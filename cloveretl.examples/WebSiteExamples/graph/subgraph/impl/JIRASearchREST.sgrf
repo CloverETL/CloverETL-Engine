@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="User" created="Wed May 28 13:40:15 CEST 2014" guiVersion="4.0.0.M2" id="1401291104482" licenseType="Evaluation" modified="Thu Jul 03 17:47:12 CEST 2014" modifiedBy="User" name="Default graph name" nature="subgraph" revision="1.32" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="jira_search_metadata" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="jira_query" type="string"/>
+<Field label="startAt" name="start_at" type="integer"/>
+<Field label="maxResults" name="max_results" type="integer"/>
+<Field label="total" name="total_results" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="jira_search_result" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="issue_id" type="string"/>
+<Field name="type" type="string"/>
+<Field name="summary" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="query" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Field name="query" type="string"/>
+<Field eofAsDelimiter="false" name="session_name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="session_value" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="rest_url" nullable="true" shift="0" size="0" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata5" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="search_params" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="query" type="string"/>
+<Field name="session_name" type="string"/>
+<Field name="session_value" type="string"/>
+<Field name="start_at" type="integer"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameter name="DEFAULT_MAX_RESULTS" value="1000"/>
+<GraphParameter name="JIRA_SEARCH_URL" value="${JIRA_REST_URL}/search?"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+<GraphParameterFile fileURL="jira.prm"/>
+</GraphParameters>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="94" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Description" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="380" x="305" y="-72">
+<attr name="text"><![CDATA[Performs REST call for the JQL query. Returns one page of results, might need to be called multiple times.]]></attr>
+</Note>
+<Dictionary>
+<Entry id="DictionaryEntry0" input="true" name="session_name" output="true" type="string"/>
+<Entry id="DictionaryEntry1" input="true" name="session_value" output="true" type="string"/>
+</Dictionary>
+</Global>
+<Phase number="0">
+<Node debugInput="true" enabled="enabled" guiName="Sample query" guiX="44" guiY="50" id="ANONYMOUS_SESSION" recordsNumber="1" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+
+// Generates output record.
+function integer generate() {
+	$out.0.query = getParamValue("DEFAULT_QUERY");
+	$out.0.start_at = 0;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the generate. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if generate() throws an exception.
+// function integer generateOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Combine" guiX="1328" guiY="136" id="COMBINE" type="COMBINE">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.start_at = $in.0.start_at;
+	$out.0.max_results = $in.0.max_results;
+	$out.0.total_results = $in.0.total_results;
+	$out.0.jira_query = $in.1.query;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Create REST URL" guiX="557" guiY="50" id="CREATE_REST_URL" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.* = $in.0.*;
+	
+	string escaped_query = escapeUrlFragment(($in.0.query == null ? "" : $in.0.query));
+	string rest_url = getParamValue("JIRA_SEARCH_URL") 
+		+ "startAt=" + $in.0.start_at 
+		+ "&maxResults=" + getParamValue("DEFAULT_MAX_RESULTS") 
+		+ "&fields=id,summary,issuetype"
+		+ "&jql=" + escaped_query;
+	$out.0.rest_url = rest_url;
+			
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node debugOutput="true" enabled="enabled" guiName="DebugOutput" guiX="1670" guiY="50" id="DEBUG_OUTPUT" type="TRASH"/>
+<Node debugOutput="true" enabled="enabled" guiName="DebugOutput" guiX="1670" guiY="167" id="DEBUG_OUTPUT1" type="TRASH"/>
+<Node enabled="enabled" guiName="Detect error" guiX="959" guiY="50" id="DETECT_ERROR" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	if ($in.0.statusCode != 200) {
+		string errorMessage = "Search failed. Status code: " + $in.0.statusCode + " Error Message: " + $in.0.errorMessage + "\n"
+			+ "\n"
+			+ "Response:\n"
+			+ $in.0.content;
+		raiseError(errorMessage);
+	}
+	
+	$out.0.* = $in.0.*;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Parse search JSON" guiX="1148" guiY="50" id="PARSE_SEARCH_JSON" schema="${META_DIR}/issue_json.xsd" sourceUri="port:$0.content:discrete" type="JSON_EXTRACT">
+<attr name="mapping"><![CDATA[<Mappings>
+	<Mapping element="json_object" outPort="1"
+			xmlFields="{}maxResults;{}startAt;{}total"
+			cloverFields="max_results;start_at;total_results">
+		<Mapping element="issues" outPort="0"
+				xmlFields="{}key"
+				cloverFields="issue_id">
+			<Mapping element="fields" useParentRecord="true"
+					xmlFields="{}summary"
+					cloverFields="summary">
+				<Mapping element="issuetype" useParentRecord="true"
+						xmlFields="{}name"
+						cloverFields="type">
+				</Mapping>
+			</Mapping>
+		</Mapping>
+	</Mapping>
+</Mappings>
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Search REST" guiX="762" guiY="50" id="SEARCH_REST" requestMethod="GET" type="HTTP_CONNECTOR">
+<attr name="inputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.URL = $in.0.rest_url;
+	$out.0.additionalHTTPHeaders["Cookie"] = $in.0.session_name + "=" + $in.0.session_value;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+<attr name="standardOutputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.content = $in.1.content;
+	$out.0.contentByte = $in.1.contentByte;
+	$out.0.outputFilePath = $in.1.outputFilePath;
+	$out.0.statusCode = $in.1.statusCode;
+	$out.0.header = $in.1.header;
+	$out.0.rawHeaders = $in.1.rawHeaders;
+	$out.0.errorMessage = $in.1.errorMessage;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="SimpleCopy" guiX="392" guiY="50" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiName="SubgraphInput" guiX="228" guiY="-70" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT">
+<Port guiY="69" name="0"/>
+<Port guiY="87" name="1"/>
+</Node>
+<Node enabled="enabled" guiName="SubgraphOutput" guiX="1556" guiY="-70" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT">
+<Port guiY="69" name="0"/>
+<Port guiY="87" name="1"/>
+<Port guiY="128" name="2"/>
+</Node>
+<Edge fromNode="ANONYMOUS_SESSION:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="SUBGRAPH_INPUT:0"/>
+<Edge debugMode="true" fromNode="COMBINE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 1 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="SUBGRAPH_OUTPUT:1"/>
+<Edge debugMode="true" fromNode="CREATE_REST_URL:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SEARCH_REST:0"/>
+<Edge debugMode="true" fromNode="DETECT_ERROR:0" guiBendpoints="" guiRouter="Manhattan" id="Edge14" inPort="Port 0 (input)" outPort="Port 0 (out)" toNode="PARSE_SEARCH_JSON:0"/>
+<Edge debugMode="true" fromNode="PARSE_SEARCH_JSON:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SUBGRAPH_OUTPUT:0"/>
+<Edge debugMode="true" fromNode="PARSE_SEARCH_JSON:1" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="COMBINE:0"/>
+<Edge debugMode="true" fromNode="SEARCH_REST:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="DETECT_ERROR:0"/>
+<Edge debugMode="true" fromNode="SIMPLE_COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="CREATE_REST_URL:0"/>
+<Edge fromNode="SIMPLE_COPY:1" guiBendpoints="" guiRouter="Manhattan" id="Edge13" inPort="Port 1 (in)" outPort="Port 1 (out)" toNode="COMBINE:1"/>
+<Edge debugMode="true" fromNode="SUBGRAPH_INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="SIMPLE_COPY:0"/>
+<Edge fromNode="SUBGRAPH_OUTPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DEBUG_OUTPUT:0"/>
+<Edge fromNode="SUBGRAPH_OUTPUT:1" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="DEBUG_OUTPUT1:0"/>
+</Phase>
+</Graph>

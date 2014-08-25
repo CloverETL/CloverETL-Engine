@@ -210,13 +210,18 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("EmptySubGraph.grf") // server test
 							&& !file.getName().equals("ParallelReader_HDFS.grf") // cluster test
 							&& !file.getName().equals("SubgraphsReuse.grf") // contains subgraphs
+							&& !file.getName().startsWith("Issues") // contains subgraphs
 							&& !file.getName().equals("SubgraphsSimplifyingGraph.grf") // contains subgraphs
+							&& !file.getName().equals("GEOCoding.grf") // contains subgraphs
+							&& !file.getName().equals("RandomDataGenerator.grf") // contains subgraphs
 							&& !file.getName().equals("graphHTTPConnector.grf") // external service is unstable
 							&& !file.getName().equals("CLO-2214_pre_post_execute_race_condition.grf") // ok, is to fail
 							&& !file.getName().equals("EmptyGraph.grf") // ok, is to fail
 							&& !file.getName().equals("informix.grf") // remove after CLO-2793 solved
 							&& !file.getName().equals("EmailReader_BadDataFormatException.grf") // ok, is to fail
 							&& !file.getName().equals("PhaseOrderCheck.grf") // ok, is to fail
+							&& !file.getName().equals("graphCloverData.grf") // remove after CLO-4360 fixed
+							&& !file.getName().equals("ReadTweets.grf") // server test
 							&& !file.getName().equals("MetadataWriter.grf"); // server test
 					
 				}

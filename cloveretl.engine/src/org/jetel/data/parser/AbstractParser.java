@@ -21,6 +21,8 @@ package org.jetel.data.parser;
 import java.io.IOException;
 
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelException;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * Abstract implementation of {@link Parser} interface.
@@ -60,6 +62,19 @@ public abstract class AbstractParser implements Parser {
 	public DataSourceType getPreferredDataSourceType() {
 		//channel data source type is preferred by default
 		return DataSourceType.CHANNEL;
+	}
+	
+	/**
+	 * by default, parser do not support direct reading -i.e. reading serialized data
+	 */
+	@Override
+	public boolean isDirectReadingSupported(){
+		return false;
+	}
+	
+	@Override
+	public int getNextDirect(CloverBuffer buffer) throws JetelException{
+		throw new UnsupportedOperationException("This parser does not support direct reading.");
 	}
 	
 }

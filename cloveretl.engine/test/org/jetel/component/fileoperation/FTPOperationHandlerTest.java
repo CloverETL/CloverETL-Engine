@@ -149,12 +149,14 @@ public class FTPOperationHandlerTest extends OperationHandlerTestTemplate {
 		result = manager.info(uri);
 		assertTrue(result.success());
 		assertTrue(result.isDirectory());
+		assertTrue(result.getName().isEmpty());
 		System.out.println(result.getResult());
 
 		uri = CloverURI.createURI("ftp://test:test@koule");
 		result = manager.info(uri);
 		assertTrue(result.success());
 		assertTrue(result.isDirectory());
+		assertTrue(result.getName().isEmpty());
 		System.out.println(result.getResult());
 	}
 	

@@ -102,7 +102,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 	 */
 	public static final int HEADER_OPTIONS_ARRAY_SIZE = 8;
 	public static final int HEADER_OPTIONS_ARRAY_SIZE_3_5 = 4;
-	public static final long OPTION_MASK_USE_FIELDS_NULL_INDICATORS = 0b01; //bit 1
+	//public static final long OPTION_MASK_USE_FIELDS_NULL_INDICATORS = 0b01; //bit 1, CLO-4594: removed as obsolete
 	public static final long OPTION_MASK_COMPRESSED_DATA = 0b1110;  // bits 2..4 one of compressions 000 -> none 001 -> LZ4 010..111 -> reserved
 	public static final long OPTION_MASK_STORE_INDEX_DATA = 0b1110000;  // bits 5..7 size of index (entries) stored 00 - none 001 -> 64 010 ->128 011->256 
 	public static final long OPTION_MASK_RAW_DATA = 0b10000000;  // bit 8: raw data (1 -> raw data, 0 -> custom serialization) 
@@ -269,9 +269,6 @@ public class CloverDataFormatter extends AbstractFormatter {
         //extra bytes now used only first bit to distinquish whether null fields are serialized as a bit array
         //@see Defaults.Record.USE_FIELDS_NULL_INDICATORS
     	byte[] extraBytes = new byte[HEADER_OPTIONS_ARRAY_SIZE];
-        if (Defaults.Record.USE_FIELDS_NULL_INDICATORS) {
-        	BitArray.encodeNumber(extraBytes, OPTION_MASK_USE_FIELDS_NULL_INDICATORS,1);
-        }
         //encode compression
         BitArray.encodeNumber(extraBytes, OPTION_MASK_COMPRESSED_DATA, compress.getId());
         if (isSaveIndex()){

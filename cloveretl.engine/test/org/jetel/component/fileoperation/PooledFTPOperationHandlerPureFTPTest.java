@@ -25,6 +25,8 @@ import java.net.URISyntaxException;
 
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.result.CreateResult;
+import org.jetel.component.fileoperation.result.InfoResult;
+import org.jetel.component.fileoperation.result.ResolveResult;
 
 /**
  * Tests FTP handler on Pure-FTPd, 
@@ -50,5 +52,52 @@ public class PooledFTPOperationHandlerPureFTPTest extends PooledFTPOperationHand
 		} catch (URISyntaxException ex) {
 			return null;
 		}
+	}
+
+	@Override
+	public void testResolve() throws Exception {
+		super.testResolve();
+
+		CloverURI uri;
+		ResolveResult result;
+		
+		// CLO-4062:
+		String input = "ftp://wildcards:pas*word@koule:66/";
+		uri = CloverURI.createURI(input);
+		result = manager.resolve(uri);
+		assertEquals(1, result.getResult().size());
+		assertEquals(URI.create(input), result.getResult().get(0).toURI());
+
+		input = "ftp://wildcards:pas*word@koule:66/wildcards/*.tmp";
+		uri = CloverURI.createURI(input);
+		result = manager.resolve(uri);
+		assertEquals(1, result.getResult().size());
+		assertEquals(URI.create("ftp://wildcards:pas*word@koule:66/wildcards/file.tmp"), result.getResult().get(0).toURI());
+		
+		input = "ftp://wildcards:pas*word@koule:66/wildcards/nonExistingFile.tmp";
+		uri = CloverURI.createURI(input);
+		result = manager.resolve(uri);
+		assertEquals(1, result.getResult().size());
+		assertEquals(URI.create(input), result.getResult().get(0).toURI());
+	}
+
+	@Override
+	public void testRootInfo() throws Exception {
+		CloverURI uri;
+		InfoResult result;
+		
+		uri = CloverURI.createURI("ftp://ftproottest:test@koule:66/");
+		result = manager.info(uri);
+		assertTrue(result.success());
+		assertTrue(result.isDirectory());
+		assertTrue(result.getName().isEmpty());
+		System.out.println(result.getResult());
+
+		uri = CloverURI.createURI("ftp://ftproottest:test@koule:66");
+		result = manager.info(uri);
+		assertTrue(result.success());
+		assertTrue(result.isDirectory());
+		assertTrue(result.getName().isEmpty());
+		System.out.println(result.getResult());
 	}
 }

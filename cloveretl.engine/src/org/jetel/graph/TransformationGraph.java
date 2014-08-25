@@ -172,12 +172,14 @@ public final class TransformationGraph extends GraphElement {
 	private String category;
 
 	/**
-	 * Path to icon, which is used only by subgraphs. It is of course useless
+	 * Path to icons, which are used only by subgraphs. It is of course useless
 	 * for runtime, but it is necessary for SubgraphComponentDynamization
 	 * in designer, where TranformationGraph is used as model for various
 	 * Subgraph component modifications.
 	 */
-	private String iconPath;
+	private String smallIconPath;
+	private String mediumIconPath;
+	private String largeIconPath;
 
 	/**
 	 * This checkConfig status is populated in graph factorisation.
@@ -479,8 +481,6 @@ public final class TransformationGraph extends GraphElement {
 	        if(isInitialized()) return;
 			super.init();
 	
-			graphParameters.init();
-			
 			//analyse the graph if necessary - usually the graph is analysed already in TransformationGraphXMLReaderWriter
 			if (!isAnalysed()) {
 				TransformationGraphAnalyzer.analyseGraph(this, getRuntimeContext(), true);
@@ -1523,12 +1523,28 @@ public final class TransformationGraph extends GraphElement {
 		this.category = category;
 	}
 
-	public String getIconPath() {
-		return getPropertyRefResolver().resolveRef(iconPath, RefResFlag.SPEC_CHARACTERS_OFF);
+	public String getSmallIconPath() {
+		return getPropertyRefResolver().resolveRef(smallIconPath, RefResFlag.SPEC_CHARACTERS_OFF);
 	}
 
-	public void setIconPath(String iconPath) {
-		this.iconPath = iconPath;
+	public void setSmallIconPath(String smallIconPath) {
+		this.smallIconPath = smallIconPath;
+	}
+
+	public String getMediumIconPath() {
+		return getPropertyRefResolver().resolveRef(mediumIconPath, RefResFlag.SPEC_CHARACTERS_OFF);
+	}
+
+	public void setMediumIconPath(String mediumIconPath) {
+		this.mediumIconPath = mediumIconPath;
+	}
+
+	public String getLargeIconPath() {
+		return getPropertyRefResolver().resolveRef(largeIconPath, RefResFlag.SPEC_CHARACTERS_OFF);
+	}
+
+	public void setLargeIconPath(String largeIconPath) {
+		this.largeIconPath = largeIconPath;
 	}
 
 	/**

@@ -78,7 +78,11 @@ public class PrimitiveHadoopOperationHandler implements PrimitiveOperationHandle
 		if (query != null) {
 			sb.append('?').append(query);
 		}
-		return URI.create(sb.toString()).normalize();
+		String result = sb.toString();
+		if (result.isEmpty()) {
+			result = URIUtils.PATH_SEPARATOR;
+		}
+		return URI.create(result).normalize();
 	}
 
 	public boolean createFile(URI target, boolean makeParents) throws IOException {

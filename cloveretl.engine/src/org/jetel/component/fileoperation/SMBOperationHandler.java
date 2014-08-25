@@ -445,11 +445,11 @@ public class SMBOperationHandler implements IOperationHandler {
 	}
 
 	private static List<String> getParts(String uri) {
-		return FileManager.getParts(uri);
+		return FileManager.getUriParts(uri);
 	}
 	
 	private static boolean hasWildcards(String path) {
-		return FileManager.hasWildcards(path);
+		return FileManager.uriHasWildcards(path);
 	}
 	
 	@Override

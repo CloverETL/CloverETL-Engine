@@ -41,5 +41,11 @@
 		<FlatFile outputFile="data-out/employees_txt.fmt" supposedFile="supposed-out/employees_txt.fmt"/>
 		<FlatFile outputFile="data-out/departments_txt.fmt" supposedFile="supposed-out/departments_txt.fmt"/>
 	</FunctionalTest>
+	
+	<FunctionalTest ident="IssuesReport" graphFile="graph/IssuesReport.grf" excludedEtlEnvironment="engine" />
+	
+	<FunctionalTest ident="IssuesSearch" graphFile="graph/IssuesSearch.grf" excludedEtlEnvironment="engine" />
+	
+	<FunctionalTest ident="ReadTweets" graphFile="graph/ReadTweets.grf" excludedEtlEnvironment="engine" />
 
 </TestScenario>

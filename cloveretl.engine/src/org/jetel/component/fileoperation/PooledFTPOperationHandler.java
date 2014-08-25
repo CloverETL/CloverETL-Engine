@@ -44,6 +44,7 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPCmd;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
+import org.apache.commons.net.ftp.parser.MLSxEntryParser;
 import org.jetel.component.fileoperation.SimpleParameters.CopyParameters;
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
@@ -61,6 +62,7 @@ import org.jetel.component.fileoperation.pool.DefaultAuthority;
 import org.jetel.component.fileoperation.pool.PooledFTPConnection;
 import org.jetel.component.fileoperation.pool.PooledFTPConnection.WriteMode;
 import org.jetel.util.string.StringUtils;
+import org.jetel.util.string.UnicodeBlanks;
 
 public class PooledFTPOperationHandler implements IOperationHandler {
 	
@@ -114,7 +116,11 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 			if (m.matches()) {
 				name = m.group(1); // some FTPs return full file paths as names, we want only the filename 
 			}
+			if (name.equals("/")) {
+				name = ""; // root directory has no name
+			}
 			this.name = name;
+			// name is modified just for the URI
 			if (file.isDirectory() && !name.endsWith(URIUtils.PATH_SEPARATOR)) {
 				name = name + URIUtils.PATH_SEPARATOR;
 			}
@@ -276,6 +282,40 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 	}
 	
 	/**
+	 * CLO-4118:
+	 * Performs the MLST command.
+	 * Copied from {@link FTPClient#mlistFile(String)}.
+	 * 
+	 * GlobalScape EFT does not return the leading space,
+	 * as required by <a href="http://tools.ietf.org/html/rfc3659#section-7.2">RFC 3659</a>.
+	 * This causes the entry to be stripped of the first character 
+	 * - the "Type" fact is turned to "ype". 
+	 * 
+	 * @param ftp		FTP client
+	 * @param pathname	remote path
+	 * @return FTPFile or <code>null</code>	
+	 * @throws IOException
+	 * 
+	 * @see {@link FTPClient#mlistFile(String)}
+	 * @see <a href="http://tools.ietf.org/html/rfc3659#section-7.2">RFC 3659 - Extensions to FTP</a>
+	 */
+	private FTPFile mlistFile(FTPClient ftp, String pathname) throws IOException {
+        boolean success = FTPReply.isPositiveCompletion(ftp.sendCommand(FTPCmd.MLST, pathname));
+        if (success) {
+            String entry = ftp.getReplyStrings()[1];
+            char firstChar = entry.charAt(0);
+            if (UnicodeBlanks.isBlank(firstChar)) {
+            	// skip leading space for parser
+            	entry = entry.substring(1);
+            }
+            return MLSxEntryParser.parseEntry(entry);
+        } else {
+            return null;
+        }
+//		return ftp.mlistFile(pathname);
+	}
+	
+	/**
 	 * Implementation using the MLST command, if available. 
 	 * 
 	 * @param targetUri
@@ -287,7 +327,14 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 			if (ftp.hasFeature(FTPCmd.MLST.getCommand())) {
 				// Pure-FTPd does not understand .. and . in the path, hence we use URI.normalize()
 				String path = getPath(targetUri.normalize());
-				FTPFile file = ftp.mlistFile(path);
+				if (path.equals(URIUtils.PATH_SEPARATOR)) {
+					// CLO-4118: root directory, GlobalScape EFT disallows MLST
+					FTPFile root = new FTPFile();
+					root.setType(FTPFile.DIRECTORY_TYPE);
+					root.setName("");
+					return info(root, null, targetUri);
+				}
+				FTPFile file = mlistFile(ftp, path);
 				if (file != null) {
 					return new FTPInfo(file, null, targetUri);
 				} else {
@@ -329,7 +376,7 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 		if (getPath(targetUri.normalize()).equals(URIUtils.PATH_SEPARATOR)) {
 			FTPFile root = new FTPFile();
 			root.setType(FTPFile.DIRECTORY_TYPE);
-			root.setName(URIUtils.CURRENT_DIR_NAME);
+			root.setName("");
 			return info(root, null, targetUri);
 		} else {
 			String path = getPath(targetUri);

@@ -37,6 +37,7 @@ public class TimeZoneProvider implements Serializable {
 	
 	public static final String JODA_PREFIX = "joda:";
 	public static final String JAVA_PREFIX = "java:";
+	private static final String ISO8601_PREFIX = "iso-8601:";
 
 	private final TimeZone javaTimeZone;
 	
@@ -49,30 +50,6 @@ public class TimeZoneProvider implements Serializable {
 	 */
 	public TimeZoneProvider() {
 		this((String) null);
-	}
-	
-	/**
-	 * @param timeZone Java time zone
-	 */
-	public TimeZoneProvider(TimeZone timeZone) {
-		if (timeZone == null) {
-			throw new NullPointerException("timeZone is null");
-		}
-		this.javaTimeZone = timeZone;
-		this.jodaTimeZone = null;
-		this.config = timeZone.getID();
-	}
-
-	/**
-	 * @param timeZone Joda time zone
-	 */
-	public TimeZoneProvider(DateTimeZone timeZone) {
-		if (timeZone == null) {
-			throw new NullPointerException("timeZone is null");
-		}
-		this.javaTimeZone = null;
-		this.jodaTimeZone = timeZone;
-		this.config = JODA_PREFIX + timeZone.getID();
 	}
 	
 	/**
@@ -101,6 +78,8 @@ public class TimeZoneProvider implements Serializable {
 				
 				if (id.startsWith(JODA_PREFIX)) {
 					joda = DateTimeZone.forID(id.substring(JODA_PREFIX.length()));
+				} else if (id.startsWith(ISO8601_PREFIX)) {
+					joda = DateTimeZone.forID(id.substring(ISO8601_PREFIX.length()));
 				} else {
 					if (id.startsWith(JAVA_PREFIX)) {
 						id = id.substring(JAVA_PREFIX.length());

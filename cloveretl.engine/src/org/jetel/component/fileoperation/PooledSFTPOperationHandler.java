@@ -85,6 +85,8 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 			Info sourceInfo = info(source, channel);
 			if (sourceInfo == null) {
 				throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), source.toString())); //$NON-NLS-1$
+			} else if (!sourceInfo.isDirectory() && target.getPath().endsWith(URIUtils.PATH_SEPARATOR)) {
+				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), source)); //$NON-NLS-1$
 			}
 			Info targetInfo = info(target, channel);
 			boolean targetChanged = false;
@@ -96,6 +98,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 			if (params.isUpdate() || params.isNoOverwrite()) {
 				if (targetChanged) { // obtain new targetInfo if the target has changed
 					targetInfo = info(target, channel);
+					targetChanged = false;
 				}
 				if (targetInfo != null) {
 					if (params.isNoOverwrite()) {
@@ -199,6 +202,9 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 		if (info == null) {
 			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), uri.toString())); //$NON-NLS-1$
 		}
+		if (!info.isDirectory() && uri.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
+			throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), uri)); //$NON-NLS-1$
+		}
 		delete(channel, info, params);
 	}
 	
@@ -257,13 +263,13 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 		 * some methods may throw exceptions upon invocation.
 		 * 
 		 * @param attrs
-		 * @param self
+		 * @param uri
 		 */
-		private SFTPInfo(SftpATTRS attrs, URI self) {
+		private SFTPInfo(SftpATTRS attrs, URI uri) {
 			this.file = null;
 			this.parent = null;
-			this.name = null;
-			this.uri = self;
+			this.name = URIUtils.urlDecode(URIUtils.getFileName(uri));
+			this.uri = uri;
 			this.attrs = attrs;
 		}
 		
@@ -414,36 +420,14 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 		try {
 			String path = getPath(targetUri);
 			SftpATTRS attrs = channel.stat(path);
-			if (!attrs.isDir()) {
-				if (simple) {
-					// speed optimization, does not contain filename!
-					return new SFTPInfo(attrs, targetUri);
-				} else {
-					@SuppressWarnings("unchecked")
-					Vector<LsEntry> files = channel.ls(path);
-					if ((files != null) && !files.isEmpty()) {
-						return info(files.get(0), null, null, targetUri);
-					}
-				}
-			} else {
-				@SuppressWarnings("unchecked")
-				Vector<LsEntry> files = channel.ls(path);
-				if ((files != null) && !files.isEmpty() && (files.get(0) != null)) {
-					for (LsEntry file: files) {
-						if ((file != null) && file.getAttrs().isDir() && file.getFilename().equals(URIUtils.CURRENT_DIR_NAME)) {
-							URI parentUri = URIUtils.getParentURI(targetUri);
-							if (parentUri != null) {
-								String fileName = parentUri.relativize(targetUri).toString();
-								fileName = URIUtils.urlDecode(fileName);
-								return info(file, fileName, null, targetUri);
-							}
-							return info(file, null, null, targetUri);
-						}
-						
-					}
-					return info(files.get(0), null, null, targetUri);
+			if (!simple && !attrs.isDir()) { // perform LS for regular files
+				Vector<?> fileList = channel.ls(path);
+				if (fileList.size() == 1) {
+					LsEntry file = (LsEntry) fileList.get(0);
+					return info(file, null, null, targetUri);
 				}
 			}
+			return new SFTPInfo(attrs, targetUri);
 		} catch (SftpException sftpe) {
 			if (sftpe.id != ChannelSftp.SSH_FX_NO_SUCH_FILE) { // other than No such file
 				throw new IOException("Failed to get SFTP file info", sftpe);
@@ -546,9 +530,18 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 		ftp.put(new ByteArrayInputStream(new byte[0]), path);
 	}
 
-	private void setLastModified(ChannelSftp channel, String path, long millis) throws SftpException {
-		long secs = millis / 1000;
-		channel.setMtime(path, (int) secs);
+	private void setLastModified(ChannelSftp channel, String path, long millis, boolean directory) throws SftpException {
+		int secs = (int) (millis / 1000);
+		if (!directory) {
+			channel.setMtime(path, secs); // strict, setting modification date on files must work
+		} else {
+			try {
+				// lenient, best-effort implementation
+				channel.setMtime(path, secs);
+			} catch (SftpException sftpe) {
+				log.warn("Failed to set directory last modification time: " + path);
+			}
+		}
 	}
 
 	private void create(ChannelSftp channel, URI uri, CreateParameters params) throws IOException, SftpException {
@@ -557,13 +550,17 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 		}
 		boolean createDirectory = Boolean.TRUE.equals(params.isDirectory());
 		boolean createParents = Boolean.TRUE.equals(params.isMakeParents());
-		Info fileInfo = info(uri, channel);
+		Info fileInfo = simpleInfo(uri, channel);
 		String path = getPath(uri);
 		Date lastModified = params.getLastModified();
 		if (fileInfo == null) { // does not exist
+			URI parentUri = URIUtils.getParentURI(uri);
 			if (createParents) {
-				URI parentUri = URIUtils.getParentURI(uri);
 				create(channel, parentUri, params.clone().setDirectory(true));
+			} else if (parentUri != null) {
+				if (simpleInfo(parentUri, channel) == null) {
+					throw new FileNotFoundException("No such directory: " + parentUri);
+				}
 			}
 			if (createDirectory) {
 				channel.mkdir(path);
@@ -571,13 +568,13 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 				createFile(channel, path);
 			}
 			if (lastModified != null) {
-				setLastModified(channel, path, lastModified.getTime());
+				setLastModified(channel, path, lastModified.getTime(), createDirectory);
 			}
 		} else {
 			if (createDirectory != fileInfo.isDirectory()) {
 				throw new IOException(MessageFormat.format(createDirectory ? FileOperationMessages.getString("IOperationHandler.exists_not_directory") : FileOperationMessages.getString("IOperationHandler.exists_not_file"), uri)); //$NON-NLS-1$ //$NON-NLS-2$
 			}
-			setLastModified(channel, path, lastModified != null ? lastModified.getTime() : System.currentTimeMillis());
+			setLastModified(channel, path, (lastModified != null) ? lastModified.getTime() : System.currentTimeMillis(), fileInfo.isDirectory());
 		}
 	}
 

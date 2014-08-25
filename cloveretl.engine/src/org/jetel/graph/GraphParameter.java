@@ -28,7 +28,6 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.jetel.component.ComponentDescription.Attribute;
-import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.parameter.GraphParameterAttributeNode;
 import org.jetel.graph.parameter.GraphParameterDynamicValueProvider;
@@ -106,12 +105,6 @@ public class GraphParameter {
 		return parentGraphParameters != null ? parentGraphParameters.getParentGraph() : null;
 	}
 	
-	public void init() throws ComponentNotReadyException {
-		if (dynamicValue != null) {
-			dynamicValue.init();
-		}
-	}
-	
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -136,7 +129,7 @@ public class GraphParameter {
 	 * @return true if value of this graph parameter is defined by CTL code
 	 */
 	public boolean hasDynamicValue() {
-		return dynamicValue != null && dynamicValue.isInitialized();
+		return dynamicValue != null;
 	}
 	
 	/**
@@ -146,7 +139,7 @@ public class GraphParameter {
 	 */
 	public String getValueResolved(RefResFlag flag) {
 		if (!hasDynamicValue()) {
-			return getParentGraph().getPropertyRefResolver().resolveRef(value, flag);
+			return getParentGraph().getPropertyRefResolver().getResolvedPropertyValue(name, flag);
 		} else {
 			return dynamicValue.getValue();
 		}
@@ -158,7 +151,7 @@ public class GraphParameter {
 	@XmlAttribute(name="value")
 	public String getValue() {
 		if (!hasDynamicValue()) {
-			return value;
+			return value != null ? value : "";
 		} else {
 			return dynamicValue.getValue();
 		}
@@ -327,7 +320,7 @@ public class GraphParameter {
 		this.defaultHint = defaultHint;
 	}
 
-	@XmlElement(name="singleType")
+	@XmlElement(name="SingleType")
 	public SingleType getSingleType() {
 		return singleType;
 	}
@@ -398,7 +391,7 @@ public class GraphParameter {
 		this.singleType = new SingleType(singleTypeName);
 	}
 
-	@XmlElement(name="componentReference")
+	@XmlElement(name="ComponentReference")
 	public ComponentReference getComponentReference() {
 		return componentReference;
 	}

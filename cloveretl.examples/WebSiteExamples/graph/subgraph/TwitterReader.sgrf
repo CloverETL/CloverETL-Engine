@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="dpavlis" created="Wed Jul 09 15:34:33 CEST 2014" guiVersion="4.0.0.M2" id="1404915642404" licenseType="Evaluation" modified="Fri Jul 18 11:06:08 CEST 2014" modifiedBy="User" name="TwitterReader" nature="subgraph" revision="1.36" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata1">
+<Record fieldDelimiter="|" name="Trends" recordDelimiter="\n" type="delimited">
+<Field name="name" type="string"/>
+<Field name="query" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3">
+<Record fieldDelimiter="|" name="TweetMinID" recordDelimiter="\n" type="delimited">
+<Field name="minID" type="long"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="Tweets" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="tweet_text" type="string"/>
+<Field name="created" type="string"/>
+<Field name="author" type="string"/>
+<Field name="id" type="long"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="TwitterResponse" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="content" type="string"/>
+<Field name="query" type="string"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameter label="TWITTER_QUERY" name="_TWITTER__QUERY1" public="true" required="false" value="dummy"/>
+<GraphParameter category="basic" label="NUM_TWEETS" name="_NUM__TWEETS" public="true" required="false" value="100"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="100" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Comment" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="14" width="524" x="317" y="46">
+<attr name="text"><![CDATA[Reading Tweets/Searching based on provided search string. As Twitter returns max 100 tweets per request, this subgraph allows for cascading of the requests in order to return older (timewise) tweets for the same search string - that's why the second output port.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="Aggregate" guiX="708" guiY="346" id="AGGREGATE" mapping="$minID:=min($id);" sorted="false" type="AGGREGATE"/>
+<Node debugInput="true" enabled="disabled" guiName="DebugInput" guiX="50" guiY="134" id="DEBUG_INPUT" recordsNumber="0" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+
+// Generates output record.
+function integer generate() {
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the generate. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if generate() throws an exception.
+// function integer generateOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node debugOutput="true" enabled="enabled" guiName="DebugOutput" guiX="1043" guiY="134" id="DEBUG_OUTPUT" type="TRASH"/>
+<Node charset="UTF-16" enabled="enabled" fileURL="port:$0.content:discrete" guiName="JSONReader" guiX="511" guiY="200" id="JSONREADER" type="JSON_READER">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<!-- =========================== Context ================================ -->
+<!-- Context element sets the "current node" in the JSON tree             --> 
+<!-- for subsequent Mapping (or Context) operations.                      -->
+<!--                                                                      -->
+<!-- Parameters:                                                          -->
+<!--   xpath: position in the JSON tree                                   -->
+<!--   outPort: (optional) routes mapped data to specified output port    -->
+<!--                                                                      -->
+<!-- Valid "xpath" for root context:                                      -->
+<!--   xpath="/root/object"  if root of JSON structure is an object       -->
+<!--   xpath="/root/array"   if root of JSON structure is an array        -->
+  
+<Context xpath="/root/object/statuses" outPort="0">
+  
+  <!-- =========================== Mapping ================================ -->
+  <!-- Mapping elements extract data from single JSON name/value pair       -->
+  <!-- in the current node or its subtree.                                  --> 
+  <!--                                                                      -->
+  <!-- Parameters:                                                          -->
+  <!--   xpath: extract value of a name/value pair for a specified name     -->
+  <!--                                                                      -->
+  <Mapping cloverField="tweet_text" xpath="text"/>
+  <Mapping cloverField="created" xpath="created_x005fat"/>
+  <Mapping cloverField="author" xpath="user/name"/>
+  <Mapping cloverField="id" xpath="id"/>
+</Context>
+]]></attr>
+</Node>
+<Node NUM_TWEETS="${_NUM__TWEETS}" TWITTER_QUERY="${_TWITTER__QUERY1}" enabled="enabled" guiName="Search for tweets" guiX="317" guiY="200" id="SEARCH_FOR_TWEETS" type="HTTP_CONNECTOR">
+<attr name="inputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+
+	$out.0.URL = "https://api.twitter.com/1.1/search/tweets.json?q=" + escapeUrlFragment(getComponentProperty("TWITTER_QUERY"))
+					+ "&count="  + getComponentProperty("NUM_TWEETS");
+	$out.0.consumerKey = "xiKI3LT6IHGv2z1dDT6uWoARC";
+	$out.0.consumerSecret = "OE1tbQR14e3E00JRnMMFnfF1jN1q4KIMLXiWVbvKQqesnCf3mE";
+	$out.0.oAuthAccessToken = "2613582000-IeOh0AY3Mkr3JyxRba2bN7Qslzk0DNrq85LQwaa";
+	$out.0.oAuthAccessTokenSecret = "eCWm4HECCTFM2MaBodPtslx2z646mXTfl8T7z1eIDgm31";
+	
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+<attr name="standardOutputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.content = $in.1.content;
+	$out.0.query = $in.2.URL;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="SimpleCopy" guiX="685" guiY="193" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiName="SubgraphInput" guiX="228" guiY="10" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT">
+<Port guiY="152" name="0"/>
+<Port guiY="222" name="1"/>
+</Node>
+<Node enabled="enabled" guiName="SubgraphOutput" guiX="929" guiY="10" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT">
+<Port guiY="152" name="0"/>
+<Port guiY="222" name="1"/>
+<Port guiY="292" name="2"/>
+</Node>
+<Edge fromNode="AGGREGATE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 1 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="SUBGRAPH_OUTPUT:1"/>
+<Edge fromNode="DEBUG_INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="SUBGRAPH_INPUT:0"/>
+<Edge debugMode="false" fromNode="JSONREADER:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SIMPLE_COPY:0"/>
+<Edge debugMode="false" fromNode="SEARCH_FOR_TWEETS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="JSONREADER:0"/>
+<Edge debugMode="false" fromNode="SIMPLE_COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SUBGRAPH_OUTPUT:0"/>
+<Edge fromNode="SIMPLE_COPY:1" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" outPort="Port 1 (out)" toNode="AGGREGATE:0"/>
+<Edge fromNode="SUBGRAPH_OUTPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DEBUG_OUTPUT:0"/>
+</Phase>
+</Graph>

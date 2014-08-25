@@ -64,7 +64,7 @@ if( !runTests ){
 	// compile engine and run some tests
 	antBaseD = engineD
 	antArgs = [
-		"-Dadditional.plugin.list=cloveretl.license.engine,cloveretl.component.hadoop,cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.tlfunction.commercial,cloveretl.ctlfunction.commercial,cloveretl.addressdoctor.commercial,cloveretl.profiler.commercial,cloveretl.mongodb.commercial,cloveretl.validator.commercial,cloveretl.initiate.engine,cloveretl.spreadsheet.commercial,cloveretl.oem.example.component",
+		"-Dadditional.plugin.list=cloveretl.license.engine,cloveretl.component.hadoop,cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.tlfunction.commercial,cloveretl.ctlfunction.commercial,cloveretl.addressdoctor.commercial,cloveretl.profiler.commercial,cloveretl.mongodb.commercial,cloveretl.validator.commercial,cloveretl.initiate.engine,cloveretl.spreadsheet.commercial,cloveretl.oem.example.component,cloveretl.subgraph.commercial",
 		"-Dcte.logpath=/data/cte-logs",
 		"-Dcte.hudson.link=job/${jobName}/${buildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
@@ -156,9 +156,9 @@ if( !runTests ){
 	}
 	if (testName == "after-commit" && testJVM.endsWith("IBM")) {
 		// disable Hadoop tests
-		antArgs += "-Dtestenv.excludedtestidentpattern=Hadoop.*|HDFS.*|Hive.*"
+		antArgs += "-Dtestenv.excludedtestidentpattern=Hadoop.*|HDFS.*|Hive.*|AddressDoctor*"
 		// prevent OutOfMemoryError and Segmentation error on IBM Java
-		antArgs += "-Drunscenarios.Xmx=-Xmx1024m"
+		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
 	}
 
 	
@@ -197,7 +197,7 @@ antArgs.each{arg-> antC += arg}
 antC.executeSave(subEnv(antCustomEnv), antBaseD)
 	
 println "hostName=" + InetAddress.localHost.hostName
-if( InetAddress.localHost.hostName != "linda" ) {
+if( InetAddress.localHost.hostName != "linda" && InetAddress.localHost.hostName != "virt-linda" ) {
 	rsyncC = ["rsync", "-rv", "--remove-source-files", "/data/cte-logs/", "jenkins@linda:/data/cte-logs"]
 	keyFile = new File("/hudson/id_dsa")
 	if( keyFile.exists() ){
