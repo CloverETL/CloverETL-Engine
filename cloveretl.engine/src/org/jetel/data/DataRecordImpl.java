@@ -71,6 +71,16 @@ public class DataRecordImpl extends DataRecord {
      */
     private boolean plain=false;
     
+    /**
+     * If set to <code>false</code>, deserialization will skip auto-filled fields.
+     * 
+     * <code>true</code> by default.
+     * 
+     * @see DataRecord#setDeserializeAutofilledFields(boolean)
+     * @see <a href="https://bug.javlin.eu/browse/CLO-4591">CLO-4591</a>
+     */
+    private boolean deserializeAutofilledFields = true;
+    
 	/**
 	 * Create new instance of DataRecord based on specified metadata (
 	 * how many fields, what field types, etc.)
@@ -254,14 +264,22 @@ public class DataRecordImpl extends DataRecord {
 	 */
 	@Override
 	public void deserialize(CloverBuffer buffer) {
-		for (DataField field : fields) {
-			field.deserialize(buffer);
+		if (deserializeAutofilledFields) {
+			for (DataField field : fields) {
+				field.deserialize(buffer);
+			}
+		} else { // CLO-4591
+			deserialize(buffer, metadata.getNonAutofilledFields());
 		}
 	}
 	
 	@Override
 	public void deserialize(CloverBuffer buffer, DataRecordSerializer serializer){
-		serializer.deserialize(buffer,this);
+		if (deserializeAutofilledFields) {
+			serializer.deserialize(buffer,this);
+		} else { // CLO-4591
+			serializer.deserialize(buffer,this, metadata.getNonAutofilledFields());
+		}
 	}
 
 	/**
@@ -769,6 +787,11 @@ public class DataRecordImpl extends DataRecord {
             }
         };
     }
+
+	@Override
+	public void setDeserializeAutofilledFields(boolean deserializeAutofilledFields) {
+		this.deserializeAutofilledFields = deserializeAutofilledFields;
+	}
 }
 /*
  *  end class DataRecord

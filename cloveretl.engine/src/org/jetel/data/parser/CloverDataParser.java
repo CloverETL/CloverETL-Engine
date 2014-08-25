@@ -44,6 +44,7 @@ import org.jetel.exception.PolicyType;
 import org.jetel.graph.ContextProvider;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
+import org.jetel.metadata.MetadataUtils;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
@@ -373,7 +374,10 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
     		} catch (IOException e) {
     			throw new ComponentNotReadyException("Unable to read metadata definition from CloverData file", e);
     		}
-	    	if (!metadata.equals(version.metadata, false)) {
+        	
+        	// CLO-4591:
+        	DataRecordMetadata nonAutofilledFieldsMetadata = MetadataUtils.getNonAutofilledFieldsMetadata(metadata);
+	    	if (!nonAutofilledFieldsMetadata.equals(version.metadata, false)) {
 				logger.error("Data structure of input file is not compatible with used metadata. File data structure: " + version.metadata.toStringDataTypes());
 				throw new ComponentNotReadyException("Data structure of input file is not compatible with used metadata. More details available in log.");
 	    	}
