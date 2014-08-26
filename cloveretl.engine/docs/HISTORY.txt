@@ -36,6 +36,17 @@ REL-4-0-0-M1
 	 
 
 
+REL-3-5-2
+---------
+
+* DBOutputTable output using 'RETURNING' on PosgtreSQL
+- FIXES:
+	- "where" in sql comment is used in Dynamic metadata query
+	- SystemExecute closes error file descriptor during execution
+	- DBLookupTable has incorrectly synchronized activeLookups variable
+	- Dash passes through isNumber function
+
+
 REL-3-5-1
 ---------
 
