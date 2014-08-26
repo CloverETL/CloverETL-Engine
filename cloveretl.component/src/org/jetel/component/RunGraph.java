@@ -798,7 +798,7 @@ public class RunGraph extends Node{
 		return runG;
 	}
 	
-	protected void setRecursionDetection(boolean recursionDetection) {
+	public void setRecursionDetection(boolean recursionDetection) {
 		this.recursionDetection = recursionDetection;
 	}
 
