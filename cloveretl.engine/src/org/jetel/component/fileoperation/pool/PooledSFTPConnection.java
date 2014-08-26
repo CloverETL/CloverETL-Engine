@@ -170,22 +170,32 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 	private Session getSession() throws IOException {
 		JSch jsch = new JSch();
 		Set<String> keys = getPrivateKeys();
-		if (log.isDebugEnabled()) {
-			log.debug("SFTP connecting to " + authority.getHost() + " using the following private keys: " + keys);
-		}
-		if (keys != null) {
-			for (String key: keys) {
-				try {
-					log.debug("Adding new identity from " + key);
-					jsch.addIdentity(key);
-				} catch (Exception e) {
-					log.warn("Failed to read private key", e);
-				}
-			}
-		}
 		String[] user = getUserInfo();
 		String username = user[0];
 		String password = user.length == 2 ? user[1] : null;
+		
+		if (password == null) {
+			// CLO-4562: use private key authentication only if password is not set
+			if (log.isDebugEnabled()) {
+				log.debug("SFTP connecting to " + authority.getHost() + " using the following private keys: " + keys);
+			}
+			if (keys != null) {
+				for (String key: keys) {
+					try {
+						log.debug("Adding new identity from " + key);
+						jsch.addIdentity(key);
+					} catch (Exception e) {
+						log.warn("Failed to read private key", e);
+					}
+				}
+			}
+		} else if (log.isDebugEnabled()) {
+			if ((keys != null) && !keys.isEmpty()) {
+				log.debug("SFTP connecting to " + authority.getHost() + " using password, ignoring " + keys.size() + " private key(s)");
+			} else {
+				log.debug("SFTP connecting to " + authority.getHost() + " using password");
+			}
+		}
 		
 		if (log.isWarnEnabled()) {
 			if (!StringUtils.isEmpty(username) && StringUtils.isEmpty(password) && (keys == null || keys.isEmpty())) {
