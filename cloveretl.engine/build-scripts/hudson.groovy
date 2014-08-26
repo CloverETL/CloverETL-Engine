@@ -10,7 +10,7 @@ assert jobName
 def buildNumber = env['BUILD_NUMBER']
 assert buildNumber
 def testName
-jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-after-commit-windows-java-1.6-Sun|tests-after-commit-proxy-java-1.6-Sun|tests-after-commit-java-1.7-Sun|tests-after-commit-java-1.6-IBM|tests-night-java-1.6-IBM|tests-night-java-1.6-JRockit|tests-night-functional-java-1.6-Sun|tests-after-commit|tests-reset|tests-performance-java-1.6-Sun|detail)-)?(.+)$/
+jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-after-commit-windows-java-1.6-Sun|tests-after-commit-proxy-java-1.6-Sun|tests-after-commit-java-1.7-Sun|tests-after-commit-java-1.6-IBM|tests-after-commit-java-1.7-IBM|tests-night-java-1.6-IBM|tests-night-java-1.6-JRockit|tests-night-functional-java-1.6-Sun|tests-after-commit|tests-reset|tests-performance-java-1.6-Sun|detail)-)?(.+)$/
 assert jobNameM.matches() 
 jobBasename = jobNameM[0][1]
 jobGoal = jobNameM[0][3]
@@ -156,7 +156,7 @@ if( !runTests ){
 	}
 	if (testName == "after-commit" && testJVM.endsWith("IBM")) {
 		// disable Hadoop tests
-		antArgs += "-Dtestenv.excludedtestidentpattern=Hadoop.*|HDFS.*|Hive.*"
+		antArgs += "-Dtestenv.excludedtestidentpattern=Hadoop.*|HDFS.*|Hive.*|AddressDoctor*"
 		// prevent OutOfMemoryError and Segmentation error on IBM Java
 		antArgs += "-Drunscenarios.Xmx=-Xmx1024m"
 	}
