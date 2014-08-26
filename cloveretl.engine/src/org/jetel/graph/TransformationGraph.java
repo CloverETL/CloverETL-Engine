@@ -1397,7 +1397,7 @@ public final class TransformationGraph extends GraphElement {
 	private void validateRequiredGraphParameters() {
 		if (getRuntimeContext().isValidateRequiredParameters()) {
 			for (GraphParameter graphParameter : getGraphParameters().getAllGraphParameters()) {
-				if (graphParameter.isRequired()
+				if (graphParameter.isPublic() && graphParameter.isRequired()
 						&& !getRuntimeContext().getAdditionalProperties().containsKey(graphParameter.getName())) {
 					throw new JetelRuntimeException("Required graph parameter '" + graphParameter.getName() + "' is not specified.");
 				}
