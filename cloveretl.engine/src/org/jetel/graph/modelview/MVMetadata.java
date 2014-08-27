@@ -20,6 +20,7 @@ package org.jetel.graph.modelview;
 
 import java.util.List;
 
+import org.jetel.component.StaticMetadataProvider;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -33,6 +34,12 @@ import org.jetel.metadata.DataRecordMetadata;
  * @created 19. 9. 2013
  */
 public interface MVMetadata extends MVGraphElement {
+
+	/**
+	 * This is the unbeatable priority. This is used in runtime for {@link StaticMetadataProvider}
+	 * - these metadata we are sure are on the right place.
+	 */
+	public static final int TOP_PRIORITY = Integer.MAX_VALUE;
 
 	/**
 	 * This high priority is used when metadata is defined directly on edge.
