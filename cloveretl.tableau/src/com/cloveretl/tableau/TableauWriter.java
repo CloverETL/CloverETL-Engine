@@ -2,9 +2,9 @@ package com.cloveretl.tableau;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Date;
-import java.util.HashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -96,7 +96,8 @@ public class TableauWriter extends Node  {
 	// Calendar instance to convert from input dates to Tableau date fields
 	private DateFieldExtractor[] extractors;
 
-
+	//TODO check how hard check is necessary - it may work just with soft check (same file)
+	private static final boolean hardPhaseCheck = false;
 	
 	static Log logger = LogFactory.getLog(TableauWriter.class);
 	
@@ -428,8 +429,7 @@ public class TableauWriter extends Node  {
 
 		if (errMessage != null) {
 			if (status != null) {
-				status.add(new ConfigurationProblem(errMessage, Severity.ERROR,
-						this, Priority.NORMAL));
+				status.add(new ConfigurationProblem(errMessage, Severity.ERROR,	this, Priority.NORMAL));
 			} else {
 				System.err.println(errMessage);
 			}
@@ -447,6 +447,26 @@ public class TableauWriter extends Node  {
 			status.add(new ConfigurationProblem(INVALID_SUFFIX_MESSAGE, Severity.ERROR, this, Priority.NORMAL));
 		}
 		
+		URL contextURL = getContextURL();
+		for (Node n : getGraph().getPhase(getPhaseNum()).getNodes().values()) {
+			if (n != this && getType().equals(n.getType())) {
+				if (hardPhaseCheck) {
+					status.add("\""	+ n.getName() + "\" (ID: " + n.getId() + ") writes in the same phase. This is not allowed!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+				} else {
+					try {
+						URL url1 = FileUtils.getFileURL(contextURL,
+								((TableauWriter) n).outputFileName);
+						URL url2 = FileUtils.getFileURL(contextURL,
+								outputFileName);
+						if (url1.equals(url2)) {
+							status.add("\"" + n.getName() + "\" (ID: " + n.getId() + ") writes to the same file in the same phase!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+						}
+					} catch (MalformedURLException e) {
+					}
+				}
+			}
+		}
+
 		return status;
 		
 	}
