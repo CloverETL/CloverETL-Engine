@@ -179,22 +179,12 @@ public class TableauWriter extends Node  {
 							extractor.getMinute(),extractor.getSecond(),extractor.getMilliSecond()
 					);
 					break;
-				
 				case NUMBER:
 					outputRow.setDouble(i, ((NumericDataField)inputRecord.getField(i)).getDouble());
 					break;
-
-				case DECIMAL:
-					// FIXME test what happens on overflowing value
-					outputRow.setDouble(i, ((DecimalDataField)inputRecord.getField(i)).getDouble());
-					break;
-					
 				case INTEGER:
 					outputRow.setInteger(i, ((IntegerDataField)inputRecord.getField(i)).getInt());
-					break;
-				case LONG:
-					outputRow.setInteger(i, ((LongDataField)inputRecord.getField(i)).getInt());
-					break;
+					break;	
 				default: 
 					throw new ComponentNotReadyException("Unable to convert value of type \"" + fieldMetadata.getDataType() + "\" into any types supported by Tableau. Offending field:  " + fieldMetadata.getName());
 				}
@@ -451,7 +441,7 @@ public class TableauWriter extends Node  {
 		for (Node n : getGraph().getPhase(getPhaseNum()).getNodes().values()) {
 			if (n != this && getType().equals(n.getType())) {
 				if (hardPhaseCheck) {
-					status.add("\""	+ n.getName() + "\" (ID: " + n.getId() + ") writes in the same phase. This is not allowed!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+					status.add("\""	+ n.getName() + "\" writes in the same phase. This is not allowed!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
 				} else {
 					try {
 						URL url1 = FileUtils.getFileURL(contextURL,
@@ -459,11 +449,20 @@ public class TableauWriter extends Node  {
 						URL url2 = FileUtils.getFileURL(contextURL,
 								outputFileName);
 						if (url1.equals(url2)) {
-							status.add("\"" + n.getName() + "\" (ID: " + n.getId() + ") writes to the same file in the same phase!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+							status.add("\"" + n.getName() + "\" writes to the same file in the same phase!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
 						}
 					} catch (MalformedURLException e) {
 					}
 				}
+			}
+		}
+		
+		DataRecordMetadata recordMeta = getInputPort(0).getMetadata();
+		for (int i=0; i<recordMeta.getNumFields(); i++) {
+			DataFieldMetadata fieldMeta = recordMeta.getField(i);
+			DataFieldType fieldType= fieldMeta.getDataType();
+			if (fieldType == DataFieldType.LONG || fieldType == DataFieldType.DECIMAL ) {
+				status.add("Input metadata of \"" + getName() + "\" contain data type unsupported by Tableau! Metadata field "+ recordMeta.getField(i).getName() + " of metadata " + recordMeta.getName() + " has type " + fieldType.getName() + "! Unsupported types are: " + DataFieldType.LONG.getName() + ", " + DataFieldType.DECIMAL.getName(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
 			}
 		}
 
