@@ -95,9 +95,6 @@ public class TableauWriter extends Node  {
 
 	// Calendar instance to convert from input dates to Tableau date fields
 	private DateFieldExtractor[] extractors;
-
-	//TODO check how hard check is necessary - it may work just with soft check (same file)
-	private static final boolean hardPhaseCheck = false;
 	
 	static Log logger = LogFactory.getLog(TableauWriter.class);
 	
@@ -440,19 +437,14 @@ public class TableauWriter extends Node  {
 		URL contextURL = getContextURL();
 		for (Node n : getGraph().getPhase(getPhaseNum()).getNodes().values()) {
 			if (n != this && getType().equals(n.getType())) {
-				if (hardPhaseCheck) {
-					status.add("\""	+ n.getName() + "\" writes in the same phase. This is not allowed!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-				} else {
-					try {
-						URL url1 = FileUtils.getFileURL(contextURL,
-								((TableauWriter) n).outputFileName);
-						URL url2 = FileUtils.getFileURL(contextURL,
-								outputFileName);
-						if (url1.equals(url2)) {
-							status.add("\"" + n.getName() + "\" writes to the same file in the same phase!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-						}
-					} catch (MalformedURLException e) {
+				try {
+					URL url1 = FileUtils.getFileURL(contextURL,
+							((TableauWriter) n).outputFileName);
+					URL url2 = FileUtils.getFileURL(contextURL, outputFileName);
+					if (url1.equals(url2)) {
+						status.add("\"" + n.getName() + "\" writes to the same file in the same phase!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
 					}
+				} catch (MalformedURLException e) {
 				}
 			}
 		}
