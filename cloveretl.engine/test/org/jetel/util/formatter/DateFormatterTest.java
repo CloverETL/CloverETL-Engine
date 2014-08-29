@@ -80,10 +80,16 @@ public class DateFormatterTest extends CloverTestCase {
 		} catch (IllegalStateException ex) {}
 
 		// Java format, default timezone
-		formatter = DateFormatterFactory.getFormatter("dd.MM.yyyy HH:mm:ss", (Locale) null, null);
+		formatter = DateFormatterFactory.getFormatter("dd.MM.yyyy HH:mm:ss", (Locale) null, (String) null);
 
 		// Joda format, default timezone
-		formatter = DateFormatterFactory.getFormatter("joda:dd.MM.yyyy HH:mm:ss", (Locale) null, null);
+		formatter = DateFormatterFactory.getFormatter("joda:dd.MM.yyyy HH:mm:ss", (Locale) null, (String) null);
+
+		// Java format, default timezone
+		formatter = DateFormatterFactory.getFormatter("dd.MM.yyyy HH:mm:ss", (Locale) null, (TimeZoneProvider) null);
+
+		// Joda format, default timezone
+		formatter = DateFormatterFactory.getFormatter("joda:dd.MM.yyyy HH:mm:ss", (Locale) null, (TimeZoneProvider) null);
 
 		// Java format, both timezone formats
 		formatter = DateFormatterFactory.getFormatter("dd.MM.yyyy HH:mm:ss", (Locale) null, "GMT+4;joda:+04:00");
