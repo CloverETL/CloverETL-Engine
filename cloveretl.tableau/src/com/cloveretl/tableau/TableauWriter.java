@@ -48,7 +48,7 @@ import com.tableausoftware.DataExtract.Type;
 public class TableauWriter extends Node  {
 
 	//TODO put this in messages properties file
-	private final static String INVALID_SUFFIX_MESSAGE = "Output file path must point to a file with \".tde\" suffix";
+	//private final static String INVALID_SUFFIX_MESSAGE = "Output file path must point to a file with \".tde\" suffix";
 
 	public final static String TABLEAU_WRITER = "TABLEAU_WRITER";
 
@@ -451,7 +451,7 @@ public class TableauWriter extends Node  {
 		
 		// Tableau API requires that the target file ends with ".tde". See Extract constructor doc
 		if (!outputFileName.endsWith(REQUIRED_FILE_SUFFIX)) {
-			status.add(new ConfigurationProblem(INVALID_SUFFIX_MESSAGE, Severity.ERROR, this, Priority.NORMAL));
+			status.add(new ConfigurationProblem("Output file path must point to a file with \".tde\" suffix", Severity.ERROR, this, Priority.NORMAL));
 		}
 		
 		URL contextURL = getContextURL();
@@ -481,7 +481,6 @@ public class TableauWriter extends Node  {
 		return status;
 		
 	}
-	
 	
 	public static enum DateType {
 		DATE,
