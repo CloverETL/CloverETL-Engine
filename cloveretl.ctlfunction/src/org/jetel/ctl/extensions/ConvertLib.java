@@ -132,7 +132,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format")
 	public static final String num2str(TLFunctionCallContext context, Integer num, String format) {
-	    return num2str(context, num, format, MiscUtils.getDefaultLocaleId());
+	    return num2str(context, num, format, null);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
@@ -163,7 +163,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format")
 	public static final String num2str(TLFunctionCallContext context, Long num, String format) {
-		return num2str(context, num, format, MiscUtils.getDefaultLocaleId()); 	
+		return num2str(context, num, format, null); 	
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
@@ -194,7 +194,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format")
 	public static final String num2str(TLFunctionCallContext context, Double num, String format) {
-	    return num2str(context, num, format, MiscUtils.getDefaultLocaleId());
+	    return num2str(context, num, format, null);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
@@ -232,7 +232,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format")
 	public static final String num2str(TLFunctionCallContext context, BigDecimal num, String format) {
-	    return num2str(context, num, format, MiscUtils.getDefaultLocaleId());
+	    return num2str(context, num, format, null);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
@@ -252,11 +252,9 @@ public class ConvertLib extends TLFunctionLibrary {
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams().length > 1 && context.getParams()[1].isString()) {
-				String locale;
+				String locale = null;
 				if (context.getParams().length == 3) {
 					locale = stack.popString(); 
-				} else {
-					locale = MiscUtils.getDefaultLocaleId();
 				}
 				String format = stack.popString();
 				if (context.getParams()[0].isInteger()) {
@@ -715,11 +713,9 @@ public class ConvertLib extends TLFunctionLibrary {
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams().length > 1) {
-				String locale;
+				String locale = null;
 				if (context.getParams().length == 3) {
 					locale = stack.popString(); 
-				} else {
-					locale = MiscUtils.getDefaultLocaleId();
 				}
 				String format = stack.popString();
 				final String input = stack.popString();
