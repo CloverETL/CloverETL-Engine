@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.graph.ContextProvider;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -50,6 +51,17 @@ public final class MiscUtils {
 	}
 
 	/**
+	 * Default timezone is timezone from either {@link GraphRuntimeContext#getTimeZone()}
+	 * or from {@link Defaults#DEFAULT_TIME_ZONE}
+	 * @return default timezone
+	 */
+	public static String getDefaultTimeZone() {
+		GraphRuntimeContext context = ContextProvider.getRuntimeContext();
+		String timeZone = context != null ? context.getTimeZone() : null;
+		return !StringUtils.isEmpty(timeZone) ? timeZone : Defaults.DEFAULT_TIME_ZONE;
+	}
+
+	/**
 	 * Returns the default locale,
 	 * either set in the {@link GraphRuntimeContext}
 	 * or as {@link Defaults#DEFAULT_LOCALE}.
@@ -57,7 +69,7 @@ public final class MiscUtils {
 	 * @return
 	 */
 	public static Locale getDefaultLocale() {
-		return MiscUtils.createLocale(null);
+		return MiscUtils.createLocale(getDefaultLocaleId());
 	}
 	
 	/**
@@ -67,11 +79,21 @@ public final class MiscUtils {
 	 * 
 	 * @return
 	 */
-	public static String getDefautLocaleId() {
-		Locale locale = getDefaultLocale();
-		return (locale != null) ? MiscUtils.localeToString(locale) : Defaults.DEFAULT_LOCALE;
+	public static String getDefaultLocaleId() {
+		GraphRuntimeContext context = ContextProvider.getRuntimeContext();
+		String locale = context != null ? context.getLocale() : null;
+		locale = (!StringUtils.isEmpty(locale)) ? locale : Defaults.DEFAULT_LOCALE;
+		return (!StringUtils.isEmpty(locale)) ? locale : MiscUtils.localeToString(Locale.getDefault());
 	}
 	
+	/**
+	 * @return use {@link MiscUtils#getDefaultLocaleId()} instead
+	 */
+	@Deprecated
+	public static String getDefautLocaleId() {
+		return getDefaultLocaleId();
+	}
+
 	/**
      * Creates locale from clover internal format - <language_identifier>[.<country_identifier>]
      * Examples:
@@ -89,7 +111,7 @@ public final class MiscUtils {
 		Locale locale = null;
 
 		if (StringUtils.isEmpty(localeStr)) {
-			locale = MiscUtils.createLocale(GraphRuntimeContext.getDefaultLocale());
+			locale = getDefaultLocale();
 		} else {
 			String[] localeLC = localeStr.split("\\.");
 			if (localeLC.length > 1) {
