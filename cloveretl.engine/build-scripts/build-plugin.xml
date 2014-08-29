@@ -683,6 +683,10 @@
 				forkmode="once"
 				dir="${basedir}"
 				>
+			<assertions>
+			  <enable package="org.jetel"/>
+			  <enable package="com.opensys.cloveretl"/>
+			</assertions>
     		<sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser}" />
     		<sysproperty key="file.encoding" value="UTF-8" />
 			<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
