@@ -31,7 +31,6 @@ import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.data.DateFieldEnum;
-import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.primitive.StringFormat;
 import org.jetel.exception.JetelRuntimeException;
@@ -133,7 +132,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format")
 	public static final String num2str(TLFunctionCallContext context, Integer num, String format) {
-	    return num2str(context, num, format, MiscUtils.getDefautLocaleId());
+	    return num2str(context, num, format, MiscUtils.getDefaultLocaleId());
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
@@ -164,7 +163,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format")
 	public static final String num2str(TLFunctionCallContext context, Long num, String format) {
-		return num2str(context, num, format, MiscUtils.getDefautLocaleId()); 	
+		return num2str(context, num, format, MiscUtils.getDefaultLocaleId()); 	
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
@@ -195,7 +194,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format")
 	public static final String num2str(TLFunctionCallContext context, Double num, String format) {
-	    return num2str(context, num, format, MiscUtils.getDefautLocaleId());
+	    return num2str(context, num, format, MiscUtils.getDefaultLocaleId());
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
@@ -233,7 +232,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format")
 	public static final String num2str(TLFunctionCallContext context, BigDecimal num, String format) {
-	    return num2str(context, num, format, MiscUtils.getDefautLocaleId());
+	    return num2str(context, num, format, MiscUtils.getDefaultLocaleId());
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
@@ -257,7 +256,7 @@ public class ConvertLib extends TLFunctionLibrary {
 				if (context.getParams().length == 3) {
 					locale = stack.popString(); 
 				} else {
-					locale = MiscUtils.getDefautLocaleId();
+					locale = MiscUtils.getDefaultLocaleId();
 				}
 				String format = stack.popString();
 				if (context.getParams()[0].isInteger()) {
@@ -720,7 +719,7 @@ public class ConvertLib extends TLFunctionLibrary {
 				if (context.getParams().length == 3) {
 					locale = stack.popString(); 
 				} else {
-					locale = MiscUtils.getDefautLocaleId();
+					locale = MiscUtils.getDefaultLocaleId();
 				}
 				String format = stack.popString();
 				final String input = stack.popString();

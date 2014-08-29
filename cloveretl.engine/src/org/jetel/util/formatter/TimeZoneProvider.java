@@ -21,7 +21,7 @@ package org.jetel.util.formatter;
 import java.io.Serializable;
 import java.util.TimeZone;
 
-import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTimeZone;
 
@@ -61,7 +61,7 @@ public class TimeZoneProvider implements Serializable {
 	 */
 	public TimeZoneProvider(String timeZoneStr) {
 		if (StringUtils.isEmpty(timeZoneStr)) {
-			timeZoneStr = GraphRuntimeContext.getDefaultTimeZone();
+			timeZoneStr = MiscUtils.getDefaultTimeZone();
 		}
 		this.config = timeZoneStr;
 		
