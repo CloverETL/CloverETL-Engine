@@ -12,9 +12,7 @@ import org.jetel.data.BooleanDataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.DateDataField;
-import org.jetel.data.DecimalDataField;
 import org.jetel.data.IntegerDataField;
-import org.jetel.data.LongDataField;
 import org.jetel.data.NumericDataField;
 import org.jetel.data.StringDataField;
 import org.jetel.exception.AttributeNotFoundException;
@@ -70,6 +68,7 @@ public class TableauWriter extends Node  {
 	public static final String XML_DEFAULT_TABLE_COLLATION = "defaultTableCollation";
 	public static final String XML_APPEND_TO_TABLE = "appendToTable";
 	public static final String XML_OVERWRITE_OUTPUT_FILE = "overwrite";
+	public static final String XML_DATE_TYPE = "typeForDateRecords";
 
 	// output file suffix required by Tableau
 	private static final String REQUIRED_FILE_SUFFIX = ".tde";
@@ -82,6 +81,7 @@ public class TableauWriter extends Node  {
 	/* final */ boolean overwriteTargetFileFlag;
 	/* final */ private String rawTableCollation;
 	/* final */ Collation defaultTableCollation;
+	DateType dateType;
 
 	// Component inputs
 	private InputPort inputPort;
@@ -99,13 +99,14 @@ public class TableauWriter extends Node  {
 	static Log logger = LogFactory.getLog(TableauWriter.class);
 	
 	
-	public TableauWriter(String id, TransformationGraph graph, String outputFileName, String tableName, String rawTableCollation, boolean overwriteFileFlag, boolean appendToTableFlag) {
+	public TableauWriter(String id, TransformationGraph graph, String outputFileName, String tableName, String rawTableCollation, boolean overwriteFileFlag, boolean appendToTableFlag, DateType dateType) {
 		super(id, graph);
 		this.outputFileName = outputFileName;
 		this.tableName = tableName;
 		this.rawTableCollation= rawTableCollation;
 		this.overwriteTargetFileFlag = overwriteFileFlag;
 		this.appendToTableFlag = appendToTableFlag;
+		this.dateType = dateType;
 	}
 	
 	
@@ -170,11 +171,25 @@ public class TableauWriter extends Node  {
 
 					DateFieldExtractor extractor = extractors[i];
 					extractor.setDate(inputDate);
-
-					// setDateTime(int columnNumber, int year, int month, int day, int hour, int min, int sec, int frac)
-					outputRow.setDateTime(i, extractor.getYear(), extractor.getMonth(), extractor.getDay(), extractor.getHour(),
-							extractor.getMinute(),extractor.getSecond(),extractor.getMilliSecond()
-					);
+					
+					int year = extractor.getYear();
+					int month = extractor.getMonth();
+					int day = extractor.getDay();
+					int hour = extractor.getHour();
+					int minute = extractor.getMinute();
+					int second = extractor.getSecond();
+					int millisecond = extractor.getMilliSecond();
+					
+					switch (dateType) {
+					case DATE:
+						outputRow.setDate(i, year, month, day);
+						break;
+					case TIME:
+						outputRow.setDuration(i, day, hour, minute, second, millisecond);
+						break;
+					default:
+						outputRow.setDateTime(i, year, month, day, hour, minute, second, millisecond);
+					}
 					break;
 				case NUMBER:
 					outputRow.setDouble(i, ((NumericDataField)inputRecord.getField(i)).getDouble());
@@ -222,7 +237,6 @@ public class TableauWriter extends Node  {
 			logger.debug("Resolved target file to: \"" +  targetFile + "\"");
 			
 			// Create any missing directories
-			//FIXME FileUtils.makeDirs() fails on Server while it works fine in Designer .... 
 			FileUtils.createParentDirs(getContextURL(), outputFileName);
 			
 			if (targetFile.exists()) {
@@ -314,12 +328,17 @@ public class TableauWriter extends Node  {
 		case BOOLEAN:
 			return Type.BOOLEAN;
 		case DATE:
-			return Type.DATETIME;
-		case DECIMAL:
+			switch (dateType) {
+			case TIME:
+				return Type.DURATION;
+			case DATE:
+				return Type.DATE;
+			default:
+				return Type.DATETIME;
+			}
 		case NUMBER:
 			return Type.DOUBLE;
 		case INTEGER:
-		case LONG:
 			return Type.INTEGER;
 		case STRING:
 			return Type.UNICODE_STRING;
@@ -377,8 +396,9 @@ public class TableauWriter extends Node  {
         
         String rawTableCollation = xattribs.getStringEx(XML_DEFAULT_TABLE_COLLATION, null, null);
         
+        DateType dateType = DateType.valueOf(xattribs.getStringEx(XML_DATE_TYPE, DateType.DATETIME.name(), null));
 
-        return new TableauWriter(componentID, graph,targetFileName,targetTableName,rawTableCollation,overwriteFileFlag,appendToTableFlag);
+        return new TableauWriter(componentID, graph,targetFileName,targetTableName,rawTableCollation,overwriteFileFlag,appendToTableFlag,dateType);
 		
 	}
 	
@@ -460,6 +480,25 @@ public class TableauWriter extends Node  {
 
 		return status;
 		
+	}
+	
+	
+	public static enum DateType {
+		DATE,
+		DATETIME,
+		TIME;
+		
+		public boolean isDate() {
+        	return (this == DATE);
+        }
+		
+		public boolean isDateTime() {
+        	return (this == DATETIME);
+        }
+		
+		public boolean isTime() {
+        	return (this == TIME);
+        }
 	}
 	
 	//FIXME DataExtract.log log file of the API ... mention in documentation

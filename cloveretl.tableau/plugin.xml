@@ -43,6 +43,14 @@
         	<property category="basic" displayName="Default table collation" modifiable="true" name="defaultTableCollation" nullable="true" required="false" defaultHint="EN_US (Select table collation from list)">
 				<singleType name="tableauCollationType" />
 	      	</property>
+	      	
+	      	<property category="basic" displayName="Type for date records" modifiable="true" name="typeForDateRecords" nullable="true" required="false" defaultHint="DateTime">
+	        	 <enumType>
+		          <item displayValue="DateTime" value="DATETIME" />
+		          <item displayValue="Date" value="DATE" />
+		          <item displayValue="Time" value="TIME" />
+	        	</enumType>
+	      	 </property>
 	        
         	<property category="advanced" displayName="Behavior if table exists" modifiable="true" name="appendToTable" nullable="true" required="false" defaultHint="Append to table">
 	        	 <enumType>
