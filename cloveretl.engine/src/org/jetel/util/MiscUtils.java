@@ -157,6 +157,20 @@ public final class MiscUtils {
 	public static Calendar createCalendar(String localeStr, String timeZoneStr) {
 		Locale locale = MiscUtils.createLocale(localeStr);
 		TimeZoneProvider timeZone = new TimeZoneProvider(timeZoneStr);
+		return createCalendar(locale, timeZone);
+	}
+	
+	/**
+	 * Creates a {@link Calendar} instance from the given
+	 * {@link Locale} and {@link TimeZoneProvider}.
+	 * 
+	 * Assumes the arguments are not <code>null</code>.
+	 * 
+	 * @param locale
+	 * @param timeZone
+	 * @return new {@link Calendar} instance.
+	 */
+	public static Calendar createCalendar(Locale locale, TimeZoneProvider timeZone) {
 		return Calendar.getInstance(timeZone.getJavaTimeZone(), locale);
 	}
 	
@@ -168,7 +182,7 @@ public final class MiscUtils {
 	 * @return
 	 */
 	public static Calendar getDefaultCalendar() {
-		return createCalendar(null, null);
+		return createCalendar((String) null, (String) null);
 	}
 	
 	/**
