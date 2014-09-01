@@ -18,15 +18,11 @@
  */
 package org.jetel.ctl.extensions;
 
-import java.util.Locale;
 import java.util.Objects;
 
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
-import org.jetel.util.MiscUtils;
 import org.jetel.util.formatter.DateFormatter;
 import org.jetel.util.formatter.DateFormatterFactory;
-import org.jetel.util.formatter.TimeZoneProvider;
-import org.jetel.util.string.StringUtils;
 
 /**
  * @author jakub (info@cloveretl.com)
@@ -34,20 +30,12 @@ import org.jetel.util.string.StringUtils;
  *
  * @created May 25, 2010
  */
-public class TLDateFormatLocaleCache extends TLCache {
+public class TLDateFormatLocaleCache extends TLFormatterCache {
 
 	private DateFormatter cachedFormatter;
-	private String previousLocaleString;
-	private String previousTimeZoneString;
-	
-	private Locale previousLocale;
-	private TimeZoneProvider previousTimeZone;
-	private final TLFunctionCallContext context;
 	
 	private TLDateFormatLocaleCache(TLFunctionCallContext context) {
-		this.context = context;
-		this.previousLocale = context.getDefaultLocale();
-		this.previousTimeZone = context.getDefaultTimeZone();
+		super(context);
 	}
 	
 	/**
@@ -103,35 +91,6 @@ public class TLDateFormatLocaleCache extends TLCache {
 		}
 		
 	}
-	
-	private Locale getLocale(String localeString) {
-		Locale locale = previousLocale;
-		if (!Objects.equals(localeString, previousLocaleString)) {
-			if (StringUtils.isEmpty(localeString)) {
-				locale = context.getDefaultLocale();
-			} else {
-				locale = MiscUtils.createLocale(localeString);
-			}
-		}
-		previousLocaleString = localeString;
-		previousLocale = locale;
-		return locale;
-	}
-	
-	private TimeZoneProvider getTimeZone(String timeZoneString) {
-		TimeZoneProvider timeZone = previousTimeZone;
-		if (!Objects.equals(timeZoneString, previousTimeZoneString)) {
-			if (StringUtils.isEmpty(timeZoneString)) {
-				timeZone = context.getDefaultTimeZone();
-			} else {
-				timeZone = new TimeZoneProvider(timeZoneString);
-			}
-		}
-		previousTimeZoneString = timeZoneString;
-		previousTimeZone = timeZone;
-		return timeZone;
-	}
-
 	
 	private DateFormatter getCachedFormatter3(TLFunctionCallContext context, 
 			String format, String localeString, String timeZoneString,

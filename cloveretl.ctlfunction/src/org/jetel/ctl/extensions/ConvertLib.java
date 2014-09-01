@@ -112,7 +112,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	// NUM2STR
 	@TLFunctionInitAnnotation
 	public static final void num2strInit(TLFunctionCallContext context) {
-		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache();
+		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(context);
 		//we have to use non-parametric constructor - in COMPILE mode we don't have context.getParams() available
 		//TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(context.getParams()[0].isDecimal());
 		cache.createCachedLocaleFormat(context, 1, 2);
@@ -456,7 +456,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionInitAnnotation
 	public static final void str2integerInit(TLFunctionCallContext context) {
-		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(false);
+		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(context, false);
 		cache.createCachedLocaleFormat(context, 1, 2);
 		context.setCache(cache);
 	}
@@ -531,7 +531,7 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionInitAnnotation
 	public static final void str2longInit(TLFunctionCallContext context) {
-		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(false);
+		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(context, false);
 		cache.createCachedLocaleFormat(context, 1, 2);
 		context.setCache(cache);
 	}
@@ -605,7 +605,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionInitAnnotation
 	public static final void str2doubleInit(TLFunctionCallContext context) {
-		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(false);
+		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(context, false);
 		cache.createCachedLocaleFormat(context, 1, 2);
 		context.setCache(cache);
 	}
@@ -667,7 +667,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionInitAnnotation
 	public static final void str2decimalInit(TLFunctionCallContext context) {
-		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(true);
+		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(context, true);
 		cache.createCachedLocaleFormat(context, 1, 2);
 		context.setCache(cache);
 	}
