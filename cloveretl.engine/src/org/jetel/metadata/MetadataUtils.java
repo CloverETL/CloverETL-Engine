@@ -104,5 +104,21 @@ public class MetadataUtils {
     	result.flip();
     	outputChannel.write(result.buf());
     }
+    
+    /**
+     * Returns a duplicate of the given metadata
+     * with auto-filled fields removed.
+     * 
+     * @param metadata
+     * @return metadata containing only fields without auto-filling
+     */
+    public static DataRecordMetadata getNonAutofilledFieldsMetadata(DataRecordMetadata metadata) {
+    	DataRecordMetadata result = metadata.duplicate();
+    	result.delAllFields();
+    	for (int i: metadata.getNonAutofilledFields()) {
+    		result.addField(metadata.getField(i).duplicate());
+    	}
+    	return result;
+    }
 
 }

@@ -690,6 +690,7 @@ public class TransformationGraphXMLReaderWriter {
 		String[] specNodePort;
 		int fromPort;
 		int toPort;
+		String metadataRef;
 		org.jetel.graph.Edge graphEdge;
 		org.jetel.graph.Node writerNode;
 		org.jetel.graph.Node readerNode;
@@ -719,8 +720,9 @@ public class TransformationGraphXMLReaderWriter {
             debugLastRecords = attributes.getBoolean("debugLastRecords", true);
             debugFilterExpression = attributes.getString("debugFilterExpression", null);
             debugSampleData = attributes.getBoolean("debugSampleData", false);
-            
             fastPropagate = attributes.getBoolean("fastPropagate", false);
+            metadataRef = attributes.getString("metadataRef", null);
+            
 			Object metadataObj = edgeMetadataID != null ? metadata.get(edgeMetadataID) : null;
 			if (metadataObj == null && edgeMetadataID != null) {
 				throwXMLConfigurationException("Can't find metadata ID '" + edgeMetadataID + "'.");
@@ -738,6 +740,7 @@ public class TransformationGraphXMLReaderWriter {
 			graphEdge.setDebugLastRecords(debugLastRecords);
 			graphEdge.setFilterExpression(debugFilterExpression);
 			graphEdge.setDebugSampleData(debugSampleData);
+			graphEdge.setMetadataRef(metadataRef);
 			// set edge type
 			if (runtimeContext.getExecutionType() == ExecutionType.SINGLE_THREAD_EXECUTION) {
 				//in single thread execution all edges are buffered
@@ -990,11 +993,14 @@ public class TransformationGraphXMLReaderWriter {
 		boolean progress = true;
 		while (!unresolvedGraphParametersFiles.isEmpty() && progress) {
 			progress = false;
+			List<Element> resolvedGraphParametersFiles = new ArrayList<Element>();
 			for (Element graphParameterFile : unresolvedGraphParametersFiles) {
 				if (instantiateGraphParametersFile(graphParameters, graphParameterFile)) {
 					progress = true;
+					resolvedGraphParametersFiles.add(graphParameterFile);
 				}
 			}
+			unresolvedGraphParametersFiles.removeAll(resolvedGraphParametersFiles);
 			if (!progress) {
 		    	throwXMLConfigurationException("Failed to resolve following parameter file URL: " + unresolvedGraphParametersFiles.get(0).getAttribute("fileURL"));
 			}
@@ -1192,6 +1198,9 @@ public class TransformationGraphXMLReaderWriter {
 	private void throwXMLConfigurationException(String message, Throwable cause) throws XMLConfigurationException {
 		if (isStrictParsing()) {
 			throw new XMLConfigurationException(message, cause);
+		} else {
+			//strict mode is off, so exception is logged only on debug level
+			logger.debug("Graph factorization failed (strictMode = false): " + message, cause);
 		}
 	}
 	

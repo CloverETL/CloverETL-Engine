@@ -28,6 +28,7 @@ import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * @author tkramolis (info@cloveretl.com)
@@ -132,6 +133,16 @@ public class MultiFileReaderTest extends CloverTestCase {
 		@Override
 		public DataSourceType getPreferredDataSourceType() {
 			return DataSourceType.CHANNEL;
+		}
+
+		@Override
+		public boolean isDirectReadingSupported() {
+			return false;
+		}
+
+		@Override
+		public int getNextDirect(CloverBuffer buffer) throws JetelException {
+			throw new UnsupportedOperationException();
 		}
 		
 	}

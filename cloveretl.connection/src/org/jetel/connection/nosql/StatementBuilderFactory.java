@@ -21,8 +21,6 @@ package org.jetel.connection.nosql;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jetel.util.string.StringUtils;
-
 /**
  * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -36,7 +34,7 @@ public class StatementBuilderFactory {
 	private static final String PATTERN_VALIDATOR_STRING = "(.*)field(.*)";
 	private static final Pattern PATTERN_VALIDATOR = Pattern.compile(PATTERN_VALIDATOR_STRING);
 	
-	private final Pattern fieldPattern;
+	private ReplacementHelper replacementProvider;
 
 	public StatementBuilderFactory() {
 		this(DEFAULT_FIELD_PATTERN);
@@ -47,14 +45,15 @@ public class StatementBuilderFactory {
 		if (!m.matches()) {
 			throw new IllegalArgumentException("Pattern must have the form '*field*'");
 		}
-		StringBuilder realPattern = new StringBuilder();
-		realPattern.append(Pattern.quote(m.group(1)));
-		realPattern.append('(').append(StringUtils.OBJECT_NAME_PATTERN).append(')');
-		realPattern.append(Pattern.quote(m.group(2)));
-		this.fieldPattern = Pattern.compile(realPattern.toString());
+		this.replacementProvider = createReplacementHelper(m);
 	}
 
 	public StatementBuilder createStatementBuilder() {
-		return new StatementBuilder(fieldPattern);
+		return new StatementBuilder(replacementProvider);
 	}
+	
+	protected ReplacementHelper createReplacementHelper(Matcher m) {
+		return new DefaultReplacementHelper(m);
+	}
+
 }

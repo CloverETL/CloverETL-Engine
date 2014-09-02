@@ -155,10 +155,10 @@ public class GraphCycleInspector {
 	private void orientedCycleFound(List<InspectedComponent> theCycle) {
 		//if whole cycle is in a jobflow and contains a WhileCycle component, then it is ok, otherwise exception is thrown
 		TransformationGraph g = null;
-		boolean hasWhileCycle = false;
+		boolean hasLoopComponent = false;
 		for (InspectedComponent c : theCycle) {
 			if (c.getComponent().getType().equals(LOOP_COMPONENT_TYPE)) {
-				hasWhileCycle = true;
+				hasLoopComponent = true;
 			}
 			if (g == null) {
 				g = c.getComponent().getGraph();
@@ -166,14 +166,31 @@ public class GraphCycleInspector {
 				throw new JetelRuntimeException("Oriented cycle found in the graph. " + theCycle);
 			}
 		}
-		if (!g.getRuntimeJobType().isJobflow()) {
-			throw new JetelRuntimeException("Oriented cycle found in the graph. Cycles are available only in jobflows. " + theCycle);
-		}
-		if (!hasWhileCycle) {
+		if (!hasLoopComponent) {
 			throw new JetelRuntimeException("Oriented cycle without Loop component found in the graph. " + theCycle);
+		}
+		if (g.getRuntimeJobType().isGraph()) {
+			makeAllEdgesFastPropagate(theCycle);
 		}
 	}
 	
+	/**
+	 * Oriented cycle with Loop component found in the graph. All edges in the cycle must be fast propagate. 
+	 * @param theCycle
+	 */
+	private void makeAllEdgesFastPropagate(List<InspectedComponent> theCycle) {
+		for (InspectedComponent component : theCycle.subList(0, theCycle.size() - 1)) {
+			Edge edge = component.getEntryEdge();
+			if (edge.getEdgeType() == EdgeTypeEnum.DIRECT || edge.getEdgeType() == EdgeTypeEnum.DIRECT_FAST_PROPAGATE) {
+				edge.setEdgeType(EdgeTypeEnum.DIRECT_FAST_PROPAGATE);
+			} else if (edge.getEdgeType() == EdgeTypeEnum.BUFFERED || edge.getEdgeType() == EdgeTypeEnum.BUFFERED_FAST_PROPAGATE) {
+				edge.setEdgeType(EdgeTypeEnum.BUFFERED_FAST_PROPAGATE);
+			} else {
+				throw new JetelRuntimeException("Unexpected edge type (" + edge.getId() + ":" + edge.getEdgeType() + ") in oriented cycle in the graph. " + theCycle);
+			}
+		}
+	}
+
 	/**
 	 * @return
 	 */

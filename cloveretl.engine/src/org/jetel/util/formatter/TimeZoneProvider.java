@@ -21,7 +21,7 @@ package org.jetel.util.formatter;
 import java.io.Serializable;
 import java.util.TimeZone;
 
-import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTimeZone;
 
@@ -37,6 +37,7 @@ public class TimeZoneProvider implements Serializable {
 	
 	private static final String JODA_PREFIX = "joda:";
 	private static final String JAVA_PREFIX = "java:";
+	private static final String ISO8601_PREFIX = "iso-8601:";
 
 	private final TimeZone javaTimeZone;
 	
@@ -52,30 +53,6 @@ public class TimeZoneProvider implements Serializable {
 	}
 	
 	/**
-	 * @param timeZone Java time zone
-	 */
-	public TimeZoneProvider(TimeZone timeZone) {
-		if (timeZone == null) {
-			throw new NullPointerException("timeZone is null");
-		}
-		this.javaTimeZone = timeZone;
-		this.jodaTimeZone = null;
-		this.config = timeZone.getID();
-	}
-
-	/**
-	 * @param timeZone Joda time zone
-	 */
-	public TimeZoneProvider(DateTimeZone timeZone) {
-		if (timeZone == null) {
-			throw new NullPointerException("timeZone is null");
-		}
-		this.javaTimeZone = null;
-		this.jodaTimeZone = timeZone;
-		this.config = JODA_PREFIX + timeZone.getID();
-	}
-	
-	/**
 	 * If timeZoneStr is <code>null</code> or empty,
 	 * creates a default time zone.
 	 * Otherwise parses the provided string.
@@ -84,7 +61,7 @@ public class TimeZoneProvider implements Serializable {
 	 */
 	public TimeZoneProvider(String timeZoneStr) {
 		if (StringUtils.isEmpty(timeZoneStr)) {
-			timeZoneStr = GraphRuntimeContext.getDefaultTimeZone();
+			timeZoneStr = MiscUtils.getDefaultTimeZone();
 		}
 		this.config = timeZoneStr;
 		
@@ -101,6 +78,8 @@ public class TimeZoneProvider implements Serializable {
 				
 				if (id.startsWith(JODA_PREFIX)) {
 					joda = DateTimeZone.forID(id.substring(JODA_PREFIX.length()));
+				} else if (id.startsWith(ISO8601_PREFIX)) {
+					joda = DateTimeZone.forID(id.substring(ISO8601_PREFIX.length()));
 				} else {
 					if (id.startsWith(JAVA_PREFIX)) {
 						id = id.substring(JAVA_PREFIX.length());

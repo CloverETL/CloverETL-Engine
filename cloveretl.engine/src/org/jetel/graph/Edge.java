@@ -62,7 +62,9 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 
 	protected DataRecordMetadata metadata;
 	protected DataRecordMetadataStub metadataStub;
-
+	/** Reference to a graph element, from where the metadata should be derived. */
+	protected String metadataRef;
+	
     protected boolean debugMode;
     protected EdgeDebugWriter edgeDebugWriter;
     protected long debugMaxRecords;
@@ -202,6 +204,17 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 
 	public void setMetadata(DataRecordMetadata metadata) {
 		this.metadata = metadata;
+	}
+	
+	/**
+	 * @return reference to a graph element, from where metadata for this edge should be derived
+	 */
+	public String getMetadataRef() {
+		return metadataRef;
+	}
+	
+	public void setMetadataRef(String metadataRef) {
+		this.metadataRef = metadataRef;
 	}
 	
 	/* (non-Javadoc)

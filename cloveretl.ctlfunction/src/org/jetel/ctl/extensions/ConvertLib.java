@@ -31,7 +31,6 @@ import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.data.DateFieldEnum;
-import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.primitive.StringFormat;
 import org.jetel.exception.JetelRuntimeException;
@@ -113,7 +112,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	// NUM2STR
 	@TLFunctionInitAnnotation
 	public static final void num2strInit(TLFunctionCallContext context) {
-		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache();
+		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(context);
 		//we have to use non-parametric constructor - in COMPILE mode we don't have context.getParams() available
 		//TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(context.getParams()[0].isDecimal());
 		cache.createCachedLocaleFormat(context, 1, 2);
@@ -133,7 +132,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format")
 	public static final String num2str(TLFunctionCallContext context, Integer num, String format) {
-	    return num2str(context, num, format, MiscUtils.getDefautLocaleId());
+	    return num2str(context, num, format, null);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
@@ -164,7 +163,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format")
 	public static final String num2str(TLFunctionCallContext context, Long num, String format) {
-		return num2str(context, num, format, MiscUtils.getDefautLocaleId()); 	
+		return num2str(context, num, format, null); 	
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
@@ -195,7 +194,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format")
 	public static final String num2str(TLFunctionCallContext context, Double num, String format) {
-	    return num2str(context, num, format, MiscUtils.getDefautLocaleId());
+	    return num2str(context, num, format, null);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
@@ -233,7 +232,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format")
 	public static final String num2str(TLFunctionCallContext context, BigDecimal num, String format) {
-	    return num2str(context, num, format, MiscUtils.getDefautLocaleId());
+	    return num2str(context, num, format, null);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
@@ -253,11 +252,9 @@ public class ConvertLib extends TLFunctionLibrary {
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams().length > 1 && context.getParams()[1].isString()) {
-				String locale;
+				String locale = null;
 				if (context.getParams().length == 3) {
 					locale = stack.popString(); 
-				} else {
-					locale = MiscUtils.getDefautLocaleId();
 				}
 				String format = stack.popString();
 				if (context.getParams()[0].isInteger()) {
@@ -459,7 +456,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionInitAnnotation
 	public static final void str2integerInit(TLFunctionCallContext context) {
-		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(false);
+		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(context, false);
 		cache.createCachedLocaleFormat(context, 1, 2);
 		context.setCache(cache);
 	}
@@ -534,7 +531,7 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionInitAnnotation
 	public static final void str2longInit(TLFunctionCallContext context) {
-		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(false);
+		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(context, false);
 		cache.createCachedLocaleFormat(context, 1, 2);
 		context.setCache(cache);
 	}
@@ -608,7 +605,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionInitAnnotation
 	public static final void str2doubleInit(TLFunctionCallContext context) {
-		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(false);
+		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(context, false);
 		cache.createCachedLocaleFormat(context, 1, 2);
 		context.setCache(cache);
 	}
@@ -670,7 +667,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionInitAnnotation
 	public static final void str2decimalInit(TLFunctionCallContext context) {
-		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(true);
+		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(context, true);
 		cache.createCachedLocaleFormat(context, 1, 2);
 		context.setCache(cache);
 	}
@@ -716,11 +713,9 @@ public class ConvertLib extends TLFunctionLibrary {
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams().length > 1) {
-				String locale;
+				String locale = null;
 				if (context.getParams().length == 3) {
 					locale = stack.popString(); 
-				} else {
-					locale = MiscUtils.getDefautLocaleId();
 				}
 				String format = stack.popString();
 				final String input = stack.popString();

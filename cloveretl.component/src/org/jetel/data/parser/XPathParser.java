@@ -687,5 +687,12 @@ public class XPathParser extends AbstractParser {
 	public boolean nextL3Source() {
 		return false;
 	}
+
+	@Override
+	public DataSourceType getPreferredDataSourceType() {
+		return DataSourceType.STREAM;
+	}
+	
+	
 	
 }

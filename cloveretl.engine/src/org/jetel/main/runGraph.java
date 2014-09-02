@@ -499,7 +499,7 @@ public class runGraph {
     
 	public static String getInfo(){
 		final StringBuilder ret = new StringBuilder();
-		ret.append("CloverETL library version ");
+		ret.append("CloverETL version ");
 		ret.append(JetelVersion.MAJOR_VERSION );
 		ret.append(".");
 		ret.append(JetelVersion.MINOR_VERSION);
@@ -550,8 +550,7 @@ public class runGraph {
 	}
 
 	public static void printRuntimeHeader() {
-        logger.info("***  CloverETL framework/transformation graph"
-                + ", (c) 2002-" + JetelVersion.LIBRARY_BUILD_YEAR + " Javlin a.s.  ***");
+        logger.info("***  CloverETL, (c) 2002-" + JetelVersion.LIBRARY_BUILD_YEAR + " Javlin a.s.  ***");
         logger.info("Running with " + getInfo());
 
         logger.info("Running on " + Runtime.getRuntime().availableProcessors() + " CPU(s), " +

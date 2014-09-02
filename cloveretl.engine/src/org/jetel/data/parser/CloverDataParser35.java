@@ -40,6 +40,7 @@ import org.jetel.exception.PolicyType;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.JobType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.MetadataUtils;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
@@ -220,12 +221,14 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
     	if (in instanceof InputStream) {
         	inStream = (InputStream) in;
         	indexFileURL = null;
-        }
-        
-       if (inStream != null) {
-        	indexFile = null;
         	recordFile = Channels.newChannel(inStream);
+        } else if (in instanceof ReadableByteChannel) {
+        	recordFile = (ReadableByteChannel) in;
+        	indexFileURL = null;
+        	inStream = Channels.newInputStream(recordFile);
         }
+        noDataAvailable=false;
+    	
     	recordBuffer.clear();
 		try {
 			ByteBufferUtils.reload(recordBuffer.buf(),recordFile);
@@ -254,7 +257,9 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
 		if (getVersion().formatVersion == CloverDataFormatter.DataFormatVersion.VERSION_35) {
 			// check metadata compatibility - 
 			DataRecordMetadata persistedMetadata = DataRecordMetadata.deserialize(buffer);
-			if (!metadata.equals(persistedMetadata, false)) {
+			// CLO-4591:
+        	DataRecordMetadata nonAutofilledFieldsMetadata = MetadataUtils.getNonAutofilledFieldsMetadata(metadata);
+			if (!nonAutofilledFieldsMetadata.equals(persistedMetadata, false)) {
 				logger.error("Data structure of input file is not compatible with used metadata. File data structure: " + persistedMetadata.toStringDataTypes());
 				throw new ComponentNotReadyException("Data structure of input file is not compatible with used metadata. More details available in log.");
 			}
@@ -297,6 +302,7 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
 			}
 		}
 		if (recordBuffer.remaining() < LEN_SIZE_SPECIFIER){
+			noDataAvailable = true;
 			return -1;
 		}
 		int recordSize = recordBuffer.getInt();
@@ -310,7 +316,7 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
 			try {
 				recordFile.read(recordBuffer.buf());
 			} catch(IOException ex) {
-				throw new JetelException(ex.getLocalizedMessage());
+				throw new JetelException(ex.getMessage(),ex);
 			}
 			recordBuffer.flip();
 		}
@@ -353,10 +359,10 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
 	 * @throws JetelException
 	 */
 	@Override
-	public boolean getNextDirect(CloverBuffer targetBuffer) throws JetelException {
+	public int getNextDirect(CloverBuffer targetBuffer) throws JetelException {
 		int recordSize = fillRecordBuffer();
 		if (recordSize < 0) {
-			return false;
+			return 0;
 		}
 		
 	    targetBuffer.clear();
@@ -376,7 +382,7 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
 		targetBuffer.flip(); // prepare for reading
 		
 		sourceRecordCounter++;
-		return true;
+		return 1;
 	}
 	
 	/* (non-Javadoc)

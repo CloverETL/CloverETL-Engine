@@ -5561,17 +5561,20 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isNumber6", true);
 		check("isNumber7", false);
 		check("isNumber8", false);
+		check("isNumber9", false);
 		check("isInteger", false);
 		check("isInteger1", false);
 		check("isInteger2", false);
 		check("isInteger3", true);
 		check("isInteger4", false);
 		check("isInteger5", false);
+		check("isInteger6", false);
 		check("isLong", true);
 		check("isLong1", false);
 		check("isLong2", false);
 		check("isLong3", false);
 		check("isLong4", false);
+		check("isLong5", false);
 		check("isDate", true);
 		check("isDate1", false);
 		// "kk" allows hour to be 1-24 (as opposed to HH allowing hour to be 0-23)

@@ -187,7 +187,11 @@ public class ComponentXMLAttributes {
             throw new AttributeNotFoundException(key);
     	}
         String value = nodeXML.getAttribute(key);
-        return refResolver.resolveRef(value);
+        value = refResolver.resolveRef(value);
+        if (StringUtils.isEmpty(value)) {
+            throw new AttributeNotFoundException(key);
+        }
+        return value;
     }
 
 	/**
@@ -214,7 +218,11 @@ public class ComponentXMLAttributes {
             return defaultValue;
 		}
         String value=nodeXML.getAttribute(key);
-        return refResolver.resolveRef(value, flag);
+        value = refResolver.resolveRef(value, flag);
+        if (StringUtils.isEmpty(value)) {
+        	return defaultValue;
+        }
+        return value;
 	}
 
 
@@ -230,6 +238,10 @@ public class ComponentXMLAttributes {
             throw new AttributeNotFoundException(key);
     	}
         String value = nodeXML.getAttribute(key);
+        value = refResolver.resolveRef(value, flag);
+        if (StringUtils.isEmpty(value)) {
+            throw new AttributeNotFoundException(key);
+        }
         return refResolver.resolveRef(value, flag);
     }
 
@@ -250,7 +262,11 @@ public class ComponentXMLAttributes {
             throw new AttributeNotFoundException(key);
     	}
         String value=nodeXML.getAttribute(key);
-        return refResolver.resolveRef(value, resolveSpecChars);
+        value = refResolver.resolveRef(value, resolveSpecChars);
+        if (StringUtils.isEmpty(value)) {
+            throw new AttributeNotFoundException(key);
+        }
+        return value;
     }
 
 
@@ -268,7 +284,11 @@ public class ComponentXMLAttributes {
             return defaultValue;
 		}
         String value=nodeXML.getAttribute(key);
-        return refResolver.resolveRef(value, resolveSpecChars);
+        value = refResolver.resolveRef(value, resolveSpecChars);
+        if (StringUtils.isEmpty(value)) {
+        	return defaultValue;
+        }
+        return value;
 	}
 
     /**
@@ -528,15 +548,25 @@ public class ComponentXMLAttributes {
 
 	/**
      * Checks whether specified attribute exists (XML node has such attribute
-     * defined)
+     * defined) and has a non-empty value (after graph parameter resolution).
+     * <p>
+     * Since 4.0 returns <code>false</code> if the attribute exists, but its value is empty.
+     * </p>
      * 
      * @param key
      *            name of the attribute
-     * @return true if exists, otherwise false
+     * @return true if exists and is not empty, otherwise false
+     * 
+     * @deprecated use getType() with appropriate default and RefResFlag instead
      */
+    @Deprecated
 	public boolean exists(String key) {
 		if (attributes.getNamedItem(key) != null) {
-			return true;
+			String value = nodeXML.getAttribute(key);
+			// SPEC_CHARACTERS_OFF does not affect string non-emptiness
+			// how about secure parameters and dynamic values (CTL2)?
+			value = refResolver.resolveRef(value, RefResFlag.ALL_OFF);
+			return !StringUtils.isEmpty(value);
 		} 
 		return false;
 	}

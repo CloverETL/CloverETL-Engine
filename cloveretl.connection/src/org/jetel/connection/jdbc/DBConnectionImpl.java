@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.jetel.connection.jdbc;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.sql.Connection;
@@ -60,6 +61,7 @@ import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -575,6 +577,16 @@ public class DBConnectionImpl extends AbstractDBConnection {
         if(StringUtils.isEmpty(sqlQuery)) {
             throw new IllegalArgumentException("JDBC stub for clover metadata can't find sqlQuery parameter.");
         }
+        try {
+        	// CLO-4238:
+        	SQLScriptParser sqlParser = new SQLScriptParser();
+        	sqlParser.setBackslashQuoteEscaping(getJdbcSpecific().isBackslashEscaping());
+        	sqlParser.setRequireLastDelimiter(false);
+        	sqlParser.setStringInput(sqlQuery);
+			sqlQuery = sqlParser.getNextStatement();
+		} catch (IOException e1) {
+			logger.warn("Failed to parse SQL query", e1);
+		}
 
         int index = sqlQuery.toUpperCase().indexOf("WHERE");
 
@@ -872,7 +884,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
 		}
 		Driver driver = jdbcDriver.getDriver();
 		Connection connection;
-		Properties connectionProperties = new Properties(jdbcDriver.getProperties());
+		Properties connectionProperties = PropertiesUtils.duplicate(jdbcDriver.getProperties());
 		connectionProperties.putAll(createConnectionProperties());
 		
         try {

@@ -2,6 +2,25 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-0-0-M2
+------------
+
+* Subgraphs
+	- configurable as components
+	- configurable categories and icons
+* Updated model of graph parameters
+	- public parameters
+	- types of parameters and some additional attributes
+	- CTL2 in parameter value
+* Improvements of CloverDataReader
+* Sleep component worksalso without ports
+- FIXES:
+	- Asterisk in Samba URL caused unexpected behavior
+- COMPATIBILITY:
+	- XMLExtract: explicit mapping to have priority over implicit automap by name
+	
+
+
 REL-4-0-0-M1
 ------------
 
@@ -15,6 +34,17 @@ REL-4-0-0-M1
 	- split() returns empty list if input is null
 	- indexOf() accepts null value
 	 
+
+
+REL-3-5-2
+---------
+
+* DBOutputTable output using 'RETURNING' on PosgtreSQL
+- FIXES:
+	- "where" in sql comment is used in Dynamic metadata query
+	- SystemExecute closes error file descriptor during execution
+	- DBLookupTable has incorrectly synchronized activeLookups variable
+	- Dash passes through isNumber function
 
 
 REL-3-5-1

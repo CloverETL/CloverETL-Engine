@@ -44,6 +44,7 @@ import org.jetel.exception.PolicyType;
 import org.jetel.graph.ContextProvider;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
+import org.jetel.metadata.MetadataUtils;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
@@ -149,10 +150,10 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 		if (nRec == 0) {
 			return 0;
 		}
-		if (isDirectReadingSupported()) {
+		if (version.raw) {
 			CloverBuffer buffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 			for (int skipped = 0; skipped < nRec; skipped++) {
-				if (!getNextDirect(buffer)) {
+				if (getNextDirect(buffer)!=1) {
 					return skipped;
 				}
 			}
@@ -230,16 +231,16 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
         
         if (inStream==null) { // doReleaseDataSource() should set the previous stream to null
         		try{
-                String fileName = new File(FileUtils.getFile(projectURL, inData)).getName();
-                 if (fileName.toLowerCase().endsWith(".zip")) {
-                 		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
-                 }
                  	if (inData.startsWith("zip:")) { // CLO-4045
                  		StringBuilder sbAnchor = new StringBuilder(); 
                  		FileUtils.getArchiveType(inData, new StringBuilder(), sbAnchor);
                  		if (!StringUtils.isEmpty(sbAnchor)) { // CLO-4045: archive entry is already specified in the URL
                  			inStream = FileUtils.getInputStream(projectURL, inData);
                  		} else {
+                            String fileName = new File(FileUtils.getFile(projectURL, inData)).getName();
+                            if (fileName.toLowerCase().endsWith(".zip")) {
+                            		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
+                            }
                      		try {
                      			// backward compatibility, append #DATA/fileName
                      			inStream = FileUtils.getInputStream(projectURL,  
@@ -337,6 +338,7 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
     	switch(version.formatVersion){
     	case VERSION_29:
     	case VERSION_35:
+    		version.raw=true;
     		extraBytes = new byte[CloverDataFormatter.HEADER_OPTIONS_ARRAY_SIZE_3_5];
     		try {
     			int count = StreamUtils.readBlocking(recordFile, extraBytes);
@@ -346,9 +348,6 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
     		} catch (IOException e) {
     			throw new ComponentNotReadyException(e);
     		}
-	    	if (BitArray.isSet(extraBytes, 0) ^ Defaults.Record.USE_FIELDS_NULL_INDICATORS) {
-	        	throw new ComponentNotReadyException("Source file with binary data format is not compatible. Engine producer has different setup of Defaults.Record.USE_FIELDS_NULL_INDICATORS (see documentation). Data cannot be read.");
-	    	}
 	    	// what's left is metadata serialized, will let this to "other" parser 
     		break;
     	case VERSION_40:
@@ -361,9 +360,6 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
     		} catch (IOException e) {
     			throw new ComponentNotReadyException(e);
     		}
-        	if (BitArray.isSet(extraBytes, 0) ^ Defaults.Record.USE_FIELDS_NULL_INDICATORS) {
-            	throw new ComponentNotReadyException("Source file with binary data format is not compatible. Engine producer has different setup of Defaults.Record.USE_FIELDS_NULL_INDICATORS (see documentation). Data cannot be read.");
-        	}
         	version.compressionAlgorithm=BitArray.extractNumber(extraBytes, CloverDataFormatter.OPTION_MASK_COMPRESSED_DATA);
         	version.raw = BitArray.extractNumber(extraBytes, CloverDataFormatter.OPTION_MASK_RAW_DATA) == 1;
         	//check metadata (just read,do not control now)
@@ -378,7 +374,10 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
     		} catch (IOException e) {
     			throw new ComponentNotReadyException("Unable to read metadata definition from CloverData file", e);
     		}
-	    	if (!metadata.equals(version.metadata, false)) {
+        	
+        	// CLO-4591:
+        	DataRecordMetadata nonAutofilledFieldsMetadata = MetadataUtils.getNonAutofilledFieldsMetadata(metadata);
+	    	if (!nonAutofilledFieldsMetadata.equals(version.metadata, false)) {
 				logger.error("Data structure of input file is not compatible with used metadata. File data structure: " + version.metadata.toStringDataTypes());
 				throw new ComponentNotReadyException("Data structure of input file is not compatible with used metadata. More details available in log.");
 	    	}
@@ -405,15 +404,39 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 	 */
 	@Override
 	public DataRecord getNext(DataRecord record) throws JetelException {
-		if (!getNextDirect(recordBuffer)) {
-			return null; //end of file reached
+		final int size;
+		try {
+			size=ByteBufferUtils.decodeLength(input);
+			if (size<0) return null; //end of file reached
+		
+			recordBuffer.clear();
+
+			recordBuffer.limit(recordBuffer.position() + size);
+			if (input.read(recordBuffer)==-1){
+				throw new JetelException("Insufficient data in datastream.");
+			}
+			
+			recordBuffer.flip();
+		} catch(IOException ex){
+			throw new JetelException(ex);
 		}
 		
-		if (!useParsingFromJobflow_3_4) {
-			record.deserializeUnitary(recordBuffer,serializer);
+		if (version.raw) { 
+			// fix for switching from non-direct file to a direct one
+			// see CDR_multiFileReader_CLO-4333.grf
+			if (!useParsingFromJobflow_3_4) {
+				record.deserializeUnitary(recordBuffer);
+			} else {
+				record.deserialize(recordBuffer);
+			}
 		} else {
-			record.deserialize(recordBuffer,serializer);
+			if (!useParsingFromJobflow_3_4) {
+				record.deserializeUnitary(recordBuffer,serializer);
+			} else {
+				record.deserialize(recordBuffer,serializer);
+			}
 		}
+		
 		return record;
 	}
 	
@@ -433,11 +456,12 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 	 * @throws JetelException
 	 */
 	@Override
-	public boolean getNextDirect(CloverBuffer targetBuffer) throws JetelException {
+	public int getNextDirect(CloverBuffer targetBuffer) throws JetelException {
+		if (!version.raw) return -1;
 		final int size;
 		try {
 			size=ByteBufferUtils.decodeLength(input);
-			if (size<0) return false; //end of file reached
+			if (size<0) return 0; //end of file reached
 		
 			targetBuffer.clear();
 
@@ -458,7 +482,7 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 			throw new JetelException(ex);
 		}
 		
-		return true;
+		return 1;
 	}
 	
 	/* (non-Javadoc)
@@ -530,7 +554,15 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 	
 	@Override
 	public boolean isDirectReadingSupported() {
-		return getVersion().raw;
+		return true;
 	}
+
+
+	@Override
+	public DataSourceType getPreferredDataSourceType() {
+		return DataSourceType.STREAM;
+	}
+	
+	
 	
 }

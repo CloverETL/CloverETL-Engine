@@ -24,6 +24,8 @@ import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
 import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.util.ReferenceUtils;
+import org.jetel.util.string.StringUtils;
 
 /**
  * General model wrapper for engine edge ({@link Edge}).
@@ -145,6 +147,28 @@ public class MVEngineEdge implements MVEdge {
 		return engineEdge.getInputPortNumber();
 	}
 
+	@Override
+	public MVGraph getParentMVGraph() {
+		return parentMVGraph;
+	}
+	
+	@Override
+	public MVEdge getMetadataRef() {
+		String metadataRef = engineEdge.getMetadataRef();
+		if (!StringUtils.isEmpty(metadataRef)) {
+			String edgeId = ReferenceUtils.getElementID(metadataRef);
+			try {
+				MVEdge edge = getParentMVGraph().getMVEdge(edgeId);
+				return edge;
+			} catch (Exception e) {
+				//edge reference is somehow corrupted, let's ignore it
+				return null;
+			}
+		} else {
+			return null;
+		}
+	}
+	
 	@Override
 	public int hashCode() {
 		return engineEdge.hashCodeIdentity();

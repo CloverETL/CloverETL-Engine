@@ -71,6 +71,16 @@ public class DataRecordImpl extends DataRecord {
      */
     private boolean plain=false;
     
+    /**
+     * If set to <code>false</code>, deserialization will skip auto-filled fields.
+     * 
+     * <code>true</code> by default.
+     * 
+     * @see DataRecord#setDeserializeAutofilledFields(boolean)
+     * @see <a href="https://bug.javlin.eu/browse/CLO-4591">CLO-4591</a>
+     */
+    private boolean deserializeAutofilledFields = true;
+    
 	/**
 	 * Create new instance of DataRecord based on specified metadata (
 	 * how many fields, what field types, etc.)
@@ -254,46 +264,22 @@ public class DataRecordImpl extends DataRecord {
 	 */
 	@Override
 	public void deserialize(CloverBuffer buffer) {
-		if (Defaults.Record.USE_FIELDS_NULL_INDICATORS && metadata.isNullable()) {
-			// bit array containing 1 if corresponding field is null loaded from the buffer
-			final byte[] nullBits = new byte[BitArray.bitsLength2Bytes(metadata.getNumNullableFields())];
-			buffer.get(nullBits);
-
-			int index = 0;
-			int bits = nullBits[index];  // current byte of the nullBits
-			int bit = 0x01;
-
-			for (DataField field : fields) {
-				// if the current field is nullable
-				if (field.getMetadata().isNullable()) {
-					if (bit > HIGHEST_BIT) {
-						index++;
-						bits = nullBits[index];
-						bit = 0x01;
-					}
-
-					// and if it is really null
-					if ((bits & bit) != 0) {
-						field.setNull(true);
-					} else {
-						field.deserialize(buffer);
-					}
-					
-					bit <<= 1;
-				} else {
-					field.deserialize(buffer);
-				}
-			}
-		} else {
+		if (deserializeAutofilledFields) {
 			for (DataField field : fields) {
 				field.deserialize(buffer);
 			}
+		} else { // CLO-4591
+			deserialize(buffer, metadata.getNonAutofilledFields());
 		}
 	}
 	
 	@Override
 	public void deserialize(CloverBuffer buffer, DataRecordSerializer serializer){
-		serializer.deserialize(buffer,this);
+		if (deserializeAutofilledFields) {
+			serializer.deserialize(buffer,this);
+		} else { // CLO-4591
+			serializer.deserialize(buffer,this, metadata.getNonAutofilledFields());
+		}
 	}
 
 	/**
@@ -538,52 +524,8 @@ public class DataRecordImpl extends DataRecord {
 	 */
 	@Override
 	public void serialize(CloverBuffer buffer) {
-        if (Defaults.Record.USE_FIELDS_NULL_INDICATORS && metadata.isNullable()) {
-			// the bit array is stored at the base position (the beginning of the serialized record)
-			final int basePosition = buffer.position();
-			// bit array will contain 1 for null field 
-			final byte[] nullBits = new byte[BitArray.bitsLength2Bytes(metadata.getNumNullableFields())];
-			
-			// reserve space for nullBits
-			buffer.position(basePosition + nullBits.length);
-
-			int index = 0;
-			int bits = 0x00;
-			int bit = 0x01;
-
-            for (DataField field : fields) {
-				// if the current field is nullable
-				if (field.getMetadata().isNullable()) {
-					// and if it is really null
-					if (field.isNull()) {
-						bits |= bit;
-					} else {
-						field.serialize(buffer);
-					}
-
-					bit <<= 1;
-
-					if (bit > HIGHEST_BIT) {
-						nullBits[index] = (byte) bits;
-						index++;
-						bits = 0x00;
-						bit = 0x01;
-					}
-				} else {
-					field.serialize(buffer);
-				}
-			}
-            
-            if (bits > 0) {
-				nullBits[index] = (byte)bits;
-            }
-            for (int i = 0; i < nullBits.length; i++) {
-                buffer.put(i + basePosition, nullBits[i]);
-            }
-        } else {
-            for (DataField field : fields) {
-            	field.serialize(buffer);
-            }
+        for (DataField field : fields) {
+        	field.serialize(buffer);
         }
     }
 
@@ -777,16 +719,7 @@ public class DataRecordImpl extends DataRecord {
 	@Override
 	public int getSizeSerialized() {
         int size=0;
-        if (Defaults.Record.USE_FIELDS_NULL_INDICATORS && metadata.isNullable()){
-            for (int i = 0; i < fields.length;i++){
-                if (!fields[i].isNull()){
-                    size+=fields[i].getSizeSerialized(); 
-                }
-            }
-            size+=BitArray.bitsLength2Bytes(metadata.getNumNullableFields());
-        }else{
-            for (int i = 0; i < fields.length; size+=fields[i++].getSizeSerialized());
-        }
+        for (int i = 0; i < fields.length; size+=fields[i++].getSizeSerialized());
 		return size;
 	}
 
@@ -854,6 +787,11 @@ public class DataRecordImpl extends DataRecord {
             }
         };
     }
+
+	@Override
+	public void setDeserializeAutofilledFields(boolean deserializeAutofilledFields) {
+		this.deserializeAutofilledFields = deserializeAutofilledFields;
+	}
 }
 /*
  *  end class DataRecord

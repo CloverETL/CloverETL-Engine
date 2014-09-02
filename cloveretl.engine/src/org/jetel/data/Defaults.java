@@ -26,7 +26,6 @@ import java.net.URL;
 import java.sql.Connection;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.Set;
 import java.util.TimeZone;
 import java.util.zip.Deflater;
 
@@ -35,6 +34,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.util.MemoryUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
+import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTimeZone;
 
@@ -54,16 +54,7 @@ public final class Defaults {
 	 * If the engine properties are stored as separated properties and defaults (@see java.util.Properties), this method returns merged properties.
 	 */
 	public static Properties getPropertiesSnapshot() {
-		Properties p = new Properties();
-		Set<String> keys = properties.stringPropertyNames();
-		// must be implemented in this complex way, otherwise Properties.defaults would be ignored
-		for (String key : keys) {
-			String v = properties.getProperty(key); // must be getProperty, otherwise Properties.defaults would be ignored 
-			if (v != null) {
-				p.put(key, v);
-			} 
-		}// for
-		return p;
+		return PropertiesUtils.duplicate(properties);
 	}
 
     private static void initProperties(URL configurationFile) {
@@ -236,6 +227,7 @@ public final class Defaults {
 
     private static void initializeInternal() {
         DEFAULT_INTERNAL_IO_BUFFER_SIZE = getIntProperties("DEFAULT_INTERNAL_IO_BUFFER_SIZE", 32768);
+        DEFAULT_FLAT_FILE_INPUT_BUFFER_SIZE = getIntProperties("DEFAULT_FLAT_FILE_INPUT_BUFFER_SIZE", 65536);
         DEFAULT_DATE_FORMAT = getStringProperties("DEFAULT_DATE_FORMAT", "yyyy-MM-dd");
         DEFAULT_TIME_FORMAT = getStringProperties("DEFAULT_TIME_FORMAT", "HH:mm:ss");
         DEFAULT_DATETIME_FORMAT = getStringProperties("DEFAULT_DATETIME_FORMAT", "yyyy-MM-dd HH:mm:ss");
@@ -281,6 +273,11 @@ public final class Defaults {
 	 * when buffering IO, what is the default size of the buffer
 	 */
 	public static int DEFAULT_INTERNAL_IO_BUFFER_SIZE;// = 32768;
+	
+	/**
+	 * when buffering IO, what is the default size of the buffer
+	 */
+	public static int DEFAULT_FLAT_FILE_INPUT_BUFFER_SIZE;// = 65536;
 	
 	/**
 	 * Used in FileChannel.transferFrom() and FileChannel.transferTo() 
@@ -402,7 +399,6 @@ public final class Defaults {
 			FIELD_LIMIT_SIZE = getIntProperties("Record.FIELD_LIMIT_SIZE", 33554432);
 			DEFAULT_COMPRESSION_LEVEL = getIntProperties("Record.DEFAULT_COMPRESSION_LEVEL",
 					Deflater.DEFAULT_COMPRESSION);
-			USE_FIELDS_NULL_INDICATORS = getBooleanProperties("Record.USE_FIELDS_NULL_INDICATORS", false);
 			RECORDS_BUFFER_SIZE = getIntProperties("Graph.RECORDS_BUFFER_SIZE",
 					Defaults.Record.RECORD_INITIAL_SIZE * 4);
 		}
@@ -449,15 +445,6 @@ public final class Defaults {
 		 * interval 0-9.
 		 */
 		public static int DEFAULT_COMPRESSION_LEVEL;// = Deflater.DEFAULT_COMPRESSION;
-
-		/**
-		 * Switch- shall we handle differently (during serialization) NULLable records (record which has at least one
-		 * field NULLable ?)<br>
-		 * If true then during serialization of record, first is saved array of bits (one bit for each field which can
-		 * be NULLable) and bits are set depending of NULL status of the field being serialized.<br>
-		 * This may speed serialization of record contains many fields with mostly NULL value assigned.
-		 */
-		public static boolean USE_FIELDS_NULL_INDICATORS; // = false;
 
 		/**
 		 * Size of internal buffer for temporary storing several data records.
