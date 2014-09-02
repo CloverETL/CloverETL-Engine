@@ -21,40 +21,37 @@ package org.jetel.connection.nosql;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jetel.data.DataRecord;
+import org.jetel.util.string.StringUtils;
 
 /**
+ * Default {@link ReplacementHelper} implementation.
+ * <p>
+ * Uses simple placeholder substitution, 
+ * fails if the replacement value is <code>null</code>.
+ * </p>
+ * 
  * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created Apr 15, 2013
+ * @created 1. 9. 2014
  */
-public class StatementBuilder {
+public class DefaultReplacementHelper extends AbstractReplacementHelper {
 	
-	private final ReplacementHelper replacementHelper;
-	
-	public StatementBuilder(Pattern pattern) {
-		this(new DefaultReplacementHelper(pattern));
+	public DefaultReplacementHelper(Matcher m) {
+		super(getPattern(m));
 	}
 	
-	public StatementBuilder(ReplacementHelper replacementHelper) {
-		this.replacementHelper = replacementHelper;
-	}
-	
-	public String buildStatement(String template, DataRecord values) {
-		if (values == null || template == null) {
-			return template;
-		}
+	private static Pattern getPattern(Matcher m) {
+		StringBuilder realPattern = new StringBuilder();
+		realPattern.append(Pattern.quote(m.group(1)));
+		realPattern.append('(').append(StringUtils.OBJECT_NAME_PATTERN).append(')');
+		realPattern.append(Pattern.quote(m.group(2)));
 		
-		Matcher matcher = replacementHelper.getMatcher(template);
-		
-	    StringBuffer sb = new StringBuffer(template.length());
-	    while (matcher.find()) {
-	    	replacementHelper.appendReplacement(sb, matcher, values);
-	    }
-	    matcher.appendTail(sb);
-	    
-	    return sb.toString();
+		return Pattern.compile(realPattern.toString());
 	}
-	
+
+	public DefaultReplacementHelper(Pattern pattern) {
+		super(pattern);
+	}
+
 }
