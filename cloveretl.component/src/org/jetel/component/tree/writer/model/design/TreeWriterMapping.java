@@ -111,7 +111,7 @@ public class TreeWriterMapping {
 		ContainerNode currentElement = mapping.getRootElement();
 
 		XMLInputFactory factory = XMLInputFactory.newInstance();
-		factory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.FALSE);
+		factory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.TRUE);
 		try {
 			/*
 			 * this is recommendation from manual, but doesn't seem to work
