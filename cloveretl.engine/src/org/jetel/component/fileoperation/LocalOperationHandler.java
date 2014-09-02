@@ -28,6 +28,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -476,28 +481,31 @@ public class LocalOperationHandler implements IOperationHandler {
 		return null;
 	}
 	
-	private List<Info> list(File parent, ListParameters params) throws IOException {
+	private List<Info> list(Path parent, ListParameters params) throws IOException {
 		if (Thread.currentThread().isInterrupted()) {
 			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
 		}
-		if (!parent.exists()) {
+		BasicFileAttributes parentAttributes;
+		try {
+			// instead of calling Files.exists(), read file attributes
+			parentAttributes = Files.readAttributes(parent, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+		} catch (IOException ioe) {
 			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), parent.toString())); //$NON-NLS-1$
 		}
-		if (!parent.isDirectory()) {
-			return Arrays.asList(info(parent));
+		if (!parentAttributes.isDirectory()) {
+			return Arrays.asList((Info) new PathInfo(parent, parentAttributes));
 		}
-		File[] children = parent.listFiles();
-		if (children != null) {
+		try (DirectoryStream<Path> children = Files.newDirectoryStream(parent)) {
 			List<Info> result = new ArrayList<Info>();
-			for (File child: children) {
-				result.add(info(child));
-				if (params.isRecursive() && child.isDirectory()) {
+			for (Path child: children) {
+				PathInfo childInfo = new PathInfo(child);
+				result.add(childInfo);
+				if (params.isRecursive() && childInfo.isDirectory()) {
 					result.addAll(list(child, params));
 				}
 			}
 			return result;
 		}
-		return new ArrayList<Info>(0);
 	}
 
 	@Override
@@ -512,7 +520,7 @@ public class LocalOperationHandler implements IOperationHandler {
 		if (uri.toString().endsWith(URIUtils.PATH_SEPARATOR) && !file.isDirectory()) {
 			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), file)); //$NON-NLS-1$
 		}
-		return list(file, params);
+		return list(file.toPath(), params);
 	}
 	
 	private boolean create(File file, CreateParameters params) throws IOException {
