@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
+import java.util.HashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,6 +37,7 @@ import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Element;
 
+import com.cloveretl.tableau.TableauMappingParser.TableauMapping;
 import com.tableausoftware.TableauException;
 import com.tableausoftware.DataExtract.Collation;
 import com.tableausoftware.DataExtract.Extract;
@@ -68,7 +70,7 @@ public class TableauWriter extends Node  {
 	public static final String XML_DEFAULT_TABLE_COLLATION = "defaultTableCollation";
 	public static final String XML_APPEND_TO_TABLE = "appendToTable";
 	public static final String XML_OVERWRITE_OUTPUT_FILE = "overwrite";
-	public static final String XML_DATE_TYPE = "typeForDateRecords";
+	public static final String XML_MAPPING = "mapping";
 
 	// output file suffix required by Tableau
 	private static final String REQUIRED_FILE_SUFFIX = ".tde";
@@ -81,7 +83,10 @@ public class TableauWriter extends Node  {
 	/* final */ boolean overwriteTargetFileFlag;
 	/* final */ private String rawTableCollation;
 	/* final */ Collation defaultTableCollation;
-	DateType dateType;
+	/* final */ String mapping;
+	
+	// field name and its mapping
+	private HashMap<String, TableauMapping> mappings;
 
 	// Component inputs
 	private InputPort inputPort;
@@ -99,14 +104,14 @@ public class TableauWriter extends Node  {
 	static Log logger = LogFactory.getLog(TableauWriter.class);
 	
 	
-	public TableauWriter(String id, TransformationGraph graph, String outputFileName, String tableName, String rawTableCollation, boolean overwriteFileFlag, boolean appendToTableFlag, DateType dateType) {
+	public TableauWriter(String id, TransformationGraph graph, String outputFileName, String tableName, String rawTableCollation, boolean overwriteFileFlag, boolean appendToTableFlag, String mapping) {
 		super(id, graph);
 		this.outputFileName = outputFileName;
 		this.tableName = tableName;
 		this.rawTableCollation= rawTableCollation;
 		this.overwriteTargetFileFlag = overwriteFileFlag;
 		this.appendToTableFlag = appendToTableFlag;
-		this.dateType = dateType;
+		this.mapping = mapping;
 	}
 	
 	
@@ -120,6 +125,8 @@ public class TableauWriter extends Node  {
 		if (defaultTableCollation == null) {
 			checkDefaultCollation(null);
 		}
+		
+		mappings = new TableauMappingParser(mapping, false, inputMetadata).getTableauMapping();
 	}
 	
 	@Override
@@ -158,15 +165,17 @@ public class TableauWriter extends Node  {
 					continue;
 				}
 				
-				switch (fieldMetadata.getDataType()) {
-				case STRING:
+				Type type = tableDefinition.getColumnType(i);
+				
+				switch (type) {
+				case UNICODE_STRING:
 					// null values are handled above so CloverString -> String conversion will always succeed
 					outputRow.setString(i, ((StringDataField)inputRecord.getField(i)).getValue().toString());
 					break;
 				case BOOLEAN:
 					outputRow.setBoolean(i, ((BooleanDataField)inputRecord.getField(i)).getBoolean());
 					break;
-				case DATE:
+				case DATETIME: case DATE: case DURATION:
 					final Date inputDate = ((DateDataField)inputRecord.getField(i)).getDate();
 
 					DateFieldExtractor extractor = extractors[i];
@@ -179,19 +188,19 @@ public class TableauWriter extends Node  {
 					int minute = extractor.getMinute();
 					int second = extractor.getSecond();
 					int millisecond = extractor.getMilliSecond();
-					
-					switch (dateType) {
+
+					switch (type) {
+					case DURATION:
+						outputRow.setDuration(i, day, hour, minute, second,	millisecond);
+						break;
 					case DATE:
 						outputRow.setDate(i, year, month, day);
 						break;
-					case TIME:
-						outputRow.setDuration(i, day, hour, minute, second, millisecond);
-						break;
-					default:
+					default: // DATETIME
 						outputRow.setDateTime(i, year, month, day, hour, minute, second, millisecond);
 					}
 					break;
-				case NUMBER:
+				case DOUBLE:
 					outputRow.setDouble(i, ((NumericDataField)inputRecord.getField(i)).getDouble());
 					break;
 				case INTEGER:
@@ -285,7 +294,7 @@ public class TableauWriter extends Node  {
 			} else {
 				// table does not exist; create new definition
 				logger.info("Target table does not exist. Creating new table definition from input metadata.");
-				this.tableDefinition = createTableDefinitionFromMetadata();
+				this.tableDefinition = createTableDefinitionFromMapping();
 				this.targetExtract.addTable(tableName, tableDefinition);
 				this.targetTable = targetExtract.openTable(tableName);
 				printTableDefinition(this.tableName, tableDefinition);
@@ -300,17 +309,31 @@ public class TableauWriter extends Node  {
 	}
 
 	
-	private TableDefinition createTableDefinitionFromMetadata() throws ComponentNotReadyException {
+	private TableDefinition createTableDefinitionFromMapping() throws ComponentNotReadyException {
 		
 		try {
 			TableDefinition tableDefinition = new TableDefinition();
 			tableDefinition.setDefaultCollation(this.defaultTableCollation);
 			
-			for (int i=0; i<inputMetadata.getNumFields(); i++) {
-				DataFieldMetadata fieldMeta =  inputMetadata.getField(i);
-				// FIXME column collation for string columns ... must be done from component configuration
-				Type fieldType = convertType(fieldMeta);
-				tableDefinition.addColumn(fieldMeta.getName(), fieldType);
+			for (int i=0; i<inputRecord.getNumFields();i++) {
+				DataFieldMetadata fieldMetadata=inputMetadata.getField(i); 
+				TableauMapping mapping = mappings.get(fieldMetadata.getName());
+				
+				Type tableauType;
+				if (mapping.getTableauType().equals(TableauMappingParser.DEFAULT_TABLEAU_TYPE)) {
+					tableauType = convertToDefaultType(fieldMetadata);
+				} else {
+					tableauType = Type.valueOf(mapping.getTableauType());
+				}
+				
+				if (mapping.getCollation().equals(TableauMappingParser.DEFAULT_COLLATION)) {
+					tableDefinition.addColumn(fieldMetadata.getName(), tableauType);
+				} else {
+					tableDefinition.addColumnWithCollation(
+							fieldMetadata.getName(),
+							tableauType,
+							Collation.valueOf(mapping.getCollation()));
+				}
 			}
 			
 			return tableDefinition;
@@ -323,26 +346,37 @@ public class TableauWriter extends Node  {
 	}
 	
 	
-	private Type convertType(DataFieldMetadata fieldMeta) throws ComponentNotReadyException {
+	private static Type convertToDefaultType(DataFieldMetadata fieldMeta) throws ComponentNotReadyException {
 		switch (fieldMeta.getDataType()) {
 		case BOOLEAN:
 			return Type.BOOLEAN;
 		case DATE:
-			switch (dateType) {
-			case TIME:
-				return Type.DURATION;
-			case DATE:
-				return Type.DATE;
-			default:
-				return Type.DATETIME;
-			}
+			return Type.DATETIME;
 		case NUMBER:
 			return Type.DOUBLE;
 		case INTEGER:
 			return Type.INTEGER;
 		case STRING:
 			return Type.UNICODE_STRING;
-		default: throw new ComponentNotReadyException("The field type \"" + fieldMeta.getDataType() + "\" cannot be converted to any known Tableau type");
+		default:
+			throw new ComponentNotReadyException("Field type " + fieldMeta.getDataType() + " cannot be converted to any Tableau type!");
+		}
+	}
+	
+	public static Type[] getCompatibleTypes(DataFieldMetadata fieldMeta) {
+		switch (fieldMeta.getDataType()) {
+		case BOOLEAN:
+			return new Type[] {Type.BOOLEAN};
+		case DATE:
+			return new Type[] {Type.DATETIME, Type.DATE, Type.DURATION};
+		case NUMBER:
+			return new Type[] {Type.DOUBLE};
+		case INTEGER:
+			return new Type[] {Type.INTEGER};
+		case STRING:
+			return new Type[] {Type.UNICODE_STRING};
+		default:
+			return null;
 		}
 	}
 	
@@ -374,16 +408,10 @@ public class TableauWriter extends Node  {
    
         logger.info(strBuf);
     }
-    
-   
-
-
-
 
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 
 		// FIXME instrukcie na instalaciu. jna.library.path nefunguje, musime tdserver64.exe musi byt na PATH. Uzivatel bude musiet nastavit sam. Mac nepodporujeme
-		
 		
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
         
@@ -396,9 +424,9 @@ public class TableauWriter extends Node  {
         
         String rawTableCollation = xattribs.getStringEx(XML_DEFAULT_TABLE_COLLATION, null, null);
         
-        DateType dateType = DateType.valueOf(xattribs.getStringEx(XML_DATE_TYPE, DateType.DATETIME.name(), null));
+        String mapping = xattribs.getStringEx(XML_MAPPING, "", null);
 
-        return new TableauWriter(componentID, graph,targetFileName,targetTableName,rawTableCollation,overwriteFileFlag,appendToTableFlag,dateType);
+        return new TableauWriter(componentID, graph,targetFileName,targetTableName,rawTableCollation,overwriteFileFlag,appendToTableFlag,mapping);
 		
 	}
 	
@@ -480,24 +508,6 @@ public class TableauWriter extends Node  {
 
 		return status;
 		
-	}
-	
-	public static enum DateType {
-		DATE,
-		DATETIME,
-		TIME;
-		
-		public boolean isDate() {
-        	return (this == DATE);
-        }
-		
-		public boolean isDateTime() {
-        	return (this == DATETIME);
-        }
-		
-		public boolean isTime() {
-        	return (this == TIME);
-        }
 	}
 	
 	//FIXME DataExtract.log log file of the API ... mention in documentation

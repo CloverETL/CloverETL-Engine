@@ -44,12 +44,8 @@
 				<singleType name="tableauCollationType" />
 	      	</property>
 	      	
-	      	<property category="basic" displayName="Type for date records" modifiable="true" name="typeForDateRecords" nullable="true" required="false" defaultHint="DateTime">
-	        	 <enumType>
-		          <item displayValue="DateTime" value="DATETIME" />
-		          <item displayValue="Date" value="DATE" />
-		          <item displayValue="Time" value="TIME" />
-	        	</enumType>
+	      	<property category="basic" displayName="Tableau mapping" modifiable="true" name="mapping" nullable="true" required="false" defaultHint="">
+	        	<singleType name="tableauMapping" />
 	      	 </property>
 	        
         	<property category="advanced" displayName="Behavior if table exists" modifiable="true" name="appendToTable" nullable="true" required="false" defaultHint="Append to table">
