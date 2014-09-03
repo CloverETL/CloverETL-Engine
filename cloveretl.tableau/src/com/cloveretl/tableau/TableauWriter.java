@@ -482,18 +482,9 @@ public class TableauWriter extends Node  {
 			status.add(new ConfigurationProblem("Output file path must point to a file with \".tde\" suffix", Severity.ERROR, this, Priority.NORMAL));
 		}
 		
-		URL contextURL = getContextURL();
 		for (Node n : getGraph().getPhase(getPhaseNum()).getNodes().values()) {
 			if (n != this && getType().equals(n.getType())) {
-				try {
-					URL url1 = FileUtils.getFileURL(contextURL,
-							((TableauWriter) n).outputFileName);
-					URL url2 = FileUtils.getFileURL(contextURL, outputFileName);
-					if (url1.equals(url2)) {
-						status.add("\"" + n.getName() + "\" writes to the same file in the same phase!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-					}
-				} catch (MalformedURLException e) {
-				}
+				status.add("\""	+ n.getName() + "\" writes in the same phase. Only one TableauWriter is allowed per phase!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
 			}
 		}
 		
