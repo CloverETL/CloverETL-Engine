@@ -30,7 +30,6 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
@@ -485,13 +484,7 @@ public class LocalOperationHandler implements IOperationHandler {
 		if (Thread.currentThread().isInterrupted()) {
 			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
 		}
-		BasicFileAttributes parentAttributes;
-		try {
-			// instead of calling Files.exists(), read file attributes
-			parentAttributes = Files.readAttributes(parent, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
-		} catch (IOException ioe) {
-			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), parent.toString())); //$NON-NLS-1$
-		}
+		BasicFileAttributes parentAttributes = Files.readAttributes(parent, BasicFileAttributes.class);
 		if (!parentAttributes.isDirectory()) {
 			return Arrays.asList((Info) new PathInfo(parent, parentAttributes));
 		}
@@ -517,7 +510,7 @@ public class LocalOperationHandler implements IOperationHandler {
 		} catch (IOException ex) {
 			// ignore
 		}
-		if (uri.toString().endsWith(URIUtils.PATH_SEPARATOR) && !file.isDirectory()) {
+		if (!file.exists() || (uri.toString().endsWith(URIUtils.PATH_SEPARATOR) && !file.isDirectory())) {
 			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), file)); //$NON-NLS-1$
 		}
 		return list(file.toPath(), params);

@@ -21,7 +21,6 @@ package org.jetel.component.fileoperation;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
@@ -45,7 +44,7 @@ public class PathInfo implements Info {
 	private final BasicFileAttributes attributes;
 	
 	public PathInfo(Path path) throws IOException {
-		this(path, Files.readAttributes(path, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS));
+		this(path, Files.readAttributes(path, BasicFileAttributes.class));
 	}
 
 	/**
@@ -91,7 +90,8 @@ public class PathInfo implements Info {
 	
 	@Override
 	public Boolean isLink() {
-		return attributes.isSymbolicLink();
+		// the attributes object refers to the link target, not the source
+		return null;
 	}
 
 	@Override
