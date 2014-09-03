@@ -26,7 +26,6 @@ import java.net.URI;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
@@ -234,7 +233,7 @@ public class AbstractOperationHandlerTest extends LocalOperationHandlerTest {
 			for (File child: parent.listFiles()) {
 				if (!child.exists()) {
 					Path path = child.toPath();
-					Files.readAttributes(path, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+					Files.readAttributes(path, BasicFileAttributes.class);
 				}
 				result.add(child.toURI());
 			}
