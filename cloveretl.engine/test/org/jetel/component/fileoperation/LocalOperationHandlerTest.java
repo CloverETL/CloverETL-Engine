@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermissions;
 
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
@@ -199,14 +201,14 @@ public class LocalOperationHandlerTest extends OperationHandlerTestTemplate {
 			uri = relativeURI("permissionsDir/file.tmp");
 			assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
 			uri = relativeURI("permissionsDir");
-			File file = manager.getFile(uri);
+			Path file = Paths.get(uri.getSingleURI().getAbsoluteURI().toURI());
 			try {
-				Files.setPosixFilePermissions(file.toPath(), PosixFilePermissions.fromString("rw-------"));
+				Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("rw-------"));
 				result = manager.list(uri);
 				assertFalse(result.success());
 				assertTrue(result.getFirstError().getCause() instanceof AccessDeniedException);
 			} finally {
-				Files.setPosixFilePermissions(file.toPath(), PosixFilePermissions.fromString("rwxrwxrwx"));
+				Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("rwxrwxrwx"));
 			}
 		}
 	}
