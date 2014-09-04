@@ -71,8 +71,7 @@ public class TableauWriter extends Node  {
 
 	public final static String TABLEAU_WRITER = "TABLEAU_WRITER";
 
-	public static final String XML_APPEND_TO_TABLE = "appendToTable";
-	public static final String XML_OVERWRITE_OUTPUT_FILE = "overwrite";
+	public static final String XML_ACTION_ON_EXISTING_FILE = "actionOnExistingFile";
 	
 	/* 
 	 * Note mtomcanyi:
@@ -83,7 +82,7 @@ public class TableauWriter extends Node  {
 	 */
 	public static final String XML_TABLE_NAME = "tableName";
 	
-	public static final String XML_OUTPUT_FILE = "outputFile"; 
+	public static final String XML_OUTPUT_FILE = "outputFile";
 	public static final String XML_DEFAULT_TABLE_COLLATION = "defaultTableCollation";
 	public static final String XML_TABLE_STRUCTURE = "tableStructure";
 
@@ -92,13 +91,13 @@ public class TableauWriter extends Node  {
 	
 	// Attributes initialized from XML configuration
 	
-	/* final */ String outputFileName;
-	/* final */ String tableName;
-	/* final */ boolean appendToTableFlag;
-	/* final */ boolean overwriteTargetFileFlag;
-	/* final */ private String rawTableCollation;
-	/* final */ Collation defaultTableCollation;
-	/* final */ String tableStructure;
+	private String outputFileName;
+	private String tableName;
+	private TableauActionOnExistingFile actionOnExistingFile;
+	private String actionOnExistingFileRaw;
+	private String rawTableCollation;
+	private Collation defaultTableCollation;
+	private String tableStructure;
 	
 	// field name and its table column definition
 	private HashMap<String, TableauTableColumnDefinition> mappings;
@@ -118,13 +117,12 @@ public class TableauWriter extends Node  {
 	
 	static Log logger = LogFactory.getLog(TableauWriter.class);
 	
-	public TableauWriter(String id, TransformationGraph graph, String outputFileName, String tableName, String rawTableCollation, boolean overwriteFileFlag, boolean appendToTableFlag, String tableStructure) {
+	public TableauWriter(String id, TransformationGraph graph, String outputFileName, String tableName, String rawTableCollation, String actionOnExistingFileRaw, String tableStructure) {
 		super(id, graph);
 		this.outputFileName = outputFileName;
 		this.tableName = tableName;
 		this.rawTableCollation= rawTableCollation;
-		this.overwriteTargetFileFlag = overwriteFileFlag;
-		this.appendToTableFlag = appendToTableFlag;
+		this.actionOnExistingFileRaw = actionOnExistingFileRaw;
 		this.tableStructure = tableStructure;
 	}
 	
@@ -137,6 +135,12 @@ public class TableauWriter extends Node  {
 		if (defaultTableCollation == null) {
 			checkDefaultCollation(null);
 		}
+		
+		try {
+        	actionOnExistingFile = TableauActionOnExistingFile.valueOf(actionOnExistingFileRaw);
+        } catch (IllegalArgumentException e) {
+        	throw new ComponentNotReadyException("Invalid value of Action on existing file. Value was: " + actionOnExistingFileRaw);
+        }
 		
 		mappings = new TableauTableStructureParser(tableStructure, false, inputMetadata).getTableauMapping();
 	}
@@ -286,7 +290,7 @@ public class TableauWriter extends Node  {
 			FileUtils.createParentDirs(getContextURL(), outputFileName);
 			
 			if (targetFile.exists()) {
-				if (overwriteTargetFileFlag) {
+				if (actionOnExistingFile.isOverwrite()) {
 					// Tableau API throws exception if target file exists. We must delete it, there is no "replace" option
 					// See docs of constructor for Extract class
 					if (!targetFile.delete()) {
@@ -322,8 +326,8 @@ public class TableauWriter extends Node  {
 		try {
 			if (targetExtract.hasTable(tableName)) {
 				// table exists; open it if append mode is on
-				if (!appendToTableFlag) {
-					throw new ComponentNotReadyException("Target table exists and append mode is disabled. Terminating processing. Table: " + tableName);
+				if (actionOnExistingFile.isTerminate()) {
+					throw new ComponentNotReadyException("Target table exists and terminate processing option was specified. Terminating processing. Table: " + tableName);
 				}
 				
 				this.targetTable = targetExtract.openTable(tableName);
@@ -448,16 +452,18 @@ public class TableauWriter extends Node  {
         
 		String componentID = xattribs.getString(XML_ID_ATTRIBUTE);
         String targetFileName = xattribs.getStringEx(XML_OUTPUT_FILE, null, RefResFlag.URL);
-        boolean overwriteFileFlag = xattribs.getBoolean(XML_OVERWRITE_OUTPUT_FILE, true);
         
         String targetTableName = xattribs.getStringEx(XML_TABLE_NAME, "Extract", null);
-        boolean appendToTableFlag = xattribs.getBoolean(XML_APPEND_TO_TABLE, true);
         
+        String actionOnExistingFile = xattribs.getStringEx(XML_ACTION_ON_EXISTING_FILE,
+				TableauActionOnExistingFile.OVERWRITE_TABLE.name(),
+				null);
+
         String rawTableCollation = xattribs.getStringEx(XML_DEFAULT_TABLE_COLLATION, null, null);
         
         String tableStructure = xattribs.getStringEx(XML_TABLE_STRUCTURE, "", null);
 
-        return new TableauWriter(componentID, graph,targetFileName,targetTableName,rawTableCollation,overwriteFileFlag,appendToTableFlag,tableStructure);
+        return new TableauWriter(componentID, graph,targetFileName,targetTableName,rawTableCollation,actionOnExistingFile,tableStructure);
 		
 	}
 	
@@ -467,7 +473,6 @@ public class TableauWriter extends Node  {
 	 */
 	private void checkDefaultCollation(ConfigurationStatus status) {
 		String errMessage = null;
-		
 		
 		/* 
 		 * Ugly hack by mtomcanyi: Tableau Java libraries require native libraries to be on PATH. 
@@ -515,8 +520,17 @@ public class TableauWriter extends Node  {
 		
 		for (Node n : getGraph().getPhase(getPhaseNum()).getNodes().values()) {
 			if (n != this && getType().equals(n.getType())) {
+				//TODO this is the hard check, do we want it?
 				//status.add("\""	+ n.getName() + "\" writes in the same phase. Only one TableauWriter is allowed per phase!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
 			}
+		}
+		
+		try {
+			TableauActionOnExistingFile.valueOf(actionOnExistingFileRaw);
+		} catch (Exception e) {
+			status.add(new ConfigurationProblem(
+					"Action on existing output file is not set properly!",
+					Severity.ERROR, this, Priority.NORMAL));
 		}
 		
 		DataRecordMetadata recordMeta = getInputPort(0).getMetadata();
@@ -531,6 +545,25 @@ public class TableauWriter extends Node  {
 		return status;
 		
 	}
+	
+	public static enum TableauActionOnExistingFile {
+
+		OVERWRITE_TABLE,
+		APPEND_TO_TABLE,
+		TERMINATE_PROCESSING;
+        
+        public boolean isOverwrite() {
+        	return (this == OVERWRITE_TABLE);
+        }
+        
+        public boolean isAppend() {
+        	return (this == APPEND_TO_TABLE);
+        }
+        
+        public boolean isTerminate() {
+        	return (this == TERMINATE_PROCESSING);
+        }
+    }
 	
 	//FIXME DataExtract.log log file of the API ... mention in documentation
 	// FIXME !!!! Tableau nie je thread safe !!!!

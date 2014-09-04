@@ -48,15 +48,12 @@
 	        	<singleType name="tableauTableStructure" />
 	      	 </property>
 	        
-        	<property category="advanced" displayName="Behavior if table exists" modifiable="true" name="appendToTable" nullable="true" required="false" defaultHint="Append to table">
+        	<property category="advanced" displayName="Action on existing output file" modifiable="true" name="actionOnExistingFile" nullable="true" required="false" defaultHint="Overwrite table (replaces the file)">
 	        	 <enumType>
-		          <item displayValue="Append to table" value="true" />
-		          <item displayValue="Terminate processing" value="false" />
+	        	  <item displayValue="Overwrite table (replaces the file)" value="OVERWRITE_TABLE" />
+		          <item displayValue="Append to table" value="APPEND_TO_TABLE" />
+		          <item displayValue="Terminate processing" value="TERMINATE_PROCESSING" />
 	        	</enumType>
-	      	 </property>
-	        
-	        <property category="advanced" displayName="Overwrite output file" modifiable="true" name="overwrite" nullable="true" required="false" defaultHint="true">
-	        	<singleType name="bool" />
 	      	 </property>
         
         </properties>
