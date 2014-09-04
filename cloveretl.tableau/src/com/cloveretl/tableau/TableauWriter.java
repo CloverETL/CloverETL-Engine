@@ -69,13 +69,10 @@ public class TableauWriter extends Node  {
 	
 	private static final ReentrantLock lock = new ReentrantLock();
 
-	//TODO put this in messages properties file
-	//private final static String INVALID_SUFFIX_MESSAGE = "Output file path must point to a file with \".tde\" suffix";
-
 	public final static String TABLEAU_WRITER = "TABLEAU_WRITER";
 
-	public static final String XML_OUTPUT_FILE = "outputFile"; 
-	
+	public static final String XML_APPEND_TO_TABLE = "appendToTable";
+	public static final String XML_OVERWRITE_OUTPUT_FILE = "overwrite";
 	
 	/* 
 	 * Note mtomcanyi:
@@ -86,11 +83,9 @@ public class TableauWriter extends Node  {
 	 */
 	public static final String XML_TABLE_NAME = "tableName";
 	
-	
+	public static final String XML_OUTPUT_FILE = "outputFile"; 
 	public static final String XML_DEFAULT_TABLE_COLLATION = "defaultTableCollation";
-	public static final String XML_APPEND_TO_TABLE = "appendToTable";
-	public static final String XML_OVERWRITE_OUTPUT_FILE = "overwrite";
-	public static final String XML_MAPPING = "mapping";
+	public static final String XML_TABLE_STRUCTURE = "tableStructure";
 
 	// output file suffix required by Tableau
 	private static final String REQUIRED_FILE_SUFFIX = ".tde";
@@ -103,9 +98,9 @@ public class TableauWriter extends Node  {
 	/* final */ boolean overwriteTargetFileFlag;
 	/* final */ private String rawTableCollation;
 	/* final */ Collation defaultTableCollation;
-	/* final */ String mapping;
+	/* final */ String tableStructure;
 	
-	// field name and its mapping
+	// field name and its table column definition
 	private HashMap<String, TableauTableColumnDefinition> mappings;
 
 	// Component inputs
@@ -123,18 +118,15 @@ public class TableauWriter extends Node  {
 	
 	static Log logger = LogFactory.getLog(TableauWriter.class);
 	
-	
-	public TableauWriter(String id, TransformationGraph graph, String outputFileName, String tableName, String rawTableCollation, boolean overwriteFileFlag, boolean appendToTableFlag, String mapping) {
+	public TableauWriter(String id, TransformationGraph graph, String outputFileName, String tableName, String rawTableCollation, boolean overwriteFileFlag, boolean appendToTableFlag, String tableStructure) {
 		super(id, graph);
 		this.outputFileName = outputFileName;
 		this.tableName = tableName;
 		this.rawTableCollation= rawTableCollation;
 		this.overwriteTargetFileFlag = overwriteFileFlag;
 		this.appendToTableFlag = appendToTableFlag;
-		this.mapping = mapping;
+		this.tableStructure = tableStructure;
 	}
-	
-	
 	
 	@Override
 	public void init() throws ComponentNotReadyException {
@@ -146,7 +138,7 @@ public class TableauWriter extends Node  {
 			checkDefaultCollation(null);
 		}
 		
-		mappings = new TableauTableStructureParser(mapping, false, inputMetadata).getTableauMapping();
+		mappings = new TableauTableStructureParser(tableStructure, false, inputMetadata).getTableauMapping();
 	}
 	
 	@Override
@@ -338,7 +330,7 @@ public class TableauWriter extends Node  {
 				this.tableDefinition = targetTable.getTableDefinition();
 			} else {
 				// table does not exist; create new definition
-				logger.info("Target table does not exist. Creating new table definition from input metadata and mapping.");
+				logger.info("Target table does not exist. Creating new table definition from input metadata and tableStructure.");
 				this.tableDefinition = createTableDefinitionFromMapping();
 				this.targetExtract.addTable(tableName, tableDefinition);
 				this.targetTable = targetExtract.openTable(tableName);
@@ -463,9 +455,9 @@ public class TableauWriter extends Node  {
         
         String rawTableCollation = xattribs.getStringEx(XML_DEFAULT_TABLE_COLLATION, null, null);
         
-        String mapping = xattribs.getStringEx(XML_MAPPING, "", null);
+        String tableStructure = xattribs.getStringEx(XML_TABLE_STRUCTURE, "", null);
 
-        return new TableauWriter(componentID, graph,targetFileName,targetTableName,rawTableCollation,overwriteFileFlag,appendToTableFlag,mapping);
+        return new TableauWriter(componentID, graph,targetFileName,targetTableName,rawTableCollation,overwriteFileFlag,appendToTableFlag,tableStructure);
 		
 	}
 	

@@ -104,7 +104,7 @@ public class TableauTableStructureParser {
 			try {
 				parseTableauMapping(expr2);
 			} catch (Exception e) {
-				String message = "Invalid mapping '" + expr2 + "'";
+				String message = "Invalid tableStructure '" + expr2 + "'";
 				errors.add(ExceptionUtils.getMessage(message, e));
 			}
 		}
