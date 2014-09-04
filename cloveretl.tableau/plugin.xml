@@ -44,8 +44,8 @@
 				<singleType name="tableauCollationType" />
 	      	</property>
 	      	
-	      	<property category="basic" displayName="Tableau mapping" modifiable="true" name="mapping" nullable="true" required="false" defaultHint="">
-	        	<singleType name="tableauMapping" />
+	      	<property category="basic" displayName="Tableau table structure" modifiable="true" name="mapping" nullable="true" required="false" defaultHint="Generate automatically">
+	        	<singleType name="tableauTableStructure" />
 	      	 </property>
 	        
         	<property category="advanced" displayName="Behavior if table exists" modifiable="true" name="appendToTable" nullable="true" required="false" defaultHint="Append to table">

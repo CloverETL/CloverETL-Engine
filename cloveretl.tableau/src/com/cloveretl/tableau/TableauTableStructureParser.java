@@ -31,19 +31,19 @@ import org.jetel.util.string.StringUtils;
 
 import com.tableausoftware.DataExtract.Type;
 
-public class TableauMappingParser {
+public class TableauTableStructureParser {
 	
 	public static final String TABLEAU_MAPPING_PROPERTY_DELIMITER = ",";//$NON-NLS-1$
 	public static final String DEFAULT_COLLATION = "default";//$NON-NLS-1$
 	public static final String DEFAULT_TABLEAU_TYPE = "automatic"; //$NON-NLS-1$
 
-	private HashMap<String, TableauMapping> tableauMapping = new HashMap<String, TableauMapping>();
+	private HashMap<String, TableauTableColumnDefinition> tableauMapping = new HashMap<String, TableauTableColumnDefinition>();
 	DataRecordMetadata inMetadata;
 	boolean paramsAllowed;
 
 	private List<String> errors = new ArrayList<String>();
 
-	public TableauMappingParser(String mappingString, boolean paramsAllowed,
+	public TableauTableStructureParser(String mappingString, boolean paramsAllowed,
 			DataRecordMetadata inMetadata) {
 		this.inMetadata = inMetadata;
 
@@ -55,9 +55,9 @@ public class TableauMappingParser {
 
 		for (DataFieldMetadata field : inMetadata.getFields()) {
 			String fieldName = field.getName();
-			TableauMapping mapping = tableauMapping.get(fieldName);
+			TableauTableColumnDefinition mapping = tableauMapping.get(fieldName);
 			if (mapping == null) {
-				mapping = new TableauMapping(fieldName, DEFAULT_TABLEAU_TYPE,
+				mapping = new TableauTableColumnDefinition(fieldName, DEFAULT_TABLEAU_TYPE,
 						DEFAULT_COLLATION);
 				tableauMapping.put(fieldName, mapping);
 			}
@@ -121,13 +121,13 @@ public class TableauMappingParser {
 		String tableauType = parsedExpression[0].trim();
 		String collation = parsedExpression[1].trim();
 
-		TableauMapping mapping = new TableauMapping(inputField, tableauType,
+		TableauTableColumnDefinition mapping = new TableauTableColumnDefinition(inputField, tableauType,
 				collation);
 
 		tableauMapping.put(inputField, mapping);
 	}
 
-	public HashMap<String,TableauMapping> getTableauMapping() {
+	public HashMap<String,TableauTableColumnDefinition> getTableauMapping() {
 		return tableauMapping;
 	}
 
@@ -135,16 +135,16 @@ public class TableauMappingParser {
 		return errors;
 	}
 
-	public static class TableauMapping {
+	public static class TableauTableColumnDefinition {
 		private String collation;
-		private String inputField;
+		private String name;
 		private String tableauType;
 
-		public TableauMapping(String inputField, String tableauType,
+		public TableauTableColumnDefinition(String name, String tableauType,
 				String collation) {
 			super();
 			this.collation = collation;
-			this.inputField = inputField;
+			this.name = name;
 			this.tableauType = tableauType;
 		}
 
@@ -156,12 +156,12 @@ public class TableauMappingParser {
 			this.collation = collation;
 		}
 
-		public String getInputField() {
-			return inputField;
+		public String getName() {
+			return name;
 		}
 
-		public void setInputField(String inputField) {
-			this.inputField = inputField;
+		public void setName(String name) {
+			this.name = name;
 		}
 
 		public String getTableauType() {

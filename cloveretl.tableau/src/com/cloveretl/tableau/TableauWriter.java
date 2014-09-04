@@ -55,7 +55,7 @@ import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Element;
 
-import com.cloveretl.tableau.TableauMappingParser.TableauMapping;
+import com.cloveretl.tableau.TableauTableStructureParser.TableauTableColumnDefinition;
 import com.tableausoftware.TableauException;
 import com.tableausoftware.DataExtract.Collation;
 import com.tableausoftware.DataExtract.Extract;
@@ -106,7 +106,7 @@ public class TableauWriter extends Node  {
 	/* final */ String mapping;
 	
 	// field name and its mapping
-	private HashMap<String, TableauMapping> mappings;
+	private HashMap<String, TableauTableColumnDefinition> mappings;
 
 	// Component inputs
 	private InputPort inputPort;
@@ -146,7 +146,7 @@ public class TableauWriter extends Node  {
 			checkDefaultCollation(null);
 		}
 		
-		mappings = new TableauMappingParser(mapping, false, inputMetadata).getTableauMapping();
+		mappings = new TableauTableStructureParser(mapping, false, inputMetadata).getTableauMapping();
 	}
 	
 	@Override
@@ -358,16 +358,16 @@ public class TableauWriter extends Node  {
 			
 			for (int i=0; i<inputRecord.getNumFields();i++) {
 				DataFieldMetadata fieldMetadata=inputMetadata.getField(i); 
-				TableauMapping mapping = mappings.get(fieldMetadata.getName());
+				TableauTableColumnDefinition mapping = mappings.get(fieldMetadata.getName());
 				
 				Type tableauType;
-				if (mapping.getTableauType().equals(TableauMappingParser.DEFAULT_TABLEAU_TYPE)) {
+				if (mapping.getTableauType().equals(TableauTableStructureParser.DEFAULT_TABLEAU_TYPE)) {
 					tableauType = convertToDefaultType(fieldMetadata);
 				} else {
 					tableauType = Type.valueOf(mapping.getTableauType());
 				}
 				
-				if (mapping.getCollation().equals(TableauMappingParser.DEFAULT_COLLATION)) {
+				if (mapping.getCollation().equals(TableauTableStructureParser.DEFAULT_COLLATION)) {
 					tableDefinition.addColumn(fieldMetadata.getName(), tableauType);
 				} else {
 					tableDefinition.addColumnWithCollation(
