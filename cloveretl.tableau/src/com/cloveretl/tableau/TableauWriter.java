@@ -45,6 +45,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
@@ -357,13 +358,13 @@ public class TableauWriter extends Node  {
 				TableauTableColumnDefinition column = mappings.get(fieldMetadata.getName());
 				
 				Type tableauType;
-				if (column.getTableauType().equals(TableauTableStructureParser.DEFAULT_TABLEAU_TYPE)) {
+				if (column.getTableauType().equals(TableauTableStructureParser.DEFAULT_TABLEAU_TYPE_STRING)) {
 					tableauType = convertToDefaultType(fieldMetadata);
 				} else {
 					tableauType = Type.valueOf(column.getTableauType());
 				}
 				
-				if (column.getCollation().equals(TableauTableStructureParser.DEFAULT_COLLATION)) {
+				if (column.getCollation().equals(TableauTableStructureParser.DEFAULT_COLLATION_STRING)) {
 					tableDefinition.addColumn(fieldMetadata.getName(), tableauType);
 				} else {
 					tableDefinition.addColumnWithCollation(
@@ -482,7 +483,7 @@ public class TableauWriter extends Node  {
 		 */
 		try {
 	        if (rawTableCollation == null) {
-	        	this.defaultTableCollation= Collation.EN_US;
+	        	this.defaultTableCollation= TableauTableStructureParser.DEFAULT_COLLATION;
 	        } else {
 	        	try {
 	        		defaultTableCollation = Collation.valueOf(rawTableCollation);
@@ -539,6 +540,9 @@ public class TableauWriter extends Node  {
 			DataFieldType fieldType= fieldMeta.getDataType();
 			if (fieldType == DataFieldType.LONG || fieldType == DataFieldType.DECIMAL ) {
 				status.add("Input metadata of \"" + getName() + "\" contain data type unsupported by Tableau! Metadata field "+ recordMeta.getField(i).getName() + " of metadata " + recordMeta.getName() + " has type " + fieldType.getName() + "! Unsupported types are: " + DataFieldType.LONG.getName() + ", " + DataFieldType.DECIMAL.getName(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+			}
+			if (fieldMeta.getContainerType() != DataFieldContainerType.SINGLE) {
+				status.add("Input metadata of \"" + getName() + "\" have container unsupported by Tableau! Metadata field "+ recordMeta.getField(i).getName() + " of metadata " + recordMeta.getName() + " has container " + fieldMeta.getContainerType().getDisplayName() +"! Container types " + DataFieldContainerType.MAP.getDisplayName() + " and " + DataFieldContainerType.LIST.getDisplayName() + " are not supported.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
 			}
 		}
 

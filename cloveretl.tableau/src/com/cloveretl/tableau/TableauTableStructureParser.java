@@ -29,13 +29,16 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.string.StringUtils;
 
+import com.tableausoftware.DataExtract.Collation;
 import com.tableausoftware.DataExtract.Type;
 
 public class TableauTableStructureParser {
 	
 	public static final String TABLEAU_COLUMN_DEFINITION_PROPERTY_DELIMITER = ",";//$NON-NLS-1$
-	public static final String DEFAULT_COLLATION = "default";//$NON-NLS-1$
-	public static final String DEFAULT_TABLEAU_TYPE = "automatic"; //$NON-NLS-1$
+	public static final String DEFAULT_COLLATION_STRING = "default";//$NON-NLS-1$
+	public static final String DEFAULT_TABLEAU_TYPE_STRING = "automatic"; //$NON-NLS-1$
+	
+	public static final Collation DEFAULT_COLLATION = Collation.EN_US;
 
 	private HashMap<String, TableauTableColumnDefinition> tableauMapping = new HashMap<String, TableauTableColumnDefinition>();
 	DataRecordMetadata inMetadata;
@@ -57,18 +60,18 @@ public class TableauTableStructureParser {
 			String fieldName = field.getName();
 			TableauTableColumnDefinition columnDefinition = tableauMapping.get(fieldName);
 			if (columnDefinition == null) {
-				columnDefinition = new TableauTableColumnDefinition(fieldName, DEFAULT_TABLEAU_TYPE,
-						DEFAULT_COLLATION);
+				columnDefinition = new TableauTableColumnDefinition(fieldName, DEFAULT_TABLEAU_TYPE_STRING,
+						DEFAULT_COLLATION_STRING);
 				tableauMapping.put(fieldName, columnDefinition);
 			}
 			if (columnDefinition.getTableauType() == null) {
-				columnDefinition.setTableauType(DEFAULT_TABLEAU_TYPE);
+				columnDefinition.setTableauType(DEFAULT_TABLEAU_TYPE_STRING);
 			}
 			if (columnDefinition.getCollation() == null) {
-				columnDefinition.setCollation(DEFAULT_COLLATION);
+				columnDefinition.setCollation(DEFAULT_COLLATION_STRING);
 			}
 
-			if (!columnDefinition.getTableauType().equals(DEFAULT_TABLEAU_TYPE)) {
+			if (!columnDefinition.getTableauType().equals(DEFAULT_TABLEAU_TYPE_STRING)) {
 				try {
 					checkTypeCompatibility(field,
 							Type.valueOf(columnDefinition.getTableauType()));
