@@ -2,7 +2,7 @@
 
 <plugin
     id="com.cloveretl.tableau.TableauWriter"
-    version="1.0.0"
+    version="0.0.0.devel"
     provider-name="Javlin, a.s.">
 
     <runtime>

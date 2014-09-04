@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -64,6 +66,8 @@ import com.tableausoftware.DataExtract.Type;
 
 
 public class TableauWriter extends Node  {
+	
+	private static final ReentrantLock lock = new ReentrantLock();
 
 	//TODO put this in messages properties file
 	//private final static String INVALID_SUFFIX_MESSAGE = "Output file path must point to a file with \".tde\" suffix";
@@ -147,18 +151,43 @@ public class TableauWriter extends Node  {
 	
 	@Override
 	protected Result execute() throws Exception {
-		// check and prepare target file
-		try (Extract targetFile = prepareTargetFile()) {
-			prepareTargetTable();
-			prepareValueConvertors();
+		
+		// Tableau API is not thread-safe. We use a lock to deal with it.
+		// We wait for first record to come in. This prevents locking the tableau API too early.
+		if (readRecord() && runIt) {
+			logger.info(getName() + " is trying to acquire lock for Tableau API.");
+			boolean lockSuccess = lock.tryLock(300, TimeUnit.SECONDS); // thread is waiting
 			
-			while (readRecord() && runIt) {
-				writeRecord();
+			if (!lockSuccess) {
+				logger.error(getName() + " didn't acquire Tableau API lock in time.");
+				throw new Exception("TableauWriter: component " + getName() + " didn't get lock in time.");
 			}
 			
-			targetFile.close();
+			// we have the lock at this point
+			logger.info(getName() + " acquired lock for Tableau API.");
 			
-		} 
+			try {
+				// check and prepare target file
+				prepareTargetFile();
+				prepareTargetTable();
+				prepareValueConvertors();
+				
+				 // first record was already read
+				writeRecord();
+				
+				while (readRecord() && runIt) {
+					writeRecord();
+				}
+				
+				
+			} finally {
+				if (lockSuccess) {
+					targetExtract.close();
+					lock.unlock();
+					logger.info(getName() + " released lock for Tableau API.");
+				}
+			}
+		}
 		
 		return Result.FINISHED_OK;
 	}
@@ -309,19 +338,15 @@ public class TableauWriter extends Node  {
 				this.tableDefinition = targetTable.getTableDefinition();
 			} else {
 				// table does not exist; create new definition
-				logger.info("Target table does not exist. Creating new table definition from input metadata.");
+				logger.info("Target table does not exist. Creating new table definition from input metadata and mapping.");
 				this.tableDefinition = createTableDefinitionFromMapping();
 				this.targetExtract.addTable(tableName, tableDefinition);
 				this.targetTable = targetExtract.openTable(tableName);
 				printTableDefinition(this.tableName, tableDefinition);
-				
-				
 			}
 		} catch (TableauException e) {
 			throw new ComponentNotReadyException("Unable to create/open target table: " + tableName,e);
 		}
-		
-		
 	}
 
 	
@@ -357,8 +382,6 @@ public class TableauWriter extends Node  {
 		} catch (TableauException e) {
 			throw new ComponentNotReadyException("Unable to create target table definition from input metadata.",e);
 		}
-		
-		
 	}
 	
 	
@@ -474,7 +497,7 @@ public class TableauWriter extends Node  {
 			if (System.getProperty("os.name").startsWith("Mac")) {
 				errMessage = "The " + getClass().getSimpleName() + "does not work on Mac OS X as Tableau does not provide libraries for Mac.";
 			} else {
-				errMessage = "Unable to initialize Tableu native libraries. Make sure they are installed and configured in PATH environment variable (see component docs). Underlying error: \n" + e.getMessage();
+				errMessage = "Unable to initialize Tableau native libraries. Make sure they are installed and configured in PATH environment variable (see component docs). Underlying error: \n" + e.getMessage();
 			}
 		}
 
@@ -500,7 +523,7 @@ public class TableauWriter extends Node  {
 		
 		for (Node n : getGraph().getPhase(getPhaseNum()).getNodes().values()) {
 			if (n != this && getType().equals(n.getType())) {
-				status.add("\""	+ n.getName() + "\" writes in the same phase. Only one TableauWriter is allowed per phase!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+				//status.add("\""	+ n.getName() + "\" writes in the same phase. Only one TableauWriter is allowed per phase!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
 			}
 		}
 		
