@@ -33,7 +33,7 @@ import com.tableausoftware.DataExtract.Type;
 
 public class TableauTableStructureParser {
 	
-	public static final String TABLEAU_MAPPING_PROPERTY_DELIMITER = ",";//$NON-NLS-1$
+	public static final String TABLEAU_COLUMN_DEFINITION_PROPERTY_DELIMITER = ",";//$NON-NLS-1$
 	public static final String DEFAULT_COLLATION = "default";//$NON-NLS-1$
 	public static final String DEFAULT_TABLEAU_TYPE = "automatic"; //$NON-NLS-1$
 
@@ -43,35 +43,35 @@ public class TableauTableStructureParser {
 
 	private List<String> errors = new ArrayList<String>();
 
-	public TableauTableStructureParser(String mappingString, boolean paramsAllowed,
+	public TableauTableStructureParser(String tablestructureString, boolean paramsAllowed,
 			DataRecordMetadata inMetadata) {
 		this.inMetadata = inMetadata;
 
 		this.paramsAllowed = paramsAllowed;
 
-		parseMapping(StringUtils.split(mappingString));
+		parseTableStructure(StringUtils.split(tablestructureString));
 
 		// fill in missing values (use defaults)
 
 		for (DataFieldMetadata field : inMetadata.getFields()) {
 			String fieldName = field.getName();
-			TableauTableColumnDefinition mapping = tableauMapping.get(fieldName);
-			if (mapping == null) {
-				mapping = new TableauTableColumnDefinition(fieldName, DEFAULT_TABLEAU_TYPE,
+			TableauTableColumnDefinition columnDefinition = tableauMapping.get(fieldName);
+			if (columnDefinition == null) {
+				columnDefinition = new TableauTableColumnDefinition(fieldName, DEFAULT_TABLEAU_TYPE,
 						DEFAULT_COLLATION);
-				tableauMapping.put(fieldName, mapping);
+				tableauMapping.put(fieldName, columnDefinition);
 			}
-			if (mapping.getTableauType() == null) {
-				mapping.setTableauType(DEFAULT_TABLEAU_TYPE);
+			if (columnDefinition.getTableauType() == null) {
+				columnDefinition.setTableauType(DEFAULT_TABLEAU_TYPE);
 			}
-			if (mapping.getCollation() == null) {
-				mapping.setCollation(DEFAULT_COLLATION);
+			if (columnDefinition.getCollation() == null) {
+				columnDefinition.setCollation(DEFAULT_COLLATION);
 			}
 
-			if (!mapping.getTableauType().equals(DEFAULT_TABLEAU_TYPE)) {
+			if (!columnDefinition.getTableauType().equals(DEFAULT_TABLEAU_TYPE)) {
 				try {
 					checkTypeCompatibility(field,
-							Type.valueOf(mapping.getTableauType()));
+							Type.valueOf(columnDefinition.getTableauType()));
 				} catch (NoClassDefFoundError e) {
 					errors.add("Tableau libraries need to be set on environment variable PATH!");
 				}
@@ -94,15 +94,15 @@ public class TableauTableStructureParser {
 
 	}
 
-	private void parseMapping(String[] mapping) {
-		for (String expression : mapping) {
+	private void parseTableStructure(String[] columns) {
+		for (String expression : columns) {
 			String expr2 = expression.trim();
 			if (expr2.equals("")) {
 				continue;
 			}
 
 			try {
-				parseTableauMapping(expr2);
+				parseColumnDefinition(expr2);
 			} catch (Exception e) {
 				String message = "Invalid tableStructure '" + expr2 + "'";
 				errors.add(ExceptionUtils.getMessage(message, e));
@@ -110,21 +110,21 @@ public class TableauTableStructureParser {
 		}
 	}
 
-	private void parseTableauMapping(String expr) {
+	private void parseColumnDefinition(String expr) {
 		String[] parsedExpression = expr.split(Defaults.ASSIGN_SIGN);
 		String inputField = parsedExpression[0].trim().substring(
 				Defaults.CLOVER_FIELD_INDICATOR.length()); // skip the leading "$"
 
 		parsedExpression = parsedExpression[1]
-				.split(TABLEAU_MAPPING_PROPERTY_DELIMITER);
+				.split(TABLEAU_COLUMN_DEFINITION_PROPERTY_DELIMITER);
 
 		String tableauType = parsedExpression[0].trim();
 		String collation = parsedExpression[1].trim();
 
-		TableauTableColumnDefinition mapping = new TableauTableColumnDefinition(inputField, tableauType,
+		TableauTableColumnDefinition columnDefinition = new TableauTableColumnDefinition(inputField, tableauType,
 				collation);
 
-		tableauMapping.put(inputField, mapping);
+		tableauMapping.put(inputField, columnDefinition);
 	}
 
 	public HashMap<String,TableauTableColumnDefinition> getTableauMapping() {

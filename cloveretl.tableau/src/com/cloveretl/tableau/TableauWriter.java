@@ -330,8 +330,8 @@ public class TableauWriter extends Node  {
 				this.tableDefinition = targetTable.getTableDefinition();
 			} else {
 				// table does not exist; create new definition
-				logger.info("Target table does not exist. Creating new table definition from input metadata and tableStructure.");
-				this.tableDefinition = createTableDefinitionFromMapping();
+				logger.info("Target table does not exist. Creating new table definition.");
+				this.tableDefinition = createTableDefinition();
 				this.targetExtract.addTable(tableName, tableDefinition);
 				this.targetTable = targetExtract.openTable(tableName);
 				printTableDefinition(this.tableName, tableDefinition);
@@ -342,7 +342,7 @@ public class TableauWriter extends Node  {
 	}
 
 	
-	private TableDefinition createTableDefinitionFromMapping() throws ComponentNotReadyException {
+	private TableDefinition createTableDefinition() throws ComponentNotReadyException {
 		
 		try {
 			TableDefinition tableDefinition = new TableDefinition();
@@ -350,22 +350,22 @@ public class TableauWriter extends Node  {
 			
 			for (int i=0; i<inputRecord.getNumFields();i++) {
 				DataFieldMetadata fieldMetadata=inputMetadata.getField(i); 
-				TableauTableColumnDefinition mapping = mappings.get(fieldMetadata.getName());
+				TableauTableColumnDefinition column = mappings.get(fieldMetadata.getName());
 				
 				Type tableauType;
-				if (mapping.getTableauType().equals(TableauTableStructureParser.DEFAULT_TABLEAU_TYPE)) {
+				if (column.getTableauType().equals(TableauTableStructureParser.DEFAULT_TABLEAU_TYPE)) {
 					tableauType = convertToDefaultType(fieldMetadata);
 				} else {
-					tableauType = Type.valueOf(mapping.getTableauType());
+					tableauType = Type.valueOf(column.getTableauType());
 				}
 				
-				if (mapping.getCollation().equals(TableauTableStructureParser.DEFAULT_COLLATION)) {
+				if (column.getCollation().equals(TableauTableStructureParser.DEFAULT_COLLATION)) {
 					tableDefinition.addColumn(fieldMetadata.getName(), tableauType);
 				} else {
 					tableDefinition.addColumnWithCollation(
 							fieldMetadata.getName(),
 							tableauType,
-							Collation.valueOf(mapping.getCollation()));
+							Collation.valueOf(column.getCollation()));
 				}
 			}
 			
