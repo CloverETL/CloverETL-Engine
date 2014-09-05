@@ -1134,6 +1134,8 @@ public class TransformationGraphXMLReaderWriter {
 	private void throwXMLConfigurationException(String message, Throwable cause) throws XMLConfigurationException {
 		if (isStrictParsing()) {
 			throw new XMLConfigurationException(message, cause);
+		} else {
+			logger.warn(message, cause);
 		}
 	}
 	

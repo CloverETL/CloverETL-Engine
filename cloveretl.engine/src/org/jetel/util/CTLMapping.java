@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.component.RecordTransform;
 import org.jetel.component.RecordTransformDescriptor;
 import org.jetel.component.TransformFactory;
@@ -77,6 +79,8 @@ import org.jetel.util.string.StringUtils;
  * @created 29.6.2012
  */
 public class CTLMapping {
+
+	private static Log logger = LogFactory.getLog(CTLMapping.class);
 
 	/**
 	 * name of mapping - used mainly for errors/warnings reporting
@@ -447,6 +451,7 @@ public class CTLMapping {
 					DataRecord record = getOutputRecord(mfe.getRecordId());
 					for (MissingRecordFieldMessage check : missingFieldChecks) {
 						if (check.output && (record == getOutputRecord(check.recordName))) {
+							logger.warn(record.getMetadata(), mfe);
 							Object[] messageArgs = new Object[] { mfe.getFieldName() };
 							throw new ComponentNotReadyException(component, xmlAttribute, MessageFormat.format(check.errorMessage, messageArgs));
 						}
@@ -455,6 +460,7 @@ public class CTLMapping {
 					DataRecord record = getInputRecord(mfe.getRecordId());
 					for (MissingRecordFieldMessage check : missingFieldChecks) {
 						if (!check.output && (record == getInputRecord(check.recordName))) {
+							logger.warn(record.getMetadata(), mfe);
 							Object[] messageArgs = new Object[] { mfe.getFieldName() };
 							throw new ComponentNotReadyException(component, xmlAttribute, MessageFormat.format(check.errorMessage, messageArgs));
 						}
