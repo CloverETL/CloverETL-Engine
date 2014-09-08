@@ -60,7 +60,7 @@ public class CloverDataParserTest extends CloverDataParser35Test {
 
 	protected byte[] getBytes(int compressLevel) {
 		try {
-			CloverDataFormatter formatter = new CloverDataFormatter("anything", true);
+			CloverDataFormatter formatter = new CloverDataFormatter("anything");
 			formatter.setCompressLevel(compressLevel);
 			DataRecordMetadata metadata = getMetadata();
 			formatter.init(metadata);

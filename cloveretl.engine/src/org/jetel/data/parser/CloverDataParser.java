@@ -51,7 +51,6 @@ import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.BitArray;
 import org.jetel.util.stream.CloverDataStream;
 import org.jetel.util.stream.StreamUtils;
-import org.jetel.util.string.StringUtils;
 
 /**
  * Class for reading data saved in Clover internal format
@@ -89,7 +88,6 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 	private final static Log logger = LogFactory.getLog(CloverDataParser.class);
 
 	private DataRecordMetadata metadata;
-	private ReadableByteChannel recordFile;
 	private CloverDataStream.Input input;
 	private CloverBuffer recordBuffer;
 	private InputStream inStream;
@@ -111,9 +109,6 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 	 * True, if the current transformation is jobflow.
 	 */
 	private boolean isJobflow;
-
-	private final static int LONG_SIZE_BYTES = 8;
-    private final static int LEN_SIZE_SPECIFIER = 4;
 
     public CloverDataParser(DataRecordMetadata metadata){
     	this.metadata = metadata;
@@ -208,6 +203,7 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 	public void setDataSource(Object in) throws ComponentNotReadyException {
     	String inData=null;
     	if (releaseDataSource) {
+    		// doReleaseDataSource() should set the previous stream to null
     		releaseDataSource();
     	}
     	
@@ -225,42 +221,13 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
         	inData = ((String[])in)[0];
         }else if (in instanceof String){
         	inData = (String)in;
+			try {
+				inStream = FileUtils.getInputStream(projectURL, inData);
+			} catch (IOException ex) {
+				throw new ComponentNotReadyException(ex);
+			}
     	}else{
         	throw new ComponentNotReadyException("Unsupported Data Source type: "+in.getClass().getName());
-        }
-        
-        if (inStream==null) { // doReleaseDataSource() should set the previous stream to null
-        		try{
-                 	if (inData.startsWith("zip:")) { // CLO-4045
-                 		StringBuilder sbAnchor = new StringBuilder(); 
-                 		FileUtils.getArchiveType(inData, new StringBuilder(), sbAnchor);
-                 		if (!StringUtils.isEmpty(sbAnchor)) { // CLO-4045: archive entry is already specified in the URL
-                 			inStream = FileUtils.getInputStream(projectURL, inData);
-                 		} else {
-                            String fileName = new File(FileUtils.getFile(projectURL, inData)).getName();
-                            if (fileName.toLowerCase().endsWith(".zip")) {
-                            		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
-                            }
-                     		try {
-                     			// backward compatibility, append #DATA/fileName
-                     			inStream = FileUtils.getInputStream(projectURL,  
-                         				inData + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName);
-                     		} catch (IOException ioe) {
-                     			try {
-                         			inStream = FileUtils.getInputStream(projectURL, inData);
-                     			} catch (IOException ioe2) {
-                     				ioe.addSuppressed(ioe2);
-                     				throw ioe;
-                     			}
-                     		}
-                 		}
-                 	} else {
-                 		inStream = FileUtils.getInputStream(projectURL, inData);
-                 	}
-                     	
-                 } catch (IOException ex) {
-                     throw new ComponentNotReadyException(ex);
-                 }
         }
         
 		//read and check header of clover binary data format to check out the compatibility issues
