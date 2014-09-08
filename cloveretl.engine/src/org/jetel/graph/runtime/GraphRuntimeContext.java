@@ -869,6 +869,13 @@ public class GraphRuntimeContext {
 			public Object parseValue(String s) {
 				return parseBoolean(s);
 			}
+		},
+		VERBOSE_MODE("verboseMode", Boolean.class) {
+			
+			@Override
+			public Object parseValue(String s) {
+				return Boolean.parseBoolean(s);
+			}
 		};
 		
 		String key;
