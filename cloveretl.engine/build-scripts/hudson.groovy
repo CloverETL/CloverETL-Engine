@@ -157,7 +157,7 @@ if( !runTests ){
 	if (testName == "after-commit" && testJVM.endsWith("IBM")) {
 		// disable Hadoop tests
 		//antArgs += "-Dtestenv.excludedtestidentpattern=Hadoop.*|HDFS.*|Hive.*"
-		antArgs += "-Dtestenv.allowedtestidentpattern=AddressDoctor"
+		antArgs += "-Dtestenv.allowedtestidentpattern=AddressDoctor*"
 		// prevent OutOfMemoryError and Segmentation error on IBM Java
 		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
 		antArgs += "-Drunscenarios.Xmso=-Xmso2048k" // CLO-4730, CLO-4567
