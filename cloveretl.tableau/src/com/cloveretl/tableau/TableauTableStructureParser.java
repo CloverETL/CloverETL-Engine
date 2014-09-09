@@ -45,6 +45,7 @@ public class TableauTableStructureParser {
 	private HashMap<String, TableauTableColumnDefinition> tableauMapping = new HashMap<String, TableauTableColumnDefinition>();
 	DataRecordMetadata inMetadata;
 	boolean paramsAllowed;
+	boolean missingNativeLibReported = false;
 
 	private List<String> errors = new ArrayList<String>();
 
@@ -72,25 +73,36 @@ public class TableauTableStructureParser {
 			if (columnDefinition.getCollation() == null) {
 				columnDefinition.setCollation(DEFAULT_COLLATION_STRING);
 			}
-
-			if (!columnDefinition.getTableauType().equals(DEFAULT_TABLEAU_TYPE_STRING)) {
-				try {
-					checkTypeCompatibility(field,
-							Type.valueOf(columnDefinition.getTableauType()));
-				} catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
-					errors.add("Unable to initialize Tableau native libraries. Make sure they are installed and configured in PATH environment variable (see component docs). Underlying error: \n" + e.getMessage());
-				} catch (IllegalArgumentException e) {
-					errors.add("Invalid tableau type set for field: " + field.getName());
-				}
-			}
 			
-			if (!columnDefinition.getCollation().equals(DEFAULT_COLLATION_STRING)) {
-				try {
-					Collation.valueOf(columnDefinition.getCollation());
-				} catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
+			boolean typeOk = false;
+			boolean collationOk = false;
+			
+			try {
+				if (!columnDefinition.getTableauType().equals(DEFAULT_TABLEAU_TYPE_STRING)) {
+					checkTypeCompatibility(field, Type.valueOf(columnDefinition.getTableauType())); // type check
+				}
+				typeOk = true;
+				
+				if (!columnDefinition.getCollation().equals(DEFAULT_COLLATION_STRING)) {
+					Collation.valueOf(columnDefinition.getCollation()); // collation check
+				}
+				collationOk = true;
+				
+			} catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
+				if (!missingNativeLibReported) {
 					errors.add("Unable to initialize Tableau native libraries. Make sure they are installed and configured in PATH environment variable (see component docs). Underlying error: \n" + e.getMessage());
-				} catch (IllegalArgumentException e) {
-					errors.add("Invalid collation set for field: " + field.getName());
+					errors.add("Validation is not going to work due to previous errors.");
+					missingNativeLibReported = true;
+				}
+			} catch (IllegalArgumentException e) {
+				if (!typeOk) {
+					if (!columnDefinition.getTableauType().contains("${") || !paramsAllowed) {
+						errors.add("Invalid tableau type set for field: " + field.getName());
+					}
+				} else if (!collationOk) {
+					if (!columnDefinition.getCollation().contains("${") || !paramsAllowed) {
+						errors.add("Invalid collation set for field: " + field.getName());
+					}
 				}
 			}
 		}

@@ -102,6 +102,9 @@ public class TableauWriter extends Node  {
 	private Collation defaultTableCollation;
 	private String tableStructure;
 	
+	// how long should component wait for write lock, after this timeout the component run fails
+	private long synchroLockTimeoutSeconds = 300; 
+	
 	// field name and its table column definition
 	private HashMap<String, TableauTableColumnDefinition> mappings;
 
@@ -145,7 +148,7 @@ public class TableauWriter extends Node  {
         	throw new ComponentNotReadyException("Invalid value of Action on existing file. Value was: " + actionOnExistingFileRaw);
         }
 		
-		mappings = new TableauTableStructureParser(tableStructure, false, inputMetadata).getTableauMapping();
+		mappings = new TableauTableStructureParser(tableStructure, true, inputMetadata).getTableauMapping();
 	}
 	
 	@Override
@@ -155,11 +158,11 @@ public class TableauWriter extends Node  {
 		// We wait for first record to come in. This prevents locking the tableau API too early.
 		if (readRecord() && runIt) {
 			logger.info(getName() + " is trying to acquire lock for Tableau API.");
-			boolean lockSuccess = lock.tryLock(300, TimeUnit.SECONDS); // thread is waiting
+			boolean lockSuccess = lock.tryLock(synchroLockTimeoutSeconds, TimeUnit.SECONDS); // thread is waiting
 			
 			if (!lockSuccess) {
 				logger.error(getName() + " didn't acquire Tableau API lock in time.");
-				throw new Exception("TableauWriter: component " + getName() + " didn't get lock in time.");
+				throw new Exception("TableauWriter: component " + getName() + " didn't get lock in time. Component waited for " + synchroLockTimeoutSeconds + " seconds.");
 			}
 			
 			// we have the lock at this point
