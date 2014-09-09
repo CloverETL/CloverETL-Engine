@@ -46,8 +46,8 @@ println "versionSuffix = " + versionSuffix
 println "buildNumber   = " + buildNumber 
 println "====================================================="
 
-//println "Environment variables:"
-//System.getenv().each{ println "\t${it}" }
+println "Environment variables:"
+System.getenv().each{ println "\t${it}" }
 
 baseD = new File( new File('').absolutePath )
 engineD = new File( baseD, "cloveretl.engine" ) 
