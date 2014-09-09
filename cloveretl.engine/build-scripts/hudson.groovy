@@ -159,6 +159,7 @@ if( !runTests ){
 		antArgs += "-Dtestenv.excludedtestidentpattern=Hadoop.*|HDFS.*|Hive.*|AddressDoctor*"
 		// prevent OutOfMemoryError and Segmentation error on IBM Java
 		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
+		antArgs += "–Xmso2048k" // CLO-4730
 	}
 
 	
