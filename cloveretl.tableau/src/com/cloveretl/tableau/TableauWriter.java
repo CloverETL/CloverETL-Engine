@@ -20,6 +20,8 @@ package com.cloveretl.tableau;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
@@ -483,7 +485,8 @@ public class TableauWriter extends Node  {
 		 */
 		try {
 	        if (rawTableCollation == null) {
-	        	this.defaultTableCollation= TableauTableStructureParser.DEFAULT_COLLATION;
+	        	// The call to Collation needs to be hardcoded here. Do not put it in a class constant (it wouldn't initialize)
+	        	this.defaultTableCollation = Collation.valueOf(TableauTableStructureParser.DEFAULT_COLLATION);
 	        } else {
 	        	try {
 	        		defaultTableCollation = Collation.valueOf(rawTableCollation);
@@ -523,6 +526,17 @@ public class TableauWriter extends Node  {
 			if (n != this && getType().equals(n.getType())) {
 				//TODO this is the hard check, do we want it?
 				//status.add("\""	+ n.getName() + "\" writes in the same phase. Only one TableauWriter is allowed per phase!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+				
+				//soft check
+				try {
+					URL contextURL = getContextURL();
+					URL url1 = FileUtils.getFileURL(contextURL, ((TableauWriter) n).outputFileName);
+					URL url2 = FileUtils.getFileURL(contextURL, outputFileName);
+					if (url1.equals(url2)) {
+						status.add("\"" + n.getName() + "\" (ID: " + n.getId() + ") writes to the same file in the same phase!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+					}
+				} catch (MalformedURLException e) {
+				}
 			}
 		}
 		

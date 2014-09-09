@@ -36,9 +36,11 @@ public class TableauTableStructureParser {
 	
 	public static final String TABLEAU_COLUMN_DEFINITION_PROPERTY_DELIMITER = ",";//$NON-NLS-1$
 	public static final String DEFAULT_COLLATION_STRING = "default";//$NON-NLS-1$
-	public static final String DEFAULT_TABLEAU_TYPE_STRING = "automatic"; //$NON-NLS-1$
+	public static final String DEFAULT_TABLEAU_TYPE_STRING = "auto-detect"; //$NON-NLS-1$
 	
-	public static final Collation DEFAULT_COLLATION = Collation.EN_US;
+	// This has to be a string value, because direct calls to tableau Collation class result in
+	// link errors when the environment variables are not set.
+	public static final String DEFAULT_COLLATION = "EN_US";
 
 	private HashMap<String, TableauTableColumnDefinition> tableauMapping = new HashMap<String, TableauTableColumnDefinition>();
 	DataRecordMetadata inMetadata;
@@ -75,21 +77,31 @@ public class TableauTableStructureParser {
 				try {
 					checkTypeCompatibility(field,
 							Type.valueOf(columnDefinition.getTableauType()));
-				} catch (NoClassDefFoundError e) {
-					errors.add("Tableau libraries need to be set on environment variable PATH!");
+				} catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
+					errors.add("Unable to initialize Tableau native libraries. Make sure they are installed and configured in PATH environment variable (see component docs). Underlying error: \n" + e.getMessage());
+				} catch (IllegalArgumentException e) {
+					errors.add("Invalid tableau type set for field: " + field.getName());
+				}
+			}
+			
+			if (!columnDefinition.getCollation().equals(DEFAULT_COLLATION_STRING)) {
+				try {
+					Collation.valueOf(columnDefinition.getCollation());
+				} catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
+					errors.add("Unable to initialize Tableau native libraries. Make sure they are installed and configured in PATH environment variable (see component docs). Underlying error: \n" + e.getMessage());
+				} catch (IllegalArgumentException e) {
+					errors.add("Invalid collation set for field: " + field.getName());
 				}
 			}
 		}
 	}
 
-	private void checkTypeCompatibility(DataFieldMetadata field,
-			Type tableauType) {
+	private void checkTypeCompatibility(DataFieldMetadata field, Type tableauType) {
 		if (tableauType == null) {
 			errors.add("Invalid tableau type set for field: " + field.getName());
 			return;
 		}
-		if (!Arrays.asList(TableauWriter.getCompatibleTypes(field)).contains(
-				tableauType)) {
+		if (!Arrays.asList(TableauWriter.getCompatibleTypes(field)).contains(tableauType)) {
 			errors.add("Incompatible types set for field " + field.getName()
 					+ ": " + field.getDataType() + "," + tableauType.name());
 			return;
@@ -138,13 +150,17 @@ public class TableauTableStructureParser {
 		return errors;
 	}
 
+	/**
+	 * A simple data holder class.
+	 * @author salamonp
+	 *
+	 */
 	public static class TableauTableColumnDefinition {
 		private String collation;
 		private String name;
 		private String tableauType;
 
-		public TableauTableColumnDefinition(String name, String tableauType,
-				String collation) {
+		public TableauTableColumnDefinition(String name, String tableauType, String collation) {
 			super();
 			this.collation = collation;
 			this.name = name;
