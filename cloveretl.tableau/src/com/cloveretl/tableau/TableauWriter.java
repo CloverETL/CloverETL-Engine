@@ -88,6 +88,7 @@ public class TableauWriter extends Node  {
 	public static final String XML_OUTPUT_FILE = "outputFile";
 	public static final String XML_DEFAULT_TABLE_COLLATION = "defaultTableCollation";
 	public static final String XML_TABLE_STRUCTURE = "tableStructure";
+	public static final String XML_TIMEOUT = "timeout";
 
 	// output file suffix required by Tableau
 	private static final String REQUIRED_FILE_SUFFIX = ".tde";
@@ -101,9 +102,8 @@ public class TableauWriter extends Node  {
 	private String rawTableCollation;
 	private Collation defaultTableCollation;
 	private String tableStructure;
-	
 	// how long should component wait for write lock, after this timeout the component run fails
-	private long synchroLockTimeoutSeconds = 300; 
+	private long synchroLockTimeoutSeconds; 
 	
 	// field name and its table column definition
 	private HashMap<String, TableauTableColumnDefinition> mappings;
@@ -123,13 +123,14 @@ public class TableauWriter extends Node  {
 	
 	static Log logger = LogFactory.getLog(TableauWriter.class);
 	
-	public TableauWriter(String id, TransformationGraph graph, String outputFileName, String tableName, String rawTableCollation, String actionOnExistingFileRaw, String tableStructure) {
+	public TableauWriter(String id, TransformationGraph graph, String outputFileName, String tableName, String rawTableCollation, String actionOnExistingFileRaw, String tableStructure, long timeout) {
 		super(id, graph);
 		this.outputFileName = outputFileName;
 		this.tableName = tableName;
 		this.rawTableCollation= rawTableCollation;
 		this.actionOnExistingFileRaw = actionOnExistingFileRaw;
 		this.tableStructure = tableStructure;
+		this.synchroLockTimeoutSeconds = timeout;
 	}
 	
 	@Override
@@ -468,8 +469,10 @@ public class TableauWriter extends Node  {
         String rawTableCollation = xattribs.getStringEx(XML_DEFAULT_TABLE_COLLATION, null, null);
         
         String tableStructure = xattribs.getStringEx(XML_TABLE_STRUCTURE, "", null);
+        
+        long timeout = xattribs.getLong(XML_TIMEOUT, 300);
 
-        return new TableauWriter(componentID, graph,targetFileName,targetTableName,rawTableCollation,actionOnExistingFile,tableStructure);
+        return new TableauWriter(componentID, graph,targetFileName,targetTableName,rawTableCollation,actionOnExistingFile,tableStructure,timeout);
 		
 	}
 	

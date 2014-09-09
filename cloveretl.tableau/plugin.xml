@@ -55,6 +55,10 @@
 		          <item displayValue="Terminate processing" value="TERMINATE_PROCESSING" />
 	        	</enumType>
 	      	 </property>
+	      	 
+	      	<property category="advanced" displayName="Timeout (seconds)" modifiable="true" name="timeout" nullable="true" defaultHint="300">
+	        	<singleType name="timeoutLengthNumber" />
+	      	</property>
         
         </properties>
 
