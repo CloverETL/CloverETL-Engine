@@ -160,7 +160,7 @@ if( !runTests ){
 		antArgs += "-Dtestenv.allowedtestidentpattern=AddressDoctor"
 		// prevent OutOfMemoryError and Segmentation error on IBM Java
 		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
-		antArgs += "–Xmso2048k" // CLO-4730, CLO-4567
+		antArgs += "-Drunscenarios.Xmso=-Xmso2048k" // CLO-4730, CLO-4567
 	}
 
 	
