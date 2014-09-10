@@ -18,8 +18,6 @@
  */
 package org.jetel.data.parser;
 
-import java.io.DataInputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -40,6 +38,7 @@ import org.jetel.exception.PolicyType;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.JobType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.MetadataUtils;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
@@ -69,15 +68,10 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
 	private DataRecordMetadata metadata;
 	private ReadableByteChannel recordFile;
 	private CloverBuffer recordBuffer;
-	private String indexFileURL;
-	private String inData;
 	private InputStream inStream;
 	private URL projectURL;
 	
 	private boolean noDataAvailable;
-    private DataInputStream indexFile;
-    private long currentIndexPosition;
-    private long sourceRecordCounter;
 	
     /** In case the input file has been created by clover 3.4 and current job type is jobflow
      * special de-serialisation needs to be used, see CLO-1382 */
@@ -88,7 +82,6 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
 	 */
 	private boolean isJobflow;
 
-	private final static int LONG_SIZE_BYTES = 8;
     private final static int LEN_SIZE_SPECIFIER = 4;
     private CloverDataParser.FileConfig version;
     
@@ -116,66 +109,14 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
 		if (nRec == 0) {
 			return 0;
 		}
-		if (indexFile != null) {
-			long currentDataPosition;
-			long nextDataPosition;
-			long skipBytes = sourceRecordCounter*LONG_SIZE_BYTES - currentIndexPosition;
-			long indexSkippedBytes = 0;
-			try {
-				// find out what is the current index in the input stream
-				if (skipBytes != indexFile.skip(skipBytes)) {
-					throw new JetelException("Unable to skip in index file - it seems to be corrupt");					
-				}
-				currentIndexPosition += skipBytes;
-				try {
-					currentDataPosition = indexFile.readLong();
-					currentIndexPosition += LONG_SIZE_BYTES;
-				} catch (EOFException e) {
-					throw new JetelException("Unable to find index for current record - index file seems to be corrupt");					
-				}				
-				// find out what is the index of the record following skipped records
-				skipBytes = (nRec - 1)*LONG_SIZE_BYTES;
-				indexSkippedBytes = indexFile.skip(skipBytes);
-				currentIndexPosition += indexSkippedBytes;
-				nextDataPosition = currentDataPosition;
-				try {
-					nextDataPosition = indexFile.readLong();
-					currentIndexPosition += LONG_SIZE_BYTES;
-				} catch (EOFException e) {
-					noDataAvailable = true;
-				}				
-			} catch (IOException e) {
-				throw new JetelException("An IO error occured while trying to skip data in index file", e);
+		DataRecord record = DataRecordFactory.newRecord(metadata);
+		record.init();
+		for (int skipped = 0; skipped < nRec; skipped++) {
+			if (getNext(record) == null) {
+				return skipped;
 			}
-			long dataSkipBytes = nextDataPosition - currentDataPosition;
-			try {
-				while (dataSkipBytes > recordBuffer.remaining()) {
-					dataSkipBytes -= recordBuffer.remaining();
-					recordBuffer.clear();
-					ByteBufferUtils.reload(recordBuffer.buf(),recordFile);
-					recordBuffer.flip();
-					if (!recordBuffer.hasRemaining()) { // no more data available
-						break;
-					}
-				}
-				if (dataSkipBytes > recordBuffer.remaining()) { // there are not enough data available in the record file
-					throw new JetelException("Index file inconsistent with record file");
-				}
-				recordBuffer.position(recordBuffer.position() + (int)dataSkipBytes);
-			} catch (IOException e) {
-				throw new JetelException("An IO error occured while trying to skip data in record file", e);				
-			}
-			return (int)indexSkippedBytes%LONG_SIZE_BYTES;
-		} else {
-			DataRecord record = DataRecordFactory.newRecord(metadata);
-			record.init();
-			for (int skipped = 0; skipped < nRec; skipped++) {
-				if (getNext(record) == null) {
-					return skipped;
-				}
-			}
-			return nRec;
 		}
+		return nRec;
 	}
 
 	/* (non-Javadoc)
@@ -190,7 +131,7 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
 	}
 
 	private void doReleaseDataSource() throws IOException {
-		FileUtils.closeAll(recordFile, indexFile);
+		FileUtils.closeAll(recordFile);
 	}
 	
 	@Override
@@ -213,17 +154,12 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
     	if (releaseDataSource) {
     		releaseDataSource();
     	}
-    	sourceRecordCounter = 0;
-    	currentIndexPosition = 0;
-    	indexFile = null;
     	
     	if (in instanceof InputStream) {
         	inStream = (InputStream) in;
-        	indexFileURL = null;
         	recordFile = Channels.newChannel(inStream);
         } else if (in instanceof ReadableByteChannel) {
         	recordFile = (ReadableByteChannel) in;
-        	indexFileURL = null;
         	inStream = Channels.newInputStream(recordFile);
         }
         noDataAvailable=false;
@@ -256,7 +192,9 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
 		if (getVersion().formatVersion == CloverDataFormatter.DataFormatVersion.VERSION_35) {
 			// check metadata compatibility - 
 			DataRecordMetadata persistedMetadata = DataRecordMetadata.deserialize(buffer);
-			if (!metadata.equals(persistedMetadata, false)) {
+			// CLO-4591:
+        	DataRecordMetadata nonAutofilledFieldsMetadata = MetadataUtils.getNonAutofilledFieldsMetadata(metadata);
+			if (!nonAutofilledFieldsMetadata.equals(persistedMetadata, false)) {
 				logger.error("Data structure of input file is not compatible with used metadata. File data structure: " + persistedMetadata.toStringDataTypes());
 				throw new ComponentNotReadyException("Data structure of input file is not compatible with used metadata. More details available in log.");
 			}
@@ -336,7 +274,6 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
 			record.deserialize(recordBuffer);
 		}
 		
-		sourceRecordCounter++;
 		return record;
 	}
 	
@@ -378,7 +315,6 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
 		recordBuffer.limit(oldLimit); // restore old limit
 		targetBuffer.flip(); // prepare for reading
 		
-		sourceRecordCounter++;
 		return 1;
 	}
 	

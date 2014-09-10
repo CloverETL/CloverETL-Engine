@@ -19,7 +19,6 @@
 package org.jetel.connection.nosql;
 
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.jetel.data.DataRecord;
 
@@ -27,34 +26,33 @@ import org.jetel.data.DataRecord;
  * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created Apr 15, 2013
+ * @created 1. 9. 2014
  */
-public class StatementBuilder {
+public interface ReplacementHelper {
 	
-	private final ReplacementHelper replacementHelper;
+	/**
+	 * Creates a {@link Matcher} for the given input string.
+	 * 
+	 * @param input
+	 * @return a new {@link Matcher} for the <code>input</code>
+	 */
+	public Matcher getMatcher(String input);
 	
-	public StatementBuilder(Pattern pattern) {
-		this(new DefaultReplacementHelper(pattern));
-	}
-	
-	public StatementBuilder(ReplacementHelper replacementHelper) {
-		this.replacementHelper = replacementHelper;
-	}
-	
-	public String buildStatement(String template, DataRecord values) {
-		if (values == null || template == null) {
-			return template;
-		}
-		
-		Matcher matcher = replacementHelper.getMatcher(template);
-		
-	    StringBuffer sb = new StringBuffer(template.length());
-	    while (matcher.find()) {
-	    	replacementHelper.appendReplacement(sb, matcher, values);
-	    }
-	    matcher.appendTail(sb);
-	    
-	    return sb.toString();
-	}
+	/**
+	 * Analogous to {@link Matcher#appendReplacement(StringBuffer, String)}.
+	 * <ol>
+	 * 	<li>Appends to the target {@link StringBuffer} the input starting 
+	 * 		from the current {@link Matcher} position up to the beginning of the next match.</li>
+	 * 	<li>Appends the replacement value from the referenced field of the {@link DataRecord}.</li>
+	 * 	<li>Updates {@link Matcher} position.</li>
+	 * </ol>
+	 * 
+	 * @param sb		target {@link StringBuffer}
+	 * @param matcher	the {@link Matcher} used for string substitution
+	 * @param values	{@link DataRecord} containing the replacement values
+	 * 
+	 * @see Matcher#appendReplacement(StringBuffer, String)
+	 */
+	public void appendReplacement(StringBuffer sb, Matcher matcher, DataRecord values);
 	
 }

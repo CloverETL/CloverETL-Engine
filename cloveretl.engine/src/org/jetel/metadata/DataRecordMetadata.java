@@ -128,6 +128,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private List<String> keyFieldNames = new ArrayList<String>();
 
 	private short numNullableFields = 0;
+	
+	private int[] nonAutofilledFields = new int[0];
 
 	private TypedProperties recordProperties = new TypedProperties();
 	private String localeStr = null;
@@ -803,6 +805,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		updateFieldOffset();
 		updateFieldNumbers();
 		updateKeyFields();
+		updateNonAutofilledFields();
 	}
 
 	private void updateFieldNumbers() {
@@ -811,6 +814,30 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		for (DataFieldMetadata fieldMeta : fields) {
 			fieldMeta.setNumber(count++);
 		}
+	}
+	
+	private void updateNonAutofilledFields() {
+		List<Integer> tmpList = new ArrayList<>();
+		for (int i = 0; i < fields.size(); i++) {
+			DataFieldMetadata field = fields.get(i);
+			if (field.getAutoFilling() == null) {
+				tmpList.add(i);
+			}
+		}
+		this.nonAutofilledFields = new int[tmpList.size()];
+		int i = 0;
+		for (Integer fieldIndex: tmpList) {
+			nonAutofilledFields[i++] = fieldIndex;
+		}
+	}
+	
+	/**
+	 * Returns the indexes of fields with no auto-filling.
+	 * 
+	 * @return indexes of non-autofilled fields
+	 */
+	public int[] getNonAutofilledFields() {
+		return nonAutofilledFields;
 	}
 
 	private void updateFieldTypes() {

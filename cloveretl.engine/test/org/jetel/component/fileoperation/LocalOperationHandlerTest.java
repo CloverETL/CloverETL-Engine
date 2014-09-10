@@ -21,12 +21,19 @@ package org.jetel.component.fileoperation;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermissions;
 
+import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.result.CopyResult;
 import org.jetel.component.fileoperation.result.InfoResult;
 import org.jetel.component.fileoperation.result.ListResult;
 import org.jetel.component.fileoperation.result.MoveResult;
 import org.jetel.component.fileoperation.result.ResolveResult;
+import org.jetel.util.exec.PlatformUtils;
 
 public class LocalOperationHandlerTest extends OperationHandlerTestTemplate {
 	
@@ -187,6 +194,21 @@ public class LocalOperationHandlerTest extends OperationHandlerTestTemplate {
 				System.out.println(uri);
 				assertTrue(result.success());
 				System.out.println(result.getResult());
+			}
+		}
+
+		if (PlatformUtils.isLinuxPlatform()) {
+			uri = relativeURI("permissionsDir/file.tmp");
+			assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
+			uri = relativeURI("permissionsDir");
+			Path file = Paths.get(uri.getSingleURI().getAbsoluteURI().toURI());
+			try {
+				Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("rw-------"));
+				result = manager.list(uri);
+				assertFalse(result.success());
+				assertTrue(result.getFirstError().getCause() instanceof AccessDeniedException);
+			} finally {
+				Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("rwxrwxrwx"));
 			}
 		}
 	}
