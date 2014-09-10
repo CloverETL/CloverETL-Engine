@@ -67,7 +67,6 @@ import com.tableausoftware.DataExtract.Table;
 import com.tableausoftware.DataExtract.TableDefinition;
 import com.tableausoftware.DataExtract.Type;
 
-
 public class TableauWriter extends Node  {
 	
 	private static final ReentrantLock lock = new ReentrantLock();
@@ -162,8 +161,10 @@ public class TableauWriter extends Node  {
 			boolean lockSuccess = lock.tryLock(synchroLockTimeoutSeconds, TimeUnit.SECONDS); // thread is waiting
 			
 			if (!lockSuccess) {
-				logger.error(getName() + " didn't acquire Tableau API lock in time.");
-				throw new Exception("TableauWriter: component " + getName() + " didn't get lock in time. Component waited for " + synchroLockTimeoutSeconds + " seconds.");
+				logger.error(getName() + " didn't acquire Tableau API lock in time. You can try increasing the"
+						+ " component's timeout or putting the TableauWriters in different phases.");
+				throw new Exception("TableauWriter: component " + getName() + " didn't get lock in time. "
+						+ "Component waited for " + synchroLockTimeoutSeconds + " seconds.");
 			}
 			
 			// we have the lock at this point
@@ -182,10 +183,11 @@ public class TableauWriter extends Node  {
 					writeRecord();
 				}
 				
-				
 			} finally {
 				if (lockSuccess) {
-					targetExtract.close();
+					if (targetExtract != null) {
+						targetExtract.close();
+					}
 					lock.unlock();
 					logger.info(getName() + " released lock for Tableau API.");
 				}
@@ -255,14 +257,17 @@ public class TableauWriter extends Node  {
 					outputRow.setInteger(i, ((IntegerDataField)inputRecord.getField(i)).getInt());
 					break;	
 				default: 
-					throw new ComponentNotReadyException("Unable to convert value of type \"" + fieldMetadata.getDataType() + "\" into any types supported by Tableau. Offending field:  " + fieldMetadata.getName());
+					throw new ComponentNotReadyException(
+							"Unable to convert value of type \"" + fieldMetadata.getDataType() 
+							+ "\" into any types supported by Tableau. Offending field:  " + fieldMetadata.getName());
 				}
 			}
 			
 			targetTable.insert(outputRow);
 			
 		} catch (TableauException e) {
-			throw new ComponentNotReadyException("Unable to write input record to the output file. Offending record: \n" + this.inputRecord, e);
+			throw new ComponentNotReadyException(
+					"Unable to write input record to the output file. Offending record: \n" + this.inputRecord, e);
 		}
 		
 	}
@@ -281,46 +286,38 @@ public class TableauWriter extends Node  {
 	
 	
 	private Extract prepareTargetFile() throws ComponentNotReadyException {
-		try {
+		if (outputFileName == null || outputFileName.isEmpty()) {
+			throw new ComponentNotReadyException(
+					"Output file path is not set. Enter valid path pointing to a local file with \".tde\" suffix");
+		}
 
-			if (outputFileName == null || outputFileName.isEmpty()) {
-				throw new ComponentNotReadyException("Output file path is not set. Enter valid path pointing to a local file with \".tde\" suffix");
-			}
+		logger.debug("Input files is configured to: \"" + outputFileName + "\"");
 
-			logger.debug("Input files is configured to: \"" +  outputFileName + "\"");
-			
-			File targetFile = FileUtils.getJavaFile(getContextURL(), outputFileName);
+		File targetFile = FileUtils.getJavaFile(getContextURL(), outputFileName);
 
-			logger.debug("Resolved target file to: \"" +  targetFile + "\"");
-			
-			// Create any missing directories
-			FileUtils.createParentDirs(getContextURL(), outputFileName);
-			
-			if (targetFile.exists()) {
-				if (actionOnExistingFile.isOverwrite()) {
-					// Tableau API throws exception if target file exists. We must delete it, there is no "replace" option
-					// See docs of constructor for Extract class
-					if (!targetFile.delete()) {
-						throw new ComponentNotReadyException("Unable to delete output file, the file is probably locked. Output file: " + targetFile);
-					}
+		logger.debug("Resolved target file to: \"" + targetFile + "\"");
+
+		// Create any missing directories
+		FileUtils.createParentDirs(getContextURL(), outputFileName);
+
+		if (targetFile.exists()) {
+			if (actionOnExistingFile.isOverwrite()) {
+				// Tableau API throws exception if target file exists. We must delete it, there is no "replace" option
+				// See docs of constructor for Extract class
+				if (!targetFile.delete()) {
+					throw new ComponentNotReadyException("Unable to delete output file, the file is probably locked. Output file: " + targetFile);
 				}
 			}
-			
-			try {	
-				this.targetExtract = new Extract(targetFile.getCanonicalPath());
-				return this.targetExtract;
-			} catch (TableauException e) {
-				throw new ComponentNotReadyException("Unable to open output file. Output file: " + targetFile,e);
-			}
-			
-			
-		} catch (Exception e) {
-			throw new ComponentNotReadyException("Path to output file is invalid: '" + outputFileName + "'",e);
 		}
-		
-	
-	}
 
+		try {
+			this.targetExtract = new Extract(targetFile.getCanonicalPath());
+			return this.targetExtract;
+		} catch (IOException | TableauException e) {
+			throw new ComponentNotReadyException("Unable to open output file. Output file: " + targetFile, e);
+		}
+
+	}
 
 	private void prepareTargetTable() throws ComponentNotReadyException {
 		if (tableName == null) {
@@ -328,7 +325,6 @@ public class TableauWriter extends Node  {
 			this.tableName = "Extract";
 			logger.info("Target table name is not set. Using \"Extract\" as table name.");
 		}
-		
 		
 		try {
 			if (targetExtract.hasTable(tableName)) {
@@ -424,7 +420,6 @@ public class TableauWriter extends Node  {
 	
 	
 	private void prepareValueConvertors() {
-		// Hahaha I'm using array after all these years!!! Incredible! 
 		DataRecordMetadata recordMeta = getInputPort(0).getMetadata();
 		this.extractors = new DateFieldExtractor[recordMeta.getNumFields()];
 		for (int i=0; i<recordMeta.getNumFields(); i++) {
@@ -452,8 +447,6 @@ public class TableauWriter extends Node  {
     }
 
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
-
-		// FIXME instrukcie na instalaciu. jna.library.path nefunguje, musime tdserver64.exe musi byt na PATH. Uzivatel bude musiet nastavit sam. Mac nepodporujeme
 		
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
         
@@ -491,7 +484,7 @@ public class TableauWriter extends Node  {
 		 */
 		try {
 	        if (rawTableCollation == null) {
-	        	// The call to Collation needs to be hardcoded here. Do not put it in a class constant (it wouldn't initialize)
+	        	// The calls to Collation.valueOf() needs to be hard-coded here. Do not put it in a class constant (the class wouldn't initialize)
 	        	this.defaultTableCollation = Collation.valueOf(TableauTableStructureParser.DEFAULT_COLLATION);
 	        } else {
 	        	try {
@@ -559,10 +552,17 @@ public class TableauWriter extends Node  {
 			DataFieldMetadata fieldMeta = recordMeta.getField(i);
 			DataFieldType fieldType= fieldMeta.getDataType();
 			if (fieldType == DataFieldType.LONG || fieldType == DataFieldType.DECIMAL ) {
-				status.add("Input metadata of \"" + getName() + "\" contain data type unsupported by Tableau! Metadata field "+ recordMeta.getField(i).getName() + " of metadata " + recordMeta.getName() + " has type " + fieldType.getName() + "! Unsupported types are: " + DataFieldType.LONG.getName() + ", " + DataFieldType.DECIMAL.getName(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+				status.add("Input metadata of \"" + getName() + "\" contain data type unsupported by Tableau! Metadata field "
+						+ recordMeta.getField(i).getName() + " of metadata " + recordMeta.getName() + " has type " + fieldType.getName()
+						+ "! Unsupported types are: " + DataFieldType.LONG.getName() + ", " 
+						+ DataFieldType.DECIMAL.getName(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
 			}
 			if (fieldMeta.getContainerType() != DataFieldContainerType.SINGLE) {
-				status.add("Input metadata of \"" + getName() + "\" have container unsupported by Tableau! Metadata field "+ recordMeta.getField(i).getName() + " of metadata " + recordMeta.getName() + " has container " + fieldMeta.getContainerType().getDisplayName() +"! Container types " + DataFieldContainerType.MAP.getDisplayName() + " and " + DataFieldContainerType.LIST.getDisplayName() + " are not supported.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+				status.add("Input metadata of \"" + getName() + "\" have container unsupported by Tableau! Metadata field "
+						+ recordMeta.getField(i).getName() + " of metadata " + recordMeta.getName() + " has container " 
+						+ fieldMeta.getContainerType().getDisplayName() +"! Container types " 
+						+ DataFieldContainerType.MAP.getDisplayName() + " and " + DataFieldContainerType.LIST.getDisplayName() 
+						+ " are not supported.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
 			}
 		}
 
@@ -588,58 +588,5 @@ public class TableauWriter extends Node  {
         	return (this == TERMINATE_PROCESSING);
         }
     }
-	
-	//FIXME DataExtract.log log file of the API ... mention in documentation
-	// FIXME !!!! Tableau nie je thread safe !!!!
-	
-	//
-	// getType() nemusi byt
-	// zabudol som pridat ID komponenty
-	//
-	// Unclear sections: 
-	// Used mongoDBWriter ... what is a good "modern" component to start with?
-	// No good component as base for Writer
-	// Wizard ... setup component project, container/library setup
-//	    -> Screenshot: add library -> engine
-	// File utils ... URL conversion, native file path conversion
-	// Get field type z meta ... ako? 
-	// ExtString, expansion flags
-	// Co v init/preExec
-	// Alokacia recordu cez factory
-	// Exceptions ... ComponentNotReady? Ina?
-	// How to say I don't care for engine version in plugin.xml (0.0.0.devel). Does it mean MINIMUM version?
-	
-	// GUI ... Designer does not contain Eclipse SDK, so wizards do not show up. What should I install?
-	//  --> Eclipse SDK from Eclipse update site 3.7
-	//
-	// XMLSchema for the component descriptor. Not dtd! For download from docs.
-	
-	
-	/*
-	 * After com.cloveretl.gui.component has been added, set the file property to the customcomponents.xml component definition file, and the classLoaderProvider field to the org.company.gui.CLProvider class name
-	 * -> CLPROVIDER WTF?!!!
-	 * -> The class does not exist: org.cloveretl.gui.plugin.engine.AbstractClassLoaderProvider
-	 * -> it is com.cloveretl...
-	 * 
-	 * "Import requisities" ... requirements
-	 * -> Chyba
-	 * 
-	 * AKO TEN PLUGIN AKTIVUJEM V DESIGNERI?!!!
-	 *
-	 *Dependencies on jface .. Import packages
-	 * UIEnumPropertyToolkit ... miesto AbstractToolkit
-	 * 
-	 * GUI zavisi na Tableau kode ... ako pridam zavislosti do GUI pluginu koli editoru Collation?
-	 * 
-	 * Writers ... musi byt s malymi pismenami v customcomponents.xml
-	 * 
-	 * Ako debugovat
-	 *  - eclipsec.exe
-	 *  - Run as, Debug as + increase permgen
-	 * 
-	 * Mam problem ladit engine komponentu .. kde su pluginy?
-	 * 
-	 */
-	
 	
 }

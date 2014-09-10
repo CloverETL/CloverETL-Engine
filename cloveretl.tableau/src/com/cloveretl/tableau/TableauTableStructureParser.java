@@ -49,22 +49,22 @@ public class TableauTableStructureParser {
 
 	private List<String> errors = new ArrayList<String>();
 
-	public TableauTableStructureParser(String tablestructureString, boolean paramsAllowed,
-			DataRecordMetadata inMetadata) {
+	public TableauTableStructureParser(String tablestructureString, boolean paramsAllowed, DataRecordMetadata inMetadata) {
 		this.inMetadata = inMetadata;
-
 		this.paramsAllowed = paramsAllowed;
 
 		parseTableStructure(StringUtils.split(tablestructureString));
+		validate();
+	}
 
-		// fill in missing values (use defaults)
-
+	private void validate() {
 		for (DataFieldMetadata field : inMetadata.getFields()) {
 			String fieldName = field.getName();
 			TableauTableColumnDefinition columnDefinition = tableauMapping.get(fieldName);
+			
+			// fill in missing values (use defaults)
 			if (columnDefinition == null) {
-				columnDefinition = new TableauTableColumnDefinition(fieldName, DEFAULT_TABLEAU_TYPE_STRING,
-						DEFAULT_COLLATION_STRING);
+				columnDefinition = new TableauTableColumnDefinition(fieldName, DEFAULT_TABLEAU_TYPE_STRING, DEFAULT_COLLATION_STRING);
 				tableauMapping.put(fieldName, columnDefinition);
 			}
 			if (columnDefinition.getTableauType() == null) {
@@ -73,24 +73,29 @@ public class TableauTableStructureParser {
 			if (columnDefinition.getCollation() == null) {
 				columnDefinition.setCollation(DEFAULT_COLLATION_STRING);
 			}
-			
+
+			//validate
 			boolean typeOk = false;
 			boolean collationOk = false;
-			
+
 			try {
 				if (!columnDefinition.getTableauType().equals(DEFAULT_TABLEAU_TYPE_STRING)) {
-					checkTypeCompatibility(field, Type.valueOf(columnDefinition.getTableauType())); // type check
+					 // type check
+					checkTypeCompatibility(field, Type.valueOf(columnDefinition.getTableauType()));
 				}
 				typeOk = true;
-				
+
 				if (!columnDefinition.getCollation().equals(DEFAULT_COLLATION_STRING)) {
-					Collation.valueOf(columnDefinition.getCollation()); // collation check
+					 // collation check
+					Collation.valueOf(columnDefinition.getCollation());
 				}
 				collationOk = true;
-				
+
 			} catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
 				if (!missingNativeLibReported) {
-					errors.add("Unable to initialize Tableau native libraries. Make sure they are installed and configured in PATH environment variable (see component docs). Underlying error: \n" + e.getMessage());
+					errors.add("Unable to initialize Tableau native libraries. Make sure they are installed"
+							+ " and configured in PATH environment variable (see component docs). Underlying error: \n"
+							+ e.getMessage());
 					errors.add("Validation is not going to work due to previous errors.");
 					missingNativeLibReported = true;
 				}
@@ -100,7 +105,7 @@ public class TableauTableStructureParser {
 						errors.add("Invalid tableau type set for field: " + field.getName());
 					}
 				} else if (!collationOk) {
-					if (!columnDefinition.getCollation().contains("${") || !paramsAllowed) {
+					if (!columnDefinition.getCollation().contains("${")	|| !paramsAllowed) {
 						errors.add("Invalid collation set for field: " + field.getName());
 					}
 				}
@@ -142,14 +147,12 @@ public class TableauTableStructureParser {
 		String inputField = parsedExpression[0].trim().substring(
 				Defaults.CLOVER_FIELD_INDICATOR.length()); // skip the leading "$"
 
-		parsedExpression = parsedExpression[1]
-				.split(TABLEAU_COLUMN_DEFINITION_PROPERTY_DELIMITER);
+		parsedExpression = parsedExpression[1].split(TABLEAU_COLUMN_DEFINITION_PROPERTY_DELIMITER);
 
 		String tableauType = parsedExpression[0].trim();
 		String collation = parsedExpression[1].trim();
 
-		TableauTableColumnDefinition columnDefinition = new TableauTableColumnDefinition(inputField, tableauType,
-				collation);
+		TableauTableColumnDefinition columnDefinition = new TableauTableColumnDefinition(inputField, tableauType, collation);
 
 		tableauMapping.put(inputField, columnDefinition);
 	}
@@ -173,7 +176,6 @@ public class TableauTableStructureParser {
 		private String tableauType;
 
 		public TableauTableColumnDefinition(String name, String tableauType, String collation) {
-			super();
 			this.collation = collation;
 			this.name = name;
 			this.tableauType = tableauType;
