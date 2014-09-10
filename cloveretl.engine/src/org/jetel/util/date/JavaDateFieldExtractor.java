@@ -41,34 +41,42 @@ public class JavaDateFieldExtractor implements DateFieldExtractor {
 	}
 
 	
+	@Override
 	public void setDate(Date value) {
 		this.calendar.setTime(value);
 	}
 	
+	@Override
 	public int getYear() {
 		return calendar.get(Calendar.YEAR);
 	}
 	
+	@Override
 	public int getMonth() {
 		return calendar.get(Calendar.MONTH) + 1;
 	}
 	
+	@Override
 	public int getDay() {
 		return calendar.get(Calendar.DAY_OF_MONTH);
 	}
 	
+	@Override
 	public int getHour() {
 		return calendar.get(Calendar.HOUR_OF_DAY);
 	}
 	
+	@Override
 	public int getMinute() {
 		return calendar.get(Calendar.MINUTE);
 	}
 	
+	@Override
 	public int getSecond() {
 		return calendar.get(Calendar.SECOND);
 	}
 	
+	@Override
 	public int getMilliSecond() {
 		return calendar.get(Calendar.MILLISECOND);
 	}
