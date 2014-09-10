@@ -523,10 +523,10 @@ public class TableauWriter extends Node  {
 		
 		for (Node n : getGraph().getPhase(getPhaseNum()).getNodes().values()) {
 			if (n != this && getType().equals(n.getType())) {
-				//TODO this is the hard check, do we want it?
-				//status.add("\""	+ n.getName() + "\" writes in the same phase. Only one TableauWriter is allowed per phase!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+				//multiple writers in the same phase, currently just as a warning
+				status.add("\""	+ n.getName() + "\" writes in the same phase. Having multiple TableauWriters in the same phase is not recommended.", ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
 				
-				//soft check
+				//multiple writers in the same phase AND a same file - that will never work, reports config error
 				try {
 					URL contextURL = getContextURL();
 					URL url1 = FileUtils.getFileURL(contextURL, ((TableauWriter) n).outputFileName);
