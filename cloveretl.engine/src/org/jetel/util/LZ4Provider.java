@@ -24,7 +24,7 @@ import org.jetel.util.exec.PlatformUtils;
 
 /**
  * Workaround for CLO-3962.
- * Linux 64bit IBM Java crashes from version 7.0.7.0 on.
+ * 64bit IBM Java crashes from version 7.0.7.0 on.
  * To be tested with IBM Java 8.
  * 
  * In this environment, enforce the usage of {@link LZ4Factory#unsafeInstance()}.
@@ -38,7 +38,7 @@ import org.jetel.util.exec.PlatformUtils;
  */
 public class LZ4Provider {
 
-	private static boolean IBM_FIX = PlatformUtils.getJavaVendor().contains("IBM") && PlatformUtils.isLinuxPlatform() && PlatformUtils.getOSArch().contains("amd64") && PlatformUtils.getJavaMajorVersion() >= 7;
+	private static boolean IBM_FIX = PlatformUtils.getJavaVendor().contains("IBM") && PlatformUtils.getOSArch().contains("amd64") && PlatformUtils.getJavaMajorVersion() >= 7;
 	
 	public static LZ4Factory fastestInstance() {
 		return IBM_FIX ? LZ4Factory.unsafeInstance() : LZ4Factory.fastestInstance();

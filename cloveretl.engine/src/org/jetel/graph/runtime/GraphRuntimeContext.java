@@ -25,11 +25,11 @@ import java.util.Properties;
 import org.apache.log4j.Level;
 import org.jetel.component.MetadataProvider;
 import org.jetel.data.Defaults;
-import org.jetel.graph.ContextProvider;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.dictionary.DictionaryValuesContainer;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -698,10 +698,12 @@ public class GraphRuntimeContext {
 		this.locale = locale;
 	}
 
+	/**
+	 * @deprecated use {@link MiscUtils#getDefaultLocaleId()} instead 
+	 */
+	@Deprecated
 	public static String getDefaultLocale() {
-		GraphRuntimeContext context = ContextProvider.getRuntimeContext();
-		String locale = context != null ? context.getLocale() : null;
-		return !StringUtils.isEmpty(locale) ? locale : Defaults.DEFAULT_LOCALE;
+		return MiscUtils.getDefaultLocaleId();
 	}
 
 	/**
@@ -718,10 +720,12 @@ public class GraphRuntimeContext {
 		this.timeZone = timeZone;
 	}
 
+	/**
+	 * @deprecated use {@link MiscUtils#getDefaultTimeZone()} instead
+	 */
+	@Deprecated
 	public static String getDefaultTimeZone() {
-		GraphRuntimeContext context = ContextProvider.getRuntimeContext();
-		String timeZone = context != null ? context.getTimeZone() : null;
-		return !StringUtils.isEmpty(timeZone) ? timeZone : Defaults.DEFAULT_TIME_ZONE;
+		return MiscUtils.getDefaultTimeZone();
 	}
 
 	/**
@@ -864,6 +868,13 @@ public class GraphRuntimeContext {
 			@Override
 			public Object parseValue(String s) {
 				return parseBoolean(s);
+			}
+		},
+		VERBOSE_MODE("verboseMode", Boolean.class) {
+			
+			@Override
+			public Object parseValue(String s) {
+				return Boolean.parseBoolean(s);
 			}
 		};
 		

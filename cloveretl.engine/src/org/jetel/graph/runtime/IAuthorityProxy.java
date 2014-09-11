@@ -615,19 +615,6 @@ public abstract class IAuthorityProxy {
 	}
 
 	/**
-	 * Backward operation for secure parameter resolution. All occurrences
-	 * of sensitive values in the given text should be substituted
-	 * by secure parameter reference - ${SECURE_PARAMETER_NAME}.
-	 * The authority proxy should cache all already resolved secure parameters
-	 * and only these secure parameters should be considered in this obfuscation.
-	 * @param text text which should be obfuscated
-	 * @return obfuscated text
-	 */
-	public String obfuscateSecureParameters(String text) {
-		return text;
-	}
-
-	/**
 	 * @return meta information about runtime authority
 	 */
 	public abstract Map<String, String> getAuthorityConfiguration();

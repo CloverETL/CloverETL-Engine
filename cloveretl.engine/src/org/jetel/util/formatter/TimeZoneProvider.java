@@ -21,7 +21,7 @@ package org.jetel.util.formatter;
 import java.io.Serializable;
 import java.util.TimeZone;
 
-import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTimeZone;
 
@@ -35,8 +35,8 @@ public class TimeZoneProvider implements Serializable {
 	
 	private static final long serialVersionUID = -1794232110904205542L;
 	
-	private static final String JODA_PREFIX = "joda:";
-	private static final String JAVA_PREFIX = "java:";
+	public static final String JODA_PREFIX = "joda:";
+	public static final String JAVA_PREFIX = "java:";
 	private static final String ISO8601_PREFIX = "iso-8601:";
 
 	private final TimeZone javaTimeZone;
@@ -61,7 +61,7 @@ public class TimeZoneProvider implements Serializable {
 	 */
 	public TimeZoneProvider(String timeZoneStr) {
 		if (StringUtils.isEmpty(timeZoneStr)) {
-			timeZoneStr = GraphRuntimeContext.getDefaultTimeZone();
+			timeZoneStr = MiscUtils.getDefaultTimeZone();
 		}
 		this.config = timeZoneStr;
 		
@@ -115,6 +115,22 @@ public class TimeZoneProvider implements Serializable {
 	@Override
 	public String toString() {
 		return config;
+	}
+	
+	/**
+	 * Returns true if timezone string contained at least one Java timezone.
+	 * @return
+	 */
+	public boolean hasJavaTimeZone() {
+		return this.javaTimeZone != null;
+	}
+	
+	/**
+	 * Returns true it timezone string contained at least on Joda timezone.
+	 * @return
+	 */
+	public boolean hasJodaTimeZone() {
+		return this.jodaTimeZone != null;
 	}
 	
 	/**

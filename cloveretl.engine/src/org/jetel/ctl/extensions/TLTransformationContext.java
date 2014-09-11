@@ -19,9 +19,12 @@
 package org.jetel.ctl.extensions;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.jetel.graph.Node;
+import org.jetel.util.MiscUtils;
+import org.jetel.util.formatter.TimeZoneProvider;
 
 /**
  * Global transformation context shared
@@ -44,6 +47,10 @@ public class TLTransformationContext {
 	
 	private Node node;
 	
+	private final TimeZoneProvider timeZoneProvider = new TimeZoneProvider();
+	
+	private final Locale locale = MiscUtils.getDefaultLocale();
+	
 	public Object getCachedObject(Object key) {
 		return cache.get(key);
 	}
@@ -58,6 +65,14 @@ public class TLTransformationContext {
 
 	public void setNode(Node node) {
 		this.node = node;
+	}
+	
+	public TimeZoneProvider getDefaultTimeZone() {
+		return timeZoneProvider;
+	}
+	
+	public Locale getDefaultLocale() {
+		return locale;
 	}
 
 }

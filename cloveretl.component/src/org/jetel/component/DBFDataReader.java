@@ -20,6 +20,9 @@ package org.jetel.component;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.text.MessageFormat;
+import java.util.Collection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,6 +43,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileReader;
@@ -365,15 +369,26 @@ public class DBFDataReader extends Node {
         }
         
 		if (!PolicyType.isPolicyType(policyTypeStr)) {
-			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+			status.add(MessageFormat.format("Invalid data policy: {0}", policyTypeStr), Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
 		} else {
 			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
 		}
 
-        if (charset != null && !Charset.isSupported(charset)) {
-        	status.add(new ConfigurationProblem(
-            		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+        if (charset != null) {
+        	if (!Charset.isSupported(charset)) {
+				status.add(new ConfigurationProblem(
+						MessageFormat.format("Charset {0} not supported!", charset), 
+						ConfigurationStatus.Severity.ERROR, this, 
+						ConfigurationStatus.Priority.NORMAL));
+			} else {
+				CharsetEncoder encoder = Charset.forName(charset).newEncoder();
+				if (encoder.maxBytesPerChar() != 1) {
+					status.add(new ConfigurationProblem(
+							"Invalid charset used. 8bit fixed-width encoding needs to be used.", 
+							Severity.ERROR, 
+							this, Priority.NORMAL));
+				}
+			}
         }
         
         checkMetadata(status, getOutMetadata());
@@ -384,12 +399,16 @@ public class DBFDataReader extends Node {
             DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
     		if (!metadata.hasFieldWithoutAutofilling()) {
     			status.add(new ConfigurationProblem(
-                		"No field elements without autofilling for '" + getOutputPort(OUTPUT_PORT).getMetadata().getName() + "' have been found!", 
+                		MessageFormat.format("No field elements without autofilling for ''{0}'' have been found!", getOutputPort(OUTPUT_PORT).getMetadata().getName()), 
                 		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
     		}
             reader.checkConfig(metadata);
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = new ConfigurationProblem(
+            		ExceptionUtils.getMessage(e), 
+            		ConfigurationStatus.Severity.WARNING, 
+            		this, 
+            		ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }
@@ -399,6 +418,25 @@ public class DBFDataReader extends Node {
         }
         
         return status;
+    }
+    
+    @Override
+    protected ConfigurationStatus checkMetadata(ConfigurationStatus status, Collection<DataRecordMetadata> metadata) {
+    	
+    	ConfigurationStatus newStatus = super.checkMetadata(status, metadata);
+    	if (metadata != null && !metadata.isEmpty()) {
+    		DataFieldMetadata[] fields = metadata.iterator().next().getFields();
+			if (fields != null && fields.length > 0) {
+				if (!fields[0].isFixed() || fields[0].getSize() != 1) {
+					newStatus.add(new ConfigurationProblem(
+							MessageFormat.format("Invalid output metadata {0}. Expected size of first field is 1.", metadata.iterator().next().getId()), 
+							ConfigurationStatus.Severity.ERROR, 
+							this, 
+							ConfigurationStatus.Priority.NORMAL));
+				}
+			}
+    	}
+    	return newStatus;
     }
 	
     /**

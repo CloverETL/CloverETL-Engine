@@ -25,6 +25,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -228,6 +231,10 @@ public class AbstractOperationHandlerTest extends LocalOperationHandlerTest {
 			List<URI> result = new ArrayList<URI>();
 			File parent = new File(target);
 			for (File child: parent.listFiles()) {
+				if (!child.exists()) {
+					Path path = child.toPath();
+					Files.readAttributes(path, BasicFileAttributes.class);
+				}
 				result.add(child.toURI());
 			}
 			return result;
