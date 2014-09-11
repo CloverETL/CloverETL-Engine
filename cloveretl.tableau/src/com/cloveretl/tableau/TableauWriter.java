@@ -311,6 +311,7 @@ public class TableauWriter extends Node  {
 		}
 
 		try {
+			logger.debug("Using file " + targetFile.getCanonicalPath() + " as output.");
 			this.targetExtract = new Extract(targetFile.getCanonicalPath());
 			return this.targetExtract;
 		} catch (IOException | TableauException e) {
