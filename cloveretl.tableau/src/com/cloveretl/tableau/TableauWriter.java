@@ -311,9 +311,17 @@ public class TableauWriter extends Node  {
 		}
 
 		try {
+			logger.debug("Using file " + targetFile.getCanonicalPath() + " as output.");
+			if (FileUtils.canWrite(targetFile)) {
+				logger.debug("Can write to output, everything should be ok.");
+			} else {
+				logger.debug("Can NOT write to output, something is wrong.");
+			}
+			
 			this.targetExtract = new Extract(targetFile.getCanonicalPath());
 			return this.targetExtract;
 		} catch (IOException | TableauException e) {
+			logger.debug("Extract exception thrown: "+e.getMessage());
 			throw new ComponentNotReadyException("Unable to open output file. Output file: " + targetFile, e);
 		}
 
