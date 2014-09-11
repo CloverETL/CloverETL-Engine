@@ -226,7 +226,7 @@ public class JdbcDriverImpl implements JdbcDriver {
 			ClassLoader loader = getClassLoader();
 			if (driver.getClass().getClassLoader() == loader && loader instanceof ClassDefinitionFactory) {
 				ClassDefinitionFactory factory = (ClassDefinitionFactory)loader;
-				// get DriverUnregisterer co driver's classloader and perform deregistering
+				// get DriverUnregisterer's code, load it using driver's classloader and perfrom deregistration
 				try {
 					InputStream classData = DriverUnregisterer.class.getResourceAsStream(DriverUnregisterer.class.getSimpleName().concat(".class"));
 					byte classBytes[] = IOUtils.toByteArray(classData);
