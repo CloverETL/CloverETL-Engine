@@ -18,20 +18,20 @@
  */
 package org.jetel.connection.jdbc.driver;
 
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.Properties;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.database.sql.JdbcDriver;
 import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.ContextProvider;
-import org.jetel.util.classloader.GreedyURLClassLoader;
+import org.jetel.util.classloader.ClassDefinitionFactory;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -85,6 +85,7 @@ public class JdbcDriverImpl implements JdbcDriver {
      */
     private ClassLoader classLoader;
     private Driver driver;
+    private boolean libraryClassLoader;
         
     /**
      * Constructor.
@@ -179,6 +180,7 @@ public class JdbcDriverImpl implements JdbcDriver {
     		parent = ContextProvider.getGraph().getRuntimeContext().getClassLoader();
     	}
     	classLoader = ContextProvider.getAuthorityProxy().getClassLoader(driverLibraries, parent, true);
+    	libraryClassLoader = driverLibraries != null && driverLibraries.length > 0;
     }
     
     private void prepareDriver() throws ComponentNotReadyException {
@@ -206,6 +208,46 @@ public class JdbcDriverImpl implements JdbcDriver {
      */
 	@Override
 	public void free() {
+		/*
+		 * There are more possibilities where the driver may have come from:
+		 * - from driver library path specified in connection
+		 * - from engine plugin (typically org.jetel.jdbc)
+		 * - from application classpath
+		 * 
+		 * It makes sense to deregister drivers only from driver library path for it is the
+		 * classloader that we created ourselves.
+		 */
+		if (libraryClassLoader) {
+			/*
+			 * DriverManager.deregisterDriver(driver) will not work, because caller's classloader (this plugin's classloader)
+			 * differs from the classloader that defined the driver (see DriverManager#isDriverAllowed(Driver, ClassLoader)).
+			 * Therefore we need to obtain code that deregisters driver from the library classloader.
+			 */
+			ClassLoader loader = getClassLoader();
+			if (driver.getClass().getClassLoader() == loader && loader instanceof ClassDefinitionFactory) {
+				ClassDefinitionFactory factory = (ClassDefinitionFactory)loader;
+				// get DriverUnregisterer co driver's classloader and perform deregistering
+				try {
+					InputStream classData = DriverUnregisterer.class.getResourceAsStream(DriverUnregisterer.class.getSimpleName().concat(".class"));
+					byte classBytes[] = IOUtils.toByteArray(classData);
+					IOUtils.closeQuietly(classData);
+					Class<?> unregisterer = factory.defineClass(DriverUnregisterer.class.getName(), classBytes);
+					Method unregister = unregisterer.getMethod("unregisterDrivers", ClassLoader.class);
+					unregister.invoke(unregisterer.newInstance(), loader);
+				} catch (Throwable t) {
+					logger.warn("Error occurred during JDBC driver deregistration.", t);
+				}
+			}
+		}
+		if (jdbcSpecific != null) {
+			jdbcSpecific.unloadDriver(this);
+		}
+		driver = null;
+		classLoader = null;
+		
+		Runtime.getRuntime().gc();
+		
+		/*
 		// process only classLoaders created by this instance
 		if (this.classLoader == JdbcDriver.class.getClassLoader())
 			return;
@@ -262,6 +304,7 @@ public class JdbcDriverImpl implements JdbcDriver {
 		
 		// perform garbage collection as soon as possible
 		System.gc();
+		*/
 	}
 	
 }

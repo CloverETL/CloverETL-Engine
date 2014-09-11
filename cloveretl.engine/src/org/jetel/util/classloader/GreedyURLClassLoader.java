@@ -36,7 +36,7 @@ import org.jetel.util.string.StringUtils;
  * @author misho
  *
  */
-public class GreedyURLClassLoader extends URLClassLoader {
+public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinitionFactory {
 	private static Logger log  = Logger.getLogger(GreedyURLClassLoader.class);
 	
 	/** packages prefixes which are excluded from Greedy class-loading and which will be loaded in common way (parent class-loader first) 
@@ -184,4 +184,14 @@ public class GreedyURLClassLoader extends URLClassLoader {
 		return super.getResource(name);
 	}
 
+	@Override
+	public Class<?> defineClass(String name, byte[] classBytes) {
+		Class<?> klass = findLoadedClass(name);
+		if (klass == null) {
+			klass = defineClass(name, classBytes, 0, classBytes.length);
+		}
+		return klass;
+	}
+
+	
 }
