@@ -216,8 +216,8 @@ public class JdbcDriverImpl implements JdbcDriver {
 		 * - from application classpath
 		 * - from runtime context classloader
 		 * 
-		 * It makes sense to deregister drivers only from driver library path for it is the
-		 * classloader that we created ourselves, but only when specified in connection (engine plugin's driver are cached and cannot be freeed.
+		 * It makes sense to deregister drivers only from driver library path for it is the classloader
+		 * that we created ourselves, but only when specified in connection (engine plugin's drivers are cached and cannot be freeed).
 		 */
 		if (!fromDriverDescription && libraryClassLoader) {
 			/*
@@ -240,12 +240,11 @@ public class JdbcDriverImpl implements JdbcDriver {
 					logger.warn("Error occurred during JDBC driver deregistration.", t);
 				}
 			}
+			if (jdbcSpecific != null) {
+				jdbcSpecific.unloadDriver(this);
+			}
+			Runtime.getRuntime().gc();
 		}
-		if (jdbcSpecific != null) {
-			jdbcSpecific.unloadDriver(this);
-		}
-		
-		Runtime.getRuntime().gc();
 		
 		/*
 		// process only classLoaders created by this instance
