@@ -45,7 +45,6 @@ import org.jetel.util.string.StringUtils;
  */
 public class JdbcDriverImpl implements JdbcDriver {
     private static Log logger = LogFactory.getLog(JdbcDriver.class);
-    
 //    static {
 //		DriverManager.setLogWriter(new PrintWriter(System.err));
 //    }
@@ -86,6 +85,7 @@ public class JdbcDriverImpl implements JdbcDriver {
     private ClassLoader classLoader;
     private Driver driver;
     private boolean libraryClassLoader;
+    private boolean fromDriverDescription;
         
     /**
      * Constructor.
@@ -99,6 +99,7 @@ public class JdbcDriverImpl implements JdbcDriver {
     			jdbcDriverDescription.getDriverLibraryURLs(),
     			jdbcDriverDescription.getJdbcSpecific(),
     			jdbcDriverDescription.getProperties());
+    	this.fromDriverDescription = true;
     }
 
     /**
@@ -211,13 +212,14 @@ public class JdbcDriverImpl implements JdbcDriver {
 		/*
 		 * There are more possibilities where the driver may have come from:
 		 * - from driver library path specified in connection
-		 * - from engine plugin (typically org.jetel.jdbc)
+		 * - from driver library path provided by engine plugin (typically from org.jetel.jdbc)
 		 * - from application classpath
+		 * - from runtime context classloader
 		 * 
 		 * It makes sense to deregister drivers only from driver library path for it is the
-		 * classloader that we created ourselves.
+		 * classloader that we created ourselves, but only when specified in connection (engine plugin's driver are cached and cannot be freeed.
 		 */
-		if (libraryClassLoader) {
+		if (!fromDriverDescription && libraryClassLoader) {
 			/*
 			 * DriverManager.deregisterDriver(driver) will not work, because caller's classloader (this plugin's classloader)
 			 * differs from the classloader that defined the driver (see DriverManager#isDriverAllowed(Driver, ClassLoader)).
@@ -242,8 +244,6 @@ public class JdbcDriverImpl implements JdbcDriver {
 		if (jdbcSpecific != null) {
 			jdbcSpecific.unloadDriver(this);
 		}
-		driver = null;
-		classLoader = null;
 		
 		Runtime.getRuntime().gc();
 		
