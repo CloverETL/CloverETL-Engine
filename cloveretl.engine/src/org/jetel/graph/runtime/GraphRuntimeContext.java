@@ -207,6 +207,10 @@ public class GraphRuntimeContext {
 		return prop;
 	}
 
+	public String toString() {
+		return "runtimeContext["+getAuthorityProxy()+" "+getAllProperties()+"]";
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IGraphRuntimeContext#getTrackingInterval()
 	 */
