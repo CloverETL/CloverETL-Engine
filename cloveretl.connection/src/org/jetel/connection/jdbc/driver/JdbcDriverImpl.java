@@ -18,20 +18,20 @@
  */
 package org.jetel.connection.jdbc.driver;
 
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.Properties;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.database.sql.JdbcDriver;
 import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.ContextProvider;
-import org.jetel.util.classloader.GreedyURLClassLoader;
+import org.jetel.util.classloader.ClassDefinitionFactory;
 import org.jetel.util.classloader.MultiParentClassLoader;
 import org.jetel.util.string.StringUtils;
 
@@ -46,7 +46,6 @@ import org.jetel.util.string.StringUtils;
  */
 public class JdbcDriverImpl implements JdbcDriver {
     private static Log logger = LogFactory.getLog(JdbcDriver.class);
-    
 //    static {
 //		DriverManager.setLogWriter(new PrintWriter(System.err));
 //    }
@@ -86,6 +85,8 @@ public class JdbcDriverImpl implements JdbcDriver {
      */
     private ClassLoader classLoader;
     private Driver driver;
+    private boolean libraryClassLoader;
+    private boolean fromDriverDescription;
         
     /**
      * Constructor.
@@ -99,6 +100,7 @@ public class JdbcDriverImpl implements JdbcDriver {
     			jdbcDriverDescription.getDriverLibraryURLs(),
     			jdbcDriverDescription.getJdbcSpecific(),
     			jdbcDriverDescription.getProperties());
+    	this.fromDriverDescription = true;
     }
 
     /**
@@ -198,6 +200,7 @@ public class JdbcDriverImpl implements JdbcDriver {
     			classLoader = Thread.currentThread().getContextClassLoader();
     		}
     	}
+    	libraryClassLoader = driverLibraries != null && driverLibraries.length > 0;
     }
     
     private void prepareDriver() throws ComponentNotReadyException {
@@ -225,6 +228,44 @@ public class JdbcDriverImpl implements JdbcDriver {
      */
 	@Override
 	public void free() {
+		/*
+		 * There are more possibilities where the driver may have come from:
+		 * - from driver library path specified in connection
+		 * - from driver library path provided by engine plugin (typically from org.jetel.jdbc)
+		 * - from application classpath
+		 * - from runtime context classloader
+		 * 
+		 * It makes sense to deregister drivers only from driver library path for it is the classloader
+		 * that we created ourselves, but only when specified in connection (engine plugin's drivers are cached and cannot be freeed).
+		 */
+		if (!fromDriverDescription && libraryClassLoader) {
+			/*
+			 * DriverManager.deregisterDriver(driver) will not work, because caller's classloader (this plugin's classloader)
+			 * differs from the classloader that defined the driver (see DriverManager#isDriverAllowed(Driver, ClassLoader)).
+			 * Therefore we need to obtain code that deregisters driver from the library classloader.
+			 */
+			ClassLoader loader = getClassLoader();
+			if (driver.getClass().getClassLoader() == loader && loader instanceof ClassDefinitionFactory) {
+				ClassDefinitionFactory factory = (ClassDefinitionFactory)loader;
+				// get DriverUnregisterer's code, load it using driver's classloader and perfrom deregistration
+				try {
+					InputStream classData = DriverUnregisterer.class.getResourceAsStream(DriverUnregisterer.class.getSimpleName().concat(".class"));
+					byte classBytes[] = IOUtils.toByteArray(classData);
+					IOUtils.closeQuietly(classData);
+					Class<?> unregisterer = factory.defineClass(DriverUnregisterer.class.getName(), classBytes);
+					Method unregister = unregisterer.getMethod("unregisterDrivers", ClassLoader.class);
+					unregister.invoke(unregisterer.newInstance(), loader);
+				} catch (Throwable t) {
+					logger.warn("Error occurred during JDBC driver deregistration.", t);
+				}
+			}
+			if (jdbcSpecific != null) {
+				jdbcSpecific.unloadDriver(this);
+			}
+			Runtime.getRuntime().gc();
+		}
+		
+		/*
 		// process only classLoaders created by this instance
 		if (this.classLoader == JdbcDriver.class.getClassLoader())
 			return;
@@ -281,6 +322,7 @@ public class JdbcDriverImpl implements JdbcDriver {
 		
 		// perform garbage collection as soon as possible
 		System.gc();
+		*/
 	}
 	
 }
