@@ -229,7 +229,9 @@ public class JdbcDriverImpl implements JdbcDriver {
 			if (driver.getClass().getClassLoader() == loader && loader instanceof ClassDefinitionFactory) {
 				ClassDefinitionFactory factory = (ClassDefinitionFactory)loader;
 				// get DriverUnregisterer's code, load it using driver's classloader and perfrom deregistration
+				final ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
 				try {
+					Thread.currentThread().setContextClassLoader(DriverUnregisterer.class.getClassLoader());
 					InputStream classData = DriverUnregisterer.class.getResourceAsStream(DriverUnregisterer.class.getSimpleName().concat(".class"));
 					byte classBytes[] = IOUtils.toByteArray(classData);
 					IOUtils.closeQuietly(classData);
@@ -238,6 +240,8 @@ public class JdbcDriverImpl implements JdbcDriver {
 					unregister.invoke(unregisterer.newInstance(), loader);
 				} catch (Throwable t) {
 					logger.warn("Error occurred during JDBC driver deregistration.", t);
+				} finally {
+					Thread.currentThread().setContextClassLoader(originalLoader);
 				}
 			}
 			if (jdbcSpecific != null) {
