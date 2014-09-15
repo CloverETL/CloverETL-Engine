@@ -120,6 +120,16 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 		}
 		
 		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
+		
+		//initialize sourceRecords
+        sourceRecords = new DataRecord[numberOfTapes];
+        for (int i = 0; i < sourceRecords.length; i++) {
+            sourceRecords[i] = DataRecordFactory.newRecord(inMetadata);
+            sourceRecords[i].init();
+        }
+
+        //initialize sourceRecordsFlags
+        sourceRecordsFlags = new boolean[numberOfTapes];
 	}
 
 	@Override
@@ -206,10 +216,12 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 
 	@Override
 	public void reset() {
+		doMerge = false;
 		sorter.reset();
-		if (carouselInitialized && tapeCarousel != null) {
+		if (tapeCarousel != null) {
 			tapeCarousel.clear();
 		}
+		carouselInitialized = false;
 		recordBuffer.clear();
 		this.prevIndex = -1;
 
@@ -236,8 +248,10 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 	private void flushToTapeSynchronously() throws IOException, InterruptedException {
         DataRecordTape tape;
         if (!carouselInitialized) {
-            tapeCarousel = new TapeCarousel(numberOfTapes);
-            tapeCarousel.open();
+        	if (tapeCarousel == null) { //can be not null after #reset()
+	            tapeCarousel = new TapeCarousel(numberOfTapes);
+	            tapeCarousel.open();
+        	}
             tape = tapeCarousel.getFirstTape();
             carouselInitialized = true;
         } else {
@@ -269,8 +283,6 @@ public class ExternalSortDataRecord implements ISortDataRecord {
         int index;
         DataRecordTape targetTape;
         TapeCarousel targetCarousel = new TapeCarousel(tapeCarousel.numTapes());
-        sourceRecords = new DataRecord[tapeCarousel.numTapes()];
-        sourceRecordsFlags = new boolean[tapeCarousel.numTapes()];
 
         // initialize sort key which will be used when merging data
         sortKey = new RecordOrderedKey(sortKeysNames, sortOrderings, inMetadata, sorter.getComparator().getCollators());
@@ -279,10 +291,14 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 
         // initial creation & initialization of source records
         for (int i = 0; i < sourceRecords.length; i++) {
-            sourceRecords[i] = DataRecordFactory.newRecord(inMetadata);
-            sourceRecords[i].init();
+            sourceRecords[i].reset();
         }
 
+        // initialazation sourceRecordsFlags
+        for (int i = 0; i< sourceRecordsFlags.length; i++) {
+        	sourceRecordsFlags[i] = false;
+        }
+        
         // rewind carousel with source data - so we can start reading it
         tapeCarousel.rewind();
         // open carousel into which we will merge data
