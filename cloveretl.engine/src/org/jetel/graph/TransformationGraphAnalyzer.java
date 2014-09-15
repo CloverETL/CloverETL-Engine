@@ -43,12 +43,15 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.analyse.GraphCycleInspector;
 import org.jetel.graph.analyse.SingleGraphProvider;
 import org.jetel.graph.modelview.MVComponent;
+import org.jetel.graph.modelview.MVEdge;
 import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.graph.modelview.impl.MVEngineGraph;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.SingleThreadWatchDog;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.MetadataUtils;
 import org.jetel.util.GraphUtils;
 import org.jetel.util.SubgraphUtils;
 
@@ -108,6 +111,8 @@ public class TransformationGraphAnalyzer {
 			} catch (Exception e) {
 				throw new JetelRuntimeException("Metadata propagation analysis failed.", e);
 			}
+			//compare implicit metadata with persisted implicit metadata
+			validateImplicitMetadata(mvGraph);
 		}
 
         //analyze type of edges - specially buffered and phase edges
@@ -164,6 +169,29 @@ public class TransformationGraphAnalyzer {
 		mvGraph.getModel().setMetadataPropagationResolver(metadataPropagationResolver);
 	}
 
+	/**
+	 * Compares calculated implicit metadata with persisted implicit metadata,
+	 * should be identical.
+	 * @param mvGraph
+	 */
+	private static void validateImplicitMetadata(MVGraph mvGraph) {
+		for (MVEdge mvEdge : mvGraph.getMVEdges().values()) {
+			if (mvEdge.hasImplicitMetadata()) {
+				MVMetadata mvImplicitMetadata = mvEdge.getMetadata();
+				if (mvImplicitMetadata != null) {
+					DataRecordMetadata implicitMetadata = mvImplicitMetadata.getModel();
+					DataRecordMetadata persistedImplicitMetadata = mvEdge.getModel().getPersistedImplicitMetadata();
+					if (implicitMetadata != null && persistedImplicitMetadata != null
+							&& !MetadataUtils.equals(implicitMetadata, persistedImplicitMetadata)) {
+						//TODO improve exception message
+						throw new JetelRuntimeException("Metadata conflict detected");
+					}
+				}
+			}
+		}
+		
+	}
+	
 	private static final class SubgraphAnalyzer {
 		private final TransformationGraph subgraph;
 

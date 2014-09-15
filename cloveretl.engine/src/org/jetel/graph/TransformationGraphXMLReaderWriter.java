@@ -181,6 +181,9 @@ public class TransformationGraphXMLReaderWriter {
 	public final static String NODE_ELEMENT = "Node";
 	private final static String EDGE_ELEMENT = "Edge";
 	private final static String METADATA_ELEMENT = "Metadata";
+	public final static String METADATA_GROUP_ELEMENT = "MetadataGroup";
+	public final static String METADATA_GROUP_TYPE_ATTRIBUTE = "type";
+	public final static String METADATA_GROUP_TYPE_IMPLICIT = "implicit";
 	private final static String PHASE_ELEMENT = "Phase";
 	public final static String CONNECTION_ELEMENT = "Connection";
 	public final static String SEQUENCE_ELEMENT = "Sequence";
@@ -218,6 +221,7 @@ public class TransformationGraphXMLReaderWriter {
 	public final static String LARGE_ICON_PATH_ATTRIBUTE = "largeIconPath";
 	public final static String JOB_TYPE_ATTRIBUTE = "nature";
 	public final static String SHOW_COMPONENT_DETAILS_ATTRIBUTE = "showComponentDetails";
+	public final static String PERSISTED_IMPLICIT_METADATA_ATTRIBUTE = "persistedImplicitMetadata";
 	
 	private final static int ALLOCATE_MAP_SIZE=64;
 	/**
@@ -474,8 +478,8 @@ public class TransformationGraphXMLReaderWriter {
 				instantiateSequences(sequenceElements);
 				
 				//create metadata
-				NodeList metadataElements = document.getElementsByTagName(METADATA_ELEMENT);
-				instantiateMetadata(metadataElements, metadata);
+				//NodeList metadataElements = document.getElementsByTagName(METADATA_ELEMENT);
+				instantiateMetadata(getGlobalElement(document), metadata);
 		
 				// register all metadata (DataRecordMetadata) within transformation graph
 				graph.addDataRecordMetadata(metadata);
@@ -520,23 +524,39 @@ public class TransformationGraphXMLReaderWriter {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  metadataElements  Description of Parameter
-	 * @param  metadata          Description of Parameter
-	 * @exception  IOException   Description of Exception
-	 * @since                    May 24, 2002
-	 */
-	private void instantiateMetadata(NodeList metadataElements, Map<String, Object> metadata) throws XMLConfigurationException {
+	private void instantiateMetadata(Element metadataRoot, Map<String, Object> metadata) throws XMLConfigurationException {
+		List<Element> metadataElements = getChildElements(metadataRoot, METADATA_ELEMENT);
+		instantiateMetadata(metadataElements, metadata);
+		
+		List<Element> metadataGroupElements = getChildElements(metadataRoot, METADATA_GROUP_ELEMENT);
+		for (Element metadataGroupElement : metadataGroupElements) {
+			if (metadataGroupElement.hasAttribute(METADATA_GROUP_TYPE_ATTRIBUTE)
+					&& METADATA_GROUP_TYPE_IMPLICIT.equals(metadataGroupElement.getAttribute(METADATA_GROUP_TYPE_ATTRIBUTE))) {
+				//load persisted implicit metadata
+				Map<String, Object> persistedImplicitMetadata = new HashMap<>();
+				instantiateMetadata(metadataGroupElement, persistedImplicitMetadata);
+				for (Object piMetadata : persistedImplicitMetadata.values()) {
+					if (piMetadata instanceof DataRecordMetadata) {
+						graph.addPersistedImplicitMetadata((DataRecordMetadata) piMetadata);
+					} else {
+						throwXMLConfigurationException("Persisted implicit metadata cannot be defined as DB stub.");
+					}
+				}
+			} else {
+				instantiateMetadata(metadataGroupElement, metadata);
+			}
+		}
+	}
+
+	private void instantiateMetadata(List<Element> metadataElements, Map<String, Object> metadata) throws XMLConfigurationException {
 		String metadataID = null;
 		String fileURL=null;
 		Object recordMetadata = null;
 		//PropertyRefResolver refResolver=new PropertyRefResolver();
 
 		// loop through all Metadata elements & create appropriate Metadata objects
-		for (int i = 0; i < metadataElements.getLength(); i++) {
-			ComponentXMLAttributes attributes = new ComponentXMLAttributes((Element)metadataElements.item(i), graph);
+		for (int i = 0; i < metadataElements.size(); i++) {
+			ComponentXMLAttributes attributes = new ComponentXMLAttributes(metadataElements.get(i), graph);
 			try {
 				// process metadata element attributes "id" & "fileURL"
 				metadataID = attributes.getString("id");
@@ -560,7 +580,7 @@ public class TransformationGraphXMLReaderWriter {
 					}
 				} // probably metadata inserted directly into graph
 				else {
-					recordMetadata=MetadataFactory.fromXML(graph, attributes.getChildNode(metadataElements.item(i),METADATA_RECORD_ELEMENT));
+					recordMetadata=MetadataFactory.fromXML(graph, attributes.getChildNode(metadataElements.get(i),METADATA_RECORD_ELEMENT));
 				}
 			} catch (AttributeNotFoundException ex) {
 				throwXMLConfigurationException("Metadata - Attributes missing", ex);
@@ -691,6 +711,7 @@ public class TransformationGraphXMLReaderWriter {
 		int fromPort;
 		int toPort;
 		String metadataRef;
+		String persistedImplicitMetadataId;
 		org.jetel.graph.Edge graphEdge;
 		org.jetel.graph.Node writerNode;
 		org.jetel.graph.Node readerNode;
@@ -722,6 +743,7 @@ public class TransformationGraphXMLReaderWriter {
             debugSampleData = attributes.getBoolean("debugSampleData", false);
             fastPropagate = attributes.getBoolean("fastPropagate", false);
             metadataRef = attributes.getString("metadataRef", null);
+            persistedImplicitMetadataId = attributes.getString(PERSISTED_IMPLICIT_METADATA_ATTRIBUTE, null);
             
 			Object metadataObj = edgeMetadataID != null ? metadata.get(edgeMetadataID) : null;
 			if (metadataObj == null && edgeMetadataID != null) {
@@ -741,6 +763,15 @@ public class TransformationGraphXMLReaderWriter {
 			graphEdge.setFilterExpression(debugFilterExpression);
 			graphEdge.setDebugSampleData(debugSampleData);
 			graphEdge.setMetadataRef(metadataRef);
+			//persisted implicit metadata
+			if (!StringUtils.isEmpty(persistedImplicitMetadataId)) {
+				DataRecordMetadata persistedImplicitMetadata = graph.getPersistedImplicitMetadata(persistedImplicitMetadataId);
+				if (persistedImplicitMetadata != null) {
+					graphEdge.setPersistedImplicitMetadata(persistedImplicitMetadata);
+				} else {
+					throwXMLConfigurationException("Can't find persisted implicit metadata ID '" + persistedImplicitMetadataId + "'.");
+				}
+			}
 			// set edge type
 			if (runtimeContext.getExecutionType() == ExecutionType.SINGLE_THREAD_EXECUTION) {
 				//in single thread execution all edges are buffered

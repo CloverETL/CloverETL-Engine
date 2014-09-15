@@ -121,4 +121,29 @@ public class MetadataUtils {
     	return result;
     }
 
+    /**
+     * This comparison is very slow - conversion to XML is used for metadata comparison.
+     * @param metadata1
+     * @param metadata2
+     * @return true if and only if the given metadata are identical
+     */
+    public static boolean equals(DataRecordMetadata metadata1, DataRecordMetadata metadata2) {
+		if (metadata1 == null || metadata2 == null) {
+			throw new NullPointerException("null metadata");
+		}
+		String strMetadata1 = serializeMetadata(metadata1);
+		String strMetadata2 = serializeMetadata(metadata2);
+		return strMetadata1.equals(strMetadata2);
+    }
+    
+    private static String serializeMetadata(DataRecordMetadata metadata) {
+		try {
+	    	ByteArrayOutputStream os = new ByteArrayOutputStream();
+	    	DataRecordMetadataXMLReaderWriter.write(metadata, os);
+			return os.toString("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new JetelRuntimeException("Metadata " + metadata.getId() + " serialization failed.", e);
+		}
+    }
+    
 }

@@ -57,6 +57,11 @@ public interface MVGraph extends MVGraphElement {
 	public MVEdge getMVEdge(String edgeId);
 
 	/**
+	 * @return collection of all edges in this graph
+	 */
+	public Map<String, MVEdge> getMVEdges();
+	
+	/**
 	 * @param edge requested edge
 	 * @return MV representation of the requested edge; the edge can be also from a subgraph 
 	 */

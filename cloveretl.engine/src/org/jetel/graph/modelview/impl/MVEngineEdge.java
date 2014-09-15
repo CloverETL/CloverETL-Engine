@@ -39,11 +39,11 @@ public class MVEngineEdge implements MVEdge {
 
 	private Edge engineEdge;
 	
-	private MVMetadata propagatedMetadata;
+	private MVMetadata implicitMetadata;
 	
 	private MVMetadata noMetadata;
 	
-	private boolean hasPropagatedMetadata = false;
+	private boolean hasImplicitMetadata = false;
 
 	private MVGraph parentMVGraph;
 	
@@ -67,8 +67,8 @@ public class MVEngineEdge implements MVEdge {
 	
 	@Override
 	public void reset() {
-		propagatedMetadata = null;
-		hasPropagatedMetadata = false;
+		implicitMetadata = null;
+		hasImplicitMetadata = false;
 	}
 	
 	@Override
@@ -85,23 +85,28 @@ public class MVEngineEdge implements MVEdge {
 
 	@Override
 	public boolean hasMetadata() {
-		return hasPropagatedMetadata || engineEdge.getMetadata() != null;
+		return hasImplicitMetadata || engineEdge.getMetadata() != null;
 	}
 
 	@Override
-	public boolean hasMetadataDirect() {
+	public boolean hasExplicitMetadata() {
 		return engineEdge.getMetadata() != null;
 	}
-	
+
+	@Override
+	public boolean hasImplicitMetadata() {
+		return hasImplicitMetadata;
+	}
+
 	@Override
 	public MVMetadata getMetadata() {
 		if (hasMetadata()) {
-			if (hasPropagatedMetadata) {
-				if (propagatedMetadata != null) {
+			if (hasImplicitMetadata) {
+				if (implicitMetadata != null) {
 					//duplicate is returned since propagated metadata can be changed
 					//by propagation process - for example Reformat propagates metadata
 					//from input to output ports, but priority of this metadata is decreased to ZERO level
-					return propagatedMetadata.duplicate();
+					return implicitMetadata.duplicate();
 				} else {
 					return null;
 				}
@@ -116,15 +121,20 @@ public class MVEngineEdge implements MVEdge {
 	}
 
 	@Override
-	public void setPropagatedMetadata(MVMetadata propagatedMetadata) {
-		hasPropagatedMetadata = true;
-		this.propagatedMetadata = propagatedMetadata;
+	public void setImplicitMetadata(MVMetadata implicitMetadata) {
+		hasImplicitMetadata = true;
+		this.implicitMetadata = implicitMetadata;
 	}
 	
 	@Override
-	public void unsetPropagatedMetadata() {
-		hasPropagatedMetadata = false;
-		this.propagatedMetadata = null;
+	public MVMetadata getImplicitMetadata() {
+		return implicitMetadata;
+	}
+	
+	@Override
+	public void unsetImplicitMetadata() {
+		hasImplicitMetadata = false;
+		this.implicitMetadata = null;
 	}
 	
 	@Override

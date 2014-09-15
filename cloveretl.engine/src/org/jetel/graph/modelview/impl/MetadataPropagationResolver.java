@@ -60,7 +60,7 @@ public class MetadataPropagationResolver {
 		for (Edge edge : mvGraph.getModel().getEdges().values()) {
 			MVEdge mvEdge = mvGraph.getMVEdge(edge.getId());
 			MVMetadata mvMetadata = findMetadata(mvEdge);
-			mvEdge.setPropagatedMetadata(mvMetadata);
+			mvEdge.setImplicitMetadata(mvMetadata);
 		}
 	}
 
@@ -75,7 +75,7 @@ public class MetadataPropagationResolver {
 		for (Edge edge : mvGraph.getModel().getEdges().values()) {
 			MVEdge mvEdge = mvGraph.getMVEdge(edge.getId());
 			//set virtual no metadata on the edge
-			mvEdge.setPropagatedMetadata(null);
+			mvEdge.setImplicitMetadata(null);
 			//find the "no metadata"
 			MVMetadata noMetadata = findMetadataFromNeighbours(mvEdge);
 			//remember the result
@@ -102,13 +102,13 @@ public class MetadataPropagationResolver {
 	 */
 	public MVMetadata findMetadata(MVEdge edge) {
 		if (!edge.hasMetadata()) {
-			edge.setPropagatedMetadata(null); //to avoid recursive search
+			edge.setImplicitMetadata(null); //to avoid recursive search
 			MVMetadata metadata = findMetadataInternal(edge);
 			if (metadata != null) {
 				//construct metadata origin path
 				metadata.addToOriginPath(edge);
 			}
-			edge.unsetPropagatedMetadata();
+			edge.unsetImplicitMetadata();
 			return metadata;
 		} else {
 			MVMetadata metadata = edge.getMetadata();
