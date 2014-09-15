@@ -231,7 +231,7 @@ public class JdbcDriverImpl implements JdbcDriver {
 				// get DriverUnregisterer's code, load it using driver's classloader and perfrom deregistration
 				final ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
 				try {
-					Thread.currentThread().setContextClassLoader(DriverUnregisterer.class.getClassLoader());
+					Thread.currentThread().setContextClassLoader(DriverUnregisterer.class.getClassLoader()); // prevents CLO-4787
 					InputStream classData = DriverUnregisterer.class.getResourceAsStream(DriverUnregisterer.class.getSimpleName().concat(".class"));
 					byte classBytes[] = IOUtils.toByteArray(classData);
 					IOUtils.closeQuietly(classData);
@@ -249,65 +249,6 @@ public class JdbcDriverImpl implements JdbcDriver {
 			}
 			Runtime.getRuntime().gc();
 		}
-		
-		/*
-		// process only classLoaders created by this instance
-		if (this.classLoader == JdbcDriver.class.getClassLoader())
-			return;
-		
-		// this may do nothing, because the "driver" instance
-		// may not be registered with DriverManager
-		if (driver.getClass().getClassLoader() == classLoader){
-			try {
-				DriverManager.deregisterDriver(driver);
-			} catch (SQLException e1) {
-				logger.error(e1);
-			} catch (SecurityException e2) {
-				// thrown by Sybase driver
-				logger.warn("SecurityException while DriverManager.deregisterDriver()", e2);
-			}
-		}
-		
-		// DriverManager.getDrivers() only returns drivers loaded by the caller's classloader,
-		// therefore we load the class DriverUnregisterer by this instance's classloader
-		// and then use it to deregister the drivers from DriverManager.
-		if (classLoader instanceof GreedyURLClassLoader) {
-			GreedyURLClassLoader gcl = (GreedyURLClassLoader) classLoader;
-			try {
-	    		// try and obtain the URL of the JAR archive containing
-	    		// DriverUnregisterer class
-	    		// so that we can use it to deregister the driver
-				URL url = DriverUnregisterer.class.getProtectionDomain().getCodeSource().getLocation();
-				if (url != null) {
-		        	gcl.addURL(url);
-	        		ClassLoader originalCl = Thread.currentThread().getContextClassLoader();
-		        	try {
-		        		Thread.currentThread().setContextClassLoader(JdbcDriver.class.getClassLoader());
-						Class<?> c = Class.forName("org.jetel.connection.jdbc.driver.DriverUnregisterer", true, gcl);
-						Object du = c.newInstance();
-						Method m = c.getMethod("unregisterDrivers", ClassLoader.class);
-						m.invoke(du, classLoader);
-		        	} finally {
-		        		Thread.currentThread().setContextClassLoader(originalCl);
-		        	}
-				}
-			} catch (Exception e) {
-				if (logger.isWarnEnabled()) {
-					logger.warn("Unable to create helper class for driver unregistering", e);
-				}
-			}
-
-		}
-		
-		// additional cleanup operations may be necessary
-		// before the garbage collection of the driver's classloader
-		if (jdbcSpecific != null) {
-			jdbcSpecific.unloadDriver(this);
-		}
-		
-		// perform garbage collection as soon as possible
-		System.gc();
-		*/
 	}
 	
 }
