@@ -214,21 +214,21 @@ public class JdbcDriverImpl implements JdbcDriver {
 		 * - from driver library path specified in connection
 		 * - from driver library path provided by engine plugin (typically from org.jetel.jdbc)
 		 * - from application classpath
-		 * - from runtime context classloader
+		 * - from runtime context class loader
 		 * 
 		 * It makes sense to deregister drivers only from driver library path for it is the classloader
-		 * that we created ourselves, but only when specified in connection (engine plugin's drivers are cached and cannot be freeed).
+		 * that we created ourselves, but only in case the path is specified in connection (engine plugin's drivers are cached and cannot be freed).
 		 */
 		if (!fromDriverDescription && libraryClassLoader) {
 			/*
-			 * DriverManager.deregisterDriver(driver) will not work, because caller's classloader (this plugin's classloader)
-			 * differs from the classloader that defined the driver (see DriverManager#isDriverAllowed(Driver, ClassLoader)).
-			 * Therefore we need to obtain code that deregisters driver from the library classloader.
+			 * DriverManager.deregisterDriver(driver) will not work, because caller's class loader (this plugin's class loader)
+			 * differs from the class loader that defined the driver (see DriverManager#isDriverAllowed(Driver, ClassLoader)).
+			 * Therefore we need to obtain code that deregisters driver from the library class loader.
 			 */
 			ClassLoader loader = getClassLoader();
 			if (driver.getClass().getClassLoader() == loader && loader instanceof ClassDefinitionFactory) {
 				ClassDefinitionFactory factory = (ClassDefinitionFactory)loader;
-				// get DriverUnregisterer's code, load it using driver's classloader and perfrom deregistration
+				// get DriverUnregisterer's code, load it using driver's class loader and perform deregistration
 				final ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
 				try {
 					Thread.currentThread().setContextClassLoader(DriverUnregisterer.class.getClassLoader()); // prevents CLO-4787
