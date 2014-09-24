@@ -185,6 +185,7 @@ public class JdbcDriverImpl implements JdbcDriver {
     		 *  present more than once (this happens e.g. with Oracle JDBC driver in server environment)
     		 */
     		classLoader = ContextProvider.getAuthorityProxy().getClassLoader(driverLibraries, getJdbcSpecific().getDriverClassLoaderParent(), true);
+    		libraryClassLoader = true;
     	} else {
     		/*
     		 * no class path so we suppose that the driver is either provided by runtime class loader or
@@ -200,7 +201,6 @@ public class JdbcDriverImpl implements JdbcDriver {
     			classLoader = Thread.currentThread().getContextClassLoader();
     		}
     	}
-    	libraryClassLoader = driverLibraries != null && driverLibraries.length > 0;
     }
     
     private void prepareDriver() throws ComponentNotReadyException {
