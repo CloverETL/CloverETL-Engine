@@ -112,7 +112,8 @@ public class TransformationGraphAnalyzer {
 				throw new JetelRuntimeException("Metadata propagation analysis failed.", e);
 			}
 			//compare implicit metadata with persisted implicit metadata
-			validateImplicitMetadata(mvGraph);
+			//this validation is now temporary turned off - will be enabled in future releases (maybe) - see CLO-4144
+			//validateImplicitMetadata(mvGraph);
 		}
 
         //analyze type of edges - specially buffered and phase edges
