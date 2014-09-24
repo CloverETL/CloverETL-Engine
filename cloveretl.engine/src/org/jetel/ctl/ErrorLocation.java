@@ -95,6 +95,31 @@ public final class ErrorLocation implements Serializable {
 	public int getEndColumn() {
 		return endColumn;
 	}
+	
+	/**
+	 * Returns a copy of the {@link ErrorLocation}.
+	 * The copy has begin line and end line decreased by <code>lineShift</code>
+	 * and if applicable, also by <code>columnShift</code>.
+	 * <p>
+	 * <code>columnShift</code> only applies if the new line number is 1.
+	 * </p>
+	 * 
+	 * @param lineShift		number of lines to subtract
+	 * @param columnShift	number of letters to subtract (applies to the first line only)
+	 * 
+	 * @return a new {@link ErrorLocation} with modified position
+	 */
+	public ErrorLocation translate(int lineShift, int columnShift) {
+		int newBeginColumn = beginColumn;
+		if (beginLine - lineShift == 1) { // apply column shift to the first line only
+			newBeginColumn -= columnShift;
+		}
+		int newEndColumn = endColumn;
+		if (endLine - lineShift == 1) { // apply column shift to the first line only
+			newEndColumn -= columnShift;
+		}
+		return new ErrorLocation(beginLine - lineShift, newBeginColumn, endLine - lineShift, newEndColumn);
+	}
 
 	@Override
 	public String toString() {
