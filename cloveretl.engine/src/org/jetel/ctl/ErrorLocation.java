@@ -110,15 +110,21 @@ public final class ErrorLocation implements Serializable {
 	 * @return a new {@link ErrorLocation} with modified position
 	 */
 	public ErrorLocation translate(int lineShift, int columnShift) {
+		int minValue = 1; // lines and columns are numbered starting from 1
+		int newBeginLine = Math.max(beginLine - lineShift, minValue);
+		int newEndLine = Math.max(endLine - lineShift, minValue);
 		int newBeginColumn = beginColumn;
 		if (beginLine - lineShift == 1) { // apply column shift to the first line only
 			newBeginColumn -= columnShift;
 		}
+		newBeginColumn = Math.max(newBeginColumn, minValue);
 		int newEndColumn = endColumn;
 		if (endLine - lineShift == 1) { // apply column shift to the first line only
 			newEndColumn -= columnShift;
 		}
-		return new ErrorLocation(beginLine - lineShift, newBeginColumn, endLine - lineShift, newEndColumn);
+		newEndColumn = Math.max(newEndColumn, minValue);
+		
+		return new ErrorLocation(newBeginLine, newBeginColumn, newEndLine, newEndColumn);
 	}
 
 	@Override
