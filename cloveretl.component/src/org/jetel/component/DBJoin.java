@@ -396,6 +396,9 @@ public class DBJoin extends Node {
 	        	TransformFactory<RecordTransform> transformFactory = getTransformFactory(inMetadata, outMetadata);
 	        	if (transformFactory.isTransformSpecified()) {
 	        		transformFactory.checkConfig(status);
+	        	} else {
+	        		//no transformation is specified - output metadata should be equal with database metadata
+	            	checkMetadata(status, dbMetadata, getOutputPort(WRITE_TO_PORT).getMetadata());
 	        	}
 	        }
         }

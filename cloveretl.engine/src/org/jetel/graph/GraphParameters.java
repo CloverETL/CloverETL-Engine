@@ -19,10 +19,12 @@
 package org.jetel.graph;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -218,21 +220,21 @@ public class GraphParameters {
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
-		boolean firstParam = true;
+		Map<String, GraphParameter> orderedParams = new TreeMap<>();
 		synchronized (parameters) {
-			for (GraphParameter parameter : parameters.values()) {
-				if (firstParam) {
-					firstParam = false;
-				} else {
-					result.append(", ");
-				}
-				result.append(parameter.getName());
-				result.append('=');
-				if (!parameter.isSecure()) {
-					result.append(parameter.getValue());
-				} else {
-					result.append(GraphParameter.HIDDEN_SECURE_PARAMETER);
-				}
+			orderedParams.putAll(parameters);
+		}
+		for (Iterator<GraphParameter> it = orderedParams.values().iterator(); it.hasNext();) {
+			GraphParameter parameter = it.next();
+			result.append(parameter.getName());
+			result.append('=');
+			if (parameter.isSecure()) {
+				result.append(GraphParameter.HIDDEN_SECURE_PARAMETER);
+			} else {
+				result.append(parameter.getValue());
+			}
+			if (it.hasNext()) {
+				result.append('\n');
 			}
 		}
 		return result.toString();

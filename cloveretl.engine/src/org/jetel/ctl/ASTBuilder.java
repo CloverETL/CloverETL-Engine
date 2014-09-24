@@ -632,6 +632,13 @@ public class ASTBuilder extends NavigatingVisitor {
 		
 		final SimpleNode prefix = (SimpleNode)node.jjtGetChild(0);
 		
+		// CLO-4532:
+		if (prefix.getId() == TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION) {
+			error(node, "Invalid member access expression");
+			node.setType(TLType.ERROR);
+			return data;
+		}
+
 		// access to dictionary
 		if (prefix.getId() == TransformLangParserTreeConstants.JJTDICTIONARYNODE) {
 			//dictionary is not available, the ctl code is compiled without graph (graph == null)
