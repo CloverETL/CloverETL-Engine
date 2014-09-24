@@ -222,7 +222,7 @@
 		<parameter id="database" value="DERBY"/>
 		<parameter id="name" value="Derby"/>
 		<parameter id="dbDriver" value="org.apache.derby.jdbc.ClientDriver"/>
-		<parameter id="driverLibrary" value="lib/derby/derbyclient.jar"/>
+		<parameter id="driverLibrary" value="lib/derby/derbyclient-10.11.1.1.jar"/>
 		<parameter id="urlHint" value="jdbc:derby://hostname:1527/derby.db"/>
 		<parameter id="jdbcSpecific" value="DERBY"/>
 	</extension>
