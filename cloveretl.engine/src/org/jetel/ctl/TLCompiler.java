@@ -343,7 +343,8 @@ public class TLCompiler implements ITLCompiler {
 		// compute return type
 		final TLType type = TLType.fromJavaType(returnType);
 		return "function " + type.name() +  " " + syntheticFunctionName + "() { " +
-				"return " + expression + ";" +
+				// CLO-4872: terminate trailing single-line comment in expression with \n
+				"return " + expression + "\n;" +
 				" }";
 	}
 
