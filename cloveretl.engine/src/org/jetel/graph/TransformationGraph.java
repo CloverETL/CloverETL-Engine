@@ -87,6 +87,14 @@ public final class TransformationGraph extends GraphElement {
 	private Map <String, LookupTable> lookupTables;
 	
 	private Map <String, Object> dataRecordMetadata;
+
+	/**
+	 * Set of all persisted implicit metadata, which are used
+	 * for validation purpose. All edges with implicit metadata
+	 * has reference to one of these metadata. The calculated implicit
+	 * metadata is compared with the persisted one, must be identical.
+	 */
+	private Map <String, DataRecordMetadata> persistedImplicitMetadata;
 	
 	final static String DEFAULT_CONNECTION_ID = "Connection0";
 	final static String DEFAULT_SEQUENCE_ID = "Sequence0";
@@ -210,6 +218,7 @@ public final class TransformationGraph extends GraphElement {
 		sequences = new LinkedHashMap<String,Sequence> ();
 		lookupTables = new LinkedHashMap<String,LookupTable> ();
 		dataRecordMetadata = new LinkedHashMap<String,Object> ();
+		persistedImplicitMetadata = new LinkedHashMap<>();
 		graphParameters = new GraphParameters(this);
 		dictionary = new Dictionary(this);
 		memoryTracker = new MemoryTracker();
@@ -438,6 +447,38 @@ public final class TransformationGraph extends GraphElement {
 			}
 		}
 		return null;
+	}
+	
+	/**
+	 * Persited metadata are used
+	 * for validation purpose. All edges with implicit metadata
+	 * has reference to one of these metadata. The calculated implicit
+	 * metadata is compared with the persisted one, must be identical.
+	 * @param id
+	 * @return persisted implicit metadata with the given id
+	 */
+	public DataRecordMetadata getPersistedImplicitMetadata(String id) {
+		return persistedImplicitMetadata.get(id);
+	}
+	
+	/**
+	 * Persited metadata are used
+	 * for validation purpose. All edges with implicit metadata
+	 * has reference to one of these metadata. The calculated implicit
+	 * metadata is compared with the persisted one, must be identical.
+	 * @param metadata
+	 */
+	public void addPersistedImplicitMetadata(DataRecordMetadata metadata) {
+		String id = metadata.getId();
+		if (!StringUtils.isEmpty(id)) {
+			if (!persistedImplicitMetadata.containsKey(id)) {
+				persistedImplicitMetadata.put(id, metadata);
+			} else {
+				throw new JetelRuntimeException("duplicate persisted implicit metadata id " + id);
+			}
+		} else {
+			throw new JetelRuntimeException("empty persisted implicit metadata id");
+		}
 	}
 	
 	/**

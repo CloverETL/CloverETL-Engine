@@ -338,7 +338,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
             metadataElement.setAttribute(RECORD_DELIMITER_ATTR, StringUtils.specCharToString(record.getRecordDelimiter()));
         }
 
-        if (record.getRecordSize() != 0) {
+        if (record.getRecordSize() > 0) {
             metadataElement.setAttribute(RECORD_SIZE_ATTR, String.valueOf(record.getRecordSize()));
         }
         
@@ -402,17 +402,21 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				if (!StringUtils.isEmpty(label)) {
 				    fieldElement.setAttribute(LABEL_ATTR, StringUtils.specCharToString(label));
 				}
-			    fieldElement.setAttribute(TYPE_ATTR, DataFieldMetadata.type2Str(field.getType()));
+			    fieldElement.setAttribute(TYPE_ATTR, field.getDataType().getName());
 			    if (field.getContainerType() != null && field.getContainerType() != DataFieldContainerType.SINGLE) {
 			    	fieldElement.setAttribute(CONTAINER_TYPE_ATTR, field.getContainerType().toString());
 			    }
 
-				fieldElement.setAttribute(SHIFT_ATTR, String.valueOf(field.getShift()));
+			    if (field.getShift() != 0) {
+			    	fieldElement.setAttribute(SHIFT_ATTR, String.valueOf(field.getShift()));
+			    }
 				if (record.getParsingType() == DataRecordParsingType.DELIMITED 
 						&& !StringUtils.isEmpty(delimiterStr)) {
 					fieldElement.setAttribute(DELIMITER_ATTR, delimiterStr);
 				} else {
-					fieldElement.setAttribute(SIZE_ATTR, String.valueOf(field.getSize()));
+					if (field.getSize() != 0) {
+						fieldElement.setAttribute(SIZE_ATTR, String.valueOf(field.getSize()));
+					}
 				}
 				if (field.getFormatStr() != null) {
 					fieldElement.setAttribute(FORMAT_ATTR, field.getFormatStr());
@@ -432,11 +436,12 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				if (field.getDescription() != null) {
 					fieldElement.setAttribute(DESCRIPTION_ATTR, field.getDescription());
 				}
-				fieldElement.setAttribute(EOF_AS_DELIMITER_ATTR,
-						String.valueOf(field.isEofAsDelimiter()));
-				fieldElement.setAttribute(NULLABLE_ATTR,
-				        String.valueOf(field.isNullable()));
-
+				if (field.isEofAsDelimiter()) {
+					fieldElement.setAttribute(EOF_AS_DELIMITER_ATTR, String.valueOf(field.isEofAsDelimiter()));
+				}
+				if (!field.isNullable()) {
+					fieldElement.setAttribute(NULLABLE_ATTR, String.valueOf(field.isNullable()));
+				}
 				if (field.getNullValuesOnField() != null) {
 					fieldElement.setAttribute(NULL_VALUE_ATTR, StringUtils.join(field.getNullValuesOnField(), Defaults.DataFormatter.DELIMITER_DELIMITERS));
 				}
