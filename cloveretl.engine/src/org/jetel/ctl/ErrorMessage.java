@@ -195,6 +195,25 @@ public class ErrorMessage implements Serializable {
 		}
 		return sb.toString();
 	}
+	
+	/**
+	 * Returns a copy of the {@link ErrorMessage}.
+	 * The copy has begin line and end line decreased by <code>lineShift</code>
+	 * and if applicable, also by <code>columnShift</code>.
+	 * <p>
+	 * <code>columnShift</code> only applies if the new line number is 1.
+	 * </p>
+	 * 
+	 * @param lineShift		number of lines to subtract
+	 * @param columnShift	number of letters to subtract (applies to the first line only)
+	 * 
+	 * @return a new {@link ErrorMessage} with modified error position
+	 */
+	public ErrorMessage translate(int lineShift, int columnShift) {
+		ErrorLocation translatedGlobalLocation = globalLocation != null ? globalLocation.translate(lineShift, columnShift) : null;
+		ErrorLocation translatedLocation = localLocation != null ? localLocation.translate(lineShift, columnShift) : null;
+		return new ErrorMessage(importFileUrl, level, translatedGlobalLocation, translatedLocation, errorMessage, hint);
+	}
 
 	/**
 	 * An interface providing additional information about the error.
