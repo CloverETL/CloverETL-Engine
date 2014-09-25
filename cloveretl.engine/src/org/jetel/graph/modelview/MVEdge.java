@@ -56,8 +56,13 @@ public interface MVEdge extends MVGraphElement {
 	/**
 	 * @return true if the edge has metadata directly assigned by user
 	 */
-	public boolean hasMetadataDirect();
-	
+	public boolean hasExplicitMetadata();
+
+	/**
+	 * @return true if the edge is going to use some implicit metadata (propagated metadata) 
+	 */
+	public boolean hasImplicitMetadata();
+
 	/**
 	 * @return specific metadata assigned to this edge
 	 */
@@ -75,14 +80,19 @@ public interface MVEdge extends MVGraphElement {
 
 	/**
 	 * Sets metadata to this edge which has been automatically propagated from neighbours.
-	 * @param propagatedMetadata propagated metadata
+	 * @param implicitMetadata propagated metadata
 	 */
-	public void setPropagatedMetadata(MVMetadata propagatedMetadata);
+	public void setImplicitMetadata(MVMetadata implicitMetadata);
 
+	/**
+	 * @return implicit metadata if any (propagated metadata)
+	 */
+	public MVMetadata getImplicitMetadata();
+	
 	/**
 	 * Clears propagated metadata for this edge.
 	 */
-	public void unsetPropagatedMetadata();
+	public void unsetImplicitMetadata();
 
 	/**
 	 * Sets 'no metadata' for this edge. The 'no metadata' are metadata which

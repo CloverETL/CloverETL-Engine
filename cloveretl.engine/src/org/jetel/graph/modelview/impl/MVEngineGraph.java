@@ -163,6 +163,11 @@ public class MVEngineGraph implements MVGraph {
 	}
 
 	@Override
+	public Map<String, MVEdge> getMVEdges() {
+		return mvEdges;
+	}
+	
+	@Override
 	public MVMetadata createMVMetadata(DataRecordMetadata metadata) {
 		return createMVMetadata(metadata, MVMetadata.DEFAULT_PRIORITY);
 	}
