@@ -19,12 +19,13 @@
 package org.jetel.graph;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.TreeMap;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -34,6 +35,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.util.CompareUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
 
@@ -220,10 +222,15 @@ public class GraphParameters {
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
-		Map<String, GraphParameter> orderedParams = new TreeMap<>();
 		synchronized (parameters) {
-			orderedParams.putAll(parameters);
-			for (Iterator<GraphParameter> it = orderedParams.values().iterator(); it.hasNext();) {
+			List<GraphParameter> orderedParams = new ArrayList<>(parameters.values());
+			Collections.sort(orderedParams, new Comparator<GraphParameter>() {
+				@Override
+				public int compare(GraphParameter p1, GraphParameter p2) {
+					return CompareUtils.compare(p1.getName(), p2.getName());
+				}
+			});
+			for (Iterator<GraphParameter> it = orderedParams.iterator(); it.hasNext();) {
 				GraphParameter parameter = it.next();
 				result.append(parameter.getName());
 				result.append('=');
