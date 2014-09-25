@@ -223,18 +223,18 @@ public class GraphParameters {
 		Map<String, GraphParameter> orderedParams = new TreeMap<>();
 		synchronized (parameters) {
 			orderedParams.putAll(parameters);
-		}
-		for (Iterator<GraphParameter> it = orderedParams.values().iterator(); it.hasNext();) {
-			GraphParameter parameter = it.next();
-			result.append(parameter.getName());
-			result.append('=');
-			if (parameter.isSecure()) {
-				result.append(GraphParameter.HIDDEN_SECURE_PARAMETER);
-			} else {
-				result.append(parameter.getValue());
-			}
-			if (it.hasNext()) {
-				result.append('\n');
+			for (Iterator<GraphParameter> it = orderedParams.values().iterator(); it.hasNext();) {
+				GraphParameter parameter = it.next();
+				result.append(parameter.getName());
+				result.append('=');
+				if (parameter.isSecure()) {
+					result.append(GraphParameter.HIDDEN_SECURE_PARAMETER);
+				} else {
+					result.append(parameter.getValue());
+				}
+				if (it.hasNext()) {
+					result.append('\n');
+				}
 			}
 		}
 		return result.toString();
