@@ -318,6 +318,9 @@ public class TableauWriter extends Node  {
 				logger.debug("Can NOT write to output, something is wrong.");
 			}
 			
+			logger.info("Printing PATH: "+System.getenv("PATH"));
+			logger.info("Printing LD_LIBRARY_PATH: "+System.getenv("LD_LIBRARY_PATH"));
+			
 			this.targetExtract = new Extract(targetFile.getCanonicalPath());
 			return this.targetExtract;
 		} catch (IOException | TableauException e) {
