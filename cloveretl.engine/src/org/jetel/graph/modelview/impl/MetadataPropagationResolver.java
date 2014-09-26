@@ -26,6 +26,7 @@ import org.jetel.graph.modelview.MVEdge;
 import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ReferenceState;
 
 /**
  * General metadata propagation evaluator.
@@ -136,7 +137,7 @@ public class MetadataPropagationResolver {
 			if (result != null) {
 				result.addToOriginPath(referencedEdge);
 			}
-		} else {
+		} else if (!ReferenceState.isInvalidState(edge.getModel().getMetadataReferenceState())) {
 			//otherwise try to ask your neighbours
 			result = findMetadataFromNeighbours(edge);
 		}
