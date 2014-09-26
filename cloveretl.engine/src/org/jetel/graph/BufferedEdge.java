@@ -124,7 +124,8 @@ public class BufferedEdge extends EdgeBase {
 	public void postExecute() {
 		super.postExecute();
 
-		recordBuffer.reset();
+		//temp file is removed, see MULE-98
+		recordBuffer.reset(true);
 	}
 	
 	@Override
