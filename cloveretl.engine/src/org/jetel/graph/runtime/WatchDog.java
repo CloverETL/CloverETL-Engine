@@ -205,7 +205,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			  	logger.debug("Job execution type: " + getGraphRuntimeContext().getJobType());
 			  	
 	    		//print graph properties
-	    		logger.info("Job parameters: " + graph.getGraphParameters());
+	    		logger.info("Job parameters: \n" + graph.getGraphParameters());
 	    		
 	    		//print out runtime context
 	    		logger.debug("Graph runtime context: " + graph.getRuntimeContext().getAllProperties());

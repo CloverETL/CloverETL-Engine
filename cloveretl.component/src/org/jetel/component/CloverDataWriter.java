@@ -22,8 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,7 +38,6 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileURLParser;
@@ -113,8 +110,6 @@ public class CloverDataWriter extends Node {
 
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private static final String XML_APPEND_ATTRIBUTE = "append";
-	private static final String XML_SAVEINDEX_ATRRIBUTE = "saveIndex";
-	private static final String XML_SAVEMETADATA_ATTRIBUTE = "saveMetadata";
 	private static final String XML_COMPRESSLEVEL_ATTRIBUTE = "compressLevel";
 	private static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
 	private static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
@@ -126,7 +121,6 @@ public class CloverDataWriter extends Node {
 	private String fileURL;
 	private boolean append;
 	private CloverDataFormatter formatter;
-	private boolean saveMetadata;
 	private DataRecordMetadata metadata;
 	private OutputStream out;//ZipOutputstream or FileOutputStream
 	private InputPortDirect inPort;
@@ -138,38 +132,10 @@ public class CloverDataWriter extends Node {
 	
     static Log logger = LogFactory.getLog(CloverDataWriter.class);
 
- 	public CloverDataWriter(String id, String fileURL, boolean saveIndex) {
+ 	public CloverDataWriter(String id, String fileURL) {
 		super(id);
 		this.fileURL = fileURL;
-		formatter = new CloverDataFormatter(fileURL,saveIndex);
-	}
-
-	/**
-	 * This method saves metadata definition to fileName.fmt or
-	 * fileName.zip#METADATA/fileName.fmt
-	 * 
-	 * @throws IOException
-	 */
-	private void saveMetadata() throws IOException{
-		if (out instanceof ZipOutputStream) {
-			((ZipOutputStream)out).putNextEntry(new ZipEntry(
-					CloverDataFormatter.METADATA_DIRECTORY + fileName+ 
-					CloverDataFormatter.METADATA_EXTENSION));
-			DataRecordMetadataXMLReaderWriter.write(metadata, out);
-			((ZipOutputStream)out).closeEntry();
-		}else{
-			OutputStream metaFile;
-			if (fileURL.startsWith("zip:")) {
-				metaFile = FileUtils.getOutputStream(getGraph().getRuntimeContext().getContextURL(), 
-						fileURL + "#" + CloverDataFormatter.METADATA_DIRECTORY + fileName + CloverDataFormatter.METADATA_EXTENSION, false, -1);
-			}
-			else {
-				metaFile = FileUtils.getOutputStream(getGraph().getRuntimeContext().getContextURL(), 
-						fileURL + CloverDataFormatter.METADATA_EXTENSION, false, -1);
-			}
-			DataRecordMetadataXMLReaderWriter.write(metadata,metaFile);	
-			metaFile.close();
-		}
+		formatter = new CloverDataFormatter(fileURL);
 	}
 
 	@Override
@@ -191,20 +157,8 @@ public class CloverDataWriter extends Node {
         		} catch (Exception e) {
         			throw new ComponentNotReadyException("Can append only to local file.", e);
         		}
-        	}else{
-
-        		//do we really need this?
-        		String resultedURL = fileURL;
-        		if (fileURL.startsWith("zip:")) {
-	            	fileName = new File(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), fileURL)).getName();
-	            	if (fileName.toLowerCase().endsWith(".zip")) {
-	            		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
-	            	}
-	            	resultedURL = fileURL + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName;
-        		}
-        		/////
-        		
-        		out = FileUtils.  getOutputStream(getGraph().getRuntimeContext().getContextURL(), resultedURL, append, compressLevel);
+        	} else {
+        		out = FileUtils.getOutputStream(getGraph().getRuntimeContext().getContextURL(), fileURL, append, compressLevel);
         		formatter.setDataTarget(out);
         	}
 		} catch(IOException e) {
@@ -246,9 +200,6 @@ public class CloverDataWriter extends Node {
     	super.postExecute();
     	try {
 			formatter.finish();
-			if (saveMetadata){
-				saveMetadata();
-			}
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(e);
 		}
@@ -315,7 +266,6 @@ public class CloverDataWriter extends Node {
 
 		inPort = getInputPortDirect(READ_FROM_PORT);
 		metadata = inPort.getMetadata();
-		formatter.setProjectURL(getGraph().getRuntimeContext().getContextURL());
 		formatter.init(metadata);
 		formatter.setCompressLevel(compressLevel);
 	}
@@ -339,10 +289,8 @@ public class CloverDataWriter extends Node {
 		CloverDataWriter aDataWriter = null;
 		
 		aDataWriter = new CloverDataWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-				xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.URL),
-				xattribs.getBoolean(XML_SAVEINDEX_ATRRIBUTE,false));
+				xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.URL));
 		aDataWriter.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false));
-		aDataWriter.setSaveMetadata(xattribs.getBoolean(XML_SAVEMETADATA_ATTRIBUTE,false));
 		aDataWriter.setCompressLevel(xattribs.getInteger(XML_COMPRESSLEVEL_ATTRIBUTE,-1));
 		if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)){
 			aDataWriter.setSkip(Integer.parseInt(xattribs.getString(XML_RECORD_SKIP_ATTRIBUTE)));
@@ -355,10 +303,6 @@ public class CloverDataWriter extends Node {
         }
 		
 		return aDataWriter;
-	}
-
-	public void setSaveMetadata(boolean saveMetadata) {
-		this.saveMetadata = saveMetadata;
 	}
 
 	public void setCompressLevel(int compressLevel) {

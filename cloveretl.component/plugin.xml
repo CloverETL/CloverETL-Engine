@@ -1906,9 +1906,6 @@
 	      <property category="basic" displayName="Append" modifiable="true" name="append" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
 	      </property>
-	      <property category="basic" displayName="Save metadata" modifiable="true" name="saveMetadata" nullable="true" defaultHint="false">
-	        <singleType name="bool" />
-	      </property>
 	      <property category="advanced" displayName="Create directories" modifiable="true" name="makeDirs" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
 	      </property>
@@ -1920,6 +1917,9 @@
 	      </property>
 	      <property category="advanced" displayName="Max number of records" modifiable="true" name="recordCount" nullable="true">
 	        <singleType name="int" />
+	      </property>
+	      <property category="deprecated" displayName="Save metadata" modifiable="true" name="saveMetadata" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
 	      </property>
 	      <property category="deprecated" displayName="Save index" modifiable="true" name="saveIndex" nullable="true" defaultHint="false">
 	        <singleType name="bool" />

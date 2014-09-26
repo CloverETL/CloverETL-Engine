@@ -3638,6 +3638,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertTrue(recordEquals(inputRecords[2], outputRecords[0]));
 	}
 
+	// CLO-4532:
+	public void test_mapping_whitespace() {
+		doCompileExpectError("test_mapping_whitespace", "Invalid member access expression");
+	}
+
 	public void test_copyByName() {
 		doCompile("test_copyByName");
 		assertEquals("Field1", null, outputRecords[3].getField("Field1").getValue());

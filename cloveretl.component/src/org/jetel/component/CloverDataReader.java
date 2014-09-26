@@ -81,8 +81,6 @@ import org.w3c.dom.Element;
  *  <tr><td><b>type</b></td><td>"CLOVER_READER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>fileURL</b></td><td>path to the data file. </td>
- *  <tr><td><b>indexFileURL</b><br><i>optional</i></td><td>if index file is not 
- *  in the same directory as data file or has not expected name (fileURL.idx)</td>
  *  <tr><td><b>startRecord</b><br><i>optional</i></td><td>index of first parsed record</td>
  *  <tr><td><b>finalRecord</b><br><i>optional</i></td><td>index of final parsed record</td>
  *  </tr>
@@ -112,7 +110,6 @@ public class CloverDataReader extends Node implements MultiFileListener {
 
 	/** XML attribute names */
 	private final static String XML_FILE_ATTRIBUTE = "fileURL";
-	//private final static String XML_INDEXFILEURL_ATTRIBUTE = "indexFileURL";
 	private static final String XML_STARTRECORD_ATTRIBUTE = "startRecord";
 	private static final String XML_FINALRECORD_ATTRIBUTE = "finalRecord";
 	private static final String XML_SKIPROWS_ATTRIBUTE = "skipRows";
@@ -144,7 +141,6 @@ public class CloverDataReader extends Node implements MultiFileListener {
 	/**
 	 * @param id
 	 * @param fileURL
-	 * @param indexFileURL
 	 */
 	public CloverDataReader(String id, String fileURL) {
 		super(id);

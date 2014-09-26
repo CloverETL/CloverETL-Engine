@@ -207,6 +207,11 @@ public class GraphRuntimeContext {
 		return prop;
 	}
 
+	@Override
+	public String toString() {
+		return "runtimeContext["+getAuthorityProxy()+" "+getAllProperties()+"]";
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IGraphRuntimeContext#getTrackingInterval()
 	 */
@@ -868,6 +873,13 @@ public class GraphRuntimeContext {
 			@Override
 			public Object parseValue(String s) {
 				return parseBoolean(s);
+			}
+		},
+		VERBOSE_MODE("verboseMode", Boolean.class) {
+			
+			@Override
+			public Object parseValue(String s) {
+				return Boolean.parseBoolean(s);
 			}
 		};
 		

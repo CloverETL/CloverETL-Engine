@@ -32,7 +32,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -76,9 +75,10 @@ import org.jetel.util.file.FileUtils;
 public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 	/**
-	 * RunId random generator.
+	 * Auto-incremented number, which is used in {@link #getUniqueRunId()}
+	 * for generating unique run IDs. 
 	 */
-	private static Random random = new Random();
+	private static long runIdSequence = 1;
 
 	/**
 	 * Suffix of temp files created by standalone engine
@@ -226,7 +226,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
         	return rr;
         }
 		
-		GraphRuntimeContext runtimeContext = prepareRuntimeContext(givenRuntimeContext, rr.runId = getUniqueRunId(runId));
+		GraphRuntimeContext runtimeContext = prepareRuntimeContext(givenRuntimeContext, rr.runId = getUniqueRunId());
         runtimeContext.setUseJMX(givenRuntimeContext.useJMX());
         
         TransformationGraph graph = null;
@@ -261,13 +261,16 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		long startTime = System.currentTimeMillis();
 		rr.startTime = new Date(startTime);
 
-		GraphRuntimeContext runtimeContext = prepareRuntimeContext(givenRuntimeContext, rr.runId = getUniqueRunId(runId));
+		GraphRuntimeContext runtimeContext = prepareRuntimeContext(givenRuntimeContext, rr.runId = getUniqueRunId());
 
 		return executeGraphSync(rr, graph, runtimeContext, timeout);
 	}
 
-	private static long getUniqueRunId(long parentRunId) {
-		return Math.abs((random.nextLong()));
+	/**
+	 * @return unique long number, which can be used as run ID of newly executed graphs
+	 */
+	public static synchronized long getUniqueRunId() {
+		return runIdSequence++;
 	}
 	
 	/**

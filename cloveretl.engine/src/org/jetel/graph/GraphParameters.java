@@ -19,6 +19,9 @@
 package org.jetel.graph;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +35,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.util.CompareUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
 
@@ -218,20 +222,25 @@ public class GraphParameters {
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
-		boolean firstParam = true;
 		synchronized (parameters) {
-			for (GraphParameter parameter : parameters.values()) {
-				if (firstParam) {
-					firstParam = false;
-				} else {
-					result.append(", ");
+			List<GraphParameter> orderedParams = new ArrayList<>(parameters.values());
+			Collections.sort(orderedParams, new Comparator<GraphParameter>() {
+				@Override
+				public int compare(GraphParameter p1, GraphParameter p2) {
+					return CompareUtils.compare(p1.getName(), p2.getName());
 				}
+			});
+			for (Iterator<GraphParameter> it = orderedParams.iterator(); it.hasNext();) {
+				GraphParameter parameter = it.next();
 				result.append(parameter.getName());
 				result.append('=');
-				if (!parameter.isSecure()) {
-					result.append(parameter.getValue());
-				} else {
+				if (parameter.isSecure()) {
 					result.append(GraphParameter.HIDDEN_SECURE_PARAMETER);
+				} else {
+					result.append(parameter.getValue());
+				}
+				if (it.hasNext()) {
+					result.append('\n');
 				}
 			}
 		}

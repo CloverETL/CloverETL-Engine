@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
-import java.net.URL;
 import java.nio.ByteOrder;
 import java.nio.channels.Channels;
 import java.nio.channels.SeekableByteChannel;
@@ -104,7 +103,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 	public static final int HEADER_OPTIONS_ARRAY_SIZE_3_5 = 4;
 	//public static final long OPTION_MASK_USE_FIELDS_NULL_INDICATORS = 0b01; //bit 1, CLO-4594: removed as obsolete
 	public static final long OPTION_MASK_COMPRESSED_DATA = 0b1110;  // bits 2..4 one of compressions 000 -> none 001 -> LZ4 010..111 -> reserved
-	public static final long OPTION_MASK_STORE_INDEX_DATA = 0b1110000;  // bits 5..7 size of index (entries) stored 00 - none 001 -> 64 010 ->128 011->256 
+	//public static final long OPTION_MASK_STORE_INDEX_DATA = 0b1110000;  // bits 5..7 size of index (entries) stored 00 - none 001 -> 64 010 ->128 011->256; CLO-4447: removed as obsolete
 	public static final long OPTION_MASK_RAW_DATA = 0b10000000;  // bit 8: raw data (1 -> raw data, 0 -> custom serialization) 
 	
 	public final static int CLOVER_DATA_HEADER_LENGTH= 
@@ -116,25 +115,14 @@ public class CloverDataFormatter extends AbstractFormatter {
 	
 	public final static int CLOVER_DATA_HEADER_OPTIONS_OFFSET= CLOVER_DATA_HEADER_LENGTH -1;
 	
-	public final static char FILE_SEPARATOR = '/';
-	public final static String DATA_DIRECTORY = "DATA" + FILE_SEPARATOR;
-	public final static String INDEX_DIRECTORY = "INDEX" + FILE_SEPARATOR;
-	public final static String METADATA_DIRECTORY = "METADATA" + FILE_SEPARATOR;
-	public final static String INDEX_EXTENSION = ".idx";
-	public final static String METADATA_EXTENSION = ".fmt";
-	public final static String TMP_EXTENSION = ".tmp";
 
 	private WritableByteChannel writer;
 	private CloverDataStream.Output output;
 	private OutputStream out;//FileOutputStream or ZipOutputStream
 	private CloverBuffer buffer;
-	private boolean saveIndex;
-	private String fileURL;
-	private String fileName;
 	private boolean isOpen = false;
 	private DataCompressAlgorithm compress;
 	private boolean raw = true;
-	private URL projectURL;
 	private DataRecordMetadata metadata;	
 	
 	private DataRecordSerializer serializer;
@@ -151,9 +139,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 	 * @param fileName name of archive or name of binary file with records
 	 * @param saveIndex whether to save indexes of records or not 
 	 */
-	public CloverDataFormatter(String fileName,boolean saveIndex) {
-		this.fileURL = fileName;
-		this.saveIndex = saveIndex;
+	public CloverDataFormatter(String fileName) {
 		this.compress= DataCompressAlgorithm.NONE;
 	}
 
@@ -183,7 +169,6 @@ public class CloverDataFormatter extends AbstractFormatter {
 			this.out = (OutputStream) outputDataTarget;
 			writer = Channels.newChannel(this.out);
 		}else if (outputDataTarget instanceof File){
-			this.fileName=((File)outputDataTarget).getAbsolutePath();
 			this.writer = new RandomAccessFile((File)outputDataTarget,"rw").getChannel();
 			this.out = Channels.newOutputStream(this.writer);
 		}else{
@@ -271,9 +256,6 @@ public class CloverDataFormatter extends AbstractFormatter {
     	byte[] extraBytes = new byte[HEADER_OPTIONS_ARRAY_SIZE];
         //encode compression
         BitArray.encodeNumber(extraBytes, OPTION_MASK_COMPRESSED_DATA, compress.getId());
-        if (isSaveIndex()){
-        	BitArray.encodeNumber(extraBytes, OPTION_MASK_STORE_INDEX_DATA, DEFAULT_BLOCK_INDEX_SIZE.getId());
-        }
         BitArray.encodeNumber(extraBytes, OPTION_MASK_RAW_DATA, raw ? 1 : 0);
         
         buffer.put(extraBytes);
@@ -364,10 +346,6 @@ public class CloverDataFormatter extends AbstractFormatter {
 		//out.flush();
 	}
 	
-	public boolean isSaveIndex() {
-		return saveIndex;
-	}
-
 	@Override
 	public int writeFooter() throws IOException {
 		return 0;
@@ -378,12 +356,6 @@ public class CloverDataFormatter extends AbstractFormatter {
 		return 0;
 	}
 
-	public void setProjectURL(URL projectURL) {
-		this.projectURL = projectURL;
-	}
-
-	
-	
 	protected byte[] metadataSerialize(DataRecordMetadata metadata) {
 		ByteArrayOutputStream  outStream = new ByteArrayOutputStream();
 		DataRecordMetadataXMLReaderWriter.write(metadata, outStream);
