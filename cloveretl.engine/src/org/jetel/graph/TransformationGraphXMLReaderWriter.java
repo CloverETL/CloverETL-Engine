@@ -773,7 +773,8 @@ public class TransformationGraphXMLReaderWriter {
 				if (persistedImplicitMetadata != null) {
 					graphEdge.setPersistedImplicitMetadata(persistedImplicitMetadata);
 				} else {
-					throwXMLConfigurationException("Can't find persisted implicit metadata ID '" + persistedImplicitMetadataId + "'.");
+					//ignore this error - missing persisted implicit metadata are ignored - validation will be introduced in the future
+					//throwXMLConfigurationException("Can't find persisted implicit metadata ID '" + persistedImplicitMetadataId + "'.");
 				}
 			}
 			// set edge type
