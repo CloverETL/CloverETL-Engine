@@ -82,7 +82,7 @@ public class FilterClassLoader extends ClassLoader {
 	protected boolean proceed(final String className) {
 		
 		synchronized (filters) {
-			boolean load = true;
+			boolean load = false;
 			for (Entry<String, Boolean> entry : filters.headMap(className).entrySet()) {
 				if (!className.startsWith(entry.getKey())) { // XXX optimize me
 					continue;
