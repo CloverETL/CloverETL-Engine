@@ -131,7 +131,7 @@ public class MetadataPropagationResolver {
 		MVMetadata result = null;
 		
 		MVEdge referencedEdge = edge.getMetadataRef();
-		if (referencedEdge != null) {
+		if (referencedEdge != null && edge.getModel().getMetadataReferenceState() == ReferenceState.VALID_REFERENCE) {
 			//metadata are dedicated by an edge reference
 			result = findMetadata(referencedEdge);
 			if (result != null) {
