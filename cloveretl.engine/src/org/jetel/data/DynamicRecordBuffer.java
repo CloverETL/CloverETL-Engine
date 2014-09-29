@@ -219,15 +219,33 @@ public class DynamicRecordBuffer {
 	
 	/**
 	 *  Clears the buffer. Temp file (if it was created) remains
-	 * unchanged size-wise
+	 * unchanged size-wise and can be reused in the future.
 	 */
 	public void reset() {
+		reset(false);
+	}
+
+	/**
+	 *  Clears the buffer. Temp file (if it was created) either remains
+	 * unchanged size-wise or can be deleted.
+	 */
+	public void reset(boolean deleteTempFile) {
 		isClosed = false;
 		
-		//all obsolete temp files are closed, only the biggest/newest one is persist and reset
+		//the biggest/newest temp file is either persist/reused or deleted
 		if (tempFile != null) {
-			tempFile.reset();
+			if (deleteTempFile) {
+				try {
+					tempFile.close();
+				} catch (IOException e) {
+					log.warn("Failed to close temp file.", e);
+				}
+				tempFile = null;
+			} else {
+				tempFile.reset();
+			}
 		}
+		//all obsolete temp files are closed and removed
 		while (!obsoleteTempFiles.isEmpty()) {
 			try {
 				obsoleteTempFiles.remove().close();
