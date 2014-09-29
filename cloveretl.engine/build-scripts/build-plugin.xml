@@ -471,6 +471,7 @@
 			<keep name="com.opensys.cloveretl.addressdoctor.unlockcode.provider.impl.*"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.addressdoctor.unlockcode.validator.*"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.addressdoctor.mapping.element.AddressObjectMappingElement"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.addressdoctor.mapping.element.ADErrorMappingElement"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.addressdoctor.mapping.provider.ADMappingElementProvider"><field access="public"/><method access="public"/></keep>
 			
 			<keep name="com.opensys.cloveretl.ctl.extensions.*Lib"><field access="public"/><method access="public"/></keep>
