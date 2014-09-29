@@ -41,6 +41,8 @@ public class MappingAssignment {
 	// target - left side
 	private MappingTarget target;
 	
+	private String rawStatement;
+	
 	/**
 	 * Returns source of mapping assignment.
 	 * 
@@ -78,6 +80,20 @@ public class MappingAssignment {
 	}
 
 	/**
+	 * @return the rawStatement
+	 */
+	public String getRawStatement() {
+		return rawStatement;
+	}
+
+	/**
+	 * @param rawStatement the rawStatement to set
+	 */
+	private void setRawStatement(String rawStatement) {
+		this.rawStatement = rawStatement;
+	}
+
+	/**
 	 * Parses and gets a mapping assignment.
 	 * 
 	 * @param rawStatement - string containing a mapping assignment
@@ -86,6 +102,7 @@ public class MappingAssignment {
 	 */
 	public static MappingAssignment createAssignment(String rawStatement, IMappingElementProvider mappingProvider) throws MappingException {
 		MappingAssignment assignment = new MappingAssignment();
+		assignment.setRawStatement(rawStatement);
 		
 		// split assignment
 		String[] elements = rawStatement.split(ELEMENT_DELIMITER_REGEX, 2); //better way - check ':=' for ctl data elements
