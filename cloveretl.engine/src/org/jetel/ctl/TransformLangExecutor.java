@@ -2768,9 +2768,16 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			final DataFieldMetadata field = new DataFieldMetadata("_field" + i, TLTypePrimitive.toCloverType(argType),"|"); 
 			keyRecordMetadata.addField(field);
 			keyFields[i] = i;
-			if (argType.isDecimal() && decimalIter != null) {
-				field.setProperty(DataFieldMetadata.LENGTH_ATTR, String.valueOf(decimalIter.next()));
-				field.setProperty(DataFieldMetadata.SCALE_ATTR, String.valueOf(decimalIter.next()));
+			if (argType.isDecimal()) {
+				if (decimalIter != null) {
+					field.setProperty(DataFieldMetadata.LENGTH_ATTR, String.valueOf(decimalIter.next()));
+					field.setProperty(DataFieldMetadata.SCALE_ATTR, String.valueOf(decimalIter.next()));
+				} else {
+					//we have no idea what is correct precision and scale for unknown decimal value
+					//so we set precision and scale to max value (64, 32)
+					field.setProperty(DataFieldMetadata.LENGTH_ATTR, String.valueOf(DECIMAL_MAX_PRECISION * 2));
+					field.setProperty(DataFieldMetadata.SCALE_ATTR, String.valueOf(DECIMAL_MAX_PRECISION));
+				}
 			}
 		}
 		
