@@ -644,7 +644,7 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 		/*
 		 * return filtered system classloader, for in most cases only classes from java(x).sql.* are needed;
 		 * moreover some JDBC driver use sealed packages, so it is important to prevent delagation if they are present both
-		 * in project/plugin and in application classpath, see CLO-4867
+		 * in project/plugin and in application classpath.
 		 */
 		FilterClassLoader loader = new FilterClassLoader(ClassLoader.getSystemClassLoader());
 		loader.addIncludedPackages("java.sql", "javax.sql");
