@@ -61,6 +61,7 @@ import org.jetel.graph.Node;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.classloader.FilterClassLoader;
 import org.jetel.util.string.StringUtils;
 
 
@@ -641,8 +642,12 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	@Override
 	public ClassLoader getDriverClassLoaderParent() {
 		/*
-		 * return system classloader, for in most cases only classes from java.sql.* are needed
+		 * return filtered system classloader, for in most cases only classes from java(x).sql.* are needed;
+		 * moreover some JDBC driver use sealed packages, so it is important to prevent delagation if they are present both
+		 * in project/plugin and in application classpath, see CLO-4867
 		 */
-		return ClassLoader.getSystemClassLoader();
+		FilterClassLoader loader = new FilterClassLoader(ClassLoader.getSystemClassLoader());
+		loader.addIncludedPackages("java.sql", "javax.sql");
+		return loader;
 	}
 }
