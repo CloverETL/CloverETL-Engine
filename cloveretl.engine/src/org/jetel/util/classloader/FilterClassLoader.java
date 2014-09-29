@@ -43,11 +43,10 @@ public class FilterClassLoader extends ClassLoader {
 	@Override
 	protected Class<?> loadClass(String className, boolean resolveClass) throws ClassNotFoundException {
 		if (proceed(className)) {
-			super.loadClass(className, resolveClass);
+			return super.loadClass(className, resolveClass);
 		} else {
 			throw new ClassNotFoundException(className);
 		}
-		return null;
 	}
 	
 	/**
