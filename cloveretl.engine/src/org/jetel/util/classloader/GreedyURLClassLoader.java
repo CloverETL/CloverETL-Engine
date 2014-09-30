@@ -112,12 +112,12 @@ public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinit
 		}
 	
 		if (useGreedyAlgorithm) {
-			Class c = loadClassGreedy(name, resolve);
+			Class<?> c = loadClassGreedy(name, resolve);
 			return c;
 		} else {
 	        if (log.isTraceEnabled())
 	      	   log.trace(this+" P-F loading: "+ name);
-			Class c = super.loadClass(name, resolve);
+			Class<?> c = super.loadClass(name, resolve);
 	        if (log.isTraceEnabled())
 	           log.trace(this+" P-F loaded:  "+ name+" by: "+getClassLoaderId(c.getClassLoader()));
 			return c;
@@ -126,7 +126,7 @@ public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinit
 
 	protected synchronized Class<?> loadClassGreedy(String name, boolean resolve) throws ClassNotFoundException {
 		// First, check if the class has already been loaded
-		Class c = findLoadedClass(name);
+		Class <?> c = findLoadedClass(name);
 		if (c == null) {
 		    try {
 				// try to load the class by ourselves
@@ -142,15 +142,6 @@ public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinit
 		        if (log.isTraceEnabled())
 			      	   log.trace(this+" S-F loaded:  "+ name + " by: "+getClassLoaderId(c.getClassLoader()));
 		    }
-		    /* this should be needed anymore - we are not fetching packages from parent
-		    	log.warn("GreedyURLClassLoader: cannot load "+name+" due to SecurityException loading from parent class-loader:"+this.getParent(), se);
-		        if (log.isTraceEnabled())
-			      	   log.trace(this+" S-F loading: "+ name + " by parent: "+getClassLoaderId(getParent()));
-		    	c = getParent().loadClass(name);
-		        if (log.isTraceEnabled())
-			      	   log.trace(this+" S-F loaded:  "+ name + " by: "+getClassLoaderId(c.getClassLoader()));
-		    }
-		    */
 		}
 		if (resolve) {
 		    resolveClass(c);
@@ -159,9 +150,9 @@ public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinit
 	}
 	
 	/*
-	 * This method overrides default behaviour for package retrieval - for classes to be loaded from this class loader
-	 * are checked for package sealing - should there be the package present on parent class loader as well, SecurityException
-	 * would be thrown. To prevent this, only packages defined by this class loader are considered.
+	 * This method overrides default behaviour for package retrieval - the purpose of greedy (inverted) loading is to
+	 * load code from provided URLs instead from ancestor loaders. Such code can be contained in sealed packages -
+	 * in order to prevent sealing violations it is needed to provide only packages that were defined by this class loader.
 	 */
 	@Override
 	protected Package getPackage(String name) {
