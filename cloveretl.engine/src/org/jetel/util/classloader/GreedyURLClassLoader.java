@@ -20,6 +20,8 @@ package org.jetel.util.classloader;
 
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.jetel.data.Defaults;
@@ -43,7 +45,9 @@ public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinit
 	 * Typically "java." "javax." "sun.misc." etc. */
 	public static String[] excludedPackages = StringUtils.split(Defaults.PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING);
 
-	protected String[] clExcludedPackages = null; 
+	protected String[] clExcludedPackages = null;
+	
+	private Map<String, Package> packages = new HashMap<String, Package>();
 	
 	/**
 	 * Is this class loader greedy by default? 
@@ -137,7 +141,8 @@ public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinit
 		    	c = getParent().loadClass(name);
 		        if (log.isTraceEnabled())
 			      	   log.trace(this+" S-F loaded:  "+ name + " by: "+getClassLoaderId(c.getClassLoader()));
-		    } catch (SecurityException se) { // intended to catch java.lang.SecurityException: sealing violation: package oracle.jdbc.driver is sealed at java.net.URLClassLoader.defineClass (URLClassLoader.java:227)
+		    }
+		    /* this should be needed anymore - we are not fetching packages from parent
 		    	log.warn("GreedyURLClassLoader: cannot load "+name+" due to SecurityException loading from parent class-loader:"+this.getParent(), se);
 		        if (log.isTraceEnabled())
 			      	   log.trace(this+" S-F loading: "+ name + " by parent: "+getClassLoaderId(getParent()));
@@ -145,11 +150,55 @@ public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinit
 		        if (log.isTraceEnabled())
 			      	   log.trace(this+" S-F loaded:  "+ name + " by: "+getClassLoaderId(c.getClassLoader()));
 		    }
+		    */
 		}
 		if (resolve) {
 		    resolveClass(c);
 		}
 		return c;
+	}
+	
+	/*
+	 * This method overrides default behaviour for package retrieval - for classes to be loaded from this class loader
+	 * are checked for package sealing - should there be the package present on parent class loader as well, SecurityException
+	 * would be thrown. To prevent this, only packages defined by this class loader are considered.
+	 */
+	@Override
+	protected Package getPackage(String name) {
+		
+		boolean greedyLoading = greedy;
+		if (clExcludedPackages != null) {
+			for (String excludedPkg : clExcludedPackages) {
+				if (excludedPkg.equals(name) || name.startsWith(excludedPkg + ".")) {
+					greedyLoading = !greedyLoading;
+					break;
+				}
+			}
+		}
+		
+		if (greedyLoading) {
+			return findPackage(name);
+		} else {
+			return super.getPackage(name);
+		}
+	}
+	
+	protected Package findPackage(String name) {
+		synchronized (packages) {
+			return packages.get(name);
+		}
+	}
+	
+	@Override
+	protected Package definePackage(String name, String specTitle, String specVersion, String specVendor,
+			String implTitle, String implVersion, String implVendor, URL sealBase) throws IllegalArgumentException {
+		Package pkg = super.definePackage(name, specTitle, specVersion, specVendor, implTitle, implVersion, implVendor, sealBase);
+		if (pkg != null) {
+			synchronized (packages) {
+				packages.put(pkg.getName(), pkg);
+			}
+		}
+		return pkg;
 	}
 
 	/**
