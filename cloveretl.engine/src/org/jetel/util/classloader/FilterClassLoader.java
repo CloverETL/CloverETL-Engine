@@ -76,7 +76,7 @@ public class FilterClassLoader extends ClassLoader {
 	}
 	
 	protected String[] getDefaultInclusions() {
-		return new String[] {"java", "javax", "sun.misc"};
+		return new String[] {"java", "javax", "sun"};
 	}
 	
 	protected boolean proceed(final String className) {
