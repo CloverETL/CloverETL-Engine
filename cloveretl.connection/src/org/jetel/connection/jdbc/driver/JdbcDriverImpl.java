@@ -204,17 +204,12 @@ public class JdbcDriverImpl implements JdbcDriver {
     }
     
     private void prepareDriver() throws ComponentNotReadyException {
-    	final ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
         try {
-        	ClassLoader driverLoader = getClassLoader();
-        	Thread.currentThread().setContextClassLoader(driverLoader); // prevent sealing violations when driver is present both on driverLoader and caller's classpath (CLO-4867)
-            driver = (Driver) Class.forName(dbDriver, true, driverLoader).newInstance();
+            driver = (Driver) Class.forName(dbDriver, true, getClassLoader()).newInstance();
         } catch (ClassNotFoundException ex1) {
             throw new ComponentNotReadyException("Cannot create JDBC driver '" + getName() + "'. Cannot find class.", ex1);
         } catch (Exception ex1) {
             throw new ComponentNotReadyException("Cannot create JDBC driver '" + getName() + "'.", ex1);
-        } finally {
-        	Thread.currentThread().setContextClassLoader(originalLoader);
         }
         if (driver == null)
             throw new ComponentNotReadyException("Cannot create JDBC driver '" + getName() + "'. No driver found. " + dbDriver );
