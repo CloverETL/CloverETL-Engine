@@ -56,9 +56,13 @@
 	        	</enumType>
 	      	 </property>
 	      	 
+	      	<!--
+	      	The timeout property is currently disabled, because multiple tableau writers in the same phase are currently not allowed.
+	      	
 	      	<property category="advanced" displayName="Timeout (seconds)" modifiable="true" name="timeout" nullable="true" defaultHint="300">
 	        	<singleType name="timeoutLengthNumber" />
 	      	</property>
+	      	-->
         
         </properties>
 
