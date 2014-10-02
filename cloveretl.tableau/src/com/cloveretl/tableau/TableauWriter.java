@@ -93,7 +93,6 @@ public class TableauWriter extends Node  {
 	private static final String REQUIRED_FILE_SUFFIX = ".tde";
 	
 	// Attributes initialized from XML configuration
-	
 	private String outputFileName;
 	private String tableName;
 	private TableauActionOnExistingFile actionOnExistingFile;
@@ -101,7 +100,8 @@ public class TableauWriter extends Node  {
 	private String rawTableCollation;
 	private Collation defaultTableCollation;
 	private String tableStructure;
-	// how long should component wait for write lock, after this timeout the component run fails
+	// How long should component wait for write lock, after this timeout the component run fails
+	// Currently unused - multiple TableauWriters are not allowed in the same phase
 	private long synchroLockTimeoutSeconds; 
 	
 	// field name and its table column definition
@@ -311,13 +311,6 @@ public class TableauWriter extends Node  {
 		}
 
 		try {
-			logger.debug("Using file " + targetFile.getCanonicalPath() + " as output.");
-			if (FileUtils.canWrite(targetFile)) {
-				logger.debug("Can write to output, everything should be ok.");
-			} else {
-				logger.debug("Can NOT write to output, something is wrong.");
-			}
-			
 			this.targetExtract = new Extract(targetFile.getCanonicalPath());
 			return this.targetExtract;
 		} catch (IOException | TableauException e) {
@@ -531,10 +524,12 @@ public class TableauWriter extends Node  {
 		
 		for (Node n : getGraph().getPhase(getPhaseNum()).getNodes().values()) {
 			if (n != this && getType().equals(n.getType())) {
-				//multiple writers in the same phase, currently just as a warning
-				status.add("\""	+ n.getName() + "\" writes in the same phase. Having multiple TableauWriters in the same phase is not recommended.", ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+				//multiple writers in the same phase
+				//status.add("\""	+ n.getName() + "\" writes in the same phase. Having multiple TableauWriters in the same phase is not recommended.", ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+				status.add("\""	+ n.getName() + "\" writes in the same phase. Having multiple TableauWriters in the same phase is not allowed.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
 				
 				//multiple writers in the same phase AND a same file - that will never work, reports config error
+				/*
 				try {
 					URL contextURL = getContextURL();
 					URL url1 = FileUtils.getFileURL(contextURL, ((TableauWriter) n).outputFileName);
@@ -544,6 +539,7 @@ public class TableauWriter extends Node  {
 					}
 				} catch (MalformedURLException e) {
 				}
+				*/
 			}
 		}
 		

@@ -70,6 +70,7 @@ import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.metadata.MetadataFactory;
 import org.jetel.util.JAXBContextProvider;
+import org.jetel.util.ReferenceState;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -711,6 +712,7 @@ public class TransformationGraphXMLReaderWriter {
 		int fromPort;
 		int toPort;
 		String metadataRef;
+		ReferenceState metadataRefState;
 		String persistedImplicitMetadataId;
 		org.jetel.graph.Edge graphEdge;
 		org.jetel.graph.Node writerNode;
@@ -743,6 +745,7 @@ public class TransformationGraphXMLReaderWriter {
             debugSampleData = attributes.getBoolean("debugSampleData", false);
             fastPropagate = attributes.getBoolean("fastPropagate", false);
             metadataRef = attributes.getString("metadataRef", null);
+            metadataRefState = ReferenceState.fromString(attributes.getString("metadataRefState", ReferenceState.VALID_REFERENCE.toString()));
             persistedImplicitMetadataId = attributes.getString(PERSISTED_IMPLICIT_METADATA_ATTRIBUTE, null);
             
 			Object metadataObj = edgeMetadataID != null ? metadata.get(edgeMetadataID) : null;
@@ -763,13 +766,15 @@ public class TransformationGraphXMLReaderWriter {
 			graphEdge.setFilterExpression(debugFilterExpression);
 			graphEdge.setDebugSampleData(debugSampleData);
 			graphEdge.setMetadataRef(metadataRef);
+			graphEdge.setMetadataReferenceState(metadataRefState);
 			//persisted implicit metadata
 			if (!StringUtils.isEmpty(persistedImplicitMetadataId)) {
 				DataRecordMetadata persistedImplicitMetadata = graph.getPersistedImplicitMetadata(persistedImplicitMetadataId);
 				if (persistedImplicitMetadata != null) {
 					graphEdge.setPersistedImplicitMetadata(persistedImplicitMetadata);
 				} else {
-					throwXMLConfigurationException("Can't find persisted implicit metadata ID '" + persistedImplicitMetadataId + "'.");
+					//ignore this error - missing persisted implicit metadata are ignored - validation will be introduced in the future
+					//throwXMLConfigurationException("Can't find persisted implicit metadata ID '" + persistedImplicitMetadataId + "'.");
 				}
 			}
 			// set edge type

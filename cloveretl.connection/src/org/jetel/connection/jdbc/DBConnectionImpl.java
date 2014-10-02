@@ -406,9 +406,65 @@ public class DBConnectionImpl extends AbstractDBConnection {
     }
 
     /**
-     * Commits and closes all allocated connections.
+     * Called if graph execution succeeds.
+     * 
+     * Commits all allocated connections.
+     */
+    @Override
+	public void commit() {
+    	performAction(ConnectionAction.COMMIT);
+	}
+
+    /**
+     * Called if graph execution fails.
+     * 
+     * Rolls back all allocated connections.
+     */
+	@Override
+	public void rollback() {
+    	performAction(ConnectionAction.ROLLBACK);
+	}
+	
+	/**
+	 * Performs the selected action on the given connection.
+	 * 
+	 * @param connection - SQL connection
+	 * @param action	 - COMMIT or ROLLBACK action
+	 */
+	private void performAction(SqlConnection connection, ConnectionAction action) {
+        try {
+        	if (!connection.isClosed() && !connection.getAutoCommit()) {
+                action.perform(connection);
+        	}
+        } catch (SQLException e) {
+            logger.warn("DBConnection '" + getId() + "' " + action + " operation failed.");
+        }
+	}
+	
+	/**
+	 * Performs the selected action on all allocated connections.
+	 * 
+	 * @param action - COMMIT or ROLLBACK action
+	 */
+	private void performAction(ConnectionAction action) {
+        if (threadSafeConnections) {
+            for (SqlConnection connection: connectionsCache.values()) {
+            	performAction(connection, action);
+            }
+        }
+
+        if (sharedConnection != null) {
+        	performAction(sharedConnection, action);
+		}
+	}
+
+	/**
+     * Closes all allocated connections.
+     * CLO-4878: committing moved to {@link #commit()}.
      * 
      * @see org.jetel.graph.GraphElement#free()
+     * @see #commit()
+     * @see #rollback()
      */
     @Override
     public synchronized void free() {
@@ -441,13 +497,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
     private void closeConnection(SqlConnection connection) {
         try {
         	if (!connection.isClosed()) {
-                if (!connection.getAutoCommit()) {
-                    try {
-						connection.commit();
-					} catch (SQLException e) {
-			            logger.warn("DBConnection '" + getId() + "' commit operation failed.");
-					}
-                }
+        		// CLO-4878: committing moved to commit()
                 connection.close();
         	}
         } catch (SQLException e) {

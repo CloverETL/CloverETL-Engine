@@ -36,6 +36,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.MetadataFactory;
 import org.jetel.util.EdgeDebugUtils;
+import org.jetel.util.ReferenceState;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -64,6 +65,8 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	protected DataRecordMetadataStub metadataStub;
 	/** Reference to a graph element, from where the metadata should be derived. */
 	protected String metadataRef;
+	/** State of the reference to a graph element*/
+	protected ReferenceState metadataRefState;
 	
 	/** Implicit metadata which has been persisted. This metadata is used
 	 * for validation purpose. Calculated implicit metadata must be identical
@@ -222,6 +225,14 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		this.metadataRef = metadataRef;
 	}
 	
+	public ReferenceState getMetadataReferenceState() {
+		return metadataRefState;
+	}
+	
+	public void setMetadataReferenceState(ReferenceState refState) {
+		this.metadataRefState = refState;
+	}
+	
 	public DataRecordMetadata getPersistedImplicitMetadata() {
 		return persistedImplicitMetadata;
 	}
@@ -369,6 +380,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @since     June 6, 2002
      * @deprecated use hasData() method instead
 	 */
+	@Deprecated
 	@Override
 	public boolean isOpen() {
 		return !isEOF();
@@ -401,9 +413,15 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		/* if metadata is null and we have metadata stub, try to
 		 * load metadata from JDBC
 		 */
-		if (metadata==null){
-			if (metadataStub==null){
-				throw new RuntimeException("No metadata and no metadata stub defined for edge: "+getId());
+		if (metadata == null) {
+			if (metadataStub == null) {
+				String message = "No metadata and no metadata stub defined for edge: " + getId();
+				if (metadataRef != null) {
+					message += ". The edge reference" + 
+							(metadataRefState == ReferenceState.INVALID_REFERENCE ? " missing " : " disabled ") + 
+							"edge.";
+				}
+				throw new RuntimeException(message);
 			}
 			try{
 				metadata=MetadataFactory.fromStub(metadataStub);
@@ -628,6 +646,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 *
 	 * @deprecated 
 	 */
+	@Deprecated
 	@Override
 	public void open() {
         //DO NOTHING
@@ -638,6 +657,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
      * @throws IOException 
 	 * @deprecated use direct eof() method
 	 */
+	@Deprecated
 	@Override
 	public void close() throws InterruptedException, IOException {
         eof();

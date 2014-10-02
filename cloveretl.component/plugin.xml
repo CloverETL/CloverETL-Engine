@@ -1395,7 +1395,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="others" iconPath="icons/others/RunGraph" name="RunGraph" type="RUN_GRAPH" passThrough="true" defaultVisibility="etlGraph" className="org.jetel.component.RunGraph">
+	  <ETLComponent category="others" iconPath="icons/others/RunGraph" name="RunGraph" type="RUN_GRAPH" defaultVisibility="etlGraph" className="org.jetel.component.RunGraph">
 	    <shortDescription>Runs graphs in selected instance of Clover.</shortDescription>
 	    <description>Runs specified graph(s) in selected instance of Clover. Name(s) of at least one graph can be received through connected input port or name of one graph only can be set as attribute of this component. If graph name(s) is(are) received through connected input port, information about execution of the graph(s) is sent to the connected first output port (second output port is not connected). If graph name is set as attribute of the component, input port is not connected and information about execution of the graph is sent to connected output ports. It is sent to the first output port if it is successful or to the second if not.</description>
 	    <inputPorts>
