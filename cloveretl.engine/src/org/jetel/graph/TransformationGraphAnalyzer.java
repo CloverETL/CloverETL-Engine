@@ -40,6 +40,7 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.exception.RecursiveSubgraphException;
 import org.jetel.graph.analyse.GraphCycleInspector;
 import org.jetel.graph.analyse.SingleGraphProvider;
 import org.jetel.graph.modelview.MVComponent;
@@ -138,7 +139,8 @@ public class TransformationGraphAnalyzer {
 		boolean topLevel = urlStack.isEmpty();
 		String url = graph.getModel().getRuntimeContext().getJobUrl();
 		if (urlStack.contains(url)) {
-			throw new JetelRuntimeException("Recursive subgraph hierarchy detected in " + url);
+			// CLO-4930:
+			throw new RecursiveSubgraphException("Recursive subgraph hierarchy detected in " + url, causedComponent.getModel());
 		} else {
 			urlStack.add(url);
 		}
