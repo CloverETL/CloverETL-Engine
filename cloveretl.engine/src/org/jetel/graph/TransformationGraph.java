@@ -44,6 +44,7 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.exception.RecursiveSubgraphException;
 import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
@@ -1199,97 +1200,109 @@ public final class TransformationGraph extends GraphElement {
     
     @Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-		super.checkConfig(status);
+    	super.checkConfig(status);
+    	
+    	// CLO-4930: catch and report RecusiveSubgraphException
+    	try {
+    		//analyse the graph if necessary - usually the graph is analysed already in TransformationGraphXMLReaderWriter
+    		if (!isAnalysed()) {
+    			TransformationGraphAnalyzer.analyseGraph(this, getRuntimeContext(), true);
+    		}
+    		
+    		//register current thread in ContextProvider - it is necessary to static approach to transformation graph
+    		Context c = ContextProvider.registerGraph(this);
+    		try {
+    	    	if(status == null) {
+    	            status = new ConfigurationStatus();
+    	        }
 
-		//analyse the graph if necessary - usually the graph is analysed already in TransformationGraphXMLReaderWriter
-		if (!isAnalysed()) {
-			TransformationGraphAnalyzer.analyseGraph(this, getRuntimeContext(), true);
-		}
-		
-		//register current thread in ContextProvider - it is necessary to static approach to transformation graph
-		Context c = ContextProvider.registerGraph(this);
-		try {
-	    	if(status == null) {
+    	    	status.addAll(preCheckConfigStatus);
+    			
+    	    	graphParameters.checkConfig(status);
+    	        
+    	        //check dictionary
+    	        dictionary.checkConfig(status);
+    	        
+    	        //check connections configuration
+    	        for(IConnection connection : connections.values()) {
+    	        	try {
+    	        		connection.checkConfig(status);
+    	        	} catch (Exception e) {
+    	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, connection, Priority.HIGH);
+    	        		problem.setCauseException(e);
+    	        		status.add(problem);
+    	        	}
+    	        }
+    	
+    	        //check lookup tables configuration
+    	        for(LookupTable lookupTable : lookupTables.values()) {
+    	        	try {
+    	        		lookupTable.checkConfig(status);
+    	        	} catch (Exception e) {
+    	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, lookupTable, Priority.HIGH);
+    	        		problem.setCauseException(e);
+    	        		status.add(problem);
+    	        	}
+    	        }
+    	
+    	        //check sequences configuration
+    	        for(Sequence sequence : sequences.values()) {
+    	        	try {
+    	        		sequence.checkConfig(status);
+    	        	} catch (Exception e) {
+    	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, sequence, Priority.HIGH);
+    	        		problem.setCauseException(e);
+    	        		status.add(problem);
+    	        	}
+    	        }
+    	
+    	        //check metadatas configuration
+    	        for(Object oDataRecordMetadata : dataRecordMetadata.values()) {
+    	            if (oDataRecordMetadata instanceof DataRecordMetadata) ((DataRecordMetadata)oDataRecordMetadata).checkConfig(status);
+    	        }
+    	
+    	        //check phases configuration
+    	        for(Phase phase : getPhases()) {
+    	            phase.checkConfig(status);
+    	        }
+    	        
+    	        //only single instance of SubgraphInput and SubgraphOutput component is allowed in transformation graph
+    	        List<Node> subgraphInputComponents = new ArrayList<>();
+    	        List<Node> subgraphOutputComponents = new ArrayList<>();
+    	        for (Node component : getNodes().values()) {
+    	        	if (SubgraphUtils.isSubJobInputComponent(component.getType())) {
+    	        		subgraphInputComponents.add(component);
+    	        	}
+    	        	if (SubgraphUtils.isSubJobOutputComponent(component.getType())) {
+    	        		subgraphOutputComponents.add(component);
+    	        	}
+    	        }
+    	        if (subgraphInputComponents.size() > 1) {
+    	    		for (Node subgraphInputComponent : subgraphInputComponents) {
+    	    			status.add("Multiple SubgraphInput component detected in the graph.", Severity.ERROR, subgraphInputComponent, Priority.NORMAL);
+    	    		}
+    	        }
+    	        if (subgraphOutputComponents.size() > 1) {
+    	    		for (Node subgraphOutputComponent : subgraphOutputComponents) {
+    	    			status.add("Multiple SubgraphOutput component detected in the graph.", Severity.ERROR, subgraphOutputComponent, Priority.NORMAL);
+    	    		}
+    	        }
+    	        
+    	        return status;
+    		} finally {
+    			//unregister current thread from ContextProvider
+    			ContextProvider.unregister(c);
+    		}
+    	} catch (RecursiveSubgraphException ex) {
+    		// CLO-4930:
+	    	if (status == null) {
 	            status = new ConfigurationStatus();
 	        }
+    		ConfigurationProblem problem = new ConfigurationProblem(ex, Severity.ERROR, ex.getNode(), Priority.HIGH, SubgraphUtils.XML_JOB_URL_ATTRIBUTE);
+    		status.add(problem);
+    		return status;
+    	}
 
-	    	status.addAll(preCheckConfigStatus);
-			
-	    	graphParameters.checkConfig(status);
-	        
-	        //check dictionary
-	        dictionary.checkConfig(status);
-	        
-	        //check connections configuration
-	        for(IConnection connection : connections.values()) {
-	        	try {
-	        		connection.checkConfig(status);
-	        	} catch (Exception e) {
-	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, connection, Priority.HIGH);
-	        		problem.setCauseException(e);
-	        		status.add(problem);
-	        	}
-	        }
-	
-	        //check lookup tables configuration
-	        for(LookupTable lookupTable : lookupTables.values()) {
-	        	try {
-	        		lookupTable.checkConfig(status);
-	        	} catch (Exception e) {
-	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, lookupTable, Priority.HIGH);
-	        		problem.setCauseException(e);
-	        		status.add(problem);
-	        	}
-	        }
-	
-	        //check sequences configuration
-	        for(Sequence sequence : sequences.values()) {
-	        	try {
-	        		sequence.checkConfig(status);
-	        	} catch (Exception e) {
-	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, sequence, Priority.HIGH);
-	        		problem.setCauseException(e);
-	        		status.add(problem);
-	        	}
-	        }
-	
-	        //check metadatas configuration
-	        for(Object oDataRecordMetadata : dataRecordMetadata.values()) {
-	            if (oDataRecordMetadata instanceof DataRecordMetadata) ((DataRecordMetadata)oDataRecordMetadata).checkConfig(status);
-	        }
-	
-	        //check phases configuration
-	        for(Phase phase : getPhases()) {
-	            phase.checkConfig(status);
-	        }
-	        
-	        //only single instance of SubgraphInput and SubgraphOutput component is allowed in transformation graph
-	        List<Node> subgraphInputComponents = new ArrayList<>();
-	        List<Node> subgraphOutputComponents = new ArrayList<>();
-	        for (Node component : getNodes().values()) {
-	        	if (SubgraphUtils.isSubJobInputComponent(component.getType())) {
-	        		subgraphInputComponents.add(component);
-	        	}
-	        	if (SubgraphUtils.isSubJobOutputComponent(component.getType())) {
-	        		subgraphOutputComponents.add(component);
-	        	}
-	        }
-	        if (subgraphInputComponents.size() > 1) {
-	    		for (Node subgraphInputComponent : subgraphInputComponents) {
-	    			status.add("Multiple SubgraphInput component detected in the graph.", Severity.ERROR, subgraphInputComponent, Priority.NORMAL);
-	    		}
-	        }
-	        if (subgraphOutputComponents.size() > 1) {
-	    		for (Node subgraphOutputComponent : subgraphOutputComponents) {
-	    			status.add("Multiple SubgraphOutput component detected in the graph.", Severity.ERROR, subgraphOutputComponent, Priority.NORMAL);
-	    		}
-	        }
-	        
-	        return status;
-		} finally {
-			//unregister current thread from ContextProvider
-			ContextProvider.unregister(c);
-		}
     }
     
     public CloverPost getPost(){
