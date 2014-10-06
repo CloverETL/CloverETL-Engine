@@ -153,53 +153,6 @@ public class JmsConnection extends GraphElement implements IConnection {
 		return config;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#init()
-	 */
-	/*
-	synchronized public void init() throws ComponentNotReadyException {
-        if(isInitialized()) return;
-		super.init();
-		
-		try {
-			this.librariesUrls = getLibrariesURL( libraries );
-			Context ctx = null;
-			if (iniCtxFtory != null) {
-				Hashtable<String, String> properties = new Hashtable<String, String>();
-				properties.put(Context.INITIAL_CONTEXT_FACTORY, iniCtxFtory);
-				properties.put(Context.PROVIDER_URL, providerUrl);
-				ctx = new InitialContext(properties);			
-			} else {	// use jndi.properties
-				ctx = new InitialContext();
-			}
-		    ConnectionFactory ftory = (ConnectionFactory)ctx.lookup(conFtory);	
-		    
-		    if (passwordEncrypted) {
-	            Enigma enigma = getGraph().getEnigma();
-	            String decryptedPassword = null;
-	            try {
-	                decryptedPassword = enigma.decrypt(pwd);
-	            } catch (JetelException e) {
-	                throw new ComponentNotReadyException("Can't decrypt password on JmsConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.", e);
-	            }
-	            // If password decryption fails, try to use the unencrypted password
-	            if (decryptedPassword != null) {
-	                pwd = decryptedPassword;
-	                passwordEncrypted = false;
-	            }
-		    }
-
-		    connection = ftory.createConnection(user, pwd);
-			session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);			
-			destination = (Destination)ctx.lookup(destId);
-			connection.start();
-		} catch (NamingException e) {
-			throw new ComponentNotReadyException(e);
-		} catch (JMSException e) {
-			throw new ComponentNotReadyException(e);
-		}
-	}*/
-
 	@Override
 	synchronized public void init() throws ComponentNotReadyException {
 		if (isInitialized()) return;
@@ -299,45 +252,6 @@ public class JmsConnection extends GraphElement implements IConnection {
 			throw new ComponentNotReadyException(e);
 		}
 	}
-	
-	/*
-	private InitialContext createInitialContextWithClassLoader(Hashtable<String, String> initCtxProps) throws NamingException {
-		InitialContext ctx = null;
-		
-		ClassLoader prevCl = Thread.currentThread().getContextClassLoader();
-
-		// Create the class loader by using the given URL
-		// Use prevCl as parent to maintain current visibility
-		//ClassLoader urlCl = URLClassLoader.newInstance(new URL[]{new URL(url)}, prevCl);
-
-		//String initCtxClassName = (String)JmsConnectionPage.this.connectionProperties.get( JmsConnectionModel.INITCTX_FACTORY_PROPERTY );
-		String libs = (String)JmsConnectionPage.this.connectionProperties.get( JmsConnectionModel.LIBRARIES_PROPERTY );
-		URL[] urls = JmsConnection.getLibrariesURL(libs);
-		if (urls == null)
-			return null;
-		//GreedyURLClassLoader loader = new GreedyURLClassLoader( urls, prevCl );
-		URLClassLoader loader = new URLClassLoader( urls, prevCl );
-		
-		try {
-		    // Save the class loader so that you can restore it later
-		    Thread.currentThread().setContextClassLoader(loader);
-
-		    // Expect that the environment properties are in the
-		    // application resource file found at "url"
-		    ctx = new InitialContext(initCtxProps);
-
-		    ConnectionFactory ftory = (ConnectionFactory)ctx.lookup( config.getProperty(JmsConnectionModel.CONN_FACTORY_PROPERTY) );
-		    
-		    //System.out.println(ftory);
-		} finally {
-		    // Restore
-		    Thread.currentThread().setContextClassLoader(prevCl);
-		}
-		return ctx;
-	}*/
-	
-	
-	
 	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#free()

@@ -1497,7 +1497,7 @@
 	      <property category="basic" displayName="Multipart entities" modifiable="true" name="multipartEntities" nullable="true" required="false">
 	        <singleType name="key" title="Fields to use as multipart entities" leftLabel="Available fields:" rightLabel="Fields to use:" />
 	      </property>
-	      <property category="basic" displayName="Request/response charset" modifiable="true" name="charset" nullable="true">
+	      <property category="basic" displayName="Request/response charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
 	        <singleType name="charset" />
 	      </property>
 	      <property category="basic" displayName="Request content" modifiable="true" name="requestContent" nullable="true" required="false" redundant="inFileUrl">
