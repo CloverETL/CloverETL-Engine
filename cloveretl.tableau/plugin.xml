@@ -32,7 +32,7 @@
 	
 
         <properties>
-        	 <property category="basic" displayName="Output file URL" modifiable="true" name="outputFile" nullable="true" required="true" defaultHint="Path to local file with *.tde suffix">
+        	 <property category="basic" displayName="File URL" modifiable="true" name="outputFile" nullable="true" required="true" defaultHint="Path to file with *.tde suffix">
 	        	<singleType name="file" selectionMode="file_only" mandatory_existing_file="false"/>
 	      	 </property>
 	

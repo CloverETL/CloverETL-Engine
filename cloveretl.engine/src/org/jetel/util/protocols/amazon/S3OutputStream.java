@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.graph.ContextProvider;
@@ -33,9 +34,13 @@ import org.jets3t.service.S3ServiceException;
 import org.jets3t.service.impl.rest.httpclient.RestS3Service;
 import org.jets3t.service.model.S3Bucket;
 import org.jets3t.service.model.S3Object;
+import org.jets3t.service.model.StorageObject;
 import org.jets3t.service.security.AWSCredentials;
+import org.jets3t.service.utils.MultipartUtils;
 
 public class S3OutputStream extends OutputStream {
+	
+	private static int MAX_SIZE = 5 * 1024 * 1024 * 1024; // 5 GB
 
 	// on creation: create outputstream writing to a file
 	// remember url
@@ -100,11 +105,28 @@ public class S3OutputStream extends OutputStream {
 			}
 			uploadObject.setKey(file);
 			
-			try {
-				service.putObject(s3bucket, uploadObject);
-			} catch (S3ServiceException e) {
-				throw s3ExceptionToIOException(e);
+			if (file.length() <= MAX_SIZE) {
+				try {
+					service.putObject(s3bucket, uploadObject);
+				} catch (S3ServiceException e) {
+					throw s3ExceptionToIOException(e);
+				}
+			} else {
+				// CLO-4724:
+				try {
+					MultipartUtils mpUtils = new MultipartUtils(MAX_SIZE);
+					mpUtils.uploadObjects(bucket, service, Arrays.asList((StorageObject) uploadObject),
+						    null // eventListener : Provide one to monitor the upload progress
+					);
+				} catch (S3ServiceException e) {
+					throw s3ExceptionToIOException(e);
+				} catch (IOException e) {
+					throw e;
+				} catch (Exception e) {
+					throw new IOException("Multi-part file upload failed", e);
+				}
 			}
+			
 		} finally {
 			tempFile.delete();
 		}
