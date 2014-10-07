@@ -275,7 +275,7 @@ public class Denormalizer extends Node {
 			denorm = createRecordDenormalizeFactory().createTransform();
 		}
 		if (!denorm.init(transformationParameters, inMetadata, outMetadata)) {
-			throw new ComponentNotReadyException("Normalizer initialization failed: " + denorm.getMessage());
+			throw new ComponentNotReadyException("Denormalizer initialization failed: " + denorm.getMessage());
 		}
 		if (recordKeyTokens != null) {
 			recordComparator = RecordComapratorAnyOrderType.createRecordComparator(recordKeyTokens, inMetadata);
