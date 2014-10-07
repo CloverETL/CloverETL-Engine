@@ -104,7 +104,7 @@
 
 	<extension point-id="component">
 	  <ETLComponent category="writers" iconPath="icons/writers/UniversalDataWriter" name="UniversalDataWriter" type="DATA_WRITER" className="org.jetel.component.DataWriter">
-	    <shortDescription>Writes data to flat files (CSV, fixed-lenght).</shortDescription>
+	    <shortDescription>Writes data to flat files (CSV, fixed-length).</shortDescription>
 	    <description>Receives data through connected input port and writes data records to delimited or fixed length files based on input metadata.</description>
 	    <inputPorts>
 	      <singlePort name="0" required="true" />
