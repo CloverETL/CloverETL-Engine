@@ -776,11 +776,6 @@ public class RunGraph extends Node{
 		checkMetadata(status);
         checkParams(status);
        	
-        if (!sameInstance && !"true".equals(getAuthorityProxy().getAuthorityConfiguration().get("runtime.embedded.enabled"))) {
-			status.add(new ConfigurationProblem("Execution in separate JVM is not available in server environment.", Severity.ERROR, this, Priority.NORMAL));
-			return status;
-        }
-        
 		try {
 			contextURL = FileUtils.convertUrlToFile(getGraph().getRuntimeContext().getContextURL()).getAbsolutePath();
 		} catch (MalformedURLException e) {
