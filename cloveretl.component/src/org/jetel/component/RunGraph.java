@@ -21,10 +21,12 @@ package org.jetel.component;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -203,6 +205,9 @@ public class RunGraph extends Node{
 	private String outputFileName;
 	private static Log logger = LogFactory.getLog(RunGraph.class);
 	
+	/** Context URL converted to local file system. Only for execution in different JVM. */
+	private String contextURL;
+	
 	/**
 	 * Should be basic validation of recursive graph execution performed ?
 	 */
@@ -240,9 +245,6 @@ public class RunGraph extends Node{
 				
 		this.append = append;
 		this.sameInstance = sameInst;
-		if (!this.sameInstance) {
-			this.classPath = System.getProperty("java.class.path");
-		}
 	}	
 	
 	private DataRecord initInRecord() {
@@ -446,7 +448,7 @@ public class RunGraph extends Node{
 		
 		if (!args.contains(runGraph.CONTEXT_URL_SWITCH) && getGraph().getRuntimeContext().getContextURL() != null) {
 			commandList.add(runGraph.CONTEXT_URL_SWITCH);
-			commandList.add(getGraph().getRuntimeContext().getContextURL().toString());
+			commandList.add(contextURL);
 		}
 		
 		if (!args.contains(runGraph.LOG4J_LOG_LEVEL_SWITCH) && getGraph().getRuntimeContext().getLogLevel() != null) {
@@ -597,6 +599,36 @@ public class RunGraph extends Node{
         if (isInitialized()) return;
 		super.init();
 	
+		if (!this.sameInstance) {
+			//find all necessary jars - from system property java.class.path and from authority property engine.lib.dirs
+			Concatenate concat = new Concatenate(File.pathSeparator);
+			concat.append(System.getProperty("java.class.path"));
+			
+			String engineLibDirs = getAuthorityProxy().getAuthorityConfiguration().get("engine.lib.dirs");
+			if (!StringUtils.isEmpty(engineLibDirs)) {
+				for (String engineLibDir : engineLibDirs.split(",")) {
+					File root = new File(engineLibDir);
+					File[] jars = root.listFiles(new FileFilter() {
+						@Override
+						public boolean accept(File pathname) {
+							return pathname.getName().endsWith(".jar");
+						}
+					});
+					for (File jar : jars) {
+						concat.append(jar.getAbsolutePath());
+					}
+				}
+			}
+			this.classPath = concat.toString();
+			
+			//get contextURL - has to be converted to path to local file system 
+			try {
+				contextURL = FileUtils.convertUrlToFile(getGraph().getRuntimeContext().getContextURL()).getAbsolutePath();
+			} catch (MalformedURLException e) {
+				throw new ComponentNotReadyException("Context URL does not found.", e);
+			}
+		}
+		
 		ConfigurationStatus status = new ConfigurationStatus();
 		if (!checkMetadata(status) || !checkParams(status)) {
 			throw new ComponentNotReadyException(this, status.getLast().getMessage());
@@ -744,6 +776,18 @@ public class RunGraph extends Node{
 		checkMetadata(status);
         checkParams(status);
        	
+        if (!sameInstance && !"true".equals(getAuthorityProxy().getAuthorityConfiguration().get("runtime.embedded.enabled"))) {
+			status.add(new ConfigurationProblem("Execution in separate JVM is not available in server environment.", Severity.ERROR, this, Priority.NORMAL));
+			return status;
+        }
+        
+		try {
+			contextURL = FileUtils.convertUrlToFile(getGraph().getRuntimeContext().getContextURL()).getAbsolutePath();
+		} catch (MalformedURLException e) {
+			status.add(new ConfigurationProblem("Context URL cannot be found.", e, Severity.ERROR, this, Priority.NORMAL, null));
+			return status;
+		}
+        
         try {
             init();
         } catch (ComponentNotReadyException e) {

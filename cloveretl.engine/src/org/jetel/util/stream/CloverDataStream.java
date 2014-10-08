@@ -93,8 +93,16 @@ public class CloverDataStream {
 
 		private final LZ4Compressor compressor;
 
+		private CompressorLZ4(LZ4Compressor compressor) {
+			this.compressor = compressor;
+		}
+
 		public CompressorLZ4() {
-			this.compressor = LZ4Provider.fastestInstance().fastCompressor();
+			this(LZ4Provider.fastestInstance().fastCompressor());
+		}
+		
+		public static final CompressorLZ4 getHighCompressor() {
+			return new CompressorLZ4(LZ4Provider.fastestInstance().highCompressor());
 		}
 		
 		@Override
