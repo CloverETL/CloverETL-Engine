@@ -1909,8 +1909,12 @@
 	      <property category="advanced" displayName="Create directories" modifiable="true" name="makeDirs" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
 	      </property>
-	      <property category="advanced" displayName="Compress level" modifiable="true" name="compressLevel" nullable="true">
-	        <singleType name="int" min="0" max="9" />
+	      <property category="advanced" displayName="Compress level" modifiable="true" name="compressLevel" nullable="true" defaultHint="1 - Fastest">
+	        <enumType>
+	          <item displayValue="0 - No compression" value="0" />
+	          <item displayValue="1 - Fastest" value="1" />
+	          <item displayValue="9 - Maximum" value="9" />
+	        </enumType>
 	      </property>
 	      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="recordSkip" nullable="true">
 	        <singleType name="int" />
