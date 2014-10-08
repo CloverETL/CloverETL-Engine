@@ -403,6 +403,11 @@
 			<keep name="org.jetel.component.rollup.*"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.data.parser.*"><field access="public"/><method access="public"/></keep> <!-- the XPathParser is used in a transformation of a test (graphJmsSingleXmlField.grf), so has to be de-obfuscated -->
 			
+			<!-- keep delegate methods in compiled CTL transformations -->
+			<keep extends="org.jetel.ctl.CTLAbstractTransform">
+				<method annotation="org.jetel.ctl.CTLEntryPoint" />
+			</keep>
+			
 			<keep name="org.jetel.connection.jdbc.CopySQLData"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.connection.jdbc.DBConnection"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.connection.jdbc.SQLCloverStatement"><field access="protected public"/><method access="protected public"/></keep>
