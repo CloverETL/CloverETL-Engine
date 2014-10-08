@@ -1151,6 +1151,10 @@ public class FileUtils {
 		return SandboxUrlUtils.isSandboxUrl(input);
 	}
 	
+	private static boolean isSandbox(URL url) {
+		return SandboxUrlUtils.isSandboxUrl(url);
+	}
+	
 	private static boolean isDictionary(String input) {
 		return input.startsWith(DICTIONARY_PROTOCOL);
 	}
@@ -1277,6 +1281,21 @@ public class FileUtils {
 			assert(path.length() == 0);			
 			path.append(input);
 			return true;
+		}
+		else if ((isSandbox(input) || isSandbox(contextURL)) && nestLevel > 0) { // CLO-4278
+			assert(path.length() == 0);			
+			URL url = getFileURL(contextURL, input);
+			if (isSandbox(url)) {
+				try {
+					CloverURI cloverUri = CloverURI.createURI(url.toURI());
+					File file = FileManager.getInstance().getFile(cloverUri); 
+					if (file != null) {
+						path.append(file.getAbsolutePath());
+						return true;
+					}
+				} catch (Exception ex) {}
+			}
+			return false; // conversion failed, will fall back to remote ZIP streams
 		}
 		else {
 			return false;
