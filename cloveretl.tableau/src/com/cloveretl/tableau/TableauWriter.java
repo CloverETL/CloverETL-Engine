@@ -20,8 +20,6 @@ package com.cloveretl.tableau;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
@@ -518,7 +516,7 @@ public class TableauWriter extends Node  {
 		checkDefaultCollation(status);
 		
 		// Tableau API requires that the target file ends with ".tde". See Extract constructor doc
-		if (!outputFileName.endsWith(REQUIRED_FILE_SUFFIX)) {
+		if (outputFileName != null && !outputFileName.endsWith(REQUIRED_FILE_SUFFIX)) {
 			status.add(new ConfigurationProblem("Output file path must point to a file with \".tde\" suffix", Severity.ERROR, this, Priority.NORMAL));
 		}
 		
@@ -555,11 +553,11 @@ public class TableauWriter extends Node  {
 		for (int i=0; i<recordMeta.getNumFields(); i++) {
 			DataFieldMetadata fieldMeta = recordMeta.getField(i);
 			DataFieldType fieldType= fieldMeta.getDataType();
-			if (fieldType == DataFieldType.LONG || fieldType == DataFieldType.DECIMAL ) {
+			if (fieldType == DataFieldType.LONG || fieldType == DataFieldType.DECIMAL || fieldType == DataFieldType.BYTE || fieldType == DataFieldType.CBYTE) {
 				status.add("Input metadata of \"" + getName() + "\" contain data type unsupported by Tableau! Metadata field "
 						+ recordMeta.getField(i).getName() + " of metadata " + recordMeta.getName() + " has type " + fieldType.getName()
-						+ "! Unsupported types are: " + DataFieldType.LONG.getName() + ", " 
-						+ DataFieldType.DECIMAL.getName(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+						+ "! Unsupported types are: " + DataFieldType.LONG.getName() + ", "	+ DataFieldType.DECIMAL.getName()
+						+ ", " + DataFieldType.BYTE.getName() + ", " + DataFieldType.CBYTE.getName(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
 			}
 			if (fieldMeta.getContainerType() != DataFieldContainerType.SINGLE) {
 				status.add("Input metadata of \"" + getName() + "\" have container unsupported by Tableau! Metadata field "
