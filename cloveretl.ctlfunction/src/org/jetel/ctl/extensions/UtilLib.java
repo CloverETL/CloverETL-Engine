@@ -447,7 +447,7 @@ public class UtilLib extends TLFunctionLibrary {
  	}
  	
  	// BYTE SET
-  	@TLFunctionAnnotation("Returns byte at the specified position of input bytearray")
+  	@TLFunctionAnnotation("Sets the byte at the specified position of input bytearray")
   	public static final void byteSet(TLFunctionCallContext context, byte[] input, int position, int value) {
   		input[position]= (byte)( value & 0xff);
   	}
