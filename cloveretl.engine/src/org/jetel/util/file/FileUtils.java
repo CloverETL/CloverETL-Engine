@@ -1288,10 +1288,16 @@ public class FileUtils {
 			if (isSandbox(url)) {
 				try {
 					CloverURI cloverUri = CloverURI.createURI(url.toURI());
-					File file = FileManager.getInstance().getFile(cloverUri); 
+					FileManager fileManager = FileManager.getInstance();
+					File file = fileManager.getFile(cloverUri); 
 					if (file != null) {
-						path.append(file.getAbsolutePath());
-						return true;
+						URL sandboxRootUrl = SandboxUrlUtils.getSandboxUrl(SandboxUrlUtils.getSandboxName(url));
+						File sandboxRoot = fileManager.getFile(CloverURI.createURI(sandboxRootUrl.toURI()));
+						if (sandboxRoot != null) {
+							path.append(sandboxRoot.getAbsolutePath()); // replace sandbox name with absolute path to sandbox root
+							path.append(SandboxUrlUtils.getSandboxPath(url)); // CLO-702: preserve escaped character sequences in the path
+							return true;
+						}
 					}
 				} catch (Exception ex) {}
 			}
