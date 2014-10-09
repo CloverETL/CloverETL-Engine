@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.data.TLType;
@@ -464,10 +463,9 @@ public class ContainerLib extends TLFunctionLibrary {
 		return map.containsValue(value);
 	}
 	
-	@SuppressWarnings("unchecked")
-	@TLFunctionAnnotation("Checks if a list contains a specified value. The list must be sorted in ascending order.")
+	@TLFunctionAnnotation("Checks if a list contains a specified value.")
 	public static final <V> boolean containsValue(TLFunctionCallContext context, List<V> list, V value) {
-		return Collections.binarySearch(((List<? extends Comparable<? super V>>) list), value)>=0;
+		return list.contains(value);
 	}
 	
 	class ContainsValueFunction implements TLFunctionPrototype{
