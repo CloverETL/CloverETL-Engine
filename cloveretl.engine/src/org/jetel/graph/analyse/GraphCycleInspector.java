@@ -45,8 +45,6 @@ import org.jetel.graph.TransformationGraph;
  */
 public class GraphCycleInspector {
 
-	public static final String LOOP_COMPONENT_TYPE = "LOOP"; //TODO what is better place?
-	
 	private GraphProvider graphProvider;
 
 	private List<InspectedComponent> visitedComponents = new ArrayList<InspectedComponent>();
@@ -116,7 +114,7 @@ public class GraphCycleInspector {
 	/**
 	 * Cycle in the graph found - first regularly oriented edge is marked as BUFFERED. 
 	 */
-	private void cycleFound(Stack<InspectedComponent> visitedComponents) {
+	protected void cycleFound(Stack<InspectedComponent> visitedComponents) {
 		List<InspectedComponent> theCycle = new ArrayList<InspectedComponent>();
 		InspectedComponent endOfCycle = visitedComponents.pop();
 		InspectedComponent component = endOfCycle;
@@ -152,12 +150,12 @@ public class GraphCycleInspector {
 		}
 	}
 
-	private void orientedCycleFound(List<InspectedComponent> theCycle) {
-		//if whole cycle is in a jobflow and contains a WhileCycle component, then it is ok, otherwise exception is thrown
+	protected void orientedCycleFound(List<InspectedComponent> theCycle) {
+		//if whole cycle is in a jobflow and contains a Loop component, then it is ok, otherwise exception is thrown
 		TransformationGraph g = null;
 		boolean hasLoopComponent = false;
 		for (InspectedComponent c : theCycle) {
-			if (c.getComponent().getType().equals(LOOP_COMPONENT_TYPE)) {
+			if (c.getComponent().getType().equals(LoopsInspector.LOOP_COMPONENT_TYPE)) {
 				hasLoopComponent = true;
 			}
 			if (g == null) {
@@ -169,28 +167,8 @@ public class GraphCycleInspector {
 		if (!hasLoopComponent) {
 			throw new JetelRuntimeException("Oriented cycle without Loop component found in the graph. " + theCycle);
 		}
-		if (g.getRuntimeJobType().isGraph()) {
-			makeAllEdgesFastPropagate(theCycle);
-		}
 	}
 	
-	/**
-	 * Oriented cycle with Loop component found in the graph. All edges in the cycle must be fast propagate. 
-	 * @param theCycle
-	 */
-	private void makeAllEdgesFastPropagate(List<InspectedComponent> theCycle) {
-		for (InspectedComponent component : theCycle.subList(0, theCycle.size() - 1)) {
-			Edge edge = component.getEntryEdge();
-			if (edge.getEdgeType() == EdgeTypeEnum.DIRECT || edge.getEdgeType() == EdgeTypeEnum.DIRECT_FAST_PROPAGATE) {
-				edge.setEdgeType(EdgeTypeEnum.DIRECT_FAST_PROPAGATE);
-			} else if (edge.getEdgeType() == EdgeTypeEnum.BUFFERED || edge.getEdgeType() == EdgeTypeEnum.BUFFERED_FAST_PROPAGATE) {
-				edge.setEdgeType(EdgeTypeEnum.BUFFERED_FAST_PROPAGATE);
-			} else {
-				throw new JetelRuntimeException("Unexpected edge type (" + edge.getId() + ":" + edge.getEdgeType() + ") in oriented cycle in the graph. " + theCycle);
-			}
-		}
-	}
-
 	/**
 	 * @return
 	 */
