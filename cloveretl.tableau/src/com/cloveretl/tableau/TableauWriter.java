@@ -496,7 +496,7 @@ public class TableauWriter extends Node  {
 	        }
 		} catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
 			if (System.getProperty("os.name").startsWith("Mac")) {
-				errMessage = "The " + getClass().getSimpleName() + "does not work on Mac OS X as Tableau does not provide libraries for Mac.";
+				errMessage = "The " + getClass().getSimpleName() + " does not work on Mac OS X as Tableau does not provide libraries for Mac.";
 			} else {
 				errMessage = "Unable to initialize Tableau native libraries. Make sure they are installed and configured in PATH environment variable (see component docs). Underlying error: \n" + e.getMessage();
 			}
