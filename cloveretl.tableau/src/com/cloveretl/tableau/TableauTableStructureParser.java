@@ -118,7 +118,8 @@ public class TableauTableStructureParser {
 			errors.add("Invalid tableau type set for field: " + field.getName());
 			return;
 		}
-		if (!Arrays.asList(TableauWriter.getCompatibleTypes(field)).contains(tableauType)) {
+		Type[] types = TableauWriter.getCompatibleTypes(field);
+		if (types == null || !Arrays.asList(types).contains(tableauType)) {
 			errors.add("Incompatible types set for field " + field.getName()
 					+ ": " + field.getDataType() + "," + tableauType.name());
 			return;
