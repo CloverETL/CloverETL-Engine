@@ -1343,7 +1343,6 @@ public class DBOutputTable extends Node {
 			status.add(problem);
 		} finally {
 			if (dbConnection != null) {
-				dbConnection.rollback();
 				dbConnection.free();
 			}
 		}
