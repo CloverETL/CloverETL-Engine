@@ -105,7 +105,7 @@ public class S3OutputStream extends OutputStream {
 			}
 			uploadObject.setKey(file);
 			
-			if (file.length() <= MAX_SIZE) {
+			if (tempFile.length() <= MAX_SIZE) {
 				try {
 					service.putObject(s3bucket, uploadObject);
 				} catch (S3ServiceException e) {
