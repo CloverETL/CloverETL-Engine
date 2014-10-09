@@ -19,7 +19,7 @@
        <ETLComponent
         category="writers"
         className="com.cloveretl.tableau.TableauWriter"
-        name="Tableau Writer"
+        name="TableauWriter"
         type="TABLEAU_WRITER"
         iconPath="icons/TableauWriter">
 
