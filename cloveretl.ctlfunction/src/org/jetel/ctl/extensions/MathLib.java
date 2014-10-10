@@ -821,10 +821,10 @@ public class MathLib extends TLFunctionLibrary {
     	return ((input & ( 1l << bitPosition)) != 0);
 	}
     
-    @TLFunctionAnnotation("Tests if n-th bit of 1st argument is set")
-	public static final Boolean bitIsSet(TLFunctionCallContext context, byte[] input, Integer bitPosition) {
-    	return BitArray.isSet(input, bitPosition);
-	}
+//    @TLFunctionAnnotation("Tests if n-th bit of 1st argument is set")
+//	public static final Boolean bitIsSet(TLFunctionCallContext context, byte[] input, Integer bitPosition) {
+//    	return BitArray.isSet(input, bitPosition);
+//	}
 
     
     class BitIsSetFunction implements TLFunctionPrototype {
@@ -841,10 +841,11 @@ public class MathLib extends TLFunctionLibrary {
 			} else if (context.getParams()[0].isLong()) {
 				int bitPosition = stack.popInt();
 				stack.push(bitIsSet(context, stack.popLong(), bitPosition));
-			} else if (context.getParams()[0].isByteArray()) {
-				int bitPosition = stack.popInt();
-				stack.push(bitIsSet(context, stack.popByteArray(), bitPosition));
 			}
+//			else if (context.getParams()[0].isByteArray()) {
+//				int bitPosition = stack.popInt();
+//				stack.push(bitIsSet(context, stack.popByteArray(), bitPosition));
+//			}
 		}
     }
     
@@ -870,17 +871,17 @@ public class MathLib extends TLFunctionLibrary {
     	return result;
 	}
     
-    @TLFunctionAnnotation("Sets or resets n-th bit of 1st argument")
-	public static final byte[] bitSet(TLFunctionCallContext context, byte[] input, Integer bitPosition, boolean value) {
-    	byte[] result = new byte[input.length];
-    	System.arraycopy(input, 0, result, 0, input.length);
-    	if (value)
-    		BitArray.set(result, bitPosition);
-		else
-			BitArray.reset(result, bitPosition);
-    	
-    	return result;
-	}
+//    @TLFunctionAnnotation("Sets or resets n-th bit of 1st argument")
+//	public static final byte[] bitSet(TLFunctionCallContext context, byte[] input, Integer bitPosition, boolean value) {
+//    	byte[] result = new byte[input.length];
+//    	System.arraycopy(input, 0, result, 0, input.length);
+//    	if (value)
+//    		BitArray.set(result, bitPosition);
+//		else
+//			BitArray.reset(result, bitPosition);
+//    	
+//    	return result;
+//	}
 
 
     
@@ -898,9 +899,10 @@ public class MathLib extends TLFunctionLibrary {
 				stack.push(bitSet(context, stack.popInt(), bitPosition, value));
 			} else if (context.getParams()[0].isLong()) {
 				stack.push(bitSet(context, stack.popLong(), bitPosition, value));
-			} else if (context.getParams()[0].isByteArray()) {
-				stack.push(bitSet(context, stack.popByteArray(), bitPosition, value));
 			}
+//			else if (context.getParams()[0].isByteArray()) {
+//				stack.push(bitSet(context, stack.popByteArray(), bitPosition, value));
+//			}
 		}
     	
     }
