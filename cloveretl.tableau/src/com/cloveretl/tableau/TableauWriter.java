@@ -54,6 +54,7 @@ import org.jetel.util.date.DateFieldExtractorFactory;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 import com.cloveretl.tableau.TableauTableStructureParser.TableauTableColumnDefinition;
@@ -515,6 +516,10 @@ public class TableauWriter extends Node  {
 		
 		checkDefaultCollation(status);
 		
+		if (StringUtils.isEmpty(outputFileName)) {
+            status.add(new ConfigurationProblem("Missing File URL attribute.", Severity.ERROR, this, Priority.NORMAL));
+        }
+		
 		// Tableau API requires that the target file ends with ".tde". See Extract constructor doc
 		if (outputFileName != null && !outputFileName.endsWith(REQUIRED_FILE_SUFFIX)) {
 			status.add(new ConfigurationProblem("Output file path must point to a file with \".tde\" suffix", Severity.ERROR, this, Priority.NORMAL));
@@ -549,22 +554,25 @@ public class TableauWriter extends Node  {
 					Severity.ERROR, this, Priority.NORMAL));
 		}
 		
-		DataRecordMetadata recordMeta = getInputPort(0).getMetadata();
-		for (int i=0; i<recordMeta.getNumFields(); i++) {
-			DataFieldMetadata fieldMeta = recordMeta.getField(i);
-			DataFieldType fieldType= fieldMeta.getDataType();
-			if (fieldType == DataFieldType.LONG || fieldType == DataFieldType.DECIMAL || fieldType == DataFieldType.BYTE || fieldType == DataFieldType.CBYTE) {
-				status.add("Input metadata of \"" + getName() + "\" contain data type unsupported by Tableau! Metadata field "
-						+ recordMeta.getField(i).getName() + " of metadata " + recordMeta.getName() + " has type " + fieldType.getName()
-						+ "! Unsupported types are: " + DataFieldType.LONG.getName() + ", "	+ DataFieldType.DECIMAL.getName()
-						+ ", " + DataFieldType.BYTE.getName() + ", " + DataFieldType.CBYTE.getName(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-			}
-			if (fieldMeta.getContainerType() != DataFieldContainerType.SINGLE) {
-				status.add("Input metadata of \"" + getName() + "\" have container unsupported by Tableau! Metadata field "
-						+ recordMeta.getField(i).getName() + " of metadata " + recordMeta.getName() + " has container " 
-						+ fieldMeta.getContainerType().getDisplayName() +"! Container types " 
-						+ DataFieldContainerType.MAP.getDisplayName() + " and " + DataFieldContainerType.LIST.getDisplayName() 
-						+ " are not supported.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+		checkInputPorts(status, 1, 1);
+		DataRecordMetadata recordMeta;
+		if (getInputPort(0) != null && (recordMeta = getInputPort(0).getMetadata()) != null) {
+			for (int i=0; i<recordMeta.getNumFields(); i++) {
+				DataFieldMetadata fieldMeta = recordMeta.getField(i);
+				DataFieldType fieldType= fieldMeta.getDataType();
+				if (fieldType == DataFieldType.LONG || fieldType == DataFieldType.DECIMAL || fieldType == DataFieldType.BYTE || fieldType == DataFieldType.CBYTE) {
+					status.add("Input metadata of \"" + getName() + "\" contain data type unsupported by Tableau! Metadata field "
+							+ recordMeta.getField(i).getName() + " of metadata " + recordMeta.getName() + " has type " + fieldType.getName()
+							+ "! Unsupported types are: " + DataFieldType.LONG.getName() + ", "	+ DataFieldType.DECIMAL.getName()
+							+ ", " + DataFieldType.BYTE.getName() + ", " + DataFieldType.CBYTE.getName(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+				}
+				if (fieldMeta.getContainerType() != DataFieldContainerType.SINGLE) {
+					status.add("Input metadata of \"" + getName() + "\" have container unsupported by Tableau! Metadata field "
+							+ recordMeta.getField(i).getName() + " of metadata " + recordMeta.getName() + " has container " 
+							+ fieldMeta.getContainerType().getDisplayName() +"! Container types " 
+							+ DataFieldContainerType.MAP.getDisplayName() + " and " + DataFieldContainerType.LIST.getDisplayName() 
+							+ " are not supported.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+				}
 			}
 		}
 
