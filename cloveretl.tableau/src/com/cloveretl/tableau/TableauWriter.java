@@ -20,6 +20,8 @@ package com.cloveretl.tableau;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +29,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.fileoperation.CloverURI;
+import org.jetel.component.fileoperation.FileManager;
 import org.jetel.data.BooleanDataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
@@ -292,7 +296,16 @@ public class TableauWriter extends Node  {
 
 		logger.debug("Input files is configured to: \"" + outputFileName + "\"");
 
-		File targetFile = FileUtils.getJavaFile(getContextURL(), outputFileName);
+		URI contextURI;
+		try {
+			contextURI = getContextURL().toURI();
+		} catch (URISyntaxException e1) {
+			ComponentNotReadyException ex = new ComponentNotReadyException("Error while resolving project context.");
+			ex.addSuppressed(e1);
+			throw ex;
+		}
+		
+		File targetFile = FileManager.getInstance().getFile(CloverURI.createSingleURI(contextURI, outputFileName));
 
 		logger.debug("Resolved target file to: \"" + targetFile + "\"");
 
