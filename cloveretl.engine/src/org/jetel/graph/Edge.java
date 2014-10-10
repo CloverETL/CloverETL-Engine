@@ -37,6 +37,7 @@ import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.MetadataFactory;
 import org.jetel.util.EdgeDebugUtils;
 import org.jetel.util.ReferenceState;
+import org.jetel.util.ReferenceUtils;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -415,13 +416,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		 */
 		if (metadata == null) {
 			if (metadataStub == null) {
-				String message = "No metadata and no metadata stub defined for edge: " + getId();
-				if (metadataRef != null) {
-					message += ". The edge reference" + 
-							(metadataRefState == ReferenceState.INVALID_REFERENCE ? " missing " : " disabled ") + 
-							"edge.";
-				}
-				throw new RuntimeException(message);
+				throw new RuntimeException(createMissingMetadataMessage());
 			}
 			try{
 				metadata=MetadataFactory.fromStub(metadataStub);
@@ -438,7 +433,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	        }
 		}
 	}
-
+	
 	private void initEdgeBase() {
 		if (edge == null) {
 			edge = getEdgeType().createEdgeBase(this);
@@ -820,6 +815,26 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		return getId();
 	}
 
+	private String createMissingMetadataMessage() {
+		
+		String defaultComponentLabel = "Unknown component";
+		StringBuilder message = new StringBuilder();
+		message.append("No metadata defined for edge ");
+		message.append(getId());
+		message.append(" (");
+		message.append(getWriter() == null ? defaultComponentLabel : getWriter().getId());
+		message.append(" -> ");
+		message.append(getReader() == null ? defaultComponentLabel : getReader().getId());
+		message.append(")");
+		if (metadataRef != null) {
+			message.append(". The edge references");
+			message.append(metadataRefState == ReferenceState.INVALID_REFERENCE ? " missing " : " disabled ");
+			message.append("edge ");
+			message.append(ReferenceUtils.getElementID(metadataRef));
+			message.append(".");
+		}
+		return message.toString();
+	}
 }
 /*
  *  end class EdgeStub
