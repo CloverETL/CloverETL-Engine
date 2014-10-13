@@ -42,6 +42,7 @@ import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.RecursiveSubgraphException;
 import org.jetel.graph.analyse.GraphCycleInspector;
+import org.jetel.graph.analyse.LoopsInspector;
 import org.jetel.graph.analyse.SingleGraphProvider;
 import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
@@ -491,6 +492,9 @@ public class TransformationGraphAnalyzer {
 		GraphCycleInspector graphCycleInspector = new GraphCycleInspector(new SingleGraphProvider(graph));
 		graphCycleInspector.inspectGraph();
 		
+		//make all edges around loop component fast propagate
+		LoopsInspector.inspectEdgesInLoops(graph);
+		
 		//update edge types around Subgraph components
 		//real edge is combination of parent graph edge type and subgraph edge type
 		//this is turned off - parent graph is not changed according child graph, at least for now
@@ -712,7 +716,7 @@ public class TransformationGraphAnalyzer {
 			if (findPrecedentNodes(givenNode, givenNodes).isEmpty()) {
 				roots.add(givenNode);
 			} else {
-				if (givenNode.getType().equals(GraphCycleInspector.LOOP_COMPONENT_TYPE)) {
+				if (givenNode.getType().equals(LoopsInspector.LOOP_COMPONENT_TYPE)) {
 					loopComponents.add(givenNode);
 				}
 			}
@@ -759,7 +763,7 @@ public class TransformationGraphAnalyzer {
 				List<OutputPort> outputPorts = new ArrayList<OutputPort>(root.getOutPorts());
 				//let's reverse the output ports to get more logical output
 				//Loop component is only exception where reversing is not desired
-				if (!root.getType().equals(GraphCycleInspector.LOOP_COMPONENT_TYPE)) {
+				if (!root.getType().equals(LoopsInspector.LOOP_COMPONENT_TYPE)) {
 					Collections.reverse(outputPorts);
 				}
 				

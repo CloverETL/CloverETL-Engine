@@ -23,10 +23,9 @@ import java.io.IOException;
 import org.jetel.data.Defaults;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.graph.InputPort;
 import org.jetel.graph.InputPortDirect;
-import org.jetel.graph.JobType;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
@@ -115,21 +114,33 @@ public class SimpleGather extends Node {
 
 	@Override
 	public Result execute() throws Exception {
-		//ETL Graphs and jobflows use different implementations (CLO-3538)
-		JobType runtimeJobType = getGraph().getRuntimeContext().getJobType();
-		if (runtimeJobType.isGraph()) {
-			return executeInETLGraph();
-		} else if (runtimeJobType.isJobflow()) {
-			return executeInJobflow();
+		//check all input edges - if one of them is fast propagate
+		//sub-optimal gathering algorithm will be used
+		//typically jobflow has all of the edges fast-propagate or
+		//all edges in loop are automatically fast-propagate
+		boolean hasFastPropagateInput = false;
+		for (InputPort inputPort : getInPorts()) {
+			if (inputPort.getEdge().getEdgeType().isFastPropagate()) {
+				hasFastPropagateInput = true;
+				break;
+			}
+		}
+		
+		if (hasFastPropagateInput) {
+			//at least one input edge is fast propagate - so algorithm can not block on an input edge
+			//non blocking sub-optimal algorithm will be used
+			return gatherFastPropagate();
 		} else {
-			throw new JetelRuntimeException("Unexpected job type for SimpleGather component - " + runtimeJobType);
+			return gatherPerformanceOptimal();
 		}
 	}
 	
 	/**
-	 * Execution in regular ETL graph - forceReading is used (CLO-3538).
+	 * This implementation is fastest gathering algorithm, but
+	 * it is not suitable for jobflow or loops, where fast-propagate edges
+	 * have to be used.
 	 */
-	private Result executeInETLGraph() throws Exception {
+	private Result gatherPerformanceOptimal() throws Exception {
 		InputPortDirect inPort;
 		/*
 		 * we need to keep track of all input ports - it they contain data or signalized that they are empty.
@@ -184,9 +195,10 @@ public class SimpleGather extends Node {
 	}
 	
 	/**
-	 * Execution in jobflow - forceReading cannot be used (CLO-3538).
+	 * This implemenation is performance sub-optimal, but never block on empty input ports.
+	 * So it is suitable for fast-propagate graphs - jobflows and loops.
 	 */
-	private Result executeInJobflow() throws Exception {
+	private Result gatherFastPropagate() throws Exception {
 		InputPortDirect inPort;
 		/*
 		 * we need to keep track of all input ports - it they contain data or signalized that they are empty.

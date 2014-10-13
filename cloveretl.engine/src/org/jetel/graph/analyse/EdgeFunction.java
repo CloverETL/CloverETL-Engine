@@ -19,42 +19,32 @@
 package org.jetel.graph.analyse;
 
 import org.jetel.graph.Edge;
-import org.jetel.graph.Node;
 
 /**
- * This interface is used by {@link GraphCycleInspector} for graph layout tracking.
- * This is handler for a component and provides iterable view to all connected
- * components.
+ * This class defines transitional function from a component to an other component.
+ * The transition is possible only if an edge is between components, but this class
+ * can define filter on these possible transitions.
  * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 20.12.2012
- * @see GraphCycleInspector
- * @see SingleGraphProvider
+ * @created 8. 10. 2014
+ * @see GraphProvider
  */
-public interface InspectedComponent {
+public interface EdgeFunction {
 
 	/**
-	 * Provides iterable view to all components connected with wrapped component.
-	 * Sequentially returns wrappers for all connected components.
+	 * @param edge
+	 * @param entryEdge edge which has been used to get to the current component (edge.getWriter())
+	 * @return true if the given edge can be used for transition from a reader component to writer component
 	 */
-	public InspectedComponent getNextComponent();
+	public boolean isInputEdgeAllowed(Edge edge, Edge entryEdge);
 
 	/**
-	 * Returns representation of components, which is down the output port with the given number.
+	 * @param edge
+	 * @param entryEdge edge which has been used to get to the current component (edge.getWriter())
+	 * @return true if the given edge can be used for transition from a writer component to reader component
 	 */
-	public InspectedComponent getOutputPortComponent(int portNumber);
-	
-	/**
-	 * @return an edge through which was reached the wrapped component
-	 * in cycle detection algorithm (see {@link GraphCycleInspector}
-	 */
-	public Edge getEntryEdge();
+	public boolean isOutputEdgeAllowed(Edge edge, Edge entryEdge);
 
-	/**
-	 * @return wrapped component
-	 */
-	public Node getComponent();
-	
 }
