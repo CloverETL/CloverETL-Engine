@@ -35,12 +35,28 @@ import org.jetel.util.SubgraphUtils;
 public abstract class AbstractGraphProvider implements GraphProvider {
 
 	/**
+	 * Edge function defines how to traverse from a component to an other component.
+	 * Some edges can be avoided from algorithm or edges can be used in opposite direction.
+	 */
+	private EdgeFunction edgeFunction;
+	
+	/**
 	 * RemoteEdgeComponent and SubJobInput/Output components are not processed in regular way.
 	 * @return true for the component which are dedicated to be root of graph processing
 	 */
 	protected boolean isAllowedComponent(Node component) {
 		return !ClusterUtils.isRemoteEdgeComponent(component.getType())
 				&& !SubgraphUtils.isSubJobInputOutputComponent(component.getType());
+	}
+	
+	@Override
+	public void setEdgeFunction(EdgeFunction edgeFunction) {
+		this.edgeFunction = edgeFunction;
+	}
+	
+	@Override
+	public EdgeFunction getEdgeFunction() {
+		return edgeFunction;
 	}
 	
 }
