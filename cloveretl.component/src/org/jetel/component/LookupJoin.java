@@ -505,12 +505,16 @@ public class LookupJoin extends Node implements MetadataProvider {
 	        	getTransformFactory(inMetadata, outMetadata).checkConfig(status);
 	
 				//check join key
-	        	try {
-					recordKey = new RecordKey(joinKey, inMetadata[0]);
-					recordKey.init();
-				} catch (Exception e) {
-					status.add(new ConfigurationProblem("Join key parsing error.", e, Severity.ERROR, this, Priority.NORMAL, XML_JOIN_KEY_ATTRIBUTE));
-				}
+	        	if (joinKey == null) {
+	    			status.add(new ConfigurationProblem("Required join key is missing.", Severity.ERROR, this, Priority.NORMAL, XML_JOIN_KEY_ATTRIBUTE));
+	        	} else {
+		        	try {
+						recordKey = new RecordKey(joinKey, inMetadata[0]);
+						recordKey.init();
+					} catch (Exception e) {
+						status.add(new ConfigurationProblem("Join key parsing error.", e, Severity.ERROR, this, Priority.NORMAL, XML_JOIN_KEY_ATTRIBUTE));
+					}
+	        	}
 	        }
         }
         
@@ -584,13 +588,15 @@ public class LookupJoin extends Node implements MetadataProvider {
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		LookupJoin join;
-		String[] joinKey;
+		String[] joinKey = null;
 		// get necessary parameters
-		joinKey = xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(
-				Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+		if (xattribs.exists(XML_JOIN_KEY_ATTRIBUTE)) {
+			joinKey = xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(
+					Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+		}
 
 		join = new LookupJoin(xattribs.getString(XML_ID_ATTRIBUTE),
-				xattribs.getString(XML_LOOKUP_TABLE_ATTRIBUTE), joinKey,
+				xattribs.getString(XML_LOOKUP_TABLE_ATTRIBUTE, null), joinKey,
 				xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
 				xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
 				xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.URL));
