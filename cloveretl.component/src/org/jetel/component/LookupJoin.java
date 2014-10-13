@@ -489,25 +489,29 @@ public class LookupJoin extends Node implements MetadataProvider {
 			}
         }
 
-		LookupTable lookupTable = getGraph().getLookupTable(lookupTableName);
-
-		if (lookupTable == null) {
-			status.add(new ConfigurationProblem("Lookup table \"" + lookupTableName + "\" not found.", Severity.ERROR,
-					this, Priority.NORMAL));
-		} else if (transformation == null && !runtimeMetadata(lookupTable)) {
-			DataRecordMetadata[] inMetadata = { getInputPort(READ_FROM_PORT).getMetadata(), lookupTable.getMetadata() };
-			DataRecordMetadata[] outMetadata = { getOutputPort(WRITE_TO_PORT).getMetadata() };
-		
-            //check transformation
-        	getTransformFactory(inMetadata, outMetadata).checkConfig(status);
-
-			//check join key
-        	try {
-				recordKey = new RecordKey(joinKey, inMetadata[0]);
-				recordKey.init();
-			} catch (Exception e) {
-				status.add(new ConfigurationProblem("Join key parsing error.", e, Severity.ERROR, this, Priority.NORMAL, XML_JOIN_KEY_ATTRIBUTE));
-			}
+        if (StringUtils.isEmpty(lookupTableName)) {
+			status.add(new ConfigurationProblem("Required lookup table is missing.", Severity.ERROR, this, Priority.NORMAL, XML_LOOKUP_TABLE_ATTRIBUTE));
+        } else {
+			LookupTable lookupTable = getGraph().getLookupTable(lookupTableName);
+	
+			if (lookupTable == null) {
+				status.add(new ConfigurationProblem("Lookup table \"" + lookupTableName + "\" not found.", Severity.ERROR,
+						this, Priority.NORMAL));
+			} else if (transformation == null && !runtimeMetadata(lookupTable)) {
+				DataRecordMetadata[] inMetadata = { getInputPort(READ_FROM_PORT).getMetadata(), lookupTable.getMetadata() };
+				DataRecordMetadata[] outMetadata = { getOutputPort(WRITE_TO_PORT).getMetadata() };
+			
+	            //check transformation
+	        	getTransformFactory(inMetadata, outMetadata).checkConfig(status);
+	
+				//check join key
+	        	try {
+					recordKey = new RecordKey(joinKey, inMetadata[0]);
+					recordKey.init();
+				} catch (Exception e) {
+					status.add(new ConfigurationProblem("Join key parsing error.", e, Severity.ERROR, this, Priority.NORMAL, XML_JOIN_KEY_ATTRIBUTE));
+				}
+	        }
         }
         
         return status;
