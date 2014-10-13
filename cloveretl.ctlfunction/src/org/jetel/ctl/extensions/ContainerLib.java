@@ -23,8 +23,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -550,7 +550,7 @@ public class ContainerLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Converts input list to map where list items become map's keys, all values are the same constant.")
 	public static final <K, V> Map<K,V> toMap(TLFunctionCallContext context, List<K> keys, V constant) {
-		Map <K,V> map = new HashMap<K,V>(keys.size());
+		Map <K,V> map = new LinkedHashMap<K,V>(keys.size());
 		for(K key: keys){
 			map.put(key, constant);
 		}
@@ -560,7 +560,7 @@ public class ContainerLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Converts two input lists to map where first list items become map's keys and second list corresponding values.")
 	public static final <K, V> Map<K,V> toMap(TLFunctionCallContext context, List<K> keys, List<V> values) {
-		Map <K,V> map = new HashMap<K,V>(keys.size());
+		Map <K,V> map = new LinkedHashMap<K,V>(keys.size());
 		Iterator<V> iter = values.iterator();
 		if (keys.size()!=values.size()){
 			throw new IllegalArgumentException("Keys list does not match values list in size.");
