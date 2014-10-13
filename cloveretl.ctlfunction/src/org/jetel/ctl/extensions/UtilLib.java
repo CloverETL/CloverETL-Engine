@@ -27,7 +27,6 @@ import java.util.UUID;
 
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.data.TLTypeEnum;
-import org.jetel.ctl.extensions.StringLib.CharAtFunction;
 import org.jetel.data.DataRecord;
 import org.jetel.graph.GraphParameter;
 import org.jetel.graph.GraphParameters;
@@ -54,7 +53,8 @@ public class UtilLib extends TLFunctionLibrary {
         	"getComponentProperty".equals(functionName) ? new GetComponentPropertyFunction() : 
     		"hashCode".equals(functionName)	? new HashCodeFunction() :	
     		"byteAt".equals(functionName) ? new ByteAtFunction() : 
-    		"byteSet".equals(functionName) ? new ByteSetFunction() :null; 
+//    		"byteSet".equals(functionName) ? new ByteSetFunction() :
+    		null; 
     		
 		if (ret == null) {
     		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
@@ -446,8 +446,9 @@ public class UtilLib extends TLFunctionLibrary {
  		}
  	}
  	
+ 	/*
  	// BYTE SET
-  	@TLFunctionAnnotation("Returns byte at the specified position of input bytearray")
+  	@TLFunctionAnnotation("Sets the byte at the specified position of input bytearray")
   	public static final void byteSet(TLFunctionCallContext context, byte[] input, int position, int value) {
   		input[position]= (byte)( value & 0xff);
   	}
@@ -466,6 +467,7 @@ public class UtilLib extends TLFunctionLibrary {
   			byteSet(context, input, pos, value);
   		}
   	}
+  	*/
 
     
 }

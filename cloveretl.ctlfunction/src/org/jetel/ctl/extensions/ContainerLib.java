@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.data.TLType;
@@ -54,6 +53,7 @@ public class ContainerLib extends TLFunctionLibrary {
     		"containsAll".equals(functionName) ? new ContainsAllFunction() :
     		"containsKey".equals(functionName) ? new ContainsKeyFunction() :
     		"containsValue".equals(functionName) ? new ContainsValueFunction() : 
+//        	"binarySearch".equals(functionName) ? new BinarySearchFunction() : 
     		"getKeys".equals(functionName) ? new GetKeysFunction() :
     		"getValues".equals(functionName) ? new GetValuesFunction() :
     		"toMap".equals(functionName) ? new ToMapFunction() : null;
@@ -464,10 +464,9 @@ public class ContainerLib extends TLFunctionLibrary {
 		return map.containsValue(value);
 	}
 	
-	@SuppressWarnings("unchecked")
-	@TLFunctionAnnotation("Checks if a list contains a specified value. The list must be sorted in ascending order.")
+	@TLFunctionAnnotation("Checks if a list contains a specified value.")
 	public static final <V> boolean containsValue(TLFunctionCallContext context, List<V> list, V value) {
-		return Collections.binarySearch(((List<? extends Comparable<? super V>>) list), value)>=0;
+		return list.contains(value);
 	}
 	
 	class ContainsValueFunction implements TLFunctionPrototype{
@@ -490,6 +489,26 @@ public class ContainerLib extends TLFunctionLibrary {
 			}
 		}
 	}
+	
+//	@SuppressWarnings("unchecked")
+//	@TLFunctionAnnotation("Searches a list for the specified value. The list must be sorted in ascending order.")
+//	public static final <V> Integer binarySearch(TLFunctionCallContext context, List<V> list, V value) {
+//		return Collections.binarySearch(((List<? extends Comparable<? super V>>) list), value);
+//	}
+//	
+//	class BinarySearchFunction implements TLFunctionPrototype{
+//		
+//		@Override
+//		public void init(TLFunctionCallContext context) {
+//		}
+//
+//		@Override
+//		public void execute(Stack stack, TLFunctionCallContext context) {
+//			Object value = stack.pop();
+//			List<Object> list = stack.popList();
+//			stack.push(binarySearch(context, list, value));
+//		}
+//	}
 	
 	@TLFunctionAnnotation("Returns the keys of the map.")
 	public static final <K, V> List<K> getKeys(TLFunctionCallContext context, Map<K, V> map) {

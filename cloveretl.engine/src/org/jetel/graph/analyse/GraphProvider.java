@@ -46,4 +46,14 @@ public interface GraphProvider {
 	 */
 	public void reset();
 	
+	/**
+	 * Gets transition function between components in the graph.
+	 */
+	public EdgeFunction getEdgeFunction();
+	
+	/**
+	 * Sets transition function between components in the graph.
+	 */
+	public void setEdgeFunction(EdgeFunction edgeFunction);
+	
 }
