@@ -30,18 +30,18 @@ import org.jetel.graph.PhaseConnectionEdge;
 
 public enum EdgeTypeEnum {
 	/**  Proxy represents Direct Edge */
-	DIRECT("direct", DirectEdge.class, false),
+	DIRECT("direct", DirectEdge.class, false, false),
 	/**  Proxy represents Direct Edge fast propagate */
-	DIRECT_FAST_PROPAGATE("directFastPropagate", DirectEdgeFastPropagate.class, false),
+	DIRECT_FAST_PROPAGATE("directFastPropagate", DirectEdgeFastPropagate.class, false, true),
 	/**  Proxy represents Buffered Edge */
-	BUFFERED("buffered", BufferedEdge.class, true),
+	BUFFERED("buffered", BufferedEdge.class, true, false),
 	/**  Proxy represents Buffered fast propagate edge */
-	BUFFERED_FAST_PROPAGATE("bufferedFastPropagate", BufferedFastPropagateEdge.class, true),
+	BUFFERED_FAST_PROPAGATE("bufferedFastPropagate", BufferedFastPropagateEdge.class, true, true),
 	/** Proxy represents Edge connecting two different phases */
-	PHASE_CONNECTION("phaseConnection", PhaseConnectionEdge.class, true),
+	PHASE_CONNECTION("phaseConnection", PhaseConnectionEdge.class, true, false),
 
 	/** This edge type is used by server for remote edges in clustered graphs. */
-	L_REMOTE("lRemote", LRemoteEdge.class, false);
+	L_REMOTE("lRemote", LRemoteEdge.class, false, false);
 
 	private String name;
 	
@@ -49,10 +49,13 @@ public enum EdgeTypeEnum {
 	
 	private boolean buffered;
 	
-	private EdgeTypeEnum(String name, Class<? extends EdgeBase> edgeBaseClass, boolean buffered) {
+	private boolean fastPropagate;
+	
+	private EdgeTypeEnum(String name, Class<? extends EdgeBase> edgeBaseClass, boolean buffered, boolean fastPropagate) {
 		this.name = name;
 		this.edgeBaseClass = edgeBaseClass;
 		this.buffered = buffered;
+		this.fastPropagate = fastPropagate;
 	}
 	
 	/**
@@ -60,6 +63,14 @@ public enum EdgeTypeEnum {
 	 */
 	public boolean isBuffered() {
 		return buffered;
+	}
+	
+	/**
+	 * @return true if the edge type represents a fast propagate edge
+	 * - edge provides incoming records to reader component immediately.
+	 */
+	public boolean isFastPropagate() {
+		return fastPropagate;
 	}
 	
 	/**

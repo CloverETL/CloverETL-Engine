@@ -1151,6 +1151,10 @@ public class FileUtils {
 		return SandboxUrlUtils.isSandboxUrl(input);
 	}
 	
+	private static boolean isSandbox(URL url) {
+		return SandboxUrlUtils.isSandboxUrl(url);
+	}
+	
 	private static boolean isDictionary(String input) {
 		return input.startsWith(DICTIONARY_PROTOCOL);
 	}
@@ -1277,6 +1281,27 @@ public class FileUtils {
 			assert(path.length() == 0);			
 			path.append(input);
 			return true;
+		}
+		else if ((isSandbox(input) || isSandbox(contextURL)) && nestLevel > 0) { // CLO-4278
+			assert(path.length() == 0);			
+			URL url = getFileURL(contextURL, input);
+			if (isSandbox(url)) {
+				try {
+					CloverURI cloverUri = CloverURI.createURI(url.toURI());
+					FileManager fileManager = FileManager.getInstance();
+					File file = fileManager.getFile(cloverUri); 
+					if (file != null) {
+						URL sandboxRootUrl = SandboxUrlUtils.getSandboxUrl(SandboxUrlUtils.getSandboxName(url));
+						File sandboxRoot = fileManager.getFile(CloverURI.createURI(sandboxRootUrl.toURI()));
+						if (sandboxRoot != null) {
+							path.append(sandboxRoot.getAbsolutePath()); // replace sandbox name with absolute path to sandbox root
+							path.append(SandboxUrlUtils.getSandboxPath(url)); // CLO-702: preserve escaped character sequences in the path
+							return true;
+						}
+					}
+				} catch (Exception ex) {}
+			}
+			return false; // conversion failed, will fall back to remote ZIP streams
 		}
 		else {
 			return false;

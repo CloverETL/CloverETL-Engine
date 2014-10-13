@@ -18,52 +18,26 @@
  */
 package org.jetel.graph.analyse;
 
-import java.util.Iterator;
-
-import org.jetel.graph.Node;
-import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Edge;
 
 /**
- * This class is used by {@link GraphCycleInspector} class to provide all components of inspected graph.
- *  
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 20.12.2012
- * @see GraphCycleInspector
- * @see BasicInspectedComponent
+ * @created 8. 10. 2014
  */
-public class SingleGraphProvider extends AbstractGraphProvider {
+public class EdgeFunctionImpl implements EdgeFunction {
 
-	private TransformationGraph graph;
-	
-	private Iterator<Node> componentsIterator;
-	
-	/**
-	 * @param graph
-	 */
-	public SingleGraphProvider(TransformationGraph graph) {
-		this.graph = graph;
-		reset();
+	@Override
+	public boolean isInputEdgeAllowed(Edge edge, Edge entryEdge) {
+		//edges cannot be used in backward direction
+		return false;
 	}
 
 	@Override
-	public BasicInspectedComponent getNextComponent() {
-		if (componentsIterator.hasNext()) {
-			Node nextComponent = componentsIterator.next();
-			if (isAllowedComponent(nextComponent)) {
-				return new BasicInspectedComponent(this, nextComponent, null);
-			} else {
-				return getNextComponent();
-			}
-		} else {
-			return null;
-		}
+	public boolean isOutputEdgeAllowed(Edge edge, Edge entryEdge) {
+		//never return back where you come from
+		return (entryEdge != edge);
 	}
 
-	@Override
-	public void reset() {
-		componentsIterator = graph.getNodes().values().iterator();
-	}
-	
 }
