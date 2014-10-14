@@ -1,0 +1,10 @@
+fixVersion = rel-3-3-0-M1 and labels = release-notes
+fixVersion = rel-3-3-0-M2 and labels = release-notes
+fixVersion = rel-3-3-0-M3 and labels = release-notes
+fixVersion = rel-3-3-0 and labels = release-notes
+fixVersion = rel-3-5-0-M1 and labels = release-notes
+fixVersion = rel-3-5-0-M2 and labels = release-notes
+fixVersion = rel-3-5-0 and labels = release-notes
+fixVersion = rel-3-4-0-M1 and labels = release-notes
+fixVersion = rel-3-4-0-M2 and labels = release-notes
+fixVersion = rel-3-4-0 and labels = release-notes
