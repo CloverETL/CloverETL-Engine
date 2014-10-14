@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="employees_txt" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Field delimiter="|" eofAsDelimiter="false" label="First name" name="first_name" nullable="true" shift="0" type="string"/>
+<Field delimiter="|" eofAsDelimiter="false" label="Last name" name="last_name" nullable="true" shift="0" type="string"/>
+<Field delimiter="|" eofAsDelimiter="false" label="Age" name="age" nullable="true" shift="0" type="integer"/>
+<Field delimiter="|" eofAsDelimiter="false" format="yyyy-MM-dd" label="Joined" name="joined" nullable="true" shift="0" type="date"/>
+<Field delimiter="|" eofAsDelimiter="false" label="Salary" name="salary" nullable="true" shift="0" type="decimal"/>
+</Record>
+
