@@ -29,7 +29,8 @@ import org.jetel.util.string.StringUtils;
 
 import java.io.IOException;
 import java.util.Enumeration;
-import sun.misc.CompoundEnumeration;
+import java.util.Iterator;
+import org.apache.commons.collections.IteratorUtils;
 
 /**
  * Class-loader extended from URL classloader which by default loads classes and finds resources
@@ -231,15 +232,13 @@ public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinit
 	@SuppressWarnings({"unchecked"})
 	@Override
 	public Enumeration<URL> getResources(String name) throws IOException {
-		Enumeration<URL>[] tmp = new Enumeration[2];
-        if (greedy) {
-        	tmp[0] = findResources(name);
-        	tmp[1] = super.getResources(name);
+		Iterator<URL> iterator;
+		if (greedy) {
+        	iterator = IteratorUtils.chainedIterator(IteratorUtils.asIterator(findResources(name)), IteratorUtils.asIterator(super.getResources(name)));
         } else {
-        	tmp[0] = super.getResources(name);
-        	tmp[1] = findResources(name);
+        	iterator = IteratorUtils.chainedIterator(IteratorUtils.asIterator(super.getResources(name)), IteratorUtils.asIterator(findResources(name)));
         }
-        return new CompoundEnumeration<>(tmp);
+		return IteratorUtils.asEnumeration(iterator);
 	}
 
 	@Override
