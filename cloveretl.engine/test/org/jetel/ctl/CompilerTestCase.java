@@ -4750,6 +4750,116 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 	}
+
+	public void test_containerlib_getValues() {
+		doCompile("test_containerlib_getValues");
+		check("stringList", Arrays.asList("a","b"));
+		check("stringList2", Arrays.asList("a","b"));
+		check("integerList", Arrays.asList(5,7,2));
+		check("integerList2", Arrays.asList(5,7,2));
+		List<Date> list = new ArrayList<Date>();
+		Calendar cal = Calendar.getInstance();
+		cal.set(2008, 10, 12, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.set(2001, 5, 28, 0, 0, 0);
+		cal2.set(Calendar.MILLISECOND, 0);
+		list.add(cal.getTime());
+		list.add(cal2.getTime());
+		check("dateList", list);
+		check("dateList2", list);
+		check("longList", Arrays.asList(14L, 45L));
+		check("longList2", Arrays.asList(14L, 45L));
+		check("numList", Arrays.asList(12.3d, 13.4d));
+		check("numList2", Arrays.asList(12.3d, 13.4d));
+		check("decList", Arrays.asList(new BigDecimal("34.5"), new BigDecimal("45.6")));
+		check("decList2", Arrays.asList(new BigDecimal("34.5"), new BigDecimal("45.6")));
+		check("emptyList", Arrays.asList());
+		check("emptyList2", Arrays.asList());
+	}
+	
+	public void test_containerlib_getValues_expect_error(){
+		try {
+			doCompile("function integer transform(){map[string,string] strMap = null; string[] str = strMap.getValues(); return 0;}","test_containerlib_getValues_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){map[string,string] strMap = null; string[] str = getValues(strMap); return 0;}","test_containerlib_getValues_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_containerlib_toMap() {
+		doCompile("test_containerlib_toMap");
+		
+		{
+			Map<Integer, Boolean> expected = new HashMap<>();
+			expected.put(5, true);
+			expected.put(8, false);
+			check("integerBooleanMap", expected);
+		}
+		{
+			Map<Integer, Boolean> expected = new HashMap<>();
+			expected.put(5, null);
+			expected.put(8, null);
+			check("integerBooleanMapNull", expected);
+		}
+		{
+			Map<Integer, Boolean> expected = new HashMap<>();
+			expected.put(5, true);
+			expected.put(8, true);
+			check("integerBooleanMapTrue", expected);
+		}
+		check("emptyMap", new HashMap<BigDecimal, Long>(0));
+		{
+			Map<Double, byte[]> expected = new HashMap<>();
+			expected.put(null, null);
+			check("nullMap", expected);
+		}
+		{
+			Map<Date, String> expected = new HashMap<>();
+			expected.put(new Date(7), "C");
+			expected.put(null, "D");
+			expected.put(new Date(46), "E");
+			check("duplicateMap", expected);
+		}
+		{
+			List<String> upperCase = Arrays.asList("A", "B", "C", "D", "E", "F", "G");
+			List<String> lowerCase = Arrays.asList("a", "b", "c", "d", "e", "f", "g");
+			check("keys1", upperCase);
+			check("keys2", upperCase);
+			check("values", lowerCase);
+		}
+	}
+	
+	public void test_containerlib_toMap_expect_error() {
+		doCompileExpectError("function integer transform(){map[string,string] strMap = toMap(null, null); return 0;}","test_containerlib_toMap_expect_error", Arrays.asList("Function 'toMap' is ambiguous"));
+		doCompileExpectError("function integer transform(){map[string,string] strMap = toMap(['a', 'b'], null); return 0;}","test_containerlib_toMap_expect_error", Arrays.asList("Function 'toMap' is ambiguous"));
+		doCompileExpectError("function integer transform(){string[] values = null; map[string,string] strMap = toMap(null, values); return 0;}","test_containerlib_toMap_expect_error", Arrays.asList("Type mismatch: cannot convert from 'map[?,string]' to 'map[string,string]'"));
+		
+		try {
+			doCompile("function integer transform(){string[] keys = ['A']; string[] values = null; map[string,string] strMap = toMap(keys, values); return 0;}","test_containerlib_toMap_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] keys = null; string[] values = ['A']; map[string,string] strMap = toMap(keys, values); return 0;}","test_containerlib_toMap_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] keys = ['x', 'y']; string[] values = ['A']; map[string,string] strMap = toMap(keys, values); return 0;}","test_containerlib_toMap_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
 //---------------------- StringLib Tests ------------------------	
 	
 	public void test_stringlib_cache() {
