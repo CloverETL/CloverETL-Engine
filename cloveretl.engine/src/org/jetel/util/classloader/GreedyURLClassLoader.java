@@ -27,6 +27,10 @@ import org.apache.log4j.Logger;
 import org.jetel.data.Defaults;
 import org.jetel.util.string.StringUtils;
 
+import java.io.IOException;
+import java.util.Enumeration;
+import sun.misc.CompoundEnumeration;
+
 /**
  * Class-loader extended from URL classloader which by default loads classes and finds resources
  * (greedily) from specified URLs at first. If unsuccessful, it tries to load class or to find resource
@@ -222,6 +226,20 @@ public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinit
 		}
 		
 		return super.getResource(name);
+	}
+	
+	@SuppressWarnings({"unchecked"})
+	@Override
+	public Enumeration<URL> getResources(String name) throws IOException {
+		Enumeration<URL>[] tmp = new Enumeration[2];
+        if (greedy) {
+        	tmp[0] = findResources(name);
+        	tmp[1] = super.getResources(name);
+        } else {
+        	tmp[0] = super.getResources(name);
+        	tmp[1] = findResources(name);
+        }
+        return new CompoundEnumeration<>(tmp);
 	}
 
 	@Override
