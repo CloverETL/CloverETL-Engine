@@ -489,6 +489,18 @@ public class CTLMapping {
         
 	}
 	
+	public DataRecordMetadata[] getInputRecordsMetadata() {
+		return inputRecordsMetadata;
+	}
+
+	public DataRecordMetadata[] getOutputRecordsMetadata() {
+		return outputRecordsMetadata;
+	}
+	
+	public Set<Field> getUsedOutputFields() {
+		return usedOutputFields;
+	}
+
 	private ComponentNotReadyException handleMissingFieldException(MissingFieldException mfe) {
 		if (mfe.isOutput()) {
 			DataRecord record = getOutputRecord(mfe.getRecordId());
