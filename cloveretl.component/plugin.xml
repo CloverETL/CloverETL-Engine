@@ -1903,7 +1903,7 @@
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
-	        <singleType name="file" mandatory_existing_file="false" selectionMode="file_only" />
+	        <singleType name="file" fields="output" dictionary="output" mandatory_existing_file="false" selectionMode="file_only" />
 	      </property>
 	      <property category="basic" displayName="Append" modifiable="true" name="append" nullable="true" defaultHint="false">
 	        <singleType name="bool" />

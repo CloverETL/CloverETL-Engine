@@ -27,14 +27,21 @@ import org.jetel.data.Defaults;
 import org.jetel.data.formatter.provider.CloverDataFormatterProvider;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.enums.PartitionFileTagType;
+import org.jetel.enums.ProcessingType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldContainerType;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -123,6 +130,7 @@ public class CloverDataWriter extends Node {
 
 	public final static String COMPONENT_TYPE = "CLOVER_WRITER";
 	private final static int READ_FROM_PORT = 0;
+	private final static int OUTPUT_PORT = 0;
 
 	private String fileURL;
 	private boolean append;
@@ -206,6 +214,37 @@ public class CloverDataWriter extends Node {
 		}
 	}
 	
+	private void checkFileURL() throws ComponentNotReadyException {
+		String PORT_PROTOCOL = "port:";
+		String FIELD_DELIMITER = "\\.";
+		if (!StringUtils.isEmpty(fileURL) && fileURL.startsWith(PORT_PROTOCOL)) {
+			String[] aField = fileURL.substring(PORT_PROTOCOL.length()).split(":");
+			if (aField.length < 1) {
+				throw new ComponentNotReadyException("The source string '" + fileURL + "' is not valid.");
+			}
+			ProcessingType fieldProcessingType = ProcessingType.fromString(aField.length > 1 ? aField[1] : null, ProcessingType.DISCRETE);
+			if (fieldProcessingType != ProcessingType.DISCRETE) {
+				throw new ComponentNotReadyException("Unsupported output method: " + fieldProcessingType);
+			}
+			String[] aFieldNamePort = aField[0].split(FIELD_DELIMITER);
+			if (aFieldNamePort.length < 2) {
+				throw new ComponentNotReadyException("The source string '" + fileURL + "' is not valid.");
+			}
+			String fName = aFieldNamePort[1];
+			DataRecordMetadata record = getOutputPort(OUTPUT_PORT).getMetadata();
+			DataFieldMetadata field = record.getField(fName);
+			if (field == null) {
+				throw new ComponentNotReadyException("The field not found for the statement: '" + fileURL + "'");
+			}
+			if (field.getDataType() != DataFieldType.BYTE || field.getDataType() == DataFieldType.CBYTE) {
+				throw new ComponentNotReadyException("Unsupported output field type: '" + field.getDataType() + "'. Use 'byte' or 'cbyte' instead.");
+			}
+			if (field.getContainerType() != DataFieldContainerType.SINGLE) {
+				throw new ComponentNotReadyException("Unsupported output field container type: '" + field.getContainerType() + "'");
+			}
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig()
 	 */
@@ -214,7 +253,7 @@ public class CloverDataWriter extends Node {
         super.checkConfig(status);
         
         if(!checkInputPorts(status, 1, 1)
-        		|| !checkOutputPorts(status, 0, 0)) {
+        		|| !checkOutputPorts(status, 0, 1)) {
         	return status;
         }
 
@@ -240,6 +279,12 @@ public class CloverDataWriter extends Node {
             status.add(e.toString(),ConfigurationStatus.Severity.ERROR,this,
             		ConfigurationStatus.Priority.NORMAL,XML_APPEND_ATTRIBUTE);
 		}
+        
+        try {
+        	checkFileURL();
+        } catch (ComponentNotReadyException e) {
+        	status.add(e, Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE);
+        }
         
         return status;
     }
@@ -269,6 +314,8 @@ public class CloverDataWriter extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
+		
+		checkFileURL();
 		
 		//prepare formatter provider
 		formatterProvider = new CloverDataFormatterProvider();
