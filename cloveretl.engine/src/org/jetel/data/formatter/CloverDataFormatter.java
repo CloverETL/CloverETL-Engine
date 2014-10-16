@@ -188,6 +188,9 @@ public class CloverDataFormatter extends AbstractFormatter {
 			// MultiFileWriter returns a File even if not appending - the file must be overwritten
 			channel = append ? new RandomAccessFile((File) outputDataTarget, "rw").getChannel() : new FileOutputStream(file).getChannel();
 			this.out = Channels.newOutputStream(this.channel);
+		}else if (outputDataTarget instanceof WritableByteChannel){
+			channel = (WritableByteChannel) outputDataTarget;
+			this.out = Channels.newOutputStream(this.channel);
 		}else{
         	throw new IOException("Unsupported  Data Target type: "+outputDataTarget.getClass().getName());
         }
