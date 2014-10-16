@@ -295,7 +295,7 @@ public class MultiFileWriter {
 	    }
     }
     
-    private void writeCommon() throws IOException, ComponentNotReadyException {
+    private boolean writeCommon() throws IOException, ComponentNotReadyException {
     	if (reset) {
     		prepareTargets();
     		reset = false;
@@ -303,19 +303,20 @@ public class MultiFileWriter {
 
         // check for index of last returned record
         if(numRecords > 0 && numRecords == counter) {
-            return;
+            return false;
         }
 
         // shall i skip some records?
         if(skip > 0) {
             skip--;
-            return;
+            return false;
         }
 
         if (currentTarget != null) {
         	checkAndSetNextOutput();
         }
         
+        return true;
     }
     
     /**
@@ -344,7 +345,9 @@ public class MultiFileWriter {
     }
     
     public void writeDirect(CloverBuffer buffer) throws IOException, ComponentNotReadyException {
-    	writeCommon();
+    	if (!writeCommon()) {
+    		return;
+    	}
 
     	this.deserialized = false; // new record - clear cache
     	
@@ -371,7 +374,9 @@ public class MultiFileWriter {
      * @throws ComponentNotReadyException 
      */
     public void write(DataRecord record) throws IOException, ComponentNotReadyException {
-    	writeCommon();
+    	if (!writeCommon()) {
+    		return;
+    	}
         
         // write the record according to value partition
         if (partitionKey == null) {
