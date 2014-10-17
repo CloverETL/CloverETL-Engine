@@ -223,7 +223,7 @@ public class CloverDataWriter extends Node {
 				throw new ComponentNotReadyException("The source string '" + fileURL + "' is not valid.");
 			}
 			ProcessingType fieldProcessingType = ProcessingType.fromString(aField.length > 1 ? aField[1] : null, ProcessingType.DISCRETE);
-			if (fieldProcessingType != ProcessingType.DISCRETE) {
+			if (fieldProcessingType == ProcessingType.SOURCE) {
 				throw new ComponentNotReadyException("Unsupported output method: " + fieldProcessingType);
 			}
 			String[] aFieldNamePort = aField[0].split(FIELD_DELIMITER);
