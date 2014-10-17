@@ -21,6 +21,7 @@ package org.jetel.component.aggregate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -90,7 +91,7 @@ public class AggregateProcessor {
 		this.sorted = sorted;
 		if (!sorted) {
 			hashKey = new HashKey(recordKey, null);
-			unsortedGroups = new HashMap<HashKey, AggregationGroup>();
+			unsortedGroups = new LinkedHashMap<HashKey, AggregationGroup>();
 		}
 		
 		this.inMetadata = inMetadata;
