@@ -302,6 +302,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 	@Override
 	public void finish() throws IOException{
     	if (!isOpen) return;
+		output.finish();
     	flush();
     }
     

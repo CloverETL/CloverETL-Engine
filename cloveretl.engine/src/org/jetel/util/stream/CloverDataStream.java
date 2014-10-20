@@ -421,11 +421,8 @@ public class CloverDataStream {
 
 		@Override
 		public void close() throws IOException {
-			writeIndexData(); // this also marks the end of data
-			if (!finished) {
-				finish();
-			}
 			if (out != null) {
+				finish();
 				out.close();
 				out = null;
 			}
@@ -510,7 +507,10 @@ public class CloverDataStream {
 		 * to keep on using the underlying stream.
 		 */
 		public void finish() throws IOException {
-			finished = true;
+			if (!finished) {
+				writeIndexData(); // this also marks the end of data
+				finished = true;
+			}
 			out.flush();
 		}
 
