@@ -98,7 +98,7 @@ public class GraphUtils {
     private static final String RS_END_TIME_NAME = "endTime";
     private static final String RS_DURATION_NAME = "duration";
     private static final String RS_EXECUTION_GROUP_NAME = "executionGroup";
-    private static final String RS_EXECUTION_LABEL_NAME = "executionLabel";
+    public static final String RS_EXECUTION_LABEL_NAME = "executionLabel";
     public static final String RS_STATUS_NAME = "status";
     private static final String RS_ERR_EXCEPTION_NAME = "errException";
     private static final String RS_ERR_MESSAGE_NAME = "errMessage";

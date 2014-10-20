@@ -10,6 +10,13 @@ long resultLong4;
 long test_mixed1;
 long test_mixed2;
 
+byte resultByte1;
+byte resultByte2;
+byte resultByte3;
+byte resultByte4;
+
+byte resultByteDifferentLength;
+
 function integer transform() {
 
 	resultInt1 = bitXor(0,1);
@@ -23,5 +30,13 @@ function integer transform() {
 
 	test_mixed1 = bitXor(31L,16);
 	test_mixed2 = bitXor(48,12L);
+
+	resultByte1 = bitXor(hex2byte("00F0FF"), hex2byte("010101"));
+	resultByte2 = bitXor(hex2byte("0001FF"), hex2byte("F1F1F1"));
+	resultByte3 = bitXor(hex2byte("0072FF"), hex2byte("717171"));
+	resultByte4 = bitXor(hex2byte("00F3FF"), hex2byte("F1F1F1"));
+	
+	resultByteDifferentLength = bitXor(hex2byte("F0F0F0F0"), hex2byte("FF0077"));
+
 	return 0;
 }

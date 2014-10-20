@@ -873,18 +873,13 @@ public class AproxMergeJoin extends Node implements MetadataProvider {
 		boolean[] ordering = new boolean[joiners.length]; 
 		Arrays.fill(ordering, true);//TODO change the key dialog
 
-		int[] fields = new int[joiners.length];
-		for (int i = 0; i < fields.length; i++) {
-			fields[i] = metaData.getFieldPosition(joiners[i]);
-		}
-		
 		if (locale != null) {
 			RuleBasedCollator col = (RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(locale));
 			col.setStrength(caseSensitive ? Collator.TERTIARY : Collator.SECONDARY);
 			col.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
-			return new RecordOrderedKey(fields, ordering, metaData, col);
+			return new RecordOrderedKey(joiners, ordering, metaData, col);
 		} else {
-			return new RecordOrderedKey(fields, ordering, metaData);
+			return new RecordOrderedKey(joiners, ordering, metaData);
 		}
 	}
 	
