@@ -534,6 +534,11 @@ public class DataRecordImpl extends DataRecord {
 		serializer.serialize(buffer, this);
 	}
 	
+	@Override
+	public void serialize(CloverBuffer buffer,DataRecordSerializer serializer, int[] whichFields) {
+		serializer.serialize(buffer, this, whichFields);
+	}
+	
 	/**
 	 * Unitary deserialization should be compatible with
 	 * unitary serialization. Moreover this type of unitary

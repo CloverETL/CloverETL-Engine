@@ -1933,6 +1933,9 @@
 	        <singleType name="int" />
 	      </property>
 	      -->
+	      <property category="advanced" displayName="Exclude fields" modifiable="true" name="excludeFields" nullable="true">
+	        <singleType name="key" rightLabel="Exclude fields:" />
+	      </property>
 	      <property category="advanced" displayName="Partition key" modifiable="true" name="partitionKey" nullable="true" required="partition">
 	        <singleType name="key" inputPortName="0" rightLabel="Partition key:" />
 	      </property>

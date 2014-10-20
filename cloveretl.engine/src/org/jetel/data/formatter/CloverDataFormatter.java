@@ -30,6 +30,7 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 import org.jetel.data.CloverDataRecordSerializer;
+import org.jetel.data.CompressingDataRecordSerializer;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordSerializer;
 import org.jetel.data.Defaults;
@@ -41,6 +42,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
+import org.jetel.metadata.MetadataUtils;
 import org.jetel.util.JetelVersion;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -128,7 +130,9 @@ public class CloverDataFormatter extends AbstractFormatter {
 	 */
 	private boolean isJobflow;
 
-	
+	private String[] excludedFieldNames;
+	private int[] includedFieldIndices;
+
 	/**
 	 * Constructor
 	 */
@@ -143,6 +147,9 @@ public class CloverDataFormatter extends AbstractFormatter {
 	public CloverDataFormatter(CloverDataFormatter parent) {
 		this();
 		this.buffer = parent.buffer;
+		this.metadata = parent.metadata;
+		this.excludedFieldNames = parent.excludedFieldNames;
+		this.includedFieldIndices = parent.includedFieldIndices;
 	}
 	
 	/* (non-Javadoc)
@@ -150,12 +157,18 @@ public class CloverDataFormatter extends AbstractFormatter {
 	 */
 	@Override
 	public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
-		this.metadata = metadata;
-		if (buffer == null) {
+		if (this.metadata == null) { // already initialized for lightweight formatter instances
+			includedFieldIndices = metadata.fieldsIndicesComplement(excludedFieldNames);
+			if (excludedFieldNames != null) {
+				// only selected fields must be stored in the header
+				metadata = MetadataUtils.getSelectedFieldsMetadata(metadata, includedFieldIndices);
+			}
+			this.metadata = metadata;
+		}
+		if (this.buffer == null) { // already initialized for lightweight formatter instances
 	        buffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE+LEN_SIZE_SPECIFIER);
 	        buffer.order(BUFFER_BYTE_ORDER);
 		}
-        serializer = new CloverDataRecordSerializer();
 
         //is the current transformation jobflow?
         isJobflow = ContextProvider.getRuntimeContext() != null
@@ -221,7 +234,9 @@ public class CloverDataFormatter extends AbstractFormatter {
 				throw new RuntimeException(e);
 			}
 		}
-		this.recordWriter = raw ? new DirectRecordWriter() : new SerializingRecordWriter();
+		
+		this.serializer = raw ? new CloverDataRecordSerializer() : new CompressingDataRecordSerializer();
+		
 		try {
 			int size = 0;
 			if (writeHeader) {
@@ -257,6 +272,13 @@ public class CloverDataFormatter extends AbstractFormatter {
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
 		}
+		
+		if (excludedFieldNames != null) {
+			raw = false; // direct writing is not possible, we need to exclude some fields
+			// original value is stored in the header - the file may be parsed with direct reading
+		}
+		// ensure that the right write() method is called
+		this.recordWriter = raw ? new DirectRecordWriter() : new SerializingRecordWriter();
 	}
     
     @Override
@@ -402,6 +424,10 @@ public class CloverDataFormatter extends AbstractFormatter {
 		}
 	}
 	
+	public void setExcludedFieldNames(String[] excludedFieldNames) {
+		this.excludedFieldNames = excludedFieldNames;
+	}
+
 public enum DataCompressAlgorithm {
 		
 		NONE(0),
@@ -518,7 +544,7 @@ public enum DataCompressAlgorithm {
 		@Override
 		public int write(DataRecord record) throws IOException {
 			buffer.clear();
-			record.serialize(buffer, serializer);
+			record.serialize(buffer, serializer, includedFieldIndices);
 			buffer.flip();
 			return doWriteDirect(buffer);
 		}
