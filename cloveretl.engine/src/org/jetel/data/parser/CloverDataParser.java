@@ -30,6 +30,7 @@ import java.nio.channels.ReadableByteChannel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.CloverDataRecordSerializer;
+import org.jetel.data.CompressingDataRecordSerializer;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.DataRecordSerializer;
@@ -174,7 +175,6 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 		}
         recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
         recordBuffer.order(CloverDataFormatter.BUFFER_BYTE_ORDER);
-        serializer=new CloverDataRecordSerializer();
 	}
 
 	private void doReleaseDataSource() throws IOException {
@@ -235,6 +235,8 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 	     if(version.formatVersion!=CloverDataFormatter.CURRENT_FORMAT_VERSION){
 	    	 return;
 	     }
+	     
+	    this.serializer = version.raw ? new CloverDataRecordSerializer() : new CompressingDataRecordSerializer();
 	     
 		 this.compress=DataCompressAlgorithm.getAlgorithm(version.compressionAlgorithm);
         
@@ -388,20 +390,12 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 			throw new JetelException(ex);
 		}
 		
-		if (version.raw) { 
-			// fix for switching from non-direct file to a direct one
-			// see CDR_multiFileReader_CLO-4333.grf
-			if (!useParsingFromJobflow_3_4) {
-				record.deserializeUnitary(recordBuffer);
-			} else {
-				record.deserialize(recordBuffer);
-			}
+		// fix for switching from non-direct file to a direct one
+		// see CDR_multiFileReader_CLO-4333.grf
+		if (!useParsingFromJobflow_3_4) {
+			record.deserializeUnitary(recordBuffer, serializer);
 		} else {
-			if (!useParsingFromJobflow_3_4) {
-				record.deserializeUnitary(recordBuffer,serializer);
-			} else {
-				record.deserialize(recordBuffer,serializer);
-			}
+			record.deserialize(recordBuffer, serializer);
 		}
 		
 		return record;

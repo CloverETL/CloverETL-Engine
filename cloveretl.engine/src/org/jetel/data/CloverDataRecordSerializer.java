@@ -18,34 +18,17 @@
  */
 package org.jetel.data;
 
-import java.io.IOException;
-import java.nio.BufferOverflowException;
-import java.util.Map.Entry;
-
-
-import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
-import org.jetel.util.bytes.DynamicCloverBuffer;
-import org.jetel.util.bytes.UTF8CloverBufferReader;
-import org.jetel.util.bytes.UTF8CloverBufferWriter;
 
 /**
- * @author dpavlis (info@cloveretl.com)
+ * {@link DataRecordSerializer} that uses internal {@link DataField} serialization. 
+ *  
+ * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created Mar 6, 2014
+ * @created 17. 10. 2014
  */
 public class CloverDataRecordSerializer implements DataRecordSerializer {
-	
-	UTF8CloverBufferWriter utfWriter;
-	UTF8CloverBufferReader utfReader;
-	
-	public CloverDataRecordSerializer(){
-		utfWriter = new UTF8CloverBufferWriter();
-		utfReader = new UTF8CloverBufferReader();
-	}
-	
 	
 	@Override
 	public void serialize(CloverBuffer buffer, DataRecord record) {
@@ -85,19 +68,7 @@ public class CloverDataRecordSerializer implements DataRecordSerializer {
 
 	@Override
 	public void serialize(CloverBuffer buffer, StringDataField field) {
-		try {
-			// encode nulls as zero, increment length of non-null values by one
-			ByteBufferUtils.encodeLength(buffer,field.isNull() ? 0 : field.length() + 1);
-			
-			utfWriter.setOutput(buffer);
-			utfWriter.write(field);
-			utfWriter.reset();
-			
-    	} catch (BufferOverflowException | IOException e) {
-    		throw new RuntimeException("The size of data buffer is only " + buffer.maximumCapacity() + ". Set appropriate parameter in defaultProperties file.", e);
-    	}
-		
-
+		field.serialize(buffer);
 	}
 
 	@Override
@@ -150,59 +121,19 @@ public class CloverDataRecordSerializer implements DataRecordSerializer {
 
 	@Override
 	public void serialize(CloverBuffer buffer, ListDataField field) {
-		try {
-			// encode null as zero, increment size of non-null values by one
-			ByteBufferUtils.encodeLength(buffer, field.isNull ? 0 : field.getSize() + 1);
-
-			for (DataField lfield : field) {
-				lfield.serialize(buffer,this);
-			}
-    	} catch (BufferOverflowException e) {
-    		throw new RuntimeException("The size of data buffer is only " + buffer.maximumCapacity() + ". Set appropriate parameter in defaultProperties file.", e);
-    	}
-
+		field.serialize(buffer);
 	}
 
 	@Override
 	public void serialize(CloverBuffer buffer, MapDataField field) {
-		try {
-			// encode null as zero, increment size of non-null values by one
-			ByteBufferUtils.encodeLength(buffer, field.isNull() ? 0 : field.getSize() + 1);
-
-			for (Entry<String, DataField> fieldEntry : field.getFields()) {
-				encodeString(buffer, fieldEntry.getKey());
-				fieldEntry.getValue().serialize(buffer,this);
-			}
-    	} catch (BufferOverflowException e) {
-    		throw new RuntimeException("The size of data buffer is only " + buffer.maximumCapacity() + ". Set appropriate parameter in defaultProperties file.", e);
-    	}
+		field.serialize(buffer);
 	}
 
 	
 
 	@Override
 	public void deserialize(CloverBuffer buffer, StringDataField field) {
-		// encoded length is incremented by one, decrement it back to normal
-		final int length = ByteBufferUtils.decodeLength(buffer) - 1;
-		
-		// empty value - so we can store new string
-		field.value.setLength(0);
-
-		if (length < 0) {
-			field.setNull(true);
-		} else {
-			try {
-		
-				utfReader.setInput(buffer);
-				utfReader.read(field,length);
-				utfReader.reset();
-				
-			} catch (IOException e) {
-				throw new RuntimeException("Exception during deserializing StringDataField: " + field.getMetadata().getName(), e);
-			}
-			field.setNull(false);
-		}
-
+		field.deserialize(buffer);
 	}
 
 	@Override
@@ -255,95 +186,12 @@ public class CloverDataRecordSerializer implements DataRecordSerializer {
 
 	@Override
 	public void deserialize(CloverBuffer buffer, ListDataField field) {
-		// encoded length is incremented by one, decrement it back to normal
-		final int length = ByteBufferUtils.decodeLength(buffer) - 1;
-
-		// clear the list
-		field.clear();
-
-		if (length == -1) {
-			field.setNull(true);
-		} else {
-			for (int i = 0; i < length; i++) {
-				field.addField().deserialize(buffer,this);
-			}
-			field.setNull(false);
-		}
-		
+		field.deserialize(buffer);
 	}
 
 	@Override
 	public void deserialize(CloverBuffer buffer, MapDataField field) {
-		// encoded length is incremented by one, decrement it back to normal
-		final int length = ByteBufferUtils.decodeLength(buffer) - 1;
-
-		// clear the list
-		field.clear();
-
-		if (length == -1) {
-			field.setNull(true);
-		} else {
-			for (int i = 0; i < length; i++) {
-				field.putField(decodeString(buffer).toString()).deserialize(buffer, this);
-			}
-			field.setNull(false);
-		}
-
-	}
-	
-	 public void encodeString(CloverBuffer buffer, CharSequence str) {
-			// encode nulls as zero, increment length of non-null values by one
-	    	if (str == null) {
-	    		ByteBufferUtils.encodeLength(buffer, 0);
-	    	} else {
-	    		final int length = str.length();
-				ByteBufferUtils.encodeLength(buffer, length + 1);
-				
-				try {
-					utfWriter.setOutput(buffer);
-					utfWriter.write(str);
-					utfWriter.reset();
-				} catch (IOException e) {
-			    	throw new RuntimeException("The size of data buffer is only " + buffer.maximumCapacity() + ". Set appropriate parameter in defaultProperties file.", e);
-				}
-	    	}
-	    }
-	 
-	public CharSequence decodeString(CloverBuffer buffer) {
-		int length = ByteBufferUtils.decodeLength(buffer)-1;
-		if (length == 0) {
-			return null;
-		} else {
-			StringBuilder sb = new StringBuilder(length);
-			try {
-
-				utfReader.setInput(buffer);
-				utfReader.read(sb, length);
-				utfReader.reset();
-			} catch (IOException e) {
-				throw new RuntimeException("Exception during deserializing string value", e);
-			}
-			return sb;
-		}
-	}
-
-	public static void main(String[] args){
-		String test="Jakobysenechumelilo +ěščřžýáíé😄⧯⧰⧭⧬不丰互五卅𠀋㐂両丧並䶵";
-		StringDataField field = new StringDataField(new DataFieldMetadata("test", DataFieldMetadata.STRING_FIELD, ";"));
-		field.setValue(test);
-		System.err.println(test);
-		CloverBuffer buffer = DynamicCloverBuffer.allocate(512);
-		CloverDataRecordSerializer serializer = new CloverDataRecordSerializer();
-		field.serialize(buffer, serializer);
-		field.reset();
-		buffer.flip();
-		field.deserialize(buffer, serializer);
-		System.err.println(field.toString());
-		buffer.clear();
-		serializer.encodeString(buffer, test);
-		buffer.flip();
-		System.err.println(serializer.decodeString(buffer));
-		
+		field.deserialize(buffer);
 	}
 	
 }

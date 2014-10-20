@@ -113,9 +113,20 @@ public class MetadataUtils {
      * @return metadata containing only fields without auto-filling
      */
     public static DataRecordMetadata getNonAutofilledFieldsMetadata(DataRecordMetadata metadata) {
+    	return getSelectedFieldsMetadata(metadata, metadata.getNonAutofilledFields());
+    }
+    
+    /**
+     * Returns a duplicate of the given metadata
+     * containing only fields with the selected indexes.
+     * 
+     * @param metadata
+     * @return metadata containing only selected fields
+     */
+    public static DataRecordMetadata getSelectedFieldsMetadata(DataRecordMetadata metadata, int[] selectedFields) {
     	DataRecordMetadata result = metadata.duplicate();
     	result.delAllFields();
-    	for (int i: metadata.getNonAutofilledFields()) {
+    	for (int i: selectedFields) {
     		result.addField(metadata.getField(i).duplicate());
     	}
     	return result;
