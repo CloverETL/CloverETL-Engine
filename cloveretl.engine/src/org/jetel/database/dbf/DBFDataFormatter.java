@@ -25,6 +25,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.util.Arrays;
@@ -61,7 +62,7 @@ public class DBFDataFormatter extends AbstractFormatter {
 	
 	private final byte dbfType;
 	
-	private FileChannel writer;
+	private SeekableByteChannel writer;
 	private CharsetEncoder encoder;
 	private ByteBuffer dataBuffer;
 	private ByteBuffer fillerBuffer;
@@ -138,8 +139,8 @@ public class DBFDataFormatter extends AbstractFormatter {
             writer = null;
         } else if (outputDataTarget instanceof File) {
 			writer = new RandomAccessFile(((File) outputDataTarget), FILE_ACCESS_MODE).getChannel();
-		} else if (outputDataTarget instanceof FileChannel) {
-			writer = (FileChannel) outputDataTarget;
+		} else if (outputDataTarget instanceof SeekableByteChannel) {
+			writer = (SeekableByteChannel) outputDataTarget;
 		}
         else {
             throw new IOException("Unsupported output data stream type: "+outputDataTarget.getClass()+". (need seekable stream).");
@@ -341,7 +342,9 @@ public class DBFDataFormatter extends AbstractFormatter {
 
 	@Override
 	public void flush() throws IOException {
-		writer.force(true);
+		if (writer instanceof FileChannel) {
+			((FileChannel) writer).force(true);
+		}
 	}
 
 	@Override

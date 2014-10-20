@@ -428,7 +428,7 @@ public class UtilLib extends TLFunctionLibrary {
     
     // BYTE AT
  	@TLFunctionAnnotation("Returns byte at the specified position of input bytearray")
- 	public static final Integer byteAt(TLFunctionCallContext context, byte[] input, int position) {
+ 	public static final Integer byteAt(TLFunctionCallContext context, byte[] input, Integer position) {
  		return Integer.valueOf(0xff & input[position]);
  	}
 
@@ -440,7 +440,7 @@ public class UtilLib extends TLFunctionLibrary {
 
  		@Override
  		public void execute(Stack stack, TLFunctionCallContext context) {
- 			final int pos = stack.popInt();
+ 			final Integer pos = stack.popInt();
  			final byte[] input = stack.popByteArray();
  			stack.push(byteAt(context, input, pos));
  		}

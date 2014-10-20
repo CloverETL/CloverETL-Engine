@@ -50,7 +50,7 @@ public class CloverDataParserTest extends CloverDataParser35Test {
 	}
 	
 	private void writeRecord(CloverDataFormatter formatter, DataRecord record, CloverBuffer buffer) throws IOException {
-		if (formatter.isRawData()) {
+		if (formatter.isDirect()) {
 			serializeRecord(record, buffer);
 			formatter.writeDirect(buffer);
 		} else {
@@ -60,7 +60,7 @@ public class CloverDataParserTest extends CloverDataParser35Test {
 
 	protected byte[] getBytes(int compressLevel) {
 		try {
-			CloverDataFormatter formatter = new CloverDataFormatter("anything");
+			CloverDataFormatter formatter = new CloverDataFormatter();
 			formatter.setCompressLevel(compressLevel);
 			DataRecordMetadata metadata = getMetadata();
 			formatter.init(metadata);
@@ -70,7 +70,7 @@ public class CloverDataParserTest extends CloverDataParser35Test {
 			DataRecord record = DataRecordFactory.newRecord(metadata);
 			record.init();
 			CloverBuffer buffer = null;
-			if (formatter.isRawData()) {
+			if (formatter.isDirect()) {
 				buffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 			}
 			record.getField(0).setValue("test1");

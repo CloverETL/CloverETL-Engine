@@ -1898,10 +1898,12 @@
 	    <inputPorts>
 	      <singlePort name="0" required="true" />
 	    </inputPorts>
-	    <outputPorts />
+	    <outputPorts>
+	      <singlePort name="0" required="false" />
+	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
-	        <singleType name="file" mandatory_existing_file="false" selectionMode="file_only" />
+	        <singleType name="file" fields="output" dictionary="output" mandatory_existing_file="false" selectionMode="file_only" />
 	      </property>
 	      <property category="basic" displayName="Append" modifiable="true" name="append" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
@@ -1921,6 +1923,36 @@
 	      </property>
 	      <property category="advanced" displayName="Max number of records" modifiable="true" name="recordCount" nullable="true">
 	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Records per file" modifiable="true" name="recordsPerFile" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <!--
+	      Does not work well because of the compression
+	      <property category="advanced" displayName="Bytes per file" modifiable="true" name="bytesPerFile" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      -->
+	      <property category="advanced" displayName="Partition key" modifiable="true" name="partitionKey" nullable="true" required="partition">
+	        <singleType name="key" inputPortName="0" rightLabel="Partition key:" />
+	      </property>
+	      <property category="advanced" displayName="Partition lookup table" modifiable="true" name="partition" nullable="true" required="partitionOutFields">
+	        <singleType name="lookupTableID" />
+	      </property>
+	      <property category="advanced" displayName="Partition file tag" modifiable="true" name="partitionFileTag" nullable="true" defaultHint="Number file tag">
+	        <enumType>
+	          <item displayValue="Number file tag" value="numberFileTag" />
+	          <item displayValue="Key file tag" value="keyNameFileTag" />
+	        </enumType>
+	      </property>
+	      <property category="advanced" displayName="Partition output fields" modifiable="true" name="partitionOutFields" nullable="true" required="partition">
+	        <singleType name="key" lookupMatadataProp="partition" rightLabel="Partition output fields:" />
+	      </property>
+	      <property category="advanced" displayName="Partition unassigned file name" modifiable="true" name="partitionUnassignedFileName" nullable="true" redundant="!partition">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Sorted input" modifiable="true" name="sortedInput" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
 	      </property>
 	      <property category="deprecated" displayName="Save metadata" modifiable="true" name="saveMetadata" nullable="true" defaultHint="false">
 	        <singleType name="bool" />

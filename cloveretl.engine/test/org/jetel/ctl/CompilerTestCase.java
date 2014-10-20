@@ -4637,7 +4637,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("test4", true);
 		check("test5", true);
 		check("test6", false);
-		check("test7", false);
+		//check("test7", true); // disabled - CLO-4979
 		check("test8", true);
 		check("test9", true);
 		check("test10", false);
@@ -4657,15 +4657,56 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("test24", true);
 		check("test25", false);
 		check("test26", false);
+		
+		check("listResults", Arrays.asList(true, false, false, true, false, false, true, false));
+		check("listEmptyTest1", false);
+		check("listEmptyTest2", false);
+		check("listEmptyTest3", false);
+		check("listTest1", true);
+		check("listTest2", true);
+		check("listTest3", false);
+		check("listTest4", true);
+		check("listTest5", true);
+		check("listTest6", false);
+		//check("listTest7", true); // disabled - CLO-4979
+		check("listTest8", true);
+		check("listTest9", true);
+		check("listTest10", false);
+		check("listTest11", true);
+		check("listTest12", true);
+		check("listTest13", false);
+		check("listTest14", true);
+		check("listTest15", true);
+		check("listTest16", false);
+		check("integerToLongTest", true);
+		check("listTest17", true);
+		check("listTest18", true);
+		check("listTest19", false);
+		check("listTest20", true);
+		check("listTest21", true);
+		check("listTest22", false);
+		check("listTest23", true);
+		check("listTest24", true);
+		check("listTest25", false);
+
+		check("listEmptyTest4", false);
 	}
 	
-	public void test_convertlib_containsValue_expect_error(){
+	public void test_containerlib_containsValue_expect_error(){
 		try {
 			doCompile("function integer transform(){map[integer, long] nullMap = null; boolean b = nullMap.containsValue(18L); return 0;}","test_convertlib_containsValue_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
+		try {
+			doCompile("function integer transform(){long[] nullList = null; boolean b = nullList.containsValue(18L); return 0;}","test_convertlib_containsValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		
+		doCompileExpectError("function integer transform(){boolean b = containsValue(null, 18L); return 0;}","test_convertlib_containsValue_expect_error", Arrays.asList("Function 'containsValue' is ambiguous"));
 	}
 
 	public void test_containerlib_getKeys() {
@@ -4704,6 +4745,116 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 		try {
 			doCompile("function integer transform(){map[string,string] strMap = null; string[] str = getKeys(strMap); return 0;}","test_containerlib_getKeys_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_containerlib_getValues() {
+		doCompile("test_containerlib_getValues");
+		check("stringList", Arrays.asList("a","b"));
+		check("stringList2", Arrays.asList("a","b"));
+		check("integerList", Arrays.asList(5,7,2));
+		check("integerList2", Arrays.asList(5,7,2));
+		List<Date> list = new ArrayList<Date>();
+		Calendar cal = Calendar.getInstance();
+		cal.set(2008, 10, 12, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.set(2001, 5, 28, 0, 0, 0);
+		cal2.set(Calendar.MILLISECOND, 0);
+		list.add(cal.getTime());
+		list.add(cal2.getTime());
+		check("dateList", list);
+		check("dateList2", list);
+		check("longList", Arrays.asList(14L, 45L));
+		check("longList2", Arrays.asList(14L, 45L));
+		check("numList", Arrays.asList(12.3d, 13.4d));
+		check("numList2", Arrays.asList(12.3d, 13.4d));
+		check("decList", Arrays.asList(new BigDecimal("34.5"), new BigDecimal("45.6")));
+		check("decList2", Arrays.asList(new BigDecimal("34.5"), new BigDecimal("45.6")));
+		check("emptyList", Arrays.asList());
+		check("emptyList2", Arrays.asList());
+	}
+	
+	public void test_containerlib_getValues_expect_error(){
+		try {
+			doCompile("function integer transform(){map[string,string] strMap = null; string[] str = strMap.getValues(); return 0;}","test_containerlib_getValues_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){map[string,string] strMap = null; string[] str = getValues(strMap); return 0;}","test_containerlib_getValues_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_containerlib_toMap() {
+		doCompile("test_containerlib_toMap");
+		
+		{
+			Map<Integer, Boolean> expected = new HashMap<>();
+			expected.put(5, true);
+			expected.put(8, false);
+			check("integerBooleanMap", expected);
+		}
+		{
+			Map<Integer, Boolean> expected = new HashMap<>();
+			expected.put(5, null);
+			expected.put(8, null);
+			check("integerBooleanMapNull", expected);
+		}
+		{
+			Map<Integer, Boolean> expected = new HashMap<>();
+			expected.put(5, true);
+			expected.put(8, true);
+			check("integerBooleanMapTrue", expected);
+		}
+		check("emptyMap", new HashMap<BigDecimal, Long>(0));
+		{
+			Map<Double, byte[]> expected = new HashMap<>();
+			expected.put(null, null);
+			check("nullMap", expected);
+		}
+		{
+			Map<Date, String> expected = new HashMap<>();
+			expected.put(new Date(7), "C");
+			expected.put(null, "D");
+			expected.put(new Date(46), "E");
+			check("duplicateMap", expected);
+		}
+		{
+			List<String> upperCase = Arrays.asList("A", "B", "C", "D", "E", "F", "G");
+			List<String> lowerCase = Arrays.asList("a", "b", "c", "d", "e", "f", "g");
+			check("keys1", upperCase);
+			check("keys2", upperCase);
+			check("values", lowerCase);
+		}
+	}
+	
+	public void test_containerlib_toMap_expect_error() {
+		doCompileExpectError("function integer transform(){map[string,string] strMap = toMap(null, null); return 0;}","test_containerlib_toMap_expect_error", Arrays.asList("Function 'toMap' is ambiguous"));
+		doCompileExpectError("function integer transform(){map[string,string] strMap = toMap(['a', 'b'], null); return 0;}","test_containerlib_toMap_expect_error", Arrays.asList("Function 'toMap' is ambiguous"));
+		doCompileExpectError("function integer transform(){string[] values = null; map[string,string] strMap = toMap(null, values); return 0;}","test_containerlib_toMap_expect_error", Arrays.asList("Type mismatch: cannot convert from 'map[?,string]' to 'map[string,string]'"));
+		
+		try {
+			doCompile("function integer transform(){string[] keys = ['A']; string[] values = null; map[string,string] strMap = toMap(keys, values); return 0;}","test_containerlib_toMap_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] keys = null; string[] values = ['A']; map[string,string] strMap = toMap(keys, values); return 0;}","test_containerlib_toMap_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] keys = ['x', 'y']; string[] values = ['A']; map[string,string] strMap = toMap(keys, values); return 0;}","test_containerlib_toMap_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
@@ -6896,6 +7047,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultLong4", 3l);
 		check("resultMix1", 15L);
 		check("resultMix2", 15L);
+
+		checkArray("resultByte1", new byte[] {0x01, (byte) 0xF1, (byte) 0xFF});
+		checkArray("resultByte2", new byte[] {(byte) 0xF1, (byte) 0xF1, (byte) 0xFF});
+		checkArray("resultByte3", new byte[] {0x71, 0x73, (byte) 0xFF});
+		checkArray("resultByte4", new byte[] {(byte) 0xF1, (byte) 0xF3, (byte) 0xFF});
+		
+		checkArray("resultByteDifferentLength", new byte[] {(byte) 0xFF, (byte) 0xF0, (byte) 0xF7});
 	}
 	
 	public void test_bitwise_or_expect_error(){
@@ -6935,6 +7093,28 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+		try {
+			doCompile("function integer transform(){\n"
+					+ "byte a = hex2byte('FF'); byte b = null;\n"
+					+ "byte i = bitOr(a,b);\n"
+					+ "return 0;}",
+					"test_bitwise_or_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){\n"
+					+ "byte a = null; byte b = hex2byte('FF');\n"
+					+ "byte i = bitOr(a,b);\n"
+					+ "return 0;}",
+					"test_bitwise_or_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		doCompileExpectError("function integer transform(){long i = bitOr(null, null); return 0;}","test_bitwise_or_expect_error", Arrays.asList("Function 'bitOr' is ambiguous"));
 	}
 
 	public void test_bitwise_and() {
@@ -6949,6 +7129,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultLong4", 1l);
 		check("test_mixed1", 4l);
 		check("test_mixed2", 4l);
+		
+		checkArray("resultByte1", new byte[] {0x00, 0x00, 0x01});
+		checkArray("resultByte2", new byte[] {0x00, 0x01, (byte) 0xF1});
+		checkArray("resultByte3", new byte[] {0x00, 0x70, 0x71});
+		checkArray("resultByte4", new byte[] {0x00, (byte) 0xF1, (byte) 0xF1});
+		
+		checkArray("resultByteDifferentLength", new byte[] {(byte) 0xF0, 0x00, 0x70});
 	}
 
 	public void test_bitwise_and_expect_error(){
@@ -6992,6 +7179,28 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+		try {
+			doCompile("function integer transform(){\n"
+					+ "byte a = hex2byte('FF'); byte b = null;\n"
+					+ "byte i = bitAnd(a,b);\n"
+					+ "return 0;}",
+					"test_bitwise_and_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){\n"
+					+ "byte a = null; byte b = hex2byte('FF');\n"
+					+ "byte i = bitAnd(a,b);\n"
+					+ "return 0;}",
+					"test_bitwise_and_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		doCompileExpectError("function integer transform(){long i = bitAnd(null, null); return 0;}","test_bitwise_and_expect_error", Arrays.asList("Function 'bitAnd' is ambiguous"));
 	}
 	
 	public void test_bitwise_xor() {
@@ -7006,6 +7215,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultLong4", 2l);
 		check("test_mixed1", 15L);
 		check("test_mixed2", 60L);
+
+		checkArray("resultByte1", new byte[] {0x01, (byte) 0xF1, (byte) 0xFE});
+		checkArray("resultByte2", new byte[] {(byte) 0xF1, (byte) 0xF0, (byte) 0x0E});
+		checkArray("resultByte3", new byte[] {0x71, 0x03, (byte) 0x8E});
+		checkArray("resultByte4", new byte[] {(byte) 0xF1, 0x02, (byte) 0x0E});
+		
+		checkArray("resultByteDifferentLength", new byte[] {0x0F, (byte) 0xF0, (byte) 0x87});
 	}
 	
 	public void test_bitwise_xor_expect_error(){
@@ -7045,6 +7261,28 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+		try {
+			doCompile("function integer transform(){\n"
+					+ "byte a = hex2byte('FF'); byte b = null;\n"
+					+ "byte i = bitXor(a,b);\n"
+					+ "return 0;}",
+					"test_bitwise_xor_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){\n"
+					+ "byte a = null; byte b = hex2byte('FF');\n"
+					+ "byte i = bitXor(a,b);\n"
+					+ "return 0;}",
+					"test_bitwise_xor_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		doCompileExpectError("function integer transform(){long i = bitXor(null, null); return 0;}","test_bitwise_xor_expect_error", Arrays.asList("Function 'bitXor' is ambiguous"));
 	}
 
 	public void test_bitwise_lshift() {
@@ -7160,6 +7398,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultLong", -3321654987654105969L);
 		check("test_zero_int", -1);
 		check("test_zero_long", -1l);
+		
+		checkArray("resultByte", new byte[] {0b00110101, 0b01101100});
+		byte[] testZeroByte = new byte[4];
+		Arrays.fill(testZeroByte, (byte) 0xFF);
+		checkArray("testZeroByte", testZeroByte);
 	}
 	
 	public void test_bitwise_negate_expect_error(){
@@ -7175,6 +7418,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+		try {
+			doCompile("function integer transform(){byte input = null; byte i = bitNegate(input); return 0;}","test_bitwise_negate_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		
+		doCompileExpectError("function integer transform(){long i = bitNegate(null); return 0;}","test_bitwise_negate_expect_error", Arrays.asList("Function 'bitNegate' is ambiguous"));
 	}
 
 	public void test_set_bit() {
@@ -9762,6 +10013,62 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_utillib_random_uuid");
 		assertNotNull(getVariable("uuid"));
 	}
+
+	public void test_utillib_byteAt() {
+		doCompile("test_utillib_byteAt");
+		check("ret0", 0x00);
+		check("ret1", 0xFF);
+		check("ret2", 0xF0);
+		check("ret3", 0x0F);
+		check("ret4", 0x01);
+		check("ret5", 0x00);
+	}
+
+	public void test_utillib_byteAt_expect_error() {
+		try {
+			doCompile("function integer transform(){byte b = hex2byte('00'); b.byteAt(-1); return 0;}","test_utillib_byteAt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = hex2byte('00'); b.byteAt(1); return 0;}","test_utillib_byteAt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = hex2byte(''); b.byteAt(0); return 0;}","test_utillib_byteAt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = null; b.byteAt(0); return 0;}","test_utillib_byteAt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byteAt(null, 0); return 0;}","test_utillib_byteAt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = hex2byte('00'); integer i = null; b.byteAt(i); return 0;}","test_utillib_byteAt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = hex2byte('00'); b.byteAt(null); return 0;}","test_utillib_byteAt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
 	public void test_stringlib_randomString(){
 		doCompile("string test; function integer transform(){test = randomString(1,3); return 0;}","test_stringlib_randomString");
 		assertNotNull(getVariable("test"));

@@ -104,7 +104,6 @@ public class TableauWriter extends Node  {
 	private Collation defaultTableCollation;
 	private String tableStructure;
 	// How long should component wait for write lock, after this timeout the component run fails
-	// Currently unused - multiple TableauWriters are not allowed in the same phase
 	private long synchroLockTimeoutSeconds; 
 	
 	// field name and its table column definition
@@ -164,10 +163,10 @@ public class TableauWriter extends Node  {
 			boolean lockSuccess = lock.tryLock(synchroLockTimeoutSeconds, TimeUnit.SECONDS); // thread is waiting
 			
 			if (!lockSuccess) {
-				logger.error(getName() + " didn't acquire Tableau API lock in time. You can try increasing the"
-						+ " component's timeout or putting the TableauWriters in different phases.");
-				throw new Exception("TableauWriter: component " + getName() + " didn't get lock in time. "
-						+ "Component waited for " + synchroLockTimeoutSeconds + " seconds.");
+				logger.error(getName() + " didn't acquire Tableau API lock. This happened because there were multiple TableauWriter"
+						+ " components running at the same time, which is not allowed.");
+				throw new Exception("TableauWriter: component " + getName() + " couldn't acquire write lock because there was already different TableauWriter component running.");
+						//+ " Component waited for " + synchroLockTimeoutSeconds + " seconds.");
 			}
 			
 			// we have the lock at this point
@@ -476,7 +475,8 @@ public class TableauWriter extends Node  {
         
         String tableStructure = xattribs.getStringEx(XML_TABLE_STRUCTURE, "", null);
         
-        long timeout = xattribs.getLong(XML_TIMEOUT, 300);
+        // Currently, multiple TableauWriters are not allowed to run at the same time. Thus the timeout is set to 0.
+        long timeout = xattribs.getLong(XML_TIMEOUT, 0);
 
         return new TableauWriter(componentID, graph,targetFileName,targetTableName,rawTableCollation,actionOnExistingFile,tableStructure,timeout);
 		
@@ -497,7 +497,7 @@ public class TableauWriter extends Node  {
 		 */
 		try {
 	        if (rawTableCollation == null) {
-	        	// The calls to Collation.valueOf() needs to be hard-coded here. Do not put it in a class constant (the class wouldn't initialize)
+	        	// The calls to Collation.valueOf() need to be hard-coded here. Do not put it in a class constant (the class wouldn't initialize)
 	        	this.defaultTableCollation = Collation.valueOf(TableauTableStructureParser.DEFAULT_COLLATION);
 	        } else {
 	        	try {
