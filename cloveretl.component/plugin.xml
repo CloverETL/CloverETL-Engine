@@ -2134,7 +2134,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Denormalize class" modifiable="true" name="denormalizeClass" nullable="true" required="!denormalize,!denormalizeURL">
 	        <singleType name="class" />
 	      </property>
-	      <property category="basic" displayName="Sort order" modifiable="true" name="order" nullable="true" defaultHint="Auto">
+	      <property category="deprecated" displayName="Sort order" modifiable="true" name="order" nullable="true" defaultHint="Auto">
 	        <enumType>
 	          <item displayValue="Ascending" value="Asc" />
 	          <item displayValue="Descending" value="Desc" />
