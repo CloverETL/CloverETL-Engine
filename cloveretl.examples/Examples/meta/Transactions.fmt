@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record name="Transactions" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="fixed">
+<Field name="TransactionId" size="10" type="integer"/>
+<Field name="CustomerId" size="7" type="integer"/>
+<Field name="Amount" scale="2" size="10" type="decimal"/>
+<Field name="CurrencyId" size="3" type="integer"/>
+</Record>
