@@ -556,10 +556,7 @@ public class ComponentXMLAttributes {
      * @param key
      *            name of the attribute
      * @return true if exists and is not empty, otherwise false
-     * 
-     * @deprecated use getType() with appropriate default and RefResFlag instead
      */
-    @Deprecated
 	public boolean exists(String key) {
 		if (attributes.getNamedItem(key) != null) {
 			String value = nodeXML.getAttribute(key);

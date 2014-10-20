@@ -20,6 +20,7 @@ package org.jetel.data.formatter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
@@ -47,17 +48,11 @@ import org.jetel.util.primitive.BitArray;
 import org.jetel.util.stream.CloverDataStream;
 
 /**
- * Class for saving data in Clover internal format
- * Data are saved to zip file with structure:
- * DATA/fileName
- * INDEX/fileName.idx
- * METADATA/fileName.fmt
- * or to binary files
- * 
+ * Class for saving data in Clover internal format.
  * 
  * @author avackova <agata.vackova@javlinconsulting.cz> ; 
- * (c) JavlinConsulting s.r.o.
- *  www.javlinconsulting.cz
+ * @author krivanekm (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @since Oct 12, 2006
  *
@@ -116,7 +111,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 	public final static int CLOVER_DATA_HEADER_OPTIONS_OFFSET= CLOVER_DATA_HEADER_LENGTH -1;
 	
 
-	private WritableByteChannel writer;
+	private WritableByteChannel channel;
 	private CloverDataStream.Output output;
 	private OutputStream out;//FileOutputStream or ZipOutputStream
 	private CloverBuffer buffer;
@@ -126,6 +121,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 	private DataRecordMetadata metadata;	
 	
 	private DataRecordSerializer serializer;
+	private RecordWriter recordWriter;
 	
 	/**
 	 * True, if the current transformation is jobflow.
@@ -135,22 +131,30 @@ public class CloverDataFormatter extends AbstractFormatter {
 	
 	/**
 	 * Constructor
-	 * 
-	 * @param fileName name of archive or name of binary file with records
-	 * @param saveIndex whether to save indexes of records or not 
 	 */
-	public CloverDataFormatter(String fileName) {
+	public CloverDataFormatter() {
 		this.compress= DataCompressAlgorithm.NONE;
 	}
-
+	
+	/**
+	 * Constructor for lightweight {@link CloverDataFormatter}
+	 * that shares the {@link #buffer} with its parent.
+	 */
+	public CloverDataFormatter(CloverDataFormatter parent) {
+		this();
+		this.buffer = parent.buffer;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#init(org.jetel.metadata.DataRecordMetadata)
 	 */
 	@Override
 	public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
 		this.metadata = metadata;
-        buffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE+LEN_SIZE_SPECIFIER);
-        buffer.order(BUFFER_BYTE_ORDER);
+		if (buffer == null) {
+	        buffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE+LEN_SIZE_SPECIFIER);
+	        buffer.order(BUFFER_BYTE_ORDER);
+		}
         serializer = new CloverDataRecordSerializer();
 
         //is the current transformation jobflow?
@@ -163,26 +167,42 @@ public class CloverDataFormatter extends AbstractFormatter {
      */
     @Override
 	public void setDataTarget(Object outputDataTarget) throws IOException {
+    	close(); // close the previous output - flush
+    	
 		buffer.clear();
+		
+		// TargetFile.setOutput() passes {contextURL, fileName, outputStream}
+		if (outputDataTarget instanceof Object[]) {
+			Object[] array = (Object[]) outputDataTarget;
+			if ((array.length >= 3) && (array[2] instanceof OutputStream)) {
+				outputDataTarget = array[2];
+			}
+		}
+		
 		// create output stream
 		if (outputDataTarget instanceof OutputStream){
 			this.out = (OutputStream) outputDataTarget;
-			writer = Channels.newChannel(this.out);
+			channel = Channels.newChannel(this.out);
 		}else if (outputDataTarget instanceof File){
-			this.writer = new RandomAccessFile((File)outputDataTarget,"rw").getChannel();
-			this.out = Channels.newOutputStream(this.writer);
+			File file = (File) outputDataTarget;
+			// MultiFileWriter returns a File even if not appending - the file must be overwritten
+			channel = append ? new RandomAccessFile((File) outputDataTarget, "rw").getChannel() : new FileOutputStream(file).getChannel();
+			this.out = Channels.newOutputStream(this.channel);
+		}else if (outputDataTarget instanceof WritableByteChannel){
+			channel = (WritableByteChannel) outputDataTarget;
+			this.out = Channels.newOutputStream(this.channel);
 		}else{
         	throw new IOException("Unsupported  Data Target type: "+outputDataTarget.getClass().getName());
         }
 		isOpen = true;
 		boolean writeHeader = true;
 		if (append) {
-			if (!(writer instanceof SeekableByteChannel)) {
-				throw new RuntimeException("Seekable stream is required for appending. Got "+writer.getClass().getName());
+			if (!(channel instanceof SeekableByteChannel)) {
+				throw new RuntimeException("Seekable stream is required for appending. Got "+channel.getClass().getName());
 			}
 			try {
-				if (((SeekableByteChannel) writer).size() > 0) {
-					FileConfig version = CloverDataParser.checkCompatibilityHeader((SeekableByteChannel)writer, metadata);
+				if (((SeekableByteChannel) channel).size() > 0) {
+					FileConfig version = CloverDataParser.checkCompatibilityHeader((SeekableByteChannel)channel, metadata);
 					//check that we have compatible format version
 					if (version.formatVersion!=CURRENT_FORMAT_VERSION){
 						throw new IOException("Can not append. Target file is of incompatible version - "+version.formatVersion);
@@ -201,6 +221,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 				throw new RuntimeException(e);
 			}
 		}
+		this.recordWriter = raw ? new DirectRecordWriter() : new SerializingRecordWriter();
 		try {
 			int size = 0;
 			if (writeHeader) {
@@ -208,7 +229,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 				writeCompatibilityHeader();
 				buffer.flip();
 				size = buffer.remaining();
-				writer.write(buffer.buf());
+				channel.write(buffer.buf());
 			}
 
 			switch (compress) {
@@ -228,7 +249,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 				throw new RuntimeException("Unsupported compression algorithm: " + compress);
 			}
 			if (append) {
-				this.output.seekToAppend((SeekableByteChannel) writer);
+				this.output.seekToAppend((SeekableByteChannel) channel);
 			} else {
 				this.output.setPosition(size); // need to tell CloverDataStream what is current position of the wrapped
 												// stream
@@ -240,7 +261,8 @@ public class CloverDataFormatter extends AbstractFormatter {
     
     @Override
 	public DataTargetType getPreferredDataTargetType() {
-		return DataTargetType.FILE;
+    	// if not appending, avoid URL-to-File conversion, which may throw an exception
+		return append ? DataTargetType.FILE : DataTargetType.CHANNEL;
 	}
 
     private void writeCompatibilityHeader() {
@@ -291,27 +313,21 @@ public class CloverDataFormatter extends AbstractFormatter {
 	public void close() throws IOException {
 		if (!isOpen) return;
 		output.close();
-		if (writer.isOpen()) {
-			writer.close();
+		if (channel.isOpen()) {
+			channel.close();
 		}
 		isOpen = false;
 	}
 	
 	
 	/**
-	 * If enabled, saves the record size to the index file.
+	 * @see AbstractRecordWriter#write(DataRecord)
 	 * 
-	 * The functionality is deprecated.
-	 * 
-	 * @param recordSize
 	 * @throws IOException
 	 */
 	@Override
 	public int write(DataRecord record) throws IOException {
-		buffer.clear();
-		record.serialize(buffer, serializer);
-		buffer.flip();
-		return writeDirect(buffer);
+		return recordWriter.write(record);
 	}
 
 	/**
@@ -321,20 +337,15 @@ public class CloverDataFormatter extends AbstractFormatter {
 	 * It is assumed that the <code>recordBuffer</code>
 	 * is prepared for reading and has a limit set correctly.
 	 * 
+	 * @see AbstractRecordWriter#writeDirect(CloverBuffer)
+	 * 
 	 * @param recordBuffer
 	 * @return
 	 * @throws IOException
 	 */
+	@Override
 	public int writeDirect(CloverBuffer recordBuffer) throws IOException {
-		if (isJobflow) {
-			// CLO-2657: file generated by a jobflow would not be readable by a graph
-			Token.deserializeTokenId(recordBuffer); // do not serialize token ID
-		}
-		int recordSize = recordBuffer.remaining();
-		output.markRecordStart();
-		final int lenbytes=ByteBufferUtils.encodeLength(output, recordSize);
-		output.write(recordBuffer);
-        return recordSize + lenbytes;
+		return recordWriter.writeDirect(recordBuffer);
 	}
 
 	/* (non-Javadoc)
@@ -369,7 +380,8 @@ public class CloverDataFormatter extends AbstractFormatter {
 		return this.compress!=DataCompressAlgorithm.NONE;
 	}
 	
-	public boolean isRawData() {
+	@Override
+	public boolean isDirect() {
 		return this.raw;
 	}
 
@@ -443,6 +455,96 @@ public enum DataCompressAlgorithm {
 	
 	public enum DataFormatVersion{
 		VERSION_29, VERSION_35, VERSION_40;
+	}
+	
+	/**
+	 * Used to ensure data integrity.
+	 * <p>
+	 * The implementations either throw {@link UnsupportedOperationException}
+	 * if the formatter expects raw data as a {@link CloverBuffer} and {@link #write(DataRecord)} is called
+	 * or if {@link DataRecord} is expected and {@link #writeDirect(CloverBuffer)} is called.
+	 * </p>
+	 * 
+	 * @author krivanekm (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created 15. 10. 2014
+	 */
+	private static interface RecordWriter {
+		
+		/**
+		 * Writes a {@link DataRecord}.
+		 * 
+		 * @param record
+		 * @return
+		 * @throws IOException
+		 * 
+		 * @throws UnsupportedOperationException if {@link CloverDataFormatter#isDirect()} returns <code>true</code>
+		 * 
+		 * @see Formatter#write(DataRecord)
+		 */
+		public int write(DataRecord record) throws IOException;
+		
+		/**
+		 * Writes a {@link CloverBuffer}.
+		 * 
+		 * @param recordBuffer - raw record data
+		 * @return
+		 * @throws IOException
+		 * 
+		 * @throws UnsupportedOperationException if {@link CloverDataFormatter#isDirect()} returns <code>false</code>
+		 * 
+		 * @see Formatter#writeDirect(CloverBuffer)
+		 */
+		public int writeDirect(CloverBuffer recordBuffer) throws IOException;
+		
+	}
+	
+	private abstract class AbstractRecordWriter implements RecordWriter {
+		
+		private int doWriteDirect(CloverBuffer recordBuffer) throws IOException {
+			if (isJobflow) {
+				// CLO-2657: file generated by a jobflow would not be readable by a graph
+				Token.deserializeTokenId(recordBuffer); // do not serialize token ID
+			}
+			int recordSize = recordBuffer.remaining();
+			output.markRecordStart();
+			final int lenbytes=ByteBufferUtils.encodeLength(output, recordSize);
+			output.write(recordBuffer);
+	        return recordSize + lenbytes;
+		}
+
+		@Override
+		public int write(DataRecord record) throws IOException {
+			buffer.clear();
+			record.serialize(buffer, serializer);
+			buffer.flip();
+			return doWriteDirect(buffer);
+		}
+
+		@Override
+		public int writeDirect(CloverBuffer recordBuffer) throws IOException {
+			return doWriteDirect(recordBuffer);
+		}
+		
+	}
+	
+	private class DirectRecordWriter extends AbstractRecordWriter {
+
+		@Override
+		public int write(DataRecord record) throws IOException {
+			throw new UnsupportedOperationException("The formatter only supports raw data writing");
+		}
+		
+	}
+	
+	private class SerializingRecordWriter extends AbstractRecordWriter {
+
+		@Override
+		public int writeDirect(CloverBuffer recordBuffer) throws IOException {
+			throw new UnsupportedOperationException("The formatter does not support raw data writing");
+		}
+		
 	}
 	
 }

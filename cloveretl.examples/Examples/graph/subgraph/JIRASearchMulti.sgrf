@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="User" created="Thu May 22 11:17:18 CEST 2014" guiVersion="4.0.0.M2" id="1400758283747" licenseType="Evaluation" modified="Fri Jun 27 17:22:30 CEST 2014" modifiedBy="User" name="Default graph name" nature="subgraph" revision="1.147" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata4" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="jira_search" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="query" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="jira_search_metadata" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="jira_search_metadata" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="jira_query" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" label="total" name="total_results" nullable="true" shift="0" size="0" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata5" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="search_params" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="query" type="string"/>
+<Field name="session_name" type="string"/>
+<Field name="session_value" type="string"/>
+<Field name="start_at" type="string"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameter label="User" name="USER" public="true"/>
+<GraphParameter label="Password" name="PASSWORD" public="true" secure="false"/>
+<GraphParameter category="advanced" label="Start at" name="DEFAULT_START_AT" public="false" value="0">
+<attr name="description"><![CDATA[Start index in the result of the search - store the found issues from this index]]></attr>
+</GraphParameter>
+<GraphParameter name="DEFAULT_MAX_RESULTS" value="1000"/>
+<GraphParameter name="JIRA_SEARCH_URL" value="${JIRA_REST_URL}/search?"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+<GraphParameterFile fileURL="jira.prm"/>
+</GraphParameters>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="126" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Description" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="300" x="-354" y="-210">
+<attr name="text"><![CDATA[Searches JIRA via multiple JQL queries. The JQL queries are read from the input port. Sends the found issues to the 1. output port, and search metadata to the 2. output port.]]></attr>
+</Note>
+<Dictionary>
+<Entry id="DictionaryEntry0" input="true" name="session_name" output="true" type="string"/>
+<Entry id="DictionaryEntry1" input="true" name="session_value" output="true" type="string"/>
+</Dictionary>
+</Global>
+<Phase number="0">
+<Node debugInput="true" enabled="enabled" guiName="DataGenerator" guiX="-636" guiY="145" id="DATA_GENERATOR" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+
+// Generates output record.
+function integer generate() {
+	$out.0.query = getParamValue("DEFAULT_QUERY");
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the generate. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if generate() throws an exception.
+// function integer generateOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node __PASSWORD="${PASSWORD}" __USER="${USER}" enabled="enabled" guiName="Login" guiX="-354" guiY="-40" id="LOGIN" jobURL="${SUBGRAPH_DIR}/impl/JIRALogin.sgrf" type="SUBGRAPH"/>
+<Node enabled="enabled" guiName="Session to dictionary" guiX="-155" guiY="-40" id="SESSION_TO_DICTIONARY" type="SET_JOB_OUTPUT">
+<attr name="mapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.session_name = $in.0.session_name;
+	$out.0.session_value = $in.0.session_value;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="SubgraphInput" guiX="-428" guiY="-205" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT">
+<Port guiY="168" name="0"/>
+<Port guiY="186" name="1"/>
+</Node>
+<Edge debugMode="true" fromNode="DATA_GENERATOR:0" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="SUBGRAPH_INPUT:0"/>
+<Edge debugMode="true" fromNode="LOGIN:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="SESSION_TO_DICTIONARY:0"/>
+<Edge debugMode="true" fromNode="SUBGRAPH_INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="REFORMAT:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" guiName="Calculate pages" guiX="66" guiY="189" id="CALCULATE_PAGES" type="NORMALIZER">
+<attr name="normalize"><![CDATA[//#CTL2
+// This transformation defines the way in which a single input record is normalized
+// into multiple output records.
+
+integer page_size;
+string query;
+
+// This function is called for all input records.
+// It parses each single input record and returns the number of records
+// that should be created from such input record.
+function integer count() {
+	page_size = $in.0.max_results;
+	query = $in.0.jira_query;
+	
+	integer total_results = $in.0.total_results;
+	
+	integer pages = total_results / page_size + 1;
+	return pages;
+}
+
+// This function creates new records for the output, based on single input record
+// that has been parsed by the count() function.
+// It is called count() times for each input record.
+// The idx argument specifies which output record is being created,
+// its values range is from 0 to count() - 1.
+function integer transform(integer idx) {
+	$out.0.* = $out.0.*;
+	$out.0.query = query;
+	$out.0.start_at = idx * page_size;
+	$out.0.session_name = dictionary.session_name;
+	$out.0.session_value = dictionary.session_value;
+	
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if count() throws an exception.
+// function integer countOnError(string errorMessage, string stackTrace) {
+//}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace, integer idx) {
+// }
+
+// Called after transform(count-1) to return the resources that have been used to their initial state
+// so that next input record may be parsed.
+// function void clean() {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Get paging info" guiX="-155" guiY="145" id="GET_PAGING_INFO" jobURL="${SUBGRAPH_DIR}/impl/JIRASearchREST.sgrf" type="SUBGRAPH"/>
+<Node enabled="enabled" guiName="Reformat" guiX="-354" guiY="145" id="REFORMAT" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.query = $in.0.query;
+	$out.0.session_name = dictionary.session_name;
+	$out.0.session_value = dictionary.session_value;
+	$out.0.start_at = str2integer(getParamValue("DEFAULT_START_AT"));
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Reformat" guiX="483" guiY="237" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	if ($in.0.start_at + $in.0.max_results < $in.0.total_results) {
+		return SKIP;
+	}
+	
+	$out.0.* = $in.0.*;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Run search REST" guiX="271" guiY="189" id="RUN_SEARCH_REST" jobURL="${SUBGRAPH_DIR}/impl/JIRASearchREST.sgrf" type="SUBGRAPH"/>
+<Node enabled="enabled" guiName="SubgraphOutput" guiX="662" guiY="-205" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT">
+<Port guiY="209" name="0"/>
+<Port guiY="254" name="1"/>
+<Port guiY="274" name="2"/>
+</Node>
+<Node enabled="enabled" guiName="Trash" guiX="60" guiY="66" id="TRASH" type="TRASH"/>
+<Edge debugMode="true" fromNode="CALCULATE_PAGES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge17" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="RUN_SEARCH_REST:0"/>
+<Edge debugMode="true" fromNode="GET_PAGING_INFO:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="TRASH:0"/>
+<Edge debugMode="true" fromNode="GET_PAGING_INFO:1" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" outPort="Port 1 (out)" toNode="CALCULATE_PAGES:0"/>
+<Edge debugMode="true" fromNode="REFORMAT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="GET_PAGING_INFO:0"/>
+<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge18" inPort="Port 1 (in)" metadata="jira_search_metadata" outPort="Port 0 (out)" toNode="SUBGRAPH_OUTPUT:1"/>
+<Edge debugMode="true" fromNode="RUN_SEARCH_REST:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="SUBGRAPH_OUTPUT:0"/>
+<Edge debugMode="true" fromNode="RUN_SEARCH_REST:1" guiBendpoints="" guiRouter="Manhattan" id="Edge16" inPort="Port 0 (in)" outPort="Port 1 (out)" toNode="REFORMAT1:0"/>
+</Phase>
+</Graph>

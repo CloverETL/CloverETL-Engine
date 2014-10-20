@@ -9,6 +9,13 @@ long resultLong4;
 long resultMix1;
 long resultMix2;
 
+byte resultByte1;
+byte resultByte2;
+byte resultByte3;
+byte resultByte4;
+
+byte resultByteDifferentLength;
+
 function integer transform() {
 
 	resultInt1 = bitOr(0,1);
@@ -22,5 +29,12 @@ function integer transform() {
 	resultMix1 = bitOr(13,2L);
 	resultMix2 = bitOr(13L,2);
 	
+	resultByte1 = bitOr(hex2byte("00F0FF"), hex2byte("010101"));
+	resultByte2 = bitOr(hex2byte("0001FF"), hex2byte("F1F1F1"));
+	resultByte3 = bitOr(hex2byte("0072FF"), hex2byte("717171"));
+	resultByte4 = bitOr(hex2byte("00F3FF"), hex2byte("F1F1F1"));
+	
+	resultByteDifferentLength = bitOr(hex2byte("F0F0F0F0"), hex2byte("FF0077"));
+
 	return 0;
 }
