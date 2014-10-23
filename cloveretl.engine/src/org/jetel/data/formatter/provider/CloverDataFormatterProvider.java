@@ -34,6 +34,8 @@ public class CloverDataFormatterProvider implements SharedFormatterProvider {
 	
 	private int compressLevel;
 
+	private String[] excludedFieldNames;
+
 	@Override
 	public CloverDataFormatter getNewFormatter() {
 		CloverDataFormatter formatter = new CloverDataFormatter();
@@ -66,6 +68,7 @@ public class CloverDataFormatterProvider implements SharedFormatterProvider {
 	private void initFormatter(CloverDataFormatter formatter) {
 		formatter.setAppend(append);
 		formatter.setCompressLevel(compressLevel);
+		formatter.setExcludedFieldNames(excludedFieldNames);
 	}
 
 	public void setAppend(boolean append) {
@@ -74,6 +77,10 @@ public class CloverDataFormatterProvider implements SharedFormatterProvider {
 	
 	public void setCompressLevel(int compressLevel) {
 		this.compressLevel = compressLevel;
+	}
+
+	public void setExcludedFieldNames(String[] excludedFieldNames) {
+		this.excludedFieldNames = excludedFieldNames;
 	}
 
 }
