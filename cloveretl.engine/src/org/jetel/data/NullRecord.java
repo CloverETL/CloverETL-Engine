@@ -103,7 +103,11 @@ public class NullRecord extends DataRecordImpl {
 		throw new UnsupportedOperationException("Can't serialize NullRecord");
 	}
 	
-	
+	@Override
+	public void serialize(CloverBuffer buffer, DataRecordSerializer serializer, int[] whichFields) {
+		throw new UnsupportedOperationException("Can't serialize NullRecord");
+	}
+
 	@Override
 	public void setMetadata(DataRecordMetadata metadata) {
 	}

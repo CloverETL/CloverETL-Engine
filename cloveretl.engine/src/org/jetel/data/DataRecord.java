@@ -247,6 +247,16 @@ public abstract class DataRecord implements Serializable, Comparable<Object>, It
 	public abstract void serialize(CloverBuffer buffer,DataRecordSerializer serializer);
 
 	/**
+	 * Serializes selected fields from the record into the target CloverBuffer.
+	 * Used for field exclusion in CloverDataWriter.
+	 * 
+	 * @param buffer		- target buffer
+	 * @param serializer	- record serializer
+	 * @param whichFields	- indexes of selected fields
+	 */
+	public abstract void serialize(CloverBuffer buffer,DataRecordSerializer serializer, int[] whichFields);
+
+	/**
 	 * Unitary deserialization should be compatible with
 	 * unitary serialization. Moreover this type of unitary
 	 * serialization and deserialization should be compatible
