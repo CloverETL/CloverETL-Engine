@@ -267,11 +267,11 @@ public class FileManager {
 	}
 	
 	public CopyResult copy(String source, String target, CopyParameters params) {
-		if (source == null) {
-			return new CopyResult(new NullPointerException(FileOperationMessages.getString("FileManager.copy_source_is_null"))); //$NON-NLS-1$
+		if (StringUtils.isEmpty(source)) {
+			return new CopyResult(new IllegalArgumentException(FileOperationMessages.getString("FileManager.copy_source_is_empty"))); //$NON-NLS-1$
 		}
-		if (target == null) {
-			return new CopyResult(new NullPointerException(FileOperationMessages.getString("FileManager.copy_target_is_null"))); //$NON-NLS-1$
+		if (StringUtils.isEmpty(target)) {
+			return new CopyResult(new IllegalArgumentException(FileOperationMessages.getString("FileManager.copy_target_is_empty"))); //$NON-NLS-1$
 		}
 		CloverURI sourceCloverUri = CloverURI.createURI(source);
 		CloverURI targetCloverUri = CloverURI.createURI(target);
@@ -361,11 +361,11 @@ public class FileManager {
 	}
 	
 	public MoveResult move(String source, String target, MoveParameters params) {
-		if (source == null) {
-			return new MoveResult(new NullPointerException(FileOperationMessages.getString("FileManager.move_source_is_null"))); //$NON-NLS-1$
+		if (StringUtils.isEmpty(source)) {
+			return new MoveResult(new IllegalArgumentException(FileOperationMessages.getString("FileManager.move_source_is_empty"))); //$NON-NLS-1$
 		}
-		if (target == null) {
-			return new MoveResult(new NullPointerException(FileOperationMessages.getString("FileManager.move_target_is_null"))); //$NON-NLS-1$
+		if (StringUtils.isEmpty(target)) {
+			return new MoveResult(new IllegalArgumentException(FileOperationMessages.getString("FileManager.move_target_is_empty"))); //$NON-NLS-1$
 		}
 		CloverURI sourceCloverUri = CloverURI.createURI(source);
 		CloverURI targetCloverUri = CloverURI.createURI(target);
@@ -697,8 +697,8 @@ public class FileManager {
 	}
 
 	public DeleteResult delete(String target, DeleteParameters params) {
-		if (target == null) {
-			return new DeleteResult(new NullPointerException(FileOperationMessages.getString("FileManager.delete_target_is_null"))); //$NON-NLS-1$
+		if (StringUtils.isEmpty(target)) {
+			return new DeleteResult(new IllegalArgumentException(FileOperationMessages.getString("FileManager.delete_target_is_empty"))); //$NON-NLS-1$
 		}
 		CloverURI targetCloverUri = CloverURI.createURI(target);
 		return delete(targetCloverUri, params);
@@ -1028,8 +1028,8 @@ public class FileManager {
 	}
 	
 	public ListResult list(String target, ListParameters params) {
-		if (target == null) {
-			return new ListResult(new NullPointerException(FileOperationMessages.getString("FileManager.list_target_is_null"))); //$NON-NLS-1$
+		if (StringUtils.isEmpty(target)) {
+			return new ListResult(new IllegalArgumentException(FileOperationMessages.getString("FileManager.list_target_is_empty"))); //$NON-NLS-1$
 		}
 		CloverURI targetCloverUri = CloverURI.createURI(target);
 		return list(targetCloverUri, params);
@@ -1086,8 +1086,8 @@ public class FileManager {
 	}
 
 	public CreateResult create(String target, CreateParameters params) {
-		if (target == null) {
-			return new CreateResult(new NullPointerException(FileOperationMessages.getString("FileManager.create_target_is_null"))); //$NON-NLS-1$
+		if (StringUtils.isEmpty(target)) {
+			return new CreateResult(new IllegalArgumentException(FileOperationMessages.getString("FileManager.create_target_is_empty"))); //$NON-NLS-1$
 		}
 		CloverURI targetCloverUri = CloverURI.createURI(target);
 		return create(targetCloverUri, params);
