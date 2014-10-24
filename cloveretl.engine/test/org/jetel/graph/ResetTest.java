@@ -190,6 +190,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("DebuggingGraph.grf") // ok, is to fail
 							&& !file.getName().equals("graphDebuggingGraph.grf") // ok, is to fail
 							&& !file.getName().equals("CLO-404-recordCountsInErrorMessage.grf") // ok, is to fail
+							&& !file.getName().equals("TreeReader_CLO-4699.grf") // ok, is to fail
 							&& !file.getName().matches("Locale_.*_default.grf") // server only
 							&& !file.getName().equals("CompanyChecks.grf") // an example that needs embedded derby
 							&& !file.getName().equals("DatabaseAccess.grf") // an example that needs embedded derby

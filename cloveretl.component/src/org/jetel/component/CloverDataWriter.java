@@ -119,6 +119,7 @@ public class CloverDataWriter extends Node {
 	private static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
 	private static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
 	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
+    private static final String XML_EXCLUDE_FIELDS_ATTRIBUTE = "excludeFields";
 	private static final String XML_RECORDS_PER_FILE = "recordsPerFile"; // FIXME does not work well because of the compression
 	private static final String XML_BYTES_PER_FILE = "bytesPerFile";
 	private static final String XML_PARTITIONKEY_ATTRIBUTE = "partitionKey";
@@ -152,6 +153,8 @@ public class CloverDataWriter extends Node {
 	private String partitionUnassignedFileName;
 	private boolean mkDir;
 	private boolean sortedInput = false;
+
+    private String excludeFields;
 
 	static Log logger = LogFactory.getLog(CloverDataWriter.class);
 
@@ -321,6 +324,11 @@ public class CloverDataWriter extends Node {
 		formatterProvider = new CloverDataFormatterProvider();
 		formatterProvider.setAppend(this.append);
 		formatterProvider.setCompressLevel(compressLevel);
+
+        if (!StringUtils.isEmpty(excludeFields)) {
+        	String[] excludedFieldNames = excludeFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+            formatterProvider.setExcludedFieldNames(excludedFieldNames);
+        }
 		
 		initLookupTable();
 
@@ -380,6 +388,9 @@ public class CloverDataWriter extends Node {
 		}
 		if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
 			aDataWriter.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
+        }
+        if(xattribs.exists(XML_EXCLUDE_FIELDS_ATTRIBUTE)) {
+            aDataWriter.setExcludeFields(xattribs.getString(XML_EXCLUDE_FIELDS_ATTRIBUTE));
         }
         if(xattribs.exists(XML_RECORDS_PER_FILE)) {
             aDataWriter.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
@@ -471,6 +482,10 @@ public class CloverDataWriter extends Node {
 
 	private void setSortedInput(boolean sortedInput) {
 		this.sortedInput = sortedInput;
+	}
+
+	private void setExcludeFields(String excludeFields) {
+		this.excludeFields = excludeFields;
 	}
 
 }
