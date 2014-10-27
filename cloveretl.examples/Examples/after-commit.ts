@@ -103,7 +103,7 @@
 		<Property name="FORCE_COM_USER" value="support@javlin.eu" />
 	</FunctionalTest>
 	
-	<FunctionalTest ident="MetadataWriter" graphFile="graph/MetadataWriter.grf" excludedEtlEnvironment="engine">
+	<FunctionalTest ident="MetadataWriting" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine">
 		<FlatFile outputFile="data-out/employees_txt.fmt" supposedFile="supposed-out/employees_txt.fmt"/>
 		<FlatFile outputFile="data-out/departments_txt.fmt" supposedFile="supposed-out/departments_txt.fmt"/>
 	</FunctionalTest>
