@@ -645,7 +645,6 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 *
 	 * @return the type of the field
 	 */
-	@Deprecated
 	public DataFieldType getDataFieldType(String fieldName) {
 		DataFieldMetadata field = getField(fieldName);
 

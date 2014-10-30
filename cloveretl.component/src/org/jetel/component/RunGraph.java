@@ -630,7 +630,7 @@ public class RunGraph extends Node{
 		}
 		
 		ConfigurationStatus status = new ConfigurationStatus();
-		if (!checkMetadata(status) || !checkParams(status)) {
+		if (!checkMetadata(status)) {
 			throw new ComponentNotReadyException(this, status.getLast().getMessage());
 		}
 		
@@ -746,22 +746,6 @@ public class RunGraph extends Node{
         return true;
 	}
 	
-	private boolean checkParams(ConfigurationStatus status) {
-		if (!sameInstance && StringUtils.isEmpty(cloverCmdLineArgs) &&
-				(isPipelineMode() || getInputPort(INPUT_PORT) == null)) {
-        	ConfigurationProblem problem = new ConfigurationProblem("If the graph is " +
-        			"executed in separate instance of clover, supplying the command " +
-        			"line for clover is necessary (at least the -plugins argument). " +
-        			"Command line arguments can be supplied by cloverCmdLineArgs attribute " +
-        			"or by second field in input port (Supplying by field can be made only in in/out mode)." , 
-        			Severity.ERROR, this, Priority.NORMAL);
-        	status.add(problem);
-        	return false;
-        }
-		
-		return true;
-	}
-	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig()
 	 */
@@ -774,7 +758,6 @@ public class RunGraph extends Node{
 		}
 
 		checkMetadata(status);
-        checkParams(status);
        	
 		try {
 			contextURL = FileUtils.convertUrlToFile(getGraph().getRuntimeContext().getContextURL()).getAbsolutePath();
