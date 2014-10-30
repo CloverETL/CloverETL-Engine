@@ -1356,6 +1356,11 @@ public final class TransformationGraph extends GraphElement {
     	this.initialRuntimeContext = initialRuntimeContext;
     }
     
+	/**
+	 * @return logger for this transformation graph
+	 * @deprecated use {@link #getLog()} instead
+	 */
+    @Deprecated
 	public Log getLogger() {
 		return TransformationGraph.logger;
 	}
