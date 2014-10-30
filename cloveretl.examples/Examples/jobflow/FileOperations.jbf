@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Tue Jul 31 13:22:30 CEST 2012" guiVersion="4.0.0.M1" id="1343742976656" licenseType="Commercial" modified="Tue Mar 25 13:52:04 CET 2014" modifiedBy="User" name="example01_A" nature="jobflow" revision="1.87" showComponentDetails="true">
+<Graph author="Wesley" created="Tue Jul 31 13:22:30 CEST 2012" guiVersion="4.0.0" id="1343742976656" licenseCode="CLP1DJAVLI74991486BY" licenseType="Commercial" modified="Mon Oct 27 13:55:24 CET 2014" modifiedBy="User" name="example01_A" nature="jobflow" revision="1.89" showComponentDetails="true">
 <Global>
 <Metadata id="ExecuteGraph_RunStatus" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="ExecuteGraph_RunStatus" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -16,13 +16,50 @@
 <Field eofAsDelimiter="false" name="dtFileInfo" nullable="true" shift="0" size="0" type="string"/>
 </Record>
 </Metadata>
+<MetadataGroup name="Implicit metadata" type="implicit">
+<Metadata id="__static_metadata_LIST_FILES_ListFiles_Result">
+<Record fieldDelimiter="|" name="ListFiles_Result" recordDelimiter="\n" type="delimited">
+<Field name="URL" type="string"/>
+<Field name="name" type="string"/>
+<Field name="canRead" type="boolean"/>
+<Field name="canWrite" type="boolean"/>
+<Field name="canExecute" type="boolean"/>
+<Field name="isDirectory" type="boolean"/>
+<Field name="isFile" type="boolean"/>
+<Field name="isHidden" type="boolean"/>
+<Field format="yyyy-MM-dd HH:mm:ss" name="lastModified" type="date"/>
+<Field name="size" type="long"/>
+<Field name="result" type="boolean"/>
+<Field name="errorMessage" type="string"/>
+<Field name="stackTrace" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="__static_metadata_DELETE_FILES_DeleteFiles_Result">
+<Record fieldDelimiter="|" name="DeleteFiles_Result" recordDelimiter="\n" type="delimited">
+<Field name="fileURL" type="string"/>
+<Field name="result" type="boolean"/>
+<Field name="errorMessage" type="string"/>
+<Field name="stackTrace" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="__static_metadata_COPY_FILES_CopyFiles_Result">
+<Record fieldDelimiter="|" name="CopyFiles_Result" recordDelimiter="\n" type="delimited">
+<Field name="sourceURL" type="string"/>
+<Field name="targetURL" type="string"/>
+<Field name="resultURL" type="string"/>
+<Field name="result" type="boolean"/>
+<Field name="errorMessage" type="string"/>
+<Field name="stackTrace" type="string"/>
+</Record>
+</Metadata>
+</MetadataGroup>
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="121" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="302" x="611" y="81">
 <attr name="text"><![CDATA[Related Processes:
 - BasicFileOperations.jbf (Main)
-- BasicFileOperations.grf]]></attr>
+- BasicFileOperationsProcess.grf]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="121" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="A. Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="211" x="13" y="81">
 <attr name="text"><![CDATA[A lot of ETL processes require some sort of file handling before and after the actual process - moving files to a staging area, cleaning up intermediate files, etc.]]></attr>
@@ -216,7 +253,7 @@ function integer transform() {
 <attr name="filterExpression"><![CDATA[//#CTL2
 $in.0.isFile == true]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Process Each File" guiX="561" guiY="262" id="PROCESS_EACH_FILE" jobURL="${GRAPH_DIR}/nested_graphs/FileOperations.grf" type="EXECUTE_GRAPH">
+<Node enabled="enabled" guiName="Process Each File" guiX="561" guiY="262" id="PROCESS_EACH_FILE" jobURL="${GRAPH_DIR}/nested_graphs/FileOperationsProcess.grf" type="EXECUTE_GRAPH">
 <attr name="inputMapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -283,10 +320,10 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="COPY_FILES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="LIST_FILES0:0"/>
-<Edge debugMode="true" fromNode="DELETE_FILES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="FILE_PROCESSING_COMPLETE:0"/>
-<Edge debugMode="true" fromNode="LIST_FILES0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="ONLY_FILES:0"/>
-<Edge fromNode="ONLY_FILES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (true)" toNode="PROCESS_EACH_FILE:0"/>
+<Edge debugMode="true" fromNode="COPY_FILES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="__static_metadata_COPY_FILES_CopyFiles_Result" toNode="LIST_FILES0:0"/>
+<Edge debugMode="true" fromNode="DELETE_FILES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="__static_metadata_DELETE_FILES_DeleteFiles_Result" toNode="FILE_PROCESSING_COMPLETE:0"/>
+<Edge debugMode="true" fromNode="LIST_FILES0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="__static_metadata_LIST_FILES_ListFiles_Result" toNode="ONLY_FILES:0"/>
+<Edge fromNode="ONLY_FILES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (true)" persistedImplicitMetadata="__static_metadata_LIST_FILES_ListFiles_Result" toNode="PROCESS_EACH_FILE:0"/>
 <Edge debugMode="true" fromNode="PROCESS_EACH_FILE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 0 (out)" toNode="DELETE_FILES:0"/>
 </Phase>
 </Graph>

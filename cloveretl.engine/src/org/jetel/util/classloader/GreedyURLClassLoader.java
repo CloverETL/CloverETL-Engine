@@ -220,13 +220,23 @@ public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinit
 	@Override
 	public URL getResource(String name) {
 		if (greedy) {
+			if (log.isTraceEnabled())
+				log.trace(this+" S-F trying to load resource: "+ name);
 			URL url = findResource(name);
 			if (url != null) {
+				if (log.isTraceEnabled())
+					log.trace(this+" S-F loaded resource: "+ name);
 				return url;
 			}
 		}
 		
-		return super.getResource(name);
+		if (log.isTraceEnabled())
+			log.trace(this+" P-F trying to load resource: "+ name);
+		
+		 URL url = super.getResource(name);
+		 if (log.isTraceEnabled())
+			 log.trace(this+" resource loaded from url: "+ url);
+		return url;
 	}
 	
 	@SuppressWarnings({"unchecked"})
@@ -234,8 +244,12 @@ public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinit
 	public Enumeration<URL> getResources(String name) throws IOException {
 		Iterator<URL> iterator;
 		if (greedy) {
-        	iterator = IteratorUtils.chainedIterator(IteratorUtils.asIterator(findResources(name)), IteratorUtils.asIterator(super.getResources(name)));
+			if (log.isTraceEnabled())
+				log.trace(this+" S-F trying to load resources: "+ name);
+        	iterator = IteratorUtils.chainedIterator(IteratorUtils.asIterator(findResources(name)), IteratorUtils.asIterator(getParent().getResources(name)));
         } else {
+        	if (log.isTraceEnabled())
+				log.trace(this+" P-F trying to load resources: "+ name);
         	iterator = IteratorUtils.chainedIterator(IteratorUtils.asIterator(super.getResources(name)), IteratorUtils.asIterator(findResources(name)));
         }
 		return IteratorUtils.asEnumeration(iterator);

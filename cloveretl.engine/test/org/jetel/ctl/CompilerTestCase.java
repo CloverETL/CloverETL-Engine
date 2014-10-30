@@ -9897,6 +9897,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("result", 3);
 	}
 	
+	public void test_conditional_fail_CLO_4566() {
+		doCompile("test_conditional_fail_CLO-4566");
+	}
+	
 	
 	public void test_expression_statement(){
 		// test case for issue 4174

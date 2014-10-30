@@ -2618,30 +2618,32 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		final CLVFParameters formal = (CLVFParameters)callTarget.jjtGetChild(1);
 		final CLVFArguments actual = (CLVFArguments)node.jjtGetChild(0);
 		
-		// activate function scope
-		stack.enteredBlock(callTarget.getScope());
-		
-		// set function parameters - they are already computed on stack
-		for (int i=actual.jjtGetNumChildren()-1; i>=0; i--) {
-			setVariable((SimpleNode)formal.jjtGetChild(i), stack.pop());
+		try {
+			// activate function scope
+			stack.enteredBlock(callTarget.getScope());
+			
+			// set function parameters - they are already computed on stack
+			for (int i=actual.jjtGetNumChildren()-1; i>=0; i--) {
+				setVariable((SimpleNode)formal.jjtGetChild(i), stack.pop());
+			}
+			
+			// execute function body
+			callTarget.jjtGetChild(2).jjtAccept(this, null);
+			
+			// set the saved return value back onto stack
+			if (!node.getType().isVoid()) {
+				stack.push(this.lastReturnValue);
+				this.lastReturnValue = null;
+			}
+		} finally {
+			// clear all break flags
+			if (breakFlag) {
+				breakFlag = false;
+			}
+			
+			// clear function scope
+			stack.exitedBlock();
 		}
-		
-		// execute function body
-		callTarget.jjtGetChild(2).jjtAccept(this, null);
-		
-		// set the saved return value back onto stack
-		if (!node.getType().isVoid()) {
-			stack.push(this.lastReturnValue);
-			this.lastReturnValue = null;
-		}
-		
-		// clear all break flags
-		if (breakFlag) {
-			breakFlag = false;
-		}
-		
-		// clear function scope
-		stack.exitedBlock();
 	}
 	
 
