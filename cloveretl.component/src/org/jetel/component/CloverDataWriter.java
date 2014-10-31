@@ -239,7 +239,7 @@ public class CloverDataWriter extends Node {
 			if (field == null) {
 				throw new ComponentNotReadyException("The field not found for the statement: '" + fileURL + "'");
 			}
-			if (field.getDataType() != DataFieldType.BYTE || field.getDataType() == DataFieldType.CBYTE) {
+			if ((field.getDataType() != DataFieldType.BYTE) && (field.getDataType() != DataFieldType.CBYTE)) {
 				throw new ComponentNotReadyException("Unsupported output field type: '" + field.getDataType() + "'. Use 'byte' or 'cbyte' instead.");
 			}
 			if (field.getContainerType() != DataFieldContainerType.SINGLE) {
