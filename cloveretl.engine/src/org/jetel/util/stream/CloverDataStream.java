@@ -643,6 +643,8 @@ public class CloverDataStream {
 		private int firstRecordPosition;
 		private boolean hasIndex;
 		
+		private boolean eof = false;
+		
 		private SeekableByteChannel seekableChannel;
 
 		/**
@@ -759,12 +761,26 @@ public class CloverDataStream {
 			}
 		}
 
+		/**
+		 * Stores the EOF flag, further attempts to read a data block
+		 * will have no effect and return <code>false</code> immediately.
+		 * 
+		 * @return <code>true</code> if a block of data has been read
+		 * @throws IOException
+		 */
 		private boolean readDataBlock() throws IOException {
+			if (eof) {
+				// CLO-5188
+				return false;
+			}
 			buffer.clear();
 			// store index of new block which will be added (but only if it contains beginning of record
 			// firstRecordPosition
 			final int readin=StreamUtils.readBlocking(in, buffer.array(), 0, CLOVER_BLOCK_HEADER_LENGTH);
-			if (readin==-1) return false;
+			if (readin==-1) {
+				eof = true; // CLO-5188
+				return false;
+			}
 			if (readin!= CLOVER_BLOCK_HEADER_LENGTH || !testBlockHeader(buffer)) {
 				throw new IOException("Missing block header. Probably corrupted data !");
 			}
@@ -776,6 +792,10 @@ public class CloverDataStream {
 			case RAW_DATA:
 				break;
 			case INDEX:
+				eof = true;
+				// CLO-5188: mark the buffer as empty for reading
+				buffer.clear();
+				buffer.flip();
 				// return, no more data, the index block is always the last
 				return false;
 			}
