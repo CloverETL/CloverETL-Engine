@@ -846,7 +846,9 @@ public class CloverDataStream {
 			position = seekableChannel.position();
 			ByteBuffer buffer = ByteBuffer.allocate(CLOVER_BLOCK_HEADER_LENGTH);
 			seekableChannel.position(seekableChannel.size() - CLOVER_BLOCK_HEADER_LENGTH);
-			seekableChannel.read(buffer);
+			if (StreamUtils.readBlocking(seekableChannel, buffer) != CLOVER_BLOCK_HEADER_LENGTH) {
+				throw new IOException("Missing block header. Probably corrupted data !");
+			}
 			buffer.flip();
 			// test that it is our Index block
 			if (testBlockHeader(buffer, DataBlockType.INDEX)) {
@@ -855,7 +857,9 @@ public class CloverDataStream {
 				// reallocate bytebuffer
 				buffer = ByteBuffer.wrap(new byte[CLOVER_BLOCK_HEADER_LENGTH + size]);
 				seekableChannel.position(seekableChannel.size() - CLOVER_BLOCK_HEADER_LENGTH - size);
-				seekableChannel.read(buffer);
+				if (StreamUtils.readBlocking(seekableChannel, buffer) != buffer.capacity()) {
+					throw new IOException("Unexpected end of file");
+				}
 				buffer.flip();
 				// validate checksum
 				checksum.reset();
