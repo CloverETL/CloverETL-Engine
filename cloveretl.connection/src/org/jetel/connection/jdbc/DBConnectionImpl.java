@@ -480,7 +480,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
 		}
 	}
 
-    private void closeConnections() {
+    public void closeConnections() {
         if (threadSafeConnections) {
             for (SqlConnection connection: connectionsCache.values()) {
             	closeConnection(connection);
