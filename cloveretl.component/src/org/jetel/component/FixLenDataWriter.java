@@ -126,6 +126,7 @@ public class FixLenDataWriter extends Node {
 	private int bytesPerFile;
     private int skip;
 	private int numRecords;
+	private String charset;
 	private WritableByteChannel writableByteChannel;
 
 	private String partition;
@@ -155,12 +156,14 @@ public class FixLenDataWriter extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
+		this.charset = charset;
 		formatterProvider = new FixLenDataFormatterProvider(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
 	public FixLenDataWriter(String id, WritableByteChannel writableByteChannel, String charset) {
 		super(id);
 		this.writableByteChannel = writableByteChannel;
+		this.charset = charset;
 		formatterProvider = new FixLenDataFormatterProvider(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
@@ -234,6 +237,7 @@ public class FixLenDataWriter extends Node {
         writer.setAppendData(appendData);
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
+        writer.setCharset(charset);
         if (attrPartitionKey != null) {
             writer.setLookupTable(lookupTable);
             writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
