@@ -30,6 +30,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -103,7 +104,7 @@ public class GraphParameterDynamicValueProvider {
 		Node node = createNodeForTransformation();
 		factory.setComponent(node);
 		PropertyRefResolver propertyRefResolver = graphProvider.getGraph().getPropertyRefResolver();
-		String resolvedCode = propertyRefResolver.resolveRef(transformCode);
+		String resolvedCode = propertyRefResolver.resolveRef(transformCode, RefResFlag.SPEC_CHARACTERS_OFF);
 		factory.setTransform(resolvedCode);
 		transform = factory.createTransform();
 		if (transform == null) {
