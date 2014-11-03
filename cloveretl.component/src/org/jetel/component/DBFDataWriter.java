@@ -346,6 +346,7 @@ public class DBFDataWriter extends Node {
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
         writer.setDictionary(graph != null ? graph.getDictionary() : null);
+        writer.setCharset(charsetName);
         if (attrPartitionKey != null) {
             writer.setLookupTable(lookupTable);
             writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));

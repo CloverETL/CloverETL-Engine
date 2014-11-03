@@ -219,6 +219,7 @@ public class Trash extends Node {
 				writer.setAppendData(debugAppend);
 				writer.setDictionary(graph.getDictionary());
 				writer.setOutputPort(getOutputPort(OUTPUT_PORT)); // for port protocol: target file writes data
+				writer.setCharset(charSet);
 			}
 		}
 	}

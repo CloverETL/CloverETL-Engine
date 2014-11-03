@@ -121,6 +121,7 @@ public class TextTableWriter extends Node {
 	private boolean outputFieldNames=true;
 	private int recordsPerFile;
 	private int bytesPerFile;
+	private String charset;
 	
 	private String partition;
 	private String attrPartitionKey;
@@ -148,6 +149,7 @@ public class TextTableWriter extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
+		this.charset = charset;
 		formatterProvider = charset == null ? new TextTableFormatterProvider(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER) : new TextTableFormatterProvider(charset);
 		formatterProvider.setMask(fields);
 	}
@@ -166,6 +168,7 @@ public class TextTableWriter extends Node {
 		super(id);
 		this.writableByteChannel = writableByteChannel;
 		this.appendData = appendData;
+		this.charset = charset;
 		formatterProvider = charset == null ? new TextTableFormatterProvider(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER) : new TextTableFormatterProvider(charset);
 		formatterProvider.setMask(fields);
 	}
@@ -269,6 +272,7 @@ public class TextTableWriter extends Node {
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
         writer.setDictionary(graph != null ? graph.getDictionary() : null);
+        writer.setCharset(charset);
         if (attrPartitionKey != null) {
             writer.setLookupTable(lookupTable);
             writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
