@@ -70,7 +70,6 @@ public class TargetFile {
 	private static final String PORT_DELIMITER = "\\.";
 	private static final String PORT_PROTOCOL = "port:";
 	private static final String DICT_PROTOCOL = "dict:";
-	private static final String DEFAULT_CHARSET = "UTF-8";
 
 	private DecimalFormat format;					// it is used if the file tag is a number
 
@@ -154,7 +153,7 @@ public class TargetFile {
      */
     public void init() throws IOException, ComponentNotReadyException {
     	if (charset == null) {
-    		charset = DEFAULT_CHARSET;
+    		charset = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
     	}
 
     	if (fileURL != null && fileURL.startsWith(PORT_PROTOCOL)) {
