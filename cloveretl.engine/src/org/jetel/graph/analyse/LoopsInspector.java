@@ -49,7 +49,7 @@ public class LoopsInspector {
 	 * @param transformationGraph
 	 */
 	public static void inspectEdgesInLoops(TransformationGraph transformationGraph) {
-		//initialise graph provider, which allows go through the graph and perform searching algorithm  
+		//initialise graph provider, which allows to go through the graph and perform searching algorithm  
 		SingleGraphProvider graph = new SingleGraphProvider(transformationGraph);
 		graph.setEdgeFunction(new EdgeFunctionImpl());
 		
@@ -80,7 +80,7 @@ public class LoopsInspector {
 				if (follower != null) {
 					if (componentsInLoop.contains(follower)) {
 						componentsInLoop.addAll(path);
-					} else {
+					} else if (!path.contains(follower)) {
 						path.push(follower);
 						pointer = follower;
 					}
