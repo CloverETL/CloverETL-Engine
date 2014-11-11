@@ -72,7 +72,7 @@ public class CellValueFormatter {
 		return formatter.formatCellValue(cell, formulaEvaluator);
 	}
 	
-	public static class OurDataFormatter extends DataFormatter {
+	private static class OurDataFormatter extends DataFormatter {
 		
 	    private static final Pattern FRAC_PATTERN = Pattern.compile("\\?+/[\\d+|\\?+]");
 	    
@@ -90,6 +90,11 @@ public class CellValueFormatter {
 			if (fracMatcher.find()) {
 				// convert fractions to standard double
 				formatString = "0.00";
+			}
+			//fix CLO-4866: openXML standard says these formats should have "yy", but excel uses "yyyy"
+			//it was decided that clover should work same as excel
+			if (formatIndex == 14 || formatIndex == 22) {
+				formatString = formatString.replace("yy", "yyyy");
 			}
 			return super.formatRawCellContents(value, formatIndex, formatString).replaceFirst("\\* ", "");
 		}
