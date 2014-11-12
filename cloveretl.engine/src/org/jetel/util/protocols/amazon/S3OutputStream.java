@@ -40,8 +40,6 @@ import org.jets3t.service.utils.MultipartUtils;
 
 public class S3OutputStream extends OutputStream {
 	
-	private static int MAX_SIZE = 5 * 1024 * 1024 * 1024; // 5 GB
-
 	// on creation: create outputstream writing to a file
 	// remember url
 	
@@ -80,9 +78,9 @@ public class S3OutputStream extends OutputStream {
 			
 			String accessKey = S3InputStream.getAccessKey(url);
 			String secretKey = S3InputStream.getSecretKey(url);
-			String file = url.getFile();
-			if (file.startsWith("/")) {
-				file = file.substring(1);
+			String path = url.getFile();
+			if (path.startsWith("/")) {
+				path = path.substring(1);
 			}
 			
 			AWSCredentials credentials = new AWSCredentials(accessKey, secretKey);
@@ -103,9 +101,9 @@ public class S3OutputStream extends OutputStream {
 			} catch (NoSuchAlgorithmException e) {
 				throw new IOException(e);
 			}
-			uploadObject.setKey(file);
+			uploadObject.setKey(path);
 			
-			if (tempFile.length() <= MAX_SIZE) {
+			if (tempFile.length() <= MultipartUtils.MAX_OBJECT_SIZE) {
 				try {
 					service.putObject(s3bucket, uploadObject);
 				} catch (S3ServiceException e) {
@@ -114,7 +112,7 @@ public class S3OutputStream extends OutputStream {
 			} else {
 				// CLO-4724:
 				try {
-					MultipartUtils mpUtils = new MultipartUtils(MAX_SIZE);
+					MultipartUtils mpUtils = new MultipartUtils(MultipartUtils.MAX_OBJECT_SIZE);
 					mpUtils.uploadObjects(bucket, service, Arrays.asList((StorageObject) uploadObject),
 						    null // eventListener : Provide one to monitor the upload progress
 					);
