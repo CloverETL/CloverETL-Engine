@@ -786,7 +786,8 @@ public class DataFieldMetadata implements Serializable {
 	public boolean isSkipTrailingBlanks() {
 		if (trim == null) {
 			//trailing characters in fixlen metadata are skipped by default
-			if (getDataRecordMetadata().getParsingType() == DataRecordParsingType.FIXEDLEN) {
+			if (getDataRecordMetadata().getParsingType() == DataRecordParsingType.FIXEDLEN
+					|| (getDataRecordMetadata().getParsingType() == DataRecordParsingType.MIXED && isFixed())) {
 				return true;
 			}
 		}
