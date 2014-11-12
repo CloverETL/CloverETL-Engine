@@ -26,6 +26,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.SQLDataParser;
+import org.jetel.connection.jdbc.SQLIncremental;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
@@ -39,6 +40,8 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
@@ -516,6 +519,12 @@ public class DBInputTable extends Node {
 		                problem.setAttributeName(e2.getAttributeName());
 		            }
 		            status.add(problem);
+				}
+				
+				if (sqlQuery != null && incrementalKeyDef != null && !sqlQuery.contains(SQLIncremental.INCREMENTAL_KEY_INDICATOR)) {
+					status.add(new ConfigurationProblem("Incremental file and key is specified but sql query doesn't contain incremental key indicator ("
+							+SQLIncremental.INCREMENTAL_KEY_INDICATOR+"). The component will erase incremental key from the incremental file.",
+							Severity.WARNING, this, Priority.NORMAL, XML_SQLQUERY_ATTRIBUTE));
 				}
 			}
         } catch (ComponentNotReadyException e) {
