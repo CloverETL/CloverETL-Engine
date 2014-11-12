@@ -2,6 +2,33 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+
+REL-4-0-0
+---------
+
+* TableauWriter component
+* explicit metadata propagation
+* improved CloverDataReader and CloverDataWriter
+	- compression
+	- consistency with other readers and writers (e.g. partitioning)
+* CTL function to get sandbox-prefixed path
+* New CTL2 container functions - toMap() and getValues()
+* Added and improved bit operation functions
+* CTL function to access custom component properties
+* FIXES:
+	- SortWithinGroup is losing records
+	- CTL2 performance issues in locale and timezone manipulation
+	- EOF as delimiter does not work for fixed length
+	- RunGraph component does not work with sameJVM=false
+	- CloverDataReader: autofilling does not work
+	- DB Lookup does not accept key longer than 10 digits
+	- Space Preceding a * in Wildcard Mapping does not report error in Design or Runtime
+	- Improve FTP connection error reporting
+* COMPATIBILITY:
+	- Removed direct zip support in CloverDataReader and CloverDataWriter
+	- Move component description from designer to engine
+	- Do not perform database commit if graph execution fails
+
 REL-4-0-0-M2
 ------------
 
