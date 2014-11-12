@@ -286,6 +286,7 @@ public class SQLCloverStatement {
 				//we can create Statement (not PreparedStatement) only in case input record is not null
 				statement = record != null ? connection.prepareStatement(sqlQuery) : connection.createStatement();
 			}else{//we have incremental
+				incremental.setQuery(sqlQuery); //CLO-4973, we have to use query with removed clover mappings
 				statement = incremental.updateQuery(connection);
 			}
 		}
