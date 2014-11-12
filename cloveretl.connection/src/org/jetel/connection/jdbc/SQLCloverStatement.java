@@ -772,7 +772,6 @@ public class SQLCloverStatement {
 	
 	/**
 	 * Best-effort method that searches given sql query for 'returning' statement. Search goes from the back.
-	 * Basically returns index of 'returning' string with whitespace on both sides. Accepts ')' before instead of whitespace.
 	 * Created to fix CLO-4847.
 	 * @param sql
 	 * @return index of the returning clause, -1 if the returning clause is not present
@@ -781,7 +780,7 @@ public class SQLCloverStatement {
 		sql = sql.toLowerCase();
 		int ri = sql.length();
 		
-		//search from the back and skip occurrences of 'returning' that did not have whitespace around
+		//search from the back and skip occurrences of 'returning' that are not properly delimited
 		for (;;) {
 			ri = sql.lastIndexOf(RETURNING_KEY_WORD, ri - RETURNING_KEY_WORD.length());
 			if (ri == -1) {
@@ -790,7 +789,7 @@ public class SQLCloverStatement {
 			try {
 				char charBefore = sql.charAt(ri-1);
 				char charAfter = sql.charAt(ri + RETURNING_KEY_WORD.length());
-				if ((charBefore==')' || Character.isWhitespace(charBefore)) &&	Character.isWhitespace(charAfter)) {
+				if (isReturningDelimiter(charBefore) && isReturningDelimiter(charAfter)) {
 					return ri;
 				}
 			} catch (IndexOutOfBoundsException e) {
@@ -798,6 +797,10 @@ public class SQLCloverStatement {
 				return -1;
 			}
 		}
+	}
+	
+	private boolean isReturningDelimiter(char c) {
+		return Character.isWhitespace(c) || !Character.isJavaIdentifierPart(c);
 	}
 }
 
