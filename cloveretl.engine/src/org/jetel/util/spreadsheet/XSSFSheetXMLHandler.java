@@ -36,7 +36,7 @@ limitations under the License.
 ==================================================================== */
 
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.xssf.eventusermodel.ReadOnlySharedStringsTable;
+import org.apache.poi.xssf.model.SharedStringsTable;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -66,7 +66,7 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 	public static final String CELL_VALUE_TRUE = "TRUE";
 	public static final String CELL_VALUE_FALSE = "FALSE";
 	
-	private ReadOnlySharedStringsTable sharedStringsTable;
+	private SharedStringsTable sharedStringsTable;
 
 	/**
 	 * Where our text is going
@@ -108,7 +108,7 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 	 * @param strings
 	 *            Table of shared strings
 	 */
-	public XSSFSheetXMLHandler(ReadOnlySharedStringsTable strings, SheetContentsHandler sheetContentsHandler) {
+	public XSSFSheetXMLHandler(SharedStringsTable strings, SheetContentsHandler sheetContentsHandler) {
 		this.sharedStringsTable = strings;
 		this.output = sheetContentsHandler;
 		this.nextDataType = XSSFDataType.NUMBER;
@@ -133,15 +133,14 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 
 	@Override
 	public void startElement(String uri, String localName, String name, Attributes attributes) throws SAXException {
-
-		if (isTextTag(name)) {
+		if (isTextTag(localName)) {
 			vIsOpen = true;
 			// Clear contents cache
 			value.setLength(0);
-		} else if ("is".equals(name)) {
+		} else if ("is".equals(localName)) {
 			// Inline string outer tag
 			isIsOpen = true;
-		} else if ("f".equals(name)) {
+		} else if ("f".equals(localName)) {
 	          // Clear contents cache
 	          formula.setLength(0);
 	          
@@ -176,17 +175,17 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 	          } else {
 	             //fIsOpen = true;
 	          }
-	    } else if ("oddHeader".equals(name) || "evenHeader".equals(name) || "firstHeader".equals(name) || "firstFooter".equals(name) || "oddFooter".equals(name) || "evenFooter".equals(name)) {
+	    } else if ("oddHeader".equals(localName) || "evenHeader".equals(localName) || "firstHeader".equals(localName) || "firstFooter".equals(localName) || "oddFooter".equals(localName) || "evenFooter".equals(localName)) {
 			hfIsOpen = true;
 			// Clear contents cache
 			headerFooter.setLength(0);
-		} else if ("row".equals(name)) {
+		} else if ("row".equals(localName)) {
 			String r = attributes.getValue("r");
 			int rowNum = r != null ? Integer.parseInt(r) - 1 : lastRowNum + 1;
 			lastRowNum = rowNum;
 			cellRef = null;
 			output.startRow(rowNum);
-		} else if ("c".equals(name)) { // c => cell
+		} else if ("c".equals(localName)) { // c => cell
 			// Set up defaults.
 			this.nextDataType = XSSFDataType.NUMBER;
 			String r = attributes.getValue("r"); // cell reference (coordinates, e.g. "A1")
@@ -231,7 +230,7 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 		int cellType;
 
 		// v => contents of a cell
-		if (isTextTag(name)) {
+		if (isTextTag(localName)) {
 			vIsOpen = false;
 
 			// Process the value contents as required, now we have it all
@@ -290,16 +289,16 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 			// Output
 			output.cell(cellRef, cellType, formulaType, thisStr, styleIndex);
 			formulaType = -1;
-		} else if ("is".equals(name)) {
+		} else if ("is".equals(localName)) {
 			isIsOpen = false;
-		} else if ("row".equals(name)) {
+		} else if ("row".equals(localName)) {
 			output.endRow();
-		} else if ("oddHeader".equals(name) || "evenHeader".equals(name) || "firstHeader".equals(name)) {
+		} else if ("oddHeader".equals(localName) || "evenHeader".equals(localName) || "firstHeader".equals(localName)) {
 			hfIsOpen = false;
-			output.headerFooter(headerFooter.toString(), true, name);
-		} else if ("oddFooter".equals(name) || "evenFooter".equals(name) || "firstFooter".equals(name)) {
+			output.headerFooter(headerFooter.toString(), true, localName);
+		} else if ("oddFooter".equals(localName) || "evenFooter".equals(localName) || "firstFooter".equals(localName)) {
 			hfIsOpen = false;
-			output.headerFooter(headerFooter.toString(), false, name);
+			output.headerFooter(headerFooter.toString(), false, localName);
 		}
 	}
 
