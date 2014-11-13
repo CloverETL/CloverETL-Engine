@@ -155,7 +155,8 @@ public class DataFormatter extends AbstractFormatter {
 		if (lastIncludedFieldIndex < lastFieldIndex) {
 			delimiters[lastIncludedFieldIndex] = delimiters[lastFieldIndex];
 			delimiterLength[lastIncludedFieldIndex] = delimiterLength[lastFieldIndex];
-			fieldLengths[lastIncludedFieldIndex] = fieldLengths[lastFieldIndex];
+			// CLO-5083: removed possibly incorrect code
+//			fieldLengths[lastIncludedFieldIndex] = fieldLengths[lastFieldIndex];
 		}
 	}
 
