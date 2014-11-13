@@ -528,7 +528,9 @@ public class MultiFileWriter {
         		entry.getValue().finish();
         	}
     	} else {
-    		currentTarget.finish();
+    		if (currentTarget != null) {
+                currentTarget.finish();
+    		}
     	}
     	if (unassignedTarget != null) {
     		unassignedTarget.finish();
