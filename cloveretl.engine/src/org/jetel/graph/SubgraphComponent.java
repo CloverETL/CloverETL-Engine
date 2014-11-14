@@ -60,5 +60,13 @@ public interface SubgraphComponent {
 	 * @return output edge of executed subgraph
 	 */
 	public Edge getSubgraphOutputEdge(int portIndex);
+
+	/**
+	 * Sets flag which indicates the subgraph should be executed in fast-propagate mode.
+	 * Fast-propagate subgraph execution is used if the subgraph is part of a loop (see Loop component).
+	 * All edges between SubgraphInput and SubgraphOutput components have to be fast-propagated.
+	 * @param fastPropagateExection
+	 */
+	public void setFastPropagateExecution(boolean fastPropagateExection);
 	
 }
