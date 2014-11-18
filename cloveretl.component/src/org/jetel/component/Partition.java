@@ -428,7 +428,7 @@ public class Partition extends Node {
    		if (charset != null && !Charset.isSupported(charset)) {
            	status.add(new ConfigurationProblem(
                		"Charset "+charset+" not supported!", 
-               		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+               		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
          }
 
         checkMetadata(status, getInMetadata(), getOutMetadata());
@@ -444,7 +444,7 @@ public class Partition extends Node {
     				partitionKey.init();
     			} catch (Exception e) {
     				throw new ComponentNotReadyException(this, 
-    						XML_PARTITIONKEY_ATTRIBUTE, e);
+    						"Error during initialization of partition key.", e, XML_PARTITIONKEY_ATTRIBUTE);
     			}
     		}
         } catch (ComponentNotReadyException e) {

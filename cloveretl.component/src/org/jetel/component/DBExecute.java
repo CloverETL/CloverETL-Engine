@@ -838,17 +838,17 @@ public class DBExecute extends Node {
         if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
 
 		try {
 		    if (dbConnection == null){
 		        IConnection conn = getGraph().getConnection(dbConnectionName);
 	            if(conn == null) {
-	                throw new ComponentNotReadyException("Can't find DBConnection ID: " + dbConnectionName);
+	                throw new ComponentNotReadyException("Can't find DBConnection ID: " + dbConnectionName, XML_DBCONNECTION_ATTRIBUTE);
 	            }
 	            if(!(conn instanceof DBConnection)) {
-	                throw new ComponentNotReadyException("Connection with ID: " + dbConnectionName + " isn't instance of the DBConnection class.");
+	                throw new ComponentNotReadyException("Connection with ID: " + dbConnectionName + " isn't instance of the DBConnection class.", XML_DBCONNECTION_ATTRIBUTE);
 	            }
 		    }
             if (errorActionsString != null){

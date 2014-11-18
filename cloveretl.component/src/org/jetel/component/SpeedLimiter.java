@@ -213,7 +213,7 @@ public class SpeedLimiter extends Node {
 		}
 
 		if (delay == -1 && StringUtils.isEmpty(inputMappingCode)) {
-			status.add(new ConfigurationProblem("Delay is not specified.", Severity.ERROR, this, Priority.NORMAL));
+			status.add(new ConfigurationProblem("Delay is not specified.", Severity.ERROR, this, Priority.NORMAL, XML_DELAY_ATTRIBUTE));
 		}
 		
 		try {

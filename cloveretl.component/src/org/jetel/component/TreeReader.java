@@ -234,7 +234,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		}
 
 		if (StringUtils.isEmpty(this.getFileUrl())) {
-			status.add(new ConfigurationProblem("Missing required attribute 'File URL'", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+			status.add(new ConfigurationProblem("Missing required attribute 'File URL'", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_FILE_URL_ATTRIBUTE));
 		}
 
 		if (StringUtils.isEmpty(mappingURL) && StringUtils.isEmpty(mappingString)) {
@@ -242,7 +242,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		}
 
 		if (charset != null && !Charset.isSupported(charset)) {
-			status.add(new ConfigurationProblem("Charset " + charset + " not supported!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+			status.add(new ConfigurationProblem("Charset " + charset + " not supported!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
 		}
 
 		/*
