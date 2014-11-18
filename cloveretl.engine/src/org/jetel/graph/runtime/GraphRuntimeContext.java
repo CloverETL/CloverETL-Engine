@@ -106,6 +106,11 @@ public class GraphRuntimeContext {
 	private MetadataProvider metadataProvider;
 	/** Should executor check required graph parameters? */
 	private boolean validateRequiredParameters;
+	/** Only subgraphs can be executed in fast-propagated mode. This flag indicates,
+	 * the Subgraph is in a loop, so all edges between SGI and SGO components has to be
+	 * fast-propagated. */
+	private boolean fastPropagateExecution;
+	
 	
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
@@ -129,6 +134,7 @@ public class GraphRuntimeContext {
 		locale = null;
 		timeZone = null;
 		validateRequiredParameters = DEFAULT_VALIDATE_REQUIRED_PARAMETERS;
+		fastPropagateExecution = false;
 	}
 	
 	/* (non-Javadoc)
@@ -169,6 +175,7 @@ public class GraphRuntimeContext {
 		ret.executionType = getExecutionType();
 		ret.metadataProvider = getMetadataProvider();
 		ret.validateRequiredParameters = isValidateRequiredParameters();
+		ret.fastPropagateExecution = isFastPropagateExecution();
 		
 		return ret;
 	}
@@ -203,6 +210,7 @@ public class GraphRuntimeContext {
 		prop.setProperty("jobUrl", String.valueOf(getJobUrl()));
 		prop.setProperty("executionType", String.valueOf(getExecutionType()));
 		prop.setProperty("validateRequiredParameters", Boolean.toString(isValidateRequiredParameters()));
+		prop.setProperty("fastPropagateExecution", Boolean.toString(isFastPropagateExecution()));
 		
 		return prop;
 	}
@@ -810,7 +818,22 @@ public class GraphRuntimeContext {
 		this.embeddedRun = embeddedRun;
 	}
 
-
+	/**
+	 * @return the flag which indicates the subgraph is executed in fast-propagated mode,
+	 * which is used only for subgraphs in loops, where is necessary to have all edges fast-propagating.
+	 */
+	public boolean isFastPropagateExecution() {
+		return fastPropagateExecution;
+	}
+	
+	/** Sets the flag which indicates the subgraph is executed in fast-propagate mode,
+	 * which is used only for subgraphs in loops, where is necessary to have all edges fast-propagating.
+	 * @param fastPropagateExecution
+	 */
+	public void setFastPropagateExecution(boolean fastPropagateExecution) {
+		this.fastPropagateExecution = fastPropagateExecution;
+	}
+	
 
 	/**
 	 * This enum is attempt to provide a more generic way to this runtime configuration.

@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -678,6 +679,41 @@ public class GraphUtils {
 					}
 				}
 			}
+		}
+	}
+
+	/**
+	 * Converst all edges between the given components to fast-propagating type.
+	 * Direct edge is changed to direct fast propagated edge,
+	 * buffered edge is changed to buffered fast propagated edge,
+	 * an exception is thrown for a phase edge.
+	 * @param components
+	 */
+	public static void makeEdgesFastPropagate(Collection<Node> components) {
+		for (Node component : components) {
+			for (OutputPort outputPort : component.getOutPorts()) {
+				Edge edge = outputPort.getEdge();
+				if (components.contains(edge.getReader())) {
+					setEdgeAsFastPropagate(edge);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Converts the given edge to phase propagated type.
+	 * Direct edge is changed to direct fast propagated edge,
+	 * buffered edge is changed to buffered fast propagated edge,
+	 * an exception is thrown for a phase edge.
+	 * @param edge
+	 */
+	public static void setEdgeAsFastPropagate(Edge edge) {
+		if (edge.getEdgeType() == EdgeTypeEnum.DIRECT || edge.getEdgeType() == EdgeTypeEnum.DIRECT_FAST_PROPAGATE) {
+			edge.setEdgeType(EdgeTypeEnum.DIRECT_FAST_PROPAGATE);
+		} else if (edge.getEdgeType() == EdgeTypeEnum.BUFFERED || edge.getEdgeType() == EdgeTypeEnum.BUFFERED_FAST_PROPAGATE) {
+			edge.setEdgeType(EdgeTypeEnum.BUFFERED_FAST_PROPAGATE);
+		} else {
+			throw new JetelRuntimeException("Unexpected edge type (" + edge.getId() + ":" + edge.getEdgeType() + ").");
 		}
 	}
 

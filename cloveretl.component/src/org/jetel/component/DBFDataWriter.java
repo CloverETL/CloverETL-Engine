@@ -275,7 +275,7 @@ public class DBFDataWriter extends Node {
 		CharsetEncoder encoder = Charset.forName(charsetName).newEncoder();
 		if (encoder.maxBytesPerChar() != 1) {
 			status.add(new ConfigurationProblem("Invalid charset used. 8bit fixed-width encoding needs to be used.", 
-					Severity.ERROR, this, Priority.NORMAL));
+					Severity.ERROR, this, Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
 		}
 		
         try {

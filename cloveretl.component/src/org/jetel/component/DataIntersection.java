@@ -721,12 +721,12 @@ public class DataIntersection extends Node implements MetadataProvider {
         if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
         
         DataRecordMetadata driverMetadata = getInputPort(DRIVER_ON_PORT).getMetadata();
         DataRecordMetadata slaveMetadata = getInputPort(SLAVE_ON_PORT).getMetadata();
-        //compiliance of input and output metadata checking
+        //compliance of input and output metadata checking
 		checkMetadata(status, driverMetadata, getOutputPort(WRITE_TO_PORT_A).getMetadata());
 		checkMetadata(status, slaveMetadata, getOutputPort(WRITE_TO_PORT_B).getMetadata());
 

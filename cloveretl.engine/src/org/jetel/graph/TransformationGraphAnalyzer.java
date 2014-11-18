@@ -41,6 +41,7 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.RecursiveSubgraphException;
+import org.jetel.graph.analyse.FastPropagateSubgraphInspector;
 import org.jetel.graph.analyse.GraphCycleInspector;
 import org.jetel.graph.analyse.LoopsInspector;
 import org.jetel.graph.analyse.SingleGraphProvider;
@@ -82,7 +83,7 @@ public class TransformationGraphAnalyzer {
 	 * - automatic metadata propagation is performed
 	 * - correct edge types are detected
 	 */
-	public static void analyseGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext, boolean propagateMetadata){
+	public static void analyseGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext, boolean propagateMetadata) {
         //remove disabled components and their edges
 		try {
 			TransformationGraphAnalyzer.disableNodesInPhases(graph);
@@ -120,7 +121,7 @@ public class TransformationGraphAnalyzer {
 
         //analyze type of edges - specially buffered and phase edges
         try {
-        	TransformationGraphAnalyzer.analyseEdgeTypes(graph);
+        	TransformationGraphAnalyzer.analyseEdgeTypes(graph, runtimeContext);
 		} catch (Exception e) {
 			throw new JetelRuntimeException("Edge type analysis failed.", e);
 		}
@@ -484,7 +485,11 @@ public class TransformationGraphAnalyzer {
 	 * Detects suitable type of edges for the given graph. Edge types are preset
 	 * directly to the graph instance.
 	 */
-	public static void analyseEdgeTypes(TransformationGraph graph) {
+	public static void analyseEdgeTypes(TransformationGraph graph, GraphRuntimeContext runtimeContext) {
+		if (runtimeContext == null) {
+			runtimeContext = graph.getRuntimeContext();
+		}
+		
 		//first of all find the phase edges
 		analysePhaseEdges(graph);
 
@@ -494,6 +499,13 @@ public class TransformationGraphAnalyzer {
 		
 		//make all edges around loop component fast propagate
 		LoopsInspector.inspectEdgesInLoops(graph);
+		
+		//if the subgraph is executed in fast-propagate mode
+		//all edges between SGI and SGO components have to fast-propagated
+		//let's find all these edges and change edge type to a fast-propagate variant
+		if (runtimeContext.isFastPropagateExecution()) {
+			FastPropagateSubgraphInspector.inspectEdges(graph);
+		}
 		
 		//update edge types around Subgraph components
 		//real edge is combination of parent graph edge type and subgraph edge type

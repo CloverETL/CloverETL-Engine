@@ -602,12 +602,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					"Attribute \"name\" or \"type\" not defined within Record !");
 		}
 
-		DataRecordParsingType rt;
-		if (recordType.equalsIgnoreCase("delimited")) rt = DataRecordParsingType.DELIMITED;
-		else if (recordType.equalsIgnoreCase("fixed")) rt = DataRecordParsingType.FIXEDLEN;
-		else if (recordType.equalsIgnoreCase("mixed")) rt = DataRecordParsingType.MIXED;
-		else throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-				"Unknown record type '" + recordType + "'. One of these options is supported delimited|fixed|mixed.");
+		DataRecordParsingType rt = DataRecordParsingType.fromString(recordType);
 
 		recordMetadata = new DataRecordMetadata(recordName, rt);
 		if (!StringUtils.isEmpty(recordLabel)) {

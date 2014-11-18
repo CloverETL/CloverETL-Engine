@@ -465,6 +465,8 @@ public class XLSWriter extends Node {
 
             if (!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
+            } else {
+            	problem.setAttributeName(XML_FILEURL_ATTRIBUTE);
             }
 
             status.add(problem);
