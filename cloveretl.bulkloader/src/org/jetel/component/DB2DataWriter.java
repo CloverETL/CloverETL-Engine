@@ -845,7 +845,7 @@ public class DB2DataWriter extends Node {
 				batchFile = getGraph().getAuthorityProxy().newTempFile("tmp", ".bat", -1);
 			}
 			if (!batchFile.canWrite()) {
-				status.add(new ConfigurationProblem("Can not create batch file", Severity.ERROR, this, Priority.NORMAL));
+				status.add(new ConfigurationProblem("Can not create batch file", Severity.ERROR, this, Priority.NORMAL, XML_BATCHURL_ATTRIBUTE));
 			}
 		} catch (IOException e) {
 			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_BATCHURL_ATTRIBUTE));
