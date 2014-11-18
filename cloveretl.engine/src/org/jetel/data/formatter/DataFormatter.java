@@ -126,7 +126,7 @@ public class DataFormatter extends AbstractFormatter {
 						&& metadata.getField(i).getDataType() != DataFieldType.BYTE
 						&& metadata.getField(i).getDataType() != DataFieldType.CBYTE;
                 try {
-                	String[] fDelimiters = metadata.getField(i).getDelimiters();
+                	String[] fDelimiters = metadata.getField(i).getDelimiters(false); // CLO-5293
                 	if (fDelimiters != null) { //for eof delimiter
     					delimiters[i] = fDelimiters[0].getBytes(charSet);
                 	}
