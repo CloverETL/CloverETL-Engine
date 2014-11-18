@@ -467,13 +467,48 @@ public class DataFieldMetadata implements Serializable {
 	 * @return the array of all field delimiters
 	 */
 	public String[] getDelimiters() {
+		return getDelimiters(true);
+	}
+	
+	/**
+	 * Returns <code>true</code> if the field is the last field
+	 * in the parent {@link DataRecordMetadata}.
+	 * 
+	 * If <code>excludeAutofillingFields</code> is <code>true</code> (default for parsers),
+	 * the last non-autofilled field is considered the last field.
+	 * 
+	 * @param excludeAutofillingFields
+	 * 
+	 * @return <code>true</code> if this field is the last field
+	 */
+	private boolean isLastField(boolean excludeAutofillingFields) {
+		if (excludeAutofillingFields) {
+			return isLastNonAutoFilledField();
+		} else {
+			return getNumber() == (getDataRecordMetadata().getNumFields() - 1);
+		}
+	}
+	
+	/**
+	 * CLO-5293:
+	 * 
+	 * Returns an array of all field delimiters assigned to this field. In case no field delimiters are defined, default
+	 * field delimiters from parent metadata are returned. Delimiters for last field are extended by a record delimiter.
+	 * 
+	 * If <code>excludeAutofillingFields</code> is <code>true</code> (default for parsers),
+	 * the last non-autofilled field is considered the last field.
+	 * 
+	 * @param excludeAutofillingFields
+	 * @return the array of all field delimiters
+	 */
+	public String[] getDelimiters(boolean excludeAutofillingFields) {
 		if (isDelimited()) {
 			String[] delimiters = null;
 
 			if (delimiter != null) {
 				delimiters = delimiter.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX);
 
-				if (isLastNonAutoFilledField()) { // if field is last
+				if (isLastField(excludeAutofillingFields)) { // if field is last
 					if (getDataRecordMetadata().isSpecifiedRecordDelimiter()) {
 						List<String> tempDelimiters = new ArrayList<String>();
 
@@ -490,7 +525,7 @@ public class DataFieldMetadata implements Serializable {
 					}
 				}
 			} else {
-				if (!isLastNonAutoFilledField()) { // if the field is not last
+				if (!isLastField(excludeAutofillingFields)) { // if the field is not last
 					delimiters = getDataRecordMetadata().getFieldDelimiters();
 				} else {
 					delimiters = getDataRecordMetadata().getRecordDelimiters();
