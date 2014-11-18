@@ -1770,7 +1770,7 @@ public class HttpConnector extends Node {
 		hasErrorOutputPort = (errorOutputPort != null);
 
 		if (redirectErrorOutput && hasErrorOutputPort) {
-			throw new ComponentNotReadyException("Error output is redirected to standard output port, but error port has an edge connected");
+			throw new ComponentNotReadyException("Error output is redirected to standard output port, but error port has an edge connected", XML_REDIRECT_ERROR_OUTPUT);
 		}
 
 		// create input mapping transformation
@@ -2697,7 +2697,10 @@ public class HttpConnector extends Node {
 
 		try {
 			tryToInit(true);
-		} catch (Exception e) {
+		} catch (ComponentNotReadyException e) {
+			status.add("Initialization failed. " + ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, e.getAttributeName());
+		}
+		catch (Exception e) {
 			status.add("Initialization failed. " + ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL);
 		}
 

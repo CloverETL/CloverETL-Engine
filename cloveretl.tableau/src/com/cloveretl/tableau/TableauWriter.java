@@ -542,21 +542,7 @@ public class TableauWriter extends Node  {
 		for (Node n : getGraph().getPhase(getPhaseNum()).getNodes().values()) {
 			if (n != this && getType().equals(n.getType())) {
 				//multiple writers in the same phase
-				//status.add("\""	+ n.getName() + "\" writes in the same phase. Having multiple TableauWriters in the same phase is not recommended.", ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
 				status.add("\""	+ n.getName() + "\" writes in the same phase. Having multiple TableauWriters in the same phase is not allowed.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-				
-				//multiple writers in the same phase AND a same file - that will never work, reports config error
-				/*
-				try {
-					URL contextURL = getContextURL();
-					URL url1 = FileUtils.getFileURL(contextURL, ((TableauWriter) n).outputFileName);
-					URL url2 = FileUtils.getFileURL(contextURL, outputFileName);
-					if (url1.equals(url2)) {
-						status.add("\"" + n.getName() + "\" (ID: " + n.getId() + ") writes to the same file in the same phase!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-					}
-				} catch (MalformedURLException e) {
-				}
-				*/
 			}
 		}
 		

@@ -465,7 +465,7 @@ public class CTLMapping {
 			try {
 				// initialise mapping
 		        if (!ctlTransformation.init(null, inputRecordsMetadata, outputRecordsMetadata)) {
-		            throw new ComponentNotReadyException(name + " initialization was unsuccessful.");
+		            throw new ComponentNotReadyException(name + " initialization was unsuccessful.", xmlAttribute);
 		        }
 			} catch (Exception e) {
 				throw new JetelRuntimeException(name + " initialization failed.", e);
