@@ -41,12 +41,25 @@ public abstract class AbstractGraphProvider implements GraphProvider {
 	private EdgeFunction edgeFunction;
 	
 	/**
+	 * This flag indicates the SubgraphInput (or SubgraphOutput) component will be considered
+	 * as single component. Otherwise, each port of SGI or SGO component represents separate
+	 * 'component' entity for this graph provider.
+	 */
+	private boolean subgraphInputOutputAsSingleComponent = false;
+	
+	/**
+	 * This flag indicates whether the SubgraphInput and SubgraphOutput components are
+	 * part of provided graph.
+	 */
+	private boolean subgraphInputOutputVisibility = false;
+	
+	/**
 	 * RemoteEdgeComponent and SubJobInput/Output components are not processed in regular way.
 	 * @return true for the component which are dedicated to be root of graph processing
 	 */
 	protected boolean isAllowedComponent(Node component) {
 		return !ClusterUtils.isRemoteEdgeComponent(component.getType())
-				&& !SubgraphUtils.isSubJobInputOutputComponent(component.getType());
+				&& (isSubgraphInputOutputVisibility() || !SubgraphUtils.isSubJobInputOutputComponent(component.getType()));
 	}
 	
 	@Override
@@ -57,6 +70,26 @@ public abstract class AbstractGraphProvider implements GraphProvider {
 	@Override
 	public EdgeFunction getEdgeFunction() {
 		return edgeFunction;
+	}
+	
+	@Override
+	public void setSubgraphInputOutputAsSingleComponent(boolean subgraphInputOutputAsSingleComponent) {
+		this.subgraphInputOutputAsSingleComponent = subgraphInputOutputAsSingleComponent;
+	}
+	
+	@Override
+	public boolean isSubgraphInputOutputAsSingleComponent() {
+		return subgraphInputOutputAsSingleComponent;
+	}
+	
+	@Override
+	public void setSubgraphInputOutputVisibility(boolean subgraphInputOutputVisibility) {
+		this.subgraphInputOutputVisibility = subgraphInputOutputVisibility;
+	}
+	
+	@Override
+	public boolean isSubgraphInputOutputVisibility() {
+		return subgraphInputOutputVisibility;
 	}
 	
 }

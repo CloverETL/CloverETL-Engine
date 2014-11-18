@@ -379,14 +379,14 @@ public class DBFDataReader extends Node {
 				status.add(new ConfigurationProblem(
 						MessageFormat.format("Charset {0} not supported!", charset), 
 						ConfigurationStatus.Severity.ERROR, this, 
-						ConfigurationStatus.Priority.NORMAL));
+						ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
 			} else {
 				CharsetEncoder encoder = Charset.forName(charset).newEncoder();
 				if (encoder.maxBytesPerChar() != 1) {
 					status.add(new ConfigurationProblem(
 							"Invalid charset used. 8bit fixed-width encoding needs to be used.", 
 							Severity.ERROR, 
-							this, Priority.NORMAL));
+							this, Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
 				}
 			}
         }

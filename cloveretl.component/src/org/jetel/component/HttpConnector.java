@@ -1770,7 +1770,7 @@ public class HttpConnector extends Node {
 		hasErrorOutputPort = (errorOutputPort != null);
 
 		if (redirectErrorOutput && hasErrorOutputPort) {
-			throw new ComponentNotReadyException("Error output is redirected to standard output port, but error port has an edge connected");
+			throw new ComponentNotReadyException("Error output is redirected to standard output port, but error port has an edge connected", XML_REDIRECT_ERROR_OUTPUT);
 		}
 
 		// create input mapping transformation
@@ -2477,7 +2477,7 @@ public class HttpConnector extends Node {
 
 		// check character set
 		if (charset != null && !Charset.isSupported(charset)) {
-			status.add(new ConfigurationProblem("Charset " + charset + " not supported!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+			status.add(new ConfigurationProblem("Charset " + charset + " not supported!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
 		}
 
 		InputPort inputPort = getInputPort(INPUT_PORT_NUMBER);
@@ -2523,12 +2523,12 @@ public class HttpConnector extends Node {
 
 		// Unknown request method
 		if (!PLAIN_REQUEST_METHODS.contains(requestMethod) && !ENTITY_ENCLOSING_REQUEST_METHODS.contains(requestMethod)) {
-			status.add(new ConfigurationProblem("Unsupported request method: " + requestMethod, Severity.ERROR, this, Priority.NORMAL));
+			status.add(new ConfigurationProblem("Unsupported request method: " + requestMethod, Severity.ERROR, this, Priority.NORMAL, XML_REQUEST_METHOD_ATTRIBUTE));
 		}
 
 		// Unknown authentication method
 		if (!SUPPORTED_AUTHENTICATION_METHODS.contains(authenticationMethod)) {
-			status.add(new ConfigurationProblem("Unsupported authentication method: " + authenticationMethod, Severity.ERROR, this, Priority.NORMAL));
+			status.add(new ConfigurationProblem("Unsupported authentication method: " + authenticationMethod, Severity.ERROR, this, Priority.NORMAL, XML_AUTHENTICATION_METHOD_ATTRIBUTE));
 		}
 
 		if (inputPort != null) {
@@ -2697,7 +2697,10 @@ public class HttpConnector extends Node {
 
 		try {
 			tryToInit(true);
-		} catch (Exception e) {
+		} catch (ComponentNotReadyException e) {
+			status.add("Initialization failed. " + ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, e.getAttributeName());
+		}
+		catch (Exception e) {
 			status.add("Initialization failed. " + ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL);
 		}
 

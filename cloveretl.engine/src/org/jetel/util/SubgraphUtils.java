@@ -116,7 +116,8 @@ public class SubgraphUtils {
 		return subgraphEdge.getGraph().getRuntimeJobType().isSubJob()
 				&& subgraphEdge.getGraph().getRuntimeJobType().isGraph() //jobflows do not share edges to avoid distorted logging of token tracked 
 				&& !subgraphEdge.isDebugMode()
-				&& subgraphEdge.getEdgeType() != EdgeTypeEnum.L_REMOTE;
+				&& subgraphEdge.getEdgeType() != EdgeTypeEnum.L_REMOTE
+				&& subgraphEdge.getEdgeType() != EdgeTypeEnum.PHASE_CONNECTION;
 	}
 
 	/**
@@ -132,6 +133,7 @@ public class SubgraphUtils {
 		return subgraphEdge.getGraph().getRuntimeJobType().isSubJob()
 				&& subgraphEdge.getGraph().getRuntimeJobType().isGraph() //jobflows do not share edges to avoid distorted logging of token tracked 
 				&& !parentGraphEdge.isDebugMode()
+				&& subgraphEdge.getEdgeType() != EdgeTypeEnum.PHASE_CONNECTION
 				&& !SubgraphUtils.isSubJobInputComponent(subgraphEdge.getWriter().getType()); //edges directly interconnect SubgraphInput and SubgraphOutput cannot be share from both sides
 	}
 	

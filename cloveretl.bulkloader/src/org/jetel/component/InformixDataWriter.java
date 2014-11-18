@@ -677,7 +677,7 @@ public class InformixDataWriter extends BulkLoader {
 						Severity.ERROR, this, Priority.NORMAL));
 			}
 		} catch (ComponentNotReadyException e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e),	Severity.ERROR, this, Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL));
 		}
 		if (StringUtils.isEmpty(command) && StringUtils.isEmpty(table)) {
 			status.add(new ConfigurationProblem(StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute has to be specified or " +
@@ -692,10 +692,10 @@ public class InformixDataWriter extends BulkLoader {
 				try {
 					if (!fileExists(dataURL)) {
 						status.add(new ConfigurationProblem("Data file " + StringUtils.quote(dataURL) + " not exists.",
-								Severity.ERROR,	this, Priority.NORMAL));
+								Severity.ERROR,	this, Priority.NORMAL, XML_FILE_URL_ATTRIBUTE));
 					}
 				} catch (ComponentNotReadyException e) {
-					status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e),	Severity.ERROR, this, Priority.NORMAL));
+					status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_FILE_URL_ATTRIBUTE));
 				}
 		}
 		

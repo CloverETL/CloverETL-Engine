@@ -343,11 +343,6 @@ public class Rollup extends Node {
                     Severity.ERROR, this, Priority.HIGH, XML_GROUP_ACCUMULATOR_METADATA_ID_ATTRIBUTE));
         }
 
-        if (StringUtils.isEmpty(transform) && StringUtils.isEmpty(transformUrl)
-        		&& StringUtils.isEmpty(transformClassName)) {
-            status.add(new ConfigurationProblem("No rollup transform specified!", Severity.ERROR, this, Priority.HIGH));
-        }
-
         if (transformUrlCharset != null && !Charset.isSupported(transformUrlCharset)) {
             status.add(new ConfigurationProblem("The transform URL character set is not supported!",
                     Severity.ERROR, this, Priority.NORMAL, XML_TRANSFORM_URL_CHARSET_ATTRIBUTE));

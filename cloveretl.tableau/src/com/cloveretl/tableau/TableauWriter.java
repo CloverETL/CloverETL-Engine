@@ -483,7 +483,7 @@ public class TableauWriter extends Node  {
 	}
 	
 	/**
-	 * Sets default collation. If status is null, prints errors to System.err
+	 * Sets default collation. If status is null, logs errors
 	 * @param status
 	 */
 	private void checkDefaultCollation(ConfigurationStatus status) {
@@ -503,7 +503,11 @@ public class TableauWriter extends Node  {
 	        	try {
 	        		defaultTableCollation = Collation.valueOf(rawTableCollation);
 	        	} catch (IllegalArgumentException e) {
-	        		errMessage = "Illegal value for default table collation: " + rawTableCollation;
+	        		if (status != null) {
+	        			status.add(new ConfigurationProblem("Illegal value for default table collation: " + rawTableCollation, Severity.ERROR,	this, Priority.NORMAL, XML_DEFAULT_TABLE_COLLATION));
+	        		} else {
+	        			logger.error(errMessage);
+	        		}
 	        	}
 	        }
 		} catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
@@ -512,13 +516,10 @@ public class TableauWriter extends Node  {
 			} else {
 				errMessage = "Unable to initialize Tableau native libraries. Make sure they are installed and configured in PATH environment variable (see component docs). Underlying error: \n" + e.getMessage();
 			}
-		}
-
-		if (errMessage != null) {
 			if (status != null) {
 				status.add(new ConfigurationProblem(errMessage, Severity.ERROR,	this, Priority.NORMAL));
 			} else {
-				System.err.println(errMessage);
+				logger.error(errMessage);
 			}
 		}
 	}
@@ -530,32 +531,18 @@ public class TableauWriter extends Node  {
 		checkDefaultCollation(status);
 		
 		if (StringUtils.isEmpty(outputFileName)) {
-            status.add(new ConfigurationProblem("Missing File URL attribute.", Severity.ERROR, this, Priority.NORMAL));
+            status.add(new ConfigurationProblem("Missing File URL attribute.", Severity.ERROR, this, Priority.NORMAL, XML_OUTPUT_FILE));
         }
 		
 		// Tableau API requires that the target file ends with ".tde". See Extract constructor doc
 		if (outputFileName != null && !outputFileName.endsWith(REQUIRED_FILE_SUFFIX)) {
-			status.add(new ConfigurationProblem("Output file path must point to a file with \".tde\" suffix", Severity.ERROR, this, Priority.NORMAL));
+			status.add(new ConfigurationProblem("Output file path must point to a file with \".tde\" suffix", Severity.ERROR, this, Priority.NORMAL, XML_OUTPUT_FILE));
 		}
 		
 		for (Node n : getGraph().getPhase(getPhaseNum()).getNodes().values()) {
 			if (n != this && getType().equals(n.getType())) {
 				//multiple writers in the same phase
-				//status.add("\""	+ n.getName() + "\" writes in the same phase. Having multiple TableauWriters in the same phase is not recommended.", ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
 				status.add("\""	+ n.getName() + "\" writes in the same phase. Having multiple TableauWriters in the same phase is not allowed.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-				
-				//multiple writers in the same phase AND a same file - that will never work, reports config error
-				/*
-				try {
-					URL contextURL = getContextURL();
-					URL url1 = FileUtils.getFileURL(contextURL, ((TableauWriter) n).outputFileName);
-					URL url2 = FileUtils.getFileURL(contextURL, outputFileName);
-					if (url1.equals(url2)) {
-						status.add("\"" + n.getName() + "\" (ID: " + n.getId() + ") writes to the same file in the same phase!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-					}
-				} catch (MalformedURLException e) {
-				}
-				*/
 			}
 		}
 		
@@ -564,7 +551,7 @@ public class TableauWriter extends Node  {
 		} catch (Exception e) {
 			status.add(new ConfigurationProblem(
 					"Action on existing output file is not set properly!",
-					Severity.ERROR, this, Priority.NORMAL));
+					Severity.ERROR, this, Priority.NORMAL, XML_ACTION_ON_EXISTING_FILE));
 		}
 		
 		checkInputPorts(status, 1, 1);
