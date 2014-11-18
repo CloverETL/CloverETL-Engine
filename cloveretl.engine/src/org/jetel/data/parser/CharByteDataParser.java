@@ -734,7 +734,7 @@ public class CharByteDataParser extends AbstractTextParser {
 						for (int idx = 0; idx < fieldCount; idx++) {
 							if (!isAutoFilling[idx] && i >= fieldStart[idx] && i < fieldEnd[idx]) {
 								if (!record.getMetadata().getField(startFieldIdx + idx).isEofAsDelimiter()) {
-									throw new BadDataFormatException("End of input encountered instead of the closing quote");
+									throw new BadDataFormatException("End of input encountered while reading fixed-length field");
 								}
 							}
 						}
