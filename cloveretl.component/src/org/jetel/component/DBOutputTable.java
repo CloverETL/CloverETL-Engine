@@ -1183,12 +1183,12 @@ public class DBOutputTable extends Node {
 			IConnection conn = getGraph().getConnection(dbConnectionName);
 			if (conn == null) {
 				throw new ComponentNotReadyException(
-						"Can't find DBConnection ID: " + dbConnectionName);
+						"Can't find DBConnection ID: " + dbConnectionName, XML_DBCONNECTION_ATTRIBUTE);
 			}
 			if (!(conn instanceof DBConnection)) {
 				throw new ComponentNotReadyException("Connection with ID: "
 						+ dbConnectionName
-						+ " isn't instance of the DBConnection class.");
+						+ " isn't instance of the DBConnection class.", XML_DBCONNECTION_ATTRIBUTE);
 			}
 			dbConnection = (DBConnection) conn;
 			dbConnection.init();

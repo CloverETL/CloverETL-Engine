@@ -310,30 +310,30 @@ public class SortWithinGroups extends Node {
         DataRecordMetadata metadata = getInputPort(INPUT_PORT_NUMBER).getMetadata();
 
         if (groupKeyFields == null) {
-            status.add(new ConfigurationProblem("The group key is empty!", Severity.ERROR, this, Priority.HIGH));
+            status.add(new ConfigurationProblem("The group key is empty!", Severity.ERROR, this, Priority.HIGH, XML_ATTRIBUTE_GROUP_KEY));
         } else {
             for (String groupKeyField : groupKeyFields) {
                 if (metadata.getField(groupKeyField) == null) {
                     status.add(new ConfigurationProblem("The group key field " + StringUtils.quote(groupKeyField)
-                            + " doesn't exist!", Severity.ERROR, this, Priority.HIGH));
+                            + " doesn't exist!", Severity.ERROR, this, Priority.HIGH, XML_ATTRIBUTE_GROUP_KEY));
                 }
             }
         }
 
         if (sortKeyFields == null) {
-            status.add(new ConfigurationProblem("The sort key is empty!", Severity.ERROR, this, Priority.HIGH));
+            status.add(new ConfigurationProblem("The sort key is empty!", Severity.ERROR, this, Priority.HIGH, XML_ATTRIBUTE_SORT_KEY));
         } else {
             for (String sortKeyField : sortKeyFields) {
                 if (metadata.getField(sortKeyField) == null) {
                     status.add(new ConfigurationProblem("The sort key field " + StringUtils.quote(sortKeyField)
-                            + " doesn't exist!", Severity.ERROR, this, Priority.HIGH));
+                            + " doesn't exist!", Severity.ERROR, this, Priority.HIGH, XML_ATTRIBUTE_SORT_KEY));
                 }
             }
         }
 
         if (numberOfTapes <= 0) {
             status.add(new ConfigurationProblem("The number of tapes is less than 1!",
-                    Severity.ERROR, this, Priority.NORMAL));
+                    Severity.ERROR, this, Priority.NORMAL, XML_ATTRIBUTE_NUMBER_OF_TAPES));
         }
 
         return status;

@@ -361,7 +361,7 @@ public class Aggregate extends Node {
         }
         
         if (newMapping == null && oldMapping == null) {
-        	status.add(new ConfigurationProblem("Mapping not specified", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+        	status.add(new ConfigurationProblem("Mapping not specified", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_MAPPING_ATTRIBUTE));
         	return status;
         }
         

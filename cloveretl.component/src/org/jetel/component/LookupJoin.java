@@ -466,7 +466,7 @@ public class LookupJoin extends Node implements MetadataProvider {
         if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
 
         if (getOutputPort(REJECTED_PORT) != null) {
@@ -496,7 +496,7 @@ public class LookupJoin extends Node implements MetadataProvider {
 	
 			if (lookupTable == null) {
 				status.add(new ConfigurationProblem("Lookup table \"" + lookupTableName + "\" not found.", Severity.ERROR,
-						this, Priority.NORMAL));
+						this, Priority.NORMAL, XML_LOOKUP_TABLE_ATTRIBUTE));
 			} else if (transformation == null && !runtimeMetadata(lookupTable)) {
 				DataRecordMetadata[] inMetadata = { getInputPort(READ_FROM_PORT).getMetadata(), lookupTable.getMetadata() };
 				DataRecordMetadata[] outMetadata = { getOutputPort(WRITE_TO_PORT).getMetadata() };
