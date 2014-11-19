@@ -25,8 +25,6 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.BinaryDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
-import org.jetel.graph.Edge;
-import org.jetel.graph.EdgeBase;
 import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.util.bytes.CloverBuffer;
 
@@ -156,6 +154,7 @@ public class LRemoteEdge extends EdgeBase {
     		eof = true;
     		dataFormatter.close();
     		eofMonitor.notifyAll();
+    		eofSent = true;
     	}
 	}
 

@@ -393,6 +393,13 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     }
 
     /**
+     * @return true if eof() method has been already invoked on this edge
+     */
+    public boolean isEofSent() {
+    	return edge.isEofSent();
+    }
+    
+    /**
      * Current thread is block until EOF on the edge is reached.
      */
     public void waitForEOF() throws InterruptedException {
