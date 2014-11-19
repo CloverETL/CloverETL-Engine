@@ -169,6 +169,7 @@ public class BufferedEdge extends EdgeBase {
 	public void eof() throws InterruptedException {
         try {
 			recordBuffer.setEOF();
+			eofSent = true;
 		} catch (IOException ex) {
 			throw new RuntimeException("Error when closing BufferedEdge", ex);
 		}

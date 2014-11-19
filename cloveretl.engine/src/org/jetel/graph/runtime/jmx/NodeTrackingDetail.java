@@ -22,11 +22,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
+import org.jetel.util.SubgraphUtils;
 
 /**
  * This class represents tracking information about an node.
@@ -322,8 +322,15 @@ public class NodeTrackingDetail implements NodeTracking {
 
 	//******************* EVENTS ********************/
 	public void gatherTrackingDetails() {
-		//result
-		result = node.getResultCode();
+		//get the node result (SubgraphInput and SubgraphOutput is handled in special way
+		if (SubgraphUtils.isSubJobInputComponent(node.getType())) {
+			result = getResultOfSubgraphInput(node);
+		} else if (SubgraphUtils.isSubJobOutputComponent(node.getType())) {
+			result = getResultOfSubgraphOutput(node);
+		} else {
+			result = node.getResultCode();
+		}
+
 		if (result != Result.RUNNING && result != Result.WAITING && result != Result.FINISHED_OK) {
 			return;
 		}
@@ -427,6 +434,38 @@ public class NodeTrackingDetail implements NodeTracking {
 		} else {
 			return threadUserTime - initialThreadUserTime.get(thread.getId());
 		}
+	}
+
+	/**
+	 * @param node subgraph input component
+	 * @return virtual result status of SubgraphInput component, this result is derived
+	 * from traffic on output edges
+	 */
+	private static Result getResultOfSubgraphInput(Node node) {
+		boolean isStop = true;
+		for (OutputPort outputPort : node.getOutPorts()) {
+			if (!outputPort.getEdge().isEofSent()
+					&& !outputPort.getEdge().getReader().getResultCode().isStop()) {
+				isStop = false; 
+			}
+		}
+		return isStop ? Result.FINISHED_OK : Result.RUNNING;
+	}
+	
+	/**
+	 * @param node subgraph output component
+	 * @return virtual result status of SubgraphOutput component, this result is derived
+	 * from traffic on input edges
+	 */
+	private static Result getResultOfSubgraphOutput(Node node) {
+		boolean isStop = true;
+		for (InputPort inputPort : node.getInPorts()) {
+			if (!inputPort.getEdge().isEofSent()
+					&& !inputPort.getEdge().getWriter().getResultCode().isStop()) {
+				isStop = false; 
+			}
+		}
+		return isStop ? Result.FINISHED_OK : Result.RUNNING;
 	}
 
 }
