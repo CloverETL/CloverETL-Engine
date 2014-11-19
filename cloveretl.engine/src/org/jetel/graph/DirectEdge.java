@@ -377,6 +377,7 @@ public class DirectEdge extends EdgeBase {
             flushWriteBuffer();
         }
         ByteBufferUtils.encodeLength(writeBuffer, EOF); // send EOF
+        eofSent = true;
         
         flushWriteBuffer();
 	}

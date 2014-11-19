@@ -248,6 +248,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
     @Override
     public void eof() {
         recordsBuffer.close();
+        eofSent = true;
     }
 
     @Override
