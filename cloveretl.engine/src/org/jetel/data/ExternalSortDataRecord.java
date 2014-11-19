@@ -233,6 +233,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 			try {
 				tapeCarousel.free();
 				carouselInitialized = false;
+				tapeCarousel = null;
 			} catch (InterruptedException e) {
 				// DO NOTHING
 			}
