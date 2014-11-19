@@ -251,6 +251,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 	        dataTape.flush(false);
     	    dataTape.rewind();
 	    	isReadMode=true;
+	    	eofSent = true;
     		eofMonitor.notifyAll();
     	}
 	}

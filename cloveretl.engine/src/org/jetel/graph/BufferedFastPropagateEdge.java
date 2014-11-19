@@ -294,6 +294,7 @@ public class BufferedFastPropagateEdge extends EdgeBase {
 				throw new JetelRuntimeException("internal error - unexpected internal state");
 			}
 		}
+		eofSent = true;
 	}
 
 	@Override
