@@ -248,6 +248,7 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
 			recordBuffer.compact();
 			
 			if (recordBuffer.capacity() < recordSize) {
+				// CLO-5329:
 				if (recordSize > recordBuffer.maximumCapacity()) {
 					throw new JetelRuntimeException(MessageFormat.format("Record size {0} exceeds maximum buffer capacity: {1}. The input file may be corrupted.", recordSize, recordBuffer.maximumCapacity()));
 				}
