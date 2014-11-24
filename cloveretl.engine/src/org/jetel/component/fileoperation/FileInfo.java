@@ -20,6 +20,7 @@ package org.jetel.component.fileoperation;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Files;
 import java.util.Date;
 
 public class FileInfo implements Info {
@@ -108,7 +109,7 @@ public class FileInfo implements Info {
 
 	@Override
 	public Boolean canRead() {
-		return file.canRead();
+		return Files.isReadable(file.toPath());
 	}
 
 	@Override
