@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.text.MessageFormat;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,6 +35,7 @@ import org.jetel.data.formatter.CloverDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.PolicyType;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.JobType;
@@ -246,6 +248,10 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
 			recordBuffer.compact();
 			
 			if (recordBuffer.capacity() < recordSize) {
+				// CLO-5329:
+				if (recordSize > recordBuffer.maximumCapacity()) {
+					throw new JetelRuntimeException(MessageFormat.format("Record size {0} exceeds maximum buffer capacity: {1}. The input file may be corrupted.", recordSize, recordBuffer.maximumCapacity()));
+				}
 				recordBuffer.expand(0, recordSize);
 			}
 			try {
