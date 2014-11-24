@@ -67,6 +67,7 @@ import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.HttpVersion;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.AuthenticationException;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CookieStore;
@@ -96,6 +97,7 @@ import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -2903,6 +2905,21 @@ public class HttpConnector extends Node {
 		}
 
 		addRequestCookies(method);
+
+		try {
+			if (!StringUtils.isEmpty(this.usernameToUse) && !StringUtils.isEmpty(this.passwordToUse) && (("BASIC".equals(this.authenticationMethodToUse) || "ANY".equals(this.authenticationMethodToUse)))) {
+				Header[] headers = method.getHeaders("Authorization");
+
+				if (headers == null || headers.length == 0) {
+					logger.info("No Authorization HTTP header found. Initializing preemptive basic authentication.");
+
+					UsernamePasswordCredentials creds = new UsernamePasswordCredentials(this.usernameToUse, this.passwordToUse);
+					method.addHeader(new BasicScheme().authenticate(creds, method, this.httpContext));
+				}
+			}
+		} catch (AuthenticationException e) {
+			logger.warn("Preemptive authentication. Authorization header generation failed.", e);
+		}
 
 		return method;
 	}
