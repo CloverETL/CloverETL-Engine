@@ -63,7 +63,7 @@ public class ArchiveFlushTest extends CloverTestCase {
 		assertTrue(file.exists());
 		assertFalse(file.isDirectory());
 		assertTrue(Files.isReadable(file.toPath()));
-		assertTrue(file.canWrite());
+		assertTrue(Files.isWritable(file.toPath()));
 		assertTrue(file.renameTo(file2));
 		assertTrue(file2.delete());
 	}

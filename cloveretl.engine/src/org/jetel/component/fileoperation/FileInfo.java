@@ -114,12 +114,12 @@ public class FileInfo implements Info {
 
 	@Override
 	public Boolean canWrite() {
-		return file.canWrite();
+		return Files.isWritable(file.toPath());
 	}
 
 	@Override
 	public Boolean canExecute() {
-		return file.canExecute();
+		return Files.isExecutable(file.toPath());
 	}
 
 }

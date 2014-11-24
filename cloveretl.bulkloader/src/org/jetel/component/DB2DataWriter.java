@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -844,7 +845,7 @@ public class DB2DataWriter extends Node {
 			if (batchFile == null) {
 				batchFile = getGraph().getAuthorityProxy().newTempFile("tmp", ".bat", -1);
 			}
-			if (!batchFile.canWrite()) {
+			if (!Files.isWritable(batchFile.toPath())) {
 				status.add(new ConfigurationProblem("Can not create batch file", Severity.ERROR, this, Priority.NORMAL, XML_BATCHURL_ATTRIBUTE));
 			}
 		} catch (IOException e) {
