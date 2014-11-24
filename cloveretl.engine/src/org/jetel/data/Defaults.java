@@ -26,7 +26,6 @@ import java.net.URL;
 import java.sql.Connection;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.Set;
 import java.util.TimeZone;
 import java.util.zip.Deflater;
 
@@ -35,6 +34,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.util.MemoryUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
+import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTimeZone;
 
@@ -54,16 +54,7 @@ public final class Defaults {
 	 * If the engine properties are stored as separated properties and defaults (@see java.util.Properties), this method returns merged properties.
 	 */
 	public static Properties getPropertiesSnapshot() {
-		Properties p = new Properties();
-		Set<String> keys = properties.stringPropertyNames();
-		// must be implemented in this complex way, otherwise Properties.defaults would be ignored
-		for (String key : keys) {
-			String v = properties.getProperty(key); // must be getProperty, otherwise Properties.defaults would be ignored 
-			if (v != null) {
-				p.put(key, v);
-			} 
-		}// for
-		return p;
+		return PropertiesUtils.duplicate(properties);
 	}
 
     private static void initProperties(URL configurationFile) {
