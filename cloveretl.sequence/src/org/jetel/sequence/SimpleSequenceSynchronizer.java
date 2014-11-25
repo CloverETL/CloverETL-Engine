@@ -95,7 +95,14 @@ public class SimpleSequenceSynchronizer {
 	 * @return
 	 * @throws IOException
 	 */
-	public long getAndSet(int increment) throws IOException {
+	public long getAndSet(int step, int numCachedValues) throws IOException {
+		long increment;
+		if (numCachedValues <= 0) {
+			// backwards compatibility and sanity check
+			increment = step;
+		} else {
+			increment = step*numCachedValues;
+		}
 		long currentValue;
 		synchronized (READ_WRITE_LOCK) {
 			ensureOpen();
@@ -174,7 +181,7 @@ public class SimpleSequenceSynchronizer {
 	 * @throws IOException
 	 */
 	public static SimpleSequenceSynchronizer registerAndGetSynchronizer(SimpleSequence seq) throws IOException {
-		URL contextURL = seq.getGraph().getRuntimeContext().getContextURL();
+		URL contextURL = (seq.getGraph() != null) ? seq.getGraph().getRuntimeContext().getContextURL() : null;
 		String filename = seq.getFilename();
 		String file = FileUtils.getFile(contextURL, filename);
 		SimpleSequenceSynchronizer synchro;
