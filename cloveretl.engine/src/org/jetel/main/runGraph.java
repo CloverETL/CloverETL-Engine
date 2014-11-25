@@ -27,6 +27,7 @@ import java.net.Authenticator;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -202,7 +203,7 @@ public class runGraph {
                 i++;
                 log4jPropertiesFile = args[i];
                 File test = new File(log4jPropertiesFile);
-                if (!test.canRead()){
+                if (!Files.isReadable(test.toPath())){
                     System.err.println("Cannot read file: \"" + log4jPropertiesFile + "\"");
                     System.exit(-1);
                 }

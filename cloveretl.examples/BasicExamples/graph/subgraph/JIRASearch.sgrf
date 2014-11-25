@@ -1,11 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="User" created="Tue Jun 03 18:12:53 CEST 2014" guiVersion="4.0.0.M2" id="1401812464122" licenseType="Evaluation" modified="Fri Jun 27 17:24:47 CEST 2014" modifiedBy="User" name="jira_search" nature="subgraph" revision="1.8" showComponentDetails="true">
+<Graph author="User" category="readers" created="Tue Jun 03 18:12:53 CEST 2014" guiVersion="4.0.1" id="1401812464122" licenseCode="CLP1DJAVLI74991486BY" licenseType="Commercial" modified="Mon Nov 24 15:50:39 CET 2014" modifiedBy="User" name="jira_search" nature="subgraph" revision="1.9" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0">
 <Record fieldDelimiter="|" name="recordName1" recordDelimiter="\r\n" type="delimited">
 <Field name="field1" type="string"/>
 </Record>
 </Metadata>
+<MetadataGroup name="Implicit metadata" type="implicit">
+<Metadata id="JIRA_SEARCH_MULTI_RUN_SEARCH_REST_Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="jira_search_result" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="issue_id" type="string"/>
+<Field name="type" type="string"/>
+<Field name="summary" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="JIRA_SEARCH_MULTI_Metadata4" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="jira_search" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="query" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="JIRA_SEARCH_MULTI_jira_search_metadata" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="jira_search_metadata" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="jira_query" type="string"/>
+<Field label="total" name="total_results" type="integer"/>
+</Record>
+</Metadata>
+</MetadataGroup>
 <GraphParameters>
 <GraphParameter label="JIRA Query" name="QUERY" public="true" required="true" value="${DEFAULT_QUERY}"/>
 <GraphParameter label="User" name="USER" public="true" required="false"/>
@@ -57,8 +77,8 @@ function integer transform() {
 <Port guiY="170" name="0"/>
 <Port guiY="240" name="1"/>
 </Node>
-<Edge fromNode="GET_JOB_INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="JIRA_SEARCH_MULTI:0"/>
-<Edge fromNode="JIRA_SEARCH_MULTI:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="SUBGRAPH_OUTPUT0:0"/>
-<Edge fromNode="JIRA_SEARCH_MULTI:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 1 (out)" toNode="SEARCH_METADATA_NOT_NEEDED:0"/>
+<Edge fromNode="GET_JOB_INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="JIRA_SEARCH_MULTI_Metadata4" toNode="JIRA_SEARCH_MULTI:0"/>
+<Edge fromNode="JIRA_SEARCH_MULTI:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="JIRA_SEARCH_MULTI_RUN_SEARCH_REST_Metadata0" toNode="SUBGRAPH_OUTPUT0:0"/>
+<Edge fromNode="JIRA_SEARCH_MULTI:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 1 (out)" persistedImplicitMetadata="JIRA_SEARCH_MULTI_jira_search_metadata" toNode="SEARCH_METADATA_NOT_NEEDED:0"/>
 </Phase>
 </Graph>
