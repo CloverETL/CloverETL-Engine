@@ -108,7 +108,6 @@ public class SimpleSequenceSynchronizer {
 			ensureOpen();
 
 			// get
-			io.force(true);
 			buffer.clear();
 			io.position(0);
 			io.read(buffer);
