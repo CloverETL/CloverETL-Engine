@@ -142,7 +142,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
         if (counter<=0){
         	try {
         		//read current value from file, since other running graphs could have changed it
-        		sequenceValue = synchronizer.getAndSet(step*numCachedValues);
+        		sequenceValue = synchronizer.getAndSet(step, numCachedValues);
         	} catch (IOException ex){
                 throw new RuntimeException("I/O error when accessing sequence "+getName()+" id: "+getId(), ex);
             }
