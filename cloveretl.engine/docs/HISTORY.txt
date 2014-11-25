@@ -6,7 +6,8 @@
 REL-4-0-1
 ---------
 
-- no changes
+* FIXES:
+	- HTTPConnector behaves differently in Clover 4 - authentication fails
 
 REL-4-0-0
 ---------
