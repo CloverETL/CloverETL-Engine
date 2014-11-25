@@ -44,7 +44,7 @@ public class ResetTest extends CloverTestCase {
 			"../cloveretl.examples/ExtExamples/",
 			"../cloveretl.examples.community/RealWorldExamples/",
 			"../cloveretl.examples.community/WebSiteExamples/",
-			"../cloveretl.examples/Examples/",
+			"../cloveretl.examples/BasicExamples/",
 			"../cloveretl.test.scenarios/",
 			"../cloveretl.examples.commercial/CommercialExamples/",
 			"../cloveretl.examples.commercial/DataQualityExamples/",
