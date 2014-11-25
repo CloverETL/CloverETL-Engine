@@ -20,6 +20,7 @@ package org.jetel.graph;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.file.Files;
 import java.util.concurrent.Future;
 
 import org.jetel.graph.runtime.EngineInitializer;
@@ -61,8 +62,8 @@ public class ArchiveFlushTest extends CloverTestCase {
 		File file2 = new File(SCENARIOS_RELATIVE_PATH + "data-out/simple-zip-write2.zip");
 		assertTrue(file.exists());
 		assertFalse(file.isDirectory());
-		assertTrue(file.canRead());
-		assertTrue(file.canWrite());
+		assertTrue(Files.isReadable(file.toPath()));
+		assertTrue(Files.isWritable(file.toPath()));
 		assertTrue(file.renameTo(file2));
 		assertTrue(file2.delete());
 	}

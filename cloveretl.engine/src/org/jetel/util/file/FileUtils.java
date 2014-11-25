@@ -43,6 +43,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1588,7 +1589,7 @@ public class FileUtils {
 			throw new ComponentNotReadyException(e + ": " + fileURL, e);
 		}
 		//check if can write to this file
-		tmp = file.exists() ? file.canWrite() : createFile(file, mkDirs);
+		tmp = file.exists() ? Files.isWritable(file.toPath()) : createFile(file, mkDirs);
 		
 		if (!tmp) {
 			throw new ComponentNotReadyException("Can't write to: " + fileURL);
@@ -1795,7 +1796,7 @@ public class FileUtils {
 	 * @return true if can write, false otherwise
 	 */
 	public static boolean canWrite(File dest){
-		if (dest.exists()) return dest.canWrite();
+		if (dest.exists()) return Files.isWritable(dest.toPath());
 		
 		List<File> dirs = getDirs(dest);
 		
