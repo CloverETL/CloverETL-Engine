@@ -379,8 +379,6 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 			throw new JetelException(ex);
 		}
 		
-		// fix for switching from non-direct file to a direct one
-		// see CDR_multiFileReader_CLO-4333.grf
 		record.deserializeUnitary(recordBuffer, serializer);
 		
 		return record;
