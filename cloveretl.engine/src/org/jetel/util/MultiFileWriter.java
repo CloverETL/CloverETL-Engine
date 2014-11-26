@@ -184,12 +184,6 @@ public class MultiFileWriter {
      * @throws ComponentNotReadyException
      */
     private void prepareTargets() throws ComponentNotReadyException {
-    	// creates necessary directories
-        if (mkDir) {
-        	// CL-2478
-        	FileUtils.createParentDirs(contextURL, fileURL);
-        }
-        
     	// prepare type of targets: lookup/keyValue
 		try {
 			if (partitionKey != null) {
@@ -243,6 +237,7 @@ public class MultiFileWriter {
 		targetFile.setCompressLevel(compressLevel);
 		targetFile.setOutputPort(outputPort);
 		targetFile.setDictionary(dictionary);
+		targetFile.setMkDir(mkDir);
 		return targetFile;
     }
     
@@ -265,6 +260,7 @@ public class MultiFileWriter {
 		targetFile.setCompressLevel(compressLevel);
 		targetFile.setOutputPort(outputPort);
 		targetFile.setDictionary(dictionary);
+		targetFile.setMkDir(mkDir);
 		return targetFile;
     }
 
