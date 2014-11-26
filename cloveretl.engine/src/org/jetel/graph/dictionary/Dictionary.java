@@ -178,6 +178,7 @@ public class Dictionary extends GraphElement {
 			entry.setDefault(true); // if not, dictionary entry will be initialized later
 		} else {
 			entry.init(this); //in other case, initialize entry immediately
+			entry.setDirty(true); //and make the entry dirty
 		}
 	}
 	
