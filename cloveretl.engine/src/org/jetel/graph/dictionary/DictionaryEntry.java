@@ -46,6 +46,11 @@ public class DictionaryEntry {
 	
 	private String contentType;
 	
+	/**
+	 * This flag indicates the entry has been changed by the graph after initialisation.
+	 */
+	private boolean dirty = false;
+	
 	public DictionaryEntry(IDictionaryType type) {
 		this(type, false, false, false);
 	}
@@ -74,6 +79,7 @@ public class DictionaryEntry {
 
 	public void reset() {
 		value = defaultValue;
+		dirty = false;
 	}
 	
 	public IDictionaryType getType() {
@@ -131,7 +137,22 @@ public class DictionaryEntry {
 	public String getContentType() {
 		return contentType;
 	}
-	
+
+	/**
+	 * @return true if this dictionary entry has been changed in graph runtime
+	 */
+	public boolean isDirty() {
+		return dirty;
+	}
+
+	/**
+	 * Sets the dictionary entry to dirty state. Should be invoked by {@link Dictionary}
+	 * on entry value change.
+	 */
+	public void setDirty(boolean dirty) {
+		this.dirty = dirty;
+	}
+
 	@Override
 	public String toString() {
 		return getValue().toString();
