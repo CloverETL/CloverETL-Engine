@@ -266,6 +266,12 @@ public class Dictionary extends GraphElement {
 		}
 	}
 	
+	public boolean isDirty(String key) {
+		DictionaryEntry entry = dictionary.get(key);
+		
+		return entry != null && entry.isDirty();
+	}
+
 	public Set<String> getKeys() {
 		return dictionary.keySet();
 	}

@@ -32,35 +32,47 @@ public class DictionaryTest extends CloverTestCase {
 
 	public void testDirtyFlag() throws ComponentNotReadyException {
 		Dictionary dictionary = new Dictionary(new TransformationGraph());
+		assertFalse(dictionary.isDirty("k"));
 		dictionary.setValue("key1", "value1");
 		assertFalse(dictionary.getEntry("key1").isDirty());
 		dictionary.setValue("key1", "value2");
 		assertFalse(dictionary.getEntry("key1").isDirty());
+		assertFalse(dictionary.isDirty("key1"));
 		
 		dictionary.init();
 
 		dictionary.setValue("key1", "value3");
 		assertTrue(dictionary.getEntry("key1").isDirty());
+		assertTrue(dictionary.isDirty("key1"));
 
 		dictionary.setValue("key1", "value4");
 		assertTrue(dictionary.getEntry("key1").isDirty());
+		assertTrue(dictionary.isDirty("key1"));
 
 		dictionary.reset();
 		assertFalse(dictionary.getEntry("key1").isDirty());
+		assertFalse(dictionary.isDirty("key1"));
 
 		dictionary.setValue("key1", null);
 		assertTrue(dictionary.getEntry("key1").isDirty());
+		assertTrue(dictionary.isDirty("key1"));
 
 		dictionary.setValue("key2", "integer", 123);
 		assertTrue(dictionary.getEntry("key2").isDirty());
+		assertTrue(dictionary.isDirty("key2"));
 		
 		dictionary.reset();
 		
 		assertFalse(dictionary.hasEntry("key2"));
+		assertFalse(dictionary.isDirty("key2"));
 
 		assertFalse(dictionary.getEntry("key1").isDirty());
+		assertFalse(dictionary.isDirty("key1"));
 		dictionary.setValue("key1", "value2");
 		assertTrue(dictionary.getEntry("key1").isDirty());
+		assertTrue(dictionary.isDirty("key1"));
+		
+		assertFalse(dictionary.isDirty("key3"));
 	}
 	
 }
