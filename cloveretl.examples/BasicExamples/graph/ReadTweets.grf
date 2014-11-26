@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="dpavlis" created="Wed Jul 09 15:34:33 CEST 2014" guiVersion="4.0.0.M2" id="1404915892380" licenseType="Evaluation" modified="Fri Jul 18 11:02:04 CEST 2014" modifiedBy="User" name="CloverTweets" revision="1.73" showComponentDetails="true">
+<Graph author="dpavlis" created="Wed Jul 09 15:34:33 CEST 2014" guiVersion="0.0.0.devel" id="1404915892380" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Nov 26 18:51:08 CET 2014" modifiedBy="User" name="CloverTweets" revision="1.75" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="Texts" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -17,6 +17,16 @@
 <Field name="count" type="integer"/>
 </Record>
 </Metadata>
+<MetadataGroup name="Implicit metadata" type="implicit">
+<Metadata id="READ_TWEETS_TWITTER_READER_Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="Tweets" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="tweet_text" type="string"/>
+<Field name="created" type="string"/>
+<Field name="author" type="string"/>
+<Field name="id" type="long"/>
+</Record>
+</Metadata>
+</MetadataGroup>
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
@@ -41,7 +51,7 @@ Content of the tweets is analysed for their sentiment (positive, negative and ne
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/tweets-word-frequencies.csv" guiName="Frequencies" guiX="825" guiY="497" id="FREQUENCIES1" type="DATA_WRITER"/>
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/tweets-negative.csv" guiName="Negative" guiX="825" guiY="285" id="NEGATIVE1" type="DATA_WRITER"/>
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/tweets-positive.csv" guiName="Positive" guiX="825" guiY="178" id="POSITIVE1" type="DATA_WRITER"/>
-<Node ____TWITTER___QUERY1="#bigdata" enabled="enabled" guiName="ReadTweetsCascade" guiX="24" guiY="176" id="READ_TWEETS" jobURL="${SUBGRAPH_DIR}/ReadTweetsCascade.sgrf" type="SUBGRAPH"/>
+<Node ____TWITTER___QUERY1="#bigdata" enabled="enabled" guiName="ReadTweets" guiX="24" guiY="176" id="READ_TWEETS" jobURL="${SUBGRAPH_DIR}/ReadTweetsCascade.sgrf" type="SUBGRAPH"/>
 <Node enabled="enabled" guiName="Reformat" guiX="226" guiY="176" id="REFORMAT" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
@@ -74,13 +84,13 @@ function integer transform() {
 <Node enabled="enabled" guiName="SimpleCopy" guiX="406" guiY="176" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/tweets-undecided.csv" guiName="Undecided" guiX="825" guiY="391" id="UNDECIDED1" type="DATA_WRITER"/>
 <Node enabled="enabled" guiName="WordsFrequency" guiX="601" guiY="497" id="WORDS_FREQUENCY" jobURL="${SUBGRAPH_DIR}/WordsFrequency.sgrf" type="SUBGRAPH"/>
-<Edge debugMode="true" fromNode="CLASSIFY_TWEETS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="POSITIVE1:0"/>
-<Edge debugMode="true" fromNode="CLASSIFY_TWEETS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 1 (out)" toNode="NEGATIVE1:0"/>
-<Edge debugMode="true" fromNode="CLASSIFY_TWEETS:2" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" outPort="Port 2 (out)" toNode="UNDECIDED1:0"/>
-<Edge debugMode="true" fromNode="READ_TWEETS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="REFORMAT:0"/>
+<Edge debugMode="true" fromNode="CLASSIFY_TWEETS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata0" toNode="POSITIVE1:0"/>
+<Edge debugMode="true" fromNode="CLASSIFY_TWEETS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 1 (out)" persistedImplicitMetadata="Metadata0" toNode="NEGATIVE1:0"/>
+<Edge debugMode="true" fromNode="CLASSIFY_TWEETS:2" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" outPort="Port 2 (out)" persistedImplicitMetadata="Metadata0" toNode="UNDECIDED1:0"/>
+<Edge debugMode="true" fromNode="READ_TWEETS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="READ_TWEETS_TWITTER_READER_Metadata2" toNode="REFORMAT:0"/>
 <Edge debugMode="true" fromNode="REFORMAT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_COPY:0"/>
 <Edge debugMode="true" fromNode="SIMPLE_COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="CLASSIFY_TWEETS:0"/>
-<Edge debugMode="true" fromNode="SIMPLE_COPY:1" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" outPort="Port 1 (out)" toNode="WORDS_FREQUENCY:0"/>
+<Edge debugMode="true" fromNode="SIMPLE_COPY:1" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" outPort="Port 1 (out)" persistedImplicitMetadata="Metadata0" toNode="WORDS_FREQUENCY:0"/>
 <Edge debugMode="true" fromNode="WORDS_FREQUENCY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge14" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="FREQUENCIES1:0"/>
 </Phase>
 </Graph>
