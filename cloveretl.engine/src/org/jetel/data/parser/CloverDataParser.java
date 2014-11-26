@@ -102,10 +102,6 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 	/** Clover version which has been used to create the input data file. */
 	private FileConfig version;
 
-    /** In case the input file has been created by clover 3.4 and current job type is jobflow
-     * special de-serialisation needs to be used, see CLO-1382 */
-	private boolean useParsingFromJobflow_3_4 = false;
-
 	/**
 	 * True, if the current transformation is jobflow.
 	 */
@@ -244,13 +240,6 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
         isJobflow = ContextProvider.getRuntimeContext() != null
         		&& ContextProvider.getRuntimeContext().getJobType().isJobflow();
         
-        //in case the input file has been created by clover 3.4 or 3.3 and current job type is jobflow
-        //special de-serialisation needs to be used, see CLO-1382
-        if (version.majorVersion == 3 
-        		&& (version.minorVersion == 3 || version.minorVersion == 4)
-        		&& isJobflow) {
-        	useParsingFromJobflow_3_4 = true;
-        }
         switch(compress){
         case NONE:
         	this.input= new CloverDataStream.Input(inStream);
@@ -392,11 +381,7 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 		
 		// fix for switching from non-direct file to a direct one
 		// see CDR_multiFileReader_CLO-4333.grf
-		if (!useParsingFromJobflow_3_4) {
-			record.deserializeUnitary(recordBuffer, serializer);
-		} else {
-			record.deserialize(recordBuffer, serializer);
-		}
+		record.deserializeUnitary(recordBuffer, serializer);
 		
 		return record;
 	}
