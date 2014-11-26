@@ -63,13 +63,6 @@
 		<FlatFile outputFile="data-out/Actors.json" supposedFile="supposed-out/Actors.json"/>
 	</FunctionalTest>
 	
-	<FunctionalTest ident="Twitter" graphFile="graph/Twitter.grf">
-		<Property name="OAUTH_API_KEY" value="r0h8VjKBinQUaEhAksjEjUw3v" />
-		<Property name="OAUTH_API_KEY_SECRET" value="KrNSU4lT9Po5Lam4X7adf57CXFFpZc8fPljTo0OrhcbattKWOU" />
-		<Property name="OAUTH_ACCESS_TOKEN" value="2492653806-5XIsyYAfv289fUcN3vIsCIbXAgsgKqfM2KnXawU" />
-		<Property name="OAUTH_ACCESS_TOKEN_SECRET" value="Mpnb4Vbwt2BH9XcNL4EogKct7huGTDgvtDRZeheQeDSKB" />
-	</FunctionalTest>
-	
 	<FunctionalTest ident="_Introduction" graphFile="graph/_Introduction.grf" />
 	
 	<FunctionalTest ident="CreditCardFraudDetection" graphFile="graph/CreditCardFraudDetection.grf" />
@@ -96,6 +89,6 @@
 	
 	<FunctionalTest ident="IssuesSearch" graphFile="graph/IssuesSearch.grf" excludedEtlEnvironment="engine" />
 	
-	<FunctionalTest ident="ReadTweets" graphFile="graph/ReadTweets.grf" excludedEtlEnvironment="engine" />
+	<FunctionalTest ident="Twitter" graphFile="graph/Twitter.grf" excludedEtlEnvironment="engine" />
 
 </TestScenario>
