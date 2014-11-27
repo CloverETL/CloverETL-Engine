@@ -21,6 +21,7 @@ package org.jetel.component.fileoperation;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -218,6 +219,16 @@ public class URLOperationHandler implements IOperationHandler {
 			case RESOLVE:
 			case INFO:
 			case LIST:
+			try {
+				// We create a dummy URL, which causes JVM to find a URLStreamHandler for the protocol of our operation.
+				// When no URLStreamHandler is found, a MalformedURLException is thrown and we know that the protocol is not supported.
+				new URL(operation.scheme(), null, -1, "", null);
+			} catch (MalformedURLException e) {
+				if (e.getMessage().contains("unknown protocol: " + operation.scheme().toLowerCase())) {
+					// The protocol of the operation is not supported.
+					return false;
+				}
+			}
 				return true;
 			default: 
 				return false;
