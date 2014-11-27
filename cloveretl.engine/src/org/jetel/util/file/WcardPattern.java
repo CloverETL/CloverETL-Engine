@@ -553,8 +553,7 @@ public class WcardPattern {
 			}
 		}
 		
-		else if (resolveAllNames && (
-				url.getProtocol().equals(SandboxUrlUtils.SANDBOX_PROTOCOL))) {
+		else if (url.getProtocol().equals(SandboxUrlUtils.SANDBOX_PROTOCOL)) {
 			return getSanboxNames(url);
 		}
 		else if (resolveAllNames && (
@@ -564,7 +563,9 @@ public class WcardPattern {
 
 		// return original filename
 		List<String> mfiles = new ArrayList<String>();
-		mfiles.add(fileName);
+		if (resolveAllNames) { // CLO-5399 and CL-1590
+			mfiles.add(fileName);
+		}
 		return mfiles;
 	}
 	
