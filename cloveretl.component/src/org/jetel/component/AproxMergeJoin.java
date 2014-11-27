@@ -40,6 +40,8 @@ import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.TransformException;
@@ -1058,12 +1060,18 @@ public class AproxMergeJoin extends Node implements MetadataProvider {
     		inMetadata[0]=getInputPort(DRIVER_ON_PORT).getMetadata();
     		inMetadata[1]=getInputPort(SLAVE_ON_PORT).getMetadata();
     		// initializing join parameters
-    		AproximativeJoinKey[] keys;
-    		if (joinParameters[0].indexOf('=') != -1) {
-    			keys = initNewJoinKey(joinParameters);
-    		}else{
-    			keys = initOldJoinKey(joinParameters);
-    		}
+    		AproximativeJoinKey[] keys = null;
+			try {
+				if (joinParameters[0].indexOf('=') != -1) {
+					keys = initNewJoinKey(joinParameters);
+				} else {
+					keys = initOldJoinKey(joinParameters);
+				}
+			} catch (IndexOutOfBoundsException e) {
+				String joinKey = StringUtils.join(Arrays.asList(joinParameters), Defaults.Component.KEY_FIELDS_DELIMITER);
+				status.add("Invalid join key: " + joinKey, Severity.ERROR, this, Priority.NORMAL, XML_JOIN_KEY_ATTRIBUTE);
+				return status;
+			}
     		joinKeys = new String[joinParameters.length];
     		maxDifferenceLetters = new int[joinParameters.length];
     		boolean[][] strength=new boolean[joinParameters.length][StringAproxComparator.IDENTICAL];
