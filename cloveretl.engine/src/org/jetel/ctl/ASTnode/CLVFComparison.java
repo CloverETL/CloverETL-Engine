@@ -49,7 +49,8 @@ public class CLVFComparison extends SimpleNode {
 		this.operator = node.operator;
 	}
 
-	/** Accept the visitor. * */
+	
+	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */
 	@Override
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
 		try {

@@ -23,6 +23,11 @@ import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.TransformLangParserVisitor;
 
 public class CLVFBreakpointNode extends SimpleNode {
+	
+	private SimpleNode breakAtNode;
+	private boolean disabled=false;
+	private int depth;
+	
 	public CLVFBreakpointNode(int id) {
 		super(id);
 	}
@@ -53,5 +58,29 @@ public class CLVFBreakpointNode extends SimpleNode {
 	@Override
 	public SimpleNode duplicate() {
 		return new CLVFBreakpointNode(this);
+	}
+	
+	public SimpleNode getBreakAtNode(){
+		return breakAtNode;
+	}
+	
+	public void setBreakAtNode(SimpleNode node){
+		this.breakAtNode=node;
+	}
+
+	public boolean isDisabled() {
+		return disabled;
+	}
+
+	public void setDisabled(boolean disabled) {
+		this.disabled = disabled;
+	}
+
+	public int getDepth() {
+		return depth;
+	}
+
+	public void setDepth(int depth) {
+		this.depth = depth;
 	}
 }
