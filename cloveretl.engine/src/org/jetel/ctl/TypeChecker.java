@@ -88,6 +88,7 @@ import org.jetel.ctl.ASTnode.CastNode;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLTypePrimitive;
+import org.jetel.ctl.data.TLType.TLTypeByteArray;
 import org.jetel.ctl.data.TLType.TLTypeList;
 import org.jetel.ctl.data.TLType.TLTypeMap;
 import org.jetel.ctl.data.TLType.TLTypeRecord;
@@ -248,6 +249,17 @@ public class TypeChecker extends NavigatingVisitor {
 				return data;
 			}
 			node.setType(mapComposite.getValueType());
+			return data;
+		}
+		
+		if (composite.getType().isByteArray()) {
+			SimpleNode index = (SimpleNode)node.jjtGetChild(1);
+			if (! index.getType().isInteger()) {
+				error(index,"Cannot convert from '" + index.getType().name() + "' to '" + TLTypePrimitive.INTEGER.name() + "'");
+				node.setType(TLType.ERROR);
+				return data;
+			}
+			node.setType(TLType.BYTEARRAY);
 			return data;
 		}
 		

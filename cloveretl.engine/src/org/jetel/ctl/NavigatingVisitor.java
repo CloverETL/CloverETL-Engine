@@ -300,6 +300,7 @@ public class NavigatingVisitor implements TransformLangParserVisitor {
 	@Override
 	public Object visit(SimpleNode node, Object data) {
 		throw new UnsupportedOperationException("Unreachable code");
+		
 	}
 	
 	@Override
@@ -372,6 +373,18 @@ public class NavigatingVisitor implements TransformLangParserVisitor {
 	@Override
 	public Object visit(CastNode node, Object data) {
 		return visitNode(node,data);
+	}
+
+	@Override
+	public boolean inDebugMode() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void debug(SimpleNode node, Object data) {
+		// TODO Auto-generated method stub
+		
 	}
 
 

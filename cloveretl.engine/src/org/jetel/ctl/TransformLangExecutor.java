@@ -104,6 +104,7 @@ import org.jetel.ctl.data.TLType.TLTypeList;
 import org.jetel.ctl.data.TLType.TLTypeMap;
 import org.jetel.ctl.data.TLType.TLTypeRecord;
 import org.jetel.ctl.data.TLTypePrimitive;
+import org.jetel.ctl.debug.DebugStack;
 import org.jetel.ctl.extensions.IntegralLib;
 import org.jetel.ctl.extensions.TLFunctionPrototype;
 import org.jetel.ctl.extensions.TLTransformationContext;
@@ -197,16 +198,22 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 	static Log logger = LogFactory.getLog(TransformLangExecutor.class);
 
-	private SimpleNode /* CLVFStart or CLVFStartExpression */ ast;
+	protected SimpleNode /* CLVFStart or CLVFStartExpression */ ast;
 	private boolean keepGlobalScope;
 	private Object lastReturnValue = null;
+	
+	/** control variables for debug mode*/
+	private boolean inDebugMode = false; //Indicates whether interpreter runs in debug mode (always false in this class) 
+	protected Map<String,Node> imports;
+	
+	protected SimpleNode withinFunction=null;
 	
 	/**
 	 * Allocates runtime data structures within the AST tree necessary for execution
 	 * 
 	 * @author Michal Tomcanyi <michal.tomcanyi@javlin.cz>
 	 */
-	private class InterpretedRuntimeInitializer extends NavigatingVisitor {
+	protected class InterpretedRuntimeInitializer extends NavigatingVisitor {
 		
 		/**
 		 * Entry method for initialization
@@ -272,6 +279,22 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			return data;
 		}
 		
+		@Override
+		public Object visit(CLVFImportSource node,Object data){
+			//adding reference to source file from which nodes were imported
+			TransformLangExecutor.this.imports.put(node.sourceFilename, node);
+			addSourceInfo((SimpleNode)node.jjtGetChild(0),node.sourceFilename);
+			return data;
+		}
+		
+		private void addSourceInfo(SimpleNode node, String sourceFilename){
+			node.setSourceFilename(sourceFilename);
+			for(int i=0;i<node.jjtGetNumChildren();i++){
+				addSourceInfo((SimpleNode)node.jjtGetChild(i),sourceFilename);
+			}
+		}
+		
+		
 	}
 	
 	private static class PostExecuteCleanupVisitor extends NavigatingVisitor {
@@ -302,6 +325,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		this.graph = graph;
 		stack = new Stack();
 		breakFlag = false;
+		this.imports=new HashMap<String,Node>();
 	}
 	
 	public TransformLangExecutor(TransformLangParser parser, TransformationGraph graph) {
@@ -367,6 +391,18 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		this.globalParameters = parameters;
 	}
 
+	public void setDebugMode(boolean debug){
+		if (this.inDebugMode==debug) return;
+		if(debug){
+			this.stack = new DebugStack();
+			this.inDebugMode=true;
+		}else{
+			this.stack = new Stack();
+			this.inDebugMode=false;
+		}
+	}
+	
+	
 	/**
 	 * Method which returns result of executing parse tree.<br>
 	 * Basically, it returns whatever object was left on top of executor's stack (usually as a result of last executed
@@ -431,17 +467,19 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		initInternal(ast);
 	}
 	
-	private void initInternal(SimpleNode ast) throws TransformLangExecutorRuntimeException {
+	protected void initInternal(SimpleNode ast) throws TransformLangExecutorRuntimeException {
 		if (ast == null) {
 			throw new TransformLangExecutorRuntimeException("AST tree to initialize is null");
 		}
-		
+
 		this.ast = ast;
 		InterpretedRuntimeInitializer init = new InterpretedRuntimeInitializer();
 		init.initialize(ast);
 	}
 	
-	public void preExecute() {}
+	public void preExecute() {
+	}
+	
 	
 	public void postExecute() {
 		
@@ -449,6 +487,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		cleanup.cleanup(ast);
 		lookupCache.clear();
 		lookupCounter = 0;
+		
 	}
 	
 	/**
@@ -484,7 +523,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * Execute statements (returning no value)
 	 * @param node
 	 */
-	private void executeInternal(SimpleNode node) {
+	protected void executeInternal(SimpleNode node) {
 		this.ast = node;
 		node.jjtAccept(this, null);
 	}
@@ -1501,6 +1540,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		return data;
 	}
 
+	
 	@Override
 	public Object visit(CLVFCaseStatement node, Object data) {
 		// execute the case expression and leave it on the stack for parent switch
@@ -1570,7 +1610,183 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 		return data;
 	}
-	
+
+	/**
+	 * @param node
+	 */
+//	protected void handleBreakpoint_old(SimpleNode node, Object data) {
+//		String command="";
+//		
+//		debug_print.print(node.getLine());
+//		debug_print.print(" node: ");
+//		debug_print.println(node);
+//		printSourceLine(node);
+//		debug_print.flush();
+//		do {
+//			try {
+//				if (System.console().reader().ready()){
+////					command = debug_ in.readLine();
+//				}else{
+//					command="";
+//					try {
+//						Thread.sleep(250);
+//					} catch (InterruptedException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//				}
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//			if (command.equalsIgnoreCase("help")){
+//				debug_print.println("info");
+//				debug_print.println("tree");
+//				debug_print.println("resume");
+//				debug_print.println("step");
+//				debug_print.println("stepin");
+//				debug_print.println("stepout");
+//				debug_print.println("list");
+//				debug_print.println("setvar");
+//				debug_print.println("disable");
+//				debug_print.println("enable");
+//				debug_print.println("list breakpoints");
+//				debug_print.println("list callstack");
+//				debug_print.println("line");
+//				
+//			}
+//			if (command.equalsIgnoreCase("info")){
+//				debug_print.print("** Reached breakpoint on line: ");
+//				debug_print.print(node.getLine());
+//				debug_print.print(" on node: ");
+//				debug_print.println(node);
+//			// debug_out.print(node.getBreakAtNode());
+//			//	debug_out.println(" on line "+node.getBreakAtNode().getLine());
+//				
+//			}
+//			if(command.startsWith("setvar")){
+//					String[] varDef = command.split("\\s+");
+//					StoredVariable variable=(StoredVariable)((DebuggingStack)stack).getVariable(varDef[1]);
+//					if (variable!=null){
+//					if (variable.getType().isString()){
+//						variable.setValue(varDef[2]);
+//					}else if (variable.getType().isInteger()){
+//						variable.setValue(Integer.valueOf(varDef[2]));
+//					}
+//					}
+//							
+//			}
+//			if(command.startsWith("disable")){
+//				String[] breakdef = command.split("\\s+");
+//				int line = Integer.parseInt(breakdef[1]);
+//				ArrayList<Integer> lines = new ArrayList<Integer>(this.breakpointLines.length);
+//				for(Integer i:this.breakpointLines){
+//					if (i!=line){
+//						lines.add(i);
+//					}
+//				}
+//				this.breakpointLines=new int[lines.size()];
+//				int counter=0;
+//				for(Integer i:lines){
+//					this.breakpointLines[counter++]=i;
+//				}
+//				Arrays.sort(this.breakpointLines);
+//				
+//			}
+//			if(command.startsWith("enable")){
+//				String[] breakdef = command.split("\\s+");
+//				int line = Integer.parseInt(breakdef[1]);
+//				int[] lines=new int[this.breakpointLines.length+1];
+//				System.arraycopy(this.breakpointLines, 0, lines, 0, this.breakpointLines.length);
+//				lines[this.breakpointLines.length]=line;
+//				this.breakpointLines=lines;
+//				Arrays.sort(this.breakpointLines);
+//				
+//			}
+//			if (command.equalsIgnoreCase("tree")){
+//				this.ast.dump(debug_print,"CTL");
+//			}
+//			if (command.equalsIgnoreCase("resume")) {
+//				this.step=DebugStep.STEP_RUN;
+//				this.withinFunction=null;
+//				break;
+//			}
+//			if (command.equalsIgnoreCase("step")) {
+//				//SimpleNode breakat=node.getBreakAtNode();
+//			//	this.setForNextStep(breakat);
+//				this.step=DebugStep.STEP_OVER;
+//				this.withinFunction = ((DebuggingStack) stack).getFunctionCallNode();
+//				break;
+//			}
+//			if (command.equalsIgnoreCase("stepout")) {
+//				//SimpleNode breakat=node.getBreakAtNode();
+//			//	this.setForNextStep(breakat);
+//				this.step=DebugStep.STEP_OUT;
+//				this.withinFunction = ((DebuggingStack) stack).getPreviousFunctionCallNode();
+//				break;
+//			}
+//			if (command.equalsIgnoreCase("stepin")) {
+//			/*	SimpleNode breakat=node.getBreakAtNode();
+//				if (breakat instanceof CLVFIfStatement)
+//					this.setForInsideStep((CLVFIfStatement)breakat);
+//				else
+//					this.setForInsideStep(breakat);
+//				break;
+//				*/
+//				this.withinFunction=null;
+//				this.step=DebugStep.STEP_INTO;
+//				break;
+//			}
+//			if (command.equalsIgnoreCase("list")) {
+//				// list all variables
+//				try{
+//					debug_print.println("** list of global variables ***");
+//				final Object[] globalVariables = stack.getGlobalVariables();
+//				for (int i = 0; i < globalVariables.length; i++) {
+//					StoredVariable var = (StoredVariable) globalVariables[i];
+//					if(var.type.isByteArray()){
+//						ByteArray array=new ByteArray((byte[])var.value);
+//						debug_print.println(String.format("%s : %s : \"%s\"", var.name, var.type.toString(), array.toHexString()));
+//					}else{
+//					debug_print.println(String.format("%s : %s : \"%s\"", var.name, var.type.toString(), var.value.toString()));
+//					}
+//				}
+//				debug_print.println("** list of local variables ***");
+//				final Object[] localVariables = ((DebuggingStack)stack).getAllLocalVariables();
+//				for (int i = 0; i < localVariables.length; i++) {
+//					StoredVariable var = (StoredVariable) localVariables[i];
+//					if(var.type.isByteArray()){
+//						ByteArray array=new ByteArray((byte[])var.value);
+//						debug_print.println(String.format("%s : %s : \"%s\"", var.name, var.type.toString(), array.toHexString()));
+//					}else{
+//					debug_print.println(String.format("%s : %s : \"%s\"", var.name, var.type.toString(), var.value.toString()));
+//					}
+//				}
+//				}catch(Exception ex){
+//					//ex.printStackTrace();
+//				}
+//			}
+//			if (command.equalsIgnoreCase("list breakpoints")) {
+//				debug_print.print("breakpoints: ");
+//				for (int i:this.breakpointLines) {
+//					debug_print.print(i + ", ");
+//				}
+//				debug_print.println();
+//			}
+//			if (command.equalsIgnoreCase("list callstack")) {
+//				debug_print.println("=== Call stack ===");
+//				Iterator<SimpleNode> iter =  ((DebuggingStack)stack).getFunctionCallsStack();
+//				while(iter.hasNext()){
+//					CLVFFunctionCall callnode = (CLVFFunctionCall)iter.next();
+//					debug_print.println(callnode.getLocalFunction().name);
+//				}
+//			}
+//			if (command.equalsIgnoreCase("line")) {
+//				printSourceLine(node);
+//			}
+//		} while (true);
+//	}
+
 	private DataRecord createNewRecord(TLTypeRecord type) {
 		final DataRecordMetadata metaData = type.getMetadata();
 		final DataRecord record = DataRecordFactory.newRecord(metaData);
@@ -2375,6 +2591,26 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 								 : String.format("Attempting to access item %d from list of size %d", index, list.size());
 				throw new ArrayIndexOutOfBoundsException(message);
 			}
+		} else if (composite.getType().isByteArray()) {
+			byte[] list = stack.popByteArray();
+			
+			// compute index and push value stored in the list
+			node.jjtGetChild(1).jjtAccept(this, data);
+			Integer index = stack.popInt();
+			try {
+				stack.push(list[index]&0xff);
+			} catch (IndexOutOfBoundsException ex) {
+				String name = null;
+				if (composite.getId() == TransformLangParserTreeConstants.JJTIDENTIFIER) {
+					CLVFIdentifier id = (CLVFIdentifier) composite;
+					name = id.getName();
+				}
+				// TODO extract name from record fields of type list
+				String message = (name != null) 
+								 ? String.format("Attempting to access item %d from byte array \"%s\" of size %d", index, name, list.length)
+								 : String.format("Attempting to access item %d from byte array of size %d", index, list.length);
+				throw new ArrayIndexOutOfBoundsException(message);
+			}
 		}
 		
 		return data;
@@ -2618,31 +2854,33 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		final CLVFParameters formal = (CLVFParameters)callTarget.jjtGetChild(1);
 		final CLVFArguments actual = (CLVFArguments)node.jjtGetChild(0);
 		
-		try {
-			// activate function scope
-			stack.enteredBlock(callTarget.getScope());
-			
-			// set function parameters - they are already computed on stack
-			for (int i=actual.jjtGetNumChildren()-1; i>=0; i--) {
-				setVariable((SimpleNode)formal.jjtGetChild(i), stack.pop());
-			}
-			
-			// execute function body
-			callTarget.jjtGetChild(2).jjtAccept(this, null);
-			
-			// set the saved return value back onto stack
-			if (!node.getType().isVoid()) {
-				stack.push(this.lastReturnValue);
-				this.lastReturnValue = null;
-			}
-		} finally {
-			// clear all break flags
-			if (breakFlag) {
-				breakFlag = false;
-			}
-			
-			// clear function scope
-			stack.exitedBlock();
+		try{
+		// activate function scope
+		stack.enteredBlock(callTarget.getScope(),node);
+		
+		// set function parameters - they are already computed on stack
+		for (int i=actual.jjtGetNumChildren()-1; i>=0; i--) {
+			setVariable((SimpleNode)formal.jjtGetChild(i), stack.pop());
+		}
+		
+		// execute function body
+		callTarget.jjtGetChild(2).jjtAccept(this, null);
+		
+		// set the saved return value back onto stack
+		if (!node.getType().isVoid()) {
+			stack.push(this.lastReturnValue);
+			this.lastReturnValue = null;
+		}
+		
+		}finally{
+		// clear all break flags
+		if (breakFlag) {
+			breakFlag = false;
+		}
+		
+		// clear function scope
+		stack.exitedBlock(node);
+		if (inDebugMode) this.withinFunction=((DebugStack)stack).getFunctionCallNode();
 		}
 	}
 	
@@ -2699,7 +2937,16 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 					throw new TransformLangExecutorRuntimeException("Unknown variable type: " + lhs);
 			}
 
-			stack.setVariable(blockOffset, varOffset, value);
+			if (inDebugMode){
+				if (lhs instanceof CLVFVariableDeclaration){
+					CLVFVariableDeclaration var=(CLVFVariableDeclaration)lhs;
+					stack.setVariable(blockOffset, varOffset, value, var.getName(),var.getType());
+				}else{
+					stack.setVariable(blockOffset, varOffset, value);
+				}
+			}else{
+				stack.setVariable(blockOffset, varOffset, value);
+			}
 		}
 	}
 	
@@ -2895,5 +3142,16 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		}
 		
 	}
+	
+	@Override
+	public final boolean inDebugMode(){
+		return this.inDebugMode;
+	}
+
+	@Override
+	public void debug(SimpleNode node, Object data) {
+		//do nothing, just stub to allow debugging
+	}
+	
 
 }

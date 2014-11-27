@@ -22,10 +22,14 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.jetel.ctl.ASTnode.CLVFFunctionCall;
+import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.ctl.data.Scope;
+import org.jetel.ctl.data.TLType;
 import org.jetel.data.DataRecord;
 
 /**
@@ -42,9 +46,14 @@ public class Stack {
     /** Grow factor for stack array realocation */
     public static final float GROW_FACTOR = 1.6f;
     
-    private Object[] stack;
-    private ArrayList<Object[]> variableStack;
-    private int top = -1;
+    protected Object[] stack;
+    protected ArrayList<Object[]> variableStack;
+    protected int top = -1;
+    
+
+	protected ArrayList<CLVFFunctionCall> functionCalls;
+	protected SimpleNode previousFunctionCallNode=null;
+	protected SimpleNode currentFunctionCallNode=null;
     
 	public Stack(){
         this(STACK_DEPTH);
@@ -53,6 +62,9 @@ public class Stack {
 	public Stack(int depth){
 		stack= new Object[depth];
 		variableStack = new ArrayList<Object[]>();
+		functionCalls = new ArrayList<CLVFFunctionCall>();
+		previousFunctionCallNode = null;
+		currentFunctionCallNode = null;
 	}
 
 	/**
@@ -158,16 +170,76 @@ public class Stack {
 	 * Adds 'frame' on the variable stack for active block or function
 	 * 
 	 * @param blockScope	scope of active block
+	 * @param functionCallNode	the CTL AST Node of the function (call)
 	 */
-	public void enteredBlock(Scope blockScope) {
+	public void enteredBlock(Scope blockScope,CLVFFunctionCall functionCallNode) {
+		if (functionCallNode != null) {
+			previousFunctionCallNode = currentFunctionCallNode;
+			currentFunctionCallNode = functionCallNode;
+			functionCalls.add(functionCallNode);
+		}
 		variableStack.add(new Object[blockScope.size()]);
 	}
+
+	
+	public final void enteredBlock(Scope blockScope) {
+		enteredBlock(blockScope,null);
+	}
+	
 	
 	/**
 	 * Removes 'frame' for active block or function
+	 * @param functionCallNode	the CTL AST Node of the function (call)
 	 */
-	public void exitedBlock() {
+	public void exitedBlock(SimpleNode functionCallNode) {
 		variableStack.remove(variableStack.size()-1);
+		if (functionCallNode !=null) {
+			functionCalls.remove(functionCalls.size()-1);
+			currentFunctionCallNode = previousFunctionCallNode;
+			final int size=functionCalls.size();
+			previousFunctionCallNode =  size>1 ?  functionCalls.get(size-2) : null;
+		}
+	}
+	
+	public final void exitedBlock() {
+		exitedBlock(null);
+	}
+	
+	/**
+	 * Returns block / variable stack index of the last entered function call block, or -1 if
+	 * there are no functions entered yet 
+	 */
+	public SimpleNode getFunctionCallNode(){
+			return currentFunctionCallNode;
+	}
+	
+	public SimpleNode getPreviousFunctionCallNode(){
+		return previousFunctionCallNode;
+	}
+	
+	public Iterator<CLVFFunctionCall> getFunctionCallsStack(){
+		return functionCalls.iterator();
+	}
+	
+	
+	/**
+	 *  Returns the depth of variable stack - i.e. how many blocks deep we are 
+	 */
+	public int blockDepth(){
+		return variableStack.size();
+	}
+	
+	/**
+	 * Sets value of variable specified by variableIndex in block specified by blockIndex
+	 * 
+	 * @param blockOffset
+	 * @param variableOffset
+	 * @param value
+	 * @param varName
+	 * @param varType
+	 */
+	public void setVariable(int blockOffset, int variableOffset, Object value, String varName,TLType varType) {
+		throw new UnsupportedOperationException();
 	}
 	
 	/**
@@ -177,6 +249,7 @@ public class Stack {
 	 * @param variableOffset
 	 * @param value
 	 */
+	
 	public void setVariable(int blockOffset, int variableOffset, Object value) {
 		// blockIndex < 0 indicates access to the (always accessible) global scope
 		if (blockOffset < 0) {
