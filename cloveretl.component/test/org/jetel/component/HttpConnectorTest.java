@@ -319,12 +319,12 @@ public class HttpConnectorTest  extends CloverTestCase {
 		HttpConnectorMutlipartEntity entity;
 		entity = new HttpConnectorMutlipartEntity();
 		entity.name = "test1";
-		entity.file = this.getClass().getResource("./HttpConnector.class").getFile();
+		entity.file = this.getClass().getResource("./HttpConnectorTest.class").getFile();
 		multipartEntities.put(entity.name, entity);
 		
 		PartWithName[] result = this.createHttpConnector().buildMultiPart(multipartEntities);
 		assertEquals(1, result.length);
-		assertEquals("HttpConnector.class", result[0].value.getFilename());
+		assertEquals("HttpConnectorTest.class", result[0].value.getFilename());
 		assertEquals("test1", result[0].name);
 	}
 
@@ -350,13 +350,13 @@ public class HttpConnectorTest  extends CloverTestCase {
 		entity = new HttpConnectorMutlipartEntity();
 		entity.name = "test1";
 		entity.content = "Filename1";
-		entity.file = this.getClass().getResource("./HttpConnector.class").getFile();
+		entity.file = this.getClass().getResource("./HttpConnectorTest.class").getFile();
 		multipartEntities.put(entity.name, entity);
 		
 		entity = new HttpConnectorMutlipartEntity();
 		entity.name = "test2";
 		entity.conentType = "application/octetstream";
-		entity.file = this.getClass().getResource("./HttpConnector.class").getFile();
+		entity.file = this.getClass().getResource("./HttpConnectorTest.class").getFile();
 		multipartEntities.put(entity.name, entity);
 
 		entity = new HttpConnectorMutlipartEntity();
@@ -364,7 +364,7 @@ public class HttpConnectorTest  extends CloverTestCase {
 		entity.content = "Filename2";
 		entity.charset = "UTF-16";
 		entity.conentType = "application/octetstream";
-		entity.file = this.getClass().getResource("./HttpConnector.class").getFile();
+		entity.file = this.getClass().getResource("./HttpConnectorTest.class").getFile();
 		multipartEntities.put(entity.name, entity);
 		
 		entity = new HttpConnectorMutlipartEntity();
