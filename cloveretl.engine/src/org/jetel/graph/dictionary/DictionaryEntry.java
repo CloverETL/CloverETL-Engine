@@ -158,4 +158,11 @@ public class DictionaryEntry {
 		return getValue().toString();
 	}
 
+	/**
+	 * Resets dirty flaf, when the value is synchronized.
+	 */
+	public void resetDirty() {
+		this.dirty = false;
+	}
+
 }

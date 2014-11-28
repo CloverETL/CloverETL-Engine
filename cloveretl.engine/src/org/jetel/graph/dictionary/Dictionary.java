@@ -344,5 +344,16 @@ public class Dictionary extends GraphElement {
 			}// for
 		}// if not empty
 	}
+
+	/**
+	 * Use this to reset dirty flag of dictionary entry, when the value is synchronized (e.g. between partitioned workers). 
+	 * @param key
+	 */
+	public void resetDirty(String key) {
+		DictionaryEntry entry = dictionary.get(key);
+		if (entry == null)
+			return;
+		entry.resetDirty();
+	}
 	
 }
