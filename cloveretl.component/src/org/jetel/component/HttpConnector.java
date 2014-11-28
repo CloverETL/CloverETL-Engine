@@ -1807,7 +1807,6 @@ public class HttpConnector extends Node {
 		// build record for multipart entities
 		if (!StringUtils.isEmpty(this.multipartEntities)) {
 			try {
-
 				this.multipartRequestPropertiesRecord = DataRecordFactory.newRecord(createMultipartMetadataFromString(multipartEntities, MULTIPART_ENTITIES_RECORD_NAME, MULTIPART_ENTITIES_SEPARATOR));
 				this.multipartRequestPropertiesRecord.init();
 			} catch (Exception e) {
@@ -3270,31 +3269,31 @@ public class HttpConnector extends Node {
 				HttpConnectorMutlipartEntity entity = new HttpConnectorMutlipartEntity();
 
 				String contentValue = null;
+				if (multipartRequestPropertiesRecord != null) {
+					DataField field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_CONTENT);
+					if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
+						multipartExists = true;
+						contentValue = field.getValue() != null ? field.getValue().toString() : "";
+					}
 
-				DataField field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_CONTENT);
-				if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
-					multipartExists = true;
-					contentValue = field.getValue()!=null ? field.getValue().toString() : "";
+					field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_CHARSET);
+					if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
+						entity.charset = field.getValue() != null ? field.getValue().toString() : null;
+						multipartExists = true;
+					}
+
+					field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_CONTENTTYPE);
+					if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
+						entity.conentType = field.getValue() != null ? field.getValue().toString() : null;
+						multipartExists = true;
+					}
+
+					field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_FILE);
+					if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
+						entity.file = field.getValue() != null ? field.getValue().toString() : null;
+						multipartExists = true;
+					}
 				}
-
-				field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_CHARSET);
-				if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
-					entity.charset = field.getValue()!=null ? field.getValue().toString() : null;
-					multipartExists = true;
-				}
-
-				field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_CONTENTTYPE);
-				if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
-					entity.conentType = field.getValue()!=null ? field.getValue().toString() : null;
-					multipartExists = true;
-				}
-
-				field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_FILE);
-				if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
-					entity.file = field.getValue()!=null ? field.getValue().toString() : null;
-					multipartExists = true;
-				}
-
 				entity.name = token;
 
 				if (contentValue != null) {
