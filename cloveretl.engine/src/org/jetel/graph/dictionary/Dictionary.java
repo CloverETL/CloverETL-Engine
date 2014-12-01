@@ -178,6 +178,7 @@ public class Dictionary extends GraphElement {
 			entry.setDefault(true); // if not, dictionary entry will be initialized later
 		} else {
 			entry.init(this); //in other case, initialize entry immediately
+			entry.setDirty(true); //and make the entry dirty
 		}
 	}
 	
@@ -265,6 +266,12 @@ public class Dictionary extends GraphElement {
 		}
 	}
 	
+	public boolean isDirty(String key) {
+		DictionaryEntry entry = dictionary.get(key);
+		
+		return entry != null && entry.isDirty();
+	}
+
 	public Set<String> getKeys() {
 		return dictionary.keySet();
 	}
@@ -336,6 +343,17 @@ public class Dictionary extends GraphElement {
 				}
 			}// for
 		}// if not empty
+	}
+
+	/**
+	 * Use this to reset dirty flag of dictionary entry, when the value is synchronized (e.g. between partitioned workers). 
+	 * @param key
+	 */
+	public void resetDirty(String key) {
+		DictionaryEntry entry = dictionary.get(key);
+		if (entry == null)
+			return;
+		entry.resetDirty();
 	}
 	
 }
