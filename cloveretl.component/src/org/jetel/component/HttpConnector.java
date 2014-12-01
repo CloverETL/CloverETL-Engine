@@ -416,7 +416,7 @@ public class HttpConnector extends Node {
 	/**
 	 * The name of an XML attribute representing multipart entities.
 	 */
-	private final static String XML_MULTIPART_ENTITIES_FIELDS_LIST_ATTRIBUTE = "multipartEntities";
+	public final static String XML_MULTIPART_ENTITIES_FIELDS_LIST_ATTRIBUTE = "multipartEntities";
 
 	/**
 	 * The name of an XML attribute representing field holding a target URL.
