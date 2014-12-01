@@ -454,7 +454,7 @@
 	        <singleType name="connection" />
 	      </property>
 	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!dbTable,!sqlQuery" redundant="dbTable|sqlQuery">
-	        <singleType name="file" />
+	        <singleType name="file" dictionary="input" />
 	      </property>
 	      <property category="basic" displayName="SQL query" modifiable="true" name="sqlQuery" nullable="true" required="!dbTable,!url" redundant="dbTable|url">
 			<singleType name="sqlQuery" type="insert" inputPortName="0" outputPortName="1" />
