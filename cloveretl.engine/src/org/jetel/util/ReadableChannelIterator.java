@@ -121,7 +121,7 @@ public class ReadableChannelIterator {
 	 * Checks this class for the first using.
 	 */
 	public void checkConfig() throws ComponentNotReadyException {
-		common(true);
+		common(false); // CLO-5399
 	}
 
 	/**

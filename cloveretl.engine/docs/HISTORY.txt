@@ -69,6 +69,20 @@ REL-4-0-0-M1
 	 
 
 
+REL-3-5-3
+---------
+
+* FIXES:
+	- SortWithinGroup keeps losing records
+	- In SQL query everything after 'returning' string is cut off
+	- UniversalDataWriter produces wrong delimiters if used with autofilled fields
+	- Fixed-length metadata trim string fields
+	- XMLWriter fails with "Unexpected null value"
+	- UDR/UDW issues with fixed-length metadata
+	- "Create directories" does not work in UniversalDataWriter when using Dictionary as file URL
+	- UniversalDataWriter: fixed-length fields exclusion issue
+	
+
 REL-3-5-2
 ---------
 

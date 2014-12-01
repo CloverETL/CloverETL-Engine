@@ -616,7 +616,7 @@ public class MultiFileReader {
 		autoFilling.reset();
 		iSource = -1;
 
-		channelIterator.reset();
+		// channelIterator.reset(); // CLO-5399
 		skipped = 0;
         try {
     		incrementalReading.reset();
