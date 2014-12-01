@@ -37,7 +37,8 @@ import java.util.zip.Inflater;
 import net.jpountz.lz4.LZ4Compressor;
 import net.jpountz.lz4.LZ4Factory;
 import net.jpountz.lz4.LZ4FastDecompressor;
-import net.jpountz.util.Utils;
+import net.jpountz.util.SafeUtils;
+import net.jpountz.xxhash.StreamingXXHash32;
 import net.jpountz.xxhash.XXHashFactory;
 
 import org.jetel.util.LZ4Provider;
@@ -708,7 +709,7 @@ public class CloverDataStream {
 
 		@Override
 		public int read(byte[] b, int off, int len) throws IOException {
-			Utils.checkRange(b, off, len);
+			SafeUtils.checkRange(b, off, len);
 			int count = 0;
 			while (buffer.remaining() < len) {
 				final int l = buffer.remaining();
