@@ -98,6 +98,8 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.ContentBody;
+import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -848,6 +850,8 @@ public class HttpConnector extends Node {
 
 	protected DataRecord responseCookiesRecord;
 
+	protected DataRecord multipartRequestPropertiesRecord;
+
 	/**
 	 * Input records for input mapping transformation.
 	 */
@@ -895,6 +899,9 @@ public class HttpConnector extends Node {
 
 	private static final String RESPONSE_COOKIES_SEPARATOR = ";";
 
+	public static final String MULTIPART_ENTITIES_RECORD_NAME = "MultipartEntities";
+
+	public static final String MULTIPART_ENTITIES_SEPARATOR = ";";
 	/**
 	 * URL to which the HTTPConnector should connect.
 	 */
