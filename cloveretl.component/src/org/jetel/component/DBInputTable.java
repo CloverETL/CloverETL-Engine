@@ -180,7 +180,7 @@ public class DBInputTable extends Node {
 	private String url = null;
 	private boolean printStatements;
 	private String charset;
-	private ReadableChannelIterator channelIterator;  // for reading queries from URL or input port
+	private ReadableChannelIterator channelIterator;  // for reading queries from URL, dictionary or input port
 	private DBConnection connection;
 
 	private DataRecordMetadata statementMetadata;
@@ -245,10 +245,11 @@ public class DBInputTable extends Node {
         }
 
         if (sqlQuery == null) {
-        	// we'll be reading SQL from file or input port
+        	// we'll be reading SQL from file or input port or dictionary
         	channelIterator = new ReadableChannelIterator(getInputPort(READ_FROM_PORT),
         			getGraph().getRuntimeContext().getContextURL(), url);
 			channelIterator.setCharset(charset);
+			channelIterator.setDictionary(getGraph().getDictionary());
 			channelIterator.init();
 			
 			//statements are single strings delimited by delimiter
