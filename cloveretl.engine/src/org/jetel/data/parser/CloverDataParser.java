@@ -88,7 +88,7 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 	
 	private final static Log logger = LogFactory.getLog(CloverDataParser.class);
 
-	private DataRecordMetadata metadata;
+	protected DataRecordMetadata metadata;
 	private CloverDataStream.Input input;
 	private CloverBuffer recordBuffer;
 	private InputStream inStream;
@@ -333,12 +333,14 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
     			throw new ComponentNotReadyException("Unable to read metadata definition from CloverData file", e);
     		}
         	
-        	// CLO-4591:
-        	DataRecordMetadata nonAutofilledFieldsMetadata = MetadataUtils.getNonAutofilledFieldsMetadata(metadata);
-	    	if (!nonAutofilledFieldsMetadata.equals(version.metadata, false)) {
-				logger.error("Data structure of input file is not compatible with used metadata. File data structure: " + version.metadata.toStringDataTypes());
-				throw new ComponentNotReadyException("Data structure of input file is not compatible with used metadata. More details available in log.");
-	    	}
+        	if (metadata != null) { // CLO-5416: can also be used to read metadata from Clover debug file
+        		// CLO-4591:
+        		DataRecordMetadata nonAutofilledFieldsMetadata = MetadataUtils.getNonAutofilledFieldsMetadata(metadata);
+        		if (!nonAutofilledFieldsMetadata.equals(version.metadata, false)) {
+        			logger.error("Data structure of input file is not compatible with used metadata. File data structure: " + version.metadata.toStringDataTypes());
+        			throw new ComponentNotReadyException("Data structure of input file is not compatible with used metadata. More details available in log.");
+        		}
+        	}
         	
     		break;
     		default:
