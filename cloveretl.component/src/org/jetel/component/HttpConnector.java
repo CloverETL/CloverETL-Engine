@@ -37,6 +37,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -53,6 +54,7 @@ import java.util.regex.Pattern;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -96,6 +98,8 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.ContentBody;
+import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -551,6 +555,11 @@ public class HttpConnector extends Node {
 	private static final int EP_MESSAGE_INDEX = 0;
 	private static final String EP_MESSAGE_NAME = RP_MESSAGE_NAME;
 
+	private static String MULTIPART_CONTENT = "Content";
+	private static String MULTIPART_FILE = "File";
+	private static String MULTIPART_CHARSET = "Charset";
+	private static String MULTIPART_CONTENTTYPE = "ContentType";
+
 	private interface ResponseWriter {
 		public void writeResponse(HttpResponse response) throws IOException;
 	}
@@ -841,6 +850,8 @@ public class HttpConnector extends Node {
 
 	protected DataRecord responseCookiesRecord;
 
+	protected DataRecord multipartRequestPropertiesRecord;
+
 	/**
 	 * Input records for input mapping transformation.
 	 */
@@ -888,6 +899,9 @@ public class HttpConnector extends Node {
 
 	private static final String RESPONSE_COOKIES_SEPARATOR = ";";
 
+	public static final String MULTIPART_ENTITIES_RECORD_NAME = "MultipartEntities";
+
+	public static final String MULTIPART_ENTITIES_SEPARATOR = ";";
 	/**
 	 * URL to which the HTTPConnector should connect.
 	 */
@@ -1246,9 +1260,9 @@ public class HttpConnector extends Node {
 	 */
 	protected static class PartWithName {
 		public String name;
-		public StringBody value;
+		public ContentBody value;
 
-		public PartWithName(String name, StringBody value) {
+		public PartWithName(String name, ContentBody value) {
 			super();
 			this.name = name;
 			this.value = value;
@@ -1266,7 +1280,7 @@ public class HttpConnector extends Node {
 		private String target;
 		private String proxy;
 		private Map<String, String> parameters = new LinkedHashMap<String, String>();
-		private Map<String, String> multipartEntities = new LinkedHashMap<String, String>();
+		private Map<String, HttpConnectorMutlipartEntity> multipartEntities = new LinkedHashMap<String, HttpConnectorMutlipartEntity>();
 		private Object content;
 
 		private URL targetURL;
@@ -1319,11 +1333,11 @@ public class HttpConnector extends Node {
 			this.parameters.putAll(parameters);
 		}
 
-		public Map<String, String> getMultipartEntities() {
+		public Map<String, HttpConnectorMutlipartEntity> getMultipartEntities() {
 			return multipartEntities;
 		}
 
-		public void setMultipartEntities(Map<String, String> multipartEntities) {
+		public void setMultipartEntities(Map<String, HttpConnectorMutlipartEntity> multipartEntities) {
 			this.multipartEntities.clear();
 			this.multipartEntities.putAll(multipartEntities);
 		}
@@ -1369,7 +1383,7 @@ public class HttpConnector extends Node {
 			configuration.setProxy(proxy);
 			configuration.setContent(content);
 			configuration.setParameters(new LinkedHashMap<String, String>(parameters));
-			configuration.setMultipartEntities(new LinkedHashMap<String, String>(multipartEntities));
+			configuration.setMultipartEntities(new LinkedHashMap<String, HttpConnectorMutlipartEntity>(multipartEntities));
 
 			configuration.setProxyURL(proxyURL);
 			configuration.setTargetURL(targetURL);
@@ -1542,6 +1556,23 @@ public class HttpConnector extends Node {
 				}
 			}
 		}		
+		//
+		// if(this.multipartRequestPropertiesRecord != null) {
+		// if(multipartRequestMappingToUse==null) {
+		// multipartRequestMappingToUse = new HashMap<String, String>();
+		// }else{
+		// this.multipartRequestMappingToUse.clear();
+		// }
+		// for (DataField field : multipartRequestPropertiesRecord) {
+		// if (inputMappingTransformation.isOutputOverridden(multipartRequestPropertiesRecord, field)) {
+		// String labelOrName = field.getMetadata().getLabelOrName();
+		// if (!field.isNull()) {
+		// multipartRequestMappingToUse.put(labelOrName, field.getValue().toString());
+		// }
+		// }
+		// }
+		// }
+
 	}
 
 	/**
@@ -1815,6 +1846,18 @@ public class HttpConnector extends Node {
 				throw new ComponentNotReadyException(this, "Unexpected exception during request headers reading.", e);
 			}
 		}
+
+		// build record for multipart entities
+		if (!StringUtils.isEmpty(this.multipartEntities)) {
+			try {
+				this.multipartRequestPropertiesRecord = DataRecordFactory.newRecord(createMultipartMetadataFromString(multipartEntities, MULTIPART_ENTITIES_RECORD_NAME, MULTIPART_ENTITIES_SEPARATOR));
+				this.multipartRequestPropertiesRecord.init();
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(this, "Unexpected exception during request headers reading.", e);
+			}
+		}
+
+		// create internal result data record
 		// build properties from request headers
 		if (!StringUtils.isEmpty(requestParametersStr)) {
 			requestParameters = new Properties();
@@ -1885,12 +1928,15 @@ public class HttpConnector extends Node {
 		inputMappingOutRecordsList.add(additionalHeadersRecord);
 		inputMappingOutRecordsList.add(requestCookiesRecord);
 		inputMappingOutRecordsList.add(requestParametersRecord);
+		inputMappingOutRecordsList.add(multipartRequestPropertiesRecord);
+
 		inputMappingOutRecords = inputMappingOutRecordsList.toArray(new DataRecord[0]);
 
 		inputMappingTransformation.addOutputRecord(ATTRIBUTES_RECORD_NAME, inputParamsRecord);
 		inputMappingTransformation.addOutputRecord(ADDITIONAL_HTTP_HEADERS_RECORD_NAME, additionalHeadersRecord);
 		inputMappingTransformation.addOutputRecord(REQUEST_COOKIES_RECORD_NAME, requestCookiesRecord);
 		inputMappingTransformation.addOutputRecord(REQUEST_PARAMETERS_RECORD_NAME, requestParametersRecord);
+		inputMappingTransformation.addOutputRecord(MULTIPART_ENTITIES_RECORD_NAME, multipartRequestPropertiesRecord);
 
 		// create input records for standard output mapping
 		standardOutputMappingTransformation.addInputRecord(INPUT_RECORD_NAME, inputRecord);
@@ -2734,11 +2780,10 @@ public class HttpConnector extends Node {
 	 * 
 	 * @param configuration
 	 * @return a POST-like method for given configuration.
-	 * 
-	 * @throws UnsupportedEncodingException
+	 * @throws IOException
 	 */
 	private HttpEntityEnclosingRequestBase prepareEntityEnclosingMethod(String method,
-			HTTPRequestConfiguration configuration) throws UnsupportedEncodingException {
+			HTTPRequestConfiguration configuration) throws IOException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Creating " + method + " request to " + configuration.getTarget());
 		}
@@ -2878,9 +2923,10 @@ public class HttpConnector extends Node {
 	 * @return a HTTP method (based on the given configuration) to be used for a request.
 	 * @throws UnsupportedEncodingException
 	 * @throws ComponentNotReadyException
+	 * @throws IOException
 	 */
-	private HttpRequestBase prepareMethod(HTTPRequestConfiguration configuration) throws UnsupportedEncodingException,
-			ComponentNotReadyException {
+	private HttpRequestBase prepareMethod(HTTPRequestConfiguration configuration) throws ComponentNotReadyException,
+			IOException {
 		HttpRequestBase method = null;
 
 		if (requestMethodToUse != null) {
@@ -2993,18 +3039,56 @@ public class HttpConnector extends Node {
 	 * 
 	 * @param multipartEntities
 	 * @return an array of content parts for given entity map.
-	 * 
-	 * @throws UnsupportedEncodingException
+	 * @throws IOException
 	 */
-	private PartWithName[] buildMultiPart(Map<String, String> multipartEntities) throws UnsupportedEncodingException {
+	protected PartWithName[] buildMultiPart(Map<String, HttpConnectorMutlipartEntity> multipartEntities)
+			throws IOException {
 		if (multipartEntities == null) {
 			return null;
 		}
 
 		int index = 0;
 		PartWithName[] result = new PartWithName[multipartEntities.size()];
-		for (Entry<String, String> parameter : multipartEntities.entrySet()) {
-			result[index] = new PartWithName(parameter.getKey(), new StringBody(parameter.getValue()));
+		for (Entry<String, HttpConnectorMutlipartEntity> parameter : multipartEntities.entrySet()) {
+
+			if (parameter.getValue().file == null) {
+				Charset charset = parameter.getValue().charset != null ? Charset.forName(parameter.getValue().charset) : Charset.defaultCharset();
+				String contentType = parameter.getValue().conentType != null ? parameter.getValue().conentType : ContentType.TEXT_PLAIN.toString();
+
+				String value = parameter.getValue().content != null ? parameter.getValue().content : "";
+				result[index] = new PartWithName(parameter.getKey(), new StringBody(value, contentType, charset));
+			} else if (parameter.getValue().content != null) {
+				Charset charset = parameter.getValue().charset != null ? Charset.forName(parameter.getValue().charset) : Charset.defaultCharset();
+				String contentType = parameter.getValue().conentType != null ? parameter.getValue().conentType : ContentType.TEXT_PLAIN.toString();
+
+				final String fileName = parameter.getValue().file;
+				String value = parameter.getValue().content != null ? parameter.getValue().content : "";
+				result[index] = new PartWithName(parameter.getKey(), new StringBody(value, contentType, charset) {
+					@Override
+					public String getFilename() {
+						return fileName;
+					}
+				});
+
+			} else {
+
+				InputStream inputStream = FileUtils.getInputStream(this.getContextURL(), parameter.getValue().file);
+				String fileName = null;
+				File file = FileUtils.getJavaFile(this.getContextURL(), parameter.getValue().file);
+				if (file != null) {
+					fileName = file.getName();
+				} else {
+					fileName = parameter.getKey();
+				}
+				InputStreamBody body = (parameter.getValue().conentType != null) ? new InputStreamBody(inputStream, parameter.getValue().conentType, fileName) : new InputStreamBody(inputStream, fileName);
+				result[index] = new PartWithName(parameter.getKey(), body);
+
+				if (logger.isDebugEnabled()) {
+					if (parameter.getValue().charset != null) {
+						logger.debug("Charset specified to " + parameter.getValue().charset + ". But charset cannot be specified for file multipart entity. Charset will be ignored.");
+					}
+				}
+			}
 			index++;
 		}
 
@@ -3290,17 +3374,63 @@ public class HttpConnector extends Node {
 	 * 
 	 * @return a map representing multi-part entities.
 	 */
-	private Map<String, String> prepareMultipartEntities() {
-		Map<String, String> multipartEntitiesMap = new LinkedHashMap<String, String>();
+	protected Map<String, HttpConnectorMutlipartEntity> prepareMultipartEntities() {
+		Map<String, HttpConnectorMutlipartEntity> multipartEntitiesMap = new LinkedHashMap<String, HttpConnectorMutlipartEntity>();
+
+		if (StringUtils.isEmpty(multipartEntitiesToUse) && !StringUtils.isEmpty(this.multipartEntities)) {
+			this.multipartEntitiesToUse = this.multipartEntities;
+		}
 
 		// parse multipart entities
-		if (multipartEntities != null) {
-			StringTokenizer parts = new StringTokenizer(multipartEntities, ";");
+		if (multipartEntitiesToUse != null) {
+			StringTokenizer parts = new StringTokenizer(this.multipartEntitiesToUse, ";");
+			boolean multipartExists = false;
 			while (parts.hasMoreTokens()) {
 				String token = parts.nextToken();
-				String value = inputRecord.getField(token).toString();
+				String value = null;
+				if(inputRecord.hasField(token)) {
+					value = inputRecord.getField(token).toString();
+					multipartExists = true;
+				}
 
-				multipartEntitiesMap.put(token, value);
+				HttpConnectorMutlipartEntity entity = new HttpConnectorMutlipartEntity();
+
+				String contentValue = null;
+				if (multipartRequestPropertiesRecord != null) {
+					DataField field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_CONTENT);
+					if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
+						multipartExists = true;
+						contentValue = field.getValue() != null ? field.getValue().toString() : "";
+					}
+
+					field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_CHARSET);
+					if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
+						entity.charset = field.getValue() != null ? field.getValue().toString() : null;
+						multipartExists = true;
+					}
+
+					field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_CONTENTTYPE);
+					if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
+						entity.conentType = field.getValue() != null ? field.getValue().toString() : null;
+						multipartExists = true;
+					}
+
+					field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_FILE);
+					if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
+						entity.file = field.getValue() != null ? field.getValue().toString() : null;
+						multipartExists = true;
+					}
+				}
+				entity.name = token;
+
+				if (contentValue != null) {
+					entity.content = contentValue;
+				} else if (entity.file == null) {
+					entity.content = value; // use not mapped input field value only if file is not mapped to
+				}
+				if(multipartExists) {
+				  multipartEntitiesMap.put(token, entity);
+				}
 			}
 		}
 
@@ -3549,6 +3679,61 @@ public class HttpConnector extends Node {
 		return metadata;
 	}
 
+	public static DataRecordMetadata createMetadataFromString(String inputString, String metadataName, String separator) {
+		DataRecordMetadata metadata = new DataRecordMetadata(metadataName);
+
+		String[] splitted = inputString.split(separator);
+
+		for (String part : splitted) {
+			String partTrimmed = part.trim();
+			if (!partTrimmed.isEmpty()) {
+				DataFieldMetadata field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
+				field.setLabel(partTrimmed);
+				metadata.addField(field);
+			}
+		}
+
+		metadata.normalize();
+		return metadata;
+	}
+
+	public static DataRecordMetadata createMultipartMetadataFromString(String multipart, String metadataName,
+			String separator) {
+		if (multipart == null || StringUtils.isEmpty(multipart)) {
+			return null;
+		}
+
+		DataRecordMetadata metadata = new DataRecordMetadata(metadataName);
+
+		String[] splitted = multipart.split(separator);
+
+		for (String part : splitted) {
+			String partTrimmed = part.trim();
+			if (!partTrimmed.isEmpty()) {
+				DataFieldMetadata field;
+
+				field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
+				field.setLabel(partTrimmed + "_" + MULTIPART_CONTENT);
+				metadata.addField(field);
+
+				field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
+				field.setLabel(partTrimmed + "_" + MULTIPART_FILE);
+				metadata.addField(field);
+
+				field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
+				field.setLabel(partTrimmed + "_" + MULTIPART_CONTENTTYPE);
+				metadata.addField(field);
+
+				field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
+				field.setLabel(partTrimmed + "_" + MULTIPART_CHARSET);
+				metadata.addField(field);
+			}
+		}
+
+		metadata.normalize();
+		return metadata;
+	}
+
 	public static DataRecordMetadata createMetadataFromProperties(Properties requestCookies, String metadataName) {
 		DataRecordMetadata metadata = new DataRecordMetadata(metadataName);
 
@@ -3563,21 +3748,7 @@ public class HttpConnector extends Node {
 	}
 
 	public static DataRecordMetadata createResponseCookiesMetadata(String responseCookies) {
-		DataRecordMetadata metadata = new DataRecordMetadata(RESPONSE_COOKIES_RECORD_NAME);
-
-		String[] cookies = responseCookies.split(RESPONSE_COOKIES_SEPARATOR);
-
-		for (String c : cookies) {
-			String cookie = c.trim();
-			if (!cookie.isEmpty()) {
-				DataFieldMetadata field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
-				field.setLabel(cookie);
-				metadata.addField(field);
-			}
-		}
-
-		metadata.normalize();
-		return metadata;
+		return createMetadataFromString(responseCookies, RESPONSE_COOKIES_RECORD_NAME, RESPONSE_COOKIES_SEPARATOR);
 	}
 
 	/**
@@ -3926,4 +4097,12 @@ public class HttpConnector extends Node {
 
 	}
 
+}
+
+class HttpConnectorMutlipartEntity {
+	public String name = null;
+	public String file = null;
+	public String content = null;
+	public String conentType = null;
+	public String charset = null;
 }
