@@ -78,17 +78,17 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 
 	public DebugTransformLangExecutor(TransformLangParser parser, TransformationGraph graph, Properties globalParameters){
 		super(parser,graph,globalParameters);
-		setDebugMode(true);
 		this.breakpoints= new HashSet<Breakpoint>();
 		this.curpoint=new Breakpoint(null, -1);
+		this.stack= new DebugStack();
 	}
 
 	public DebugTransformLangExecutor(TransformLangExecutor executor){
 		super(executor.parser, executor.graph, executor.globalParameters );
 		this.ast=executor.ast;
-		setDebugMode(true);
 		this.breakpoints= new HashSet<Breakpoint>();
 		this.curpoint=new Breakpoint(null, -1);
+		this.stack= new DebugStack();
 	}
 	
 	/**
@@ -100,7 +100,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 		String breakpoint=this.graph.getGraphParameters().getGraphParameter("BREAKPOINT").getValue();
 		System.err.println("Setting breakpoint at: "+breakpoint);
 		if (breakpoint!=null){
-			setDebugMode(true);
 			debug_in = new ArrayBlockingQueue<DebugCommand>(2, false);
 			debug_out = new ArrayBlockingQueue<DebugStatus>(1, false);
 			String[] points=breakpoint.split(",");
@@ -442,6 +441,11 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 
 	public synchronized void suspendExecution() {
 			this.step=DebugStep.STEP_SUSPEND;
+	}
+	
+	@Override
+	public final boolean inDebugMode(){
+		return true;
 	}
 	
 

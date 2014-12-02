@@ -203,7 +203,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	private Object lastReturnValue = null;
 	
 	/** control variables for debug mode*/
-	private boolean inDebugMode = false; //Indicates whether interpreter runs in debug mode (always false in this class) 
 	protected Map<String,Node> imports;
 	
 	protected SimpleNode withinFunction=null;
@@ -391,18 +390,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		this.globalParameters = parameters;
 	}
 
-	public void setDebugMode(boolean debug){
-		if (this.inDebugMode==debug) return;
-		if(debug){
-			this.stack = new DebugStack();
-			this.inDebugMode=true;
-		}else{
-			this.stack = new Stack();
-			this.inDebugMode=false;
-		}
-	}
-	
-	
 	/**
 	 * Method which returns result of executing parse tree.<br>
 	 * Basically, it returns whatever object was left on top of executor's stack (usually as a result of last executed
@@ -2880,7 +2867,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		
 		// clear function scope
 		stack.exitedBlock(node);
-		if (inDebugMode) this.withinFunction=((DebugStack)stack).getFunctionCallNode();
+		if (inDebugMode()) this.withinFunction=((DebugStack)stack).getFunctionCallNode();
 		}
 	}
 	
@@ -2937,7 +2924,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 					throw new TransformLangExecutorRuntimeException("Unknown variable type: " + lhs);
 			}
 
-			if (inDebugMode){
+			if (inDebugMode()){
 				if (lhs instanceof CLVFVariableDeclaration){
 					CLVFVariableDeclaration var=(CLVFVariableDeclaration)lhs;
 					stack.setVariable(blockOffset, varOffset, value, var.getName(),var.getType());
@@ -3144,8 +3131,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	}
 	
 	@Override
-	public final boolean inDebugMode(){
-		return this.inDebugMode;
+	public boolean inDebugMode(){
+		return false;
 	}
 
 	@Override
