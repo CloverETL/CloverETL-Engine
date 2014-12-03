@@ -35,6 +35,7 @@ import org.jetel.component.fileoperation.result.DeleteResult;
 import org.jetel.component.fileoperation.result.ListResult;
 import org.jetel.component.fileoperation.result.MoveResult;
 import org.jetel.component.fileoperation.result.ResolveResult;
+import org.jetel.util.ExceptionUtils;
 
 public class SMBOperationHandlerTest extends OperationHandlerTestTemplate {
 	
@@ -149,7 +150,7 @@ public class SMBOperationHandlerTest extends OperationHandlerTestTemplate {
 				uri = CloverURI.createURI(file.toString() + "*");
 				result = manager.resolve(uri);
 				System.out.println(uri);
-				assertTrue(result.success());
+				assertTrue(ExceptionUtils.stackTraceToString(result.getFirstError()), result.success());
 				System.out.println(result.getResult());
 
 				uri = CloverURI.createURI(file.toString());
