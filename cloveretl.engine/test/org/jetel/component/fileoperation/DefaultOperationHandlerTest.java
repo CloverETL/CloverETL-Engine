@@ -213,6 +213,11 @@ public class DefaultOperationHandlerTest extends LocalOperationHandlerTest {
 		assertTrue(manager.copy(source, target).success());
 		assertEquals(originalContent, read(manager.getInput(target).channel()));
 		
+		source = relativeHttpURI(name);
+		target = relativeURI("HTTP_" + name);
+		assertTrue(manager.copy(source, target).success());
+		assertEquals(originalContent, read(manager.getInput(target).channel()));
+
 		// CLO-5431
 		source = CloverURI.createURI("sftp://test:test@koule/home/test/data-in/specialCharacters");
 		target = relativeFtpURI("specialCharacters_CLO-5431/");
