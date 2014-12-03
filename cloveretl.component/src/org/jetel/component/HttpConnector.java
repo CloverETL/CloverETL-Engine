@@ -3053,17 +3053,21 @@ public class HttpConnector extends Node {
 
 			if (parameter.getValue().file == null) {
 				Charset charset = parameter.getValue().charset != null ? Charset.forName(parameter.getValue().charset) : Charset.defaultCharset();
-				String contentType = parameter.getValue().conentType != null ? parameter.getValue().conentType : ContentType.TEXT_PLAIN.toString();
-
+				String mimeType = parameter.getValue().conentType != null ? parameter.getValue().conentType : ContentType.TEXT_PLAIN.getMimeType();
+				
+				ContentType contentType = ContentType.create(mimeType, charset);
+				
 				String value = parameter.getValue().content != null ? parameter.getValue().content : "";
-				result[index] = new PartWithName(parameter.getKey(), new StringBody(value, contentType, charset));
+				result[index] = new PartWithName(parameter.getKey(), new StringBody(value, contentType));
 			} else if (parameter.getValue().content != null) {
 				Charset charset = parameter.getValue().charset != null ? Charset.forName(parameter.getValue().charset) : Charset.defaultCharset();
-				String contentType = parameter.getValue().conentType != null ? parameter.getValue().conentType : ContentType.TEXT_PLAIN.toString();
+				String mimeType = parameter.getValue().conentType != null ? parameter.getValue().conentType : ContentType.TEXT_PLAIN.getMimeType();
+
+				ContentType contentType = ContentType.create(mimeType, charset);
 
 				final String fileName = parameter.getValue().file;
 				String value = parameter.getValue().content != null ? parameter.getValue().content : "";
-				result[index] = new PartWithName(parameter.getKey(), new StringBody(value, contentType, charset) {
+				result[index] = new PartWithName(parameter.getKey(), new StringBody(value, contentType) {
 					@Override
 					public String getFilename() {
 						return fileName;
