@@ -277,10 +277,19 @@ public class HttpConnectorTest  extends CloverTestCase {
 //		CTLMapping mapping = new CTLMapping("name", httpConnector);
 		httpConnector.inputMappingTransformation.addInputMetadata("input", new CustomMetadata());
 		httpConnector.inputMappingTransformation.setTransformation("//#CTL2\nfunction integer transform() {return ALL;}");
+		DataRecord multipartRecord = null;
 		if(fieldValues.keySet()!=null) {
-		for(String key : fieldValues.keySet()) {
-			httpConnector.inputMappingTransformation.getOutputRecord(3).getField(key).setValue(fieldValues.get(key));
-		}
+			DataRecordMetadata[] metadata = httpConnector.inputMappingTransformation.getOutputRecordsMetadata();
+			for (int i=0; i<metadata.length; i++) {
+				if(metadata[i]!=null && metadata[i].getName()!=null && metadata[i].getName().equals("MultipartEntities")) {
+					multipartRecord = httpConnector.inputMappingTransformation.getOutputRecord(i);
+				}
+			}
+			if (multipartRecord != null) {
+				for (String key : fieldValues.keySet()) {
+					multipartRecord.getField(key).setValue(fieldValues.get(key));
+				}
+			}
 		}
 	}
 	
