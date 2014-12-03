@@ -31,6 +31,10 @@ import java.nio.channels.Channels;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.jetel.component.fileoperation.SimpleParameters.CopyParameters;
+import org.jetel.component.fileoperation.result.CopyResult;
+import org.jetel.util.ExceptionUtils;
+
 public class DefaultOperationHandlerTest extends LocalOperationHandlerTest {
 	
 	private DefaultOperationHandler handler = null;
@@ -93,7 +97,7 @@ public class DefaultOperationHandlerTest extends LocalOperationHandlerTest {
 		};
 		manager.registerHandler(VERBOSE ? new ObservableHandler(urlHandler) : urlHandler);
 
-		FTPOperationHandler ftpHandler = new FTPOperationHandler() {
+		PooledFTPOperationHandler ftpHandler = new PooledFTPOperationHandler() {
 			@Override
 			public boolean canPerform(Operation operation) {
 				switch (operation.kind) {
@@ -112,7 +116,7 @@ public class DefaultOperationHandlerTest extends LocalOperationHandlerTest {
 		S3OperationHandler s3handler = new S3OperationHandler();
 		manager.registerHandler(VERBOSE ? new ObservableHandler(s3handler) : s3handler);
 
-		SFTPOperationHandler sftpHandler = new SFTPOperationHandler() {
+		PooledSFTPOperationHandler sftpHandler = new PooledSFTPOperationHandler() {
 
 			@Override
 			public boolean canPerform(Operation operation) {
@@ -209,10 +213,11 @@ public class DefaultOperationHandlerTest extends LocalOperationHandlerTest {
 		assertTrue(manager.copy(source, target).success());
 		assertEquals(originalContent, read(manager.getInput(target).channel()));
 		
-		source = relativeHttpURI(name);
-		target = relativeURI("HTTP_" + name);
-		assertTrue(manager.copy(source, target).success());
-		assertEquals(originalContent, read(manager.getInput(target).channel()));
+		// CLO-5431
+		source = CloverURI.createURI("sftp://test:test@koule/home/test/data-in/specialCharacters");
+		target = relativeFtpURI("specialCharacters_CLO-5431/");
+		CopyResult result = manager.copy(source, target, new CopyParameters().setMakeParents(true).setRecursive(true));
+		assertTrue(ExceptionUtils.stackTraceToString(result.getFirstError()), result.success());
 
 //		zip(Channels.newInputStream(manager.getInput(relativeURI("HTTP_" + name)).next()), Channels.newOutputStream(manager.getOutput(relativeURI("test.jar")).next()), "HTTP_" + name);
 //		source = relativeJarURI("HTTP_" + name);
