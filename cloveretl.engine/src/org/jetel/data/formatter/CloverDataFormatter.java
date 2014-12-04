@@ -48,6 +48,7 @@ import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.primitive.BitArray;
 import org.jetel.util.stream.CloverDataStream;
+import org.jetel.util.stream.SeekableOutputStream;
 
 /**
  * Class for saving data in Clover internal format.
@@ -132,6 +133,8 @@ public class CloverDataFormatter extends AbstractFormatter {
 
 	private String[] excludedFieldNames;
 	private int[] includedFieldIndices;
+	
+	protected boolean syncFlush = false;
 
 	/**
 	 * Constructor
@@ -193,7 +196,11 @@ public class CloverDataFormatter extends AbstractFormatter {
 		}
 		
 		// create output stream
-		if (outputDataTarget instanceof OutputStream){
+		if (outputDataTarget instanceof SeekableOutputStream) {
+			SeekableOutputStream stream = (SeekableOutputStream) outputDataTarget;
+			this.out = stream;
+			this.channel = stream.getChannel(); 
+		} else if (outputDataTarget instanceof OutputStream){
 			this.out = (OutputStream) outputDataTarget;
 			channel = Channels.newChannel(this.out);
 		}else if (outputDataTarget instanceof File){
@@ -262,6 +269,9 @@ public class CloverDataFormatter extends AbstractFormatter {
 				break;
 			default:
 				throw new RuntimeException("Unsupported compression algorithm: " + compress);
+			}
+			if (syncFlush) {
+				this.output.setSyncFlush(syncFlush);
 			}
 			if (append) {
 				this.output.seekToAppend((SeekableByteChannel) channel);
@@ -376,8 +386,9 @@ public class CloverDataFormatter extends AbstractFormatter {
 	 */
 	@Override
 	public void flush() throws IOException {
-		//output.flush();
-		//out.flush();
+		if (syncFlush) {
+			output.flush();
+		}
 	}
 	
 	@Override
