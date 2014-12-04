@@ -19,13 +19,17 @@
 package org.jetel.graph;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import javax.xml.bind.annotation.XmlAnyAttribute;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.namespace.QName;
 
 import org.jetel.component.ComponentDescription.Attribute;
 import org.jetel.exception.JetelRuntimeException;
@@ -408,6 +412,9 @@ public class GraphParameter {
 	public static class SingleType {
 		private String name;
 
+		@XmlAnyAttribute
+		private Map<QName, String> attributes;
+
 		public SingleType() {
 		}
 
@@ -422,6 +429,14 @@ public class GraphParameter {
 
 		public void setName(String name) {
 			this.name = name;
+		}
+		
+		public Map<String, String> getParameters() {
+			Map<String, String> params = new HashMap<>();
+			for (Map.Entry<QName, String> attribute : attributes.entrySet()) {
+				params.put(attribute.getKey().getLocalPart(), attribute.getValue());
+			}
+			return params;
 		}
 	}
 	

@@ -19,8 +19,6 @@
 package org.jetel.data.parser;
 
 import org.jetel.data.parser.CloverDataParser.FileConfig;
-import org.jetel.exception.JetelException;
-import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * @author krivanekm (info@cloveretl.com)

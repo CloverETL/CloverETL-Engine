@@ -114,7 +114,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 	
 
 	private WritableByteChannel channel;
-	private CloverDataStream.Output output;
+	protected CloverDataStream.Output output;
 	private OutputStream out;//FileOutputStream or ZipOutputStream
 	private CloverBuffer buffer;
 	private boolean isOpen = false;
@@ -128,7 +128,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 	/**
 	 * True, if the current transformation is jobflow.
 	 */
-	private boolean isJobflow;
+	protected boolean isJobflow;
 
 	private String[] excludedFieldNames;
 	private int[] includedFieldIndices;

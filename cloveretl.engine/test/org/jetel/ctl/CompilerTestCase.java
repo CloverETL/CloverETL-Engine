@@ -2728,6 +2728,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 
+	// CLO-5423
+	public void test_cast_null() {
+		doCompile("test_cast_null");
+	}
+
 	@SuppressWarnings("unchecked")
 	public void test_type_map() {
 		doCompile("test_type_map");
