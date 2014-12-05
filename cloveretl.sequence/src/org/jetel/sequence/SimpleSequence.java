@@ -216,7 +216,9 @@ public class SimpleSequence extends GraphElement implements Sequence {
     		alreadyIncremented = false;
         } catch(IOException ex) {
             free();
-            ComponentNotReadyException cnre = new ComponentNotReadyException(this, "Can't read value from sequence file.", ex);
+            ComponentNotReadyException cnre = new ComponentNotReadyException(this, "Can't read value from sequence file. If you "
+            		+ "are using CloverETL Cluster, please make sure you are accessing persisted sequence "
+            		+StringUtils.quote(getName())+" on the same cluster node.", ex);
             cnre.setAttributeName(XML_FILE_URL_ATTRIBUTE);
             throw cnre;
 		}catch (BufferUnderflowException e) {
