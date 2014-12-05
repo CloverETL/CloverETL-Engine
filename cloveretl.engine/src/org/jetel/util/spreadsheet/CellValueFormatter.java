@@ -51,7 +51,7 @@ public class CellValueFormatter {
 		return formatter.formatRawCellContents(cellValue, formatIndex, formatString, use1904windowing);
 	}
 
-	private DataFormatter getLocalizedDataFormater(String localeString) {
+	public DataFormatter getLocalizedDataFormater(String localeString) {
 		DataFormatter formatter = formatters.get(localeString);
 		if (formatter == null) {
 			String[] localParts = localeString.split("\\.");
