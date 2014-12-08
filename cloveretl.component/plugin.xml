@@ -672,6 +672,23 @@
 	    </properties>
 	  </ETLComponent>
 	</extension>
+	
+	<extension point-id="component">
+	  <ETLComponent category="joiners" iconPath="icons/joiners/MergeJoin" name="CartesianProduct"  type="CARTESIAN_PRODUCT" className="org.jetel.component.CartesianProduct">
+	    <shortDescription>Performs cartesian product.</shortDescription>
+	    <description>Receives data records through all connected input ports and performs cartesian product on them. Each connected input port represents one set of records. Results are sent to the connected output port.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" label="master"/>
+	      <multiplePort required="false" label="slave" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true" />
+	    </outputPorts>
+	    <properties>
+			<!-- blank -->
+	    </properties>
+	  </ETLComponent>
+	</extension>
 
 	<extension point-id="component">
 	  <ETLComponent category="deprecated" iconPath="icons/joiners/MergeJoin" name="MergeJoin"  type="MERGE_JOIN" defaultVisibility="false" className="org.jetel.component.MergeJoin">
