@@ -19,8 +19,15 @@
 package org.jetel.util.spreadsheet;
 
 import java.awt.Point;
+import java.io.IOException;
+import java.io.InputStream;
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.xssf.eventusermodel.XSSFReader;
+import org.apache.xmlbeans.XmlException;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTWorkbookPr;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.WorkbookDocument;
 
 /**
  * @author lkrejci (info@cloveretl.com)
@@ -136,7 +143,28 @@ public class SpreadsheetUtils {
 			return sheetName;
 		}
 	}
-
+	
+	/**
+	 * Checks the source for 1904 windowing flag. This is kind of ugly, but there doesn't seem to be a better way.
+	 * Method for event model.
+	 * @param reader
+	 * @return true if 1904 windowing is used, false otherwise
+	 * @throws IOException
+	 * @throws XmlException
+	 * @throws InvalidFormatException
+	 */
+	public static boolean get1904Windowing(XSSFReader reader) throws IOException, XmlException, InvalidFormatException {
+		InputStream workbookXML = reader.getWorkbookData();
+		WorkbookDocument doc = WorkbookDocument.Factory.parse(workbookXML);
+		CTWorkbookPr workbookPr = doc.getWorkbook().getWorkbookPr();
+		boolean windowing1904 = false;
+		if (workbookPr != null) {
+			windowing1904 = workbookPr.getDate1904();
+		}
+		workbookXML.close();
+		return windowing1904;
+	}
+	
 	public static String quoteSheetNameIfNotQuoted(String sheetName) {
 		if (sheetName.startsWith(""+SHEET_NAME_ESCAPE_START) && sheetName.endsWith(""+SHEET_NAME_ESCAPE_END)) {
 			return sheetName;
