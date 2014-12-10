@@ -18,8 +18,17 @@
  */
 package org.jetel.util;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.jetel.data.ByteDataField;
+import org.jetel.data.DataField;
+import org.jetel.data.DataRecord;
+import org.jetel.exception.FieldNotFoundException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.string.StringUtils;
 
 /**
  * @author Tomas Laurincik (info@cloveretl.com)
@@ -67,5 +76,65 @@ public class DataRecordUtils {
 		}
 		
 		return false;
+	}
+	
+	static Pattern varPattern = Pattern.compile("(\\$)([\\w_\\d]+)");
+	/**
+	 * Expands $field markers in `value` with values from `record`
+	 * 
+	 * Returns a String or byte[] according to type of expanded fields
+	 * 
+	 * @param value
+	 * @param record
+	 * @return
+	 */
+	public static Object expandFieldName(String value, DataRecord record, PropertyRefResolver resolver) {
+		if (StringUtils.isEmpty(value)) {
+			return value;
+		}
+		Matcher m = varPattern.matcher(value);
+		DataField field;
+		
+		StringBuilder sb = null;
+		int last = 0;
+		String ret;
+		while (m.find()) {
+			if (sb == null) {
+				sb = new StringBuilder();
+			}
+			
+			String fieldName = m.group(2);
+			if (!record.hasField(fieldName)) {
+				throw new FieldNotFoundException(record, fieldName);
+			}
+			field = record.getField(fieldName);
+			
+			if (field instanceof ByteDataField) {
+				return field.getValue();
+			} else {
+				sb.append(value.substring(last, m.start()));
+				if (field.getValue() != null) {
+					sb.append(String.valueOf(field.getValue()));
+				} else {
+					sb.append("");
+				}
+				last = m.end();
+			}
+			
+		}
+		if (sb != null) {
+			sb.append(value.substring(last));
+			ret = sb.toString();
+		} else {
+			ret = value;
+		}
+
+		return (resolver != null) ? resolver.resolveRef(ret) : ret;
+		
+	}
+	
+	public static Object expandFieldName(String value, DataRecord record, Object defaultValue, PropertyRefResolver resolver) {
+		Object ret = DataRecordUtils.expandFieldName(value, record, resolver);
+		return ret == null ? defaultValue : ret;
 	}
 }

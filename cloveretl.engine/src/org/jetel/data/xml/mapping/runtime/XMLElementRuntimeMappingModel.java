@@ -121,6 +121,11 @@ public class XMLElementRuntimeMappingModel extends XMLRuntimeMappingModel {
 	 */ 
 	private Map<String, String> fieldsMap = new HashMap<String, String>();
 
+	/**
+	 * http header -> output field map.
+	 */
+	private Map<String, String> responseHttpHeadersToOutputFields;
+ 
 	/** 
 	 * List of clover fields (among else) which will be filled from ancestor.
 	 */
@@ -781,6 +786,14 @@ public class XMLElementRuntimeMappingModel extends XMLRuntimeMappingModel {
 
 	public void setFieldTransformation(RecordTransform fieldTransformation) {
 		this.fieldTransformation = fieldTransformation;
+	}
+	
+	public Map<String, String> getResponseHttpHeadersToOutputFields() {
+		return responseHttpHeadersToOutputFields;
+	}
+	
+	public void setResponseHttpHeadersToOutputFields(Map<String, String> responseHttpHeadersToOutputFields) {
+		this.responseHttpHeadersToOutputFields = responseHttpHeadersToOutputFields;
 	}
 
 	public XMLElementRuntimeMappingModel getProducingParent() {
