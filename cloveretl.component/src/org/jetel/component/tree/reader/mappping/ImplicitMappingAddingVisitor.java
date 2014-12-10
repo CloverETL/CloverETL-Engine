@@ -112,6 +112,7 @@ public class ImplicitMappingAddingVisitor implements MappingVisitor {
 				FieldMapping fieldMapping = new FieldMapping();
 				fieldMapping.setXPath(xpath);
 				fieldMapping.setCloverField(fieldName);
+				fieldMapping.setInputField(fieldName);
 				context.addChild(fieldMapping);
 			}
 		}
