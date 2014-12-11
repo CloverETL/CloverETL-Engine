@@ -38,7 +38,6 @@ import java.util.Set;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-//import org.apache.axiom.om.OMElement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.io.SAXContentHandler;
@@ -486,18 +485,18 @@ public class XmlSaxParser {
 			final String universalName = augmentURI(namespaceURI) + localName;
 			XMLElementRuntimeMappingModel mapping = null;
 			if (m_activeMapping == null) {
-				mapping = (XMLElementRuntimeMappingModel) m_elementPortMap.get(universalName);
+				mapping = m_elementPortMap.get(universalName);
 
 				// CL-2053 - backward compatibility (part 1/2)
 				if (mapping == null) {
-					mapping = (XMLElementRuntimeMappingModel) m_elementPortMap.get("{}" + localName);
+					mapping = m_elementPortMap.get("{}" + localName);
 				}
 			} else if (useNestedNodes || m_activeMapping.getLevel() == m_level - 1) {
-				mapping = (XMLElementRuntimeMappingModel) m_activeMapping.getChildMapping(universalName);
+				mapping = m_activeMapping.getChildMapping(universalName);
 
 				// CL-2053 - backward compatibility (part 2/2)
 				if (mapping == null) {
-					mapping = (XMLElementRuntimeMappingModel) m_activeMapping.getChildMapping("{}" + localName);
+					mapping = m_activeMapping.getChildMapping("{}" + localName);
 				}
 			}
 			if (mapping != null) {
