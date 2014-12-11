@@ -110,8 +110,8 @@ public class Normalizer extends Node {
 	private static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions";
     private static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
 	
-	private static final int IN_PORT = 0;
-	private static final int OUT_PORT = 0;
+	protected static final int IN_PORT = 0;
+	protected static final int OUT_PORT = 0;
 
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "NORMALIZER";
