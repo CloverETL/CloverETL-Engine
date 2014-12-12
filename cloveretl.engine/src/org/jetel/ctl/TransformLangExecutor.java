@@ -1641,6 +1641,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		case TransformLangParserTreeConstants.JJTARRAYACCESSEXPRESSION:
 			final SimpleNode argNode = (SimpleNode)lhs.jjtGetChild(0);
 			argNode.jjtAccept(this, data);
+			
+			//Assignment into null container initializes the container to empty (to avoid NPE): CLO-403
+			//After the assignment we have to set new value to lhs - but only after the currently assigned value is
+			//added to container, otherwise the added value is missing.
 			boolean assignedIntoNullContainer = false;
 			
 			if (argNode.getType().isList()) {
