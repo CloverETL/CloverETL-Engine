@@ -86,7 +86,7 @@ public class MetadataRepository {
 		}
 	}
 
-	private static DataRecordMetadata getRegisteredMetadata(String registeredMetadataId) {
+	public static DataRecordMetadata getRegisteredMetadata(String registeredMetadataId) {
 		return registeredMetadata.get(registeredMetadataId);
 	}
 	
