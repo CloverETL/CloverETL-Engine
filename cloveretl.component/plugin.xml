@@ -1570,6 +1570,9 @@
 	      <property category="advanced" displayName="Request parameters" modifiable="true" name="requestParameters" nullable="true">
 	        <singleType name="properties" />
 	      </property>	      
+	      <property category="advanced" displayName="Disable SSL Certificate Validation" modifiable="true" name="disableSSLCertValidation" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>   
 	      <property category="deprecated" displayName="URL from input field" modifiable="true" name="urlInputField" nullable="true">
 	        <singleType name="field" inputPortName="0" />
 	      </property>
