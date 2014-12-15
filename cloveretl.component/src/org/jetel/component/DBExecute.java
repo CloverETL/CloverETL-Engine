@@ -569,6 +569,7 @@ public class DBExecute extends Node {
     				String statement;
     				int index = 0;
     				while ((statement = sqlScriptParser.getNextStatement()) != null) {
+    					statement = getPropertyRefResolver().resolveRef(statement);
     					if (printStatements) {
 							logger.info("Executing statement: " + statement);
     					}
