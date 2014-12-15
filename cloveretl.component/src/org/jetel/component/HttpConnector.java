@@ -34,10 +34,11 @@ import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -54,7 +55,6 @@ import java.util.regex.Pattern;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 
-import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -90,6 +90,9 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIUtils;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContextBuilder;
+import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.cookie.CookieSpecProvider;
 import org.apache.http.entity.BufferedHttpEntity;
@@ -472,6 +475,8 @@ public class HttpConnector extends Node {
 	public final static String XML_RESPONSE_COOKIES_ATTRIBUTE = "responseCookies";
 
 	public final static String XML_STREAMING_ATTRIBUTE = "streaming";
+	
+	private static final String XML_DISABLE_SSL_CERT_VALIDATION = "disableSSLCertValidation";
 
 	/**
 	 * Default value of the 'append output' flag
@@ -1197,6 +1202,11 @@ public class HttpConnector extends Node {
 	 * Result of the processing of one record.
 	 */
 	private RequestResult result;
+	
+	/**
+	 * Toggle for disabling verification of certificates.
+	 */
+	private boolean disableSSLCertValidation;
 
 	/* === Tools used === */
 
@@ -2474,6 +2484,7 @@ public class HttpConnector extends Node {
 		httpConnector.setResponseCookies(xattribs.getString(XML_RESPONSE_COOKIES_ATTRIBUTE, null));
 		httpConnector.setStreaming(xattribs.getBoolean(XML_STREAMING_ATTRIBUTE, true));
 		httpConnector.setRequestParametersStr(xattribs.getString(XML_REQUEST_PARAMETERS_ATTRIBUTE, null));
+		httpConnector.setDisableSSLCertValidation(xattribs.getBoolean(XML_DISABLE_SSL_CERT_VALIDATION, false));
 
 		/** job flow related properties */
 		httpConnector.setInputMapping(xattribs.getStringEx(XML_INPUT_MAPPING_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
@@ -2741,6 +2752,10 @@ public class HttpConnector extends Node {
 					status.add(new ConfigurationProblem("Missing ':' semicolon character in \"raw HTTP header\" item: \"" + rawHeader + "\"", Severity.WARNING, this, Priority.NORMAL, XML_RAW_HTTP_HEADERS_ATTRIBUTE));
 				}
 			}
+		}
+		
+		if (disableSSLCertValidation) {
+			status.add("Certificate validation is disabled. Connection will not be secure.", Severity.WARNING, this, Priority.NORMAL, XML_DISABLE_SSL_CERT_VALIDATION);
 		}
 
 		try {
@@ -3191,6 +3206,27 @@ public class HttpConnector extends Node {
 			// }
 			//
 			// });
+		}
+
+		if (disableSSLCertValidation) {
+			// THIS MAKES THE SSL CONNECTION UNSECURE
+			try {
+				SSLContextBuilder contextBuilder = new SSLContextBuilder();
+				contextBuilder.loadTrustMaterial(null, new TrustStrategy() {
+					@Override
+					public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+						// trust ALL certificates
+						return true;
+					}
+				});
+				SSLConnectionSocketFactory sslFactory = new SSLConnectionSocketFactory(
+						contextBuilder.build(),
+						SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+				
+				builder.setSSLSocketFactory(sslFactory);
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(this, "Problem with HTTPS connection.", e);
+			}
 		}
 
 		// configure OAuth authentication
@@ -4047,6 +4083,14 @@ public class HttpConnector extends Node {
 
 	public void setResponseCookies(String responseCookies) {
 		this.responseCookies = responseCookies;
+	}
+	
+	public boolean isDisableSSLCertValidation() {
+		return disableSSLCertValidation;
+	}
+
+	public void setDisableSSLCertValidation(boolean disableSSLCertValidation) {
+		this.disableSSLCertValidation = disableSSLCertValidation;
 	}
 
 	@Override
