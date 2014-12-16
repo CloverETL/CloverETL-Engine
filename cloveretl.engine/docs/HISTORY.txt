@@ -2,6 +2,12 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-0-2
+---------
+
+* Changed priority of edge-based explicit metadata propagation
+* FIXES:
+    -  Tracking on edges with no record   
 
 REL-4-0-1
 ---------
