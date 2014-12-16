@@ -433,8 +433,10 @@ public class GraphParameter {
 		
 		public Map<String, String> getParameters() {
 			Map<String, String> params = new HashMap<>();
-			for (Map.Entry<QName, String> attribute : attributes.entrySet()) {
-				params.put(attribute.getKey().getLocalPart(), attribute.getValue());
+			if (attributes != null) {
+                for (Map.Entry<QName, String> attribute : attributes.entrySet()) {
+                    params.put(attribute.getKey().getLocalPart(), attribute.getValue());
+                }
 			}
 			return params;
 		}
