@@ -1642,6 +1642,16 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			final SimpleNode argNode = (SimpleNode)lhs.jjtGetChild(0);
 			argNode.jjtAccept(this, data);
 			
+			boolean canInitialize = false;
+			switch (argNode.getId()) {
+			case TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION:
+			case TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION:
+			case TransformLangParserTreeConstants.JJTIDENTIFIER:
+			case TransformLangParserTreeConstants.JJTVARIABLEDECLARATION:
+				canInitialize = true;
+				break;
+			}
+			
 			//Assignment into null container initializes the container to empty (to avoid NPE): CLO-403
 			//After the assignment we have to set new value to lhs - but only after the currently assigned value is
 			//added to container, otherwise the added value is missing.
@@ -1650,7 +1660,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			if (argNode.getType().isList()) {
 				// accessing list
 				List<Object> list = stack.popList();
-				if (list == null) {
+				if ((list == null) && canInitialize) {
 					//CLO-403: assignment into null container, we have to initialize the container to empty value
 					assignedIntoNullContainer = true;
 					list = new ArrayList<>();
@@ -1668,13 +1678,13 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 					list.set(index, value);
 				}
 				if (assignedIntoNullContainer) {
-					setVariable((SimpleNode) lhs.jjtGetChild(0), list);
+					setVariable(argNode, list);
 				}
 			} else {
 				// accessing map
 				Map<Object,Object> map = stack.popMap();
 
-				if (map == null) {
+				if ((map == null) && canInitialize) {
 					//CLO-403: assignment into null container, we have to initialize the container to empty value
 					assignedIntoNullContainer = true;
 					map = new LinkedHashMap<>();
@@ -1686,7 +1696,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 				
 				map.put(index,value);
 				if (assignedIntoNullContainer) {
-					setVariable((SimpleNode) lhs.jjtGetChild(0), map);
+					setVariable(argNode, map);
 				}
 			}
 			break;
