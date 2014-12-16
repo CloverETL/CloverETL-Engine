@@ -19,6 +19,7 @@
 package org.jetel.component;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 
 import org.apache.commons.logging.Log;
@@ -31,6 +32,7 @@ import org.jetel.data.parser.CloverDataParser;
 import org.jetel.data.parser.CloverDataParser.FileConfig;
 import org.jetel.data.parser.CloverDataParser35;
 import org.jetel.data.parser.ICloverDataParser;
+import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -39,19 +41,27 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
+import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileListener;
 import org.jetel.util.MultiFileReader;
+import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
+import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.SandboxUrlUtils;
+import org.jetel.util.file.WcardPattern;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -102,7 +112,7 @@ import org.w3c.dom.Element;
  */
 
 
-public class CloverDataReader extends Node implements MultiFileListener {
+public class CloverDataReader extends Node implements MultiFileListener, MetadataProvider {
 
 	private final static Log logger = LogFactory.getLog(CloverDataReader.class);
 	
@@ -512,5 +522,29 @@ public class CloverDataReader extends Node implements MultiFileListener {
 		}
 		
 		
+	}
+
+	@Override
+	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		return null;
+	}
+
+	private MVMetadata metadata = null;
+	private boolean metadataInitialized = false;
+	
+	@Override
+	public MVMetadata getOutputMetadata(int portIndex, final MetadataPropagationResolver metadataPropagationResolver) {
+		if (!metadataInitialized) {
+			metadataInitialized = true;
+			try (InputStream stream = FileUtils.getFirstInputStream(getContextURL(), fileURL)) {
+				FileConfig header = CloverDataParser.checkCompatibilityHeader(stream, null);
+				DataRecordMetadata fileMetadata = header.metadata;
+				if (fileMetadata != null) { // 3.5 and newer
+					this.metadata = metadataPropagationResolver.createMVMetadata(fileMetadata, CloverDataReader.this, null, MVMetadata.HIGH_PRIORITY);
+				}
+			} catch (Exception e) {}
+		}
+		
+		return metadata;
 	}
 }

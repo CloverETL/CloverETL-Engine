@@ -495,6 +495,35 @@ public class FileUtils {
     	//incremental reader needs FileChannel:
     	return in instanceof FileInputStream ? ((FileInputStream)in).getChannel() : Channels.newChannel(in);
     }	
+	
+	/**
+	 * For a file URL pattern, returns the first <emph>local</emph>
+	 * or sandbox {@link InputStream}.
+	 * 
+	 * The URL may contain wildcards.
+	 * 
+	 * Skips dictionary and port URLs.
+	 * 
+	 * @param contextUrl
+	 * @param fileURL
+	 * @return first local or sandbox InputStream
+	 * @throws IOException
+	 */
+	public static InputStream getFirstInputStream(URL contextUrl, String fileURL) throws IOException {
+		if (!StringUtils.isEmpty(fileURL)) {
+			WcardPattern pattern = new WcardPattern();
+			pattern.setParent(contextUrl);
+			pattern.addPattern(fileURL);
+			pattern.resolveAllNames(false);
+			Iterable<String> filenames = pattern.filenames();
+			for (String file: filenames) {
+				if (isSandbox(file) || isLocalFile(contextUrl, file)) {
+					return getInputStream(contextUrl, file);
+				}
+			}
+		}
+		return null;
+	}
 
 	/**
 	 * Creates InputStream from the url definition.
