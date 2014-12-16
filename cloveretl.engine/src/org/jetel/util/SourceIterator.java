@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.enums.ProcessingType;
@@ -267,6 +268,13 @@ public class SourceIterator {
 		if (portReadingIterator != null) {
 			portReadingIterator.blankRead();
 		}
+	}
+	
+	public DataRecord getCurrenRecord() {
+		if (this.portReadingIterator != null) {
+			return this.portReadingIterator.getCurrentRecord();
+		}
+		return null;
 	}
 
 	/**

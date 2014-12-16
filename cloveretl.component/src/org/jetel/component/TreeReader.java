@@ -425,7 +425,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		Object inputData = getNextSource();
 		while (inputData != null) {
 			try {
-				treeProcessor.processInput(inputData);
+				treeProcessor.processInput(inputData, sourceIterator.getCurrenRecord());
 			} catch (AbortParsingException e) {
 				if (!runIt) {
 					return Result.ABORTED;
@@ -669,7 +669,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	 * @created 10.3.2012
 	 */
 	private interface TreeProcessor {
-		void processInput(Object input) throws Exception;
+		void processInput(Object input, DataRecord inputRecord) throws Exception;
 	}
 
 
@@ -693,8 +693,8 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		}
 
 		@Override
-		public void processInput(Object input) throws AbortParsingException {
-			pushParser.parse(rootContext, inputAdapter.adapt(input));
+		public void processInput(Object input, DataRecord inputRecord) throws AbortParsingException {
+			pushParser.parse(rootContext, inputAdapter.adapt(input), inputRecord);
 		}
 	}
 
@@ -731,7 +731,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		}
 
 		@Override
-		public void processInput(Object input) throws Exception {
+		public void processInput(Object input, DataRecord inputRecord) throws Exception {
 			if (input instanceof ReadableByteChannel) {
 				/*
 				 * Convert input stream to XML
@@ -752,6 +752,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 					pipeTransformer.setInputOutput(Channels.newWriter(pipe.sink(), "UTF-8"), source);
 					pipeParser = new PipeParser(TreeReader.this, pushParser, rootContext);
 					pipeParser.setInput(Channels.newReader(pipe.source(), "UTF-8"));
+					pipeParser.setInputDataRecord(inputRecord);
 				} catch (TransformerFactoryConfigurationError e) {
 					throw new JetelRuntimeException("Failed to instantiate transformer", e);
 				}
@@ -844,6 +845,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			private XPathPushParser pushParser;
 			private MappingContext rootContext;
 			private Reader pipedReader;
+			private DataRecord inputRecord;
 			
 			public PipeParser(Node node, XPathPushParser parser, MappingContext root) {
 				super(node, "PipeParser");
@@ -851,11 +853,14 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				this.rootContext = root;
 			}
 			
-			
+			public void setInputDataRecord(DataRecord inputRecord) {
+				this.inputRecord = inputRecord;
+			}
+
 			@Override
 			public void work() throws InterruptedException {
 				try {
-					pushParser.parse(rootContext, new SAXSource(new InputSource(pipedReader)));
+					pushParser.parse(rootContext, new SAXSource(new InputSource(pipedReader)), inputRecord);
 				} catch (Throwable t) {
 					StreamConvertingXPathProcessor.this.failure = t;
 				}

@@ -18,12 +18,15 @@
  */
 package org.jetel.data.xml.mapping.runtime.factory;
 
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.jetel.component.RecordTransform;
 import org.jetel.component.RecordTransformDescriptor;
 import org.jetel.component.TransformFactory;
+import org.jetel.data.xml.mapping.HttpHeaderMappingDefinition;
 import org.jetel.data.xml.mapping.InputFieldMappingDefinition;
 import org.jetel.data.xml.mapping.XMLElementMappingDefinition;
 import org.jetel.data.xml.mapping.XMLMappingConstants;
@@ -129,11 +132,16 @@ public class RuntimeMappingModelFactory {
 
 			List<InputFieldMappingDefinition> fieldMappings = new LinkedList<InputFieldMappingDefinition>();
 			
+			Map<String, String> responseHttpHeadersToOutputFields = new LinkedHashMap<String, String>();
+			
 			// Process all nested mappings
 			for (XMLMappingDefinition recordMapping : mappingDefinition.getChildren()) {
 				// if this is a definition of input field -> output field mapping, save it for later processing.
 				if (recordMapping instanceof InputFieldMappingDefinition) {
 					fieldMappings.add((InputFieldMappingDefinition) recordMapping);
+				} else if (recordMapping instanceof HttpHeaderMappingDefinition) {
+					
+					responseHttpHeadersToOutputFields.put(((HttpHeaderMappingDefinition) recordMapping).getHttpHeader(), ((HttpHeaderMappingDefinition) recordMapping).getOutputField());
 					
 				} else if (recordMapping instanceof XMLElementMappingDefinition) {
 					mapping.addChildMapping(createRuntimeMappingModel(recordMapping, mapping));
@@ -142,6 +150,8 @@ public class RuntimeMappingModelFactory {
 
 			mapping.setFieldTransformation(buildTransformation(fieldMappings, mapping));
 			
+			mapping.setResponseHttpHeadersToOutputFields(responseHttpHeadersToOutputFields);
+
 			// prepare variable reset of skip and numRecords' attributes
 			mapping.prepareReset4CurrentRecord4Mapping();
 

@@ -19,6 +19,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -247,6 +248,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			g.getDictionary().setContentType("dateList", "date");
 			g.getDictionary().setValue("byteList", "list", Arrays.asList(new byte[] {0x12}, new byte[] {0x34, 0x56}, null, new byte[] {0x78}));
 			g.getDictionary().setContentType("byteList", "byte");
+			g.getDictionary().setValue("stringMap", "map", new LinkedHashMap<String,String>());
+			g.getDictionary().setContentType("stringMap", "string");
 		} catch (ComponentNotReadyException e) {
 			throw new RuntimeException("Error init default dictionary", e);
 		}
@@ -2725,6 +2728,79 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			assertTrue(((List<?>) recordMap1.get(2).getField("stringListField").getValue()).isEmpty());
 			
 			
+		}
+	}
+	
+	// CLO-403
+	public void test_container_assignment_initialization() {
+		doCompile("test_container_assignment_initialization");
+		
+		//list
+		Object val = ((List<?>) outputRecords[5].getField("stringListField").getValue()).get(1);
+		assertEquals(val.toString(), "value");
+		
+		val = ((List<?>) outputRecords[4].getField("stringListField").getValue()).get(0);
+		assertEquals(val.toString(), "value");
+		
+		List<?> dictList = (List<?>) graph.getDictionary().getEntry("stringList").getValue();
+		assertDeepEquals(dictList, Arrays.asList(null, "value"));
+		
+		check("listNull", true);
+		check("arrayString", Arrays.asList("value"));
+		
+		
+		//map
+		val = ((Map<?,?>) outputRecords[5].getField("stringMapField").getValue()).get("key");
+		assertEquals(val.toString(), "value");
+		
+		val = ((Map<?,?>) outputRecords[4].getField("stringMapField").getValue()).get("key");
+		assertEquals(val.toString(), "value");
+		
+		Map<?,?> dictMap = (Map<?,?>) graph.getDictionary().getEntry("stringMap").getValue();
+		LinkedHashMap<String,String> expectedmap = new LinkedHashMap<>();
+		expectedmap.put("key", "value");
+		assertDeepEquals(dictMap, expectedmap);
+		
+		check("mapNull", true);
+		check("mapString", expectedmap);
+	}
+	
+	/**
+	 * Answers <code>true</code> if given throwable is or is caused by given cause type.
+	 * @param throwable
+	 * @param causeType
+	 * @return
+	 */
+	public static boolean isCausedBy(Throwable throwable, Class<? extends Throwable> causeType) {
+		
+		while (throwable != null) {
+			if (causeType.isAssignableFrom(throwable.getClass())) {
+				return true;
+			}
+			throwable = throwable.getCause();
+		}
+		return false;
+	}
+
+	public void test_container_assignment_initialization_expect_error() {
+		try {
+			doCompile("function string[] getStringList() {return $out.firstMultivalueOutput.stringListField;} function integer transform(){getStringList()[0] = 'test'; return 0;}", "test_container_assignment_initialization_expect_error");
+			fail();
+		} catch (NullPointerException npe) {
+		} catch (TransformLangExecutorRuntimeException ex) {
+			if (!isCausedBy(ex, NullPointerException.class)) {
+				throw ex;
+			}
+		}
+
+		try {
+			doCompile("function map[string, string] getStringMap() {return $out.firstMultivalueOutput.stringMapField;} function integer transform(){getStringMap()['key'] = 'value'; return 0;}", "test_container_assignment_initialization_expect_error");
+			fail();
+		} catch (NullPointerException npe) {
+		} catch (TransformLangExecutorRuntimeException ex) {
+			if (!isCausedBy(ex, NullPointerException.class)) {
+				throw ex;
+			}
 		}
 	}
 
