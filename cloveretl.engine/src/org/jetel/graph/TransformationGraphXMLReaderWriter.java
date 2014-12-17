@@ -615,10 +615,12 @@ public class TransformationGraphXMLReaderWriter {
 			// process Phase element attribute "number"
 			try {
 				phaseNum = attributes.getInteger("number");
-				phase=new Phase(phaseNum);
-				graph.addPhase(phase);
+				if ((phase = graph.getPhase(phaseNum)) == null) {
+					phase=new Phase(phaseNum);
+					graph.addPhase(phase);
+				}
 				// get all nodes defined in this phase and instantiate them
-				// we expect that all childern of phase are Nodes
+				// we expect that all children of phase are Nodes
 				//phaseElements.item(i).normalize();
 				nodeElements=phaseElements.item(i).getChildNodes();
 				instantiateNodes(phase,nodeElements);
