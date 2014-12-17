@@ -506,10 +506,10 @@ public class FileUtils {
 	 * 
 	 * @param contextUrl
 	 * @param fileURL
-	 * @return first local or sandbox InputStream
+	 * @return URL of the first local or sandbox InputStream
 	 * @throws IOException
 	 */
-	public static InputStream getFirstInputStream(URL contextUrl, String fileURL) throws IOException {
+	public static URL getFirstInput(URL contextUrl, String fileURL) throws IOException {
 		if (!StringUtils.isEmpty(fileURL)) {
 			WcardPattern pattern = new WcardPattern();
 			pattern.setParent(contextUrl);
@@ -518,7 +518,7 @@ public class FileUtils {
 			Iterable<String> filenames = pattern.filenames();
 			for (String file: filenames) {
 				if (isSandbox(file) || isLocalFile(contextUrl, file)) {
-					return getInputStream(contextUrl, file);
+					return getFileURL(contextUrl, file);
 				}
 			}
 		}

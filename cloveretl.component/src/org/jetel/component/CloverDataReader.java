@@ -536,13 +536,27 @@ public class CloverDataReader extends Node implements MultiFileListener, Metadat
 	public MVMetadata getOutputMetadata(int portIndex, final MetadataPropagationResolver metadataPropagationResolver) {
 		if (!metadataInitialized) {
 			metadataInitialized = true;
-			try (InputStream stream = FileUtils.getFirstInputStream(getContextURL(), fileURL)) {
-				FileConfig header = CloverDataParser.checkCompatibilityHeader(stream, null);
-				DataRecordMetadata fileMetadata = header.metadata;
-				if (fileMetadata != null) { // 3.5 and newer
-					this.metadata = metadataPropagationResolver.createMVMetadata(fileMetadata, CloverDataReader.this, null, MVMetadata.HIGH_PRIORITY);
+			try {
+				URL url = FileUtils.getFirstInput(getContextURL(), fileURL);
+				try (InputStream stream = url.openStream()) {
+					FileConfig header = CloverDataParser.readHeader(stream);
+					DataRecordMetadata fileMetadata = header.metadata;
+					if (header.formatVersion == CloverDataFormatter.DataFormatVersion.VERSION_35) {
+						String file = url.getFile();
+						int idx = file.lastIndexOf("/");
+						if (idx >= 0) {
+							file = file.substring(idx + 1);
+						}
+						if (!file.isEmpty()) {
+							fileMetadata.setLabel(file);
+							fileMetadata.normalize();
+						}
+					}
+					if (fileMetadata != null) { // 3.5 and newer
+						this.metadata = metadataPropagationResolver.createMVMetadata(fileMetadata, CloverDataReader.this, null, MVMetadata.HIGH_PRIORITY);
+					}
 				}
-			} catch (Exception e) {}
+			}  catch (Exception e) {}
 		}
 		
 		return metadata;
