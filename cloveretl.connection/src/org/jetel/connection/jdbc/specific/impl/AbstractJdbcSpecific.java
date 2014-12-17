@@ -492,7 +492,7 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 			
 			query = SQLUtil.removeUnnamedFields(query, this);
 			if (optimizeSelectQuery) {
-				q = "SELECT wrapper_table.* FROM (" + query + ") wrapper_table where 1=0";
+				q = SQLUtil.appendOptimizingWhereClause(query);
 			} else {
 				q = query;
 			}
