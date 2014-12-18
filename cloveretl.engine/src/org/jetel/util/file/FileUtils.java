@@ -1923,6 +1923,19 @@ public class FileUtils {
 	}
 	
 	/**
+	 * Removes root directory delimiter.
+	 * @param path
+	 * @return
+	 */
+	public static String removeLeadingSlash(String path) {
+		
+		if (path != null && path.length() > 0 && path.charAt(0) == '/') {
+			return path.substring(1);
+		}
+		return path;
+	}
+	
+	/**
 	 * Removes "./" sequence from the beginning of a path
 	 * @param path
 	 * @return
