@@ -178,21 +178,23 @@ public class LocalOperationHandlerTest extends OperationHandlerTestTemplate {
 			File file = new File(source.getAbsoluteURI().getSingleURI().toURI());
 			Path path = file.toPath();
 			assertTrue(file.exists());
-			AclFileAttributeView view = Files.getFileAttributeView(path, AclFileAttributeView.class);
-			UserPrincipal owner = view.getOwner();
-			List<AclEntry> acl = view.getAcl();
-			for (ListIterator<AclEntry> it = acl.listIterator(); it.hasNext(); ) {
-				AclEntry entry = it.next();
-				if (entry.principal().equals(owner)) {
-					Set<AclEntryPermission> permissions = entry.permissions();
-					permissions.remove(AclEntryPermission.READ_DATA);
-					AclEntry.Builder builder = AclEntry.newBuilder(entry);
-					builder.setPermissions(permissions);
-					it.set(builder.build());
-					break;
+			if (!file.setReadable(false)) {
+				AclFileAttributeView view = Files.getFileAttributeView(path, AclFileAttributeView.class);
+				UserPrincipal owner = view.getOwner();
+				List<AclEntry> acl = view.getAcl();
+				for (ListIterator<AclEntry> it = acl.listIterator(); it.hasNext(); ) {
+					AclEntry entry = it.next();
+					if (entry.principal().equals(owner)) {
+						Set<AclEntryPermission> permissions = entry.permissions();
+						permissions.remove(AclEntryPermission.READ_DATA);
+						AclEntry.Builder builder = AclEntry.newBuilder(entry);
+						builder.setPermissions(permissions);
+						it.set(builder.build());
+						break;
+					}
 				}
+				view.setAcl(acl);
 			}
-			view.setAcl(acl);
 			assertFalse(Files.isReadable(path));
 			result = manager.copy(source, target);
 			assertFalse(result.success());
