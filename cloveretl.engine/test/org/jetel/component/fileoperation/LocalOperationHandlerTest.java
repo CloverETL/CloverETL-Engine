@@ -25,7 +25,14 @@ import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclEntryPermission;
+import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.nio.file.attribute.UserPrincipal;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
 
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.result.CopyResult;
@@ -161,6 +168,37 @@ public class LocalOperationHandlerTest extends OperationHandlerTestTemplate {
 			assertFalse(result.success());
 			assertTrue(manager.exists(source));
 		}
+		
+		{
+			// CLO-4658:
+			source = relativeURI("unreadable.tmp");
+			target = relativeURI("unreadable_destination/");
+			manager.create(source);
+			manager.create(target);
+			File file = new File(source.getAbsoluteURI().getSingleURI().toURI());
+			Path path = file.toPath();
+			assertTrue(file.exists());
+			AclFileAttributeView view = Files.getFileAttributeView(path, AclFileAttributeView.class);
+			UserPrincipal owner = view.getOwner();
+			List<AclEntry> acl = view.getAcl();
+			for (ListIterator<AclEntry> it = acl.listIterator(); it.hasNext(); ) {
+				AclEntry entry = it.next();
+				if (entry.principal().equals(owner)) {
+					Set<AclEntryPermission> permissions = entry.permissions();
+					permissions.remove(AclEntryPermission.READ_DATA);
+					AclEntry.Builder builder = AclEntry.newBuilder(entry);
+					builder.setPermissions(permissions);
+					it.set(builder.build());
+					break;
+				}
+			}
+			view.setAcl(acl);
+			assertFalse(Files.isReadable(path));
+			result = manager.copy(source, target);
+			assertFalse(result.success());
+			assertFalse(manager.exists(relativeURI("unreadable_destination/unreadable.tmp")));
+		}
+		
 	}
 
 	@Override
