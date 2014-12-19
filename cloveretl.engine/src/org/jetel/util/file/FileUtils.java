@@ -2308,19 +2308,14 @@ public class FileUtils {
      * @throws IOException
      */
 	public static boolean copyFile(File source, File target) throws IOException {
-		FileInputStream inputStream = null;
-		FileOutputStream outputStream = null;
-		FileChannel inputChannel = null;
-		FileChannel outputChannel = null;
-		try {
-			inputStream = new FileInputStream(source);
-			outputStream = new FileOutputStream(target);
-			inputChannel = inputStream.getChannel();
-			outputChannel = outputStream.getChannel();
+		try (
+			FileInputStream inputStream = new FileInputStream(source);
+			FileChannel inputChannel = inputStream.getChannel();
+			FileOutputStream outputStream = new FileOutputStream(target);
+			FileChannel outputChannel = outputStream.getChannel();
+		) {
 	        StreamUtils.copy(inputChannel, outputChannel);
 			return true;
-		} finally {
-			closeAll(outputChannel, outputStream, inputChannel, inputStream);
 		}
 	}
 
