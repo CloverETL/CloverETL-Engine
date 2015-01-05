@@ -121,7 +121,7 @@ public class GenericComponent extends Node {
 	private TransformFactory<GenericTransform> getTransformFactory() {
 		TransformFactory<GenericTransform> transformFactory = TransformFactory.createTransformFactory(GenericTransform.class);
 		transformFactory.setTransform(genericTransformCode);
-		transformFactory.setTransformClass(genericTransformCode);
+		transformFactory.setTransformClass(genericTransformClass);
 		transformFactory.setTransformUrl(genericTransformURL);
 		transformFactory.setCharset(charset);
 		transformFactory.setComponent(this);
@@ -129,7 +129,7 @@ public class GenericComponent extends Node {
 	}
 	
 	@Override
-	public ConfigurationStatus checkConfig(ConfigurationStatus status) {		
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 		
 		if (charset != null && !Charset.isSupported(charset)) {
@@ -149,24 +149,22 @@ public class GenericComponent extends Node {
 	 * @param xmlElement
 	 * @return
 	 * @throws XMLConfigurationException
-	 * @throws AttributeNotFoundException 
+	 * @throws AttributeNotFoundException
 	 */
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
-//		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
-//		
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
+		
 //		Properties additionalAttributes;
-//		
-//		GenericComponent genericComponent = new GenericComponent(xattribs.getString(XML_ID_ATTRIBUTE));
-//
-//        genericComponent.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
-//        
-//        genericComponent.set                xattribs.getStringEx(XML_GENERIC_TRANSFORM_ATTRIBUTERUNNABLE_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
-//                xattribs.getString(XML_RUNNABLECLASS_ATTRIBUTE, null),
-//                xattribs.getStringEx(XML_RUNNABLEURL_ATTRIBUTE, null, RefResFlag.URL),
-//                internalProperties);
-//		
-//		return javaExecute;
-		return null;
+		
+		GenericComponent genericComponent = new GenericComponent(xattribs.getString(XML_ID_ATTRIBUTE));
+        genericComponent.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
+        
+        //TODO ctl expressions are still turned on? - this might cause trouble if the code is java?
+        genericComponent.setGenericTransformCode(xattribs.getStringEx(XML_GENERIC_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
+        genericComponent.setGenericTransformURL(xattribs.getStringEx(XML_GENERIC_TRANSFORM_URL_ATTRIBUTE, null, RefResFlag.URL));
+        genericComponent.setGenericTransformClass(xattribs.getString(XML_GENERIC_TRANSFORM_CLASS_ATTRIBUTE, null));
+        
+		return genericComponent;
 	}
 
 	public String getCharset() {
