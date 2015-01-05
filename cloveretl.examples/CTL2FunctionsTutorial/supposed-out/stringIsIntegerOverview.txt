@@ -1,5 +1,5 @@
 test;isInteger($0.Arg);false
-tï¿½st;isInteger($0.Arg);false
+têst;isInteger($0.Arg);false
 5;isInteger($0.Arg);true
 123456;isInteger($0.Arg);true
 12345678910111213;isInteger($0.Arg);false
