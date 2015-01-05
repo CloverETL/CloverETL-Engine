@@ -38,8 +38,8 @@ import java.util.Set;
 public enum AdditionalComponentAttributes {
 	
 	// Components are listed with descending priority (for common file extension(s))
-	SPREADSHEET_DATA_READER("SPREADSHEET_READER", true, "xls", "xlsx"),
-	SPREADSHEET_DATA_WRITER("SPREADSHEET_WRITER", false, "xls", "xlsx"),
+	SPREADSHEET_DATA_READER("SPREADSHEET_READER", true, "xls", "xlsx", "xlsm"),
+	SPREADSHEET_DATA_WRITER("SPREADSHEET_WRITER", false, "xls", "xlsx", "xlsm"),
 	XLS_READER("XLS_READER", true, "xls", "xlsx"),
 	XLS_WRITER("XLS_WRITER", false, "xls", "xlsx"),
 	JSON_READER("JSON_READER", true, "json");

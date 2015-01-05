@@ -29,8 +29,18 @@ package org.jetel.component.tree.reader.mappping;
 public class FieldMapping extends MappingElement {
 
 	private boolean trim = true;
+	/**
+	 * for mapping of node to output field
+	 */
 	private String nodeName;
+	/**
+	 * output field
+	 */
 	private String cloverField;
+	/**
+	 * for mapping of input field to output field
+	 */
+	private String inputField;
 	
 	@Override
 	public void acceptVisitor(MappingVisitor visitor) {
@@ -51,6 +61,14 @@ public class FieldMapping extends MappingElement {
 	
 	public void setNodeName(String nodeName) {
 		this.nodeName = nodeName;
+	}
+	
+	public void setInputField(String inputField) {
+		this.inputField = inputField;
+	}
+	
+	public String getInputField() {
+		return inputField;
 	}
 	
 	public String getCloverField() {

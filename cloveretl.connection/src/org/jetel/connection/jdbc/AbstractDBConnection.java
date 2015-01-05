@@ -116,14 +116,7 @@ public abstract class AbstractDBConnection extends GraphElement implements DBCon
         if(StringUtils.isEmpty(sqlQuery)) {
             throw new IllegalArgumentException("JDBC stub for clover metadata can't find sqlQuery parameter.");
         }
-
-        int index = sqlQuery.toUpperCase().indexOf("WHERE");
-
-		if (index >= 0) {
-			sqlQuery = sqlQuery.substring(0, index).concat("WHERE 0=1");
-		} else {
-			sqlQuery = sqlQuery.concat(" WHERE 0=1");
-		}
+        sqlQuery = SQLUtil.appendOptimizingWhereClause(sqlQuery);
 
         Connection connection;
 		try {

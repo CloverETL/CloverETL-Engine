@@ -1570,6 +1570,9 @@
 	      <property category="advanced" displayName="Request parameters" modifiable="true" name="requestParameters" nullable="true">
 	        <singleType name="properties" />
 	      </property>	      
+	      <property category="advanced" displayName="Disable SSL Certificate Validation" modifiable="true" name="disableSSLCertValidation" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>   
 	      <property category="deprecated" displayName="URL from input field" modifiable="true" name="urlInputField" nullable="true">
 	        <singleType name="field" inputPortName="0" />
 	      </property>
@@ -2407,8 +2410,8 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Equal NULL" modifiable="true" name="equalNULL" nullable="true" defaultHint="true">
 	        <singleType name="bool"/>
 	      </property>
-	      <property category="deprecated" displayName="Locale" modifiable="true" name="locale" nullable="true">
-	        <singleType name="string"/>
+	      <property category="deprecated" displayName="Locale" modifiable="true" name="locale" nullable="true" defaultHint="none">
+	        <singleType name="locale"/>
 	      </property>
 	      <property category="deprecated" displayName="Use internationalization" modifiable="true" name="useI18N" nullable="true" defaultHint="false">
 	        <singleType name="bool"/>

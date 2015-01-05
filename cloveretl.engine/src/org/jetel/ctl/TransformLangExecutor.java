@@ -1642,9 +1642,29 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			final SimpleNode argNode = (SimpleNode)lhs.jjtGetChild(0);
 			argNode.jjtAccept(this, data);
 			
+			boolean canInitialize = false;
+			switch (argNode.getId()) {
+			case TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION:
+			case TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION:
+			case TransformLangParserTreeConstants.JJTIDENTIFIER:
+			case TransformLangParserTreeConstants.JJTVARIABLEDECLARATION:
+				canInitialize = true;
+				break;
+			}
+			
+			//Assignment into null container initializes the container to empty (to avoid NPE): CLO-403
+			//After the assignment we have to set new value to lhs - but only after the currently assigned value is
+			//added to container, otherwise the added value is missing.
+			boolean assignedIntoNullContainer = false;
+			
 			if (argNode.getType().isList()) {
 				// accessing list
-				final List<Object> list = (List<Object>)stack.popList();
+				List<Object> list = stack.popList();
+				if ((list == null) && canInitialize) {
+					//CLO-403: assignment into null container, we have to initialize the container to empty value
+					assignedIntoNullContainer = true;
+					list = new ArrayList<>();
+				}
 				lhs.jjtGetChild(1).jjtAccept(this, data);
 				final int index = stack.popInt();
 
@@ -1657,15 +1677,27 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 					for (; list.size() <= index; list.add(null));
 					list.set(index, value);
 				}
+				if (assignedIntoNullContainer) {
+					setVariable(argNode, list);
+				}
 			} else {
 				// accessing map
-				final Map<Object,Object> map = (Map<Object,Object>)stack.popMap();
+				Map<Object,Object> map = stack.popMap();
+
+				if ((map == null) && canInitialize) {
+					//CLO-403: assignment into null container, we have to initialize the container to empty value
+					assignedIntoNullContainer = true;
+					map = new LinkedHashMap<>();
+				}
 				lhs.jjtGetChild(1).jjtAccept(this, data);
 				final Object index = stack.pop();
 				
 				value = getDeepCopy(evaluateRHS(data, lhs, rhs));
 				
 				map.put(index,value);
+				if (assignedIntoNullContainer) {
+					setVariable(argNode, map);
+				}
 			}
 			break;
 		case TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION:
@@ -2671,11 +2703,19 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	
 	private void setVariable(SimpleNode lhs, Object value) {
 		if (lhs.getId() == TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION) {
-			final CLVFIdentifier recId = (CLVFIdentifier) lhs.jjtGetChild(0);
-			final int fieldId = ((CLVFMemberAccessExpression) lhs).getFieldId();
+			if (((SimpleNode) lhs.jjtGetChild(0)).getId() == TransformLangParserTreeConstants.JJTDICTIONARYNODE) {
+				try {
+					graph.getDictionary().setValue(((CLVFMemberAccessExpression) lhs).getName(), value);
+				} catch (ComponentNotReadyException e) {
+					throw new TransformLangExecutorRuntimeException("Dictionary is not initialized",e);
+				}
+			} else {
+				final CLVFIdentifier recId = (CLVFIdentifier) lhs.jjtGetChild(0);
+				final int fieldId = ((CLVFMemberAccessExpression) lhs).getFieldId();
 
-			DataRecord record = (DataRecord) stack.getVariable(recId.getBlockOffset(), recId.getVariableOffset());
-			record.getField(fieldId).setValue(value);
+				DataRecord record = (DataRecord) stack.getVariable(recId.getBlockOffset(), recId.getVariableOffset());
+				record.getField(fieldId).setValue(value);
+			}
 		} else if(lhs.getId() == TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION) {
 			final CLVFFieldAccessExpression faNode = (CLVFFieldAccessExpression) lhs;
 			DataRecord record = faNode.isOutput() ? outputRecords[faNode.getRecordId()] : inputRecords[faNode.getRecordId()];
