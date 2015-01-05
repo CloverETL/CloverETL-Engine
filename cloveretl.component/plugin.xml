@@ -2670,6 +2670,33 @@ Sends all resulting records to all connected output ports.</description>
 	    </properties>
 	  </ETLComponent>
 	</extension>
+
+	<extension point-id="component">
+	  <ETLComponent category="others" iconPath="icons/others/JavaExecute" name="GenericComponent" type="GENERIC_COMPONENT" className="org.jetel.component.GenericComponent">
+	    <shortDescription>TODO</shortDescription>
+	    <description>TODO</description>
+	    <inputPorts>
+	      <multiplePort required="false" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="false" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Algorithm" modifiable="true" name="runnable" nullable="true" required="!runnableClass,!runnableURL">
+	        <singleType name="multilineEditableJava" />
+	      </property>
+	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="runnableURL" nullable="true" required="!runnableClass,!runnable">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Algorithm class" modifiable="true" name="runnableClass" nullable="true" required="!runnable,!runnableURL">
+	        <singleType name="class" />
+	      </property>
+	      <property category="basic" displayName="Runnable source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
+	</extension>
 	
 	<extension point-id="component">
 	  <ETLComponent category="deprecated" iconPath="icons/writers/XMLWriter" name="XMLWriter (deprecated)"  type="XML_WRITER" defaultVisibility="false" className="org.jetel.component.XmlWriter">
