@@ -29,11 +29,10 @@ import java.util.Properties;
  * @created 21. 11. 2014
  */
 public interface GenericTransform extends Transform {
-
-	public void setAdditionalAttributes(Properties additionalAttributes);
 	
 	public void init();
 	
+	//this should probably be renamed to transform() everywhere
 	public void execute();
 	
 	public void executeOnError(Exception e);

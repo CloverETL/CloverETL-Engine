@@ -32,17 +32,6 @@ import org.jetel.exception.JetelRuntimeException;
  * @created 20. 11. 2014
  */
 public abstract class AbstractGenericTransform extends AbstractDataTransform implements GenericTransform {
-
-	private Properties additionalAttributes;
-	
-	@Override
-	public void setAdditionalAttributes(Properties additionalAttributes) {
-		this.additionalAttributes = additionalAttributes;
-	}
-
-	public Properties getAdditionalAttributes() {
-		return additionalAttributes;
-	}
 	
 	@Override
 	public void init() {

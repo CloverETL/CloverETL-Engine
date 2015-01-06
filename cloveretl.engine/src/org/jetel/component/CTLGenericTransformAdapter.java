@@ -18,8 +18,6 @@
  */
 package org.jetel.component;
 
-import java.util.Properties;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
@@ -45,6 +43,7 @@ public final class CTLGenericTransformAdapter extends CTLAbstractTransformAdapte
 
 	private CLVFFunctionDeclaration executeFunction;
 	private CLVFFunctionDeclaration executeOnErrorFunction;
+	private CLVFFunctionDeclaration freeFunction;
 
 	private DataRecord[] inputRecords;
 	
@@ -95,6 +94,8 @@ public final class CTLGenericTransformAdapter extends CTLAbstractTransformAdapte
 		executeFunction = executor.getFunction(CTLGenericTransform.EXECUTE_FUNCTION_NAME);
 		executeOnErrorFunction = executor.getFunction(CTLGenericTransform.EXECUTE_ON_ERROR_FUNCTION_NAME,
 				TLTypePrimitive.STRING, TLTypePrimitive.STRING);
+		
+		freeFunction = executor.getFunction(CTLGenericTransform.FREE_FUNCTION_NAME);
 
 		if (executeFunction == null) {
 			throw new JetelRuntimeException(CTLGenericTransform.EXECUTE_FUNCTION_NAME + " function must be defined");
@@ -120,13 +121,10 @@ public final class CTLGenericTransformAdapter extends CTLAbstractTransformAdapte
 	}
 
 	@Override
-	public void setAdditionalAttributes(Properties additionalAttributes) {
-		//additional attributes are ignored
-	}
-
-	@Override
 	public void free() {
-		
+		if (freeFunction != null) {
+			executor.executeFunction(freeFunction, NO_ARGUMENTS, inputRecords, outputRecords);
+		}
 	}
 
 }
