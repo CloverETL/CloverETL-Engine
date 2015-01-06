@@ -120,7 +120,7 @@ public abstract class DataFieldImpl extends DataField {
 			}
 		} catch (Exception ex) {
 			// here, the only reason to fail is bad DefaultValue
-			throw new BadDataFormatException(metadata.getName() + " has incorrect default value", metadata.getDefaultValueStr());
+			throw new BadDataFormatException("Field '" + metadata.getName() + "' has incorrect default value", metadata.getDefaultValueStr());
 		}
 	}
 
