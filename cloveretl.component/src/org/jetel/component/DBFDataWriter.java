@@ -131,6 +131,7 @@ public class DBFDataWriter extends Node {
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 	private static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
 	private static final String XML_SORTED_INPUT_ATTRIBUTE = "sortedInput";
+	private static final String XML_CREATE_EMPTY_FILES_ATTRIBUTE = "createEmptyFiles";
 	
 	private static final byte[] TYPES = new byte[] {0x02, 0x03, 0x30, 0x31, 0x32, 0x43, (byte) 0xFB};
 
@@ -153,6 +154,7 @@ public class DBFDataWriter extends Node {
 	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBER_FILE_TAG;
 	private String partitionUnassignedFileName;
 	private boolean sortedInput = false;
+	private boolean createEmptyFiles = true;
 
 	private DBFDataFormatterProvider formatterProvider;
 	private MultiFileWriter writer;
@@ -366,6 +368,7 @@ public class DBFDataWriter extends Node {
         
         writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
         writer.setMkDir(mkDir);
+		writer.setCreateEmptyFiles(createEmptyFiles);
 	}
 
 	/**
@@ -435,6 +438,9 @@ public class DBFDataWriter extends Node {
         }
 		if(xattribs.exists(XML_SORTED_INPUT_ATTRIBUTE)) {
 			aDataWriter.setSortedInput(xattribs.getBoolean(XML_SORTED_INPUT_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_CREATE_EMPTY_FILES_ATTRIBUTE)) {
+        	aDataWriter.setCreateEmptyFiles(xattribs.getBoolean(XML_CREATE_EMPTY_FILES_ATTRIBUTE));
         }
 		
 		return aDataWriter;
@@ -578,6 +584,10 @@ public class DBFDataWriter extends Node {
 	 */
 	public void setSortedInput(boolean sortedInput) {
 		this.sortedInput = sortedInput;
+	}
+
+	private void setCreateEmptyFiles(boolean createEmptyFiles) {
+		this.createEmptyFiles = createEmptyFiles;
 	}
     
 }
