@@ -33,7 +33,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
- * Implementation of <code>java.nio.channels.ReadableByteChannel</code> for reading data from input port (thread-safe).
+ * Implementation of <code>java.nio.channels.ReadableByteChannel</code> for streamed reading data from input port (thread-safe).
  * 
  * @author Martin Slama (martin.slama@javlin.eu) (c) Javlin, a.s. (www.cloveretl.com)
  * 
@@ -204,6 +204,16 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 
 	    	buffer.flip();
 		}
+	}
+	
+	/**
+	 * Fix of CLO-5524. This class basically reads records and throws away all theirs
+	 * data except one field. In some cases we need to access data in the other fields as well.
+	 * This method lets us access the whole DataRecord. 
+	 * @return
+	 */
+	protected DataRecord getCurrentRecord() {
+		return record.duplicate();
 	}
 	
 }
