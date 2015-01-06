@@ -638,14 +638,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
 		} catch (IOException e1) {
 			logger.warn("Failed to parse SQL query", e1);
 		}
-
-        int index = sqlQuery.toUpperCase().indexOf("WHERE");
-
-		if (index >= 0) {
-			sqlQuery = sqlQuery.substring(0, index).concat("WHERE 0=1");
-		} else {
-			sqlQuery = sqlQuery.concat(" WHERE 0=1");
-		}
+        sqlQuery = SQLUtil.appendOptimizingWhereClause(sqlQuery);
 
         Connection connection;
 		try {

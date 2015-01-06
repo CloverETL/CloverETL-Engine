@@ -989,5 +989,16 @@ public class SQLUtil {
 		return splitter.getResult();
 	}
 	
+	/**
+	 * CLO-4510
+	 * 
+	 * Wraps the query in SELECT query with optimizing "WHERE 0=1"
+	 * @param query
+	 * @return
+	 */
+	public static String appendOptimizingWhereClause(String query) {
+		return "SELECT wrapper_table.* FROM (" + query + ") wrapper_table where 1=0";
+	}
+	
 }
 
