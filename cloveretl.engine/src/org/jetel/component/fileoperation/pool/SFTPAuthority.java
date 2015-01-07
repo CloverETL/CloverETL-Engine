@@ -31,6 +31,7 @@ import org.jetel.graph.ContextProvider;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.protocols.UserInfo;
 import org.jetel.util.protocols.proxy.ProxyProtocolEnum;
+import org.jetel.util.string.StringUtils;
 
 public class SFTPAuthority extends AbstractAuthority implements Authority {
 	
@@ -76,6 +77,13 @@ public class SFTPAuthority extends AbstractAuthority implements Authority {
 	}
 	
 	private void loadPrivateKeys() {
+		// CLO-5529: do not load private keys if password is specified
+		if (!StringUtils.isEmpty(userInfo) && (userInfo.indexOf(':') >= 0)) {
+			String password = userInfo.split(":")[1];
+			if (!StringUtils.isEmpty(password)) {
+				return;
+			}
+		}
 		File file = FileUtils.getJavaFile(ContextProvider.getContextURL(), SSH_KEYS_DIR);
 		if ((file != null) && file.isDirectory()) {
 			File[] keys = file.listFiles(KEY_FILE_FILTER);

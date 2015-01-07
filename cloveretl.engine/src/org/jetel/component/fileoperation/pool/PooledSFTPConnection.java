@@ -190,11 +190,7 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 				}
 			}
 		} else if (log.isDebugEnabled()) {
-			if ((keys != null) && !keys.isEmpty()) {
-				log.debug("SFTP connecting to " + authority.getHost() + " using password, ignoring " + keys.size() + " private key(s)");
-			} else {
-				log.debug("SFTP connecting to " + authority.getHost() + " using password");
-			}
+			log.debug("SFTP connecting to " + authority.getHost() + " using password");
 		}
 		
 		if (log.isWarnEnabled()) {
