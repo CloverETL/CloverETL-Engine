@@ -36,7 +36,7 @@ import org.w3c.dom.Element;
 
 
 /**
- * Generic component, also called as Hercules.
+ * Generic component, also called Hercules.
  * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -59,8 +59,6 @@ public class GenericComponent extends Node {
 	
 	private GenericTransform genericTransform = null;
 
-	private Properties additionalAttributes = null;
-
 	public GenericComponent(String id) {
 		super(id);
 	}
@@ -71,8 +69,6 @@ public class GenericComponent extends Node {
 		super.init();
 
 		genericTransform = getTransformFactory().createTransform();
-
-		genericTransform.setAdditionalAttributes(additionalAttributes);
 		
 		genericTransform.init();
 	}
@@ -119,12 +115,19 @@ public class GenericComponent extends Node {
 	}
 
 	private TransformFactory<GenericTransform> getTransformFactory() {
-		TransformFactory<GenericTransform> transformFactory = TransformFactory.createTransformFactory(GenericTransform.class);
+		//this way of getting a transform factory allows only java implementation, CTL will not work
+		//TransformFactory<GenericTransform> transformFactory = TransformFactory.createTransformFactory(GenericTransform.class);
+		
+		TransformFactory<GenericTransform> transformFactory = TransformFactory.createTransformFactory(GenericTransformDescriptor.newInstance());
 		transformFactory.setTransform(genericTransformCode);
 		transformFactory.setTransformClass(genericTransformClass);
 		transformFactory.setTransformUrl(genericTransformURL);
 		transformFactory.setCharset(charset);
 		transformFactory.setComponent(this);
+		
+		//this is only needed for ctl? - delete it if ctl is disabled in the component?
+		transformFactory.setInMetadata(getInMetadata());
+    	transformFactory.setOutMetadata(getOutMetadata());
 		return transformFactory;
 	}
 	
@@ -153,9 +156,7 @@ public class GenericComponent extends Node {
 	 */
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
-		
-//		Properties additionalAttributes;
-		
+
 		GenericComponent genericComponent = new GenericComponent(xattribs.getString(XML_ID_ATTRIBUTE));
         genericComponent.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
         

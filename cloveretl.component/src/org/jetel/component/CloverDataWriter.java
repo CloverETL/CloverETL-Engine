@@ -128,6 +128,7 @@ public class CloverDataWriter extends Node {
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 	private static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
 	private static final String XML_SORTED_INPUT_ATTRIBUTE = "sortedInput";
+	private static final String XML_CREATE_EMPTY_FILES_ATTRIBUTE = "createEmptyFiles";
 
 	public final static String COMPONENT_TYPE = "CLOVER_WRITER";
 	private final static int READ_FROM_PORT = 0;
@@ -153,6 +154,7 @@ public class CloverDataWriter extends Node {
 	private String partitionUnassignedFileName;
 	private boolean mkDir;
 	private boolean sortedInput = false;
+	private boolean createEmptyFiles = true;
 
     private String excludeFields;
 
@@ -343,6 +345,7 @@ public class CloverDataWriter extends Node {
         writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
 		writer.setMkDir(mkDir);
 		writer.setUseChannel(false); // prefer OutputStream
+		writer.setCreateEmptyFiles(createEmptyFiles);
         if (attrPartitionKey != null) {
             writer.setLookupTable(lookupTable);
             writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
@@ -416,6 +419,9 @@ public class CloverDataWriter extends Node {
         if (xattribs.exists(XML_SORTED_INPUT_ATTRIBUTE)) {
         	aDataWriter.setSortedInput(xattribs.getBoolean(XML_SORTED_INPUT_ATTRIBUTE));
         }
+        if (xattribs.exists(XML_CREATE_EMPTY_FILES_ATTRIBUTE)) {
+        	aDataWriter.setCreateEmptyFiles(xattribs.getBoolean(XML_CREATE_EMPTY_FILES_ATTRIBUTE));
+        }
 		
 		return aDataWriter;
 	}
@@ -486,6 +492,10 @@ public class CloverDataWriter extends Node {
 
 	private void setExcludeFields(String excludeFields) {
 		this.excludeFields = excludeFields;
+	}
+
+	private void setCreateEmptyFiles(boolean createEmptyFiles) {
+		this.createEmptyFiles = createEmptyFiles;
 	}
 
 }

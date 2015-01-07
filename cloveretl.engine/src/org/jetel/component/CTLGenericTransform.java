@@ -45,6 +45,8 @@ public abstract class CTLGenericTransform extends CTLAbstractTransform implement
     public static final String EXECUTE_FUNCTION_NAME = "execute";
 
     public static final String EXECUTE_ON_ERROR_FUNCTION_NAME = "executeOnError";
+    
+    public static final String FREE_FUNCTION_NAME = "free";
 
 	/** Input data records used for transform, or <code>null</code> if not accessible. */
 	private DataRecord[] inputRecords = null;
@@ -70,7 +72,7 @@ public abstract class CTLGenericTransform extends CTLAbstractTransform implement
 				inputRecords[i].init();
 				i++;
 			}
-			//prepare input records
+			//prepare output records
 			DataRecordMetadata[] outMetadata = component.getOutMetadataArray();
 			outputRecords = new DataRecord[outMetadata.length];
 			i = 0;
@@ -175,4 +177,18 @@ public abstract class CTLGenericTransform extends CTLAbstractTransform implement
 		return outputRecords[index];
 	}
 
+	@Override
+	public void free() {
+		if (!freeDelegate()) {
+			throw new JetelRuntimeException("GenericComponent free() failed.");
+		}
+	}
+	
+	@CTLEntryPoint(name = FREE_FUNCTION_NAME, required = false)
+	protected Boolean freeDelegate() {
+		// does nothing and succeeds by default, may be overridden by generated transform classes
+		return true;
+	}
+	
+	
 }

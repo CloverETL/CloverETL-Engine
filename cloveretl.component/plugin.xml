@@ -170,6 +170,9 @@
 	      <property category="advanced" displayName="Sorted input" modifiable="true" name="sortedInput" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
 	      </property>
+	      <property category="advanced" displayName="Create empty files" modifiable="true" name="createEmptyFiles" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
 	    </properties>
 	  </ETLComponent>
 	</extension>
@@ -1140,6 +1143,9 @@
 	      <property category="advanced" displayName="Sorted input" modifiable="true" name="sortedInput" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
 	      </property>
+	      <property category="advanced" displayName="Create empty files" modifiable="true" name="createEmptyFiles" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
 	    </properties>
 	  </ETLComponent>
 	</extension>
@@ -1960,6 +1966,9 @@
 	      <property category="advanced" displayName="Sorted input" modifiable="true" name="sortedInput" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
 	      </property>
+	      <property category="advanced" displayName="Create empty files" modifiable="true" name="createEmptyFiles" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
 	      <property category="deprecated" displayName="Save metadata" modifiable="true" name="saveMetadata" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
 	      </property>
@@ -2074,6 +2083,9 @@
 	        <singleType name="string" />
 	      </property>
 	      <property category="advanced" displayName="Sorted input" modifiable="true" name="sortedInput" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Create empty files" modifiable="true" name="createEmptyFiles" nullable="true" defaultHint="true">
 	        <singleType name="bool" />
 	      </property>
 	    </properties>
@@ -2836,6 +2848,9 @@ Sends all resulting records to all connected output ports.</description>
 	        <singleType name="string" />
 	      </property>
 	      <property category="advanced" displayName="Partition key sorted" modifiable="true" name="partitionKeySorted" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Create empty files" modifiable="true" name="createEmptyFiles" nullable="true" defaultHint="true">
 	        <singleType name="bool" />
 	      </property>
 	    </properties>
