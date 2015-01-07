@@ -50,7 +50,14 @@ public abstract class AbstractDBConnection extends GraphElement implements DBCon
 
 	public final static String SQL_QUERY_PROPERTY = "sqlQuery";
 	
+	public final static String OPTIMIZE_QUERY_PROPERTY = "sqlOptimization";
+	
     public static final String XML_JDBC_PROPERTIES_PREFIX = "jdbc.";
+    
+    /** CLO-4510 */
+    public enum SqlQueryOptimizeOption {
+    	TRUE, FALSE, NAIVE
+    }
     
 	/**
 	 * @param id
@@ -116,7 +123,32 @@ public abstract class AbstractDBConnection extends GraphElement implements DBCon
         if(StringUtils.isEmpty(sqlQuery)) {
             throw new IllegalArgumentException("JDBC stub for clover metadata can't find sqlQuery parameter.");
         }
-        sqlQuery = SQLUtil.appendOptimizingWhereClause(sqlQuery);
+        String optimizeProperty = parameters.getProperty(OPTIMIZE_QUERY_PROPERTY);
+        SqlQueryOptimizeOption optimize;
+        if (optimizeProperty == null) {
+        	optimize = SqlQueryOptimizeOption.FALSE;
+        } else {
+        	try {
+        		optimize = SqlQueryOptimizeOption.valueOf(optimizeProperty.toUpperCase());
+        	} catch (Exception e) {
+        		optimize = SqlQueryOptimizeOption.FALSE;
+        	}
+        }
+        switch (optimize) {
+        case TRUE:
+        case NAIVE:
+        	logger.debug("Optimizing sql query for dynamic metadata. Original query: " + sqlQuery);
+        	if (optimize == SqlQueryOptimizeOption.TRUE) {
+        		sqlQuery = SQLUtil.encloseInQptimizingQuery(sqlQuery);
+        	} else {
+        		//NAIVE
+        		sqlQuery = SQLUtil.appendOptimizingWhereClause(sqlQuery);
+        	}
+        	logger.debug("Optimizing sql query for dynamic metadata. Optimized query: " + sqlQuery);
+        	break;
+        default:
+        	//empty
+        }
 
         Connection connection;
 		try {
