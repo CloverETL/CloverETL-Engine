@@ -178,7 +178,9 @@ public class TransformFactory<T> {
 						status.add(new ConfigurationProblem(e, Severity.WARNING, component, Priority.NORMAL, null));
 					}
 	        	} else if (transformLanguage == null) {
-	        		status.add(new ConfigurationProblem("Can't determine transformation language", Severity.WARNING, component, Priority.NORMAL));
+	        		String messagePrefix = attributeName != null ? attributeName + ": can't" : "Can't";
+	        		status.add(new ConfigurationProblem(messagePrefix + " determine transformation language",
+	        				Severity.WARNING, component, Priority.NORMAL, attributeName));
 	        	}
 	        }
         }
