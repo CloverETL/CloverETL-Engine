@@ -177,6 +177,8 @@ public class TransformFactory<T> {
 						// report CTL error as a warning
 						status.add(new ConfigurationProblem(e, Severity.WARNING, component, Priority.NORMAL, null));
 					}
+	        	} else if (transformLanguage == null) {
+	        		status.add(new ConfigurationProblem("Can't determine transformation language", Severity.WARNING, component, Priority.NORMAL));
 	        	}
 	        }
         }
@@ -225,7 +227,12 @@ public class TransformFactory<T> {
     private T createTransformFromCode(String transformCode) {
     	T transformation = null;
     	
-        switch (TransformLanguageDetector.guessLanguage(transformCode)) {
+    	TransformLanguage language = TransformLanguageDetector.guessLanguage(transformCode);
+    	if (language == null) {
+    		throw new LoadClassException("Can't determine transformation code.");
+    	}
+    	
+        switch (language) {
         case JAVA:
         	transformCode = preprocessJavaCode(transformCode, inMetadata, outMetadata, component, false);
             transformation = DynamicJavaClass.instantiate(transformCode, transformDescriptor.getTransformClass(), component);
