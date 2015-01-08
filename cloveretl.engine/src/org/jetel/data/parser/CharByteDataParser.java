@@ -243,6 +243,8 @@ public class CharByteDataParser extends AbstractTextParser {
 				}
 				return parsingErrorFound(e.getSimpleMessage(), record, Math.min(consumerIdx, numFields - 1), //in case extra delimiter consumer is used - index of consumer does not need to match index of field 
 						e.getOffendingValue() != null ? e.getOffendingValue().toString() : null);
+			} catch (RuntimeException e){
+				return parsingErrorFound(e.getMessage(), record, consumerIdx, null);
 			} finally {
 				if (verboseInputReader != null) {
 					verboseInputReader.releaseOuterMark();
@@ -756,7 +758,7 @@ public class CharByteDataParser extends AbstractTextParser {
 				}
 				seq.position(startPos + fieldStart[idx]);
 				seq.limit(Math.min(startPos + fieldEnd[idx], endPos)); //range of data for the field may be wider than read data (in case eofAsDelimiter)
-				record.getField(startFieldIdx + idx).fromByteBuffer(seq, decoder);
+					record.getField(startFieldIdx + idx).fromByteBuffer(seq, decoder);
 			}
 			return true;
 		}
