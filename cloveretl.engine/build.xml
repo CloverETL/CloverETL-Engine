@@ -934,7 +934,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 				<pathelement path="${tools}"/>
 				<fileset refid="engine-libs"/>
 				<pathelement path="${dir.bin}"/>
-				<pathelement path="${dir.tools}/junit-4.4.jar"/>
+				<pathelement path="${dir.tools}/junit-4.11.jar"/>
 			</classpath>
 			<src path="${dir.src.test}"/>
 		</javac>
@@ -1025,7 +1025,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 					<include name="*.jar"/>
 				</fileset>
 				<pathelement path="${dir.examples}/ExtExamples/lib/derby/lib/derby.jar"/>
-				<pathelement path="${dir.tools}/junit-4.4.jar"/>
+				<pathelement path="${dir.tools}/junit-4.11.jar"/>
 				<pathelement path="${dir.tools}/junit.xml.formatter.jar"/>
 				<path refid="cp.cobertura"/>
 			</classpath>
