@@ -559,7 +559,7 @@ public class CloverDataReader extends Node implements MultiFileListener, Metadat
 							}
 						}
 						if (fileMetadata != null) { // 3.5 and newer
-							return metadataPropagationResolver.createMVMetadata(fileMetadata, CloverDataReader.this, null, MVMetadata.HIGH_PRIORITY);
+							return metadataPropagationResolver.createMVMetadata(fileMetadata, CloverDataReader.this, null, MVMetadata.DEFAULT_PRIORITY);
 						}
 					}
 					
