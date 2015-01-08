@@ -21,6 +21,13 @@ package org.jetel.component;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,7 +39,6 @@ import org.jetel.data.parser.CloverDataParser;
 import org.jetel.data.parser.CloverDataParser.FileConfig;
 import org.jetel.data.parser.CloverDataParser35;
 import org.jetel.data.parser.ICloverDataParser;
-import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -40,8 +46,8 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.PolicyType;
-import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
@@ -53,15 +59,11 @@ import org.jetel.util.AutoFilling;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileListener;
 import org.jetel.util.MultiFileReader;
-import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
-import org.jetel.util.file.SandboxUrlUtils;
-import org.jetel.util.file.WcardPattern;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
-import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -536,27 +538,58 @@ public class CloverDataReader extends Node implements MultiFileListener, Metadat
 	public MVMetadata getOutputMetadata(int portIndex, final MetadataPropagationResolver metadataPropagationResolver) {
 		if (!metadataInitialized) {
 			metadataInitialized = true;
-			try {
-				URL url = FileUtils.getFirstInput(getContextURL(), fileURL);
-				try (InputStream stream = url.openStream()) {
-					FileConfig header = CloverDataParser.readHeader(stream);
-					DataRecordMetadata fileMetadata = header.metadata;
-					if (header.formatVersion == CloverDataFormatter.DataFormatVersion.VERSION_35) {
-						String file = url.getFile();
-						int idx = file.lastIndexOf("/");
-						if (idx >= 0) {
-							file = file.substring(idx + 1);
+			
+			Callable<MVMetadata> callable = new Callable<MVMetadata>() {
+
+				@Override
+				public MVMetadata call() throws Exception {
+					URL url = FileUtils.getFirstInput(getContextURL(), fileURL);
+					try (InputStream stream = url.openStream()) {
+						FileConfig header = CloverDataParser.readHeader(stream);
+						DataRecordMetadata fileMetadata = header.metadata;
+						if (header.formatVersion == CloverDataFormatter.DataFormatVersion.VERSION_35) {
+							String file = url.getFile();
+							int idx = file.lastIndexOf("/");
+							if (idx >= 0) {
+								file = file.substring(idx + 1);
+							}
+							if (!file.isEmpty()) {
+								fileMetadata.setLabel(file);
+								fileMetadata.normalize();
+							}
 						}
-						if (!file.isEmpty()) {
-							fileMetadata.setLabel(file);
-							fileMetadata.normalize();
+						if (fileMetadata != null) { // 3.5 and newer
+							return metadataPropagationResolver.createMVMetadata(fileMetadata, CloverDataReader.this, null, MVMetadata.HIGH_PRIORITY);
 						}
 					}
-					if (fileMetadata != null) { // 3.5 and newer
-						this.metadata = metadataPropagationResolver.createMVMetadata(fileMetadata, CloverDataReader.this, null, MVMetadata.HIGH_PRIORITY);
-					}
+					
+					return null;
 				}
-			}  catch (Exception e) {}
+				
+			};
+			ExecutorService executor = Executors.newSingleThreadExecutor(new ThreadFactory() {
+				
+				@Override
+				public Thread newThread(Runnable r) {
+					Thread t = new Thread(r);
+					registerChildThread(t);
+					t.setName(getId() + "_metadataLoader");
+					return t;
+				}
+			});
+			Future<MVMetadata> future = executor.submit(callable);
+			
+			try {
+				this.metadata = future.get(10, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				throw new JetelRuntimeException("Metadata loading interrupted", e);
+			} catch (TimeoutException e) {
+				getLog().warn("Metadata loading timed out", e);
+			} catch (Exception e) {
+				getLog().warn("Metadata loading failed", e);
+			} finally {
+				executor.shutdownNow();
+			}
 		}
 		
 		return metadata;
