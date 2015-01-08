@@ -72,7 +72,7 @@ public class HttpConnectorTest  extends CloverTestCase {
 		inputRecord.put("entity2", "ValueOfEntity2");
 		httpConnector.inputRecord = this.createConstDataRecord(inputRecord);
 
-		httpConnector.tryToInit(false);
+		httpConnector.tryToInit(null);
 		Map<String, String> mappingFieldValues = null;
 		
 //		this.createInputTransformation(httpConnector,mappingFieldValues);
@@ -92,7 +92,7 @@ public class HttpConnectorTest  extends CloverTestCase {
 		inputRecord.put("entity2", "ValueOfEntity2");
 		httpConnector.inputRecord = this.createConstDataRecord(inputRecord);
 
-		httpConnector.tryToInit(false);
+		httpConnector.tryToInit(null);
 		Map<String, String> mappingFieldValues = new HashMap<String, String>();
 		mappingFieldValues.put("entity2_Content", "ValueOfContent");
 		
@@ -113,7 +113,7 @@ public class HttpConnectorTest  extends CloverTestCase {
 		inputRecord.put("entity2", "ValueOfEntity2");
 		httpConnector.inputRecord = this.createConstDataRecord(inputRecord);
 
-		httpConnector.tryToInit(false);
+		httpConnector.tryToInit(null);
 		Map<String, String> mappingFieldValues = new HashMap<String, String>();
 		mappingFieldValues.put("entity2_File", "ValueOfContent");
 		
@@ -135,7 +135,7 @@ public class HttpConnectorTest  extends CloverTestCase {
 		inputRecord.put("entity2", "ValueOfEntity2");
 		httpConnector.inputRecord = this.createConstDataRecord(inputRecord);
 
-		httpConnector.tryToInit(false);
+		httpConnector.tryToInit(null);
 		Map<String, String> mappingFieldValues = new HashMap<String, String>();
 		mappingFieldValues.put("entity2_File", "filename");
 		mappingFieldValues.put("entity2_Content", "ValueOfContent");
@@ -154,7 +154,7 @@ public class HttpConnectorTest  extends CloverTestCase {
 		
 		httpConnector = createHttpConnector();
 		httpConnector.setMultipartEntities("test1");
-		httpConnector.tryToInit(false);
+		httpConnector.tryToInit(null);
 		Map<String, HttpConnectorMutlipartEntity> result = null;
 		result = httpConnector.prepareMultipartEntities();
 		assertNotNull(result);
@@ -162,7 +162,7 @@ public class HttpConnectorTest  extends CloverTestCase {
 
 		httpConnector = createHttpConnector();
 		httpConnector.setMultipartEntities("test1;test2");
-		httpConnector.tryToInit(false);
+		httpConnector.tryToInit(null);
 		result = httpConnector.prepareMultipartEntities();
 		assertNotNull(result);
 		assertEquals(2, result.size());
@@ -185,7 +185,7 @@ public class HttpConnectorTest  extends CloverTestCase {
 	public void testMultipartEntitiesContentMapped() throws ComponentNotReadyException {
 		HttpConnector httpConnector = createHttpConnector();
 		httpConnector.setMultipartEntities("entity");
-		httpConnector.tryToInit(false);
+		httpConnector.tryToInit(null);
 		Map<String, String> mappingFieldValues = null;
 		mappingFieldValues = new HashMap<String, String>();
 		mappingFieldValues.put("entity_Content", "contentValue");
@@ -199,7 +199,7 @@ public class HttpConnectorTest  extends CloverTestCase {
 	public void testMultipartEntitiesCharsetMapped() throws ComponentNotReadyException {
 		HttpConnector httpConnector = createHttpConnector();
 		httpConnector.setMultipartEntities("entity");
-		httpConnector.tryToInit(false);
+		httpConnector.tryToInit(null);
 		Map<String, String> mappingFieldValues = null;
 		mappingFieldValues = new HashMap<String, String>();
 		mappingFieldValues.put("entity_Charset", "customCharset");
@@ -213,7 +213,7 @@ public class HttpConnectorTest  extends CloverTestCase {
 	public void testMultipartEntitiesContentTypeMapped() throws ComponentNotReadyException {
 		HttpConnector httpConnector = createHttpConnector();
 		httpConnector.setMultipartEntities("entity");
-		httpConnector.tryToInit(false);
+		httpConnector.tryToInit(null);
 		Map<String, String> mappingFieldValues = null;
 		mappingFieldValues = new HashMap<String, String>();
 		mappingFieldValues.put("entity_ContentType", "customContentType");
@@ -242,7 +242,7 @@ public class HttpConnectorTest  extends CloverTestCase {
 	public void testMultipartEntitiesMultipleValues() throws ComponentNotReadyException {
 		HttpConnector httpConnector = createHttpConnector();
 		httpConnector.setMultipartEntities("entity;second;third");
-		httpConnector.tryToInit(false);
+		httpConnector.tryToInit(null);
 		Map<String, String> mappingFieldValues = null;
 		mappingFieldValues = new HashMap<String, String>();
 		mappingFieldValues.put("entity_Charset", "customCharset");
