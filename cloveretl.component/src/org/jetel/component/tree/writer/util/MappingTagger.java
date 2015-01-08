@@ -30,6 +30,7 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jetel.component.tree.writer.model.design.AbstractNode;
 import org.jetel.component.tree.writer.model.design.CollectionNode;
 import org.jetel.component.tree.writer.model.design.ContainerNode;
 import org.jetel.component.tree.writer.model.design.MappingProperty;
@@ -343,14 +344,27 @@ public class MappingTagger extends AbstractVisitor {
 		if (partitionElement == null) {
 			if (element.isPartition()) {
 				partitionElement = element;
-			} else if (partitionElementCandidate == null) {
-				if (element.getRelation() != null || tagMap.get(element) != null) {
+				//choose another candidate if any parent of the current is a template - CLO-3952, CLO-5304	
+			} else if (partitionElementCandidate == null || anyParentIsATemplate(partitionElementCandidate)) {	
+				if (element.getRelation() != null || tagMap.get(element) != null) {	
 					partitionElementCandidate = element;
 				}
 			}
 		}
 
 	}
+	
+	private boolean anyParentIsATemplate(ContainerNode element) {
+		if (element.getParent() != null) { 
+			if (element.getParent().getType() == AbstractNode.TEMPLATE) {
+				return true;
+			} else {
+				return anyParentIsATemplate(element.getParent());
+			}
+		} else {
+			return false;
+		}
+	} 
 
 	private boolean resolveIndex(ContainerNode element) {
 		if (element.getRelation() != null) {
