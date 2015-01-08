@@ -1421,7 +1421,7 @@ public class HttpConnector extends Node {
 			this.charset = Charset.defaultCharset().name();
 		}
 
-		tryToInit(false);
+		tryToInit(null);
 
 		// create response writer based on the configuration XXX is this really needed? Happens in preProcessForRecord()
 		// too
@@ -1801,7 +1801,8 @@ public class HttpConnector extends Node {
 	 * 
 	 * @throws ComponentNotReadyException
 	 */
-	protected void tryToInit(boolean runningFromCheckConfig) throws ComponentNotReadyException {
+	protected void tryToInit(ConfigurationStatus status) throws ComponentNotReadyException {
+		boolean runningFromCheckConfig = (status != null);
 		// find the attached ports (input and output)
 		inputPort = getInputPortDirect(INPUT_PORT_NUMBER);
 		standardOutputPort = getOutputPort(STANDARD_OUTPUT_PORT_NUMBER);
@@ -1982,9 +1983,9 @@ public class HttpConnector extends Node {
 			initExecutionParametersFromComponentAttributes();
 		}
 
-		inputMappingTransformation.init(XML_INPUT_MAPPING_ATTRIBUTE);
-		standardOutputMappingTransformation.init(XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE);
-		errorOutputMappingTransformation.init(XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE);
+		inputMappingTransformation.init(status, XML_INPUT_MAPPING_ATTRIBUTE);
+		standardOutputMappingTransformation.init(status, XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE);
+		errorOutputMappingTransformation.init(status, XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE);
 	}
 
 	private void initExecutionParametersFromComponentAttributes() throws ComponentNotReadyException {
@@ -2759,7 +2760,7 @@ public class HttpConnector extends Node {
 		}
 
 		try {
-			tryToInit(true);
+			tryToInit(status);
 		} catch (ComponentNotReadyException e) {
 			status.add("Initialization failed. " + ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, e.getAttributeName());
 		}

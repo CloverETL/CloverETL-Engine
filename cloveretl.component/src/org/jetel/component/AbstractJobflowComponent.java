@@ -242,7 +242,7 @@ public abstract class AbstractJobflowComponent extends Node {
 	
 	protected abstract void setDefaults();
 
-	protected void tryToInit() throws ComponentNotReadyException {
+	protected void tryToInit(ConfigurationStatus status) throws ComponentNotReadyException {
 		inputPort = getInputPort(INPUT_PORT_NUMBER);
 		outputPort = getOutputPort(OUTPUT_PORT_NUMBER);
 		errorPort = getOutputPort(ERROR_PORT_NUMBER);
@@ -307,18 +307,18 @@ public abstract class AbstractJobflowComponent extends Node {
 		setDefaults();
 
 		//initialize input mapping
-		inputMapping.init(XML_INPUT_MAPPING_ATTRIBUTE, 
+		inputMapping.init(status, XML_INPUT_MAPPING_ATTRIBUTE, 
 				MissingRecordFieldMessage.newOutputFieldMessage(ATTRIBUTES_RECORD_ID, "No such attribute")
 		);
 		
 		//initialize output mapping
-		outputMapping.init(XML_OUTPUT_MAPPING_ATTRIBUTE,
+		outputMapping.init(status, XML_OUTPUT_MAPPING_ATTRIBUTE,
 				MissingRecordFieldMessage.newInputFieldMessage(ATTRIBUTES_RECORD_ID, "No such attribute"),
 				MissingRecordFieldMessage.newInputFieldMessage(RESULT_RECORD_ID, "No such result field")
 		);
 		
 		//initialize error mapping
-		errorMapping.init(XML_ERROR_MAPPING_ATTRIBUTE,
+		errorMapping.init(status, XML_ERROR_MAPPING_ATTRIBUTE,
 				MissingRecordFieldMessage.newInputFieldMessage(ATTRIBUTES_RECORD_ID, "No such attribute"),
 				MissingRecordFieldMessage.newInputFieldMessage(ERROR_RESULT_RECORD_ID, "No such result field")
 		);
@@ -327,19 +327,11 @@ public abstract class AbstractJobflowComponent extends Node {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		tryToInit();
+		tryToInit(null);
 	}
 	
 	protected boolean checkPorts(ConfigurationStatus status) {
 		return checkInputPorts(status, 0, 1) && checkOutputPorts(status, 0, 2, false);
-	}
-	
-	protected void tryToInit(ConfigurationStatus status) {
-		try {
-        	tryToInit();
-        } catch (Exception e) {
-        	status.add("Initialization failed", e, Severity.ERROR, this, Priority.NORMAL);
-        }
 	}
 	
 	protected void checkMappings(ConfigurationStatus status) {
@@ -362,7 +354,11 @@ public abstract class AbstractJobflowComponent extends Node {
         	return status;
         }
         
-        tryToInit(status);
+		try {
+        	tryToInit(status);
+        } catch (Exception e) {
+        	status.add("Initialization failed", e, Severity.ERROR, this, Priority.NORMAL);
+        }
         
         checkMappings(status);
 
