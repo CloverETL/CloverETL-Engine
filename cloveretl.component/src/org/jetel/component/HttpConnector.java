@@ -111,6 +111,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 import org.apache.log4j.Level;
+import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
@@ -545,10 +546,12 @@ public class HttpConnector extends Node {
 	private static final int EP_MESSAGE_INDEX = 0;
 	private static final String EP_MESSAGE_NAME = RP_MESSAGE_NAME;
 
-	private static String MULTIPART_CONTENT = "Content";
-	private static String MULTIPART_FILE = "File";
-	private static String MULTIPART_CHARSET = "Charset";
-	private static String MULTIPART_CONTENTTYPE = "ContentType";
+	private static String MULTIPART_CONTENT = "EntityContent";
+	private static String MULTIPART_CONTENT_BYTE = "EntityContentByte";
+	private static String MULTIPART_SOURCE_FILE = "EntitySourceFile";
+	private static String MULTIPART_FILENAME = "EntityFileNameAttribute";
+	private static String MULTIPART_CHARSET = "EntityCharsetAttribute";
+	private static String MULTIPART_CONTENTTYPE = "EntityMimeTypeAttribute";
 
 	private interface ResponseWriter {
 		public void writeResponse(HttpResponse response) throws IOException;
@@ -2947,35 +2950,18 @@ public class HttpConnector extends Node {
 		int index = 0;
 		PartWithName[] result = new PartWithName[multipartEntities.size()];
 		for (Entry<String, HttpConnectorMutlipartEntity> parameter : multipartEntities.entrySet()) {
-
-			if (parameter.getValue().file == null) {
-				Charset charset = parameter.getValue().charset != null ? Charset.forName(parameter.getValue().charset) : Charset.defaultCharset();
-				String contentType = parameter.getValue().conentType != null ? parameter.getValue().conentType : ContentType.TEXT_PLAIN.toString();
-
-				String value = parameter.getValue().content != null ? parameter.getValue().content : "";
-				result[index] = new PartWithName(parameter.getKey(), new StringBody(value, contentType, charset));
-			} else if (parameter.getValue().content != null) {
-				Charset charset = parameter.getValue().charset != null ? Charset.forName(parameter.getValue().charset) : Charset.defaultCharset();
-				String contentType = parameter.getValue().conentType != null ? parameter.getValue().conentType : ContentType.TEXT_PLAIN.toString();
-
-				final String fileName = parameter.getValue().file;
-				String value = parameter.getValue().content != null ? parameter.getValue().content : "";
-				result[index] = new PartWithName(parameter.getKey(), new StringBody(value, contentType, charset) {
-					@Override
-					public String getFilename() {
-						return fileName;
-					}
-				});
-
-			} else {
-
-				InputStream inputStream = FileUtils.getInputStream(this.getContextURL(), parameter.getValue().file);
+			if(parameter.getValue().sourceFile!=null) {
+				//input stream
+				InputStream inputStream = FileUtils.getInputStream(this.getContextURL(), parameter.getValue().sourceFile);
 				String fileName = null;
-				File file = FileUtils.getJavaFile(this.getContextURL(), parameter.getValue().file);
+				File file = FileUtils.getJavaFile(this.getContextURL(), parameter.getValue().sourceFile);
 				if (file != null) {
 					fileName = file.getName();
 				} else {
 					fileName = parameter.getKey();
+				}
+				if(parameter.getValue().fileNameAttribute!=null) {
+					fileName = parameter.getValue().fileNameAttribute;
 				}
 				InputStreamBody body = (parameter.getValue().conentType != null) ? new InputStreamBody(inputStream, parameter.getValue().conentType, fileName) : new InputStreamBody(inputStream, fileName);
 				result[index] = new PartWithName(parameter.getKey(), body);
@@ -2985,7 +2971,58 @@ public class HttpConnector extends Node {
 						logger.debug("Charset specified to " + parameter.getValue().charset + ". But charset cannot be specified for file multipart entity. Charset will be ignored.");
 					}
 				}
+			}else if(parameter.getValue().contentByte!=null) {
+				//input stream
+				ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(parameter.getValue().contentByte);
+				String fileName = parameter.getValue().name; 
+				if(parameter.getValue().fileNameAttribute!=null) {
+					fileName = parameter.getValue().fileNameAttribute;
+				}
+				InputStreamBody body = (parameter.getValue().conentType != null) ? new InputStreamBody(byteArrayInputStream, parameter.getValue().conentType, fileName) : new InputStreamBody(byteArrayInputStream, fileName);
+				result[index] = new PartWithName(parameter.getKey(), body);
+				if (logger.isDebugEnabled()) {
+					if (parameter.getValue().charset != null) {
+						logger.debug("Charset specified to " + parameter.getValue().charset + ". But charset cannot be specified for file multipart entity. Charset will be ignored.");
+					}
+				}
+			}else{ 
+				//string content
+				final String fileName = parameter.getValue().fileNameAttribute;
+				
+				String value = parameter.getValue().content != null ? parameter.getValue().content : "";
+				String contentType = parameter.getValue().conentType != null ? parameter.getValue().conentType : ContentType.TEXT_PLAIN.toString();
+				Charset charset = parameter.getValue().charset != null ? Charset.forName(parameter.getValue().charset) : Charset.defaultCharset();
+
+				result[index] = new PartWithName(parameter.getKey(), new StringBody(value, contentType, charset) {
+					@Override
+					public String getFilename() {
+						return fileName;
+					}
+				});
 			}
+			
+//			if (parameter.getValue().fileNameAttribute == null) {
+//				Charset charset = parameter.getValue().charset != null ? Charset.forName(parameter.getValue().charset) : Charset.defaultCharset();
+//				String contentType = parameter.getValue().conentType != null ? parameter.getValue().conentType : ContentType.TEXT_PLAIN.toString();
+//
+//				String value = parameter.getValue().content != null ? parameter.getValue().content : "";
+//				result[index] = new PartWithName(parameter.getKey(), new StringBody(value, contentType, charset));
+//			} else if (parameter.getValue().content != null) {
+//				Charset charset = parameter.getValue().charset != null ? Charset.forName(parameter.getValue().charset) : Charset.defaultCharset();
+//				String contentType = parameter.getValue().conentType != null ? parameter.getValue().conentType : ContentType.TEXT_PLAIN.toString();
+//
+//				final String fileName = parameter.getValue().fileNameAttribute;
+//				String value = parameter.getValue().content != null ? parameter.getValue().content : "";
+//				result[index] = new PartWithName(parameter.getKey(), new StringBody(value, contentType, charset) {
+//					@Override
+//					public String getFilename() {
+//						return fileName;
+//					}
+//				});
+//
+//			} else {
+
+	//		}
 			index++;
 		}
 
@@ -3288,17 +3325,33 @@ public class HttpConnector extends Node {
 						multipartExists = true;
 					}
 
-					field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_FILE);
+					field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_FILENAME);
 					if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
-						entity.file = field.getValue() != null ? field.getValue().toString() : null;
+						entity.fileNameAttribute = field.getValue() != null ? field.getValue().toString() : null;
 						multipartExists = true;
+					}
+
+					field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_SOURCE_FILE);
+					if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
+						entity.sourceFile = field.getValue() != null ? field.getValue().toString() : null;
+						multipartExists = true;
+					}
+
+					field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_CONTENT_BYTE);
+					if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
+						if(field instanceof ByteDataField) {
+							entity.contentByte = ((ByteDataField)field).getByteArray();
+							multipartExists = true;
+						}else {
+							entity.contentByte = null;
+						}
 					}
 				}
 				entity.name = token;
 
 				if (contentValue != null) {
 					entity.content = contentValue;
-				} else if (entity.file == null) {
+				} else if (entity.fileNameAttribute == null) {
 					entity.content = value; // use not mapped input field value only if file is not mapped to
 				}
 				if(multipartExists) {
@@ -3586,18 +3639,27 @@ public class HttpConnector extends Node {
 				field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
 				field.setLabel(partTrimmed + "_" + MULTIPART_CONTENT);
 				metadata.addField(field);
+				
+				field = new DataFieldMetadata("xxx", DataFieldType.BYTE, null);
+				field.setLabel(partTrimmed + "_" + MULTIPART_CONTENT_BYTE);
+				metadata.addField(field);
 
 				field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
-				field.setLabel(partTrimmed + "_" + MULTIPART_FILE);
+				field.setLabel(partTrimmed + "_" + MULTIPART_SOURCE_FILE);
+				metadata.addField(field);
+
+				field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
+				field.setLabel(partTrimmed + "_" + MULTIPART_FILENAME);
+				metadata.addField(field);
+
+				field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
+				field.setLabel(partTrimmed + "_" + MULTIPART_CHARSET);
 				metadata.addField(field);
 
 				field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
 				field.setLabel(partTrimmed + "_" + MULTIPART_CONTENTTYPE);
 				metadata.addField(field);
 
-				field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
-				field.setLabel(partTrimmed + "_" + MULTIPART_CHARSET);
-				metadata.addField(field);
 			}
 		}
 
@@ -3961,8 +4023,10 @@ public class HttpConnector extends Node {
 
 class HttpConnectorMutlipartEntity {
 	public String name = null;
-	public String file = null;
+	public String fileNameAttribute = null;
+	public String sourceFile = null;
 	public String content = null;
-	public String conentType = null;
+	public byte[] contentByte = null;
+	public String conentType = null; // MIME type
 	public String charset = null;
 }
