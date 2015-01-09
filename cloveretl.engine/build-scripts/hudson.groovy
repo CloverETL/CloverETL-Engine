@@ -11,6 +11,9 @@ def buildNumber = env['BUILD_NUMBER']
 assert buildNumber
 def workspace = env['WORKSPACE']
 assert workspace
+def jenkinsBuildUrl = evn['BUILD_URL']
+assert jenkinsBuildUrl
+
 def testName
 jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-after-commit-windows-java-1.7-Sun|tests-after-commit-windows-java-1.7-IBM|tests-after-commit-windows-java-1.7-IBM|tests-after-commit-proxy-java-1.7-Sun|tests-after-commit-java-8-Sun|tests-after-commit-java-1.7-IBM|tests-night-java-1.6-IBM|tests-night-java-1.6-JRockit|tests-night-functional-java-1.7-Sun|tests-after-commit|tests-reset|tests-performance-java-1.7-Sun|detail)-)?(.+)$/
 assert jobNameM.matches() 
@@ -68,7 +71,7 @@ if( !runTests ){
 	antArgs = [
 		"-Dadditional.plugin.list=cloveretl.license.engine,cloveretl.component.hadoop,cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.tlfunction.commercial,cloveretl.ctlfunction.commercial,cloveretl.addressdoctor.commercial,cloveretl.profiler.commercial,cloveretl.mongodb.commercial,cloveretl.validator.commercial,cloveretl.initiate.engine,cloveretl.spreadsheet.commercial,cloveretl.oem.example.component,cloveretl.subgraph.commercial,cloveretl.tableau",
 		"-Dcte.logpath=${workspace}/cte-logs",
-		"-Dcteguiloglink=http://linda/jenkins/job/${jobName}/${buildNumber}/artifact/cte-logs/",
+		"-Dcteguiloglink=${jenkinsBuildUrl}/artifact/cte-logs/",
 		"-Dcte.hudson.link=job/${jobName}/${buildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
 	]
@@ -123,7 +126,7 @@ if( !runTests ){
 		"-Dscenarios=${scenarios}",
 		"-Denvironment.config=${testConfiguration}",
 		"-Dlogpath=${workspace}/cte-logs",
-		"-Dcteguiloglink=http://linda/jenkins/job/${jobName}/${buildNumber}/artifact/cte-logs/",
+		"-Dcteguiloglink=${jenkinsBuildUrl}/artifact/cte-logs/",
 		"-Dhudson.link=job/${jobName}/${buildNumber}",
 		"-Dhudson.engine.link=job/${engineJobName}/${engineBuildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
