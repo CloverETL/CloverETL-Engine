@@ -11,7 +11,7 @@ def buildNumber = env['BUILD_NUMBER']
 assert buildNumber
 def workspace = env['WORKSPACE']
 assert workspace
-def jenkinsBuildUrl = evn['BUILD_URL']
+def jenkinsBuildUrl = env['BUILD_URL']
 assert jenkinsBuildUrl
 
 def testName
