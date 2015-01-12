@@ -25,7 +25,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.activation.MimeType;
+
 import org.apache.commons.io.input.NullReader;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.poi.util.ByteField;
 import org.jetel.component.HttpConnector.PartWithName;
@@ -475,7 +478,7 @@ public class HttpConnectorTest  extends CloverTestCase {
 		entity.name = "test4";
 		entity.content = "Filename2";
 		entity.charset = "UTF-16";
-		entity.conentType = "abcd";
+		entity.conentType = ContentType.DEFAULT_TEXT.getMimeType();
 		multipartEntities.put(entity.name, entity);
 
 		PartWithName[] result = this.createHttpConnector().buildMultiPart(multipartEntities);

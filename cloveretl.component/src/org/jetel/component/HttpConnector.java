@@ -3109,15 +3109,21 @@ public class HttpConnector extends Node {
 				final String fileName = parameter.getValue().fileNameAttribute;
 				
 				String value = parameter.getValue().content != null ? parameter.getValue().content : "";
-				String contentType = parameter.getValue().conentType != null ? parameter.getValue().conentType : ContentType.TEXT_PLAIN.toString();
+				String contentTypeString = parameter.getValue().conentType != null ? parameter.getValue().conentType : ContentType.TEXT_PLAIN.getMimeType();
 				Charset charset = parameter.getValue().charset != null ? Charset.forName(parameter.getValue().charset) : Charset.defaultCharset();
 
-				result[index] = new PartWithName(parameter.getKey(), new StringBody(value, contentType, charset) {
+				ContentType contentType = ContentType.create(contentTypeString, charset);
+				
+				StringBody stringBody = new StringBody(value, contentType) {
 					@Override
 					public String getFilename() {
 						return fileName;
 					}
-				});
+					
+				};
+						
+				
+				result[index] = new PartWithName(parameter.getKey(), stringBody);
 			}
 			
 //			if (parameter.getValue().fileNameAttribute == null) {
