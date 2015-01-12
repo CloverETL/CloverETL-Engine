@@ -73,12 +73,12 @@ public class SimpleSequence extends GraphElement implements Sequence {
     
     String filename;
     long sequenceValue;
-    int step;
+    long step;
     long start;
-    int numCachedValues;
+    long numCachedValues;
     boolean alreadyIncremented = false;
     
-    int counter;
+    long counter;
     SimpleSequenceSynchronizer synchronizer; 
 
 	private String configFileName;
@@ -268,10 +268,10 @@ public class SimpleSequence extends GraphElement implements Sequence {
     @Override
 	synchronized public void free() {
         if(!isInitialized()) return;
-        super.free();
         if (synchronizer != null) {
         	synchronizer.unregisterSequence(this);
         }
+        super.free();
     }
     
     public synchronized void delete() {
@@ -286,7 +286,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
         }
     }
     
-	public int getNumCachedValues() {
+	public long getNumCachedValues() {
 		return numCachedValues;
 	}
 
@@ -294,7 +294,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
 		return start;
 	}
 	
-	public int getStep() {
+	public long getStep() {
 		return step;
 	}
 	
@@ -352,6 +352,13 @@ public class SimpleSequence extends GraphElement implements Sequence {
 	@Override
 	public boolean isShared() {
 		return true;
+	}
+
+	/**
+	 * @return the last number this sequence has currently reserved
+	 */
+	public long getEndOfCurrentRange() {
+		return currentValueLong() + counter * step;
 	}
 
 }
