@@ -66,28 +66,19 @@ import org.w3c.dom.Element;
  *              cached CDATA #IMPLIED&gt;
  *                                 
  */
-public class SimpleSequence extends GraphElement implements Sequence {
+public class SimpleSequence extends AbstractSequence implements Sequence {
 
     public final static String SEQUENCE_TYPE = "SIMPLE_SEQUENCE";
     public static final Log logger = LogFactory.getLog(SimpleSequence.class);
     
-    String filename;
-    long sequenceValue;
-    long step;
-    long start;
-    long numCachedValues;
-    boolean alreadyIncremented = false;
-    
+    // file for persisting
+    private String filename;
+    private long numCachedValues;
     long counter;
-    SimpleSequenceSynchronizer synchronizer; 
+    private SimpleSequenceSynchronizer synchronizer; 
 
-	private String configFileName;
-    private static final String XML_NAME_ATTRIBUTE = "name";
 	private static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
-	private static final String XML_START_ATTRIBUTE = "start";
-	private static final String XML_STEP_ATTRIBUTE = "step";
 	private static final String XML_CACHED_ATTRIBUTE = "cached";
-	private static final String XML_SEQCONFIG_ATTRIBUTE = "seqConfig";
     
     /**
      * Creates SimpleSequence object.
@@ -122,13 +113,6 @@ public class SimpleSequence extends GraphElement implements Sequence {
 		this.counter = 0;
     }
     
-    private boolean isOutOfIntegerBounds(long value) {
-    	if (value > Integer.MAX_VALUE || value < Integer.MIN_VALUE) {
-    		return true;
-    	}
-    	return false;
-    }
-    
     @Override
 	synchronized public long currentValueLong(){
         if(!isInitialized()) {
@@ -156,36 +140,6 @@ public class SimpleSequence extends GraphElement implements Sequence {
         counter--;
         alreadyIncremented = true;
         return tmpVal;
-    }
-    
-    @Override
-	public int currentValueInt(){
-    	long currentValueLong = currentValueLong();
-    	if (isOutOfIntegerBounds(currentValueLong)) {
-    		throw new ArithmeticException("Can't get currentValue as integer from sequence " + getName() + " because of value overflow/underflow."
-    				+ " Overflow/underflow sequence value: " + currentValueLong);
-    	}
-        return (int) currentValueLong;
-    }
-    
-    @Override
-	public int nextValueInt(){
-    	long nextValueLong = nextValueLong();
-    	if (isOutOfIntegerBounds(nextValueLong)) {
-    		throw new ArithmeticException("Can't get nextValue as integer from sequence " + getName() + " because of value overflow/underflow."
-    				+ " Overflow/underflow sequence value: " + nextValueLong);
-    	}
-        return (int) nextValueLong;
-    }
-    
-    @Override
-	public String currentValueString(){
-        return Long.toString(currentValueLong());
-    }
-    
-    @Override
-	public String nextValueString(){
-        return Long.toString(nextValueLong());
     }
     
     /* (non-Javadoc)
@@ -300,14 +254,6 @@ public class SimpleSequence extends GraphElement implements Sequence {
     
 	public long getNumCachedValues() {
 		return numCachedValues;
-	}
-
-	public long getStart() {
-		return start;
-	}
-	
-	public long getStep() {
-		return step;
 	}
 	
 	public String getFilename() {

@@ -115,7 +115,7 @@ public class SimpleSequenceSynchronizer {
 			currentValue = buffer.getLong();
 			
 			//overflow and underflow checking
-			if ((currentValue > 0 && currentValue + increment < 0) || (currentValue < 0 && currentValue + increment > 0)) { 
+			if (Long.signum(currentValue) != Long.signum(currentValue+increment)) { 
 				throw new ArithmeticException("Sequence value overflow/underflow while reserving range from file " + file + ". Last valid sequence value: " + currentValue);
 			}
 
