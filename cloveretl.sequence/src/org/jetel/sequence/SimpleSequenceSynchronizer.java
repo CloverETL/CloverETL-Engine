@@ -113,6 +113,11 @@ public class SimpleSequenceSynchronizer {
 			io.read(buffer);
 			buffer.flip();
 			currentValue = buffer.getLong();
+			
+			//overflow and underflow checking
+			if ((currentValue > 0 && currentValue + increment < 0) || (currentValue < 0 && currentValue + increment > 0)) { 
+				throw new ArithmeticException("Sequence value overflow/underflow while reserving range from file " + file + ". Last valid sequence value: " + currentValue);
+			}
 
 			// set
 			buffer.clear();

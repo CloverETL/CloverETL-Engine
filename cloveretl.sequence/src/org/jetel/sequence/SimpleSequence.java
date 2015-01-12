@@ -119,9 +119,14 @@ public class SimpleSequence extends GraphElement implements Sequence {
     public SimpleSequence(String id, TransformationGraph graph, String configFilename) {
         super(id, graph);
         this.configFileName = configFilename;
-        
 		this.counter = 0;
-
+    }
+    
+    private boolean isOutOfIntegerBounds(long value) {
+    	if (value > Integer.MAX_VALUE || value < Integer.MIN_VALUE) {
+    		return true;
+    	}
+    	return false;
     }
     
     @Override
@@ -129,7 +134,6 @@ public class SimpleSequence extends GraphElement implements Sequence {
         if(!isInitialized()) {
             throw new RuntimeException("Can't get currentValue for non-initialized sequence "+getId());
         }
-
         return alreadyIncremented ? sequenceValue - step : sequenceValue;
     }
     
@@ -138,7 +142,6 @@ public class SimpleSequence extends GraphElement implements Sequence {
         if(!isInitialized()) {
             throw new RuntimeException("Can't call nextValue for non-initialized sequence "+getId());
         }
-
         if (counter<=0){
         	try {
         		//read current value from file, since other running graphs could have changed it
@@ -152,18 +155,27 @@ public class SimpleSequence extends GraphElement implements Sequence {
         sequenceValue+=step;
         counter--;
         alreadyIncremented = true;
-        
         return tmpVal;
     }
     
     @Override
 	public int currentValueInt(){
-        return (int) currentValueLong();
+    	long currentValueLong = currentValueLong();
+    	if (isOutOfIntegerBounds(currentValueLong)) {
+    		throw new ArithmeticException("Can't get currentValue as integer from sequence " + getName() + " because of value overflow/underflow."
+    				+ " Overflow/underflow sequence value: " + currentValueLong);
+    	}
+        return (int) currentValueLong;
     }
     
     @Override
 	public int nextValueInt(){
-        return (int) nextValueLong();
+    	long nextValueLong = nextValueLong();
+    	if (isOutOfIntegerBounds(nextValueLong)) {
+    		throw new ArithmeticException("Can't get nextValue as integer from sequence " + getName() + " because of value overflow/underflow."
+    				+ " Overflow/underflow sequence value: " + nextValueLong);
+    	}
+        return (int) nextValueLong;
     }
     
     @Override
