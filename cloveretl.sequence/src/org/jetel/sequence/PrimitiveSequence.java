@@ -38,7 +38,6 @@ import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
-
 /**
  * Simple class implementing Sequence interface. It uses internally "long" datatype to
  * store sequence's value. The value is not persistent.<br>
@@ -55,20 +54,9 @@ import org.w3c.dom.Element;
  * @author Martin Zatopek, Javlin Consulting (www.javlinconsulting.cz)
  *
  */
-public class PrimitiveSequence extends GraphElement implements Sequence {
+public class PrimitiveSequence extends AbstractSequence implements Sequence {
 
     public final static String SEQUENCE_TYPE = "PRIMITIVE_SEQUENCE";
-
-    private static final String XML_NAME_ATTRIBUTE = "name";
-    private static final String XML_START_ATTRIBUTE = "start";
-    private static final String XML_STEP_ATTRIBUTE = "step";
-    private static final String XML_SEQCONFIG_ATTRIBUTE = "seqConfig";
-
-    private String configFileName; //file name with external definition of this primitive sequence
-    private long value = 0;
-    private long start = 0;
-    private long step = 1;
-    boolean alreadyIncremented = false;
     
     public PrimitiveSequence(String id, TransformationGraph graph, String name) {
         super(id, graph, name);
@@ -151,28 +139,11 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
     }
 
     /**
-     * @see org.jetel.data.sequence.Sequence#currentValueInt()
-     */
-    @Override
-	public int currentValueInt() {
-        return (int) currentValueLong();
-    }
-
-    /**
-     * @see org.jetel.data.sequence.Sequence#nextValueInt()
-     */
-    @Override
-	public int nextValueInt() {
-        return (int) nextValueLong();
-    }
-
-    /**
      * @see org.jetel.data.sequence.Sequence#currentValueLong()
      */
     @Override
 	public synchronized long currentValueLong() {
-        return alreadyIncremented ? value - step : value;
-
+        return alreadyIncremented ? sequenceValue - step : sequenceValue;
     }
 
     /**
@@ -180,26 +151,14 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
      */
     @Override
 	public synchronized long nextValueLong() {
-    	long tmpVal=value;
-        value += step;
+    	long tmpVal=sequenceValue;
+    	sequenceValue += step;
         alreadyIncremented = true;
+        if (Long.signum(tmpVal) != Long.signum(sequenceValue)) {
+        	throw new ArithmeticException("Can't get nextValue from sequence " + getName() + " because of value overflow/underflow."
+    				+ " Overflow/underflow sequence value: " + sequenceValue);
+        }
         return tmpVal;
-    }
-
-    /**
-     * @see org.jetel.data.sequence.Sequence#currentValueString()
-     */
-    @Override
-	public String currentValueString() {
-        return Long.toString(currentValueLong());
-    }
-
-    /**
-     * @see org.jetel.data.sequence.Sequence#nextValueString()
-     */
-    @Override
-	public String nextValueString() {
-        return Long.toString(nextValueLong());
     }
 
     /**
@@ -208,7 +167,7 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
     @Override
 	public synchronized void resetValue() {
     	alreadyIncremented = false;
-        value = start;
+    	sequenceValue = start;
     }
 
     /**
@@ -218,11 +177,7 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
 	public boolean isPersistent() {
         return false;
     }
-
-    public long getStart() {
-        return start;
-    }
-
+    
     /**
      * Sets start value and resets this sequencer.
      * @param start
@@ -230,10 +185,6 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
     public void setStart(long start) {
         this.start = start;
         resetValue();
-    }
-
-    public long getStep() {
-        return step;
     }
 
     /**
