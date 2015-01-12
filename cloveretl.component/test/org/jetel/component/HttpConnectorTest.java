@@ -117,7 +117,7 @@ public class HttpConnectorTest  extends CloverTestCase {
 		inputRecord.put("entity2", "ValueOfEntity2");
 		httpConnector.inputRecord = this.createConstDataRecord(inputRecord);
 
-		httpConnector.tryToInit(false);
+		httpConnector.tryToInit(null);
 		Map<String, Object> mappingFieldValues = new HashMap<String, Object>();
 		mappingFieldValues.put("entity2_"+MULTIPART_SOURCE_FILE, "SOURCEFILE");
 		
@@ -137,7 +137,7 @@ public class HttpConnectorTest  extends CloverTestCase {
 		inputRecord.put("entity2", "ValueOfEntity2");
 		httpConnector.inputRecord = this.createConstDataRecord(inputRecord);
 
-		httpConnector.tryToInit(false);
+		httpConnector.tryToInit(null);
 		Map<String, Object> mappingFieldValues = new HashMap<String, Object>();
 		mappingFieldValues.put("entity2_"+MULTIPART_CONTENT_BYTE, "contentOfBytesArray".getBytes());
 		
