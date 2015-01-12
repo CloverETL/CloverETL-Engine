@@ -182,6 +182,10 @@ public class CloverDataFormatter extends AbstractFormatter {
 	public void setDataTarget(Object outputDataTarget) throws IOException {
     	close(); // close the previous output - flush
     	
+    	// CLO-5556: do not change the value of this.append!
+    	// Otherwise setDataTarget() is invoked twice, first with File and then with Channel
+    	boolean doAppend = append;
+    	
 		buffer.clear();
 		
 		// TargetFile.setOutput() passes {contextURL, fileName, outputStream}
@@ -226,7 +230,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 				} else {
 					// write header information for compatibility testing while later reading
 					writeHeader = true;
-					append=false; //zero length, thus no appending actually
+					doAppend=false; //zero length, thus no appending actually
 				}
 			} catch (IOException e) {
 				throw new RuntimeException(e);
@@ -263,7 +267,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 			default:
 				throw new RuntimeException("Unsupported compression algorithm: " + compress);
 			}
-			if (append) {
+			if (doAppend) {
 				this.output.seekToAppend((SeekableByteChannel) channel);
 			} else {
 				this.output.setPosition(size); // need to tell CloverDataStream what is current position of the wrapped
