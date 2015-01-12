@@ -95,7 +95,7 @@ public class SimpleSequenceSynchronizer {
 	 * @return
 	 * @throws IOException
 	 */
-	public long getAndSet(int step, int numCachedValues) throws IOException {
+	public long getAndSet(long step, long numCachedValues) throws IOException {
 		long increment;
 		if (numCachedValues <= 0) {
 			// backwards compatibility and sanity check
@@ -164,7 +164,7 @@ public class SimpleSequenceSynchronizer {
 		synchronized (READ_WRITE_LOCK) {
 			ensureOpen();
 			
-			io.force(true);
+			//io.force(true);
 			buffer.clear();
 			io.position(0);
 			io.read(buffer);
@@ -242,6 +242,11 @@ public class SimpleSequenceSynchronizer {
 			if (registeredSequences.size() == 0) {
 				lastSequence = true;
 				try {
+					// we are in synchronized block, returning range here is ok (thread-wise) 
+					boolean rangeReturned = tryReturnRange(seq);
+					if (rangeReturned) {
+						logger.debug("Part of sequence range successfully returned.");
+					}
 					free();
 				} catch (IOException ex) {
 					logger.warn("I/O error when freeing sequence " + seq.getName(), ex);
@@ -255,6 +260,25 @@ public class SimpleSequenceSynchronizer {
 				synchronizerHolder.remove(file);
 			}
 		}
+	}
+	
+	/**
+	 * Checks whether the last range was provided to the same sequence. If yes, persists unused part of the range back to the file.
+	 * 
+	 * This method is not thread-safe by itself. Make sure you use external synchronization.
+	 * @param seq
+	 * @return
+	 * @throws IOException
+	 */
+	private boolean tryReturnRange(SimpleSequence seq) throws IOException {
+		long persistedValue = getCurrentValue();
+		long endOfRange = seq.getEndOfCurrentRange();
+		
+		if (persistedValue == endOfRange + seq.step && seq.counter != 0) {
+			flushValue(seq.currentValueLong() + seq.step);
+			return true;
+		}
+		return false;
 	}
 
 	/**
