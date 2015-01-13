@@ -7,10 +7,10 @@
 	<FunctionalTest ident="DataSelectionAdvanced" graphFile="graph/DataSelectionAdvanced.grf" excludedContainers="websphere7">
 		<FlatFile outputFile="data-out/NumberOfCustomers.out" supposedFile="supposed-out/NumberOfCustomers.out"/>
 		<FlatFile outputFile="data-tmp/had_duplicate_records.txt" supposedFile="supposed-out/had_duplicate_records.txt"/>
-		<RegEx expression="# 2 *\|Argentina *\|16" occurences="1"/>
-		<RegEx expression="# 4 *\|Spain *\|23" occurences="1"/>
+		<RegEx expression="# 4 *\|Argentina *\|16" occurences="1"/>
+		<RegEx expression="# 3 *\|Spain *\|23" occurences="1"/>
 		<RegEx expression="# 1 *\|Brazil *\|83" occurences="1"/>
-		<RegEx expression="# 3 *\|Venezuela *\|46" occurences="1"/>
+		<RegEx expression="# 2 *\|Venezuela *\|46" occurences="1"/>
 	</FunctionalTest>
 	
 	<!-- excluded on websphere85 because of CLO-3267 -->
