@@ -149,7 +149,7 @@ public class SimpleSequenceSynchronizer {
 	private void init(SimpleSequence seq) throws IOException {
 		try {
 			if (!javaFile.exists()) {
-				logger.info("Sequence file " + seq.getName() + " doesn't exist. Creating new file.");
+				logger.info("Sequence file " + seq.getFilename() + " doesn't exist. Creating new file.");
 				javaFile.createNewFile();
 				io = new RandomAccessFile(absoluteFilePath, ACCESS_MODE).getChannel();
 				lock = io.lock();
