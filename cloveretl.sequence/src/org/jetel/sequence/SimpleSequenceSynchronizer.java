@@ -43,24 +43,32 @@ import org.jetel.util.file.FileUtils;
  * @created 21. 11. 2014
  */
 public class SimpleSequenceSynchronizer {
-	// each file has its own synchronizer, use absolute pathnames as keys
+	/** Map holding synchronizer for each file. Every file has its own synchronizer, use absolute pathnames as keys. */
 	private static final HashMap<String, SimpleSequenceSynchronizer> synchronizerHolder = new HashMap<>();
 
-	// every synchronizer has a set of registered sequences
+	/** Every synchronizer has a set of registered sequences. This map holds them. */
 	private static final HashMap<SimpleSequenceSynchronizer, Set<SimpleSequence>> sequenceHolder = new HashMap<>();
 
+	/** This system lock is for the case when someone runs two separate JVMs and they both try to lock the file - it must crash in that case */ 
 	private FileLock lock;
+	
 	private FileChannel io;
 	private ByteBuffer buffer;
-	private String file; // absolute pathname
+	
+	/** Persisted file */
+	private File javaFile;
+	
+	/** Absolute path of the persisted file. Used as an ID - should be unique. */
+	private String absoluteFilePath;
 
 	private final Object READ_WRITE_LOCK = new Object();
 	private static final Log logger = LogFactory.getLog(SimpleSequenceSynchronizer.class);
     private static final int DATA_SIZE = 8; //how many bytes occupy serialized value in file
     private static final String ACCESS_MODE="rwd";
 
-	private SimpleSequenceSynchronizer(String file) {
-		this.file = file;
+	private SimpleSequenceSynchronizer(File javaFile, String absolutePath) {
+		this.javaFile = javaFile;
+		this.absoluteFilePath = absolutePath;
 		buffer = ByteBuffer.allocateDirect(DATA_SIZE);
 	}
 
@@ -76,15 +84,15 @@ public class SimpleSequenceSynchronizer {
 		synchronized (READ_WRITE_LOCK) {
 			while (!io.isOpen() && limit > 0) {
 				free();
-				io = new RandomAccessFile(file, ACCESS_MODE).getChannel();
+				io = new RandomAccessFile(absoluteFilePath, ACCESS_MODE).getChannel();
 				lock = io.tryLock();
 				if (lock == null) {
-					logger.warn("Can't obtain file lock for sequence file " + file);
+					logger.warn("Can't obtain file lock for sequence file " + absoluteFilePath);
 				}
 			}
 		}
 		if (limit == 0) {
-			logger.warn("Can't open sequence file " + file);
+			logger.warn("Can't open sequence file " + absoluteFilePath);
 		}
 	}
 
@@ -118,7 +126,7 @@ public class SimpleSequenceSynchronizer {
 			int signBefore = Long.signum(currentValue);
 			int signAfter = Long.signum(currentValue+increment);
 			if (signBefore != signAfter && signBefore != 0 && signAfter != 0) { 
-				throw new ArithmeticException("Sequence value overflow/underflow while reserving range from file " + file + ". Last valid sequence value: " + currentValue);
+				throw new ArithmeticException("Sequence value overflow/underflow while reserving range from file " + absoluteFilePath + ". Last valid sequence value: " + currentValue);
 			}
 
 			// set
@@ -139,16 +147,15 @@ public class SimpleSequenceSynchronizer {
 	 */
 	private void init(SimpleSequence seq) throws IOException {
 		try {
-			File javaFile = new File(file);
 			if (!javaFile.exists()) {
 				logger.info("Sequence file " + seq.getName() + " doesn't exist. Creating new file.");
 				javaFile.createNewFile();
-				io = new RandomAccessFile(file, ACCESS_MODE).getChannel();
+				io = new RandomAccessFile(absoluteFilePath, ACCESS_MODE).getChannel();
 				lock = io.lock();
 				io.force(true);
 				flushValue(seq.currentValueLong());
 			} else {
-				io = new RandomAccessFile(file, ACCESS_MODE).getChannel();
+				io = new RandomAccessFile(absoluteFilePath, ACCESS_MODE).getChannel();
 				lock = io.tryLock();
 				if (lock == null) {
 					// report non-locked sequence
@@ -190,15 +197,25 @@ public class SimpleSequenceSynchronizer {
 		URL contextURL = (seq.getGraph() != null) ? seq.getGraph().getRuntimeContext().getContextURL() : null;
 		String filename = seq.getFilename();
 		String file = FileUtils.getFile(contextURL, filename);
+		
+		// extracting absolute path used as an ID
+		File javaFile = new File(file);
+		String pathIdentifier;
+		try {
+			pathIdentifier = javaFile.getCanonicalPath();
+		} catch (Exception e) {
+			logger.debug("Can't determine unique sequence file identifier: " + e.getMessage());
+			pathIdentifier = javaFile.getAbsolutePath();
+		}
+		
 		SimpleSequenceSynchronizer synchro;
-
 		synchronized (synchronizerHolder) {
 			// get or create synchronizer
-			synchro = synchronizerHolder.get(file);
+			synchro = synchronizerHolder.get(pathIdentifier);
 			if (synchro == null) {
-				synchro = new SimpleSequenceSynchronizer(file);
+				synchro = new SimpleSequenceSynchronizer(javaFile, pathIdentifier);
 				synchro.init(seq);
-				synchronizerHolder.put(file, synchro);
+				synchronizerHolder.put(pathIdentifier, synchro);
 			}
 		}
 		synchronized (sequenceHolder) {
@@ -264,7 +281,7 @@ public class SimpleSequenceSynchronizer {
 
 		if (lastSequence) {
 			synchronized (synchronizerHolder) {
-				synchronizerHolder.remove(file);
+				synchronizerHolder.remove(absoluteFilePath);
 			}
 		}
 	}
