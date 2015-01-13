@@ -267,6 +267,14 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 						status.setValue(var2set);
 					}
 					break;
+				case GET_IN_RECORDS:
+					status = new DebugStatus(node, CommandType.GET_IN_RECORDS);
+					status.setValue(this.inputRecords);
+					break;
+				case GET_OUT_RECORDS:
+					status = new DebugStatus(node, CommandType.GET_OUT_RECORDS);
+					status.setValue(this.outputRecords);
+					break;
 				case RESUME:
 					status = new DebugStatus(node, CommandType.RESUME);
 					status.setSuspended(false);

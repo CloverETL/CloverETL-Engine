@@ -22,48 +22,50 @@ package org.jetel.ctl.debug;
 
 public class DebugCommand {
 
-		protected CommandType type;
-		protected Object value;
-
-		public DebugCommand(CommandType type) {
-			this.type = type;
-			value = null;
-		}
-
-		public CommandType getType() {
-			return type;
-		}
-
-		public void setValue(Object value) {
-			this.value = value;
-		}
-
-		public Object getValue() {
-			return value;
-		}
-		
-		@Override
-		public String toString(){
-			return type.toString();
-		}
-
-
 	public enum CommandType {
+		GET_AST, 
+		GET_CALLSTACK, 
+		GET_VAR,
+		GET_IN_RECORDS,
+		GET_OUT_RECORDS,
+		INFO, 
+		LIST_BREAKPOINTS, 
+		LIST_VARS, 
+		REMOVE_BREAKPOINT, 
 		RESUME, 
-		SUSPEND, 
-		STEP_OVER, 
+		SET_BREAKPOINT, 
+		SET_BREAKPOINTS, 
+		SET_VAR,
 		STEP_IN, 
 		STEP_OUT, 
-		LIST_VARS, 
-		GET_VAR, 
-		SET_VAR, 
-		LIST_BREAKPOINTS, 
-		SET_BREAKPOINTS, 
-		SET_BREAKPOINT, 
-		REMOVE_BREAKPOINT, 
-		GET_CALLSTACK, 
-		INFO, 
-		GET_AST;
+		STEP_OVER, 
+		SUSPEND;
+	}
+	protected CommandType type;
+
+	protected Object value;
+
+	public DebugCommand(CommandType type) {
+		this.type = type;
+		value = null;
+	}
+
+	public CommandType getType() {
+		return type;
+	}
+
+	public Object getValue() {
+		return value;
+	}
+
+	public void setValue(Object value) {
+		this.value = value;
+	}
+
+
+	@Override
+	public String toString(){
+		return type.toString();
 	}
 
 }
