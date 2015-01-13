@@ -141,6 +141,7 @@ public class SimpleSequenceSynchronizer {
 
 	/**
 	 * Never call from outside. Use {@link #registerAndGetSynchronizer(SimpleSequence)} instead.
+	 * This method sets the value of sequence if the persisted file exists.
 	 * 
 	 * @param seq
 	 * @throws IOException
@@ -161,6 +162,7 @@ public class SimpleSequenceSynchronizer {
 					// report non-locked sequence
 					logger.warn("Can't obtain file lock for sequence: " + seq.getName() + " id: " + seq.getId());
 				}
+				seq.sequenceValue = getCurrentValue();
 			}
 		} catch (IOException | BufferUnderflowException e) {
 			free();

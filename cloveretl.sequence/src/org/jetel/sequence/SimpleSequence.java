@@ -178,7 +178,6 @@ public class SimpleSequence extends AbstractSequence implements Sequence {
         try {
         	// register this sequence, set it's value
         	synchronizer = SimpleSequenceSynchronizer.registerAndGetSynchronizer(this);
-        	sequenceValue = synchronizer.getCurrentValue();
     		alreadyIncremented = false;
         } catch(IOException ex) {
             free();
