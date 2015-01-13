@@ -134,7 +134,7 @@ public class GraphParameterDynamicValueProvider {
 			}
 			
 			recursionFlag = true;
-			String parameterValue = transform.getValue();
+			String parameterValue = String.valueOf(transform.getValue());
 			
 			return parameterValue;
 		} catch (TransformException e) {
