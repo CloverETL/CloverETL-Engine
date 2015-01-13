@@ -19,8 +19,10 @@
 package org.jetel.graph.parameter;
 
 import java.text.MessageFormat;
+import java.util.Date;
 
 import org.jetel.component.TransformFactory;
+import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelRuntimeException;
@@ -29,6 +31,8 @@ import org.jetel.graph.GraphParameter;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.formatter.DateFormatter;
+import org.jetel.util.formatter.DateFormatterFactory;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
@@ -54,6 +58,12 @@ public class GraphParameterDynamicValueProvider {
 	private GraphParameterValueFunction transform;
 	private boolean recursionFlag;
 
+	/**
+	 * CLO-5564:
+	 * Used for conversion of Date to String.
+	 */
+	private DateFormatter dateFormatter;
+	
 	private GraphParameterDynamicValueProvider(TransformationGraphProvider graphProvider, String parameterName, String transformCode, TransformFactory<GraphParameterValueFunction> factory) {
 		super();
 		this.graphProvider = graphProvider;
@@ -119,6 +129,20 @@ public class GraphParameterDynamicValueProvider {
 		return factory.checkConfig(status);
 	}
 	
+	private DateFormatter getDateFormatter() {
+		if (dateFormatter == null) {
+			dateFormatter = DateFormatterFactory.getFormatter(Defaults.DEFAULT_DATETIME_FORMAT);
+		}
+		return dateFormatter;
+	}
+	
+	private String toString(Object value) {
+		if (value instanceof Date) {
+			return getDateFormatter().format((Date) value);
+		}
+		return String.valueOf(value);
+	}
+	
 	public synchronized String getValue() {
 		try {
 			init();
@@ -134,7 +158,7 @@ public class GraphParameterDynamicValueProvider {
 			}
 			
 			recursionFlag = true;
-			String parameterValue = String.valueOf(transform.getValue());
+			String parameterValue = toString(transform.getValue());
 			
 			return parameterValue;
 		} catch (TransformException e) {
