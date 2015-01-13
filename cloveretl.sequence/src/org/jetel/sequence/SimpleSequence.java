@@ -92,7 +92,7 @@ public class SimpleSequence extends AbstractSequence implements Sequence {
      * @param numCachedValues	how many values should be cached (reduces IO but consumes some of the 
      * available values between object reusals)
      */
-    public SimpleSequence(String id, TransformationGraph graph, String sequenceName, String filename, long start, int step, int numCachedValues) {
+    public SimpleSequence(String id, TransformationGraph graph, String sequenceName, String filename, long start, long step, long numCachedValues) {
         super(id, graph, sequenceName);
         this.filename=filename;
         this.start=start;
