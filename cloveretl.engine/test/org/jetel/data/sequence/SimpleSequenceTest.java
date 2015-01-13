@@ -183,6 +183,7 @@ public class SimpleSequenceTest extends CloverTestCase {
 				for (int i = 0; i < ITERATIONS_SEQUENCE_RUNNER; i++) {
 					seq.nextValueLong();
 				}
+				seq.free();
 			}
 		};
     }
