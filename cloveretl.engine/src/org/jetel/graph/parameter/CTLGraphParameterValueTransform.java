@@ -44,18 +44,16 @@ public abstract class CTLGraphParameterValueTransform extends CTLAbstractTransfo
 	}
 
 	@CTLEntryPoint(name = GET_PARAMETER_VALUE_FUNCTION_NAME, required = true)
-	protected abstract String getParameterValueDelegate() throws ComponentNotReadyException, TransformException;
+	protected abstract Object getParameterValueDelegate() throws ComponentNotReadyException, TransformException;
 	
 	@Override
-	public String getValue() throws TransformException {
-		String result;
+	public Object getValue() throws TransformException {
 		try {
-			result = getParameterValueDelegate();
+			return getParameterValueDelegate();
 		} catch (ComponentNotReadyException exception) {
 			// the exception may be thrown by lookups, sequences, etc.
 			throw new TransformException("Generated transform class threw an exception!", exception);
 		}
-		return result;
 	}
 
 	@Override
