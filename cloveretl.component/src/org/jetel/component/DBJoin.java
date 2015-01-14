@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.connection.jdbc.AbstractDBConnection;
 import org.jetel.connection.jdbc.DBConnectionImpl;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
@@ -492,6 +493,8 @@ public class DBJoin extends Node {
 			throws ComponentNotReadyException {
 		Properties parameters = new Properties();
 		parameters.setProperty(DBConnectionImpl.SQL_QUERY_PROPERTY, sqlQuery);
+		parameters.setProperty(AbstractDBConnection.OPTIMIZE_QUERY_PROPERTY,
+								AbstractDBConnection.SqlQueryOptimizeOption.NAIVE.toString());
 
 		try {
 			return connection.createMetadata(parameters);

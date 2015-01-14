@@ -996,8 +996,25 @@ public class SQLUtil {
 	 * @param query
 	 * @return
 	 */
-	public static String appendOptimizingWhereClause(String query) {
+	public static String encloseInQptimizingQuery(String query) {
 		return "SELECT wrapper_table.* FROM (" + query + ") wrapper_table where 1=0";
+	}
+
+
+	/**
+	 * Appends "WHERE 0=1" to the query. If the query already contains where clause, it is replaced by "WHERE 0=1"
+	 * 
+	 * @param sqlQuery
+	 * @return
+	 */
+	public static String appendOptimizingWhereClause(String sqlQuery) {
+		int index = sqlQuery.toUpperCase().indexOf("WHERE");
+		if (index >= 0) {
+			sqlQuery = sqlQuery.substring(0, index).concat("WHERE 0=1");
+		} else {
+			sqlQuery = sqlQuery.concat(" WHERE 0=1");
+		}
+		return sqlQuery;
 	}
 	
 }

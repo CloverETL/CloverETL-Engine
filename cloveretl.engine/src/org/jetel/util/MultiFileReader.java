@@ -444,6 +444,7 @@ public class MultiFileReader {
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		// checks skip/numRecords
 		if (!checkRowAndPrepareSource()) {
+			channelIterator.blankRead(); // CLO-4577
 			return null;
 		}
 		

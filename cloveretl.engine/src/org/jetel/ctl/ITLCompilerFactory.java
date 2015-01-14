@@ -16,35 +16,19 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.graph.parameter;
+package org.jetel.ctl;
 
-import org.jetel.component.Transform;
-import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.TransformException;
+import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * @author Raszyk (info@cloveretl.com)
+ * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 29. 4. 2014
+ * @created 13. 1. 2015
  */
-public interface GraphParameterValueFunction extends Transform {
-
-	public static final String GET_PARAMETER_VALUE_FUNCTION_NAME = "getValue";
-	public static final String INIT_FUNCTION_NAME = "init";
+public interface ITLCompilerFactory {
 	
-	/**
-	 * Called before {@link #getParameterValue()} is called for the first time.
-	 * @throws ComponentNotReadyException 
-	 */
-	public void init() throws ComponentNotReadyException;
-	
-	/**
-	 * Graph parameter dynamic value as a string.
-	 * 
-	 * @return
-	 * @throws TransformException 
-	 */
-	public Object getValue() throws TransformException;
+	public ITLCompiler createCompiler(TransformationGraph graph, DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, String encoding);
 
 }
