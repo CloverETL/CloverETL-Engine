@@ -25,6 +25,7 @@ import org.jetel.component.TransformLanguageDetector.TransformLanguage;
 import org.jetel.ctl.CTLAbstractTransform;
 import org.jetel.ctl.ErrorMessage;
 import org.jetel.ctl.ITLCompiler;
+import org.jetel.ctl.ITLCompilerFactory;
 import org.jetel.ctl.MetadataErrorDetail;
 import org.jetel.ctl.TLCompilerFactory;
 import org.jetel.ctl.TransformLangExecutor;
@@ -37,6 +38,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.LoadClassException;
 import org.jetel.exception.MissingFieldException;
 import org.jetel.graph.Node;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CodeParser;
 import org.jetel.util.compile.ClassLoaderUtils;
@@ -86,6 +88,8 @@ public class TransformFactory<T> {
 	private DataRecordMetadata[] inMetadata;
 	/** Output metadata of transformation, used for CTL compilation */
 	private DataRecordMetadata[] outMetadata;
+	/** Customizable compiler factory */
+	private ITLCompilerFactory compilerFactory = new DefaultCompilerFactory();
 	
 	private TransformFactory(TransformDescriptor<T> transformDescriptor) {
 		this.transformDescriptor = transformDescriptor;
@@ -251,7 +255,7 @@ public class TransformFactory<T> {
         		charset = Defaults.DEFAULT_SOURCE_CODE_CHARSET;
         	}
         	final ITLCompiler compiler = 
-        		TLCompilerFactory.createCompiler(component.getGraph(), inMetadata, outMetadata, charset);
+        		compilerFactory.createCompiler(component.getGraph(), inMetadata, outMetadata, charset);
         	String id = component.getId();
         	if (!StringUtils.isEmpty(attributeName)) {
         		id += "_" + attributeName;
@@ -382,4 +386,27 @@ public class TransformFactory<T> {
 		return !StringUtils.isEmpty(transform) || !StringUtils.isEmpty(transformClass) || !StringUtils.isEmpty(transformUrl);
 	}
 
+	public void setCompilerFactory(ITLCompilerFactory compilerFactory) {
+		this.compilerFactory = compilerFactory;
+	}
+
+	/**
+	 * Default {@link ITLCompilerFactory} implementation,
+	 * selects the compiler with maximum priority from registered compilers.
+	 * 
+	 * @author krivanekm (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created 14. 1. 2015
+	 */
+	public static class DefaultCompilerFactory implements ITLCompilerFactory {
+
+		@Override
+		public ITLCompiler createCompiler(TransformationGraph graph, DataRecordMetadata[] inMetadata,
+				DataRecordMetadata[] outMetadata, String encoding) {
+			
+			return TLCompilerFactory.createCompiler(graph, inMetadata, outMetadata, encoding);
+		}
+
+	}
 }

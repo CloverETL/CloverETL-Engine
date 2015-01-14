@@ -22,6 +22,7 @@ import java.text.MessageFormat;
 import java.util.Date;
 
 import org.jetel.component.TransformFactory;
+import org.jetel.ctl.ITLCompilerFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
@@ -44,6 +45,8 @@ import org.jetel.util.string.StringUtils;
  * @created 29. 4. 2014
  */
 public class GraphParameterDynamicValueProvider {
+	
+	private static ITLCompilerFactory COMPILER_FACTORY;
 	
 	private static interface TransformationGraphProvider {
 		TransformationGraph getGraph();
@@ -72,6 +75,14 @@ public class GraphParameterDynamicValueProvider {
 		this.factory = factory;
 	}
 	
+	private static TransformFactory<GraphParameterValueFunction> createTransformFactory() {
+		TransformFactory<GraphParameterValueFunction> factory = TransformFactory.createTransformFactory(GraphParameterValueFunctionDescriptor.newInstance());
+		if (COMPILER_FACTORY != null) {
+			factory.setCompilerFactory(COMPILER_FACTORY);
+		}
+		return factory;
+	}
+	
 	public static GraphParameterDynamicValueProvider create(final GraphParameter graphParameter, String transformCode) {
 		TransformationGraphProvider transformationGraphProvider = new TransformationGraphProvider() {
 			@Override
@@ -80,7 +91,7 @@ public class GraphParameterDynamicValueProvider {
 			}
 		};
 		
-		TransformFactory<GraphParameterValueFunction> factory = TransformFactory.createTransformFactory(GraphParameterValueFunctionDescriptor.newInstance());
+		TransformFactory<GraphParameterValueFunction> factory = createTransformFactory();
 
 		return new GraphParameterDynamicValueProvider(transformationGraphProvider, graphParameter.getName(), transformCode, factory);
 	}
@@ -92,7 +103,7 @@ public class GraphParameterDynamicValueProvider {
 				return graph;
 			}
 		};
-		TransformFactory<GraphParameterValueFunction> factory = TransformFactory.createTransformFactory(GraphParameterValueFunctionDescriptor.newInstance());
+		TransformFactory<GraphParameterValueFunction> factory = createTransformFactory();
 
 		return new GraphParameterDynamicValueProvider(transformationGraphProvider, parameterName, transformCode, factory);
 	}
@@ -170,6 +181,10 @@ public class GraphParameterDynamicValueProvider {
 	
 	public String getTransformCode() {
 		return transformCode;
+	}
+
+	public static void setCompilerFactory(ITLCompilerFactory compilerFactory) {
+		GraphParameterDynamicValueProvider.COMPILER_FACTORY = compilerFactory;
 	}
 	
 }
