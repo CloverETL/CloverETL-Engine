@@ -45,12 +45,13 @@ import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
 /**
+ * CrossJoin component, also known as CartesianProduct
  * @author salamonp (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 1. 12. 2014
  */
-public class CartesianProduct extends Node implements MetadataProvider {
+public class CrossJoin extends Node implements MetadataProvider {
 	public final static String COMPONENT_TYPE = "CARTESIAN_PRODUCT";
 	private final static String OUT_METADATA_NAME = "Cartesian_dynamic";
 	private final static String OUT_METADATA_ID_SUFFIX = "_outMetadata";
@@ -74,7 +75,7 @@ public class CartesianProduct extends Node implements MetadataProvider {
 	
 	//static Log logger = LogFactory.getLog(CartesianProduct.class);
 
-	public CartesianProduct(String id) {
+	public CrossJoin(String id) {
 		super(id);
 	}
 
@@ -200,7 +201,7 @@ public class CartesianProduct extends Node implements MetadataProvider {
 
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
-		return new CartesianProduct(xattribs.getString(XML_ID_ATTRIBUTE));
+		return new CrossJoin(xattribs.getString(XML_ID_ATTRIBUTE));
 	}
 	
 	@Override

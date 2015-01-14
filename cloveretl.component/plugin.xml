@@ -674,7 +674,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="joiners" iconPath="icons/joiners/MergeJoin" name="CartesianProduct"  type="CARTESIAN_PRODUCT" className="org.jetel.component.CartesianProduct">
+	  <ETLComponent category="joiners" iconPath="icons/joiners/MergeJoin" name="CrossJoin"  type="CROSS_JOIN" className="org.jetel.component.CrossJoin">
 	    <shortDescription>Performs cartesian product.</shortDescription>
 	    <description>Receives data records through all connected input ports and performs cartesian product on them. Each connected input port represents one set of records. Results are sent to the connected output port.</description>
 	    <inputPorts>
