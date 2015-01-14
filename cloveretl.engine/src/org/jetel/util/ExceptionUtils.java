@@ -194,7 +194,7 @@ public class ExceptionUtils {
 		
 		//if the last item in the exception chain does not have an message, class name is used instead of message
 		if (!(t instanceof RootException) && message == null && t.getCause() == null) {
-			message = t.getClass().getName();
+			message = getClassName(t);
 		}
 
 		//do not report exception message that is mentioned already in parent exception message
@@ -210,22 +210,21 @@ public class ExceptionUtils {
 		// sometimes we cannot affect this at all, as in the case of http-client library, see HttpConnector
 		Throwable cause = t.getCause();
 		if (message != null && cause != null) {
-			if (!(cause instanceof SerializableException)) {
-				if (message.equals(cause.getClass().getName())
-						 || message.equals(cause.getClass().getName() + ": " + cause.getMessage())) {
-						message = null;
-				}
-			} else {
-				//SerializableException needs special handling
-				SerializableException serializableCause = (SerializableException) cause;
-				if (message.equals(serializableCause.getWrappedExceptionClass().getName())
-						 || message.equals(serializableCause.getWrappedExceptionClass().getName() + ": " + serializableCause.getMessage())) {
-						message = null;
-				}
+			if (message.equals(getClassName(cause))
+					 || message.equals(getClassName(cause) + ": " + cause.getMessage())) {
+					message = null;
 			}
 		}
 		
 		return message;
+    }
+    
+    private static String getClassName(Throwable t) {
+		if (!(t instanceof SerializableException)) {
+			return t.getClass().getName();
+		} else {
+			return ((SerializableException) t).getWrappedExceptionClass().getName();
+		}
     }
     
 	private static void appendMessage(StringBuilder result, String message, int depth) {
