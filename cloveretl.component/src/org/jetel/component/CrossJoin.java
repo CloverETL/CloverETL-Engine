@@ -19,12 +19,11 @@
 package org.jetel.component;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.ListIterator;
 
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
+import org.jetel.data.FileRecordBuffer;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
@@ -40,6 +39,7 @@ import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
@@ -52,8 +52,8 @@ import org.w3c.dom.Element;
  * @created 1. 12. 2014
  */
 public class CrossJoin extends Node implements MetadataProvider {
-	public final static String COMPONENT_TYPE = "CARTESIAN_PRODUCT";
-	private final static String OUT_METADATA_NAME = "Cartesian_dynamic";
+	public final static String COMPONENT_TYPE = "CROSS_JOIN";
+	private final static String OUT_METADATA_NAME = "CrossJoin_dynamic";
 	private final static String OUT_METADATA_ID_SUFFIX = "_outMetadata";
 	private final static int WRITE_TO_PORT = 0;
 	private final static int MASTER_PORT = 0;
@@ -61,7 +61,10 @@ public class CrossJoin extends Node implements MetadataProvider {
 
 	private int slaveCount;
 	private boolean[] slaveFinishedReading;
-	private LinkedList<DataRecord>[] slaveRecordsMemory; // all incoming slave records are held in memory
+	private ShiftingFileBuffer[] slaveRecordsMemory;
+	
+	private CloverBuffer data = CloverBuffer.allocateDirect(org.jetel.data.Defaults.Record.RECORD_INITIAL_SIZE);
+	private CloverBuffer recordInMemory;
 	
 	//input
 	private InputPort masterPort;
@@ -73,13 +76,12 @@ public class CrossJoin extends Node implements MetadataProvider {
 	private OutputPort outPort;
 	private DataRecord outRecord;
 	
-	//static Log logger = LogFactory.getLog(CartesianProduct.class);
+	//static Log logger = LogFactory.getLog(CrossJoin.class);
 
 	public CrossJoin(String id) {
 		super(id);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
@@ -92,13 +94,13 @@ public class CrossJoin extends Node implements MetadataProvider {
 		slavePorts = new InputPort[slaveCount];
 		slaveRecords = new DataRecord[slaveCount];
 		slaveFinishedReading = new boolean[slaveCount];
-		slaveRecordsMemory = (LinkedList<DataRecord>[]) new LinkedList<?>[slaveCount];
+		slaveRecordsMemory = new ShiftingFileBuffer[slaveCount];
 		for (int slaveIdx = 0; slaveIdx < slaveCount; slaveIdx++) {
 			slavePorts[slaveIdx] = getInputPort(FIRST_SLAVE_PORT + slaveIdx);
 			slaveRecords[slaveIdx] = DataRecordFactory.newRecord(slavePorts[slaveIdx].getMetadata());
 			slaveRecords[slaveIdx].init();
 			slaveFinishedReading[slaveIdx] = false;
-			slaveRecordsMemory[slaveIdx] = new LinkedList<>();
+			slaveRecordsMemory[slaveIdx] = new ShiftingFileBuffer();
 		}
 		
 		// init output
@@ -135,14 +137,14 @@ public class CrossJoin extends Node implements MetadataProvider {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	private void readSlaveRecord(int slaveIdx, ListIterator<DataRecord> iter) throws IOException, InterruptedException {
+	private DataRecord readSlaveRecord(int slaveIdx, CloverBuffer intoBuffer) throws IOException, InterruptedException {
 		if (slavePorts[slaveIdx].readRecord(slaveRecords[slaveIdx]) == null) {
 			// no more input data
 			slaveFinishedReading[slaveIdx] = true;
-			return;
+			return null;
 		}
-		iter.add(slaveRecords[slaveIdx].duplicate());
-		iter.previous(); // move one position back
+		slaveRecords[slaveIdx].serialize(intoBuffer);
+		return slaveRecords[slaveIdx];
 	}
 	
 	/**
@@ -157,22 +159,42 @@ public class CrossJoin extends Node implements MetadataProvider {
 			writeRecord(currentRecords);
 			return;
 		}
-		ListIterator<DataRecord> currentIter = slaveRecordsMemory[slaveIdx].listIterator();
-		while (runIt && (currentIter.hasNext() || !slaveFinishedReading[slaveIdx])) {
-			if (!currentIter.hasNext()) {
-				readSlaveRecord(slaveIdx, currentIter);
-				continue;
+		slaveRecordsMemory[slaveIdx].rewind();
+		
+		data.clear();
+		while (runIt && ((recordInMemory = slaveRecordsMemory[slaveIdx].shift(data)) != null || !slaveFinishedReading[slaveIdx])) {
+			if (recordInMemory == null) {
+				// no record in memory any more, we need to read more
+				DataRecord slaveRecord = readSlaveRecord(slaveIdx, data);
+				if (slaveRecord == null) {
+					// all records read from this slave
+					break;
+				} else {
+					data.flip();
+					slaveRecordsMemory[slaveIdx].push(data);
+
+					
+					currentRecords[slaveIdx + 1] = slaveRecord;
+				}
+			} else {
+				// record found in memory
+				recordInMemory.flip();
+				currentRecords[slaveIdx + 1].deserialize(recordInMemory);
 			}
-			currentRecords[slaveIdx + 1] = currentIter.next();
+			
 			recursiveAppendSlaveRecord(currentRecords, slaveIdx + 1);
+			data.clear();
 		}
 	}
 	
 	@Override
 	protected Result execute() throws IOException, InterruptedException {
 		DataRecord[] currentRecords = new DataRecord[slaveCount + 1]; //master and slaves
+		for (int slaveIdx = 0; slaveIdx < slaveCount; slaveIdx++) {
+			currentRecords[slaveIdx + 1] = slaveRecords[slaveIdx].duplicate();
+		}
 		while (runIt && masterPort.readRecord(masterRecord) != null) {
-			currentRecords[0] = masterRecord;
+			currentRecords[0] = masterRecord.duplicate();
 			recursiveAppendSlaveRecord(currentRecords, 0);
 			//SynchronizeUtils.cloverYield();
 		}
@@ -276,5 +298,17 @@ public class CrossJoin extends Node implements MetadataProvider {
 			return metadataPropagationResolver.createMVMetadata(getConcatenatedMetadata(), this, OUT_METADATA_ID_SUFFIX);
 		}
 		return null;
+	}
+	
+	/**
+	 * This implementation provides no records immediately after writing and allows reading only from the beginning using rewind().
+	 */
+	private static class ShiftingFileBuffer extends FileRecordBuffer {
+		@Override
+		public void push(CloverBuffer data) throws IOException {
+			super.push(data);
+			readPosition = writePosition;
+		}
+		
 	}
 }
