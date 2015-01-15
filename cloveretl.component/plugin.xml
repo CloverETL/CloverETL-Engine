@@ -685,7 +685,18 @@
 	      <singlePort name="0" required="true" />
 	    </outputPorts>
 	    <properties>
-			<!-- blank -->
+		  <property category="advanced" displayName="Transform" modifiable="true" name="transform" nullable="true" required="false,!transformClass,!transformURL" defaultHint="basic default hint">
+	        <singleType name="transform"/>
+	      </property>
+	      <property category="advanced" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="false,!transformClass,!transform">
+	        <singleType name="file"/>
+	      </property>
+	      <property category="advanced" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="false,!transform,!transformURL">
+	        <singleType name="class"/>
+	      </property>
+	      <property category="advanced" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset"/>
+	      </property>
 	    </properties>
 	  </ETLComponent>
 	</extension>

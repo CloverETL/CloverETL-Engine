@@ -19,7 +19,10 @@
 package org.jetel.component;
 
 import java.io.IOException;
+import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
@@ -29,6 +32,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.TransformException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -42,6 +46,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Element;
 
 /**
@@ -55,6 +60,20 @@ public class CrossJoin extends Node implements MetadataProvider {
 	public final static String COMPONENT_TYPE = "CROSS_JOIN";
 	private final static String OUT_METADATA_NAME = "CrossJoin_dynamic";
 	private final static String OUT_METADATA_ID_SUFFIX = "_outMetadata";
+	
+	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
+	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
+	private static final String XML_TRANSFORMURL_ATTRIBUTE = "transformURL";
+	private static final String XML_CHARSET_ATTRIBUTE = "charset";
+	
+	private String transformClassName;
+	private String transformSource;
+	private String transformURL;
+	private String charset;
+	
+	private RecordTransform transformation;
+	private Properties transformationParameters;
+	
 	private final static int WRITE_TO_PORT = 0;
 	private final static int MASTER_PORT = 0;
 	private final static int FIRST_SLAVE_PORT = 1;
@@ -74,17 +93,54 @@ public class CrossJoin extends Node implements MetadataProvider {
 	
 	//output
 	private OutputPort outPort;
-	private DataRecord outRecord;
+	private DataRecord[] outRecord; // size 1
 	
-	//static Log logger = LogFactory.getLog(CrossJoin.class);
+	static Log logger = LogFactory.getLog(CrossJoin.class);
 
-	public CrossJoin(String id) {
+	public CrossJoin(String id, String transform, String transformUrl, String transformClass, String charset) {
 		super(id);
+		this.transformSource = transform;
+		this.transformURL = transformUrl;
+		this.transformClassName = transformClass;
+		this.charset = charset;
+	}
+
+	@Override
+	public void init() throws ComponentNotReadyException {
+		super.init();
+		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { getOutputPort(WRITE_TO_PORT).getMetadata() };
+		DataRecordMetadata[] inMetadata = getInMetadataArray();
+		
+		if (transformSource != null || transformURL != null || transformClassName != null) {
+			transformation = getTransformFactory(inMetadata, outMetadata).createTransform();
+        }
+		
+		// init transformation
+        if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
+            throw new ComponentNotReadyException("Error when initializing tranformation function.");
+        }
+	}
+	
+	private TransformFactory<RecordTransform> getTransformFactory(DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata) {
+    	TransformFactory<RecordTransform> transformFactory = TransformFactory.createTransformFactory(RecordTransformDescriptor.newInstance());
+    	transformFactory.setTransform(transformSource);
+    	transformFactory.setTransformClass(transformClassName);
+    	transformFactory.setTransformUrl(transformURL);
+    	transformFactory.setCharset(charset);
+    	transformFactory.setComponent(this);
+    	transformFactory.setInMetadata(inMetadata);
+    	transformFactory.setOutMetadata(outMetadata);
+    	return transformFactory;
 	}
 
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
+		
+		if (transformation != null) {
+			transformation.preExecute();
+		}
+		
 		slaveCount = inPorts.size() - 1;
 
 		//init input
@@ -105,28 +161,61 @@ public class CrossJoin extends Node implements MetadataProvider {
 		
 		// init output
 		outPort = getOutputPort(WRITE_TO_PORT);
-		outRecord = DataRecordFactory.newRecord(outPort.getMetadata());
-		outRecord.init();
-		outRecord.reset();
+		outRecord =  new DataRecord[] { DataRecordFactory.newRecord(outPort.getMetadata()) };
+		outRecord[WRITE_TO_PORT].init();
+		outRecord[WRITE_TO_PORT].reset();
+	}
+
+	@Override
+	public void postExecute() throws ComponentNotReadyException {
+		super.postExecute();
+		if (transformation != null) {
+			transformation.postExecute();
+		}
 	}
 	
+	@Override
+	public void free() {
+		super.free();
+		try {
+			for (int i = 0; i < slaveRecordsMemory.length; i++) {
+				slaveRecordsMemory[i].close();
+			}
+		} catch (IOException e) {
+			logger.debug("Exception while clearing slave records memory of " + this.getName() + ". Message: " + e.getMessage());
+		}
+	}
+
 	/**
 	 * Concatenates passed DataRecord array and writes it to the output port.
 	 * @param currentRecords
 	 * @throws IOException
 	 * @throws InterruptedException
+	 * @throws TransformException 
 	 */
-	private void writeRecord(DataRecord[] currentRecords) throws IOException, InterruptedException {
-		int outFieldIndex = 0;
-		DataField[] outFields = outRecord.getFields();
-		for (DataRecord rec : currentRecords) {
-			for (DataField field : rec.getFields()) {
-				outFields[outFieldIndex].setValue(field);
-				outFieldIndex++;
+	private void writeRecord(DataRecord[] currentRecords) throws IOException, InterruptedException, TransformException {
+		if (transformation != null) {
+			int transformResult;
+			try {
+				transformResult = transformation.transform(currentRecords, outRecord);
+			} catch (Exception exception) {
+				transformResult = transformation.transformOnError(exception, currentRecords, outRecord);
 			}
+			
+		} else {
+			int outFieldIndex = 0;
+			DataField[] outFields = outRecord[WRITE_TO_PORT].getFields();
+			for (DataRecord rec : currentRecords) {
+				for (DataField field : rec.getFields()) {
+					outFields[outFieldIndex].setValue(field);
+					outFieldIndex++;
+				}
+			}
+			
 		}
-		outPort.writeRecord(outRecord);
-		outRecord.reset();
+		
+		outPort.writeRecord(outRecord[WRITE_TO_PORT]);
+		outRecord[WRITE_TO_PORT].reset();
 	}
 	
 	/**
@@ -153,8 +242,9 @@ public class CrossJoin extends Node implements MetadataProvider {
 	 * @param slaveIdx
 	 * @throws IOException
 	 * @throws InterruptedException
+	 * @throws TransformException 
 	 */
-	private void recursiveAppendSlaveRecord(DataRecord[] currentRecords, int slaveIdx) throws IOException, InterruptedException {
+	private void recursiveAppendSlaveRecord(DataRecord[] currentRecords, int slaveIdx) throws IOException, InterruptedException, TransformException {
 		if (slaveIdx >= slaveCount) {
 			writeRecord(currentRecords);
 			return;
@@ -172,8 +262,6 @@ public class CrossJoin extends Node implements MetadataProvider {
 				} else {
 					data.flip();
 					slaveRecordsMemory[slaveIdx].push(data);
-
-					
 					currentRecords[slaveIdx + 1] = slaveRecord;
 				}
 			} else {
@@ -188,7 +276,7 @@ public class CrossJoin extends Node implements MetadataProvider {
 	}
 	
 	@Override
-	protected Result execute() throws IOException, InterruptedException {
+	protected Result execute() throws IOException, InterruptedException, TransformException {
 		DataRecord[] currentRecords = new DataRecord[slaveCount + 1]; //master and slaves
 		for (int slaveIdx = 0; slaveIdx < slaveCount; slaveIdx++) {
 			currentRecords[slaveIdx + 1] = slaveRecords[slaveIdx].duplicate();
@@ -223,7 +311,18 @@ public class CrossJoin extends Node implements MetadataProvider {
 
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
-		return new CrossJoin(xattribs.getString(XML_ID_ATTRIBUTE));
+		
+		CrossJoin join = new CrossJoin(xattribs.getString(XML_ID_ATTRIBUTE),
+				xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
+				xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.URL),
+				xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
+				xattribs.getString(XML_CHARSET_ATTRIBUTE, null)
+				);
+		
+		join.setTransformationParameters(xattribs.attributes2Properties(
+				new String[] {XML_ID_ATTRIBUTE, XML_TRANSFORM_ATTRIBUTE, XML_TRANSFORMCLASS_ATTRIBUTE}));	
+		
+		return join;
 	}
 	
 	@Override
@@ -298,6 +397,10 @@ public class CrossJoin extends Node implements MetadataProvider {
 			return metadataPropagationResolver.createMVMetadata(getConcatenatedMetadata(), this, OUT_METADATA_ID_SUFFIX);
 		}
 		return null;
+	}
+	
+	public void setTransformationParameters(Properties transformationParameters) {
+		this.transformationParameters = transformationParameters;
 	}
 	
 	/**
