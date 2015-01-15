@@ -2,6 +2,14 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-0-3
+---------
+
+* FIXES:
+	- Invalid CloverData format
+	- "Create directories" does not work in UniversalDataWriter when using 
+	Dictionary as file URL
+
 REL-4-0-2
 ---------
 
