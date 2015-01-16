@@ -1113,6 +1113,14 @@ public class DataFieldMetadata implements Serializable {
 
 		return null;
 	}
+	
+	/**
+	 * doesn't search in parent in case locale is not specified
+	 * @return
+	 */
+	public String getLocaleStrFieldOnly() {
+		return localeStr;
+	}
 
 	/**
 	 * @param timeZoneStr the timeZoneStr to set
@@ -1134,6 +1142,14 @@ public class DataFieldMetadata implements Serializable {
 		}
 
 		return null;
+	}
+	
+	/**
+	 * doesn't search in parent in case the time zone is not specified
+	 * @return
+	 */
+	public String getTimeZoneStrFieldOnly() {
+		return timeZoneStr;
 	}
 
 	/**
@@ -1165,6 +1181,10 @@ public class DataFieldMetadata implements Serializable {
 		} else {
 			return dataRecordMetadata.getCollatorSensitivity();
 		}
+	}
+	
+	public String getCollatorSensitivityFieldOnly() {
+		return collatorSensitivity;
 	}
 
 	/**
@@ -1249,6 +1269,12 @@ public class DataFieldMetadata implements Serializable {
 		dataFieldMetadata.setLocaleStr(localeStr);
 		dataFieldMetadata.setTimeZoneStr(timeZoneStr);
 		dataFieldMetadata.setCollatorSensitivity(collatorSensitivity);
+		
+		if (nullValues != null) {
+			List<String> nullValsCopy = new ArrayList<>(nullValues.size());
+			nullValsCopy.addAll(nullValues);
+			dataFieldMetadata.setNullValues(nullValsCopy);
+		}
 
 		return dataFieldMetadata;
 	}
