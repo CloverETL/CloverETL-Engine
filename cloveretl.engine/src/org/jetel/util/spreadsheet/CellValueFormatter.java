@@ -46,12 +46,12 @@ public class CellValueFormatter {
 		formatters.put(null, defaultLocaleFormatter);
 	}
 	
-	public String formatRawCellContents(double cellValue, int formatIndex, String formatString, String localeString) {
+	public String formatRawCellContents(double cellValue, int formatIndex, String formatString, String localeString, boolean use1904windowing) {
 		DataFormatter formatter = getLocalizedDataFormater(localeString);
-		return formatter.formatRawCellContents(cellValue, formatIndex, formatString);
+		return formatter.formatRawCellContents(cellValue, formatIndex, formatString, use1904windowing);
 	}
 
-	private DataFormatter getLocalizedDataFormater(String localeString) {
+	public DataFormatter getLocalizedDataFormater(String localeString) {
 		DataFormatter formatter = formatters.get(localeString);
 		if (formatter == null) {
 			String[] localParts = localeString.split("\\.");
@@ -72,6 +72,20 @@ public class CellValueFormatter {
 		return formatter.formatCellValue(cell, formulaEvaluator);
 	}
 	
+	/**
+	 * We are using this method to implement formatting behavior as close to Excel as possible.
+	 * @param formatIndex
+	 * @param formatString
+	 */
+	public static String modifyFormatString(int formatIndex, String formatString) {
+		//fix CLO-4866: openXML standard says these formats should have "yy", but excel uses "yyyy"
+		//it was decided that clover should work same as excel
+		if (formatIndex == 14 || formatIndex == 22) {
+			return formatString.replace("yy", "yyyy");
+		}
+		return formatString;
+	}
+	
 	public static class OurDataFormatter extends DataFormatter {
 		
 	    private static final Pattern FRAC_PATTERN = Pattern.compile("\\?+/[\\d+|\\?+]");
@@ -85,15 +99,16 @@ public class CellValueFormatter {
 		}
 	    
 		@Override
-		public String formatRawCellContents(double value, int formatIndex, String formatString) {  // TODO boolean use1904Windowing
+		public String formatRawCellContents(double value, int formatIndex, String formatString, boolean use1904Windowing) { 
 			Matcher fracMatcher = FRAC_PATTERN.matcher(formatString);
 			if (fracMatcher.find()) {
 				// convert fractions to standard double
 				formatString = "0.00";
 			}
-			return super.formatRawCellContents(value, formatIndex, formatString).replaceFirst("\\* ", "");
+			formatString = modifyFormatString(formatIndex, formatString);
+			return super.formatRawCellContents(value, formatIndex, formatString, use1904Windowing).replaceFirst("\\* ", "");
 		}
-
+		
 		@Override
 	    public String formatCellValue(Cell cell, FormulaEvaluator evaluator) {
 
@@ -123,7 +138,7 @@ public class CellValueFormatter {
 		
 	    private String getFormattedNumberString(Cell cell) {
 	    	CellStyle cellStyle = cell.getCellStyle();
-	    	return formatRawCellContents(cell.getNumericCellValue(), cellStyle.getDataFormat(), cellStyle.getDataFormatString());
+	    	return formatRawCellContents(cell.getNumericCellValue(), cellStyle.getDataFormat(), cellStyle.getDataFormatString(), false);
 	    }
 	    
 	}
