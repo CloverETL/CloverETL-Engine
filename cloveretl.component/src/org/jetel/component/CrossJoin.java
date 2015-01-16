@@ -111,13 +111,17 @@ public class CrossJoin extends Node implements MetadataProvider {
 		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { getOutputPort(WRITE_TO_PORT).getMetadata() };
 		DataRecordMetadata[] inMetadata = getInMetadataArray();
 		
+		createTransformIfPossible(inMetadata, outMetadata);
+
+		// init transformation
+        if (transformation != null && !transformation.init(transformationParameters, inMetadata, outMetadata)) {
+            throw new ComponentNotReadyException("Error when initializing tranformation function.");
+        }
+	}
+	
+	private void createTransformIfPossible(DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata) {
 		if (transformSource != null || transformURL != null || transformClassName != null) {
 			transformation = getTransformFactory(inMetadata, outMetadata).createTransform();
-        }
-		
-		// init transformation
-        if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
-            throw new ComponentNotReadyException("Error when initializing tranformation function.");
         }
 	}
 	
@@ -333,27 +337,31 @@ public class CrossJoin extends Node implements MetadataProvider {
 			return status;
 		}
 		
-		DataRecordMetadata expectedOutMetadata = getConcatenatedMetadata();
-		DataRecordMetadata outMetadata = getOutputPort(WRITE_TO_PORT).getMetadata();
+		DataRecordMetadata[] outMeta = new DataRecordMetadata[] { getOutputPort(WRITE_TO_PORT).getMetadata() };
+		DataRecordMetadata[] inMeta = getInMetadataArray();
+		createTransformIfPossible(inMeta, outMeta);
 		
-		DataFieldMetadata[] expectedFields = expectedOutMetadata.getFields();
-		DataFieldMetadata[] outFields = outMetadata.getFields();
-		
-		if (outFields.length < expectedFields.length) {
-			status.add("Incompatible metadata on output. Not enough fields in output metadata.",
-					Severity.ERROR, this, Priority.NORMAL);
-			return status;
-		}
-		
-		for (int i = 0; i < expectedFields.length; i++) {
-			DataFieldType expectedType = expectedFields[i].getDataType();
-			DataFieldType outType = outFields[i].getDataType();
-			if (!expectedType.isSubtype(outType)) {
-				status.add("Incompatible metadata on output. Expected type " + expectedType + " on position " + (i + 1) +
-						". Found: " + outType + ".", Severity.ERROR, this, Priority.NORMAL);
+		if (transformation == null) {
+			DataRecordMetadata expectedOutMetadata = getConcatenatedMetadata();
+			DataRecordMetadata outMetadata = getOutputPort(WRITE_TO_PORT).getMetadata();
+
+			DataFieldMetadata[] expectedFields = expectedOutMetadata.getFields();
+			DataFieldMetadata[] outFields = outMetadata.getFields();
+
+			if (outFields.length < expectedFields.length) {
+				status.add("Incompatible metadata on output. Not enough fields in output metadata.", Severity.ERROR, this, Priority.NORMAL);
+				return status;
+			}
+
+			for (int i = 0; i < expectedFields.length; i++) {
+				DataFieldType expectedType = expectedFields[i].getDataType();
+				DataFieldType outType = outFields[i].getDataType();
+				if (!expectedType.isSubtype(outType)) {
+					status.add("Incompatible metadata on output. Expected type " + expectedType + " on position " + (i + 1) + ". Found: " + outType + ".", Severity.ERROR, this, Priority.NORMAL);
+				}
 			}
 		}
-		
+
 		return status;
 	}
 

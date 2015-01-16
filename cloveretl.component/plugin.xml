@@ -685,13 +685,13 @@
 	      <singlePort name="0" required="true" />
 	    </outputPorts>
 	    <properties>
-		  <property category="advanced" displayName="Transform" modifiable="true" name="transform" nullable="true" required="false,!transformClass,!transformURL" defaultHint="basic default hint">
+		  <property category="advanced" displayName="Transform" modifiable="true" name="transform" nullable="true" redundant="transformClass|transformURL" required="false" defaultHint="Default transformation maps fields by order">
 	        <singleType name="transform"/>
 	      </property>
-	      <property category="advanced" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="false,!transformClass,!transform">
+	      <property category="advanced" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" redundant="transformClass|transform" required="false">
 	        <singleType name="file"/>
 	      </property>
-	      <property category="advanced" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="false,!transform,!transformURL">
+	      <property category="advanced" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" redundant="transform|transformURL" required="false">
 	        <singleType name="class"/>
 	      </property>
 	      <property category="advanced" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
