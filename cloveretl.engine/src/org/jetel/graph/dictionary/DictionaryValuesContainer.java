@@ -20,7 +20,6 @@ package org.jetel.graph.dictionary;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.NotSerializableException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.nio.channels.Channels;
@@ -35,6 +34,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -51,6 +51,7 @@ public final class DictionaryValuesContainer implements Serializable {
 	private static Logger log = Logger.getLogger(DictionaryValuesContainer.class);
 	
 	private final Map<String, Serializable> values;
+	private final Set<String> dirtyKeys;
 
 	/**
 	 * 
@@ -110,48 +111,98 @@ public final class DictionaryValuesContainer implements Serializable {
 	 * @return
 	 */
 	public static DictionaryValuesContainer getInstance(Dictionary dictionary) {
+		return getDictionaryValuesContainer(dictionary, true, true, false);
+	}
+
+	public static DictionaryValuesContainer getDictionaryValuesContainer(Dictionary dictionary, boolean includeInput, boolean includeOutput) {
+		return getDictionaryValuesContainer(dictionary, includeInput, includeOutput, false);
+	}
+	
+	/**
+	 * Creates DictionaryValuesContainer from specified Dictionary.
+	 * It's expected that all values are serializable. 
+	 * TODO handle streams
+	 * 
+	 * @throws UnsupportedOperationException when the dictionary contains output stream.
+	 * @param engineDictionary
+	 * @param includeInputs - dict entries with input=true will be included
+	 * @param includeOutputs - dict entries with output=true will be included
+	 * @param includeNonDefined - dict entries with input=false and output=false will be included (those which are not specified in the graph, but the value is somehow set)
+	 * @return
+	 */
+	public static DictionaryValuesContainer getDictionaryValuesContainer(Dictionary dictionary, boolean includeInput, boolean includeOutput, boolean includeNonDefined) {
 		DictionaryValuesContainer result = new DictionaryValuesContainer();
 
 		if (dictionary != null) {
 			for (String entryName : dictionary.getKeys()) {
 				final DictionaryEntry entry = dictionary.getEntry(entryName);
 				Object val = entry.getValue();
-				if (val instanceof Serializable) {
-					result.setValue(entryName, (Serializable)val);
-				} else {
-					log.warn("Non-Serializable Dictionary entry: key:"+entryName+" value:"+val);
+				//we are interested in output dictionary entries
+				if ((entry.isInput() && includeInput) 
+						|| (entry.isOutput() && includeOutput) 
+						|| (includeNonDefined && !entry.isInput() && !entry.isOutput())) {
+					if (val==null || val instanceof Serializable) {
+						synchronized (result.values) {
+							result.values.put(entryName, (Serializable)val);
+							if (entry.isDirty()) {
+								result.dirtyKeys.add(entryName);
+							}
+						}
+					} else {
+						log.warn("Non-Serializable Dictionary entry: key:"+entryName+" value:"+val);
+					}
 				}
 			}
 		}
-		
 		return result;
 	}
-
+	
 	public static DictionaryValuesContainer duplicate(DictionaryValuesContainer dictionaryContainer) {
-		DictionaryValuesContainer result = new DictionaryValuesContainer();
-
 		if (dictionaryContainer != null) {
-			synchronized (dictionaryContainer.values) {
-				result.values.putAll(dictionaryContainer.values);
+			return dictionaryContainer.duplicate();
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Goes through specified DictionaryValuesContainer and modified values puts to the specified Dictionary.
+	 * Thus modifications made by another worker in the previous phase may be applied to this worker before next phase)
+	 * We don't expect any conflicts, since the dictionary is already merged.
+	 * 
+	 * @param dictionary - target dictionary
+	 * @param mergedDictionaryContainer - source dictionary merged from all workers
+	 * @throws ComponentNotReadyException 
+	 */
+	public static void setModifiedValues(Dictionary dictionary, DictionaryValuesContainer mergedDictionaryContainer) throws ComponentNotReadyException {
+		if (mergedDictionaryContainer == null) {
+			return;
+		}
+		synchronized (mergedDictionaryContainer.values) {
+			for (String key : mergedDictionaryContainer.values.keySet()) {
+				if (mergedDictionaryContainer.isDirty(key)) {
+					dictionary.setValue(key, mergedDictionaryContainer.values.get(key));
+					dictionary.resetDirty(key); // dictionary is synchronized with another workers, so it's not dirty any more
+				}
 			}
 		}
-		
-		return result;
 	}
-
+	
 	/**
 	 * 
 	 */
 	public DictionaryValuesContainer() {
 		values = new HashMap<String, Serializable>();
+		dirtyKeys = new HashSet<String>();
 	}
-	
+
 	public void setValue(String key, Serializable value) {
 		if (key == null) {
 			throw new IllegalArgumentException("Dictionary key cannot be null.");
 		}
 		synchronized (values) {
 			values.put(key, value);
+			dirtyKeys.add(key);
 		}
 	}
 
@@ -203,6 +254,7 @@ public final class DictionaryValuesContainer implements Serializable {
 	public void clear() {
 		synchronized (values) {
 			values.clear();
+			dirtyKeys.clear();
 		}
 	}
 	
@@ -230,6 +282,13 @@ public final class DictionaryValuesContainer implements Serializable {
 		return s;
 	}
 
+	public boolean isDirty(String key) {
+		Serializable s = null;
+		synchronized (values) {
+			return dirtyKeys.contains(key);
+		}
+	}
+
 	/**
 	 * Returns shallow copy of the dictionary content.
 	 * TreeMap sorts by the keys.
@@ -251,6 +310,7 @@ public final class DictionaryValuesContainer implements Serializable {
 		DictionaryValuesContainer result = new DictionaryValuesContainer();
 		synchronized (values) {
 			result.values.putAll(values);
+			result.dirtyKeys.addAll(dirtyKeys);
 		}
 		return result;
 	}
@@ -276,6 +336,9 @@ public final class DictionaryValuesContainer implements Serializable {
 				} else {
 					first = false;
 				}
+				if (isDirty(entry.getKey())) {
+					result.append("*");
+				}
 				result.append(entry.getKey()).append("=").append(String.valueOf(entry.getValue()));
 			}
 		}
@@ -289,6 +352,39 @@ public final class DictionaryValuesContainer implements Serializable {
 	
 	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();  
+	}
+
+	/**
+	 * Removes entries from specified dicContainer according to definition in the Dictionary.
+	 * @param dictionaryContainer
+	 * @param dictionaryDefinition
+	 * @param keepInput
+	 * @param keepOutput
+	 * @param keepNonDefined
+	 * @return
+	 */
+	public static DictionaryValuesContainer filterDictionaryEntries(DictionaryValuesContainer dictionaryContainer,	Dictionary dictionaryDefinition, boolean keepInput, boolean keepOutput, boolean keepNonDefined) {
+		DictionaryValuesContainer result = dictionaryContainer.duplicate();
+		synchronized (dictionaryContainer.values) {
+			for (String key : dictionaryContainer.values.keySet()) {
+				final DictionaryEntry entry = dictionaryDefinition.getEntry(key);
+				if ((entry.isInput() && keepInput) 
+						|| (entry.isOutput() && keepOutput) 
+						|| (keepNonDefined && !entry.isInput() && !entry.isOutput())) {
+					// we keep the entry
+				} else {
+					result.remove(key);
+				}
+
+			}// for
+		}// sync
+		return result;
+	}
+
+	private void remove(String key) {
+		synchronized (values) {
+			values.remove(key); 
+		}
 	}
 	
 }
