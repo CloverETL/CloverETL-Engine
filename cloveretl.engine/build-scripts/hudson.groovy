@@ -101,10 +101,10 @@ if( !runTests ){
 	antBaseD = testEnvironmentD
 	
 	engineJobName = "cloveretl.engine-" + versionSuffix
-	engineBuildNumber = new URL( env['HUDSON_URL'] + "/job/${engineJobName}/lastSuccessfulBuild/buildNumber").text
+	engineBuildNumber = new URL( env['JENKINS_URL'] + "job/${engineJobName}/lastSuccessfulBuild/buildNumber").text
 	println "engineBuildNumber   = " + engineBuildNumber
 
-        cloverVersionPropertiesURL = env['HUDSON_URL'] + "/job/${engineJobName}/${engineBuildNumber}/artifact/cloveretl.engine/version.properties"
+        cloverVersionPropertiesURL = env['JENKINS_URL'] + "job/${engineJobName}/${engineBuildNumber}/artifact/cloveretl.engine/version.properties"
         println "cloverVersionPropertiesURL ${cloverVersionPropertiesURL}"
 
 	cloverVersionProperties = new URL( cloverVersionPropertiesURL ).text
@@ -168,7 +168,7 @@ if( !runTests ){
 	ant.delete( dir:cloverD )
 	ant.delete(failonerror:false){ fileset( dir:"/data/bigfiles/tmp" , includes:"**")}
 
-	engineURL = new URL( env['HUDSON_URL'] + "/job/${engineJobName}/${engineBuildNumber}/artifact/cloveretl.engine/dist/cloverETL.rel-${cloverVersionDash}.zip" )
+	engineURL = new URL( env['JENKINS_URL'] + "job/${engineJobName}/${engineBuildNumber}/artifact/cloveretl.engine/dist/cloverETL.rel-${cloverVersionDash}.zip" )
 	engineFile = new File( baseD, "cloverETL.zip" )
 	engineURL.download( engineFile )
 	ant.unzip( src:engineFile, dest:baseD )
