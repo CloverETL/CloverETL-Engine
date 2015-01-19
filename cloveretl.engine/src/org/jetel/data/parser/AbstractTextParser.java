@@ -189,6 +189,10 @@ public abstract class AbstractTextParser extends AbstractParser implements TextP
 	 * @param policyType
 	 */
 	public static void applyDecoderPolicy(CharsetDecoder decoder, PolicyType policyType) {
+		if (policyType == null) {
+			policyType = PolicyType.STRICT;
+		}
+		
 		switch (policyType) {
 		case LENIENT:
 			setLenientDecoder(decoder);
