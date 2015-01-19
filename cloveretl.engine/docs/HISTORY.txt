@@ -83,6 +83,16 @@ REL-4-0-0-M1
 	 
 
 
+REL-3-5-4
+---------
+
+* Improved support for multipart entities in HttpConnector
+* FIXES:
+    - multipart entities mapping does not work
+    - simultaneous run of Success and SetJoboutput components fixed
+    - DBOutputTable fails on syntax error when using multiple quotes 
+
+
 REL-3-5-3
 ---------
 
