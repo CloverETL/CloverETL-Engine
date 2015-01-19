@@ -41,6 +41,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
@@ -48,6 +49,7 @@ import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -355,7 +357,6 @@ public class CrossJoin extends Node implements MetadataProvider {
 		if (transformation == null) {
 			DataRecordMetadata expectedOutMetadata = getConcatenatedMetadata(null);
 			DataRecordMetadata outMetadata = getOutputPort(WRITE_TO_PORT).getMetadata();
-
 			DataFieldMetadata[] expectedFields = expectedOutMetadata.getFields();
 			DataFieldMetadata[] outFields = outMetadata.getFields();
 
@@ -367,12 +368,30 @@ public class CrossJoin extends Node implements MetadataProvider {
 			for (int i = 0; i < expectedFields.length; i++) {
 				DataFieldType expectedType = expectedFields[i].getDataType();
 				DataFieldType outType = outFields[i].getDataType();
-				if (!expectedType.isSubtype(outType)) {
-					status.add("Incompatible metadata on output. Expected type " + expectedType + " on position " + (i + 1) + ". Found: " + outType + ".", Severity.ERROR, this, Priority.NORMAL);
+				DataFieldContainerType expectedContainer = expectedFields[i].getContainerType();
+				DataFieldContainerType outContainer = outFields[i].getContainerType();
+				if (expectedType != outType || expectedContainer != outContainer) {
+					StringBuilder sb = new StringBuilder("Incompatible metadata on output. Expected type ");
+					if (expectedContainer == null || expectedContainer == DataFieldContainerType.SINGLE) {
+						sb.append(StringUtils.quote(expectedType.toString()));
+					} else if (expectedContainer == DataFieldContainerType.LIST) {
+						sb.append(StringUtils.quote("list[" + expectedType + "]"));
+					} else if (expectedContainer == DataFieldContainerType.MAP) {
+						sb.append(StringUtils.quote("map[" + expectedType + "]"));
+					}
+					sb.append(" on position " + (i + 1) + ". Found: ");
+					if (outContainer == null || outContainer == DataFieldContainerType.SINGLE) {
+						sb.append(StringUtils.quote(outType.toString()));
+					} else if (outContainer == DataFieldContainerType.LIST) {
+						sb.append(StringUtils.quote("list[" + outType + "]"));
+					} else if (outContainer == DataFieldContainerType.MAP) {
+						sb.append(StringUtils.quote("map[" + outType + "]"));
+					}
+					sb.append(".");
+					status.add(sb.toString(), Severity.ERROR, this, Priority.NORMAL);
 				}
 			}
 		}
-
 		return status;
 	}
 
