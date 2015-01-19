@@ -43,6 +43,9 @@
 	      <property category="basic" displayName="Value field" modifiable="true" name="valueField" nullable="true" required="true">
 	        <singleType name="field" inputPortName="0" />
 	      </property>
+	      <property category="advanced" displayName="Create empty files" modifiable="true" name="createEmptyFiles" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
 	    </properties>
 	  </ETLComponent>
 	</extension>

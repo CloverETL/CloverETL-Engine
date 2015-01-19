@@ -363,42 +363,38 @@ public class MultiFileReader {
 	 * @throws JetelException 
 	 */
 	private void skip() throws JetelException {
-        try {
-        	// perform L3 skip
-    		if (skipL3Rows > 0) {
-    			parser.skip(skipL3Rows);
+    	// perform L3 skip
+		if (skipL3Rows > 0) {
+			parser.skip(skipL3Rows);
+		}
+		// perform per-source skip, skipped records are counted by L3 counter
+		int numSkippedSource = 0; // number of records skipped in this subsource to satisfy skip-per-source attribute 
+		if (skippedInSource < skipSourceRows) {
+			// perform per-source skip
+			int numSkipSource = skipSourceRows - skippedInSource;
+    		if (numL3Records >= 0 && numL3Records < numSkipSource) {
+    			// records for global skip in local file are limited by max number of records from local file
+    			numSkipSource = numL3Records;
     		}
-    		// perform per-source skip, skipped records are counted by L3 counter
-    		int numSkippedSource = 0; // number of records skipped in this subsource to satisfy skip-per-source attribute 
-    		if (skippedInSource < skipSourceRows) {
-    			// perform per-source skip
-    			int numSkipSource = skipSourceRows - skippedInSource;
-        		if (numL3Records >= 0 && numL3Records < numSkipSource) {
-        			// records for global skip in local file are limited by max number of records from local file
-        			numSkipSource = numL3Records;
-        		}
-        		numSkippedSource = parser.skip(numSkipSource);
-        		skippedInSource += numSkippedSource;
-        		autoFilling.incL3Counter(numSkippedSource);
-    		}
-    		// perform global skip, skipp records are counted by L3 counter and per-source counter
-    		if (skipped < skip) {
-    			int numSkipGlobal = skip - skipped;    			
-    			if (numL3Records >= 0 && numL3Records - numSkippedSource < numSkipGlobal) {    				
-    				numSkipGlobal = numL3Records - numSkippedSource;
-    			}
-    			if (numSourceRecords >= 0 && numSourceRecords - autoFilling.getSourceCounter() < numSkipGlobal) {
-    				// records for global skip in local file are limited by max number of records from local file
-    				numSkipGlobal = Math.min(numSkipGlobal, numSourceRecords - autoFilling.getSourceCounter());
-    			}
-    			int numSkippedGlobal = parser.skip(numSkipGlobal);
-    			skipped += numSkippedGlobal;
-    			autoFilling.incL3Counter(numSkippedGlobal);
-    			autoFilling.incSourceCounter(numSkippedGlobal);
-    		}
-        } catch (JetelException e) {
-            logger.error("An error occured while skipping records in file " + autoFilling.getFilename() + ", the file will be ignored", e);
-        }
+    		numSkippedSource = parser.skip(numSkipSource);
+    		skippedInSource += numSkippedSource;
+    		autoFilling.incL3Counter(numSkippedSource);
+		}
+		// perform global skip, skip records are counted by L3 counter and per-source counter
+		if (skipped < skip) {
+			int numSkipGlobal = skip - skipped;    			
+			if (numL3Records >= 0 && numL3Records - numSkippedSource < numSkipGlobal) {    				
+				numSkipGlobal = numL3Records - numSkippedSource;
+			}
+			if (numSourceRecords >= 0 && numSourceRecords - autoFilling.getSourceCounter() < numSkipGlobal) {
+				// records for global skip in local file are limited by max number of records from local file
+				numSkipGlobal = Math.min(numSkipGlobal, numSourceRecords - autoFilling.getSourceCounter());
+			}
+			int numSkippedGlobal = parser.skip(numSkipGlobal);
+			skipped += numSkippedGlobal;
+			autoFilling.incL3Counter(numSkippedGlobal);
+			autoFilling.incSourceCounter(numSkippedGlobal);
+		}
     }
 	
 	    
@@ -444,6 +440,7 @@ public class MultiFileReader {
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		// checks skip/numRecords
 		if (!checkRowAndPrepareSource()) {
+			channelIterator.blankRead(); // CLO-4577
 			return null;
 		}
 		

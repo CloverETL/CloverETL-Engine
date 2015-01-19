@@ -36,18 +36,18 @@ import org.jetel.test.CloverTestCase;
  */
 public class ExceptionUtilsTest extends CloverTestCase {
 	
-	public void testExceptionChainToMessage() {
+	public void testGetMessage() {
 		assertEquals("", ExceptionUtils.getMessage(null, null));
 		
 		assertEquals("", ExceptionUtils.getMessage("", null));
 		
 		assertEquals("abc", ExceptionUtils.getMessage("abc", null));
 		
-		assertEquals("", ExceptionUtils.getMessage(null, new Exception()));
+		assertEquals("java.lang.Exception", ExceptionUtils.getMessage(null, new Exception()));
 
-		assertEquals("", ExceptionUtils.getMessage("", new Exception()));
+		assertEquals("java.lang.Exception", ExceptionUtils.getMessage("", new Exception()));
 
-		assertEquals("abc", ExceptionUtils.getMessage("abc", new Exception()));
+		assertEquals("abc\n java.lang.Exception", ExceptionUtils.getMessage("abc", new Exception()));
 
 		assertEquals("first", ExceptionUtils.getMessage(null, new Exception("first")));
 
@@ -55,9 +55,9 @@ public class ExceptionUtilsTest extends CloverTestCase {
 		
 		assertEquals("abc\n first", ExceptionUtils.getMessage("abc", new Exception("first")));
 
-		assertEquals("abc\n first", ExceptionUtils.getMessage("abc", new Exception("first", new Exception())));
+		assertEquals("abc\n first\n  java.lang.Exception", ExceptionUtils.getMessage("abc", new Exception("first", new Exception())));
 
-		assertEquals("abc\n first", ExceptionUtils.getMessage("abc", new Exception("first", new Exception(""))));
+		assertEquals("abc\n first\n  java.lang.Exception", ExceptionUtils.getMessage("abc", new Exception("first", new Exception(""))));
 
 		assertEquals("abc\n first", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first"))));
 
@@ -69,15 +69,15 @@ public class ExceptionUtilsTest extends CloverTestCase {
 
 		assertEquals("abc\n first\n  second", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new Exception("second")))));
 
-		assertEquals("abc\n first", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException(new Exception())))));
+		assertEquals("abc\n first\n  java.lang.Exception", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException(new Exception())))));
 
-		assertEquals("abc\n first", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException("", new Exception())))));
+		assertEquals("abc\n first\n  java.lang.Exception", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException("", new Exception())))));
 
 		assertEquals("abc\n first\n  second", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException(new Exception("second"))))));
 
-		assertEquals("abc\n first\n  second", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception())))));
+		assertEquals("abc\n first\n  second\n   java.lang.Exception", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception())))));
 
-		assertEquals("abc\n first\n  second", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception(""))))));
+		assertEquals("abc\n first\n  second\n   java.lang.Exception", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception(""))))));
 		
 		assertEquals("abc\n first\n  second\n   third", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception("third"))))));
 
@@ -85,7 +85,7 @@ public class ExceptionUtilsTest extends CloverTestCase {
 
 		assertEquals("abc\n first\n  third\n  forth", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException(new Exception("third"), new Exception("forth"))))));
 
-		assertEquals("abc\n first\n  second\n   forth", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception(""), new Exception("forth"))))));
+		assertEquals("abc\n first\n  second\n   java.lang.Exception\n   forth", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception(""), new Exception("forth"))))));
 
 		assertEquals("abc\n first\n  second\n  second2\n   third\n    third1\n    third2\n     third3\n   forth", 
 				ExceptionUtils.getMessage("abc", 
@@ -107,9 +107,9 @@ public class ExceptionUtilsTest extends CloverTestCase {
 
 		assertEquals("abc\n first\n  Unexpected null value.", ExceptionUtils.getMessage("abc", new Exception("first", new NullPointerException("null"))));
 
-		assertEquals("abc", ExceptionUtils.getMessage("abc", new Exception()));
+		assertEquals("abc\n java.lang.Exception", ExceptionUtils.getMessage("abc", new Exception()));
 
-		assertEquals("abc", ExceptionUtils.getMessage("abc", new Exception(new Exception())));
+		assertEquals("abc\n java.lang.Exception", ExceptionUtils.getMessage("abc", new Exception(new Exception())));
 		
 		assertEquals("abc\n first", ExceptionUtils.getMessage("abc", new Exception(new Exception("first"))));
 
@@ -120,6 +120,8 @@ public class ExceptionUtilsTest extends CloverTestCase {
 		assertEquals("abc\n first\n  second", ExceptionUtils.getMessage("abc", new Exception("first", new Exception(new Exception(new Exception(new Exception("second")))))));
 
 		assertEquals("abc\n Unexpected null value.", ExceptionUtils.getMessage("abc", new Exception(new Exception(new NullPointerException()))));
+
+		assertEquals("abc\n java.lang.Exception", ExceptionUtils.getMessage("abc", new Exception(new Exception(new Exception()))));
 	}
 
 	public void testInstanceOf() {

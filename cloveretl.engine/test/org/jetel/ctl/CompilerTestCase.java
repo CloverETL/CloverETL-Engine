@@ -19,6 +19,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -61,7 +62,10 @@ import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Years;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class CompilerTestCase extends CloverTestCase {
 
 	// ---------- RECORD NAMES -----------
@@ -247,6 +251,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			g.getDictionary().setContentType("dateList", "date");
 			g.getDictionary().setValue("byteList", "list", Arrays.asList(new byte[] {0x12}, new byte[] {0x34, 0x56}, null, new byte[] {0x78}));
 			g.getDictionary().setContentType("byteList", "byte");
+			g.getDictionary().setValue("stringMap", "map", new LinkedHashMap<String,String>());
+			g.getDictionary().setContentType("stringMap", "string");
 		} catch (ComponentNotReadyException e) {
 			throw new RuntimeException("Error init default dictionary", e);
 		}
@@ -2727,6 +2733,79 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			
 		}
 	}
+	
+	// CLO-403
+	public void test_container_assignment_initialization() {
+		doCompile("test_container_assignment_initialization");
+		
+		//list
+		Object val = ((List<?>) outputRecords[5].getField("stringListField").getValue()).get(1);
+		assertEquals(val.toString(), "value");
+		
+		val = ((List<?>) outputRecords[4].getField("stringListField").getValue()).get(0);
+		assertEquals(val.toString(), "value");
+		
+		List<?> dictList = (List<?>) graph.getDictionary().getEntry("stringList").getValue();
+		assertDeepEquals(dictList, Arrays.asList(null, "value"));
+		
+		check("listNull", true);
+		check("arrayString", Arrays.asList("value"));
+		
+		
+		//map
+		val = ((Map<?,?>) outputRecords[5].getField("stringMapField").getValue()).get("key");
+		assertEquals(val.toString(), "value");
+		
+		val = ((Map<?,?>) outputRecords[4].getField("stringMapField").getValue()).get("key");
+		assertEquals(val.toString(), "value");
+		
+		Map<?,?> dictMap = (Map<?,?>) graph.getDictionary().getEntry("stringMap").getValue();
+		LinkedHashMap<String,String> expectedmap = new LinkedHashMap<>();
+		expectedmap.put("key", "value");
+		assertDeepEquals(dictMap, expectedmap);
+		
+		check("mapNull", true);
+		check("mapString", expectedmap);
+	}
+	
+	/**
+	 * Answers <code>true</code> if given throwable is or is caused by given cause type.
+	 * @param throwable
+	 * @param causeType
+	 * @return
+	 */
+	public static boolean isCausedBy(Throwable throwable, Class<? extends Throwable> causeType) {
+		
+		while (throwable != null) {
+			if (causeType.isAssignableFrom(throwable.getClass())) {
+				return true;
+			}
+			throwable = throwable.getCause();
+		}
+		return false;
+	}
+
+	public void test_container_assignment_initialization_expect_error() {
+		try {
+			doCompile("function string[] getStringList() {return $out.firstMultivalueOutput.stringListField;} function integer transform(){getStringList()[0] = 'test'; return 0;}", "test_container_assignment_initialization_expect_error");
+			fail();
+		} catch (NullPointerException npe) {
+		} catch (TransformLangExecutorRuntimeException ex) {
+			if (!isCausedBy(ex, NullPointerException.class)) {
+				throw ex;
+			}
+		}
+
+		try {
+			doCompile("function map[string, string] getStringMap() {return $out.firstMultivalueOutput.stringMapField;} function integer transform(){getStringMap()['key'] = 'value'; return 0;}", "test_container_assignment_initialization_expect_error");
+			fail();
+		} catch (NullPointerException npe) {
+		} catch (TransformLangExecutorRuntimeException ex) {
+			if (!isCausedBy(ex, NullPointerException.class)) {
+				throw ex;
+			}
+		}
+	}
 
 	// CLO-5423
 	public void test_cast_null() {
@@ -4712,6 +4791,64 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 		
 		doCompileExpectError("function integer transform(){boolean b = containsValue(null, 18L); return 0;}","test_convertlib_containsValue_expect_error", Arrays.asList("Function 'containsValue' is ambiguous"));
+	}
+
+	public void test_containerlib_binarySearch() {
+		doCompile("test_containerlib_binarySearch");
+
+		check("listResults", Arrays.asList(2, -4, -4, 0, -1, -1, 1, -4));
+		check("listEmptyTest2", -1);
+		check("listEmptyTest3", -1);
+		check("listTest2", 1);
+		check("listTest3", 0);
+		check("listTest8", 1);
+		check("listTest9", 0);
+		check("listTest10", -3);
+		check("listTest11", 1);
+		check("listTest12", 0);
+		check("listTest13", -5);
+		check("listTest14", 0);
+		check("listTest15", 2);
+		check("listTest16", -4);
+		check("integerToLongTest", 1);
+		check("listTest17", 1);
+		check("listTest18", 0);
+		check("listTest19", -5);
+		check("listTest20", 0);
+		check("listTest21", 1);
+		check("listTest22", -5);
+		check("listTest23", 1);
+		check("listTest24", 0);
+		check("listTest25", -5);
+
+		check("listEmptyTest4", -1);
+	}
+
+	public void test_containerlib_binarySearch_expect_error(){
+		try {
+			doCompile("function integer transform(){long[] nullList = null; integer i = nullList.binarySearch(18L); return 0;}","test_containerlib_binarySearch_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+		try {
+			doCompile("function integer transform(){long nullValue = null; [5L, 15L].binarySearch(nullValue); return 0;}","test_containerlib_binarySearch_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+		try {
+			doCompile("function integer transform(){long[] emptyList; long nullValue = null; emptyList.binarySearch(nullValue); return 0;}","test_containerlib_binarySearch_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+		try {
+			doCompile("function integer transform(){byte[] byteList = [hex2byte('00')]; byteList.binarySearch(hex2byte('FF')); return 0;}","test_containerlib_binarySearch_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, IllegalArgumentException.class));
+		}
 	}
 
 	public void test_containerlib_getKeys() {

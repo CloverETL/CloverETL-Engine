@@ -1337,6 +1337,13 @@ public class DataFieldMetadata implements Serializable {
 			status.add(new ConfigurationProblem("Data type is not specified.", Severity.ERROR, null, Priority.NORMAL));
 		}
 		
+		//not nullable field cannot have a default value in set of null values - CLO-4569
+		if (!isNullable() && getNullValues().contains(getDefaultValueStr())) {
+			status.add(new ConfigurationProblem("Invalid metadata for field '" + name + "'. Default value of not nullable field can not be one of the null values.",
+					Severity.ERROR, null, Priority.NORMAL));
+			return;
+		}
+		
 		// verify default value - approved by kokon
 		if (defaultValue != null || defaultValueStr != null) {
 			DataField dataField = DataFieldFactory.createDataField(this, false);

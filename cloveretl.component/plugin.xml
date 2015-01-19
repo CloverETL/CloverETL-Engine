@@ -170,6 +170,9 @@
 	      <property category="advanced" displayName="Sorted input" modifiable="true" name="sortedInput" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
 	      </property>
+	      <property category="advanced" displayName="Create empty files" modifiable="true" name="createEmptyFiles" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
 	    </properties>
 	  </ETLComponent>
 	</extension>
@@ -1168,6 +1171,9 @@
 	      <property category="advanced" displayName="Sorted input" modifiable="true" name="sortedInput" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
 	      </property>
+	      <property category="advanced" displayName="Create empty files" modifiable="true" name="createEmptyFiles" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
 	    </properties>
 	  </ETLComponent>
 	</extension>
@@ -1598,6 +1604,9 @@
 	      <property category="advanced" displayName="Request parameters" modifiable="true" name="requestParameters" nullable="true">
 	        <singleType name="properties" />
 	      </property>	      
+	      <property category="advanced" displayName="Disable SSL Certificate Validation" modifiable="true" name="disableSSLCertValidation" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>   
 	      <property category="deprecated" displayName="URL from input field" modifiable="true" name="urlInputField" nullable="true">
 	        <singleType name="field" inputPortName="0" />
 	      </property>
@@ -1985,6 +1994,9 @@
 	      <property category="advanced" displayName="Sorted input" modifiable="true" name="sortedInput" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
 	      </property>
+	      <property category="advanced" displayName="Create empty files" modifiable="true" name="createEmptyFiles" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
 	      <property category="deprecated" displayName="Save metadata" modifiable="true" name="saveMetadata" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
 	      </property>
@@ -2099,6 +2111,9 @@
 	        <singleType name="string" />
 	      </property>
 	      <property category="advanced" displayName="Sorted input" modifiable="true" name="sortedInput" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Create empty files" modifiable="true" name="createEmptyFiles" nullable="true" defaultHint="true">
 	        <singleType name="bool" />
 	      </property>
 	    </properties>
@@ -2435,8 +2450,8 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Equal NULL" modifiable="true" name="equalNULL" nullable="true" defaultHint="true">
 	        <singleType name="bool"/>
 	      </property>
-	      <property category="deprecated" displayName="Locale" modifiable="true" name="locale" nullable="true">
-	        <singleType name="string"/>
+	      <property category="deprecated" displayName="Locale" modifiable="true" name="locale" nullable="true" defaultHint="none">
+	        <singleType name="locale"/>
 	      </property>
 	      <property category="deprecated" displayName="Use internationalization" modifiable="true" name="useI18N" nullable="true" defaultHint="false">
 	        <singleType name="bool"/>
@@ -2695,6 +2710,33 @@ Sends all resulting records to all connected output ports.</description>
 	    </properties>
 	  </ETLComponent>
 	</extension>
+
+	<extension point-id="component">
+	  <ETLComponent category="others" iconPath="icons/others/JavaExecute" name="GenericComponent" type="GENERIC_COMPONENT" className="org.jetel.component.GenericComponent">
+	    <shortDescription>teh hercules</shortDescription>
+	    <description>teh ultimate hercules, son of zeus</description>
+	    <inputPorts>
+	      <multiplePort required="false" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="false" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Algorithm" modifiable="true" name="genericTransform" nullable="true" required="!genericTransformClass,!genericTransformURL">
+	        <singleType name="multilineEditableJava" />
+	      </property>
+	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Algorithm class" modifiable="true" name="genericTransformClass" nullable="true" required="!genericTransform,!genericTransformURL">
+	        <singleType name="class" />
+	      </property>
+	      <property category="basic" displayName="Runnable source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
+	</extension>
 	
 	<extension point-id="component">
 	  <ETLComponent category="deprecated" iconPath="icons/writers/XMLWriter" name="XMLWriter (deprecated)"  type="XML_WRITER" defaultVisibility="false" className="org.jetel.component.XmlWriter">
@@ -2834,6 +2876,9 @@ Sends all resulting records to all connected output ports.</description>
 	        <singleType name="string" />
 	      </property>
 	      <property category="advanced" displayName="Partition key sorted" modifiable="true" name="partitionKeySorted" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Create empty files" modifiable="true" name="createEmptyFiles" nullable="true" defaultHint="true">
 	        <singleType name="bool" />
 	      </property>
 	    </properties>

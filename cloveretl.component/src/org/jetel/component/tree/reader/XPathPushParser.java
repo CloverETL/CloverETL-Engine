@@ -79,20 +79,20 @@ public class XPathPushParser {
 	 * @param mapping
 	 * @param input
 	 */
-	public void parse(MappingContext mapping, Object input) throws AbortParsingException {
+	public void parse(MappingContext mapping, Object input, DataRecord inputRecord) throws AbortParsingException {
 
-		handleContext(mapping, input, null);
+		handleContext(mapping, input, null, inputRecord);
 		evaluator.reset();
 	}
 
-	protected void handleContext(MappingContext mapping, Object context, DataRecord dataTarget)
+	protected void handleContext(MappingContext mapping, Object context, DataRecord dataTarget, DataRecord inputRecord)
 			throws AbortParsingException {
 		/*
 		 * for unbound context, switch evaluation context and process nested mappings
 		 */
 		if (mapping.getOutputPort() == null) {
 			Object newContext = evaluator.evaluatePath(mapping.getXPath(), getNamespaceBinding(mapping), context, mapping);
-			applyContextMappings(mapping, newContext, dataTarget, -1);
+			applyContextMappings(mapping, newContext, dataTarget, -1, inputRecord);
 			return;
 		}
 		
@@ -142,7 +142,7 @@ public class XPathPushParser {
 			 * process nested mappings on each element
 			 */
 			Object element = it.next();
-			applyContextMappings(mapping, element, newTarget, portIndex);
+			applyContextMappings(mapping, element, newTarget, portIndex, inputRecord);
 
 			/*
 			 * pass record data to consumer if no error occured
@@ -158,21 +158,21 @@ public class XPathPushParser {
 		contextErrorStack.pop();
 	}
 
-	protected void applyContextMappings(MappingContext mapping, Object evaluationContext, DataRecord targetRecord, int portIndex)
+	protected void applyContextMappings(MappingContext mapping, Object evaluationContext, DataRecord targetRecord, int portIndex, DataRecord inputRecord)
 			throws AbortParsingException {
 
 		if (evaluationContext == null) {
 			return;
 		}
 		for (FieldMapping fieldMapping : mapping.getFieldMappingChildren()) {
-			handleFieldMapping(fieldMapping, evaluationContext, targetRecord, portIndex);
+			handleFieldMapping(fieldMapping, evaluationContext, targetRecord, portIndex, inputRecord);
 		}
 		for (MappingContext constantMapping : mapping.getMappingContextChildren()) {
-			handleContext(constantMapping, evaluationContext, targetRecord);
+			handleContext(constantMapping, evaluationContext, targetRecord, inputRecord);
 		}
 	}
 
-	protected void handleFieldMapping(FieldMapping mapping, Object context, DataRecord target, int portIndex)
+	protected void handleFieldMapping(FieldMapping mapping, Object context, DataRecord target, int portIndex, DataRecord inputRecord)
 			throws AbortParsingException {
 
 		DataField field = null;
@@ -187,7 +187,7 @@ public class XPathPushParser {
 		Object value = null;
 		if (mapping.getXPath() != null) {
 			value = evaluator.evaluatePath(mapping.getXPath(), getNamespaceBinding(mapping), context, mapping);
-		} else {
+		} else if (mapping.getNodeName() != null) {
 			value = evaluator.evaluateNodeName(mapping.getNodeName(), getNamespaceBinding(mapping), context, mapping);
 		}
 		if (value != null) {
@@ -195,6 +195,17 @@ public class XPathPushParser {
 				valueHandler.storeValueToField(value, field, mapping.isTrim());
 			} catch (BadDataFormatException e) {
 				handleException(portIndex, target, field, e);
+			}
+		}
+
+		if (mapping.getInputField() != null && field.getValue() == null && inputRecord != null) {
+			// xpath found nothing, inputField mapping exists, let's use it
+			try {
+				DataField inputField = inputRecord.getField(mapping.getInputField());
+				field.setValue(inputField);
+			} catch (ArrayIndexOutOfBoundsException e) {
+				// mapped input field not present in input record, no big deal
+				// happens when user types wrong inputField into mapping, and also with implicit mappings
 			}
 		}
 	}

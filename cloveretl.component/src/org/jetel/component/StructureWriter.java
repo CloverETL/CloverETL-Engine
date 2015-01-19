@@ -157,6 +157,7 @@ public class StructureWriter extends Node {
 	private static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
 	private static final String XML_SORTED_INPUT_ATTRIBUTE = "sortedInput";
 	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
+	private static final String XML_CREATE_EMPTY_FILES_ATTRIBUTE = "createEmptyFiles";
 
 	private String fileURL;
 	private boolean appendData;
@@ -179,6 +180,7 @@ public class StructureWriter extends Node {
 	private String headerMask;
 	private String footerMask;
 	private boolean sortedInput = false;
+	private boolean createEmptyFiles = true;
 	
 	private static Log logger = LogFactory.getLog(StructureWriter.class);
 
@@ -400,6 +402,7 @@ public class StructureWriter extends Node {
         	}
         }
         writer.setMkDir(mkDir);
+		writer.setCreateEmptyFiles(createEmptyFiles);
 		if (headerMask != null) {
 			if (getInputPort(HEADER_PORT) != null) {
 				headerFormatter = new StructureFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
@@ -508,6 +511,9 @@ public class StructureWriter extends Node {
         }
 		if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
 			aDataWriter.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_CREATE_EMPTY_FILES_ATTRIBUTE)) {
+        	aDataWriter.setCreateEmptyFiles(xattribs.getBoolean(XML_CREATE_EMPTY_FILES_ATTRIBUTE));
         }
 		
 		return aDataWriter;
@@ -659,6 +665,10 @@ public class StructureWriter extends Node {
 		this.mkDir = mkDir;
 	}
 
+	private void setCreateEmptyFiles(boolean createEmptyFiles) {
+		this.createEmptyFiles = createEmptyFiles;
+	}
+    
 	/**
 	 * This is class for format header/footer from input records
 	 * 

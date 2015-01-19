@@ -64,6 +64,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.XmlUtils;
@@ -137,6 +138,7 @@ public class XmlSaxParser {
 	// protected TreeMap<String, XmlElementMapping> declaredTemplates = new TreeMap<String, XmlElementMapping>();
 
 	private DataRecord inputRecord;
+	private Map<String, String> responseHttpHeaders; 
 
 	/**
 	 * Namespace bindings relate namespace prefix used in Mapping specification and the namespace URI used by the
@@ -483,18 +485,18 @@ public class XmlSaxParser {
 			final String universalName = augmentURI(namespaceURI) + localName;
 			XMLElementRuntimeMappingModel mapping = null;
 			if (m_activeMapping == null) {
-				mapping = (XMLElementRuntimeMappingModel) m_elementPortMap.get(universalName);
+				mapping = m_elementPortMap.get(universalName);
 
 				// CL-2053 - backward compatibility (part 1/2)
 				if (mapping == null) {
-					mapping = (XMLElementRuntimeMappingModel) m_elementPortMap.get("{}" + localName);
+					mapping = m_elementPortMap.get("{}" + localName);
 				}
 			} else if (useNestedNodes || m_activeMapping.getLevel() == m_level - 1) {
-				mapping = (XMLElementRuntimeMappingModel) m_activeMapping.getChildMapping(universalName);
+				mapping = m_activeMapping.getChildMapping(universalName);
 
 				// CL-2053 - backward compatibility (part 2/2)
 				if (mapping == null) {
-					mapping = (XMLElementRuntimeMappingModel) m_activeMapping.getChildMapping("{}" + localName);
+					mapping = m_activeMapping.getChildMapping("{}" + localName);
 				}
 			}
 			if (mapping != null) {
@@ -513,6 +515,25 @@ public class XmlSaxParser {
 
 					if (mapping.getFieldTransformation() != null) {
 						applyInputFieldTransformation(mapping.getFieldTransformation(), mapping.getOutputRecord());
+					}
+
+					Map<String, String> headersToFields = m_activeMapping.getResponseHttpHeadersToOutputFields();
+									
+					if (headersToFields != null && !headersToFields.isEmpty()) {
+						for (Map.Entry<String, String> entry : headersToFields.entrySet()) {
+							//if there is a field with given name
+							if (m_activeMapping.getOutputRecord().hasField(entry.getValue())) {
+								//and if the given header was returned in the response
+								if (responseHttpHeaders.containsKey(entry.getKey())) {
+									//write the value to the output port	
+									DataField outField = m_activeMapping.getOutputRecord().getField(entry.getValue());
+									
+									if (outField.getMetadata().getDataType() == DataFieldType.STRING) {
+										outField.setValue(responseHttpHeaders.get(entry.getKey()));
+									}
+								}								
+							}
+						}
 					}
 
 					// sequence fields initialization
@@ -1084,7 +1105,13 @@ public class XmlSaxParser {
 					if (m_activeMapping.getSequenceField()!=null && (m_activeMapping.getSequenceField().equals(localName) || m_activeMapping.getSequenceField().equals(universalName) ) ) {
 						continue; //don't do implicit mapping for fields mapped to sequence
 					} 
-
+					
+					if (m_activeMapping.getResponseHttpHeadersToOutputFields() != null) {
+						if (m_activeMapping.getResponseHttpHeadersToOutputFields().containsValue(localName) || m_activeMapping.getResponseHttpHeadersToOutputFields().containsValue(universalName)) {
+							continue; //don't do implicit mapping for fields mapped to http headers						
+						}											
+					} 
+					
 					if (fieldName == null && m_activeMapping.isImplicit()) {
 						/*
 						 * As we could not find match using qualified name try mapping the xml element/attribute without
@@ -1311,6 +1338,10 @@ public class XmlSaxParser {
 
 	public void setInputRecord(DataRecord inputRecord) {
 		this.inputRecord = inputRecord;
+	}
+	
+	public void setResponseHttpHeaders(Map<String, String> responseHttpHeaders) {
+		this.responseHttpHeaders = responseHttpHeaders;
 	}
 
 	public AutoFilling getAutoFilling() {

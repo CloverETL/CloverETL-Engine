@@ -119,6 +119,7 @@ public class DataWriter extends Node {
 	private static final String XML_QUOTEDSTRINGS_ATTRIBUTE = "quotedStrings";
 	private static final String XML_QUOTECHAR_ATTRIBUTE = "quoteCharacter";
 	private static final String XML_SORTED_INPUT_ATTRIBUTE = "sortedInput";
+	private static final String XML_CREATE_EMPTY_FILES_ATTRIBUTE = "createEmptyFiles";
 	
 	private String fileURL;
 	private boolean appendData;
@@ -143,6 +144,7 @@ public class DataWriter extends Node {
 	private boolean mkDir;
 	private boolean quotedStringsHasDefaultValue = true;
 	private boolean sortedInput = false;
+	private boolean createEmptyFiles = true;
 
     private String excludeFields;
 
@@ -275,6 +277,7 @@ public class DataWriter extends Node {
         writer.setDictionary(graph.getDictionary());
         writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
         writer.setMkDir(mkDir);
+		writer.setCreateEmptyFiles(createEmptyFiles);
 	}
 
 	/* (non-Javadoc)
@@ -388,6 +391,9 @@ public class DataWriter extends Node {
         }
         if (xattribs.exists(XML_SORTED_INPUT_ATTRIBUTE)) {
         	aDataWriter.setSortedInput(xattribs.getBoolean(XML_SORTED_INPUT_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_CREATE_EMPTY_FILES_ATTRIBUTE)) {
+        	aDataWriter.setCreateEmptyFiles(xattribs.getBoolean(XML_CREATE_EMPTY_FILES_ATTRIBUTE));
         }
 		
 		return aDataWriter;
@@ -618,6 +624,10 @@ public class DataWriter extends Node {
     	return sortedInput;
     }
     
+	private void setCreateEmptyFiles(boolean createEmptyFiles) {
+		this.createEmptyFiles = createEmptyFiles;
+	}
+
 	@Override
 	public synchronized void free() {
 		super.free();

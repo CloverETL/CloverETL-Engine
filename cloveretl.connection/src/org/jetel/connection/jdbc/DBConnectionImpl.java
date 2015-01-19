@@ -36,6 +36,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.connection.jdbc.AbstractDBConnection.SqlQueryOptimizeOption;
 import org.jetel.connection.jdbc.driver.JdbcDriverDescription;
 import org.jetel.connection.jdbc.driver.JdbcDriverFactory;
 import org.jetel.connection.jdbc.driver.JdbcDriverImpl;
@@ -638,14 +639,33 @@ public class DBConnectionImpl extends AbstractDBConnection {
 		} catch (IOException e1) {
 			logger.warn("Failed to parse SQL query", e1);
 		}
-
-        int index = sqlQuery.toUpperCase().indexOf("WHERE");
-
-		if (index >= 0) {
-			sqlQuery = sqlQuery.substring(0, index).concat("WHERE 0=1");
-		} else {
-			sqlQuery = sqlQuery.concat(" WHERE 0=1");
-		}
+        
+        String optimizeProperty = parameters.getProperty(OPTIMIZE_QUERY_PROPERTY);
+        SqlQueryOptimizeOption optimize;
+        if (optimizeProperty == null) {
+        	optimize = SqlQueryOptimizeOption.FALSE;
+        } else {
+        	try {
+        		optimize = SqlQueryOptimizeOption.valueOf(optimizeProperty.toUpperCase());
+        	} catch (Exception e) {
+        		optimize = SqlQueryOptimizeOption.FALSE;
+        	}
+        }
+        switch (optimize) {
+        case TRUE:
+        case NAIVE:
+        	logger.debug("Optimizing sql query for dynamic metadata. Original query: " + sqlQuery);
+        	if (optimize == SqlQueryOptimizeOption.TRUE) {
+        		sqlQuery = SQLUtil.encloseInQptimizingQuery(sqlQuery);
+        	} else {
+        		//NAIVE
+        		sqlQuery = SQLUtil.appendOptimizingWhereClause(sqlQuery);
+        	}
+        	logger.debug("Optimizing sql query for dynamic metadata. Optimized query: " + sqlQuery);
+        	break;
+        default:
+        	//empty
+        }
 
         Connection connection;
 		try {

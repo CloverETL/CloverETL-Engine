@@ -1923,6 +1923,19 @@ public class FileUtils {
 	}
 	
 	/**
+	 * Removes root directory delimiter.
+	 * @param path
+	 * @return
+	 */
+	public static String removeLeadingSlash(String path) {
+		
+		if (path != null && path.length() > 0 && path.charAt(0) == '/') {
+			return path.substring(1);
+		}
+		return path;
+	}
+	
+	/**
 	 * Removes "./" sequence from the beginning of a path
 	 * @param path
 	 * @return
@@ -2295,19 +2308,14 @@ public class FileUtils {
      * @throws IOException
      */
 	public static boolean copyFile(File source, File target) throws IOException {
-		FileInputStream inputStream = null;
-		FileOutputStream outputStream = null;
-		FileChannel inputChannel = null;
-		FileChannel outputChannel = null;
-		try {
-			inputStream = new FileInputStream(source);
-			outputStream = new FileOutputStream(target);
-			inputChannel = inputStream.getChannel();
-			outputChannel = outputStream.getChannel();
+		try (
+			FileInputStream inputStream = new FileInputStream(source);
+			FileChannel inputChannel = inputStream.getChannel();
+			FileOutputStream outputStream = new FileOutputStream(target);
+			FileChannel outputChannel = outputStream.getChannel();
+		) {
 	        StreamUtils.copy(inputChannel, outputChannel);
 			return true;
-		} finally {
-			closeAll(outputChannel, outputStream, inputChannel, inputStream);
 		}
 	}
 

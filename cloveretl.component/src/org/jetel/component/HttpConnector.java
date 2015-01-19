@@ -34,10 +34,11 @@ import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -54,7 +55,6 @@ import java.util.regex.Pattern;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 
-import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -90,6 +90,9 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIUtils;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContextBuilder;
+import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.cookie.CookieSpecProvider;
 import org.apache.http.entity.BufferedHttpEntity;
@@ -116,6 +119,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.log4j.Level;
+import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
@@ -472,6 +476,8 @@ public class HttpConnector extends Node {
 	public final static String XML_RESPONSE_COOKIES_ATTRIBUTE = "responseCookies";
 
 	public final static String XML_STREAMING_ATTRIBUTE = "streaming";
+	
+	private static final String XML_DISABLE_SSL_CERT_VALIDATION = "disableSSLCertValidation";
 
 	/**
 	 * Default value of the 'append output' flag
@@ -555,10 +561,12 @@ public class HttpConnector extends Node {
 	private static final int EP_MESSAGE_INDEX = 0;
 	private static final String EP_MESSAGE_NAME = RP_MESSAGE_NAME;
 
-	private static String MULTIPART_CONTENT = "Content";
-	private static String MULTIPART_FILE = "File";
-	private static String MULTIPART_CHARSET = "Charset";
-	private static String MULTIPART_CONTENTTYPE = "ContentType";
+	private static String MULTIPART_CONTENT = "EntityContent";
+	private static String MULTIPART_CONTENT_BYTE = "EntityContentByte";
+	private static String MULTIPART_SOURCE_FILE = "EntitySourceFile";
+	private static String MULTIPART_FILENAME = "EntityFileNameAttribute";
+	private static String MULTIPART_CHARSET = "EntityCharsetAttribute";
+	private static String MULTIPART_CONTENTTYPE = "EntityMimeTypeAttribute";
 
 	private interface ResponseWriter {
 		public void writeResponse(HttpResponse response) throws IOException;
@@ -1197,6 +1205,11 @@ public class HttpConnector extends Node {
 	 * Result of the processing of one record.
 	 */
 	private RequestResult result;
+	
+	/**
+	 * Toggle for disabling verification of certificates.
+	 */
+	private boolean disableSSLCertValidation;
 
 	/* === Tools used === */
 
@@ -1411,7 +1424,7 @@ public class HttpConnector extends Node {
 			this.charset = Charset.defaultCharset().name();
 		}
 
-		tryToInit(false);
+		tryToInit(null);
 
 		// create response writer based on the configuration XXX is this really needed? Happens in preProcessForRecord()
 		// too
@@ -1791,7 +1804,8 @@ public class HttpConnector extends Node {
 	 * 
 	 * @throws ComponentNotReadyException
 	 */
-	protected void tryToInit(boolean runningFromCheckConfig) throws ComponentNotReadyException {
+	protected void tryToInit(ConfigurationStatus status) throws ComponentNotReadyException {
+		boolean runningFromCheckConfig = (status != null);
 		// find the attached ports (input and output)
 		inputPort = getInputPortDirect(INPUT_PORT_NUMBER);
 		standardOutputPort = getOutputPort(STANDARD_OUTPUT_PORT_NUMBER);
@@ -1972,9 +1986,9 @@ public class HttpConnector extends Node {
 			initExecutionParametersFromComponentAttributes();
 		}
 
-		inputMappingTransformation.init(XML_INPUT_MAPPING_ATTRIBUTE);
-		standardOutputMappingTransformation.init(XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE);
-		errorOutputMappingTransformation.init(XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE);
+		inputMappingTransformation.init(status, XML_INPUT_MAPPING_ATTRIBUTE);
+		standardOutputMappingTransformation.init(status, XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE);
+		errorOutputMappingTransformation.init(status, XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE);
 	}
 
 	private void initExecutionParametersFromComponentAttributes() throws ComponentNotReadyException {
@@ -2474,6 +2488,7 @@ public class HttpConnector extends Node {
 		httpConnector.setResponseCookies(xattribs.getString(XML_RESPONSE_COOKIES_ATTRIBUTE, null));
 		httpConnector.setStreaming(xattribs.getBoolean(XML_STREAMING_ATTRIBUTE, true));
 		httpConnector.setRequestParametersStr(xattribs.getString(XML_REQUEST_PARAMETERS_ATTRIBUTE, null));
+		httpConnector.setDisableSSLCertValidation(xattribs.getBoolean(XML_DISABLE_SSL_CERT_VALIDATION, false));
 
 		/** job flow related properties */
 		httpConnector.setInputMapping(xattribs.getStringEx(XML_INPUT_MAPPING_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
@@ -2742,9 +2757,13 @@ public class HttpConnector extends Node {
 				}
 			}
 		}
+		
+		if (disableSSLCertValidation) {
+			status.add("Certificate validation is disabled. Connection will not be secure.", Severity.WARNING, this, Priority.NORMAL, XML_DISABLE_SSL_CERT_VALIDATION);
+		}
 
 		try {
-			tryToInit(true);
+			tryToInit(status);
 		} catch (ComponentNotReadyException e) {
 			status.add("Initialization failed. " + ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, e.getAttributeName());
 		}
@@ -3050,39 +3069,18 @@ public class HttpConnector extends Node {
 		int index = 0;
 		PartWithName[] result = new PartWithName[multipartEntities.size()];
 		for (Entry<String, HttpConnectorMutlipartEntity> parameter : multipartEntities.entrySet()) {
-
-			if (parameter.getValue().file == null) {
-				Charset charset = parameter.getValue().charset != null ? Charset.forName(parameter.getValue().charset) : Charset.defaultCharset();
-				String mimeType = parameter.getValue().conentType != null ? parameter.getValue().conentType : ContentType.TEXT_PLAIN.getMimeType();
-				
-				ContentType contentType = ContentType.create(mimeType, charset);
-				
-				String value = parameter.getValue().content != null ? parameter.getValue().content : "";
-				result[index] = new PartWithName(parameter.getKey(), new StringBody(value, contentType));
-			} else if (parameter.getValue().content != null) {
-				Charset charset = parameter.getValue().charset != null ? Charset.forName(parameter.getValue().charset) : Charset.defaultCharset();
-				String mimeType = parameter.getValue().conentType != null ? parameter.getValue().conentType : ContentType.TEXT_PLAIN.getMimeType();
-
-				ContentType contentType = ContentType.create(mimeType, charset);
-
-				final String fileName = parameter.getValue().file;
-				String value = parameter.getValue().content != null ? parameter.getValue().content : "";
-				result[index] = new PartWithName(parameter.getKey(), new StringBody(value, contentType) {
-					@Override
-					public String getFilename() {
-						return fileName;
-					}
-				});
-
-			} else {
-
-				InputStream inputStream = FileUtils.getInputStream(this.getContextURL(), parameter.getValue().file);
+			if(parameter.getValue().sourceFile!=null) {
+				//input stream
+				InputStream inputStream = FileUtils.getInputStream(this.getContextURL(), parameter.getValue().sourceFile);
 				String fileName = null;
-				File file = FileUtils.getJavaFile(this.getContextURL(), parameter.getValue().file);
+				File file = FileUtils.getJavaFile(this.getContextURL(), parameter.getValue().sourceFile);
 				if (file != null) {
 					fileName = file.getName();
 				} else {
 					fileName = parameter.getKey();
+				}
+				if(parameter.getValue().fileNameAttribute!=null) {
+					fileName = parameter.getValue().fileNameAttribute;
 				}
 				InputStreamBody body = (parameter.getValue().conentType != null) ? new InputStreamBody(inputStream, parameter.getValue().conentType, fileName) : new InputStreamBody(inputStream, fileName);
 				result[index] = new PartWithName(parameter.getKey(), body);
@@ -3092,7 +3090,64 @@ public class HttpConnector extends Node {
 						logger.debug("Charset specified to " + parameter.getValue().charset + ". But charset cannot be specified for file multipart entity. Charset will be ignored.");
 					}
 				}
+			}else if(parameter.getValue().contentByte!=null) {
+				//input stream
+				ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(parameter.getValue().contentByte);
+				String fileName = parameter.getValue().name; 
+				if(parameter.getValue().fileNameAttribute!=null) {
+					fileName = parameter.getValue().fileNameAttribute;
+				}
+				InputStreamBody body = (parameter.getValue().conentType != null) ? new InputStreamBody(byteArrayInputStream, parameter.getValue().conentType, fileName) : new InputStreamBody(byteArrayInputStream, fileName);
+				result[index] = new PartWithName(parameter.getKey(), body);
+				if (logger.isDebugEnabled()) {
+					if (parameter.getValue().charset != null) {
+						logger.debug("Charset specified to " + parameter.getValue().charset + ". But charset cannot be specified for file multipart entity. Charset will be ignored.");
+					}
+				}
+			}else{ 
+				//string content
+				final String fileName = parameter.getValue().fileNameAttribute;
+				
+				String value = parameter.getValue().content != null ? parameter.getValue().content : "";
+				String contentTypeString = parameter.getValue().conentType != null ? parameter.getValue().conentType : ContentType.TEXT_PLAIN.getMimeType();
+				Charset charset = parameter.getValue().charset != null ? Charset.forName(parameter.getValue().charset) : Charset.defaultCharset();
+
+				ContentType contentType = ContentType.create(contentTypeString, charset);
+				
+				StringBody stringBody = new StringBody(value, contentType) {
+					@Override
+					public String getFilename() {
+						return fileName;
+					}
+					
+				};
+						
+				
+				result[index] = new PartWithName(parameter.getKey(), stringBody);
 			}
+			
+//			if (parameter.getValue().fileNameAttribute == null) {
+//				Charset charset = parameter.getValue().charset != null ? Charset.forName(parameter.getValue().charset) : Charset.defaultCharset();
+//				String contentType = parameter.getValue().conentType != null ? parameter.getValue().conentType : ContentType.TEXT_PLAIN.toString();
+//
+//				String value = parameter.getValue().content != null ? parameter.getValue().content : "";
+//				result[index] = new PartWithName(parameter.getKey(), new StringBody(value, contentType, charset));
+//			} else if (parameter.getValue().content != null) {
+//				Charset charset = parameter.getValue().charset != null ? Charset.forName(parameter.getValue().charset) : Charset.defaultCharset();
+//				String contentType = parameter.getValue().conentType != null ? parameter.getValue().conentType : ContentType.TEXT_PLAIN.toString();
+//
+//				final String fileName = parameter.getValue().fileNameAttribute;
+//				String value = parameter.getValue().content != null ? parameter.getValue().content : "";
+//				result[index] = new PartWithName(parameter.getKey(), new StringBody(value, contentType, charset) {
+//					@Override
+//					public String getFilename() {
+//						return fileName;
+//					}
+//				});
+//
+//			} else {
+
+	//		}
 			index++;
 		}
 
@@ -3191,6 +3246,27 @@ public class HttpConnector extends Node {
 			// }
 			//
 			// });
+		}
+
+		if (disableSSLCertValidation) {
+			// THIS MAKES THE SSL CONNECTION UNSECURE
+			try {
+				SSLContextBuilder contextBuilder = new SSLContextBuilder();
+				contextBuilder.loadTrustMaterial(null, new TrustStrategy() {
+					@Override
+					public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+						// trust ALL certificates
+						return true;
+					}
+				});
+				SSLConnectionSocketFactory sslFactory = new SSLConnectionSocketFactory(
+						contextBuilder.build(),
+						SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+				
+				builder.setSSLSocketFactory(sslFactory);
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(this, "Problem with HTTPS connection.", e);
+			}
 		}
 
 		// configure OAuth authentication
@@ -3419,17 +3495,33 @@ public class HttpConnector extends Node {
 						multipartExists = true;
 					}
 
-					field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_FILE);
+					field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_FILENAME);
 					if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
-						entity.file = field.getValue() != null ? field.getValue().toString() : null;
+						entity.fileNameAttribute = field.getValue() != null ? field.getValue().toString() : null;
 						multipartExists = true;
+					}
+
+					field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_SOURCE_FILE);
+					if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
+						entity.sourceFile = field.getValue() != null ? field.getValue().toString() : null;
+						multipartExists = true;
+					}
+
+					field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_CONTENT_BYTE);
+					if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
+						if(field instanceof ByteDataField) {
+							entity.contentByte = ((ByteDataField)field).getByteArray();
+							multipartExists = true;
+						}else {
+							entity.contentByte = null;
+						}
 					}
 				}
 				entity.name = token;
 
 				if (contentValue != null) {
 					entity.content = contentValue;
-				} else if (entity.file == null) {
+				} else if (entity.fileNameAttribute == null) {
 					entity.content = value; // use not mapped input field value only if file is not mapped to
 				}
 				if(multipartExists) {
@@ -3719,18 +3811,27 @@ public class HttpConnector extends Node {
 				field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
 				field.setLabel(partTrimmed + "_" + MULTIPART_CONTENT);
 				metadata.addField(field);
+				
+				field = new DataFieldMetadata("xxx", DataFieldType.BYTE, null);
+				field.setLabel(partTrimmed + "_" + MULTIPART_CONTENT_BYTE);
+				metadata.addField(field);
 
 				field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
-				field.setLabel(partTrimmed + "_" + MULTIPART_FILE);
+				field.setLabel(partTrimmed + "_" + MULTIPART_SOURCE_FILE);
+				metadata.addField(field);
+
+				field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
+				field.setLabel(partTrimmed + "_" + MULTIPART_FILENAME);
+				metadata.addField(field);
+
+				field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
+				field.setLabel(partTrimmed + "_" + MULTIPART_CHARSET);
 				metadata.addField(field);
 
 				field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
 				field.setLabel(partTrimmed + "_" + MULTIPART_CONTENTTYPE);
 				metadata.addField(field);
 
-				field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
-				field.setLabel(partTrimmed + "_" + MULTIPART_CHARSET);
-				metadata.addField(field);
 			}
 		}
 
@@ -4048,6 +4149,14 @@ public class HttpConnector extends Node {
 	public void setResponseCookies(String responseCookies) {
 		this.responseCookies = responseCookies;
 	}
+	
+	public boolean isDisableSSLCertValidation() {
+		return disableSSLCertValidation;
+	}
+
+	public void setDisableSSLCertValidation(boolean disableSSLCertValidation) {
+		this.disableSSLCertValidation = disableSSLCertValidation;
+	}
 
 	@Override
 	protected ComponentTokenTracker createComponentTokenTracker() {
@@ -4105,8 +4214,10 @@ public class HttpConnector extends Node {
 
 class HttpConnectorMutlipartEntity {
 	public String name = null;
-	public String file = null;
+	public String fileNameAttribute = null;
+	public String sourceFile = null;
 	public String content = null;
-	public String conentType = null;
+	public byte[] contentByte = null;
+	public String conentType = null; // MIME type
 	public String charset = null;
 }
