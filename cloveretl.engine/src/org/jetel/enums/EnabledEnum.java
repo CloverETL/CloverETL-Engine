@@ -20,7 +20,9 @@ package org.jetel.enums;
 
 
 /**
- * This enum expresses state of component - enabled, disabled or pass through component state.
+ * This enumeration represents all possible values of 'enable' attribute of components.
+ * Actually the enum has only two meaningful values true (ENABLED and TRUE)
+ * and false (DISABLED, PASS_THROUGH and FALSE).
  *  
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
@@ -29,14 +31,19 @@ package org.jetel.enums;
  */
 public enum EnabledEnum {
    
-    ENABLED("enabled"),
-    DISABLED("disabled"),
-    PASS_THROUGH("passThrough");
+    ENABLED("enabled", true),
+    DISABLED("disabled", false),
+    PASS_THROUGH("passThrough", false), //deprecated - use DISABLED or FALSE
+    TRUE("true", true),
+    FALSE("false", false);
     
     private String id;
     
-    private EnabledEnum(String id) {
+    private boolean enabled;
+    
+    private EnabledEnum(String id, boolean enabled) {
         this.id = id;
+        this.enabled = enabled;
     }
     
     public static EnabledEnum fromString(String id) {
@@ -53,6 +60,14 @@ public enum EnabledEnum {
         }
         
         return defaultValue;
+    }
+    
+    /**
+     * @return true if a component with this value is kept enabled, false 
+     *  if a component with this value is removed from graph
+     */
+    public boolean isEnabled() {
+    	return enabled;
     }
     
     @Override

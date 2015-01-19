@@ -679,8 +679,7 @@ public class TransformationGraphXMLReaderWriter {
                 nodeEnabled = attributes.getString(Node.XML_ENABLED_ATTRIBUTE, EnabledEnum.ENABLED.toString());
                 nodePassThroughInputPort = attributes.getInteger("passThroughInputPort", 0);
                 nodePassThroughOutputPort = attributes.getInteger("passThroughOutputPort", 0);
-				if(!nodeEnabled.equalsIgnoreCase(EnabledEnum.DISABLED.toString()) 
-                        && !nodeEnabled.equalsIgnoreCase(EnabledEnum.PASS_THROUGH.toString())) {
+                if (EnabledEnum.fromString(nodeEnabled, EnabledEnum.ENABLED).isEnabled()) {
 					graphNode = ComponentFactory.createComponent(graph, nodeType, nodeElements.item(i), isStrictParsing());
                 } else {
                     graphNode = ComponentFactory.createDummyComponent(graph, nodeType, null, nodeElements.item(i));

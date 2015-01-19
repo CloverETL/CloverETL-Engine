@@ -569,10 +569,7 @@ public class TransformationGraphAnalyzer {
 		for (int i = 0; i < phases.length; i++) {
 			nodesToRemove.clear();
 			for (Node node : phases[i].getNodes().values()) {
-				if (node.getEnabled() == EnabledEnum.DISABLED) {
-					nodesToRemove.add(node);
-					disconnectAllEdges(node);
-				} else if (node.getEnabled() == EnabledEnum.PASS_THROUGH) {
+				if (!node.getEnabled().isEnabled()) {
 					nodesToRemove.add(node);
 					final InputPort inputPort = node.getInputPort(node.getPassThroughInputPort());
 					final OutputPort outputPort = node.getOutputPort(node.getPassThroughOutputPort());
