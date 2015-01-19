@@ -74,7 +74,7 @@ public class CrossJoin extends Node implements MetadataProvider {
 	private final static int FIRST_SLAVE_PORT = 1;
 	
 	/** Amount of memory for records from each slave port. When memory is full, the records are swapped to disk. */
-	private final static int SLAVE_BUFFER_SIZE = Defaults.Record.RECORD_INITIAL_SIZE * 8; // 512 kB
+	private final static int SLAVE_BUFFER_SIZE = Defaults.Record.RECORD_INITIAL_SIZE * 8; // 512 KB
 	
 	// attributes
 	private String transformClassName;
