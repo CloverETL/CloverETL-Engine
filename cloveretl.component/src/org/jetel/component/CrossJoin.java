@@ -26,6 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
+import org.jetel.data.Defaults;
 import org.jetel.data.FileRecordBuffer;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -66,6 +67,14 @@ public class CrossJoin extends Node implements MetadataProvider {
 	private static final String XML_TRANSFORMURL_ATTRIBUTE = "transformURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	
+	private final static int WRITE_TO_PORT = 0;
+	private final static int MASTER_PORT = 0;
+	private final static int FIRST_SLAVE_PORT = 1;
+	
+	/** Amount of memory for records from each slave port. When memory is full, the records are swapped to disk. */
+	private final static int SLAVE_BUFFER_SIZE = Defaults.Record.RECORD_INITIAL_SIZE * 8; // 512 kB
+	
+	// attributes
 	private String transformClassName;
 	private String transformSource;
 	private String transformURL;
@@ -73,25 +82,25 @@ public class CrossJoin extends Node implements MetadataProvider {
 	
 	private RecordTransform transformation;
 	private Properties transformationParameters;
-	
-	private final static int WRITE_TO_PORT = 0;
-	private final static int MASTER_PORT = 0;
-	private final static int FIRST_SLAVE_PORT = 1;
 
+	// slaves management
 	private int slaveCount;
 	private boolean[] slaveFinishedReading;
 	private ShiftingFileBuffer[] slaveRecordsMemory;
 	
+	/** Record buffer for slave records */
 	private CloverBuffer data = CloverBuffer.allocateDirect(org.jetel.data.Defaults.Record.RECORD_INITIAL_SIZE);
+	
+	/** Helper variable, needed for maintaining reference to "data" buffer */
 	private CloverBuffer recordInMemory;
 	
-	//input
+	// input
 	private InputPort masterPort;
 	private InputPort[] slavePorts;
 	private DataRecord masterRecord;
 	private DataRecord[] slaveRecords;
 	
-	//output
+	// output
 	private OutputPort outPort;
 	private DataRecord[] outRecord; // size 1
 	
@@ -160,7 +169,7 @@ public class CrossJoin extends Node implements MetadataProvider {
 			slaveRecords[slaveIdx] = DataRecordFactory.newRecord(slavePorts[slaveIdx].getMetadata());
 			slaveRecords[slaveIdx].init();
 			slaveFinishedReading[slaveIdx] = false;
-			slaveRecordsMemory[slaveIdx] = new ShiftingFileBuffer();
+			slaveRecordsMemory[slaveIdx] = new ShiftingFileBuffer(SLAVE_BUFFER_SIZE);
 		}
 		
 		// init output
@@ -230,13 +239,13 @@ public class CrossJoin extends Node implements MetadataProvider {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	private DataRecord readSlaveRecord(int slaveIdx, CloverBuffer intoBuffer) throws IOException, InterruptedException {
+	private DataRecord readSlaveRecord(int slaveIdx) throws IOException, InterruptedException {
 		if (slavePorts[slaveIdx].readRecord(slaveRecords[slaveIdx]) == null) {
 			// no more input data
 			slaveFinishedReading[slaveIdx] = true;
 			return null;
 		}
-		slaveRecords[slaveIdx].serialize(intoBuffer);
+		
 		return slaveRecords[slaveIdx];
 	}
 	
@@ -259,19 +268,21 @@ public class CrossJoin extends Node implements MetadataProvider {
 		while (runIt && ((recordInMemory = slaveRecordsMemory[slaveIdx].shift(data)) != null || !slaveFinishedReading[slaveIdx])) {
 			if (recordInMemory == null) {
 				// no record in memory any more, we need to read more
-				DataRecord slaveRecord = readSlaveRecord(slaveIdx, data);
+				DataRecord slaveRecord = readSlaveRecord(slaveIdx);
 				if (slaveRecord == null) {
 					// all records read from this slave
 					break;
 				} else {
+					slaveRecord.serialize(data);
 					data.flip();
 					slaveRecordsMemory[slaveIdx].push(data);
 					currentRecords[slaveIdx + 1] = slaveRecord;
 				}
 			} else {
 				// record found in memory
-				recordInMemory.flip();
-				currentRecords[slaveIdx + 1].deserialize(recordInMemory);
+				// At this point, data and recordInMemory are actually the same buffer instance.
+				data.flip();
+				currentRecords[slaveIdx + 1].deserialize(data);
 			}
 			
 			recursiveAppendSlaveRecord(currentRecords, slaveIdx + 1);
@@ -342,7 +353,7 @@ public class CrossJoin extends Node implements MetadataProvider {
 		createTransformIfPossible(inMeta, outMeta);
 		
 		if (transformation == null) {
-			DataRecordMetadata expectedOutMetadata = getConcatenatedMetadata();
+			DataRecordMetadata expectedOutMetadata = getConcatenatedMetadata(null);
 			DataRecordMetadata outMetadata = getOutputPort(WRITE_TO_PORT).getMetadata();
 
 			DataFieldMetadata[] expectedFields = expectedOutMetadata.getFields();
@@ -372,12 +383,17 @@ public class CrossJoin extends Node implements MetadataProvider {
 	 * Output metadata are made by copying metadata on first input port and copying all fields from other input ports. 
 	 * @return
 	 */
-	private DataRecordMetadata getConcatenatedMetadata() {
-		InputPort[] ports = inPorts.values().toArray(new InputPort[0]);
-		DataRecordMetadata outMeta = ports[0].getMetadata().duplicate();
-
-		for (int i = 1; i < ports.length; i++) {
-			for (DataFieldMetadata inFieldMeta : ports[i].getMetadata().getFields()) {
+	private DataRecordMetadata getConcatenatedMetadata(DataRecordMetadata[] inputMetadata) {
+		if (inputMetadata == null) {
+			inputMetadata = new DataRecordMetadata[inPorts.size()];
+			for (int i = 0; i < inputMetadata.length; i++) {
+				inputMetadata[i] = getInputPort(i).getMetadata();
+			}
+		}
+		
+		DataRecordMetadata outMeta = inputMetadata[0].duplicate();
+		for (int i = 1; i < inputMetadata.length; i++) {
+			for (DataFieldMetadata inFieldMeta : inputMetadata[i].getFields()) {
 				outMeta.addField(inFieldMeta.duplicate());
 			}
 		}
@@ -397,12 +413,17 @@ public class CrossJoin extends Node implements MetadataProvider {
 	@Override
 	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		if (portIndex == WRITE_TO_PORT) {
+			DataRecordMetadata[] inputMetadata = new DataRecordMetadata[inPorts.size()];
+			int index = 0;
 			for (InputPort port : inPorts.values()) {
-				if (port.getMetadata() == null) {
+				MVMetadata metadata = metadataPropagationResolver.findMetadata(port.getEdge());
+				if (metadata == null) {
 					return null;
 				}
+				inputMetadata[index] = metadata.getModel();
+				index++;
 			}
-			return metadataPropagationResolver.createMVMetadata(getConcatenatedMetadata(), this, OUT_METADATA_ID_SUFFIX);
+			return metadataPropagationResolver.createMVMetadata(getConcatenatedMetadata(inputMetadata), this, OUT_METADATA_ID_SUFFIX);
 		}
 		return null;
 	}
@@ -415,6 +436,11 @@ public class CrossJoin extends Node implements MetadataProvider {
 	 * This implementation provides no records immediately after writing and allows reading only from the beginning using rewind().
 	 */
 	private static class ShiftingFileBuffer extends FileRecordBuffer {
+
+		public ShiftingFileBuffer(int bufferSize) {
+			super(bufferSize);
+		}
+
 		@Override
 		public void push(CloverBuffer data) throws IOException {
 			super.push(data);

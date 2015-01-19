@@ -363,8 +363,6 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
         }
         if (record.getQuoteChar() != null) {
         	metadataElement.setAttribute(QUOTE_CHAR, String.valueOf(record.getQuoteChar()));
-        } else {
-        	metadataElement.setAttribute(QUOTE_CHAR, "both");
         }
         if (record.getLocaleStr() != null) {
         	metadataElement.setAttribute(LOCALE_ATTR, record.getLocaleStr());
