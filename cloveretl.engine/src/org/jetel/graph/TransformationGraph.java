@@ -89,6 +89,10 @@ public final class TransformationGraph extends GraphElement {
 	
 	private Map <String, Object> dataRecordMetadata;
 
+	private SubgraphPorts subgraphInputPorts = new SubgraphPorts();
+	
+	private SubgraphPorts subgraphOutputPorts = new SubgraphPorts();
+	
 	/**
 	 * Set of all persisted implicit metadata, which are used
 	 * for validation purpose. All edges with implicit metadata
@@ -1198,6 +1202,14 @@ public final class TransformationGraph extends GraphElement {
     	phase.deleteEdge(edge);
     }
     
+    public SubgraphPorts getSubgraphInputPorts() {
+    	return subgraphInputPorts;
+    }
+
+    public SubgraphPorts getSubgraphOutputPorts() {
+    	return subgraphOutputPorts;
+    }
+
     @Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
     	super.checkConfig(status);

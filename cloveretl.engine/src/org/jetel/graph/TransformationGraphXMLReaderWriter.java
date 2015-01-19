@@ -195,6 +195,12 @@ public class TransformationGraphXMLReaderWriter {
 	private final static String GRAPH_PARAMETERS_ELEMENT = "GraphParameters";
 	private final static String GRAPH_PARAMETER_FILE_ELEMENT = "GraphParameterFile";
 	
+	public final static String SUBGRAPH_INPUT_PORTS_ELEMENT = "inputPorts";
+	public final static String SUBGRAPH_OUTPUT_PORTS_ELEMENT = "outputPorts";
+	public final static String SUBGRAPH_SINGLE_PORT_ELEMENT= "singlePort";
+	public final static String SUBGRAPH_PORT_NAME_ATTRIBUTE = "name";
+	public final static String SUBGRAPH_PORT_REQUIRED_ATTRIBUTE = "required";
+	
 	private final static String DICTIONARY_ELEMENT = "Dictionary";
 	private final static String DICTIONARY_ENTRY_ELEMENT = "Entry";
 	private final static String DICTIONARY_ENTRY_ID = "id";
@@ -451,6 +457,14 @@ public class TransformationGraphXMLReaderWriter {
 	        graph.setLargeIconPath(grfAttributes.getString(LARGE_ICON_PATH_ATTRIBUTE, null));
 	        graph.setStaticJobType(JobType.fromString(grfAttributes.getString(JOB_TYPE_ATTRIBUTE, null)));
 	
+	        //read subgraph input ports
+			List<Element> subgraphInputPortsElements = getChildElements(getGlobalElement(document), SUBGRAPH_INPUT_PORTS_ELEMENT);
+	        instantiateSubgraphPorts(graph.getSubgraphInputPorts(), subgraphInputPortsElements);
+
+	        //read subgraph output ports
+			List<Element> subgraphOutputPortsElements = getChildElements(getGlobalElement(document), SUBGRAPH_OUTPUT_PORTS_ELEMENT);
+	        instantiateSubgraphPorts(graph.getSubgraphOutputPorts(), subgraphOutputPortsElements);
+
 			// handle all defined graph parameters - old-fashion
 			NodeList PropertyElements = document.getElementsByTagName(PROPERTY_ELEMENT);
 			instantiateProperties(PropertyElements);
@@ -843,6 +857,29 @@ public class TransformationGraphXMLReaderWriter {
 		}
 	}
 
+	private void instantiateSubgraphPorts(SubgraphPorts subgraphPorts, List<Element> subgraphPortsElements) throws XMLConfigurationException {
+		if (subgraphPortsElements.isEmpty()) {
+			return;
+		}
+		if (subgraphPortsElements.size() > 1) {
+			throw new JetelRuntimeException("XML element 'input/outputPorts' has max occurences 1, but is " + subgraphPortsElements.size());
+		}
+
+		List<Element> subgraphPortElements = getChildElements(subgraphPortsElements.get(0), SUBGRAPH_SINGLE_PORT_ELEMENT);
+		for (Element subgraphPortElement : subgraphPortElements) {
+            ComponentXMLAttributes attributes = new ComponentXMLAttributes(subgraphPortElement, graph);
+            int index;
+            try {
+                index = attributes.getInteger(SUBGRAPH_PORT_NAME_ATTRIBUTE);
+            } catch (AttributeNotFoundException ex) {
+                throwXMLConfigurationException("Attribute name at singlePort is missing.", ex);
+                continue;
+            }
+            boolean required = attributes.getBoolean(SUBGRAPH_PORT_REQUIRED_ATTRIBUTE, true);
+            SubgraphPort subgraphPort = new SubgraphPort(index, required);
+            subgraphPorts.addPort(subgraphPort);
+		}
+	}
 
 	/**
 	 *  Description of the Method

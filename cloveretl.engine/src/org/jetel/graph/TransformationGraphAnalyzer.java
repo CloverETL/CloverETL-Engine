@@ -91,6 +91,7 @@ public class TransformationGraphAnalyzer {
 			throw new JetelRuntimeException("Removing disabled nodes failed.", e);
 		}
 
+		//analyse subgraph - check layout and removes debug components if necessary
 		boolean subJobRuntime = runtimeContext.getJobType().isSubJob();
 		boolean subJobFile = runtimeContext.getJobType().isSubJob() || graph.getStaticJobType().isSubJob();
 		if (subJobRuntime || subJobFile) {
