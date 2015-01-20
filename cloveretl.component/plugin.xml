@@ -675,6 +675,34 @@
 	    </properties>
 	  </ETLComponent>
 	</extension>
+	
+	<extension point-id="component">
+	  <ETLComponent category="joiners" iconPath="icons/joiners/MergeJoin" name="CrossJoin"  type="CROSS_JOIN" className="org.jetel.component.CrossJoin">
+	    <shortDescription>Performs cartesian product.</shortDescription>
+	    <description>Receives data records through all connected input ports and performs cartesian product on them. Each connected input port represents one set of records. Results are sent to the connected output port.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" label="master"/>
+	      <multiplePort required="false" label="slave" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true" />
+	    </outputPorts>
+	    <properties>
+		  <property category="advanced" displayName="Transform" modifiable="true" name="transform" nullable="true" redundant="transformClass|transformURL" required="false" defaultHint="Default transformation maps fields by order">
+	        <singleType name="transform"/>
+	      </property>
+	      <property category="advanced" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" redundant="transformClass|transform" required="false">
+	        <singleType name="file"/>
+	      </property>
+	      <property category="advanced" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" redundant="transform|transformURL" required="false">
+	        <singleType name="class"/>
+	      </property>
+	      <property category="advanced" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset"/>
+	      </property>
+	    </properties>
+	  </ETLComponent>
+	</extension>
 
 	<extension point-id="component">
 	  <ETLComponent category="deprecated" iconPath="icons/joiners/MergeJoin" name="MergeJoin"  type="MERGE_JOIN" defaultVisibility="false" className="org.jetel.component.MergeJoin">

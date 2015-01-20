@@ -1214,6 +1214,18 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		dataRecordMetadata.setTimeZoneStr(timeZoneStr);
 		dataRecordMetadata.setCollatorSensitivity(collatorSensitivity);
 		
+		if (keyFieldNames != null) {
+			List<String> keyFieldNamesCopy = new ArrayList<>(keyFieldNames.size());
+			keyFieldNamesCopy.addAll(keyFieldNames);
+			dataRecordMetadata.setKeyFieldNames(keyFieldNamesCopy);
+		}
+		
+		if (nullValues != null) {
+			List<String> nullValsCopy = new ArrayList<>(nullValues.size());
+			nullValsCopy.addAll(nullValues);
+			dataRecordMetadata.setNullValues(nullValsCopy);
+		}
+		
 		return dataRecordMetadata;
 	}
 
