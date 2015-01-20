@@ -74,7 +74,7 @@ public class CrossJoin extends Node implements MetadataProvider {
 	private final static int FIRST_SLAVE_PORT = 1;
 	
 	/** Amount of memory for records from each slave port. When memory is full, the records are swapped to disk. */
-	private final static int SLAVE_BUFFER_SIZE = Defaults.Record.RECORD_INITIAL_SIZE * 8; // 512 KB
+	private final static int SLAVE_BUFFER_SIZE = Defaults.Record.RECORDS_BUFFER_SIZE; // 256 KB
 	
 	// attributes
 	private String transformClassName;
@@ -91,7 +91,7 @@ public class CrossJoin extends Node implements MetadataProvider {
 	private ShiftingFileBuffer[] slaveRecordsMemory;
 	
 	/** Record buffer for slave records */
-	private CloverBuffer data = CloverBuffer.allocateDirect(org.jetel.data.Defaults.Record.RECORD_INITIAL_SIZE);
+	private CloverBuffer data = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE);
 	
 	/** Helper variable, needed for maintaining reference to "data" buffer */
 	private CloverBuffer recordInMemory;
@@ -352,9 +352,9 @@ public class CrossJoin extends Node implements MetadataProvider {
 		
 		DataRecordMetadata[] outMeta = new DataRecordMetadata[] { getOutputPort(WRITE_TO_PORT).getMetadata() };
 		DataRecordMetadata[] inMeta = getInMetadataArray();
-		createTransformIfPossible(inMeta, outMeta);
+		getTransformFactory(inMeta, outMeta).checkConfig(status);
 		
-		if (transformation == null) {
+		if (transformSource == null && transformURL == null && transformClassName == null) {
 			DataRecordMetadata expectedOutMetadata = getConcatenatedMetadata(null);
 			DataRecordMetadata outMetadata = getOutputPort(WRITE_TO_PORT).getMetadata();
 			DataFieldMetadata[] expectedFields = expectedOutMetadata.getFields();
