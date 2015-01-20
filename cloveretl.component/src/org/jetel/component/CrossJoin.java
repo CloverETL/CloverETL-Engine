@@ -352,7 +352,6 @@ public class CrossJoin extends Node implements MetadataProvider {
 		
 		DataRecordMetadata[] outMeta = new DataRecordMetadata[] { getOutputPort(WRITE_TO_PORT).getMetadata() };
 		DataRecordMetadata[] inMeta = getInMetadataArray();
-		getTransformFactory(inMeta, outMeta).checkConfig(status);
 		
 		if (transformSource == null && transformURL == null && transformClassName == null) {
 			DataRecordMetadata expectedOutMetadata = getConcatenatedMetadata(null);
@@ -391,6 +390,8 @@ public class CrossJoin extends Node implements MetadataProvider {
 					status.add(sb.toString(), Severity.ERROR, this, Priority.NORMAL);
 				}
 			}
+		} else {
+			getTransformFactory(inMeta, outMeta).checkConfig(status);
 		}
 		return status;
 	}
