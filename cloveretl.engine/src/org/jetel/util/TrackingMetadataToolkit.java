@@ -181,7 +181,6 @@ public class TrackingMetadataToolkit {
 		GRAPH_NAME("graphName"),
 		RESULT("result"),
 		RUNNING_PHASE("runningPhase"),
-		USED_MEMORY("usedMemory"),
 		MEMORY_UTILIZATION("memoryUtilization"),
 		NAME("name"),
 		USAGE_CPU("usageCPU"),
@@ -258,7 +257,6 @@ public class TrackingMetadataToolkit {
 		attachField(metadata, composeFieldName(graphTracking, Attribute.GRAPH_NAME), DataFieldType.STRING);
 		attachField(metadata, composeFieldName(graphTracking, Attribute.RESULT), DataFieldType.STRING);
 		attachField(metadata, composeFieldName(graphTracking, Attribute.RUNNING_PHASE), DataFieldType.INTEGER);
-		attachField(metadata, composeFieldName(graphTracking, Attribute.USED_MEMORY), DataFieldType.INTEGER);
 
 		for (PhaseTracking phase : graphTracking.getPhaseTracking()) {
 			metadataForPhase(phase, metadata);
@@ -286,7 +284,6 @@ public class TrackingMetadataToolkit {
 		attachField(metadata, composeFieldName(nodeTracking, Attribute.TOTAL_CPU_TIME), DataFieldType.LONG);
 		attachField(metadata, composeFieldName(nodeTracking, Attribute.TOTAL_USER_TIME), DataFieldType.LONG);
 		attachField(metadata, composeFieldName(nodeTracking, Attribute.RESULT), DataFieldType.STRING);
-		attachField(metadata, composeFieldName(nodeTracking, Attribute.USED_MEMORY), DataFieldType.INTEGER);
 
 		for (InputPortTracking port : nodeTracking.getInputPortTracking()) {
 			metadataForPort(port, metadata, true);
@@ -306,7 +303,6 @@ public class TrackingMetadataToolkit {
 		attachField(metadata, composeFieldName(portTracking, Attribute.TOTAL_RECORDS, isInput), DataFieldType.LONG);
 		attachField(metadata, composeFieldName(portTracking, Attribute.WAITING_RECORDS, isInput), DataFieldType.INTEGER);
 		attachField(metadata, composeFieldName(portTracking, Attribute.AVERAGE_WAITING_RECORDS, isInput), DataFieldType.INTEGER);
-		attachField(metadata, composeFieldName(portTracking, Attribute.USED_MEMORY, isInput), DataFieldType.INTEGER);
 	}
 	
 	private static void attachField(DataRecordMetadata metadata, String name, DataFieldType type) {
@@ -330,7 +326,6 @@ public class TrackingMetadataToolkit {
 		populateField(record, composeFieldName(graphTracking, Attribute.RESULT), graphTracking.getResult().message());
 		PhaseTracking runningPhase = graphTracking.getRunningPhaseTracking();
 		populateField(record, composeFieldName(graphTracking, Attribute.RUNNING_PHASE), ((runningPhase==null) ? null : runningPhase.getPhaseNum()) );
-		populateField(record, composeFieldName(graphTracking, Attribute.USED_MEMORY), graphTracking.getUsedMemory());
 
 		PhaseTracking[] phases = graphTracking.getPhaseTracking();
 		if (phases != null) { //it is not probably necessary, just for sure
@@ -364,7 +359,6 @@ public class TrackingMetadataToolkit {
 		populateField(record, composeFieldName(nodeTracking, Attribute.TOTAL_CPU_TIME), nodeTracking.getTotalCPUTime());
 		populateField(record, composeFieldName(nodeTracking, Attribute.TOTAL_USER_TIME), nodeTracking.getTotalUserTime());
 		populateField(record, composeFieldName(nodeTracking, Attribute.RESULT), nodeTracking.getResult().message());
-		populateField(record, composeFieldName(nodeTracking, Attribute.USED_MEMORY), nodeTracking.getUsedMemory());
 
 		InputPortTracking[] inputPorts = nodeTracking.getInputPortTracking();
 		if (inputPorts != null) {
@@ -390,7 +384,6 @@ public class TrackingMetadataToolkit {
 		populateField(record, composeFieldName(portTracking, Attribute.TOTAL_RECORDS, isInput), portTracking.getTotalRecords());
 		populateField(record, composeFieldName(portTracking, Attribute.WAITING_RECORDS, isInput), portTracking.getWaitingRecords());
 		populateField(record, composeFieldName(portTracking, Attribute.AVERAGE_WAITING_RECORDS, isInput), portTracking.getAverageWaitingRecords());
-		populateField(record, composeFieldName(portTracking, Attribute.USED_MEMORY, isInput), portTracking.getUsedMemory());
 	}
 
 	private static void populateField(DataRecord trackingRecord, String fieldName, Object value) {
