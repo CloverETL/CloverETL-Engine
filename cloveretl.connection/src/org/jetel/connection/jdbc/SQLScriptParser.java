@@ -283,7 +283,10 @@ public class SQLScriptParser implements Iterable<String> {
 	
 	private boolean matchString(StringBuilder sb) throws IOException {
 		boolean regularQuoteMatched = matchQuote(false);
-		boolean mySQLQuoteMatched = matchQuote(true);
+		boolean mySQLQuoteMatched = false;
+		if (!regularQuoteMatched) {
+			mySQLQuoteMatched = matchQuote(true);
+		}
 		
 		if (regularQuoteMatched || mySQLQuoteMatched) {
 			char quoteChar;

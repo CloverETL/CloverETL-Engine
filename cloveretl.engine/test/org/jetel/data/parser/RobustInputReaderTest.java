@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 import org.jetel.data.parser.CharByteInputReader.RobustInputReader;
+import org.jetel.exception.PolicyType;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.string.StringUtils;
 
@@ -52,7 +53,7 @@ public class RobustInputReaderTest extends CloverTestCase {
 	}
 	
 	protected RobustInputReader createReader() {
-		RobustInputReader reader = new RobustInputReader(defaultCharset, 0);
+		RobustInputReader reader = new RobustInputReader(defaultCharset, 0, PolicyType.STRICT);
 		reader.setInputSource(Channels.newChannel(new ByteArrayInputStream(INPUT.getBytes(defaultCharset))));
 		return reader;
 	}

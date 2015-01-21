@@ -114,7 +114,15 @@ public class JavolutionNumericFormatter implements NumericFormatter {
 
 	@Override
 	public BigDecimal parseBigDecimal(CharSequence seq) {
-		return new BigDecimal(seq.toString(), precision);
+		try {
+			return new BigDecimal(seq.toString(), precision);
+		} catch (NumberFormatException e) {
+			//BigDecimal throws exception without an reasonable message, so a message is added now
+			if (e.getMessage() == null) {
+				e = new NumberFormatException("String '" + seq + "' is not a valid representation of a BigDecimal");
+			}
+			throw e;
+		}
 	}
 
 	@Override
