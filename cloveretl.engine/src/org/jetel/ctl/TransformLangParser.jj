@@ -3759,7 +3759,7 @@ void ControlConstant()          : {/*@bgen(jjtree) Literal */
 	} 
 	"(" 		t=<IDENTIFIER> 
 		{ 
-			jjtn000.setSequenceName(t.image);
+			jjtn000.setSequenceName(t.image,t.beginLine,t.beginColumn);
 			jjtn000.setType(TLTypePrimitive.INTEGER); 
 		} 	[ ","	  (  
 	  	<INT_VAR> { jjtn000.setType(TLTypePrimitive.INTEGER); }	   |
@@ -3826,7 +3826,7 @@ void LookupNode() :{/*@bgen(jjtree) LookupNode */
 	   }
 	   "("			<IDENTIFIER> 
 			{ 
-				jjtn000.setLookupName(token.image); 
+				jjtn000.setLookupName(token.image,token.beginLine,token.beginColumn); 
 			}	   ")"
 	   {
 	   		jjtn000.end(token.endLine,token.endColumn);
@@ -3863,7 +3863,7 @@ void LookupNode() :{/*@bgen(jjtree) LookupNode */
 	   "("
 			<IDENTIFIER> 			{ 
 				jjtn000.setOperation(1); 
-				jjtn000.setLookupName(token.image); 
+				jjtn000.setLookupName(token.image,token.beginLine,token.beginColumn); 
 			}
 	   ")"/*@bgen(jjtree)*/
                 {
@@ -3881,7 +3881,7 @@ void LookupNode() :{/*@bgen(jjtree) LookupNode */
 		"("
 			<IDENTIFIER> 			{
 				jjtn000.setOperation(2); 
-				jjtn000.setLookupName(token.image); 
+				jjtn000.setLookupName(token.image,token.beginLine,token.beginColumn); 
 			}
 		")"/*@bgen(jjtree)*/
                 {
@@ -3898,7 +3898,7 @@ void LookupNode() :{/*@bgen(jjtree) LookupNode */
 	   	}
 		"("
 			<IDENTIFIER> 			{ 
-				jjtn000.setLookupName(token.image); 
+				jjtn000.setLookupName(token.image,token.beginLine,token.beginColumn); 
 			} 
 			","	<IDENTIFIER> 
 			{ 

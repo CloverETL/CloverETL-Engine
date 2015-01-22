@@ -42,7 +42,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                         this.sourceCode = ((SourceCodeProvider) input).getSourceCode();
                 }
                 this.graph = graph;
-                this.propertyRefResolver = (graph != null) ? new PropertyRefResolver(graph.getGraphParameters()) : null;
+                this.propertyRefResolver = (graph != null) ? new PropertyRefResolver(graph.getGraphProperties()) : null;
                 this.parserHelper = new ParserHelper();
                 this.hasEvalNode = false;
                 this.parsedImports = new HashSet<String>();
@@ -4083,7 +4083,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                 jjtn000.begin(token.beginLine,token.beginColumn);
       jj_consume_token(OPEN_PAR);
       t = jj_consume_token(IDENTIFIER);
-                        jjtn000.setSequenceName(t.image);
+                        jjtn000.setSequenceName(t.image,t.beginLine,t.beginColumn);
                         jjtn000.setType(TLTypePrimitive.INTEGER);
       switch (jj_nt.kind) {
       case 127:
@@ -4165,7 +4165,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                         jjtn000.begin(token.beginLine,token.beginColumn);
         jj_consume_token(OPEN_PAR);
         jj_consume_token(IDENTIFIER);
-                                jjtn000.setLookupName(token.image);
+                                jjtn000.setLookupName(token.image,token.beginLine,token.beginColumn);
         jj_consume_token(CLOSE_PAR);
                         jjtn000.end(token.endLine,token.endColumn);
         jj_consume_token(DOT);
@@ -4195,7 +4195,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         jj_consume_token(OPEN_PAR);
         jj_consume_token(IDENTIFIER);
                                 jjtn000.setOperation(1);
-                                jjtn000.setLookupName(token.image);
+                                jjtn000.setLookupName(token.image,token.beginLine,token.beginColumn);
         jj_consume_token(CLOSE_PAR);
                   jjtree.closeNodeScope(jjtn000, true);
                   jjtc000 = false;
@@ -4208,7 +4208,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         jj_consume_token(OPEN_PAR);
         jj_consume_token(IDENTIFIER);
                                 jjtn000.setOperation(2);
-                                jjtn000.setLookupName(token.image);
+                                jjtn000.setLookupName(token.image,token.beginLine,token.beginColumn);
         jj_consume_token(CLOSE_PAR);
                   jjtree.closeNodeScope(jjtn000, true);
                   jjtc000 = false;
@@ -4220,7 +4220,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                         jjtn000.begin(token.beginLine,token.beginColumn);
         jj_consume_token(OPEN_PAR);
         jj_consume_token(IDENTIFIER);
-                                jjtn000.setLookupName(token.image);
+                                jjtn000.setLookupName(token.image,token.beginLine,token.beginColumn);
         jj_consume_token(127);
         jj_consume_token(IDENTIFIER);
                                 if (token.image.equalsIgnoreCase("init")) {

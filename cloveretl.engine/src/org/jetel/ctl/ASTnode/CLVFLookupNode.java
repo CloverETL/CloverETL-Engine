@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jetel.ctl.SyntacticPosition;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.TransformLangParser;
 import org.jetel.ctl.TransformLangParserVisitor;
@@ -45,6 +46,7 @@ public class CLVFLookupNode extends SimpleNode {
 	private /* final */ TLType[] paramTypes;
 	private /* final */ List<Integer> decimalPrecisions;
 	private /* final */ Lookup lookup;
+	private SyntacticPosition nameBegin;
 	
 	public CLVFLookupNode(TransformLangParser p, int id) {
 		super(p, id);
@@ -70,8 +72,9 @@ public class CLVFLookupNode extends SimpleNode {
 		}
 	}
 
-	public void setLookupName(String name) {
+	public void setLookupName(String name, int beginLine, int beginColumn) {
 		this.lookupName = name;
+		this.nameBegin = new SyntacticPosition(beginLine, beginColumn);
 	}
 
 	public void setOperation(int oper) {
@@ -80,6 +83,10 @@ public class CLVFLookupNode extends SimpleNode {
 
 	public String getLookupName() {
 		return lookupName;
+	}
+	
+	public SyntacticPosition getNameBegin() {
+		return nameBegin;
 	}
 
 	public int getOperation() {
