@@ -409,29 +409,6 @@ SPECIAL_TOKEN : {
 //SPECIAL_TOKEN : //{//    < SINGLE_LINE_COMMENT: "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")? > : WithinSingleLineComment //} 
 
 
-/* handling strings, even multiline */
-TOKEN:
-{
-  <QUOTE:"\""> : STRING_STATE
-}
-
-<STRING_STATE> MORE:
-{
-  "\\" : ESC_STATE
-}
-
-<STRING_STATE> TOKEN:
-{
-  <ENDQUOTE:<QUOTE>> : DEFAULT
-| <CHAR:~["\"","\\"]>
-}
-
-<ESC_STATE> TOKEN:
-{
-  <CNTRL_ESC:["\"","\\","/","b","f","n","r","t"]> : STRING_STATE
-}
-
-
 
 /* Literals */
 TOKEN : 
@@ -530,8 +507,7 @@ TOKEN:
         				if (prevChar=='\\')
         					image.setLength(image.length()-1);
         				else
-        					if (image.length()>4096)
-        						throw new UnterminatedStringException(startLine,startCol,input_stream.getEndLine(),input_stream.getEndColumn());
+        					throw new UnterminatedStringException(startLine,startCol,input_stream.getEndLine(),input_stream.getEndColumn());
         				break;
         			}
         			image.append(inChar);
@@ -545,56 +521,6 @@ TOKEN:
             matchedToken.endColumn = input_stream.getEndColumn();
         }
 }
-
-/**
- * Match a quoted string.
- */
-/*
-String string_new() :
-{
-  StringBuilder builder = new StringBuilder();
-}
-{
-  <QUOTE> ( getChar(builder) )* <ENDQUOTE>
-  {
-    return builder.toString();
-  }
-}
-*/
-
-/**
- * Match char inside quoted string.
- */
- /*
-void getChar(StringBuilder builder):
-{
-  Token t;
-}
-{
-  ( t = <CHAR> | t = <CNTRL_ESC> )
-  {
-    if (t.image.length() < 2)
-    {
-      // CHAR
-      builder.append(t.image.charAt(0));
-    }
-    else if (t.image.length() < 6)
-    {
-      // ESC
-      char c = t.image.charAt(1);
-      switch (c)
-      {
-        case 'b': builder.append((char) 8); break;
-        case 'f': builder.append((char) 12); break;
-        case 'n': builder.append((char) 10); break;
-        case 'r': builder.append((char) 13); break;
-        case 't': builder.append((char) 9); break;
-        default: builder.append(c);
-      }
-    }
-  }
-}
-*/
 
 /* Logical operators */
 TOKEN [IGNORE_CASE]: 
