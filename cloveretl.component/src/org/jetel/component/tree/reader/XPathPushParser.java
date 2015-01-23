@@ -202,7 +202,8 @@ public class XPathPushParser {
 			// xpath found nothing, inputField mapping exists, let's use it
 			try {
 				DataField inputField = inputRecord.getField(mapping.getInputField());
-				field.setValue(inputField);
+				String stringValue = inputField.toString();
+				field.fromString(stringValue);
 			} catch (ArrayIndexOutOfBoundsException e) {
 				// mapped input field not present in input record, no big deal
 				// happens when user types wrong inputField into mapping, and also with implicit mappings
