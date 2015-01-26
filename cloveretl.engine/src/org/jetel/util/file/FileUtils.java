@@ -257,8 +257,8 @@ public class FileUtils {
     private static Pattern DRIVE_LETTER_PATTERN = Pattern.compile("\\A\\p{Alpha}:[/\\\\]");
     private static Pattern PROTOCOL_PATTERN = Pattern.compile("\\A(\\p{Alnum}+):");
     
-    private static final String PORT_PROTOCOL = "port";
-    private static final String DICTIONARY_PROTOCOL = "dict";
+    public static final String PORT_PROTOCOL = "port";
+    public static final String DICTIONARY_PROTOCOL = "dict";
     
     public static String getProtocol(String fileURL) {
     	if (fileURL == null) {
