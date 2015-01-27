@@ -281,7 +281,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/MySQLDataWriter" name="MysqlDataWriter" type="MYSQL_DATA_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.component.MysqlDataWriter">
+	  <ETLComponent category="writers" iconPath="icons/writers/MySQLDataWriter" name="MySQLDataWriter" type="MYSQL_DATA_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.component.MysqlDataWriter">
 		<shortDescription>Loads data into MySQL database.</shortDescription>
 		<description>Receives data through connected input port or reads it from input file, connects to MySQL database using mysql utility and loads data records into specified database table. Information about rejected records can be sent out through optional output port if connected. It works faster than DBOutputTable.</description>
 		<inputPorts>
