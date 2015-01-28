@@ -237,14 +237,15 @@ public class AnalyzeDB {
 		boolean utf8Encoding=false;
 		// initialization of PrintStream
 		if (filename != null) {
-			try{
+			try {
 				print = new PrintStream(new FileOutputStream(filename),true,DEFAULT_XML_ENCODING);
 				utf8Encoding=true;
-			}catch(UnsupportedEncodingException ex){
+			} catch (UnsupportedEncodingException ex) {
 				logger.error(ex);
 				print = new PrintStream(new FileOutputStream(filename));
 			}
 		} else {
+			// don't close System.out!
 			print = System.out;
 		}
 		// load in Database Driver & try to connect to database
@@ -253,8 +254,12 @@ public class AnalyzeDB {
             connection.init();
         } catch (ComponentNotReadyException e) {
             throw new IOException(e);
+        } finally {
+        	if (print != System.out) {
+        		print.close();
+        	}
         }
-        
+		
 		// do we want just to display driver properties ?
 		SqlConnection conn = connection.getConnection(connection.getId(), OperationType.READ);
 		if (showDriverInfo){

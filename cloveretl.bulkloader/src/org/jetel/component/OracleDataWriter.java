@@ -524,16 +524,23 @@ public class OracleDataWriter extends BulkLoader {
         }
         
         File controlFile = new File(controlFileName);
-        FileWriter controlWriter;
+        FileWriter controlWriter = null;
         try {
             controlFile.createNewFile();
             controlWriter = new FileWriter(controlFile);
             String content = control == null ? getDefaultControlFileContent(table, append, getInputPort(READ_FROM_PORT).getMetadata(), dbFields) : control;
             logger.debug("Control file content: " + content);
             controlWriter.write(content);
-            controlWriter.close();
         } catch (IOException ex){
             throw new ComponentNotReadyException(this, "Control file for sqlldr utility can't be created.", ex);
+        } finally {
+        	try {
+				if (controlWriter != null) {
+					controlWriter.close();
+				}
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(e);
+			}
         }
     }
 
