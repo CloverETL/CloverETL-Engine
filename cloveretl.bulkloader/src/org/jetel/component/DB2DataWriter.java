@@ -1529,13 +1529,11 @@ public class DB2DataWriter extends Node {
 		}		
 		// TODO Labels:
 		//Writer batchWriter = new OutputStreamWriter(new FileOutputStream(batchFile), Charset.forName(FILE_ENCODING));
-		FileWriter batchWriter = new FileWriter(batchFile);
-
-		batchWriter.write(prepareConnectCommand());
-		batchWriter.write(prepareLoadCommand());
-		batchWriter.write(prepareDisconnectCommand());
-
-		batchWriter.close();
+		try (FileWriter batchWriter = new FileWriter(batchFile)) {
+			batchWriter.write(prepareConnectCommand());
+			batchWriter.write(prepareLoadCommand());
+			batchWriter.write(prepareDisconnectCommand());
+		}
 		return batchURL != null ? batchFile.getCanonicalPath() : batchFile.getName();
 	}
 	
