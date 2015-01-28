@@ -35,9 +35,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.graph.ContextProvider;
-import org.jetel.graph.Node;
-import org.jetel.graph.TransformationGraph;
 
 /**
  * This class is substitution for originally very intensive using of {@link ByteBuffer} class.
@@ -59,10 +56,6 @@ public abstract class CloverBuffer {
 	private static final Logger logger = Logger.getLogger(CloverBuffer.class);
 	
 	private static final boolean DEFAULT_DIRECT = false;
-	
-	protected TransformationGraph associatedGraph;
-	
-	protected Node associatedNode;
 	
 	private static CloverBufferAllocator allocator = new DynamicCloverBufferAllocator();
 	
@@ -175,25 +168,17 @@ public abstract class CloverBuffer {
     }
 
 	protected CloverBuffer() {
-    	associatedGraph = ContextProvider.getGraph();
-    	associatedNode = ContextProvider.getNode();
 	}
     
     protected void memoryAllocated(int memorySize, boolean direct) {
     	if (direct) {
     		directMemoryUsed.addAndGet(memorySize);
     	}
-    	if (associatedGraph != null) {
-    		associatedGraph.getMemoryTracker().memoryAllocated(associatedNode, memorySize);
-    	}
     }
 
     protected void memoryDeallocated(int memorySize, boolean direct) {
     	if (direct) {
     		directMemoryUsed.addAndGet(-memorySize);
-    	}
-    	if (associatedGraph != null) {
-    		associatedGraph.getMemoryTracker().memoryDeallocated(associatedNode, memorySize);
     	}
     }
 
