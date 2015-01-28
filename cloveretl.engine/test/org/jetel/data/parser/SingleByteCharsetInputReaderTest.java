@@ -52,6 +52,8 @@ public class SingleByteCharsetInputReaderTest extends CharByteReaderTestCase {
 		assertFalse(reader.isEndOfInput());
 		assertEquals('D', reader.readChar());
 		assertEquals('E', reader.readByte());
+		while (reader.readChar() >= 0) {}
+		assertTrue(reader.isEndOfInput());
 	}
 
 }

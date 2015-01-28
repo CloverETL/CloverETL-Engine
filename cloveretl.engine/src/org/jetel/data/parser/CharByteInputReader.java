@@ -310,7 +310,8 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		
 		@Override
 		public boolean isEndOfInput() {
-			return endOfInput;
+			// CLO-5610: return false if there are remaining bytes in the buffer
+			return endOfInput && !byteBuffer.hasRemaining();
 		}
 		
 		@Override
@@ -324,8 +325,6 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 				throw new InvalidMarkException();
 			}
 			byteBuffer.position(currentMark);
-			// CLO-5610: reset EOF flag
-			endOfInput = false;
 			currentMark = INVALID_MARK;
 		}
 
@@ -512,7 +511,8 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 
 		@Override
 		public boolean isEndOfInput() {
-			return endOfInput;
+			// CLO-5610: return false if there are remaining chars in the buffer
+			return endOfInput && !charBuffer.hasRemaining();
 		}
 		
 		@Override
@@ -526,8 +526,6 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 				throw new InvalidMarkException();
 			}
 			charBuffer.position(currentMark);
-			// CLO-5610: reset EOF flag
-			endOfInput = false;
 			// discard mark automatically to avoid problems with instance user forgetting to discard it explicitly
 			currentMark = INVALID_MARK;
 		}
@@ -758,7 +756,8 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		
 		@Override
 		public boolean isEndOfInput() {
-			return endOfInput;
+			// CLO-5610: return false if there are remaining elements in the buffers
+			return endOfInput && !charBuffer.hasRemaining();
 		}
 		
 		@Override
@@ -774,8 +773,6 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			}
 			charBuffer.position(currentMark);
 			byteBuffer.position(currentMark);
-			// CLO-5610: reset EOF flag
-			endOfInput = false;
 			// discard mark automatically to avoid problems with instance user forgetting to discard it explicitly
 			currentMark = INVALID_MARK;
 		}
