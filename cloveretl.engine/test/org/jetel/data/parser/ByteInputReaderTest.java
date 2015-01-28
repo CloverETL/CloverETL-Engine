@@ -50,6 +50,8 @@ public class ByteInputReaderTest extends CharByteReaderTestCase {
 		reader.revert();
 		assertFalse(reader.isEndOfInput());
 		assertEquals(3, reader.readByte());
+		while (reader.readByte() >= 0) {}
+		assertTrue(reader.isEndOfInput());
 	}
 
 }
