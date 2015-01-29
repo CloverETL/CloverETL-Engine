@@ -221,6 +221,9 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("informix.grf") // remove after CLO-2793 solved
 							&& !file.getName().equals("EmailReader_BadDataFormatException.grf") // ok, is to fail
 							&& !file.getName().equals("PhaseOrderCheck.grf") // ok, is to fail
+							&& !file.getName().equals("JoinApproximative_invalid_join_key_CLO-4748.grf") // ok, is to fail
+							&& !file.getName().equals("ExtSort_missing_sort_key_CLO-4741.grf") // ok, is to fail
+							&& !file.getName().equals("Transformations_invalid_language.grf") // ok, is to fail
 							&& !file.getName().equals("graphCloverData.grf") // remove after CLO-4360 fixed
 							&& !file.getName().equals("MetadataWriting.grf"); // server test
 					
