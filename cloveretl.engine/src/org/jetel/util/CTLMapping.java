@@ -453,6 +453,8 @@ public class CTLMapping {
 
 		initMetadata();
 		
+		initUsedOutputFields();
+		
 		if (!StringUtils.isEmpty(sourceCode)) {
 			try {
 				createTransform(xmlAttribute);
@@ -511,6 +513,8 @@ public class CTLMapping {
 		
 		initMetadata();
 		
+		initUsedOutputFields();
+		
 		//create CTL transformation
         if (!StringUtils.isEmpty(sourceCode)) {
         	ctlTransformation = createTransform(xmlAttribute);
@@ -522,7 +526,11 @@ public class CTLMapping {
 			} catch (Exception e) {
 				throw new JetelRuntimeException(name + " initialization failed.", e);
 			}
-			
+        }
+	}
+	
+	private void initUsedOutputFields() {
+        if (!StringUtils.isEmpty(sourceCode)) {
 			usedOutputFields = CTLTransformUtils.findUsedOutputFields(component.getGraph(), inputRecordsMetadata, outputRecordsMetadata, sourceCode);
         } else {
         	// extract used output fields from the automapping
@@ -538,7 +546,6 @@ public class CTLMapping {
         		}
         	}
         }
-        
 	}
 	
 	public DataRecordMetadata[] getInputRecordsMetadata() {

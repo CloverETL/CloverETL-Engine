@@ -280,9 +280,9 @@ public class SystemExecute extends Node{
 		} catch (TempFileCreationException e) {
 			throw new IOException(e);
 		}
-		FileWriter batchWriter = new FileWriter(batch);
-		batchWriter.write(command);
-		batchWriter.close();
+		try (FileWriter batchWriter = new FileWriter(batch)) {
+			batchWriter.write(command);
+		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("Batch file content:\n" + command);
 		}

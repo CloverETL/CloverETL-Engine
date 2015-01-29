@@ -488,14 +488,8 @@ public class SQLDataParser extends AbstractParser {
 		if (incrementalKey == null || incrementalFile == null) {
 			return;
 		}
-		FileOutputStream fos = null;
-		try {
-			 fos = new FileOutputStream(incrementalFile);
+		try (FileOutputStream fos = new FileOutputStream(incrementalFile)) {
 			((Properties) position).store(fos, null);
-		} finally {
-			if (fos != null) {
-				fos.close();
-			}
 		}
 	}
 

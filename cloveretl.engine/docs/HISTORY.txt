@@ -2,6 +2,14 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-0-3
+---------
+
+* FIXES:
+	- Invalid CloverData format
+	- "Create directories" does not work in UniversalDataWriter when using 
+	Dictionary as file URL
+
 REL-4-0-2
 ---------
 
@@ -73,6 +81,16 @@ REL-4-0-0-M1
 	- split() returns empty list if input is null
 	- indexOf() accepts null value
 	 
+
+
+REL-3-5-4
+---------
+
+* Improved support for multipart entities in HttpConnector
+* FIXES:
+    - multipart entities mapping does not work
+    - simultaneous run of Success and SetJoboutput components fixed
+    - DBOutputTable fails on syntax error when using multiple quotes 
 
 
 REL-3-5-3

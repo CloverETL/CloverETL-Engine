@@ -18,6 +18,9 @@
  */
 package org.jetel.util.file;
 
+import static org.jetel.util.file.FileUtils.DICTIONARY_PROTOCOL;
+import static org.jetel.util.file.FileUtils.PORT_PROTOCOL;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
@@ -535,18 +538,20 @@ public class WcardPattern {
 			}
 		}
 		
+		String protocol = url.getProtocol();
+		
 		// wildcards for file protocol
-		if (url.getProtocol().equals(FILE)) {
+		if (protocol.equals(FILE)) {
 			return getFileNames(fileName);
 		}
 		
 		// wildcards for sftp protocol
-		else if (resolveAllNames && url.getProtocol().equals(SFTP)) {
+		else if (resolveAllNames && protocol.equals(SFTP)) {
 			return getSftpNames(url);
 		}
 		
 		// wildcards for ftp protocol
-		else if (resolveAllNames && url.getProtocol().equals(FTP)) {
+		else if (resolveAllNames && protocol.equals(FTP)) {
 			try {
 				return getFtpNames(new URL(parent, fileName, FileUtils.ftpStreamHandler));	// the FTPStreamHandler is not properly tested but supports 'ls'
 			} catch (MalformedURLException e) {
@@ -554,12 +559,16 @@ public class WcardPattern {
 			}
 		}
 		
-		else if (url.getProtocol().equals(SandboxUrlUtils.SANDBOX_PROTOCOL)) {
+		else if (protocol.equals(SandboxUrlUtils.SANDBOX_PROTOCOL)) {
 			return getSanboxNames(url);
 		}
 		else if (resolveAllNames && (
-				url.getProtocol().equals(HTTP) || url.getProtocol().equals(HTTPS))) {
+				protocol.equals(HTTP) || protocol.equals(HTTPS))) {
 			return getHttpNames(url);
+		}
+		// CLO-5532:
+		else if (protocol.equals(PORT_PROTOCOL) || protocol.equals(DICTIONARY_PROTOCOL)) {
+			return Arrays.asList(fileName);
 		}
 
 		// return original filename

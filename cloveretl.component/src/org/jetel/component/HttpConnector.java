@@ -2625,22 +2625,22 @@ public class HttpConnector extends Node {
 				}
 			}
 
-			// check whether multipart entities list contains just values from metadata
-			if (!StringUtils.isEmpty(multipartEntities)) {
-				List<String> multipartEntitiesList = new ArrayList<String>();
-				StringTokenizer tokenizer = new StringTokenizer(multipartEntities, ";");
-				while (tokenizer.hasMoreElements()) {
-					multipartEntitiesList.add(tokenizer.nextToken());
-				}
-				String[] metadataNames = inputPort.getMetadata().getFieldNamesArray();
-				for (String metadataName : metadataNames) {
-					multipartEntitiesList.remove(metadataName);
-				}
-
-				if (!multipartEntitiesList.isEmpty()) {
-					status.add(new ConfigurationProblem("Given multipart entities list contains value not defined at metadata: " + multipartEntitiesList.get(0), Severity.ERROR, this, Priority.NORMAL));
-				}
-			}
+//			// check whether multipart entities list contains just values from metadata
+//			if (!StringUtils.isEmpty(multipartEntities)) {
+////				List<String> multipartEntitiesList = new ArrayList<String>();
+////				StringTokenizer tokenizer = new StringTokenizer(multipartEntities, ";");
+////				while (tokenizer.hasMoreElements()) {
+////					multipartEntitiesList.add(tokenizer.nextToken());
+////				}
+////				String[] metadataNames = inputPort.getMetadata().getFieldNamesArray();
+////				for (String metadataName : metadataNames) {
+////					multipartEntitiesList.remove(metadataName);
+////				}
+////
+////				if (!multipartEntitiesList.isEmpty()) {
+////					status.add(new ConfigurationProblem("Given multipart entities list contains value not defined at metadata: " + multipartEntitiesList.get(0), Severity.ERROR, this, Priority.NORMAL));
+////				}
+//			}
 
 			// check whether ignored fields list contains just values from metadata
 			if (!StringUtils.isEmpty(ignoredFields)) {

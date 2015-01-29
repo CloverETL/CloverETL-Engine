@@ -282,11 +282,10 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	 * @throws IOException when error occured
 	 */
 	private void saveCommandToFile(File commandFile, String command) throws IOException {
-		FileWriter commandWriter = new FileWriter(commandFile);
-		printCommandToLog(command);
-		
-		commandWriter.write(command);
-		commandWriter.close();
+		try (FileWriter commandWriter = new FileWriter(commandFile)) {
+			printCommandToLog(command);
+			commandWriter.write(command);
+		}
 	}
 	
 	/**

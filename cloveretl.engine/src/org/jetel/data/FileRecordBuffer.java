@@ -50,8 +50,8 @@ public class FileRecordBuffer {
 
 	private CloverBuffer dataBuffer;
 
-	private long readPosition;
-	private long writePosition;
+	protected long readPosition;
+	protected long writePosition;
 	private long mapPosition;
 
 	private boolean hasFile;

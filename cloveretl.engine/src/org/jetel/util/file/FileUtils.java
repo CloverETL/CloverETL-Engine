@@ -260,8 +260,8 @@ public class FileUtils {
     private static Pattern DRIVE_LETTER_PATTERN = Pattern.compile("\\A\\p{Alpha}:[/\\\\]");
     private static Pattern PROTOCOL_PATTERN = Pattern.compile("\\A(\\p{Alnum}+):");
     
-    private static final String PORT_PROTOCOL = "port";
-    private static final String DICTIONARY_PROTOCOL = "dict";
+    public static final String PORT_PROTOCOL = "port";
+    public static final String DICTIONARY_PROTOCOL = "dict";
     
     public static String getProtocol(String fileURL) {
     	if (fileURL == null) {
@@ -531,7 +531,7 @@ public class FileUtils {
         	// apply the contextURL
         	URL url = FileUtils.getFileURL(contextURL, localArchivePath.toString());
 			String absolutePath = getUrlFile(url);
-			registerTrueZipVSFEntry(new TFile(localArchivePath.toString()));
+			registerTrueZipVSFEntry(newTFile(localArchivePath.toString()));
 			return new TFileInputStream(absolutePath);
         }
 
@@ -1337,13 +1337,32 @@ public class FileUtils {
     	// apply the contextURL
     	URL url = FileUtils.getFileURL(contextURL, localArchivePath);
 		String absolutePath = FileUtils.getUrlFile(url);
-		registerTrueZipVSFEntry(new TFile(localArchivePath));
+		registerTrueZipVSFEntry(newTFile(localArchivePath));
 		return new TFile(absolutePath);
 	}
 		
 	private static boolean getLocalArchiveInputPath(URL contextURL, String input, StringBuilder path)
 		throws IOException {
 		return getLocalArchivePath(contextURL, input, false, 0, path, 0, false);
+	}
+	
+	/**
+	 * This method should be used instead of the {@link TFile} constructor
+	 * to avoid CLO-5569.
+	 * 
+	 * @param path
+	 * @return new {@link TFile}
+	 */
+	private static TFile newTFile(String path) {
+		ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+		try {
+			// CLO-5569: use the same classloader that loaded the TrueZip kernel
+			ClassLoader cl = TFile.class.getClassLoader();
+			Thread.currentThread().setContextClassLoader(cl);
+			return new TFile(path);
+		} finally {
+			Thread.currentThread().setContextClassLoader(contextClassLoader);
+		}
 	}
 	
 	private static void registerTrueZipVSFEntry(TFile entry) {
@@ -1379,7 +1398,7 @@ public class FileUtils {
         	URL url = FileUtils.getFileURL(contextURL, archPath);
 			String absolutePath = getUrlFile(url);
 			
-        	TFile archive = new TFile(absolutePath);
+        	TFile archive = newTFile(absolutePath);
         	boolean mkdirsResult = archive.getParentFile().mkdirs();
 			log.debug("Opening local archive entry " + archive.getAbsolutePath()
         			+ " (mkdirs: " + mkdirsResult
