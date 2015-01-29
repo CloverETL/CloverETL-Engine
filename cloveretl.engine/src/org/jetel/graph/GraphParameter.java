@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAnyAttribute;
+import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -40,6 +41,8 @@ import org.jetel.util.SubgraphUtils;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 
 /**
  * This class represents single graph parameter - name-value pair, which is
@@ -415,6 +418,9 @@ public class GraphParameter {
 		@XmlAnyAttribute
 		private Map<QName, String> attributes;
 
+		@XmlAnyElement
+		private List<Element> elements;
+
 		public SingleType() {
 		}
 
@@ -439,6 +445,55 @@ public class GraphParameter {
                 }
 			}
 			return params;
+		}
+		
+		public SingleTypeConfig getTypeConfig() {
+			SingleTypeConfig config = new SingleTypeConfig();
+			config.setSimpleParameters(getParameters());
+
+			Map<String, List<Map<String, String>>> groups = new HashMap<>();
+			config.setGroupedParameters(groups);
+
+			if (elements != null) {
+				for (Element elem : elements) {
+					if ("Group".equals(elem.getLocalName())) {
+                        String name = elem.getAttribute("name");
+                        List<Map<String, String>> groupList = groups.get(name);
+                        if (groupList == null) {
+                        	groupList = new ArrayList<Map<String, String>>();
+                        	groups.put(name, groupList);
+                        }
+                        
+                        Map<String, String> paramMap = new HashMap<String, String>();
+                        groupList.add(paramMap);
+                        
+                        NamedNodeMap attrs = elem.getAttributes();
+                        for (int i = 0; i < attrs.getLength(); i++) {
+                        	org.w3c.dom.Node attr = attrs.item(i);
+                        	paramMap.put(attr.getNodeName(), attr.getNodeValue());
+                        }
+					}
+				}
+			}
+			
+			return config;
+		}
+	}
+	
+	public static class SingleTypeConfig {
+		private Map<String, String> simpleParameters;
+		private Map<String, List<Map<String, String>>> groupedParameters;
+		public Map<String, String> getSimpleParameters() {
+			return simpleParameters;
+		}
+		public void setSimpleParameters(Map<String, String> simpleParameters) {
+			this.simpleParameters = simpleParameters;
+		}
+		public Map<String, List<Map<String, String>>> getGroupedParameters() {
+			return groupedParameters;
+		}
+		public void setGroupedParameters(Map<String, List<Map<String, String>>> groupedParameters) {
+			this.groupedParameters = groupedParameters;
 		}
 	}
 	
