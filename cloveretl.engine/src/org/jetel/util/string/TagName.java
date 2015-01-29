@@ -134,9 +134,7 @@ public class TagName {
 					isValid = true;
 				}
 				
-			} else {
-				isValid = false;
-			}
+			} 
 		} else {
 			isValid = !TagName.hasInvalidCharacters(name);
 		}
