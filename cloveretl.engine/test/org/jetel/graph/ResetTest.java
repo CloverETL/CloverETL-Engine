@@ -162,6 +162,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("packedDecimal.grf") // remove after CL-1811 solved
 							&& !file.getName().equals("SimpleZipWrite.grf") // used by ArchiveFlushTest.java, doesn't make sense to run it separately
 							&& !file.getName().equals("XMLExtract_TKLK_003_Back.grf") // needs output from XMLWriter_LKTW_003.grf
+							&& !file.getName().equals("XMLWriter-CL-2404-CNO_OTF_ITSS.grf") // runs too long
 							&& !file.getName().equals("SQLDataParser_precision_CL2187.grf") // ok, is to fail
 							&& !file.getName().equals("incrementalReadingDB_explicitMapping.grf") // remove after CL-2239 solved
 							&& !file.getName().equals("HTTPConnector_get_bodyparams.grf") // ok, is to fail
@@ -220,6 +221,9 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("informix.grf") // remove after CLO-2793 solved
 							&& !file.getName().equals("EmailReader_BadDataFormatException.grf") // ok, is to fail
 							&& !file.getName().equals("PhaseOrderCheck.grf") // ok, is to fail
+							&& !file.getName().equals("JoinApproximative_invalid_join_key_CLO-4748.grf") // ok, is to fail
+							&& !file.getName().equals("ExtSort_missing_sort_key_CLO-4741.grf") // ok, is to fail
+							&& !file.getName().equals("Transformations_invalid_language.grf") // ok, is to fail
 							&& !file.getName().equals("graphCloverData.grf") // remove after CLO-4360 fixed
 							&& !file.getName().equals("MetadataWriting.grf"); // server test
 					

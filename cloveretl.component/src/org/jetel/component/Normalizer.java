@@ -136,6 +136,9 @@ public class Normalizer extends Node {
 	private Map<Integer, ErrorAction> errorActions = new HashMap<Integer, ErrorAction>();
 	private String errorLogURL;
 	private FileWriter errorLog;
+	
+	protected DataRecord inRecord;
+	protected DataRecord outRecord;
 
 	/**
 	 * Sole ctor.
@@ -192,6 +195,12 @@ public class Normalizer extends Node {
 			throw new ComponentNotReadyException("Normalizer initialization failed: " + norm.getMessage());
 		}
         errorActions = ErrorAction.createMap(errorActionsString);
+        
+        inRecord = DataRecordFactory.newRecord(inMetadata);
+		inRecord.init();
+		outRecord = DataRecordFactory.newRecord(outMetadata);
+		outRecord.init();
+		outRecord.reset();
 	}
 
 	private TransformFactory<RecordNormalize> getTransformFactory() {
@@ -213,11 +222,7 @@ public class Normalizer extends Node {
 	 * @throws TransformException
 	 */
 	private void processInput() throws IOException, InterruptedException, TransformException {
-		DataRecord inRecord = DataRecordFactory.newRecord(inMetadata);
-		inRecord.init();
-		DataRecord outRecord = DataRecordFactory.newRecord(outMetadata);
-		outRecord.init();
-		outRecord.reset();
+		
 		int src = 0;
 		int transformResult;
 		while (runIt) {

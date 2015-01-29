@@ -591,12 +591,11 @@ public class MysqlDataWriter extends BulkLoader {
 	 * @throws IOException when error occured
 	 */
 	private void saveCommandFile(File commandFile) throws ComponentNotReadyException, IOException {
-		FileWriter commandWriter = new FileWriter(commandFile);
-		String command = getDefaultCommandFileContent();
-		logger.debug("Command file content: " + command);
-
-		commandWriter.write(command);
-		commandWriter.close();
+		try (FileWriter commandWriter = new FileWriter(commandFile)) {
+			String command = getDefaultCommandFileContent();
+			logger.debug("Command file content: " + command);
+			commandWriter.write(command);
+		}
 	}
 	
 	/**

@@ -165,11 +165,6 @@ public class GraphTrackingDetail implements GraphTracking {
 		}
 	}
 
-	@Override
-	public long getUsedMemory() {
-		return graph.getMemoryTracker().getUsedMemory();
-	}
-	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getResult()
 	 */

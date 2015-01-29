@@ -310,7 +310,8 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		
 		@Override
 		public boolean isEndOfInput() {
-			return endOfInput;
+			// CLO-5610: return false if there are remaining bytes in the buffer
+			return endOfInput && !byteBuffer.hasRemaining();
 		}
 		
 		@Override
@@ -510,7 +511,8 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 
 		@Override
 		public boolean isEndOfInput() {
-			return endOfInput;
+			// CLO-5610: return false if there are remaining chars in the buffer
+			return endOfInput && !charBuffer.hasRemaining();
 		}
 		
 		@Override
@@ -754,7 +756,8 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		
 		@Override
 		public boolean isEndOfInput() {
-			return endOfInput;
+			// CLO-5610: return false if there are remaining elements in the buffers
+			return endOfInput && !charBuffer.hasRemaining();
 		}
 		
 		@Override
