@@ -253,11 +253,10 @@ public class AnalyzeDB {
 		try {
             connection.init();
         } catch (ComponentNotReadyException e) {
+			if (print != System.out) {
+				print.close();
+			}
             throw new IOException(e);
-        } finally {
-        	if (print != System.out) {
-        		print.close();
-        	}
         }
 		
 		// do we want just to display driver properties ?
