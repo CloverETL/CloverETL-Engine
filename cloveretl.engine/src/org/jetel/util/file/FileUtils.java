@@ -1659,7 +1659,8 @@ public class FileUtils {
 			}
 
 			try {
-				graph.getAuthorityProxy().makeDirectories(url.getHost(), url.getPath());
+				// CLO-5641: decode escaped character sequences
+				graph.getAuthorityProxy().makeDirectories(url.getHost(), URIUtils.urlDecode(url.getPath()));
 			} catch (IOException exception) {
 				throw new ComponentNotReadyException("Making of sandbox directories failed!", exception);
 			}
