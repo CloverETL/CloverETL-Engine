@@ -30,9 +30,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
-import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 
@@ -53,13 +51,9 @@ import org.jetel.data.Defaults;
  */
 public abstract class CloverBuffer {
 
-	private static final Logger logger = Logger.getLogger(CloverBuffer.class);
-	
 	private static final boolean DEFAULT_DIRECT = false;
 	
 	private static CloverBufferAllocator allocator = new DynamicCloverBufferAllocator();
-	
-	private static AtomicLong directMemoryUsed = new AtomicLong();
 	
 	public static void setAllocator(CloverBufferAllocator allocator) {
 		CloverBuffer.allocator = allocator;
@@ -169,33 +163,6 @@ public abstract class CloverBuffer {
 
 	protected CloverBuffer() {
 	}
-    
-    protected void memoryAllocated(int memorySize, boolean direct) {
-    	if (direct) {
-    		directMemoryUsed.addAndGet(memorySize);
-    	}
-    }
-
-    protected void memoryDeallocated(int memorySize, boolean direct) {
-    	if (direct) {
-    		directMemoryUsed.addAndGet(-memorySize);
-    	}
-    }
-
-    /**
-     * That is attempt to track information about all clover buffers associated with a graph or node. 
-     */
-    @Override
-    protected final void finalize() throws Throwable {
-    	super.finalize();
-    	try {
-    		if (!isDerived()) {
-    			memoryDeallocated(capacity(), isDirect());
-    		}
-    	} catch (Throwable t) {
-    		logger.warn("Finalization of CluverBuffer failed.", t);
-    	}
-    }
     
     /**
      * Returns the underlying NIO buffer instance.
@@ -655,20 +622,11 @@ public abstract class CloverBuffer {
     }
 
     /**
-     * Request to prepare a new byte buffer. Memory tracker is updated.
+     * Request to prepare a new byte buffer.
      */
     protected ByteBuffer reallocateByteBuffer(int capacity, boolean direct) {
     	ByteBuffer result = allocateByteBuffer(capacity, direct);
-    	memoryAllocated(capacity, result.isDirect());
     	return result;
-    }
-
-    /**
-     * Event listener, that an underlying byte buffer is no more used.
-     * Memory tracker is updated. 
-     */
-    protected void deallocateByteBuffer(ByteBuffer byteBuffer) {
-    	memoryDeallocated(byteBuffer.capacity(), byteBuffer.isDirect());
     }
 
     /**
@@ -681,41 +639,14 @@ public abstract class CloverBuffer {
      * @return new {@link ByteBuffer}
      */
     protected static synchronized ByteBuffer allocateByteBuffer(int capacity, boolean direct) {
-    	if (direct && Defaults.USE_DIRECT_MEMORY && isDirectMemoryAvailable(capacity)) {
+    	if (direct && Defaults.USE_DIRECT_MEMORY) {
     		try {
     			return ByteBuffer.allocateDirect(capacity);
     		} catch (OutOfMemoryError e) {
-    			logger.debug("Engine is out of direct memory. Heap memory is going to be used.");
-    			lastDirectMemoryAllocationFail = System.currentTimeMillis();
         		return ByteBuffer.allocate(capacity);
     		}
     	} else {
     		return ByteBuffer.allocate(capacity);
-    	}
-    }
-    
-    /**
-     * This simple method should decide whether some direct memory is available.
-     * The direct memory is considered unavailable if an unsuccessful attempt to allocate direct
-     * memory was performed in last 10 seconds.
-     */
-    private static volatile long lastDirectMemoryAllocationFail = 0;
-    private static synchronized boolean isDirectMemoryAvailable(int capacity) {
-    	if (lastDirectMemoryAllocationFail == 0) {
-    		if (directMemoryUsed.get() + capacity <= Defaults.CLOVER_BUFFER_DIRECT_MEMORY_LIMIT_SIZE) {
-        		return true;
-    		} else {
-    			logger.trace("CloverBuffers are out of direct memory, used " + directMemoryUsed + "B and requested " + capacity + "B.");
-    			return false;
-    		}
-    	} else {
-	    	long currentTime = System.currentTimeMillis();
-	    	if (currentTime - lastDirectMemoryAllocationFail > 10000) {
-	    		lastDirectMemoryAllocationFail = 0;
-	    		return true;
-	    	} else {
-	    		return false;
-	    	}
     	}
     }
     
