@@ -41,7 +41,15 @@ public class URIUtils {
 	
 	public static final String PARENT_DIR_NAME = ".."; //$NON-NLS-1$
 	
-	public static final String CHARSET = "US-ASCII"; //$NON-NLS-1$
+	/**
+	 * According to <a href="http://tools.ietf.org/html/rfc3986">RFC 3986</a>,
+	 * UTF-8 should be used for URL encoding.
+	 * <p>
+	 * Changed from ASCII to UTF-8 since 4.0.4.
+	 * </p>
+	 * @see <a href="https://bug.javlin.eu/browse/CLO-5641">CLO-5641</a>
+	 */
+	public static final String CHARSET = "UTF-8"; //$NON-NLS-1$
 	
 	private static final Pattern PLUS_PATTERN = Pattern.compile("\\+"); //$NON-NLS-1$
 	
