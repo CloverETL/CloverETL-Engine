@@ -19,9 +19,15 @@
 package org.jetel.util.file;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.TransformationGraph;
 
 /**
  * Utility class for working with sandbox URLs.
@@ -195,6 +201,37 @@ public final class SandboxUrlUtils {
 			return null;
 		}
 	}
+
+    /**
+     * CLO-5660: use getUrlFile() to decode the path
+     * 
+     * @param url			- target URL
+     * @param appendData	- <code>true</code> to open the stream for appending
+     * @return new sandbox {@link OutputStream}
+     * @throws IOException
+     */
+    public static OutputStream getSandboxOutputStream(URL url, boolean appendData) throws IOException {
+		TransformationGraph graph = ContextProvider.getGraph();
+		if (graph == null) {
+			throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
+		}
+    	return graph.getAuthorityProxy().getSandboxResourceOutput(ContextProvider.getComponentId(), url.getHost(), FileUtils.getUrlFile(url), appendData);
+    }
+    
+    /**
+     * Utility method to open sandbox {@link InputStream}.
+     * 
+     * @param url	- source URL
+     * @return new sandbox {@link InputStream}
+     * @throws IOException
+     */
+    public static InputStream getSandboxInputStream(URL url) throws IOException {
+		TransformationGraph graph = ContextProvider.getGraph();
+		if (graph == null) {
+			throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
+		}
+		return graph.getAuthorityProxy().getSandboxResourceInput(ContextProvider.getComponentId(), url.getHost(), FileUtils.getUrlFile(url));
+    }
 
 	private SandboxUrlUtils() {
 		throw new UnsupportedOperationException();
