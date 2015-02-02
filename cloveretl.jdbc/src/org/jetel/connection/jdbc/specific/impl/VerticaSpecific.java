@@ -38,6 +38,26 @@ public class VerticaSpecific extends AbstractJdbcSpecific {
 
 	private static final VerticaSpecific INSTANCE = new VerticaSpecific();
 
+	/**
+	 * Vertica SQL type identifiers for intervals (101-113).
+	 * Follows ODBC standard.
+	 * @see Types
+	 */
+	public static final int INTERVAL_YEAR = 101;
+	public static final int INTERVAL_MONTH = 102;
+	public static final int INTERVAL_DAY = 103;
+	public static final int INTERVAL_HOUR = 104;
+	public static final int INTERVAL_MINUTE = 105;
+	public static final int INTERVAL_SECOND = 106;
+	public static final int INTERVAL_YEAR_TO_MONTH = 107;
+	public static final int INTERVAL_DAY_TO_HOUR = 108;
+	public static final int INTERVAL_DAY_TO_MINUTE = 109;
+	public static final int INTERVAL_DAY_TO_SECOND = 110;
+	public static final int INTERVAL_HOUR_TO_MINUTE = 111;
+	public static final int INTERVAL_HOUR_TO_SECOND = 112;
+	public static final int INTERVAL_MINUTE_TO_SECOND = 113;
+
+	
 	public static VerticaSpecific getInstance() {
 		return INSTANCE;
 	}
@@ -72,7 +92,13 @@ public class VerticaSpecific extends AbstractJdbcSpecific {
 	 */
 	@Override
 	public char sqlType2jetel(int sqlType) {
+		if (isIntervalType(sqlType)) {
+			return DataFieldType.STRING.getShortName();
+		}
 		switch (sqlType) {
+			case Types.OTHER:
+				// Vertica interval types and UUID
+				return DataFieldType.STRING.getShortName();
 			case Types.BIT:
 				// the type of boolean columns is returned as Types.BIT,
 				// which is normally converted to a string
@@ -97,6 +123,10 @@ public class VerticaSpecific extends AbstractJdbcSpecific {
 	 */
 	@Override
 	public boolean isJetelTypeConvertible2sql(int sqlType, DataFieldMetadata field) {
+		if ((sqlType == Types.OTHER) || isIntervalType(sqlType)) {
+			// Vertica interval types and UUID
+			return field.getDataType() == DataFieldType.STRING;
+		}
 		switch (field.getDataType()) {
 			case BOOLEAN:
 				// BOOLEAN type is returned as Types.BIT
@@ -106,8 +136,28 @@ public class VerticaSpecific extends AbstractJdbcSpecific {
 				return (sqlType == Types.BIGINT) || super.isJetelTypeConvertible2sql(sqlType, field);
 			case DECIMAL:
 				return (sqlType == Types.NUMERIC) || super.isJetelTypeConvertible2sql(sqlType, field);
+			case BYTE: 
+			case CBYTE:
+				return (sqlType == Types.LONGVARBINARY) || super.isJetelTypeConvertible2sql(sqlType, field);
+			case STRING:
+				switch (sqlType) {
+				case Types.LONGVARCHAR:
+				case Types.LONGNVARCHAR:
+					return true;
+				}
 			default:
 				return super.isJetelTypeConvertible2sql(sqlType, field);
 		}
+	}
+	
+	/**
+	 * Returns <code>true</code> if the <code>sqlType</code> 
+	 * is one of the INTERVAL_* constants.
+	 * 
+	 * @param sqlType - SQL type identifier
+	 * @return <code>true</code> if <code>sqlType</code> is an interval
+	 */
+	public static boolean isIntervalType(int sqlType) {
+		return (sqlType >= INTERVAL_YEAR) && (sqlType <= INTERVAL_MINUTE_TO_SECOND);
 	}
 }
