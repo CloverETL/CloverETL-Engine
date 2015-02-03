@@ -59,7 +59,8 @@ public class CloverDebugFormatter extends CloverDataFormatter {
 		if (metadata.getParsingType() == DataRecordParsingType.FIXEDLEN) {
 			duplicate.addField(0, new DataFieldMetadata("__recordNumber", DataFieldType.LONG, 10));
 		} else {
-			duplicate.addField(0, new DataFieldMetadata("__recordNumber", DataFieldType.LONG, null));
+			String delimiter = (metadata.getFieldDelimiter() != null) ? null : "|"; // only set if no default delimiter
+			duplicate.addField(0, new DataFieldMetadata("__recordNumber", DataFieldType.LONG, delimiter));
 		}
 		
 		super.init(duplicate);
