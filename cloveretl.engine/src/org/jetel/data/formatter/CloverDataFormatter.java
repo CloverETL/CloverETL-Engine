@@ -46,6 +46,7 @@ import org.jetel.metadata.MetadataUtils;
 import org.jetel.util.JetelVersion;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.BitArray;
 import org.jetel.util.stream.CloverDataStream;
 
@@ -339,7 +340,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 	@Override
 	public void close() throws IOException {
 		if (!isOpen) return;
-		output.close();
+		FileUtils.close(output); // CLO-5217
 		if (channel.isOpen()) {
 			channel.close();
 		}
