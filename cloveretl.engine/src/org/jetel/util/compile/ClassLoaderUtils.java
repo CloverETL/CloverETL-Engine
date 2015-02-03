@@ -24,6 +24,7 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.security.AccessControlException;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -134,8 +135,13 @@ public class ClassLoaderUtils {
 
 	private static boolean isFileOk(String fileName) {
 		File file = new File(fileName);
-		if (file.exists() && (fileName.endsWith(".jar") || fileName.endsWith(".zip") || file.isDirectory())) {
-			return true;
+		try {
+			if (file.exists() && (fileName.endsWith(".jar") || fileName.endsWith(".zip") || file.isDirectory())) {
+				return true;
+			}
+		} catch (AccessControlException e) {
+			logger.debug("Can't access file "+file+" "+e.getMessage());
+			return false;
 		}
 		return false;
 	}
