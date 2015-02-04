@@ -32,13 +32,12 @@ import org.jetel.component.RecordFilterFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.RingRecordBuffer;
-import org.jetel.data.formatter.BinaryDataFormatter;
+import org.jetel.data.formatter.CloverDebugFormatter;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.metadata.MetadataUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
 
@@ -70,7 +69,7 @@ public class EdgeDebugWriter {
 
     /** used to store the ordinal of the data record currently processed (read or written) */
     private WritableByteChannel outputChannel;
-    private BinaryDataFormatter formatter;
+    private CloverDebugFormatter formatter;
     private RingRecordBuffer ringRecordBuffer;
     private DataRecord recordOrdinal;
     private RecordFilter filter;
@@ -80,9 +79,9 @@ public class EdgeDebugWriter {
     private Edge parentEdge; //can be null
     
     /** the number of data records processed so far */
-    private int recordsCounter = 0;
+    private long recordsCounter = 0;
     /** the number of debugged (stored) records */
-    private int debuggedRecords = 0;
+    private long debuggedRecords = 0;
     
     private long lastFlushTime = 0;
 
@@ -107,8 +106,7 @@ public class EdgeDebugWriter {
 	    		outputChannel = FileUtils.getWritableChannel(getContextURL(), debugFile, false);
 	    	}
 	    	
-	    	formatter = new BinaryDataFormatter(outputChannel);
-	    	formatter.setUnitarySerialization(true);
+	    	formatter = new CloverDebugFormatter(outputChannel);
 	    	formatter.init(metadata);
 	
 	        if (debugMaxRecords > 0 && debugLastRecords) {
@@ -116,7 +114,7 @@ public class EdgeDebugWriter {
 	        	ringRecordBuffer.init();
 	        	
 	        	DataRecordMetadata recordOrdinalMetadata = new DataRecordMetadata("recordOrdinal");
-	        	recordOrdinalMetadata.addField(new DataFieldMetadata("ordinal", DataFieldType.INTEGER, null));
+	        	recordOrdinalMetadata.addField(new DataFieldMetadata("ordinal", DataFieldType.LONG, null));
 	
 	        	recordOrdinal = DataRecordFactory.newRecord(recordOrdinalMetadata);
 	        	recordOrdinal.init();
@@ -130,7 +128,6 @@ public class EdgeDebugWriter {
 	        	sampler = new Sampler();
 	        }
 	        
-	        MetadataUtils.writeMetadata(metadata, outputChannel);
     	} catch (Exception e) {
     		throw new JetelRuntimeException("Initialization of edge debug writer failed.", e);
     	}
@@ -154,7 +151,7 @@ public class EdgeDebugWriter {
 	    		ringRecordBuffer.pushRecord(record);
             }
         } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(record)) {
-        	formatter.writeInt(recordsCounter);
+        	formatter.writeLong(recordsCounter);
         	formatter.write(record);
         	flushIfNeeded();
         	debuggedRecords++;
@@ -172,6 +169,14 @@ public class EdgeDebugWriter {
 		lastFlushTime = System.nanoTime();
     }
     
+    private boolean checkRecordToWrite(CloverBuffer byteBuffer) {
+    	if (filter != null) {
+            tempRecord.deserialize(byteBuffer);
+            byteBuffer.rewind();
+    	}
+    	return checkRecordToWrite(tempRecord);
+    }
+    
     private boolean checkRecordToWrite(DataRecord record) {
     	return ((filter == null || isValid(record)) && (sampler == null || sampler.sample()));
     }
@@ -187,21 +192,16 @@ public class EdgeDebugWriter {
     public void writeRecord(CloverBuffer byteBuffer) throws IOException, InterruptedException {
         recordsCounter++;
 
-        tempRecord.deserialize(byteBuffer);
-        byteBuffer.rewind();
-
         if (recordsCounter >= debugStartRecord) {
 	        if (ringRecordBuffer != null) {
-	        	if (checkRecordToWrite(tempRecord)) {
+	        	if (checkRecordToWrite(byteBuffer)) {
 	                recordOrdinal.getField(0).setValue(recordsCounter);
 	        		ringRecordBuffer.pushRecord(recordOrdinal);
 	        		ringRecordBuffer.pushRecord(byteBuffer);
 	        	}
-	        } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(tempRecord)) {
-	        	formatter.writeInt(recordsCounter);
-	        	//write the deserialized record instead of raw data record
-	        	//the raw data record could be a token, but only regular records should be written
-	        	formatter.write(tempRecord); 
+	        } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(byteBuffer)) {
+	        	formatter.writeLong(recordsCounter);
+	        	formatter.writeDirect(byteBuffer); 
 	        	flushIfNeeded();
 	        	debuggedRecords++;
 	        }
@@ -236,12 +236,12 @@ public class EdgeDebugWriter {
 				dataRecord.init();
 
 				while (ringRecordBuffer.popRecord(recordOrdinal) != null && ringRecordBuffer.popRecord(dataRecord) != null) {
-					formatter.writeInt((Integer) recordOrdinal.getField(0).getValue());
+					formatter.writeLong((Long) recordOrdinal.getField(0).getValue());
 					formatter.write(dataRecord);
 				}
 			}
 
-			formatter.writeInt(-1);
+			formatter.writeLong(-1);
 			formatter.close();
 		} catch (IOException exception) {
 			logger.error("Error writing debug records.");

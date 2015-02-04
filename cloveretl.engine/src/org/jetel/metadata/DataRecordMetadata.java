@@ -18,6 +18,9 @@
  */
 package org.jetel.metadata;
 
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1867,6 +1870,32 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 			if (dataType == DataFieldType.DECIMAL) {
 				fieldMetadata.setProperty(DataFieldMetadata.LENGTH_ATTR, Integer.toString(buffer.getInt()));
 				fieldMetadata.setProperty(DataFieldMetadata.SCALE_ATTR, Integer.toString(buffer.getInt()));
+			}
+			recordMetadata.addField(fieldMetadata);
+		}
+		
+		return recordMetadata;
+	}
+	
+	/**
+	 * This method deserialises metadata, only data types are deserialized.
+	 * This method is counterpart for {@link #serialize(CloverBuffer)} method.
+	 * @param is
+	 * @return
+	 */
+	public static DataRecordMetadata deserialize(InputStream is) throws IOException {
+		DataRecordMetadata recordMetadata = new DataRecordMetadata("record");
+		DataInputStream dis = new DataInputStream(is);
+		
+		int numFields = dis.readInt();
+		for (int i = 0; i < numFields; i++) {
+			DataFieldType dataType = DataFieldType.fromByteIdentifier(dis.readByte());
+			DataFieldContainerType containerType = DataFieldContainerType.fromByteIdentifier(dis.readByte());
+			
+			DataFieldMetadata fieldMetadata = new DataFieldMetadata("field" + (i+1), dataType, null, containerType);
+			if (dataType == DataFieldType.DECIMAL) {
+				fieldMetadata.setProperty(DataFieldMetadata.LENGTH_ATTR, Integer.toString(dis.readInt()));
+				fieldMetadata.setProperty(DataFieldMetadata.SCALE_ATTR, Integer.toString(dis.readInt()));
 			}
 			recordMetadata.addField(fieldMetadata);
 		}
