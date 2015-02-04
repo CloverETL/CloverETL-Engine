@@ -484,7 +484,7 @@ public class InformixDataWriter extends BulkLoader {
      */
     private void createCommandFile() throws ComponentNotReadyException {
     	File commandFile = new File(commandFileName);
-        FileWriter commandWriter;
+        FileWriter commandWriter = null;
         try {
         	commandFile.createNewFile();
         	commandWriter = new FileWriter(commandFile);
@@ -507,9 +507,16 @@ public class InformixDataWriter extends BulkLoader {
         	}
 
             commandWriter.write(content);
-            commandWriter.close();
-        } catch(IOException ex) {
+        } catch (IOException ex) {
             throw new ComponentNotReadyException(this, "Can't create temp control file for dbload utility.", ex);
+        } finally {
+        	try {
+        		if (commandWriter != null) {
+        			commandWriter.close();
+        		}
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(e);
+			}
         }
     }
 

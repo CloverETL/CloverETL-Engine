@@ -239,6 +239,9 @@ public class CharByteDataParser extends AbstractTextParser {
 				parsingErrorFound(ExceptionUtils.getMessage(e));
 				return null;
 			} catch (UnexpectedEndOfRecordDataFormatException e) {
+				if (cfg.isVerbose()) {
+					lastRawRecord = getLastRawRecord(); 
+				}
 				return parsingErrorFound(e.getSimpleMessage(), record, consumerIdx, null);
 			} catch (BadDataFormatException e) {
 				if (recordSkipper != null) {
