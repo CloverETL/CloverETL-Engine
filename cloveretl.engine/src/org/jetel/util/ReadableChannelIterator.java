@@ -20,6 +20,7 @@ package org.jetel.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -120,7 +121,7 @@ public class ReadableChannelIterator {
 	 * Checks this class for the first using.
 	 */
 	public void checkConfig() throws ComponentNotReadyException {
-		common(true);
+		common(false); // CLO-5399
 	}
 
 	/**
@@ -209,7 +210,7 @@ public class ReadableChannelIterator {
 	 * TODO to make hasData method for the InputPort that waits for new data if the edge is empty. Is it good solution???
 	 */
 	public boolean hasNext() {
-		return filenameItor.hasNext() || (bInputPort && portReadingIterator.hasNext());
+		return dictionaryReadingIterator.hasNext() || filenameItor.hasNext() || (bInputPort && portReadingIterator.hasNext());
 	}
 
 	/**
@@ -219,7 +220,12 @@ public class ReadableChannelIterator {
 	public Object next() throws JetelException {
 		// read next value from dictionary array or list
 		if (dictionaryReadingIterator.hasNext()) {
-			return dictionaryReadingIterator.next();
+			ReadableByteChannel next = dictionaryReadingIterator.next();
+			String currentInnerFileName = dictionaryReadingIterator.getCurrentInnerFileName();
+			if (currentInnerFileName != null) {
+				currentFileName = currentInnerFileName;
+			}
+			return next;
 		}
 		
 		// read from fields
@@ -252,6 +258,10 @@ public class ReadableChannelIterator {
 			Object preferredDataSource = getPreferredDataSource(contextURL, currentFileName, preferredDataSourceType);
 			if (preferredDataSource != null) {
 				return preferredDataSource;
+			}
+			
+			if (preferredDataSourceType == DataSourceType.STREAM) {
+				return createInputStream(currentFileName);
 			}
 			
 			return createReadableByteChannel(currentFileName);
@@ -342,6 +352,24 @@ public class ReadableChannelIterator {
 	public void blankRead() {
 		// empty read
 		if (portReadingIterator != null) portReadingIterator.blankRead();
+	}
+	
+	/**
+	 * Creates input stream for a file name.
+	 * 
+	 * @param fileName
+	 * @return
+	 * @throws JetelException
+	 */
+	private InputStream createInputStream(String fileName) throws JetelException {
+		defaultLogger.debug("Opening input file " + fileName);
+		try {
+			InputStream iStream = FileUtils.getInputStream(contextURL, fileName);
+			defaultLogger.debug("Reading input file " + fileName);
+			return iStream;
+		} catch (IOException e) {
+			throw new JetelException("File is unreachable: " + fileName, e);
+		}
 	}
 	
 	/**

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Mon Jul 12 11:43:38 CEST 2010" modifiedBy="cloveruser" name="mathCeil" revision="1.133">
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="3.5.0.M2" id="1235387325275" licenseType="Commercial" modified="Thu Sep 26 17:15:02 CEST 2013" modifiedBy="user" name="mathCeil" revision="1.136" showComponentDetails="false">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="ceilInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -10,34 +10,35 @@
 <Record fieldDelimiter=";" name="ceilOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
 <Field length="32" name="Decimal" scale="3" type="decimal"/>
 <Field name="Function" type="string"/>
-<Field name="Result" type="number"/>
+<Field length="32" name="Result" scale="3" type="decimal"/>
 </Record>
 </Metadata>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="166" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="number ceil(decimal arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="640" x="52" y="-102">
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="166" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="decimal ceil(decimal arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="640" x="52" y="-102">
 <attr name="text"><![CDATA[
 The ceil(decimal) function takes one argument of decimal data type and returns the smallest (closest to
-negative infinity) double value that is greater than or equal to the argument and is equal to a mathematical integer.
+negative infinity) decimal value that is greater than or equal to the argument and is equal to a mathematical integer.
 
 By default, decimal number has 8 significant digits, including 2 digits after the decimal dot. For this reason, we have set Decimals to 32 significant digits (Length == number of significant digits) and 3 digits after the decimal dot (Scale == digits after the decimal dot).
 
-With a decimal number that has more significant digits than are allowed for a double value, a loss of precision occurs.
 
 
 
 
 ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="number ceil(number arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="637" x="53" y="103">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="100" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="number ceil(number arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="637" x="53" y="103">
 <attr name="text"><![CDATA[
 This function can also accept double argument: number ceil(number arg).]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/mathCeil.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="54" guiY="236" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/mathCeilOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="490" guiY="236" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="267" guiY="236" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/mathCeil.txt" guiName="UniversalDataReader" guiX="54" guiY="236" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/mathCeilOverview.txt" guiName="UniversalDataWriter" guiX="490" guiY="236" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiName="Reformat" guiX="267" guiY="236" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -68,7 +69,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Edge debugLastRecords="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
-<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+<Edge debugLastRecords="true" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>

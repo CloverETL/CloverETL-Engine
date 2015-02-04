@@ -478,13 +478,19 @@ public class SQLDataParser extends AbstractParser {
 	}
 	
 	public void storeIncrementalReading() throws IOException {
-		if (incremental == null || incrementalFile == null) return;
+		if (incremental == null || incrementalFile == null) {
+			return;
+		}
 		storeIncrementalReading(incremental.getPosition());
 	}
 	
 	public void storeIncrementalReading(Object position) throws IOException {
-		if (incrementalKey == null || incrementalFile == null) return;
-		((Properties) position).store(new FileOutputStream(incrementalFile), null);
+		if (incrementalKey == null || incrementalFile == null) {
+			return;
+		}
+		try (FileOutputStream fos = new FileOutputStream(incrementalFile)) {
+			((Properties) position).store(fos, null);
+		}
 	}
 
 	@Override

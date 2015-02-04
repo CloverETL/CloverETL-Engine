@@ -118,6 +118,8 @@ public class DataWriter extends Node {
     private static final String XML_EXCLUDE_FIELDS_ATTRIBUTE = "excludeFields";
 	private static final String XML_QUOTEDSTRINGS_ATTRIBUTE = "quotedStrings";
 	private static final String XML_QUOTECHAR_ATTRIBUTE = "quoteCharacter";
+	private static final String XML_SORTED_INPUT_ATTRIBUTE = "sortedInput";
+	private static final String XML_CREATE_EMPTY_FILES_ATTRIBUTE = "createEmptyFiles";
 	
 	private String fileURL;
 	private boolean appendData;
@@ -141,6 +143,8 @@ public class DataWriter extends Node {
 	private String partitionUnassignedFileName;
 	private boolean mkDir;
 	private boolean quotedStringsHasDefaultValue = true;
+	private boolean sortedInput = false;
+	private boolean createEmptyFiles = true;
 
     private String excludeFields;
 
@@ -221,12 +225,13 @@ public class DataWriter extends Node {
 			formatterProvider.setQuotedStrings(quotedStrings);
 			formatterProvider.setQuoteChar(quoteChar);
 		}
+		formatterProvider.setAppend(appendData);
 		
 		initLookupTable();
 
 		// initialize multifile writer based on prepared formatter
 		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatterProvider, graph != null ? graph.getRuntimeContext().getContextURL() : null, fileURL);
+	        writer = new MultiFileWriter(formatterProvider, getContextURL(), fileURL);
 		} else {
 			if (writableByteChannel == null) {
 		        writableByteChannel = new SystemOutByteChannel();
@@ -239,12 +244,14 @@ public class DataWriter extends Node {
         writer.setAppendData(appendData);
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
+        writer.setCharset(charset);
         if (attrPartitionKey != null) {
             writer.setLookupTable(lookupTable);
             writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
             writer.setPartitionFileTag(partitionFileTagType);
         	writer.setPartitionUnassignedFileName(partitionUnassignedFileName);
-        	
+            writer.setSortedInput(sortedInput);
+	
         	if (attrPartitionOutFields != null) {
         		writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
         	}
@@ -270,6 +277,7 @@ public class DataWriter extends Node {
         writer.setDictionary(graph.getDictionary());
         writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
         writer.setMkDir(mkDir);
+		writer.setCreateEmptyFiles(createEmptyFiles);
 	}
 
 	/* (non-Javadoc)
@@ -335,7 +343,7 @@ public class DataWriter extends Node {
 		DataWriter aDataWriter = null;
 		
 		aDataWriter = new DataWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-								xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, RefResFlag.URL),
+								xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.URL),
 								xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
 								xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false));
         if (xattribs.exists(XML_OUTPUT_FIELD_NAMES)){
@@ -381,6 +389,12 @@ public class DataWriter extends Node {
         if (xattribs.exists(XML_QUOTECHAR_ATTRIBUTE)) {
         	aDataWriter.setQuoteChar(QuotingDecoder.quoteCharFromString(xattribs.getString(XML_QUOTECHAR_ATTRIBUTE)));
         }
+        if (xattribs.exists(XML_SORTED_INPUT_ATTRIBUTE)) {
+        	aDataWriter.setSortedInput(xattribs.getBoolean(XML_SORTED_INPUT_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_CREATE_EMPTY_FILES_ATTRIBUTE)) {
+        	aDataWriter.setCreateEmptyFiles(xattribs.getBoolean(XML_CREATE_EMPTY_FILES_ATTRIBUTE));
+        }
 		
 		return aDataWriter;
 	}
@@ -397,8 +411,13 @@ public class DataWriter extends Node {
         	return status;
         }
 
+        if (StringUtils.isEmpty(fileURL)) {
+            status.add("Missing file URL attribute.", Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE);
+            return status;
+        }
+        
         try {
-        	FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, fileURL, mkDir);
+        	FileUtils.canWrite(getContextURL(), fileURL, mkDir);
         } catch (ComponentNotReadyException e) {
             status.add(e,ConfigurationStatus.Severity.ERROR,this,
             		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
@@ -435,16 +454,9 @@ public class DataWriter extends Node {
         return status;
     }
 	
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-
-
     public int getBytesPerFile() {
         return bytesPerFile;
     }
-
 
     public void setBytesPerFile(int bytesPerFile) {
         this.bytesPerFile = bytesPerFile;
@@ -604,6 +616,18 @@ public class DataWriter extends Node {
     	this.fileURL = fileURL;
     }
     
+    public void setSortedInput(boolean sortedInput) {
+    	this.sortedInput = sortedInput;
+    }
+    
+    public boolean isSortedInput() {
+    	return sortedInput;
+    }
+    
+	private void setCreateEmptyFiles(boolean createEmptyFiles) {
+		this.createEmptyFiles = createEmptyFiles;
+	}
+
 	@Override
 	public synchronized void free() {
 		super.free();

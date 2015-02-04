@@ -38,8 +38,12 @@ public class RecordKeyTokens implements Iterable<KeyFieldTokens> {
 
 	private List<KeyFieldTokens> keyFields;
 	
+	public RecordKeyTokens(List<KeyFieldTokens> keyFields) {
+		this.keyFields = new ArrayList<KeyFieldTokens>(keyFields);
+	}
+	
 	RecordKeyTokens() {
-		keyFields = new ArrayList<KeyFieldTokens>();
+		this.keyFields = new ArrayList<KeyFieldTokens>();
 	}
 	
 	private void addKeyField(KeyFieldTokens keyField) {

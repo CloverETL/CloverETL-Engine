@@ -127,37 +127,37 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	synchronized public void graphStarted() {
 		graphDetail.graphStarted();
 
-        sendNotification(new Notification(GRAPH_STARTED, this/*getGraphDetail()*/, notificationSequence++)); 
+		sendNotification(new Notification(GRAPH_STARTED, this/*getGraphDetail()*/, notificationSequence++));
 	}
 
 	synchronized public void phaseStarted(Phase phase) {
 		graphDetail.phaseStarted(phase);
 		
-		sendNotification(new Notification(PHASE_STARTED, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++)); 
+		sendNotification(new Notification(PHASE_STARTED, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++));
 	}
 
 	synchronized public void gatherTrackingDetails() {
 		graphDetail.gatherTrackingDetails();
 		
-		sendNotification(new Notification(TRACKING_UPDATED, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++)); 
+		sendNotification(new Notification(TRACKING_UPDATED, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++));
 	}
 
 	synchronized public void phaseFinished() {
 		graphDetail.phaseFinished();
 		
-		sendNotification(new Notification(PHASE_FINISHED, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++)); 
+		sendNotification(new Notification(PHASE_FINISHED, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++));
 	}
 
 	synchronized public void phaseAborted() {
 		graphDetail.phaseFinished();
 		
-		sendNotification(new Notification(PHASE_ABORTED, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++)); 
+		sendNotification(new Notification(PHASE_ABORTED, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++));
 	}
 
 	synchronized public void phaseError(String message) {
 		graphDetail.phaseFinished();
 		
-		sendNotification(new Notification(PHASE_ERROR, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++)); 
+		sendNotification(new Notification(PHASE_ERROR, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++));
 	}
 
 	synchronized public void graphFinished() {
@@ -166,7 +166,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 			graphFinished = true;
 		}
 
-		sendNotification(new Notification(GRAPH_FINISHED, this/*getGraphDetail()*/, notificationSequence++)); 
+		sendNotification(new Notification(GRAPH_FINISHED, this/*getGraphDetail()*/, notificationSequence++));
 	}
 
 	/**
@@ -179,7 +179,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 			graphFinished = true;
 		}
 
-		sendNotification(new Notification(GRAPH_ABORTED , this/*getGraphDetail()*/, notificationSequence++)); 
+		sendNotification(new Notification(GRAPH_ABORTED , this/*getGraphDetail()*/, notificationSequence++));
 	}
 
 	/**
@@ -192,7 +192,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 			graphFinished = true;
 		}
 
-		sendNotification(new Notification(GRAPH_ERROR, this/*getGraphDetail()*/, notificationSequence++, message)); 
+		sendNotification(new Notification(GRAPH_ERROR, this/*getGraphDetail()*/, notificationSequence++, message));
 	}
 
 }

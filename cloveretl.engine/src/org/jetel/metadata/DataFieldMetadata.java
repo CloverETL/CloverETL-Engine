@@ -20,7 +20,9 @@ package org.jetel.metadata;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
@@ -32,6 +34,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.InvalidGraphObjectNameException;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.BooleanFormatter;
@@ -39,6 +42,7 @@ import org.jetel.util.formatter.BooleanFormatterFactory;
 import org.jetel.util.formatter.DateFormatter;
 import org.jetel.util.formatter.DateFormatterFactory;
 import org.jetel.util.formatter.ParseBooleanException;
+import org.jetel.util.formatter.TimeZoneProvider;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
 
@@ -108,8 +112,8 @@ public class DataFieldMetadata implements Serializable {
 	private Boolean trim;
 	/** Fields can assume null value by default. */
 	private boolean nullable = true;
-	/** String value that is considered as null (in addition to null itself). */
-	private String nullValue = null;
+	/** String values that are considered as null (in addition to null itself). */
+	private List<String> nullValues = null;
 
 	/** The default value. */
 	private Object defaultValue;
@@ -143,6 +147,11 @@ public class DataFieldMetadata implements Serializable {
 	 */
 	private String timeZoneStr = null;
 
+	/**
+	 * Lazy initialised timezone provider instance returned by {@link #getTimeZone()} method. 
+	 */
+	private TimeZoneProvider timeZoneProvider;
+	
 	/**
 	 * See Collator.setStregth(String strength). It is used only in string fields.
 	 */
@@ -467,13 +476,48 @@ public class DataFieldMetadata implements Serializable {
 	 * @return the array of all field delimiters
 	 */
 	public String[] getDelimiters() {
+		return getDelimiters(true);
+	}
+	
+	/**
+	 * Returns <code>true</code> if the field is the last field
+	 * in the parent {@link DataRecordMetadata}.
+	 * 
+	 * If <code>excludeAutofillingFields</code> is <code>true</code> (default for parsers),
+	 * the last non-autofilled field is considered the last field.
+	 * 
+	 * @param excludeAutofillingFields
+	 * 
+	 * @return <code>true</code> if this field is the last field
+	 */
+	private boolean isLastField(boolean excludeAutofillingFields) {
+		if (excludeAutofillingFields) {
+			return isLastNonAutoFilledField();
+		} else {
+			return getNumber() == (getDataRecordMetadata().getNumFields() - 1);
+		}
+	}
+	
+	/**
+	 * CLO-5293:
+	 * 
+	 * Returns an array of all field delimiters assigned to this field. In case no field delimiters are defined, default
+	 * field delimiters from parent metadata are returned. Delimiters for last field are extended by a record delimiter.
+	 * 
+	 * If <code>excludeAutofillingFields</code> is <code>true</code> (default for parsers),
+	 * the last non-autofilled field is considered the last field.
+	 * 
+	 * @param excludeAutofillingFields
+	 * @return the array of all field delimiters
+	 */
+	public String[] getDelimiters(boolean excludeAutofillingFields) {
 		if (isDelimited()) {
 			String[] delimiters = null;
 
 			if (delimiter != null) {
 				delimiters = delimiter.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX);
 
-				if (isLastNonAutoFilledField()) { // if field is last
+				if (isLastField(excludeAutofillingFields)) { // if field is last
 					if (getDataRecordMetadata().isSpecifiedRecordDelimiter()) {
 						List<String> tempDelimiters = new ArrayList<String>();
 
@@ -490,7 +534,7 @@ public class DataFieldMetadata implements Serializable {
 					}
 				}
 			} else {
-				if (!isLastNonAutoFilledField()) { // if the field is not last
+				if (!isLastField(excludeAutofillingFields)) { // if the field is not last
 					delimiters = getDataRecordMetadata().getFieldDelimiters();
 				} else {
 					delimiters = getDataRecordMetadata().getRecordDelimiters();
@@ -525,7 +569,7 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Sets the OEF-as-delimiter flag.
+	 * Sets the EOF-as-delimiter flag.
 	 *
 	 * @param eofAsDelimiter the new value of the flag
 	 */
@@ -534,10 +578,14 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * @return the value of the OEF-as-delimiter flag
+	 * @return the value of the EOF-as-delimiter flag (last field inherits this flag from record)
 	 */
 	public boolean isEofAsDelimiter() {
-		return eofAsDelimiter;
+		if (isLastNonAutoFilledField() && dataRecordMetadata.getEofAsDelimiter() != null) {
+			return dataRecordMetadata.getEofAsDelimiter();
+		} else {
+			return eofAsDelimiter;
+		}
 	}
 
 	/**
@@ -646,14 +694,27 @@ public class DataFieldMetadata implements Serializable {
 	 * @return <code>true</code> if this data field is delimited, <code>false</code> otherwise
 	 */
 	public boolean isDelimited() {
-		return (size == 0);
+		return (size == 0 || (getDataRecordMetadata()!=null && getDataRecordMetadata().getParsingType() == DataRecordParsingType.DELIMITED) || (size>0 && delimiter!=null));
 	}
 
 	/**
 	 * @return <code>true</code> if this data field is fixed-length, <code>false</code> otherwise
 	 */
 	public boolean isFixed() {
-		return (size != 0);
+		if (size > 0) {
+			if (getDataRecordMetadata() != null) {
+				if (this.getDataRecordMetadata().getParsingType() == DataRecordParsingType.FIXEDLEN) {
+					return true;
+				}
+				if (this.getDataRecordMetadata().getParsingType() == DataRecordParsingType.DELIMITED) {
+					return false;
+				}
+			}
+			if (delimiter == null) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**
@@ -786,7 +847,8 @@ public class DataFieldMetadata implements Serializable {
 	public boolean isSkipTrailingBlanks() {
 		if (trim == null) {
 			//trailing characters in fixlen metadata are skipped by default
-			if (getDataRecordMetadata().getParsingType() == DataRecordParsingType.FIXEDLEN) {
+			if (getDataRecordMetadata().getParsingType() == DataRecordParsingType.FIXEDLEN
+					|| (getDataRecordMetadata().getParsingType() == DataRecordParsingType.MIXED && isFixed())) {
 				return true;
 			}
 		}
@@ -815,24 +877,63 @@ public class DataFieldMetadata implements Serializable {
 	 * @param nullValue the string value to be considered as null, or <code>null</code> if an empty string should be used
 	 */
 	public void setNullValue(String nullValue) {
-		this.nullValue = nullValue;
+		if (nullValue != null) {
+			setNullValues(Arrays.asList(nullValue));
+		} else {
+			nullValues = null;
+		}
 	}
 
 	/**
-	 * @return the string value that is considered as <code>null</code>, never returns <code>null</code>
+	 * Sets list of string value that will be considered as <code>null</code> (in addition to <code>null</code> itself).
+	 *
+	 * @param nullValues the list of string values to be considered as null, or <code>null</code> if an empty string should be used
 	 */
-	public String getNullValue() {
-		if (nullValue != null) {
-			return nullValue;
+	public void setNullValues(List<String> nullValues) {
+		if (nullValues != null) {
+			for (String nullValue : nullValues) {
+				Objects.requireNonNull(nullValue);
+			}
 		}
-
-		if (dataRecordMetadata != null) {
-			return dataRecordMetadata.getNullValue();
-		}
-
-		return DataRecordMetadata.DEFAULT_NULL_VALUE;
+		this.nullValues = nullValues;
 	}
 
+	/**
+	 * @return the first string value that is considered as <code>null</code>, never returns <code>null</code>
+	 */
+	public String getNullValue() {
+		if (nullValues != null) {
+			if (nullValues.size() > 0) {
+				return nullValues.get(0);
+			} else {
+				return null;
+			}
+		} else if (dataRecordMetadata != null) {
+			return dataRecordMetadata.getNullValue();
+		} else if (DataRecordMetadata.DEFAULT_NULL_VALUES.size() > 0) {
+			return DataRecordMetadata.DEFAULT_NULL_VALUES.get(0);
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * @return list of string values that are considered as <code>null</code>, never returns <code>null</code>
+	 */
+	public List<String> getNullValues() {
+		if (nullValues != null) {
+			return nullValues;
+		} else if (dataRecordMetadata != null) {
+			return dataRecordMetadata.getNullValues();
+		} else {
+			return DataRecordMetadata.DEFAULT_NULL_VALUES;
+		}
+	}
+	
+	public List<String> getNullValuesOnField() {
+		return nullValues;
+	}
+	
 	/**
 	 * Sets the default value.
 	 *
@@ -1012,6 +1113,14 @@ public class DataFieldMetadata implements Serializable {
 
 		return null;
 	}
+	
+	/**
+	 * doesn't search in parent in case locale is not specified
+	 * @return
+	 */
+	public String getLocaleStrFieldOnly() {
+		return localeStr;
+	}
 
 	/**
 	 * @param timeZoneStr the timeZoneStr to set
@@ -1034,7 +1143,26 @@ public class DataFieldMetadata implements Serializable {
 
 		return null;
 	}
+	
+	/**
+	 * doesn't search in parent in case the time zone is not specified
+	 * @return
+	 */
+	public String getTimeZoneStrFieldOnly() {
+		return timeZoneStr;
+	}
 
+	/**
+	 * @return timezone provider, which is based on {@link #getTimeZoneStr()} for non-null value
+	 * or is based on default runtime timezone ({@link GraphRuntimeContext#getTimeZone()}). 
+	 */
+	public TimeZoneProvider getTimeZone() {
+		if (timeZoneProvider == null) {
+			timeZoneProvider = new TimeZoneProvider(getTimeZoneStr());
+		}
+		return timeZoneProvider;
+	}
+	
 	/**
 	 * Set collator sensitivity string.	
 	 * @param collatorSensitivity
@@ -1053,6 +1181,10 @@ public class DataFieldMetadata implements Serializable {
 		} else {
 			return dataRecordMetadata.getCollatorSensitivity();
 		}
+	}
+	
+	public String getCollatorSensitivityFieldOnly() {
+		return collatorSensitivity;
 	}
 
 	/**
@@ -1137,6 +1269,12 @@ public class DataFieldMetadata implements Serializable {
 		dataFieldMetadata.setLocaleStr(localeStr);
 		dataFieldMetadata.setTimeZoneStr(timeZoneStr);
 		dataFieldMetadata.setCollatorSensitivity(collatorSensitivity);
+		
+		if (nullValues != null) {
+			List<String> nullValsCopy = new ArrayList<>(nullValues.size());
+			nullValsCopy.addAll(nullValues);
+			dataFieldMetadata.setNullValues(nullValsCopy);
+		}
 
 		return dataFieldMetadata;
 	}
@@ -1197,6 +1335,13 @@ public class DataFieldMetadata implements Serializable {
 		//check data type
 		if (type == null) {
 			status.add(new ConfigurationProblem("Data type is not specified.", Severity.ERROR, null, Priority.NORMAL));
+		}
+		
+		//not nullable field cannot have a default value in set of null values - CLO-4569
+		if (!isNullable() && getNullValues().contains(getDefaultValueStr())) {
+			status.add(new ConfigurationProblem("Invalid metadata for field '" + name + "'. Default value of not nullable field can not be one of the null values.",
+					Severity.ERROR, null, Priority.NORMAL));
+			return;
 		}
 		
 		// verify default value - approved by kokon

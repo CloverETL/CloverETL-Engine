@@ -1,10 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="3.4.0.M2" id="1361358390393" licenseType="Commercial" modified="Tue Mar 19 20:01:11 CET 2013" modifiedBy="mtomcanyi" name="PrepareInputData" revision="1.70" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361358390393" licenseType="Commercial" modified="Mon Jan 13 18:38:52 CET 2014" modifiedBy="User" name="PrepareInputData" revision="1.71" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/weblogs_parse_txt.fmt" id="Metadata0"/>
 <Connection config="${CONN_DIR}/Hadoop-CDH-3u5.cfg" id="CDH3" type="HADOOP"/>
-<Property fileURL="hadoop.prm" id="GraphParameter0"/>
-<Property fileURL="workspace.prm" id="GraphParameter3"/>
+<GraphParameters>
+<GraphParameterFile fileURL="hadoop.prm"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="272" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Prepare Key/Value Pair Format" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="244" x="329" y="196">
 <attr name="text"><![CDATA[
 

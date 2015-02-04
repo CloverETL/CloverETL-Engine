@@ -132,13 +132,13 @@ public class ContextProvider {
 	}
 	
 	/**
-	 * @return job type of current graph or {@link JobType#DEFAULT} if current graph cannot be specified
+	 * @return runtime job type of current graph or {@link JobType#DEFAULT} if current graph cannot be specified
 	 */
-	public static synchronized JobType getJobType() {
+	public static synchronized JobType getRuntimeJobType() {
     	TransformationGraph currentGraph = ContextProvider.getGraph();
     	
     	if (currentGraph != null) {
-    		return currentGraph.getJobType();
+    		return currentGraph.getRuntimeJobType();
     	} else {
     		return JobType.DEFAULT;
     	}

@@ -55,17 +55,59 @@ public abstract class PortData {
 	 * @param cacheSize
 	 * @return
 	 */
-	public static PortData getInstance(boolean cached, InputPort inPort, Set<List<String>> keys,
+	public static PortData getInstance(boolean cached, boolean inMemory, InputPort inPort, Set<List<String>> keys,
 			SortHint hint) {
 		if (cached) {
-			if (keys.size() > 1) {
-				return new ExternalComplexPortData(inPort, keys);
+			if (inMemory) {
+				if (hasNullKeyOnly(keys) || hasSingleFieldKey(keys)) {
+					return new InternalSimplePortData(inPort, keys);
+				} else {
+					return new InternalComplexPortData(inPort, keys);
+				}
 			} else {
-				return new ExternalSimplePortData(inPort, keys);
+				if (keys.size() > 1) {
+					return new ExternalComplexPortData(inPort, keys);
+				} else {
+					return new ExternalSimplePortData(inPort, keys);
+				}
 			}
 		} else {
-			return new StreamedPortData(inPort, keys, hint);
+			if (hasNullKeyOnly(keys)) {
+				return new StreamedSimplePortData(inPort, keys, hint);
+			} else {
+				if (inMemory) {
+					return new InternalStreamedPortData(inPort, keys, hint);
+				} else {
+					return new StreamedPortData(inPort, keys, hint);
+				}
+			}
 		}
+	}
+	
+	/**
+	 * Answers <code>true</code> if there is only null key defined.
+	 * @param keys
+	 * @return
+	 */
+	private static boolean hasNullKeyOnly(Set<List<String>> keys) {
+		return keys.size() == 1 && keys.contains(null);
+	}
+	
+	/**
+	 * Answers <code>true</code> if there is only one one-field key defined
+	 * (null key is ignored).
+	 * @param keys
+	 * @return
+	 */
+	private static boolean hasSingleFieldKey(Set<List<String>> keys) {
+		
+		int fieldCount = 0;
+		for (List<String> keyFields : keys) {
+			if (keyFields != null) {
+				fieldCount += keyFields.size();
+			}
+		}
+		return fieldCount == 1;
 	}
 	
 	PortData(InputPort inPort, Set<List<String>> keys) {
@@ -88,10 +130,10 @@ public abstract class PortData {
 	public void preExecute() throws ComponentNotReadyException {
 	}
 	
-	public void postExecute() throws ComponentNotReadyException {		
+	public void postExecute() throws ComponentNotReadyException {
 	}
 	
-	public void free() {		
+	public void free() {
 	}
 	
 	public void setSharedCache(CacheRecordManager sharedCache) {
@@ -109,10 +151,6 @@ public abstract class PortData {
 	}
 	
 	private int[] resolveKey(DataRecordMetadata metadata, List<String> key) {
-		int[] resolvedKey = new int[key.size()];
-		for (int i = 0; i < key.size(); i++) {
-			resolvedKey[i] = metadata.getFieldPosition(key.get(i));
-		}
-		return resolvedKey;
+		return metadata.fieldsIndices(key.toArray(new String[key.size()]));
 	}
 }

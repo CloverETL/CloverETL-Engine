@@ -28,6 +28,15 @@ import java.net.Proxy.Type;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.text.MessageFormat;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,9 +57,12 @@ import com.jcraft.jsch.UserInfo;
 
 public class PooledSFTPConnection extends AbstractPoolableConnection {
 	
+	/**
+	 * Async close timeout (seconds).
+	 */
+	private static final int CLOSE_TIMEOUT = 10; // 10 seconds should be enough to close an input stream
+	
 	private static final int DEFAULT_PORT = 22;
-
-	private static final JSch jsch = new JSch();
 
 	private static final Log log = LogFactory.getLog(PooledSFTPConnection.class);
 
@@ -60,6 +72,20 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 
 	private Session session = null;
 	private ChannelSftp channel = null;
+	
+	// CLO-2533: use a private lock to minimize the chance of deadlocking
+	private Object lock = new Object();
+	
+	private static final ThreadFactory THREAD_FACTORY = new ThreadFactory() {
+
+		@Override
+		public Thread newThread(Runnable r) {
+			Thread t = new Thread(r);
+			t.setName("SFTP stream closer " + t.getId());
+			return t;
+		}
+		
+	};
 	
 	public PooledSFTPConnection(Authority authority) {
 		super(authority);
@@ -118,6 +144,10 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 		if (userInfo == null) return new String[] {""};
 		return decodeString(userInfo).split(":");
 	}
+	
+	private Set<String> getPrivateKeys() {
+		return ((SFTPAuthority) authority).getPrivateKeys();
+	}
 
 	public ChannelSftp getChannelSftp() throws JSchException {
 		if ((channel == null) || !channel.isConnected()) {
@@ -138,30 +168,64 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 	}
 	
 	private Session getSession() throws IOException {
+		JSch jsch = new JSch();
+		Set<String> keys = getPrivateKeys();
 		String[] user = getUserInfo();
 		String username = user[0];
 		String password = user.length == 2 ? user[1] : null;
+		
+		if (password == null) {
+			// CLO-4562: use private key authentication only if password is not set
+			if (log.isDebugEnabled()) {
+				log.debug("SFTP connecting to " + authority.getHost() + " using the following private keys: " + keys);
+			}
+			if (keys != null) {
+				for (String key: keys) {
+					try {
+						log.debug("Adding new identity from " + key);
+						jsch.addIdentity(key);
+					} catch (Exception e) {
+						log.warn("Failed to read private key", e);
+					}
+				}
+			}
+		} else if (log.isDebugEnabled()) {
+			log.debug("SFTP connecting to " + authority.getHost() + " using password");
+		}
+		
+		if (log.isWarnEnabled()) {
+			if (!StringUtils.isEmpty(username) && StringUtils.isEmpty(password) && (keys == null || keys.isEmpty())) {
+				log.warn("No password or private key specified for user " + username);
+			}
+		}
 
 		Proxy[] proxies = getProxies();
 		try {
-			log.trace("Connecting with password authentication");
-			return getSession(username, new URLUserInfo(password), proxies);
+			if (log.isDebugEnabled()) {
+				log.debug("Connecting to " + authority.getHost() + " with password authentication");
+			}
+			return getSession(jsch, username, new URLUserInfo(password), proxies);
 		} catch (Exception e) {
-			log.trace("Connecting with keyboard-interactive authentication");
-			return getSession(username, new URLUserInfoIteractive(password), proxies);
+			if (log.isDebugEnabled()) {
+				log.debug("Connecting to " + authority.getHost() + " with keyboard-interactive authentication");
+			}
+			return getSession(jsch, username, new URLUserInfoIteractive(password), proxies);
 		}
 	}
 	
-	public void connect() throws IOException {
-		session = getSession();
-		try {
-			getChannelSftp();
-		} catch (JSchException e) {
-			throw new IOException(e);
+	protected void connect() throws IOException {
+		synchronized (lock) { // CLO-2533
+			session = getSession();
+			session.setConfig("StrictHostKeyChecking", "no");
+			try {
+				getChannelSftp();
+			} catch (JSchException e) {
+				throw new IOException(e);
+			}
 		}
 	}
 
-	private Session getSession(String username, UserInfo password, Proxy[] proxies) throws IOException {
+	private Session getSession(JSch jsch, String username, UserInfo password, Proxy[] proxies) throws IOException {
 		assert (proxies != null) && (proxies.length > 0);
 		
 		Session session;
@@ -201,8 +265,10 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 	}
 
 	public void disconnect() {
-		if ((session != null) && session.isConnected()) {
-			session.disconnect();
+		synchronized (lock) { // CLO-2533
+			if ((session != null) && session.isConnected()) {
+				session.disconnect();
+			}
 		}
 	}
 
@@ -225,13 +291,72 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 	}
 
 	public InputStream getInputStream(String file) throws IOException {
+		final Thread owner = Thread.currentThread();
 		try {
 			channel = getChannelSftp();
 			InputStream is = new BufferedInputStream(channel.get(file.equals("") ? "/" : file)) {
+				
+				/**
+				 * Helper method for the Callable.
+				 * 
+				 * @throws IOException
+				 */
+				private void superClose() throws IOException {
+					super.close();
+				}
+				
 				@Override
 				public void close() throws IOException {
 					try {
-						super.close();
+						if (Thread.currentThread() == owner) {
+							// CLO-2522: hopefully safe; if deadlocks occur, use the approach below even in this case
+							superClose();
+						} else {
+							// CLO-2522:
+							// potentially dangerous, JSch is not thread-safe
+							// also used by asynchronous java.nio.channels.Channel interruption
+							// might block indefinitely, so use a background thread with a timeout
+							// setting a socket timeout now will not help, it is already too late to set it
+							
+							// convert the super.close() call to a Callable
+							Callable<Void> callable = new Callable<Void>() {
+
+								@Override
+								public Void call() throws Exception {
+									superClose();
+									return null;
+								}
+								
+							};
+							
+							// decorate the callable with timeout support
+							// this should be a rare case, no need to have the thread running the whole time
+							ExecutorService executorService = Executors.newSingleThreadExecutor(THREAD_FACTORY);
+							Future<Void> future = executorService.submit(callable);
+							executorService.shutdown();
+							try {
+								future.get(CLOSE_TIMEOUT, TimeUnit.SECONDS);
+							} catch (InterruptedException e) {
+								throw new IOException("Failed to close input stream", e);
+							} catch (ExecutionException e) {
+								Throwable cause = e.getCause();
+								if (cause instanceof IOException) {
+									throw (IOException) cause;
+								} else if (cause != null) {
+									throw new IOException("Failed to close input stream", cause);
+								} else {
+									throw new IOException("Failed to close input stream", e);
+								}
+							} catch (TimeoutException e) {
+								// something is wrong with the pooled ChannelSftp, better close it and create a new connection
+								log.warn("SFTP close stream timeout", e);
+								future.cancel(true); // this should interrupt the ExecutorService thread
+								disconnect(); // this should close the socket and lead to termination of all related threads
+								throw new IOException("Failed to close input stream", e);
+							} finally {
+								executorService.shutdownNow(); // fallback
+							}
+						}
 					} finally {
 						returnToPool();
 					}

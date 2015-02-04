@@ -207,11 +207,6 @@ public class Rollup extends Node {
 
         ComponentXMLAttributes componentAttributes = new ComponentXMLAttributes(xmlElement, transformationGraph);
 
-        if (!componentAttributes.getString(XML_TYPE_ATTRIBUTE).equalsIgnoreCase(COMPONENT_TYPE)) {
-            throw new XMLConfigurationException("The " + StringUtils.quote(XML_TYPE_ATTRIBUTE)
-                    + " attribute contains a value incompatible with this component!");
-        }
-
         rollup = new Rollup(componentAttributes.getString(XML_ID_ATTRIBUTE));
 
         String groupKeyString = componentAttributes.getString(XML_GROUP_KEY_FIELDS_ATTRIBUTE, null);
@@ -288,11 +283,6 @@ public class Rollup extends Node {
         this.recordRollup = recordRollup;
     }
 
-    @Override
-    public String getType() {
-        return COMPONENT_TYPE;
-    }
-
     public void setGroupKeyFields(String[] groupKeyFields) {
         this.groupKeyFields = groupKeyFields;
     }
@@ -351,11 +341,6 @@ public class Rollup extends Node {
         if (groupAccumulatorMetadataId != null && getGraph().getDataRecordMetadata(groupAccumulatorMetadataId, false) == null) {
             status.add(new ConfigurationProblem("The group \"accumulator\" metadata ID is not valid!",
                     Severity.ERROR, this, Priority.HIGH, XML_GROUP_ACCUMULATOR_METADATA_ID_ATTRIBUTE));
-        }
-
-        if (StringUtils.isEmpty(transform) && StringUtils.isEmpty(transformUrl)
-        		&& StringUtils.isEmpty(transformClassName)) {
-            status.add(new ConfigurationProblem("No rollup transform specified!", Severity.ERROR, this, Priority.HIGH));
         }
 
         if (transformUrlCharset != null && !Charset.isSupported(transformUrlCharset)) {

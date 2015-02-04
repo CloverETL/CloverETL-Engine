@@ -21,6 +21,7 @@ package org.jetel.ctl;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -105,22 +106,25 @@ import org.jetel.ctl.data.TLType.TLTypeRecord;
 import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.ctl.extensions.IntegralLib;
 import org.jetel.ctl.extensions.TLFunctionPrototype;
+import org.jetel.ctl.extensions.TLTransformationContext;
 import org.jetel.data.DataField;
+import org.jetel.data.DataFieldInvalidStateException;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
-import org.jetel.data.DecimalDataField;
 import org.jetel.data.Defaults;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
-import org.jetel.data.StringDataField;
 import org.jetel.data.lookup.Lookup;
+import org.jetel.data.primitive.Decimal;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.MissingFieldException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.CharSequenceReader;
 import org.jetel.util.string.StringUtils;
 
@@ -177,6 +181,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	/** Instance of running transformation graph where code executes */
 	protected TransformationGraph graph;
 	
+	/**
+	 * Global context shared between all function calls.
+	 */
+	protected TLTransformationContext context = new TLTransformationContext();
+	
 	protected Log runtimeLogger;
 	
 	protected TransformLangParser parser;
@@ -219,6 +228,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			try {
 				if (node.isExternal()) {
 					node.getFunctionCallContext().setGraph(getGraph()); // CL-2203
+					node.getFunctionCallContext().setTransformationContext(context); // CLO-722
 					TLFunctionPrototype executable = node.getExternalFunction().getExecutable();
 					node.setExecutable(executable);
 					executable.init(node.getFunctionCallContext());
@@ -304,6 +314,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 	public void setGraph(TransformationGraph graph) {
 		this.graph = graph;
+	}
+
+	public void setNode(org.jetel.graph.Node node) {
+		context.setNode(node);
 	}
 
 	public Log getRuntimeLogger() {
@@ -1628,9 +1642,29 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			final SimpleNode argNode = (SimpleNode)lhs.jjtGetChild(0);
 			argNode.jjtAccept(this, data);
 			
+			boolean canInitialize = false;
+			switch (argNode.getId()) {
+			case TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION:
+			case TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION:
+			case TransformLangParserTreeConstants.JJTIDENTIFIER:
+			case TransformLangParserTreeConstants.JJTVARIABLEDECLARATION:
+				canInitialize = true;
+				break;
+			}
+			
+			//Assignment into null container initializes the container to empty (to avoid NPE): CLO-403
+			//After the assignment we have to set new value to lhs - but only after the currently assigned value is
+			//added to container, otherwise the added value is missing.
+			boolean assignedIntoNullContainer = false;
+			
 			if (argNode.getType().isList()) {
 				// accessing list
-				final List<Object> list = (List<Object>)stack.popList();
+				List<Object> list = stack.popList();
+				if ((list == null) && canInitialize) {
+					//CLO-403: assignment into null container, we have to initialize the container to empty value
+					assignedIntoNullContainer = true;
+					list = new ArrayList<>();
+				}
 				lhs.jjtGetChild(1).jjtAccept(this, data);
 				final int index = stack.popInt();
 
@@ -1643,15 +1677,27 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 					for (; list.size() <= index; list.add(null));
 					list.set(index, value);
 				}
+				if (assignedIntoNullContainer) {
+					setVariable(argNode, list);
+				}
 			} else {
 				// accessing map
-				final Map<Object,Object> map = (Map<Object,Object>)stack.popMap();
+				Map<Object,Object> map = stack.popMap();
+
+				if ((map == null) && canInitialize) {
+					//CLO-403: assignment into null container, we have to initialize the container to empty value
+					assignedIntoNullContainer = true;
+					map = new LinkedHashMap<>();
+				}
 				lhs.jjtGetChild(1).jjtAccept(this, data);
 				final Object index = stack.pop();
 				
 				value = getDeepCopy(evaluateRHS(data, lhs, rhs));
 				
 				map.put(index,value);
+				if (assignedIntoNullContainer) {
+					setVariable(argNode, map);
+				}
 			}
 			break;
 		case TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION:
@@ -2203,7 +2249,15 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		}
 		
 		final DataField field = record.getField(node.getFieldId());
-		stack.push(fieldValue(field));
+		try {
+			stack.push(fieldValue(field));
+		} catch (DataFieldInvalidStateException e) {
+			//field value can have 'invalid' value, see DataFieldWithInvalidState
+			//access to this invalid field throws this exception
+			//let's report it as missing field
+			//see CLO-1872
+			throw new MissingFieldException(e.getMessage(), node.isOutput(), node.getRecordId(), node.getFieldName());
+		}
 		
 		return data;
 	}
@@ -2274,10 +2328,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		case DECIMAL:
 			// we want the decimal within the field to undergo satisfyPrecision() check 
 			// so that out-of-precision errors are discovered early
-			return ((DecimalDataField)field).getDecimal().getBigDecimalOutput();
+			return ((Decimal) field.getValue()).getBigDecimalOutput();
 		case STRING:
 			// StringBuilder -> String
-			return ((StringDataField)field).getValue().toString();
+			return field.getValue().toString();
 
 		case BOOLEAN:
 		case INTEGER:
@@ -2538,20 +2592,38 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * @return return value of executed function or <code>null</code> if <code>void</code>
 	 */
 	public Object executeFunction(CLVFFunctionDeclaration node, Object[] arguments, DataRecord[] inputRecords, DataRecord[] outputRecords) {
+		try {
 		
-		
-		//set input and output records (if given)
-		this.inputRecords = inputRecords;
-		this.outputRecords = outputRecords;
-
-		//clean previous return value
-		this.lastReturnValue = null;
-		
-		//execute function
-		executeFunction(node,arguments);
-
-		//return result
-        return this.lastReturnValue;
+			//set input and output records (if given)
+			this.inputRecords = inputRecords;
+			this.outputRecords = outputRecords;
+	
+			//clean previous return value
+			this.lastReturnValue = null;
+			
+			//execute function
+			executeFunction(node,arguments);
+	
+			//return result
+	        return this.lastReturnValue;
+		} catch (TransformLangExecutorRuntimeException ex) {
+			// CLO-2104: decorate the exception with an ErrorReporter instance to provide more detailed error reporting
+			String source = parser.getSource();
+			SimpleNode nodeInError = ex.getNode();
+			if ((nodeInError != null) && (nodeInError.getSourceFilename() != null)) {
+				URL contextURL = (graph != null) ? graph.getRuntimeContext().getContextURL() : null;
+				try {
+					source = FileUtils.getStringFromURL(contextURL, nodeInError.getSourceFilename(), parser.getEncoding());
+				} catch (Exception ioe) {
+					source = null;
+				}
+			}
+			ErrorReporter errorReporter = new ErrorReporter(ex, stack, inputRecords, outputRecords, source);
+			errorReporter.setTabWidth(parser.getTabSize());
+			errorReporter.createReport();
+			ex.setErrorReporter(errorReporter);
+			throw ex;
+		}
 	}
 	
 	
@@ -2578,30 +2650,32 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		final CLVFParameters formal = (CLVFParameters)callTarget.jjtGetChild(1);
 		final CLVFArguments actual = (CLVFArguments)node.jjtGetChild(0);
 		
-		// activate function scope
-		stack.enteredBlock(callTarget.getScope());
-		
-		// set function parameters - they are already computed on stack
-		for (int i=actual.jjtGetNumChildren()-1; i>=0; i--) {
-			setVariable((SimpleNode)formal.jjtGetChild(i), stack.pop());
+		try {
+			// activate function scope
+			stack.enteredBlock(callTarget.getScope());
+			
+			// set function parameters - they are already computed on stack
+			for (int i=actual.jjtGetNumChildren()-1; i>=0; i--) {
+				setVariable((SimpleNode)formal.jjtGetChild(i), stack.pop());
+			}
+			
+			// execute function body
+			callTarget.jjtGetChild(2).jjtAccept(this, null);
+			
+			// set the saved return value back onto stack
+			if (!node.getType().isVoid()) {
+				stack.push(this.lastReturnValue);
+				this.lastReturnValue = null;
+			}
+		} finally {
+			// clear all break flags
+			if (breakFlag) {
+				breakFlag = false;
+			}
+			
+			// clear function scope
+			stack.exitedBlock();
 		}
-		
-		// execute function body
-		callTarget.jjtGetChild(2).jjtAccept(this, null);
-		
-		// set the saved return value back onto stack
-		if (!node.getType().isVoid()) {
-			stack.push(this.lastReturnValue);
-			this.lastReturnValue = null;
-		}
-		
-		// clear all break flags
-		if (breakFlag) {
-			breakFlag = false;
-		}
-		
-		// clear function scope
-		stack.exitedBlock();
 	}
 	
 
@@ -2629,11 +2703,19 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	
 	private void setVariable(SimpleNode lhs, Object value) {
 		if (lhs.getId() == TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION) {
-			final CLVFIdentifier recId = (CLVFIdentifier) lhs.jjtGetChild(0);
-			final int fieldId = ((CLVFMemberAccessExpression) lhs).getFieldId();
+			if (((SimpleNode) lhs.jjtGetChild(0)).getId() == TransformLangParserTreeConstants.JJTDICTIONARYNODE) {
+				try {
+					graph.getDictionary().setValue(((CLVFMemberAccessExpression) lhs).getName(), value);
+				} catch (ComponentNotReadyException e) {
+					throw new TransformLangExecutorRuntimeException("Dictionary is not initialized",e);
+				}
+			} else {
+				final CLVFIdentifier recId = (CLVFIdentifier) lhs.jjtGetChild(0);
+				final int fieldId = ((CLVFMemberAccessExpression) lhs).getFieldId();
 
-			DataRecord record = (DataRecord) stack.getVariable(recId.getBlockOffset(), recId.getVariableOffset());
-			record.getField(fieldId).setValue(value);
+				DataRecord record = (DataRecord) stack.getVariable(recId.getBlockOffset(), recId.getVariableOffset());
+				record.getField(fieldId).setValue(value);
+			}
 		} else if(lhs.getId() == TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION) {
 			final CLVFFieldAccessExpression faNode = (CLVFFieldAccessExpression) lhs;
 			DataRecord record = faNode.isOutput() ? outputRecords[faNode.getRecordId()] : inputRecords[faNode.getRecordId()];
@@ -2719,7 +2801,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		// decimal precisions does not have to be available
 		// for example DBLookupTable does not support getKeyMetadata()
 		// so we cannot preset correct precision - default is used
-		if (decimalPrecisions != null) {
+		if (decimalPrecisions != null && !decimalPrecisions.isEmpty()) {
 			decimalIter = decimalPrecisions.iterator();
 		}
 		for (int i=0; i<arguments.jjtGetNumChildren(); i++) {
@@ -2728,9 +2810,16 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			final DataFieldMetadata field = new DataFieldMetadata("_field" + i, TLTypePrimitive.toCloverType(argType),"|"); 
 			keyRecordMetadata.addField(field);
 			keyFields[i] = i;
-			if (argType.isDecimal() && decimalIter != null) {
-				field.setProperty(DataFieldMetadata.LENGTH_ATTR, String.valueOf(decimalIter.next()));
-				field.setProperty(DataFieldMetadata.SCALE_ATTR, String.valueOf(decimalIter.next()));
+			if (argType.isDecimal()) {
+				if (decimalIter != null) {
+					field.setProperty(DataFieldMetadata.LENGTH_ATTR, String.valueOf(decimalIter.next()));
+					field.setProperty(DataFieldMetadata.SCALE_ATTR, String.valueOf(decimalIter.next()));
+				} else {
+					//we have no idea what is correct precision and scale for unknown decimal value
+					//so we set precision and scale to max value (64, 32)
+					field.setProperty(DataFieldMetadata.LENGTH_ATTR, String.valueOf(DECIMAL_MAX_PRECISION * 2));
+					field.setProperty(DataFieldMetadata.SCALE_ATTR, String.valueOf(DECIMAL_MAX_PRECISION));
+				}
 			}
 		}
 		

@@ -34,7 +34,9 @@ public enum FileType {
 	JOBFLOW("jbf"), //$NON-NLS-1$
 	PROFILER_JOB("cpj"), //$NON-NLS-1$
 	METADATA("fmt"), //$NON-NLS-1$
-	CTL_TRANSFORMATION("ctl"); //$NON-NLS-1$
+	CTL_TRANSFORMATION("ctl"), //$NON-NLS-1$
+	SUBGRAPH("sgrf"), //$NON-NLS-1$
+	SUBJOBFLOW("sjbf"); //$NON-NLS-1$
 	
 	public final String extension;
 	
@@ -99,6 +101,14 @@ public enum FileType {
 	 */
 	public String getName() {
 		return UtilMessages.getString("FileType." + this.toString()); //$NON-NLS-1$
+	}
+	
+	/**
+	 * Returns <code>true</code> when the file type is ETL Graph, Subgraph or (Sub-)Jobflow.
+	 * @return <code>true</code> for {@link #ETL_GRAPH}, {@link #JOBFLOW}, {@link #SUBGRAPH}, and {@link #SUBJOBFLOW}
+	 */
+	public boolean isGraph() {
+		return this == ETL_GRAPH || this == JOBFLOW || this == SUBGRAPH || this == SUBJOBFLOW;
 	}
 
 }

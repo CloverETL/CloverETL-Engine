@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -67,6 +68,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -272,18 +274,17 @@ public class XmlWriter extends Node {
 		TransformerHandler th = null;
 			
 		@Override
-		public void close() {
+		public void close() throws IOException {
 			if (os == null) {
 				return;
 			}
 
-			try{
+			try {
 				flush();
+			} finally {
 				os.close();
-			}catch(IOException ex){
-				ex.printStackTrace();
+				os = null;
 			}
-			os = null;
 		}
 
 		@Override
@@ -310,7 +311,11 @@ public class XmlWriter extends Node {
 		 */
 		@Override
 		public void setDataTarget(Object outputDataTarget) {
-			close();
+			try {
+				close();
+			} catch (IOException e) {
+				throw new JetelRuntimeException(e);
+			}
 			WritableByteChannel channel = null;
 			if (outputDataTarget instanceof WritableByteChannel){
 				channel = (WritableByteChannel)outputDataTarget;
@@ -602,6 +607,7 @@ public class XmlWriter extends Node {
         if(isInitialized()) return;
 		super.init();
 		TransformationGraph graph = getGraph();
+		URL contextURL = getContextURL();
 
 		portsCnt = inPorts.size();
 
@@ -618,7 +624,7 @@ public class XmlWriter extends Node {
     		Map<Integer, PortDefinition> allPortDefinitionMap = new HashMap<Integer,PortDefinition>();
     		try {
     			if (this.mappingURL != null) {
-    				ReadableByteChannel ch = FileUtils.getReadableChannel(graph != null ? graph.getRuntimeContext().getContextURL() : null, mappingURL);
+    				ReadableByteChannel ch = FileUtils.getReadableChannel(contextURL, mappingURL);
     				Document doc = createDocumentFromChannel(ch);
     	            Element mappingRoot = doc.getDocumentElement();
     				PortDefinition portDef = createInputPortDefinitionStructure(graph, allPortDefinitionMap, mappingRoot);
@@ -647,7 +653,7 @@ public class XmlWriter extends Node {
         }
 		
         XmlFormatter formatter = new XmlFormatter(); 
-        writer = new MultiFileWriter(formatter, graph != null ? graph.getRuntimeContext().getContextURL() : null, this.fileUrl);
+        writer = new MultiFileWriter(formatter, contextURL, this.fileUrl);
         writer.setLogger(logger);
         writer.setRecordsPerFile(this.recordsPerFile);
         writer.setAppendData(false);
@@ -967,15 +973,6 @@ public class XmlWriter extends Node {
 		 } // for
 	}
 	
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
 	/** 
 	 * Creates an instance according to XML specification.
 	 * @param graph
@@ -1227,7 +1224,7 @@ public class XmlWriter extends Node {
 		if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
 		
 		//Check whether XML mapping schema is valid

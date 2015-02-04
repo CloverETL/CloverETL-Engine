@@ -22,9 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
-import java.net.Proxy;
 import java.net.ProxySelector;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -52,19 +50,20 @@ import org.apache.http.impl.client.DefaultProxyAuthenticationHandler;
 import org.apache.http.impl.client.SystemDefaultHttpClient;
 import org.apache.http.protocol.HttpContext;
 import org.jetel.util.protocols.ProxyConfiguration;
+import org.jetel.util.protocols.UserInfo;
 
-import com.googlecode.sardine.DavResource;
-import com.googlecode.sardine.impl.SardineException;
-import com.googlecode.sardine.impl.SardineImpl;
-import com.googlecode.sardine.impl.handler.ExistsResponseHandler;
-import com.googlecode.sardine.impl.handler.MultiStatusResponseHandler;
-import com.googlecode.sardine.impl.io.ConsumingInputStream;
-import com.googlecode.sardine.impl.methods.HttpPropFind;
-import com.googlecode.sardine.model.Allprop;
-import com.googlecode.sardine.model.Multistatus;
-import com.googlecode.sardine.model.Propfind;
-import com.googlecode.sardine.model.Response;
-import com.googlecode.sardine.util.SardineUtil;
+import com.github.sardine.DavResource;
+import com.github.sardine.impl.SardineException;
+import com.github.sardine.impl.SardineImpl;
+import com.github.sardine.impl.handler.ExistsResponseHandler;
+import com.github.sardine.impl.handler.MultiStatusResponseHandler;
+import com.github.sardine.impl.io.ConsumingInputStream;
+import com.github.sardine.impl.methods.HttpPropFind;
+import com.github.sardine.model.Allprop;
+import com.github.sardine.model.Multistatus;
+import com.github.sardine.model.Propfind;
+import com.github.sardine.model.Response;
+import com.github.sardine.util.SardineUtil;
 
 /**
  * An extension of {@link SardineImpl}
@@ -108,14 +107,12 @@ public class WebdavClientImpl extends SardineImpl implements WebdavClient {
             
         });
 		
-		Proxy proxy = proxyConfiguration.getProxy();
-		if (proxy != null && proxy != Proxy.NO_PROXY) {
-			URI proxyUri = URI.create(proxyConfiguration.getProxyString());
-			String userInfo = proxyUri.getUserInfo();
-			if (userInfo != null) {
-				HttpHost proxyHost = new HttpHost(proxyUri.getHost(), proxyUri.getPort());
+		if (proxyConfiguration.isProxyUsed()) {
+			UserInfo userInfo = proxyConfiguration.getUserInfo();
+			if (!userInfo.isEmpty()) {
+				HttpHost proxyHost = new HttpHost(proxyConfiguration.getHost(), proxyConfiguration.getPort());
 				client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxyHost);
-				setProxyCredentials(client, proxyHost.getHostName(), proxyHost.getPort(), userInfo);
+				setProxyCredentials(client, proxyHost.getHostName(), proxyHost.getPort(), userInfo.getUserInfo());
 			}
 		}
 	}
@@ -150,7 +147,9 @@ public class WebdavClientImpl extends SardineImpl implements WebdavClient {
 	 */
 	private void setDefaultProxyCredentials(String protocol) {
 		protocol = protocol.toLowerCase();
-		String proxyUserInfo = getUserInfo(System.getProperty(protocol + ".proxyUser"), System.getProperty(protocol + ".proxyPassword"));
+		String user = System.getProperty(protocol + ".proxyUser");
+		String password = System.getProperty(protocol + ".proxyPassword");
+		String proxyUserInfo = getUserInfo(user, password);
 		String proxyHost = System.getProperty(protocol + ".proxyHost"); // null means any host
 		String proxyPortString = System.getProperty(protocol + ".proxyPort");
 		int proxyPort = -1; // -1 means any port

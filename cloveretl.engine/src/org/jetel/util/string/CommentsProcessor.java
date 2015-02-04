@@ -35,12 +35,12 @@ import java.util.regex.Pattern;
  */
 public class CommentsProcessor {
 
-	private static final String SINGLE_LINE_COMMENT = "//";
+	private static final String SINGLE_LINE_COMMENT = "//"; //$NON-NLS-1$
 	
-	private static final String MULTI_LINE_START_COMMENT = "/*";
-	private static final String MULTI_LINE_END_COMMENT = "*/";
+	private static final String MULTI_LINE_START_COMMENT = "/*"; //$NON-NLS-1$
+	private static final String MULTI_LINE_END_COMMENT = "*/"; //$NON-NLS-1$
 	
-	private static final String EOL_REGEXP = "(\\r)|(\\n)";
+	private static final String EOL_REGEXP = "(\\r)|(\\n)"; //$NON-NLS-1$
 	
 	private enum CommentType {
 		SINGLE_LINE, MULTI_LINE;
@@ -91,8 +91,8 @@ public class CommentsProcessor {
 	}
 	
 	private CommentType nextComment() {
-		int singleLineComment = transform.indexOf(SINGLE_LINE_COMMENT, index);
-		int multiLineComment = transform.indexOf(MULTI_LINE_START_COMMENT, index);
+		int singleLineComment = getCommentStart(SINGLE_LINE_COMMENT);
+		int multiLineComment = getCommentStart(MULTI_LINE_START_COMMENT);
 
 		if (singleLineComment == -1 && multiLineComment == -1) {
 			incrementIndexAndRemember(transform.length());
@@ -125,4 +125,28 @@ public class CommentsProcessor {
 		index = newIndex;	
 	}
 
+	private int getCommentStart(String commentPattern) {
+		int tmpIndex;
+		int commentStart = transform.indexOf(commentPattern, index);
+		
+        while (commentStart > 0 && endsInsideString(transform.substring(index, commentStart))) {
+            tmpIndex = commentStart + commentPattern.length();
+            commentStart = transform.indexOf(commentPattern, tmpIndex);
+        }
+		return commentStart;
+	}
+	
+	private boolean endsInsideString(String code) {
+		if (!code.contains("\"")) { //$NON-NLS-1$
+			return false;
+		}
+        // remove all \", but first remove all \\ for cases like \\"
+		code = code.replace("\\\\", "").replace("\\\"", "");   //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+		int count = 0;
+		int start = -1;
+		while ((start=code.indexOf("\"", start+1)) >= 0) { //$NON-NLS-1$
+			count++;
+		}
+		return count % 2 != 0;
+	}
 }

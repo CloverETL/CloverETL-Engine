@@ -48,7 +48,7 @@ public class Value extends AbstractNode {
 
 	@Override
 	public String getDisplayName() {
-		return "Text node";
+		return "Text Node";
 	}
 
 	@Override

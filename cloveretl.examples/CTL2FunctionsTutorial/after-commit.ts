@@ -181,7 +181,9 @@
 	 <FlatFile outputFile="data-out/conversionStr2boolOverview.txt" supposedFile="supposed-out/conversionStr2boolOverview.txt"/>
 </FunctionalTest>
 
-<FunctionalTest ident="conversionStr2datePatternLocale" graphFile="graph/conversionStr2datePatternLocale.grf">
+<!-- IBM SDK 7 expects polish months to be in genitive, yet the input contains nominative: luty/27/1988 vs. lutego/27/1988 - exclude the test for such JVM -->
+<FunctionalTest ident="conversionStr2datePatternLocale" graphFile="graph/conversionStr2datePatternLocale.grf"
+    excludedJavaVendor="ibm">
 	 <FlatFile outputFile="data-out/conversionStr2datePatternLocale0Overview.txt" supposedFile="supposed-out/conversionStr2datePatternLocale0Overview.txt"/>
 	 <FlatFile outputFile="data-out/conversionStr2datePatternLocale1Overview.txt" supposedFile="supposed-out/conversionStr2datePatternLocale1Overview.txt"/>
 </FunctionalTest>
@@ -493,6 +495,14 @@
 
 <FunctionalTest ident="mathSetRandomSeed" graphFile="graph/mathSetRandomSeed.grf">
 	 <FlatFile outputFile="data-out/mathSetRandomSeedOverview.txt" supposedFile="supposed-out/mathSetRandomSeedOverview.txt"/>
+</FunctionalTest>
+
+<FunctionalTest ident="mathFloor" graphFile="graph/mathFloor.grf">
+	 <FlatFile outputFile="data-out/mathFloorOverview.txt" supposedFile="supposed-out/mathFloorOverview.txt"/>
+</FunctionalTest>
+
+<FunctionalTest ident="mathCeil" graphFile="graph/mathCeil.grf">
+	 <FlatFile outputFile="data-out/mathCeilOverview.txt" supposedFile="supposed-out/mathCeilOverview.txt"/>
 </FunctionalTest>
 
 </TestScenario>

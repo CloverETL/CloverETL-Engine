@@ -21,17 +21,19 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Properties;
 import java.util.TreeMap;
 import java.util.concurrent.CyclicBarrier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.MDC;
+import org.jetel.component.ComponentDescription;
+import org.jetel.component.ComponentDescriptionImpl;
 import org.jetel.data.DataRecord;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ComponentNotReadyException;
@@ -45,6 +47,7 @@ import org.jetel.graph.distribution.EngineComponentAllocation;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.CloverWorkerListener;
 import org.jetel.graph.runtime.ErrorMsgBody;
+import org.jetel.graph.runtime.ExecutionType;
 import org.jetel.graph.runtime.Message;
 import org.jetel.graph.runtime.tracker.ComplexComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
@@ -69,15 +72,17 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 
     private static final Log logger = LogFactory.getLog(Node.class);
 
-    private Thread nodeThread;
-    private final Object nodeThreadMonitor = new Object(); // nodeThread variable is guarded by this monitor
+    private Thread nodeThread; // is guarde by nodeThreadMonitor
+    private final Object nodeThreadMonitor = new Object(); // nodeThread variable and childThreads variable are guarded by this monitor
+    
+    private String formerThreadName;
     
     /**
      * List of all threads under this component.
      * For instance parallel reader uses threads for parallel reading.
      * It is component's responsibility to register all inner threads via addChildThread() method.
      */
-    protected List<Thread> childThreads;  
+    protected List<Thread> childThreads; // is guarded by nodeThreadMonitor
     protected EnabledEnum enabled;
     protected int passThroughInputPort;
     protected int passThroughOutputPort;
@@ -119,6 +124,14 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      */
     protected ComponentTokenTracker tokenTracker;    
     
+    private Properties attributes;
+    
+    /** Subgraph only. Is this component part of debug input phase of the subgraph. */
+    private boolean partOfDebugInput = false;
+    
+    /** Subgraph only. Is this component part of debug output phase of the subgraph. */
+    private boolean partOfDebugOutput = false;
+    
 	/**
 	 *  Various PORT kinds identifiers
 	 *
@@ -135,6 +148,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	public final static String XML_TYPE_ATTRIBUTE="type";
     public final static String XML_ENABLED_ATTRIBUTE="enabled";
     public final static String XML_ALLOCATION_ATTRIBUTE = "allocation";
+    public final static String XML_PART_OF_DEBUG_INPUT_ATTRIBUTE = "debugInput";
+    public final static String XML_PART_OF_DEBUG_OUTPUT_ATTRIBUTE = "debugOutput";
 
     /**
      *  Standard constructor.
@@ -158,8 +173,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		inPorts = new TreeMap<Integer, InputPort>();
         phase = null;
         setResultCode(Result.N_A); // result is not known yet
-        childThreads = Collections.synchronizedList(new ArrayList<Thread>());
-        allocation = EngineComponentAllocation.createBasedOnNeighbours();
+        childThreads = new ArrayList<Thread>();
+        allocation = EngineComponentAllocation.createNeighboursAllocation();
 	}
 
 	/**
@@ -186,7 +201,9 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *@return    The Type value
 	 *@since     April 4, 2002
 	 */
-	public abstract String getType();
+	public String getType() {
+		return getDescriptor().getType();
+	}
 
 	/**
 	 *  Returns True if this Node is Leaf Node - i.e. only consumes data (has only
@@ -435,7 +452,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 
         //initialise component token tracker if necessary
         if (getGraph() != null
-        		&& getGraph().getJobType() == JobType.JOBFLOW
+        		&& getGraph().getRuntimeJobType().isJobflow()
         		&& getGraph().getRuntimeContext().isTokenTracking()) {
         	tokenTracker = createComponentTokenTracker();
         } else {
@@ -458,7 +475,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         	}
 			//non empty allocation is not allowed in non-cluster environment
 			EngineComponentAllocation allocation = getAllocation();
-			if (allocation != null && !allocation.isInferedFromNeighbours()) {
+			if (allocation != null && !allocation.isNeighboursAllocation()) {
 				throw new JetelRuntimeException("Component allocation cannot be specified in non-cluster environment.");
 			}
         }
@@ -480,19 +497,24 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     		//store the current thread like a node executor
             setNodeThread(Thread.currentThread());
             
-        	//we need a synchronization point for all components in a phase
-        	//watchdog starts all components in phase and wait on this barrier for real startup
-    		preExecuteBarrier.await();
-        	
-        	//preExecute() invocation
-    		try {
-    			preExecute();
-    		} catch (Throwable e) {
-    			throw new ComponentNotReadyException(this, "Component pre-execute initialization failed.", e);
-    		}
-
-    		//waiting for other nodes in the current phase - first all pre-execution has to be done at all nodes
-    		executeBarrier.await();
+            //Node.preExecute() is not performed for single thread execution
+            //SingleThreadWatchDog executes preExecution itself
+        	if (getGraph().getRuntimeContext().getExecutionType() != ExecutionType.SINGLE_THREAD_EXECUTION) {
+	            
+	        	//we need a synchronization point for all components in a phase
+	        	//watchdog starts all components in phase and wait on this barrier for real startup
+	    		preExecuteBarrier.await();
+	        	
+	        	//preExecute() invocation
+	    		try {
+	    			preExecute();
+	    		} catch (Throwable e) {
+	    			throw new ComponentNotReadyException(this, "Component pre-execute initialization failed.", e);
+	    		} finally {
+		    		//waiting for other nodes in the current phase - first all pre-execution has to be done at all nodes
+		    		executeBarrier.await();
+	    		}
+        	}
     		
     		//execute() invocation
     		Result result = execute();
@@ -518,7 +540,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
             	} else if (checkEofOnInputPorts()) { // true by default
 	            	//check whether all input ports are already closed
 	            	for (InputPort inputPort : getInPorts()) {
-	            		if (!inputPort.isEOF()) {
+	            		//if the edge base of the input port is not shared due this component and some data records are still in input port, report an error
+	            		if (!inputPort.getEdge().isSharedEdgeBaseFromReader() && !inputPort.isEOF()) {
 	            			setResultCode(Result.ERROR);
 	            			Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
 	            					new ErrorMsgBody(Result.ERROR.code(), Result.ERROR.message(), createNodeException(new JetelRuntimeException("Component has finished and input port " + inputPort.getInputPortNumber() + " still contains some unread records."))));
@@ -545,8 +568,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
             sendMessage(msg);
         } finally {
 			ContextProvider.unregister(c);
-        	sendFinishMessage();
         	setNodeThread(null);
+        	sendFinishMessage();
         }
     }
     
@@ -598,12 +621,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 					//interrupt main node thread
 					nodeThread.interrupt();
 					//interrupt all child threads if any
-					for (Thread childThread : getChildThreads()) {
-						if (logger.isDebugEnabled()) {
-							logger.debug("trying to interrupt child thread " + childThread);
-						}
-						childThread.interrupt();
-					}
+					abortChildThreads();
 					//wait some time for graph result
 					try {
 						Thread.sleep(10);
@@ -612,6 +630,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 				}
 			}
 		}
+		
 		if (cause != null) {
             setResultCode(Result.ERROR);
             resultException = createNodeException(cause);
@@ -626,6 +645,17 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		}
 	}
 
+	private void abortChildThreads() {
+		synchronized(nodeThreadMonitor) {
+			for (Thread childThread : childThreads) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("trying to interrupt child thread " + childThread);
+				}
+				childThread.interrupt();
+			}
+		}
+	}
+	
     /**
      * @return thread of running node; <b>null</b> if node does not running
      */
@@ -639,32 +669,37 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      * Sets actual thread in which this node current running.
      * @param nodeThread
      */
-    private void setNodeThread(Thread nodeThread) {
+    public void setNodeThread(Thread nodeThread) {
     	synchronized (nodeThreadMonitor) {
 			if(nodeThread != null) {
-	    		this.nodeThread = nodeThread;
+				if (this.nodeThread != nodeThread) {
+		    		this.nodeThread = nodeThread;
 	    		
-				//thread context classloader is preset to a reasonable classloader
-				//this is just for sure, threads are recycled and no body can guarantee which context classloader remains preset
-	    		nodeThread.setContextClassLoader(this.getClass().getClassLoader());
+					//thread context classloader is preset to a reasonable classloader
+					//this is just for sure, threads are recycled and no body can guarantee which context classloader remains preset
+	    			nodeThread.setContextClassLoader(this.getClass().getClassLoader());
 	    		
-				String oldName = nodeThread.getName();
-	    		long runId = getGraph().getRuntimeContext().getRunId();
-	    		nodeThread.setName(getId()+"_"+runId);
-				MDC.put("runId", getGraph().getRuntimeContext().getRunId());
+					formerThreadName = nodeThread.getName();
+	    			long runId = getGraph().getRuntimeContext().getRunId();
+		    		nodeThread.setName(getId()+"_"+runId);
+					MDC.put("runId", getGraph().getRuntimeContext().getRunId());
 				
-				if (logger.isTraceEnabled()) {
-					logger.trace("set thread name; old:"+oldName+" new:"+ nodeThread.getName());
-					logger.trace("set thread runId; runId:"+runId+" thread name:"+Thread.currentThread().getName());
+					if (logger.isTraceEnabled()) {
+						logger.trace("set thread name; old:"+formerThreadName+" new:"+ nodeThread.getName());
+						logger.trace("set thread runId; runId:"+runId+" thread name:"+Thread.currentThread().getName());
+					}
 				}
-				
 			} else {
 				MDC.remove("runId");
 				long runId = getGraph().getRuntimeContext().getRunId();
 				if (logger.isTraceEnabled()) 
 					logger.trace("reset thread runId; runId:"+runId+" thread name:"+Thread.currentThread().getName());
 				
-				this.nodeThread.setName("<unnamed>");
+				if (!StringUtils.isEmpty(formerThreadName)) {
+					this.nodeThread.setName(formerThreadName); //use former thread name if any 
+				} else {
+					this.nodeThread.setName("<unnamed>");
+				}
 				this.nodeThread = null;
 			}
     	}
@@ -1090,6 +1125,20 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         outPortsSize = outPortsArray.length;
     }
     
+    @Override
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+    	status = super.checkConfig(status);
+    	
+    	//component allocation is limited for jobflows
+    	if (!getGraph().getRuntimeJobType().isGraph()) {
+    		if (!getAllocation().isNeighboursAllocation()) {
+        		status.add("Invalid component allocation. Only regular ETL graphs can be distributed.", Severity.ERROR, this, Priority.NORMAL);
+    		}
+    	}
+    	
+    	return status;
+    }
+    
     /**
      * Checks number of input ports, whether is in the given interval.
      * @param status
@@ -1287,9 +1336,27 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      * @param childThread
      */
     public void registerChildThread(Thread childThread) {
-    	childThreads.add(childThread);
+    	synchronized(nodeThreadMonitor) {
+	    	if (runIt) {
+	    		//new child thread can be registered only for running components
+	    		childThreads.add(childThread);
+	    	} else {
+	    		throw new JetelRuntimeException("New component's child thread cannot be registered. Component has been already finished.");
+	    	}
+    	}
     }
 
+    /**
+     * The given thread is unregistered from this node. Should be invoked by the child thread
+     * right before the thread finish.
+     * @param childThread
+     */
+    public void unregisterChildThread(Thread childThread) {
+    	synchronized(nodeThreadMonitor) {
+    		childThreads.remove(childThread);
+    	}
+    }
+    
     /**
      * The given threads are registered as child threads of this component.
      * The child threads are exploited for gathering of tracking information - for instance 
@@ -1297,14 +1364,23 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      * @param childThreads
      */
     protected void registerChildThreads(List<Thread> childThreads) {
-    	this.childThreads.addAll(childThreads);
+    	synchronized(nodeThreadMonitor) {
+	    	if (runIt) {
+	    		//new child thread can be registered only for running components
+	    		this.childThreads.addAll(childThreads);
+	    	} else {
+	    		throw new JetelRuntimeException("New component's child threads cannot be registered. Component has been already finished.");
+	    	}
+    	}
     }
 
     /**
      * @return list of all child threads - threads running under this component
      */
     public List<Thread> getChildThreads() {
-    	return new ArrayList<Thread>(childThreads); //duplicate is returned to ensure thread safety
+    	synchronized(nodeThreadMonitor) {
+    		return new ArrayList<Thread>(childThreads); //duplicate is returned to ensure thread safety
+    	}
     }
 
 
@@ -1320,14 +1396,21 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         setResultCode(Result.READY);
         resultMessage = null;
         resultException = null;
-        childThreads.clear();
+
+//should be uncommented after CLO-2574 is fixed   	
+//        synchronized(nodeThreadMonitor) {
+//    		childThreads.clear();
+//    	}
     }
 
     @Override
     public synchronized void free() {
     	super.free();
     	
-    	childThreads.clear();
+//should be uncommented after CLO-2574 is fixed   	
+//    	synchronized(nodeThreadMonitor) {
+//    		childThreads.clear();
+//    	}
     }
 
 	/**
@@ -1396,4 +1479,59 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		return true;
 	}
 	
+    @Override
+	public ComponentDescription getDescriptor() {
+    	ComponentDescription componentDescription = (ComponentDescription) super.getDescriptor();
+    	if (componentDescription == null) {
+    		componentDescription = new ComponentDescriptionImpl.MissingComponentDescription();
+    		setDescriptor(componentDescription);
+    	}
+    	return componentDescription;
+    }
+
+	public Properties getAttributes() {
+		return attributes;
+	}
+
+	public void setAttributes(Properties attributes) {
+		this.attributes = attributes;
+	}
+
+	/**
+     * This method blocks current thread until all input and output edges are
+     * complete - last record is read, EOF indicator is reached.
+     */
+    protected void waitForEdgesEOF() throws InterruptedException {
+    	for (InputPort inputPort : getInPorts()) {
+    		inputPort.getEdge().waitForEOF();
+    	}
+    	for (OutputPort outputPort : getOutPorts()) {
+    		outputPort.getEdge().waitForEOF();
+    	}
+    }
+
+	public void setPartOfDebugInput(boolean partOfDebugInput) {
+		this.partOfDebugInput = partOfDebugInput;
+	}
+
+	/**
+	 * Subgraph only feature.
+	 * @return true if this component is part of debug input phase of this subgraph
+	 */
+	public boolean isPartOfDebugInput() {
+		return partOfDebugInput;
+	}
+	
+	public void setPartOfDebugOutput(boolean partOfDebugOutput) {
+		this.partOfDebugOutput = partOfDebugOutput;
+	}
+
+	/**
+	 * Subgraph only feature.
+	 * @return true if this component is part of debug output phase of this subgraph
+	 */
+	public boolean isPartOfDebugOutput() {
+		return partOfDebugOutput;
+	}
+
 }

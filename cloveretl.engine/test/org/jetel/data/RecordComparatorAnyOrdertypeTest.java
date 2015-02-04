@@ -21,11 +21,16 @@ package org.jetel.data;
 import java.util.Arrays;
 import java.util.Random;
 
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.DataGenerator;
+import org.jetel.util.key.KeyTokenizer;
 import org.jetel.util.key.OrderType;
+import org.jetel.util.key.RecordKeyTokens;
 
 /**
  * @author avackova (info@cloveretl.com)
@@ -159,6 +164,107 @@ public class RecordComparatorAnyOrdertypeTest extends CloverTestCase {
 		}
 		return expected;
 	}
+	
+	public void testAutodetection() throws JetelException, ComponentNotReadyException {
+		String orderingSpecification = "field1(r);field2(r);field3(r)";
+		RecordKeyTokens recordKeyTokens = KeyTokenizer.tokenizeRecordKey(orderingSpecification);
+		
+		DataRecordMetadata drm = new DataRecordMetadata("myRec");
+		DataFieldMetadata dfm1 = new DataFieldMetadata("field1", DataFieldType.INTEGER, "|");
+		drm.addField(dfm1);
+		DataFieldMetadata dfm2 = new DataFieldMetadata("field2", DataFieldType.INTEGER, "|");
+		drm.addField(dfm2);
+		DataFieldMetadata dfm3 = new DataFieldMetadata("field3", DataFieldType.INTEGER, "|");
+		drm.addField(dfm3);
+		
+		DataRecord dr1 = DataRecordFactory.newRecord(drm);
+		dr1.init();
+		
+		RecordComapratorAnyOrderType comparator = RecordComapratorAnyOrderType.createRecordComparator(recordKeyTokens, drm);
+		
+		// --- step 1 : begin with two same records
+		
+		setRecordValues(dr1, 10, 10, 10);
+		DataRecord dr2 = dr1.duplicate();
+		
+		int compare = comparator.compare(dr1, dr2);
+		assertEquals(0, compare);
+		assertOrdering(comparator.getSortOrderingsAnyType(), "rrr");
+		
+		// --- step 2 : field1 goes ascending
+		
+		DataRecord tmp = dr1; dr1 = dr2; dr2 = tmp;
+		setRecordValues(dr2, 11, 10, 10);
 
+		compare = comparator.compare(dr1, dr2);
+		assertEquals(-1, compare);
+		assertOrdering(comparator.getSortOrderingsAnyType(), "arr");
+		
+		// --- step 3 : no change
+
+		tmp = dr1; dr1 = dr2; dr2 = tmp;
+		setRecordValues(dr2, 11, 10, 10);
+
+		compare = comparator.compare(dr1, dr2);
+		assertEquals(0, compare);
+		assertOrdering(comparator.getSortOrderingsAnyType(), "arr");
+		
+		// --- step 4 : field2 goes descending
+		
+		tmp = dr1; dr1 = dr2; dr2 = tmp;
+		setRecordValues(dr2, 11, 9, 10);
+
+		compare = comparator.compare(dr1, dr2);
+		assertEquals(-1, compare);
+		assertOrdering(comparator.getSortOrderingsAnyType(), "adr");
+		
+		// --- step 5 : field3 goes descending
+		
+		tmp = dr1; dr1 = dr2; dr2 = tmp;
+		setRecordValues(dr2, 11, 9, 9);
+		
+		compare = comparator.compare(dr1, dr2);
+		assertEquals(-1, compare);
+		assertOrdering(comparator.getSortOrderingsAnyType(), "add");
+		
+		// --- step 6 : field3 goes wrong order
+		
+		tmp = dr1; dr1 = dr2; dr2 = tmp;
+		setRecordValues(dr2, 11, 9, 10);
+		
+		compare = comparator.compare(dr1, dr2);
+		assertEquals(1, compare);
+	}
+	
+	private void setRecordValues(DataRecord r, Object... values) {
+		int f = 0;
+		for (Object val : values) {
+			r.getField(f++).setValue(val);
+		}
+	}
+	
+	private void assertOrdering(OrderType[] ordering, String orderString) {
+		if (ordering.length != orderString.length()) {
+			throw new IllegalArgumentException("ordering.length != expected.length");
+		}
+		
+		for (int i = 0; i < ordering.length; i++) {
+			assertEquals(getOrderTypeByCode(orderString.charAt(i)), ordering[i]);
+		}
+	}
+	
+	private OrderType getOrderTypeByCode(char c) {
+		switch (c) {
+		case 'a':
+			return OrderType.ASCENDING;
+		case 'd':
+			return OrderType.DESCENDING;
+		case 'r':
+			return OrderType.AUTO;
+		case 'i':
+			return OrderType.IGNORE;
+		default: throw new IllegalStateException();
+		}
+	}
 
 }

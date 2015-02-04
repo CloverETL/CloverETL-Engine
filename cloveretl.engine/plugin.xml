@@ -74,7 +74,7 @@
 	</extension>
 	
 	<extension point-id="ctlfunction">
-		<parameter id="libraryName" value="integral"/>
+		<parameter id="libraryName" value="record"/>
 		<parameter id="className" value="org.jetel.ctl.extensions.IntegralLib"/>
 	</extension>
 	

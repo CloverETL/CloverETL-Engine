@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.tape.DataRecordTape;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -44,10 +45,15 @@ public class PhaseConnectionEdge extends EdgeBase {
 	private long readCounter;
     private long writeByteCounter;
     private long readByteCounter;
-	private boolean isReadMode;
+	private volatile boolean isReadMode;
 	private boolean wasInitialized;
 
-	private boolean isEmpty;
+	private volatile boolean isEmpty;
+	
+    /**
+     * Monitor for {@link #waitForEOF()}
+     */
+	private final Object eofMonitor = new Object();
 	
 	private CloverBuffer recordBuffer;
 
@@ -108,28 +114,29 @@ public class PhaseConnectionEdge extends EdgeBase {
 		// we are ready to supply data
 		// there are two attemps to initialize this edge
 		// first by phase of the writer, then by phase of the reader, we initilize only once
-		if (!wasInitialized) {
-			writeCounter = readCounter=0;
-            writeByteCounter=readByteCounter=0;
-			dataTape.open(-1);
-			dataTape.addDataChunk();
-			wasInitialized = true;
-		}
 	}
 
 	@Override
-	public void reset() {
-		isReadMode=false;
+	public void preExecute() {
+		super.preExecute();
+
+		isReadMode = false;
 		isEmpty = false;
 		writeCounter = 0;
 		readCounter = 0;
         writeByteCounter = 0;
         readByteCounter = 0;
 		try {
-			dataTape.clear();
-			dataTape.addDataChunk();
+			if (!wasInitialized) {
+				dataTape.open(-1);
+				dataTape.addDataChunk();
+				wasInitialized = true;
+			} else {
+				dataTape.clear();
+				dataTape.addDataChunk();
+			}
 		} catch (Exception e) {
-			dataTape = new DataRecordTape();
+			throw new JetelRuntimeException("Phase edge preExecute operation failed.", e);
 		}
 	}
 
@@ -153,7 +160,7 @@ public class PhaseConnectionEdge extends EdgeBase {
             readByteCounter+=record.getSizeSerialized();
 		    readCounter++;
 		    return record;
-		}else{
+		} else {
 			isEmpty = true;
 		    return null;
 		}
@@ -180,7 +187,7 @@ public class PhaseConnectionEdge extends EdgeBase {
             readByteCounter+=record.remaining();
 		    readCounter++;
 		    return true;
-		}else{
+		} else {
 			isEmpty = true;
 		    return false;
 		}
@@ -240,9 +247,13 @@ public class PhaseConnectionEdge extends EdgeBase {
 	    // as writer closes the
 	    // port/edge - no more data is to be written, flush
 	    // the buffer of the data tape, we will start reading data
-        dataTape.flush(false);
-        dataTape.rewind();
-	    isReadMode=true;
+    	synchronized (eofMonitor) {
+	        dataTape.flush(false);
+    	    dataTape.rewind();
+	    	isReadMode=true;
+	    	eofSent = true;
+    		eofMonitor.notifyAll();
+    	}
 	}
 
 	@Override
@@ -266,6 +277,15 @@ public class PhaseConnectionEdge extends EdgeBase {
     @Override
     public boolean isEOF() {
         return isEmpty;
+    }
+    
+    @Override
+    public void waitForEOF() throws InterruptedException {
+    	synchronized (eofMonitor) {
+    		while (!isReadMode) {
+    			eofMonitor.wait();
+    		}
+    	}
     }
     
 }

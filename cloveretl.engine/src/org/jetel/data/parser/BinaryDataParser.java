@@ -80,6 +80,9 @@ public class BinaryDataParser extends AbstractParser {
 
 	private long processedBytes;
 	
+	/** Which kind of data record deserialisation should be used? */
+	private boolean unitaryDeserialization = false;
+
 	public BinaryDataParser(DataRecordMetadata metadata) {
 		this.metadata = metadata;
 	}
@@ -104,6 +107,22 @@ public class BinaryDataParser extends AbstractParser {
 		setDataSource(file);
 	}
 	
+	/**
+	 * Sets the parser to deserialise the given data records using {@link DataRecord#deserializeUnitary(CloverBuffer)}
+	 * method.
+	 * Regular deserialisation is used by default.
+	 */
+	public void setUnitaryDeserialization(boolean unitaryDeserialization) {
+		this.unitaryDeserialization = unitaryDeserialization;
+	}
+	
+	/**
+	 * @return true if unitary deserialisation of data records will be used
+	 */
+	public boolean getUnitaryDeserialization() {
+		return unitaryDeserialization;
+	}
+
 	public int getBufferLimit() {
 		return bufferLimit;
 	}
@@ -159,7 +178,11 @@ public class BinaryDataParser extends AbstractParser {
 				}
 			}
 
-			record.deserialize(buffer);
+			if (unitaryDeserialization) {
+				record.deserializeUnitary(buffer);
+			} else {
+				record.deserialize(buffer);
+			}
 			
 			return record;
 		} catch (IOException e) {
@@ -202,6 +225,26 @@ public class BinaryDataParser extends AbstractParser {
 			throw new JetelRuntimeException(e);
 		} catch (BufferUnderflowException e) {
 			throw new JetelRuntimeException("Invalid end of stream.", e);
+		}
+	}
+	
+	/**
+	 * Reads an integer from current data source.
+	 * @return read integer value
+	 * @throws NoDataAvailableException if no more bytes are available in current data source 
+	 */
+	public int getNextInt() throws NoDataAvailableException {
+		try {
+			if (buffer.remaining() < 4) {
+				reloadBuffer(4);
+				if (buffer.remaining() < 4) {
+					throw new NoDataAvailableException();
+				}
+			}
+			
+			return buffer.getInt();
+		} catch (IOException e) {
+			throw new JetelRuntimeException(e);
 		}
 	}
 	
@@ -297,7 +340,7 @@ public class BinaryDataParser extends AbstractParser {
 		try {
 			doReleaseDataSource();
 		} catch (IOException ioe) {
-			ioe.printStackTrace(); // TODO
+			throw new JetelRuntimeException(ioe);
 		}
 	}
 
@@ -316,6 +359,10 @@ public class BinaryDataParser extends AbstractParser {
 		} else if (inputDataSource instanceof InputStream) {
 			backendStream = (InputStream) inputDataSource;
 			reader = Channels.newChannel(backendStream);
+		} else if (inputDataSource instanceof ReadableByteChannel) {
+			reader = (ReadableByteChannel) inputDataSource;
+		} else {
+			throw new JetelRuntimeException("Unsupported data source type " + inputDataSource.getClass().getName());
 		}
 		
 		eofReached = false;
@@ -371,4 +418,11 @@ public class BinaryDataParser extends AbstractParser {
 		return false;
 	}
 
+	/**
+	 * Is thrown if no more bytes are available in current data source for requested operation.
+	 */
+	public static class NoDataAvailableException extends Exception {
+		private static final long serialVersionUID = -5435696416541293699L;
+	}
+	
 }

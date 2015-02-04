@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="cloveruser" created="Mon Mar 05 11:32:38 CET 2007" description="This graph shows usage of DBJoin component: data are read from flat file and joined with the records from database due to conforming key field (lname in records read from file, last_name in records read from database)." guiVersion="3.4.0" id="1197027195231" licenseType="Commercial" modified="Tue Apr 16 17:37:52 CEST 2013" modifiedBy="user" name="graphDBJoin" revision="1.65" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="cloveruser" created="Mon Mar 05 11:32:38 CET 2007" description="This graph shows usage of DBJoin component: data are read from flat file and joined with the records from database due to conforming key field (lname in records read from file, last_name in records read from database)." guiVersion="3.4.3.P" id="1197027195231" licenseType="Commercial" modified="Fri Nov 08 10:55:33 CET 2013" modifiedBy="user" name="graphDBJoin" revision="1.66" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/incorrectRecords.fmt" id="Metadata1"/>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
@@ -68,7 +68,7 @@
 <attr name="guiDescription"><![CDATA[Can contain some valid records.]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Fail" guiX="240" guiY="497" id="FAIL" type="FAIL"/>
-<Edge debugMode="false" fromNode="DATA_READER2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="DATA_WRITER2:0"/>
+<Edge debugMode="false" edgeType="directFastPropagate" fromNode="DATA_READER2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="DATA_WRITER2:0"/>
 <Edge debugMode="false" fromNode="DATA_READER2:1" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="UDR_ErrorPort" outPort="Port 1 (logs)" toNode="FAIL:0"/>
 </Phase>
 </Graph>

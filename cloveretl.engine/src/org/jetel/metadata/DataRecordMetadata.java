@@ -27,29 +27,36 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.DataRecordNature;
 import org.jetel.data.Defaults;
+import org.jetel.data.GraphElementDescription;
 import org.jetel.data.RecordKey;
 import org.jetel.data.Token;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.InvalidGraphObjectNameException;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.util.bytes.CloverBuffer;
+import org.jetel.util.formatter.TimeZoneProvider;
 import org.jetel.util.primitive.BitArray;
 import org.jetel.util.primitive.TypedProperties;
+import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.string.QuotingDecoder;
 import org.jetel.util.string.StringUtils;
-
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
  * A class that represents metadata describing a data record.
@@ -67,14 +74,19 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @see org.jetel.data.DataField
  * 
  */
-public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetadata> {
+public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetadata>, IGraphElement {
 
 	private static final long serialVersionUID = 7032218607804024730L;
 	
 	/** The default string value that is considered as null. */
-	public static final String DEFAULT_NULL_VALUE = "";
+	public static final List<String> DEFAULT_NULL_VALUES = Arrays.asList("");
 	
 	public static final String EMPTY_NAME = "_";
+
+	/**
+	 * Default value of eof-as-delimiter flag if {@link #eofAsDelimiter} is null.
+	 */
+	private static final boolean DEFAULT_EOF_AS_DELIMITER = false;
 
 	/** Parent graph of this metadata */
 	private transient TransformationGraph graph;
@@ -116,10 +128,17 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private List<String> keyFieldNames = new ArrayList<String>();
 
 	private short numNullableFields = 0;
+	
+	private int[] nonAutofilledFields = new int[0];
 
 	private TypedProperties recordProperties = new TypedProperties();
 	private String localeStr = null;
 	private String timeZoneStr = null;
+
+	/**
+	 * Lazy initialised timezone provider instance returned by {@link #getTimeZone()} method. 
+	 */
+	private TimeZoneProvider timeZoneProvider;
 
 	/** a format string for numbers */
 	private String numberFormatStr = null;
@@ -127,7 +146,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private String dateFormatStr = null;
 
 	/** String value that is considered as null (in addition to null itself). */
-	private String nullValue = DEFAULT_NULL_VALUE;
+	private List<String> nullValues = DEFAULT_NULL_VALUES;
 
 	/**
 	 * Default collator sensitivity for string fields. Can be overridden by DataFieldMetadata.
@@ -135,8 +154,13 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 */
 	private String collatorSensitivity = null;
 	
+	/** If this switch is set to true, last field of this record recognises EOF as valid delimiter.
+	 * Can be null if the flag is not specified, see {@link #DEFAULT_EOF_AS_DELIMITER}.
+	 * See {@link DataFieldMetadata#isEofAsDelimiter()} */
+	private Boolean eofAsDelimiter;
+
 	/**
-	 * Metadadata nature should correspond with graph nature, see {@link #checkConfig(ConfigurationStatus)}.
+	 * Metadata nature should correspond with graph nature, see {@link #checkConfig(ConfigurationStatus)}.
 	 * Different implementations of DataRecord are used for various natures.
 	 * Nature {@link DataRecordNature#DATA_RECORD} is represented by {@link DataRecord}.
 	 * Nature {@link DataRecordNature#TOKEN} is represented by {@link Token}.
@@ -201,6 +225,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	/**
 	 * @return metadata identifier
 	 */
+	@Override
 	public String getId() {
 		return id;
 	}
@@ -218,6 +243,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 *
 	 * @param name the new name of the data record
 	 */
+	@Override
 	public void setName(String name) {
 		if (!StringUtils.isValidObjectName(name)) {
 			throw new InvalidGraphObjectNameException(name, "RECORD");
@@ -229,6 +255,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	/**
 	 * @return the name of the data record
 	 */
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -618,7 +645,6 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 *
 	 * @return the type of the field
 	 */
-	@Deprecated
 	public DataFieldType getDataFieldType(String fieldName) {
 		DataFieldMetadata field = getField(fieldName);
 
@@ -778,6 +804,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		updateFieldOffset();
 		updateFieldNumbers();
 		updateKeyFields();
+		updateNonAutofilledFields();
 	}
 
 	private void updateFieldNumbers() {
@@ -786,6 +813,30 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		for (DataFieldMetadata fieldMeta : fields) {
 			fieldMeta.setNumber(count++);
 		}
+	}
+	
+	private void updateNonAutofilledFields() {
+		List<Integer> tmpList = new ArrayList<>();
+		for (int i = 0; i < fields.size(); i++) {
+			DataFieldMetadata field = fields.get(i);
+			if (field.getAutoFilling() == null) {
+				tmpList.add(i);
+			}
+		}
+		this.nonAutofilledFields = new int[tmpList.size()];
+		int i = 0;
+		for (Integer fieldIndex: tmpList) {
+			nonAutofilledFields[i++] = fieldIndex;
+		}
+	}
+	
+	/**
+	 * Returns the indexes of fields with no auto-filling.
+	 * 
+	 * @return indexes of non-autofilled fields
+	 */
+	public int[] getNonAutofilledFields() {
+		return nonAutofilledFields;
 	}
 
 	private void updateFieldTypes() {
@@ -1039,6 +1090,17 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	}
 
 	/**
+	 * @return timezone provider, which is based on {@link #getTimeZoneStr()} for non-null value
+	 * or is based on default runtime timezone {@link GraphRuntimeContext#getTimeZone()}. 
+	 */
+	public TimeZoneProvider getTimeZone() {
+		if (timeZoneProvider == null) {
+			timeZoneProvider = new TimeZoneProvider(getTimeZoneStr());
+		}
+		return timeZoneProvider;
+	}
+
+	/**
 	 * Sets the number format pattern as a default format string for numeric data fields.
 	 *
 	 * @param numberFormatStr the new number format pattern
@@ -1083,14 +1145,42 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * should be used
 	 */
 	public void setNullValue(String nullValue) {
-		this.nullValue = (nullValue != null) ? nullValue : DEFAULT_NULL_VALUE;
+		setNullValues(Arrays.asList(nullValue));
+	}
+
+	/**
+	 * Sets list of string values that will be considered as <code>null</code> (in addition to <code>null</code> itself).
+	 *
+	 * @param nullValues list of string value to be considered as null, or <code>null</code> if the default null value
+	 * should be used
+	 */
+	public void setNullValues(List<String> nullValues) {
+		if (nullValues != null) {
+			for (String nullValue : nullValues) {
+				Objects.requireNonNull(nullValue);
+			}
+			this.nullValues = nullValues;
+		} else {
+			this.nullValues = Collections.emptyList();
+		}
 	}
 
 	/**
 	 * @return the string value that is considered as <code>null</code>, never returns <code>null</code>
 	 */
 	public String getNullValue() {
-		return nullValue;
+		if (nullValues.size() > 0) {
+			return nullValues.get(0);
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * @return list of string values that are considered as <code>null</code>, never returns <code>null</code>
+	 */
+	public List<String> getNullValues() {
+		return nullValues;
 	}
 
 	/**
@@ -1112,7 +1202,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		dataRecordMetadata.setQuotedStrings(quotedStrings);
 		dataRecordMetadata.setRecordSize(recordSize);
 		//nature of duplicate is preserve
-		dataRecordMetadata.setNature(getNature());
+		dataRecordMetadata.setNature(nature);
+		dataRecordMetadata.setEofAsDelimiter(eofAsDelimiter);
 
 		for (DataFieldMetadata field : fields) {
 			dataRecordMetadata.addField(field.duplicate());
@@ -1123,6 +1214,18 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		dataRecordMetadata.setTimeZoneStr(timeZoneStr);
 		dataRecordMetadata.setCollatorSensitivity(collatorSensitivity);
 		
+		if (keyFieldNames != null) {
+			List<String> keyFieldNamesCopy = new ArrayList<>(keyFieldNames.size());
+			keyFieldNamesCopy.addAll(keyFieldNames);
+			dataRecordMetadata.setKeyFieldNames(keyFieldNamesCopy);
+		}
+		
+		if (nullValues != null) {
+			List<String> nullValsCopy = new ArrayList<>(nullValues.size());
+			nullValsCopy.addAll(nullValues);
+			dataRecordMetadata.setNullValues(nullValsCopy);
+		}
+		
 		return dataRecordMetadata;
 	}
 
@@ -1132,11 +1235,12 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @param status
 	 * @return
 	 */
+	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		// verify count of fields
 		if (fields.size() == 0) {
 			status.add(new ConfigurationProblem("No field elements for '" + name + "' have been found!",
-					Severity.ERROR, null, Priority.NORMAL));
+					Severity.ERROR, this, Priority.NORMAL));
 		}
 		
 		// verify delimiters - field delimiters
@@ -1151,9 +1255,9 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		//verify job type - has to be same as job type of parent graph
 		TransformationGraph parentGraph = getGraph();
 		if (parentGraph != null) {
-			if (parentGraph.getJobType() == JobType.JOBFLOW && getNature() != DataRecordNature.TOKEN) {
+			if (parentGraph.getRuntimeJobType().isJobflow() && getNature() != DataRecordNature.TOKEN) {
 				status.add(new ConfigurationProblem("Invalid metadata '" + name + "'. Token metadata nature is required.",
-						Severity.ERROR, null, Priority.NORMAL));
+						Severity.ERROR, this, Priority.NORMAL));
 			}
 		}
 		
@@ -1181,7 +1285,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 			for (String keyFieldName : keyFieldNames) {
 				if (!fieldNames.contains(keyFieldName)) {
 					status.add(new ConfigurationProblem("Field with name '" + keyFieldName + "' that is listed in a record key " +
-							"does not exist", Severity.ERROR, null, Priority.NORMAL));
+							"does not exist", Severity.ERROR, this, Priority.NORMAL));
 				}
 			}
 		}
@@ -1199,7 +1303,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 			sName = field.getName();
 			if (setName.contains(sName)) {
 				status.add(new ConfigurationProblem("Field name '" + field.getName() + "' in the record element '"
-						+ name + "' is defined more than once!", Severity.ERROR, null, Priority.NORMAL));
+						+ name + "' is defined more than once!", Severity.ERROR, this, Priority.NORMAL));
 			} else {
 				setName.add(sName);
 			}
@@ -1245,7 +1349,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private void verifyFieldSize(DataFieldMetadata field, ConfigurationStatus status) {
 		if (field.getSize() <= 0) {
 			status.add(new ConfigurationProblem("Field size '" + field.getSize() + "' for the field '" + field.getName()
-					+ "' in the record element '" + name + "' has wrong number!", Severity.ERROR, null, Priority.NORMAL));
+					+ "' in the record element '" + name + "' has wrong number!", Severity.ERROR, this, Priority.NORMAL));
 		}
 	}
 	
@@ -1259,7 +1363,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		String[] fieldDelimiters = field.getDelimiters();
 		if (fieldDelimiters == null || fieldDelimiters.length == 0) {
 			status.add(new ConfigurationProblem("Field delimiter for the field '" + field.getName() +
-					"' in the record element '" + name + "' not found!", Severity.ERROR, null, Priority.NORMAL));
+					"' in the record element '" + name + "' not found!", Severity.ERROR, this, Priority.NORMAL));
 		}
 	}
 
@@ -1484,6 +1588,10 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		return hashCode;
 	}
 
+    public int hashCodeIdentity() {
+    	return super.hashCode();
+    }
+
 	@Override
 	public String toString() {
 		StringBuffer buffer = new StringBuffer();
@@ -1573,7 +1681,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	}
 	
 	/**
-	 * Sets metadadata nature which should correspond with graph job type, see {@link #checkConfig(ConfigurationStatus)}.
+	 * Sets metadata nature which should correspond with graph job type, see {@link #checkConfig(ConfigurationStatus)}.
 	 * Different implementations of DataRecord are used for various natures.<br>
 	 * Nature {@link JobType#ETL_GRAPH} is represented by {@link DataRecord}.<br>
 	 * Nature {@link JobType#JOBFLOW} is represented by {@link Token}.<br>
@@ -1591,15 +1699,44 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 */
 	public DataRecordNature getNature() {
 		if (getGraph() != null) {
-			return DataRecordNature.fromJobType(getGraph().getJobType());
+			return DataRecordNature.fromJobType(getGraph().getRuntimeJobType());
+		} else if (nature != null) {
+			return nature;
+		} else if (ContextProvider.getGraph() != null) {
+			return DataRecordNature.fromJobType(ContextProvider.getGraph().getRuntimeJobType());
 		} else {
-			return nature != null ? nature : DataRecordNature.DEFAULT;
+			return DataRecordNature.DEFAULT;
 		}
 	}
 	
 	/**
+	 * Sets the EOF-as-delimiter flag on last field of this record.
+	 * Null value means the flag is not specified, default (false) is used.
+	 *
+	 * @param eofAsDelimiter the new value of the flag
+	 */
+	public void setEofAsDelimiter(Boolean eofAsDelimiter) {
+		this.eofAsDelimiter = eofAsDelimiter;
+	}
+
+	/**
+	 * @return the value of the EOF-as-delimiter flag (can be null, if is not specified)
+	 */
+	public Boolean getEofAsDelimiter() {
+		return eofAsDelimiter;
+	}
+
+	/**
+	 * @return true if EOF should be considered as delimiter on last field; false otherwise
+	 */
+	public boolean isEofAsDelimiter() {
+		return eofAsDelimiter != null ? eofAsDelimiter : DEFAULT_EOF_AS_DELIMITER;
+	}
+
+	/**
 	 * @return the parent graph of this metadata or null if no parent graph is specified
 	 */
+	@Override
 	public TransformationGraph getGraph() {
 		return graph;
 	}
@@ -1608,6 +1745,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * Sets the parent graph of this metadata
 	 * @param graph the parent graph to set
 	 */
+	@Override
 	public void setGraph(TransformationGraph graph) {
 		this.graph = graph;
 	}
@@ -1735,6 +1873,91 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		
 		return recordMetadata;
 	}
+
+	///////////////////////////////////////////
+	// dummy implementation of IGraphElement //
+	///////////////////////////////////////////
 	
+	//will be extended in the future - for now only this simple implementation, which allows
+	//to pass metadata object to ConfigurationProblem, where IGraphElement is only possible
+	//source of the problem
+	
+	@Override
+	public void init() throws ComponentNotReadyException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void postExecute() throws ComponentNotReadyException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void commit() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void rollback() {
+		throw new UnsupportedOperationException();
+	}
+
+	@java.lang.SuppressWarnings("deprecation")
+	@Deprecated
+	@Override
+	public void reset() throws ComponentNotReadyException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void free() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean isChecked() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean isInitialized() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean firstRun() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public JobType getRuntimeJobType() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Logger getLog() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public PropertyRefResolver getPropertyRefResolver() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public GraphElementDescription getDescriptor() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void setDescriptor(GraphElementDescription descriptor) {
+		throw new UnsupportedOperationException();
+	}
+
 }
 

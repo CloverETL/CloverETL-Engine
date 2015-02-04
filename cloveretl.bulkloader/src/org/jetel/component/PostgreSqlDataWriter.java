@@ -282,11 +282,10 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	 * @throws IOException when error occured
 	 */
 	private void saveCommandToFile(File commandFile, String command) throws IOException {
-		FileWriter commandWriter = new FileWriter(commandFile);
-		printCommandToLog(command);
-		
-		commandWriter.write(command);
-		commandWriter.close();
+		try (FileWriter commandWriter = new FileWriter(commandFile)) {
+			printCommandToLog(command);
+			commandWriter.write(command);
+		}
 	}
 	
 	/**
@@ -631,11 +630,6 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		}
 		deleteTempFiles();
 		return status;
-	}
-
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
 	}
 
 	public void setCommandURL(String commandURL) {

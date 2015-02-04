@@ -1,11 +1,41 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="user" created="Tue Jun 11 11:29:13 CEST 2013" guiVersion="3.5.0.M1" id="1370960327382" licenseType="Commercial" modified="Thu Aug 01 13:44:15 CEST 2013" modifiedBy="user" name="setParameters" revision="1.19" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="user" created="Tue Jun 11 11:29:13 CEST 2013" guiVersion="3.5.0" id="1370960327382" licenseType="Commercial" modified="Tue Jan 14 16:35:13 CET 2014" modifiedBy="User" name="setParameters" revision="1.28" showComponentDetails="true">
 <Global>
+<GraphParameters/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="100" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="This is not an example or test." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="257" x="371" y="64">
-<attr name="text"><![CDATA[This graph has only one noble purpose - to set CONN_DIR to workspace.prm for the mongo example.]]></attr>
+<attr name="text"><![CDATA[This graph has only one noble purpose - to set CONN_DIR to workspace.prm for the mongo example and LIB_DIR hadoop examples.]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiName="JavaExecute" guiX="435" guiY="245" id="JAVA_EXECUTE" runnable="import org.jetel.component.BasicJavaRunnable;&#13;&#10;import java.io.IOException;&#13;&#10;import java.io.FileInputStream;&#13;&#10;import java.io.FileOutputStream;&#13;&#10;import java.util.Properties;&#13;&#10;import java.net.URL;&#13;&#10;&#13;&#10;public class SetParameters extends BasicJavaRunnable {&#13;&#10;&#13;&#10;&#9;@Override&#13;&#10;&#9;public void run() {&#13;&#10;&#9;&#9;Properties props = new Properties();&#13;&#10;&#9;&#9;&#9;&#9;&#13;&#10;&#9;&#9;try {&#13;&#10;&#9;&#9;&#9;URL prmFileURL = new URL(graph.getRuntimeContext().getContextURL(), &quot;workspace.prm&quot;);&#13;&#10;&#9;&#9;&#9;props.load(prmFileURL.openStream());&#13;&#10;&#9;&#9;&#9;&#13;&#10;&#9;&#9;&#9;props.setProperty(&quot;CONN_DIR&quot;, &quot;sandbox://cloveretl.test.scenarios/conn&quot;);&#13;&#10;&#9;&#9;&#9;&#13;&#10;&#9;&#9;&#9;props.store(prmFileURL.openConnection().getOutputStream(), null);&#13;&#10;&#9;&#9;} catch (Exception e) {&#13;&#10;&#9;&#9;&#9;e.printStackTrace();&#13;&#10;&#9;&#9;}&#13;&#10;&#9;}&#13;&#10;}" type="JAVA_EXECUTE"/>
+<Node enabled="enabled" guiName="JavaExecute" guiX="435" guiY="245" id="JAVA_EXECUTE" type="JAVA_EXECUTE">
+<attr name="runnable"><![CDATA[import org.jetel.component.BasicJavaRunnable;
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
+import java.net.URL;
+
+import org.jetel.util.file.FileUtils;
+
+public class SetParameters extends BasicJavaRunnable {
+
+	@Override
+	public void run() {
+		try {
+			// replace connection dir
+			String fileContents = FileUtils.getStringFromURL(graph.getRuntimeContext().getContextURL(), "workspace.prm", "UTF-8");
+			String newContents = fileContents.replaceAll("\\$\\{PROJECT\\}/conn", "sandbox://cloveretl.test.scenarios/conn");
+			newContents = newContents.replaceAll("\\$\\{PROJECT\\}/lib", "sandbox://cloveretl.test.scenarios/lib");
+
+			// write new params
+			URL prmFileURL = new URL(graph.getRuntimeContext().getContextURL(), "workspace.prm");
+			BufferedWriter writer =new BufferedWriter(new OutputStreamWriter(prmFileURL.openConnection().getOutputStream()));
+		    writer.write(newContents);
+		    writer.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}]]></attr>
+</Node>
 </Phase>
 </Graph>

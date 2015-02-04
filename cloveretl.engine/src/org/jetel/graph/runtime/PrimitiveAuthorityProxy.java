@@ -24,12 +24,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.channels.Channels;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -48,6 +50,8 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.Edge;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -58,8 +62,8 @@ import org.jetel.graph.runtime.jmx.TrackingEvent;
 import org.jetel.main.runGraph;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.FileConstrains;
-import org.jetel.util.bytes.SeekableByteChannel;
 import org.jetel.util.classloader.GreedyURLClassLoader;
+import org.jetel.util.classloader.MultiParentClassLoader;
 import org.jetel.util.file.FileUtils;
 
 /**
@@ -69,6 +73,12 @@ import org.jetel.util.file.FileUtils;
  * @created Jul 11, 2008
  */
 public class PrimitiveAuthorityProxy extends IAuthorityProxy {
+
+	/**
+	 * Auto-incremented number, which is used in {@link #getUniqueRunId()}
+	 * for generating unique run IDs. 
+	 */
+	private static long runIdSequence = 1;
 
 	/**
 	 * Suffix of temp files created by standalone engine
@@ -97,16 +107,21 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		sequence.free();
 	}
 	
-	private GraphRuntimeContext prepareRuntimeContext(GraphRuntimeContext givenRuntimeContext, long runId) {
+	protected GraphRuntimeContext prepareRuntimeContext(GraphRuntimeContext givenRuntimeContext, long runId) {
         GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
         runtimeContext.setRunId(runId);
+        runtimeContext.setParentRunId(givenRuntimeContext.getRunId());
         runtimeContext.setLogLevel(Level.ALL);
+        runtimeContext.setLogLocation(givenRuntimeContext.getLogLocation());
         if (runtimeContext.getLogLocation() != null) {
         	prepareLogger(runtimeContext);
         }
         runtimeContext.setAdditionalProperties(givenRuntimeContext.getAdditionalProperties());
         runtimeContext.setContextURL(givenRuntimeContext.getContextURL());
         runtimeContext.setDictionaryContent(givenRuntimeContext.getDictionaryContent());
+        runtimeContext.setRuntimeClassPath(givenRuntimeContext.getRuntimeClassPath());
+        runtimeContext.setCompileClassPath(givenRuntimeContext.getCompileClassPath());
+        runtimeContext.setJobUrl(givenRuntimeContext.getJobUrl());
         
         // debug mode has to be turned off, parallel edge debugging is not available for non-server graph processing 
         runtimeContext.setDebugMode(false);
@@ -201,7 +216,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		rr.startTime = new Date(startTime);
 		
 		try {
-            in = Channels.newInputStream(FileUtils.getReadableChannel(givenRuntimeContext.getContextURL(), graphFileName));
+            in = FileUtils.getInputStream(givenRuntimeContext.getContextURL(), graphFileName);
         } catch (IOException e) {
         	rr.endTime = new Date(System.currentTimeMillis());
         	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
@@ -211,7 +226,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
         	return rr;
         }
 		
-		GraphRuntimeContext runtimeContext = prepareRuntimeContext(givenRuntimeContext, rr.runId = getUniqueRunId(runId));
+		GraphRuntimeContext runtimeContext = prepareRuntimeContext(givenRuntimeContext, rr.runId = getUniqueRunId());
         runtimeContext.setUseJMX(givenRuntimeContext.useJMX());
         
         TransformationGraph graph = null;
@@ -246,16 +261,16 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		long startTime = System.currentTimeMillis();
 		rr.startTime = new Date(startTime);
 
-		GraphRuntimeContext runtimeContext = prepareRuntimeContext(givenRuntimeContext, rr.runId = getUniqueRunId(runId));
+		GraphRuntimeContext runtimeContext = prepareRuntimeContext(givenRuntimeContext, rr.runId = getUniqueRunId());
 
 		return executeGraphSync(rr, graph, runtimeContext, timeout);
 	}
 
-	private static long getUniqueRunId(long parentRunId) {
-		Random random = new Random();
-		long runId = Math.abs((random.nextLong() % 999));
-		return (runId != parentRunId) ? runId : runId + 1;
-		// TODO returned runId mustn't be unique
+	/**
+	 * @return unique long number, which can be used as run ID of newly executed graphs
+	 */
+	public static synchronized long getUniqueRunId() {
+		return runIdSequence++;
 	}
 	
 	/**
@@ -267,7 +282,8 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	private static void prepareLogger(GraphRuntimeContext runtimeContext) {
 		FileAppender logAppender = null;
 		try {
-			logAppender = new FileAppender(new PatternLayout("%d %-5p %-3X{runId} [%t] %m%n"), runtimeContext.getLogLocation());
+			String logLocation = FileUtils.getFile(ContextProvider.getContextURL(), runtimeContext.getLogLocation());
+			logAppender = new FileAppender(new PatternLayout("%d %-5p %-3X{runId} [%t] %m%n"), logLocation);
 			Filter f = new GraphLogFilter(runtimeContext.getRunId(), runtimeContext.getLogLevel());
 			logAppender.addFilter(f);
 			Logger.getRootLogger().addAppender(logAppender);
@@ -330,7 +346,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSandboxResourceInput(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public InputStream getSandboxResourceInput(String componentId, String storageCode, String path) {
+	public InputStream getSandboxResourceInput(String componentId, String storageCode, String path) throws IOException {
 		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
 	}
 
@@ -339,7 +355,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSandboxResourceOutput(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public OutputStream getSandboxResourceOutput(String componentId, String storageCode, String path, boolean append) {
+	public OutputStream getSandboxResourceOutput(String componentId, String storageCode, String path, boolean append) throws IOException {
 		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
 	}
 
@@ -401,14 +417,16 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 	@Override
 	public RunStatus executeGraph(String graphUrl, GraphRuntimeContext runtimeContext) {
-		throw new UnsupportedOperationException("This graph execution type is available only in CloverETL Server environment!");
+		throw new UnsupportedOperationException("Subgraph execution is available only in CloverETL Server environment!");
 	}
 
 	@Override
 	public File newTempFile(String label, String suffix, int allocationHint) throws TempFileCreationException {
-		
 		try {
-			return File.createTempFile(label, suffix == null ? CLOVER_TMP_FILE_SUFFIX : suffix);
+			label = decorateTempFileLabel(label);
+			File file = File.createTempFile(label, suffix == null ? CLOVER_TMP_FILE_SUFFIX : suffix);
+			logNewTempFile(file);
+			return file;
 		} catch (IOException e) {
 			throw new TempFileCreationException(e, label, allocationHint, null, TempSpace.ENGINE_DEFAULT);
 		}
@@ -416,26 +434,19 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 	@Override
 	public File newTempDir(String label, int allocationHint) throws TempFileCreationException {
-		
-		/*
-		 * TODO as soon as Java 1.7 will be required, use built-in facility.
-		 * Tracked under JIRA CLO-226 (https://bug.javlin.eu/browse/CLO-226)
-		 */
 		try {
-			File tmp = File.createTempFile(label, "");
-			if (!tmp.exists()) {
-				throw new IOException("Temporary file does no exist: " + tmp.getAbsolutePath());
-			}
-			if (!tmp.delete()) {
-				throw new IOException("Temporary directory could not be created.");
-			}
-			if (!tmp.mkdir()) {
-				throw new IOException("Temporary directory could not be created.");
-			}
+			label = decorateTempFileLabel(label);
+			File tmp = Files.createTempDirectory(label).toFile(); // CLO-226
+			logNewTempFile(tmp);
 			return tmp;
 		} catch (IOException e) {
 			throw new TempFileCreationException(e, label, allocationHint, null, TempSpace.ENGINE_DEFAULT);
 		}
+	}
+	
+	@Override
+	public boolean isProfilerResultsDataSourceSupported() {
+		return false;
 	}
 	
 	@Override
@@ -493,28 +504,33 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	}
 	
 	@Override
+	public ClassLoader createMultiParentClassLoader(ClassLoader... parents) {
+		return new MultiParentClassLoader(parents);
+	}
+	
+	@Override
 	public boolean isClusterEnabled() {
 		return false;
 	}
 
 	@Override
-	public OutputStream getSubGraphDataTarget(long subGraphRunId, int inputPortIndex) {
-		throw new UnsupportedOperationException("sub-graphs are not avaible in standalone engine");
+	public Edge getParentGraphSourceEdge(int inputPortIndex) {
+		throw new UnsupportedOperationException("subgraphs are not avaible in standalone engine");
 	}
 
 	@Override
-	public InputStream getSubGraphDataSource(long subGraphRunId, int outputPortIndex) {
-		throw new UnsupportedOperationException("sub-graphs are not avaible in standalone engine");
+	public Edge getParentGraphTargetEdge(int outputPortIndex) {
+		throw new UnsupportedOperationException("subgraphs are not avaible in standalone engine");
 	}
 
 	@Override
-	public InputStream getParentGraphDataSource(int inputPortIndex) {
-		throw new UnsupportedOperationException("sub-graphs are not avaible in standalone engine");
+	public Map<String, String> getAuthorityConfiguration() {
+		return Collections.emptyMap();
 	}
-
+	
 	@Override
-	public OutputStream getParentGraphDataTarget(int outputPortIndex) {
-		throw new UnsupportedOperationException("sub-graphs are not avaible in standalone engine");
+	public long getNextTokenIdFromParentJob() {
+		throw new UnsupportedOperationException("token ID sequence is not available for local execution");
 	}
 	
 }

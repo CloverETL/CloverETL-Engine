@@ -21,10 +21,13 @@ package org.jetel.component;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -61,6 +64,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.plugin.PluginLocation;
 import org.jetel.plugin.Plugins;
+import org.jetel.util.CompareUtils;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.PlatformUtils;
@@ -150,6 +154,12 @@ public class RunGraph extends Node{
 	private static final String XML_CLOVER_CMD_LINE = "cloverCmdLineArgs";
 	private static final String XML_IGNORE_GRAPH_FAIL = "ignoreGraphFail";
 	private static final String XML_PARAMS_TO_PASS = "paramsToPass";
+	/**
+	 * This is hidden component attribute, which can turn on basic validation of recursive graph execution (see CLO-4586)
+	 */
+	private static final String XML_RECURSION_DETECTION_ATTRIBUTE = "recursionDetection";
+
+	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
 
 	private final static String DEFAULT_JAVA_CMD_LINE = "java -cp";
 	private final static String DEFAULT_CLOVER_CMD_LINE = "";
@@ -190,9 +200,18 @@ public class RunGraph extends Node{
 	private boolean sameInstance;
 	
 	private boolean append;
+	private boolean mkDir;
 	private int exitValue;		
 	private String outputFileName;
 	private static Log logger = LogFactory.getLog(RunGraph.class);
+	
+	/** Context URL converted to local file system. Only for execution in different JVM. */
+	private String contextURL;
+	
+	/**
+	 * Should be basic validation of recursive graph execution performed ?
+	 */
+	private boolean recursionDetection = false;
 	
 	private void setCloverCmdLineArgs(String cloverCmdLineArgs) {
 		this.cloverCmdLineArgs = cloverCmdLineArgs;
@@ -226,9 +245,6 @@ public class RunGraph extends Node{
 				
 		this.append = append;
 		this.sameInstance = sameInst;
-		if (!this.sameInstance) {
-			this.classPath = System.getProperty("java.class.path");
-		}
 	}	
 	
 	private DataRecord initInRecord() {
@@ -391,6 +407,11 @@ public class RunGraph extends Node{
 	}
 	
 	private Result runSingleGraph(String graphName, DataRecord output, String cloverCommandLineArgs) throws IOException, InterruptedException {
+		if (recursionDetection
+				&& CompareUtils.equals(graphName, getGraph().getRuntimeContext().getJobUrl())) {
+			throw new JetelRuntimeException("Recursive graph execution detected (" + graphName + ").");
+		}
+
 		OutputRecordData outputRecordData = new OutputRecordData(output, graphName);
 		if (sameInstance) {			
 			logger.info("Running graph " + graphName + " in the same instance.");
@@ -427,8 +448,14 @@ public class RunGraph extends Node{
 		
 		if (!args.contains(runGraph.CONTEXT_URL_SWITCH) && getGraph().getRuntimeContext().getContextURL() != null) {
 			commandList.add(runGraph.CONTEXT_URL_SWITCH);
-			commandList.add(getGraph().getRuntimeContext().getContextURL().toString());
+			commandList.add(contextURL);
 		}
+		
+		if (!args.contains(runGraph.LOG4J_LOG_LEVEL_SWITCH) && getGraph().getRuntimeContext().getLogLevel() != null) {
+			commandList.add(runGraph.LOG4J_LOG_LEVEL_SWITCH);
+			commandList.add(getGraph().getRuntimeContext().getLogLevel().toString());
+		}
+
 		// TODO - hotfix - clover can't run two graphs simultaneously with enable edge debugging
 		// after resolve issue 1748 (http://home.javlinconsulting.cz/view.php?id=1748) next line should be removed
 		commandList.add(runGraph.NO_DEBUG_SWITCH);
@@ -495,11 +522,16 @@ public class RunGraph extends Node{
 		runtimeContext.setAdditionalProperties(extractNeededGraphProperties(this.getGraph().getGraphParameters().asProperties()));
 		runtimeContext.setContextURL(this.getGraph().getRuntimeContext().getContextURL());
 		runtimeContext.setLogLocation(outputFileName);
+		runtimeContext.setLogLevel(this.getGraph().getRuntimeContext().getLogLevel());
+		runtimeContext.setDebugMode(this.getGraph().getRuntimeContext().isDebugMode());
+		runtimeContext.setSkipCheckConfig(this.getGraph().getRuntimeContext().isSkipCheckConfig());
 		runtimeContext.setUseJMX(this.getGraph().getRuntimeContext().useJMX());
-		
+		runtimeContext.setRuntimeClassPath(this.getGraph().getRuntimeContext().getRuntimeClassPath());
+		runtimeContext.setCompileClassPath(this.getGraph().getRuntimeContext().getCompileClassPath());
+		runtimeContext.setJobUrl(graphFileName);
 		RunStatus rs = this.getGraph().getAuthorityProxy().executeGraphSync( graphFileName, runtimeContext, null);
 		
-		outputRecordData.setDescription(assembleDescription(rs));
+		outputRecordData.setDescription(rs.errException);
 		outputRecordData.setDuration(rs.duration);
 		outputRecordData.setGraphName(graphFileName);
 		outputRecordData.setMessage(rs.status.message());
@@ -513,24 +545,10 @@ public class RunGraph extends Node{
     		outputRecordData.setDescription("");
 		} else {
         	outputRecordData.setResult(Result.ERROR.equals(rs.status) ? "Error" : rs.status.message());
-        	outputRecordData.setDescription("Execution of graph '" + graphFileName + "' failed! " + assembleDescription(rs));
-            logError("Execution of graph '" + graphFileName + "' failed!", assembleException(rs));
+        	outputRecordData.setDescription("Execution of graph '" + graphFileName + "' failed! " + rs.errException);
+            logError("Execution of graph '" + graphFileName + "' failed!", new JetelRuntimeException(rs.errMessage));
 		}
 		return rs.status;
-	}
-
-	private String assembleDescription(RunStatus runStatus) {
-		String message = runStatus.errMessage;
-		String exception = runStatus.errException;
-		if (!StringUtils.isEmpty(message)) {
-			return message + (!StringUtils.isEmpty(exception) ? "\nInner exception: " + exception : "");
-		} else {
-			return (!StringUtils.isEmpty(exception)) ? "Inner exception: " + exception : "";
-		}
-	}
-
-	private Exception assembleException(RunStatus runStatus) {
-		return new JetelRuntimeException(assembleDescription(runStatus));
 	}
 
 	private void logError(String message, Throwable e) {
@@ -581,8 +599,38 @@ public class RunGraph extends Node{
         if (isInitialized()) return;
 		super.init();
 	
+		if (!this.sameInstance) {
+			//find all necessary jars - from system property java.class.path and from authority property engine.lib.dirs
+			Concatenate concat = new Concatenate(File.pathSeparator);
+			concat.append(System.getProperty("java.class.path"));
+			
+			String engineLibDirs = getAuthorityProxy().getAuthorityConfiguration().get("engine.lib.dirs");
+			if (!StringUtils.isEmpty(engineLibDirs)) {
+				for (String engineLibDir : engineLibDirs.split(",")) {
+					File root = new File(engineLibDir);
+					File[] jars = root.listFiles(new FileFilter() {
+						@Override
+						public boolean accept(File pathname) {
+							return pathname.getName().endsWith(".jar");
+						}
+					});
+					for (File jar : jars) {
+						concat.append(jar.getAbsolutePath());
+					}
+				}
+			}
+			this.classPath = concat.toString();
+			
+			//get contextURL - has to be converted to path to local file system 
+			try {
+				contextURL = FileUtils.convertUrlToFile(getGraph().getRuntimeContext().getContextURL()).getAbsolutePath();
+			} catch (MalformedURLException e) {
+				throw new ComponentNotReadyException("Context URL does not found.", e);
+			}
+		}
+		
 		ConfigurationStatus status = new ConfigurationStatus();
-		if (!checkMetadata(status) || !checkParams(status)) {
+		if (!checkMetadata(status)) {
 			throw new ComponentNotReadyException(this, status.getLast().getMessage());
 		}
 		
@@ -593,13 +641,6 @@ public class RunGraph extends Node{
 		outPortErr = getOutputPort(ERR_OUTPUT_PORT);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
-	@Override public String getType(){
-		return COMPONENT_TYPE;
-	}
-	
 	private boolean isPipelineMode() {
 		if (graphName != null) {
 			return true;
@@ -705,22 +746,6 @@ public class RunGraph extends Node{
         return true;
 	}
 	
-	private boolean checkParams(ConfigurationStatus status) {
-		if (!sameInstance && StringUtils.isEmpty(cloverCmdLineArgs) &&
-				(isPipelineMode() || getInputPort(INPUT_PORT) == null)) {
-        	ConfigurationProblem problem = new ConfigurationProblem("If the graph is " +
-        			"executed in separate instance of clover, supplying the command " +
-        			"line for clover is necessary (at least the -plugins argument)." +
-        			"Command line arguments can be supplied by cloverCmdLineArgs attribute" +
-        			"or by second field in input port (Supplying by field can be made only in in/out mode)." , 
-        			Severity.ERROR, this, Priority.NORMAL);
-        	status.add(problem);
-        	return false;
-        }
-		
-		return true;
-	}
-	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig()
 	 */
@@ -733,8 +758,14 @@ public class RunGraph extends Node{
 		}
 
 		checkMetadata(status);
-        checkParams(status);
        	
+		try {
+			contextURL = FileUtils.convertUrlToFile(getGraph().getRuntimeContext().getContextURL()).getAbsolutePath();
+		} catch (MalformedURLException e) {
+			status.add(new ConfigurationProblem("Context URL cannot be found.", e, Severity.ERROR, this, Priority.NORMAL, null));
+			return status;
+		}
+        
         try {
             init();
         } catch (ComponentNotReadyException e) {
@@ -787,10 +818,19 @@ public class RunGraph extends Node{
 		if (xattribs.exists(XML_IGNORE_GRAPH_FAIL)) {
 			runG.setIgnoreGraphFail(xattribs.getBoolean(XML_IGNORE_GRAPH_FAIL));
 		}
-									
+		if (xattribs.exists(XML_RECURSION_DETECTION_ATTRIBUTE)) {
+			runG.setRecursionDetection(xattribs.getBoolean(XML_RECURSION_DETECTION_ATTRIBUTE));
+		}
+
+		runG.setMkDir(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE, false));
+
 		return runG;
 	}
 	
+	public void setRecursionDetection(boolean recursionDetection) {
+		this.recursionDetection = recursionDetection;
+	}
+
 	/**
 	 * Sets output file 
 	 * 
@@ -804,6 +844,10 @@ public class RunGraph extends Node{
 		this.graphName = graphName;
 	}
 
+	private void setMkDir(boolean mkDir) {
+		this.mkDir = mkDir;
+	}
+
 	/**
 	 * Prepares file for log output of executed graph.
 	 * @throws ComponentNotReadyException
@@ -811,7 +855,12 @@ public class RunGraph extends Node{
 	private void initGraphOutputFile() throws ComponentNotReadyException {
 		if (outputFileName != null){
 			try {
-				File outFile = new File(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), outputFileName));
+				URL contextURL = getGraph().getRuntimeContext().getContextURL();
+				// CLO-1085
+				if (mkDir) {
+					FileUtils.createParentDirs(contextURL, outputFileName);
+				}
+				File outFile = FileUtils.getJavaFile(contextURL, outputFileName);
 				outFile.createNewFile();
 				outputFile = new FileWriter(outFile, append);
 			} catch (IOException ex) {

@@ -42,6 +42,11 @@ public class ComponentNotReadyException extends Exception {
 	  super(message);
   }
   
+  public ComponentNotReadyException(String message, String attributeName){
+	  super(message);
+	  this.attributeName = attributeName;
+  }
+  
   public ComponentNotReadyException(Throwable ex){
       super(ex);
   }
@@ -58,6 +63,12 @@ public class ComponentNotReadyException extends Exception {
   public ComponentNotReadyException(IGraphElement element,String message,Throwable ex){
       super(message,ex);
       this.graphElement=element;
+  }
+  
+  public ComponentNotReadyException(IGraphElement element,String message,Throwable ex, String attributeName){
+      super(message,ex);
+      this.graphElement = element;
+      this.attributeName = attributeName;
   }
   
   public ComponentNotReadyException(IGraphElement element,String message){

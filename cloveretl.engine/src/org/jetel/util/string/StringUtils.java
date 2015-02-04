@@ -58,7 +58,7 @@ public class StringUtils {
 	// quoting characters
 	public final static char QUOTE_CHAR = '\'';
 	public final static char DOUBLE_QUOTE_CHAR = '"';
-	public final static String ILLICIT_CHAR_REPLACEMENT = "_";
+	public final static String ILLICIT_CHAR_REPLACEMENT = "_"; //$NON-NLS-1$
 
 	public final static char DECIMAL_POINT = '.';
 	public final static char EXPONENT_SYMBOL = 'e';
@@ -72,19 +72,20 @@ public class StringUtils {
 
 	private final static int SEQUENTIAL_TRANLATE_LENGTH = 16;
 
-    private static final String HEX_STRING_ENCODING = "ISO-8859-1";
-    private static final String HEX_STRING_LINE_SEPARATOR = System.getProperty("line.separator");
+    private static final String HEX_STRING_ENCODING = "ISO-8859-1"; //$NON-NLS-1$
+    private static final String HEX_STRING_LINE_SEPARATOR = System.getProperty("line.separator"); //$NON-NLS-1$
     private static final int HEX_STRING_BYTES_PER_LINE = 16;
 
     private static Pattern delimiterPattern;
 	
-	public final static String OBJECT_NAME_PATTERN = "[_A-Za-z]+[_A-Za-z0-9]*";
+	public final static String OBJECT_NAME_PATTERN = "[_A-Za-z]+[_A-Za-z0-9]*"; //$NON-NLS-1$
+	public final static String GRAPH_NAME_PATTERN = "[^\\\\]+"; //$NON-NLS-1$
 	
-	private final static String INVALID_CHARACTER_CLASS = "[^_A-Za-z0-9]";
-	private final static Pattern INVALID_CHAR = Pattern.compile(INVALID_CHARACTER_CLASS + "{1}");
-	private final static Pattern LEADING_INVALID_SUBSTRING = Pattern.compile("^" + INVALID_CHARACTER_CLASS + "+");
-	private final static Pattern TRAILING_INVALID_SUBSTRING = Pattern.compile(INVALID_CHARACTER_CLASS + "+$");
-	private final static Pattern INVALID_SUBSTRING = Pattern.compile(INVALID_CHARACTER_CLASS + "+");
+	private final static String INVALID_CHARACTER_CLASS = "[^_A-Za-z0-9]"; //$NON-NLS-1$
+	private final static Pattern INVALID_CHAR = Pattern.compile(INVALID_CHARACTER_CLASS + "{1}"); //$NON-NLS-1$
+	private final static Pattern LEADING_INVALID_SUBSTRING = Pattern.compile("^" + INVALID_CHARACTER_CLASS + "+");  //$NON-NLS-1$//$NON-NLS-2$
+	private final static Pattern TRAILING_INVALID_SUBSTRING = Pattern.compile(INVALID_CHARACTER_CLASS + "+$"); //$NON-NLS-1$
+	private final static Pattern INVALID_SUBSTRING = Pattern.compile(INVALID_CHARACTER_CLASS + "+"); //$NON-NLS-1$
 	
 	private static final int MAX_OBJECT_NAME_LENGTH = 250;
 	
@@ -211,6 +212,83 @@ public class StringUtils {
                 stringBuilder.append(!Character.isWhitespace(currentChar) ? currentChar : ' ');
             }
 
+            stringBuilder.append(HEX_STRING_LINE_SEPARATOR);
+        }
+
+        return stringBuilder.toString();
+    }
+    
+    /**
+	 * Converts a string into its HEX representation (that can be used for display).
+	 *
+	 * @param string the string to be converted
+	 * @param charsetName 
+	 * @return the string in HEX mode
+	 *
+	 * @throws NullPointerException if the string is <code>null</code>
+	 * @throws IllegalArgumentException if charsetName is unsupported
+	 *
+	 * @since 17th October 2013
+	 */
+    public static String stringToHexString(String string, String charsetName) {
+        if (string == null) {
+            throw new NullPointerException("string");
+        }
+
+        StringBuilder stringBuilder = new StringBuilder();
+        byte[] stringBytes = null;
+        
+        try {
+            stringBytes = string.getBytes(charsetName);
+        } catch (UnsupportedEncodingException exception) {
+        	throw new IllegalArgumentException("Unsupported charsetName " + charsetName);
+        }
+
+        int lineSpacesForNextRow = 0;//count of spaces added to beginning of the row (if previous char is greater than one byte)
+        int stringPosition = 0;//current absolute position within given string parameter
+        for (int i = 0; i < stringBytes.length; i += HEX_STRING_BYTES_PER_LINE) {
+            stringBuilder.append(String.format("%1$08X:  ", i));
+
+            int lineLength = Math.min(HEX_STRING_BYTES_PER_LINE, stringBytes.length - i);
+
+            for (int j = 0; j < lineLength; j++) {
+                stringBuilder.append(String.format("%1$02X ", stringBytes[i + j]));
+            }
+
+            for (int j = lineLength; j < HEX_STRING_BYTES_PER_LINE; j++) {
+                stringBuilder.append("   ");
+            }
+
+            stringBuilder.append(' ');
+            
+            int j = lineSpacesForNextRow;
+            if(lineSpacesForNextRow>0) {//add spaces from previous row
+            	for(int l=0; l<lineSpacesForNextRow;l++) {
+            		stringBuilder.append(' ');
+            	}
+            	lineSpacesForNextRow = 0;
+            }
+            byte[] charBytes = null;
+            while(j<lineLength && (stringPosition<string.length())) {
+            	String currentCharacter = String.valueOf(string.charAt(stringPosition++));
+            	stringBuilder.append(!Character.isWhitespace(currentCharacter.charAt(0)) ? currentCharacter : ' ');
+            	try {
+            		charBytes = currentCharacter.getBytes(charsetName);
+            		j++;
+            		if(charBytes.length>1) {
+            			for(int k=0; k<charBytes.length-1; k++) {
+            				if(j<lineLength) {
+            					stringBuilder.append(' ');
+            				} else {
+            					lineSpacesForNextRow++;
+            				}
+            				j++;
+            			}
+            		}
+	            } catch (UnsupportedEncodingException exception) {
+	            	throw new IllegalArgumentException("Unsupported charsetName " + charsetName);
+	            }
+            }
             stringBuilder.append(HEX_STRING_LINE_SEPARATOR);
         }
 
@@ -762,16 +840,7 @@ public class StringUtils {
 	}
 	
 	
-	/**
-	 * Converts textual representation of control characters into control characters<br>
-	 * Note: This code handles only \n, \r , \t , \f, \" ,\', \`, \\ special chars
-	 * 
-	 * @param controlString
-	 *            Description of the Parameter
-	 * @return String with control characters
-	 * @since July 25, 2002
-	 */
-	public static String stringToSpecChar(CharSequence controlString) {
+	private static String stringToSpecChar(CharSequence controlString, boolean lenient) {
 		if (controlString == null) {
 			return null;
 		}
@@ -811,22 +880,37 @@ public class StringUtils {
 					copy.append('\b');
 					break;
 				case 'u':	// '\u003B' will be converted to ';'
-					if (i + 5 > controlString.length()) {
-						throw new IllegalArgumentException("Invalid unicode character");
-					}
-					String hex = controlString.subSequence(i + 1, i + 5).toString();
-					char[] chars;
-					try {
-						chars = Character.toChars(Integer.parseInt(hex, 16));
-						copy.append(chars);
-						i += 4;
-					} catch (NumberFormatException e) {
-						throw new IllegalArgumentException("Invalid unicode character \\u" + hex);
+					if (i + 4 < controlString.length()) {
+						String hex = controlString.subSequence(i + 1, i + 5).toString();
+						char[] chars;
+						try {
+							chars = Character.toChars(Integer.parseInt(hex, 16));
+							copy.append(chars);
+							i += 4;
+						} catch (NumberFormatException e) {
+							if (lenient) {
+								copy.append('\\');
+								copy.append('u');
+							} else {
+								throw new IllegalArgumentException("Invalid unicode character \\u" + hex);
+							}
+						}
+					} else {
+						if (lenient) {
+							copy.append('\\');
+							copy.append('u');
+						} else {
+							throw new IllegalArgumentException("Invalid unicode character");
+						}
 					}
 					break;
 				default:
-					copy.append('\\');
-					copy.append(character);
+					if (lenient) {
+						copy.append('\\');
+						copy.append(character);
+					} else {
+						throw new IllegalArgumentException("Invalid escape sequence: \\" + character);
+					}
 					break;
 				}
 				isBackslash = false;
@@ -838,13 +922,49 @@ public class StringUtils {
 				}
 			}
 		}
+		if (isBackslash) {
+			if (lenient) {
+				copy.append('\\');
+			} else {
+				throw new IllegalArgumentException("Invalid escape sequence: \\");
+			}
+		}
 		return copy.toString();
+	}
+
+	/**
+	 * Converts textual representation of control characters into control characters<br>
+	 * Note: This code handles only \n, \r , \t , \f, \" ,\', \`, \\ special chars
+	 * 
+	 * @param controlString
+	 *            Description of the Parameter
+	 * @return String with control characters
+	 * @since July 25, 2002
+	 */
+	public static String stringToSpecChar(CharSequence controlString) {
+		return stringToSpecChar(controlString, true);
+	}
+
+	/**
+	 * Converts textual representation of control characters into control characters<br>
+	 * Note: This code handles only \n, \r , \t , \f, \" ,\', \`, \\ special chars
+	 * 
+	 * @param controlString
+	 *            Description of the Parameter
+	 * @return String with control characters
+	 * 
+	 * @throws IllegalArgumentException if an invalid escape sequence is encountered
+	 * 
+	 * @since July 25, 2002
+	 */
+	public static String stringToSpecCharStrict(CharSequence controlString) {
+		return stringToSpecChar(controlString, false);
 	}
 
 	/**
 	 * Formats string from specified messages and their lengths.<br>
 	 * Negative (&lt;0) length means justify to the left, positive (&gt;0) to the right<br>
-	 * If message is longer than specified size, it is trimmed; if shorter, it is padded with blanks.
+	 * If message is longer than specified size, it is trimmed; if shorter, it is padded with specified fill char.
 	 * 
 	 * @param messages
 	 *            array of objects with toString() implemented methods
@@ -852,7 +972,7 @@ public class StringUtils {
 	 *            array of desired lengths (+-) for every message specified
 	 * @return Formatted string
 	 */
-	public static String formatString(Object[] messages, int[] sizes) {
+	public static String formatString(Object[] messages, int[] sizes, char fillchar) {
 		int formatSize;
 		String message;
 		StringBuilder strBuff = new StringBuilder(100);
@@ -861,22 +981,37 @@ public class StringUtils {
 			// left or right justified ?
 			if (sizes[i] < 0) {
 				formatSize = sizes[i] * (-1);
-				fillString(strBuff, message, 0, formatSize);
+				fillString(strBuff, message, 0, formatSize,fillchar);
 			} else {
 				formatSize = sizes[i];
 				if (message.length() < formatSize) {
 					fillBlank(strBuff, formatSize - message.length());
-					fillString(strBuff, message, 0, message.length());
+					fillString(strBuff, message, 0, message.length(),fillchar);
 				} else {
-					fillString(strBuff, message, 0, formatSize);
+					fillString(strBuff, message, 0, formatSize,fillchar);
 				}
 			}
 		}
 		return strBuff.toString();
 	}
+	
+	/**
+	 * Like formatString() but pads with blanks
+	 * 
+	 * @param messages
+	 * @param sizes
+	 * @return
+	 */
+	
+	public static String formatString(Object[] messages, int[] sizes){
+		return formatString(messages,sizes,' ');
+	}
+	
+	
 
 	/**
-	 * Description of the Method
+	 * Fills the provided buffer with source string and pads with specified fill character up to
+	 * specified length
 	 * 
 	 * @param strBuf
 	 *            Description of the Parameter
@@ -887,16 +1022,21 @@ public class StringUtils {
 	 * @param length
 	 *            Description of the Parameter
 	 */
-	private static void fillString(StringBuilder strBuff, String source, int start, int length) {
+	private static void fillString(StringBuilder strBuff, String source, int start, int length,char fillchar) {
 		int srcLength = source.length();
 		for (int i = start; i < start + length; i++) {
 			if (i < srcLength) {
 				strBuff.append(source.charAt(i));
 			} else {
-				strBuff.append(' ');
+				strBuff.append(fillchar);
 			}
 		}
 	}
+	
+	private static void fillString(StringBuilder strBuff, String source, int start, int length) {
+		fillString(strBuff,source,start,length,' ');
+	}
+	
 
 	/**
 	 * Description of the Method
@@ -939,7 +1079,10 @@ public class StringUtils {
 	 * @return <code>true</code> if name is a valid graph name, <code>false</code> otherwise.
 	 */
 	public static boolean isValidGraphName(CharSequence name) {
-		return (name != null);
+		if (name == null) {
+			return false;
+		}
+		return name.toString().matches(GRAPH_NAME_PATTERN);
 	}
 	
 	/**
@@ -1420,7 +1563,10 @@ public class StringUtils {
 	 * 
 	 * @param data
 	 * @return true if parameter contains space characters only
+	 * @deprecated Does not recognize ASCII control (Unicode C0 control) characters, such as tab (09), CR (13), LF (10) and others to be blank.
+	 * Use {@link UnicodeBlanks#isBlank(CharSequence)} instead.
 	 */
+	@Deprecated
 	public static boolean isBlank(CharBuffer data) {
 		data.mark();
 		for (int i = 0; i < data.length(); i++) {
@@ -1438,7 +1584,10 @@ public class StringUtils {
 	 * 
 	 * @param data
 	 * @return true if parameter contains space characters only
+	 * @deprecated Does not recognize ASCII control (Unicode C0 control) characters, such as tab (09), CR (13), LF (10) to be blank.
+	 * Use {@link UnicodeBlanks#isBlank(CharSequence)} instead.
 	 */
+	@Deprecated
 	public static boolean isBlank(CharSequence data) {
 		if (data == null) {
 			return true;
@@ -1491,7 +1640,28 @@ public class StringUtils {
 		if (str == null){
 			return null;
 		}
-		return str.replaceAll("[^\\p{Print}]+", "");
+		
+		// CLO-1814, see comments on the issue
+		StringBuilder sb = new StringBuilder(str.length());
+		for (int i = 0; i < str.length(); i++) {
+			int codePoint = str.codePointAt(i);
+			switch (Character.getType(codePoint))
+		    {
+		        case Character.CONTROL:     // \p{Cc}
+		        case Character.FORMAT:      // \p{Cf}
+		        case Character.PRIVATE_USE: // \p{Co}
+		        case Character.SURROGATE:   // \p{Cs}
+		        case Character.UNASSIGNED:  // \p{Cn}
+		            break; // skip
+		        default:
+		            sb.appendCodePoint(codePoint);
+		            break;
+		    }
+		}
+		
+		return sb.toString();
+		// also removes low-surrogates
+//		return str.replaceAll("[\\p{C}]", ""); // CLO-1814 - previously "[^\\p{Print}]+"
 	}
 	
 	/**
@@ -1803,11 +1973,14 @@ public class StringUtils {
 	 * @return
 	 */
 	public static boolean isNumber(CharSequence str) {
-		if (str == null || str.length() == 0) {
+		if (isEmpty(str)) {
 			return false;
 		}
 		int start = 0;
 		if (str.charAt(0) == '-') {
+			if (str.length() == 1) { // CLO-3856
+				return false;
+			}
 			start = 1;
 		}
 		boolean decimalPiontIndex = false;
@@ -1866,6 +2039,20 @@ public class StringUtils {
 		return str.replaceAll("[^\\p{ASCII}]+", "");
 	}
 
+	/**
+	 * Replace all new line combinations like \r\n, \n and \r with the given replacement.
+	 */
+	public static String removeNewLineChars(String str, String replacement) {
+		if (str != null) {
+			if (replacement == null) {
+				replacement = "";
+			}
+			return str.replaceAll("\\r\\n|\\r|\\n", replacement);
+		} else {
+			return null;
+		}
+	}
+	
 	/**
 	 * This method copies substring of source to target.
 	 * 
@@ -2131,7 +2318,7 @@ public class StringUtils {
 		}
 		
 		
-		final Comparator comparator =new  Comparator(){
+		final Comparator<Object> comparator = new Comparator<Object>(){
 
 			@Override
 			public int compare(Object o1, Object o2) {
@@ -2339,6 +2526,8 @@ public class StringUtils {
 	/**
 	 * @param c tested character
 	 * @return is the given character printable?
+	 * @deprecated This function wrongly marks many characters (e.g. U+2144) as non-printable
+	 * See {@link UnicodeBlanks}.
 	 */
 	public static boolean isPrintableChar(char c) {
         Character.UnicodeBlock block = Character.UnicodeBlock.of( c );
@@ -2579,6 +2768,27 @@ public class StringUtils {
 		}
 	}
 	
+	private static final <E> String toStringInternalList(List<E> list,String format) {
+        Iterator<E> i = list.iterator();
+		if (! i.hasNext())
+		    return "[]";
+
+		StringBuilder sb = new StringBuilder();
+		sb.append('[');
+		for (;;) {
+		    E e = i.next();
+		    if (e instanceof byte[]) {
+		    	sb.append(toStringInternalBytes((byte[]) e));
+		    } else {
+		    	sb.append(e == list ? "(this Collection)" : String.format(format, e));
+		    }
+		    if (! i.hasNext()) {
+		    	return sb.append(']').toString();
+		    }
+		    sb.append(", ");
+		}
+	}
+	
 	private static final <K, V> String toStringInternalMap(Map<K, V> map) {
 		Iterator<Entry<K,V>> i = map.entrySet().iterator();
 		if (! i.hasNext())
@@ -2600,6 +2810,34 @@ public class StringUtils {
 		    	sb.append(toStringInternalBytes((byte[]) value));
 		    } else {
 			    sb.append(value == map ? "(this Map)" : value);
+		    }
+		    if (! i.hasNext())
+			return sb.append('}').toString();
+		    sb.append(", ");
+		}
+	}
+	
+	private static final <K, V> String toStringInternalMap(Map<K, V> map, String format) {
+		Iterator<Entry<K,V>> i = map.entrySet().iterator();
+		if (! i.hasNext())
+		    return "{}";
+
+		StringBuilder sb = new StringBuilder();
+		sb.append('{');
+		for (;;) {
+		    Entry<K,V> e = i.next();
+		    K key = e.getKey();
+		    V value = e.getValue();
+		    if (key instanceof byte[]) {
+		    	sb.append(toStringInternalBytes((byte[]) key));
+		    } else {
+			    sb.append(key   == map ? "(this Map)" : key);
+		    }
+		    sb.append('=');
+		    if (value instanceof byte[]) {
+		    	sb.append(toStringInternalBytes((byte[]) value));
+		    } else {
+			    sb.append(value == map ? "(this Map)" : String.format(format, value));
 		    }
 		    if (! i.hasNext())
 			return sb.append('}').toString();
@@ -2632,6 +2870,22 @@ public class StringUtils {
 			return toStringInternalMap((Map<?, ?>) o);
 		}
 		return o.toString();
+	}
+	
+	public static String toOutputStringCTL(Object o, String formatStr) {
+		if (o == null) {
+			return "null";
+		}
+		if (o instanceof byte[]) {
+			return toStringInternalBytes((byte[]) o);
+		}
+		if (o instanceof List) {
+			return toStringInternalList((List<?>) o,formatStr);
+		}
+		if (o instanceof Map) {
+			return toStringInternalMap((Map<?, ?>) o, formatStr);
+		}
+		return String.format(formatStr, o);
 	}
 	
 	/**

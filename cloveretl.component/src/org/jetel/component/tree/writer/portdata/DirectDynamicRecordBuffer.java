@@ -84,7 +84,7 @@ public class DirectDynamicRecordBuffer {
 	
 	public IndexKey writeRaw(DataRecord record) throws IOException {
         try {
-            record.serialize(recordBuffer);
+            record.serializeUnitary(recordBuffer);
         } catch (BufferOverflowException ex) {
             throw new IOException("Internal buffer is not big enough to accomodate data record ! (See Record.RECORD_LIMIT_SIZE parameter)");
         }
@@ -107,7 +107,7 @@ public class DirectDynamicRecordBuffer {
 
 	public void write(DataRecord record) throws IOException {
 		try {
-            record.serialize(recordBuffer);
+            record.serializeUnitary(recordBuffer);
         } catch (BufferOverflowException ex) {
             throw new IOException("Internal buffer is not big enough to accomodate data record ! (See RECORD_LIMIT_SIZE parameter)");
         }
@@ -144,7 +144,7 @@ public class DirectDynamicRecordBuffer {
 				}
 			}
 
-			record.deserialize(dataBuffer);
+			record.deserializeUnitary(dataBuffer);
 
 			readRecordCount++;
 

@@ -32,6 +32,7 @@ import java.nio.charset.UnsupportedCharsetException;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.Defaults.DataFormatter;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -113,7 +114,11 @@ public class DelimitedDataFormatter extends AbstractFormatter {
     @Override
 	public void setDataTarget(Object out) {
         // close previous output
-        close();
+        try {
+			close();
+		} catch (IOException e) {
+			throw new JetelRuntimeException(e);
+		}
         
         // create buffered input stream reader
         if (out == null) {
@@ -130,22 +135,22 @@ public class DelimitedDataFormatter extends AbstractFormatter {
     
 	/**
 	 *  Description of the Method
+	 * @throws IOException 
 	 *
 	 * @since    March 28, 2002
 	 */
 	@Override
-	public void close() {
+	public void close() throws IOException {
 		if (writer == null || !writer.isOpen()) {
 			return;
 		}
 
 		try{
 			flush();
+		} finally {
 			writer.close();
-		}catch(IOException ex){
-			ex.printStackTrace();
+			writer = null;
 		}
-		writer = null;
 	}
 
 	@Override

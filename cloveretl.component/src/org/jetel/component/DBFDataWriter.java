@@ -130,6 +130,8 @@ public class DBFDataWriter extends Node {
 	private static final String XML_PARTITION_OUTFIELDS_ATTRIBUTE = "partitionOutFields";
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 	private static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
+	private static final String XML_SORTED_INPUT_ATTRIBUTE = "sortedInput";
+	private static final String XML_CREATE_EMPTY_FILES_ATTRIBUTE = "createEmptyFiles";
 	
 	private static final byte[] TYPES = new byte[] {0x02, 0x03, 0x30, 0x31, 0x32, 0x43, (byte) 0xFB};
 
@@ -151,6 +153,8 @@ public class DBFDataWriter extends Node {
 	private String attrPartitionOutFields;
 	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBER_FILE_TAG;
 	private String partitionUnassignedFileName;
+	private boolean sortedInput = false;
+	private boolean createEmptyFiles = true;
 
 	private DBFDataFormatterProvider formatterProvider;
 	private MultiFileWriter writer;
@@ -189,14 +193,6 @@ public class DBFDataWriter extends Node {
 		this.appendData = appendData;
 		this.charsetName = charset;
 		throw new UnsupportedOperationException("Can't work with WritableByteChannel !");
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
 	}
 
 	@Override
@@ -281,12 +277,11 @@ public class DBFDataWriter extends Node {
 		CharsetEncoder encoder = Charset.forName(charsetName).newEncoder();
 		if (encoder.maxBytesPerChar() != 1) {
 			status.add(new ConfigurationProblem("Invalid charset used. 8bit fixed-width encoding needs to be used.", 
-					Severity.ERROR, this, Priority.NORMAL));
+					Severity.ERROR, this, Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
 		}
 		
         try {
-        	FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, 
-        			fileURL, mkDir);
+        	FileUtils.canWrite(getContextURL(), fileURL, mkDir);
         } catch (ComponentNotReadyException e) {
             status.add(e,ConfigurationStatus.Severity.ERROR,this,
             		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
@@ -340,7 +335,7 @@ public class DBFDataWriter extends Node {
 
 		// based on file mask, create/open output file
 		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatterProvider, graph != null ? graph.getRuntimeContext().getContextURL() : null, fileURL);
+	        writer = new MultiFileWriter(formatterProvider, getContextURL(), fileURL);
 		} else {
 			if (writableByteChannel == null) {
 		        writableByteChannel =  new SystemOutByteChannel();
@@ -353,11 +348,13 @@ public class DBFDataWriter extends Node {
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
         writer.setDictionary(graph != null ? graph.getDictionary() : null);
+        writer.setCharset(charsetName);
         if (attrPartitionKey != null) {
             writer.setLookupTable(lookupTable);
             writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
             writer.setPartitionFileTag(partitionFileTagType);
             writer.setPartitionUnassignedFileName(partitionUnassignedFileName);
+            writer.setSortedInput(sortedInput);
         	if (attrPartitionOutFields != null) {
         		writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
         	}
@@ -371,6 +368,7 @@ public class DBFDataWriter extends Node {
         
         writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
         writer.setMkDir(mkDir);
+		writer.setCreateEmptyFiles(createEmptyFiles);
 	}
 
 	/**
@@ -389,6 +387,11 @@ public class DBFDataWriter extends Node {
 		if (!lookupTable.isInitialized()) {
 			lookupTable.init();
 		}
+	}
+
+	@Override
+	public String[] getUsedUrls() {
+		return new String[] { fileURL };
 	}
 
 	/* (non-Javadoc)
@@ -432,6 +435,12 @@ public class DBFDataWriter extends Node {
         }
 		if(xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
 			aDataWriter.setPartitionUnassignedFileName(xattribs.getStringEx(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE, RefResFlag.URL));
+        }
+		if(xattribs.exists(XML_SORTED_INPUT_ATTRIBUTE)) {
+			aDataWriter.setSortedInput(xattribs.getBoolean(XML_SORTED_INPUT_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_CREATE_EMPTY_FILES_ATTRIBUTE)) {
+        	aDataWriter.setCreateEmptyFiles(xattribs.getBoolean(XML_CREATE_EMPTY_FILES_ATTRIBUTE));
         }
 		
 		return aDataWriter;
@@ -562,4 +571,23 @@ public class DBFDataWriter extends Node {
     public void setPartitionUnassignedFileName(String partitionUnassignedFileName) {
     	this.partitionUnassignedFileName = partitionUnassignedFileName;
 	}
+
+	/**
+	 * @return the sortedInput
+	 */
+	public boolean isSortedInput() {
+		return sortedInput;
+	}
+
+	/**
+	 * @param sortedInput the sortedInput to set
+	 */
+	public void setSortedInput(boolean sortedInput) {
+		this.sortedInput = sortedInput;
+	}
+
+	private void setCreateEmptyFiles(boolean createEmptyFiles) {
+		this.createEmptyFiles = createEmptyFiles;
+	}
+    
 }

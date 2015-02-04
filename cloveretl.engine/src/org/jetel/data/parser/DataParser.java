@@ -26,7 +26,6 @@ import java.nio.CharBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 
@@ -42,6 +41,8 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.bytes.ByteCharBuffer;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.QuotingDecoder;
@@ -134,7 +135,6 @@ public class DataParser extends AbstractTextParser {
 	
 	public DataParser(TextParserConfiguration cfg){
 		super(cfg);
-		decoder = Charset.forName(cfg.getCharset()).newDecoder();
 		reader = null;
 		exceptionHandler = cfg.getExceptionHandler();
 		qDecoder.setQuoteChar(getQuoteChar());
@@ -165,15 +165,7 @@ public class DataParser extends AbstractTextParser {
 		DataRecord record = DataRecordFactory.newRecord(cfg.getMetadata());
 		record.init();
 
-		record = parseNext(record);
-        if(exceptionHandler != null ) {  //use handler only if configured
-            while(exceptionHandler.isExceptionThrowed()) {
-            	exceptionHandler.setRawRecord(getLastRawRecord());
-                exceptionHandler.handleException();
-                record = parseNext(record);
-            }
-        }
-		return record;
+		return getNext(record);
 	}
 
 	/**
@@ -182,9 +174,12 @@ public class DataParser extends AbstractTextParser {
 	@Override
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		record = parseNext(record);
+		
         if(exceptionHandler != null ) {  //use handler only if configured
             while(exceptionHandler.isExceptionThrowed()) {
-            	exceptionHandler.setRawRecord(getLastRawRecord());
+            	if (exceptionHandler.getRecordNumber() > -1) {
+            		exceptionHandler.setRawRecord(getLastRawRecord());
+            	}
                 exceptionHandler.handleException();
                 record = parseNext(record);
             }
@@ -204,7 +199,7 @@ public class DataParser extends AbstractTextParser {
 		fieldBuffer = new StringBuilder(Defaults.Record.FIELD_INITIAL_SIZE);
 		recordBuffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 		tempReadBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		numFields = cfg.getMetadata().getNumFields();
+		numFields = getNumFields();
 		isAutoFilling = new boolean[numFields];
 //		isSkipBlanks = new boolean[numFields];
 		isSkipLeadingBlanks = new boolean[numFields];
@@ -268,6 +263,9 @@ public class DataParser extends AbstractTextParser {
 		
 		metadataFields = cfg.getMetadata().getFields();
 		tryToFindLongerDelimiter = cfg.isTryToMatchLongerDelimiter();
+		
+		//create charset decoder
+		decoder = createCharsetDecoder();
 	}
 
     @Override
@@ -363,7 +361,7 @@ public class DataParser extends AbstractTextParser {
 	}
 
 	private DataRecord parseNext(DataRecord record) {
-		int fieldCounter;
+		int fieldCounter = -1;
 		int character = -1;
 		int mark;
 		boolean inQuote, quoteFound;
@@ -382,19 +380,21 @@ public class DataParser extends AbstractTextParser {
 			}
 		}
 		recordIsParsed = false;
-		for (fieldCounter = 0; fieldCounter < numFields; fieldCounter++) {
-			// skip all fields that are internally filled 
-			if (isAutoFilling[fieldCounter]) {
-				continue;
-			}
-			skipLBlanks = isSkipLeadingBlanks[fieldCounter];
-			skipTBlanks = isSkipTrailingBlanks[fieldCounter];
-			quotedField = quotedFields[fieldCounter];
-			fieldBuffer.setLength(0);
-			if (fieldLengths[fieldCounter] == 0) { //delimited data field
-				inQuote = false;
-				quoteFound = false;
-				try {
+		
+		try {
+			for (fieldCounter = 0; fieldCounter < numFields; fieldCounter++) {
+				// skip all fields that are internally filled 
+				if (isAutoFilling[fieldCounter]) {
+					continue;
+				}
+				skipLBlanks = isSkipLeadingBlanks[fieldCounter];
+				skipTBlanks = isSkipTrailingBlanks[fieldCounter];
+				quotedField = quotedFields[fieldCounter];
+				fieldBuffer.setLength(0);
+				if (fieldLengths[fieldCounter] == 0) { //delimited data field
+					inQuote = false;
+					quoteFound = false;
+	
 					while ((character = readChar()) != -1) {
 						recordIsParsed = true;
 						//delimiter update
@@ -403,8 +403,8 @@ public class DataParser extends AbstractTextParser {
 						//skip leading blanks
 						if (skipLBlanks && !Character.isWhitespace(character)) {
 							skipLBlanks = false;
-                        }
-
+	                    }
+	
 						//quotedStrings
 						if (quotedField) {
 							if (fieldBuffer.length() == 0 && !inQuote) { //first quote character
@@ -438,22 +438,22 @@ public class DataParser extends AbstractTextParser {
 								}
 							}
 						}
-
+	
 						//fieldDelimiter update
 						if(!skipLBlanks) {
 						    fieldBuffer.append((char) character);
 						    if (fieldBuffer.length() > Defaults.Record.FIELD_LIMIT_SIZE) {
 								return parsingErrorFound("Field delimiter was not found (this could be caused by insufficient field buffer size - Record.FIELD_LIMIT_SIZE=" + Defaults.Record.FIELD_LIMIT_SIZE + " - increase the constant if necessary)", record, fieldCounter);
 						    }
-                        }
-
+	                    }
+	
 						//test field delimiter
 						if (!inQuote) {
 							if (delimiterSearcher.isPattern(fieldCounter)) {
-//							    fieldBuffer.setLength(fieldBuffer.length() - delimiterSearcher.getMatchLength());
+	//							    fieldBuffer.setLength(fieldBuffer.length() - delimiterSearcher.getMatchLength());
 								if (!skipLBlanks) {
 								    fieldBuffer.setLength(Math.max(0, fieldBuffer.length() - delimiterSearcher.getMatchLength()));
-                                }
+	                            }
 								if (skipTBlanks) {
 									StringUtils.trimTrailing(fieldBuffer);
 								}
@@ -463,7 +463,7 @@ public class DataParser extends AbstractTextParser {
 								
 								if(cfg.isTreatMultipleDelimitersAsOne())
 									while(followFieldDelimiter(fieldCounter));
-
+	
 								
 								delimiterSearcher.reset(); // CL-1859 Fix: We don't want prefix of some other delimiter to be already matched
 								break;
@@ -477,16 +477,13 @@ public class DataParser extends AbstractTextParser {
 							if(recordDelimiterFound()) {
 								return parsingErrorFound("Unexpected record delimiter, probably record has too few fields.", record, fieldCounter);
 							}
-
+	
 						}
 					}
-				} catch (Exception ex) {
-					throw new RuntimeException(getErrorMessage(null, metadataFields[fieldCounter]), ex);
-				}
-			} else { //fixlen data field
-				mark = 0;
-				fieldBuffer.setLength(0);
-				try {
+				} else { //fixlen data field
+					mark = 0;
+					fieldBuffer.setLength(0);
+	
 					for(int i = 0; i < fieldLengths[fieldCounter]; i++) {
 						//end of file
 						if ((character = readChar()) == -1) {
@@ -494,20 +491,20 @@ public class DataParser extends AbstractTextParser {
 						} else {
 							recordIsParsed = true;
 						}
-
+	
 						//delimiter update
 						delimiterSearcher.update((char) character);
-
+	
 						//test record delimiter
 						if(recordDelimiterFound()) {
 							return parsingErrorFound("Unexpected record delimiter, probably record is too short.", record, fieldCounter);
 						}
-
+	
 						//skip leading blanks
 						if (skipLBlanks) 
 							if(Character.isWhitespace(character)) continue; 
 							else skipLBlanks = false;
-
+	
 						//keep track of trailing blanks
 						if(!Character.isWhitespace(character)) {
 							mark = i;
@@ -521,44 +518,48 @@ public class DataParser extends AbstractTextParser {
 					}
 					//check record delimiter presence for last field
 					if(hasRecordDelimiter && fieldCounter + 1 == numFields && character != -1) {
-						int followRecord = followRecordDelimiter(); 
-						if(followRecord>0) { //record delimiter is not found
-							return parsingErrorFound("Too many characters found", record, fieldCounter);
-						}
-						if(followRecord<0) { //record delimiter is not found
-							return parsingErrorFound("Unexpected record delimiter, probably record is too short.", record, fieldCounter);
+						int followRecord = followRecordDelimiter();
+						//check whether EOF follows right the data (handling eofAsDelimiter flag)
+						if (followRecord != Integer.MIN_VALUE) {
+							if(followRecord>0) { //record delimiter is not found
+								return parsingErrorFound("Too many characters found", record, fieldCounter);
+							}
+							if(followRecord<0) { //record delimiter is not found
+								return parsingErrorFound("Unexpected record delimiter, probably record is too short.", record, fieldCounter);
+							}
 						}
 					}
-
-				} catch (Exception ex) {
-					throw new RuntimeException(getErrorMessage(null, metadataFields[fieldCounter]), ex);
 				}
-			}
-
-			// did we have EOF situation ?
-			if (character == -1) {
-				try {
-    				if (!recordIsParsed) {
-                        reader.close();
-    				    return null;
-                    } else {
+	
+				// did we have EOF situation ?
+				if (character == -1) {
+					if (!recordIsParsed) {
+	                    reader.close();
+					    return null;
+	                } else {
                         //maybe the field has EOF delimiter
                         if(eofAsDelimiters[fieldCounter]) {
+                        	//populate the field
                             populateField(record, fieldCounter, fieldBuffer);
+                            //clear all the rest fields
+                            for (int i = fieldCounter + 1; i < numFields; i++) {
+                            	record.getField(i).reset();
+                            }
                             return record;
                         }
-                        return parsingErrorFound("Unexpected end of file", record, fieldCounter);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (Exception e1) {
-					throw new RuntimeException(getErrorMessage(null, metadataFields[fieldCounter]), e1);
-                }
+	                    return parsingErrorFound("Unexpected end of file", record, fieldCounter);
+	                }
+				}
+	
+				//populate field
+				populateField(record, fieldCounter, fieldBuffer);
 			}
-
-			//populate field
-			populateField(record, fieldCounter, fieldBuffer);
+		} catch (CharsetDecoderException e) {
+			parsingErrorFound(ExceptionUtils.getMessage(e));
+		} catch (Exception ex) {
+			throw new RuntimeException(getErrorMessage(null, metadataFields[fieldCounter]), ex);
 		}
+		
 
 		return record;
 	}
@@ -566,7 +567,15 @@ public class DataParser extends AbstractTextParser {
 	public int getOverStepChars() {
 		return tempReadBuffer.length();
 	}
-	
+
+	private void parsingErrorFound(String exceptionMessage) {
+        if (exceptionHandler != null) {
+            exceptionHandler.populateHandler("Parsing error: " + exceptionMessage, null, -1, -1, null, new BadDataFormatException("Parsing error: " + exceptionMessage));
+        } else {
+			throw new RuntimeException("Parsing error: " + exceptionMessage);
+		}
+	}
+
 	private DataRecord parsingErrorFound(String exceptionMessage, DataRecord record, int fieldNum) {
         if(exceptionHandler != null) {
             exceptionHandler.populateHandler("Parsing error: " + exceptionMessage, record, recordCounter, fieldNum , getLastRawRecord(), new BadDataFormatException("Parsing error: " + exceptionMessage));
@@ -578,8 +587,6 @@ public class DataParser extends AbstractTextParser {
 	
 	private int readChar() throws IOException {
 		final char character;
-		final int size;
-        CoderResult result;
 
 		if(tempReadBuffer.length() > 0) { // the tempReadBuffer is used as a cache of already read characters which should be read again
 			character = tempReadBuffer.charAt(0);
@@ -609,39 +616,30 @@ public class DataParser extends AbstractTextParser {
         	byteCharBuffer.readChars();
         } else { //(reader != null) let's decode bytes from reader to charBuffer
         
-	        charBuffer.clear();
-	        if (byteBuffer.hasRemaining())
-	        	byteBuffer.compact();
-	        else
-	        	byteBuffer.clear();
+    		int size;
+	        charBuffer.clear(); // sets the position to zero, used in the do-while loop condition
 	
-	        if ((size = reader.read(byteBuffer)) == -1) {
-	            isEof = true;
-	        } else {
-	        	bytesProcessed += size;
-	        }
-	        byteBuffer.flip();
-	
-	        result = decoder.decode(byteBuffer, charBuffer, isEof);
-	//        if (result == CoderResult.UNDERFLOW) {
-	//            // try to load additional data
-	//        	byteBuffer.compact();
-	//
-	//            if (reader.read(byteBuffer) == -1) {
-	//                isEof = true;
-	//            }
-	//            byteBuffer.flip();
-	//            decoder.decode(byteBuffer, charBuffer, isEof);
-	//        } else 
-	        if (result.isError()) {
-	            throw new IOException(result.toString()+" when converting from "+decoder.charset());
-	        }
+	        do { // CLO-2568
+		        if (byteBuffer.hasRemaining()) {
+		        	byteBuffer.compact(); // preserve non-decoded bytes
+		        } else {
+		        	byteBuffer.clear();
+		        }
+		        if ((size = reader.read(byteBuffer)) == -1) {
+		            isEof = true;
+		        } else {
+		        	bytesProcessed += size; // may be zero, TODO sleep
+		        }
+		        byteBuffer.flip();
+		        
+		        // CLO-2568: may not decode any characters at all, if there is an incomplete multi-byte character in the byteBuffer
+		        checkDecoderResult(decoder.decode(byteBuffer, charBuffer, isEof));
+	        } while ((charBuffer.position() == 0) && !isEof); // CLO-2568
+	        
 	        if (isEof) {
-	            result = decoder.flush(charBuffer);
-	            if (result.isError()) {
-	                throw new IOException(result.toString()+" when converting from "+decoder.charset());
-	            }
+	        	checkDecoderResult(decoder.flush(charBuffer));
 	        }
+
 	        charBuffer.flip();
         }
 		
@@ -660,6 +658,14 @@ public class DataParser extends AbstractTextParser {
 		}
 	}
 
+	private void checkDecoderResult(CoderResult result) throws CharsetDecoderException {
+        if (result.isError()) {
+        	isEof = true;
+        	charBuffer.clear().flip();
+        	throw new CharsetDecoderException("Character decoding error occurred. Set correct charset. Current charset is " + decoder.charset());
+        }
+	}
+	
 	/**
 	 * Assembles error message when exception occures during parsing
 	 * 
@@ -852,7 +858,8 @@ public class DataParser extends AbstractTextParser {
 	
 	/**
 	 * Follow record delimiter in the input channel?
-	 * @return 0 if record delimiter follows. -1 if record is too short, 1 if record is longer
+	 * @return 0 if record delimiter follows. Negative value if record is too short, 
+	 * positive value if record is longer and MIN_INT if EOF found instead of a delimiter
 	 */
 	private int followRecordDelimiter() {
 		int count = 1;
@@ -872,7 +879,12 @@ public class DataParser extends AbstractTextParser {
 			throw new RuntimeException(getErrorMessage(null, null), e);
 		}
 		//end of file
-		return -1;
+		if (count == 1) {
+			//EOF found instead of delimiter
+			return Integer.MIN_VALUE;
+		} else {
+			return count;
+		}
 	}
 
 	/**
@@ -908,6 +920,23 @@ public class DataParser extends AbstractTextParser {
 		}
 	}
 	
+	/**
+	 * @return number of fields in given metadata (autofilled fields in the end of metadata are ignored)
+	 */
+	private int getNumFields() {
+		DataRecordMetadata metadata = cfg.getMetadata();
+		int numFields = metadata.getNumFields(); 
+		DataFieldMetadata field;
+		do {
+			if (numFields == 0) {
+				return 0;
+			}
+			numFields--;
+			field = metadata.getField(numFields);
+		} while (field.isAutoFilled());
+		
+		return numFields + 1;
+	}
 	
 	public boolean endOfInputChannel() {
 		return reader == null || !reader.isOpen();
@@ -957,6 +986,7 @@ public class DataParser extends AbstractTextParser {
         if(cfg.getMetadata().isSpecifiedRecordDelimiter()) {
 			for(skipped = 0; skipped < count; skipped++) {
 				if(!findFirstRecordDelimiter()) {
+					logger.warn("End of input reached while skipping records");
 				    break;
                 }
 				recordBuffer.clear();
@@ -964,6 +994,7 @@ public class DataParser extends AbstractTextParser {
 		} else {
 			for(skipped = 0; skipped < count; skipped++) {
 				if(!findEndOfRecord(0)) {
+					logger.warn("End of input reached while skipping records");
 				    break;
                 }
 				recordBuffer.clear();

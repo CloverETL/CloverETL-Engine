@@ -2,6 +2,187 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-0-3
+---------
+
+* FIXES:
+	- Invalid CloverData format
+	- "Create directories" does not work in UniversalDataWriter when using 
+	Dictionary as file URL
+
+REL-4-0-2
+---------
+
+* Changed priority of edge-based explicit metadata propagation
+* FIXES:
+    -  Tracking on edges with no record   
+
+REL-4-0-1
+---------
+
+* FIXES:
+	- HTTPConnector behaves differently in Clover 4 - authentication fails
+
+REL-4-0-0
+---------
+
+* TableauWriter component
+* explicit metadata propagation
+* improved CloverDataReader and CloverDataWriter
+	- compression
+	- consistency with other readers and writers (e.g. partitioning)
+* CTL function to get sandbox-prefixed path
+* New CTL2 container functions - toMap() and getValues()
+* Added and improved bit operation functions
+* CTL function to access custom component properties
+* FIXES:
+	- SortWithinGroup is losing records
+	- CTL2 performance issues in locale and timezone manipulation
+	- EOF as delimiter does not work for fixed length
+	- RunGraph component does not work with sameJVM=false
+	- CloverDataReader: autofilling does not work
+	- DB Lookup does not accept key longer than 10 digits
+	- Space Preceding a * in Wildcard Mapping does not report error in Design or Runtime
+	- Improve FTP connection error reporting
+* COMPATIBILITY:
+	- Removed direct zip support in CloverDataReader and CloverDataWriter
+	- Move component description from designer to engine
+	- Do not perform database commit if graph execution fails
+
+REL-4-0-0-M2
+------------
+
+* Subgraphs
+	- configurable as components
+	- configurable categories and icons
+* Updated model of graph parameters
+	- public parameters
+	- types of parameters and some additional attributes
+	- CTL2 in parameter value
+* Improvements of CloverDataReader
+* Sleep component worksalso without ports
+- FIXES:
+	- Asterisk in Samba URL caused unexpected behavior
+- COMPATIBILITY:
+	- XMLExtract: explicit mapping to have priority over implicit automap by name
+	
+
+
+REL-4-0-0-M1
+------------
+
+* Subgraphs
+* Automatic metadata propagation
+- FIXES:
+	- UniversalDataReader logging improved
+- COMPATIBILITY:
+	- Dropped support of Java 1.6
+	- Updated internal libraries to newer versions
+	- split() returns empty list if input is null
+	- indexOf() accepts null value
+	 
+
+
+REL-3-5-4
+---------
+
+* Improved support for multipart entities in HttpConnector
+* FIXES:
+    - multipart entities mapping does not work
+    - simultaneous run of Success and SetJoboutput components fixed
+    - DBOutputTable fails on syntax error when using multiple quotes 
+
+
+REL-3-5-3
+---------
+
+* FIXES:
+	- SortWithinGroup keeps losing records
+	- In SQL query everything after 'returning' string is cut off
+	- UniversalDataWriter produces wrong delimiters if used with autofilled fields
+	- Fixed-length metadata trim string fields
+	- XMLWriter fails with "Unexpected null value"
+	- UDR/UDW issues with fixed-length metadata
+	- "Create directories" does not work in UniversalDataWriter when using Dictionary as file URL
+	- UniversalDataWriter: fixed-length fields exclusion issue
+	
+
+REL-3-5-2
+---------
+
+* DBOutputTable output using 'RETURNING' on PosgtreSQL
+- FIXES:
+	- "where" in sql comment is used in Dynamic metadata query
+	- SystemExecute closes error file descriptor during execution
+	- DBLookupTable has incorrectly synchronized activeLookups variable
+	- Dash passes through isNumber function
+
+
+REL-3-5-1
+---------
+
+* Print loaded engine plugins to log
+- FIXES:
+	- SimpleGather performance regression
+	- XMLDataWriter behaves inconsistently with long strings
+	- Debug files are always created when running graph via RunGraph
+	- Pivot produces wrong data for string key
+	- Vertica meta-function execution fails
+	- DBExecute does not report on error port
+- COMPATIBILITY:
+	- When parsing deprecated format of parameters, ignore those with invalid names
+	- CTL2: function removeNonPrintable() incorrectly removes also all non-ASCII characters (unicode)
+	- CTL code in parameter value does not work when used as a DB password
+
+
+REL-3-5-0
+---------
+
+* Improved visualization of CTL errors in runtime
+* CloverDataReader: remove unnecessary deserialization
+* Add support for CDATA sections in XmlWriter
+* XMLExtract: use schema defined in XML
+* Create new CTL functions getRawParamValue() and getRawParamValues()
+* Vertica connectivity
+- FIXES:
+	- Graph which has Denormalizer with a class reference executed using RunGraph component does not work
+	- Function round does not work in the same way for double and decimal on one side and integer and long
+	 on the other side when rounding to hundred or thousand
+	- XMLXPathReader - document that reading multivalue fields is unsupported
+	- XMLExtract: explicit mapping to have priority over implicit automap by name
+	- str2bits does not check validity of its input string
+- COMPATIBILITY:
+	- RecordFilter interface declares two isValid() methods
+	- update jTDS to version 1.2.8
+	- Rename 'Integral Lib' to 'Record Lib'
+	- Validate names of graph parameters
+	
+
+REL-3-5-0-M2
+------------
+
+* Secure storage of credentials
+* EXASOL connectivity
+* JSONExtract component
+* Update of MySQL JDBC driver
+* HTTPConnector should use streaming for input file
+* HTTPConnector should allow manipulating with requestContent and responseContent 
+  in byte form (now only strings are supported)
+* Better implementation of partitioning for file writers
+* round() functions with precision
+* Allow null case values
+- FIXES:
+	- Fixed length file with last field as autofilling generates errors
+	- CTL function get() for lookups should work same in compiled and interpreted mode.
+- COMPATIBILITY:
+	- Some functions from DateLib have to return null for null input, instead of throwing an exception
+	- Some functions from ConvertLib have to return null for null input, instead of throwing exception
+	- Functions ceil() and floor() return decimal instead of number for parameters of type decimal
+	- CTL2: function removeNonPrintable() incorrectly removes also all non-ASCII characters (unicode)
+	- CloverDataReader in rel-3-5 cannot read data files written by CloverDataWriter used in a jobflow in rel-3-4
+	- Fixlen data reading should be possible even without trimming
+
+
 REL-3-5-0-M1
 ------------
 
@@ -15,6 +196,27 @@ REL-3-5-0-M1
   - Readers fail with NPE when port is connected and valid file URL is specified
   - HTTPConnector could have also "Access Token" and "Access Token Secret" properties and it could be able to create Authorization Header
   
+
+REL-3-4-3
+---------
+
+- FIXES:
+	- Component status and number of records on the edge are not shown after joiner 
+	that has input edges in different phases
+	- Insufficient error message while reading CSV files with header across two rows
+	- Insufficient and unclear error message while reading CSV files with incorrect encoding
+	- HTTPConnector changes EOL delimiters in response content
+	- Null value being saved into db table field of time type
+
+REL-3-4-2
+---------
+
+* improved performance of TreeWriter caches (in-memory caching)
+* upgraded JSch library to 0.1.50
+* upgraded slf4j-api to 1.7.2
+- FIXES:
+	- CLO-1216 Hadoop is missing in opensource engine build
+	- CLO-1335 Problems with DBExecute component
 
 REL-3-4-1
 ---------

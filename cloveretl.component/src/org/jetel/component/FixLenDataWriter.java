@@ -126,6 +126,7 @@ public class FixLenDataWriter extends Node {
 	private int bytesPerFile;
     private int skip;
 	private int numRecords;
+	private String charset;
 	private WritableByteChannel writableByteChannel;
 
 	private String partition;
@@ -155,12 +156,14 @@ public class FixLenDataWriter extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
+		this.charset = charset;
 		formatterProvider = new FixLenDataFormatterProvider(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
 	public FixLenDataWriter(String id, WritableByteChannel writableByteChannel, String charset) {
 		super(id);
 		this.writableByteChannel = writableByteChannel;
+		this.charset = charset;
 		formatterProvider = new FixLenDataFormatterProvider(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
@@ -221,7 +224,7 @@ public class FixLenDataWriter extends Node {
 		
         // initialize multifile writer based on prepared formatter
 		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatterProvider, graph != null ? graph.getRuntimeContext().getContextURL() : null, fileURL);
+	        writer = new MultiFileWriter(formatterProvider, getContextURL(), fileURL);
 		} else {
 			if (writableByteChannel == null) {
 		        writableByteChannel = new SystemOutByteChannel();
@@ -234,6 +237,7 @@ public class FixLenDataWriter extends Node {
         writer.setAppendData(appendData);
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
+        writer.setCharset(charset);
         if (attrPartitionKey != null) {
             writer.setLookupTable(lookupTable);
             writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
@@ -358,7 +362,7 @@ public class FixLenDataWriter extends Node {
 		}
 
         try {
-        	FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, fileURL);
+        	FileUtils.canWrite(getContextURL(), fileURL);
         } catch (ComponentNotReadyException e) {
             status.add(e,ConfigurationStatus.Severity.ERROR,this,
             		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
@@ -367,11 +371,6 @@ public class FixLenDataWriter extends Node {
         return status;
     }
 	
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-
     /**
      * Which character (1st from specified string) will
      * be used as filler for padding output fields

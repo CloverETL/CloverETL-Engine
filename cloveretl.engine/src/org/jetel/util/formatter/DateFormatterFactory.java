@@ -35,10 +35,15 @@ import org.jetel.util.MiscUtils;
  */
 public final class DateFormatterFactory {
 	
-	public static DateFormatter getFormatter(String formatString, Locale locale, String timeZoneId) {
-		TimeZoneProvider timeZoneProvider = new TimeZoneProvider(timeZoneId);
-		if (DataFieldFormatType.getFormatType(formatString) == DataFieldFormatType.JODA) {
+	public static DateFormatter getFormatter(String formatString, Locale locale, TimeZoneProvider timeZoneProvider) {
+		if (timeZoneProvider == null) {
+			timeZoneProvider = new TimeZoneProvider();
+		}
+		final DataFieldFormatType formatType = DataFieldFormatType.getFormatType(formatString);
+		if (formatType == DataFieldFormatType.JODA) {
 			return new JodaDateFormatter(DataFieldFormatType.JODA.getFormat(formatString), locale, timeZoneProvider.getJodaTimeZone());
+		} else if (formatType == DataFieldFormatType.ISO_8601) {
+			return new Iso8601DateFormatter(DataFieldFormatType.ISO_8601.getFormat(formatString), locale, timeZoneProvider.getJodaTimeZone());
 		} else {
 			TimeZone tz = timeZoneProvider.getJavaTimeZone();
 			if (DataFieldFormatType.getFormatType(formatString) == DataFieldFormatType.JAVA) {
@@ -50,8 +55,12 @@ public final class DateFormatterFactory {
 		
 	}
 
+	public static DateFormatter getFormatter(String formatString, Locale locale, String timeZoneId) {
+		return getFormatter(formatString, locale, new TimeZoneProvider(timeZoneId));
+	}
+
 	public static DateFormatter getFormatter(String formatString, Locale locale) {
-		return getFormatter(formatString, locale, null);
+		return getFormatter(formatString, locale, (TimeZoneProvider) null);
 	}
 
 	public static DateFormatter getFormatter(String formatString, String localeString) {

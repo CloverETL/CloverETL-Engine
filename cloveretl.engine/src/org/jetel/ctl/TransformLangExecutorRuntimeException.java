@@ -19,6 +19,7 @@
 package org.jetel.ctl;
 
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
+import org.jetel.ctl.ASTnode.Node;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.exception.JetelRuntimeException;
 
@@ -39,6 +40,8 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
     SimpleNode nodeInError;
 	Object[] arguments;
 	int errorCode;
+	
+	private ErrorReporter errorReporter = null;
 	
 	public TransformLangExecutorRuntimeException(SimpleNode node,Object[] arguments,String message){
 		this(node,arguments,message,null);
@@ -100,16 +103,19 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
             return nodeInError.getLine();
         return -1;
     }
-	
-	@Override
-	public String getMessage() {
-		StringBuffer strBuf = new StringBuffer("Interpreter runtime exception");
+    
+    public String getSimpleMessage() {
+		StringBuilder strBuf = new StringBuilder("Interpreter runtime exception");
         if (nodeInError != null) {
         	if (nodeInError instanceof CLVFFunctionCall) {
         		strBuf.append(" in function ").append(((CLVFFunctionCall) nodeInError).getName());
         	}
             strBuf.append(" on line ").append(nodeInError.getLine());
             strBuf.append(" column ").append(nodeInError.getColumn());
+            String fileName = nodeInError.getSourceFilename();
+            if (fileName != null) {
+            	strBuf.append(" in import ").append(fileName);
+            }
         }
 		if (arguments != null) {
 			for(int i = 0; i < arguments.length; i++) {
@@ -120,13 +126,49 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
 			}
 		}
 		return strBuf.toString();
+    }
+	
+	@Override
+	public String getMessage() {
+		return (errorReporter != null) ? errorReporter.getReport() : getSimpleMessage();
 	}
 
+	public String getExtendedMessage(){
+		StringBuilder strBuf=new StringBuilder();
+		if (nodeInError != null) {
+			strBuf.append("THIS: ").append(nodeInError.toString());
+			Node parent=nodeInError.jjtGetParent();
+        	while(parent!=null){
+        		strBuf.append(" parent: ").append(parent.toString());
+        		parent=parent.jjtGetParent();
+        	}
+        	if(nodeInError.jjtHasChildren()){
+        		for(int i=0;i<nodeInError.jjtGetNumChildren();i++){
+        			strBuf.append(" child ").append(nodeInError.jjtGetChild(i).toString());
+        		}
+        	}
+		}
+		return strBuf.toString();
+	}
+	
+	
 	public int getErrorCode() {
 		return errorCode;
 	}
 
 	public void setErrorCode(int errorCode) {
 		this.errorCode = errorCode;
+	}
+	
+	/**
+	 * Sets the error reporter.
+	 * Multiple invocations of this method have no effect.
+	 * 
+	 * @param errorReporter
+	 */
+	public void setErrorReporter(ErrorReporter errorReporter) {
+		if (this.errorReporter == null) {
+			this.errorReporter = errorReporter;
+		}
 	}
 }

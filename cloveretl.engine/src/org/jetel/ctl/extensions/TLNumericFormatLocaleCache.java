@@ -18,6 +18,8 @@
  */
 package org.jetel.ctl.extensions;
 
+import java.util.Locale;
+
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.util.formatter.NumericFormatter;
 import org.jetel.util.formatter.NumericFormatterFactory;
@@ -28,11 +30,10 @@ import org.jetel.util.formatter.NumericFormatterFactory;
  *
  * @created May 28, 2010
  */
-public class TLNumericFormatLocaleCache extends TLCache {
+public class TLNumericFormatLocaleCache extends TLFormatterCache {
 	
 	private NumericFormatter cachedFormatter;
 	private String previousFormatString;
-	private String previousLocaleString;
 	private boolean isDecimal;
 	
 	/**
@@ -41,12 +42,13 @@ public class TLNumericFormatLocaleCache extends TLCache {
 	 * 2) For isDecimal equal true 'NumericFormatterFactory.createDecimalFormatter()' is used to create formatter.
 	 * @param isDecimal 
 	 */
-	public TLNumericFormatLocaleCache(boolean isDecimal) {
+	public TLNumericFormatLocaleCache(TLFunctionCallContext context, boolean isDecimal) {
+		super(context);
 		this.isDecimal = isDecimal;
 	}
 
-	public TLNumericFormatLocaleCache() {
-		this(false);
+	public TLNumericFormatLocaleCache(TLFunctionCallContext context) {
+		this(context, false);
 	}
 
 	public void createCachedLocaleFormat(TLFunctionCallContext context, int pos1, int pos2) {
@@ -60,7 +62,7 @@ public class TLNumericFormatLocaleCache extends TLCache {
 		if (context.getLiteralsSize() <= pos2 || !(context.getParamValue(pos2) instanceof String)) {
 			String paramPattern = (String) context.getParamValue(pos1);
 			if (context.isLiteral(pos1)) {
-				prepareCachedFormatter(paramPattern, null);
+				prepareCachedFormatter(context, paramPattern, context.getDefaultLocale());
 			}
 			return;
 		}
@@ -68,7 +70,7 @@ public class TLNumericFormatLocaleCache extends TLCache {
 		String paramPattern = (String) context.getParamValue(pos1);
 		String paramLocale = (String) context.getParamValue(pos2);
 		if (context.isLiteral(pos1) && context.isLiteral(pos2)) {
-			prepareCachedFormatter(paramPattern, paramLocale);
+			prepareCachedFormatter(context, paramPattern, getLocale(paramLocale));
 		}
 	}
 	
@@ -85,9 +87,8 @@ public class TLNumericFormatLocaleCache extends TLCache {
 				return cachedFormatter;
 			} else {
 				// otherwise we have to recompute cache and remember just in the case future input will be the same
-				prepareCachedFormatter(format, locale);
+				prepareCachedFormatter(context, format, getLocale(locale));
 				previousFormatString = format;
-				previousLocaleString = locale;
 				return cachedFormatter;
 			}
 		}
@@ -98,7 +99,7 @@ public class TLNumericFormatLocaleCache extends TLCache {
 				return cachedFormatter;
 			} else {
 				// same as above but just for format (default locale is used)
-				prepareCachedFormatter(format, null);
+				prepareCachedFormatter(context, format, null);
 				previousFormatString = format;
 				return cachedFormatter;
 			}
@@ -106,11 +107,11 @@ public class TLNumericFormatLocaleCache extends TLCache {
 		throw new TransformLangExecutorRuntimeException("Format not correctly specified for the number.");
 	}
 	
-	private void prepareCachedFormatter(String format, String locale) {
+	private void prepareCachedFormatter(TLFunctionCallContext context, String format, Locale locale) {
 		if (!isDecimal) {
-			cachedFormatter = NumericFormatterFactory.getFormatter(format, locale); 
+			cachedFormatter = NumericFormatterFactory.getFormatter(format, locale, context.getDefaultLocale()); 
 		} else {
-			cachedFormatter = NumericFormatterFactory.getDecimalFormatter(format, locale); 
+			cachedFormatter = NumericFormatterFactory.getDecimalFormatter(format, locale, context.getDefaultLocale()); 
 		}
 	}
 	
@@ -119,5 +120,18 @@ public class TLNumericFormatLocaleCache extends TLCache {
 			this.isDecimal = isDecimal;
 			cachedFormatter = null;
 		}
+	}
+
+	/*
+	 * For <code>null<code> input, returns <code>null<code>.
+	 * We need to preserve the information that the user has not specified any locale at all.
+	 */
+	@Override
+	protected Locale getLocale(String localeString) {
+		// NumericFormatterFactory.createNumberFormatter(String, Locale) checks if Locale is null
+		if (localeString == null) { 
+			return null;
+		}
+		return super.getLocale(localeString);
 	}
 }

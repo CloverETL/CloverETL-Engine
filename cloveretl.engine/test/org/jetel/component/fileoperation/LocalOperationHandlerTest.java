@@ -21,12 +21,26 @@ package org.jetel.component.fileoperation;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclEntryPermission;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.nio.file.attribute.UserPrincipal;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
 
+import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.result.CopyResult;
 import org.jetel.component.fileoperation.result.InfoResult;
 import org.jetel.component.fileoperation.result.ListResult;
 import org.jetel.component.fileoperation.result.MoveResult;
 import org.jetel.component.fileoperation.result.ResolveResult;
+import org.jetel.util.exec.PlatformUtils;
 
 public class LocalOperationHandlerTest extends OperationHandlerTestTemplate {
 	
@@ -154,6 +168,39 @@ public class LocalOperationHandlerTest extends OperationHandlerTestTemplate {
 			assertFalse(result.success());
 			assertTrue(manager.exists(source));
 		}
+		
+		{
+			// CLO-4658:
+			source = relativeURI("unreadable.tmp");
+			target = relativeURI("unreadable_destination/");
+			manager.create(source);
+			manager.create(target);
+			File file = new File(source.getAbsoluteURI().getSingleURI().toURI());
+			Path path = file.toPath();
+			assertTrue(file.exists());
+			if (!file.setReadable(false)) {
+				AclFileAttributeView view = Files.getFileAttributeView(path, AclFileAttributeView.class);
+				UserPrincipal owner = view.getOwner();
+				List<AclEntry> acl = view.getAcl();
+				for (ListIterator<AclEntry> it = acl.listIterator(); it.hasNext(); ) {
+					AclEntry entry = it.next();
+					if (entry.principal().equals(owner)) {
+						Set<AclEntryPermission> permissions = entry.permissions();
+						permissions.remove(AclEntryPermission.READ_DATA);
+						AclEntry.Builder builder = AclEntry.newBuilder(entry);
+						builder.setPermissions(permissions);
+						it.set(builder.build());
+						break;
+					}
+				}
+				view.setAcl(acl);
+			}
+			assertFalse(Files.isReadable(path));
+			result = manager.copy(source, target);
+			assertFalse(result.success());
+			assertFalse(manager.exists(relativeURI("unreadable_destination/unreadable.tmp")));
+		}
+		
 	}
 
 	@Override
@@ -189,6 +236,21 @@ public class LocalOperationHandlerTest extends OperationHandlerTestTemplate {
 				System.out.println(result.getResult());
 			}
 		}
+
+		if (PlatformUtils.isLinuxPlatform()) {
+			uri = relativeURI("permissionsDir/file.tmp");
+			assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
+			uri = relativeURI("permissionsDir");
+			Path file = Paths.get(uri.getSingleURI().getAbsoluteURI().toURI());
+			try {
+				Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("rw-------"));
+				result = manager.list(uri);
+				assertFalse(result.success());
+				assertTrue(result.getFirstError().getCause() instanceof AccessDeniedException);
+			} finally {
+				Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("rwxrwxrwx"));
+			}
+		}
 	}
 
 	@Override
@@ -204,6 +266,7 @@ public class LocalOperationHandlerTest extends OperationHandlerTestTemplate {
 				System.out.println(uri);
 				assertTrue(result.success());
 				assertTrue(result.isDirectory());
+				assertTrue(result.getName().isEmpty());
 				System.out.println(result.getResult());
 			}
 		}

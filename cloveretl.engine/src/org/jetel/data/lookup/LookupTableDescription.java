@@ -18,14 +18,14 @@
  */
 package org.jetel.data.lookup;
 
-import org.jetel.data.GraphElementDescription;
+import org.jetel.data.GraphElementDescriptionImpl;
 import org.jetel.plugin.Extension;
 
 /**
  * @author Martin Zatopek
  *
  */
-public class LookupTableDescription extends GraphElementDescription {
+public class LookupTableDescription extends GraphElementDescriptionImpl {
 
     public final static String EXTENSION_POINT_ID = "lookup";
     

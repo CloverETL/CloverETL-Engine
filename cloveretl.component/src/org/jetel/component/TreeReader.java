@@ -31,9 +31,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import javax.xml.transform.Transformer;
@@ -76,6 +74,8 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.PolicyType;
@@ -96,6 +96,7 @@ import org.jetel.util.XmlUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
@@ -151,7 +152,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 	protected static void readCommonAttributes(TreeReader treeReader, ComponentXMLAttributes xattribs)
 			throws XMLConfigurationException, AttributeNotFoundException {
-		treeReader.setFileURL(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.URL));
+		treeReader.setFileURL(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, null, RefResFlag.URL));
 		if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 			treeReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 		}
@@ -161,11 +162,8 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
 		if (mappingURL != null) {
 			treeReader.setMappingURL(mappingURL);
-		} else if (mapping != null) {
-			treeReader.setMappingString(mapping);
 		} else {
-			// throw configuration exception
-			xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.URL);
+			treeReader.setMappingString(mapping);
 		}
 
 		treeReader.setImplicitMapping(xattribs.getBoolean(XML_IMPLICIT_MAPPING_ATTRIBUTE, false));
@@ -175,13 +173,12 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	private DataRecord outputRecords[];
 	private OutputPort outputPorts[];
 	private boolean recordReadWithException[];
-	private int sequenceId;
-	private Map<MappingContext, Sequence> sequences = new HashMap<MappingContext, Sequence>();
-
+	private String defaultSequenceId;
 	protected String fileURL;
 	protected String charset;
 	private SourceIterator sourceIterator;
 
+	private String policyTypeStr;
 	private PolicyType policyType;
 
 	private String mappingString;
@@ -230,8 +227,22 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			return status;
 		}
 
+		if (!PolicyType.isPolicyType(policyTypeStr)) {
+			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+		} else {
+			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+		}
+
+		if (StringUtils.isEmpty(this.getFileUrl())) {
+			status.add(new ConfigurationProblem("Missing required attribute 'File URL'", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_FILE_URL_ATTRIBUTE));
+		}
+
+		if (StringUtils.isEmpty(mappingURL) && StringUtils.isEmpty(mappingString)) {
+			status.add(new ConfigurationProblem("Missing required attribute 'Mapping'", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+		}
+
 		if (charset != null && !Charset.isSupported(charset)) {
-			status.add(new ConfigurationProblem("Charset " + charset + " not supported!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+			status.add(new ConfigurationProblem("Charset " + charset + " not supported!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
 		}
 
 		/*
@@ -249,6 +260,8 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		}
 		super.init();
 		
+		policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+
 		this.parserProvider = getTreeReaderParserProvider();
 
 		recordProviderReceiverInit();
@@ -323,9 +336,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 		try {
 			if (mappingURL != null) {
-				TransformationGraph graph = getGraph();
-				URL contextURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
-				ReadableByteChannel ch = FileUtils.getReadableChannel(contextURL, mappingURL);
+				ReadableByteChannel ch = FileUtils.getReadableChannel(getContextURL(), mappingURL);
 				mappingDocument = XmlUtils.createDocumentFromChannel(ch);
 			} else {
 				mappingDocument = XmlUtils.createDocumentFromString(mappingString);
@@ -345,7 +356,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 	protected SourceIterator createSourceIterator() {
 		TransformationGraph graph = getGraph();
-		URL projectURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
+		URL projectURL = getContextURL();
 
 		SourceIterator iterator = new SourceIterator(getInputPort(INPUT_PORT_INDEX), projectURL, fileURL);
 		iterator.setCharset(charset);
@@ -414,7 +425,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		Object inputData = getNextSource();
 		while (inputData != null) {
 			try {
-				treeProcessor.processInput(inputData);
+				treeProcessor.processInput(inputData, sourceIterator.getCurrenRecord());
 			} catch (AbortParsingException e) {
 				if (!runIt) {
 					return Result.ABORTED;
@@ -441,7 +452,11 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
-		sequences.clear();
+	}
+
+	@Override
+	public String[] getUsedUrls() {
+		return new String[] { fileURL };
 	}
 
 	private Object getNextSource() throws JetelException {
@@ -490,8 +505,8 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		this.charset = charset;
 	}
 
-	public void setPolicyType(String strPolicyType) {
-		policyType = PolicyType.valueOfIgnoreCase(strPolicyType);
+	public void setPolicyType(String policyTypeStr) {
+		this.policyTypeStr = policyTypeStr;
 	}
 
 	public void setMappingString(String mappingString) {
@@ -620,19 +635,30 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	@Override
 	public Sequence getSequence(MappingContext context) {
 
-		Sequence sequence = sequences.get(context);
-		if (sequence == null) {
-			if (context.getSequenceId() != null) {
-				sequence = getGraph().getSequence(context.getSequenceId());
+		if (context.getSequenceId() != null) {
+			Sequence result = getGraph().getSequence(context.getSequenceId());
+			if (result == null) {
+				throw new JetelRuntimeException("Could not find sequence: " + context.getSequenceId());
 			}
-			if (sequence == null) {
-				
-				String id = getType() + "Seq_" + sequenceId++;
-				sequence = SequenceFactory.createSequence(getGraph(), PrimitiveSequence.SEQUENCE_TYPE, new Object[] { id, getGraph(), context.getSequenceField() }, new Class[] { String.class, TransformationGraph.class, String.class });
+			return result;
+		} else {
+			if (defaultSequenceId == null) {
+				String id = getId() + "_DefaultSequence";
+				Sequence defaultSequence = SequenceFactory.createSequence(getGraph(), PrimitiveSequence.SEQUENCE_TYPE,
+						new Object[] {id, getGraph(), id}, new Class[] {String.class, TransformationGraph.class, String.class});
+				try {
+					PrimitiveSequence ps = (PrimitiveSequence)defaultSequence;
+					ps.setGraph(getGraph());
+					ps.init();
+					ps.setStart(1);
+				} catch (ComponentNotReadyException e) {
+					throw new JetelRuntimeException(e);
+				}
+				getGraph().addSequence(defaultSequence);
+				defaultSequenceId = id;
 			}
-			sequences.put(context, sequence);
+			return getGraph().getSequence(defaultSequenceId);
 		}
-		return sequence;
 	}
 	
 	/**
@@ -643,7 +669,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	 * @created 10.3.2012
 	 */
 	private interface TreeProcessor {
-		void processInput(Object input) throws Exception;
+		void processInput(Object input, DataRecord inputRecord) throws Exception;
 	}
 
 
@@ -667,8 +693,8 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		}
 
 		@Override
-		public void processInput(Object input) throws AbortParsingException {
-			pushParser.parse(rootContext, inputAdapter.adapt(input));
+		public void processInput(Object input, DataRecord inputRecord) throws AbortParsingException {
+			pushParser.parse(rootContext, inputAdapter.adapt(input), inputRecord);
 		}
 	}
 
@@ -705,7 +731,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		}
 
 		@Override
-		public void processInput(Object input) throws Exception {
+		public void processInput(Object input, DataRecord inputRecord) throws Exception {
 			if (input instanceof ReadableByteChannel) {
 				/*
 				 * Convert input stream to XML
@@ -726,6 +752,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 					pipeTransformer.setInputOutput(Channels.newWriter(pipe.sink(), "UTF-8"), source);
 					pipeParser = new PipeParser(TreeReader.this, pushParser, rootContext);
 					pipeParser.setInput(Channels.newReader(pipe.source(), "UTF-8"));
+					pipeParser.setInputDataRecord(inputRecord);
 				} catch (TransformerFactoryConfigurationError e) {
 					throw new JetelRuntimeException("Failed to instantiate transformer", e);
 				}
@@ -818,6 +845,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			private XPathPushParser pushParser;
 			private MappingContext rootContext;
 			private Reader pipedReader;
+			private DataRecord inputRecord;
 			
 			public PipeParser(Node node, XPathPushParser parser, MappingContext root) {
 				super(node, "PipeParser");
@@ -825,11 +853,14 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				this.rootContext = root;
 			}
 			
-			
+			public void setInputDataRecord(DataRecord inputRecord) {
+				this.inputRecord = inputRecord;
+			}
+
 			@Override
 			public void work() throws InterruptedException {
 				try {
-					pushParser.parse(rootContext, new SAXSource(new InputSource(pipedReader)));
+					pushParser.parse(rootContext, new SAXSource(new InputSource(pipedReader)), inputRecord);
 				} catch (Throwable t) {
 					StreamConvertingXPathProcessor.this.failure = t;
 				}

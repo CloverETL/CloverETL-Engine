@@ -42,6 +42,11 @@ public interface InspectedComponent {
 	public InspectedComponent getNextComponent();
 
 	/**
+	 * Returns representation of components, which is down the output port with the given number.
+	 */
+	public InspectedComponent getOutputPortComponent(int portNumber);
+	
+	/**
 	 * @return an edge through which was reached the wrapped component
 	 * in cycle detection algorithm (see {@link GraphCycleInspector}
 	 */

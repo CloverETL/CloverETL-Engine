@@ -1,9 +1,9 @@
 number power1;
 number power2;
-double[] intResult;
-double[] longResult;
-double[] doubleResult;
-double[] decimalResult;
+decimal[] intResult;
+decimal[] longResult;
+decimal[] doubleResult;
+decimal[] decimalResult;
 
 function integer transform() {
 	power1=pow(3,1.2);

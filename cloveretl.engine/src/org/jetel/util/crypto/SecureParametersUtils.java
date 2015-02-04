@@ -33,9 +33,10 @@ import org.jetel.exception.JetelRuntimeException;
  */
 public class SecureParametersUtils {
 
-	private final static Pattern ENCRYPTED_TEXT_PREFIX = Pattern.compile("enc#");
+	public final static String ENCRYPTED_TEXT_PREFIX = "enc#";
+	private final static Pattern ENCRYPTED_TEXT_PREFIX_PATTERN = Pattern.compile(ENCRYPTED_TEXT_PREFIX);
 
-	private final static Pattern ENCRYPTED_TEXT_PATTERN = Pattern.compile(ENCRYPTED_TEXT_PREFIX + "(.*)");
+	private final static Pattern ENCRYPTED_TEXT_PATTERN = Pattern.compile(ENCRYPTED_TEXT_PREFIX_PATTERN + "(.*)");
 
 	/**
 	 * Checks whether the given text is encrypted text.
@@ -55,7 +56,7 @@ public class SecureParametersUtils {
 	 * An encrypted text is prefixed by 'enc#' prefix to be possible detected by {@link #isEncryptedText(String)} method.
 	 */
 	public static String wrapEncryptedText(String encryptedText) {
-		return ENCRYPTED_TEXT_PREFIX + (encryptedText != null ? encryptedText : "");
+		return ENCRYPTED_TEXT_PREFIX_PATTERN + (encryptedText != null ? encryptedText : "");
 	}
 
 	/**

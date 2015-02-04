@@ -118,15 +118,6 @@ public class LookupTableReaderWriter extends Node {
 		this.freeLookupTable = freeLookupTable;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
-
 	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
@@ -220,7 +211,7 @@ public class LookupTableReaderWriter extends Node {
 			List<DataRecordMetadata> inMetadata = getInMetadata();
 			if (inMetadata != null && inMetadata.size() > 0 && !lookupTable.isPutSupported()) {
 				status.add(new ConfigurationProblem("DB Lookup table does not support write operation.", 
-						ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+						ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_LOOKUP_TABLE_ATTRIBUTE));
 			}
 		}
 

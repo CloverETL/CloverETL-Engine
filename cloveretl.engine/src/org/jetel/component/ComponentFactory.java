@@ -29,8 +29,12 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.GraphElement;
+import org.jetel.graph.IGraphElement;
 import org.jetel.graph.Node;
+import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.distribution.EngineComponentAllocation;
@@ -39,6 +43,7 @@ import org.jetel.plugin.PluginDescriptor;
 import org.jetel.plugin.Plugins;
 import org.jetel.util.XmlUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -63,7 +68,7 @@ public class ComponentFactory {
         //register all components
         for(Extension extension : componentExtensions) {
             try {
-            	ComponentDescription description = new ComponentDescription(extension);
+            	ComponentDescription description = new ComponentDescriptionImpl(extension);
             	description.init();
                 registerComponent(description);
             } catch(Exception e) {
@@ -125,40 +130,123 @@ public class ComponentFactory {
 	 * @since                 May 27, 2002
 	 */
 	public final static Node createComponent(TransformationGraph graph, String componentType, org.w3c.dom.Node nodeXML) {
+		return createComponent(graph, componentType, nodeXML, true);
+	}
+	
+	/**
+	 *  Method for creating various types of Components based on component type & XML parameter definition.<br>
+	 *  If component type is not registered, it tries to use componentType parameter directly as a class name.
+	 *  If the instance of the component cannot be created due failure in Node.fromXML() method and strict is false
+	 *  then dummy component implementation is returned. This dummy implementation provides only
+	 *  component id, type and name of the component.
+	 *  
+	 * @param  componentType  Type of the component (e.g. SimpleCopy, Gather, Join ...)
+	 * @param  xmlNode        XML element containing appropriate Node parameters
+	 * @param  strict		  if false errors in Node.fromXML() is ignored and dummy component implementation is returned
+	 * @return                requested Component (Node) object or null if creation failed 
+	 * @since                 May 27, 2002
+	 */
+	public final static Node createComponent(TransformationGraph graph, String componentType, org.w3c.dom.Node nodeXML, boolean strict) {
 		Class<? extends Node> tClass = getComponentClass(componentType);
-
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes((Element) nodeXML, graph);
+		Node result = null;
+		
         try {
             //create instance of component
 			Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
-			Node result = (org.jetel.graph.Node) method.invoke(null, new Object[] {graph, nodeXML});
-			
-			//nodeDistribution attribute parsing
-			//hack for extracting of node layout information - Clover3 solves this issue
-			//it is the easiest way how to add new common attribute for all nodes
-			ComponentXMLAttributes xattribs = new ComponentXMLAttributes((Element) nodeXML, graph);
-			if (xattribs.exists(Node.XML_ALLOCATION_ATTRIBUTE)) {
-				EngineComponentAllocation nodeAllocation = EngineComponentAllocation.fromString(xattribs.getString(Node.XML_ALLOCATION_ATTRIBUTE));
-				result.setAllocation(nodeAllocation);
-			}
-			//name attribute parsing
-			if (xattribs.exists(Node.XML_NAME_ATTRIBUTE)) {
-				String nodeName = xattribs.getString(Node.XML_NAME_ATTRIBUTE);
-				result.setName(nodeName);
-			}
-
+			result = (org.jetel.graph.Node) method.invoke(null, new Object[] {graph, nodeXML});
+	        loadCommonAttributes(graph, componentType, result, nodeXML);
 			return result;
 		} catch (Exception e) {
-			Throwable t = e;
-			if (e instanceof InvocationTargetException) {
-				t = ((InvocationTargetException) e).getTargetException();
+			if (strict) {
+				throw createException(xattribs, e);
+			} else {
+				return createDummyComponent(graph, componentType, tClass, nodeXML);
 			}
-			ComponentXMLAttributes xattribs = new ComponentXMLAttributes((Element) nodeXML, graph);
-			String id = xattribs.getString(Node.XML_ID_ATTRIBUTE, null); 
-			String name = xattribs.getString(Node.XML_NAME_ATTRIBUTE, null); 
-            throw new RuntimeException("Can't create component " + GraphElement.identifiersToString(id, name) + ".", t);
 		}
 	}
-    
+
+	/**
+	 * @param graph parent graph
+	 * @param componentType component type
+	 * @param nodeXML xml definition
+	 * @return dummy component implementation which provides only component id, name, type and component description
+	 */
+	public final static Node createDummyComponent(TransformationGraph graph, String componentType, Class<? extends Node> componentClass, org.w3c.dom.Node nodeXML) {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes((Element) nodeXML, graph);
+		String componentId = xattribs.getString(Node.XML_ID_ATTRIBUTE, null);
+		Node result = null;
+		
+		if (componentClass != null) {
+			try {
+				//create instance of requested component using constructor
+				//component attributes are not passed into component, just correct instance is created
+				//correct instance is better than a dummy implementation, since for example
+				//metadata propagation of some components can be easily evaluated even without
+				//correct settings (LookupJoin component)
+				Constructor<? extends Node> constructor = componentClass.getConstructor(String.class);
+				result = constructor.newInstance(componentId);
+			} catch (Exception e) {
+				try {
+					Constructor<? extends Node> constructor = componentClass.getConstructor(String.class, TransformationGraph.class);
+					result = constructor.newInstance(componentId, graph);
+				} catch (Exception e1) {
+					//DO NOTHING
+				}
+			}
+		}
+
+		if (result == null) {
+			result = new SimpleNode(componentId, componentType, graph);
+		}
+
+		loadCommonAttributes(graph, componentType, result, nodeXML);
+		
+		return result;
+	}
+
+	private final static void loadCommonAttributes(TransformationGraph graph, String componentType, Node component, org.w3c.dom.Node nodeXML) {
+		ComponentXMLAttributes xattribs = null;
+		if (nodeXML != null) {
+			xattribs = new ComponentXMLAttributes((Element) nodeXML, graph);
+		}
+        try {
+	        //nodeDistribution attribute parsing
+			//it is the easiest way how to add new common attribute for all nodes
+			if (xattribs != null && xattribs.exists(Node.XML_ALLOCATION_ATTRIBUTE)) {
+				EngineComponentAllocation nodeAllocation = EngineComponentAllocation.fromString(xattribs.getString(Node.XML_ALLOCATION_ATTRIBUTE));
+				component.setAllocation(nodeAllocation);
+			}
+			//name attribute parsing
+			if (xattribs != null && xattribs.exists(Node.XML_NAME_ATTRIBUTE)) {
+				String nodeName = xattribs.getString(Node.XML_NAME_ATTRIBUTE);
+				component.setName(nodeName);
+			}
+			
+			//preset description to the node
+			component.setDescriptor(componentMap.get(componentType));
+			
+			//set annotation about location of the component (subgraph only)
+			if (xattribs != null) {
+				component.setPartOfDebugInput(xattribs.getBoolean(Node.XML_PART_OF_DEBUG_INPUT_ATTRIBUTE, false));
+				component.setPartOfDebugOutput(xattribs.getBoolean(Node.XML_PART_OF_DEBUG_OUTPUT_ATTRIBUTE, false));
+			}
+			
+			//remember all component's attribute for further usage, see getComponentProperty() CTL method
+			if (xattribs != null) {
+                component.setAttributes(xattribs.attributes2Properties(new String[0], RefResFlag.ALL_OFF));
+			}
+        } catch (Exception e) {
+        	throw createException(xattribs, e);
+        }
+	}
+
+	private final static RuntimeException createException(ComponentXMLAttributes xattribs, Exception cause) {
+		String id = xattribs != null ? xattribs.getString(Node.XML_ID_ATTRIBUTE, null) : null; 
+		String name = xattribs != null ? xattribs.getString(Node.XML_NAME_ATTRIBUTE, null) : null; 
+        return new RuntimeException("Can't create component " + GraphElement.identifiersToString(id, name) + ".", cause);
+	}
+	
     /**
      *  Method for creating various types of Components based on component type, parameters and theirs types for component constructor.<br>
      *  If component type is not registered, it tries to use componentType parameter directly as a class name.<br>
@@ -178,7 +266,9 @@ public class ComponentFactory {
         try {
             //create instance of component
             Constructor<? extends Node> constructor = tClass.getConstructor(parametersType);
-            return constructor.newInstance(constructorParameters);
+            Node result = constructor.newInstance(constructorParameters);
+            loadCommonAttributes(graph, componentType, result, null);
+            return result;
         } catch(InvocationTargetException e) {
             throw new RuntimeException("Can't create component of type '" + componentType + "'.", e.getTargetException());
         } catch(Exception e) {
@@ -192,6 +282,46 @@ public class ComponentFactory {
     public final static Node createComponent(TransformationGraph graph, String componentType, Properties properties) {
     	Document xmlDocument = XmlUtils.createDocumentFromProperties(TransformationGraphXMLReaderWriter.NODE_ELEMENT, properties);
     	return createComponent(graph, componentType, (Element) xmlDocument.getFirstChild());
+    }
+
+    /**
+     *  Method for creating various types of components based on component type, component id and attributes passed as {@link Properties}.
+     */
+    public final static Node createComponent(TransformationGraph graph, String componentType, String componentId, Properties properties) {
+    	if (properties == null) {
+    		properties = new Properties();
+    	}
+    	properties.setProperty(IGraphElement.XML_ID_ATTRIBUTE, componentId);
+    	
+    	return createComponent(graph, componentType, properties);
+    }
+
+    /**
+     * Simple implementation of Node, used for "disabled" and "pass through" nodes 
+     * by reading graph from xml. In next graph processing will be this nodes removed from graph.
+     */
+    private static class SimpleNode extends Node {
+    	private String type;
+    	
+        public SimpleNode(String id, String type, TransformationGraph graph) {
+            super(id, graph);
+            this.type = type;
+        }
+
+        @Override
+		public String getType() { return type; }
+
+        @Override
+        public ConfigurationStatus checkConfig(ConfigurationStatus status) { return status; }
+
+        @Override
+		public Result execute() { throw new UnsupportedOperationException(); }
+
+        @Override
+		public void init() throws ComponentNotReadyException { }
+
+        @Override
+		public void free() { }
     }
 
 }

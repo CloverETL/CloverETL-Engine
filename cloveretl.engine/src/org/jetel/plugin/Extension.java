@@ -25,6 +25,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.jetel.util.string.StringUtils;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * This class represents extension point of engine.
@@ -39,10 +43,14 @@ public class Extension {
 
     private final PluginDescriptor plugin;
     
-    public Extension(String pointId, PluginDescriptor plugin) {
+    /** Complete XML of extension point. */
+    private final Element xmlElement;
+    
+    public Extension(String pointId, Element xmlElement, PluginDescriptor plugin) {
         this.pointId = pointId;
         this.parameters = new HashMap<String, ExtensionParameter>();
         this.plugin = plugin;
+        this.xmlElement = xmlElement;
     }
 
     public void addParameter(String key, ExtensionParameter parameter) {
@@ -105,18 +113,54 @@ public class Extension {
         return pointId;
     }
 
+    /**
+     * @return complete XML of extension point
+     */
+    public Element getXMLDefinition() {
+    	return xmlElement;
+    }
+    
     @Override
 	public String toString() {
         StringBuilder ret = new StringBuilder(getPointId() + " { ");
         
+        //print out all 'parameters'
         for(String key : parameters.keySet()) {
             final ExtensionParameter parameter = parameters.get(key); 
-            ret.append(key + " = ");
-            ret.append(parameter);
-            ret.append("; ");
+            ret.append(key + " = " + parameter + "; ");
         }
         
-        ret.append(" }");
+        //this complicated code just print out important attributes of the root XML element of this extension description
+        //this is used for 'component' extension point, where 'paramters' are not used at all
+        if (parameters.isEmpty() && xmlElement.hasChildNodes()) {
+        	NodeList childNodes = xmlElement.getChildNodes();
+        	for (int j = 0; j < childNodes.getLength(); j++) {
+        		if (childNodes.item(j) instanceof Element) {
+		        	NamedNodeMap attributes = childNodes.item(j).getAttributes();
+		        	if (attributes != null) {
+			        	for (int i = 0; i < attributes.getLength(); i++) {
+			        		Node attribute = attributes.item(i);
+			        		String attrName = attribute.getNodeName();
+			        		if (isPrintedAttribute(attrName)) {
+				        		String attrValue = attribute.getNodeValue();
+				        		ret.append(attrName + " = " + attrValue + "; ");
+			        		}
+			        	}
+		        	}
+		        	break;
+        		}
+        	}
+        }
+        ret.append("}");
         return ret.toString();
     }
+    
+    private static final List<String> PRINTED_ATTRIBUTES = Arrays.asList("id", "name", "type", "className");
+    /**
+     * Filter out only important attributes which should be printed out to console.
+     */
+    private static boolean isPrintedAttribute(String attributeName) {
+    	return PRINTED_ATTRIBUTES.contains(attributeName);
+    }
+    
 }

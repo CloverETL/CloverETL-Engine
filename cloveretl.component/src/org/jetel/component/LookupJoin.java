@@ -47,6 +47,8 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.lookup.DBLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
@@ -197,7 +199,7 @@ import org.w3c.dom.Element;
  * @since Dec 11, 2006
  * 
  */
-public class LookupJoin extends Node {
+public class LookupJoin extends Node implements MetadataProvider {
 
 	private static final String XML_LOOKUP_TABLE_ATTRIBUTE = "lookupTable";
 
@@ -250,6 +252,10 @@ public class LookupJoin extends Node {
 
 	static Log logger = LogFactory.getLog(Reformat.class);
 
+	public LookupJoin(String id) {
+		super(id);
+	}
+	
 	/**
 	 * @param id component identification
 	 * @param lookupTableName
@@ -273,11 +279,6 @@ public class LookupJoin extends Node {
 		this.transformation = transform;
 	}
 
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-	
     @Override
     public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();
@@ -465,7 +466,7 @@ public class LookupJoin extends Node {
         if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
 
         if (getOutputPort(REJECTED_PORT) != null) {
@@ -488,17 +489,33 @@ public class LookupJoin extends Node {
 			}
         }
 
-		LookupTable lookupTable = getGraph().getLookupTable(lookupTableName);
-
-		if (lookupTable == null) {
-			status.add(new ConfigurationProblem("Lookup table \"" + lookupTableName + "\" not found.", Severity.ERROR,
-					this, Priority.NORMAL));
-		} else if (transformation == null && !runtimeMetadata(lookupTable)) {
-			DataRecordMetadata[] inMetadata = { getInputPort(READ_FROM_PORT).getMetadata(), lookupTable.getMetadata() };
-			DataRecordMetadata[] outMetadata = { getOutputPort(WRITE_TO_PORT).getMetadata() };
-		
-            //check transformation
-        	getTransformFactory(inMetadata, outMetadata).checkConfig(status);
+        if (StringUtils.isEmpty(lookupTableName)) {
+			status.add(new ConfigurationProblem("Required lookup table is missing.", Severity.ERROR, this, Priority.NORMAL, XML_LOOKUP_TABLE_ATTRIBUTE));
+        } else {
+			LookupTable lookupTable = getGraph().getLookupTable(lookupTableName);
+	
+			if (lookupTable == null) {
+				status.add(new ConfigurationProblem("Lookup table \"" + lookupTableName + "\" not found.", Severity.ERROR,
+						this, Priority.NORMAL, XML_LOOKUP_TABLE_ATTRIBUTE));
+			} else if (transformation == null && !runtimeMetadata(lookupTable)) {
+				DataRecordMetadata[] inMetadata = { getInputPort(READ_FROM_PORT).getMetadata(), lookupTable.getMetadata() };
+				DataRecordMetadata[] outMetadata = { getOutputPort(WRITE_TO_PORT).getMetadata() };
+			
+	            //check transformation
+	        	getTransformFactory(inMetadata, outMetadata).checkConfig(status);
+	
+				//check join key
+	        	if (joinKey == null) {
+	    			status.add(new ConfigurationProblem("Required join key is missing.", Severity.ERROR, this, Priority.NORMAL, XML_JOIN_KEY_ATTRIBUTE));
+	        	} else {
+		        	try {
+						recordKey = new RecordKey(joinKey, inMetadata[0]);
+						recordKey.init();
+					} catch (Exception e) {
+						status.add(new ConfigurationProblem("Join key parsing error.", e, Severity.ERROR, this, Priority.NORMAL, XML_JOIN_KEY_ATTRIBUTE));
+					}
+	        	}
+	        }
         }
         
         return status;
@@ -519,10 +536,8 @@ public class LookupJoin extends Node {
 			lookupTable.init();
 		}
 		DataRecordMetadata lookupMetadata = lookupTable.getMetadata();
-		DataRecordMetadata inMetadata[] = {
-				getInputPort(READ_FROM_PORT).getMetadata(), lookupMetadata };
-		DataRecordMetadata outMetadata[] = { getOutputPort(WRITE_TO_PORT)
-				.getMetadata() };
+		DataRecordMetadata inMetadata[] = {	getInputPort(READ_FROM_PORT).getMetadata(), lookupMetadata };
+		DataRecordMetadata outMetadata[] = { getOutputPort(WRITE_TO_PORT).getMetadata() };
 		try {
 			recordKey = new RecordKey(joinKey, inMetadata[0]);
 			recordKey.init();
@@ -573,13 +588,15 @@ public class LookupJoin extends Node {
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		LookupJoin join;
-		String[] joinKey;
+		String[] joinKey = null;
 		// get necessary parameters
-		joinKey = xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(
-				Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+		if (xattribs.exists(XML_JOIN_KEY_ATTRIBUTE)) {
+			joinKey = xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(
+					Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+		}
 
 		join = new LookupJoin(xattribs.getString(XML_ID_ATTRIBUTE),
-				xattribs.getString(XML_LOOKUP_TABLE_ATTRIBUTE), joinKey,
+				xattribs.getString(XML_LOOKUP_TABLE_ATTRIBUTE, null), joinKey,
 				xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
 				xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
 				xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.URL));
@@ -632,6 +649,26 @@ public class LookupJoin extends Node {
 
 	public void setCharset(String charset) {
 		this.charset = charset;
+	}
+
+	@Override
+	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		if (portIndex == 0) {
+			if (getOutputPort(1) != null) {
+				return metadataPropagationResolver.findMetadata(getOutputPort(1).getEdge());
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		if (portIndex == 1) {
+			if (getInputPort(0) != null) {
+				return metadataPropagationResolver.findMetadata(getInputPort(0).getEdge());
+			}
+		}
+		return null;
 	}
 
 }

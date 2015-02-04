@@ -18,29 +18,33 @@
  */
 package org.jetel.component;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.data.DataRecord;
-import org.jetel.data.DataRecordFactory;
-import org.jetel.data.formatter.CloverDataFormatter;
+import org.jetel.data.Defaults;
+import org.jetel.data.formatter.provider.CloverDataFormatterProvider;
+import org.jetel.data.lookup.LookupTable;
+import org.jetel.enums.PartitionFileTagType;
+import org.jetel.enums.ProcessingType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.graph.InputPort;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldContainerType;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
+import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -111,136 +115,141 @@ public class CloverDataWriter extends Node {
 
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private static final String XML_APPEND_ATTRIBUTE = "append";
-	private static final String XML_SAVEINDEX_ATRRIBUTE = "saveIndex";
-	private static final String XML_SAVEMETADATA_ATTRIBUTE = "saveMetadata";
 	private static final String XML_COMPRESSLEVEL_ATTRIBUTE = "compressLevel";
 	private static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
 	private static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
 	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
+    private static final String XML_EXCLUDE_FIELDS_ATTRIBUTE = "excludeFields";
+	private static final String XML_RECORDS_PER_FILE = "recordsPerFile"; // FIXME does not work well because of the compression
+	private static final String XML_BYTES_PER_FILE = "bytesPerFile";
+	private static final String XML_PARTITIONKEY_ATTRIBUTE = "partitionKey";
+	private static final String XML_PARTITION_ATTRIBUTE = "partition";
+	private static final String XML_PARTITION_OUTFIELDS_ATTRIBUTE = "partitionOutFields";
+	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
+	private static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
+	private static final String XML_SORTED_INPUT_ATTRIBUTE = "sortedInput";
+	private static final String XML_CREATE_EMPTY_FILES_ATTRIBUTE = "createEmptyFiles";
 
 	public final static String COMPONENT_TYPE = "CLOVER_WRITER";
 	private final static int READ_FROM_PORT = 0;
+	private final static int OUTPUT_PORT = 0;
 
 	private String fileURL;
 	private boolean append;
-	private CloverDataFormatter formatter;
-	private boolean saveMetadata;
-	private DataRecordMetadata metadata;
-	private OutputStream out;//ZipOutputstream or FileOutputStream
-	private InputPort inPort;
+	private CloverDataFormatterProvider formatterProvider;
+	private InputPortDirect inPort;
 	private int compressLevel;
-	String fileName;
     private int skip;
 	private int numRecords = -1;
-	private boolean mkDir;
 	
-    static Log logger = LogFactory.getLog(CloverDataWriter.class);
+	private MultiFileWriter writer;
+	
+	private int bytesPerFile; // FIXME does not work well because of the compression
+	private int recordsPerFile;
+	private String partition;
+	private String attrPartitionKey;
+	private LookupTable lookupTable;
+	private String attrPartitionOutFields;
+	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBER_FILE_TAG;
+	private String partitionUnassignedFileName;
+	private boolean mkDir;
+	private boolean sortedInput = false;
+	private boolean createEmptyFiles = true;
 
- 	public CloverDataWriter(String id, String fileURL, boolean saveIndex) {
+    private String excludeFields;
+
+	static Log logger = LogFactory.getLog(CloverDataWriter.class);
+
+ 	public CloverDataWriter(String id, String fileURL) {
 		super(id);
 		this.fileURL = fileURL;
-		formatter = new CloverDataFormatter(fileURL,saveIndex);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
-	/**
-	 * This method saves metadata definition to fileName.fmt or
-	 * fileName.zip#METADATA/fileName.fmt
-	 * 
-	 * @throws IOException
-	 */
-	private void saveMetadata() throws IOException{
-		if (out instanceof ZipOutputStream) {
-			((ZipOutputStream)out).putNextEntry(new ZipEntry(
-					CloverDataFormatter.METADATA_DIRECTORY + fileName+ 
-					CloverDataFormatter.METADATA_EXTENSION));
-			DataRecordMetadataXMLReaderWriter.write(metadata, out);
-			((ZipOutputStream)out).closeEntry();
-		}else{
-			OutputStream metaFile;
-			if (fileURL.startsWith("zip:")) {
-				metaFile = FileUtils.getOutputStream(getGraph().getRuntimeContext().getContextURL(), 
-						fileURL + "#" + CloverDataFormatter.METADATA_DIRECTORY + fileName + CloverDataFormatter.METADATA_EXTENSION, false, -1);
-			}
-			else {
-				metaFile = FileUtils.getOutputStream(getGraph().getRuntimeContext().getContextURL(), 
-						fileURL + CloverDataFormatter.METADATA_EXTENSION, false, -1);
-			}
-			DataRecordMetadataXMLReaderWriter.write(metadata,metaFile);	
-			metaFile.close();
+	protected void prepareWriter() throws ComponentNotReadyException {
+		if (firstRun()) {
+	        try {
+	            writer.init(inPort.getMetadata());
+	        } catch(ComponentNotReadyException e) {
+	            e.setAttributeName(XML_FILEURL_ATTRIBUTE);
+	            throw e;
+	        }
+		}
+		else {
+			writer.reset();
 		}
 	}
-
+	
 	@Override
     public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();
-    	
-    	if (firstRun()) {//a phase-dependent part of initialization
-    		//all has been initialized in init()
-    	}
-    	else {
-    		formatter.reset();
-    	}
-
-    	try{//create output stream and rewrite existing data
-        	fileName = new File(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), fileURL)).getName();
-        	if (fileName.toLowerCase().endsWith(".zip")) {
-        		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
-        	}
-			out = FileUtils.getOutputStream(getGraph().getRuntimeContext().getContextURL(), 
-					fileURL.startsWith("zip:") ? fileURL + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName : fileURL, 
-					append, compressLevel);
-		} catch(IOException e) {
-			throw new ComponentNotReadyException(e);
-		}
-
-        formatter.setDataTarget(out);
+    	prepareWriter();
     }
 	
 	@Override
 	public Result execute() throws Exception {
-		DataRecord record = DataRecordFactory.newRecord(metadata);
-		long iRec = 0;
-		int recordTo = numRecords < 0 ? Integer.MAX_VALUE : (skip <= 0 ? numRecords+1 : skip+1 + numRecords);
-		record.init();
-		while (record != null && runIt) {
-			iRec++;
-			record = inPort.readRecord(record);
-			if (skip >= iRec || recordTo <= iRec) continue;
-			if (record != null) {
-				formatter.write(record);
-			}
+		// CLO-2657: use direct input port reading
+		CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE);
+		while (inPort.readRecordDirect(recordBuffer) && runIt) {
+			writer.writeDirect(recordBuffer);
 			SynchronizeUtils.cloverYield();
 		}
+		writer.finish();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
-    @Override
-    public void postExecute() throws ComponentNotReadyException {
-    	super.postExecute();
-    	try {
-			formatter.finish();
-			if (saveMetadata){
-				saveMetadata();
-			}
+	@Override
+	public void postExecute() throws ComponentNotReadyException {
+		super.postExecute();
+		try {
+			writer.close();
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(e);
 		}
-  		formatter.close(); //indirectly closes out    		
-    }
+	}
     
 	@Override
 	public synchronized void free() {
-        if(!isInitialized()) return;
 		super.free();
+		if (writer != null) {
+			try {
+				writer.close();
+			} catch(Throwable t) {
+				logger.warn("Resource releasing failed for '" + getId() + "'.", t);
+			}
+		}
 	}
+	
+	private void checkFileURL() throws ComponentNotReadyException {
+		String PORT_PROTOCOL = "port:";
+		String FIELD_DELIMITER = "\\.";
+		if (!StringUtils.isEmpty(fileURL) && fileURL.startsWith(PORT_PROTOCOL)) {
+			String[] aField = fileURL.substring(PORT_PROTOCOL.length()).split(":");
+			if (aField.length < 1) {
+				throw new ComponentNotReadyException("The source string '" + fileURL + "' is not valid.");
+			}
+			ProcessingType fieldProcessingType = ProcessingType.fromString(aField.length > 1 ? aField[1] : null, ProcessingType.DISCRETE);
+			if (fieldProcessingType == ProcessingType.SOURCE) {
+				throw new ComponentNotReadyException("Unsupported output method: " + fieldProcessingType);
+			}
+			String[] aFieldNamePort = aField[0].split(FIELD_DELIMITER);
+			if (aFieldNamePort.length < 2) {
+				throw new ComponentNotReadyException("The source string '" + fileURL + "' is not valid.");
+			}
+			String fName = aFieldNamePort[1];
+			DataRecordMetadata record = getOutputPort(OUTPUT_PORT).getMetadata();
+			DataFieldMetadata field = record.getField(fName);
+			if (field == null) {
+				throw new ComponentNotReadyException("The field not found for the statement: '" + fileURL + "'");
+			}
+			if ((field.getDataType() != DataFieldType.BYTE) && (field.getDataType() != DataFieldType.CBYTE)) {
+				throw new ComponentNotReadyException("Unsupported output field type: '" + field.getDataType() + "'. Use 'byte' or 'cbyte' instead.");
+			}
+			if (field.getContainerType() != DataFieldContainerType.SINGLE) {
+				throw new ComponentNotReadyException("Unsupported output field container type: '" + field.getContainerType() + "'");
+			}
+		}
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig()
 	 */
@@ -249,7 +258,7 @@ public class CloverDataWriter extends Node {
         super.checkConfig(status);
         
         if(!checkInputPorts(status, 1, 1)
-        		|| !checkOutputPorts(status, 0, 0)) {
+        		|| !checkOutputPorts(status, 0, 1)) {
         	return status;
         }
 
@@ -260,7 +269,7 @@ public class CloverDataWriter extends Node {
         }
         
         try {
-        	FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, fileURL, mkDir);
+        	FileUtils.canWrite(getContextURL(), fileURL, mkDir);
         } catch (ComponentNotReadyException e) {
             status.add(e,ConfigurationStatus.Severity.ERROR,this,
             		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
@@ -276,8 +285,32 @@ public class CloverDataWriter extends Node {
             		ConfigurationStatus.Priority.NORMAL,XML_APPEND_ATTRIBUTE);
 		}
         
+        try {
+        	checkFileURL();
+        } catch (ComponentNotReadyException e) {
+        	status.add(e, Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE);
+        }
+        
         return status;
     }
+
+	/**
+	 * Creates and initializes lookup table.
+	 * 
+	 * @throws ComponentNotReadyException
+	 */
+	private void initLookupTable() throws ComponentNotReadyException {
+		if (partition == null) return;
+		
+		// Initializing lookup table
+		lookupTable = getGraph().getLookupTable(partition);
+		if (lookupTable == null) {
+			throw new ComponentNotReadyException("Lookup table \"" + partition + "\" not found.");
+		}
+		if (!lookupTable.isInitialized()) {
+			lookupTable.init();
+		}
+	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#init()
@@ -287,15 +320,52 @@ public class CloverDataWriter extends Node {
         if(isInitialized()) return;
 		super.init();
 		
-    	// creates necessary directories
-        if (mkDir) FileUtils.makeDirs(getGraph().getRuntimeContext().getContextURL(), new File(FileURLParser.getMostInnerAddress(fileURL)).getParent());
-
-		inPort = getInputPort(READ_FROM_PORT);
-		metadata = inPort.getMetadata();
-		formatter.setProjectURL(getGraph().getRuntimeContext().getContextURL());
-		formatter.init(metadata);
-	}
+		checkFileURL();
 		
+		//prepare formatter provider
+		formatterProvider = new CloverDataFormatterProvider();
+		formatterProvider.setAppend(this.append);
+		formatterProvider.setCompressLevel(compressLevel);
+
+        if (!StringUtils.isEmpty(excludeFields)) {
+        	String[] excludedFieldNames = excludeFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+            formatterProvider.setExcludedFieldNames(excludedFieldNames);
+        }
+		
+		initLookupTable();
+
+		writer = new MultiFileWriter(formatterProvider, getContextURL(), fileURL);
+		writer.setLogger(logger);
+        writer.setBytesPerFile(bytesPerFile);
+        writer.setRecordsPerFile(recordsPerFile);
+		writer.setAppendData(append);
+		writer.setSkip(skip);
+		writer.setNumRecords(numRecords);
+		writer.setDictionary(getGraph().getDictionary());
+        writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
+		writer.setMkDir(mkDir);
+		writer.setUseChannel(false); // prefer OutputStream
+		writer.setCreateEmptyFiles(createEmptyFiles);
+        if (attrPartitionKey != null) {
+            writer.setLookupTable(lookupTable);
+            writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+            writer.setPartitionFileTag(partitionFileTagType);
+        	writer.setPartitionUnassignedFileName(partitionUnassignedFileName);
+            writer.setSortedInput(sortedInput);
+	
+        	if (attrPartitionOutFields != null) {
+        		writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+        	}
+        }
+
+		inPort = getInputPortDirect(READ_FROM_PORT);
+	}
+
+	@Override
+	public String[] getUsedUrls() {
+		return new String[] { fileURL };
+	}
+
 	/**
 	 *  Description of the Method
 	 *
@@ -310,10 +380,8 @@ public class CloverDataWriter extends Node {
 		CloverDataWriter aDataWriter = null;
 		
 		aDataWriter = new CloverDataWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-				xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.URL),
-				xattribs.getBoolean(XML_SAVEINDEX_ATRRIBUTE,false));
+				xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.URL));
 		aDataWriter.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false));
-		aDataWriter.setSaveMetadata(xattribs.getBoolean(XML_SAVEMETADATA_ATTRIBUTE,false));
 		aDataWriter.setCompressLevel(xattribs.getInteger(XML_COMPRESSLEVEL_ATTRIBUTE,-1));
 		if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)){
 			aDataWriter.setSkip(Integer.parseInt(xattribs.getString(XML_RECORD_SKIP_ATTRIBUTE)));
@@ -324,12 +392,38 @@ public class CloverDataWriter extends Node {
 		if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
 			aDataWriter.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
         }
+        if(xattribs.exists(XML_EXCLUDE_FIELDS_ATTRIBUTE)) {
+            aDataWriter.setExcludeFields(xattribs.getString(XML_EXCLUDE_FIELDS_ATTRIBUTE));
+        }
+        if(xattribs.exists(XML_RECORDS_PER_FILE)) {
+            aDataWriter.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
+        }
+        if(xattribs.exists(XML_BYTES_PER_FILE)) {
+            aDataWriter.setBytesPerFile(xattribs.getInteger(XML_BYTES_PER_FILE));
+        }
+		if(xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)) {
+			aDataWriter.setPartitionKey(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE));
+        }
+		if(xattribs.exists(XML_PARTITION_ATTRIBUTE)) {
+			aDataWriter.setPartition(xattribs.getString(XML_PARTITION_ATTRIBUTE));
+        }
+		if(xattribs.exists(XML_PARTITION_FILETAG_ATTRIBUTE)) {
+			aDataWriter.setPartitionFileTag(xattribs.getString(XML_PARTITION_FILETAG_ATTRIBUTE));
+        }
+		if(xattribs.exists(XML_PARTITION_OUTFIELDS_ATTRIBUTE)) {
+			aDataWriter.setPartitionOutFields(xattribs.getString(XML_PARTITION_OUTFIELDS_ATTRIBUTE));
+        }
+		if(xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
+			aDataWriter.setPartitionUnassignedFileName(xattribs.getStringEx(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE, RefResFlag.URL));
+        }
+        if (xattribs.exists(XML_SORTED_INPUT_ATTRIBUTE)) {
+        	aDataWriter.setSortedInput(xattribs.getBoolean(XML_SORTED_INPUT_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_CREATE_EMPTY_FILES_ATTRIBUTE)) {
+        	aDataWriter.setCreateEmptyFiles(xattribs.getBoolean(XML_CREATE_EMPTY_FILES_ATTRIBUTE));
+        }
 		
 		return aDataWriter;
-	}
-
-	public void setSaveMetadata(boolean saveMetadata) {
-		this.saveMetadata = saveMetadata;
 	}
 
 	public void setCompressLevel(int compressLevel) {
@@ -338,7 +432,6 @@ public class CloverDataWriter extends Node {
 
 	public void setAppend(boolean append) {
 		this.append = append;
-		formatter.setAppend(append);
 	}
 
     /**
@@ -364,4 +457,45 @@ public class CloverDataWriter extends Node {
 	private void setMkDirs(boolean mkDir) {
 		this.mkDir = mkDir;
 	}
+
+	private void setBytesPerFile(int bytesPerFile) {
+		this.bytesPerFile = bytesPerFile;
+	}
+
+	private void setRecordsPerFile(int recordsPerFile) {
+		this.recordsPerFile = recordsPerFile;
+	}
+
+	private void setPartition(String partition) {
+		this.partition = partition;
+	}
+
+	private void setPartitionKey(String partitionKey) {
+		this.attrPartitionKey = partitionKey;
+	}
+
+	private void setPartitionOutFields(String partitionOutFields) {
+		this.attrPartitionOutFields = partitionOutFields;
+	}
+
+	private void setPartitionFileTag(String partitionFileTag) {
+		this.partitionFileTagType = PartitionFileTagType.valueOfIgnoreCase(partitionFileTag);
+	}
+
+	private void setPartitionUnassignedFileName(String partitionUnassignedFileName) {
+		this.partitionUnassignedFileName = partitionUnassignedFileName;
+	}
+
+	private void setSortedInput(boolean sortedInput) {
+		this.sortedInput = sortedInput;
+	}
+
+	private void setExcludeFields(String excludeFields) {
+		this.excludeFields = excludeFields;
+	}
+
+	private void setCreateEmptyFiles(boolean createEmptyFiles) {
+		this.createEmptyFiles = createEmptyFiles;
+	}
+
 }

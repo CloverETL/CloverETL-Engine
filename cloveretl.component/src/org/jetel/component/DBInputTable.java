@@ -26,6 +26,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.SQLDataParser;
+import org.jetel.connection.jdbc.SQLIncremental;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
@@ -39,6 +40,8 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
@@ -161,6 +164,7 @@ public class DBInputTable extends Node {
 	public static final String XML_INCREMENTAL_KEY_ATTRIBUTE = "incrementalKey";
 	public static final String XML_PRINTSTATEMENTS_ATTRIBUTE = "printStatements";
 	
+	private String policyTypeStr;
 	private PolicyType policyType;
 	private TextParser inputParser;
 
@@ -176,7 +180,7 @@ public class DBInputTable extends Node {
 	private String url = null;
 	private boolean printStatements;
 	private String charset;
-	private ReadableChannelIterator channelIterator;  // for reading queries from URL or input port
+	private ReadableChannelIterator channelIterator;  // for reading queries from URL, dictionary or input port
 	private DBConnection connection;
 
 	private DataRecordMetadata statementMetadata;
@@ -230,6 +234,8 @@ public class DBInputTable extends Node {
         if(isInitialized()) return;
 		super.init();
 		
+		policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+
         IConnection conn = getGraph().getConnection(dbConnectionName);
         if (conn==null){
             throw new ComponentNotReadyException("Can't obtain DBConnection object: \""+dbConnectionName+"\"");
@@ -239,10 +245,11 @@ public class DBInputTable extends Node {
         }
 
         if (sqlQuery == null) {
-        	// we'll be reading SQL from file or input port
+        	// we'll be reading SQL from file or input port or dictionary
         	channelIterator = new ReadableChannelIterator(getInputPort(READ_FROM_PORT),
         			getGraph().getRuntimeContext().getContextURL(), url);
 			channelIterator.setCharset(charset);
+			channelIterator.setDictionary(getGraph().getDictionary());
 			channelIterator.init();
 			
 			//statements are single strings delimited by delimiter
@@ -298,6 +305,9 @@ public class DBInputTable extends Node {
 			SQLDataParser parser = null;
 			if (sqlQuery != null) {
 				// we have only single query
+				if (printStatements) {
+					logger.info("Executing statement: " + sqlQuery);
+				}
 				parser = processSqlQuery(sqlQuery);
 			} else {
 				// process queries from file or input port
@@ -479,6 +489,12 @@ public class DBInputTable extends Node {
         	return status;
         }
         
+		if (!PolicyType.isPolicyType(policyTypeStr)) {
+			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+		} else {
+			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+		}
+
         checkMetadata(status, getOutMetadata());
         
         try {
@@ -517,6 +533,12 @@ public class DBInputTable extends Node {
 		            }
 		            status.add(problem);
 				}
+				
+				if (sqlQuery != null && incrementalKeyDef != null && !sqlQuery.contains(SQLIncremental.INCREMENTAL_KEY_INDICATOR)) {
+					status.add(new ConfigurationProblem("Incremental file and key is specified but sql query doesn't contain incremental key indicator ("
+							+SQLIncremental.INCREMENTAL_KEY_INDICATOR+"). The component will erase incremental key from the incremental file.",
+							Severity.WARNING, this, Priority.NORMAL, XML_SQLQUERY_ATTRIBUTE));
+				}
 			}
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
@@ -529,28 +551,17 @@ public class DBInputTable extends Node {
         return status;
     }
 	
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-
 	public void setFetchSize(int fetchSize){
 	    this.fetchSize=fetchSize;
 	}
 
-    public void setPolicyType(String strPolicyType) {
-        setPolicyType(PolicyType.valueOfIgnoreCase(strPolicyType));
+    public void setPolicyType(String policyTypeStr) {
+        this.policyTypeStr = policyTypeStr;
     }
     
-	/**
-	 * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
-	 *
-	 * @param  handler
-	 */
-	public void setPolicyType(PolicyType policyType) {
-        this.policyType = policyType;
-	}
-
+    public void setPolicyType(PolicyType policyType) {
+    	this.policyTypeStr = (policyType != null) ? policyType.toString() : null;
+    }
 
 	public void setIncrementalFile(String incrementalFile) throws MalformedURLException {
 		this.incrementalFile = incrementalFile;

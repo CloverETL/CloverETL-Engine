@@ -63,6 +63,20 @@ public class CloverURITest extends CloverTestCase {
 		for (SingleCloverURI u: uris) {
 			assertTrue(u.getPath().startsWith("file:"));
 		}
+
+		URI context = URI.create("ftp://hostname/dir");
+		CloverURI result = CloverURI.createRelativeURI(context, "");
+		// the trailing slash is not required, but should not break anything
+		// we assume the context URL is a directory
+		assertEquals(URI.create("ftp://hostname/dir/"), result.getAbsoluteURI().getSingleURI().toURI());
+	}
+	
+	public void testCreateSingleURI() {
+		URI context = URI.create("ftp://hostname/dir");
+		SingleCloverURI result = CloverURI.createSingleURI(context, "");
+		// the trailing slash is not required, but should not break anything
+		// we assume the context URL is a directory
+		assertEquals(URI.create("ftp://hostname/dir/"), result.getAbsoluteURI().toURI());
 	}
 
 }

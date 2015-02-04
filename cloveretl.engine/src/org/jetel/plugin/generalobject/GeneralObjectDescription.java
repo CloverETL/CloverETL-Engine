@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.data.PluginableItemDescription;
+import org.jetel.data.PluginableItemDescriptionImpl;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
 
@@ -36,7 +36,7 @@ import org.jetel.plugin.PluginDescriptor;
  *
  * @created 27 Feb 2012
  */
-public class GeneralObjectDescription extends PluginableItemDescription {
+public class GeneralObjectDescription extends PluginableItemDescriptionImpl {
 
     private static Log logger = LogFactory.getLog(GeneralObjectDescription.class);
 
@@ -81,7 +81,7 @@ public class GeneralObjectDescription extends PluginableItemDescription {
                 //find class of general object
                 generalObjectClass = Class.forName(className, true, pluginDescriptor.getClassLoader());
             } catch (ClassNotFoundException ex) {
-                logger.error("Genral object class " + className + " does not exist in plugin " + pluginDescriptor.getId() + ".");
+                logger.error("General object class " + className + " does not exist in plugin " + pluginDescriptor.getId() + ".");
                 throw new RuntimeException("General object class " + className + " does not exist in plugin " + pluginDescriptor.getId() + ".", ex);
             }
             

@@ -2,6 +2,7 @@ import java.util.Random;
 
 import org.jetel.component.DataRecordGenerate;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
@@ -22,7 +23,7 @@ public class GenerateRecord extends DataRecordGenerate{
 		LookupTable lTable = getLookupTable("LookupTable0");
 		lTable.init();
 		DataRecordMetadata keyMetadata = lTable.getKeyMetadata();
-		keyRecord = new DataRecord(keyMetadata);
+		keyRecord = DataRecordFactory.newRecord(keyMetadata);
 		keyRecord.init();
 		lookup = lTable.createLookup(new RecordKey(keyMetadata.getFieldNamesArray(), keyMetadata), keyRecord);
 		

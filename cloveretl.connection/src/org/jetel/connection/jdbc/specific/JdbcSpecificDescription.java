@@ -26,7 +26,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific;
-import org.jetel.data.PluginableItemDescription;
+import org.jetel.data.PluginableItemDescriptionImpl;
 import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
@@ -39,7 +39,7 @@ import org.jetel.plugin.PluginDescriptor;
  *
  * @created May 23, 2008
  */
-public class JdbcSpecificDescription extends PluginableItemDescription {
+public class JdbcSpecificDescription extends PluginableItemDescriptionImpl {
 
     private static Log logger = LogFactory.getLog(JdbcSpecificDescription.class);
 

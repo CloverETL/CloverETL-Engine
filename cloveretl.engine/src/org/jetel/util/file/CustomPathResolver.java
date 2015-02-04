@@ -76,6 +76,12 @@ public interface CustomPathResolver {
 	
 	/**
 	 * Method should return true if this CustomPathResolver handles specified URL - protocol
+	 * <p>
+	 * Note that if the method returns <code>true</code>,
+	 * the resolver must implement both
+	 * {@link #getInputStream(URL, String)}
+	 * and {@link #getOutputStream(URL, String, boolean, int)}.
+	 * </p>
 	 * 
 	 * @param contextURL working/home directory
 	 * @param fileURL URL of the source file

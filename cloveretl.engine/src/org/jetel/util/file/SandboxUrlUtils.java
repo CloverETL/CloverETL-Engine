@@ -19,9 +19,15 @@
 package org.jetel.util.file;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.TransformationGraph;
 
 /**
  * Utility class for working with sandbox URLs.
@@ -196,8 +202,56 @@ public final class SandboxUrlUtils {
 		}
 	}
 
+    /**
+     * CLO-5660: use getUrlFile() to decode the path
+     * 
+     * @param url			- target URL
+     * @param appendData	- <code>true</code> to open the stream for appending
+     * @return new sandbox {@link OutputStream}
+     * @throws IOException
+     */
+    public static OutputStream getSandboxOutputStream(URL url, boolean appendData) throws IOException {
+		TransformationGraph graph = ContextProvider.getGraph();
+		if (graph == null) {
+			throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
+		}
+    	return graph.getAuthorityProxy().getSandboxResourceOutput(ContextProvider.getComponentId(), url.getHost(), FileUtils.getUrlFile(url), appendData);
+    }
+    
+    /**
+     * Utility method to open sandbox {@link InputStream}.
+     * 
+     * @param url	- source URL
+     * @return new sandbox {@link InputStream}
+     * @throws IOException
+     */
+    public static InputStream getSandboxInputStream(URL url) throws IOException {
+		TransformationGraph graph = ContextProvider.getGraph();
+		if (graph == null) {
+			throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
+		}
+		return graph.getAuthorityProxy().getSandboxResourceInput(ContextProvider.getComponentId(), url.getHost(), FileUtils.getUrlFile(url));
+    }
+
 	private SandboxUrlUtils() {
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * Joins context URL with an other URL. If the second URL is regular
+	 * sandbox URL, only the secon attribute is returned. But if the second URL
+	 * is relative path, first context URL is taken into consideration and
+	 * the relative path is joined with the sandbox given by the first attribute.
+	 * For example:
+	 * joinSandboxUrls("xxx", "sandbox://test/data.txt") -> "sandbox://test/data.txt" 
+	 * joinSandboxUrls("sandbox://test/foo.txt"", "./some/data.txt") -> "sandbox://test/some/data.txt" 
+	 */
+	public static String joinSandboxUrls(String contextSandboxUrl, String sandboxUrl) {
+		if (isSandboxUrl(sandboxUrl) || !isSandboxUrl(contextSandboxUrl)) {
+			return sandboxUrl;
+		}
+		String sandboxName = getSandboxName(contextSandboxUrl);
+		return getSandboxPath(sandboxName, sandboxUrl);
+	}
+	
 }

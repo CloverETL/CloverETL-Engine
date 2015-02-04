@@ -19,6 +19,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -44,6 +45,8 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.ContextProvider.Context;
+import org.jetel.graph.Node;
+import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
@@ -59,7 +62,10 @@ import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Years;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class CompilerTestCase extends CloverTestCase {
 
 	// ---------- RECORD NAMES -----------
@@ -109,6 +115,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	protected DataRecord[] outputRecords;
 	
 	protected TransformationGraph graph;
+	
+	protected Node node;
 
 	public CompilerTestCase(boolean compileToJava) {
 		this.compileToJava = compileToJava;
@@ -136,8 +144,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	protected abstract Object getVariable(String varName);
 
 	protected void check(String varName, Object expectedResult) {
-		assertEquals(varName, expectedResult, getVariable(varName));
+		  assertEquals(varName, expectedResult, getVariable(varName));
 	}
+	
+	protected void checkEqualValue(String varName, Object expectedResult) {
+		  assertTrue(varName, ((Comparable)expectedResult).compareTo(getVariable(varName))==0);
+	}
+	
 	
 	protected void checkEquals(String varName1, String varName2) {
 		assertEquals("Comparing " + varName1 + " and " + varName2 + " : ", getVariable(varName1), getVariable(varName2));
@@ -176,6 +189,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		inputRecords = null;
 		outputRecords = null;
 		graph = null;
+		node = null;
 	}
 
 	protected TransformationGraph createEmptyGraph() {
@@ -237,6 +251,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			g.getDictionary().setContentType("dateList", "date");
 			g.getDictionary().setValue("byteList", "list", Arrays.asList(new byte[] {0x12}, new byte[] {0x34, 0x56}, null, new byte[] {0x78}));
 			g.getDictionary().setContentType("byteList", "byte");
+			g.getDictionary().setValue("stringMap", "map", new LinkedHashMap<String,String>());
+			g.getDictionary().setContentType("stringMap", "string");
 		} catch (ComponentNotReadyException e) {
 			throw new RuntimeException("Error init default dictionary", e);
 		}
@@ -623,7 +639,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		ITLCompiler compiler = TLCompilerFactory.createCompiler(graph, inMetadata, outMetadata, "UTF-8");
 		// *** NOTE: please don't remove this commented code. It is used for debugging
 		// ***       Uncomment the code to get the compiled Java code during test execution.
-		// ***       Please don't commit this code uncommited.
+		// ***       Please don't commit this code uncommented.
 	
 //		try {
 //			System.out.println(compiler.convertToJava(expStr, CTLRecordTransform.class, testIdentifier));
@@ -647,9 +663,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		executeCode(compiler);
 	}
+	
+	protected void doCompileExpectError(TransformationGraph graph, String expStr, String testIdentifier, List<String> errCodes) {
+		this.graph = graph;
 
-	protected void doCompileExpectError(String expStr, String testIdentifier, List<String> errCodes) {
-		graph = createDefaultGraph();
 		DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2), graph.getDataRecordMetadata(INPUT_3) };
 		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2), graph.getDataRecordMetadata(OUTPUT_3), graph.getDataRecordMetadata(OUTPUT_4) };
 
@@ -685,6 +702,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		// parseTree.dump("");
 
 		// executeCode(compiler);
+	}
+
+	protected void doCompileExpectError(String expStr, String testIdentifier, List<String> errCodes) {
+		doCompileExpectError(createDefaultGraph(), expStr, testIdentifier, errCodes);
 	}
 
 	protected void doCompileExpectError(String testIdentifier, String errCode) {
@@ -1743,6 +1764,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 
 	public void test_ambiguous() {
+		// no error expected
+		doCompile("test_ambiguous_working");
+		
 		// built-in toString function
 		doCompileExpectError("test_ambiguous_toString", "Function 'toString' is ambiguous");
 		// built-in join function
@@ -1753,6 +1777,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompileExpectError("test_ambiguous_combined", "Function 'getUrlPath' is ambiguous");
 		// swapped arguments - non null ambiguity
 		doCompileExpectError("test_ambiguous_swapped", "Function 'swapped' is ambiguous");
+		// swapped arguments (internal and external function)
+		doCompileExpectError("test_ambiguous_swapped_combined", "Function 'charAt' is ambiguous");
 		// primitive type widening; the test depends on specific values of the type distance function, can be removed
 		doCompileExpectError("test_ambiguous_widening", "Function 'widening' is ambiguous");
 	}
@@ -2054,6 +2080,15 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	public void test_type_string() {
 		doCompile("test_type_string");
+
+		check("literalParserTest1", "some // string");
+		check("literalParserTest2", "some /* string */");
+		check("literalParserTest3", "some \" string");
+		check("literalParserTest4", "some \\ string");
+		check("literalParserTest5", "some \\\" string");
+		check("literalParserTest6", "some \\\\\" string");
+		check("literalParserTest7", "some \\\\\\\" string");
+		
 		check("i","0");
 		check("helloEscaped", "hello\\nworld");
 		check("helloExpanded", "hello\nworld");
@@ -2069,7 +2104,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("empty", "");
 		check("def", "");
 		checkNull("varWithNullInitializer");
-}
+		
+		doCompileExpectError("string promenna = \"^\\..*\"; function integer transform() { return 0;}", "test_type_string", Arrays.asList("Invalid escape sequence: \\."));
+	}
 	
 	public void test_type_string_long() {
 		int length = 1000;
@@ -2695,6 +2732,84 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			
 			
 		}
+	}
+	
+	// CLO-403
+	public void test_container_assignment_initialization() {
+		doCompile("test_container_assignment_initialization");
+		
+		//list
+		Object val = ((List<?>) outputRecords[5].getField("stringListField").getValue()).get(1);
+		assertEquals(val.toString(), "value");
+		
+		val = ((List<?>) outputRecords[4].getField("stringListField").getValue()).get(0);
+		assertEquals(val.toString(), "value");
+		
+		List<?> dictList = (List<?>) graph.getDictionary().getEntry("stringList").getValue();
+		assertDeepEquals(dictList, Arrays.asList(null, "value"));
+		
+		check("listNull", true);
+		check("arrayString", Arrays.asList("value"));
+		
+		
+		//map
+		val = ((Map<?,?>) outputRecords[5].getField("stringMapField").getValue()).get("key");
+		assertEquals(val.toString(), "value");
+		
+		val = ((Map<?,?>) outputRecords[4].getField("stringMapField").getValue()).get("key");
+		assertEquals(val.toString(), "value");
+		
+		Map<?,?> dictMap = (Map<?,?>) graph.getDictionary().getEntry("stringMap").getValue();
+		LinkedHashMap<String,String> expectedmap = new LinkedHashMap<>();
+		expectedmap.put("key", "value");
+		assertDeepEquals(dictMap, expectedmap);
+		
+		check("mapNull", true);
+		check("mapString", expectedmap);
+	}
+	
+	/**
+	 * Answers <code>true</code> if given throwable is or is caused by given cause type.
+	 * @param throwable
+	 * @param causeType
+	 * @return
+	 */
+	public static boolean isCausedBy(Throwable throwable, Class<? extends Throwable> causeType) {
+		
+		while (throwable != null) {
+			if (causeType.isAssignableFrom(throwable.getClass())) {
+				return true;
+			}
+			throwable = throwable.getCause();
+		}
+		return false;
+	}
+
+	public void test_container_assignment_initialization_expect_error() {
+		try {
+			doCompile("function string[] getStringList() {return $out.firstMultivalueOutput.stringListField;} function integer transform(){getStringList()[0] = 'test'; return 0;}", "test_container_assignment_initialization_expect_error");
+			fail();
+		} catch (NullPointerException npe) {
+		} catch (TransformLangExecutorRuntimeException ex) {
+			if (!isCausedBy(ex, NullPointerException.class)) {
+				throw ex;
+			}
+		}
+
+		try {
+			doCompile("function map[string, string] getStringMap() {return $out.firstMultivalueOutput.stringMapField;} function integer transform(){getStringMap()['key'] = 'value'; return 0;}", "test_container_assignment_initialization_expect_error");
+			fail();
+		} catch (NullPointerException npe) {
+		} catch (TransformLangExecutorRuntimeException ex) {
+			if (!isCausedBy(ex, NullPointerException.class)) {
+				throw ex;
+			}
+		}
+	}
+
+	// CLO-5423
+	public void test_cast_null() {
+		doCompile("test_cast_null");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -3607,6 +3722,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertTrue(recordEquals(inputRecords[2], outputRecords[0]));
 	}
 
+	// CLO-4532:
+	public void test_mapping_whitespace() {
+		doCompileExpectError("test_mapping_whitespace", "Invalid member access expression");
+	}
+
 	public void test_copyByName() {
 		doCompile("test_copyByName");
 		assertEquals("Field1", null, outputRecords[3].getField("Field1").getValue());
@@ -3640,6 +3760,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals("Field1", null, outputRecords[3].getField("Field1").getValue());
 		assertEquals("Age", AGE_VALUE, outputRecords[3].getField("Age").getValue());
 		assertEquals("City", CITY_VALUE, outputRecords[3].getField("City").getValue().toString());
+		
+		// CLO-637:
+		DataRecord outRecord1 = (DataRecord) getVariable("outRecord1");
+		DataRecord outRecord2 = (DataRecord) getVariable("outRecord2");
+		assertEquals(outRecord1.getField("Name").getValue(), null);
+		assertEquals(outRecord2.getField("Name").getValue().toString(), "some value");
 	}
 
 	public void test_copyByName_assignment1() {
@@ -3647,6 +3773,146 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals("Field1", null, outputRecords[3].getField("Field1").getValue());
 		assertEquals("Age", null, outputRecords[3].getField("Age").getValue());
 		assertEquals("City", null, outputRecords[3].getField("City").getValue());
+	}
+	
+	public void test_copyByName_assignment_containers() {
+		TransformationGraph g = createEmptyGraph();
+		
+		DataRecordMetadata m1 = new DataRecordMetadata("metadata1");
+		m1.addField(new DataFieldMetadata("field1", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("field2", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("field3", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("yyy", DataFieldType.STRING, "|"));
+		g.addDataRecordMetadata(m1);
+		
+		DataRecordMetadata m2 = new DataRecordMetadata("metadata2");
+		DataFieldMetadata field;
+		m2.addField(new DataFieldMetadata("field1", DataFieldType.STRING, "|"));
+		m2.addField(field = new DataFieldMetadata("field2", DataFieldType.STRING, "|"));
+		field.setContainerType(DataFieldContainerType.LIST);
+		m2.addField(field = new DataFieldMetadata("field3", DataFieldType.STRING, "|"));
+		field.setContainerType(DataFieldContainerType.MAP);
+		m2.addField(new DataFieldMetadata("xxx", DataFieldType.STRING, "|"));
+		g.addDataRecordMetadata(m2);
+
+		DataRecord input1 = DataRecordFactory.newRecord(m1);
+		DataRecord input2 = DataRecordFactory.newRecord(m2);
+		DataRecord output1 = DataRecordFactory.newRecord(m2);
+		DataRecord output2 = DataRecordFactory.newRecord(m1);
+		
+		input1.init();
+		input2.init();
+		output1.init();
+		output2.init();
+		
+		input1.reset();
+		input2.reset();
+		output1.reset();
+		output2.reset();
+		
+		input1.getField("field1").setValue("abc");
+		input1.getField("field2").setValue("def");
+		input1.getField("field3").setValue("ghi");
+		input1.getField("yyy").setValue("jkl");
+		
+		input2.getField("field1").setValue("abc");
+		input2.getField("field2").setValue(Arrays.asList("def", "ghi"));
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("jkl", "mno");
+		map.put("pqr", "stu");
+		input2.getField("field3").setValue(map);
+		input2.getField("xxx").setValue("jkl");
+		
+		String testIdentifier = "test_copyByName_assignment_containers";
+		doCompile(loadSourceCode(testIdentifier), testIdentifier, g, new DataRecord[] {input1, input2}, new DataRecord[] {output1, output2});
+		
+		assertEquals("abc", output1.getField("field1").getValue().toString());
+		assertEquals(null, output1.getField("field2").getValue());
+		assertEquals(null, output1.getField("field3").getValue());
+		assertEquals(null, output1.getField("xxx").getValue());
+
+		assertEquals("abc", output2.getField("field1").getValue().toString());
+		assertEquals(null, output2.getField("field2").getValue());
+		assertEquals(null, output2.getField("field3").getValue());
+		assertEquals(null, output2.getField("yyy").getValue());
+	}
+
+	public void test_copyByName_assignment_caseInsensitive() {
+		TransformationGraph g = createEmptyGraph();
+		DataRecordMetadata m1 = new DataRecordMetadata("metadata1");
+		
+		m1.addField(new DataFieldMetadata("a", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("b", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("c", DataFieldType.STRING, "|"));
+		
+		m1.addField(new DataFieldMetadata("noexactmatch", DataFieldType.STRING, "|"));
+		
+		m1.addField(new DataFieldMetadata("ambiguous", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("AMBIGUOUS", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("aMBIGUOUs", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("AmbiguouS", DataFieldType.STRING, "|"));
+		
+		m1.addField(new DataFieldMetadata("exactMATCH", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("exactMatch", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("EXACTMATCH", DataFieldType.STRING, "|"));
+		
+		g.addDataRecordMetadata(m1);
+		
+		DataRecordMetadata m2 = new DataRecordMetadata("metadata2");
+		
+		m2.addField(new DataFieldMetadata("D", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("B", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("A", DataFieldType.STRING, "|"));
+		
+		m2.addField(new DataFieldMetadata("NOEXACTMATCH", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("noExactMatch", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("noEXACTmatch", DataFieldType.STRING, "|"));
+		
+		m2.addField(new DataFieldMetadata("ambiGUOUS", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("AMBIguous", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("ambiguouS", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("Ambiguous", DataFieldType.STRING, "|"));
+		
+		m2.addField(new DataFieldMetadata("ExactMatch", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("EXACTMATCH", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("ExactMATCH", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("Exactmatch", DataFieldType.STRING, "|"));
+
+		g.addDataRecordMetadata(m2);
+		
+		DataRecordMetadata m3 = new DataRecordMetadata("metadata3");
+		m3.addField(new DataFieldMetadata("singleInputField", DataFieldType.STRING, "|"));
+		g.addDataRecordMetadata(m3);
+		
+		DataRecordMetadata m4 = new DataRecordMetadata("metadata4");
+		m4.addField(new DataFieldMetadata("outputField1", DataFieldType.STRING, "|")); // must not match "singleInputField"
+		g.addDataRecordMetadata(m4);
+
+		String testIdentifier = "test_copyByName_assignment_caseInsensitive";
+		doCompile(loadSourceCode(testIdentifier), testIdentifier, g, new DataRecord[0], new DataRecord[0]);
+		
+		DataRecord r2 = (DataRecord) getVariable("r2");
+		
+		assertEquals("a", r2.getField("A").getValue().toString());
+		assertEquals("b", r2.getField("B").getValue().toString());
+		assertEquals(null, r2.getField("D").getValue());
+		
+		assertEquals("noexactmatch", r2.getField("NOEXACTMATCH").getValue().toString()); // assigned to the first matching field
+		assertEquals(null, r2.getField("noExactMatch").getValue());
+		assertEquals(null, r2.getField("noEXACTmatch").getValue());
+		
+		assertEquals("ambiguous", r2.getField("ambiGUOUS").getValue().toString()); // first unmapped input field selected
+		assertEquals("AMBIGUOUS", r2.getField("AMBIguous").getValue().toString()); // first unmapped input field selected
+		assertEquals("aMBIGUOUs", r2.getField("ambiguouS").getValue().toString()); // first unmapped input field selected
+		assertEquals("AmbiguouS", r2.getField("Ambiguous").getValue().toString()); // first unmapped input field selected
+
+		assertEquals("exactMATCH", r2.getField("ExactMatch").getValue().toString()); // first unmapped input field selected
+		assertEquals("EXACTMATCH", r2.getField("EXACTMATCH").getValue().toString()); // exact match (has priority)
+		assertEquals("exactMatch", r2.getField("ExactMATCH").getValue().toString()); // first unmapped input field selected
+		assertEquals(null, r2.getField("Exactmatch").getValue()); // no remaining unmapped input field
+		
+		DataRecord r4 = (DataRecord) getVariable("r4");
+		assertEquals(null, r4.getField("outputField1").getValue()); // CLO-637
 	}
 	
 	public void test_containerlib_copyByPosition(){
@@ -4333,15 +4599,22 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("strList2", Arrays.asList("","Alistar", "Nocturne", "Soraka"));
 		check("emptyList", Arrays.asList());
 		check("emptyList2", Arrays.asList());
+		check("retNull1", Arrays.asList("Kennen", "Renector", null, null));
+		check("retNull2", Arrays.asList(false, true, true, null, null, null));
+		cal.clear();
+		cal.set(2001,0,20,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		cal2.clear();
+		cal2.set(2003,4,12,0,0,0);
+		cal2.set(Calendar.MILLISECOND, 0);
+		check("retNull3", Arrays.asList(cal.getTime(), cal2.getTime(), null, null));
+		check("retNull4", Arrays.asList(1,8,10,12,null,null,null));
+		check("retNull5", Arrays.asList(1l, 12l, 15l, null, null, null));
+		check("retNull6", Arrays.asList(12.1d, 12.3d, 12.4d, null, null));
+		check("retNull7", Arrays.asList(new BigDecimal("11"), new BigDecimal("11.1"), new BigDecimal("11.2"), null, null, null));
 	}
 
 	public void test_containerlib_sort_expect_error(){
-		try {
-			doCompile("function integer transform(){string[] strList = ['Renektor', null, 'Jayce']; sort(strList); return 0;}","test_containerlib_sort_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
 		try {
 			doCompile("function integer transform(){string[] strList = null; sort(strList); return 0;}","test_containerlib_sort_expect_error");
 			fail();
@@ -4448,7 +4721,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("test4", true);
 		check("test5", true);
 		check("test6", false);
-		check("test7", false);
+		//check("test7", true); // disabled - CLO-4979
 		check("test8", true);
 		check("test9", true);
 		check("test10", false);
@@ -4468,14 +4741,113 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("test24", true);
 		check("test25", false);
 		check("test26", false);
+		
+		check("listResults", Arrays.asList(true, false, false, true, false, false, true, false));
+		check("listEmptyTest1", false);
+		check("listEmptyTest2", false);
+		check("listEmptyTest3", false);
+		check("listTest1", true);
+		check("listTest2", true);
+		check("listTest3", false);
+		check("listTest4", true);
+		check("listTest5", true);
+		check("listTest6", false);
+		//check("listTest7", true); // disabled - CLO-4979
+		check("listTest8", true);
+		check("listTest9", true);
+		check("listTest10", false);
+		check("listTest11", true);
+		check("listTest12", true);
+		check("listTest13", false);
+		check("listTest14", true);
+		check("listTest15", true);
+		check("listTest16", false);
+		check("integerToLongTest", true);
+		check("listTest17", true);
+		check("listTest18", true);
+		check("listTest19", false);
+		check("listTest20", true);
+		check("listTest21", true);
+		check("listTest22", false);
+		check("listTest23", true);
+		check("listTest24", true);
+		check("listTest25", false);
+
+		check("listEmptyTest4", false);
 	}
 	
-	public void test_convertlib_containsValue_expect_error(){
+	public void test_containerlib_containsValue_expect_error(){
 		try {
 			doCompile("function integer transform(){map[integer, long] nullMap = null; boolean b = nullMap.containsValue(18L); return 0;}","test_convertlib_containsValue_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long[] nullList = null; boolean b = nullList.containsValue(18L); return 0;}","test_convertlib_containsValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		
+		doCompileExpectError("function integer transform(){boolean b = containsValue(null, 18L); return 0;}","test_convertlib_containsValue_expect_error", Arrays.asList("Function 'containsValue' is ambiguous"));
+	}
+
+	public void test_containerlib_binarySearch() {
+		doCompile("test_containerlib_binarySearch");
+
+		check("listResults", Arrays.asList(2, -4, -4, 0, -1, -1, 1, -4));
+		check("listEmptyTest2", -1);
+		check("listEmptyTest3", -1);
+		check("listTest2", 1);
+		check("listTest3", 0);
+		check("listTest8", 1);
+		check("listTest9", 0);
+		check("listTest10", -3);
+		check("listTest11", 1);
+		check("listTest12", 0);
+		check("listTest13", -5);
+		check("listTest14", 0);
+		check("listTest15", 2);
+		check("listTest16", -4);
+		check("integerToLongTest", 1);
+		check("listTest17", 1);
+		check("listTest18", 0);
+		check("listTest19", -5);
+		check("listTest20", 0);
+		check("listTest21", 1);
+		check("listTest22", -5);
+		check("listTest23", 1);
+		check("listTest24", 0);
+		check("listTest25", -5);
+
+		check("listEmptyTest4", -1);
+	}
+
+	public void test_containerlib_binarySearch_expect_error(){
+		try {
+			doCompile("function integer transform(){long[] nullList = null; integer i = nullList.binarySearch(18L); return 0;}","test_containerlib_binarySearch_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+		try {
+			doCompile("function integer transform(){long nullValue = null; [5L, 15L].binarySearch(nullValue); return 0;}","test_containerlib_binarySearch_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+		try {
+			doCompile("function integer transform(){long[] emptyList; long nullValue = null; emptyList.binarySearch(nullValue); return 0;}","test_containerlib_binarySearch_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+		try {
+			doCompile("function integer transform(){byte[] byteList = [hex2byte('00')]; byteList.binarySearch(hex2byte('FF')); return 0;}","test_containerlib_binarySearch_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, IllegalArgumentException.class));
 		}
 	}
 
@@ -4515,6 +4887,116 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 		try {
 			doCompile("function integer transform(){map[string,string] strMap = null; string[] str = getKeys(strMap); return 0;}","test_containerlib_getKeys_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_containerlib_getValues() {
+		doCompile("test_containerlib_getValues");
+		check("stringList", Arrays.asList("a","b"));
+		check("stringList2", Arrays.asList("a","b"));
+		check("integerList", Arrays.asList(5,7,2));
+		check("integerList2", Arrays.asList(5,7,2));
+		List<Date> list = new ArrayList<Date>();
+		Calendar cal = Calendar.getInstance();
+		cal.set(2008, 10, 12, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.set(2001, 5, 28, 0, 0, 0);
+		cal2.set(Calendar.MILLISECOND, 0);
+		list.add(cal.getTime());
+		list.add(cal2.getTime());
+		check("dateList", list);
+		check("dateList2", list);
+		check("longList", Arrays.asList(14L, 45L));
+		check("longList2", Arrays.asList(14L, 45L));
+		check("numList", Arrays.asList(12.3d, 13.4d));
+		check("numList2", Arrays.asList(12.3d, 13.4d));
+		check("decList", Arrays.asList(new BigDecimal("34.5"), new BigDecimal("45.6")));
+		check("decList2", Arrays.asList(new BigDecimal("34.5"), new BigDecimal("45.6")));
+		check("emptyList", Arrays.asList());
+		check("emptyList2", Arrays.asList());
+	}
+	
+	public void test_containerlib_getValues_expect_error(){
+		try {
+			doCompile("function integer transform(){map[string,string] strMap = null; string[] str = strMap.getValues(); return 0;}","test_containerlib_getValues_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){map[string,string] strMap = null; string[] str = getValues(strMap); return 0;}","test_containerlib_getValues_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_containerlib_toMap() {
+		doCompile("test_containerlib_toMap");
+		
+		{
+			Map<Integer, Boolean> expected = new HashMap<>();
+			expected.put(5, true);
+			expected.put(8, false);
+			check("integerBooleanMap", expected);
+		}
+		{
+			Map<Integer, Boolean> expected = new HashMap<>();
+			expected.put(5, null);
+			expected.put(8, null);
+			check("integerBooleanMapNull", expected);
+		}
+		{
+			Map<Integer, Boolean> expected = new HashMap<>();
+			expected.put(5, true);
+			expected.put(8, true);
+			check("integerBooleanMapTrue", expected);
+		}
+		check("emptyMap", new HashMap<BigDecimal, Long>(0));
+		{
+			Map<Double, byte[]> expected = new HashMap<>();
+			expected.put(null, null);
+			check("nullMap", expected);
+		}
+		{
+			Map<Date, String> expected = new HashMap<>();
+			expected.put(new Date(7), "C");
+			expected.put(null, "D");
+			expected.put(new Date(46), "E");
+			check("duplicateMap", expected);
+		}
+		{
+			List<String> upperCase = Arrays.asList("A", "B", "C", "D", "E", "F", "G");
+			List<String> lowerCase = Arrays.asList("a", "b", "c", "d", "e", "f", "g");
+			check("keys1", upperCase);
+			check("keys2", upperCase);
+			check("values", lowerCase);
+		}
+	}
+	
+	public void test_containerlib_toMap_expect_error() {
+		doCompileExpectError("function integer transform(){map[string,string] strMap = toMap(null, null); return 0;}","test_containerlib_toMap_expect_error", Arrays.asList("Function 'toMap' is ambiguous"));
+		doCompileExpectError("function integer transform(){map[string,string] strMap = toMap(['a', 'b'], null); return 0;}","test_containerlib_toMap_expect_error", Arrays.asList("Function 'toMap' is ambiguous"));
+		doCompileExpectError("function integer transform(){string[] values = null; map[string,string] strMap = toMap(null, values); return 0;}","test_containerlib_toMap_expect_error", Arrays.asList("Type mismatch: cannot convert from 'map[?,string]' to 'map[string,string]'"));
+		
+		try {
+			doCompile("function integer transform(){string[] keys = ['A']; string[] values = null; map[string,string] strMap = toMap(keys, values); return 0;}","test_containerlib_toMap_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] keys = null; string[] values = ['A']; map[string,string] strMap = toMap(keys, values); return 0;}","test_containerlib_toMap_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] keys = ['x', 'y']; string[] values = ['A']; map[string,string] strMap = toMap(keys, values); return 0;}","test_containerlib_toMap_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
@@ -4764,6 +5246,26 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch ( Exception e) {
 			// do nothing
 		}
+		try {
+			doCompile("integer test;function integer transform() {integer input = null; test = editDistance('Talon','Ahri', input);return 0;}","test_stringlib_editDistance_expect_error");
+		} catch ( Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("integer test;function integer transform() {integer input = null; test = editDistance('Talon','Ahri', input, 'cs.CZ');return 0;}","test_stringlib_editDistance_expect_error");
+		} catch ( Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("integer test;function integer transform() {integer input = null; test = editDistance('Talon','Ahri', input, input);return 0;}","test_stringlib_editDistance_expect_error");
+		} catch ( Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("integer test;function integer transform() {integer input = null; test = editDistance('Talon','Ahri', input, 'cs.CZ', input);return 0;}","test_stringlib_editDistance_expect_error");
+		} catch ( Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_stringlib_find() {
@@ -4883,6 +5385,45 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("test13", null);
 		check("test14", "");
 		check("test15", "");
+	}
+	
+	public void test_stringlib_left_expect_error(){
+		try {
+			doCompile("function integer transform(){string s = left('Lux', -7, false); return 0;}","test_stringlib_left_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string s = left('Darius', -7, true); return 0;}","test_stringlib_left_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string s = left('Darius', null, true); return 0;}","test_stringlib_left_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer int = null; string s = left('Darius', int, true); return 0;}","test_stringlib_left_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){boolean b = null; string s = left('Darius', 9, b); return 0;}","test_stringlib_left_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string s = left('Darius', 7, null); return 0;}","test_stringlib_left_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_stringlib_length() {
@@ -5123,31 +5664,73 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_stringlib_split() {
 		doCompile("test_stringlib_split");
 		check("split1", Arrays.asList("The quick br", "wn f", "", " jumps " , "ver the lazy d", "g"));
+		check("split2", Arrays.asList("The quick br", "wn f", "", " jumps " , "ver the lazy d", "g"));
+		check("split3", Arrays.asList("The quick br", "wn f", "", " jumps " , "ver the lazy d", "g"));
+
+		// limit
+		check("limit1", Arrays.asList("The quick brown fox jumps over the lazy dog"));
+		check("limit2", Arrays.asList("The quick br", "wn fox jumps over the lazy dog"));
+		check("limit3", Arrays.asList("The quick br", "wn f", "x jumps over the lazy dog"));
+		check("limit4", Arrays.asList("The quick br", "wn f", "", " jumps over the lazy dog"));
+		check("limit20", Arrays.asList("The quick br", "wn f", "", " jumps " , "ver the lazy d", "g"));
+		
 		check("test_empty", Arrays.asList(""));
 		check("test_empty2", Arrays.asList("","a","a"));
-		List<String> tmp = new ArrayList<String>();
-		tmp.add(null);
-		check("test_null", tmp);
+		check("test_empty3", Arrays.asList(""));
+		check("test_empty4", Arrays.asList("","a","a"));
+		check("test_empty5", Arrays.asList(""));
+		check("test_empty6", Arrays.asList("","a","a", "")); // regex is an empty string => trailing empty string
+		
+		check("test_null", Collections.EMPTY_LIST);
+		
+		check("removeTrailing1", Collections.EMPTY_LIST);
+		check("removeTrailing2", Collections.EMPTY_LIST);
+		check("removeTrailing3", Arrays.asList("", "a", "", "b"));
+		check("removeTrailing4", Arrays.asList("", "a", "", "b"));
+
+		check("keepTrailing1", Arrays.asList("", "", "", "", ""));
+		check("keepTrailing2", Arrays.asList("", "a", "", "b", "", "", ""));
 	}
 	
 	public void test_stringlib_split_expect_error(){
-		//test: regexp null - test1
+		//test: regexp null literal 1
 		try {
 			doCompile("function integer transform(){string[] s = split('aaa',null); return 0;}","test_stringlib_split_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
-		//test: regexp null - test2
+		//test: regexp null literal 2
 		try {
 			doCompile("function integer transform(){string[] s = split('',null); return 0;}","test_stringlib_split_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
-		//test: regexp null - test3
+		//test: regexp null literal 3
 		try {
 			doCompile("function integer transform(){string[] s = split(null,null); return 0;}","test_stringlib_split_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: regexp null variable
+		try {
+			doCompile("function integer transform(){string regexp = null; string[] s = split(null,regexp); return 0;}","test_stringlib_split_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: limit null
+		try {
+			doCompile("function integer transform(){split('a','a',null); return 0;}","test_stringlib_split_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: limit null variable
+		try {
+			doCompile("function integer transform(){integer limit = null; split('a','a',limit); return 0;}","test_stringlib_split_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
@@ -5156,24 +5739,35 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_stringlib_substring() {
 		doCompile("test_stringlib_substring");
+		
 		check("subs", "UICk ");
 		check("test1", "");
 		check("test_empty", "");
+		check("nullLiteral", null);
+		check("nullVariable", null);
+		
+		check("subs2", "UICk !!$  broWn fox 	juMPS over the lazy DOG	");
+		check("test2", "aaa");
+		check("test3", "");
+		check("test_empty2", "");
+		check("nullLiteral2", null);
+		check("nullVariable2", null);
+
+		check("result1", "abcdefghi");
+		check("result2", "fghi");
+		check("result3", "");
+		check("result4", "");
+		check("result5", "");
+		check("result6", "abcdefghi");
+		check("result7", "");
+		check("result8", "f");
+		check("result9", "fghi");
+		check("result10", "");
+		check("result11", "i");
+		check("result12", "i");
 	}
 	
 	public void test_stringlib_substring_expect_error(){
-		try {
-			doCompile("function integer transform(){string test = substring('arabela',4,19);return 0;}","test_stringlib_substring_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){string test = substring('arabela',15,3);return 0;}","test_stringlib_substring_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
 		try {
 			doCompile("function integer transform(){string test = substring('arabela',2,-3);return 0;}","test_stringlib_substring_expect_error");
 			fail();
@@ -5187,31 +5781,43 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){string test = substring('',0,7);return 0;}","test_stringlib_substring_expect_error");
+			doCompile("function integer transform(){string test = substring(null,2,-3);return 0;}","test_stringlib_substring_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){string test = substring('',7,7);return 0;}","test_stringlib_substring_expect_error");
+			doCompile("function integer transform(){string test = substring(null,-5,7);return 0;}","test_stringlib_substring_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){string test = substring(null,0,0);return 0;}","test_stringlib_substring_expect_error");
+			doCompile("function integer transform(){string test = substring('arabela',-5);return 0;}","test_stringlib_substring_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){string test = substring(null,0,4);return 0;}","test_stringlib_substring_expect_error");
+			doCompile("function integer transform(){string test = substring(null,-5);return 0;}","test_stringlib_substring_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){string test = substring(null,1,4);return 0;}","test_stringlib_substring_expect_error");
+			doCompile("function integer transform(){string test = substring('arabela',null);return 0;}","test_stringlib_substring_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string test = substring('arabela',null,5);return 0;}","test_stringlib_substring_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string test = substring('arabela',5,null);return 0;}","test_stringlib_substring_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
@@ -5253,17 +5859,20 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isNumber6", true);
 		check("isNumber7", false);
 		check("isNumber8", false);
+		check("isNumber9", false);
 		check("isInteger", false);
 		check("isInteger1", false);
 		check("isInteger2", false);
 		check("isInteger3", true);
 		check("isInteger4", false);
 		check("isInteger5", false);
+		check("isInteger6", false);
 		check("isLong", true);
 		check("isLong1", false);
 		check("isLong2", false);
 		check("isLong3", false);
 		check("isLong4", false);
+		check("isLong5", false);
 		check("isDate", true);
 		check("isDate1", false);
 		// "kk" allows hour to be 1-24 (as opposed to HH allowing hour to be 0-23)
@@ -5292,10 +5901,22 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isDate21", false);
 		
 		// CLO-1190
-//		check("isDate22", false);
-//		check("isDate23", false);
+		check("isDate22", true);
+		check("isDate23", false);
 		check("isDate24", true);
 		check("isDate25", false);
+		check("isDate26", true);
+		check("isDate27", true);
+
+		check("isDecimal", false);
+		check("isDecimal1", false);
+		check("isDecimal2", true);
+		check("isDecimal3", true);
+		check("isDecimal4", false);
+		check("isDecimal5", true);
+		check("isDecimal6", true);
+		check("isDecimal7", false);
+		check("isDecimal8", false);
 	}	
 	public void test_stringlib_empty_strings() {
 		String[] expressions = new String[] {
@@ -5448,6 +6069,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("index_empty2", 0);
 		check("index_empty3", 0);
 		check("index_empty4", -1);
+		
+		check("nullInput1", -1);
+		check("nullInput2", -1);
+		check("nullInputVariable1", -1);
+		check("nullInputVariable2", -1);
 	}
 	
 	public void test_stringlib_indexOf_expect_error(){
@@ -5465,20 +6091,20 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
-		//test: first arg is null - test1
-		try {
-			doCompile("integer index;function integer transform() {index = indexOf(null,'a'); return 0;}","test_stringlib_indexOf_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		//test: first arg is null - test2
-		try {
-			doCompile("integer index;function integer transform() {index = indexOf(null,''); return 0;}","test_stringlib_indexOf_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
+//		//test: first arg is null - test1
+//		try {
+//			doCompile("integer index;function integer transform() {index = indexOf(null,'a'); return 0;}","test_stringlib_indexOf_expect_error");
+//			fail();
+//		} catch (Exception e) {
+//			// do nothing
+//		}
+//		//test: first arg is null - test2
+//		try {
+//			doCompile("integer index;function integer transform() {index = indexOf(null,''); return 0;}","test_stringlib_indexOf_expect_error");
+//			fail();
+//		} catch (Exception e) {
+//			// do nothing
+//		}
 		//test: both args are null
 		try {
 			doCompile("integer index;function integer transform() {index = indexOf(null,null); return 0;}","test_stringlib_indexOf_expect_error");
@@ -5486,8 +6112,79 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+		//test: third arg is null
+		try {
+			doCompile("integer index;function integer transform() {index = indexOf('a','a',null); return 0;}","test_stringlib_indexOf_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
+	public void test_stringlib_lastIndexOf() {
+        doCompile("test_stringlib_lastIndexOf");
+		check("index1", 9);
+		check("index2", 9);
+		check("index3", 3);
+		check("index4", 12);
+		check("index5", 12);
+//		check("index6", -1);
+//		check("index7", -1);
+		check("index8", 0);
+		check("index9", 0);
+		check("index10", -1);
+		
+		check("nullLiteral1", -1);
+		check("nullLiteral2", -1);
+		check("nullVariable1", -1);
+		check("nullVariable2", -1);
+	}
+	
+	public void test_stringlib_lastIndexOf_expect_error() {
+		//test: fromIndex is null - test1
+		try {
+			doCompile("integer index;function integer transform() {index = lastIndexOf('hello world','b', null); return 0;}","test_stringlib_lastIndexOf_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: fromIndex is null - test2
+		try {
+			doCompile("integer index;function integer transform() {integer from = null;index = lastIndexOf('hello world','b', from); return 0;}","test_stringlib_lastIndexOf_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null searchStr - test1
+		try {
+			doCompile("integer index;function integer transform() {index = lastIndexOf('hello world',null); return 0;}","test_stringlib_lastIndexOf_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null variable searchStr - test2
+		try {
+			doCompile("integer index;function integer transform() {string searchStr = null;index = lastIndexOf('hello world',searchStr); return 0;}","test_stringlib_lastIndexOf_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null searchStr - test3
+		try {
+			doCompile("integer index;function integer transform() {index = lastIndexOf('hello world',null,0); return 0;}","test_stringlib_lastIndexOf_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null variable searchStr - test4
+		try {
+			doCompile("integer index;function integer transform() {string searchStr = null;index = lastIndexOf('hello world',searchStr,0); return 0;}","test_stringlib_lastIndexOf_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
 	public void test_stringlib_removeDiacritic(){
         doCompile("test_stringlib_removeDiacritic");
         check("test","tescik");
@@ -5630,6 +6327,743 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	}
 	
+//	public void test_stringlib_capitalizeWords() {
+//		doCompile("test_stringlib_capitalizeWords");
+//		
+//		check("word", "Word");
+//		check("twoWords", "Two Words");
+//		check("sentence", "A Full Sentence.");
+//		check("clock", "8 O'clock");
+//		check("underscore", "Do _not_ Capitalize Me");
+//		check("titleCase", "A Full Sentence");
+//		
+//		check("slovak", "\u010Cerven\u00FD \u013Dadoborec");
+//		check("russian", "\u041F\u0440\u043E\u043B\u0435\u0442\u0430\u0440\u0438\u0438 \u0412\u0441\u0435\u0445 \u0421\u0442\u0440\u0430\u043D, \u0421\u043E\u0435\u0434\u0438\u043D\u044F\u0439\u0442\u0435\u0441\u044C!");
+//		check("japanese", "\u673A\u306E\u4E0A\u306B\u306F\u30B1\u30FC\u30AD\u304C\u3042\u308A\u307E\u3059\u3002");
+//		check("german", "\u00DCberwald");
+//		
+//		check("nullValue", null);
+//		check("emptyString", "");
+//	}
+//	
+//	public void test_stringlib_uncapitalizeWords() {
+//		doCompile("test_stringlib_uncapitalizeWords");
+//		
+//		check("leaveMe", "lEAVE mE aLONE");
+//		check("correct", "this is correct");
+//		check("clock", "7 o'Clock");
+//		
+//		check("russian", "\u043F\u0440\u043E\u043B\u0435\u0442\u0430\u0440\u0438\u0438 \u0432\u0441\u0435\u0445 \u0441\u0442\u0440\u0430\u043D, \u0441\u043E\u0435\u0434\u0438\u043D\u044F\u0439\u0442\u0435\u0441\u044C!");
+//		check("japanese", "\u673A\u306E\u4E0A\u306B\u306F\u30B1\u30FC\u30AD\u304C\u3042\u308A\u307E\u3059\u3002");
+//		check("german", "\u00FCberwald");
+//		
+//		check("nullValue", null);
+//		check("emptyString", "");
+//	}
+	
+	public void test_stringlib_startsWith() {
+		doCompile("test_stringlib_startsWith");
+		
+		check("b1", true);
+		check("b2", false);
+		check("b3", true);
+		
+		check("b4", false);
+		check("b5", false);
+		
+		check("b6", false);
+		check("b7", true);
+	}
+	
+	public void test_stringlib_startsWith_expect_error() {
+		// null literal prefix
+		try {
+			doCompile("function integer transform(){startsWith('bla bla',null);return 0;}","test_stringlib_startsWith_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		// null variable prefix
+		try {
+			doCompile("function integer transform(){string prefix = null; startsWith('bla bla',prefix);return 0;}","test_stringlib_startsWith_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		// both nulls
+		try {
+			doCompile("function integer transform(){startsWith(null,null);return 0;}","test_stringlib_startsWith_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_endsWith() {
+		doCompile("test_stringlib_endsWith");
+		
+		check("b1", true);
+		check("b2", false);
+		check("b3", true);
+		
+		check("b4", false);
+		check("b5", false);
+		
+		check("b6", false);
+		check("b7", true);
+	}
+	
+	public void test_stringlib_endsWith_expect_error() {
+		// null literal prefix
+		try {
+			doCompile("function integer transform(){endsWith('bla bla',null);return 0;}","test_stringlib_endsWith_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		// null variable prefix
+		try {
+			doCompile("function integer transform(){string prefix = null; endsWith('bla bla',prefix);return 0;}","test_stringlib_endsWith_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		// both nulls
+		try {
+			doCompile("function integer transform(){endsWith(null,null);return 0;}","test_stringlib_endsWith_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_lpad() {
+		doCompile("test_stringlib_lpad");
+		
+		check("result1", "---abc");
+		check("result2", "abc");
+		check("result3", "   abc");
+		check("result4", "abc");
+		
+		check("result5", null);
+		check("result6", null);
+		
+		check("result7", "xxx ");
+		check("result8", "    ");
+		
+		check("zeroLength1", "abc");
+		check("zeroLength2", "abc");
+	}
+
+	public void test_stringlib_lpad_expect_error() {
+		//test: null filler
+		try {
+			doCompile("string test;function integer transform() {test = lpad(null, 10, null);return 0;}","test_stringlib_lpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null filler variable
+		try {
+			doCompile("string test;function integer transform() {string filler = null; test = lpad(null, 10, filler);return 0;}","test_stringlib_lpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: illegal filler length
+		try {
+			doCompile("string test;function integer transform() {test = lpad('x', 10, 'filler');return 0;}","test_stringlib_lpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: negative target length 1
+		try {
+			doCompile("function integer transform() {lpad(null, -1, ' ');return 0;}","test_stringlib_lpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: negative target length 2
+		try {
+			doCompile("function integer transform() {lpad(null, -1);return 0;}","test_stringlib_lpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: negative target length 3
+		try {
+			doCompile("function integer transform() {lpad('abc', -1, ' ');return 0;}","test_stringlib_lpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: negative target length 4
+		try {
+			doCompile("function integer transform() {lpad('abc', -1);return 0;}","test_stringlib_lpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null target length 1
+		try {
+			doCompile("string test;function integer transform() {test = lpad('x', null);return 0;}","test_stringlib_lpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null target length 1 (variable)
+		try {
+			doCompile("string test;function integer transform() {integer input = null;test = lpad('x', input);return 0;}","test_stringlib_lpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null target length 2
+		try {
+			doCompile("string test;function integer transform() {test = lpad('x', null, '-');return 0;}","test_stringlib_lpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null target length 2 (variable)
+		try {
+			doCompile("string test;function integer transform() {integer input = null;test = lpad('x', input, '-');return 0;}","test_stringlib_lpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_rpad() {
+		doCompile("test_stringlib_rpad");
+		
+		check("result1", "abc---");
+		check("result2", "abc");
+		check("result3", "abc   ");
+		check("result4", "abc");
+		
+		check("result5", null);
+		check("result6", null);
+		
+		check("result7", " xxx");
+		check("result8", "    ");
+		
+		check("zeroLength1", "abc");
+		check("zeroLength2", "abc");
+	}
+
+	public void test_stringlib_rpad_expect_error() {
+		//test: null filler
+		try {
+			doCompile("string test;function integer transform() {test = rpad(null, 10, null);return 0;}","test_stringlib_rpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null filler variable
+		try {
+			doCompile("string test;function integer transform() {string filler = null; test = rpad(null, 10, filler);return 0;}","test_stringlib_rpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: illegal filler length
+		try {
+			doCompile("string test;function integer transform() {test = rpad('x', 10, 'filler');return 0;}","test_stringlib_rpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: negative target length 1
+		try {
+			doCompile("function integer transform() {rpad(null, -1, ' ');return 0;}","test_stringlib_rpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: negative target length 2
+		try {
+			doCompile("function integer transform() {rpad(null, -1);return 0;}","test_stringlib_rpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: negative target length 3
+		try {
+			doCompile("function integer transform() {rpad('abc', -1, ' ');return 0;}","test_stringlib_rpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: negative target length 4
+		try {
+			doCompile("function integer transform() {rpad('abc', -1);return 0;}","test_stringlib_rpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null target length 1
+		try {
+			doCompile("string test;function integer transform() {test = rpad('x', null);return 0;}","test_stringlib_rpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+			e.printStackTrace();
+		}
+		//test: null target length 1 (variable)
+		try {
+			doCompile("string test;function integer transform() {integer input = null;test = rpad('x', input);return 0;}","test_stringlib_rpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null target length 2
+		try {
+			doCompile("string test;function integer transform() {test = rpad('x', null, '-');return 0;}","test_stringlib_rpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null target length 2 (variable)
+		try {
+			doCompile("string test;function integer transform() {integer input = null;test = rpad('x', input, '-');return 0;}","test_stringlib_rpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_concatWithSeparator() {
+		doCompile("test_stringlib_concatWithSeparator");
+		
+		check("result1", "a,b,c");
+		check("result2", "a, b, c");
+		check("result3", "ab");
+		check("result4", "x, y, z");
+		
+		check("blank", "");
+		check("variables", "a, b, c");
+		
+		check("oneElement", "a");
+	}
+
+	public void test_stringlib_concatWithSeparator_expect_error() {
+		//test: null separator
+		try {
+			doCompile("string test;function integer transform() {test = concatWithSeparator(null, 'a', 'b');return 0;}","test_stringlib_concatWithSeparator_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_escapeUrlFragment() {
+		doCompile("test_stringlib_escapeUrlFragment");
+		
+		String expected = "nothing_interesting";
+		check("noCharset", expected);
+		
+		check("utf8", "%C5%BElu%C5%A5ou%C4%8Dk%C3%BD_k%C5%AF%C5%88_%C3%BAp%C4%9Bl_%C4%8F%C3%A1belsk%C3%A9_%C3%B3dy");
+		check("cp1250", "%9Elu%9Dou%E8k%FD_k%F9%F2_%FAp%ECl_%EF%E1belsk%E9_%F3dy");
+		// UTF-8
+		check("defaultCharset", "%C5%BElu%C5%A5ou%C4%8Dk%C3%BD_k%C5%AF%C5%88_%C3%BAp%C4%9Bl_%C4%8F%C3%A1belsk%C3%A9_%C3%B3dy");
+		
+		check("keyValue", "name%3Dvalue");
+		check("keyValueSpace", "name%3Dlong+value");
+		
+		check("emptyString", "");
+		check("nullValue1", null);
+		check("nullValue2", null);
+		
+		// CLO-2367
+		check("emailAddressLogin1", "http%3A%2F%2Fsome.user%40gooddata.com%3Apassword%40secure.bestdata.com");
+		check("emailAddressLogin2", "http://some.user%40gooddata.com:password@secure.bestdata.com");
+
+		check("hashLogin1", "http%3A%2F%2Fac%23dsds.dsz%3Apassword%40server.goooddata.com%2Fnice");
+		check("hashLogin2", "http://ac%23dsds.dsz:password@server.goooddata.com/nice");
+		
+		check("plusLogin1", "http%3A%2F%2Fac%25%2Bdsds.dsz%3Apassword%40server.goooddata.com%2Fnice");
+		check("plusLogin2", "http://ac%25%2Bdsds.dsz:password@server.goooddata.com/nice");
+	}
+
+	public void test_stringlib_escapeUrlFragment_expect_error() {
+		//test: null literal encoding
+		try {
+			doCompile("function integer transform() {escapeUrlFragment('test', null);return 0;}","test_stringlib_escapeUrlFragment_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null variable encoding
+		try {
+			doCompile("function integer transform() {string encoding = null; escapeUrlFragment('test', encoding);return 0;}","test_stringlib_escapeUrlFragment_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: empty encoding
+		try {
+			doCompile("function integer transform() {escapeUrlFragment('test', '');return 0;}","test_stringlib_escapeUrlFragment_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: Unsupported encoding
+		try {
+			doCompile("string test;function integer transform() {test = escapeUrlFragment('test', 'not a charset');return 0;}","test_stringlib_escapeUrlFragment_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_unescapeUrlFragment() {
+		doCompile("test_stringlib_unescapeUrlFragment");
+		
+		String expected = "nothing_interesting";
+		check("noCharset", expected);
+		
+		String kun = "\u017Elu\u0165ou\u010Dk\u00FD_k\u016F\u0148_\u00FAp\u011Bl_\u010F\u00E1belsk\u00E9_\u00F3dy";
+		check("utf8", kun);
+		check("cp1250", kun);
+		check("defaultCharset", kun);
+		
+		check("keyValue", "name=value");
+		check("keyValueSpace1", "name=long value");
+		check("keyValueSpace2", "name=long value");
+		
+		check("emptyString", "");
+		check("nullValue1", null);
+		check("nullValue2", null);
+	}
+
+	public void test_stringlib_unescapeUrlFragment_expect_error() {
+		//test: null literal encoding
+		try {
+			doCompile("function integer transform() {unescapeUrlFragment('%20', null);return 0;}","test_stringlib_unescapeUrlFragment_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null variable encoding
+		try {
+			doCompile("function integer transform() {string encoding = null; unescapeUrlFragment('%20', encoding);return 0;}","test_stringlib_unescapeUrlFragment_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: empty encoding
+		try {
+			doCompile("function integer transform() {unescapeUrlFragment('%20', '');return 0;}","test_stringlib_unescapeUrlFragment_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: Unsupported encoding
+		try {
+			doCompile("string test;function integer transform() {test = unescapeUrlFragment('%20', 'not a charset');return 0;}","test_stringlib_unescapeUrlFragment_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_codePointToChar() {
+		doCompile("test_stringlib_codePointToChar");
+		
+		check("a", "a");
+		check("c_caron", "\u010D");
+		check("Ryo", "\u826F");
+		check("S", "\uD835\uDD4A"); // double-struck S
+	}
+
+	public void test_stringlib_codePointToChar_expect_error() {
+		//test: negative code point
+		try {
+			doCompile("string test;function integer transform() {test = codePointToChar(-1);return 0;}","test_stringlib_codePointToChar_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: null
+		try {
+			doCompile("string test;function integer transform() {test = codePointToChar(null);return 0;}","test_stringlib_codePointToChar_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: null variable
+		try {
+			doCompile("string test;function integer transform() {integer input = null;test = codePointToChar(input);return 0;}","test_stringlib_codePointToChar_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public void test_stringlib_codePointAt() {
+		doCompile("test_stringlib_codePointAt");
+		
+		check("russian", 0x0445);
+		check("slovak", (int) 'd');
+		
+		List<Integer> japanese = (List<Integer>) getVariable("japanese");
+		StringBuilder sb = new StringBuilder(japanese.size());
+		for (Integer i: japanese) {
+			sb.appendCodePoint(i);
+		}
+		assertEquals(sb.toString(), "\u673A\u306E\u4E0A\u306B\u306F\u30B1\u30FC\u30AD\u304C\u3042\u308A\u307E\u3059\u3002");
+
+		List<Integer> equation = (List<Integer>) getVariable("equation");
+		StringBuilder actualEquation = new StringBuilder(equation.size());
+		for (Integer i: equation) {
+			actualEquation.appendCodePoint(i);
+		}
+		StringBuilder expectedEquation = new StringBuilder(); // A = {x, y} (in mathematical script)
+		expectedEquation.appendCodePoint(0x01D49C).append(" = {").appendCodePoint(0x01D465).append(", ").appendCodePoint(0x01D4CE).append("}");
+		assertEquals(expectedEquation.toString(), actualEquation.toString());
+	}
+
+	public void test_stringlib_codePointAt_expect_error() {
+		//test: negative index
+		try {
+			doCompile("integer test;function integer transform() {test = 'abc'.codePointAt(-1);return 0;}","test_stringlib_codePointAt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: index out of bounds
+		try {
+			doCompile("integer test;function integer transform() {test = 'abc'.codePointAt(3);return 0;}","test_stringlib_codePointAt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: null
+		try {
+			doCompile("integer test;function integer transform() {test = 'abc'.codePointAt(null);return 0;}","test_stringlib_codePointAt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: null variable
+		try {
+			doCompile("integer test;function integer transform() {integer input = null;test = 'abc'.codePointAt(input);return 0;}","test_stringlib_codePointAt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_codePointLength() {
+		doCompile("test_stringlib_codePointLength");
+		
+		check("maxJapanese", 1);
+
+		check("equation", Arrays.asList("\uD835\uDC9C", "\uD835\uDC65", "\uD835\uDCCE"));
+	}
+
+	public void test_stringlib_codePointLength_expect_error() {
+		//test: null
+		try {
+			doCompile("integer test;function integer transform() {test = codePointLength(null);return 0;}","test_stringlib_codePointLength_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: null variable
+		try {
+			doCompile("integer test;function integer transform() {integer input = null;test = codePointLength(input);return 0;}","test_stringlib_codePointLength_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_isValidCodePoint() {
+		doCompile("test_stringlib_isValidCodePoint");
+		
+		check("negative", false);
+		check("minCodePoint", true);
+		check("maxCodePoint", true);
+		check("tooHigh", false);
+
+		check("a", true);
+		check("c_caron", true);
+		check("Ryo", true);
+		check("S", true);
+	}
+
+	public void test_stringlib_isValidCodePoint_expect_error() {
+		//test: null
+		try {
+			doCompile("boolean test;function integer transform() {test = isValidCodePoint(null);return 0;}","test_stringlib_codePointLength_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: null variable
+		try {
+			doCompile("boolean test;function integer transform() {integer input = null;test = isValidCodePoint(input);return 0;}","test_stringlib_codePointLength_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_unicodeNormalize() {
+		doCompile("test_stringlib_unicodeNormalize");
+		
+		check("nullValue1", null);
+		check("nullValue2", null);
+		check("emptyString", "");
+		
+		check("nfd", "A\u030AA\u030AA\u030A\u0132c\u030Cc\u030C");
+		check("nfc", "\u00C5\u00C5\u00C5\u0132\u010D\u010D");
+		check("nfkd", "A\u030AA\u030AA\u030AIJc\u030Cc\u030C");
+		check("nfkc", "\u00C5\u00C5\u00C5IJ\u010D\u010D");
+
+		check("NFD", "A\u030AA\u030AA\u030A\u0132c\u030Cc\u030C");
+		check("NFC", "\u00C5\u00C5\u00C5\u0132\u010D\u010D");
+		check("NFKD", "A\u030AA\u030AA\u030AIJc\u030Cc\u030C");
+		check("NFKC", "\u00C5\u00C5\u00C5IJ\u010D\u010D");
+	}
+
+	public void test_stringlib_unicodeNormalize_expect_error() {
+		//test: null
+		try {
+			doCompile("function integer transform() {unicodeNormalize('sample input', null);return 0;}","test_stringlib_unicodeNormalize_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: null variable
+		try {
+			doCompile("function integer transform() {string input = null;unicodeNormalize('sample input', input);return 0;}","test_stringlib_unicodeNormalize_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: invalid algorithm
+		try {
+			doCompile("function integer transform() {string input = 'not a valid algorithm';unicodeNormalize('sample input', input);return 0;}","test_stringlib_unicodeNormalize_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_isUnicodeNormalized() {
+		doCompile("test_stringlib_isUnicodeNormalized");
+		
+		check("nullValue1", true);
+		check("nullValue2", true);
+		check("emptyString", true);
+		
+		check("nfd", true);
+		check("nfc", true);
+		check("nfkd", true);
+		check("nfkc", true);
+
+		check("NFD", true);
+		check("NFC", true);
+		check("NFKD", true);
+		check("NFKC", true);
+		
+		Boolean[] results = new Boolean[8];
+		Arrays.fill(results, Boolean.FALSE);
+		check("results", Arrays.asList(results));
+	}
+
+	public void test_stringlib_isUnicodeNormalized_expect_error() {
+		//test: null
+		try {
+			doCompile("function integer transform() {isUnicodeNormalized('sample input', null);return 0;}","test_stringlib_isUnicodeNormalized_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: null variable
+		try {
+			doCompile("function integer transform() {string input = null;isUnicodeNormalized('sample input', input);return 0;}","test_stringlib_isUnicodeNormalized_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: invalid algorithm
+		try {
+			doCompile("function integer transform() {string input = 'not a valid algorithm';isUnicodeNormalized('sample input', input);return 0;}","test_stringlib_isUnicodeNormalized_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	private void checkEqualVariables(String var1, String var2) {
+		Object value1 = getVariable(var1);
+		Object value2 = getVariable(var2);
+		assertEquals("Variables '" + var1 + "' and '" + var2 + "' have different values", value1, value2);
+	}
+
+	public void test_stringlib_contains() {
+		doCompile("test_stringlib_contains");
+		
+		check("contains1", true);
+		check("contains2", true);
+		check("contains3", false);
+		check("contains4", true);
+
+		check("contains_empty1", false);
+		check("contains_empty2", true);
+		
+		check("contains_null1", false);
+		check("contains_null2", false);
+		
+		check("self", true);
+		
+		// check consistency with indexOf()
+		for (int i = 1; i <= 4; i++) {
+			checkEqualVariables("contains" + i, "indexOf" + i);
+		}
+		for (int i = 1; i <= 2; i++) {
+			checkEqualVariables("contains_empty" + i, "indexOf_empty" + i);
+		}
+		for (int i = 1; i <= 2; i++) {
+			checkEqualVariables("contains_null" + i, "indexOf_null" + i);
+		}
+	}
+
+	public void test_stringlib_contains_expect_error() {
+		//test: null
+		try {
+			doCompile("function integer transform() {contains('sample input', null);return 0;}","test_stringlib_contains_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: null variable
+		try {
+			doCompile("function integer transform() {string input = null;contains('sample input', input);return 0;}","test_stringlib_contains_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 //-------------------------- MathLib Tests ------------------------
 	public void test_bitwise_bitSet(){
 		doCompile("test_bitwise_bitSet");
@@ -5755,6 +7189,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultLong4", 3l);
 		check("resultMix1", 15L);
 		check("resultMix2", 15L);
+
+		checkArray("resultByte1", new byte[] {0x01, (byte) 0xF1, (byte) 0xFF});
+		checkArray("resultByte2", new byte[] {(byte) 0xF1, (byte) 0xF1, (byte) 0xFF});
+		checkArray("resultByte3", new byte[] {0x71, 0x73, (byte) 0xFF});
+		checkArray("resultByte4", new byte[] {(byte) 0xF1, (byte) 0xF3, (byte) 0xFF});
+		
+		checkArray("resultByteDifferentLength", new byte[] {(byte) 0xFF, (byte) 0xF0, (byte) 0xF7});
 	}
 	
 	public void test_bitwise_or_expect_error(){
@@ -5794,6 +7235,28 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+		try {
+			doCompile("function integer transform(){\n"
+					+ "byte a = hex2byte('FF'); byte b = null;\n"
+					+ "byte i = bitOr(a,b);\n"
+					+ "return 0;}",
+					"test_bitwise_or_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){\n"
+					+ "byte a = null; byte b = hex2byte('FF');\n"
+					+ "byte i = bitOr(a,b);\n"
+					+ "return 0;}",
+					"test_bitwise_or_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		doCompileExpectError("function integer transform(){long i = bitOr(null, null); return 0;}","test_bitwise_or_expect_error", Arrays.asList("Function 'bitOr' is ambiguous"));
 	}
 
 	public void test_bitwise_and() {
@@ -5808,6 +7271,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultLong4", 1l);
 		check("test_mixed1", 4l);
 		check("test_mixed2", 4l);
+		
+		checkArray("resultByte1", new byte[] {0x00, 0x00, 0x01});
+		checkArray("resultByte2", new byte[] {0x00, 0x01, (byte) 0xF1});
+		checkArray("resultByte3", new byte[] {0x00, 0x70, 0x71});
+		checkArray("resultByte4", new byte[] {0x00, (byte) 0xF1, (byte) 0xF1});
+		
+		checkArray("resultByteDifferentLength", new byte[] {(byte) 0xF0, 0x00, 0x70});
 	}
 
 	public void test_bitwise_and_expect_error(){
@@ -5851,6 +7321,28 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+		try {
+			doCompile("function integer transform(){\n"
+					+ "byte a = hex2byte('FF'); byte b = null;\n"
+					+ "byte i = bitAnd(a,b);\n"
+					+ "return 0;}",
+					"test_bitwise_and_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){\n"
+					+ "byte a = null; byte b = hex2byte('FF');\n"
+					+ "byte i = bitAnd(a,b);\n"
+					+ "return 0;}",
+					"test_bitwise_and_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		doCompileExpectError("function integer transform(){long i = bitAnd(null, null); return 0;}","test_bitwise_and_expect_error", Arrays.asList("Function 'bitAnd' is ambiguous"));
 	}
 	
 	public void test_bitwise_xor() {
@@ -5865,6 +7357,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultLong4", 2l);
 		check("test_mixed1", 15L);
 		check("test_mixed2", 60L);
+
+		checkArray("resultByte1", new byte[] {0x01, (byte) 0xF1, (byte) 0xFE});
+		checkArray("resultByte2", new byte[] {(byte) 0xF1, (byte) 0xF0, (byte) 0x0E});
+		checkArray("resultByte3", new byte[] {0x71, 0x03, (byte) 0x8E});
+		checkArray("resultByte4", new byte[] {(byte) 0xF1, 0x02, (byte) 0x0E});
+		
+		checkArray("resultByteDifferentLength", new byte[] {0x0F, (byte) 0xF0, (byte) 0x87});
 	}
 	
 	public void test_bitwise_xor_expect_error(){
@@ -5904,6 +7403,28 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+		try {
+			doCompile("function integer transform(){\n"
+					+ "byte a = hex2byte('FF'); byte b = null;\n"
+					+ "byte i = bitXor(a,b);\n"
+					+ "return 0;}",
+					"test_bitwise_xor_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){\n"
+					+ "byte a = null; byte b = hex2byte('FF');\n"
+					+ "byte i = bitXor(a,b);\n"
+					+ "return 0;}",
+					"test_bitwise_xor_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		doCompileExpectError("function integer transform(){long i = bitXor(null, null); return 0;}","test_bitwise_xor_expect_error", Arrays.asList("Function 'bitXor' is ambiguous"));
 	}
 
 	public void test_bitwise_lshift() {
@@ -6019,6 +7540,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultLong", -3321654987654105969L);
 		check("test_zero_int", -1);
 		check("test_zero_long", -1l);
+		
+		checkArray("resultByte", new byte[] {0b00110101, 0b01101100});
+		byte[] testZeroByte = new byte[4];
+		Arrays.fill(testZeroByte, (byte) 0xFF);
+		checkArray("testZeroByte", testZeroByte);
 	}
 	
 	public void test_bitwise_negate_expect_error(){
@@ -6034,6 +7560,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+		try {
+			doCompile("function integer transform(){byte input = null; byte i = bitNegate(input); return 0;}","test_bitwise_negate_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		
+		doCompileExpectError("function integer transform(){long i = bitNegate(null); return 0;}","test_bitwise_negate_expect_error", Arrays.asList("Function 'bitNegate' is ambiguous"));
 	}
 
 	public void test_set_bit() {
@@ -6114,7 +7648,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("intResult", Arrays.asList(2.0, 3.0));
 		check("longResult", Arrays.asList(2.0, 3.0));
 		check("doubleResult", Arrays.asList(3.0, -3.0));
-		check("decimalResult", Arrays.asList(3.0, -3.0));
+		check("decimalResult", Arrays.asList(new BigDecimal(3.0), new BigDecimal(-3.0)));
 	}
 	
 	public void test_mathlib_ceil_expect_error(){
@@ -6137,7 +7671,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){decimal var = null; double d = ceil(var); return 0;}","test_mathlib_ceil_expect_error");
+			doCompile("function integer transform(){decimal var = null; decimal d = ceil(var); return 0;}","test_mathlib_ceil_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
@@ -6192,7 +7726,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("intResult", Arrays.asList(2.0, 3.0));
 		check("longResult", Arrays.asList(2.0, 3.0));
 		check("doubleResult", Arrays.asList(2.0, -4.0));
-		check("decimalResult", Arrays.asList(2.0, -4.0));
+		check("decimalResult", Arrays.asList(new BigDecimal("2"), new BigDecimal("-4")));
 	}
 	
 	public void test_math_lib_floor_expect_error(){
@@ -6215,7 +7749,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){decimal input = null; double d = floor(input); return 0;}","test_math_lib_floor_expect_error");
+			doCompile("function integer transform(){decimal input = null; decimal d = floor(input); return 0;}","test_math_lib_floor_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
@@ -6310,10 +7844,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("power1", Math.pow(3,1.2));
 		check("power2", Double.NaN);
 		
-		check("intResult", Arrays.asList(8d, 8d, 8d, 8d));
-		check("longResult", Arrays.asList(8d, 8d, 8d, 8d));
-		check("doubleResult", Arrays.asList(8d, 8d, 8d, 8d));
-		check("decimalResult", Arrays.asList(8d, 8d, 8d, 8d));
+		check("intResult", Arrays.asList(new BigDecimal("8"), new BigDecimal("8"), new BigDecimal("8"), new BigDecimal("8")));
+		check("longResult", Arrays.asList(new BigDecimal("8"), new BigDecimal("8"), new BigDecimal("8"), new BigDecimal("8")));
+		check("doubleResult", Arrays.asList(new BigDecimal("8"), new BigDecimal("8"), new BigDecimal("8"), new BigDecimal("8")));
+		check("decimalResult", Arrays.asList(new BigDecimal("8.000"), new BigDecimal("8.000"), new BigDecimal("8.000"), new BigDecimal("8.000")));
 	}
 	
 	public void test_mathlib_pow_expect_error(){
@@ -6354,27 +7888,111 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){decimal var1 = 12.2d; decimal var2 = null; number n = pow(var1, var2); return 0;}","test_mathlib_pow_expect_error");
+			doCompile("function integer transform(){decimal var1 = 12.2d; decimal var2 = null; decimal n = pow(var1, var2); return 0;}","test_mathlib_pow_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){decimal var1 = null; decimal var2 = 45.3d; number n = pow(var1, var2); return 0;}","test_mathlib_pow_expect_error");
+			doCompile("function integer transform(){decimal var1 = null; decimal var2 = 45.3d; decimal n = pow(var1, var2); return 0;}","test_mathlib_pow_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 	}
 	
+	private void compareDecimals(String variableName, BigDecimal expected) {
+		BigDecimal actual = (BigDecimal) getVariable(variableName);
+		compareDecimals(expected, actual);
+	}
+	
+	private void compareDecimals(BigDecimal expected, BigDecimal actual) {
+		assertTrue("Expected: " + expected + ", actual: " + actual, expected.compareTo(actual) == 0);
+	}
+	
+	/*
+	 * The equals() method also takes the scale into account,
+	 * CTL uses compareTo() instead.
+	 */
+	private void compareDecimals(List<BigDecimal> expected, List<BigDecimal> actual) {
+		assertEquals(expected.size(), actual.size());
+		for (int i = 0; i < actual.size(); i++) {
+			compareDecimals(expected.get(i), actual.get(i));
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
 	public void test_mathlib_round() {
 		doCompile("test_mathlib_round");
 		check("round1", -4l);
 		
 		check("intResult", Arrays.asList(2l, 3l));
 		check("longResult", Arrays.asList(2l, 3l));
-		check("doubleResult", Arrays.asList(2l, 4l));
-		check("decimalResult", Arrays.asList(2l, 4l));
+		check("doubleResult", Arrays.asList(2l, 3l, 4l));
+		//CLO-1835
+		check("decimalResult", Arrays.asList(new BigDecimal("2"), new BigDecimal("3"), new BigDecimal("4")));
+		
+		// negative precision means the number of places after the decimal point
+		// positive precision before the decimal point
+		List<BigDecimal> expected = Arrays.asList(
+				new BigDecimal("0"),
+				new BigDecimal("1000000"),
+				new BigDecimal("1200000"),
+				new BigDecimal("1230000"),
+				new BigDecimal("1235000"), // rounded up
+				new BigDecimal("1234600"), // rounded up
+				new BigDecimal("1234570"), // rounded up
+				new BigDecimal("1234567"),
+				new BigDecimal("1234567.1"),
+				new BigDecimal("1234567.12"),
+				new BigDecimal("1234567.123"),
+				new BigDecimal("1234567.1235"), // rounded up
+				new BigDecimal("1234567.12346"), // rounded up
+				new BigDecimal("1234567.123457"), // rounded up
+				new BigDecimal("1234567.1234567")
+		);
+		//CLO-1835
+		compareDecimals(expected, (List<BigDecimal>) getVariable("decimal2Result"));
+		//CLO-1832
+		check("intWithPrecisionResult", 1000);
+		check("longWithPrecisionResult", 123456l);
+		check("ret1", 1200);
+		check("ret2", 10000l);
+		List<Double> expectedDouble = Arrays.asList(0.0d, 1000000.0d, 1200000.0d, 1230000.0d,
+				1235000.0d, 1234600.0d, 1234570.0d, 1234567.0d, 1234567.1d, 1234567.12d, 
+				1234567.123d, 1234567.1235d, 1234567.12346d, 1234567.123457d, 1234567.1234567d
+				);
+		check("double2Result", expectedDouble);
+		
+		check("documentationExample1", 100);
+		check("documentationExample2", 123);
+		check("documentationExample3", 123.12d);
+		
+		// CLO-2346
+		compareDecimals("hundredsDecimalUp", new BigDecimal("300"));
+		check("hundredsLongUp", 300L);
+		check("hundredsIntegerUp", 300);
+
+		compareDecimals("hundredsDecimalNegativeUp", new BigDecimal("-300"));
+		check("hundredsLongNegativeUp", -300L);
+		check("hundredsIntegerNegativeUp", -300);
+
+		compareDecimals("hundredsDecimalDown", new BigDecimal("200"));
+		check("hundredsLongDown", 200L);
+		check("hundredsIntegerDown", 200);
+
+		compareDecimals("hundredsDecimalNegativeDown", new BigDecimal("-200"));
+		check("hundredsLongNegativeDown", -200L);
+		check("hundredsIntegerNegativeDown", -200);
+
+		// no overflow should occur
+		check("minInt", -2000000000);
+		check("maxInt", 2000000000);
+		check("minLong", -9000000000000000000L);
+		check("maxLong", 9000000000000000000L);
+		
+		check("zeroPrecisionInteger", Integer.MIN_VALUE);
+		check("zeroPrecisionLong", Long.MIN_VALUE);
 	}
 	
 	public void test_mathlib_round_expect_error(){
@@ -6385,13 +8003,139 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){decimal input = null; long l = round(input);return 0;}","test_mathlib_round_expect_error");
+			doCompile("function integer transform(){decimal input = null; decimal l = round(input);return 0;}","test_mathlib_round_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){number input = null; number l = round(input, 2);return 0;}","test_mathlib_round_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; decimal l = round(input, 9); return 0;}","test_mathlib_round_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer input = null; integer l = round(input, 9); return 0;}","test_mathlib_round_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		
+		try {
+			doCompile("function integer transform(){long input = null; long l = round(input, 9); return 0;}","test_mathlib_round_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long input = null; long l = round(input); return 0;}","test_mathlib_round_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer input = null; long l = round(input); return 0;}","test_mathlib_round_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer input = 7012; integer l = round(input, null); return 0;}","test_mathlib_round_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
+	public void test_mathlib_roundHalfToEven() {
+		doCompile("test_mathlib_roundHalfToEven");
+		check("round1", new BigDecimal(-4));
+		
+		check("intResult", Arrays.asList(new BigDecimal(2), new BigDecimal(3)));
+		check("longResult", Arrays.asList(new BigDecimal(2), new BigDecimal(3)));
+		check("doubleResult", Arrays.asList(new BigDecimal(2), new BigDecimal(2), new BigDecimal(4)));
+		//CLO-1835
+		check("decimalResult", Arrays.asList(new BigDecimal(2), new BigDecimal(2), new BigDecimal(4), new BigDecimal(4), new BigDecimal(5)));
+		
+		// negative precision means the number of places after the decimal point
+		// positive precision before the decimal point
+		List<BigDecimal> expected = Arrays.asList(
+				new BigDecimal("0"),
+				new BigDecimal("1000000"),
+				new BigDecimal("1200000"),
+				new BigDecimal("1230000"),
+				new BigDecimal("1235000"), // rounded up
+				new BigDecimal("1234600"), // rounded up
+				new BigDecimal("1234570"), // rounded up
+				new BigDecimal("1234567"),
+				new BigDecimal("1234567.1"),
+				new BigDecimal("1234567.12"),
+				new BigDecimal("1234567.123"),
+				new BigDecimal("1234567.1235"), // rounded up
+				new BigDecimal("1234567.12346"), // rounded up
+				new BigDecimal("1234567.123457"), // rounded up
+				new BigDecimal("1234567.1234567")
+		);
+		//CLO-1835
+		compareDecimals(expected, (List<BigDecimal>) getVariable("decimal2Result"));
+		//CLO-1832
+		compareDecimals("intWithPrecisionResult", new BigDecimal(1000));
+		compareDecimals("longWithPrecisionResult", new BigDecimal(123456));
+		compareDecimals("ret1", new BigDecimal(1200));
+		compareDecimals("ret2", new BigDecimal(10000));
+		compareDecimals(expected, (List<BigDecimal>) getVariable("double2Result"));
+		
+		expected = Arrays.asList(
+				new BigDecimal("44.44"), 
+				new BigDecimal("55.56"),
+				new BigDecimal("66.66"),
+				new BigDecimal("44.444"), 
+				new BigDecimal("55.556"),
+				new BigDecimal("66.666"),
+				new BigDecimal("444000"), 
+				new BigDecimal("556000"),
+				new BigDecimal("666000"),
+				new BigDecimal("4444"), 
+				new BigDecimal("5556"),
+				new BigDecimal("6666")
+		); 
+		compareDecimals(expected, (List<BigDecimal>) getVariable("decimal3result"));
+	}
+
+	public void test_mathlib_roundHalfToEven_expect_error(){
+		try {
+			doCompile("function integer transform(){decimal d = roundHalfToEven(null);return 0;}","test_mathlib_roundHalfToEven_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null;decimal d = roundHalfToEven(input);return 0;}","test_mathlib_roundHalfToEven_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer precision = null; decimal d = roundHalfToEven(1D, precision);return 0;}","test_mathlib_roundHalfToEven_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal d = roundHalfToEven(1D, null);return 0;}","test_mathlib_roundHalfToEven_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
 	public void test_mathlib_sqrt() {
 		doCompile("test_mathlib_sqrt");
 		check("sqrtPi", Math.sqrt(Math.PI));
@@ -6504,6 +8248,265 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 		try {
 			doCompile("function integer transform(){integer i = null; setRandomSeed(i); return 0;}","test_mathlib_setRandomSeed_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	public void test_mathlib_max() throws UnsupportedEncodingException{
+		doCompile("test_mathlib_max");
+		check("retInt", Arrays.asList(7,545,15,11,67,-43));
+		check("retIntNull", Arrays.asList(4,-4, null, null, 12, 54, 11, 11));
+		check("retLong", Arrays.asList(23L, 58L, 45l, 75L, 89L, -11L));
+		check("retLongNull", Arrays.asList(40L, 89L, null, null, 44L, 56L, 89L, 78l, 89L, 78L, 23L));
+		check("retDec", Arrays.asList(new BigDecimal("56.3"), new BigDecimal("87.3"), new BigDecimal("65.1"), new BigDecimal("56.3"), new BigDecimal("65.1"), new BigDecimal("-11.1")));
+		check("retDecNull", Arrays.asList(new BigDecimal("65.9"), new BigDecimal("-12.6"), null, null, 
+				new BigDecimal("32.4"), new BigDecimal("21.5"), new BigDecimal("11.3"), 
+				new BigDecimal("56.3"), new BigDecimal("78.1"), new BigDecimal("45.3"),
+				new BigDecimal("87.9"), new BigDecimal("12.3"), new BigDecimal("13.4"),
+				new BigDecimal("78"), new BigDecimal("59.6"), new BigDecimal("78.6"),
+				new BigDecimal("12.3"), new BigDecimal("58.6"), new BigDecimal("48.6"),
+				new BigDecimal("65.1")));
+		check("retNum", Arrays.asList(54.89d, 0d, 89.7d, 89.7d, 23.6d, -12.5));
+		check("retNumNull", Arrays.asList(56.4d, 98.3d, null, null, 56.9d, 45.7d, -78.6d, -11.2d, 78d, 45.6d, 89.6d, 56.9d, 123.3d, 45.9d, 48.5d, 67.8d));
+		check("retString", Arrays.asList("Kennen", "Zac"));
+		check("retStringNull", Arrays.asList("Warwick", "Quinn", null));
+		check("retBool", Arrays.asList(true, true));
+		check("retBoolNull", Arrays.asList(true, true, null));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2013, 1, 24, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("retDate", Arrays.asList(cal.getTime(), cal.getTime()));
+		check("retDateNull", Arrays.asList(cal.getTime(), cal.getTime(), null));
+	}
+	
+	public void test_mathlib_max_expect_error(){
+		try {
+			doCompile("function integer transform(){long[] my_list = null; max(my_list); return 0;}","test_mathlib_max_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long[] my_list; max(my_list); return 0;}","test_mathlib_max_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte[] my_list = [str2byte('Lux', 'utf-8'), str2byte('Tresh', 'utf-8')]; max(my_list); return 0;}","test_mathlib_max_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_mathlib_min(){
+		doCompile("test_mathlib_min");
+		check("retInt", Arrays.asList(-5, 14, 17, 15, -9, -48));
+		check("retIntNull", Arrays.asList(-3, -9, null, 19, 12, null, 15, 56));
+		check("retLong", Arrays.asList(-76l, 12l, 156l, -6l, 76l, -6l));
+		check("retLongNull", Arrays.asList(-30L, 12L, null, 13L, 12L, null, 89L, -4L, 12L, -9l, -5L, -89L));
+		check("retNum", Arrays.asList(0.99d, -90.1d, 56.9d, 56.9d, 45.1d, -1.11d));
+		check("retNumNull", Arrays.asList(11.3d, -11.1d, null, null, null, 12.3d, 11.2d, 11.6d, 12.6d, 12.3d, 17d, 12.6d, 12d, null, 12.3d, -23.6d, 36.9d, 23d, null));
+		check("retDec", Arrays.asList(new BigDecimal("-7.8"), new BigDecimal("-1.11"), new BigDecimal("56.7"),
+				new BigDecimal("32.1"), new BigDecimal("56.7"), new BigDecimal("-12.4")));
+		check("retDecNull", Arrays.asList(new BigDecimal("34.2"), new BigDecimal("-1.6"), null, null, null,
+				new BigDecimal("12.3"), new BigDecimal("11.2"), new BigDecimal("1.11"), new BigDecimal("-13.5"),
+				new BigDecimal("2.11"), new BigDecimal("-23.9"), new BigDecimal("89.7"), new BigDecimal("16"),
+				null, new BigDecimal("23.6"), new BigDecimal("78.9"), new BigDecimal("45.3"), new BigDecimal("458"),
+				null, new BigDecimal("36.9"), new BigDecimal("-89.6"), new BigDecimal("78.9"), 
+				new BigDecimal("0"), null));
+		check("retStr", Arrays.asList("Jax", "Sivir"));
+		check("retStrNull", Arrays.asList("Lulu", "Fizz", null, null));
+		check("retBool", Arrays.asList(false, false));
+		check("retBoolNull", Arrays.asList(false, false, null));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2003, 10, 17, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("retDate", Arrays.asList(cal.getTime(), cal.getTime()));
+		check("retDateNull", Arrays.asList(cal.getTime(), cal.getTime(), null));
+	}
+	
+	public void test_mathlib_min_expect_error(){
+		try {
+			doCompile("function integer transform(){integer[] myList = null; min(myList); return 0;}","test_mathlib_min_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer[] myList; min(myList); return 0;}","test_mathlib_min_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){min([str2byte('Renektor', 'utf-8'), str2byte('Kayle', 'utf-16')]); return 0;}","test_mathlib_min_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_mathlib_cos(){
+		doCompile("test_mathlib_cos");
+		check("ret", Arrays.asList(Math.cos(12.6d), Math.cos(0d), Math.cos(-1456.8d), 
+				Math.cos(1.6d), Math.cos(12.6d), Math.cos(-19.3d), Math.cos(12d), Math.cos(23d),
+				Math.cos(0d), Math.cos(0d)));
+	}
+	
+	public void test_mathlib_cos_expect_error(){
+
+		try {
+			doCompile("function integer transform(){double input = null; double d = cos(input); return 0;}","test_mathlib_cos_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; double d = cos(input); return 0;}","test_mathlib_cos_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_mathlib_sin(){
+		doCompile("test_mathlib_sin");
+		check("ret", Arrays.asList(Math.sin(1d), Math.sin(25.9d), Math.sin(256d), Math.sin(123d), 
+				Math.sin(0d), Math.sin(0d)));
+	}
+	
+	public void test_mathlib_sin_expect_error(){
+		try {
+			doCompile("function integer transform(){double input = null; double d = sin(input); return 0;}","test_mathlib_sin_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; double d = sin(input); return 0;}","test_mathlib_sin_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_mathlib_tan(){
+		doCompile("test_mathlib_tan");
+		check("ret", Arrays.asList(Math.tan(Math.PI/2), Math.tan(2*Math.PI), Math.tan(Math.PI),
+				Math.tan(0d), Math.tan(12.44d), Math.tan(78d), Math.tan(725d), Math.tan(0d), Math.tan(0d)));
+	}
+	
+	public void test_mathlib_tan_expect_error(){
+		try {
+			doCompile("function integer transform(){double input = null; double dd = tan(input); return 0;}","test_mathlib_tan_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; double dd = tan(input); return 0;}","test_mathlib_tan_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_mathlib_acos(){
+		doCompile("test_mathlib_acos");
+		check("ret", Arrays.asList(Math.acos(Math.PI), Math.acos(Math.PI*2), Math.acos(Math.PI/2), 
+				Math.acos(180), Math.acos(90), Math.acos(0), Math.acos(123)));
+	}
+	
+	public void test_mathlib_acos_expect_error(){
+		try {
+			doCompile("function integer transform(){double input = null; acos(input);return 0;}");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; acos(input);return 0;}");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long input = null; acos(input);return 0;}");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer input = null; acos(input);return 0;}");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_mathlib_asin(){
+		doCompile("test_mathlib_asin");
+		check("ret", Arrays.asList(Math.asin(Math.PI), Math.asin(Math.PI*2), Math.asin(Math.PI/2),
+				Math.asin(1236), Math.asin(0)));
+	}
+	
+	public void test_mathlib_asin_expect_error(){
+		try {
+			doCompile("function integer transform(){number input = null; asin(input); return 0;}","test_mathlib_asin_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; asin(input); return 0;}","test_mathlib_asin_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long input = null; asin(input); return 0;}","test_mathlib_asin_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer input = null; asin(input); return 0;}","test_mathlib_asin_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_mathlib_atan(){
+		doCompile("test_mathlib_atan");
+		check("ret", Arrays.asList(Math.atan(Math.PI), Math.atan(Math.PI*2), Math.atan(Math.PI/2),
+				Math.atan(45), Math.atan(0)));
+	}
+	
+	public void test_mathlib_atan_expect_error(){
+		try {
+			doCompile("function integer transform(){number input = null; atan(input); return 0;}","test_mathlib_atan_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; atan(input); return 0;}","test_mathlib_atan_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long input = null; atan(input); return 0;}","test_mathlib_atan_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer input = null; atan(input); return 0;}","test_mathlib_atan_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
@@ -6885,6 +8888,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertNotNull(getVariable("patt_null"));
 		assertNotNull(getVariable("ret1"));
 		assertNotNull(getVariable("ret2"));
+		Calendar cal = Calendar.getInstance();
+		cal.set(1997,10,12,0,0,0);
+		cal.set(Calendar.MILLISECOND,0);
+		check("ret3", cal.getTime());
+		cal.clear();
+		cal.set(1970,0,1,1,0,12);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("ret4", cal.getTime());
 	}
 	
 	
@@ -7094,22 +9105,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_convertlib_base64byte() {
 		doCompile("test_convertlib_base64byte");
 		assertTrue(Arrays.equals((byte[])getVariable("base64input"), Base64.decode("The quick brown fox jumps over the lazy dog")));
-	}
-	
-	public void test_convertlib_base64byte_expect_error(){
-		//this test should be expected to success in future
-		try {
-			doCompile("function integer transform(){byte b = base64byte(null); return 0;}","test_convertlib_base64byte_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){string s = null; byte b = base64byte(s); return 0;}","test_convertlib_base64byte_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
+		check("nullLiteralOutput", null);
+		check("nullVariableOutput", null);
 	}
 	
 	public void test_convertlib_bits2str() {
@@ -7117,22 +9114,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("bitsAsString1", "00000000");
 		check("bitsAsString2", "11111111");
 		check("bitsAsString3", "010100000100110110100000");
-	}
-	
-	public void test_convertlib_bits2str_expect_error(){
-		//this test should be expected to success in future
-		try {
-			doCompile("function integer transform(){string s = bits2str(null); return 0;}","test_convertlib_bits2str_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){byte b = null; string s = bits2str(b); return 0;}","test_convertlib_bits2str_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
+		check("nullLiteralOutput", null);
+		check("nullVariableOutput", null);
 	}
 	
 	public void test_convertlib_bool2num() {
@@ -7156,21 +9139,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertTrue(((String) getVariable("inputBase64wrapped")).indexOf('\n') >= 0);
 		check("inputBase64nowrap", inputBase64nowrap);
 		assertTrue(((String) getVariable("inputBase64nowrap")).indexOf('\n') < 0);
+		
+		check("nullLiteralOutput", null);
+		check("nullVariableOutput", null);
+		check("nullLiteralOutputWrapped", null);
+		check("nullVariableOutputWrapped", null);
+		check("nullLiteralOutputNowrap", null);
+		check("nullVariableOutputNowrap", null);
 	}
 	
 	public void test_convertlib_byte2base64_expect_error(){
-		try {
-			doCompile("function integer transform(){string s = byte2base64(null);return 0;}","test_convertlib_byte2base64_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){byte b = null; string s = byte2base64(b);return 0;}","test_convertlib_byte2base64_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
 		try {
 			doCompile("function integer transform(){boolean b = null; string s = byte2base64(str2byte('Rengar', 'utf-8'), b);return 0;}","test_convertlib_byte2base64_expect_error");
 			fail();
@@ -7222,6 +9200,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("millisecMin", 0);
 		check("nullRet1", null);
 		check("nullRet2", null);
+
+		check("week1", 6);
+		check("week2", 7);
 	}
 	
 	public void test_convertlib_date2num_expect_error(){
@@ -7436,22 +9417,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_convertlib_long2packDecimal() {
 		doCompile("test_convertlib_long2packDecimal");
 		assertTrue(Arrays.equals((byte[])getVariable("packedLong"), new byte[] {5, 0, 12}));
-	}
-	
-	public void test_convertlib_long2packDecimal_expect_error(){
-		try {
-			doCompile("function integer transform(){byte b = long2packDecimal(null); return 0;}","test_convertlib_long2packDecimal_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){long l = null; byte b = long2packDecimal(l); return 0;}","test_convertlib_long2packDecimal_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-
+		check("nullLiteralOutput", null);
+		check("nullVariableOutput", null);
 	}
 	
 	public void test_convertlib_md5() {
@@ -7542,23 +9509,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_convertlib_packdecimal2long() {
 		doCompile("test_convertlib_packDecimal2long");
 		check("unpackedLong", PackedDecimal.parse(BYTEARRAY_VALUE));
+		check("nullLiteralOutput", null);
+		check("nullVariableOutput", null);
 	}
 
-	public void test_convertlib_packdecimal2long_expect_error(){
-		try {
-			doCompile("function integer transform(){long l = packDecimal2long(null); return 0;}","test_convertlib_packdecimal2long_expect_error");
-			fail();		
-		} catch (Exception e) {
-			// do nothing;
-		}
-		try {
-			doCompile("function integer transform(){byte b = null; long l = packDecimal2long(b); return 0;}","test_convertlib_packdecimal2long_expect_error");
-			fail();		
-		} catch (Exception e) {
-			// do nothing;
-		}
-	}
-	
 	public void test_convertlib_sha() {
 		doCompile("test_convertlib_sha");
 		assertTrue(Arrays.equals((byte[])getVariable("shaHash1"), Digest.digest(DigestType.SHA, "The quick brown fox jumps over the lazy dog")));
@@ -7612,20 +9566,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertTrue(Arrays.equals((byte[]) getVariable("textAsBits2"), new byte[] {-1/*, 0, 0, 0, 0, 0, 0, 0*/}));
 		assertTrue(Arrays.equals((byte[]) getVariable("textAsBits3"), new byte[] {10, -78, 5/*, 0, 0, 0, 0, 0*/}));
 		assertTrue(Arrays.equals((byte[]) getVariable("test_empty"), new byte[] {}));
+		check("nullLiteralOutput", null);
+		check("nullVariableOutput", null);
 	}
 	
-	public void test_convertlib_str2bits_expect_error(){
+	public void test_convertlib_str2bits_expect_error() {
 		try {
-			doCompile("function integer transform(){byte b = str2bits(null); return 0;}","test_convertlib_str2bits_expect_error");
+			doCompile("function integer transform(){byte b = str2bits('abcd'); return 0;}","test_convertlib_str2bits_expect_error");
 			fail();
 		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){string s = null; byte b = str2bits(s); return 0;}","test_convertlib_str2bits_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
+			// do nothing;
 		}
 	}
 
@@ -8013,45 +9963,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		checkArray("cpHello", new byte[] { 72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100, 33 });
 		checkArray("cpHorse", new byte[] { 80, -8, -19, 108, 105, -102, 32, -98, 108, 117, -99, 111, 117, -24, 107, -3, 32, 107, -7, -14, 32, 112, -20, 108, 32, -17, -31, 98, 108, 115, 107, -23, 32, -13, 100, 121 });
+		
+		check("nullLiteralOutput", null);
+		check("nullVariableOutput", null);
 	}
 
 	public void test_convertlib_str2byte_expect_error(){
-		try {
-			doCompile("function integer transform(){byte b = str2byte(null,'utf-8'); return 0;}","test_convertlib_str2byte_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){byte b = str2byte(null,'utf-16'); return 0;}","test_convertlib_str2byte_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){byte b = str2byte(null,'MacCentralEurope'); return 0;}","test_convertlib_str2byte_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){byte b = str2byte(null,'ascii'); return 0;}","test_convertlib_str2byte_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){byte b = str2byte(null,'iso-8859-2'); return 0;}","test_convertlib_str2byte_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){byte b = str2byte(null,'windows-1250'); return 0;}","test_convertlib_str2byte_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
 		try {
 			doCompile("function integer transform(){byte b = str2byte('wallace',null); return 0;}","test_convertlib_str2byte_expect_error");
 			fail();
@@ -8098,21 +10015,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("cpHello", hello);
 		check("cpHorse", horse);
 
+		check("nullLiteralOutput", null);
+		check("nullVariableOutput", null);
 	}
 
 	public void test_convertlib_byte2str_expect_error(){
-		try {
-			doCompile("function integer transform(){string s = byte2str(null,'utf-8'); return 0;}","test_convertlib_byte2str_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){byte input = null; string s = byte2str(input,'utf-8'); return 0;}","test_convertlib_byte2str_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
 		try {
 			doCompile("function integer transform(){string s = byte2str(null,null); return 0;}","test_convertlib_byte2str_expect_error");
 			fail();
@@ -8130,6 +10037,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_conditional_fail() {
 		doCompile("test_conditional_fail");
 		check("result", 3);
+	}
+	
+	public void test_conditional_fail_CLO_4566() {
+		doCompile("test_conditional_fail_CLO-4566");
 	}
 	
 	
@@ -8165,6 +10076,24 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		@SuppressWarnings("unchecked")
 		List<byte[]> byteList = (List<byte[]>) getVariable("byteList"); 
 		assertDeepEquals(byteList, Arrays.asList(new byte[] {0x12}, new byte[] {0x34, 0x56}, null, new byte[] {0x78}));
+	}
+	
+	public void test_dictionary_expect_error() throws Exception {
+		// CLO-2283
+		TransformationGraph graph = createEmptyGraph();
+		graph.getDictionary().setValue("listEntry", "list", new ArrayList<String>());
+		graph.getDictionary().setContentType("listEntry", "object");
+		graph.getDictionary().setValue("mapEntry", "map", new HashMap<String, String>());
+		graph.getDictionary().setContentType("mapEntry", "object");
+		
+		doCompileExpectError(graph, 
+				"function integer transform(){append(dictionary.listEntry, \"newValue\"); return 0;}",
+				"test_dictionary_expect_error",
+				Arrays.asList("Dictionary entry 'listEntry' has invalid content type: 'object'"));
+		doCompileExpectError(graph, 
+				"function integer transform(){containsKey(dictionary.mapEntry, \"myKey\"); return 0;}",
+				"test_dictionary_expect_error",
+				Arrays.asList("Dictionary entry 'mapEntry' has invalid content type: 'object'"));
 	}
 
 	public void test_dictionary_write() {
@@ -8230,6 +10159,62 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_utillib_random_uuid");
 		assertNotNull(getVariable("uuid"));
 	}
+
+	public void test_utillib_byteAt() {
+		doCompile("test_utillib_byteAt");
+		check("ret0", 0x00);
+		check("ret1", 0xFF);
+		check("ret2", 0xF0);
+		check("ret3", 0x0F);
+		check("ret4", 0x01);
+		check("ret5", 0x00);
+	}
+
+	public void test_utillib_byteAt_expect_error() {
+		try {
+			doCompile("function integer transform(){byte b = hex2byte('00'); b.byteAt(-1); return 0;}","test_utillib_byteAt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = hex2byte('00'); b.byteAt(1); return 0;}","test_utillib_byteAt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = hex2byte(''); b.byteAt(0); return 0;}","test_utillib_byteAt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = null; b.byteAt(0); return 0;}","test_utillib_byteAt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byteAt(null, 0); return 0;}","test_utillib_byteAt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = hex2byte('00'); integer i = null; b.byteAt(i); return 0;}","test_utillib_byteAt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = hex2byte('00'); b.byteAt(null); return 0;}","test_utillib_byteAt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
 	public void test_stringlib_randomString(){
 		doCompile("string test; function integer transform(){test = randomString(1,3); return 0;}","test_stringlib_randomString");
 		assertNotNull(getVariable("test"));
@@ -8332,6 +10317,35 @@ public abstract class CompilerTestCase extends CloverTestCase {
 //		check("ret3", null);
 	}
 
+	public void test_utillib_getComponentProperty() {
+		final String expected = "expectedValue";
+		this.node = new Node("TEST", graph) {
+
+			@Override
+			protected Result execute() throws Exception {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public Properties getAttributes() {
+				Properties attributes = new Properties();
+				attributes.put("transform", expected);
+				return attributes;
+			}
+			
+		};
+		doCompile("test_utillib_getComponentProperty");
+		check("transform", expected);
+	}
+
+	public void test_utillib_getComponentProperty_expect_error() {
+		try {
+			doCompile("test_utillib_getComponentProperty");
+			fail();
+		} catch (Exception ex) {}
+	}
+
 	public void test_utillib_getJavaProperties() {
 		String key1 = "my.testing.property";
 		String key2 = "my.testing.property2";
@@ -8382,7 +10396,32 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("params", params);
 		check("ret1", null);
 		check("ret2", null);
-	
+	}
+
+	public void test_utillib_getRawParamValues() {
+		doCompile("test_utillib_getRawParamValues");
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("PROJECT", ".");
+		params.put("DATAIN_DIR", "${PROJECT}/data-in");
+		params.put("COUNT", "`1+2`");
+		params.put("NEWLINE", "\\n"); // special characters should NOT be resolved
+		check("params", params);
+		check("ret1", null);
+		check("ret2", null);
+		check("ret3", null);
+	}
+
+	public void test_utillib_getRawParamValue() {
+		doCompile("test_utillib_getRawParamValue");
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("PROJECT", ".");
+		params.put("DATAIN_DIR", "${PROJECT}/data-in");
+		params.put("COUNT", "`1+2`");
+		params.put("NEWLINE", "\\n"); // special characters should NOT be resolved
+		params.put("NONEXISTING", null);
+		check("params", params);
+		check("ret1", null);
+		check("ret2", null);
 	}
 
 	public void test_stringlib_getUrlParts() {
@@ -8544,6 +10583,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("ret15", null);
 		check("ret16", null);
 		check("ret17", "Shaco");
+		check("ret18", 12);
+		check("ret19", 18.1d);
+		check("ret20", 15L);
+		check("ret21", new BigDecimal("18.1"));
 	}
 	
 	public void test_utillib_toAbsolutePath(){
@@ -8562,6 +10605,29 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 		try {
 			doCompile("function integer transform(){string s = null; string str = toAbsolutePath(s); return 0;}","test_utillib_toAbsolutePath_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_toProjectUrl() throws IOException {
+		doCompile("test_stringlib_toProjectUrl");
+		String result;
+		
+		result = (String) getVariable("ret1");
+		assertTrue(result.startsWith("file:") || result.startsWith("sandbox:"));
+		result = (String) getVariable("ret2");
+		assertTrue(result.startsWith("file:") || result.startsWith("sandbox:"));
+		check("ret3", "ftp://kennen_ftp/home");
+		check("ret4", null);
+		check("ret5", "file:/home/user/workspace/myproject");
+		check("ret6", "sandbox://mysandbox/user/workspace/myproject");
+	}
+	
+	public void test_stringlib_toProjectUrl_expect_error(){
+		try {
+			doCompile("function integer transform(){string str = toProjectUrl('https://user@gooddata.com:password@secure-di.gooddata.com/'); return 0;}","test_stringlib_toProjectUrl_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing

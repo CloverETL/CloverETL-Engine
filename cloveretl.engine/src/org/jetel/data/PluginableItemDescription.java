@@ -18,12 +18,8 @@
  */
 package org.jetel.data;
 
-import java.util.List;
-
-import org.apache.log4j.Logger;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.plugin.Extension;
-import org.jetel.plugin.Plugins;
 
 /**
  * Parent class for all pluginable item descriptors.
@@ -33,44 +29,10 @@ import org.jetel.plugin.Plugins;
  *
  * @created 18.3.2009
  */
-public abstract class PluginableItemDescription {
-	private static Logger log = Logger.getLogger(PluginableItemDescription.class);
-	
-	private Extension extension;
-
-	public PluginableItemDescription(Extension extension) {
-    	this.extension = extension;
-	}
+public interface PluginableItemDescription {
     
-    public void init() throws ComponentNotReadyException {
-        if (!Plugins.isLazyClassLoading()) {
-            //class references should be preloaded
-        	preloadClass();
-        }
-    }
+	public void init() throws ComponentNotReadyException;
 
-    public Extension getExtension() {
-		return extension;
-	}
-
-    abstract protected List<String> getClassNames();
-
-    /**
-     * Just pre-loads a class reference of this graph element description.
-     * It is necessary for the clover server.
-     * @throws ComponentNotReadyException 
-     */
-    private void preloadClass() throws ComponentNotReadyException {
-    	List<String> classNames = getClassNames();
-    	
-		for (String className : classNames) {
-			log.debug("loading class "+className);
-	    	try {
-	    		Class.forName(className, true, extension.getPlugin().getClassLoader());
-			} catch (ClassNotFoundException e) {
-				throw new ComponentNotReadyException("Unable to preload class '" + className + "' registred in extension: " + extension);
-			}
-		}
-    }
-
+    public Extension getExtension();
+    
 }

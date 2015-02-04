@@ -720,7 +720,7 @@ public class MergeJoin extends Node {
 		} else if (joinStr.equalsIgnoreCase("fullOuter")) {
 			joinType = Join.FULL_OUTER;
 		} else {
-			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" 
+			throw new XMLConfigurationException(xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" 
 					+ "Invalid joinType specification: " + joinStr);				
 		}
 
@@ -801,7 +801,7 @@ public class MergeJoin extends Node {
 		if (charset != null && !Charset.isSupported(charset)) {
 			status.add(new ConfigurationProblem(
 					"Charset "+charset+" not supported!", 
-					ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+					ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
 		}
 		
 		try {
@@ -877,11 +877,6 @@ public class MergeJoin extends Node {
 		}
 
 		return status;
-	}
-	
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
 	}
 	
 	public String getCharset() {

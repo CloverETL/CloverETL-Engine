@@ -1446,30 +1446,32 @@ public class CustomizedRecordTransform implements RecordTransform {
 		}
 		// array "order" stores coordinates of output fields in order they will be assigned
 		for (int i = 0; i < order.length; i++) {
-			value = transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue(sources);
+			int recNo = order[i][REC_NO];
+			int fieldNo = order[i][FIELD_NO];
+			value = transformMapArray[recNo][fieldNo].getValue(sources);
 			if (value != null || !useAlternativeRules) {
 				try {
-					target[order[i][REC_NO]].getField(order[i][FIELD_NO]).setValue(value);
+					target[recNo].getField(fieldNo).setValue(value);
 				} catch (BadDataFormatException e) {
 					// we can try to change value to String and set to output field
 					if (value != null && fieldPolicy != PolicyType.STRICT) {
 						try {
-							target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(value.toString());
+							target[recNo].getField(fieldNo).fromString(value.toString());
 						} catch (BadDataFormatException e1) {
 							if (!useAlternativeRules
-									|| !setAlternativeValue(sources, target, order[i][REC_NO], order[i][FIELD_NO], 0, e1)) {
-								error(transformMapArray, order[i][REC_NO], order[i][FIELD_NO], e1);
-								fieldResult[order[i][REC_NO]][order[i][FIELD_NO]] = false;
+									|| !setAlternativeValue(sources, target, recNo, fieldNo, 0, e1)) {
+								error(transformMapArray, recNo, fieldNo, e1);
+								fieldResult[recNo][fieldNo] = false;
 							}
 						}
 					} else if (!useAlternativeRules
-							|| !setAlternativeValue(sources, target, order[i][REC_NO], order[i][FIELD_NO], 0, e)) {// value is null or value can't be set to field
-						error(transformMapArray, order[i][REC_NO], order[i][FIELD_NO], e);
-						fieldResult[order[i][REC_NO]][order[i][FIELD_NO]] = false;
+							|| !setAlternativeValue(sources, target, recNo, fieldNo, 0, e)) {// value is null or value can't be set to field
+						error(transformMapArray, recNo, fieldNo, e);
+						fieldResult[recNo][fieldNo] = false;
 					}
 				}
 			} else {// value is null and useuseAlternativeRules = true
-				fieldResult[order[i][REC_NO]][order[i][FIELD_NO]] = setAlternativeValue(sources, target, order[i][REC_NO], order[i][FIELD_NO], 0, null);
+				fieldResult[recNo][fieldNo] = setAlternativeValue(sources, target, recNo, fieldNo, 0, null);
 			}
 		}
 		//fill semiresult for each record  

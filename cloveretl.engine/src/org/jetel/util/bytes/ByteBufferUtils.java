@@ -28,9 +28,14 @@ import java.nio.CharBuffer;
 import java.nio.InvalidMarkException;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
 
 import org.jetel.data.Defaults;
+import org.jetel.data.parser.AhoCorasick;
 import org.jetel.exception.JetelRuntimeException;
 
 /**
@@ -141,20 +146,52 @@ public final class ByteBufferUtils {
      * @since 21.11.2006
      */
     
-    public static final void encodeLength(CloverBuffer buffer,int length) {
+    public static final int encodeLength(CloverBuffer buffer,int length) {
 //    	buffer.putInt(length);
+    	int bytes=0;
         if (length <= Byte.MAX_VALUE) {
             buffer.put((byte) length);
+            bytes++;
         } else {
 
             do {
                 buffer.put((byte) (0x80 | (byte) length));
+                bytes++;
                 length = length >> 7;
             } while ((length >> 7) > 0);
             buffer.put((byte) length);
+            bytes++;
         }
+        return bytes;
     }
 
+    /**
+     * Encodes length (positive int value) into set of bytes occupying
+     * least space. Bytes are written directly to provided stream.
+     * 
+     * @param stream
+     * @param length
+     * @return number of bytes needed to encode the length and written to the stream 
+     * @throws IOException
+     */
+    public static final int encodeLength(OutputStream stream,int length) throws IOException{
+    	int bytes=0;
+        if (length <= Byte.MAX_VALUE) {
+        	stream.write((byte) length);
+            bytes++;
+        } else {
+
+            do {
+            	stream.write((byte) (0x80 | (byte) length));
+                bytes++;
+                length = length >> 7;
+            } while ((length >> 7) > 0);
+            stream.write((byte) length);
+            bytes++;
+        }
+        return bytes;
+    }
+    
     /**
      * @deprecated use {@link #encodeLength(CloverBuffer, int)} instead
      */
@@ -245,6 +282,40 @@ public final class ByteBufferUtils {
         
        return length;
     }
+    
+    
+    /**
+     * Decodes length (positive integer) from stream of bytes.
+     * 
+     * @param stream
+     * @return Decoded length or -1 if end of stream was reached
+     * @throws IOException
+     */
+    public static final int decodeLength(InputStream stream) throws IOException {
+        int length=0; 
+        byte size;
+        int offset = 0;
+        
+        int value = stream.read();
+        if (value==-1) return -1;
+        
+        size=(byte)value;
+        if (size>0){
+            return size;
+        }
+        
+        while(size<0) {
+           length = length | ((size & 0x7F) << (offset));
+           offset+=7;
+            value = stream.read();
+            if (value==-1) return -1;
+            size = (byte)value;
+        }
+        length = length | ((size & 0x7F) << (offset));
+        
+       return length;
+    }
+    
     
     /**
      * @deprecated use {@link #decodeLength(CloverBuffer)} instead
@@ -376,7 +447,7 @@ public final class ByteBufferUtils {
      */
     public static CharBuffer expandCharBuffer(CharBuffer oldBuffer, int requestedCapacity, int maximumCapacity) {
     	if (requestedCapacity > maximumCapacity) {
-    		throw new IllegalArgumentException("requested capacity cannot be bigger than maximum capacity");
+    		throw new IllegalArgumentException("CharBuffer cannot be expanded. Requested capacity (" + requestedCapacity + ") cannot be bigger than maximum capacity (" + maximumCapacity + ").");
     	}
         if (oldBuffer.capacity() < requestedCapacity) {
             // Allocate a new buffer and transfer all settings to it.
@@ -428,5 +499,65 @@ public final class ByteBufferUtils {
     	while(buffer.hasRemaining()) buffer.put(value);
     	buffer.position(pos);
     }
+
+	/**
+	 * Find next delimiter in a seekable channel 
+	 * @param channel Input channel, current position may be changed after return from the method
+	 * @param recordDelimiter An array of delimiters
+	 * @return position of the first character after first delimiter, returned position
+     * is relative to the original position in the channel
+	 * @throws IOException
+	 */ 
+	public static long findNextRecord(SeekableByteChannel channel, Charset channelCharset, String[] delimiters) throws IOException
+	{
+		boolean endOfInput = false;
+		
+    	long shift = 0;
+		
+		ByteBuffer tmpByteBuffer = ByteBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE);
+		CharBuffer charBuffer = CharBuffer.allocate(1);	// small buffer, so that byte channel position can be determined for each character
+		
+		CharsetDecoder charsetDecoder = channelCharset.newDecoder();
+		charsetDecoder.onMalformedInput(CodingErrorAction.IGNORE); 
+
+		AhoCorasick delimiterSearcher = new AhoCorasick(delimiters);
+
+		tmpByteBuffer.clear();
+    	while (!endOfInput) { // one iteration for each byte buffer filling
+        	if (shift > Defaults.Record.RECORD_LIMIT_SIZE) {
+        		throw new IOException("No record delimiter was found during file partitioning.");
+        	}
+        	
+        	if (channel.read(tmpByteBuffer) == -1) { // no more records
+        		endOfInput = true;
+        	}
+        	
+        	tmpByteBuffer.flip();
+
+    		while (true) {	// one iteration for each character
+    			charBuffer.clear();
+    			charsetDecoder.decode(tmpByteBuffer, charBuffer, endOfInput);
+    			charBuffer.flip();
+    			if (charBuffer.remaining() == 0) { // need to read more bytes into byte buffer
+    				break;
+    			}
+
+    			delimiterSearcher.update(charBuffer.get());
+    			assert charBuffer.remaining() == 0 : "Buffer seems to contain more characters than expected";
+    			
+    			for (int i = 0; i < delimiters.length; i++) {
+    				if (delimiterSearcher.isPattern(i)) {
+    					return shift + tmpByteBuffer.position(); 
+    				}
+    			}
+    		}
+    		
+			shift += tmpByteBuffer.position();
+       		tmpByteBuffer.compact();	// preserve un-decoded bytes (possibly start of next character)
+    	}    	
+    	assert endOfInput : "Unexpected execution flow";
+    	// we have reached end of the input. let's consider it as a special case of delimiter
+    	return shift;
+	}
 }
 

@@ -40,10 +40,15 @@ public class ProxyHandler extends URLStreamHandler {
     @Override
 	protected void parseURL(URL u, String spec, int start, int limit) {
     	super.parseURL(u, spec, start, limit);
+
     	String protocol = u.getProtocol();
-    	if (ProxyProtocolEnum.fromString(protocol) == null) {
+    	if (!acceptProtocol(protocol)) {
     		throw new RuntimeException("Parse error: The URL protocol have to be one of " + Arrays.toString(ProxyProtocolEnum.values()));
     	}
     }
 
+    public static boolean acceptProtocol(String protocol) {
+    	return ProxyProtocolEnum.fromString(protocol) != null;
+    }
+    
 }

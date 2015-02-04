@@ -3,13 +3,13 @@
 
 <TestScenario ident="simple-examples" description="Engine simple examples" useJMX="true">    
 
-
-<FunctionalTest ident="HttpConnector" graphFile="graph/graphHTTPConnector.grf">	 
+<!-- Disabled due to instability of the external service -->
+<!--FunctionalTest ident="HttpConnector" graphFile="graph/graphHTTPConnector.grf">	 
      <Property name="-P:DEFAULT_INTERNAL_IO_BUFFER_SIZE" value="89152" />
 	 <FlatFile outputFile="data-out/city_overview.txt" supposedFile="supposed-out/city_overview.HttpConnector.txt"/>
 	 <FlatFile outputFile="data-tmp/CzechRepublic.xml" supposedFile="supposed-out/CzechRepublic.HttpConnector.xml"/>
 	 <FlatFile outputFile="data-tmp/Poland.xml" supposedFile="supposed-out/Poland.HttpConnector.xml"/>
-</FunctionalTest>
+</FunctionalTest-->
  
 <FunctionalTest ident="AggregateSorted" graphFile="graph/graphAggregateSorted.grf">
 	 <FlatFile outputFile="data-out/orders.aggregated" supposedFile="supposed-out/orders.aggregated.AggregateSorted"/>
@@ -53,19 +53,17 @@
 	 	  <FlatFile outputFile="data-out/wrongKey.out" supposedFile="supposed-out/wrongKey.CheckForeignKey.out"/>	                                                                    
 		  <FlatFile outputFile="data-out/fixedKey.out" supposedFile="supposed-out/fixedKey.CheckForeignKey.out"/>
 	</FunctionalTest>
-
+	
 <FunctionalTest ident="CloverData" graphFile="graph/graphCloverData.grf">
 	 <FlatFile outputFile="data-out/strucured_customers.txt" supposedFile="supposed-out/strucured_customers.CloverData.txt"/>
-     
-<DeleteFile file="data-out/strucured_customers.txt"/>
-
+     <DeleteFile file="data-out/strucured_customers.txt"/>
 </FunctionalTest>
 
 <FunctionalTest ident="DataPolicy" graphFile="graph/graphDataPolicy.grf" assertion="false">
 	 <FlatFile outputFile="data-out/correctCustomersControlled.txt" supposedFile="supposed-out/correctCustomers.DataPolicy.Controlled.txt"/>
 	 <FlatFile outputFile="data-out/correctCustomersLenient.txt" supposedFile="supposed-out/correctCustomers.DataPolicy.Lenient.txt"/>
-	 <FlatFile outputFile="data-out/allCustomersStrict.txt" supposedFile="supposed-out/allCustomers.DataPolicy.Strict.txt"/>
-		<RegEx expression="org.jetel.exception.BadDataFormatException: Field account_num\(long\) cannot be set to value &quot;8747577056D&quot;; doesn't match the specified format &quot;&quot; with reason &quot;Incomplete parsing&quot;; in record 3, field 2" occurences="1"/>
+	 <!-- This output is unstable. FlatFile outputFile="data-out/allCustomersStrict.txt" supposedFile="supposed-out/allCustomers.DataPolicy.Strict.txt"/-->
+		<RegEx expression="org.jetel.exception.BadDataFormatException: Field account_num\(long\) cannot be set to value &quot;8747577056D&quot;; doesn't match the specified format &quot;&quot; with reason &quot;Extraneous characters &quot;D&quot;&quot;; in record 3, field 2" occurences="1"/>
 </FunctionalTest>
 
 <FunctionalTest ident="DBFJoin" graphFile="graph/graphDBFJoin.grf">

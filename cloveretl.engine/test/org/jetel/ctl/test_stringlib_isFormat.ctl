@@ -17,17 +17,20 @@ boolean isNumber5;
 boolean isNumber6;
 boolean isNumber7;
 boolean isNumber8;
+boolean isNumber9;
 boolean isInteger;
 boolean isInteger1;
 boolean isInteger2;
 boolean isInteger3;
 boolean isInteger4;
 boolean isInteger5;
+boolean isInteger6;
 boolean isLong;
 boolean isLong1;
 boolean isLong2;
 boolean isLong3;
 boolean isLong4;
+boolean isLong5;
 boolean isDate5;
 boolean isDate6;
 boolean isDate3;
@@ -54,7 +57,18 @@ boolean isDate22;
 boolean isDate23;
 boolean isDate24;
 boolean isDate25;
+boolean isDate26;
+boolean isDate27;
 
+boolean isDecimal;
+boolean isDecimal1;
+boolean isDecimal2;
+boolean isDecimal3;
+boolean isDecimal4;
+boolean isDecimal5;
+boolean isDecimal6;
+boolean isDecimal7;
+boolean isDecimal8;
 
 function integer transform() {
 	test='test';
@@ -80,18 +94,21 @@ function integer transform() {
 	printErr(str2decimal('-7888873.2E3'));
 	isNumber7=isNumber(nullValue);
 	isNumber8=isNumber(blank);
+	isNumber9=isNumber('-');
 	isInteger=isInteger('h3');
 	isInteger1=isInteger('78gd');
 	isInteger2=isInteger('8982.8992');
 	isInteger3=isInteger('-766542378');
 	isInteger4=isInteger(nullValue);
 	isInteger5=isInteger(blank);
+	isInteger6=isInteger('-');
 	printErr(str2integer('-766542378'));
 	isLong=isLong('7864232568822234');
 	isLong1=isLong('12345678901234567890');
 	isLong2=isLong('LONG!');
 	isLong3=isLong(nullValue);
 	isLong4=isLong(blank);
+	isLong5=isLong('-');
 	isDate5=isDate('20Jul2000','ddMMMyyyy','en.US');
 	printErr(str2date('20Jul2000','ddMMMyyyy','en.GB'));
 	isDate6=isDate('20July     2000',"ddMMMM     yyyy",'en.US');
@@ -130,6 +147,22 @@ function integer transform() {
 	// test for using default pattern from Defaults - assumed pattern yyyy-MM-dd - if different change the input string
 	isDate24=isDate('2013-12-12',null); // expected result - true
 	isDate25=isDate('17/11/1990', null); // expected result - false
-		
+	isDate26 = isDate('2013-12-12', null, null);
+	isDate27 = isDate('2013-12-12', null, null, null);	
+
+	isDecimal=isDecimal('t1');
+	isDecimal1=isDecimal('1g');
+	isDecimal2=isDecimal('1');
+	printErr(str2integer('1'));
+	isDecimal3=isDecimal('-382.334');
+	printErr(str2double('-382.334'));
+	isDecimal4=isDecimal('+332e2');
+	isDecimal5=isDecimal('8982.8992e-2');
+	printErr(str2double('8982.8992e-2'));
+	isDecimal6=isDecimal('-7888873.2E3');
+	printErr(str2decimal('-7888873.2E3'));
+	isDecimal7=isDecimal(nullValue);
+	isDecimal8=isDecimal(blank);
+
 	return 0;
 }

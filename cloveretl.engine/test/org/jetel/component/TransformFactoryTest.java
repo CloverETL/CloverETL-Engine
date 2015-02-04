@@ -20,6 +20,7 @@ package org.jetel.component;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
+import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
@@ -236,4 +237,44 @@ public class TransformFactoryTest extends CloverTestCase {
 		assertTrue(transformFactory.isTransformSpecified());
 	}
 
+	public void testDynamicCompilerOff() {
+		boolean oldUseDynamicCompiler = Defaults.USE_DYNAMIC_COMPILER;
+		try {
+			Defaults.USE_DYNAMIC_COMPILER = false;
+			
+			//following dynamic compilation should not be possible without dynamic compiler
+			try {
+				TransformFactory<Greeter> transformFactory = TransformFactory.createTransformFactory(Greeter.class);
+				transformFactory.setTransform(
+						"import org.jetel.component.Greeter;\n" +
+						"public class NewGreeter extends Greeter {\n" +
+								"public String getGreeting(String message) {\n" +
+									"return \"New hello \" + message;\n" +
+								"}\n" +
+						"}\n");
+				transformFactory.setComponent(getComponent());
+				transformFactory.createTransform();
+				assertTrue(false);
+			} catch (Exception e) {
+				//OK
+			}
+			
+			//COMPILED mode of CTL2 is not available without dynamic compiler - regular interpreted mode should be used instead
+			TransformFactory<RecordTransform> transformFactory = TransformFactory.createTransformFactory(RecordTransformDescriptor.newInstance());
+			transformFactory.setTransform(
+					"//#CTL2:COMPILED\n" +
+					"function integer transform() {\n" +
+							"$out.0.outField = $in.0.inField + \"!\";\n" +
+							"return OK;\n" +
+					"}\n");
+			transformFactory.setComponent(getComponent());
+			transformFactory.setInMetadata(getInMetadata());
+			transformFactory.setOutMetadata(getOutMetadata());
+			RecordTransform recordTransform = transformFactory.createTransform();
+			assertTrue(recordTransform instanceof CTLRecordTransformAdapter);
+		} finally {
+			Defaults.USE_DYNAMIC_COMPILER = oldUseDynamicCompiler;
+		}
+	}
+	
 }

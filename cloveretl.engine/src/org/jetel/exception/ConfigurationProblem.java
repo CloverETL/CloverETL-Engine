@@ -69,6 +69,10 @@ public class ConfigurationProblem {
     public ConfigurationProblem(Exception e, Severity severity, IGraphElement graphElement, Priority priority, String attributeName) {
     	this(null, e, severity,graphElement, priority, attributeName);
     }
+    
+    public ConfigurationProblem(Exception e, Severity severity, IGraphElement graphElement, Priority priority) {
+    	this(null, e, severity,graphElement, priority, null);
+    }
 
     public ConfigurationProblem(String message, Exception e, Severity severity, IGraphElement graphElement, Priority priority, String attributeName) {
         this(message, severity, graphElement, priority, attributeName);

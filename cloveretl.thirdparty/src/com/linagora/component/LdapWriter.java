@@ -18,13 +18,18 @@
  */
 package com.linagora.component;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.naming.NamingException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
+import org.jetel.data.Defaults;
 import org.jetel.exception.AttributeNotFoundException;
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -34,6 +39,8 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.AutoFilling;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -59,32 +66,37 @@ import com.linagora.ldap.LdapFormatter;
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
  * <td>Provides the logic to update information on an LDAP directory.<br>
- * An update can be add/delete entries, add/replace/remove attributes.<br>
- * Metadata MUST match LDAP object attribute name.<br>
- * "DN" metadata attribute is mandatory<br>
- * String is the only metadata type supported.<br>
- * LDAP rules are applied : to add an entry,mandatory attribute (even object classe) 
- * are requiered in metadata.<br>
+ * An operation can be add/delete entries, add/replace/remove attributes.<br>
+ * Metadata MUST match LDAP object attributes names.<br>
+ * The "dn" (i.e. Distinguished Name) metadata field/attribute is mandatory.<br>
+ * To add a new entry,mandatory attribute/field "objectclass" is required in input metadata/record.<br>
  * </td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0] - input records</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
- * <td>[0]- rejected records</td></tr>
+ * <td>[0]- rejected records. If rejected port connected then input records rejected by LDAP server get copied to output with fields with autofilling "ErrText" populated with error message.<br/><i>optional</i></td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
- * <td></td>LDAP attribute may be multivaluated. For now, we handle such case by using 
- * the "|" separator in a value. As a consequence, only string could be correctly handled. 
- * <br>That's why metadata string type is the only one supported.</tr>
+ * <td>LDAP attributes may be multivaluated. It depends on the input field type how multi values are handled. If
+ * Single type, then separator in the field's value may be used. If List, then each item from the list becomes one value
+ * of an attribute. 
+ * <br>Only String and (C)Byte field types are supported, both in Single & List container types.<br>
+ * If input data/record contains Map&lt;String&gt; field, then keys are mapped on attribute names and values become attribute values.
+ * In case of value string with "multiValueSeparator" (if defined) then such value is first split into individual items which then become
+ * attribute's multivalues. </td></tr>
  * </table>
  *  <br>
  *  
  *  <table border="1">
  *  <th>XML attributes:</th>
- *  <tr><td><b>type</b></td><td>"LDAP_READER"</td></tr>
+ *  <tr><td><b>type</b></td><td>"LDAP_WRITER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>ldapUrl</b><td>Ldap url of the directory, on the form "ldap://host:port/"</td>
  *  <tr><td><b>action</b></td><td>Choose one of these options: add_entry, remove_entry, replace_attributes, remove_attributes</td>
- *  <tr><td><b>user</b><br><i>optional</i></td>The user DN to used when connecting to directory.<td></td>
- *  <tr><td><b>password</b><br><i>optional</i></td>The password to used when connecting to directory.<td></td>
+ *  <tr><td><b>user</b><br><i>optional</i></td><td>The user DN to used when connecting to directory.</td>
+ *  <tr><td><b>password</b><br><i>optional</i></td><td>The password to used when connecting to directory.</td>
+ *  <tr><td><b>multiValueSeparator</b><br><i>optional</i></td><td>The character(s) used to delimit multi-values in String fields of Simple container type.</td>
+ *  <tr><td><b>ignoreFields</b><br><i>optional</i></td><td>List of input fields to be ignored (i.e. not mapped as attributes for LDAP). For example ignoring field 
+ *  which is optionally populated with error message when sent out.</td>
  * <!-- to be added <tr><td><b>DataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td></tr> -->
  *  </table>
  * 
@@ -96,13 +108,8 @@ import com.linagora.ldap.LdapFormatter;
  * <h4>Example:</h4>
  * <pre>&lt;&gt;</pre>
  *
- * <h4>Example:</h4>
- * <pre>&lt;&gt;</pre>
  * 
- * <h4>Example:</h4>
- * <pre>&lt;&gt;</pre>
- * 
- * @author   Francois Armand
+ * @author   Francois Armand, David Pavlis
  * @since    September 2006
  */
 public class LdapWriter extends Node {
@@ -133,6 +140,7 @@ public class LdapWriter extends Node {
 	private static final String XML_PASSWORD_ATTRIBUTE = "password";
 	/** The attribute name in grf file used to specify a multi-value separator */
 	private static final String XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE = "multiValueSeparator";
+	private static final String XML_IGNORE_FIELDS = "ignoreFields";
 	
 	/*
 	 * Action values available on xml file.
@@ -161,9 +169,15 @@ public class LdapWriter extends Node {
 	 *  One jetel field can contain multiple values separated by this string. */
 	private String multiValueSeparator = "|";
 	
+	/**
+	 * Input fields to ignore (if any) during processing
+	 */
+	private String[] ignoreFields;
+	
 	/** A logger for the class */
 	static Log logger = LogFactory.getLog(LdapWriter.class);
-
+	
+	private int autoFillingErrorField;
 
 	/**
 	 * Default constructor for the LdapWriter component.
@@ -201,13 +215,33 @@ public class LdapWriter extends Node {
 		this.formatter = new LdapFormatter(this.ldapUrl, this.action, this.user, this.passwd);
 		this.formatter.setMultiValueSeparator(multiValueSeparator);
 		
+		DataRecordMetadata metadata = getInputPort(READ_FROM_PORT).getMetadata();
 		// based on file mask, create/open output file
 		try {
-			formatter.open(null, getInputPort(READ_FROM_PORT).getMetadata());
+			formatter.open(null, metadata);
 		} catch (Exception ex) {
 			throw new ComponentNotReadyException(getId() + " Error opening LdapFormater", ex);
 		}
-
+		
+		
+		autoFillingErrorField=metadata.findAutoFilledField(AutoFilling.ERROR_MESSAGE);
+		// process list of fields to ignore
+		if (this.ignoreFields != null) {
+			List<Integer> ignoreFieldsIdx = new ArrayList<Integer>();
+			for (String field : ignoreFields) {
+				int idx = metadata.getFieldPosition(field);
+				if (idx >= 0) {
+					ignoreFieldsIdx.add(idx);
+				}
+			}
+			if (ignoreFieldsIdx.size() > 0) {
+				int[] idxs = new int[ignoreFieldsIdx.size()];
+				int i = 0;
+				for (Integer idx : ignoreFieldsIdx)
+					idxs[i++] = idx;
+				this.formatter.setIgnoreFields(idxs);
+			}
+		}
 	}
 	
 
@@ -215,7 +249,6 @@ public class LdapWriter extends Node {
 	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		OutputPort rejectedPort=getOutputPort(WRITE_REJECTED_TO_PORT);
-
 		DataRecord inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
 		inRecord.init();
 		try {
@@ -225,9 +258,16 @@ public class LdapWriter extends Node {
 					if (null != inRecord) {
 						formatter.write(inRecord);
 					}
-				} catch (NamingException ne) {
+				} catch (NamingException | BadDataFormatException ex) 
+				{
 					if (rejectedPort!=null){
+							if (autoFillingErrorField>=0){
+								inRecord.getField(autoFillingErrorField).fromString(
+										new StringBuilder(ex.getMessage()));
+							}
 							rejectedPort.writeRecord(inRecord);
+					}else{
+						throw ex;
 					}
 				}
 				SynchronizeUtils.cloverYield();
@@ -290,6 +330,9 @@ public class LdapWriter extends Node {
 		if (xattribs.exists(XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE)) {
 			aSimpleLdapWriter.setMultiValueSeparator(xattribs.getString(XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE));
 		}
+		if (xattribs.exists(XML_IGNORE_FIELDS)){
+			aSimpleLdapWriter.setIgnoreFields(xattribs.getString(XML_IGNORE_FIELDS).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+		}
 		
 		return aSimpleLdapWriter;
 	}
@@ -324,15 +367,6 @@ public class LdapWriter extends Node {
         return status;
     }
 	
-	/**
-	 * return the type (identifier) of the
-	 * component
-	 */
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see org.jetel.graph.Node#reset()
@@ -363,6 +397,14 @@ public class LdapWriter extends Node {
 		} else {
 			this.multiValueSeparator = null;
 		}
+	}
+
+	public String[] getIgnoreFields() {
+		return ignoreFields;
+	}
+
+	public void setIgnoreFields(String[] ignoreFields) {
+		this.ignoreFields = ignoreFields;
 	}
 
 }

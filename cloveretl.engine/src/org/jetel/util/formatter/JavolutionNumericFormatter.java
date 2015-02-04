@@ -56,7 +56,23 @@ public class JavolutionNumericFormatter implements NumericFormatter {
 
 	@Override
 	public int parseInt(CharSequence seq) {
+		// a workaround for https://java.net/jira/browse/JAVOLUTION-117 - javolution throws incorrect exception if the
+		// sequence does not start with a digit
+		firstDigitCheck(seq);
 		return TypeFormat.parseInt(seq);
+	}
+
+	/**
+	 * throws an exception if the sequence does not start with a digit, '+', or '-'
+	 * @param seq
+	 */
+	private void firstDigitCheck(CharSequence seq) {
+		if (seq.length() > 0) {
+			char c = seq.charAt(0);
+			if (c != '-' && c != '+' && (c < '0' || c > '9')) {
+				throw new NumberFormatException("Invalid integer representation for " + seq.toString());
+			}
+		}
 	}
 
 	@Override
@@ -71,6 +87,9 @@ public class JavolutionNumericFormatter implements NumericFormatter {
 
 	@Override
 	public long parseLong(CharSequence seq) throws ParseException {
+		// a workaround for https://java.net/jira/browse/JAVOLUTION-117 - javolution throws incorrect exception if the
+		// sequence does not start with a digit
+		firstDigitCheck(seq);
 		return TypeFormat.parseLong(seq);
 	}
 
@@ -95,7 +114,15 @@ public class JavolutionNumericFormatter implements NumericFormatter {
 
 	@Override
 	public BigDecimal parseBigDecimal(CharSequence seq) {
-		return new BigDecimal(seq.toString(), precision);
+		try {
+			return new BigDecimal(seq.toString(), precision);
+		} catch (NumberFormatException e) {
+			//BigDecimal throws exception without an reasonable message, so a message is added now
+			if (e.getMessage() == null) {
+				e = new NumberFormatException("String '" + seq + "' is not a valid representation of a BigDecimal");
+			}
+			throw e;
+		}
 	}
 
 	@Override

@@ -44,6 +44,9 @@ public abstract class TLType {
 	
 	// special type that can hold any value-type, used only for CTL internal functions and lookup params
 	public static final TLTypeObject OBJECT = new TLTypeObject();
+	
+	// special type that can hold any value-type, used only for missing metadata definitions
+	public static final TLTypeUnknown UNKNOWN = new TLTypeUnknown();
 
 	/**
 	 * Human-readable name for this type. Used for error reporting and messages
@@ -71,7 +74,7 @@ public abstract class TLType {
 	 * @return
 	 */
 	public boolean canAssign(TLType otherType) {
-		return otherType == TLType.NULL || this.promoteWith(otherType).equals(this);
+		return otherType == TLType.NULL || otherType == TLType.UNKNOWN || this.promoteWith(otherType).equals(this);
 	}
 
 	
@@ -105,6 +108,34 @@ public abstract class TLType {
 			return "object";
 		}
 		
+	}
+	
+	public static final class TLTypeUnknown extends TLType {
+
+		@Override
+		public TLType promoteWith(TLType otherType) {
+			if (otherType == TLType.VOID) {
+				return TLType.ERROR;
+			}
+			
+			return otherType;
+		}
+
+		@Override
+		public boolean isNumeric() {
+			return true;
+		}
+		
+		@Override
+		public String name() {
+			return "unknown";
+		}
+
+		@Override
+		public boolean canAssign(TLType otherType) {
+			return true;
+		}
+
 	}
 	
 	public static final class TLTypeVoid extends TLType {
@@ -703,6 +734,10 @@ public abstract class TLType {
 		return this == TLType.OBJECT;
 	}
 	
+	public boolean isUnknown() {
+		return this == TLType.UNKNOWN;
+	}
+	
 	public boolean isTypeVariable() {
 		return this instanceof TLTypeVariable;
 	}
@@ -942,6 +977,10 @@ public abstract class TLType {
 		if (from.isByteArray()) {
 			return	to.isByteArray() 	?	0		:
 					to.isTypeVariable()	?	10		:	Integer.MAX_VALUE;
+		}
+		
+		if (from.isUnknown() || to.isUnknown()) {
+			return 0;
 		}
 		
 		throw new IllegalArgumentException(" Unknown types for type-distance calculation: '" 

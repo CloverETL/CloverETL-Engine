@@ -19,15 +19,20 @@
 package org.jetel.component.fileoperation.hadoop;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 
 public class Hadoop412OperationHandlerTest extends HadoopOperationHandlerTest {
 
-	private static final String TESTING_URI = "hdfs://CDH412/tmp/test_fo/";
-
 	@Override
-	protected URI getTestingURI() throws URISyntaxException {
-		return new URI(TESTING_URI);
+	protected URI getTestingURI() {
+		return URI.create(CDH412);
+	}
+
+	/*
+	 * Used for testing MOVE between two servers.
+	 */
+	@Override
+	protected URI getRemoteURI() {
+		return URI.create(CDH_3U5);
 	}
 
 	@Override

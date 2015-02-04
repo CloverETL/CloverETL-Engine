@@ -26,9 +26,8 @@ import java.util.List;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jetel.exception.CompoundException;
-import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.SerializableException;
-import org.jetel.exception.StackTraceWrapperException;
+import org.jetel.exception.UserAbortException;
 import org.jetel.logger.SafeLogUtils;
 import org.jetel.util.string.StringUtils;
 
@@ -76,12 +75,14 @@ public class ExceptionUtils {
 			}
 			
 			//StackTraceWrapperException has to be handled in special way - stacktrace of a cause is stored in local attribute
-			if (throwable instanceof StackTraceWrapperException) {
-				String causeStackTrace = ((StackTraceWrapperException) throwable).getCauseStackTrace();
-				if (causeStackTrace != null) {
-					stringWriter.append("Caused by: " + causeStackTrace);
-				}
-			}
+//stacktrace of exception from a child job is not printed out - see CLO-3356
+//			if (throwable instanceof StackTraceWrapperException) {
+//				String causeStackTrace = ((StackTraceWrapperException) throwable).getCauseStackTrace();
+//				if (causeStackTrace != null) {
+//					stringWriter.append("Caused by: " + causeStackTrace);
+//				}
+//			}
+			
 			return SafeLogUtils.obfuscateSensitiveInformation(stringWriter.toString());
 		}
 	}
@@ -104,7 +105,7 @@ public class ExceptionUtils {
      * @return resulted overall message
      */
     public static String getMessage(String message, Throwable exception) {
-    	List<ErrorMessage> errMessages = getMessages(new JetelRuntimeException(message, exception), 0);
+    	List<ErrorMessage> errMessages = getMessages(new RootException(message, exception), 0);
     	StringBuilder result = new StringBuilder();
     	for (ErrorMessage errMessage : errMessages) {
     		appendMessage(result, errMessage.message, errMessage.depth);
@@ -186,14 +187,19 @@ public class ExceptionUtils {
 				(StringUtils.isEmpty(t.getMessage()) || t.getMessage().equalsIgnoreCase("null"))) {
 			//the NPE can be wrapped also in SerializableException
 			message = "Unexpected null value.";
-
 		} else if (!StringUtils.isEmpty(t.getMessage())) {
 			//only non-empty messages are considered
 			message = t.getMessage();
 		}
 		
+		//if the last item in the exception chain does not have an message, class name is used instead of message
+		if (!(t instanceof RootException) && message == null && t.getCause() == null) {
+			message = getClassName(t);
+		}
+
 		//do not report exception message that is mentioned already in parent exception message
-		if (message != null && lastMessage != null && lastMessage.contains(message)) {
+		//unless it is User abort e.g. from Fail component - never suppress this
+		if (message != null && lastMessage != null && lastMessage.contains(message) && !(t instanceof UserAbortException)) {
 			message = null;
 		}
 		
@@ -204,22 +210,21 @@ public class ExceptionUtils {
 		// sometimes we cannot affect this at all, as in the case of http-client library, see HttpConnector
 		Throwable cause = t.getCause();
 		if (message != null && cause != null) {
-			if (!(cause instanceof SerializableException)) {
-				if (message.equals(cause.getClass().getName())
-						 || message.equals(cause.getClass().getName() + ": " + cause.getMessage())) {
-						message = null;
-				}
-			} else {
-				//SerializableException needs special handling
-				SerializableException serializableCause = (SerializableException) cause;
-				if (message.equals(serializableCause.getWrappedExceptionClass().getName())
-						 || message.equals(serializableCause.getWrappedExceptionClass().getName() + ": " + serializableCause.getMessage())) {
-						message = null;
-				}
+			if (message.equals(getClassName(cause))
+					 || message.equals(getClassName(cause) + ": " + cause.getMessage())) {
+					message = null;
 			}
 		}
 		
 		return message;
+    }
+    
+    private static String getClassName(Throwable t) {
+		if (!(t instanceof SerializableException)) {
+			return t.getClass().getName();
+		} else {
+			return ((SerializableException) t).getWrappedExceptionClass().getName();
+		}
     }
     
 	private static void appendMessage(StringBuilder result, String message, int depth) {
@@ -393,6 +398,19 @@ public class ExceptionUtils {
 	 */
 	public static void logHighlightedException(Logger logger, String message, Throwable exception) {
 		logHighlightedMessage(logger, getMessage(message, exception));
+	}
+	
+	/**
+	 * This exception type is used only in {@link #getMessage(String, Throwable)} as a root exception,
+	 * which wraps given message and exception. Specific exception type is necessary to distinguish
+	 * regular exception from exceptions chain and this artificial root exception. 
+	 */
+	private static class RootException extends Exception {
+		private static final long serialVersionUID = 1L;
+		
+		public RootException(String message, Throwable cause) {
+			super(message, cause);
+		}
 	}
 	
 }

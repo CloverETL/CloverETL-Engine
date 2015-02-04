@@ -181,6 +181,7 @@ public class MetadataXsd extends MXAbstract {
 	 * 
 	 * @param dataFieldMetadata
 	 * @param node
+	 * @param sType
 	 */
 	private void setField(DataFieldMetadata dataFieldMetadata, Node node, String sType) {
 		Node restParent;

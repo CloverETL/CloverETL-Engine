@@ -198,6 +198,14 @@ public class StringUtilsTest extends CloverTestCase {
 
 		assertEquals(controlString2, tmp);
 
+		assertEquals(";", StringUtils.stringToSpecChar("\\u003B"));
+		assertEquals("\\", StringUtils.stringToSpecChar("\\"));
+		assertEquals("\\u", StringUtils.stringToSpecChar("\\u"));
+		assertEquals("a\\", StringUtils.stringToSpecChar("a\\"));
+		assertEquals("\\a", StringUtils.stringToSpecChar("\\a"));
+		assertEquals("\\u00XX", StringUtils.stringToSpecChar("\\u00XX"));
+		assertEquals(";a", StringUtils.stringToSpecChar("\\u003ba"));
+		assertEquals("b;a", StringUtils.stringToSpecChar("b\\u003ba"));
 	}
 
 	/**
@@ -762,6 +770,85 @@ public class StringUtilsTest extends CloverTestCase {
 		assertEquals("defabcghi", StringUtils.join(Arrays.asList("def", "ghi"), "abc"));
 		assertEquals("ja nebojsa", StringUtils.join(Arrays.asList("ja", "nebojsa"), " "));
 		assertEquals("jedna;dva;;tri;null;ctyri", StringUtils.join(Arrays.asList("jedna", "dva", "", "tri", null, "ctyri"), ";"));
+	}
+	
+	public void testRemoveNonPrintable() {
+		String input;
+		
+		// remove non-printable
+		input = "A\u000b\u000bH\u000b\u000bO\u000b\u000bJ";
+		assertEquals("AHOJ", StringUtils.removeNonPrintable(input));
+		
+		// remove ASCII control characters
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i <= 31; i++) { // space (32) is considered printable 
+			sb.appendCodePoint(i);
+		}
+		sb.appendCodePoint(127); // delete (127)
+		assertEquals("", StringUtils.removeNonPrintable(sb.toString()));
+
+		// preserve non-ASCII characters
+		input = "\u017Elu\u0165ou\u010Dk\u00FD k\u016F\u0148 \u00FAp\u011Bl \u010F\u00E1belsk\u00E9 \u00F3dy";
+		assertEquals(input, StringUtils.removeNonPrintable(input));
+
+		// preserve space
+		input = "a b";
+		assertEquals(input, StringUtils.removeNonPrintable(input));
+
+		// empty string
+		input = "";
+		assertEquals(input, StringUtils.removeNonPrintable(input));
+
+		// null
+		input = null;
+		assertEquals(input, StringUtils.removeNonPrintable(input));
+
+		// blank string
+		input = "   ";
+		assertEquals(input, StringUtils.removeNonPrintable(input));
+		
+		// standalone high surrogate
+		input = "\uD835";
+		assertEquals("", StringUtils.removeNonPrintable(input));
+		
+		// standalone low surrogate
+		input = "\uDC65";
+		assertEquals("", StringUtils.removeNonPrintable(input));
+		
+		// CLO-1814:
+		// A = {x, y} in mathematical script, non-BMP plane
+		input = "\uD835\uDC9C = {\uD835\uDC65, \uD835\uDCCE}";
+		assertEquals(input, StringUtils.removeNonPrintable(input));
+
+		if (!System.getProperty("java.version").startsWith("1.6")) {
+			// U+1F604: SMILING FACE WITH OPEN MOUTH AND SMILING EYES
+			input = "\uD83D\uDE04";
+			assertEquals(input, StringUtils.removeNonPrintable(input));
+		}
+	}
+	
+	public void testRemoveNewLineChars() {
+		assertEquals(null, StringUtils.removeNewLineChars(null, null));
+		assertEquals(null, StringUtils.removeNewLineChars(null, ""));
+		assertEquals(null, StringUtils.removeNewLineChars(null, "xxx"));
+
+		assertEquals("", StringUtils.removeNewLineChars("", null));
+		assertEquals("", StringUtils.removeNewLineChars("", ""));
+		assertEquals("", StringUtils.removeNewLineChars("", "xxx"));
+		
+		assertEquals("abc", StringUtils.removeNewLineChars("abc", null));
+		assertEquals("abc", StringUtils.removeNewLineChars("abc", ""));
+		assertEquals("abc", StringUtils.removeNewLineChars("abc", "xxx"));
+		
+		assertEquals("abcdef", StringUtils.removeNewLineChars("abc\ndef", null));
+		assertEquals("abcdef", StringUtils.removeNewLineChars("abc\ndef", ""));
+		assertEquals("abcxxxdef", StringUtils.removeNewLineChars("abc\ndef", "xxx"));
+
+		assertEquals("def", StringUtils.removeNewLineChars("\r\rdef", null));
+		assertEquals("abc", StringUtils.removeNewLineChars("abc\r", ""));
+		assertEquals("abcxxxdefxxx", StringUtils.removeNewLineChars("abc\r\ndef\n", "xxx"));
+
+		assertEquals("abcxxxxxxdefxxx", StringUtils.removeNewLineChars("abc\n\rdef\n", "xxx"));
 	}
 	
 }

@@ -21,7 +21,6 @@ package org.jetel.util;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
-import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -109,7 +108,7 @@ public class IncrementalReading {
     	IncrementalData incremental;
     	Properties prop = new Properties();
     	try {
-    		prop.load(Channels.newInputStream(FileUtils.getReadableChannel(contextURL, incrementalFile)));
+    		prop.load(FileUtils.getInputStream(contextURL, incrementalFile));
 		} catch (IOException e) {
 			logger.warn("The incremental file not found or it is corrupted!", e);
 		}
@@ -183,7 +182,7 @@ public class IncrementalReading {
 	public void storeIncrementalReading() throws IOException {
 		if (incrementalFile == null || incrementalProperties == null || incrementalValues.size() == 0) return;
 		
-		OutputStream os = Channels.newOutputStream(FileUtils.getWritableChannel(contextURL, incrementalFile, false));
+		OutputStream os = FileUtils.getOutputStream(contextURL, incrementalFile, false, -1);
 		Properties prop = incrementalProperties.get(incrementalFile).getProperties();
 		prop.remove(incrementalKey);
 		StringBuilder sb = new StringBuilder();

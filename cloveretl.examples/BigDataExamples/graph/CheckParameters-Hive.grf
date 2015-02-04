@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="mtomcanyi" created="Tue Mar 19 13:20:07 CET 2013" guiVersion="3.4.0.M2" id="1363695843550" licenseType="Commercial" modified="Tue Mar 19 20:02:19 CET 2013" modifiedBy="mtomcanyi" name="CheckJobConfiguration" revision="1.50" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="mtomcanyi" created="Tue Mar 19 13:20:07 CET 2013" guiVersion="4.0.0.M1" id="1363695843550" licenseType="Commercial" modified="Tue Mar 25 15:54:12 CET 2014" modifiedBy="User" name="CheckJobConfiguration" revision="1.55" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="ValidationStatus" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -6,8 +7,10 @@
 <Field name="validationMessage" type="string"/>
 </Record>
 </Metadata>
-<Property fileURL="hadoop.prm" id="GraphParameter0"/>
-<Property fileURL="workspace.prm" id="GraphParameter3"/>
+<GraphParameters>
+<GraphParameterFile fileURL="hadoop.prm"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Dictionary/>
 </Global>
 <Phase number="0">
@@ -16,10 +19,10 @@
 
 /*  ----- Default settings of parameters -----
 
-HADOOP_JOBTRACKER_HOST=virt-hotel.javlin.eu
+HADOOP_JOBTRACKER_HOST=jobtracker.yourhost.com
 HADOOP_HIVE_URL=
 HADOOP_NAMESERVER_PORT=8020
-HADOOP_NAMESERVER_HOST=virt-hotel.javlin.eu
+HADOOP_NAMESERVER_HOST=namenode.yourhost.com
 HADOOP_HIVE_USER=
 HADOOP_JOBTRACKER_PORT=8021
 
@@ -115,7 +118,7 @@ function integer transform() {
 $in.0.isValid]]></attr>
 </Node>
 <Edge debugMode="true" fromNode="CHECK_REQUIRED_PARAMETERS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="VALIDATION_OK:0"/>
-<Edge fromNode="VALIDATION_OK:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted)" toNode="OK:0"/>
-<Edge fromNode="VALIDATION_OK:1" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (rejected)" toNode="REPORT_MISSING_PARAMETERS:0"/>
+<Edge fromNode="VALIDATION_OK:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 0 (accepted)" toNode="OK:0"/>
+<Edge fromNode="VALIDATION_OK:1" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 1 (rejected)" toNode="REPORT_MISSING_PARAMETERS:0"/>
 </Phase>
 </Graph>

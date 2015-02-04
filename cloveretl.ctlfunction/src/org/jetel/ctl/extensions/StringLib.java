@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +66,7 @@ public class StringLib extends TLFunctionLibrary {
 			"isInteger".equals(functionName) ? new IsIntegerFunction() : //$NON-NLS-1$
 			"isLong".equals(functionName) ? new IsLongFunction() : //$NON-NLS-1$
 			"isDate".equals(functionName) ? new IsDateFunction() : //$NON-NLS-1$
+			"isDecimal".equals(functionName) ? new IsDecimalFunction() : //$NON-NLS-1$
 			"removeDiacritic".equals(functionName) ? new RemoveDiacriticFunction() : //$NON-NLS-1$
 			"removeBlankSpace".equals(functionName) ? new RemoveBlankSpaceFunction() : //$NON-NLS-1$
 			"removeNonPrintable".equals(functionName) ? new RemoveNonPrintableFunction() : //$NON-NLS-1$
@@ -89,6 +91,7 @@ public class StringLib extends TLFunctionLibrary {
 			"getUrlQuery".equals(functionName) ? new GetUrlQueryFunction() : //$NON-NLS-1$
 			"getUrlRef".equals(functionName) ? new GetUrlRefFunction() : //$NON-NLS-1$
 			"toAbsolutePath".equals(functionName) ? new ToAbsolutePathFunction() : //$NON-NLS-1$
+			"toProjectUrl".equals(functionName) ? new ToProjectUrlFunction() : //$NON-NLS-1$
 			"escapeUrl".equals(functionName) ? new EscapeUrlFunction() : //$NON-NLS-1$
 			"unescapeUrl".equals(functionName) ? new UnescapeUrlFunction() : null; //$NON-NLS-1$
 
@@ -181,10 +184,62 @@ public class StringLib extends TLFunctionLibrary {
 
 	// SUBSTRING
 	@TLFunctionAnnotation("Returns a substring of a given string")
-	public static final String substring(TLFunctionCallContext context, String input, int from, int length) {
-		return input.substring(from, from+length);
+	public static final String substring(TLFunctionCallContext context, String input, Integer beginIndex, Integer length) {
+		if (beginIndex < 0) {
+			throw new IllegalArgumentException("Begin index is negative");
+		}
+		
+		if (length < 0) {
+			throw new IllegalArgumentException("Length is negative");
+		}
+		
+		if (input == null) {
+			return null;
+		}
+		
+		if (beginIndex > input.length()) {
+			return "";
+		}
+		
+		int endIndex = beginIndex + length;
+		if (endIndex > input.length()) {
+			return input.substring(beginIndex);
+		}
+		
+		return input.substring(beginIndex, endIndex);
 	}
 
+	/**
+	 * <p>Returns a substring beginning at specified position and extending to the end of the string.</p>
+	 * 
+	 * <p>Function gracefully handles null values. Null input results in null output.</p>
+	 * 
+	 * @param context function call context
+	 * @param input input string. May be null.
+	 * @param beginIndex the beginning index of the resulting substring. Value is inclusive. 
+	 * 		Only non-negative values are allowed. Values larger then the length of the input result in empty string.
+	 * 
+	 * @return the specified substring.
+	 * 
+	 * @see String#substring(int)
+	 */
+	@TLFunctionAnnotation("Returns a substring beginning at specified position and extending to the end of the string.")
+	public static final String substring(TLFunctionCallContext context, String input, Integer beginIndex) {
+		if (beginIndex < 0) {
+			throw new IllegalArgumentException("Begin index is negative");
+		}
+		
+		if (input == null) {
+			return null;
+		}
+		
+		if (beginIndex > input.length()) {
+			return "";
+		}
+		
+		return input.substring(beginIndex);
+	}
+	
 	class SubstringFunction implements TLFunctionPrototype {
 
 		@Override
@@ -193,22 +248,35 @@ public class StringLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			final int length = stack.popInt();
-			final int from = stack.popInt();
-			final String input = stack.popString();
-			stack.push(substring(context, input, from, length));
+			switch (context.getParams().length) {
+				case 3: {
+					final int length = stack.popInt();
+					final int from = stack.popInt();
+					final String input = stack.popString();
+					stack.push(substring(context, input, from, length));
+					break;
+				}
+				case 2: {
+					final int from = stack.popInt();
+					final String input = stack.popString();
+					stack.push(substring(context, input, from));
+					break;
+				}
+				default:
+					throw new TransformLangExecutorRuntimeException("Unsupported number of arguments: " + stack.length());
+			}
 		}
 	}
 
 	// LEFT
 	@TLFunctionAnnotation("Returns prefix of the specified length")
-	public static final String left(TLFunctionCallContext context, String input, int length) {
+	public static final String left(TLFunctionCallContext context, String input, Integer length) {
 		return left(context, input, length, false);
 	}
 
 	@TLFunctionAnnotation("Returns prefix of the specified length. If input string is shorter than specified length " +
 		"and 3th argument is true, right side of result is padded with blank spaces so that the result has specified length.")
-	public static final String left(TLFunctionCallContext context, String input, int length, boolean spacePad) {
+	public static final String left(TLFunctionCallContext context, String input, Integer length, Boolean spacePad) {
 		if (input == null) {
 			return null;
 		}
@@ -431,20 +499,52 @@ public class StringLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Splits the string around regular expression matches")
 	public static final List<String> split(TLFunctionCallContext context, String input, String regex) {
-		if (input == null){
-			List<String> tmp = new ArrayList<String>();
-			tmp.add(null);
-			return tmp;
-		}
-		final Pattern p = ((TLRegexpCache)context.getCache()).getCachedPattern(context, regex);
-		final String[] strArray = p.split(input);
-		final List<String> list = new ArrayList<String>();
-		for (String item : strArray) {
-			list.add(item);
-		}
-		return list;
+		return split(context, input, regex, 0);
 	}
 
+	/**
+	 * <p>Splits this string around matches of the given regular expression.</p>
+	 * 
+	 * <p> The array returned by this method contains each substring of the input that is terminated by another substring
+	 * that matches the given expression or is terminated by the end of the string.
+	 * The substrings in the array are in the order in which they occur the input. If the expression does not match
+	 * any part of the input then the resulting array has just one element, namely the input string.</p>
+	 * <p>The limit parameter controls the number of times the pattern is applied and therefore affects the length
+	 * of the resulting array. If the limit is greater than zero then the pattern will be applied at most limit - 1 times,
+	 * the array's length will be no greater than limit, and the array's last entry will contain all input beyond
+	 * the last matched delimiter. If limit is non-positive then the pattern will be applied as many times as possible
+	 * and the array can have any length.
+	 * If limit is zero then the pattern will be applied as many times as possible, the array can have any length,
+	 * and trailing empty strings will be discarded.</p> 
+	 * 
+	 * @param context function call context.
+	 * @param input input string to split. May be null.
+	 * @param regex regular expression specifying the delimiters. Cannot be null.
+	 * @param limit the result threshold as described above.
+	 * 
+	 * @return the array of strings obtained by splitting input string around matches of the given regular expression.
+	 *         null input string results in an empty array. This function never returns null.
+	 * 
+	 * @see String#split(String, int)
+	 */
+	@TLFunctionAnnotation("Split string around matches of given regular expression.")
+	public static final List< String > split(TLFunctionCallContext context, String input, String regex, Integer limit) {
+		
+		if (regex == null) {
+			throw new IllegalArgumentException("Null regular expression is not allowed.");
+		}
+		
+		List< String > result = new ArrayList< String >();
+		if (input == null) {
+			return result;
+		}
+		
+		final Pattern pattern = ((TLRegexpCache) context.getCache()).getCachedPattern(context, regex);
+		Collections.addAll(result, pattern.split(input, limit));
+		
+		return result;
+	}
+	
 	class SplitFunction implements TLFunctionPrototype {
 
 		@Override
@@ -454,9 +554,24 @@ public class StringLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			final String regex = stack.popString();
-			final String input = stack.popString();
-			stack.push(split(context, input, regex));
+			// Stack layout: [limit,] regexp, input
+			int limit = 0;
+			String regexp = null;
+			String input = null;
+			
+			switch (context.getParams().length) {
+			case 3:
+				limit = stack.popInt();
+				// no break here
+			case 2:
+				regexp = stack.popString();
+				input = stack.popString();
+				break;
+			default:
+				throw new IllegalArgumentException("Unsupported number of arguments for split function (" + context.getParams().length + " parameters found).");
+			}
+			
+			stack.push(split(context, input, regexp, limit));
 		}
 
 	}
@@ -535,6 +650,33 @@ public class StringLib extends TLFunctionLibrary {
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(isNumber(context, stack.popString()));
+		}
+	}
+
+	// IS DECIMAL
+	/**
+	 * Test if given string represents a decimal number (same as {@link #isNumber(TLFunctionCallContext, String)}).
+	 * 
+	 * @param context function call context
+	 * @param value value to parse
+	 * 
+	 * @return <code>true</code> if provided string is a valid decimal number according to the default format,
+	 * 			<code>false</code> otherwise or if the string is <code>null</code>.
+	 */
+	@TLFunctionAnnotation("Test if string represents a decimal number.")
+	public static boolean isDecimal(TLFunctionCallContext context, String value) {
+		return StringUtils.isNumber(value);
+	}
+	
+	public class IsDecimalFunction implements TLFunctionPrototype {
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(isDecimal(context, stack.popString()));
+		}
+
+		@Override
+		public void init(TLFunctionCallContext context) {
 		}
 	}
 
@@ -766,7 +908,7 @@ public class StringLib extends TLFunctionLibrary {
 	}
 
 	// JOIN
-	@TLFunctionAnnotation("Concatenets list elements into a string using delimiter.")
+	@TLFunctionAnnotation("Concatenates list elements into a string using delimiter.")
 	public static final <E> String join(TLFunctionCallContext context, String delimiter, List<E> values) {
 		if (delimiter == null){
 			delimiter ="";
@@ -832,7 +974,13 @@ public class StringLib extends TLFunctionLibrary {
 	}
 
 	@TLFunctionAnnotation("Returns the first occurence of a specified string")
-	public static final Integer indexOf(TLFunctionCallContext context, String input, String pattern, int from) {
+	public static final Integer indexOf(TLFunctionCallContext context, String input, String pattern, Integer from) {
+		if (pattern == null) {
+			throw new NullPointerException("Search string is null");
+		}
+		if (input == null) {
+			return -1;
+		}
 		return StringUtils.indexOf(input, pattern, from);
 	}
 
@@ -1320,6 +1468,32 @@ public class StringLib extends TLFunctionLibrary {
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String url = stack.popString();
 			stack.push(toAbsolutePath(context, url));
+		}
+	}
+	
+	@TLFunctionAnnotation("Converts the argument to an absolute URL with respect to the project URL")
+	public static final String toProjectUrl(TLFunctionCallContext context, String url) {
+		if (url == null) {
+			return null;
+		}
+		URL contextUrl = context.getGraph().getRuntimeContext().getContextURL();
+		try {
+			return FileUtils.getAbsoluteURL(contextUrl, url);
+		} catch (MalformedURLException ex) {
+			throw new JetelRuntimeException(ex);
+		}
+	}
+	
+	class ToProjectUrlFunction implements TLFunctionPrototype {
+	
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+		
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final String url = stack.popString();
+			stack.push(toProjectUrl(context, url));
 		}
 	}
 	

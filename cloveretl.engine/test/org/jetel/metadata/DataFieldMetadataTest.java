@@ -23,6 +23,8 @@ import static org.jetel.metadata.DataFieldFormatType.EXCEL;
 import static org.jetel.metadata.DataFieldFormatType.JAVA;
 import static org.jetel.metadata.DataFieldFormatType.JODA;
 
+import java.util.Arrays;
+
 import org.jetel.test.CloverTestCase;
 
 /**
@@ -157,4 +159,55 @@ public class DataFieldMetadataTest extends CloverTestCase {
 		assertEquals(EXCEL, fieldMetadata.getFormatType());
 	}
 
+	public void testNullValues() {
+		DataFieldMetadata fieldMetadata = new DataFieldMetadata("field", ";");
+		
+		assertTrue(fieldMetadata.getNullValues().size() == 1);
+		assertTrue(fieldMetadata.getNullValues().get(0).equals(""));
+		assertTrue(fieldMetadata.getNullValue().equals(""));
+		
+		fieldMetadata.setNullValue("abc");
+
+		assertTrue(fieldMetadata.getNullValues().size() == 1);
+		assertTrue(fieldMetadata.getNullValues().get(0).equals("abc"));
+		assertTrue(fieldMetadata.getNullValue().equals("abc"));
+
+		fieldMetadata.setNullValues(Arrays.asList("", "abc","xxx"));
+
+		assertTrue(fieldMetadata.getNullValues().size() == 3);
+		assertTrue(fieldMetadata.getNullValues().get(0).equals(""));
+		assertTrue(fieldMetadata.getNullValues().get(1).equals("abc"));
+		assertTrue(fieldMetadata.getNullValues().get(2).equals("xxx"));
+		assertTrue(fieldMetadata.getNullValue().equals(""));
+		
+		DataRecordMetadata recordMetadata = new DataRecordMetadata("record");
+		recordMetadata.addField(fieldMetadata);
+
+		assertTrue(fieldMetadata.getNullValues().size() == 3);
+		assertTrue(fieldMetadata.getNullValues().get(0).equals(""));
+		assertTrue(fieldMetadata.getNullValues().get(1).equals("abc"));
+		assertTrue(fieldMetadata.getNullValues().get(2).equals("xxx"));
+		assertTrue(fieldMetadata.getNullValue().equals(""));
+
+		fieldMetadata.setNullValues(null);
+
+		assertTrue(fieldMetadata.getNullValues().size() == 1);
+		assertTrue(fieldMetadata.getNullValues().get(0).equals(""));
+		assertTrue(fieldMetadata.getNullValue().equals(""));
+		
+		recordMetadata.setNullValue("abc");
+		
+		assertTrue(fieldMetadata.getNullValues().size() == 1);
+		assertTrue(fieldMetadata.getNullValues().get(0).equals("abc"));
+		assertTrue(fieldMetadata.getNullValue().equals("abc"));
+
+		fieldMetadata.setNullValues(Arrays.asList("", "abc","xxx"));
+
+		assertTrue(fieldMetadata.getNullValues().size() == 3);
+		assertTrue(fieldMetadata.getNullValues().get(0).equals(""));
+		assertTrue(fieldMetadata.getNullValues().get(1).equals("abc"));
+		assertTrue(fieldMetadata.getNullValues().get(2).equals("xxx"));
+		assertTrue(fieldMetadata.getNullValue().equals(""));
+	}
+	
 }

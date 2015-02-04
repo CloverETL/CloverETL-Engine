@@ -24,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.DynamicRecordBuffer;
+import org.jetel.graph.runtime.ExecutionType;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -104,6 +105,10 @@ public class BufferedEdge extends EdgeBase {
 	@Override
 	public void init() throws IOException {
 		recordBuffer = new DynamicRecordBuffer(internalBufferSize);
+		if (proxy != null && proxy.getGraph() != null) {
+			//for single thread execution we can say that the usage of record buffer is sequential - first all write operation and then all read operations
+			recordBuffer.setSequentialReading(proxy.getGraph().getRuntimeContext().getExecutionType() == ExecutionType.SINGLE_THREAD_EXECUTION);
+		}
 		recordBuffer.init();
 	}
 
@@ -122,7 +127,8 @@ public class BufferedEdge extends EdgeBase {
 	public void postExecute() {
 		super.postExecute();
 
-		recordBuffer.reset();
+		//temp file is removed, see MULE-98
+		recordBuffer.reset(true);
 	}
 	
 	@Override
@@ -163,6 +169,7 @@ public class BufferedEdge extends EdgeBase {
 	public void eof() throws InterruptedException {
         try {
 			recordBuffer.setEOF();
+			eofSent = true;
 		} catch (IOException ex) {
 			throw new RuntimeException("Error when closing BufferedEdge", ex);
 		}
@@ -201,6 +208,11 @@ public class BufferedEdge extends EdgeBase {
     @Override
     public long getWriterWaitingTime() {
     	return recordBuffer.getWriterWaitingTime();
+    }
+    
+    @Override
+    public void waitForEOF() throws InterruptedException {
+    	recordBuffer.waitForEOF();
     }
     
 }

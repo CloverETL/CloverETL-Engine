@@ -52,7 +52,7 @@ public class IntegralLib extends TLFunctionLibrary {
     	return ret;
     }
     
-	private static String LIBRARY_NAME = "Integral";
+	private static String LIBRARY_NAME = "Record";
 
 	@Override
 	public String getName() {

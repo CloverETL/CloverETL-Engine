@@ -19,6 +19,7 @@
 package org.jetel.component.tree.writer.util;
 
 import org.jetel.component.tree.writer.model.design.Attribute;
+import org.jetel.component.tree.writer.model.design.CDataSection;
 import org.jetel.component.tree.writer.model.design.CollectionNode;
 import org.jetel.component.tree.writer.model.design.Comment;
 import org.jetel.component.tree.writer.model.design.Namespace;
@@ -46,4 +47,5 @@ public interface MappingVisitor {
 	void visit(Relation element) throws Exception;
 	void visit(TemplateEntry objectTemplateEntry) throws Exception;
 	void visit(Comment objectComment) throws Exception;
+	void visit(CDataSection cdataSection) throws Exception;
 }

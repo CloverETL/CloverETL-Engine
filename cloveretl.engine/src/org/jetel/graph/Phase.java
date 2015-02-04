@@ -139,7 +139,9 @@ public class Phase extends GraphElement implements Comparable {
 		logger.info("Initializing phase " + phaseNum);
 
         //initialization of all edges
+        if(logger.isDebugEnabled()){
 		logger.debug("Initializing edges");
+        }
         for (Edge edge : edges.values()) {
         	try {
         		edge.init();
@@ -148,10 +150,14 @@ public class Phase extends GraphElement implements Comparable {
         		throw new ComponentNotReadyException(this, "Edge " + edge + " initialization failed.", e);
         	}
         }
+        if(logger.isDebugEnabled()){
 		logger.debug("All edges initialized successfully.");
+        }
 
 		// iterate through all nodes and initialize them
+        if(logger.isDebugEnabled()){
 		logger.debug("Initializing nodes");
+        }
 		for (Node node : nodes.values()) {
 			ClassLoader formerClassLoader = Thread.currentThread().getContextClassLoader();
 
@@ -227,11 +233,15 @@ public class Phase extends GraphElement implements Comparable {
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
 
-		logger.debug("Phase " + phaseNum + " post-execution");
+        if(logger.isDebugEnabled()){
+		    logger.debug("Phase " + phaseNum + " post-execution");
+        }
 		List<Exception> exceptions = new ArrayList<Exception>();
 		
 		// post-execute finalization of all edges
-		logger.debug("Edges post-execution");
+        if(logger.isDebugEnabled()){
+		    logger.debug("Edges post-execution");
+        }
 		for (Edge edge : edges.values()) {
 			try {
 				edge.postExecute();
@@ -240,15 +250,21 @@ public class Phase extends GraphElement implements Comparable {
 				exceptions.add(new ComponentNotReadyException(edge, "Edge " + edge + " post-execution failed.", e));
 			}
 		}
-		logger.debug("Edges post-execution " + (exceptions.size() != 0 ? "failed." : "success."));
+        if(logger.isDebugEnabled()){
+	    	logger.debug("Edges post-execution " + (exceptions.size() != 0 ? "failed." : "success."));
+        }
 
 		// iterate through all nodes and finalize them
-		logger.debug("Components post-execution");
+        if(logger.isDebugEnabled()){
+		    logger.debug("Components post-execution");
+        }
 		for (Node node : nodes.values()) {
 			Context c = ContextProvider.registerNode(node);
 			try {
 				node.postExecute();
-				logger.debug("\t" + node.getId() + " ...OK");
+                if(logger.isDebugEnabled()){
+				    logger.debug("\t" + node.getId() + " ...OK");
+                }
 			} catch (Exception ex) {
 				node.setResultCode(Result.ERROR);
 				result = Result.ERROR;
@@ -261,7 +277,9 @@ public class Phase extends GraphElement implements Comparable {
 		getGraph().getVfsEntries().freeAll(); // close all zip files - moved from TransformationGraph.free()
 		
 		if (exceptions.isEmpty()) {
-			logger.debug("Phase " + phaseNum + " post-execution succeeded.");
+            if(logger.isDebugEnabled()){
+			    logger.debug("Phase " + phaseNum + " post-execution succeeded.");
+            }
 		} else {
 			throw new CompoundException("Phase " + phaseNum + " post-execution failed.", exceptions.toArray(new Exception[0]));
 		}

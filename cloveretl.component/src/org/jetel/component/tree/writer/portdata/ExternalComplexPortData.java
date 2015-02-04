@@ -112,7 +112,7 @@ class ExternalComplexPortData extends ExternalPortData {
 		for (int i = 0; i < primaryKey.length; i++) {
 			int[] key = primaryKey[i];
 
-			record.serialize(recordBuffer, key);
+			record.serializeUnitary(recordBuffer, key);
 			recordBuffer.put(toByteArray(keyCounter));
 			byte[] serializedKey = new byte[recordBuffer.position()];
 			recordBuffer.flip();
@@ -160,7 +160,7 @@ class ExternalComplexPortData extends ExternalPortData {
 		
 		recordBuffer.limit(length);
 		dataStorage.read(recordBuffer, position);
-		record.deserialize(recordBuffer);
+		record.deserializeUnitary(recordBuffer);
 		recordBuffer.clear();
 	}
 	

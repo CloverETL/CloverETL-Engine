@@ -45,6 +45,7 @@ import org.jetel.exception.PolicyType;
 import org.jetel.exception.UnexpectedEndOfRecordDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.QuotingDecoder;
 import org.jetel.util.string.StringUtils;
@@ -148,8 +149,16 @@ public class CharByteDataParser extends AbstractTextParser {
 		return "<Raw record data is not available, please turn on verbose mode.>";
 	}
 
-	private DataRecord parsingErrorFound(String exceptionMessage, DataRecord record, int fieldNum,
-			String offendingValue) {
+	private void parsingErrorFound(String exceptionMessage) {
+		if (exceptionHandler != null) {
+			exceptionHandler.populateHandler(exceptionMessage, null, -1, -1,
+					null, new BadDataFormatException(exceptionMessage));
+		} else {
+			throw new RuntimeException("Parsing error: " + exceptionMessage);
+		}
+	}
+
+	private DataRecord parsingErrorFound(String exceptionMessage, DataRecord record, int fieldNum, String offendingValue) {
 		if (exceptionHandler != null) {
 			exceptionHandler.populateHandler(exceptionMessage, record, recordCounter, fieldNum,
 					offendingValue, new BadDataFormatException(exceptionMessage));
@@ -168,15 +177,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		DataRecord record = DataRecordFactory.newRecord(cfg.getMetadata());
 		record.init();
 
-		record = parseNext(record);
-		if (exceptionHandler != null) { // use handler only if configured
-			while (exceptionHandler.isExceptionThrowed()) {
-				exceptionHandler.setRawRecord(lastRawRecord);
-				exceptionHandler.handleException();
-				record = parseNext(record);
-			}
-		}
-		return record;
+		return getNext(record);
 	}
 
 	/**
@@ -187,7 +188,9 @@ public class CharByteDataParser extends AbstractTextParser {
 		record = parseNext(record);
 		if (exceptionHandler != null) { // use handler only if configured
 			while (exceptionHandler.isExceptionThrowed()) {
-				exceptionHandler.setRawRecord(lastRawRecord);
+				if (exceptionHandler.getRecordNumber() > -1) {
+					exceptionHandler.setRawRecord(lastRawRecord);
+				}
 				exceptionHandler.handleException();
 				record = parseNext(record);
 			}
@@ -232,7 +235,13 @@ public class CharByteDataParser extends AbstractTextParser {
 						recordSkipper.skipInput(consumerIdx);
 					}
 				}
+			} catch (CharsetDecoderException e) {
+				parsingErrorFound(ExceptionUtils.getMessage(e));
+				return null;
 			} catch (UnexpectedEndOfRecordDataFormatException e) {
+				if (cfg.isVerbose()) {
+					lastRawRecord = getLastRawRecord(); 
+				}
 				return parsingErrorFound(e.getSimpleMessage(), record, consumerIdx, null);
 			} catch (BadDataFormatException e) {
 				if (recordSkipper != null) {
@@ -267,10 +276,11 @@ public class CharByteDataParser extends AbstractTextParser {
 				if (!recordSkipper.skipInput(0)) {
 					break;
 				}
-			} catch (OperationNotSupportedException e) {
-				break;
-			} catch (IOException e) {
-				break;
+			} catch (Exception e) {
+				parsingErrorFound(ExceptionUtils.getMessage("An error occured while skipping records.", e));
+				if (exceptionHandler != null) {
+					exceptionHandler.handleException();
+				}
 			}
 		}
 		return counter;
@@ -460,7 +470,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		}
 		// create input reader according to data record requirements
 		if (inputReader == null) {
-			CharByteInputReader singleMarkInputReader = CharByteInputReader.createInputReader(metadata, charset, false, false);
+			CharByteInputReader singleMarkInputReader = CharByteInputReader.createInputReader(metadata, charset, false, false, getPolicyType());
 			if (cfg.isVerbose()) {
 				inputReader = verboseInputReader = new CharByteInputReader.DoubleMarkCharByteInputReader(singleMarkInputReader);
 			} else {
@@ -734,7 +744,7 @@ public class CharByteDataParser extends AbstractTextParser {
 						for (int idx = 0; idx < fieldCount; idx++) {
 							if (!isAutoFilling[idx] && i >= fieldStart[idx] && i < fieldEnd[idx]) {
 								if (!record.getMetadata().getField(startFieldIdx + idx).isEofAsDelimiter()) {
-									throw new BadDataFormatException("End of input encountered instead of the closing quote");
+									throw new BadDataFormatException("End of input encountered while reading fixed-length field");
 								}
 							}
 						}
@@ -1070,7 +1080,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			} // quoted/unquoted if statement
 
 			// tries to find longer delimiter - typically for a set of delimiters \n, \r, \r\n, after \r is found, this will look for possible match of
-			// \r\n. NOTE: this is different behavior than matching multiple delimiters
+			// \r\n. NOTE: this is different behaviour than matching multiple delimiters
 			if (matchLongestDelimiter) {
 				// consume longest possible delimiter
 				inputReader.mark();
@@ -1371,6 +1381,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			inputReader.mark();
 			int ichr;
 			char chr;
+			boolean delimiterFound = false;
 			while (true) {
 				ichr = inputReader.readChar();
 				if (ichr == CharByteInputReader.BLOCKED_BY_MARK) {
@@ -1380,15 +1391,21 @@ public class CharByteDataParser extends AbstractTextParser {
 					throw new BadDataFormatException("Decoding of input into char data failed while looking for obligatory delimiter");
 				}
 				if (ichr == CharByteInputReader.END_OF_INPUT) {
-					if (acceptEofAsDelim && delimPatterns.getMatchLength() == 0) {
-						return false; // indicates end of input before one single character was read
+					if (delimiterFound) {
+						inputReader.revert();
+						return true;
 					} else {
-						throw new BadDataFormatException("End of input encountered instead of the field delimiter");
+						if (acceptEofAsDelim && delimPatterns.getMatchLength() == 0) {
+							return false; // indicates end of input before one single character was read
+						} else {
+							throw new BadDataFormatException("End of input encountered instead of the field delimiter");
+						}
 					}
 				}
 				chr = (char) ichr;
 				boolean withoutFail = delimPatterns.update(chr);
 				if (delimPatterns.isPattern(delimId)) {
+					delimiterFound = true;
 					// we are trying to match longest possible delimiter
 					if (matchLongerDelimiter && withoutFail) {
 						inputReader.mark();
@@ -1396,6 +1413,9 @@ public class CharByteDataParser extends AbstractTextParser {
 					} else {
 						return true;
 					}
+				} else if (delimiterFound) {
+					inputReader.revert();
+					return true;
 				} else if (delimPatterns.isPattern(DEFAULT_FIELD_DELIMITER_IDENTIFIER)) {
 					throw new BadDataFormatException("Unexpected field delimiter found - record probably contains too many fields");
 				} else if (delimPatterns.isPattern(RECORD_DELIMITER_IDENTIFIER)) {

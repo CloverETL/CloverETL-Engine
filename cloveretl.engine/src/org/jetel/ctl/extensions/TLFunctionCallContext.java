@@ -18,8 +18,11 @@
  */
 package org.jetel.ctl.extensions;
 
+import java.util.Locale;
+
 import org.jetel.ctl.data.TLType;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.formatter.TimeZoneProvider;
 
 /**
  * @author jakub (info@cloveretl.com)
@@ -42,6 +45,10 @@ public class TLFunctionCallContext {
     /** Instance of running transformation graph where code executes */
     private TransformationGraph graph;
 
+    /**
+     * Context shared by all functions of the same transformation.
+     */
+    private TLTransformationContext transformationContext;
 	
 	public TLFunctionCallContext(Object transformationID) {
 		this.transformationID = transformationID;
@@ -73,6 +80,10 @@ public class TLFunctionCallContext {
 	 */
 	public void setParams(TLType[] params) {
 		this.params = params;
+	}
+	
+	public void setParam(int index, TLType param){
+		this.params[index]=param;
 	}
 	
 	public boolean isLiteral(int i) {
@@ -180,5 +191,21 @@ public class TLFunctionCallContext {
     public void setGraph(TransformationGraph graph) {
         this.graph = graph;
     }
+    
+	public TLTransformationContext getTransformationContext() {
+		return transformationContext;
+	}
+	
+	public void setTransformationContext(TLTransformationContext transformationContext) {
+		this.transformationContext = transformationContext;
+	}
+	
+	public TimeZoneProvider getDefaultTimeZone() {
+		return transformationContext.getDefaultTimeZone();
+	}
+	
+	public Locale getDefaultLocale() {
+		return transformationContext.getDefaultLocale();
+	}
 
 }

@@ -22,10 +22,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.nio.CharBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CharsetDecoder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,6 +40,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -154,15 +156,7 @@ public class SimpleDataParser extends AbstractTextParser {
 		DataRecord record = DataRecordFactory.newRecord(cfg.getMetadata());
 		record.init();
 
-		record = parseNext(record);
-		if (exceptionHandler != null) { // use handler only if configured
-			while (exceptionHandler.isExceptionThrowed()) {
-				exceptionHandler.setRawRecord("SimpleDataParser does not provide raw record.");
-				exceptionHandler.handleException();
-				record = parseNext(record);
-			}
-		}
-		return record;
+		return getNext(record);
 	}
 
 	/**
@@ -173,7 +167,9 @@ public class SimpleDataParser extends AbstractTextParser {
 		record = parseNext(record);
 		if (exceptionHandler != null) { // use handler only if configured
 			while (exceptionHandler.isExceptionThrowed()) {
-				exceptionHandler.setRawRecord("SimpleDataParser does not provide raw record.");
+				if (exceptionHandler.getRecordNumber() > -1) {
+					exceptionHandler.setRawRecord("SimpleDataParser does not provide raw record.");
+				}
 				exceptionHandler.handleException();
 				record = parseNext(record);
 			}
@@ -219,21 +215,17 @@ public class SimpleDataParser extends AbstractTextParser {
 		// bytesCounter = 0;
 		isEOF = false;
 
-		try {
-			if (inputDataSource == null) {
-				reader = null;
-			} else if (inputDataSource instanceof CharBuffer) {
-				throw new UnsupportedOperationException("NOT IMPLEMENTED");
-			} else if (inputDataSource instanceof ReadableByteChannel) {
-				reader = Channels.newReader((ReadableByteChannel) inputDataSource, cfg.getCharset());
-			} else {
-				reader = new InputStreamReader((InputStream) inputDataSource,
-						cfg.getCharset());
-			}
-		} catch (UnsupportedEncodingException e) {
-			throw new IllegalStateException("Invalid data reader charset '" + cfg.getCharset() + "'", e);
+		CharsetDecoder decoder = createCharsetDecoder();
+		
+		if (inputDataSource == null) {
+			reader = null;
+		} else if (inputDataSource instanceof CharBuffer) {
+			throw new UnsupportedOperationException("NOT IMPLEMENTED");
+		} else if (inputDataSource instanceof ReadableByteChannel) {
+			reader = Channels.newReader((ReadableByteChannel) inputDataSource, decoder, -1);
+		} else {
+			reader = new InputStreamReader((InputStream) inputDataSource, decoder);
 		}
-
 	}
 
 	/**
@@ -275,6 +267,7 @@ public class SimpleDataParser extends AbstractTextParser {
 			if (fieldCharacters != null) {
 				populateField(record, fieldIndex, fieldCharacters);
 				if (isEOF) {
+					resetMissingFields(fieldIndex + 1, record);
 					return record;
 				}
 			} else {
@@ -282,12 +275,19 @@ public class SimpleDataParser extends AbstractTextParser {
 					return null;
 				} else {
 					// parsing error
+					resetMissingFields(fieldIndex + 1, record);
 					return record;
 				}
 			}
 		}
 
 		return record;
+	}
+
+	private void resetMissingFields(int fieldIndex, DataRecord record) {
+		for (int i = fieldIndex; i < numFields; i++) {
+			record.getField(i).reset();
+		}
 	}
 
 	/**
@@ -372,6 +372,9 @@ public class SimpleDataParser extends AbstractTextParser {
 					return null;
 				}
 			}
+		} catch (CharsetDecoderException e) {
+			parsingErrorFound(ExceptionUtils.getMessage(e));
+			return null;
 		} catch (Exception ex) {
 			throw new RuntimeException(getErrorMessage(fieldBuffer, fieldIndex), ex);
 		}
@@ -388,14 +391,28 @@ public class SimpleDataParser extends AbstractTextParser {
 	}
 
 	private void fill() throws IOException {
-		int dst = 0;
-		int n;
-		do {
-			n = reader.read(cb, dst, cb.length - dst);
-		} while (n == 0);
-		if (n > 0) {
-			nChars = dst + n;
-			nextChar = dst;
+		try {
+			int dst = 0;
+			int n;
+			do {
+				n = reader.read(cb, dst, cb.length - dst);
+			} while (n == 0);
+			if (n > 0) {
+				nChars = dst + n;
+				nextChar = dst;
+			}
+		} catch (CharacterCodingException e) {
+			isEOF = true;
+			throw new CharsetDecoderException("Character decoding error occurred. Set correct charset." + (!StringUtils.isEmpty(cfg.getCharset()) ? " Current charset is " + cfg.getCharset() : ""));
+		}
+	}
+
+	private void parsingErrorFound(String exceptionMessage) {
+		if (exceptionHandler != null) {
+			exceptionHandler.populateHandler("Parsing error: " + exceptionMessage, null, -1, -1,
+					null, new BadDataFormatException("Parsing error: " + exceptionMessage));
+		} else {
+			throw new RuntimeException("Parsing error: " + exceptionMessage);
 		}
 	}
 

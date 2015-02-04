@@ -242,17 +242,28 @@ public class EngineInitializer {
 	
 	/**
 	 * Prepares graph for first run. Checks configuration and initializes.
+	 * CheckConfig is executed only if !runtimeContext.isSkipCheckConfig()
 	 * @param graph
 	 * @throws ComponentNotReadyException
 	 */
 	public static void initGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext) throws ComponentNotReadyException {
+		initGraph(graph, runtimeContext, null);
+	}
+	
+	/**
+	 * Prepares graph for first run. Checks configuration and initializes.
+	 * CheckConfig is executed according skipCheckConfig parameter, if the parameter
+	 * is null, runtimeContext.isSkipCheckConfig() is used instead.
+	 * @param graph
+	 * @throws ComponentNotReadyException
+	 */
+	public static void initGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext, Boolean skipCheckConfig) throws ComponentNotReadyException {
 		graph.setPassword(runtimeContext.getPassword());
+		graph.setInitialRuntimeContext(runtimeContext);
 		
 		//first perform checkConfig() method on the graph 
-		if (!runtimeContext.isSkipCheckConfig()) {
+		if ((skipCheckConfig != null && !skipCheckConfig) || (skipCheckConfig == null && !runtimeContext.isSkipCheckConfig())) {
 			checkConfig(graph);
-		} else {
-			logger.info("Graph configuration checking is skipped.");
 		}
 		
 		//initialize the graph

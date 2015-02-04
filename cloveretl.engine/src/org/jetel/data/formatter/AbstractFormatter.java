@@ -18,6 +18,10 @@
  */
 package org.jetel.data.formatter;
 
+import java.io.IOException;
+
+import org.jetel.util.bytes.CloverBuffer;
+
 /**
  * Basic abstract implementation of {@link Formatter} interface.
  *  
@@ -29,6 +33,7 @@ package org.jetel.data.formatter;
 public abstract class AbstractFormatter implements Formatter {
 
 	protected boolean append;
+	protected boolean appendTargetNotEmpty;
 	
 	@Override
 	public void setAppend(boolean append) {
@@ -38,6 +43,21 @@ public abstract class AbstractFormatter implements Formatter {
 	@Override
 	public DataTargetType getPreferredDataTargetType() {
 		return DataTargetType.CHANNEL;
+	}
+	
+	@Override
+	public void setAppendTargetNotEmpty(boolean b) {
+		this.appendTargetNotEmpty = b;
+	}
+
+	@Override
+	public int writeDirect(CloverBuffer record) throws IOException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean isDirect() {
+		return false;
 	}
 	
 }

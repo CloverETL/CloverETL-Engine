@@ -40,6 +40,8 @@ import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.TransformException;
@@ -48,6 +50,8 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ExceptionUtils;
@@ -187,7 +191,7 @@ import org.w3c.dom.Element;
  *	@created October 10, 2006
  *
  */
-public class AproxMergeJoin extends Node {
+public class AproxMergeJoin extends Node implements MetadataProvider {
 
 	public static final String XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE = "slaveOverrideKey";
 	private static final String XML_JOIN_KEY_ATTRIBUTE = "joinKey";
@@ -843,6 +847,7 @@ public class AproxMergeJoin extends Node {
     	transformFactory.setTransformClass(transformClassName);
     	transformFactory.setTransformUrl(transformURL);
     	transformFactory.setCharset(charset);
+    	transformFactory.setAttributeName("Transform");
     	transformFactory.setComponent(this);
     	transformFactory.setInMetadata(getInMetadata());
     	transformFactory.setOutMetadata(getOutputPort(CONFORMING_OUT).getMetadata());
@@ -855,6 +860,7 @@ public class AproxMergeJoin extends Node {
 		transformFactory.setTransformClass(transformClassNameForSuspicious);
 		transformFactory.setTransformUrl(transformURLForsuspicious);
 		transformFactory.setCharset(charset);
+		transformFactory.setAttributeName("Transform for suspicious");
 		transformFactory.setComponent(this);
 		transformFactory.setInMetadata(getInMetadata());
 		transformFactory.setOutMetadata(getOutputPort(SUSPICIOUS_OUT).getMetadata());
@@ -871,18 +877,13 @@ public class AproxMergeJoin extends Node {
 		boolean[] ordering = new boolean[joiners.length]; 
 		Arrays.fill(ordering, true);//TODO change the key dialog
 
-		int[] fields = new int[joiners.length];
-		for (int i = 0; i < fields.length; i++) {
-			fields[i] = metaData.getFieldPosition(joiners[i]);
-		}
-		
 		if (locale != null) {
 			RuleBasedCollator col = (RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(locale));
 			col.setStrength(caseSensitive ? Collator.TERTIARY : Collator.SECONDARY);
 			col.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
-			return new RecordOrderedKey(fields, ordering, metaData, col);
+			return new RecordOrderedKey(joiners, ordering, metaData, col);
 		} else {
-			return new RecordOrderedKey(fields, ordering, metaData);
+			return new RecordOrderedKey(joiners, ordering, metaData);
 		}
 	}
 	
@@ -1044,7 +1045,7 @@ public class AproxMergeJoin extends Node {
         if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
         
 		if (getOutputPort(NOT_MATCH_DRIVER_OUT) != null) {
@@ -1061,12 +1062,18 @@ public class AproxMergeJoin extends Node {
     		inMetadata[0]=getInputPort(DRIVER_ON_PORT).getMetadata();
     		inMetadata[1]=getInputPort(SLAVE_ON_PORT).getMetadata();
     		// initializing join parameters
-    		AproximativeJoinKey[] keys;
-    		if (joinParameters[0].indexOf('=') != -1) {
-    			keys = initNewJoinKey(joinParameters);
-    		}else{
-    			keys = initOldJoinKey(joinParameters);
-    		}
+    		AproximativeJoinKey[] keys = null;
+			try {
+				if (joinParameters[0].indexOf('=') != -1) {
+					keys = initNewJoinKey(joinParameters);
+				} else {
+					keys = initOldJoinKey(joinParameters);
+				}
+			} catch (IndexOutOfBoundsException e) {
+				String joinKey = StringUtils.join(Arrays.asList(joinParameters), Defaults.Component.KEY_FIELDS_DELIMITER);
+				status.add("Invalid join key: " + joinKey, Severity.ERROR, this, Priority.NORMAL, XML_JOIN_KEY_ATTRIBUTE);
+				return status;
+			}
     		joinKeys = new String[joinParameters.length];
     		maxDifferenceLetters = new int[joinParameters.length];
     		boolean[][] strength=new boolean[joinParameters.length][StringAproxComparator.IDENTICAL];
@@ -1155,11 +1162,6 @@ public class AproxMergeJoin extends Node {
         return status;
     }
 
-    @Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-
 	private void setConformityLimit(double conformityLimit) {
 		this.conformityLimit = conformityLimit;
 	}
@@ -1186,5 +1188,24 @@ public class AproxMergeJoin extends Node {
 	public void setErrorActions(String string) {
 		this.errorActionsString = string;		
 	}
-		
+	
+	@Override
+	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		return null;
+	}
+
+	@Override
+	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		if (portIndex == 2) {
+			if (getInputPort(0) != null) {
+				return metadataPropagationResolver.findMetadata(getInputPort(0).getEdge());
+			}
+		}
+		if (portIndex == 3) {
+			if (getInputPort(1) != null) {
+				return metadataPropagationResolver.findMetadata(getInputPort(1).getEdge());
+			}
+		}
+		return null;
+	}
 }

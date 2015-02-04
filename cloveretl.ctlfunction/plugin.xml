@@ -47,4 +47,10 @@
 		<parameter id="libraryName" value="dynamic"/>
 		<parameter id="className" value="org.jetel.ctl.extensions.DynamicLib"/>
 	</extension>
+
+	<extension point-id="ctlfunction">
+		<parameter id="libraryName" value="string"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.StringLibExt"/>
+	</extension>
+
 </plugin>

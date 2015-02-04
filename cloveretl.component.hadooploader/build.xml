@@ -61,8 +61,8 @@
 		<javac 
 				debug="true" 
 				destdir="${dir.build}"
-				target="1.5"
-				source="1.5">
+				target="1.7"
+				source="1.7">
 			<classpath>
 				<fileset refid="libs"/>
 				<fileset refid="engine"/>

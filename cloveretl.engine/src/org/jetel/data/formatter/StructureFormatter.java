@@ -32,6 +32,7 @@ import java.util.Map;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -182,7 +183,11 @@ public class StructureFormatter extends AbstractFormatter {
      */
     @Override
 	public void setDataTarget(Object out) {
-        close();
+        try {
+			close();
+		} catch (IOException e) {
+			throw new JetelRuntimeException(e);
+		}
         writer = (WritableByteChannel) out;
     }
     
@@ -190,15 +195,14 @@ public class StructureFormatter extends AbstractFormatter {
 	 * @see org.jetel.data.formatter.Formatter#close()
 	 */
 	@Override
-	public void close() {
+	public void close() throws IOException {
         if (writer == null || !writer.isOpen()) {
             return;
         }
 		try{
 			flush();
+		} finally {
 			writer.close();
-		}catch(IOException ex){
-			ex.printStackTrace();
 		}
 	}
 

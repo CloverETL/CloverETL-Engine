@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -844,8 +845,8 @@ public class DB2DataWriter extends Node {
 			if (batchFile == null) {
 				batchFile = getGraph().getAuthorityProxy().newTempFile("tmp", ".bat", -1);
 			}
-			if (!batchFile.canWrite()) {
-				status.add(new ConfigurationProblem("Can not create batch file", Severity.ERROR, this, Priority.NORMAL));
+			if (!Files.isWritable(batchFile.toPath())) {
+				status.add(new ConfigurationProblem("Can not create batch file", Severity.ERROR, this, Priority.NORMAL, XML_BATCHURL_ATTRIBUTE));
 			}
 		} catch (IOException e) {
 			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_BATCHURL_ATTRIBUTE));
@@ -1528,13 +1529,11 @@ public class DB2DataWriter extends Node {
 		}		
 		// TODO Labels:
 		//Writer batchWriter = new OutputStreamWriter(new FileOutputStream(batchFile), Charset.forName(FILE_ENCODING));
-		FileWriter batchWriter = new FileWriter(batchFile);
-
-		batchWriter.write(prepareConnectCommand());
-		batchWriter.write(prepareLoadCommand());
-		batchWriter.write(prepareDisconnectCommand());
-
-		batchWriter.close();
+		try (FileWriter batchWriter = new FileWriter(batchFile)) {
+			batchWriter.write(prepareConnectCommand());
+			batchWriter.write(prepareLoadCommand());
+			batchWriter.write(prepareDisconnectCommand());
+		}
 		return batchURL != null ? batchFile.getCanonicalPath() : batchFile.getName();
 	}
 	
@@ -1782,11 +1781,6 @@ public class DB2DataWriter extends Node {
         return writer;
     }
 	
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
 	public char getColumnDelimiter() {
 		return columnDelimiter;
 	}

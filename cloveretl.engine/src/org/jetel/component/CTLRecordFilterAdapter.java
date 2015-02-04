@@ -27,7 +27,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
 
-public class CTLRecordFilterAdapter implements RecordFilter {
+public class CTLRecordFilterAdapter implements RecordsFilter {
 
 	public static final String ISVALID_FUNCTION_NAME = "isValid";
 	private static final Object[] EMPTY_ARGUMENTS = new Object[0];

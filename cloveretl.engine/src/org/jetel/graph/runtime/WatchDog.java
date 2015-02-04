@@ -18,6 +18,7 @@
  */
 package org.jetel.graph.runtime;
 import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.management.InstanceNotFoundException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
@@ -39,12 +41,12 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.MDC;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.CompoundException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.IGraphElement;
-import org.jetel.graph.JobType;
 import org.jetel.graph.Node;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
@@ -94,7 +96,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
     private MultiValueMap<IGraphElement, Message<?>> outMsgMap;
     private volatile Throwable causeException;
     private volatile IGraphElement causeGraphElement;
-    private CloverJMX cloverJMX;
+    protected CloverJMX cloverJMX;
 //    private volatile boolean runIt;
     private boolean provideJMX = true;
     private boolean finishJMX = true; //whether the JMX mbean should be unregistered on the graph finish 
@@ -141,7 +143,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		}
 
 		//create token tracker if graph is jobflow type
-		if (graph.getJobType() == JobType.JOBFLOW) {
+		if (graph.getRuntimeJobType().isJobflow()) {
 			tokenTracker = new TokenTracker(graph);
 		}
 		
@@ -159,6 +161,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		if(provideJMX) {
 			try {
 				getMBeanServer().unregisterMBean(jmxObjectName);
+			} catch (InstanceNotFoundException e) {
+				if (logger.isDebugEnabled()) {
+					logger.info("JMX notification listener not found", e);
+				} else {
+					logger.info("JMX notification listener not found");
+				}
 			} catch (Exception e) {
 				ExceptionUtils.logException(logger, "JMX error - ObjectName cannot be unregistered.", e);
 			}
@@ -169,156 +177,175 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	@Override
 	public Result call() {
 		CURRENT_PHASE_LOCK.lock();
-		
 		String originalThreadName = null;
+		long startTimestamp = System.currentTimeMillis();
 
 		//we have to register current watchdog's thread to context provider - from now all 
 		//ContextProvider.getGraph() invocations return proper transformation graph
 		Context c = ContextProvider.registerGraph(graph);
 		try {
-			
-			//thread context classloader is preset to a reasonable classloader
-			//this is just for sure, threads are recycled and no body can guarantee which context classloader remains preset
-			Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-
-    		MDC.put("runId", runtimeContext.getRunId());
-    		
-    		Thread t = Thread.currentThread();
-    		originalThreadName = t.getName();
-			String newThreadName = WATCHDOG_THREAD_NAME_PREFIX + runtimeContext.getRunId();
-			if (logger.isTraceEnabled())
-					logger.trace("rename thread " + originalThreadName + " to " + newThreadName);
-		  	t.setName(newThreadName);
-    		
-    		long startTimestamp = System.currentTimeMillis();
-    		
-    		//print graph properties
-    		graph.getGraphParameters().asProperties().print(logger, "Graph parameters:");
-    		
-    		//print out runtime context
-    		logger.debug("Graph runtime context: " + graph.getRuntimeContext().getAllProperties());
-    		
-    		//print initial dictionary content
-    		graph.getDictionary().printContent(logger, "Initial dictionary content:");
-    		
-            if (runtimeContext.isVerboseMode()) {
-                // this can be called only after graph.init()
-                graph.dumpGraphConfiguration();
-            }
-
-    		watchDogStatus = Result.RUNNING;
-
-    		//creates tracking logger for cloverJMX mbean
-            TrackingLogger.track(cloverJMX);
-          	
-           	cloverJMX.graphStarted();
-
-           	//pre-execute initialization of graph
-           	try {
-           		graph.preExecute();
-           	} catch (Exception e) {
-    			setCauseException(e);
-    			if (e instanceof ComponentNotReadyException) {
-    				causeGraphElement = ((ComponentNotReadyException) e).getGraphElement();
-    			}
-           		watchDogStatus = Result.ERROR;
-           		ExceptionUtils.logException(logger, "Graph pre-execute initialization failed.", e);
-           	}
-
-           	//run all phases
-           	if (watchDogStatus == Result.RUNNING) {
-	           	Phase[] phases = graph.getPhases();
-	           	Result phaseResult = Result.N_A;
-	           	for (int currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
-	           		//if the graph runs in synchronized mode we need to wait for synchronization event to process next phase
-	           		if (runtimeContext.isSynchronizedRun()) {
-	           			logger.info("Waiting for phase " + phases[currentPhaseNum] + " approval...");
-           				watchDogStatus = Result.WAITING;
-           				CURRENT_PHASE_LOCK.unlock();
-	           			synchronized (cloverJMX) {
-		           			while (cloverJMX.getApprovedPhaseNumber() < phases[currentPhaseNum].getPhaseNum() 
-		           					&& watchDogStatus == Result.WAITING) { //graph was maybe aborted
-		           				try {
-		           					cloverJMX.wait();
-		           				} catch (InterruptedException e) {
-		           					throw new RuntimeException("WatchDog was interrupted while was waiting for phase synchronization event.");
-		           				}
-		           			}
-	           			}
-           				CURRENT_PHASE_LOCK.lock();
-           				//watchdog was aborted while was waiting for next phase approval
-           				if (watchDogStatus == Result.ABORTED) {
-    	                    logger.warn("!!! Graph execution aborted !!!");
-    	                    break;
-           				} else {
-           					watchDogStatus = Result.RUNNING;
-           				}
-	           		}
-	           		cloverJMX.phaseStarted(phases[currentPhaseNum]);
-	           		//execute phase
-	                phaseResult = executePhase(phases[currentPhaseNum]);
-	                
-	                if(phaseResult == Result.ABORTED)      {
-	                	cloverJMX.phaseAborted();
-	                    logger.warn("!!! Phase execution aborted !!!");
-	                    break;
-	                } else if(phaseResult == Result.ERROR) {
-	                	cloverJMX.phaseError(getErrorMessage());
-	                    logger.error("!!! Phase finished with error - stopping graph run !!!");
-	                    break;
-	                }
-	           		cloverJMX.phaseFinished();
+			try {
+				if (watchDogStatus == Result.ABORTED) { //graph has been aborted before real execution
+					return watchDogStatus;
+				}
+				
+				//thread context classloader is preset to a reasonable classloader
+				//this is just for sure, threads are recycled and no body can guarantee which context classloader remains preset
+				Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+	
+	    		MDC.put("runId", runtimeContext.getRunId());
+	    		
+	    		Thread t = Thread.currentThread();
+	    		originalThreadName = t.getName();
+				String newThreadName = WATCHDOG_THREAD_NAME_PREFIX + runtimeContext.getRunId();
+				if (logger.isTraceEnabled())
+						logger.trace("rename thread " + originalThreadName + " to " + newThreadName);
+			  	t.setName(newThreadName);
+	    		
+			  	logger.debug("Job execution type: " + getGraphRuntimeContext().getJobType());
+			  	
+	    		//print graph properties
+	    		logger.info("Job parameters: \n" + graph.getGraphParameters());
+	    		
+	    		//print out runtime context
+	    		logger.debug("Graph runtime context: " + graph.getRuntimeContext().getAllProperties());
+	    		
+	    		//print initial dictionary content
+	    		graph.getDictionary().printContent(logger, "Initial dictionary content:");
+	    		
+	            if (runtimeContext.isVerboseMode()) {
+	                // this can be called only after graph.init()
+	                graph.dumpGraphConfiguration();
 	            }
-	           	//post-execution of graph
+	
+	    		watchDogStatus = Result.RUNNING;
+	
+	    		//creates tracking logger for cloverJMX mbean
+	            TrackingLogger.track(cloverJMX);
+	          	
+	           	cloverJMX.graphStarted();
+	
+	           	//pre-execute initialization of graph
 	           	try {
-	           		graph.postExecute();
+	           		graph.preExecute();
 	           	} catch (Exception e) {
 	    			setCauseException(e);
 	    			if (e instanceof ComponentNotReadyException) {
-	    				causeGraphElement = ((ComponentNotReadyException) e).getGraphElement();
+	    				setCauseGraphElement(((ComponentNotReadyException) e).getGraphElement());
 	    			}
 	           		watchDogStatus = Result.ERROR;
-	           		ExceptionUtils.logException(logger, "Graph post-execute method failed.", e);
+	           		ExceptionUtils.logException(logger, "Graph pre-execute initialization failed.", e);
 	           	}
-
-	           	//aborted graph does not follow last phase status
+	
+	           	//run all phases
 	           	if (watchDogStatus == Result.RUNNING) {
-	           		watchDogStatus = phaseResult;
+		           	Phase[] phases = graph.getPhases();
+		           	Result phaseResult = Result.N_A;
+		           	if (phases.length > 0) { //non-empty graph
+			           	for (int currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
+			           		//if the graph runs in synchronized mode we need to wait for synchronization event to process next phase
+			           		if (runtimeContext.isSynchronizedRun()) {
+			           			logger.info("Waiting for phase " + phases[currentPhaseNum] + " approval...");
+		           				watchDogStatus = Result.WAITING;
+		           				CURRENT_PHASE_LOCK.unlock();
+			           			synchronized (cloverJMX) {
+				           			while (cloverJMX.getApprovedPhaseNumber() < phases[currentPhaseNum].getPhaseNum() 
+				           					&& watchDogStatus == Result.WAITING) { //graph was maybe aborted
+				           				try {
+				           					cloverJMX.wait();
+				           				} catch (InterruptedException e) {
+				           					throw new RuntimeException("WatchDog was interrupted while was waiting for phase synchronization event.");
+				           				}
+				           			}
+			           			}
+		           				CURRENT_PHASE_LOCK.lock();
+		           				//watchdog was aborted while was waiting for next phase approval
+		           				if (watchDogStatus == Result.ABORTED) {
+		    	                    logger.warn("!!! Graph execution aborted !!!");
+		    	                    break;
+		           				} else {
+		           					watchDogStatus = Result.RUNNING;
+		           				}
+			           		}
+			           		cloverJMX.phaseStarted(phases[currentPhaseNum]);
+			           		//execute phase
+			                phaseResult = executePhase(phases[currentPhaseNum]);
+			                phases[currentPhaseNum].setResult(phaseResult);
+			                
+			                if(phaseResult == Result.ABORTED)      {
+			                	cloverJMX.phaseAborted();
+			                    logger.warn("!!! Phase execution aborted !!!");
+			                    break;
+			                } else if(phaseResult == Result.ERROR) {
+			                	cloverJMX.phaseError(getErrorMessage());
+			                    logger.error("!!! Phase finished with error - stopping graph run !!!");
+			                    break;
+			                }
+			           		cloverJMX.phaseFinished();
+			            }
+		           	} else {
+		           		//empty graph execution is successful 
+		           		logger.info("Transformation with no components has been executed.");
+		           		watchDogStatus = Result.FINISHED_OK;
+		           	}
+		           	//post-execution of graph
+		           	try {
+		           		graph.postExecute();
+		           	} catch (Exception e) {
+		    			setCauseException(e);
+		    			if (e instanceof ComponentNotReadyException) {
+		    				setCauseGraphElement(((ComponentNotReadyException) e).getGraphElement());
+		    			}
+		           		watchDogStatus = Result.ERROR;
+		           		ExceptionUtils.logException(logger, "Graph post-execute method failed.", e);
+		           	}
+	
+		           	//aborted graph does not follow last phase status
+		           	if (watchDogStatus == Result.RUNNING) {
+		           		watchDogStatus = phaseResult;
+		           	}
 	           	}
-           	}
+	
+	           	//commit or rollback
+	           	if (watchDogStatus == Result.FINISHED_OK) {
+	           		try {
+	           			graph.commit();
+	           		} catch (Exception e) {
+	           			setCauseException(e);
+		           		watchDogStatus = Result.ERROR;
+		           		ExceptionUtils.logException(logger, "Graph commit failed", e, Level.FATAL);
+	           		}
+	           	} else {
+	           		try {
+	           			graph.rollback();
+	           		} catch (Exception e) {
+	           			setCauseException(e);
+		           		watchDogStatus = Result.ERROR;
+		           		ExceptionUtils.logException(logger, "Graph rollback failed", e, Level.FATAL);
+	           		}
+	           	}
 
-           	//commit or rollback
-           	if (watchDogStatus == Result.FINISHED_OK) {
-           		try {
-           			graph.commit();
-           		} catch (Exception e) {
-           			setCauseException(e);
-	           		watchDogStatus = Result.ERROR;
-	           		ExceptionUtils.logException(logger, "Graph commit failed", e, Level.FATAL);
-           		}
-           	} else {
-           		try {
-           			graph.rollback();
-           		} catch (Exception e) {
-           			setCauseException(e);
-	           		watchDogStatus = Result.ERROR;
-	           		ExceptionUtils.logException(logger, "Graph rollback failed", e, Level.FATAL);
-           		}
-           	}
-           	
-    		//print initial dictionary content
-    		graph.getDictionary().printContent(logger, "Final dictionary content:");
-
-           	sendFinalJmxNotification();
-           	
-            logger.info("WatchDog thread finished - total execution time: " + (System.currentTimeMillis() - startTimestamp) / 1000 + " (sec)");
-       	} catch (Throwable t) {
-       		setCauseException(t);
-       		causeGraphElement = null;
-       		watchDogStatus = Result.ERROR;
-       		ExceptionUtils.logException(logger, "Error watchdog execution", t);
+	           	//print initial dictionary content
+	    		graph.getDictionary().printContent(logger, "Final dictionary content:");
+	       	} catch (Throwable t) {
+	       		//something was seriously wrong, let's abort the graph if necessary and report the error
+				CURRENT_PHASE_LOCK.unlock(); //current phase monitor needs to be unlocked before aborting
+				try {
+					abort(false);
+				} catch (Exception e) {
+		       		setCauseException(t);
+				}
+	       		
+	       		setCauseException(t);
+	       		setCauseGraphElement(null);
+	       		watchDogStatus = Result.ERROR;
+	       		ExceptionUtils.logException(logger, "Error watchdog execution", t);
+	       	} finally {
+	           	sendFinalJmxNotification();
+	            logger.info("WatchDog thread finished - total execution time: " + (System.currentTimeMillis() - startTimestamp) / 1000 + " (sec)");
+			}
 		} finally {
-			//we have to unregister current watchdog's thread from context provider
+            //we have to unregister current watchdog's thread from context provider
 			ContextProvider.unregister(c);
 
 			if (finishJMX) {
@@ -461,9 +488,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				switch(message.getType()){
 				case ERROR:
 					setCauseException(((ErrorMsgBody) message.getBody()).getSourceException());
-					causeGraphElement = message.getSender();
+					setCauseGraphElement(message.getSender());
 					if (getCauseException() == null) {
-						setCauseException(new JetelRuntimeException(String.format("Graph element %s failed with unknown cause.", causeGraphElement)));
+						setCauseException(new JetelRuntimeException(String.format("Graph element %s failed with unknown cause.", message.getSender())));
 					}
 					ExceptionUtils.logException(logger, null, getCauseException());
 					return Result.ERROR;
@@ -490,7 +517,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 			// gather graph tracking
 			//etl graphs are tracked only in regular intervals, jobflows are tracked more precise, whenever something happens
-			if (message == null || ContextProvider.getJobType() == JobType.JOBFLOW) {
+			if (message == null || ContextProvider.getRuntimeJobType().isJobflow()) {
 				cloverJMX.gatherTrackingDetails();
 			}
 		}
@@ -506,13 +533,17 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	public Result getStatus() {
 		return watchDogStatus;
 	}
-	
+
 	/**
 	 * aborts execution of current phase
 	 *
 	 * @since    July 29, 2002
 	 */
 	public void abort() {
+		abort(true);
+	}
+	
+	private void abort(boolean waitForAbort) {
 		CURRENT_PHASE_LOCK.lock();
 		//only running or waiting graph can be aborted
 		if (watchDogStatus != Result.RUNNING && watchDogStatus != Result.WAITING) {
@@ -523,7 +554,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			CURRENT_PHASE_LOCK.unlock();
 			return;
 		}
+		Object oldMDCRunId = null;
 		try {
+			//update MDC for current thread to route logging message to correct logging destination
+			oldMDCRunId = MDC.get("runId");
+			MDC.put("runId", runtimeContext.getRunId());
+			
 			//if the phase is running broadcast all nodes in the phase they should be aborted
 			if (watchDogStatus == Result.RUNNING) { 
 		        watchDogStatus = Result.ABORTED;
@@ -547,11 +583,13 @@ public class WatchDog implements Callable<Result>, CloverPost {
 					cloverJMX.notifyAll();
 				}
 			}
+		} catch (RuntimeException e) {
+			throw new JetelRuntimeException("Graph abort failed.", e);
 		} finally {
 			synchronized (ABORT_MONITOR) {
 				CURRENT_PHASE_LOCK.unlock();
 				long startAbort = System.currentTimeMillis();
-				while (!abortFinished) {
+				while (!abortFinished && waitForAbort) {
 					long interval = System.currentTimeMillis() - startAbort;
 					if (interval > ABORT_TIMEOUT) {
 						throw new IllegalStateException("Graph aborting error! Timeout "+ABORT_TIMEOUT+"ms exceeded!");
@@ -562,6 +600,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 					} catch (InterruptedException ignore) {	}// catch
 				}// while
 			}// synchronized
+
+			//rollback MDC
+			MDC.remove("runId");
+			if (oldMDCRunId != null) {
+				MDC.put("runId", oldMDCRunId);
+			}
 		}// finally
 	}
 
@@ -612,16 +656,18 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 * @param  phase  Description of the Parameter
 	 * @return        Description of the Return Value
 	 */
-	private Result executePhase(Phase phase) {
+	protected Result executePhase(Phase phase) {
 		currentPhase = phase;
 		
 		//preExecute() invocation
 		try {
 			phase.preExecute();
-		} catch (ComponentNotReadyException e) {
+		} catch (Exception e) {
 			ExceptionUtils.logException(logger, "Phase pre-execute initialization failed", e);
 			setCauseException(e);
-			causeGraphElement = e.getGraphElement();
+			if (e instanceof ComponentNotReadyException) {
+				setCauseGraphElement(((ComponentNotReadyException) e).getGraphElement());
+			}
 			return Result.ERROR;
 		}
 		logger.info("Starting up all nodes in phase [" + phase.getPhaseNum() + "]");
@@ -655,16 +701,17 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	        	//postExecute() invocation
 	        	try {
 	        		phase.postExecute();
-	        	} catch (ComponentNotReadyException e) {
+	        	} catch (Exception e) {
 	        		ExceptionUtils.logException(logger, "Phase post-execute finalization failed", e);
 	    			setCauseException(e);
-	    			causeGraphElement = e.getGraphElement();
+	    			if (e instanceof ComponentNotReadyException) {
+	    				setCauseGraphElement(((ComponentNotReadyException) e).getGraphElement());
+	    			}
 	    			phaseStatus = Result.ERROR;
 	        	}
             }
         }
         
-        phase.setResult(phaseStatus);
 		return phaseStatus;
 	}
 
@@ -705,13 +752,24 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
     /**
      * Sets cause exception of graph failure.
-     * The given cause exception is wrapped to obfuscate
-     * sensitive information.
+     * If some cause exception is already exists, {@link CompoundException} is created for both of them.
      * @param e
      */
     protected void setCauseException(Throwable e) {
     	//causeException = new ObfuscatingException(e);
-    	causeException = e;
+
+    	if (causeException == null) {
+        	causeException = e;
+    	} else {
+    		List<Throwable> causes = new ArrayList<Throwable>();
+    		if (causeException instanceof CompoundException) {
+    			causes.addAll(((CompoundException) causeException).getCauses());
+    		} else {
+    			causes.add(causeException);
+    		}
+    		causes.add(e);
+    		causeException = new CompoundException(causes.toArray(new Throwable[0]));
+    	}
     }
 
     /**
@@ -725,7 +783,13 @@ public class WatchDog implements Callable<Result>, CloverPost {
         return causeGraphElement;
     }
 
-    public String getErrorMessage() {
+    protected void setCauseGraphElement(IGraphElement causeGraphElement) {
+    	if (this.causeGraphElement == null) {
+    		this.causeGraphElement = causeGraphElement;
+    	}
+    }
+    
+	public String getErrorMessage() {
     	return ExceptionUtils.getMessage(getCauseException());
     }
     

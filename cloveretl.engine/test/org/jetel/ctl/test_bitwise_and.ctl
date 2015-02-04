@@ -9,6 +9,13 @@ long resultLong4;
 long test_mixed1;
 long test_mixed2;
 
+byte resultByte1;
+byte resultByte2;
+byte resultByte3;
+byte resultByte4;
+
+byte resultByteDifferentLength;
+
 function integer transform() {
 
 	resultInt1 = bitAnd(0,1);
@@ -21,6 +28,13 @@ function integer transform() {
 	resultLong4 = bitAnd(3l,1l);
 	test_mixed1 = bitAnd(6,12l);
 	test_mixed2 = bitAnd(6l,12);
+	
+	resultByte1 = bitAnd(hex2byte("00F0FF"), hex2byte("010101"));
+	resultByte2 = bitAnd(hex2byte("0001FF"), hex2byte("F1F1F1"));
+	resultByte3 = bitAnd(hex2byte("0072FF"), hex2byte("717171"));
+	resultByte4 = bitAnd(hex2byte("00F3FF"), hex2byte("F1F1F1"));
+	
+	resultByteDifferentLength = bitAnd(hex2byte("F0F0F0F0"), hex2byte("FF0077"));
 	
 	return 0;
 }

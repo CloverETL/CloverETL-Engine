@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.nio.channels.Channels;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
@@ -145,7 +144,7 @@ public class FileCloseTest extends CloverTestCase {
 			DataRecordMetadataXMLReaderWriter dataRecordMetadataXMLReaderWriter = new DataRecordMetadataXMLReaderWriter();
 			InputStream is = null;
 			try {
-				is = Channels.newInputStream(FileUtils.getReadableChannel(null,  metaDir + "/delimited/orders.fmt"));
+				is = FileUtils.getInputStream(null,  metaDir + "/delimited/orders.fmt");
 			} catch (IOException e) {
 				fail(e.getMessage());
 			}

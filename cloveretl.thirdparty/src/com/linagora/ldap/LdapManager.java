@@ -18,6 +18,7 @@
  */
 package com.linagora.ldap;
 
+import java.io.IOException;
 import java.util.Hashtable;
 
 import javax.naming.Context;
@@ -28,6 +29,11 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
+import javax.naming.ldap.Control;
+import javax.naming.ldap.InitialLdapContext;
+import javax.naming.ldap.LdapContext;
+import javax.naming.ldap.PagedResultsControl;
+import javax.naming.ldap.PagedResultsResponseControl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -64,6 +70,9 @@ public class LdapManager {
 	/** Default max number of result returned, 0 means no limit */
 	private static final int DEFAULT_SEARCH_LIMIT = 0;
 	
+	/** Default size of one page (items) in paged search */
+	private static final int DEFAULT_PAGE_SIZE = 100;
+	
 	/**
 	 * To speed up existance checks, we use a single static constraints object that
 	 * never changes.
@@ -89,6 +98,12 @@ public class LdapManager {
 	 */
 	private DirContext ctx = null;
 
+	private int pageSize=DEFAULT_PAGE_SIZE;
+	
+	private boolean ldapContext=false; //should we use LDAP context - e.g for paging
+
+	private byte[] cookie;
+	
 	private static Log logger = LogFactory.getLog(LdapManager.class);
 
 	/**
@@ -213,7 +228,12 @@ public class LdapManager {
 		 }
 		 System.out.println("*****************");
 		 */
-		this.ctx = new InitialDirContext(this.env);
+		
+		if (ldapContext){
+			this.ctx = new InitialLdapContext(this.env,null);
+		}else{
+			this.ctx = new InitialDirContext(this.env);
+		}
 
 		if (ctx == null)
 			throw new NamingException(
@@ -277,7 +297,32 @@ public class LdapManager {
 		return results;
 
 	}
-
+	
+	public void initPagedSearch() throws NamingException, IOException{
+		this.cookie = null;
+        ((LdapContext)ctx).setRequestControls(new Control[]{
+        		new PagedResultsControl(pageSize, Control.NONCRITICAL) });
+	}
+	
+	public void reactivatePagedSearch() throws NamingException, IOException{
+		  // Examine the paged results control response
+        Control[] controls = ((LdapContext)ctx).getResponseControls();
+        if (controls != null) {
+        for (int i = 0; i < controls.length; i++) {
+            if (controls[i] instanceof PagedResultsResponseControl) {
+            PagedResultsResponseControl prrc =
+                             (PagedResultsResponseControl)controls[i];
+            // int total = prrc.getResultSize();
+            this.cookie = prrc.getCookie();
+            }
+        }
+        // Re-activate paged results
+        ((LdapContext)ctx).setRequestControls(new Control[]{
+        		new PagedResultsControl(pageSize, cookie, Control.CRITICAL) });
+        }
+	}
+	
+	
 	/**
 	 * Convenient search fonction with default limit and timeout
 	 * @param searchbase
@@ -471,6 +516,27 @@ public class LdapManager {
 	 */
 	public void deleteEntry(String dn) throws NamingException {
 		ctx.destroySubcontext(dn);
+	}
+
+	public int getPageSize() {
+		return pageSize;
+	}
+
+	public void setPageSize(int pageSize) {
+		this.pageSize = pageSize;
+		if (pageSize>0) this.ldapContext=true;
+	}
+
+	public boolean isLdapContext() {
+		return ldapContext;
+	}
+
+	public void setLdapContext(boolean ldapContext) {
+		this.ldapContext = ldapContext;
+	}
+	
+	public boolean hasMorePages(){
+		return this.cookie!=null;
 	}
 	
 }

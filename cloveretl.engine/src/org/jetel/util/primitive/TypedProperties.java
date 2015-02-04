@@ -199,14 +199,14 @@ public class TypedProperties extends Properties {
 
     private String resolvePropertyReferences(String s, RefResFlag refResFlag) {
     	if (s != null) {
-    		s = getLocalPropertyRefResolver().resolveRef(s, refResFlag);
+    		if (propertyRefResolver == null) {
+    			//local property reference resolver is used only if no special resolver is available
+    			s = getLocalPropertyRefResolver().resolveRef(s, refResFlag);
+    		} else {
+    			s = propertyRefResolver.resolveRef(s, refResFlag);
+    		}
     	}
-    	
-    	if(propertyRefResolver != null && s != null) {
-    		return propertyRefResolver.resolveRef(s, refResFlag);
-    	} else {
-    		return s;
-    	}
+    	return s;
     }
 
     private PropertyRefResolver getLocalPropertyRefResolver() {

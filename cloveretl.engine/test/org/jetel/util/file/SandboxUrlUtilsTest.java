@@ -91,4 +91,16 @@ public class SandboxUrlUtilsTest extends CloverTestCase {
 		assertEquals("sandbox://xxx/yy/y", SandboxUrlUtils.getSandboxPath("xxx", "yy/y"));
 	}
 	
+	public void testJoinSandboxUrls() {
+		assertEquals("sandbox://test/data.txt", SandboxUrlUtils.joinSandboxUrls("xxx", "sandbox://test/data.txt"));
+		assertEquals("sandbox://test/data.txt", SandboxUrlUtils.joinSandboxUrls("", "sandbox://test/data.txt"));
+		assertEquals("sandbox://test/data.txt", SandboxUrlUtils.joinSandboxUrls(null, "sandbox://test/data.txt"));
+		
+		assertEquals("sandbox://test/some/data.txt", SandboxUrlUtils.joinSandboxUrls("sandbox://test/foo.txt", "some/data.txt"));
+
+		assertEquals("some/data.txt", SandboxUrlUtils.joinSandboxUrls("foo.txt", "some/data.txt")); 
+		assertEquals("some/data.txt", SandboxUrlUtils.joinSandboxUrls("", "some/data.txt")); 
+		assertEquals("some/data.txt", SandboxUrlUtils.joinSandboxUrls(null, "some/data.txt")); 
+	}
+	
 }

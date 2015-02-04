@@ -18,6 +18,8 @@
  */
 package org.jetel.util.string;
 
+import java.util.List;
+
 /**
  * Utility to generate valid XML tag name from arbitrary string. Even that XML allows non-ASCII characters
  * as a tag name, this utility encodes them as well as any special ASCII characters. These characters are encoded as
@@ -40,9 +42,10 @@ public class TagName {
 	 * output: "_x0040Funny_x002aTag-Name_x0028_x0029"
 	 * </pre>
 	 * @param s
+	 * @param encodeSeqChar if SEQ_CHAR ('_') should be encoded
 	 * @return
 	 */
-	public static String encode(final String s) {
+	public static String encode(final String s, boolean encodeSeqChar) {
 		
 		if (s == null) {
 			return null;
@@ -51,7 +54,7 @@ public class TagName {
 		final StringBuilder sb = new StringBuilder(s.length());
 		for (int i = 0; i < s.length(); ++i) {
 			char c = s.charAt(i);
-			if (isInvalidCharacter(i, c)) {
+			if (isInvalidCharacter(i, c, encodeSeqChar)) {
 				sb.append(ENC_SEQ_START);
 				String scode = Integer.toHexString(c);
 				for (int j = 0; j < 4 - scode.length(); ++j) {
@@ -66,13 +69,32 @@ public class TagName {
 	}
 
 	/**
+	 * Encodes given input string using unicodes.
+	 * <pre>
+	 * Example:
+	 * input: "@Funny*Tag-Name()"
+	 * output: "_x0040Funny_x002aTag-Name_x0028_x0029"
+	 * </pre>
+	 * @param s
+	 * @return
+	 */
+	public static String encode(final String s) {
+		return encode(s, true);
+	}
+
+	/**
 	 * @param i index of the character
 	 * @param c the character
+	 * @param encodeSeqChar treat SEQ_CHAR as invalid character
 	 * @return true iff the character would be escaped by the {@link #encode(String)} method 
 	 */
-	private static boolean isInvalidCharacter(int i, char c) {
-		return !('0' <= c && c <= '9' || 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z' || c == '-' || c == '.') ||
-				c == ENC_SEQ_CHAR || (i == 0 && ('0' <= c && c <= '9' || c == '-' || c == '.'));
+	private static boolean isInvalidCharacter(int i, char c, boolean encodeSeqChar) {
+		if (c == ENC_SEQ_CHAR) {
+			return encodeSeqChar;
+		} else {
+            return !('0' <= c && c <= '9' || 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z' || c == '-' || c == '.') ||
+				(i == 0 && ('0' <= c && c <= '9' || c == '-' || c == '.'));
+		}
 	}
 	
 	/**
@@ -80,14 +102,46 @@ public class TagName {
 	 * @return true iff at least one character of the string <code>s</code> would be escaped by the {@link #encode(String)} method
 	 */
 	public static boolean hasInvalidCharacters(String s) {
+		return hasInvalidCharacters(s, true);
+	}
+
+	/**
+	 * @param s
+	 * @return true iff at least one character of the string <code>s</code> would be escaped by the {@link #encode(String)} method
+	 */
+	public static boolean hasInvalidCharacters(String s, boolean encodeSeqChar) {
 		for (int i = 0; i < s.length(); ++i) {
 			char c = s.charAt(i);
-			if (isInvalidCharacter(i, c)) {
+			if (isInvalidCharacter(i, c, encodeSeqChar)) {
 				return true;
 			}
 		}
 		return false;
 	}
+	
+	//CLO-4853, CLO-4857 - if the element name has exactly one ":" and other characters are valid 
+	//and the substring from the beginning to the ":" is a namespace name, it is considered valid
+	public static boolean isValidName(String name, List<String> namespaceNames) {
+		boolean isValid = false;
+		
+		if (name.contains(":")) {
+		
+			String elementNamespaceName = name.substring(0, name.indexOf(":"));
+			String elementName = name.substring(name.indexOf(":") + 1);
+			if (!TagName.hasInvalidCharacters(elementNamespaceName) && !TagName.hasInvalidCharacters(elementName)) {
+
+				if (namespaceNames.contains(elementNamespaceName)) {
+					isValid = true;
+				}
+				
+			} 
+		} else {
+			isValid = !TagName.hasInvalidCharacters(name);
+		}
+		
+		return isValid;
+	}
+	
 	
 	/**
 	 * Decodes given input string previously encoded by this class.

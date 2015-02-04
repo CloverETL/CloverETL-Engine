@@ -36,10 +36,10 @@ import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.database.ConnectionFactory;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.dictionary.DictionaryTypeFactory;
 import org.jetel.graph.runtime.AuthorityProxyFactory;
 import org.jetel.interpreter.extensions.TLFunctionPluginRepository;
+import org.jetel.metadata.MetadataRepository;
 import org.jetel.plugin.generalobject.GeneralObjectFactory;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.protocols.CustomPathResolverFactory;
@@ -141,6 +141,9 @@ public class Plugins {
         Plugins.init(pls);
     }
 
+    /**
+     * @param pluginLocations
+     */
     public static synchronized void init(PluginLocation[] pluginLocations) {
         //remove all previous settings
         pluginDescriptors = new HashMap<String, PluginDescriptor>();
@@ -162,6 +165,9 @@ public class Plugins {
         //check dependences between plugins
         checkDependences();
         
+        //non-lazy activated plugins must be activated here
+        activatePluginsIfNecessary();
+        
         //init calls of all factories for components, sequences, lookups and connections
         ComponentFactory.init();
         SequenceFactory.init();
@@ -174,9 +180,23 @@ public class Plugins {
         GeneralObjectFactory.init();
         CustomPathResolverFactory.init();
         AuthorityProxyFactory.init();
+        MetadataRepository.init();
     }
     
-    public static Map<String, PluginDescriptor> getPluginDescriptors(){
+	/**
+	 * Activates all plugins which should be activated right on engine startup.
+	 */
+	private static void activatePluginsIfNecessary() {
+    	for (String pluginId : pluginDescriptors.keySet()) {
+    		if (!pluginDescriptors.get(pluginId).isLazyActivated()
+    				&& !activePlugins.containsKey(pluginId)
+    				&& !deactivePlugins.containsKey(pluginId)) {
+    			activatePlugin(pluginId);
+    		}
+    	}
+	}
+
+	public static Map<String, PluginDescriptor> getPluginDescriptors(){
     	return pluginDescriptors;
     }
     
@@ -213,10 +233,28 @@ public class Plugins {
     		//stores prepared plugin descriptor
     		if (!pluginDescriptors.containsKey(pluginDescriptor.getId())) {
         		pluginDescriptors.put(pluginDescriptor.getId(), pluginDescriptor);
-        		logger.debug("Plugin " + pluginDescriptor.getId() + " loaded.\n" + pluginDescriptor.toString());
     		} else {
-        		logger.warn("Plugin at '" + pluginManifestUrl + "' cannot be loaded. An another plugin is already registered with identical id attribute.");
+        		logger.warn("Plugin at '" + pluginManifestUrl + "' cannot be loaded. Another plugin is already registered with identical id attribute.");
     		}
+        }
+        
+        //log plugin descriptors
+        if (logger.isDebugEnabled()) {
+        	for (PluginDescriptor pluginDescriptor : pluginDescriptors.values()) {
+    			logger.debug("Plugin " + pluginDescriptor.getId() + " loaded.\n" + pluginDescriptor.toString());
+        	}
+        } else if (logger.isInfoEnabled()) {
+        	StringBuilder sb = new StringBuilder("Engine plug-ins loaded: ");
+        	boolean first = true;
+        	for (PluginDescriptor pluginDescriptor : pluginDescriptors.values()) {
+        		if (!first) {
+        			sb.append(", ");
+        		} else {
+        			first = false;
+        		}
+        		sb.append(pluginDescriptor.getId());
+        	}
+        	logger.info(sb.toString());
         }
     }
 

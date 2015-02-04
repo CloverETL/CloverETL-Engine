@@ -30,10 +30,11 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 
 import org.apache.commons.logging.Log;
-import org.jetel.component.RecordFilter;
 import org.jetel.component.RecordFilterFactory;
+import org.jetel.component.RecordsFilter;
 import org.jetel.component.tree.writer.model.design.AbstractNode;
 import org.jetel.component.tree.writer.model.design.Attribute;
+import org.jetel.component.tree.writer.model.design.CDataSection;
 import org.jetel.component.tree.writer.model.design.CollectionNode;
 import org.jetel.component.tree.writer.model.design.Comment;
 import org.jetel.component.tree.writer.model.design.ContainerNode;
@@ -50,6 +51,7 @@ import org.jetel.component.tree.writer.model.runtime.NodeValue;
 import org.jetel.component.tree.writer.model.runtime.PortBinding;
 import org.jetel.component.tree.writer.model.runtime.StaticValue;
 import org.jetel.component.tree.writer.model.runtime.WritableAttribute;
+import org.jetel.component.tree.writer.model.runtime.WritableCData;
 import org.jetel.component.tree.writer.model.runtime.WritableCollection;
 import org.jetel.component.tree.writer.model.runtime.WritableComment;
 import org.jetel.component.tree.writer.model.runtime.WritableContainer;
@@ -98,9 +100,9 @@ public class MappingCompiler extends AbstractVisitor {
 
 	private MappingTagger tagger;
 
-	public MappingCompiler(Map<Integer, DataRecordMetadata> inPorts, String sortHintsString, boolean singleTopLevelRecord) {
+	public MappingCompiler(Map<Integer, DataRecordMetadata> inPorts, String sortHintsString, boolean singleTopLevelRecord, boolean inMemoryCache) {
 		this.inPorts = inPorts;
-		this.tagger = new MappingTagger(inPorts, sortHintsString, singleTopLevelRecord);
+		this.tagger = new MappingTagger(inPorts, sortHintsString, singleTopLevelRecord, inMemoryCache);
 	}
 
 	public WritableMapping compile(Map<Integer, InputPort> inPorts, boolean partition)
@@ -117,7 +119,7 @@ public class MappingCompiler extends AbstractVisitor {
 	}
 
 	public static int resolvePartitionKeyPortIndex(TreeWriterMapping mapping, Map<Integer, DataRecordMetadata> inPorts) {
-		MappingTagger tagger = new MappingTagger(inPorts, null, false);
+		MappingTagger tagger = new MappingTagger(inPorts, null, false, false);
 		tagger.setResolvePartition(true);
 		tagger.setMapping(mapping);
 		tagger.tag();
@@ -452,7 +454,7 @@ public class MappingCompiler extends AbstractVisitor {
 			}
 		}
 
-		RecordFilter recordFilter = null;
+		RecordsFilter recordFilter = null;
 		if (filterExpression != null) {
 			recordFilter = RecordFilterFactory.createFilter(FILTER_PREFIX + filterExpression, metadata, graph, componentId, logger);
 		}
@@ -573,5 +575,11 @@ public class MappingCompiler extends AbstractVisitor {
 			WritableValue value = parseValue(element.getProperty(MappingProperty.VALUE));
 			currentParent.addChild(new WritableComment(value));
 		}
+	}
+	
+	@Override
+	public void visit(CDataSection cdataSection) throws Exception {
+		WritableValue value = parseValue(cdataSection.getProperty(MappingProperty.VALUE));
+		currentParent.addChild(new WritableCData(value));
 	}
 }

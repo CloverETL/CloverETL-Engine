@@ -33,7 +33,7 @@ import org.jetel.util.bytes.CloverBuffer;
  * @created 26 Apr 2012
  * @see TokenTracker
  */
-public class Token extends DataRecord {
+public class Token extends DataRecordImpl {
 
 	private static final long serialVersionUID = -6335039894273092797L;
 	
@@ -77,8 +77,28 @@ public class Token extends DataRecord {
 	}
 	
 	@Override
+	public void serialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		serializeTokenId(buffer);
+		
+		super.serialize(buffer,serializer);
+	}
+	
+	@Override
+	public void serialize(CloverBuffer buffer, DataRecordSerializer serializer, int[] whichFields) {
+		serializeTokenId(buffer);
+		
+		super.serialize(buffer, serializer, whichFields);
+	}
+
+	@Override
 	public void serializeUnitary(CloverBuffer buffer) {
 		super.serialize(buffer);
+	}
+	
+	
+	@Override
+	public void serializeUnitary(CloverBuffer buffer, DataRecordSerializer serializer) {
+		super.serialize(buffer,serializer);
 	}
 	
 	@Override
@@ -88,7 +108,21 @@ public class Token extends DataRecord {
 		super.serialize(buffer, whichFields);
 	}
 	
+    @Override
+	public void serializeUnitary(CloverBuffer buffer,int[] whichFields) {
+    	super.serialize(buffer, whichFields);
+    }
+
 	private void serializeTokenId(CloverBuffer buffer) {
+		serializeTokenId(tokenId, buffer);
+	}
+	
+	/**
+	 * Writes tokenId header into given buffer.
+	 * @param tokenId token Id written to the buffer
+	 * @param buffer target buffer
+	 */
+	public static void serializeTokenId(long tokenId, CloverBuffer buffer) {
 		if (tokenId == -1) {
 			buffer.put(EMPTY_TOKEN_TAG);
 		} else {
@@ -97,11 +131,30 @@ public class Token extends DataRecord {
 		}
 	}
 	
+	/**
+	 * Reads tokenId header from the given buffer.
+	 * @param buffer source buffer
+	 */
+	public static long deserializeTokenId(CloverBuffer buffer) {
+		if (buffer.get() == EMPTY_TOKEN_TAG) {
+			return -1;
+		} else {
+			return buffer.getLong();
+		}
+	}
+	
 	@Override
 	public void deserialize(CloverBuffer buffer) {
-		deserializeTokenId(buffer);
+		setTokenId(buffer);
 		
 		super.deserialize(buffer);
+	}
+	
+	@Override
+	public void deserialize(CloverBuffer buffer, DataRecordSerializer serializer) {
+		setTokenId(buffer);
+		
+		super.deserialize(buffer,serializer);
 	}
 
 	@Override
@@ -111,18 +164,21 @@ public class Token extends DataRecord {
 	}
 
 	@Override
+	public void deserializeUnitary(CloverBuffer buffer,DataRecordSerializer serializer) {
+		super.deserialize(buffer,serializer);
+		tokenId = -1;
+	}
+
+	
+	@Override
 	public void deserialize(CloverBuffer buffer, int[] whichFields) {
-		deserializeTokenId(buffer);
+		setTokenId(buffer);
 		
 		super.deserialize(buffer, whichFields);
 	}
 
-	private void deserializeTokenId(CloverBuffer buffer) {
-		if (buffer.get() == EMPTY_TOKEN_TAG) {
-			tokenId = -1;
-		} else {
-			tokenId = buffer.getLong();
-		}
+	private void setTokenId(CloverBuffer buffer) {
+		tokenId = deserializeTokenId(buffer);
 	}
 	
 	@Override
@@ -158,7 +214,7 @@ public class Token extends DataRecord {
 	}
 	
 	@Override
-	protected DataRecord newInstance(DataRecordMetadata metadata) {
+	protected DataRecordImpl newInstance(DataRecordMetadata metadata) {
 		return new Token(metadata);
 	}
 	

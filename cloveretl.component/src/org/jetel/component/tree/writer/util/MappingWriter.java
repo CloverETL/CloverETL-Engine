@@ -18,6 +18,7 @@
  */
 package org.jetel.component.tree.writer.util;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -26,6 +27,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.jetel.component.tree.writer.model.design.AbstractNode;
 import org.jetel.component.tree.writer.model.design.Attribute;
+import org.jetel.component.tree.writer.model.design.CDataSection;
 import org.jetel.component.tree.writer.model.design.CollectionNode;
 import org.jetel.component.tree.writer.model.design.Comment;
 import org.jetel.component.tree.writer.model.design.MappingProperty;
@@ -51,6 +53,7 @@ import org.jetel.util.string.TagName;
 public class MappingWriter implements MappingVisitor {
 	
 	private XMLStreamWriter writer;
+	private List<String> namespaceNames = new ArrayList<>();
 	
 	public MappingWriter(XMLStreamWriter writer) {
 		this.writer = writer;
@@ -100,9 +103,14 @@ public class MappingWriter implements MappingVisitor {
 			writer.writeStartElement(TreeWriterMapping.MAPPING_KEYWORDS_NAMESPACEURI, ObjectNode.XML_TEMPLATE_DEFINITION);
 			writePropertyAsCloverAttribute(element, MappingProperty.NAME);
 		} else {
+
+			for (Namespace namespace : element.getNamespaces()) {
+				namespaceNames.add(namespace.getProperty(MappingProperty.NAME));
+			}
+
 			String name = element.getProperty(MappingProperty.NAME);
-			boolean writeNameAsAttribute = TagName.hasInvalidCharacters(name);
-			
+			boolean writeNameAsAttribute = !TagName.isValidName(name, namespaceNames);
+
 			String elementName = writeNameAsAttribute ? TreeWriterMapping.MAPPING_KEYWORDS_PREFIX + ":" + ObjectNode.XML_ELEMENT_WITH_NAME_ATTRIBUTE : name;
 			
 			if (element.getChildren().isEmpty() && childAttributes.isEmpty()) {
@@ -160,10 +168,14 @@ public class MappingWriter implements MappingVisitor {
 	public void visit(Value element) throws XMLStreamException {
 		String toWrite = element.getProperty(MappingProperty.VALUE);
 		if (toWrite != null) {
-			// If CRLF is written, LFLF is subsequently read 
-			toWrite = toWrite.replaceAll("\r\n", "\n"); // maybe StaxPrettyPrintHandler would be better place do this
-			writer.writeCharacters(toWrite);
+			writeText(toWrite);
 		}
+	}
+	
+	private void writeText(String text) throws XMLStreamException {
+		// If CRLF is written, LFLF is subsequently read 
+		text = text.replaceAll("\r\n", "\n"); // maybe StaxPrettyPrintHandler would be better place do this
+		writer.writeCharacters(text);
 	}
 
 	@Override
@@ -218,6 +230,13 @@ public class MappingWriter implements MappingVisitor {
 		}
 		comment.append(" ");
 		writer.writeComment(comment.toString());
+	}
+	
+	@Override
+	public void visit(CDataSection cdataSection) throws Exception {
+		
+		String value = cdataSection.getProperty(MappingProperty.VALUE);
+		writer.writeCData(value != null ? value : "");
 	}
 	
 	private void writePropertyAsCloverAttribute(AbstractNode element, MappingProperty property) throws XMLStreamException {

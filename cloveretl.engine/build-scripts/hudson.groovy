@@ -9,8 +9,13 @@ def jobName = env['JOB_NAME']
 assert jobName
 def buildNumber = env['BUILD_NUMBER']
 assert buildNumber
+def workspace = env['WORKSPACE']
+assert workspace
+def jenkinsBuildUrl = env['BUILD_URL']
+assert jenkinsBuildUrl
+
 def testName
-jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-after-commit-windows-java-1.6-Sun|tests-after-commit-proxy-java-1.6-Sun|tests-after-commit-java-1.7-Sun|tests-night-java-1.6-IBM|tests-night-java-1.6-JRockit|tests-night-functional-java-1.6-Sun|tests-after-commit|tests-reset|tests-performance-java-1.6-Sun|detail)-)?(.+)$/
+jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-after-commit-windows-java-1.7-Sun|tests-after-commit-windows-java-1.7-IBM|tests-after-commit-windows-java-1.7-IBM|tests-after-commit-proxy-java-1.7-Sun|tests-after-commit-java-8-Sun|tests-after-commit-java-1.7-IBM|tests-night-java-1.6-IBM|tests-night-java-1.6-JRockit|tests-night-functional-java-1.7-Sun|tests-after-commit|tests-reset|tests-performance-java-1.7-Sun|detail)-)?(.+)$/
 assert jobNameM.matches() 
 jobBasename = jobNameM[0][1]
 jobGoal = jobNameM[0][3]
@@ -64,14 +69,15 @@ if( !runTests ){
 	// compile engine and run some tests
 	antBaseD = engineD
 	antArgs = [
-		"-Dadditional.plugin.list=cloveretl.license.engine,cloveretl.component.hadoop,cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.tlfunction.commercial,cloveretl.ctlfunction.commercial,cloveretl.addressdoctor.commercial,cloveretl.profiler.commercial,cloveretl.mongodb.commercial",
-		"-Dcte.logpath=/data/cte-logs",
+		"-Dadditional.plugin.list=cloveretl.license.engine,cloveretl.component.hadoop,cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.tlfunction.commercial,cloveretl.ctlfunction.commercial,cloveretl.addressdoctor.commercial,cloveretl.profiler.commercial,cloveretl.mongodb.commercial,cloveretl.validator.commercial,cloveretl.initiate.engine,cloveretl.spreadsheet.commercial,cloveretl.oem.example.component,cloveretl.subgraph.commercial,cloveretl.tableau",
+		"-Dcte.logpath=${workspace}/cte-logs",
+		"-Dcteguiloglink=${jenkinsBuildUrl}/artifact/cte-logs/",
 		"-Dcte.hudson.link=job/${jobName}/${buildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
 	]
 	if( jobGoal == "after-commit" ) {
 		antTarget = "reports-hudson"
-		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.6-Sun"
+		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.7-Sun"
 		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/SFTPOperationHandlerTest.java,org/jetel/component/fileoperation/FTPOperationHandlerTest.java,com/opensys/cloveretl/component/EmailFilterTest.java"
 		antArgs += "-Druntests-target=runtests-scenario-after-commit"
 	} else if( jobGoal == "optimalized"){
@@ -82,7 +88,7 @@ if( !runTests ){
 		antArgs += "-Druntests-target=runtests-scenario-after-commit-with-engine-classes"
 	} else if( jobGoal == "detail"){
 		antTarget = "reports-hudson-detail"
-		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.6-Sun_detail"
+		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.7-Sun_detail"
 		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java"
 		antArgs += "-Druntests-target=runtests-scenario-after-commit"
 	} else if( jobGoal == "tests-reset"){
@@ -101,14 +107,14 @@ if( !runTests ){
 	antBaseD = testEnvironmentD
 	
 	engineJobName = "cloveretl.engine-" + versionSuffix
-	engineBuildNumber = new URL( env['HUDSON_URL'] + "/job/${engineJobName}/lastSuccessfulBuild/buildNumber").text
+	engineBuildNumber = new URL( env['JENKINS_URL'] + "job/${engineJobName}/lastSuccessfulBuild/buildNumber").text
 	println "engineBuildNumber   = " + engineBuildNumber
 
-        cloverVersionPropertiesURL = env['HUDSON_URL'] + "/job/${engineJobName}/${engineBuildNumber}/artifact/cloveretl.engine/version.properties"
+        cloverVersionPropertiesURL = env['JENKINS_URL'] + "job/${engineJobName}/${engineBuildNumber}/artifact/cloveretl.engine/version.properties"
         println "cloverVersionPropertiesURL ${cloverVersionPropertiesURL}"
 
 	cloverVersionProperties = new URL( cloverVersionPropertiesURL ).text
-        cloverVersionPropertiesM = cloverVersionProperties =~ /version=([^\n]*)/
+        cloverVersionPropertiesM = cloverVersionProperties =~ /version.product=([^\n]*)/
 
 	cloverVersion = cloverVersionPropertiesM[0][1]
 	cloverVersionDash = cloverVersion.replaceAll("\\.","-")
@@ -119,7 +125,8 @@ if( !runTests ){
 		"-Ddir.plugins=../cloverETL/plugins",
 		"-Dscenarios=${scenarios}",
 		"-Denvironment.config=${testConfiguration}",
-		"-Dlogpath=/data/cte-logs",
+		"-Dlogpath=${workspace}/cte-logs",
+		"-Dcteguiloglink=${jenkinsBuildUrl}/artifact/cte-logs/",
 		"-Dhudson.link=job/${jobName}/${buildNumber}",
 		"-Dhudson.engine.link=job/${engineJobName}/${engineBuildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
@@ -154,6 +161,14 @@ if( !runTests ){
 	if (testName == "performance") {
 		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
 	}
+	if (testName == "after-commit" && testJVM.endsWith("IBM")) {
+		// disable Hadoop tests
+		antArgs += "-Dtestenv.excludedtestidentpattern=Hadoop.*|HDFS.*|Hive.*"
+		// prevent OutOfMemoryError and Segmentation error on IBM Java
+		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
+		antArgs += "-Drunscenarios.Xmso=-Xmso2048k" // CLO-4730, CLO-4567
+	}
+
 	
 	
 	cloverD = new File(baseD, "cloverETL")
@@ -161,7 +176,7 @@ if( !runTests ){
 	ant.delete( dir:cloverD )
 	ant.delete(failonerror:false){ fileset( dir:"/data/bigfiles/tmp" , includes:"**")}
 
-	engineURL = new URL( env['HUDSON_URL'] + "/job/${engineJobName}/${engineBuildNumber}/artifact/cloveretl.engine/dist/cloverETL.rel-${cloverVersionDash}.zip" )
+	engineURL = new URL( env['JENKINS_URL'] + "job/${engineJobName}/${engineBuildNumber}/artifact/cloveretl.engine/dist/cloverETL.rel-${cloverVersionDash}.zip" )
 	engineFile = new File( baseD, "cloverETL.zip" )
 	engineURL.download( engineFile )
 	ant.unzip( src:engineFile, dest:baseD )
@@ -190,7 +205,7 @@ antArgs.each{arg-> antC += arg}
 antC.executeSave(subEnv(antCustomEnv), antBaseD)
 	
 println "hostName=" + InetAddress.localHost.hostName
-if( InetAddress.localHost.hostName != "linda" ) {
+if( InetAddress.localHost.hostName != "linda" && InetAddress.localHost.hostName != "virt-linda" ) {
 	rsyncC = ["rsync", "-rv", "--remove-source-files", "/data/cte-logs/", "jenkins@linda:/data/cte-logs"]
 	keyFile = new File("/hudson/id_dsa")
 	if( keyFile.exists() ){

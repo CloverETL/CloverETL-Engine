@@ -24,9 +24,17 @@ public class SFTPConnectionFactory implements ConnectionFactory {
 	
 	@Override
 	public PoolableConnection makeObject(Authority authority) throws Exception {
-		PooledSFTPConnection connection = new PooledSFTPConnection(authority);
-		connection.connect();
-		return connection;
+		PooledSFTPConnection connection = null;
+		try {
+			connection = new PooledSFTPConnection(authority);
+			connection.connect();
+			return connection;
+		} catch (Exception ex) {
+			if (connection != null) {
+				connection.disconnect();
+			}
+			throw ex;
+		}
 	}
 
 	@Override

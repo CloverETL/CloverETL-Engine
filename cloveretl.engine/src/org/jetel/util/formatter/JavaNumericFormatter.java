@@ -122,7 +122,7 @@ public class JavaNumericFormatter implements NumericFormatter {
 		Number resultNumber = numberFormat.parse(seq.toString(), parsePosition); //this toString() conversion is potential performance issue
 		if (resultNumber == null || parsePosition.getErrorIndex() != -1 || parsePosition.getIndex() != seq.length()) {
 			//parsing failed
-			throw new ParseException("Long parsing error.", -1);
+			throw new ParseException("Double parsing error.", -1);
 		}
 
 		return resultNumber.doubleValue();

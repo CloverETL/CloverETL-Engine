@@ -41,6 +41,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -154,7 +155,9 @@ public class StructureWriter extends Node {
 	private static final String XML_PARTITION_OUTFIELDS_ATTRIBUTE = "partitionOutFields";
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 	private static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
+	private static final String XML_SORTED_INPUT_ATTRIBUTE = "sortedInput";
 	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
+	private static final String XML_CREATE_EMPTY_FILES_ATTRIBUTE = "createEmptyFiles";
 
 	private String fileURL;
 	private boolean appendData;
@@ -176,7 +179,9 @@ public class StructureWriter extends Node {
 	private String partitionUnassignedFileName;
 	private String headerMask;
 	private String footerMask;
-
+	private boolean sortedInput = false;
+	private boolean createEmptyFiles = true;
+	
 	private static Log logger = LogFactory.getLog(StructureWriter.class);
 
 	public final static String COMPONENT_TYPE = "STRUCTURE_WRITER";
@@ -223,13 +228,6 @@ public class StructureWriter extends Node {
 		this.footerMask = footerMask;
 		formatterProvider = new StructureFormatterProvider(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 		formatterProvider.setMask(mask);
-	}
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
 	}
 
 	@Override
@@ -340,11 +338,11 @@ public class StructureWriter extends Node {
 		if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
 
         try {
-        	FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, fileURL, mkDir);
+        	FileUtils.canWrite(getContextURL(), fileURL, mkDir);
         } catch (ComponentNotReadyException e) {
             status.add(e,ConfigurationStatus.Severity.ERROR,this,
             		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
@@ -376,7 +374,7 @@ public class StructureWriter extends Node {
 
 		// based on file mask, create/open output file
 		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatterProvider, graph != null ? graph.getRuntimeContext().getContextURL() : null, fileURL);
+	        writer = new MultiFileWriter(formatterProvider, getContextURL(), fileURL);
 		} else {
 			if (writableByteChannel == null) {
 		        writableByteChannel =  new SystemOutByteChannel();
@@ -391,17 +389,20 @@ public class StructureWriter extends Node {
         writer.setNumRecords(numRecords);
         writer.setDictionary(graph != null ? graph.getDictionary() : null);
         writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
+        writer.setCharset(charset);
         if (attrPartitionKey != null) {
             writer.setLookupTable(lookupTable);
             writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
             writer.setPartitionFileTag(partitionFileTagType);
         	writer.setPartitionUnassignedFileName(partitionUnassignedFileName);
+        	writer.setSortedInput(sortedInput);
         	
         	if (attrPartitionOutFields != null) {
         		writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
         	}
         }
         writer.setMkDir(mkDir);
+		writer.setCreateEmptyFiles(createEmptyFiles);
 		if (headerMask != null) {
 			if (getInputPort(HEADER_PORT) != null) {
 				headerFormatter = new StructureFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
@@ -441,6 +442,11 @@ public class StructureWriter extends Node {
 			}
 	}
 	
+	@Override
+	public String[] getUsedUrls() {
+		return new String[] { fileURL };
+	}
+
 	/**
 	 * Creates and initializes lookup table.
 	 * 
@@ -500,8 +506,14 @@ public class StructureWriter extends Node {
 		if(xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
 			aDataWriter.setPartitionUnassignedFileName(xattribs.getStringEx(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE, RefResFlag.URL));
         }
+		if(xattribs.exists(XML_SORTED_INPUT_ATTRIBUTE)) {
+			aDataWriter.setSortedInput(xattribs.getBoolean(XML_SORTED_INPUT_ATTRIBUTE));
+        }
 		if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
 			aDataWriter.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_CREATE_EMPTY_FILES_ATTRIBUTE)) {
+        	aDataWriter.setCreateEmptyFiles(xattribs.getBoolean(XML_CREATE_EMPTY_FILES_ATTRIBUTE));
         }
 		
 		return aDataWriter;
@@ -621,6 +633,20 @@ public class StructureWriter extends Node {
 	public PartitionFileTagType getPartitionFileTag() {
 		return partitionFileTagType;
 	}
+	
+	/**
+	 * @return the sortedInput
+	 */
+	public boolean isSortedInput() {
+		return sortedInput;
+	}
+
+	/**
+	 * @param sortedInput the sortedInput to set
+	 */
+	public void setSortedInput(boolean sortedInput) {
+		this.sortedInput = sortedInput;
+	}
 
 	/**
 	 * Sets partition unassigned file name.
@@ -639,6 +665,10 @@ public class StructureWriter extends Node {
 		this.mkDir = mkDir;
 	}
 
+	private void setCreateEmptyFiles(boolean createEmptyFiles) {
+		this.createEmptyFiles = createEmptyFiles;
+	}
+    
 	/**
 	 * This is class for format header/footer from input records
 	 * 
@@ -678,7 +708,11 @@ public class StructureWriter extends Node {
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}finally{
-				formatter.close();
+				try {
+					formatter.close();
+				} catch (IOException e) {
+					throw new JetelRuntimeException(e);
+				}
 			}
 		}
 		

@@ -21,6 +21,7 @@ package org.jetel.component.fileoperation;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -33,6 +34,7 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 
 import org.jetel.component.fileoperation.Info.Type;
@@ -58,6 +60,7 @@ import org.jetel.util.file.FileUtils;
 public class URLOperationHandler implements IOperationHandler {
 	
 	public static final int TIMEOUT = 1000;
+	private static final ConcurrentHashMap<String, Boolean> protocolSupportMemory = new ConcurrentHashMap<>();
 	
 	private URLConnection getConnection(URI uri) throws IOException {
 		try {
@@ -218,7 +221,25 @@ public class URLOperationHandler implements IOperationHandler {
 			case RESOLVE:
 			case INFO:
 			case LIST:
-				return true;
+				String protocol = operation.scheme();
+				Boolean supported = protocolSupportMemory.get(protocol);
+				if (supported == null) {
+					try {
+						// We create a dummy URL, which causes JVM to find a URLStreamHandler for the protocol of our operation.
+						// When no URLStreamHandler is found, a MalformedURLException is thrown and we know that the protocol is not supported.
+						new URL(operation.scheme(), null, -1, "", null);
+					} catch (MalformedURLException e) {
+						if (e.getMessage().contains("unknown protocol: " + operation.scheme().toLowerCase())) {
+							// The protocol of the operation is not supported.
+							protocolSupportMemory.put(protocol, false);
+							return false;
+						}
+					}
+					protocolSupportMemory.put(protocol, true);
+					return true;
+				} else {
+					return supported;
+				}
 			default: 
 				return false;
 		}

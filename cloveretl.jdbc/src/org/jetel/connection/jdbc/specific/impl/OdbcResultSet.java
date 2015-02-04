@@ -2157,4 +2157,16 @@ public class OdbcResultSet implements ResultSet {
 	public boolean wasNull() throws SQLException {
 		return resultSet.wasNull();
 	}
+	
+	/* JDBC 4.1 */
+
+	@Override
+	public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
+		return resultSet.getObject(columnIndex, type);
+	}
+
+	@Override
+	public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
+		return resultSet.getObject(columnLabel, type);
+	}
 }

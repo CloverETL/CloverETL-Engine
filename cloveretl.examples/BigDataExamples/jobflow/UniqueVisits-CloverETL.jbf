@@ -1,35 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361360543511" licenseType="Commercial" modified="Thu Jul 18 15:54:26 CEST 2013" modifiedBy="krivanekm" name="ProcessLog_CloverETL" nature="jobflow" revision="1.28" showComponentDetails="true">
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="4.0.0.M1" id="1361360543511" licenseType="Commercial" modified="Tue Mar 25 15:55:57 CET 2014" modifiedBy="User" name="ProcessLog_CloverETL" nature="jobflow" revision="1.31" showComponentDetails="true">
 <Global>
-<Metadata id="ExecuteGraph_RunStatus">
-<Record fieldDelimiter="|" name="ExecuteGraph_RunStatus" recordDelimiter="\n" type="delimited">
-<Field name="runId" type="long"/>
-<Field name="originalJobURL" type="string"/>
-<Field format="yyyy-MM-dd HH:mm:ss" name="startTime" type="date"/>
-<Field format="yyyy-MM-dd HH:mm:ss" name="endTime" type="date"/>
-<Field name="duration" type="long"/>
-<Field name="status" type="string"/>
-<Field name="errException" type="string"/>
-<Field name="errMessage" type="string"/>
-<Field name="errComponent" type="string"/>
-<Field name="errComponentType" type="string"/>
-</Record>
-</Metadata>
-<Metadata id="ExecuteGraph_RunStatus1">
-<Record fieldDelimiter="|" name="ExecuteGraph_RunStatus" recordDelimiter="\n" type="delimited">
-<Field name="runId" type="long"/>
-<Field name="originalJobURL" type="string"/>
-<Field format="yyyy-MM-dd HH:mm:ss" name="startTime" type="date"/>
-<Field format="yyyy-MM-dd HH:mm:ss" name="endTime" type="date"/>
-<Field name="duration" type="long"/>
-<Field name="status" type="string"/>
-<Field name="errException" type="string"/>
-<Field name="errMessage" type="string"/>
-<Field name="errComponent" type="string"/>
-<Field name="errComponentType" type="string"/>
-</Record>
-</Metadata>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="228" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="233" x="20" y="119">
 <attr name="text"><![CDATA[
 Web servers under heavy load can generate web access logs in orders of tens or hundreds of gigabytes per day.
@@ -101,6 +75,6 @@ function integer transform() {
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Generate Report" guiX="585" guiY="445" id="GENERATE_REPORT" jobURL="${GRAPH_DIR}/GenerateReport.grf" type="EXECUTE_GRAPH"/>
-<Edge debugMode="true" fromNode="COUNT_UNIQUE_VISITORS_USING_CLOVER_ETL:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus1" outPort="Port 0 (out)" toNode="GENERATE_REPORT:0"/>
+<Edge debugMode="true" fromNode="COUNT_UNIQUE_VISITORS_USING_CLOVER_ETL:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="GENERATE_REPORT:0"/>
 </Phase>
 </Graph>

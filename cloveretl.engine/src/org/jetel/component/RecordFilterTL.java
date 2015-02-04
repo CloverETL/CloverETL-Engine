@@ -32,7 +32,7 @@ import org.jetel.interpreter.data.TLBooleanValue;
  * @author Michal Tomcanyi <michal.tomcanyi@javlin.cz>
  *
  */
-public class RecordFilterTL implements RecordFilter {
+public class RecordFilterTL implements RecordsFilter {
 
 	private final CLVFStartExpression filterExpression;
 	private final TransformLangExecutor executor = new TransformLangExecutor();

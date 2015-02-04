@@ -146,7 +146,12 @@ public class ReadableChannelPortIterator {
 				|| fieldDataWrapper.hasData()) {
 			// if processing stream - do not read whole stream before processing starts but process data as they are coming
 			// if processing sources, previous record resolved into more than one file
-			return fieldDataWrapper.getData(preferredDataSource);
+			Object nextData = fieldDataWrapper.getData(preferredDataSource);
+			if (fieldDataWrapper instanceof StreamFieldDataWrapper) {
+				// CLO-5524 ... when obtaining new stream, we need to save all fields from the first record of the stream
+				record = ((StreamFieldDataWrapper) fieldDataWrapper).getFirstRecord();
+			}
+			return nextData;
 		} else {
 			//read next record
 			record = inputPort.readRecord(record);
@@ -435,11 +440,14 @@ public class ReadableChannelPortIterator {
 	}
 
 	/**
-	 * Source field data wrapper.
+	 * Stream field data wrapper.
 	 */
 	private static class StreamFieldDataWrapper extends FieldDataWrapper {
 		
 		private InputPort inputPort;
+		
+		// first record of the stream
+		private DataRecord firstRecord;
 		
 		public StreamFieldDataWrapper(DataField field, String charset, PortHandler portHandler, InputPort inputPort) {
 			super(field, charset, portHandler);
@@ -452,10 +460,19 @@ public class ReadableChannelPortIterator {
 		public ReadableByteChannel getData(DataSourceType preferredDataSource) throws IOException, JetelException {
 			InputPortReadableChannel channel = new InputPortReadableChannel(inputPort, field.getMetadata().getName(), charset);
 			if (!channel.isEOF()) {
+				firstRecord = channel.getCurrentRecord();
 				return channel;
 			}
 			//all records were read
 			return null;
+		}
+		
+		/**
+		 * See {@link InputPortReadableChannel#getCurrentRecord()}
+		 * @return
+		 */
+		public DataRecord getFirstRecord() {
+			return firstRecord;
 		}
 		
 	}

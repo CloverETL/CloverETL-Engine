@@ -32,6 +32,8 @@ import org.jetel.data.ISortDataRecord;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -40,6 +42,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.CopyComponentTokenTracker;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -369,6 +372,14 @@ public class ExtSort extends Node {
         }
         
         checkMetadata(status, getInMetadata(), getOutMetadata());
+        
+        DataRecordMetadata inMetadata = getInputPort(READ_FROM_PORT).getMetadata();
+        for (int i = 0; i < sortKeysNames.length; i++) {
+			if (inMetadata.getFieldPosition(sortKeysNames[i]) < 0) {
+				status.add("Key field '" + sortKeysNames[i] + "' does not exist in input metadata",
+						Severity.ERROR, this, Priority.NORMAL, XML_SORTKEY_ATTRIBUTE);
+			}
+		}
 
 //        try {
 //            init();
@@ -392,14 +403,6 @@ public class ExtSort extends Node {
     private void setNumberOfTapes(int numberOfTapes) {
     	this.numberOfTapes = numberOfTapes;
 	}
-
-    /* (non-Javadoc)
-     * @see org.jetel.graph.Node#getType()
-     */
-    @Override
-	public String getType() {
-        return COMPONENT_TYPE;
-    }
 
 	public String getLocaleStr() {
 		return localeStr;

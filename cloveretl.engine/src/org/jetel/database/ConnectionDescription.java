@@ -18,14 +18,14 @@
  */
 package org.jetel.database;
 
-import org.jetel.data.GraphElementDescription;
+import org.jetel.data.GraphElementDescriptionImpl;
 import org.jetel.plugin.Extension;
 
 /**
  * @author Martin Zatopek
  *
  */
-public class ConnectionDescription extends GraphElementDescription {
+public class ConnectionDescription extends GraphElementDescriptionImpl {
 
     public final static String EXTENSION_POINT_ID = "connection";
     

@@ -24,28 +24,67 @@ import org.jetel.graph.DirectEdge;
 import org.jetel.graph.DirectEdgeFastPropagate;
 import org.jetel.graph.Edge;
 import org.jetel.graph.EdgeBase;
+import org.jetel.graph.LRemoteEdge;
 import org.jetel.graph.PhaseConnectionEdge;
 
 
 public enum EdgeTypeEnum {
 	/**  Proxy represents Direct Edge */
-	DIRECT("direct", DirectEdge.class),
+	DIRECT("direct", DirectEdge.class, false, false),
 	/**  Proxy represents Direct Edge fast propagate */
-	DIRECT_FAST_PROPAGATE("directFastPropagate", DirectEdgeFastPropagate.class),
+	DIRECT_FAST_PROPAGATE("directFastPropagate", DirectEdgeFastPropagate.class, false, true),
 	/**  Proxy represents Buffered Edge */
-	BUFFERED("buffered", BufferedEdge.class),
+	BUFFERED("buffered", BufferedEdge.class, true, false),
 	/**  Proxy represents Buffered fast propagate edge */
-	BUFFERED_FAST_PROPAGATE("bufferedFastPropagate", BufferedFastPropagateEdge.class),
+	BUFFERED_FAST_PROPAGATE("bufferedFastPropagate", BufferedFastPropagateEdge.class, true, true),
 	/** Proxy represents Edge connecting two different phases */
-	PHASE_CONNECTION("phaseConnection", PhaseConnectionEdge.class);
+	PHASE_CONNECTION("phaseConnection", PhaseConnectionEdge.class, true, false),
+
+	/** This edge type is used by server for remote edges in clustered graphs. */
+	L_REMOTE("lRemote", LRemoteEdge.class, false, false);
+
+	private String name;
 	
-	String name;
+	private Class<? extends EdgeBase> edgeBaseClass;
 	
-	Class<? extends EdgeBase> edgeBaseClass;
+	private boolean buffered;
 	
-	EdgeTypeEnum(String name, Class<? extends EdgeBase> edgeBaseClass) {
+	private boolean fastPropagate;
+	
+	private EdgeTypeEnum(String name, Class<? extends EdgeBase> edgeBaseClass, boolean buffered, boolean fastPropagate) {
 		this.name = name;
 		this.edgeBaseClass = edgeBaseClass;
+		this.buffered = buffered;
+		this.fastPropagate = fastPropagate;
+	}
+	
+	/**
+	 * @return true if the edge type represents a buffered edge - writing to the edge is not blocking operation
+	 */
+	public boolean isBuffered() {
+		return buffered;
+	}
+	
+	/**
+	 * @return true if the edge type represents a fast propagate edge
+	 * - edge provides incoming records to reader component immediately.
+	 */
+	public boolean isFastPropagate() {
+		return fastPropagate;
+	}
+	
+	/**
+	 * @return respective edge type is returned based on given edge base implementation 
+	 */
+	public static EdgeTypeEnum valueOf(EdgeBase edgeBase) {
+		if (edgeBase != null) {
+			for (EdgeTypeEnum edgeType : values()) {
+				if (edgeType.edgeBaseClass == edgeBase.getClass()) {
+					return edgeType;
+				}
+			}
+		}
+		return null;
 	}
 	
 	public EdgeBase createEdgeBase(Edge edge) {

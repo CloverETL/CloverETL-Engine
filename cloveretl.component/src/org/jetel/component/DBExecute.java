@@ -355,8 +355,6 @@ public class DBExecute extends Node {
 					}
 				}
         	}
-        }else{
-        	errorActions.put(Integer.MIN_VALUE, ErrorAction.DEFAULT_ERROR_ACTION);
         }
 	}
 
@@ -474,7 +472,7 @@ public class DBExecute extends Node {
 				connection.setAutoCommit(transaction == InTransaction.ONE);
 			} catch (SQLException ex) {
 				if (transaction != InTransaction.ONE) {
-					throw new ComponentNotReadyException("Can't disable AutoCommit mode (required by current \"Transaction set\" setting) for DB: " + dbConnection + " !");
+					throw new ComponentNotReadyException("Can't disable AutoCommit mode (required by current \"Transaction set\" setting) for DB: " + dbConnection + " !", ex);
 				}
 			}
 		} catch (SQLException e) {
@@ -512,7 +510,7 @@ public class DBExecute extends Node {
 				action = ErrorAction.DEFAULT_ERROR_ACTION;
 			}
 		}
-		if (action == ErrorAction.CONTINUE) {
+		if (action == ErrorAction.CONTINUE || (errorActions.isEmpty() && errRecord != null)) {
 			if (errRecord != null) {
 				if (inRecord != null) {
 					errRecord.copyFieldsByName(inRecord);
@@ -571,6 +569,7 @@ public class DBExecute extends Node {
     				String statement;
     				int index = 0;
     				while ((statement = sqlScriptParser.getNextStatement()) != null) {
+    					statement = getPropertyRefResolver().resolveRef(statement, RefResFlag.ALL_OFF);
     					if (printStatements) {
 							logger.info("Executing statement: " + statement);
     					}
@@ -840,17 +839,17 @@ public class DBExecute extends Node {
         if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
 
 		try {
 		    if (dbConnection == null){
 		        IConnection conn = getGraph().getConnection(dbConnectionName);
 	            if(conn == null) {
-	                throw new ComponentNotReadyException("Can't find DBConnection ID: " + dbConnectionName);
+	                throw new ComponentNotReadyException("Can't find DBConnection ID: " + dbConnectionName, XML_DBCONNECTION_ATTRIBUTE);
 	            }
 	            if(!(conn instanceof DBConnection)) {
-	                throw new ComponentNotReadyException("Connection with ID: " + dbConnectionName + " isn't instance of the DBConnection class.");
+	                throw new ComponentNotReadyException("Connection with ID: " + dbConnectionName + " isn't instance of the DBConnection class.", XML_DBCONNECTION_ATTRIBUTE);
 	            }
 		    }
             if (errorActionsString != null){
@@ -875,12 +874,6 @@ public class DBExecute extends Node {
         return status;
    }
 	
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-
-
     public boolean isProcedureCall() {
         return procedureCall;
     }

@@ -29,14 +29,13 @@ import org.jetel.util.MiscUtils;
  *
  * @created May 25, 2010
  */
-public class TLCalendarCache extends TLCache {
+public class TLCalendarCache extends TLFormatterCache {
 	
 	private Calendar cachedCalendar;
-	private String previousLocale;
-	private String previousTimeZone;
 
-	public TLCalendarCache() {
-		cachedCalendar = MiscUtils.getDefaultCalendar();
+	public TLCalendarCache(TLFunctionCallContext context) {
+		super(context);
+		cachedCalendar = MiscUtils.createCalendar(context.getDefaultLocale(), context.getDefaultTimeZone());
 	}
 	
 	public TLCalendarCache(TLFunctionCallContext context, int localePosition) {
@@ -44,6 +43,7 @@ public class TLCalendarCache extends TLCache {
 	}
 	
 	public TLCalendarCache(TLFunctionCallContext context, int localePosition, int timeZonePosition) {
+		super(context);
 		createCachedCalendar(context, localePosition, timeZonePosition);
 	}
 	
@@ -79,7 +79,7 @@ public class TLCalendarCache extends TLCache {
 			}
 		}
 		
-		cachedCalendar = MiscUtils.createCalendar(localeStr, timeZoneStr);
+		cachedCalendar = MiscUtils.createCalendar(getLocale(localeStr), getTimeZone(timeZoneStr));
 	}
 	
 	public Calendar getCalendar() {
@@ -95,11 +95,10 @@ public class TLCalendarCache extends TLCache {
 	 * @return
 	 */
 	public Calendar getCachedCalendar(TLFunctionCallContext context, String locale, int localePosition) {
-		if (context.isLiteral(localePosition) || (cachedCalendar != null && locale.equals(previousLocale))) {
+		if (context.isLiteral(localePosition) || (cachedCalendar != null && locale.equals(previousLocaleString))) {
 			return cachedCalendar;
 		} else {
-			cachedCalendar = MiscUtils.createCalendar(locale, null);
-			previousLocale = locale;
+			cachedCalendar = MiscUtils.createCalendar(getLocale(locale), context.getDefaultTimeZone());
 			return cachedCalendar;
 		}
 	}
@@ -113,11 +112,10 @@ public class TLCalendarCache extends TLCache {
 	 * @return
 	 */
 	public Calendar getCachedCalendarWithTimeZone(TLFunctionCallContext context, String timeZone, int timeZonePosition) {
-		if ((context.getLiteralsSize() > timeZonePosition) && context.isLiteral(timeZonePosition) || (cachedCalendar != null && ((timeZone == previousTimeZone) || timeZone.equals(previousTimeZone)))) {
+		if ((context.getLiteralsSize() > timeZonePosition) && context.isLiteral(timeZonePosition) || (cachedCalendar != null && ((timeZone == previousTimeZoneString) || timeZone.equals(previousTimeZoneString)))) {
 			return cachedCalendar;
 		} else {
-			cachedCalendar = MiscUtils.createCalendar(null, timeZone);
-			previousTimeZone = timeZone;
+			cachedCalendar = MiscUtils.createCalendar(context.getDefaultLocale(), getTimeZone(timeZone));
 			return cachedCalendar;
 		}
 	}

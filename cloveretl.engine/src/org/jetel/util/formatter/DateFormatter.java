@@ -51,6 +51,19 @@ public interface DateFormatter {
 	 * @throws IllegalArgumentException if the string value has invalid format
 	 */
 	public Date parseDate(String value);
+	
+	/**
+	 * Parses the string containing a date value. Fails also when there's invalid text after the parsed date.
+	 *
+	 * @param value a string representation of a date value
+	 *
+	 * @return the date value
+	 *
+	 * @throws IllegalArgumentException if the string value has invalid format
+	 * or if there's invalid extra text after the parsed value
+	 */
+	public Date parseDateStrict(String value);
+	
 
 	/**
 	 * Parses the string containing a date value.

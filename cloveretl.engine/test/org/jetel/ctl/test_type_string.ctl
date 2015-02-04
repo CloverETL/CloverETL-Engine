@@ -14,6 +14,15 @@ string def;
 string nullValue;
 string varWithNullInitializer = null;
 
+string literalParserTest1 = "some // string";
+string literalParserTest2 = "some /* string */";
+string literalParserTest3 = "some \" string";
+string literalParserTest4 = "some \\ string";
+string literalParserTest5 = "some \\\" string";
+string literalParserTest6 = "some \\\\\" string";
+string literalParserTest7 = "some \\\\\\\" string";
+
+
 function integer transform() {
 	i="0";
 	printErr(i);

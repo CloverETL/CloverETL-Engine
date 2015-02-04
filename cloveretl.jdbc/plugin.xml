@@ -33,6 +33,12 @@
 	</extension>
 	
 	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="EXASOLUTION"/>
+		<parameter id="name" value="EXASolution"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.ExasolSpecific"/>
+	</extension>
+
+	<extension point-id="jdbcSpecific">
 		<parameter id="database" value="FIREBIRD"/>
 		<parameter id="name" value="Firebird"/>
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.FirebirdSpecific"/>
@@ -121,16 +127,16 @@
 	</extension>
 
 	<extension point-id="jdbcSpecific">
-		<parameter id="database" value="EXASOL"/>
-		<parameter id="name" value="EXASOL"/>
-		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.ExasolSpecific"/>
+		<parameter id="database" value="VERTICA"/>
+		<parameter id="name" value="Vertica"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.VerticaSpecific"/>
 	</extension>
 
 	<extension point-id="jdbcDriver">
 		<parameter id="database" value="MYSQL"/>
 		<parameter id="name" value="MySQL"/>
 		<parameter id="dbDriver" value="org.gjt.mm.mysql.Driver"/>
-		<parameter id="driverLibrary" value="lib/mysql/mysql-connector-java-5.1.22-bin.jar"/>
+		<parameter id="driverLibrary" value="lib/mysql/mysql-connector-java-5.1.26-bin.jar"/>
 		<parameter id="urlHint" value="jdbc:mysql://hostname:3306/database"/>
 		<parameter id="jdbcSpecific" value="MYSQL"/>
 		<parameter id="jdbc.zeroDateTimeBehavior" value="convertToNull"/>
@@ -155,7 +161,7 @@
 		<parameter id="database" value="POSTGRE"/>
 		<parameter id="name" value="PostgreSQL"/>
 		<parameter id="dbDriver" value="org.postgresql.Driver"/>
-		<parameter id="driverLibrary" value="lib/postgre/postgresql-9.2-1002.jdbc4.jar"/>
+		<parameter id="driverLibrary" value="lib/postgre/postgresql-9.3-1102.jdbc41.jar"/>
 		<parameter id="urlHint" value="jdbc:postgresql://hostname/database"/>
 		<parameter id="jdbcSpecific" value="POSTGRE"/>
 	</extension>
@@ -164,8 +170,11 @@
 		<parameter id="database" value="MSSQL"/>
 		<parameter id="name" value="Microsoft SQL Server"/>
 		<parameter id="dbDriver" value="net.sourceforge.jtds.jdbc.Driver"/>
-		<parameter id="driverLibrary" value="lib/jtds/jtds-1.2.4.jar"/>
-		<parameter id="urlHint" value="jdbc:jtds:sqlserver://hostname:1433/database"/>
+		<parameter id="driverLibrary" value="lib/jtds/jtds-1.2.8.jar"/>
+		<parameter id="urlHint">
+			<value>jdbc:jtds:sqlserver://hostname:1433/database;instance=instanceName</value>
+			<value>jdbc:jtds:sqlserver://hostname:1433/database</value>
+		</parameter>
 		<parameter id="jdbcSpecific" value="MSSQL"/>
 	</extension>
 	
@@ -195,7 +204,7 @@
 		<parameter id="database" value="SYBASE"/>
 		<parameter id="name" value="Sybase"/>
 		<parameter id="dbDriver" value="net.sourceforge.jtds.jdbc.Driver"/>
-		<parameter id="driverLibrary" value="lib/jtds/jtds-1.2.4.jar"/>
+		<parameter id="driverLibrary" value="lib/jtds/jtds-1.2.8.jar"/>
 		<parameter id="urlHint" value="jdbc:jtds:sybase://hostname:7100/database"/>
 		<parameter id="jdbcSpecific" value="SYBASE"/>
 	</extension>
@@ -213,7 +222,7 @@
 		<parameter id="database" value="DERBY"/>
 		<parameter id="name" value="Derby"/>
 		<parameter id="dbDriver" value="org.apache.derby.jdbc.ClientDriver"/>
-		<parameter id="driverLibrary" value="lib/derby/derbyclient.jar"/>
+		<parameter id="driverLibrary" value="lib/derby/derbyclient-10.11.1.1.jar"/>
 		<parameter id="urlHint" value="jdbc:derby://hostname:1527/derby.db"/>
 		<parameter id="jdbcSpecific" value="DERBY"/>
 	</extension>
@@ -228,12 +237,23 @@
 	</extension>
 
 	<extension point-id="jdbcDriver">
-		<parameter id="database" value="EXASOL"/>
-		<parameter id="name" value="EXASOL"/>
+		<parameter id="database" value="VERTICA"/>
+		<parameter id="name" value="Vertica"/>
+		<parameter id="dbDriver" value="com.vertica.jdbc.Driver"/>
+		<parameter id="driverLibrary" value="lib/vertica/vertica-jdbc-7.1.1-0.jar"/>
+		<parameter id="urlHint" value="jdbc:vertica://hostname:5433/database"/>
+		<parameter id="jdbcSpecific" value="VERTICA"/>
+	</extension>
+
+<!--
+	<extension point-id="jdbcDriver">
+		<parameter id="database" value="EXASOLUTION"/>
+		<parameter id="name" value="EXASolution"/>
 		<parameter id="dbDriver" value="com.exasol.jdbc.EXADriver"/>
 		<parameter id="driverLibrary" value="lib/exasol/exajdbc-4.2.1.jar"/>
-		<parameter id="urlHint" value="jdbc:exa:localhost:8563;schema=sys"/>
-		<parameter id="jdbcSpecific" value="EXASOL"/>
+		<parameter id="urlHint" value="jdbc:exa:hostname:8563;schema=schemaName"/>
+		<parameter id="jdbcSpecific" value="EXASOLUTION"/>
 	</extension>
+-->
 
 </plugin>

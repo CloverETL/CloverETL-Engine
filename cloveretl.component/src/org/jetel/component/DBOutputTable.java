@@ -19,6 +19,7 @@
 package org.jetel.component;
 
 import java.io.IOException;
+import java.nio.channels.ReadableByteChannel;
 import java.sql.BatchUpdateException;
 import java.sql.SQLException;
 import java.sql.Savepoint;
@@ -35,6 +36,8 @@ import org.jetel.connection.jdbc.SQLUtil;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
+import org.jetel.data.parser.TextParser;
+import org.jetel.data.parser.TextParserFactory;
 import org.jetel.database.IConnection;
 import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.JdbcSpecific.OperationType;
@@ -55,9 +58,13 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.ExceptionUtils;
+import org.jetel.util.ReadableChannelDictionaryIterator;
+import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
@@ -257,6 +264,8 @@ public class DBOutputTable extends Node {
 	private boolean[] returnResult;
 	private ConnectionAction errorAction = ConnectionAction.COMMIT;
 	private boolean atomicSQL;
+	private String charset;
+	ReadableChannelIterator channelReadingIterator; // for reading the query from dictionary
 	
 	private InputPort inPort;
 	private OutputPort rejectedPort, keysPort;
@@ -459,6 +468,29 @@ public class DBOutputTable extends Node {
 //				sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(inPort.getMetadata(), quotedTableName);
 //			}
 			// TODO Labels replace with end
+		} else if (sqlQuery[0] != null && sqlQuery[0].startsWith("dict:")) {
+			channelReadingIterator = new ReadableChannelIterator(null, getGraph().getRuntimeContext().getContextURL(), sqlQuery[0]);
+			channelReadingIterator.setCharset(charset);
+			channelReadingIterator.setDictionary(getGraph().getDictionary());
+			channelReadingIterator.init();
+			try {
+				Object next = channelReadingIterator.next();
+				DataRecordMetadata queryMetadata = new DataRecordMetadata("_query_metadata_", DataRecordParsingType.DELIMITED);
+				DataFieldMetadata queryField = new DataFieldMetadata("_query_field_", DataFieldType.STRING, null);
+				queryField.setEofAsDelimiter(true);
+				queryField.setTrim(true);
+				queryMetadata.addField(queryField);
+				TextParser dictParser = TextParserFactory.getParser(queryMetadata, charset);
+				dictParser.init();
+				dictParser.setDataSource(next);
+				DataRecord queryRecord = DataRecordFactory.newRecord(queryMetadata);
+				queryRecord.init();
+				if ((queryRecord = dictParser.getNext(queryRecord)) != null) {
+					sqlQuery[0] = getPropertyRefResolver().resolveRef(queryRecord.getField(0).toString());
+				}
+			} catch (JetelException | IOException e) {
+				throw new ComponentNotReadyException(e);
+			}
 		}
 
 		keysPort = getOutputPort(WRITE_AUTO_KEY_TO_PORT);
@@ -1094,10 +1126,17 @@ public class DBOutputTable extends Node {
 
 		// allows specifying parameterized SQL (with ? - question marks)
 		if (xattribs.exists(XML_URL_ATTRIBUTE)){
-			outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
-					SQLUtil.split(xattribs.resolveReferences(FileUtils.getStringFromURL(graph.getRuntimeContext().getContextURL(), 
-							xattribs.getStringEx(XML_URL_ATTRIBUTE, RefResFlag.URL), xattribs.getString(XML_CHARSET_ATTRIBUTE, null)))));
+			String url = xattribs.getStringEx(XML_URL_ATTRIBUTE, RefResFlag.URL).trim();
+			
+			if (url.startsWith("dict:")) {
+				outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
+						xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
+						new String[] {url});
+			} else {
+				outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
+						SQLUtil.split(xattribs.resolveReferences(FileUtils.getStringFromURL
+								(graph.getRuntimeContext().getContextURL(), url, xattribs.getString(XML_CHARSET_ATTRIBUTE, null)))));
+			}
 		}else if (xattribs.exists(XML_SQLQUERY_ATRIBUTE)) {
 				outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
 				xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
@@ -1164,11 +1203,22 @@ public class DBOutputTable extends Node {
 		if (xattribs.exists(XML_ATOMIC_RECORD_STATEMENT_ATTRIBUTE)){
 			outputTable.setAtomicSQL(xattribs.getBoolean(XML_ATOMIC_RECORD_STATEMENT_ATTRIBUTE));
 		}
+		if (xattribs.exists(XML_CHARSET_ATTRIBUTE)){
+			outputTable.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
+		}
 		
 		return outputTable;
 	}
 
-     @Override
+	public void setCharset(String charset) {
+		this.charset = charset;
+	}
+	
+	public String getCharset() {
+		return charset;
+	}
+
+	@Override
      public ConfigurationStatus checkConfig(ConfigurationStatus status) {
          super.checkConfig(status);
          
@@ -1183,12 +1233,12 @@ public class DBOutputTable extends Node {
 			IConnection conn = getGraph().getConnection(dbConnectionName);
 			if (conn == null) {
 				throw new ComponentNotReadyException(
-						"Can't find DBConnection ID: " + dbConnectionName);
+						"Can't find DBConnection ID: " + dbConnectionName, XML_DBCONNECTION_ATTRIBUTE);
 			}
 			if (!(conn instanceof DBConnection)) {
 				throw new ComponentNotReadyException("Connection with ID: "
 						+ dbConnectionName
-						+ " isn't instance of the DBConnection class.");
+						+ " isn't instance of the DBConnection class.", XML_DBCONNECTION_ATTRIBUTE);
 			}
 			dbConnection = (DBConnection) conn;
 			dbConnection.init();
@@ -1350,11 +1400,6 @@ public class DBOutputTable extends Node {
 		return status;
     }
 
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-	
 	/**
 	 * @param maxErrors Maximum number of tolerated SQL errors during component run. Default: 0 (zero)
 	 */

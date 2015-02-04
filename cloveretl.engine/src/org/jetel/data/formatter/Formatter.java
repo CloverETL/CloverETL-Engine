@@ -17,12 +17,20 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.jetel.data.formatter;
+import java.io.Closeable;
+import java.io.File;
+import java.io.Flushable;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
+import java.nio.channels.WritableByteChannel;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.MultiFileWriter;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  *  Interface to output data formatters
@@ -31,7 +39,7 @@ import org.jetel.metadata.DataRecordMetadata;
  *@since      December 30, 2002
  *@see        OtherClasses
  */
-public interface Formatter {
+public interface Formatter extends Closeable, Flushable {
 	
 	/**
 	 * This enumeration is used by #getPreferredDataSourceType() method to suggest preferred 
@@ -70,6 +78,7 @@ public interface Formatter {
 	/**
 	 *  Closing/deinitialization of formatter
 	 */
+	@Override
 	public void close() throws IOException;
 
 
@@ -80,7 +89,23 @@ public interface Formatter {
 	 *@exception  IOException  Description of the Exception
 	 */
 	public int write(DataRecord record) throws IOException;
-
+	
+	/**
+	 * Used in {@link MultiFileWriter#writeDirect(CloverBuffer)}.
+	 * 
+	 * @return <code>true</code> if {@link Formatter#writeDirect(CloverBuffer)} 
+	 * should be called instead of {@link Formatter#write(DataRecord)}. 
+	 */
+	public boolean isDirect();
+	
+	/**
+	 * Writes a raw serialized record.
+	 * 
+	 * @param record - CloverBuffer
+	 * @return
+	 * @throws IOException
+	 */
+	public int writeDirect(CloverBuffer record) throws IOException;
 	
 	/**
 	 *  Formats header based on provided metadata
@@ -100,6 +125,7 @@ public interface Formatter {
 	 *  Flush any unwritten data into output stream
 	 * @throws IOException
 	 */
+	@Override
 	public void flush() throws IOException;
 
 	/**
@@ -121,6 +147,11 @@ public interface Formatter {
      * @param append <code>true</code> if append mode of writing is used; <code>false</code> otherwise
      */
     public void setAppend(boolean append);
+
+	/**
+	 * @param informs the formatter that appending to a non-empty file is being performed
+	 */
+	public void setAppendTargetNotEmpty(boolean b);
     
 }
 /*

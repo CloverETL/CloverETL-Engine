@@ -3,7 +3,7 @@ double floor1;
 double[] intResult;
 double[] longResult;
 double[] doubleResult;
-double[] decimalResult;
+decimal[] decimalResult;
 
 function integer transform() {
 	floor1=floor(-pow(3,1.2));

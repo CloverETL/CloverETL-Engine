@@ -59,7 +59,6 @@ import org.jetel.util.XmlUtils;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
@@ -231,8 +230,8 @@ public class JsonExtract extends Node {
 	// xml attributes
 	public static final String XML_SOURCEURI_ATTRIBUTE = "sourceUri";
 	public static final String XML_USENESTEDNODES_ATTRIBUTE = "useNestedNodes";
-	private static final String XML_MAPPING_ATTRIBUTE = "mapping";
-	private final static String XML_MAPPING_URL_ATTRIBUTE = "mappingURL";
+	public static final String XML_MAPPING_ATTRIBUTE = "mapping";
+	public static final String XML_MAPPING_URL_ATTRIBUTE = "mappingURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
 	private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
@@ -364,11 +363,11 @@ public class JsonExtract extends Node {
 
 	private void createReadableChannelIterator() throws ComponentNotReadyException {
 		TransformationGraph graph = getGraph();
-		URL projectURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
+		URL projectURL = getContextURL();
 
 		this.readableChannelIterator = new ReadableChannelIterator(getInputPort(INPUT_PORT), projectURL, inputFile);
 		this.readableChannelIterator.setCharset(charset);
-		this.readableChannelIterator.setPropertyRefResolver(graph != null ? new PropertyRefResolver(graph.getGraphProperties()) : null);
+		this.readableChannelIterator.setPropertyRefResolver(getPropertyRefResolver());
 		this.readableChannelIterator.setDictionary(graph.getDictionary());
 	}
 
@@ -444,10 +443,11 @@ public class JsonExtract extends Node {
 		}
 
 		if (charset != null && !Charset.isSupported(charset)) {
-			status.add(new ConfigurationProblem("Charset " + charset + " not supported!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+			status.add(new ConfigurationProblem("Charset " + charset + " not supported!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
 		}
 
 		TransformationGraph graph = getGraph();
+		URL contextURL = getContextURL();
 		// Check whether XML mapping schema is valid
 		try {
 			SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -456,9 +456,9 @@ public class JsonExtract extends Node {
 			InputSource is = null;
 			Document doc = null;
 			if (this.mappingURL != null) {
-				InputStream inputStream = FileUtils.getInputStream(graph != null ? graph.getRuntimeContext().getContextURL() : null, mappingURL);
+				InputStream inputStream = FileUtils.getInputStream(contextURL, mappingURL);
 				is = new InputSource(inputStream);
-				ReadableByteChannel ch = FileUtils.getReadableChannel(graph != null ? graph.getRuntimeContext().getContextURL() : null, mappingURL);
+				ReadableByteChannel ch = FileUtils.getReadableChannel(contextURL, mappingURL);
 				doc = XmlUtils.createDocumentFromChannel(ch);
 			} else if (this.mapping != null) {
 				// inlined mapping
@@ -508,7 +508,6 @@ public class JsonExtract extends Node {
 				createReadableChannelIterator();
 				this.readableChannelIterator.checkConfig();
 
-				URL contextURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
 				String fName = null;
 				Iterator<String> fit = readableChannelIterator.getFileIterator();
 				while (fit.hasNext()) {
@@ -560,11 +559,6 @@ public class JsonExtract extends Node {
 	private boolean isXMLAttribute(String attribute) {
 		return attribute.equals(XmlSaxParser.XML_ELEMENT) || attribute.equals(XmlSaxParser.XML_OUTPORT) || attribute.equals(XmlSaxParser.XML_PARENTKEY) || attribute.equals(XmlSaxParser.XML_GENERATEDKEY) || attribute.equals(XmlSaxParser.XML_XMLFIELDS) || attribute.equals(XmlSaxParser.XML_CLOVERFIELDS) || attribute.equals(XmlSaxParser.XML_SEQUENCEFIELD) || attribute.equals(XmlSaxParser.XML_SEQUENCEID) || attribute.equals(XmlSaxParser.XML_TEMPLATE_ID) || attribute.equals(XmlSaxParser.XML_TEMPLATE_REF) || attribute.equals(XmlSaxParser.XML_TEMPLATE_DEPTH) || attribute.equals(XML_SKIP_ROWS_ATTRIBUTE) || attribute.equals(XML_NUMRECORDS_ATTRIBUTE) || attribute.equals(XML_TRIM_ATTRIBUTE) || attribute.equals(XmlSaxParser.XML_USE_PARENT_RECORD) 
 				|| attribute.equals(XmlSaxParser.XML_IMPLICIT)|| attribute.equals(XmlSaxParser.XML_INPUTFIELD)|| attribute.equals(XmlSaxParser.XML_OUTPUTFIELD);
-	}
-
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
 	}
 
 	/**

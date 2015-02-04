@@ -81,7 +81,7 @@ public class PropertyRefResolver {
 	private final GraphParameters parameters;
 
 	/** the regex pattern used to find CTL expressions */
-	private final Pattern expressionPattern = Pattern.compile(Defaults.GraphProperties.EXPRESSION_PLACEHOLDER_REGEX);
+	private static final Pattern expressionPattern = Pattern.compile(Defaults.GraphProperties.EXPRESSION_PLACEHOLDER_REGEX);
 	/** the regex pattern used to find property references */
 	private static final Pattern propertyPattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX);
 
@@ -155,15 +155,15 @@ public class PropertyRefResolver {
 		return (authorityProxy != null) ? authorityProxy : ContextProvider.getAuthorityProxy();
 	}
 	
-	/**
-	 * @return properties used for resolving property references
-	 */
-	public Properties getProperties() {
-		return parameters.asProperties();
-	}
-
 	public GraphParameters getGraphParameters() {
 		return parameters;
+	}
+	
+	/**
+	 * Clears properties used by this resolver.
+	 */
+	public void clear() {
+		parameters.clear();
 	}
 	
 	/**
@@ -489,6 +489,27 @@ public class PropertyRefResolver {
 	}
 
 	/**
+	 * @param propertyName value of this property name is returned
+	 * @param refResFlag flag which is used by resolver
+	 * @return resolved value of given property name
+	 */
+	public String getResolvedPropertyValue(String propertyName, RefResFlag refResFlag) {
+		if (!StringUtils.isEmpty(propertyName)) {
+			StringBuilder propertyReference = new StringBuilder();
+			propertyReference.append("${").append(propertyName).append('}');
+			String propertyReferenceStr = propertyReference.toString();
+			String result = resolveRef(propertyReferenceStr, refResFlag);
+			if (!result.equals(propertyReferenceStr)) {
+				return result;
+			} else {
+				return null;
+			}
+		} else {
+			throw new IllegalArgumentException("empty property name");
+		}
+	}
+	
+	/**
 	 * Indicates if given string contains also property reference (that needs to be de-referenced)
 	 * @param value value to inspect
 	 * @return <code>true</code> if value contains reference to at least one property.
@@ -496,6 +517,30 @@ public class PropertyRefResolver {
 	public static boolean containsProperty(String value){
 		if (!StringUtils.isEmpty(value)) {
 			return propertyPattern.matcher(value).find();
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * @param value tested string
+	 * @return true if the given string is represents reference to property, for example "${abc}"; false otherwise 
+	 */
+	public static boolean isPropertyReference(String value){
+		if (!StringUtils.isEmpty(value)) {
+			return propertyPattern.matcher(value).matches();
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * @param value tested string
+	 * @return true if the given string represents CTL expression, for example "`today()`; false otherwise 
+	 */
+	public static boolean isCTLExpression(String value){
+		if (!StringUtils.isEmpty(value)) {
+			return expressionPattern.matcher(value).matches();
 		} else {
 			return false;
 		}

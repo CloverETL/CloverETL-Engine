@@ -21,9 +21,12 @@ package org.jetel.util;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,6 +37,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.PropertyRefResolver;
@@ -60,6 +64,8 @@ public class MultiFileReader {
     private static final String STD_IN = "-";
     private Log logger = defaultLogger;
 
+    
+    private List<MultiFileListener> listeners;
 	private Parser parser;
     private URL contextURL;
     private String fileURL;
@@ -186,6 +192,7 @@ public class MultiFileReader {
 					dataSource = FileUtils.getReadableChannel(contextURL, fName);
 				}
 				parser.setDataSource(dataSource);
+				notifyFileChangeListeners(dataSource);
 				
 				parser.setReleaseDataSource(closeLastStream = true);
 			} catch (Exception e) {
@@ -246,6 +253,18 @@ public class MultiFileReader {
         this.logger = logger;
     }
     
+    
+    /**
+     * Attempts to set next source to underlying data parser.
+     * Should be called only if standard MultiFileReader.getNext() can't be used forever reason
+     * 
+     * @return  true if next data source was successfully set
+     * @throws JetelException
+     */
+    public boolean setNextSource() throws JetelException{
+    	return nextSource();
+    }
+    
     private Object currentSource = null;
     
 	/**
@@ -295,6 +314,7 @@ public class MultiFileReader {
 				
 				iSource++;
 				parser.setDataSource(source);
+				notifyFileChangeListeners(source);
 				if (!channelIterator.isGraphDependentSource()) {
 					parser.setReleaseDataSource(!autoFilling.getFilename().equals(STD_IN));
 				}
@@ -343,42 +363,38 @@ public class MultiFileReader {
 	 * @throws JetelException 
 	 */
 	private void skip() throws JetelException {
-        try {
-        	// perform L3 skip
-    		if (skipL3Rows > 0) {
-    			parser.skip(skipL3Rows);
+    	// perform L3 skip
+		if (skipL3Rows > 0) {
+			parser.skip(skipL3Rows);
+		}
+		// perform per-source skip, skipped records are counted by L3 counter
+		int numSkippedSource = 0; // number of records skipped in this subsource to satisfy skip-per-source attribute 
+		if (skippedInSource < skipSourceRows) {
+			// perform per-source skip
+			int numSkipSource = skipSourceRows - skippedInSource;
+    		if (numL3Records >= 0 && numL3Records < numSkipSource) {
+    			// records for global skip in local file are limited by max number of records from local file
+    			numSkipSource = numL3Records;
     		}
-    		// perform per-source skip, skipped records are counted by L3 counter
-    		int numSkippedSource = 0; // number of records skipped in this subsource to satisfy skip-per-source attribute 
-    		if (skippedInSource < skipSourceRows) {
-    			// perform per-source skip
-    			int numSkipSource = skipSourceRows - skippedInSource;
-        		if (numL3Records >= 0 && numL3Records < numSkipSource) {
-        			// records for global skip in local file are limited by max number of records from local file
-        			numSkipSource = numL3Records;
-        		}
-        		numSkippedSource = parser.skip(numSkipSource);
-        		skippedInSource += numSkippedSource;
-        		autoFilling.incL3Counter(numSkippedSource);
-    		}
-    		// perform global skip, skipp records are counted by L3 counter and per-source counter
-    		if (skipped < skip) {
-    			int numSkipGlobal = skip - skipped;    			
-    			if (numL3Records >= 0 && numL3Records - numSkippedSource < numSkipGlobal) {    				
-    				numSkipGlobal = numL3Records - numSkippedSource;
-    			}
-    			if (numSourceRecords >= 0 && numSourceRecords - autoFilling.getSourceCounter() < numSkipGlobal) {
-    				// records for global skip in local file are limited by max number of records from local file
-    				numSkipGlobal = Math.min(numSkipGlobal, numSourceRecords - autoFilling.getSourceCounter());
-    			}
-    			int numSkippedGlobal = parser.skip(numSkipGlobal);
-    			skipped += numSkippedGlobal;
-    			autoFilling.incL3Counter(numSkippedGlobal);
-    			autoFilling.incSourceCounter(numSkippedGlobal);
-    		}
-        } catch (JetelException e) {
-            logger.error("An error occured while skipping records in file " + autoFilling.getFilename() + ", the file will be ignored", e);
-        }
+    		numSkippedSource = parser.skip(numSkipSource);
+    		skippedInSource += numSkippedSource;
+    		autoFilling.incL3Counter(numSkippedSource);
+		}
+		// perform global skip, skip records are counted by L3 counter and per-source counter
+		if (skipped < skip) {
+			int numSkipGlobal = skip - skipped;    			
+			if (numL3Records >= 0 && numL3Records - numSkippedSource < numSkipGlobal) {    				
+				numSkipGlobal = numL3Records - numSkippedSource;
+			}
+			if (numSourceRecords >= 0 && numSourceRecords - autoFilling.getSourceCounter() < numSkipGlobal) {
+				// records for global skip in local file are limited by max number of records from local file
+				numSkipGlobal = Math.min(numSkipGlobal, numSourceRecords - autoFilling.getSourceCounter());
+			}
+			int numSkippedGlobal = parser.skip(numSkipGlobal);
+			skipped += numSkippedGlobal;
+			autoFilling.incL3Counter(numSkippedGlobal);
+			autoFilling.incSourceCounter(numSkippedGlobal);
+		}
     }
 	
 	    
@@ -424,18 +440,28 @@ public class MultiFileReader {
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		// checks skip/numRecords
 		if (!checkRowAndPrepareSource()) {
+			channelIterator.blankRead(); // CLO-4577
 			return null;
 		}
 		
         //use parser to get next record
         DataRecord rec;
         try {
-        	while ((rec = parser.getNext(record)) == null && (nextL3Source() || nextSource()));
-        } catch(JetelException e) {
-            autoFilling.incGlobalCounter();
-            autoFilling.incSourceCounter();
-            autoFilling.incL3Counter();
-            throw e;
+            try {
+                while ((rec = parser.getNext(record)) == null && (nextL3Source() || nextSource()));
+            } catch(JetelException e) {
+                autoFilling.incGlobalCounter();
+                autoFilling.incSourceCounter();
+                autoFilling.incL3Counter();
+                throw e;
+            } 
+        } catch (RuntimeException ex) {
+        	try {
+				throw ex.getClass().getConstructor(RuntimeException.class).newInstance("Error when parsing source: " + channelIterator.getCurrentFileName(), ex);
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+					| InvocationTargetException | NoSuchMethodException | SecurityException e) {
+				throw ex;
+			}
         }
         autoFilling.setLastUsedAutoFillingFields(rec);
         
@@ -443,6 +469,43 @@ public class MultiFileReader {
         
         return rec;
 	}
+	
+	 public int getNextDirect(CloverBuffer targetBuffer) throws JetelException {
+		 	int success;
+		 	// checks skip/numRecords
+			if (!checkRowAndPrepareSource()) {
+				return 0;
+			}
+			
+	        //use parser to get next record
+	        try {
+	            try {
+	            	do{
+	            		success=parser.getNextDirect(targetBuffer);
+	            		if (success==-1) break;
+	            	}while ((success==0) && (nextL3Source() || nextSource()));
+	            } catch(JetelException e) {
+	                autoFilling.incGlobalCounter();
+	                autoFilling.incSourceCounter();
+	                autoFilling.incL3Counter();
+	                throw e;
+	            } 
+	        } catch (RuntimeException ex) {
+	        	try {
+					throw ex.getClass().getConstructor(RuntimeException.class).newInstance("Error when parsing source: " + channelIterator.getCurrentFileName(), ex);
+				} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+						| InvocationTargetException | NoSuchMethodException | SecurityException e) {
+					throw ex;
+				}
+	        }
+	        // no autofilling with direct buffer
+	        // autoFilling.setLastUsedAutoFillingFields(rec);
+	        autoFilling.incCounters();
+	        
+	        if (success==0) channelIterator.blankRead();
+	        
+	        return success;
+	 }
 	
 	public String getSourceName() {
 		return channelIterator.getCurrentFileName();
@@ -463,10 +526,19 @@ public class MultiFileReader {
         //use parser to get next record
         DataRecord rec;
         try {
-            while((rec = parser.getNext()) == null && nextSource());
-        } catch(JetelException e) {
-            autoFilling.incGlobalCounter();
-            throw e;
+            try {
+                while((rec = parser.getNext()) == null && nextSource());
+            } catch(JetelException e) {
+                autoFilling.incGlobalCounter();
+                throw e;
+            }
+        } catch (RuntimeException ex) {
+        	try {
+				throw ex.getClass().getConstructor(RuntimeException.class).newInstance("Error when parsing source: " + channelIterator.getCurrentFileName(), ex);
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+					| InvocationTargetException | NoSuchMethodException | SecurityException e) {
+				throw ex;
+			}
         }
         autoFilling.setAutoFillingFields(rec);
         
@@ -475,6 +547,16 @@ public class MultiFileReader {
         return rec;
 	}		
 
+	
+	/**
+	 * Checks whether wrapped parser supports direct reading to CloverBuffer
+	 * 
+	 * @return true if direct reading supported
+	 */
+	public boolean isDirectReadingSupported() {
+		return parser.isDirectReadingSupported();
+	}
+	
 	private final void initializeDataDependentSource() throws JetelException {
         if (initializeDataDependentSource) {
         	noInputFile = !nextSource();
@@ -531,7 +613,7 @@ public class MultiFileReader {
 		autoFilling.reset();
 		iSource = -1;
 
-		channelIterator.reset();
+		// channelIterator.reset(); // CLO-5399
 		skipped = 0;
         try {
     		incrementalReading.reset();
@@ -585,4 +667,26 @@ public class MultiFileReader {
     public void setPropertyRefResolver(PropertyRefResolver propertyRefResolve) {
     	this.propertyRefResolve = propertyRefResolve;
     }
+    
+    /**
+     * Adds reference to listener for change in DataSource - invoked
+     * after calling Parser.setDataSource();
+     * 
+     * @param toAdd	class implementing MultiFileListener
+     */
+    public void addFileChangeListener(MultiFileListener toAdd) {
+        if (listeners==null){
+        	listeners=new ArrayList<MultiFileListener>();
+        }
+    	listeners.add(toAdd);
+    }
+    
+    private void notifyFileChangeListeners(Object newFile) {
+    	if (listeners!=null){
+    		for(MultiFileListener listener: listeners){
+    			listener.fileChanged(newFile);
+    		}
+    	}
+    }
+    
 }

@@ -88,6 +88,19 @@ class JavaDateFormatter implements DateFormatter {
 	                position.getErrorIndex());
 		return date;
 	}
+	
+	@Override
+	public Date parseDateStrict(String value) {
+		position.setIndex(0);
+		final Date date=dateFormat.parse(value,position);
+		if (position.getIndex()==0)
+			throw new IllegalArgumentException("Unparseable date: \"" + value + "\" at position "+
+			        position.getErrorIndex());
+		if (position.getIndex() != value.length()) {
+			throw new IllegalArgumentException("Invalid string \"" + value.substring(position.getIndex()) + "\" at the end of the parsed value");
+		}
+		return date;
+	}
 
 	@Override
 	public long parseMillis(String value) {

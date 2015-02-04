@@ -29,7 +29,8 @@ import org.jetel.util.string.StringUtils;
 public enum DataFieldFormatType {
 	JAVA("java", "Default system date/time/number format"),
 	JODA("joda", "Joda date/time format"),
-	EXCEL("excel", "Excel number/date/time format "),
+	ISO_8601("iso-8601", "ISO-8601 date/time format"),
+	EXCEL("excel", "Excel number/date/time format"),
 	BINARY("binary", "Binary format");
 
 	public static final DataFieldFormatType DEFAULT_FORMAT_TYPE = JAVA;

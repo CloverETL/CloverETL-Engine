@@ -23,22 +23,30 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.StackTraceWrapperException;
 import org.jetel.exception.TempFileCreationException;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.Edge;
+import org.jetel.graph.EdgeBase;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
+import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.dictionary.DictionaryValuesContainer;
@@ -46,7 +54,6 @@ import org.jetel.graph.runtime.jmx.GraphTracking;
 import org.jetel.graph.runtime.jmx.TrackingEvent;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.FileConstrains;
-import org.jetel.util.bytes.SeekableByteChannel;
 import org.jetel.util.file.WcardPattern;
 import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.string.StringUtils;
@@ -58,6 +65,9 @@ import org.jetel.util.string.StringUtils;
  * @created Jul 11, 2008
  */
 public abstract class IAuthorityProxy {
+
+	protected final static Log logger = LogFactory.getLog(IAuthorityProxy.class);
+	
 	/* This authority proxy is available all the time. */
 	private static IAuthorityProxy defaultProxy;
 	
@@ -117,6 +127,7 @@ public abstract class IAuthorityProxy {
 		public GraphTracking tracking;
 		public JobType jobType;
 		public String executionGroup;
+		public String executionLabel;
 		
 		@Override
 		public String toString() {
@@ -153,13 +164,21 @@ public abstract class IAuthorityProxy {
 		
 		public RuntimeException getException() {
 			if (status.code() < 0 || status == Result.N_A) {
-				return new JetelRuntimeException("Job " + jobUrl + (runId > 0 ? ("(#" + runId + ")") : "") + " finished with final status " + status + ".",
+				return new JetelRuntimeException(getJobLabel() + " " + jobUrl + (runId > 0 ? ("(#" + runId + ")") : "") + " finished with final status " + status + ".",
 						new StackTraceWrapperException(errMessage, errException));
 			} else {
 				return null;
 			}
 		}
 
+		private String getJobLabel() {
+			if (jobType != null) {
+				return jobType.getLabel();
+			} else {
+				return "Job";
+			}
+		}
+		
 		/**
 		 * Sets {@link #errMessage} and {@link #errException} based on given {@link Exception}.
 		 */
@@ -291,6 +310,11 @@ public abstract class IAuthorityProxy {
 	public abstract RunStatus executeProfilerJobAsync(String profilerJobUrl, GraphRuntimeContext runtimeContext);
 	
 	public abstract RunStatus executeProfilerJobSync(String profilerJobUrl, GraphRuntimeContext runtimeContext, Long timeout);
+	
+	/**
+	 * Checks whether profiler database to store profiler results is available.
+	 */
+	public abstract boolean isProfilerResultsDataSourceSupported();
 
 	public abstract DataSource getProfilerResultsDataSource();
 	
@@ -422,38 +446,20 @@ public abstract class IAuthorityProxy {
 	public abstract long getRemoteEdgeRunId(String edgeId);
 
 	/**
-	 * Returns {@link OutputStream} where the parent graph can sent data records to a sub-graph.
-	 * @see SubGraph component
-	 * @param subGraphRunId runId of addressed sub-graph
-	 * @param inputPortIndex index of virtual remote port
-	 * @return stream where serialised data records can be written
+	 * SubgraphInput component uses this method to get {@link EdgeBase} from 
+	 * parent graph, which is shared between parent graph and subgraph.
+	 * @param inputPortIndex
+	 * @return edge from parent graph
 	 */
-	public abstract OutputStream getSubGraphDataTarget(long subGraphRunId, int inputPortIndex) throws InterruptedException;
+	public abstract Edge getParentGraphSourceEdge(int inputPortIndex);
 
 	/**
-	 * Returns {@link InputStream} where the parent graph can get data records from a sub-graph.
-	 * @see SubGraph component
-	 * @param subGraphRunId runId of addressed sub-graph
-	 * @param outputPortIndex index of virtual remote port
-	 * @return stream where serialised data records can be read
+	 * SubgraphOutput component uses this method to get {@link EdgeBase} from 
+	 * parent graph, which is shared between parent graph and subgraph.
+	 * @param inputPortIndex
+	 * @return edge from parent graph
 	 */
-	public abstract InputStream getSubGraphDataSource(long subGraphRunId, int outputPortIndex) throws InterruptedException;
-
-	/**
-	 * Returns {@link InputStream} where a sub-graph can get data records from parent graph.
-	 * @see SubGraphInput component
-	 * @param inputPortIndex index of virtual remote port
-	 * @return stream where serialised data records can be read
-	 */
-	public abstract InputStream getParentGraphDataSource(int inputPortIndex) throws InterruptedException;
-
-	/**
-	 * Returns {@link OutputStream} where a sub-graph can sent data records to parent graph.
-	 * @see SubGraphOutput component
-	 * @param outputPortIndex index of virtual remote port
-	 * @return stream where serialised data records can be written
-	 */
-	public abstract OutputStream getParentGraphDataTarget(int outputPortIndex) throws InterruptedException;
+	public abstract Edge getParentGraphTargetEdge(int outputPortIndex);
 
 	/**
 	 * Assigns proper portion of a file to current cluster node. It is used mainly by ParallelReader,
@@ -536,6 +542,43 @@ public abstract class IAuthorityProxy {
 		return newTempFile(label, null, allocationHint);
 	}
 	
+	protected void logNewTempFile(File newTempFile) {
+		Node component = ContextProvider.getNode();
+		TransformationGraph graph = ContextProvider.getGraph();
+		if (component != null && graph != null) {
+			logger.trace("Component " + component + " from graph " + graph + " acquires new temporary file " + newTempFile);
+		} else if (graph != null) {
+			logger.trace("Graph " + graph + " acquires new temporary file " + newTempFile);
+		} else {
+			logger.trace("New temporary file created " + newTempFile);
+		}
+	}
+	
+	/**
+	 * Takes given label and adds information about current runId and componentId.
+	 * This can be used by newTemp*() methods to create better temporary file name.
+	 * The result has following pattern:
+	 * <label>_runId_<runId>_componentId_<componentId>
+	 */
+	protected String decorateTempFileLabel(String label) {
+		StringBuilder result = new StringBuilder(label);
+		
+		//attach runId to file name
+		GraphRuntimeContext runtimeContext = ContextProvider.getRuntimeContext();
+		if (runtimeContext != null) {
+			result.append("_runId_");
+			result.append(runtimeContext.getRunId());
+		}
+		//attach componentId to file name
+		String componentId = ContextProvider.getComponentId();
+		if (!StringUtils.isEmpty(componentId)) {
+			result.append("_componentId_");
+			result.append(componentId);
+		}
+		
+		return result.toString();
+	}
+
 	/**
 	 * Returns new temporary file without custom label being part of its name. If more locations are present, random is
 	 * chosen. For more details see {@link #newTempFile(String, int)}.
@@ -552,6 +595,12 @@ public abstract class IAuthorityProxy {
 	public abstract ClassLoader getClassLoader(URL[] urls, ClassLoader parent, boolean greedy);
 
 	public abstract ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy);
+
+	/**
+	 * Creates new classloader with multiple parent classloaders.
+	 * @return multi-parent classloader based on the given parent classloaders
+	 */
+	public abstract ClassLoader createMultiParentClassLoader(ClassLoader... parents);
 	
 	public abstract boolean isClusterEnabled();
 	
@@ -562,20 +611,21 @@ public abstract class IAuthorityProxy {
 	 */
 	public String getSecureParamater(String parameterName, String parameterValue) {
 		//no secure storage is implemented in default authority proxy
-		return null;
+		throw new JetelRuntimeException("Secure parameters are supported only in CloverETL Server environment.");
 	}
 
 	/**
-	 * Backward operation for secure parameter resolution. All occurrences
-	 * of sensitive values in the given text should be substituted
-	 * by secure parameter reference - ${SECURE_PARAMETER_NAME}.
-	 * The authority proxy should cache all already resolved secure parameters
-	 * and only these secure parameters should be considered in this obfuscation.
-	 * @param text text which should be obfuscated
-	 * @return obfuscated text
+	 * @return meta information about runtime authority
 	 */
-	public String obfuscateSecureParameters(String text) {
-		return text;
-	}
-
+	public abstract Map<String, String> getAuthorityConfiguration();
+	
+	/**
+	 * Token ID sequence is shared among complete jobflow hierarchy.
+	 * For example token created in subgraph/subjobflow must share token ID
+	 * sequence to keep token flow monitoring understandable.
+	 * 
+	 * @return next token ID from parent jobflow
+	 */
+	public abstract long getNextTokenIdFromParentJob();
+	
 }

@@ -38,7 +38,7 @@ import org.jetel.graph.InputPort;
  * 
  * @created 20 Dec 2010
  */
-class StreamedPortData extends PortData {
+class StreamedPortData extends StreamedPortDataBase {
 	
 	private int[] sortKeys;
 	private String[] sortKeysString;
@@ -109,15 +109,6 @@ class StreamedPortData extends PortData {
 		} else {
 			return new KeyDataIterator(key, parentKey, keyData, nextKeyData);
 		}
-	}
-
-	@Override
-	public boolean readInputPort() {
-		return false;
-	}
-
-	@Override
-	public void put(DataRecord record) {
 	}
 
 	private void checkOrder() throws IOException {
@@ -317,6 +308,9 @@ class StreamedPortData extends PortData {
 		}
 	}
 
+	/**
+	 * TODO refactor this class so that it extends same-named inner class from parent class.
+	 */
 	private class SimpleDataIterator implements DataIterator {
 
 		private boolean dataAvailable = true;

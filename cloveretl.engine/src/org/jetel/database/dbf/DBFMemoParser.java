@@ -25,20 +25,21 @@ import java.net.URL;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.Charset;
 
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.StringDataField;
-import org.jetel.util.bytes.FileSeekableByteChannel;
-import org.jetel.util.bytes.SeekableByteChannel;
 import org.jetel.util.file.FileUtils;
 
 /**
  * Utility class for parsing data from DBF memo file - various types -FoxPro, DBaseIII, DBaseIV.
  * Does not extend from AbstractParser thus can not be used in standard reader. A special component is used.<br>
  * Structure info from http://www.cs.cmu.edu/~varun/cs315p/xbase.txt.
+ * 
+ * Further information is available at https://wiki.javlin.eu/pages/viewpage.action?pageId=4883082
  * 
  * @author dpavlis (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -77,7 +78,7 @@ public class DBFMemoParser {
 		if (stream instanceof SeekableByteChannel) {
 			file = (SeekableByteChannel) stream;
 		} else if (stream instanceof FileInputStream) {
-			file = new FileSeekableByteChannel(((FileInputStream) stream).getChannel());
+			file = ((FileInputStream) stream).getChannel();
 		} else {
 			throw new IOException("Input file " + fileURL + " is not a regular file or a seekable stream !");
 		}

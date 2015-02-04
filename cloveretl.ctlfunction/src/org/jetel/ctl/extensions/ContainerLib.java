@@ -21,7 +21,10 @@ package org.jetel.ctl.extensions;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,7 +53,10 @@ public class ContainerLib extends TLFunctionLibrary {
     		"containsAll".equals(functionName) ? new ContainsAllFunction() :
     		"containsKey".equals(functionName) ? new ContainsKeyFunction() :
     		"containsValue".equals(functionName) ? new ContainsValueFunction() : 
-    		"getKeys".equals(functionName) ? new GetKeysFunction() : null;
+        	"binarySearch".equals(functionName) ? new BinarySearchFunction() : 
+    		"getKeys".equals(functionName) ? new GetKeysFunction() :
+    		"getValues".equals(functionName) ? new GetValuesFunction() :
+    		"toMap".equals(functionName) ? new ToMapFunction() : null;
 
     	if (ret == null) {
     		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
@@ -239,10 +245,28 @@ public class ContainerLib extends TLFunctionLibrary {
 		
 	}
 
+	private static class MyComparator<T extends Comparable<T>> implements Comparator<T> {
+
+		@Override
+		public int compare(T o1, T o2) {
+			if (o1 == o2) {
+				return 0;
+			}
+			if (o1 == null) {
+				return 1;
+			}
+			if (o2 == null) {
+				return -1;
+			}
+			return o1.compareTo(o2);
+		}
+		
+	};
+	
 	// all CTL types are comparable so this will work in runtime
 	@TLFunctionAnnotation("Sorts elements contained in list - ascending order.")
 	public static final <E extends Comparable<E>> List<E> sort(TLFunctionCallContext context, List<E> list) { 
-		Collections.sort(list);
+		Collections.sort(list, new MyComparator<E>());
 		return list;
 	}
 	class SortFunction implements TLFunctionPrototype{
@@ -439,6 +463,12 @@ public class ContainerLib extends TLFunctionLibrary {
 	public static final <K, V> boolean containsValue(TLFunctionCallContext context, Map<K, V> map, V value) {
 		return map.containsValue(value);
 	}
+	
+	@TLFunctionAnnotation("Checks if a list contains a specified value.")
+	public static final <V> boolean containsValue(TLFunctionCallContext context, List<V> list, V value) {
+		return list.contains(value);
+	}
+	
 	class ContainsValueFunction implements TLFunctionPrototype{
 		
 		@Override
@@ -447,11 +477,41 @@ public class ContainerLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			if (context.getParams()[0].isMap()) {
+			TLType type=context.getParams()[0];
+			if (type.isMap()) {
 				Object value = stack.pop();
 				Map<Object, Object> map = stack.popMap();
 				stack.push(containsValue(context, map, value));
+			}else if (type.isList()){
+				Object value = stack.pop();
+				List<Object> list = stack.popList();
+				stack.push(containsValue(context, list, value));
 			}
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	@TLFunctionAnnotation("Searches a list for the specified value. The list must be sorted in ascending order.")
+	public static final <V> Integer binarySearch(TLFunctionCallContext context, List<V> list, V value) {
+		if (value == null) {
+			throw new NullPointerException("value is null");
+		} else if (!(value instanceof Comparable)) {
+			throw new IllegalArgumentException("value is not comparable");
+		}
+		return Collections.binarySearch(((List<? extends Comparable<? super V>>) list), value);
+	}
+	
+	class BinarySearchFunction implements TLFunctionPrototype{
+		
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			Object value = stack.pop();
+			List<Object> list = stack.popList();
+			stack.push(binarySearch(context, list, value));
 		}
 	}
 	
@@ -470,6 +530,67 @@ public class ContainerLib extends TLFunctionLibrary {
 			if (context.getParams()[0].isMap()) {
 				Map<Object, Object> map = stack.popMap();
 				stack.push(getKeys(context, map));
+			}
+		}
+	}
+	
+	@TLFunctionAnnotation("Returns the values of the map.")
+	public static final <K, V> List<V> getValues(TLFunctionCallContext context, Map<K, V> map) {
+		return new ArrayList<V>(map.values());
+	}
+	class GetValuesFunction implements TLFunctionPrototype{
+		
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[0].isMap()) {
+				Map<Object, Object> map = stack.popMap();
+				stack.push(getValues(context, map));
+			}
+		}
+	}
+	
+	@TLFunctionAnnotation("Converts input list to map where list items become map's keys, all values are the same constant.")
+	public static final <K, V> Map<K,V> toMap(TLFunctionCallContext context, List<K> keys, V constant) {
+		Map <K,V> map = new LinkedHashMap<K,V>(keys.size());
+		for(K key: keys){
+			map.put(key, constant);
+		}
+		return map;
+		
+	}
+	
+	@TLFunctionAnnotation("Converts two input lists to map where first list items become map's keys and second list corresponding values.")
+	public static final <K, V> Map<K,V> toMap(TLFunctionCallContext context, List<K> keys, List<V> values) {
+		Map <K,V> map = new LinkedHashMap<K,V>(keys.size());
+		Iterator<V> iter = values.iterator();
+		if (keys.size()!=values.size()){
+			throw new IllegalArgumentException("Keys list does not match values list in size.");
+		}
+		for(K key: keys){
+			map.put(key, iter.next());
+		}
+		return map;
+		
+	}
+	
+	class ToMapFunction implements TLFunctionPrototype{
+		
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[1].isList()) {
+				List<Object> values = stack.popList();
+				stack.push(toMap(context, stack.popList(), values));
+			}else{
+				Object constant = stack.pop();
+				stack.push(toMap(context, stack.popList(), constant));
 			}
 		}
 	}

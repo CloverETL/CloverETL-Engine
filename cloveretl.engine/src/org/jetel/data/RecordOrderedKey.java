@@ -227,7 +227,7 @@ public class RecordOrderedKey extends RecordKey {
 		        if (!keyOrderings[i]) // Descending order
 		        	compResult = -compResult;
 		        if (compResult != 0) {
-		            if (!(record1.getField(keyFields[i]).isNull&&record2.getField(keyFields[i]).isNull)){
+		            if (!(record1.getField(keyFields[i]).isNull() && record2.getField(keyFields[i]).isNull())) {
 		                return compResult;
 		            }
 		        }
@@ -282,7 +282,7 @@ public class RecordOrderedKey extends RecordKey {
 		        	compResult = -compResult;
 		        }
 		        if (compResult != 0) {
-		            if (!(record1.getField(keyFields[i]).isNull&&record2.getField(keyFields[i]).isNull)){
+		            if (!(record1.getField(keyFields[i]).isNull() && record2.getField(keyFields[i]).isNull())) {
 		                return compResult;
 		            }
 		        }

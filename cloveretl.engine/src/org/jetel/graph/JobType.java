@@ -35,28 +35,56 @@ import org.jetel.util.string.StringUtils;
 public enum JobType {
 
 	/** This type represents regular ETL graphs */
-	ETL_GRAPH("etlGraph", FileType.ETL_GRAPH),
+	ETL_GRAPH("etlGraph", "Graph", FileType.ETL_GRAPH),
 	/** This type represents jobflows */
-	JOBFLOW("jobflow", FileType.JOBFLOW),
-	PROFILER_JOB("profilerJob", FileType.PROFILER_JOB);
+	JOBFLOW("jobflow", "Jobflow", FileType.JOBFLOW),
+	PROFILER_JOB("profilerJob", "Profiler job", FileType.PROFILER_JOB),
+	SUBGRAPH("subgraph", "Subgraph", FileType.SUBGRAPH, ETL_GRAPH),
+	SUBJOBFLOW("subjobflow", "Subjobflow", FileType.SUBJOBFLOW, JOBFLOW);
 
 	/** This type is used in case the type is not specified in different way. */
 	public static final JobType DEFAULT = ETL_GRAPH;
 
 	private String id;
 	
+	private String label;
+	
 	/** Associated file type. */
 	private FileType fileType;
 	
-	private JobType(String id, FileType fileType) {
+	private JobType parent;
+	
+	private JobType(String id, String label, FileType fileType) {
 		this.id = id;
+		this.label = label;
 		this.fileType = fileType;
-		
+	}
+
+	private JobType(String id, String label, FileType fileType, JobType parent) {
+		this(id, label, fileType);
+		this.parent = parent;
+	}
+
+	public String getId() {
+		return id;
+	}
+	
+	/** 
+	 * Getter which returns response of name() method. 
+	 * This getter is useful when the JobType is used as placeholder 
+	 * and we must explicitly specify that it should return name() not toString() 
+	 * - e.g. JSF may sometimes call toString() in some cases instead of name(). */ 
+	public String getName() {
+		return this.name();
+	}
+	
+	public String getLabel() {
+		return label;
 	}
 	
 	@Override
 	public String toString() {
-		return id;
+		return name();
 	}
 	
 	/**
@@ -64,6 +92,51 @@ public enum JobType {
 	 */
 	public FileType getFileType() {
 		return fileType;
+	}
+	
+	/**
+	 * Returns <code>true</code> if the current job type
+	 * is a sub-type of the given job type (or the type itself).
+	 * 
+	 * @param parentType
+	 * @return
+	 */
+	public boolean isSubTypeOf(JobType parentType) {
+		return (this == parentType) || ((parent != null) && parent.isSubTypeOf(parentType));
+	}
+	
+	/**
+	 * Returns <code>true</code> if the current job type
+	 * is {@link #ETL_GRAPH} or {@link #SUBGRAPH}.
+	 * 
+	 * @return <code>true</code> for {@link #ETL_GRAPH} or {@link #SUBGRAPH}
+	 */
+	public boolean isGraph() {
+		return this.isSubTypeOf(ETL_GRAPH);
+	}
+	
+	/**
+	 * Returns <code>true</code> if the current job type
+	 * is {@link #JOBFLOW} or {@link #SUBJOBFLOW}.
+	 * 
+	 * @return <code>true</code> for {@link #JOBFLOW} or {@link #SUBJOBFLOW}
+	 */
+	public boolean isJobflow() {
+		return this.isSubTypeOf(JOBFLOW);
+	}
+	
+	/**
+	 * Returns <code>true</code> if the current job type
+	 * is {@link #PROFILER_JOB}.
+	 * 
+	 * @return <code>true</code> for {@link #PROFILER_JOB}
+	 */
+	public boolean isProfilerJob() {
+		return this.isSubTypeOf(PROFILER_JOB);
+	}
+	
+	public JobType getBaseType() {
+		return (parent == null) ? this : parent.getBaseType();
 	}
 
 	/**
@@ -74,7 +147,7 @@ public enum JobType {
 			return DEFAULT;
 		}
 		for (JobType jobType : values()) {
-			if (jobTypeId.equals(jobType.id)) {
+			if (jobTypeId.equals(jobType.id) || jobTypeId.equals(jobType.name())) {
 				return jobType;
 			}
 		}
@@ -82,7 +155,9 @@ public enum JobType {
 	}
 	
 	/**
-	 * Detection of job type based on file name of graph or jobflow.
+	 * Detection of job type based on file name.
+	 * For example, for *.grf is returned {@link #ETL_GRAPH}
+	 * and for *.sgrf is returned {@link #SUBGRAPH}.
 	 */
 	public static JobType fromFileName(String fileName) {
 		if (StringUtils.isEmpty(fileName)) {
@@ -96,5 +171,38 @@ public enum JobType {
 		}
 		throw new IllegalArgumentException("unknown job type associated with file name " + fileName);
 	}
+
+	/**
+	 * This is identical with {@link #fromFileName(String)#getBaseType()}.
+	 * For example, for both *.grf and *.sgrf is returned {@link #ETL_GRAPH}.
+	 * 
+	 * @param fileName
+	 * @return base job type of job type derived from file name
+	 */
+	public static JobType baseTypeFromFileName(String fileName) {
+		return fromFileName(fileName).getBaseType();
+	}
 	
+	/**
+	 * Detection of job type based on file name extension.
+	 */
+	public static JobType fromFileExtension(String fileExtension) {
+		if (StringUtils.isEmpty(fileExtension)) {
+			return DEFAULT;
+		}
+		for (JobType jobType : values()) {
+			if (fileExtension.equalsIgnoreCase(jobType.fileType.getExtension())) {
+				return jobType;
+			}
+		}
+		throw new IllegalArgumentException("unknown job type associated with file extension " + fileExtension);
+	}
+
+	/**
+	 * @return true for {@link JobType#SUBGRAPH} and {@link JobType#SUBJOBFLOW}; false otherwise
+	 */
+	public boolean isSubJob() {
+		return parent != null;
+	}
+
 }

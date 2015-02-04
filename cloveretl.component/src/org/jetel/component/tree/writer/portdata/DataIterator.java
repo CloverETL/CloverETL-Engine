@@ -32,7 +32,7 @@ import org.jetel.data.DataRecord;
  */
 public interface DataIterator {
 
-	public boolean hasNext();
+	public boolean hasNext() throws IOException;
 	public DataRecord peek();
 	public DataRecord next() throws IOException;
 

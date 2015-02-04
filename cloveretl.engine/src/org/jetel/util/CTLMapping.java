@@ -34,6 +34,10 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
+import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.MissingFieldException;
 import org.jetel.exception.TransformException;
@@ -160,6 +164,22 @@ public class CTLMapping {
 	private Set<Field> usedOutputFields = null;
 	
 	/**
+	 * Before transform is executed, default values will be copied to output records
+	 */
+	private boolean outputSetDefaults = true;
+	
+	/**
+	 * Messages which should be used in case of missing an record field.
+	 */
+	private MissingRecordFieldMessage[] missingFieldChecks;
+	
+	/**
+	 * Name of component attribute in which this mapping is defined.
+	 * Error reporting purpose.  
+	 */
+	private String attributeName;
+	
+	/**
 	 * Only constructor
 	 * @param name name of CTL mapping used mainly for reporting purposes
 	 * @param component associated component used mainly for CTL mapping compilation
@@ -204,12 +224,13 @@ public class CTLMapping {
 	 * @param name identifier of the input record
 	 * @param inputRecord input record to be registered
 	 */
-	public void addInputRecord(String name, DataRecord inputRecord) {
+	public DataRecord addInputRecord(String name, DataRecord inputRecord) {
 		if (inputRecordsMap.containsKey(name)) {
 			throw new IllegalArgumentException("input name already used");
 		}
 		inputRecordsMap.put(name, inputRecord);
 		inputRecordsList.add(inputRecord);
+		return inputRecord;
 	}
 	
 	/**
@@ -340,6 +361,15 @@ public class CTLMapping {
 	}
 	
 	/**
+	 * By default, output records will be filled with default values taken from the output record used in initialization.
+	 * 
+	 * @param outputSetDefaults Setting this to false will disable this behavior - no default values will be set.
+	 */
+	public void setOutputSetDefaults(boolean outputSetDefaults) {
+		this.outputSetDefaults = outputSetDefaults;
+	}
+	
+	/**
 	 * Sets CTL transformation backed by this mapping.
 	 * @param sourceCode
 	 */
@@ -388,20 +418,64 @@ public class CTLMapping {
 		
 	}
 	
+	private RecordTransform createTransform(String xmlAttribute) throws ComponentNotReadyException {
+		try {
+        	TransformFactory<RecordTransform> transformFactory = getTransformFactory(xmlAttribute);
+        	return transformFactory.createTransform();
+		} catch (MissingFieldException mfe) {
+			throw handleMissingFieldException(mfe);
+		} catch (Exception e) {
+			throw new JetelRuntimeException(name + " is invalid.", e);
+		}
+	}
+	
 	/**
-	 * CTL mapping initialization can be called only once. Output records content at the time is considered as default output.
+	 * CLO-2500:
 	 * 
-	 * @param xmlAttribute name of the attribute that contains the source of the transformation
-	 * @param missingFieldChecks error messages for individual input and output records
-	 * 
-	 * @see MissingRecordFieldMessage
+	 * @param status 				- optional, pass <code>null</code> if executed from <code>init()</code>
+	 * @param xmlAttribute			- name of the source attribute
+	 * @param missingFieldChecks	- alternative messages for missing fields
 	 * 
 	 * @throws ComponentNotReadyException
+	 * @see <a href="https://bug.javlin.eu/browse/CLO-2500">CLO-2500</a>
 	 */
-	public void init(String xmlAttribute, MissingRecordFieldMessage... missingFieldChecks) throws ComponentNotReadyException {
-		assert (!isInitialized);
-		isInitialized = true;
+	public void init(ConfigurationStatus status, String xmlAttribute, MissingRecordFieldMessage... missingFieldChecks) throws ComponentNotReadyException {
+		if (status != null) {
+			checkConfig(status, xmlAttribute, missingFieldChecks);
+		} else {
+			init(xmlAttribute, missingFieldChecks);
+		}
+	}
+	
+	public void checkConfig(ConfigurationStatus status, String xmlAttribute, MissingRecordFieldMessage... missingFieldChecks) throws ComponentNotReadyException {
+		this.missingFieldChecks = missingFieldChecks;
+		this.attributeName = xmlAttribute;
+
+		initMetadata();
 		
+		initUsedOutputFields();
+		
+		if (!StringUtils.isEmpty(sourceCode)) {
+			try {
+				createTransform(xmlAttribute);
+			} catch (JetelRuntimeException e) {
+				// report CTL error as a warning
+				status.add(new ConfigurationProblem(e, Severity.WARNING, component, Priority.NORMAL, attributeName));
+			}
+		}
+	}
+	
+	public TransformFactory<RecordTransform> getTransformFactory(String xmlAttribute) {
+    	TransformFactory<RecordTransform> transformFactory = TransformFactory.createTransformFactory(RecordTransformDescriptor.newInstance());
+    	transformFactory.setAttributeName(xmlAttribute);
+    	transformFactory.setTransform(sourceCode);
+    	transformFactory.setComponent(component);
+    	transformFactory.setInMetadata(inputRecordsMetadata);
+    	transformFactory.setOutMetadata(outputRecordsMetadata);
+    	return transformFactory;
+	}
+	
+	private void initMetadata() {
 		inputRecordsArray = new DataRecord[inputRecordsList.size()];
 		inputRecordsArray = inputRecordsList.toArray(inputRecordsArray);
 
@@ -418,46 +492,45 @@ public class CTLMapping {
 		inputRecordsMetadata = MiscUtils.extractMetadata(inputRecordsArray);
 		outputRecordsMetadata = MiscUtils.extractMetadata(outputRecordsArray);
 		
+	}
+	
+	/**
+	 * CTL mapping initialization can be called only once. Output records content at the time is considered as default output.
+	 * 
+	 * @param xmlAttribute name of the attribute that contains the source of the transformation
+	 * @param missingFieldChecks error messages for individual input and output records
+	 * 
+	 * @see MissingRecordFieldMessage
+	 * 
+	 * @throws ComponentNotReadyException
+	 */
+	public void init(String xmlAttribute, MissingRecordFieldMessage... missingFieldChecks) throws ComponentNotReadyException {
+		assert (!isInitialized);
+		isInitialized = true;
+		
+		this.missingFieldChecks = missingFieldChecks;
+		this.attributeName = xmlAttribute;
+		
+		initMetadata();
+		
+		initUsedOutputFields();
+		
 		//create CTL transformation
         if (!StringUtils.isEmpty(sourceCode)) {
-			try {
-	        	TransformFactory<RecordTransform> transformFactory = TransformFactory.createTransformFactory(RecordTransformDescriptor.newInstance());
-	        	transformFactory.setTransform(sourceCode);
-	        	transformFactory.setComponent(component);
-	        	transformFactory.setInMetadata(inputRecordsMetadata);
-	        	transformFactory.setOutMetadata(outputRecordsMetadata);
-	        	ctlTransformation = transformFactory.createTransform();
-			} catch (MissingFieldException mfe) {
-				if (mfe.isOutput()) {
-					DataRecord record = getOutputRecord(mfe.getRecordId());
-					for (MissingRecordFieldMessage check : missingFieldChecks) {
-						if (check.output && (record == getOutputRecord(check.recordName))) {
-							Object[] messageArgs = new Object[] { mfe.getFieldName() };
-							throw new ComponentNotReadyException(component, xmlAttribute, MessageFormat.format(check.errorMessage, messageArgs));
-						}
-					}
-				} else {
-					DataRecord record = getInputRecord(mfe.getRecordId());
-					for (MissingRecordFieldMessage check : missingFieldChecks) {
-						if (!check.output && (record == getInputRecord(check.recordName))) {
-							Object[] messageArgs = new Object[] { mfe.getFieldName() };
-							throw new ComponentNotReadyException(component, xmlAttribute, MessageFormat.format(check.errorMessage, messageArgs));
-						}
-					}
-				}
-				throw new ComponentNotReadyException(component, xmlAttribute, mfe);
-			} catch (Exception e) {
-				throw new JetelRuntimeException(name + " is invalid.", e);
-			}
+        	ctlTransformation = createTransform(xmlAttribute);
 			try {
 				// initialise mapping
 		        if (!ctlTransformation.init(null, inputRecordsMetadata, outputRecordsMetadata)) {
-		            throw new ComponentNotReadyException(name + " initialization was unsuccessful.");
+		            throw new ComponentNotReadyException(name + " initialization was unsuccessful.", xmlAttribute);
 		        }
 			} catch (Exception e) {
 				throw new JetelRuntimeException(name + " initialization failed.", e);
 			}
-			
+        }
+	}
+	
+	private void initUsedOutputFields() {
+        if (!StringUtils.isEmpty(sourceCode)) {
 			usedOutputFields = CTLTransformUtils.findUsedOutputFields(component.getGraph(), inputRecordsMetadata, outputRecordsMetadata, sourceCode);
         } else {
         	// extract used output fields from the automapping
@@ -473,7 +546,39 @@ public class CTLMapping {
         		}
         	}
         }
-        
+	}
+	
+	public DataRecordMetadata[] getInputRecordsMetadata() {
+		return inputRecordsMetadata;
+	}
+
+	public DataRecordMetadata[] getOutputRecordsMetadata() {
+		return outputRecordsMetadata;
+	}
+	
+	public Set<Field> getUsedOutputFields() {
+		return usedOutputFields;
+	}
+
+	private ComponentNotReadyException handleMissingFieldException(MissingFieldException mfe) {
+		if (mfe.isOutput()) {
+			DataRecord record = getOutputRecord(mfe.getRecordId());
+			for (MissingRecordFieldMessage check : missingFieldChecks) {
+				if (check.output && (record == getOutputRecord(check.recordName))) {
+					Object[] messageArgs = new Object[] { mfe.getFieldName() };
+					return new ComponentNotReadyException(component, attributeName, MessageFormat.format(check.errorMessage, messageArgs));
+				}
+			}
+		} else {
+			DataRecord record = getInputRecord(mfe.getRecordId());
+			for (MissingRecordFieldMessage check : missingFieldChecks) {
+				if (!check.output && (record == getInputRecord(check.recordName))) {
+					Object[] messageArgs = new Object[] { mfe.getFieldName() };
+					return new ComponentNotReadyException(component, attributeName, MessageFormat.format(check.errorMessage, messageArgs));
+				}
+			}
+		}
+		return new ComponentNotReadyException(component, attributeName, mfe);
 	}
 	
 	/**
@@ -521,9 +626,11 @@ public class CTLMapping {
 		if (!isInitialized) {
 			throw new IllegalStateException("mapping needs to be initialized before execution");
 		}
-		for (int i = 0; i < outputRecordsArray.length; i++) {
-			if (outputRecordsArray[i] != null) {
-				outputRecordsArray[i].copyFrom(defaultOutputRecords[i]);
+		if (outputSetDefaults) {
+			for (int i = 0; i < outputRecordsArray.length; i++) {
+				if (outputRecordsArray[i] != null) {
+					outputRecordsArray[i].copyFrom(defaultOutputRecords[i]);
+				}
 			}
 		}
 
@@ -531,6 +638,10 @@ public class CTLMapping {
 			try {
 				return ctlTransformation.transform(inputRecordsArray, outputRecordsArray);
 			} catch (Exception exception) {
+				if (ExceptionUtils.instanceOf(exception, MissingFieldException.class)) {
+					MissingFieldException missingFieldException = ExceptionUtils.getAllExceptions(exception, MissingFieldException.class).get(0);
+					throw new JetelRuntimeException(handleMissingFieldException(missingFieldException));
+				}
 				try {
 					return ctlTransformation.transformOnError(exception, inputRecordsArray, outputRecordsArray);
 				} catch (TransformException e) {
@@ -552,6 +663,9 @@ public class CTLMapping {
 	 * @return
 	 */
 	public boolean isOutputOverridden(DataRecord record, DataField field) {
+		if (!outputSetDefaults) {
+			return false;
+		}
 		if (record.getField(field.getMetadata().getName()) != field) {
 			throw new IllegalArgumentException("field is not part of record");
 		}

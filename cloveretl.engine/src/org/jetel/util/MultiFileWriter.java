@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.RecordKey;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.formatter.provider.FormatterProvider;
@@ -40,10 +41,11 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Class for transparent writing into multifile or multistream. Underlying formatter is used for formatting
@@ -62,7 +64,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  *
  * @created 2.11.2006
  */
-@SuppressWarnings({"EI2","EI"})
+@SuppressFBWarnings({"EI2","EI"})
 public class MultiFileWriter {
 	// Default capacity of HashMap
 	private final static int tableInitialSize = 512;
@@ -108,6 +110,22 @@ public class MultiFileWriter {
 	private boolean reset;
 
 	private boolean storeRawData = true;
+	
+	// CLO-1634
+	private boolean createEmptyFiles = true;
+	
+	/**
+	 * This switch is used to say to partitioning algorithm, that
+	 * the incoming data records are sorted according partition key.
+	 * So output data files does not need to be kept open all the time.
+	 * Output files are generated after the each other.
+	 */
+	private boolean sortedInput = false;
+	private String lastKeyForSortedInput;
+	
+    private boolean deserialized;
+    private DataRecord record = null;
+    
 	
     /**
      * Constructor.
@@ -174,12 +192,6 @@ public class MultiFileWriter {
      * @throws ComponentNotReadyException
      */
     private void prepareTargets() throws ComponentNotReadyException {
-    	// creates necessary directories
-        if (mkDir) {
-        	// CL-2478
-        	FileUtils.createParentDirs(contextURL, fileURL);
-        }
-        
     	// prepare type of targets: lookup/keyValue
 		try {
 			if (partitionKey != null) {
@@ -201,23 +213,28 @@ public class MultiFileWriter {
 				multiTarget = new HashMap<Object, TargetFile>(tableInitialSize);
 				
 			// prepare type of targets: single
-			} else {
-				if (currentFormatter == null) {
-					currentFormatter = formatterGetter.getNewFormatter();	
-				}
-				currentFormatter.init(metadata);
-				if (currentTarget != null)
-					currentTarget.close();
-				currentTarget = createNewTarget(currentFormatter);
-				currentTarget.setOutputPort(outputPort);
-				currentTarget.setCharset(charset);
-				currentTarget.setDictionary(dictionary);
-				currentTarget.init();
+			} else if (createEmptyFiles) {
+				prepareSingleTarget();
 			}
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(e);
 		}
     }
+
+	/**
+	 * @throws ComponentNotReadyException
+	 * @throws IOException
+	 */
+	private void prepareSingleTarget() throws ComponentNotReadyException, IOException {
+		if (currentFormatter == null) {
+			currentFormatter = formatterGetter.getNewFormatter();	
+		}
+		currentFormatter.init(metadata);
+		if (currentTarget != null)
+			currentTarget.close();
+		currentTarget = createNewTarget(currentFormatter);
+		currentTarget.init();
+	}
     
     /**
      * Creates new target according to fileURL or channels. 
@@ -233,6 +250,10 @@ public class MultiFileWriter {
 		targetFile.setUseChannel(useChannel);
 		targetFile.setCharset(charset);
 		targetFile.setStoreRawData(storeRawData);
+		targetFile.setCompressLevel(compressLevel);
+		targetFile.setOutputPort(outputPort);
+		targetFile.setDictionary(dictionary);
+		targetFile.setMkDir(mkDir);
 		return targetFile;
     }
     
@@ -253,6 +274,9 @@ public class MultiFileWriter {
 		targetFile.setCharset(charset);
 		targetFile.setStoreRawData(storeRawData);
 		targetFile.setCompressLevel(compressLevel);
+		targetFile.setOutputPort(outputPort);
+		targetFile.setDictionary(dictionary);
+		targetFile.setMkDir(mkDir);
 		return targetFile;
     }
 
@@ -281,6 +305,81 @@ public class MultiFileWriter {
 			}
 	    }
     }
+    
+    private boolean writeCommon() throws IOException, ComponentNotReadyException {
+    	if (reset) {
+    		prepareTargets();
+    		reset = false;
+    	}
+
+        // check for index of last returned record
+        if(numRecords > 0 && numRecords == counter) {
+            return false;
+        }
+
+        // shall i skip some records?
+        if(skip > 0) {
+            skip--;
+            return false;
+        }
+
+        if (currentTarget != null) {
+        	checkAndSetNextOutput();
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Returns the record passed as {@link CloverBuffer}
+     * deserialized to a {@link DataRecord}.
+     * 
+     * Caches the result to avoid multiple deserialization
+     * of the same record.
+     * 
+     * @param buffer - current raw record
+     * 
+     * @return buffer deserialized to a {@link DataRecord}
+     */
+    private DataRecord getCurrentRecord(CloverBuffer buffer) {
+    	if (!deserialized) {
+    		if (this.record == null) {
+        		this.record = DataRecordFactory.newRecord(this.metadata);
+        		this.record.init();
+    		}
+    		record.deserialize(buffer);
+    		buffer.rewind();
+    		deserialized = true;
+    	}
+    	
+    	return record;
+    }
+    
+    public void writeDirect(CloverBuffer buffer) throws IOException, ComponentNotReadyException {
+    	if (!writeCommon()) {
+    		return;
+    	}
+
+    	this.deserialized = false; // new record - clear cache
+    	
+        // write the record according to value partition
+        if (partitionKey == null) {
+        	if (currentTarget == null) { // CLO-1634
+        		prepareSingleTarget();
+        	}
+            // single formatter/getter
+        	writeRecord2CurrentTarget(buffer);
+        } else {
+        	DataRecord outputRecord = getCurrentRecord(buffer);
+        	if (lookupTable != null) {
+                // write the record according to lookup table
+            	writeRecord4LookupTable(outputRecord, buffer);
+            } else {
+            	// just partition key without lookup table
+            	writeRecord2MultiTarget(outputRecord, buffer);
+            }
+        }
+    }
 
     /**
      * Writes given record via formatter into destination file(s).
@@ -289,27 +388,15 @@ public class MultiFileWriter {
      * @throws ComponentNotReadyException 
      */
     public void write(DataRecord record) throws IOException, ComponentNotReadyException {
-    	if (reset) {
-    		prepareTargets();		// prepare output targets //TODO remove in 2.9, there is pre_execute
-    		reset = false;
+    	if (!writeCommon()) {
+    		return;
     	}
-    	
-        // check for index of last returned record
-        if(numRecords > 0 && numRecords == counter) {
-            return;
-        }
-        
-        // shall i skip some records?
-        if(skip > 0) {
-            skip--;
-            return;
-        }
-        if (currentTarget != null) {
-        	checkAndSetNextOutput();
-        }
         
         // write the record according to value partition
         if (partitionKey == null) {
+        	if (currentTarget == null) { // CLO-1634
+        		prepareSingleTarget();
+        	}
             // single formatter/getter
         	writeRecord2CurrentTarget(record);
         } else {
@@ -331,18 +418,82 @@ public class MultiFileWriter {
      * @throws ComponentNotReadyException
      */
     private final void writeRecord2MultiTarget(DataRecord keyRecord, DataRecord record) throws IOException, ComponentNotReadyException {
+    	if (!sortedInput) {
+    		//all output files are kept open
+    		writeRecord2MultiTargetUnsortedInput(keyRecord, record);
+    	} else {
+    		//output files are generated after each other
+    		writeRecord2MultiTargetSortedInput(keyRecord, record);
+    	}
+    }
+
+    /**
+     * Writes the data record according to value partition.
+     * 
+     * @param inputRecord
+     * @throws IOException
+     * @throws ComponentNotReadyException
+     */
+    private final void writeRecord2MultiTarget(DataRecord keyRecord, CloverBuffer buffer) throws IOException, ComponentNotReadyException {
+    	if (!sortedInput) {
+    		//all output files are kept open
+    		writeRecord2MultiTargetUnsortedInput(keyRecord, buffer);
+    	} else {
+    		//output files are generated after each other
+    		writeRecord2MultiTargetSortedInput(keyRecord, buffer);
+    	}
+    }
+    
+    private final void writeRecord2MultiTargetUnsortedInputCommon(DataRecord keyRecord) throws IOException, ComponentNotReadyException {
     	String keyString = getKeyString(keyRecord);
     	if ((currentTarget = multiTarget.get(keyString)) == null) {
     		currentTarget = createNewTarget();
     		currentTarget.setFileTag(useNumberFileTag ? numberFileTag++ : keyString);
-    		currentTarget.setDictionary(dictionary);
     		currentTarget.init();
     		multiTarget.put(keyString, currentTarget);
     	}
 		currentFormatter = currentTarget.getFormatter();
+    }
+
+    private final void writeRecord2MultiTargetUnsortedInput(DataRecord keyRecord, DataRecord record) throws IOException, ComponentNotReadyException {
+    	writeRecord2MultiTargetUnsortedInputCommon(keyRecord);
 		writeRecord2CurrentTarget(record);
     }
+
+    private final void writeRecord2MultiTargetUnsortedInput(DataRecord keyRecord, CloverBuffer buffer) throws IOException, ComponentNotReadyException {
+    	writeRecord2MultiTargetUnsortedInputCommon(keyRecord);
+		writeRecord2CurrentTarget(buffer);
+    }
+
+    private final void writeRecord2MultiTargetSortedInputCommon(DataRecord keyRecord) throws IOException, ComponentNotReadyException {
+    	String keyString = getKeyString(keyRecord);
+    	if (lastKeyForSortedInput == null || !lastKeyForSortedInput.equals(keyString)) {
+    		//the key has been changed
+    		lastKeyForSortedInput = keyString;
+    		
+    		//close the previous file if necessary
+    		if (currentTarget != null) {
+	    		currentTarget.finish();
+	    		currentTarget.close();
+    		}
+    		
+    		currentTarget = createNewTarget();
+    		currentTarget.setFileTag(useNumberFileTag ? numberFileTag++ : keyString);
+    		currentTarget.init();
+    	}
+		currentFormatter = currentTarget.getFormatter();
+    }
     
+    private final void writeRecord2MultiTargetSortedInput(DataRecord keyRecord, DataRecord record) throws IOException, ComponentNotReadyException {
+    	writeRecord2MultiTargetSortedInputCommon(keyRecord);
+		writeRecord2CurrentTarget(record);
+    }
+
+    private final void writeRecord2MultiTargetSortedInput(DataRecord keyRecord, CloverBuffer buffer) throws IOException, ComponentNotReadyException {
+    	writeRecord2MultiTargetSortedInputCommon(keyRecord);
+		writeRecord2CurrentTarget(buffer);
+    }
+
     private String getKeyString(DataRecord record) throws ComponentNotReadyException {
     	if (iPartitionOutFields == null) preparePartitionOutFields();    	
     	StringBuffer sb = new StringBuffer();
@@ -373,6 +524,18 @@ public class MultiFileWriter {
     	}
     }
     
+    private void setUnassignedTarget() throws IOException, ComponentNotReadyException {
+		// creates new unassigned target if not exists
+		if (unassignedTarget == null) {
+			if (unassignedFileURL == null) return;
+			unassignedTarget = createNewTarget();
+			unassignedTarget.setFileName(unassignedFileURL);
+			unassignedTarget.init();
+		}
+		currentTarget = unassignedTarget;
+		currentFormatter = currentTarget.getFormatter();
+    }
+    
     /**
      * Writes the data record according to lookup table.
      * 
@@ -386,16 +549,7 @@ public class MultiFileWriter {
     	DataRecord keyRecord;
     	
     	if (!lookup.hasNext()) {
-    		// creates new unassigned target if not exists
-			if (unassignedTarget == null) {
-				if (unassignedFileURL == null) return;
-				unassignedTarget = createNewTarget();
-				unassignedTarget.setFileName(unassignedFileURL);
-				unassignedTarget.setDictionary(dictionary);
-				unassignedTarget.init();
-			}
-    		currentTarget = unassignedTarget;
-    		currentFormatter = currentTarget.getFormatter();
+    		setUnassignedTarget();
     		writeRecord2CurrentTarget(record);
     		return;
     	}
@@ -415,6 +569,39 @@ public class MultiFileWriter {
     }
     
     /**
+     * Writes the data record according to lookup table.
+     * 
+     * @param record
+     * @param buffer
+     * @throws IOException
+     * @throws ComponentNotReadyException
+     */
+    private final void writeRecord4LookupTable(DataRecord record, CloverBuffer buffer) throws IOException, ComponentNotReadyException {
+//    	DataRecord keyRecord = lookupTable.get(new HashKey(partitionKey, record));
+    	lookup.seek(record);
+    	DataRecord keyRecord;
+    	
+    	if (!lookup.hasNext()) {
+    		setUnassignedTarget();
+    		writeRecord2CurrentTarget(buffer);
+    		return;
+    	}
+    	
+		// data filtering
+    	do  {
+    		keyRecord = lookup.next();
+			writeRecord2MultiTarget(keyRecord, buffer);
+			
+			// get next record from database with the same key
+			if (lookup.hasNext()) {
+		        checkAndSetNextOutput();
+			}else{
+				return;
+			}
+    	}while (true);
+    }
+
+    /**
      * Sets next output if records or bytes for the output are exceeded. 
      * 
      * @throws IOException
@@ -427,6 +614,33 @@ public class MultiFileWriter {
     }
     
     /**
+     * Increments the record counters by 1
+     * and the byte counter by the given number of bytes.
+     * 
+     * @param bytes - the number of bytes written to the output as the current record
+     */
+    private void incrementCounters(int bytes) {
+    	currentTarget.setBytes(currentTarget.getBytes() + bytes);
+    	currentTarget.setRecords(currentTarget.getRecords() + 1);
+        counter++;
+    }
+    
+    /**
+     * Writes data into formatter and sets byte and record counters.
+     * 
+     * @param buffer
+     * @throws IOException
+     */
+    private final void writeRecord2CurrentTarget(CloverBuffer buffer) throws IOException {
+    	if (currentFormatter.isDirect()) {
+    		int size = currentFormatter.writeDirect(buffer);
+    		incrementCounters(size);
+    	} else {
+    		writeRecord2CurrentTarget(getCurrentRecord(buffer));
+    	}
+    }
+
+    /**
      * Writes data into formatter and sets byte and record counters.
      * 
      * @param record
@@ -434,9 +648,8 @@ public class MultiFileWriter {
      */
     private final void writeRecord2CurrentTarget(DataRecord record) throws IOException {
     	try {
-        	currentTarget.setBytes(currentTarget.getBytes()+currentFormatter.write(record));
-        	currentTarget.setRecords(currentTarget.getRecords()+1);
-            counter++;
+    		int size = currentFormatter.write(record);
+    		incrementCounters(size);
     	} catch (RuntimeException e) {
     		if (e.getCause() instanceof CharacterCodingException) {
     			throw new IOException("Converting exception in the record: " + counter + ". ", e);
@@ -460,7 +673,7 @@ public class MultiFileWriter {
 			}
     		reset = false;
     	}
-    	if (multiTarget != null) {
+    	if (multiTarget != null && !sortedInput) {
         	for (Entry<Object, TargetFile> entry: multiTarget.entrySet()) {
         		entry.getValue().close();
         	}
@@ -472,6 +685,7 @@ public class MultiFileWriter {
     		unassignedTarget = null;
     	}
     	outputClosed = true;
+    	record = null;
     }
     
     public void finish() throws IOException{
@@ -483,12 +697,14 @@ public class MultiFileWriter {
 			}
     		reset = false;
     	}
-    	if (multiTarget != null) {
+    	if (multiTarget != null && !sortedInput) {
         	for (Entry<Object, TargetFile> entry: multiTarget.entrySet()) {
         		entry.getValue().finish();
         	}
     	} else {
-    		currentTarget.finish();
+    		if (currentTarget != null) {
+                currentTarget.finish();
+    		}
     	}
     	if (unassignedTarget != null) {
     		unassignedTarget.finish();
@@ -507,7 +723,7 @@ public class MultiFileWriter {
     }
 
     /**
-     * Sets number of records written into seprate file.
+     * Sets number of records written into separate file.
      * @param recordsPerFile
      */
     public void setRecordsPerFile(int recordsPerFile) {
@@ -680,6 +896,14 @@ public class MultiFileWriter {
 		this.storeRawData = storeRawData; 
 	}
 	
+	public void setSortedInput(boolean sortedInput) {
+		this.sortedInput = sortedInput;
+	}
+	
+	public void setCreateEmptyFiles(boolean createEmptyFiles) {
+		this.createEmptyFiles = createEmptyFiles;
+	}
+
 	/**
 	 * @return Count of records written to the current target.
 	 */

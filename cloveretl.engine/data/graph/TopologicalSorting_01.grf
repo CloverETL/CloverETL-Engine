@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="user" created="Thu Oct 31 11:47:03 CET 2013" guiVersion="0.0.0.devel" id="1383217739589" licenseType="Commercial" modified="Thu Oct 31 16:01:12 CET 2013" modifiedBy="Kokon" name="test" revision="1.16" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="recordName1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="joinKey" type="integer"/>
+<Field name="value" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="DataGenerator" guiX="23" guiY="12" id="DATA_GENERATOR" recordsNumber="1000" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+
+
+function integer generate() {
+	$out.0.value = randomString(3,5);
+	$out.0.joinKey = randomInteger(0,10);
+
+	return ALL;
+}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="ExtFilter" guiX="150" guiY="237" id="EXT_FILTER1" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[//#CTL2
+$in.0.joinKey < 4]]></attr>
+</Node>
+<Node enabled="enabled" guiName="ExtSort" guiX="423" guiY="35" id="EXT_SORT1" sortKey="joinKey(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiName="SimpleCopy" guiX="36" guiY="131" id="SIMPLE_COPY2" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiName="SimpleGather" guiX="265" guiY="95" id="SIMPLE_GATHER" type="SIMPLE_GATHER"/>
+<Edge debugMode="true" fromNode="DATA_GENERATOR:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_COPY2:0"/>
+<Edge debugMode="true" fromNode="EXT_FILTER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge15" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (accepted)" toNode="SIMPLE_GATHER:1"/>
+<Edge debugMode="true" fromNode="EXT_SORT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (driver)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_MERGE_JOIN:0"/>
+<Edge debugMode="true" fromNode="SIMPLE_COPY2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_GATHER:0"/>
+<Edge debugMode="true" fromNode="SIMPLE_COPY2:1" guiBendpoints="" guiRouter="Manhattan" id="Edge14" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="EXT_FILTER1:0"/>
+<Edge debugMode="true" fromNode="SIMPLE_GATHER:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" guiName="DataGenerator" guiX="30" guiY="387" id="DATA_GENERATOR1" recordsNumber="1000" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+
+
+function integer generate() {
+	$out.0.value = randomString(3,5);
+	$out.0.joinKey = randomInteger(0,10);
+
+	return ALL;
+}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="ExtFilter" guiX="790" guiY="133" id="EXT_FILTER" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[//#CTL2
+$in.0.joinKey < 2]]></attr>
+</Node>
+<Node enabled="enabled" guiName="ExtMergeJoin" guiX="599" guiY="120" id="EXT_MERGE_JOIN" joinKey="$joinKey(a)#$joinKey(a);" type="EXT_MERGE_JOIN">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.joinKey = $in.0.joinKey;
+	$out.0.value = $in.0.value;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="ExtSort" guiX="968" guiY="67" id="EXT_SORT" sortKey="value(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiName="ExtSort" guiX="402" guiY="387" id="EXT_SORT2" sortKey="joinKey(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiName="Reformat" guiX="214" guiY="387" id="REFORMAT" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.value = $in.0.value + "updated";
+	$out.0.joinKey = $in.0.joinKey;
+
+	return ALL;
+}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="SimpleCopy" guiX="968" guiY="264" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiName="Trash" guiX="1176" guiY="67" id="TRASH" type="TRASH"/>
+<Node enabled="enabled" guiName="Trash" guiX="1176" guiY="248" id="TRASH1" type="TRASH"/>
+<Node enabled="enabled" guiName="Trash" guiX="1176" guiY="343" id="TRASH2" type="TRASH"/>
+<Node enabled="enabled" guiName="Trash" guiX="1176" guiY="438" id="TRASH3" type="TRASH"/>
+<Edge debugMode="true" fromNode="DATA_GENERATOR1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT:0"/>
+<Edge debugMode="true" fromNode="EXT_FILTER:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted)" toNode="EXT_SORT:0"/>
+<Edge debugMode="true" fromNode="EXT_FILTER:1" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (rejected)" toNode="SIMPLE_COPY:0"/>
+<Edge debugMode="true" fromNode="EXT_MERGE_JOIN:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_FILTER:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="TRASH:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_MERGE_JOIN:1"/>
+<Edge debugMode="true" fromNode="REFORMAT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge16" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT2:0"/>
+<Edge debugMode="true" fromNode="SIMPLE_COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="TRASH1:0"/>
+<Edge fromNode="SIMPLE_COPY:1" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="TRASH2:0"/>
+<Edge fromNode="SIMPLE_COPY:2" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" toNode="TRASH3:0"/>
+</Phase>
+</Graph>

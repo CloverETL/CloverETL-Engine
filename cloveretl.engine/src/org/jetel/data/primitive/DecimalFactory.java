@@ -84,15 +84,6 @@ public class DecimalFactory {
         return getDecimal(bd);
     }
     
-    public static Decimal getDecimal(String value, NumericFormat format) {
-    	if (format == null){
-    		return getDecimal(value);
-    	}
-		BigDecimal bd = (BigDecimal)format.parse((CharSequence)value);
-		return getDecimal(bd);
-	}
-    
-    
 	public static Decimal getDecimal(long value, int precision, int scale) {
 		Decimal d = getDecimal(precision, scale);
 		d.setValue(value);

@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -630,7 +631,8 @@ public class BasicSqlConnection implements SqlConnection {
 		}
 	}
 
-/* JDBC_4_ANT_KEY_BEGIN */
+	/* JDBC 4 methods */
+
 	@Override
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 	    return iface.isAssignableFrom(getClass()) || connection.isWrapperFor(iface);
@@ -706,5 +708,31 @@ public class BasicSqlConnection implements SqlConnection {
 		connection.setClientInfo(name, value);
 	}
 
-	/* JDBC_4_ANT_KEY_END */
+	/* JDBC 4.1 methods */
+
+	@Override
+	public void setSchema(String schema) throws SQLException {
+		connection.setSchema(schema);
+	}
+
+	@Override
+	public String getSchema() throws SQLException {
+		return connection.getSchema();
+	}
+
+	@Override
+	public void abort(Executor executor) throws SQLException {
+		connection.abort(executor);
+	}
+
+	@Override
+	public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+		connection.setNetworkTimeout(executor, milliseconds);
+	}
+
+	@Override
+	public int getNetworkTimeout() throws SQLException {
+		return connection.getNetworkTimeout();
+	}
+
 }

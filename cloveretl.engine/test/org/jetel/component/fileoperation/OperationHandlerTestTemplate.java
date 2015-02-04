@@ -465,6 +465,13 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			prepareData(relativeURI(e.getKey()), e.getValue());
 		}
 	}
+	
+	private static void assertOperationSupported(Throwable t) {
+		while (t != null) {
+			assertFalse(t instanceof UnsupportedOperationException);
+			t = t.getCause();
+		}
+	}
 
 	public void testMove() throws Exception {
 		Map<String, String> texts = new HashMap<String, String>();
@@ -498,7 +505,9 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		
 		source = relativeURI("srcdir/file.tmp");
 		target = relativeURI("targetdir/copy.tmp");
-		assertFalse(manager.move(source, target).success());
+		MoveResult result = manager.move(source, target);
+		assertFalse(result.success());
+		assertOperationSupported(result.getFirstError());
 		assumeTrue(manager.create(relativeURI("targetdir/")).success());
 		assertTrue(manager.move(source, target).success());
 		prepareData(texts);
@@ -515,7 +524,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 
 		source = relativeURI("a/d");
 		target = relativeURI("b/d");
-		MoveResult result = manager.move(source, target); 
+		result = manager.move(source, target); 
 		assertTrue(result.success());
 		assertTrue(manager.exists(relativeURI("b/d/d/f.tmp")));
 		assertFalse(manager.exists(source));
@@ -1426,7 +1435,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			modifiedDate = manager.info(uri).getLastModified();
 			Thread.sleep(1000);
 			assertTrue(manager.create(uri).success());
-			assertTrue(manager.info(uri).getLastModified().after(modifiedDate));
+			assertTrue(after(manager.info(uri).getLastModified(), modifiedDate));
 			
 			uri = relativeURI(dirName + "/dir/");
 			System.out.println(uri.getAbsoluteURI());
@@ -1434,8 +1443,16 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			modifiedDate = manager.info(uri).getLastModified();
 			Thread.sleep(1000);
 			assertTrue(manager.create(uri).success());
-			assertTrue(manager.info(uri).getLastModified().after(modifiedDate));
+			assertTrue(after(manager.info(uri).getLastModified(), modifiedDate));
 		}
+	}
+	
+	protected boolean after(Date after, Date before) {
+		return new Date(after.getTime() + getTolerance()).after(before);
+	}
+	
+	protected long getTolerance() {
+		return 0;
 	}
 	
 	/**

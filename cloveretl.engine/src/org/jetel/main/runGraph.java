@@ -27,29 +27,32 @@ import java.net.Authenticator;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
-import java.nio.channels.Channels;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
+import org.apache.log4j.Appender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.spi.Filter;
+import org.apache.log4j.spi.LoggingEvent;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.graph.JobType;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.dictionary.DictionaryValuesContainer;
 import org.jetel.graph.dictionary.SerializedDictionaryValue;
 import org.jetel.graph.dictionary.UnsupportedDictionaryOperation;
-import org.jetel.graph.runtime.AuthorityProxyFactory;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.graph.runtime.GraphRuntimeContext;
-import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.graph.runtime.IThreadManager;
 import org.jetel.graph.runtime.SimpleThreadManager;
 import org.jetel.graph.runtime.WatchDog;
@@ -200,7 +203,7 @@ public class runGraph {
                 i++;
                 log4jPropertiesFile = args[i];
                 File test = new File(log4jPropertiesFile);
-                if (!test.canRead()){
+                if (!Files.isReadable(test.toPath())){
                     System.err.println("Cannot read file: \"" + log4jPropertiesFile + "\"");
                     System.exit(-1);
                 }
@@ -327,8 +330,9 @@ public class runGraph {
 			PropertyConfigurator.configure(log4jPropertiesFile);
 		}
         
-        if (logLevel != null)
-        	Logger.getRootLogger().setLevel(logLevel);
+        if (logLevel != null) {
+        	setLogLevel(logLevel);
+        }
 
         EngineInitializer.initLicenses(licenseLocations);
         // engine initialization - should be called only once
@@ -347,6 +351,16 @@ public class runGraph {
         runtimeContext.setDebugMode(debugMode);
         runtimeContext.setDebugDirectory(debugDirectory);
         runtimeContext.setContextURL(contextURL);
+        runtimeContext.setLogLevel(logLevel);
+        runtimeContext.setJobType(JobType.baseTypeFromFileName(graphFileName));
+        runtimeContext.setValidateRequiredParameters(false);
+        try {
+			runtimeContext.setJobUrl(FileUtils.getFileURL(contextURL, graphFileName).toString());
+		} catch (MalformedURLException e1) {
+			ExceptionUtils.logException(logger, "Given graph path cannot form a valid URL", e1);
+			ExceptionUtils.logHighlightedException(logger, "Given graph path cannot form a valid URL", e1);
+			System.exit(-1);
+		}
         runtimeContext.setLocale(locale);
         runtimeContext.setTimeZone(timeZone);
     	if (classPathString != null) {
@@ -377,7 +391,7 @@ public class runGraph {
         	logger.info("Graph definition file: " + graphFileName);
 
         	try {
-            	in = Channels.newInputStream(FileUtils.getReadableChannel(contextURL, graphFileName));
+            	in = FileUtils.getInputStream(contextURL, graphFileName);
             } catch (IOException e) {
             	ExceptionUtils.logException(logger, "Error - graph definition file can't be read", e);
             	ExceptionUtils.logHighlightedException(logger, "Error - graph definition file can't be read", e);
@@ -460,14 +474,12 @@ public class runGraph {
             System.exit(result.code());
             break;
         default:
-            ExceptionUtils.logHighlightedException(logger, watchDogFuture.getWatchDog().getErrorMessage(),
+            ExceptionUtils.logHighlightedException(logger, null,
             		watchDogFuture.getWatchDog().getCauseException());
             logger.error("Execution of graph failed !");
             System.exit(result.code());
         }
-
     }
-
 
 	public static WatchDogFuture executeGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext) throws ComponentNotReadyException {
 		if (!graph.isInitialized()) {
@@ -480,8 +492,6 @@ public class runGraph {
 			graph.getDictionary().setValue(key, dictContainer.getValue(key));
 		}
 		
-		IAuthorityProxy authorityProxy = AuthorityProxyFactory.createDefaultAuthorityProxy();
-		runtimeContext.setAuthorityProxy(authorityProxy);
         IThreadManager threadManager = new SimpleThreadManager();
         WatchDog watchDog = new WatchDog(graph, runtimeContext);
         threadManager.initWatchDog(watchDog);
@@ -490,7 +500,7 @@ public class runGraph {
     
 	public static String getInfo(){
 		final StringBuilder ret = new StringBuilder();
-		ret.append("CloverETL library version ");
+		ret.append("CloverETL version ");
 		ret.append(JetelVersion.MAJOR_VERSION );
 		ret.append(".");
 		ret.append(JetelVersion.MINOR_VERSION);
@@ -529,7 +539,6 @@ public class runGraph {
         System.out.println("-pass\t\t\tpassword for decrypting of hidden connections passwords");
         System.out.println("-stdin\t\t\tload graph definition from STDIN");
         System.out.println("-loghost\t\tdefine host and port number for socket appender of log4j (log4j library is required); i.e. localhost:4445");
-        System.out.println("-checkconfig\t\tonly check graph configuration");
         System.out.println("-skipcheckconfig\t\tskip checking of graph configuration");
         System.out.println("-noJMX\t\t\tturns off sending graph tracking information");
         System.out.println("-config <filename>\t\tload default engine properties from specified file");
@@ -542,8 +551,7 @@ public class runGraph {
 	}
 
 	public static void printRuntimeHeader() {
-        logger.info("***  CloverETL framework/transformation graph"
-                + ", (c) 2002-" + JetelVersion.LIBRARY_BUILD_YEAR + " Javlin a.s, released under GNU Lesser General Public License  ***");
+        logger.info("***  CloverETL, (c) 2002-" + JetelVersion.LIBRARY_BUILD_YEAR + " Javlin a.s.  ***");
         logger.info("Running with " + getInfo());
 
         logger.info("Running on " + Runtime.getRuntime().availableProcessors() + " CPU(s), " +
@@ -552,5 +560,33 @@ public class runGraph {
         		", Java version " + System.getProperty("java.version") +
         		", max available memory for JVM " + Runtime.getRuntime().maxMemory() / 1024 + " KB");
 	}
+	
+	/**
+	 * Sets user-defined level of logging.
+	 * First of all, level of root logger is set to requested level and
+	 * filters to all appenders are added to avoid unintended logging messages
+	 * from child loggers with specified log level (see CLO-1682). 
+	 * @param logLevel
+	 */
+	private static void setLogLevel(final Level logLevel) {
+    	Logger.getRootLogger().setLevel(logLevel);
+    	
+    	Filter filter = new Filter() {
+			@Override
+			public int decide(LoggingEvent event) {
+			    if (event.getLevel().isGreaterOrEqual(logLevel)) {
+			    	return NEUTRAL;
+			    } else {
+			    	return DENY;
+			    }
+			}
+		};
+    	
+    	Enumeration appenders = Logger.getRootLogger().getAllAppenders();
+    	while (appenders.hasMoreElements()) {
+    		((Appender) appenders.nextElement()).addFilter(filter);
+    	}
+	}
+	
 }
 

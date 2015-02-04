@@ -255,11 +255,6 @@ public class JmsWriter extends Node {
 		}
 	}
 	
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
 	/** Creates an instance according to XML specification.
 	 * @param graph
 	 * @param xmlElement
@@ -296,7 +291,7 @@ public class JmsWriter extends Node {
 		if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
         
 		//check transformation

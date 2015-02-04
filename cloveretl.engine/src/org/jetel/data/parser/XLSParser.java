@@ -650,5 +650,12 @@ public abstract class XLSParser extends AbstractParser {
 	public boolean nextL3Source() {
 		return getNextSheet();
 	}
+
+	@Override
+	public DataSourceType getPreferredDataSourceType() {
+		return DataSourceType.STREAM;
+	}
+	
+	
 	
 }

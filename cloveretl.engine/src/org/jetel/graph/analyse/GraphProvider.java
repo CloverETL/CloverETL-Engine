@@ -46,4 +46,44 @@ public interface GraphProvider {
 	 */
 	public void reset();
 	
+	/**
+	 * Gets transition function between components in the graph.
+	 */
+	public EdgeFunction getEdgeFunction();
+	
+	/**
+	 * Sets transition function between components in the graph.
+	 */
+	public void setEdgeFunction(EdgeFunction edgeFunction);
+	
+	/**
+	 * Sets the flag which indicates the SubgraphInput (or SubgraphOutput) component will be considered
+	 * as single component. Otherwise, each port of SGI or SGO component represents separate
+	 * 'component' entity for this graph provider.
+	 * Default is false.
+	 * @param subgraphInputOutputAsSingleComponent
+	 */
+	public void setSubgraphInputOutputAsSingleComponent(boolean subgraphInputOutputAsSingleComponent);
+
+	/**
+	 * @return the flag which indicates the SubgraphInput (or SubgraphOutput) component will be considered
+	 * as single component. Otherwise, each port of SGI or SGO component represents separate
+	 * 'component' entity for this graph provider.
+	 */
+	public boolean isSubgraphInputOutputAsSingleComponent();
+
+	/**
+	 * Sets the flag which indicates whether the SubgraphInput and SubgraphOutput components are
+	 * part of provided graph.
+	 * Default is false.
+	 * @param subgraphInputOutputVisibility
+	 */
+	public void setSubgraphInputOutputVisibility(boolean subgraphInputOutputVisibility);
+
+	/**
+	 * @return the flag which indicates whether the SubgraphInput and SubgraphOutput components are
+	 * part of provided graph.
+	 */
+	public boolean isSubgraphInputOutputVisibility();
+
 }

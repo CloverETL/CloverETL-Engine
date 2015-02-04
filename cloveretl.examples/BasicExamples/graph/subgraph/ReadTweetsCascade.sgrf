@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="dpavlis" category="readers" created="Thu Jul 10 09:29:34 CEST 2014" guiVersion="0.0.0.devel" id="1404993527014" largeIconPath="${SUBGRAPH_DIR}/icons/twitter/Twitter_logo_blue_48.png" licenseCode="Commercial Devel" licenseType="Commercial" mediumIconPath="${SUBGRAPH_DIR}/icons/twitter/Twitter_logo_blue_32.png" modified="Wed Nov 26 18:50:55 CET 2014" modifiedBy="User" name="ReadTweetsCascade" nature="subgraph" revision="1.10" showComponentDetails="true" smallIconPath="${SUBGRAPH_DIR}/icons/twitter/Twitter_logo_blue_16.png">
+<Global>
+<MetadataGroup name="Implicit metadata" type="implicit">
+<Metadata id="READING2ND_Metadata3">
+<Record fieldDelimiter="|" name="TweetMinID" recordDelimiter="\n" type="delimited">
+<Field name="minID" type="long"/>
+</Record>
+</Metadata>
+<Metadata id="TWITTER_READER_Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="Tweets" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="tweet_text" type="string"/>
+<Field name="created" type="string"/>
+<Field name="author" type="string"/>
+<Field name="id" type="long"/>
+</Record>
+</Metadata>
+<Metadata id="TWITTER_READER_Metadata3">
+<Record fieldDelimiter="|" name="TweetMinID" recordDelimiter="\n" type="delimited">
+<Field name="minID" type="long"/>
+</Record>
+</Metadata>
+<Metadata id="READING1ST_Metadata3">
+<Record fieldDelimiter="|" name="TweetMinID" recordDelimiter="\n" type="delimited">
+<Field name="minID" type="long"/>
+</Record>
+</Metadata>
+<Metadata id="READING1ST_Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="Tweets" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="tweet_text" type="string"/>
+<Field name="created" type="string"/>
+<Field name="author" type="string"/>
+<Field name="id" type="long"/>
+</Record>
+</Metadata>
+<Metadata id="READING2ND_Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="Tweets" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="tweet_text" type="string"/>
+<Field name="created" type="string"/>
+<Field name="author" type="string"/>
+<Field name="id" type="long"/>
+</Record>
+</Metadata>
+</MetadataGroup>
+<GraphParameters>
+<GraphParameter label="Twitter Query" name="__TWITTER___QUERY1" public="true" required="false" value="#SamsungGalaxyS5"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node debugOutput="true" enabled="enabled" guiName="DebugOutput" guiX="1033" guiY="88" id="DEBUG_OUTPUT" type="TRASH"/>
+<Node ___TWITTER__QUERY1="${__TWITTER___QUERY1}" enabled="enabled" guiName="TwitterReaderFollowing" guiX="296" guiY="233" id="READING1ST" jobURL="${SUBGRAPH_DIR}/TwitterReaderFollowing.sgrf" type="SUBGRAPH"/>
+<Node ___TWITTER__QUERY1="${__TWITTER___QUERY1}" enabled="enabled" guiName="TwitterReaderFollowing" guiX="507" guiY="381" id="READING2ND" jobURL="${SUBGRAPH_DIR}/TwitterReaderFollowing.sgrf" type="SUBGRAPH"/>
+<Node enabled="enabled" guiName="SimpleGather" guiX="748" guiY="92" id="SIMPLE_GATHER" type="SIMPLE_GATHER"/>
+<Node enabled="enabled" guiName="SubgraphInput" guiX="50" guiY="10" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT">
+<Port guiY="110" name="0"/>
+</Node>
+<Node enabled="enabled" guiName="SubgraphOutput" guiX="919" guiY="10" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT">
+<Port guiY="106" name="0"/>
+<Port guiY="176" name="1"/>
+</Node>
+<Node enabled="enabled" guiName="Trash" guiX="748" guiY="381" id="TRASH3" type="TRASH"/>
+<Node ___NUM__TWEETS="100" ___TWITTER__QUERY1="${__TWITTER___QUERY1}" enabled="enabled" guiName="TwitterReader" guiX="125" guiY="92" id="TWITTER_READER" jobURL="${SUBGRAPH_DIR}/TwitterReader.sgrf" type="SUBGRAPH"/>
+<Edge debugMode="true" fromNode="READING1ST:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 1 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="READING1ST_Metadata2" toNode="SIMPLE_GATHER:1"/>
+<Edge fromNode="READING1ST:1" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" outPort="Port 1 (out)" persistedImplicitMetadata="READING1ST_Metadata3" toNode="READING2ND:0"/>
+<Edge debugMode="true" fromNode="READING2ND:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 2 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="READING2ND_Metadata2" toNode="SIMPLE_GATHER:2"/>
+<Edge fromNode="READING2ND:1" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" outPort="Port 1 (out)" persistedImplicitMetadata="READING2ND_Metadata3" toNode="TRASH3:0"/>
+<Edge debugMode="true" fromNode="SIMPLE_GATHER:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="TWITTER_READER_Metadata2" toNode="SUBGRAPH_OUTPUT:0"/>
+<Edge fromNode="SUBGRAPH_OUTPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="TWITTER_READER_Metadata2" toNode="DEBUG_OUTPUT:0"/>
+<Edge debugMode="true" fromNode="TWITTER_READER:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="TWITTER_READER_Metadata2" toNode="SIMPLE_GATHER:0"/>
+<Edge fromNode="TWITTER_READER:1" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" outPort="Port 1 (out)" persistedImplicitMetadata="TWITTER_READER_Metadata3" toNode="READING1ST:0"/>
+</Phase>
+</Graph>

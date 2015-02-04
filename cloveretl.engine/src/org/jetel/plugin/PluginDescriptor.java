@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.naming.directory.InvalidAttributesException;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -39,6 +41,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 /**
@@ -47,7 +50,11 @@ import org.xml.sax.SAXException;
  *
  */
 public class PluginDescriptor {
-    
+
+	public static final String PLUGIN_URL_PREFIX = "clover:/plugin/";
+	
+	private static final Pattern PLUGIN_URL_PATTERN = Pattern.compile(PLUGIN_URL_PREFIX + "([^/]*)/(.*)");
+
     static Log logger = LogFactory.getLog(Plugins.class);
 
     /**
@@ -77,7 +84,13 @@ public class PluginDescriptor {
      * (current classloader is preferred for class name resolution).
      */
     private boolean greedyClassLoader = false;
-    
+
+    /**
+     * Engine plugins are lazy activated by default. This behaviour can be changed
+     * using this attribute.
+     */
+    private boolean lazyActivated = true;
+
     /**
 	 * List of package prefixes which are excluded from greedy/regular class loading. i.e. "java." "javax." "sun.misc." etc.
 	 * Prevents GreedyClassLoader from loading standard java interfaces and classes from third-party libs.
@@ -100,7 +113,7 @@ public class PluginDescriptor {
     private List<String> nativeLibraries;
 
     /**
-     * List of all imlemented extensions points by this plugin.
+     * List of all implemented extensions points by this plugin.
      */
     private List<Extension> extensions;
 
@@ -202,7 +215,15 @@ public class PluginDescriptor {
     public void setGreedyClassLoader(boolean greedyClassLoader) {
     	this.greedyClassLoader = greedyClassLoader;
     }
-    
+
+    public boolean isLazyActivated() {
+    	return lazyActivated;
+    }
+
+    public void setLazyActivated(boolean lazyActivated) {
+    	this.lazyActivated = lazyActivated;
+    }
+
     public String[] getExcludedPackages() {
     	return excludedPackages;
     }
@@ -298,12 +319,34 @@ public class PluginDescriptor {
      * @return
      * @throws MalformedURLException
      */
-    public URL getURL(String path) throws MalformedURLException {
-        return FileUtils.getFileURL(manifest, path);
+    public URL getURL(String url) throws MalformedURLException {
+	    Matcher matcher = PLUGIN_URL_PATTERN.matcher(url);
+        if (matcher.matches()) {
+        	String pluginId = matcher.group(1);
+        	String relativePath = matcher.group(2);
+        	if (!StringUtils.isEmpty(pluginId)) {
+	        	PluginDescriptor descriptor = Plugins.getPluginDescriptor(pluginId);
+	        	if (descriptor != null) {
+		        	return FileUtils.getFileURL(descriptor.getManifest(), relativePath);
+	        	} else {
+	        		throw new MalformedURLException("Invalid URL '" + url + "', plugin '" + pluginId + "' does not exist.");
+	        	}
+        	} else {
+	        	return FileUtils.getFileURL(manifest, relativePath);
+        	}
+    	} else {
+        	return FileUtils.getFileURL(manifest, url);
+    	}
     }
     
-    public Extension addExtension(String pointId) {
-        Extension ret = new Extension(pointId, this); 
+    /**
+     * Add new extension to this plugin.
+     * @param pointId extension point id
+     * @param xmlElement complete XML definition of extension
+     * @return
+     */
+    public Extension addExtension(String pointId, Element xmlElement) {
+        Extension ret = new Extension(pointId, xmlElement, this); 
         extensions.add(ret);
         return ret;
     }
@@ -413,7 +456,7 @@ public class PluginDescriptor {
                 //i have got plugin instance
                 return (PluginActivator) plugin;
             } catch (ClassNotFoundException e) {
-                logger.error("Plugin " + getId() + " activation message: Plugin class does not found - " + getPluginClassName(), e);
+                logger.error("Plugin " + getId() + " activation message: Plugin class not found - " + getPluginClassName(), e);
             } catch (Exception e) {
                 logger.error("Plugin " + getId() + " activation message: Cannot create plugin instance - " + getPluginClassName() + " - class is abstract, interface or its nullary constructor is not accessible.", e);
             }
@@ -473,6 +516,33 @@ public class PluginDescriptor {
 				logger.warn("Probably non-standard jvm is used. The native libraries in '" + getId() + "' plugin are ignored.");
 			}
     	}
+    }
+    
+    /**
+     * @return true for url with following pattern 'clover:/plugin/<pluginId>/<path>'
+     */
+    public static boolean isPluginURL(String url) {
+    	if (url != null) { 
+	        Matcher matcher = PLUGIN_URL_PATTERN.matcher(url);
+	        return matcher.matches();
+    	} else {
+    		return false;
+    	}
+    }
+    
+    /**
+     * @param pluginId
+     * @param path
+     * @return plugin URL with following shape "clover:/plugin/<pluginId>/<path>"
+     */
+    public static String createPluginURL(String pluginId, String path) {
+    	if (pluginId == null) {
+    		pluginId = "";
+    	}
+    	if (!path.startsWith("/")) {
+    		path = "/" + path;
+    	}
+    	return PLUGIN_URL_PREFIX + pluginId + path; 
     }
     
 }

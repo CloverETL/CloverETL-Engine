@@ -20,12 +20,14 @@ package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
@@ -59,6 +61,7 @@ import org.jetel.graph.Node;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.classloader.FilterClassLoader;
 import org.jetel.util.string.StringUtils;
 
 
@@ -75,7 +78,12 @@ import org.jetel.util.string.StringUtils;
  */
 abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 
-    private final static Log logger = LogFactory.getLog(AbstractJdbcSpecific.class);
+    /**
+	 * 
+	 */
+	private static final String DEFAULT_CHAR_FIELD_SIZE = "80";
+
+	private final static Log logger = LogFactory.getLog(AbstractJdbcSpecific.class);
 
 	/** the SQL comments pattern conforming to the SQL standard */
 	//&&[^-?=-] part added due to issue 3472
@@ -98,6 +106,12 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 		this.id = id;
 	}
 	
+
+	@Override
+	public Connection connect(Driver driver, String url, Properties info) throws SQLException {
+		return driver.connect(url, info);
+	}
+
 	@Override
 	public ConfigurationStatus checkMetadata(ConfigurationStatus status, Collection<DataRecordMetadata> metadata, Node node) {
 		return status;
@@ -194,7 +208,7 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 		case Types.VARBINARY :
 		case Types.VARCHAR :
 		case Types.CHAR :
-			return sqlType2str(sqlType) + "(" + (field.isFixed() ? String.valueOf(field.getSize()) : "80") + ")";
+			return sqlType2str(sqlType) + "(" + (field.getSize()>0 ? String.valueOf(field.getSize()) : DEFAULT_CHAR_FIELD_SIZE) + ")";
 		case Types.DECIMAL :
 			String base = sqlType2str(sqlType);
 			String prec = "";
@@ -478,7 +492,7 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 			
 			query = SQLUtil.removeUnnamedFields(query, this);
 			if (optimizeSelectQuery) {
-				q = "SELECT wrapper_table.* FROM (" + query + ") wrapper_table where 1=0";
+				q = SQLUtil.encloseInQptimizingQuery(query);
 			} else {
 				q = query;
 			}
@@ -558,6 +572,11 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 			case Types.DOUBLE:
 				return true;
 			}
+		case INTEGER:
+			switch (sqlType) {
+			case Types.BIGINT:
+				return true;
+			}
 		case STRING:
 			switch (sqlType) {
 			case Types.CHAR:
@@ -618,5 +637,10 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	@Override
 	public String getCreateTableSuffix(DataRecordMetadata metadata) {
 		return "";
+	}
+	
+	@Override
+	public ClassLoader getDriverClassLoaderParent() {
+		return ClassLoader.getSystemClassLoader();
 	}
 }

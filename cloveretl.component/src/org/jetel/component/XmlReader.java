@@ -116,11 +116,6 @@ public class XmlReader extends TreeReader {
 		return configStatus;
 	}
 
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
 	private void setXmlFeatures(String xmlFeatures) {
 		this.xmlFeatures = xmlFeatures;
 	}

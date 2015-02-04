@@ -35,6 +35,7 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
@@ -177,7 +178,11 @@ public class TextTableFormatter extends AbstractFormatter {
      */
     @Override
 	public void setDataTarget(Object out) {
-        close();
+        try {
+			close();
+		} catch (IOException e) {
+			throw new JetelRuntimeException(e);
+		}
         writerChannel = (WritableByteChannel) out;
     }
     
@@ -185,15 +190,14 @@ public class TextTableFormatter extends AbstractFormatter {
 	 * @see org.jetel.data.formatter.Formatter#close()
 	 */
 	@Override
-	public void close() {
+	public void close() throws IOException {
         if (writerChannel == null || !writerChannel.isOpen()) {
             return;
         }
 		try{
 			flush();
+		} finally {
 			writerChannel.close();
-		}catch(IOException ex){
-			ex.printStackTrace();
 		}
 	}
 
@@ -444,13 +448,9 @@ public class TextTableFormatter extends AbstractFormatter {
 		Object o;
 		for (DataRecord dataRecord : dataRecords) {
 			for (int i=0; i<maskAnalize.length; i++) {
-				try {
-					o = dataRecord.getField(maskAnalize[i].index);
-					if (o != null) {
-						lenght = new String(o.toString().getBytes(charSet)).length(); // encoding
-					}
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
+				o = dataRecord.getField(maskAnalize[i].index);
+				if (o != null) {
+					lenght = o.toString().length(); // encoding
 				}
 				maskAnalize[i].length = maskAnalize[i].length < lenght ? lenght : maskAnalize[i].length;
 			}

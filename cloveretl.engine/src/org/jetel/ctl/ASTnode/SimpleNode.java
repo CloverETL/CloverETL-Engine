@@ -303,7 +303,13 @@ public abstract class SimpleNode implements Node {
 	 * @return name of file from which this node was created/imported
 	 */
 	public String getSourceFilename() {
-		return this.sourceFilename;
+		if (this.sourceFilename != null) {
+			return this.sourceFilename;
+		} else if (jjtGetParent() != null) {
+			return ((SimpleNode) jjtGetParent()).getSourceFilename();
+		} else {
+			return null;
+		}
 	}
 	
 	/**

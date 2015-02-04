@@ -31,7 +31,6 @@ import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.data.DateFieldEnum;
-import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.primitive.StringFormat;
 import org.jetel.exception.JetelRuntimeException;
@@ -92,8 +91,6 @@ public class ConvertLib extends TLFunctionLibrary {
 		    "md5".equals(functionName) ? new MD5Function() : 
 		    "sha".equals(functionName) ? new SHAFunction() : 
 			"sha256".equals(functionName) ? new SHA256Function() : 
-		    "getFieldName".equals(functionName) ? new GetFieldNameFunction() : 
-		    "getFieldType".equals(functionName) ? new GetFieldTypeFunction() : 
 			null;
 		
 		if (ret == null) {
@@ -115,7 +112,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	// NUM2STR
 	@TLFunctionInitAnnotation
 	public static final void num2strInit(TLFunctionCallContext context) {
-		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache();
+		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(context);
 		//we have to use non-parametric constructor - in COMPILE mode we don't have context.getParams() available
 		//TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(context.getParams()[0].isDecimal());
 		cache.createCachedLocaleFormat(context, 1, 2);
@@ -135,7 +132,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format")
 	public static final String num2str(TLFunctionCallContext context, Integer num, String format) {
-	    return num2str(context, num, format, MiscUtils.getDefautLocaleId());
+	    return num2str(context, num, format, null);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
@@ -166,7 +163,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format")
 	public static final String num2str(TLFunctionCallContext context, Long num, String format) {
-		return num2str(context, num, format, MiscUtils.getDefautLocaleId()); 	
+		return num2str(context, num, format, null); 	
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
@@ -197,7 +194,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format")
 	public static final String num2str(TLFunctionCallContext context, Double num, String format) {
-	    return num2str(context, num, format, MiscUtils.getDefautLocaleId());
+	    return num2str(context, num, format, null);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
@@ -235,7 +232,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format")
 	public static final String num2str(TLFunctionCallContext context, BigDecimal num, String format) {
-	    return num2str(context, num, format, MiscUtils.getDefautLocaleId());
+	    return num2str(context, num, format, null);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
@@ -255,11 +252,9 @@ public class ConvertLib extends TLFunctionLibrary {
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams().length > 1 && context.getParams()[1].isString()) {
-				String locale;
+				String locale = null;
 				if (context.getParams().length == 3) {
 					locale = stack.popString(); 
-				} else {
-					locale = MiscUtils.getDefautLocaleId();
 				}
 				String format = stack.popString();
 				if (context.getParams()[0].isInteger()) {
@@ -461,7 +456,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionInitAnnotation
 	public static final void str2integerInit(TLFunctionCallContext context) {
-		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(false);
+		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(context, false);
 		cache.createCachedLocaleFormat(context, 1, 2);
 		context.setCache(cache);
 	}
@@ -536,7 +531,7 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionInitAnnotation
 	public static final void str2longInit(TLFunctionCallContext context) {
-		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(false);
+		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(context, false);
 		cache.createCachedLocaleFormat(context, 1, 2);
 		context.setCache(cache);
 	}
@@ -610,7 +605,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionInitAnnotation
 	public static final void str2doubleInit(TLFunctionCallContext context) {
-		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(false);
+		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(context, false);
 		cache.createCachedLocaleFormat(context, 1, 2);
 		context.setCache(cache);
 	}
@@ -672,7 +667,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionInitAnnotation
 	public static final void str2decimalInit(TLFunctionCallContext context) {
-		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(true);
+		TLNumericFormatLocaleCache cache = new TLNumericFormatLocaleCache(context, true);
 		cache.createCachedLocaleFormat(context, 1, 2);
 		context.setCache(cache);
 	}
@@ -718,11 +713,9 @@ public class ConvertLib extends TLFunctionLibrary {
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams().length > 1) {
-				String locale;
+				String locale = null;
 				if (context.getParams().length == 3) {
 					locale = stack.popString(); 
-				} else {
-					locale = MiscUtils.getDefautLocaleId();
 				}
 				String format = stack.popString();
 				final String input = stack.popString();
@@ -1082,6 +1075,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Converts binary data encoded in base64 to array of bytes.")
 	public static final byte[] base64byte(TLFunctionCallContext context, String src) {
+		if (src == null) {
+			return null;
+		}
 		return Base64.decode(src);
 	}	
 	
@@ -1105,6 +1101,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Converts binary data into their base64 representation. Optionally breaks lines after 76 characters.")
 	public static final String byte2base64(TLFunctionCallContext context, byte[] src, Boolean wrap) {
+		if (src == null) {
+			return null;
+		}
 		return Base64.encodeBytes(src, wrap ? Base64.NO_OPTIONS : Base64.DONT_BREAK_LINES);
 	}
 	
@@ -1127,6 +1126,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Converts bits into their string representation.")
 	public static final String bits2str(TLFunctionCallContext context, byte[] src) {
+		if (src == null) {
+			return null;
+		}
 		StringBuilder sb = new StringBuilder();
 		for (int i=0; i < src.length << 3; i++) {
 			sb.append((src[i >> 3] & (1 << (i & 7))) != 0 ? '1' : '0');
@@ -1149,10 +1151,16 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Converts string representation of bits into binary value.")
 	public static final byte[] str2bits(TLFunctionCallContext context, String src) {
+		if (src == null) {
+			return null;
+		}
 		byte[] bits = new byte[(src.length() >> 3) + ((src.length() & 7) != 0 ? 1 : 0)];
 		for (int i = 0; i < src.length(); i++) {
-			if (src.charAt(i) == '1') {
+			char c = src.charAt(i);
+			if (c == '1') {
 				bits[i >> 3] |= (1 << (i & 7));
+			} else if (c != '0') { // CLO-2022
+				throw new IllegalArgumentException("Invalid character '" + c + "' encountered at position " + i + " of '" + src + "'");
 			}
 		}
 		return bits;
@@ -1173,6 +1181,12 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Converts string to byte according to given charset")
 	public static final byte[] str2byte(TLFunctionCallContext context, String src, String charset) {
+		if (src == null) {
+			if (charset == null) {
+				throw new NullPointerException("charset is null");
+			}
+			return null;
+		}
 		try {
 			return src.getBytes(charset);
 		} catch (UnsupportedEncodingException e) {
@@ -1199,6 +1213,12 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Converts byte to string according to given charset")
 	public static final String byte2str(TLFunctionCallContext context, byte[] src, String charset) {
+		if (src == null) {
+			if (charset == null) {
+				throw new NullPointerException("charset is null");
+			}
+			return null;
+		}
 		try {
 			return new String(src, charset);
 		} catch (UnsupportedEncodingException e) {
@@ -1261,6 +1281,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Converts long into packed decimal representation (bytes).")
 	public static final byte[] long2packDecimal(TLFunctionCallContext context, Long src) {
+		if (src == null) {
+			return null;
+		}
 		byte[] tmp = new byte[16];
 		int length = PackedDecimal.format(src, tmp);
 		byte[] result = new byte[length];
@@ -1283,6 +1306,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Converts packed decimal(bytes) into long value.")
 	public static final Long packDecimal2long(TLFunctionCallContext context, byte[] array) {
+		if (array == null) {
+			return null;
+		}
 		return PackedDecimal.parse(array);
 	}
 	
@@ -1428,49 +1454,4 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 	}
 
-	@TLFunctionAnnotation("Returns name of i-th field of passed-in record.")
-	public static final String getFieldName(TLFunctionCallContext context, DataRecord record, Integer position) {
-		if (position < 0 || position >= record.getNumFields()) {
-			throw new JetelRuntimeException("field with index " + position + " does not exist in metadata '" + record.getMetadata().getName() + "'");
-		}
-		return record.getField(position).getMetadata().getName();
-	}
-	
-	//GETFIELDNAME
-	class GetFieldNameFunction implements TLFunctionPrototype {
-
-		@Override
-		public void init(TLFunctionCallContext context) {
-		}
-
-		@Override
-		public void execute(Stack stack, TLFunctionCallContext context) {
-			Integer position = stack.popInt();
-			DataRecord record = stack.popRecord();
-			stack.push(getFieldName(context, record, position));
-		}
-	}
-	
-	@TLFunctionAnnotation("Returns data type of i-th field of passed-in record")
-	public static final String getFieldType(TLFunctionCallContext context, DataRecord record, Integer position) {
-		if (position < 0 || position >= record.getNumFields()) {
-			throw new JetelRuntimeException("field with index " + position + " does not exist in metadata '" + record.getMetadata().getName() + "'");
-		}
-		return record.getField(position).getMetadata().getDataType().getName();
-	}
-
-	//GETFIELDTYPE
-	class GetFieldTypeFunction implements TLFunctionPrototype {
-
-		@Override
-		public void init(TLFunctionCallContext context) {
-		}
-
-		@Override
-		public void execute(Stack stack, TLFunctionCallContext context) {
-			Integer position = stack.popInt();
-			DataRecord record = stack.popRecord();
-			stack.push(getFieldType(context, record, position));
-		}
-	}
 }

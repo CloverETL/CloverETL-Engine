@@ -27,7 +27,7 @@ public class HadoopFileSystemConnectionData extends AbstractHadoopConnectionData
 	public HadoopFileSystemConnectionData(String masterHost, int masterPort, String user) {
 		super(user);
 		if (masterHost == null) {
-			throw new NullPointerException("host");
+			throw new IllegalArgumentException("Host not specified");
 		}
 		if (masterPort < 0) {
 			throw new IllegalArgumentException("Port cannot be less then 0.");

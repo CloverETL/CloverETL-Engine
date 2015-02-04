@@ -11,6 +11,8 @@ string isoHello;
 string isoHorse;
 string cpHello;
 string cpHorse;
+string nullLiteralOutput;
+string nullVariableOutput;
 
 function integer transform() {
 
@@ -32,6 +34,10 @@ function integer transform() {
 	
 	cpHello = byte2str(hex2byte("48656c6c6f20576f726c6421"), "windows-1250");
 	cpHorse = byte2str(hex2byte("50f8ed6c699a209e6c759d6f75e86bfd206bf9f22070ec6c20efe1626c736be920f36479"), "windows-1250");
+	
+	nullLiteralOutput = byte2str(null, "utf-8");
+	byte nullVariable = null;
+	nullVariableOutput = byte2str(nullVariable, "utf-8");
 	
 	return 0;
 }

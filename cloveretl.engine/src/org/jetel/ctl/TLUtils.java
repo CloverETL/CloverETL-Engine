@@ -114,9 +114,23 @@ public final class TLUtils {
 	 * @return <code>true</code> if metadata fields are considered as equal, <code>false</code> otherwise
 	 */
 	public static boolean equals(DataFieldMetadata field1, DataFieldMetadata field2) {
-		return equals(field1, field2, false);
+		return equals(field1, field2, false, null);
 	}
 
+	/**
+	 * Compares two given metadata fields.
+	 * Stores warnings in the provided list.
+	 * 
+	 * Metadata fields are considered as equal if have same name (ignore case) and type.
+	 * @param field1
+	 * @param field2
+	 * @param warnings list of warnings
+	 * @return <code>true</code> if metadata fields are considered as equal, <code>false</code> otherwise
+	 */
+	public static boolean equalsIgnoreCase(DataFieldMetadata field1, DataFieldMetadata field2, List<String> warnings) {
+		return equals(field1, field2, true, warnings);
+	}
+	
 	/**
 	 * Compares two given metadata fields.
 	 * Metadata fields are considered as equal if have same name (ignore case) and type.
@@ -125,10 +139,10 @@ public final class TLUtils {
 	 * @return <code>true</code> if metadata fields are considered as equal, <code>false</code> otherwise
 	 */
 	public static boolean equalsIgnoreCase(DataFieldMetadata field1, DataFieldMetadata field2) {
-		return equals(field1, field2, true);
+		return equals(field1, field2, true, null);
 	}
-	
-	private static boolean equals(DataFieldMetadata field1, DataFieldMetadata field2, boolean ignoreCase) {
+
+	private static boolean equals(DataFieldMetadata field1, DataFieldMetadata field2, boolean ignoreCase, List<String> warnings) {
 		
 		if (field1 == null || field2 == null) {
 			return false;
@@ -158,6 +172,14 @@ public final class TLUtils {
 					field2.getProperty(DataFieldMetadata.LENGTH_ATTR))
 					|| !StringUtils.equalsWithNulls(field1.getProperty(DataFieldMetadata.SCALE_ATTR),
 					field2.getProperty(DataFieldMetadata.SCALE_ATTR))) {
+				if (warnings != null) {
+					StringBuilder sb = new StringBuilder();
+					sb.append("Incompatible types - ");
+					sb.append(field1.getName()).append(": ").append(field1.getDataType()).append('(').append(field1.getProperty(DataFieldMetadata.LENGTH_ATTR)).append(',').append(field1.getProperty(DataFieldMetadata.SCALE_ATTR)).append(')');
+					sb.append(" and ");
+					sb.append(field2.getName()).append(": ").append(field2.getDataType()).append('(').append(field2.getProperty(DataFieldMetadata.LENGTH_ATTR)).append(',').append(field2.getProperty(DataFieldMetadata.SCALE_ATTR)).append(')');
+					warnings.add(sb.toString());
+				}
 				return false;
 			}
 		}

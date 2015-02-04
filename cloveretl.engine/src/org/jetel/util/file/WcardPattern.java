@@ -18,6 +18,9 @@
  */
 package org.jetel.util.file;
 
+import static org.jetel.util.file.FileUtils.DICTIONARY_PROTOCOL;
+import static org.jetel.util.file.FileUtils.PORT_PROTOCOL;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
@@ -58,10 +61,11 @@ import org.jetel.util.protocols.webdav.WebdavClient;
 import org.jetel.util.protocols.webdav.WebdavClientImpl;
 import org.jetel.util.string.StringUtils;
 
-import com.googlecode.sardine.DavResource;
-import com.googlecode.sardine.impl.SardineException;
+import com.github.sardine.DavResource;
+import com.github.sardine.impl.SardineException;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 
+import de.schlichtherle.truezip.file.TFile;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
@@ -322,7 +326,7 @@ public class WcardPattern {
                 			if (localArchivePath != null) {
                 				// for local ZIP archives, FileUtils.getInputStream must not be called
                 				// - it treats archives as folders, therefore it is impossible to open an InputStream to read from them
-                		    	de.schlichtherle.io.File root = FileUtils.getLocalZipArchive(parent, localArchivePath);
+                		    	TFile root = FileUtils.getLocalZipArchive(parent, localArchivePath);
                 		    	if (root == null) {
                 		    		throw new IOException("Failed to open local ZIP archive");
                 		    	}
@@ -397,10 +401,9 @@ public class WcardPattern {
      * @param fileStreamNames 
      */
     private void processProxy(String fileStreamName, String originalFileName, List<String> fileStreamNames) {
-    	try {
-    		new URL(null, fileStreamName, new ProxyHandler());
+    	if (ProxyHandler.acceptProtocol(FileUtils.getProtocol(fileStreamName))) {
     		fileStreamNames.add(originalFileName); // fileStreamName is a proxy, return originalFileName
-    	} catch (MalformedURLException e) {
+    	} else {
     		fileStreamNames.add(fileStreamName); // not a proxy, return fileStreamName (why???)
     	}
 	}
@@ -535,18 +538,20 @@ public class WcardPattern {
 			}
 		}
 		
+		String protocol = url.getProtocol();
+		
 		// wildcards for file protocol
-		if (url.getProtocol().equals(FILE)) {
+		if (protocol.equals(FILE)) {
 			return getFileNames(fileName);
 		}
 		
 		// wildcards for sftp protocol
-		else if (resolveAllNames && url.getProtocol().equals(SFTP)) {
+		else if (resolveAllNames && protocol.equals(SFTP)) {
 			return getSftpNames(url);
 		}
 		
 		// wildcards for ftp protocol
-		else if (resolveAllNames && url.getProtocol().equals(FTP)) {
+		else if (resolveAllNames && protocol.equals(FTP)) {
 			try {
 				return getFtpNames(new URL(parent, fileName, FileUtils.ftpStreamHandler));	// the FTPStreamHandler is not properly tested but supports 'ls'
 			} catch (MalformedURLException e) {
@@ -554,18 +559,23 @@ public class WcardPattern {
 			}
 		}
 		
-		else if (resolveAllNames && (
-				url.getProtocol().equals(SandboxUrlUtils.SANDBOX_PROTOCOL))) {
+		else if (protocol.equals(SandboxUrlUtils.SANDBOX_PROTOCOL)) {
 			return getSanboxNames(url);
 		}
 		else if (resolveAllNames && (
-				url.getProtocol().equals(HTTP) || url.getProtocol().equals(HTTPS))) {
+				protocol.equals(HTTP) || protocol.equals(HTTPS))) {
 			return getHttpNames(url);
+		}
+		// CLO-5532:
+		else if (protocol.equals(PORT_PROTOCOL) || protocol.equals(DICTIONARY_PROTOCOL)) {
+			return Arrays.asList(fileName);
 		}
 
 		// return original filename
 		List<String> mfiles = new ArrayList<String>();
-		mfiles.add(fileName);
+		if (resolveAllNames) { // CLO-5399 and CL-1590
+			mfiles.add(fileName);
+		}
 		return mfiles;
 	}
 	
@@ -633,9 +643,13 @@ public class WcardPattern {
 	 * @param url
 	 * @return
 	 */
-	private boolean hasWildcard(URL url) {
+	public static boolean hasWildcard(URL url) {
+		return hasWildcard(url.getFile());
+	}
+	
+	public static boolean hasWildcard(String fileURL) {
 		// check if the url has wildcards
-		String fileName = new File(url.getFile()).getName();
+		String fileName = new File(fileURL).getName();
 		for (int wcardIdx = 0; wcardIdx < WCARD_CHAR.length; wcardIdx++) {
 			if (fileName.indexOf("" + WCARD_CHAR[wcardIdx]) >= 0) { // wildcard found
 				return true;

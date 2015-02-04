@@ -28,10 +28,12 @@ import java.util.List;
 import org.jetel.component.fileoperation.AbstractOperationHandler;
 import org.jetel.component.fileoperation.FileManager;
 import org.jetel.component.fileoperation.FileOperationMessages;
+import org.jetel.component.fileoperation.IOperationHandler;
 import org.jetel.component.fileoperation.Info;
 import org.jetel.component.fileoperation.Operation;
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
+import org.jetel.component.fileoperation.SimpleParameters.MoveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 import org.jetel.component.fileoperation.SingleCloverURI;
 import org.jetel.component.fileoperation.URIUtils;
@@ -102,9 +104,9 @@ public class HadoopOperationHandler extends AbstractOperationHandler {
 //			case FILE:
 				return operation.scheme().equalsIgnoreCase(HADOOP_SCHEME);
 //			case COPY:
-//			case MOVE:
-//				return operation.scheme(0).equalsIgnoreCase(HADOOP_SCHEME)
-//						&& operation.scheme(1).equalsIgnoreCase(HADOOP_SCHEME);
+			case MOVE:
+				return operation.scheme(0).equalsIgnoreCase(HADOOP_SCHEME)
+						&& operation.scheme(1).equalsIgnoreCase(HADOOP_SCHEME);
 			default: 
 				return false;
 		}
@@ -172,6 +174,30 @@ public class HadoopOperationHandler extends AbstractOperationHandler {
 			}
 		}
 		return info.isDirectory() ? simpleHandler.removeDir(target) : simpleHandler.deleteFile(target);
+	}
+
+	/*
+	 * Overridden to delegate moving between different connections
+	 * to DefaultOperationHandler.
+	 */
+	@Override
+	public SingleCloverURI move(SingleCloverURI source, SingleCloverURI target,
+			MoveParameters params) throws IOException {
+		if (Thread.currentThread().isInterrupted()) {
+			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
+		}
+		if (source.toURI().getAuthority().equals(target.toURI().getAuthority())) {
+			// same connection
+			return super.move(source, target, params);
+		} else {
+			// different connections
+			IOperationHandler nextHandler = manager.findNextHandler(Operation.move(source.getScheme(), target.getScheme()), this);
+			if (nextHandler != null) {
+				return nextHandler.move(source, target, params);
+			} else {
+				throw new UnsupportedOperationException();
+			}
+		}
 	}
 
 }

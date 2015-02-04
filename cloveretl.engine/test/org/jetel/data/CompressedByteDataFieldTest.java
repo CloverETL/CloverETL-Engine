@@ -19,12 +19,13 @@
 package org.jetel.data;
 
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 
 public class CompressedByteDataFieldTest extends ByteDataFieldTest {
 
 	@Override
 	protected ByteDataField instantiateDataField() {
-		return new CompressedByteDataField(new DataFieldMetadata("byte", DataFieldMetadata.BYTE_FIELD, (short) 10));
+		return new CompressedByteDataField(new DataFieldMetadata("byte", DataFieldType.CBYTE, (short) 10));
 	}
-
+	
 }

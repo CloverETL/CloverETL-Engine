@@ -51,8 +51,8 @@ public class RecordFilterFactory {
 		return createFilter(filterExpression, new DataRecordMetadata[] { metadata }, graph, id, logger);
 	}
 	
-	public static RecordFilter createFilter(String filterExpression, DataRecordMetadata[] metadata, TransformationGraph graph, String id, Log logger) throws ComponentNotReadyException {
-		RecordFilter filter;
+	public static RecordsFilter createFilter(String filterExpression, DataRecordMetadata[] metadata, TransformationGraph graph, String id, Log logger) throws ComponentNotReadyException {
+		RecordsFilter filter;
 		
 		if (filterExpression.contains(org.jetel.ctl.TransformLangExecutor.CTL_TRANSFORM_CODE_ID)) {
 			// new CTL initialization

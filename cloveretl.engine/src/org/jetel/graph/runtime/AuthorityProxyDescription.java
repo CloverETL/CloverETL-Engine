@@ -18,7 +18,7 @@
  */
 package org.jetel.graph.runtime;
 
-import org.jetel.data.GraphElementDescription;
+import org.jetel.data.GraphElementDescriptionImpl;
 import org.jetel.plugin.Extension;
 
 /**
@@ -31,7 +31,7 @@ import org.jetel.plugin.Extension;
  *
  * @created 30.5.2013
  */
-public class AuthorityProxyDescription extends GraphElementDescription {
+public class AuthorityProxyDescription extends GraphElementDescriptionImpl {
 
     public final static String EXTENSION_POINT_ID = "authorityProxy";
     

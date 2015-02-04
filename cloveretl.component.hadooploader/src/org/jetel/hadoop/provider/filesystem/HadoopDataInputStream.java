@@ -19,14 +19,13 @@
 package org.jetel.hadoop.provider.filesystem;
 
 import java.io.DataInputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.SeekableByteChannel;
 
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.jetel.hadoop.service.filesystem.HadoopDataInput;
-import org.jetel.util.bytes.SeekableByteChannel;
 
 public class HadoopDataInputStream implements HadoopDataInput, SeekableByteChannel {
 
@@ -155,8 +154,14 @@ public class HadoopDataInputStream implements HadoopDataInput, SeekableByteChann
 
 	@Override
 	public int read(ByteBuffer dst) throws IOException {
-		if (dst.hasArray()){
-			return stream.read(dst.array());
+		if (dst.hasArray()) {
+			// the starting position may not be 0, the limit is the number of remaining bytes before the limit
+			int n = stream.read(dst.array(), dst.position(), dst.remaining());
+			// ReadableByteChannel.read(ByteBuffer) must update the buffer position
+			if (n > 0) {
+				dst.position(dst.position() + n);
+			}
+			return n;
 		}else{
 			int len;
 			int remaining;

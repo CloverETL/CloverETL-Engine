@@ -19,6 +19,7 @@
 package org.jetel.ctl;
 
 import java.io.InputStream;
+import java.io.Reader;
 import java.util.List;
 
 import org.jetel.ctl.ASTnode.CLVFStart;
@@ -41,6 +42,13 @@ public interface ITLCompiler {
 	public List<ErrorMessage> validateExpression(InputStream input);	
 	
 	/**
+	 * Validate given (Filter) expression stored in the InputStream
+	 * @param input
+	 * @return list of error messages (empty when no errors)
+	 */
+	public List<ErrorMessage> validateExpression(Reader input);	
+	
+	/**
 	 * Validate complex CTL code
 	 * @param code
 	 * @return	list of error messages (empty when no errors)
@@ -54,6 +62,14 @@ public interface ITLCompiler {
 	 * @return list of error messages (empty when no errors)
 	 */
 	public List<ErrorMessage> validate(InputStream input);	
+	
+	/**
+	 * Validate complex CTL code stored in the input stream.
+	 * Can be called repeatedly with different input stream.
+	 * @param input
+	 * @return list of error messages (empty when no errors)
+	 */
+	public List<ErrorMessage> validate(Reader input);	
 	
 	/** 
 	 * Sets tabulator size (in characters) for the parser to correctly calculate

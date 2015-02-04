@@ -18,6 +18,8 @@
  */
 package org.jetel.metadata;
 
+import org.jetel.exception.JetelRuntimeException;
+
 
 /**
  * Enumeration of types of flat file parsing.
@@ -79,4 +81,20 @@ public enum DataRecordParsingType {
 		throw new IllegalArgumentException("Unknown flat data type '" + charIdentifier + "'.");
 	}
 
+	/**
+	 * @param parsingTypeStr
+	 * @return instance of {@link DataRecordParsingType} based on given string representation
+	 */
+	public static DataRecordParsingType fromString(String parsingTypeStr) {
+		if ("delimited".equalsIgnoreCase(parsingTypeStr)) {
+			return DataRecordParsingType.DELIMITED;
+		} else if ("fixed".equalsIgnoreCase(parsingTypeStr)) {
+			return DataRecordParsingType.FIXEDLEN;
+		} else if ("mixed".equalsIgnoreCase(parsingTypeStr)) {
+			return DataRecordParsingType.MIXED;
+		} else {
+			throw new JetelRuntimeException("Unknown record type '" + parsingTypeStr + "'. One of these options is supported delimited|fixed|mixed.");
+		}
+	}
+	
 }

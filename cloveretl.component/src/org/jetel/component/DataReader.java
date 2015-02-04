@@ -39,6 +39,8 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
@@ -155,6 +157,7 @@ public class DataReader extends Node {
 
 	protected TextParser parser;
     private MultiFileReader reader;
+    private String policyTypeStr;
     private PolicyType policyType = PolicyType.STRICT;
 
 	private String charset;
@@ -212,6 +215,8 @@ public class DataReader extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
         super.init();
+        
+        policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
 
 		//is the logging port attached?
 		if (getOutputPort(LOG_PORT) != null) {
@@ -273,11 +278,13 @@ public class DataReader extends Node {
 						throw bdfe;
 					} else {
 						if (logging) {
-							// TODO implement log port framework
-							((Numeric) logRecord.getField(0))
-									.setValue(bdfe.getRecordNumber());
-							((IntegerDataField) logRecord.getField(1))
-									.setValue(bdfe.getFieldNumber() + 1);
+							logRecord.reset();
+							if (bdfe.getRecordNumber() > -1) {
+								((Numeric) logRecord.getField(0)).setValue(bdfe.getRecordNumber());
+							}
+							if (bdfe.getFieldNumber() > -1) {
+								((IntegerDataField) logRecord.getField(1)).setValue(bdfe.getFieldNumber() + 1);
+							}
 							setCharSequenceToField(bdfe.getRawRecord(), logRecord.getField(2));
 							setCharSequenceToField(ExceptionUtils.getMessage(bdfe), logRecord.getField(3));
 							if (hasFileNameField) {
@@ -383,6 +390,7 @@ public class DataReader extends Node {
         parserCfg.setSkipTrailingBlanks(skipTrailingBlanks);
         parserCfg.setTryToMatchLongerDelimiter(DataRecordUtils.containsPrefixDelimiters(parserCfg.getMetadata()));
         parserCfg.setTrim(trim);
+        parserCfg.setPolicyType(policyType);
         if( incrementalFile != null || incrementalKey != null || skipFirstLine || skipRows > 0 || skipSourceRows > 0 ) {
         	parserCfg.setSkipRows(true);
         }
@@ -396,7 +404,7 @@ public class DataReader extends Node {
 	private void prepareMultiFileReader() throws ComponentNotReadyException {
 		// initialize multifile reader based on prepared parser
 		TransformationGraph graph = getGraph();
-        reader = new MultiFileReader(parser, graph != null ? graph.getRuntimeContext().getContextURL() : null, fileURL);
+        reader = new MultiFileReader(parser, getContextURL(), fileURL);
         reader.setLogger(logger);
         reader.setSkip(skipRows);
         reader.setNumSourceRecords(numSourceRecords);
@@ -548,10 +556,16 @@ public class DataReader extends Node {
         	return status;
         }
 
+		if (!PolicyType.isPolicyType(policyTypeStr)) {
+			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+		} else {
+			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+		}
+
         if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
         
         try {
@@ -577,11 +591,6 @@ public class DataReader extends Node {
         
         return status;
     }
-	
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
 	
 	public void setFileURL(String fileURL){
 		this.fileURL = fileURL;
@@ -625,14 +634,14 @@ public class DataReader extends Node {
 		this.maxErrorCount = maxErrorCount;
 	}
     
-    public void setPolicyType(String strPolicyType) {
-        setPolicyType(PolicyType.valueOfIgnoreCase(strPolicyType));
+    public void setPolicyType(String policyTypeStr) {
+        this.policyTypeStr = policyTypeStr;
     }
     
     public void setPolicyType(PolicyType policyType) {
-        this.policyType = policyType;
+    	this.policyTypeStr = (policyType != null) ? policyType.toString() : null;
     }
-
+    
 	@Override
 	public synchronized void free() {
 		super.free();

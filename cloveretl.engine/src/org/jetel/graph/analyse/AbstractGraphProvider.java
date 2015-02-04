@@ -18,6 +18,10 @@
  */
 package org.jetel.graph.analyse;
 
+import org.jetel.graph.Node;
+import org.jetel.util.ClusterUtils;
+import org.jetel.util.SubgraphUtils;
+
 
 /**
  * Common ancestor for both implementation of {@link GraphProvider} interface.
@@ -30,4 +34,62 @@ package org.jetel.graph.analyse;
  */
 public abstract class AbstractGraphProvider implements GraphProvider {
 
+	/**
+	 * Edge function defines how to traverse from a component to an other component.
+	 * Some edges can be avoided from algorithm or edges can be used in opposite direction.
+	 */
+	private EdgeFunction edgeFunction;
+	
+	/**
+	 * This flag indicates the SubgraphInput (or SubgraphOutput) component will be considered
+	 * as single component. Otherwise, each port of SGI or SGO component represents separate
+	 * 'component' entity for this graph provider.
+	 */
+	private boolean subgraphInputOutputAsSingleComponent = false;
+	
+	/**
+	 * This flag indicates whether the SubgraphInput and SubgraphOutput components are
+	 * part of provided graph.
+	 */
+	private boolean subgraphInputOutputVisibility = false;
+	
+	/**
+	 * RemoteEdgeComponent and SubJobInput/Output components are not processed in regular way.
+	 * @return true for the component which are dedicated to be root of graph processing
+	 */
+	protected boolean isAllowedComponent(Node component) {
+		return !ClusterUtils.isRemoteEdgeComponent(component.getType())
+				&& (isSubgraphInputOutputVisibility() || !SubgraphUtils.isSubJobInputOutputComponent(component.getType()));
+	}
+	
+	@Override
+	public void setEdgeFunction(EdgeFunction edgeFunction) {
+		this.edgeFunction = edgeFunction;
+	}
+	
+	@Override
+	public EdgeFunction getEdgeFunction() {
+		return edgeFunction;
+	}
+	
+	@Override
+	public void setSubgraphInputOutputAsSingleComponent(boolean subgraphInputOutputAsSingleComponent) {
+		this.subgraphInputOutputAsSingleComponent = subgraphInputOutputAsSingleComponent;
+	}
+	
+	@Override
+	public boolean isSubgraphInputOutputAsSingleComponent() {
+		return subgraphInputOutputAsSingleComponent;
+	}
+	
+	@Override
+	public void setSubgraphInputOutputVisibility(boolean subgraphInputOutputVisibility) {
+		this.subgraphInputOutputVisibility = subgraphInputOutputVisibility;
+	}
+	
+	@Override
+	public boolean isSubgraphInputOutputVisibility() {
+		return subgraphInputOutputVisibility;
+	}
+	
 }

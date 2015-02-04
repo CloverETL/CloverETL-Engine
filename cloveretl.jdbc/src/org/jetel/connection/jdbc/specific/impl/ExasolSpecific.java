@@ -19,8 +19,10 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Properties;
 
 import org.jetel.connection.jdbc.AbstractCopySQLData.CopyDouble;
 import org.jetel.connection.jdbc.specific.conn.ExasolConnection;
@@ -49,6 +51,18 @@ public class ExasolSpecific extends AbstractJdbcSpecific {
 	
 	protected ExasolSpecific() {
 		super();
+	}
+
+	/*
+	 * CLO-2067: Check the user name.
+	 */
+	@Override
+	public Connection connect(Driver driver, String url, Properties info) throws SQLException {
+		String user = (info != null) ? info.getProperty("user") : null;
+		if (user == null) {
+			throw new SQLException("Username was not specified, connect aborted");
+		}
+		return super.connect(driver, url, info);
 	}
 
 	@Override

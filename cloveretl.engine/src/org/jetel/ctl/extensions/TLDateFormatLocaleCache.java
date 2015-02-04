@@ -18,6 +18,8 @@
  */
 package org.jetel.ctl.extensions;
 
+import java.util.Objects;
+
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.util.formatter.DateFormatter;
 import org.jetel.util.formatter.DateFormatterFactory;
@@ -28,21 +30,25 @@ import org.jetel.util.formatter.DateFormatterFactory;
  *
  * @created May 25, 2010
  */
-public class TLDateFormatLocaleCache extends TLCache {
+public class TLDateFormatLocaleCache extends TLFormatterCache {
 
 	private DateFormatter cachedFormatter;
-	private String previousLocaleString;
-	private String previousTimeZoneString;
+	
+	private TLDateFormatLocaleCache(TLFunctionCallContext context) {
+		super(context);
+	}
 	
 	/**
 	 * @deprecated Use {@link #TLDateFormatLocaleCache(TLFunctionCallContext, int, int, int)} instead. 
 	 */
 	@Deprecated
 	public TLDateFormatLocaleCache(TLFunctionCallContext context, int patternPos, int localePos) {
+		this(context);
 		createCachedLocaleFormat(context, patternPos, localePos, -1);
 	}
 
 	public TLDateFormatLocaleCache(TLFunctionCallContext context, int patternPos, int localePos, int timeZonePos) {
+		this(context);
 		createCachedLocaleFormat(context, patternPos, localePos, timeZonePos);
 	}
 	
@@ -64,7 +70,7 @@ public class TLDateFormatLocaleCache extends TLCache {
 		if (context.getLiteralsSize() <= localePos || !(context.getParamValue(localePos) instanceof String)) {
 			String pattern = (String) paramPattern;
 			if (context.isLiteral(patternPos)) {
-				cachedFormatter = DateFormatterFactory.getFormatter(pattern);
+				cachedFormatter = DateFormatterFactory.getFormatter(pattern, context.getDefaultLocale(), context.getDefaultTimeZone());
 			}
 			return;
 		}
@@ -74,21 +80,20 @@ public class TLDateFormatLocaleCache extends TLCache {
 				String pattern = (String) paramPattern;
 				String paramLocale = (String) context.getParamValue(localePos);
 				String paramTimeZone = (String) context.getParamValue(timeZonePos);
-				cachedFormatter = DateFormatterFactory.getFormatter(pattern, paramLocale, paramTimeZone);
+				cachedFormatter = DateFormatterFactory.getFormatter(pattern, getLocale(paramLocale), getTimeZone(paramTimeZone));
 			}
 		} else {
 			if (context.isLiteral(patternPos) && context.isLiteral(localePos)) {
 				String pattern = (String) paramPattern;
 				String paramLocale = (String) context.getParamValue(localePos);
-				cachedFormatter = DateFormatterFactory.getFormatter(pattern, paramLocale);
+				cachedFormatter = DateFormatterFactory.getFormatter(pattern, getLocale(paramLocale), context.getDefaultTimeZone());
 			}
 		}
 		
 	}
-
 	
 	private DateFormatter getCachedFormatter3(TLFunctionCallContext context, 
-			String format, String locale, String timeZone,
+			String format, String localeString, String timeZoneString,
 			int patternPos, int localePos, int timeZonePos) {
 		// if we use the variant with format, locale and time zone specified
 		if ((context.isLiteral(patternPos) && context.isLiteral(localePos) && context.isLiteral(timeZonePos))
@@ -97,8 +102,8 @@ public class TLDateFormatLocaleCache extends TLCache {
 				|| (cachedFormatter != null 
 						&& format.equals(cachedFormatter.getPattern()) 
 						// careful when locale or timeZone is null! See test_convertlib_date2str.ctl
-						&& ((locale == previousLocaleString) || (locale != null && locale.equals(previousLocaleString)))
-						&& ((timeZone == previousTimeZoneString) || (timeZone != null && timeZone.equals(previousTimeZoneString)))
+						&& Objects.equals(localeString, previousLocaleString)
+						&& Objects.equals(timeZoneString, previousTimeZoneString)
 					)
 				// or format is already cached and previous inputs match the current ones
 				)
@@ -106,9 +111,7 @@ public class TLDateFormatLocaleCache extends TLCache {
 			return cachedFormatter;
 		} else {
 			// otherwise we have to recompute cache and remember just in the case future input will be the same
-			cachedFormatter = DateFormatterFactory.getFormatter(format, locale, timeZone);
-			previousLocaleString = locale;
-			previousTimeZoneString = timeZone;
+			cachedFormatter = DateFormatterFactory.getFormatter(format, getLocale(localeString), getTimeZone(timeZoneString));
 
 			return cachedFormatter;
 		}
@@ -124,7 +127,7 @@ public class TLDateFormatLocaleCache extends TLCache {
 				|| (cachedFormatter != null 
 						&& format.equals(cachedFormatter.getPattern()) 
 						// careful when locale or timeZone is null! See test_convertlib_date2str.ctl
-						&& ((locale == previousLocaleString) || (locale != null && locale.equals(previousLocaleString)))
+						&& Objects.equals(locale, previousLocaleString)
 					)
 				// or format is already cached and previous inputs match the current ones
 				)
@@ -132,8 +135,7 @@ public class TLDateFormatLocaleCache extends TLCache {
 				return cachedFormatter;
 			} else {
 				// otherwise we have to recompute cache and remember just in the case future input will be the same
-				cachedFormatter = DateFormatterFactory.getFormatter(format, locale);
-				previousLocaleString = locale;
+				cachedFormatter = DateFormatterFactory.getFormatter(format, getLocale(locale), context.getDefaultTimeZone());
 
 				return cachedFormatter;
 			}
@@ -150,7 +152,7 @@ public class TLDateFormatLocaleCache extends TLCache {
 			return cachedFormatter;
 		} else {
 			// same as above but just for format (default locale and time zone is used) 
-			cachedFormatter = DateFormatterFactory.getFormatter(format);
+			cachedFormatter = DateFormatterFactory.getFormatter(format, context.getDefaultLocale(), context.getDefaultTimeZone());
 
 			return cachedFormatter;				
 		}

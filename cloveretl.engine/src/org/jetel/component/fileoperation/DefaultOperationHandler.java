@@ -119,7 +119,7 @@ public class DefaultOperationHandler implements IOperationHandler {
 			boolean success = true;
 			URI parentURI = targetInfo.getURI();
 			for (Info child: manager.list(source)) {
-				SingleCloverURI childUri = CloverURI.createSingleURI(parentURI, child.getName()).getAbsoluteURI(); 
+				SingleCloverURI childUri = CloverURI.createSingleURI(URIUtils.getChildURI(parentURI, child.getName())).getAbsoluteURI(); 
 				success &= copyInternal(CloverURI.createSingleURI(child.getURI()), childUri, params);
 			}
 			return success;
@@ -173,10 +173,10 @@ public class DefaultOperationHandler implements IOperationHandler {
 			throw new IOException("Failed to obtain target file info", targetInfo.getFirstError());
 		}
 		if (targetInfo.isDirectory()) {
-			target = CloverURI.createSingleURI(targetInfo.getURI(), sourceInfo.getName()).getAbsoluteURI();
+			target = CloverURI.createSingleURI(URIUtils.getChildURI(targetInfo.getURI(), sourceInfo.getName())).getAbsoluteURI();
 		} else if (target.getPath().endsWith(URIUtils.PATH_SEPARATOR)) {
 			if (Boolean.TRUE.equals(params.isMakeParents())) {
-				target = CloverURI.createSingleURI(target.toURI(), sourceInfo.getName()).getAbsoluteURI();
+				target = CloverURI.createSingleURI(URIUtils.getChildURI(target.toURI(), sourceInfo.getName())).getAbsoluteURI();
 			} else if (!sourceInfo.isDirectory()) {
 				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), target.getPath())); //$NON-NLS-1$
 			}

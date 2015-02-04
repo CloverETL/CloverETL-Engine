@@ -137,6 +137,7 @@ public class FixLenDataReader extends Node {
 
 	private FixLenDataParser parser;
     private MultiFileReader reader;
+    private String policyTypeStr;
     private PolicyType policyType;
     private boolean skipFirstLine = false;
 	private int skipRows = 0; // do not skip rows by default
@@ -249,6 +250,9 @@ public class FixLenDataReader extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
+		
+		policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+
 		prepareReader();
 		prepareMultiFileReader();
 	}
@@ -276,7 +280,7 @@ public class FixLenDataReader extends Node {
 	private void prepareMultiFileReader() throws ComponentNotReadyException {
         // initialize multifile reader based on prepared parser
 		TransformationGraph graph = getGraph();
-        reader = new MultiFileReader(parser, graph != null ? graph.getRuntimeContext().getContextURL() : null, fileURL);
+        reader = new MultiFileReader(parser, getContextURL(), fileURL);
         reader.setLogger(logger);
         reader.setSkipSourceRows(skipFirstLine ? 1 : 0);
         reader.setSkip(skipRows);
@@ -400,10 +404,16 @@ public class FixLenDataReader extends Node {
         	return status;
         }
         
+		if (!PolicyType.isPolicyType(policyTypeStr)) {
+			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+		} else {
+			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+		}
+
         if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
         
         checkMetadata(status, getOutMetadata());
@@ -425,10 +435,6 @@ public class FixLenDataReader extends Node {
         return status;
     }
 	
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
     /**
      * @return Returns the skipRows.
      */
@@ -442,18 +448,10 @@ public class FixLenDataReader extends Node {
         this.skipRows = skipRows;
     }
     
-    public void setPolicyType(String strPolicyType) {
-        setPolicyType(PolicyType.valueOfIgnoreCase(strPolicyType));
+    public void setPolicyType(String policyTypeStr) {
+    	this.policyTypeStr = policyTypeStr;
     }
-    
-	public void setPolicyType(PolicyType policyType) {
-        this.policyType = policyType;
-	}
 
-	public PolicyType getPolicyType() {
-		return this.parser.getPolicyType();
-	}
-	
     private boolean isByteMode() {
     	return byteMode;
     }

@@ -151,11 +151,6 @@ public class SimpleCopy extends Node {
     }
 	
 	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-	
-	@Override
 	protected ComponentTokenTracker createComponentTokenTracker() {
 		return new CopyComponentTokenTracker(this);
 	}

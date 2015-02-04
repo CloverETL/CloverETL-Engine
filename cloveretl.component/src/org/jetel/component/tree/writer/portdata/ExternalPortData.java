@@ -85,7 +85,7 @@ abstract class ExternalPortData extends PortData {
 			record.getField(key[i]).setValue(parentRecord.getField(parentKey[i]));
 		}
 		
-		record.serialize(recordBuffer, key);
+		record.serializeUnitary(recordBuffer, key);
 		recordBuffer.put(SERIALIZED_LONG_ZERO);
 		int dataLength = recordBuffer.position();
 		recordBuffer.flip();
@@ -94,7 +94,7 @@ abstract class ExternalPortData extends PortData {
 		recordBuffer.clear();
 
 		return serializedKey;
-	}
+	} 
 		
 	protected static boolean equalsKey(Tuple<byte[], byte[]> tuple, byte[] key) {
 		byte[] foundKey = tuple.getKey();

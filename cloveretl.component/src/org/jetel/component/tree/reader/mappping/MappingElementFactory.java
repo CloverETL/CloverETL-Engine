@@ -43,6 +43,7 @@ public class MappingElementFactory {
 	
 	private static final String CLOVER_FIELD_ARTTR = "cloverField";
 	private static final String NODE_NAME_ATTR = "nodeName";
+	private static final String INPUT_FIELD_ATTR = "inputField";
 	private static final String TRIM_ATTR = "trim";
 	
 	private static final String OUTPUT_PORT_ATTR = "outPort";
@@ -130,14 +131,17 @@ public class MappingElementFactory {
 		throws MalformedMappingException {
 		
 		FieldMapping field = new FieldMapping();
-		if (!(element.hasAttribute(XPATH_ATTR) ^ element.hasAttribute(NODE_NAME_ATTR))) {
-			throw new MalformedMappingException("either " + XPATH_ATTR + " or " + NODE_NAME_ATTR + " is required on element " + element.getNodeName());
+		if (!(element.hasAttribute(XPATH_ATTR) ^ element.hasAttribute(NODE_NAME_ATTR) ^ element.hasAttribute(INPUT_FIELD_ATTR))) {
+			throw new MalformedMappingException("Exactly one of attributes " + XPATH_ATTR + ", " + NODE_NAME_ATTR + ", " + INPUT_FIELD_ATTR + " is required on element " + element.getNodeName());
 		}
 		if (element.hasAttribute(XPATH_ATTR)) {
 			field.setXPath(element.getAttribute(XPATH_ATTR));
 		}
 		if (element.hasAttribute(NODE_NAME_ATTR)) {
 			field.setNodeName(element.getAttribute(NODE_NAME_ATTR));
+		}
+		if (element.hasAttribute(INPUT_FIELD_ATTR)) {
+			field.setInputField(element.getAttribute(INPUT_FIELD_ATTR));
 		}
 		if (!element.hasAttribute(CLOVER_FIELD_ARTTR)) {
 			throw new MalformedMappingException(CLOVER_FIELD_ARTTR + " is required on element " + element.getNodeName());

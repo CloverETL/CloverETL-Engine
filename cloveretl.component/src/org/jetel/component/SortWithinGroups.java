@@ -193,11 +193,6 @@ public class SortWithinGroups extends Node {
 
         ComponentXMLAttributes componentAttributes = new ComponentXMLAttributes(xmlElement, transformationGraph);
 
-        if (!componentAttributes.getString(XML_TYPE_ATTRIBUTE).equalsIgnoreCase(COMPONENT_TYPE)) {
-            throw new XMLConfigurationException("The " + StringUtils.quote(XML_TYPE_ATTRIBUTE)
-                    + " attribute contains a value incompatible with this component!");
-        }
-
         String groupKey = componentAttributes.getString(XML_ATTRIBUTE_GROUP_KEY);
         String sortKey = componentAttributes.getString(XML_ATTRIBUTE_SORT_KEY);
 
@@ -271,11 +266,6 @@ public class SortWithinGroups extends Node {
         }
     }
 
-    @Override
-    public String getType() {
-        return COMPONENT_TYPE;
-    }
-
     public void setBufferCapacity(int bufferCapacity) {
         this.bufferCapacity = bufferCapacity;
     }
@@ -320,30 +310,30 @@ public class SortWithinGroups extends Node {
         DataRecordMetadata metadata = getInputPort(INPUT_PORT_NUMBER).getMetadata();
 
         if (groupKeyFields == null) {
-            status.add(new ConfigurationProblem("The group key is empty!", Severity.ERROR, this, Priority.HIGH));
+            status.add(new ConfigurationProblem("The group key is empty!", Severity.ERROR, this, Priority.HIGH, XML_ATTRIBUTE_GROUP_KEY));
         } else {
             for (String groupKeyField : groupKeyFields) {
                 if (metadata.getField(groupKeyField) == null) {
                     status.add(new ConfigurationProblem("The group key field " + StringUtils.quote(groupKeyField)
-                            + " doesn't exist!", Severity.ERROR, this, Priority.HIGH));
+                            + " doesn't exist!", Severity.ERROR, this, Priority.HIGH, XML_ATTRIBUTE_GROUP_KEY));
                 }
             }
         }
 
         if (sortKeyFields == null) {
-            status.add(new ConfigurationProblem("The sort key is empty!", Severity.ERROR, this, Priority.HIGH));
+            status.add(new ConfigurationProblem("The sort key is empty!", Severity.ERROR, this, Priority.HIGH, XML_ATTRIBUTE_SORT_KEY));
         } else {
             for (String sortKeyField : sortKeyFields) {
                 if (metadata.getField(sortKeyField) == null) {
                     status.add(new ConfigurationProblem("The sort key field " + StringUtils.quote(sortKeyField)
-                            + " doesn't exist!", Severity.ERROR, this, Priority.HIGH));
+                            + " doesn't exist!", Severity.ERROR, this, Priority.HIGH, XML_ATTRIBUTE_SORT_KEY));
                 }
             }
         }
 
         if (numberOfTapes <= 0) {
             status.add(new ConfigurationProblem("The number of tapes is less than 1!",
-                    Severity.ERROR, this, Priority.NORMAL));
+                    Severity.ERROR, this, Priority.NORMAL, XML_ATTRIBUTE_NUMBER_OF_TAPES));
         }
 
         return status;
@@ -428,9 +418,10 @@ public class SortWithinGroups extends Node {
     }
 
     @Override
-    public synchronized void reset() throws ComponentNotReadyException {
-        super.reset();
-    }
+	public void postExecute() throws ComponentNotReadyException {
+		super.postExecute();
+		dataRecordSorter.postExecute();
+	}
 
     @Override
     public synchronized void free() {

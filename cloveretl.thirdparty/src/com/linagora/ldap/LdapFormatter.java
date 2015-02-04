@@ -18,6 +18,10 @@
  */
 package com.linagora.ldap;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
@@ -28,10 +32,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.MapDataField;
+import org.jetel.data.StringDataField;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.JetelRuntimeException;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.CloverString;
+import org.jetel.util.string.StringUtils;
 
 import com.linagora.ldap.Jetel2LdapData.Jetel2LdapByte;
 import com.linagora.ldap.Jetel2LdapData.Jetel2LdapString;
@@ -45,11 +56,13 @@ import com.linagora.ldap.Jetel2LdapData.Jetel2LdapString;
  * @since september 2006
  */
 public class LdapFormatter {
-	/**
-	 * Possible actions and there meaning
-	 * TODO : change it to Enumeration (java 5 only)
-	 */
+
 	
+	/**
+	 * 
+	 */
+	private static final String LDAP_DN_DISTINGUISHED_NAME = "dn";
+
 	/**
 	 * Add a new entry. 
 	 * Metadata MUST contains 'dn', 'objectclass' and linked 
@@ -98,8 +111,12 @@ public class LdapFormatter {
 	/** Object that manage connection and execute commands */
 	private LdapManager ldapManager;
 	
-	/** Ugly hack to simulate multivaluated attributes */
+	/** processing of multivaluated attributes */
 	private String multiSeparator = null; //'null' means no multi-values are expected
+	
+	private Jetel2LdapString string2attribute;
+	private int dnFieldIdx;
+	private int[] ignoreFields;
 	
 	/**
 	 * A logger (log4j) for the class
@@ -135,10 +152,11 @@ public class LdapFormatter {
 		
 		this.metadata = metadata;
 		
-		char dn_type = this.metadata.getFieldType("dn");
-		if(dn_type != DataFieldMetadata.STRING_FIELD) {
+		DataFieldMetadata dnField = this.metadata.getField(LDAP_DN_DISTINGUISHED_NAME);
+		if(dnField == null || dnField.getDataType()!=DataFieldType.STRING) {
 			throw new BadDataFormatException("Metadata MUST have a \"dn\" field of type string.");
 		}
+		dnFieldIdx = dnField.getNumber();
 		
 		/* 
 		 * create a new LdapManager to do related actions
@@ -205,14 +223,14 @@ public class LdapFormatter {
 	 */
 	public void write(DataRecord record) throws NamingException, BadDataFormatException {
 		boolean dn_exists = false;
-		String dn = record.getField("dn").toString();
+		String dn = record.getField(dnFieldIdx).toString();
 		
-		if(null == dn|| dn.equals("")) {
+		if(StringUtils.isEmpty(dn)) {
 			if(logger.isDebugEnabled()) {
 				logger.debug("<LdapFormatter> guilty record: ");
 				logger.debug("<LdapFormatter> " + record.toString());
 			}
-			throw new BadDataFormatException("Metadatas MUST have a \"dn\" field (not null).");
+			throw new BadDataFormatException("Empty \"dn\" field.");
 		}
 		
 		/*
@@ -237,8 +255,12 @@ public class LdapFormatter {
 		for (int i = 0; i < transMap.length; i++) {
 			// TODO Labels:
 			//String attrId = this.metadata.getField(i).getLabelOrName();
+			
+			//check ignore fields list/ skip if so
+			if (isIgnored(i)) continue;
+			
 			String attrId = this.metadata.getField(i).getName();
-			if(!attrId.equalsIgnoreCase("dn")) { //ignore dn as an attribute
+			if(!attrId.equalsIgnoreCase(LDAP_DN_DISTINGUISHED_NAME)) { //ignore dn as an attribute
 				Attribute attr = new BasicAttribute(attrId);
 				DataField dataField = record.getField(i);
 				
@@ -246,18 +268,22 @@ public class LdapFormatter {
 				if ((this.action == ADD_ENTRY && !dn_exists) && dataField.isNull()) {
 					continue;
 				}
-				transMap[i].setAttribute(attr, dataField);
-				/*
-				 * TODO Hum. Shall we add the attr in every case ? 
-				 * For instance, if the value is null or equals to "", should we had
-				 * the attribute ? In this case, think about setAttribute(attrs, ...)
-				 */
-				attrs.put(attr);
+				if (dataField.getMetadata().getContainerType() == DataFieldContainerType.MAP){
+					fillFromMap(attrs, (MapDataField)dataField);
+				}else{
+					transMap[i].setAttribute(attr, dataField);
+					/*
+					 * TODO Hum. Shall we add the attr in every case ? 
+					 * For instance, if the value is null or equals to "", should we had
+					 * the attribute ? In this case, think about setAttribute(attrs, ...)
+					 */
+					attrs.put(attr);
+				}
+				
 			}
 		}
 		
-		try {
-			switch (this.action) {
+		switch (this.action) {
 			case REPLACE_ATTRIBUTES:
 				/*
 				 * Update an existing entry
@@ -303,20 +329,10 @@ public class LdapFormatter {
 				ldapManager.deleteAttributes(dn,attrs);
 				break;
 			default:
-				throw new JetelException (
+				throw new JetelRuntimeException (
 						"Unknown specified action :"
 						+ this.action +" ");
 			}
-		} catch (Exception e) {
-			if(logger.isDebugEnabled()) {
-				logger.debug("<LdapFormatter> guilty record: ");
-				logger.debug("<LdapFormatter> " + record.toString());
-			}
-			throw new BadDataFormatException (
-					"Error when trying to update Ldap directory entry :"
-					+ dn + " ", e);
-		}
-		
 	}
 	
 	public void close() {
@@ -330,6 +346,17 @@ public class LdapFormatter {
 		}
 	}
 	
+	
+	private void fillFromMap(Attributes attrs, MapDataField field){
+		Map<String,CloverString> map= field.getValue(CloverString.class);
+		
+		for(Map.Entry<String,CloverString> entry: map.entrySet()){
+			Attribute attr = new BasicAttribute(entry.getKey());
+			attr.add( new Object[] { entry.getValue().toString() });
+			attrs.put(attr);
+		}
+		
+	}
 	
 	private void initTransMap() throws NamingException {
 		for (int i = 0; i < this.metadata.getNumFields(); i++) {
@@ -361,6 +388,8 @@ public class LdapFormatter {
 				"Only String and Byte array types are supported.");
 			}
 		}
+		// will be used for map data field
+		string2attribute=new Jetel2LdapString(this.multiSeparator);
 	}
 	
 	public String getMultiSeparator() {
@@ -369,6 +398,28 @@ public class LdapFormatter {
 
 	public void setMultiValueSeparator(String multiSeparator) {
 		this.multiSeparator = multiSeparator;
+	}
+
+	/**
+	 * @return the ignoreFields
+	 */
+	public int[] getIgnoreFields() {
+		return ignoreFields;
+	}
+
+	/**
+	 * @param ignoreFields the ignoreFields to set
+	 */
+	public void setIgnoreFields(int[] ignoreFields) {
+		this.ignoreFields = ignoreFields;
+	}
+	
+	private boolean isIgnored(int idx){
+		if (ignoreFields==null) return false;
+		for(int i=0;i<ignoreFields.length;i++){
+			if (idx==ignoreFields[i]) return true;
+		}
+		return false;
 	}
 
 }

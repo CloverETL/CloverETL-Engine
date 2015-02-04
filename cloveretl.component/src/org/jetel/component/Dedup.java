@@ -495,7 +495,7 @@ public class Dedup extends Node {
         }
         
         if (noDupRecord < 1) {
-        	throw new ComponentNotReadyException(this, 
+        	throw new ComponentNotReadyException(this, XML_NO_DUP_RECORD_ATTRIBUTE,
         			StringUtils.quote(XML_NO_DUP_RECORD_ATTRIBUTE) 
         			+ " must be positive number.");
         }
@@ -618,11 +618,6 @@ public class Dedup extends Node {
          
          return status;
      }
-	
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
 	
 	public void setKeep(int keep) {
 		this.keep = keep;

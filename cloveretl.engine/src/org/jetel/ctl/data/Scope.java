@@ -48,6 +48,10 @@ public class Scope {
 		return symbols.get(name);
 	}
 	
+	public Map<String,CLVFVariableDeclaration> getSymbols() {
+		return symbols;
+	}
+	
 	public Scope getParent() {
 		return parent;
 	}

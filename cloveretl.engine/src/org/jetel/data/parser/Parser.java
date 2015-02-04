@@ -29,6 +29,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  *  Interface to input data parsers
@@ -44,7 +45,9 @@ public interface Parser {
 	 * data source type by a {@link Parser}.
 	 */
 	public enum DataSourceType {
-		/** Data source represented by {@link ReadableByteChannel} or {@link InputStream} */
+		/** Data source represented by  {@link InputStream} */
+		STREAM,
+		/** Data source represented by {@link ReadableByteChannel} */
 		CHANNEL,
 		/** Data source represented by {@link File} */
 		FILE,
@@ -61,6 +64,30 @@ public interface Parser {
 	 */
 	public DataRecord getNext() throws JetelException;
 
+	/**
+	 * Returns <code>true</code> if the current file can be 
+	 * parsed using direct reading.
+	 * 
+	 * @return <code>true</code> if direct reading is possible
+	 */
+	public boolean isDirectReadingSupported();
+	
+	/**
+	 * Reads the next serialized record into the provided buffer.
+	 * The target buffer is cleared first.
+	 * <p>
+	 * The position of the target buffer will be set to 0
+	 * and the limit will be set to the end of the serialized record.
+	 * </p><p>
+	 * Returns <code>0</code> to indicate EOF. <code>1</code> on Success <code>-1</code>if direct reading can be performed for current data source
+	 * </p>
+	 * 
+	 * @param targetBuffer the target buffer
+	 * @return <code>0</code> to indicate EOF. <code>1</code> on Success <code>-1</code>if direct reading can be performed for current data source
+	 * @throws JetelException
+	 */
+	public int getNextDirect(CloverBuffer buffer) throws JetelException;
+	
 	/**
 	 * Skips specified number of records.
 	 * @param nRec Number of records to be skipped. 

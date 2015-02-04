@@ -36,7 +36,7 @@ import org.jetel.exception.TransformException;
  *
  * @see RecordFilter
  */
-public abstract class CTLRecordFilter extends CTLAbstractTransform implements RecordFilter {
+public abstract class CTLRecordFilter extends CTLAbstractTransform implements RecordsFilter {
 
 	/** Input data record used for filtering, or <code>null</code> if not accessible. */
 	private DataRecord[] inputRecords = null;

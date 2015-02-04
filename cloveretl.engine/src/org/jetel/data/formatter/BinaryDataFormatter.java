@@ -37,7 +37,7 @@ import org.jetel.util.bytes.CloverBuffer;
 /**
  * This is a simple binary formatter which is used to store DataRecord objects into files
  * 
- * DataRecords are stored in their serialzed form
+ * DataRecords are stored in their serialised form
  * Uses java.nio channels and DataRecord.(de)serialize()
  * 
  * @author pnajvar
@@ -51,6 +51,8 @@ public class BinaryDataFormatter extends AbstractFormatter {
 	private DataRecordMetadata metaData;
 	private boolean useDirectBuffers = true;
 	
+	/** Which kind of data record serialization should be used? */
+	private boolean unitarySerialization = false;
 	
 	public BinaryDataFormatter() {
 		
@@ -68,17 +70,35 @@ public class BinaryDataFormatter extends AbstractFormatter {
 		setDataTarget(f);
 	}
 	
+	/**
+	 * Sets the formatter to serialise the given data records using {@link DataRecord#serializeUnitary(CloverBuffer)}
+	 * method.
+	 * Regular serialisation is used by default.
+	 */
+	public void setUnitarySerialization(boolean unitarySerialization) {
+		this.unitarySerialization = unitarySerialization;
+	}
+	
+	/**
+	 * @return true if unitary serialisation of data records will be used
+	 */
+	public boolean getUnitarySerialization() {
+		return unitarySerialization;
+	}
+	
 	@Override
-	public void close() {
-		if (writer != null && writer.isOpen()) {
-			try {
-				flush();
-				writer.close();
-			} catch (IOException e) {
-				e.printStackTrace();
+	public void close() throws IOException {
+		try {
+			if ((writer != null) && writer.isOpen()) {
+				try {
+					flush();
+				} finally {
+					writer.close();
+				}
 			}
+		} finally {
+			buffer.clear();
 		}
-		buffer.clear();
 	}
 
 	@Override
@@ -106,7 +126,11 @@ public class BinaryDataFormatter extends AbstractFormatter {
 	
 	@Override
 	public void reset() {
-		close();
+		try {
+			close();
+		} catch (IOException ioe) {
+			throw new JetelRuntimeException(ioe);
+		}
 	}
 
 	@Override
@@ -126,13 +150,17 @@ public class BinaryDataFormatter extends AbstractFormatter {
 
 	@Override
 	public int write(DataRecord record) throws IOException {
-		int recordSize = record.getSizeSerialized();
+		int recordSize = unitarySerialization ? record.getSizeSerializedUnitary() : record.getSizeSerialized();
 		int lengthSize = ByteBufferUtils.lengthEncoded(recordSize);
 		if (buffer.remaining() < recordSize + lengthSize) {
 			flush();
 		}
         ByteBufferUtils.encodeLength(buffer, recordSize);
-        record.serialize(buffer);
+        if (unitarySerialization) {
+            record.serializeUnitary(buffer);
+        } else {
+        	record.serialize(buffer);
+        }
         
         return recordSize + lengthSize;
 	}
@@ -149,7 +177,19 @@ public class BinaryDataFormatter extends AbstractFormatter {
         return recordSize + lengthSize;
 	}
 
-
+	/**
+	 * Writes the given integer to current data target.
+	 * @param value written integer
+	 * @return number of written bytes (4)
+	 * @throws IOException
+	 */
+	public int writeInt(int value) throws IOException {
+		if (buffer.remaining() < Integer.SIZE / 8) { // 4
+			flush();
+		}
+		buffer.putInt(value);
+		return Integer.SIZE / 8; // 4
+	}
 	
 	@Override
 	public int writeFooter() throws IOException {

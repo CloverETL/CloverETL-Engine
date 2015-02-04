@@ -46,11 +46,11 @@ public class NumericFormatterFactoryTest extends CloverTestCase {
 		MathContext precision = new MathContext(100, RoundingMode.DOWN);
 		String locale = "en";
 		
-		formatter = NumericFormatterFactory.getDecimalFormatter(null, null);
+		formatter = NumericFormatterFactory.getDecimalFormatter(null, (String) null);
 		result = formatter.parseBigDecimal(input);
 		assertEquals(new BigDecimal(input, TransformLangExecutor.MAX_PRECISION), result);
 		
-		formatter = NumericFormatterFactory.getDecimalFormatter(null, null, 100, 50);
+		formatter = NumericFormatterFactory.getDecimalFormatter(null, (String) null, 100, 50);
 		result = formatter.parseBigDecimal(input);
 		assertEquals(new BigDecimal(input, precision), result);
 		

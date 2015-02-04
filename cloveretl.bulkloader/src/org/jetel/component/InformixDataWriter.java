@@ -484,7 +484,7 @@ public class InformixDataWriter extends BulkLoader {
      */
     private void createCommandFile() throws ComponentNotReadyException {
     	File commandFile = new File(commandFileName);
-        FileWriter commandWriter;
+        FileWriter commandWriter = null;
         try {
         	commandFile.createNewFile();
         	commandWriter = new FileWriter(commandFile);
@@ -507,9 +507,16 @@ public class InformixDataWriter extends BulkLoader {
         	}
 
             commandWriter.write(content);
-            commandWriter.close();
-        } catch(IOException ex) {
+        } catch (IOException ex) {
             throw new ComponentNotReadyException(this, "Can't create temp control file for dbload utility.", ex);
+        } finally {
+        	try {
+        		if (commandWriter != null) {
+        			commandWriter.close();
+        		}
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(e);
+			}
         }
     }
 
@@ -677,7 +684,7 @@ public class InformixDataWriter extends BulkLoader {
 						Severity.ERROR, this, Priority.NORMAL));
 			}
 		} catch (ComponentNotReadyException e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e),	Severity.ERROR, this, Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL));
 		}
 		if (StringUtils.isEmpty(command) && StringUtils.isEmpty(table)) {
 			status.add(new ConfigurationProblem(StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute has to be specified or " +
@@ -692,10 +699,10 @@ public class InformixDataWriter extends BulkLoader {
 				try {
 					if (!fileExists(dataURL)) {
 						status.add(new ConfigurationProblem("Data file " + StringUtils.quote(dataURL) + " not exists.",
-								Severity.ERROR,	this, Priority.NORMAL));
+								Severity.ERROR,	this, Priority.NORMAL, XML_FILE_URL_ATTRIBUTE));
 					}
 				} catch (ComponentNotReadyException e) {
-					status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e),	Severity.ERROR, this, Priority.NORMAL));
+					status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_FILE_URL_ATTRIBUTE));
 				}
 		}
 		
@@ -755,11 +762,6 @@ public class InformixDataWriter extends BulkLoader {
         return status;
     }
     
-    @Override
-	public String getType(){
-        return COMPONENT_TYPE;
-    }
-
     private void setCommand(String command) {
 		this.command = command;
 	}
