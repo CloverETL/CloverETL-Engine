@@ -843,7 +843,13 @@ public class FileManager {
 			if (result.isEmpty()) {
 				return Arrays.asList(prefix);
 			} else {
-				result.set(0, prefix + result.get(0));
+				// CLO-5680:
+				String firstResult = result.get(0);
+				if (hasWildcards(firstResult)) {
+					result.add(0, prefix);
+				} else {
+					result.set(0, prefix + result.get(0));
+				}
 			}
 		}
 		return result;
