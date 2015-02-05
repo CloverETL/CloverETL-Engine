@@ -42,6 +42,7 @@ import org.jetel.component.fileoperation.SimpleParameters.MoveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ReadParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.WriteParameters;
+import org.jetel.util.ExceptionUtils;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -180,18 +181,28 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 				URI parentUri = URIUtils.getParentURI(targetUri);
 				create(parentUri, CREATE_PARENT_DIRS);
 			}
-			if (simpleHandler.renameTo(sourceUri, targetUri) != null) {
-				return true;
+			IOException renameException = null;
+			try {
+				if (simpleHandler.renameTo(sourceUri, targetUri) != null) {
+					return true;
+				}
+			} catch (IOException ioe) {
+				// ignore, just an attempt
+				renameException = ioe;
 			}
-			if (!simpleHandler.makeDir(targetUri)) {
-				throw new IOException(format(FileOperationMessages.getString("IOperationHandler.create_failed"), target.getURI())); //$NON-NLS-1$
+			try {
+				if (!simpleHandler.makeDir(targetUri)) {
+					throw new IOException(format(FileOperationMessages.getString("IOperationHandler.create_failed"), target.getURI())); //$NON-NLS-1$
+				}
+				boolean success = true;
+				for (URI child: simpleHandler.list(sourceUri)) {
+					Info childInfo = simpleHandler.info(child);
+					success &= moveInternal(child, URIUtils.getChildURI(targetUri, childInfo.getName()), params);
+				}
+				return success && simpleHandler.removeDir(sourceUri);
+			} catch (IOException ioe) {
+				throw ExceptionUtils.addSuppressed(ioe, renameException);
 			}
-			boolean success = true;
-			for (URI child: simpleHandler.list(sourceUri)) {
-				Info childInfo = simpleHandler.info(child);
-				success &= moveInternal(child, URIUtils.getChildURI(targetUri, childInfo.getName()), params);
-			}
-			return success && simpleHandler.removeDir(sourceUri);
 		} else {
 			if (target != null) {
 				if (params.isNoOverwrite()) {
@@ -205,8 +216,20 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 				URI parentUri = URIUtils.getParentURI(targetUri);
 				create(parentUri, CREATE_PARENT_DIRS);
 			}
-			boolean renamed = simpleHandler.renameTo(sourceUri, targetUri) != null;
-			return renamed || (simpleHandler.copyFile(sourceUri, targetUri) != null && simpleHandler.deleteFile(sourceUri));
+			IOException renameException = null;
+			try {
+				if (simpleHandler.renameTo(sourceUri, targetUri) != null) {
+					return true;
+				}
+			} catch (IOException ioe) {
+				renameException = ioe;
+				// ignore, just an attempt
+			}
+			try {
+				return (simpleHandler.copyFile(sourceUri, targetUri) != null) && simpleHandler.deleteFile(sourceUri);
+			} catch (IOException ioe) {
+				throw ExceptionUtils.addSuppressed(ioe, renameException);
+			}
 		}
 	}
 

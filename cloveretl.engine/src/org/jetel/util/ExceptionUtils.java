@@ -401,6 +401,34 @@ public class ExceptionUtils {
 	}
 	
 	/**
+	 * If <code>suppressed</code> is not <code>null</code>,
+	 * adds it as a suppressed {@link Throwable} to <code>t</code>.
+	 * Returns <code>t</code>.
+	 * <p>
+	 * Sample usage:
+	 * <pre>
+	 * Exception suppressedException;
+	 * try {
+	 *     return file.getCanonicalPath();
+	 * } catch (IOException ioe) {
+	 *     throw ExceptionUtils.addSuppressed(ioe, suppressedException);
+	 * }
+	 * </pre>
+	 * </p>
+	 * 
+	 * @param t				- thrown exception, must <b>not</b> be <code>null</code>
+	 * @param suppressed	- suppressed exception, may be <code>null</code>
+	 * 
+	 * @return <code>t</code> with registered suppressed throwable, if available
+	 */
+	public static <T extends Throwable> T addSuppressed(T t, Throwable suppressed) {
+		if (suppressed != null) {
+			t.addSuppressed(suppressed);
+		}
+		return t;
+	}
+	
+	/**
 	 * This exception type is used only in {@link #getMessage(String, Throwable)} as a root exception,
 	 * which wraps given message and exception. Specific exception type is necessary to distinguish
 	 * regular exception from exceptions chain and this artificial root exception. 
