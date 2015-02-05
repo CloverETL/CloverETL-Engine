@@ -68,7 +68,12 @@ public class SerializableException extends JetelRuntimeException {
 		virtualClass = e.getClass();
 		//inherit stackstrace from the wrapped exception
 		setStackTrace(e.getStackTrace());
-		
+
+		//persist suppressed exceptions
+		for (Throwable suppressedException : e.getSuppressed()) {
+			addSuppressed(wrapException(suppressedException));
+		}
+
 		//compound exception needs special handling
 		if (e instanceof CompoundException) {
 			CompoundException ce = (CompoundException) e;
