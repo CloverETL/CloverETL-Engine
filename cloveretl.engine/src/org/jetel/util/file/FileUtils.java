@@ -513,7 +513,7 @@ public class FileUtils {
 		if (!StringUtils.isEmpty(fileURL)) {
 			WcardPattern pattern = new WcardPattern();
 			pattern.setParent(contextUrl);
-			pattern.addPattern(fileURL);
+			pattern.addPattern(fileURL, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
 			pattern.resolveAllNames(false);
 			Iterable<String> filenames = pattern.filenames();
 			for (String file: filenames) {
