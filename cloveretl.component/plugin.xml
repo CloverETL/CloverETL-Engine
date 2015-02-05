@@ -697,7 +697,7 @@
 	      <property category="advanced" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" redundant="transform|transformURL" required="false">
 	        <singleType name="class"/>
 	      </property>
-	      <property category="advanced" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	      <property category="advanced" displayName="Transform source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
 	        <singleType name="charset"/>
 	      </property>
 	    </properties>

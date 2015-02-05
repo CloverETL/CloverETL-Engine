@@ -61,7 +61,7 @@ import org.w3c.dom.Element;
  */
 public class CrossJoin extends Node implements MetadataProvider {
 	public final static String COMPONENT_TYPE = "CROSS_JOIN";
-	private final static String OUT_METADATA_NAME = "CrossJoin_dynamic";
+	private final static String OUT_METADATA_NAME = "CrossJoin_Output";
 	private final static String OUT_METADATA_ID_SUFFIX = "_outMetadata";
 	
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
@@ -104,7 +104,7 @@ public class CrossJoin extends Node implements MetadataProvider {
 	
 	// output
 	private OutputPort outPort;
-	private DataRecord[] outRecord; // size 1
+	private DataRecord[] outRecord = new DataRecord[1];
 	
 	static Log logger = LogFactory.getLog(CrossJoin.class);
 
@@ -176,7 +176,7 @@ public class CrossJoin extends Node implements MetadataProvider {
 		
 		// init output
 		outPort = getOutputPort(WRITE_TO_PORT);
-		outRecord =  new DataRecord[] { DataRecordFactory.newRecord(outPort.getMetadata()) };
+		outRecord[WRITE_TO_PORT] = DataRecordFactory.newRecord(outPort.getMetadata());
 		outRecord[WRITE_TO_PORT].init();
 		outRecord[WRITE_TO_PORT].reset();
 	}
