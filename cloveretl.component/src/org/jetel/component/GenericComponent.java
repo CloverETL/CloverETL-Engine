@@ -22,6 +22,8 @@ import java.nio.charset.Charset;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -30,6 +32,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Element;
@@ -45,6 +48,7 @@ import org.w3c.dom.Element;
  */
 public class GenericComponent extends Node {
 
+	public final static String COMPONENT_TYPE = "GENERIC_COMPONENT";
 	private static final Logger logger = Logger.getLogger(GenericComponent.class);
 
 	private static final String XML_GENERIC_TRANSFORM_CLASS_ATTRIBUTE = "genericTransformClass";
@@ -55,22 +59,47 @@ public class GenericComponent extends Node {
     private String genericTransformCode = null;
 	private String genericTransformClass = null;
 	private String genericTransformURL = null;
-	private String charset = null;	
+	private String charset = null;
 	
 	private GenericTransform genericTransform = null;
+	private Properties transformationParameters = null;
+	
+	/**
+	 * Just for reading records that the transformation left unread.
+	 */
+	private DataRecord[] inRecords;
+	private DataRecord[] outRecords;
 
+	
 	public GenericComponent(String id) {
 		super(id);
+	}
+	
+	private void initRecords() {
+		DataRecordMetadata[] inMeta = getInMetadataArray();
+		inRecords = new DataRecord[inMeta.length];
+		for (int i = 0; i < inRecords.length; i++) {
+			inRecords[i] = DataRecordFactory.newRecord(inMeta[i]);
+			inRecords[i].init();
+		}
+		
+		DataRecordMetadata[] outMeta = getOutMetadataArray();
+		outRecords = new DataRecord[outMeta.length];
+		for (int i = 0; i < outRecords.length; i++) {
+			outRecords[i] = DataRecordFactory.newRecord(outMeta[i]);
+			outRecords[i].init();
+		}
 	}
 	
 	@Override
 	public void init() throws ComponentNotReadyException {
 		if (isInitialized()) return;
 		super.init();
+		initRecords();
 
 		genericTransform = getTransformFactory().createTransform();
 		
-		genericTransform.init();
+		genericTransform.init(transformationParameters);
 	}
 
 	/**
@@ -92,12 +121,21 @@ public class GenericComponent extends Node {
 			genericTransform.executeOnError(e);
 		}
 		
+		
+		for (int i = 0; i < inRecords.length; i++) {
+			boolean firstUnreadRecord = true;
+			while (readRecord(i, inRecords[i]) != null) {
+				if (firstUnreadRecord) {
+					firstUnreadRecord = false;
+					logger.warn(COMPONENT_TYPE + ": Component had unread records on input port " + i);
+				}
+				// blank read
+			}
+		}
+		
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
-    /* (non-Javadoc)
-     * @see org.jetel.graph.GraphElement#postExecute(org.jetel.graph.TransactionMethod)
-     */
     @Override
     public void postExecute() throws ComponentNotReadyException {
     	super.postExecute();
@@ -165,8 +203,19 @@ public class GenericComponent extends Node {
         genericComponent.setGenericTransformURL(xattribs.getStringEx(XML_GENERIC_TRANSFORM_URL_ATTRIBUTE, null, RefResFlag.URL));
         genericComponent.setGenericTransformClass(xattribs.getString(XML_GENERIC_TRANSFORM_CLASS_ATTRIBUTE, null));
         
+        genericComponent.setTransformationParameters(xattribs.attributes2Properties(
+				new String[]{XML_ID_ATTRIBUTE,XML_GENERIC_TRANSFORM_ATTRIBUTE,XML_GENERIC_TRANSFORM_URL_ATTRIBUTE,XML_GENERIC_TRANSFORM_CLASS_ATTRIBUTE}));
+        
 		return genericComponent;
 	}
+
+	/**
+	 * @param transformationParameters
+	 *            The transformationParameters to set.
+	 */
+    public void setTransformationParameters(Properties transformationParameters) {
+        this.transformationParameters = transformationParameters;
+    }
 
 	public String getCharset() {
 		return charset;
