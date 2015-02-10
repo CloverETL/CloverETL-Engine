@@ -1167,19 +1167,22 @@ public class TransformationGraphXMLReaderWriter {
 			        	}
 
 			        	// create entry 
-			        	if (!entryProperties.isEmpty()) {
-				        	try {
-								dictionary.setValueFromProperties(name, type, entryProperties);
-							} catch (UnsupportedDictionaryOperation e) {
-								//probably only if the dictionary type does not support initialization from Properties and an ID attribute or others was passed
-								//so just create dictionary entry without value
+			        	if (!dictionary.hasEntry(name)) {
+							if (!entryProperties.isEmpty()) {
+								try {
+									dictionary.setValueFromProperties(name, type, entryProperties);
+								} catch (UnsupportedDictionaryOperation e) {
+									// probably only if the dictionary type does not support initialization from
+									// Properties and an ID attribute or others was passed
+									// so just create dictionary entry without value
+									dictionary.setValue(name, type, null);
+								}
+							} else {
+								if (dictionary.getEntry(name) != null) {
+									throw new ComponentNotReadyException("Duplicate dictionary entry name: " + name);
+								}
 								dictionary.setValue(name, type, null);
 							}
-						} else {
-							if (dictionary.getEntry(name) != null) {
-								throw new ComponentNotReadyException("Duplicate dictionary entry name: " + name);
-							}
-							dictionary.setValue(name, type, null);
 						}
 			        	
 			        	if (attributes.exists(DICTIONARY_ENTRY_INPUT) && attributes.getBoolean(DICTIONARY_ENTRY_INPUT)) {
