@@ -34,6 +34,7 @@ import org.jetel.util.ExceptionUtils;
 
 /**
  * Implementation of {@link GenericTransform} interface which is used for CTL2 compile mode.
+ * Currently not used since GenericComponent doesn't support CTL.
  * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -41,6 +42,8 @@ import org.jetel.util.ExceptionUtils;
  * @created 5. 1. 2015
  */
 public abstract class CTLGenericTransform extends CTLAbstractTransform implements GenericTransform {
+	
+	Properties additionalProperties;
 
     public static final String EXECUTE_FUNCTION_NAME = "execute";
 
@@ -54,7 +57,8 @@ public abstract class CTLGenericTransform extends CTLAbstractTransform implement
 	private DataRecord[] outputRecords = null;
 
 	@Override
-	public final void init() {
+	public final void init(Properties properties) {
+		additionalProperties = properties;
 		try {
 			globalScopeInit();
 
