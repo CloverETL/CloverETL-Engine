@@ -2731,7 +2731,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Algorithm class" modifiable="true" name="genericTransformClass" nullable="true" required="!genericTransform,!genericTransformURL">
 	        <singleType name="class" />
 	      </property>
-	      <property category="basic" displayName="Runnable source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	      <property category="basic" displayName="Algorithm source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
 	        <singleType name="charset" />
 	      </property>
 	    </properties>
