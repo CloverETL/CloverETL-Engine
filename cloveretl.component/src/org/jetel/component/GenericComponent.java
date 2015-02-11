@@ -65,7 +65,7 @@ public class GenericComponent extends Node {
 	private Properties transformationParameters = null;
 	
 	/**
-	 * Just for reading records that the transformation left unread.
+	 * Just for blank reading records that the transformation left unread.
 	 */
 	private DataRecord[] inRecords;
 	private DataRecord[] outRecords;
@@ -93,23 +93,18 @@ public class GenericComponent extends Node {
 	
 	@Override
 	public void init() throws ComponentNotReadyException {
-		if (isInitialized()) return;
+		if (isInitialized()) {
+			return;
+		}
 		super.init();
 		initRecords();
-
 		genericTransform = getTransformFactory().createTransform();
-		
 		genericTransform.init(transformationParameters);
 	}
 
-	/**
-    /* (non-Javadoc)
-     * @see org.jetel.graph.Node#preExecute()
-     */
     @Override
     public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();
-    	
     	genericTransform.preExecute();
     }
 
@@ -120,7 +115,6 @@ public class GenericComponent extends Node {
 		} catch (Exception e) {
 			genericTransform.executeOnError(e);
 		}
-		
 		
 		for (int i = 0; i < inRecords.length; i++) {
 			boolean firstUnreadRecord = true;
@@ -139,33 +133,38 @@ public class GenericComponent extends Node {
     @Override
     public void postExecute() throws ComponentNotReadyException {
     	super.postExecute();
-    	
     	genericTransform.postExecute();
     }
     
 	@Override
 	public synchronized void free() {	
 		super.free();
-		
 		if (genericTransform != null) {
 			genericTransform.free();
 		}
 	}
 
+	/** 
+	 * You can turn on CTL support in this method. Just change the commented lines accordingly.
+	 * @return
+	 */
 	private TransformFactory<GenericTransform> getTransformFactory() {
-		//this way of getting a transform factory allows only java implementation, CTL will not work
-		//TransformFactory<GenericTransform> transformFactory = TransformFactory.createTransformFactory(GenericTransform.class);
 		
+		/** This is Java only version */
+		TransformFactory<GenericTransform> transformFactory = TransformFactory.createTransformFactory(GenericTransform.class);
+		
+		/** This is Java and CTL version */
+		/*
 		TransformFactory<GenericTransform> transformFactory = TransformFactory.createTransformFactory(GenericTransformDescriptor.newInstance());
+		transformFactory.setInMetadata(getInMetadata());
+    	transformFactory.setOutMetadata(getOutMetadata());
+    	*/
+		
 		transformFactory.setTransform(genericTransformCode);
 		transformFactory.setTransformClass(genericTransformClass);
 		transformFactory.setTransformUrl(genericTransformURL);
 		transformFactory.setCharset(charset);
 		transformFactory.setComponent(this);
-		
-		//this is only needed for ctl? - delete it if ctl is disabled in the component?
-		transformFactory.setInMetadata(getInMetadata());
-    	transformFactory.setOutMetadata(getOutMetadata());
 		return transformFactory;
 	}
 	
@@ -197,25 +196,21 @@ public class GenericComponent extends Node {
 
 		GenericComponent genericComponent = new GenericComponent(xattribs.getString(XML_ID_ATTRIBUTE));
         genericComponent.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
-        
-        //TODO ctl expressions are still turned on? - this might cause trouble if the code is java?
         genericComponent.setGenericTransformCode(xattribs.getStringEx(XML_GENERIC_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
         genericComponent.setGenericTransformURL(xattribs.getStringEx(XML_GENERIC_TRANSFORM_URL_ATTRIBUTE, null, RefResFlag.URL));
         genericComponent.setGenericTransformClass(xattribs.getString(XML_GENERIC_TRANSFORM_CLASS_ATTRIBUTE, null));
         
-        genericComponent.setTransformationParameters(xattribs.attributes2Properties(
-				new String[]{XML_ID_ATTRIBUTE,XML_GENERIC_TRANSFORM_ATTRIBUTE,XML_GENERIC_TRANSFORM_URL_ATTRIBUTE,XML_GENERIC_TRANSFORM_CLASS_ATTRIBUTE}));
-        
+        genericComponent.setTransformationParameters(xattribs.attributes2Properties(new String[] {
+        		XML_ID_ATTRIBUTE,
+        		XML_GENERIC_TRANSFORM_ATTRIBUTE,
+        		XML_GENERIC_TRANSFORM_URL_ATTRIBUTE,
+        		XML_GENERIC_TRANSFORM_CLASS_ATTRIBUTE}));
 		return genericComponent;
 	}
 
-	/**
-	 * @param transformationParameters
-	 *            The transformationParameters to set.
-	 */
-    public void setTransformationParameters(Properties transformationParameters) {
-        this.transformationParameters = transformationParameters;
-    }
+	public void setTransformationParameters(Properties transformationParameters) {
+		this.transformationParameters = transformationParameters;
+	}
 
 	public String getCharset() {
 		return charset;
@@ -225,46 +220,27 @@ public class GenericComponent extends Node {
 		this.charset = charset;
 	}
 
-	/**
-	 * @return the genericTransformCode
-	 */
 	public String getGenericTransformCode() {
 		return genericTransformCode;
 	}
 
-	/**
-	 * @param genericTransformCode the genericTransformCode to set
-	 */
 	public void setGenericTransformCode(String genericTransformCode) {
 		this.genericTransformCode = genericTransformCode;
 	}
 
-	/**
-	 * @return the genericTransformClass
-	 */
 	public String getGenericTransformClass() {
 		return genericTransformClass;
 	}
 
-	/**
-	 * @param genericTransformClass the genericTransformClass to set
-	 */
 	public void setGenericTransformClass(String genericTransformClass) {
 		this.genericTransformClass = genericTransformClass;
 	}
 
-	/**
-	 * @return the genericTransformURL
-	 */
 	public String getGenericTransformURL() {
 		return genericTransformURL;
 	}
 
-	/**
-	 * @param genericTransformURL the genericTransformURL to set
-	 */
 	public void setGenericTransformURL(String genericTransformURL) {
 		this.genericTransformURL = genericTransformURL;
 	}
-	
 }

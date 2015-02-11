@@ -23,7 +23,6 @@ import java.util.Properties;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
-import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Node;
 import org.jetel.metadata.DataRecordMetadata;
@@ -69,12 +68,12 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	public DataRecord readRecordFromPort(int portIdx) throws IOException, InterruptedException {
+	protected DataRecord readRecordFromPort(int portIdx) throws IOException, InterruptedException {
 		inRecords[portIdx].reset();
 		return component.readRecord(portIdx, inRecords[portIdx]);
 	}
 	
-	public void writeRecordToPort(int portIdx, DataRecord record) throws IOException, InterruptedException {
+	protected void writeRecordToPort(int portIdx, DataRecord record) throws IOException, InterruptedException {
 		component.writeRecord(portIdx, record);
 	}
 	
