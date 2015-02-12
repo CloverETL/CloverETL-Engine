@@ -135,7 +135,11 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	}
 
 	private static DataRecordMetadata createMetadataFromStub(DataRecordMetadataStub metadataStub) {
-		return MetadataFactory.fromStub(metadataStub);
+		if (metadataStub != null) {
+			return MetadataFactory.fromStub(metadataStub);
+		} else {
+			return null;
+		}
 	}
 
 	/**
