@@ -18,11 +18,10 @@
  */
 package org.jetel.metadata;
 
-import java.sql.SQLException;
 import java.util.Properties;
 
 import org.jetel.database.IConnection;
-import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelRuntimeException;
 
 
 /**
@@ -54,11 +53,15 @@ public class DataRecordMetadataStub {
 		return parameters;
 	}
     
-    public DataRecordMetadata createMetadata() throws ComponentNotReadyException, SQLException {
-        connection.init();
-        DataRecordMetadata result = connection.createMetadata(parameters);
-        result.setId(metadataId);
-        return result;
+    public DataRecordMetadata createMetadata() {
+    	try {
+	        connection.init();
+	        DataRecordMetadata result = connection.createMetadata(parameters);
+	        result.setId(metadataId);
+	        return result;
+    	} catch (Exception e) {
+    		throw new JetelRuntimeException("Creating metadata (id='" + metadataId + "') from DB connection failed.", e);
+    	}
     }
 
 	/**

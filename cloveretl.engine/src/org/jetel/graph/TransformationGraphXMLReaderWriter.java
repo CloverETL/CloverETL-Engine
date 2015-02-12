@@ -584,9 +584,9 @@ public class TransformationGraphXMLReaderWriter {
 					recordMetadata=MetadataFactory.fromXML(graph, attributes.getChildNode(metadataElements.get(i),METADATA_RECORD_ELEMENT));
 				}
 			} catch (AttributeNotFoundException ex) {
-				throwXMLConfigurationException("Metadata - Attributes missing", ex);
+				throwXMLConfigurationException("Metadata - Attributes missing (id='" + metadataID + "').", ex);
 			} catch (Exception e) {
-				throwXMLConfigurationException("Metadata cannot be instantiated.", e);
+				throwXMLConfigurationException("Metadata cannot be instantiated (id='" + metadataID + "').", e);
 			}
 			//set metadataId
 			if (recordMetadata != null) {
