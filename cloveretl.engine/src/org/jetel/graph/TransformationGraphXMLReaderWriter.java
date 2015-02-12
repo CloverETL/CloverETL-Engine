@@ -758,7 +758,12 @@ public class TransformationGraphXMLReaderWriter {
 				graphEdge = EdgeFactory.newEdge(edgeID, (DataRecordMetadata) metadataObj);
 			}else{ 
 				// stub
-				graphEdge = EdgeFactory.newEdge(edgeID, (DataRecordMetadataStub) metadataObj);
+				try {
+					graphEdge = EdgeFactory.newEdge(edgeID, (DataRecordMetadataStub) metadataObj);
+				} catch (Exception e) {
+					throwXMLConfigurationException("Edge '" + edgeID + "' cannot be created.", e);
+					graphEdge = EdgeFactory.newEdge(edgeID, (DataRecordMetadata) null);
+				}
 			}
 			graphEdge.setDebugMode(debugMode);
 			graphEdge.setDebugMaxRecords(debugMaxRecords);

@@ -40,6 +40,16 @@ public class DataRecordMetadataStub {
     
 	private Properties parameters;
 
+	/**
+	 * Cached instance of metadata created by {@link #createMetadata()} method.
+	 */
+	private DataRecordMetadata metadataCache;
+	/**
+	 * Exception possibly thrown by {@link #createMetadata()} method.
+	 * If the method fails, the exception is thrown from each other invocation of the method.  
+	 */
+	private RuntimeException dbFailure;
+	
 	public DataRecordMetadataStub(IConnection connection, Properties parameters){
 		this.connection = connection;
 		this.parameters = parameters;
@@ -54,14 +64,22 @@ public class DataRecordMetadataStub {
 	}
     
     public DataRecordMetadata createMetadata() {
-    	try {
-	        connection.init();
-	        DataRecordMetadata result = connection.createMetadata(parameters);
-	        result.setId(metadataId);
-	        return result;
-    	} catch (Exception e) {
-    		throw new JetelRuntimeException("Creating metadata (id='" + metadataId + "') from DB connection failed.", e);
+    	if (dbFailure != null) {
+    		//last invocation failed, throw the identical exception
+    		throw dbFailure;
+    	} else if (metadataCache == null) {
+    		//no metadata cached, let's try to load metadata from database
+	    	try {
+		        connection.init();
+		        metadataCache = connection.createMetadata(parameters);
+		        metadataCache.setId(metadataId);
+	    	} catch (Exception e) {
+	    		dbFailure = new JetelRuntimeException("Creating metadata (id='" + metadataId + "') from DB connection failed.", e);
+	    		throw dbFailure;
+	    	}
     	}
+    	
+    	return metadataCache;
     }
 
 	/**
