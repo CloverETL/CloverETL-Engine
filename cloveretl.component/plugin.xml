@@ -173,6 +173,9 @@
 	      <property category="advanced" displayName="Create empty files" modifiable="true" name="createEmptyFiles" nullable="true" defaultHint="true">
 	        <singleType name="bool" />
 	      </property>
+	      <property category="advanced" displayName="Skip last record delimiter" modifiable="true" name="skipLastRecordDelimiter" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
 	    </properties>
 	  </ETLComponent>
 	</extension>
