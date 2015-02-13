@@ -418,6 +418,10 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
         if(isInitialized()) return;
 		super.init();
 		
+		if (metadata == null) {
+			throw new RuntimeException(createMissingMetadataMessage());
+		}
+		
 		if (edge != null) {
 			try {
 				edge.init();
