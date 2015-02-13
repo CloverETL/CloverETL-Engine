@@ -69,7 +69,6 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	 * @throws InterruptedException
 	 */
 	protected DataRecord readRecordFromPort(int portIdx) throws IOException, InterruptedException {
-		inRecords[portIdx].reset();
 		return component.readRecord(portIdx, inRecords[portIdx]);
 	}
 	
