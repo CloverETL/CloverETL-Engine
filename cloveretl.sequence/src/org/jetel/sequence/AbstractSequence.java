@@ -71,11 +71,6 @@ public abstract class AbstractSequence extends GraphElement implements Sequence 
      */
 	@Override
 	public int currentValueInt() {
-    	long currentValueLong = currentValueLong();
-    	if (isOutOfIntegerBounds(currentValueLong)) {
-    		throw new ArithmeticException("Can't get currentValue as integer from sequence " + getName() + " because of value overflow/underflow."
-    				+ " Overflow/underflow sequence value: " + currentValueLong);
-    	}
         return (int) currentValueLong();
     }
 	
@@ -84,19 +79,7 @@ public abstract class AbstractSequence extends GraphElement implements Sequence 
      */
     @Override
 	public int nextValueInt() {
-    	long nextValueLong = nextValueLong();
-    	if (isOutOfIntegerBounds(nextValueLong)) {
-    		throw new ArithmeticException("Can't get nextValue as integer from sequence " + getName() + " because of value overflow/underflow."
-    				+ " Overflow/underflow sequence value: " + nextValueLong);
-    	}
-        return (int) nextValueLong;
-    }
-	
-	private boolean isOutOfIntegerBounds(long value) {
-    	if (value > Integer.MAX_VALUE || value < Integer.MIN_VALUE) {
-    		return true;
-    	}
-    	return false;
+        return (int) nextValueLong();
     }
 	
 	public long getStart() {

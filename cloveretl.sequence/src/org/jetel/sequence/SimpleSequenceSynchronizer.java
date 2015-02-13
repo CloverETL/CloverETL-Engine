@@ -99,7 +99,8 @@ public class SimpleSequenceSynchronizer {
 	/**
 	 * "Atomic" get and set operation. Stores incremented value and returns start of new sequence range.
 	 * Use this method to advance sequence forward.
-	 * @param increment
+	 * @param step
+	 * @param numCachedValues
 	 * @return
 	 * @throws IOException
 	 */
@@ -121,13 +122,6 @@ public class SimpleSequenceSynchronizer {
 			io.read(buffer);
 			buffer.flip();
 			currentValue = buffer.getLong();
-			
-			//overflow and underflow checking
-			int signBefore = Long.signum(currentValue);
-			int signAfter = Long.signum(currentValue+increment);
-			if (signBefore != signAfter && signBefore != 0 && signAfter != 0) { 
-				throw new ArithmeticException("Sequence value overflow/underflow while reserving range from file " + absoluteFilePath + ". Last valid sequence value: " + currentValue);
-			}
 
 			// set
 			buffer.clear();
@@ -180,7 +174,7 @@ public class SimpleSequenceSynchronizer {
 		synchronized (READ_WRITE_LOCK) {
 			ensureOpen();
 			
-			//io.force(true);
+			//io.force(true); // this takes unreasonable amount of time for some reason - at least on windows with java7
 			buffer.clear();
 			io.position(0);
 			io.read(buffer);
