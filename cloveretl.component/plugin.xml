@@ -2723,7 +2723,7 @@ Sends all resulting records to all connected output ports.</description>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="Algorithm" modifiable="true" name="genericTransform" nullable="true" required="!genericTransformClass,!genericTransformURL">
-	        <singleType name="multilineEditableJava" />
+	        <singleType name="genericComponentMultiline" />
 	      </property>
 	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform">
 	        <singleType name="file" />
