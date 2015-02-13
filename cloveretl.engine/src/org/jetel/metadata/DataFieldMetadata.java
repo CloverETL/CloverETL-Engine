@@ -552,6 +552,45 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
+	 * This method returns all possible delimiters for this field.
+	 * The returned delimiters are either delimiters defined on this field
+	 * or default delimiters from parent record metadata. The record delimiter is
+	 * ignored by this method. 
+	 * @param excludeAutofillingFields
+	 * @return
+	 * @see #getDelimiters(boolean)
+	 */
+	public String[] getDelimitersWithoutRecordDelimiter(boolean excludeAutofillingFields) {
+		if (isDelimited()) {
+			String[] delimiters = null;
+
+			if (delimiter != null) {
+				delimiters = delimiter.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX);
+
+				if (isLastField(excludeAutofillingFields)) { // if field is last
+					if (getDataRecordMetadata().isSpecifiedRecordDelimiter()) {
+						delimiters = null;
+					}
+				}
+			} else {
+				if (!isLastField(excludeAutofillingFields)) { // if the field is not last
+					delimiters = getDataRecordMetadata().getFieldDelimiters();
+				} else {
+					if (getDataRecordMetadata().getRecordDelimiters() == null) {
+						delimiters = getDataRecordMetadata().getFieldDelimiters();
+					} else {
+						delimiters = null;
+					}
+				}
+			}
+
+			return delimiters;
+		}
+
+		return null;
+	}
+	
+	/**
 	 * @return <code>true</code> if any field delimiter contains a carriage return, <code>false</code> otherwise
 	 */
 	public boolean containsCarriageReturnInDelimiters() {
