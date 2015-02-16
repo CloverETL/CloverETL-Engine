@@ -74,7 +74,7 @@ public class MetadataFactory {
 	 * @throws Exception 
 	 * @throws SQLException
 	 */
-	public static DataRecordMetadata fromStub(DataRecordMetadataStub metadataStub) throws Exception {
+	public static DataRecordMetadata fromStub(DataRecordMetadataStub metadataStub) {
         return metadataStub.createMetadata();
 	}
 

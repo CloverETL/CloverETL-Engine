@@ -57,10 +57,6 @@ public class JobflowEdge extends Edge {
 		super(id, metadataStub);
 	}
 
-	public JobflowEdge(String id, DataRecordMetadataStub metadataStub, DataRecordMetadata metadata, boolean debugMode) {
-		super(id, metadataStub, metadata, debugMode);
-	}
-
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
