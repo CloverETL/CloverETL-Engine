@@ -566,12 +566,6 @@ public class DataFieldMetadata implements Serializable {
 
 			if (delimiter != null) {
 				delimiters = delimiter.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX);
-
-				if (isLastField(excludeAutofillingFields)) { // if field is last
-					if (getDataRecordMetadata().isSpecifiedRecordDelimiter()) {
-						delimiters = null;
-					}
-				}
 			} else {
 				if (!isLastField(excludeAutofillingFields)) { // if the field is not last
 					delimiters = getDataRecordMetadata().getFieldDelimiters();
