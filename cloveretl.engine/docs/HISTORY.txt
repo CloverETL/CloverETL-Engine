@@ -2,6 +2,16 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-0-4
+---------
+
+* FIXES:
+	- Readers fail with "max number of records" when reading from input port
+	- Proper reporting of graph configuration errors (avoiding duplicates)
+* COMPATIBILITY:
+	- Propagation of metadata defined by SQL does not work
+	- UniversalDataWriter: 'Create directories' cannot handle encoded URL
+
 REL-4-0-3
 ---------
 
