@@ -18,6 +18,7 @@
  */
 package org.jetel.component.tree.writer.util;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -52,6 +53,7 @@ import org.jetel.util.string.TagName;
 public class MappingWriter implements MappingVisitor {
 	
 	private XMLStreamWriter writer;
+	private List<String> namespaceNames = new ArrayList<>();
 	
 	public MappingWriter(XMLStreamWriter writer) {
 		this.writer = writer;
@@ -101,9 +103,14 @@ public class MappingWriter implements MappingVisitor {
 			writer.writeStartElement(TreeWriterMapping.MAPPING_KEYWORDS_NAMESPACEURI, ObjectNode.XML_TEMPLATE_DEFINITION);
 			writePropertyAsCloverAttribute(element, MappingProperty.NAME);
 		} else {
+
+			for (Namespace namespace : element.getNamespaces()) {
+				namespaceNames.add(namespace.getProperty(MappingProperty.NAME));
+			}
+
 			String name = element.getProperty(MappingProperty.NAME);
-			boolean writeNameAsAttribute = TagName.hasInvalidCharacters(name);
-			
+			boolean writeNameAsAttribute = !TagName.isValidName(name, namespaceNames);
+
 			String elementName = writeNameAsAttribute ? TreeWriterMapping.MAPPING_KEYWORDS_PREFIX + ":" + ObjectNode.XML_ELEMENT_WITH_NAME_ATTRIBUTE : name;
 			
 			if (element.getChildren().isEmpty() && childAttributes.isEmpty()) {

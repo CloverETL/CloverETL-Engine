@@ -495,6 +495,35 @@ public class FileUtils {
     	//incremental reader needs FileChannel:
     	return in instanceof FileInputStream ? ((FileInputStream)in).getChannel() : Channels.newChannel(in);
     }	
+	
+	/**
+	 * For a file URL pattern, returns the first <emph>local</emph>
+	 * or sandbox {@link InputStream}.
+	 * 
+	 * The URL may contain wildcards.
+	 * 
+	 * Skips dictionary and port URLs.
+	 * 
+	 * @param contextUrl
+	 * @param fileURL
+	 * @return URL of the first local or sandbox InputStream
+	 * @throws IOException
+	 */
+	public static URL getFirstInput(URL contextUrl, String fileURL) throws IOException {
+		if (!StringUtils.isEmpty(fileURL)) {
+			WcardPattern pattern = new WcardPattern();
+			pattern.setParent(contextUrl);
+			pattern.addPattern(fileURL, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+			pattern.resolveAllNames(false);
+			Iterable<String> filenames = pattern.filenames();
+			for (String file: filenames) {
+				if (isSandbox(file) || isLocalFile(contextUrl, file)) {
+					return getFileURL(contextUrl, file);
+				}
+			}
+		}
+		return null;
+	}
 
 	/**
 	 * Creates InputStream from the url definition.
@@ -583,11 +612,7 @@ public class FileUtils {
         	if (archiveType == null && url.getProtocol().equals(FILE_PROTOCOL)) {
             	return new FileInputStream(url.getRef() != null ? getUrlFile(url) + "#" + url.getRef() : getUrlFile(url));
         	} else if (archiveType == null && SandboxUrlUtils.isSandboxUrl(url)) {
-        		TransformationGraph graph = ContextProvider.getGraph();
-        		if (graph == null) {
-					throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
-        		}
-        		return graph.getAuthorityProxy().getSandboxResourceInput(ContextProvider.getComponentId(), url.getHost(), getUrlFile(url));
+        		return SandboxUrlUtils.getSandboxInputStream(url);
         	}
         	
         	try {
@@ -1500,21 +1525,13 @@ public class FileUtils {
     		} else if (isHttp(input)) {
     			return new WebdavOutputStream(input);
     		} else if (isSandbox(input)) {
-    			TransformationGraph graph = ContextProvider.getGraph();
-        		if (graph == null) {
-					throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
-        		}
     			URL url = FileUtils.getFileURL(contextURL, input);
-            	return graph.getAuthorityProxy().getSandboxResourceOutput(ContextProvider.getComponentId(), url.getHost(), SandboxUrlUtils.getRelativeUrl(url.toString()), appendData);
+    			return SandboxUrlUtils.getSandboxOutputStream(url, appendData);
     		} else {
     			// file path or relative URL
     			URL url = FileUtils.getFileURL(contextURL, input);
     			if (isSandbox(url.toString())) {
-        			TransformationGraph graph = ContextProvider.getGraph();
-            		if (graph == null) {
-    					throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
-            		}
-                	return graph.getAuthorityProxy().getSandboxResourceOutput(ContextProvider.getComponentId(), url.getHost(), getUrlFile(url), appendData);
+    				return SandboxUrlUtils.getSandboxOutputStream(url, appendData);
     			}
     			// file input stream 
     			String filePath = url.getRef() != null ? getUrlFile(url) + "#" + url.getRef() : getUrlFile(url);
@@ -1678,7 +1695,8 @@ public class FileUtils {
 			}
 
 			try {
-				graph.getAuthorityProxy().makeDirectories(url.getHost(), url.getPath());
+				// CLO-5641: decode escaped character sequences
+				graph.getAuthorityProxy().makeDirectories(url.getHost(), URIUtils.urlDecode(url.getPath()));
 			} catch (IOException exception) {
 				throw new ComponentNotReadyException("Making of sandbox directories failed!", exception);
 			}
@@ -1713,7 +1731,7 @@ public class FileUtils {
          *
          * @see #handleSpecialCharacters(java.net.URL)
          */
-        private static String getUrlFile(URL url) {
+        static String getUrlFile(URL url) {
             try {
                 final String fixedFileUrl = handleSpecialCharacters(url);
                 return URLDecoder.decode(fixedFileUrl, UTF8);

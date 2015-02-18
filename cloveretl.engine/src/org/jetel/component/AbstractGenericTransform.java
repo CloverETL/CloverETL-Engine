@@ -18,10 +18,14 @@
  */
 package org.jetel.component;
 
+import java.io.IOException;
 import java.util.Properties;
 
+import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.JetelRuntimeException;
-
+import org.jetel.graph.Node;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * The only abstract implementation of {@link GenericTransform} interface.
@@ -33,8 +37,53 @@ import org.jetel.exception.JetelRuntimeException;
  */
 public abstract class AbstractGenericTransform extends AbstractDataTransform implements GenericTransform {
 	
+	protected Properties additionalProperties;
+	
+	protected DataRecord[] inRecords;
+	protected DataRecord[] outRecords;
+	protected Node component;
+	
+	private void initRecords() {
+		DataRecordMetadata[] inMeta = component.getInMetadataArray();
+		inRecords = new DataRecord[inMeta.length];
+		for (int i = 0; i < inRecords.length; i++) {
+			inRecords[i] = DataRecordFactory.newRecord(inMeta[i]);
+			inRecords[i].init();
+		}
+		
+		DataRecordMetadata[] outMeta = component.getOutMetadataArray();
+		outRecords = new DataRecord[outMeta.length];
+		for (int i = 0; i < outRecords.length; i++) {
+			outRecords[i] = DataRecordFactory.newRecord(outMeta[i]);
+			outRecords[i].init();
+		}
+	}
+	
+	/**
+	 * DataRecord objects returned by this method are re-used when this method is called repeatedly. If you need to hold data from input DataRecords
+	 * between multiple calls, use {@link DataRecord#duplicate} on objects returned by this method or save the data elsewhere.
+	 * 
+	 * @param portIdx index of port to read from
+	 * @return null if there are no more records
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+	protected DataRecord readRecordFromPort(int portIdx) throws IOException, InterruptedException {
+		return component.readRecord(portIdx, inRecords[portIdx]);
+	}
+	
+	protected void writeRecordToPort(int portIdx, DataRecord record) throws IOException, InterruptedException {
+		component.writeRecord(portIdx, record);
+	}
+	
+	/**
+	 * If you override this method, ALWAYS call super.init()
+	 */
 	@Override
-	public void init() {
+	public void init(Properties properties) {
+		additionalProperties = properties;
+		component = getNode();
+		initRecords();
 	}
 
 	@Override
@@ -44,9 +93,10 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	public void executeOnError(Exception e) {
 		throw new JetelRuntimeException("Transform failed!", e);
 	}
-
+	
 	@Override
 	public void free() {
+		// do nothing by default
 	}
 	
 }

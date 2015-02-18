@@ -16,28 +16,24 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.component;
+package org.jetel.data.parser;
 
-import java.util.Properties;
-
+import org.jetel.data.parser.BinaryDataParser.NoDataAvailableException;
+import org.jetel.exception.JetelException;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
- * Transformation for GenericComponent.
- * 
- * @author Kokon (info@cloveretl.com)
+ * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 21. 11. 2014
+ * @created 28. 11. 2014
  */
-public interface GenericTransform extends Transform {
+public interface DebugParser extends Parser {
 	
-	public void init(Properties properties);
+	public boolean getNext(CloverBuffer recordBuffer) throws JetelException;
 	
-	//this should probably be renamed to transform() everywhere
-	public void execute();
-	
-	public void executeOnError(Exception e);
-	
-	public void free();
-	
+	public long getNextRecordNumber() throws NoDataAvailableException;
+
+	public DataRecordMetadata getMetadata();
 }

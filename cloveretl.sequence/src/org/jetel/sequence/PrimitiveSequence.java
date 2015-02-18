@@ -154,12 +154,6 @@ public class PrimitiveSequence extends AbstractSequence implements Sequence {
     	long tmpVal=sequenceValue;
     	sequenceValue += step;
         alreadyIncremented = true;
-        int signBefore = Long.signum(tmpVal);
-        int signAfter = Long.signum(sequenceValue);
-        if (signBefore != signAfter && signBefore != 0 && signAfter != 0) {
-        	throw new ArithmeticException("Can't get nextValue from sequence " + getName() + " because of value overflow/underflow."
-    				+ " Overflow/underflow sequence value: " + sequenceValue);
-        }
         return tmpVal;
     }
 
