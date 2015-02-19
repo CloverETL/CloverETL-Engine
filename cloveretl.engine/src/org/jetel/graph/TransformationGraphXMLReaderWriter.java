@@ -459,11 +459,11 @@ public class TransformationGraphXMLReaderWriter {
 	
 	        //read subgraph input ports
 			List<Element> subgraphInputPortsElements = getChildElements(getGlobalElement(document), SUBGRAPH_INPUT_PORTS_ELEMENT);
-	        instantiateSubgraphPorts(graph.getSubgraphInputPorts(), subgraphInputPortsElements);
+	        instantiateSubgraphPorts(true, graph.getSubgraphInputPorts(), subgraphInputPortsElements);
 
 	        //read subgraph output ports
 			List<Element> subgraphOutputPortsElements = getChildElements(getGlobalElement(document), SUBGRAPH_OUTPUT_PORTS_ELEMENT);
-	        instantiateSubgraphPorts(graph.getSubgraphOutputPorts(), subgraphOutputPortsElements);
+	        instantiateSubgraphPorts(false, graph.getSubgraphOutputPorts(), subgraphOutputPortsElements);
 
 			// handle all defined graph parameters - old-fashion
 			NodeList PropertyElements = document.getElementsByTagName(PROPERTY_ELEMENT);
@@ -861,7 +861,7 @@ public class TransformationGraphXMLReaderWriter {
 		}
 	}
 
-	private void instantiateSubgraphPorts(SubgraphPorts subgraphPorts, List<Element> subgraphPortsElements) throws XMLConfigurationException {
+	private void instantiateSubgraphPorts(boolean inputPorts, SubgraphPorts subgraphPorts, List<Element> subgraphPortsElements) throws XMLConfigurationException {
 		if (subgraphPortsElements.isEmpty()) {
 			return;
 		}
@@ -880,8 +880,13 @@ public class TransformationGraphXMLReaderWriter {
                 continue;
             }
             boolean required = attributes.getBoolean(SUBGRAPH_PORT_REQUIRED_ATTRIBUTE, true);
-            SubgraphPort subgraphPort = new SubgraphPort(index, required);
-            subgraphPorts.addPort(subgraphPort);
+            SubgraphPort subgraphPort;
+            if (inputPorts) {
+            	subgraphPort = new SubgraphInputPort(subgraphPorts, index, required);
+            } else {
+            	subgraphPort = new SubgraphOutputPort(subgraphPorts, index, required);
+            }
+            subgraphPorts.getPorts().add(subgraphPort);
 		}
 	}
 

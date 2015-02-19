@@ -88,9 +88,9 @@ public final class TransformationGraph extends GraphElement {
 	
 	private Map <String, Object> dataRecordMetadata;
 
-	private SubgraphPorts subgraphInputPorts = new SubgraphPorts();
+	private SubgraphPorts subgraphInputPorts = new SubgraphPorts(this);
 	
-	private SubgraphPorts subgraphOutputPorts = new SubgraphPorts();
+	private SubgraphPorts subgraphOutputPorts = new SubgraphPorts(this);
 	
 	/**
 	 * Set of all persisted implicit metadata, which are used
@@ -196,6 +196,18 @@ public final class TransformationGraph extends GraphElement {
 	 */
 	private ConfigurationStatus preCheckConfigStatus = new ConfigurationStatus();
 	
+	/**
+	 * Reference to SubgraphInput component or null if the graph is not subjob.
+	 * Lazy initialised variable.
+	 */
+	private Node subgraphInputComponent = null;
+
+	/**
+	 * Reference to SubgraphOutput component or null if the graph is not subjob.
+	 * Lazy initialised variable.
+	 */
+	private Node subgraphOutputComponent = null;
+
 	public TransformationGraph() {
 		this(DEFAULT_GRAPH_ID);
 	}
@@ -1615,6 +1627,42 @@ public final class TransformationGraph extends GraphElement {
 	@Override
 	public String toString() {
 		return getId() + ":" + getRuntimeContext().getRunId();
+	}
+
+	/**
+	 * @return reference to SubgraphInput component in this graph if any
+	 */
+	public Node getSubgraphInputComponent() {
+		if (subgraphInputComponent == null) {
+			for (Node component : getNodes().values()) {
+				if (SubgraphUtils.isSubJobInputComponent(component.getType())) {
+					subgraphInputComponent = component;
+					break;
+				}
+			}
+			if (subgraphInputComponent == null) {
+				throw new JetelRuntimeException("SubgraphInput component is not available.");
+			}
+		}
+		return subgraphInputComponent;
+	}
+
+	/**
+	 * @return reference to SubgraphOutput component in this graph if any
+	 */
+	public Node getSubgraphOutputComponent() {
+		if (subgraphOutputComponent == null) {
+			for (Node component : getNodes().values()) {
+				if (SubgraphUtils.isSubJobOutputComponent(component.getType())) {
+					subgraphOutputComponent = component;
+					break;
+				}
+			}
+			if (subgraphOutputComponent == null) {
+				throw new JetelRuntimeException("SubgraphOutput component is not available.");
+			}
+		}
+		return subgraphOutputComponent;
 	}
 
 }

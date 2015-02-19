@@ -31,6 +31,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.graph.GraphParameter;
 import org.jetel.graph.GraphParameters;
 import org.jetel.graph.Node;
+import org.jetel.graph.SubgraphPort;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.HashCodeUtil;
 import org.jetel.util.property.PropertyRefResolver;
@@ -52,7 +53,11 @@ public class UtilLib extends TLFunctionLibrary {
     		"getEnvironmentVariables".equals(functionName) ? new GetEnvironmentVariablesFunction() : 
         	"getComponentProperty".equals(functionName) ? new GetComponentPropertyFunction() : 
     		"hashCode".equals(functionName)	? new HashCodeFunction() :	
-    		"byteAt".equals(functionName) ? new ByteAtFunction() : 
+       		"byteAt".equals(functionName) ? new ByteAtFunction() : 
+       		"getSubgraphInputPortsCount".equals(functionName) ? new GetSubgraphInputPortsCountFunction() : 
+       		"getSubgraphOutputPortsCount".equals(functionName) ? new GetSubgraphOutputPortsCountFunction() : 
+       		"isSubgraphInputPortConnected".equals(functionName) ? new IsSubgraphInputPortConnectedFunction() : 
+       		"isSubgraphOutputPortConnected".equals(functionName) ? new IsSubgraphOutputPortConnectedFunction() : 
 //    		"byteSet".equals(functionName) ? new ByteSetFunction() :
     		null; 
     		
@@ -469,5 +474,118 @@ public class UtilLib extends TLFunctionLibrary {
   	}
   	*/
 
+    // GET SUBGRAPH INPUT PORTS COUNT
+	@SuppressWarnings("unchecked")
+	@TLFunctionAnnotation("Returns number of input ports for this subgraph")
+    public static Integer getSubgraphInputPortsCount(TLFunctionCallContext context) {
+		return ((TLObjectCache<Integer>) context.getCache()).getObject();
+    }
     
+    @TLFunctionInitAnnotation()
+    public static final void getSubgraphInputPortsCountInit(TLFunctionCallContext context) {
+    	if (context.getGraph().getStaticJobType().isSubJob()) {
+    		context.setCache(new TLObjectCache<Integer>(context.getGraph().getSubgraphInputPorts().getPorts().size()));
+    	} else {
+    		context.setCache(new TLObjectCache<Integer>(null));
+    	}
+    }
+
+    class GetSubgraphInputPortsCountFunction implements TLFunctionPrototype {
+    	
+    	@Override
+    	public void init(TLFunctionCallContext context) {
+    		getSubgraphInputPortsCountInit(context);
+    	}
+    	
+    	@Override
+    	public void execute(Stack stack, TLFunctionCallContext context) {
+    		stack.push(getSubgraphInputPortsCount(context));
+    	}
+    }
+
+    // GET SUBGRAPH OUTPUT PORTS COUNT
+	@SuppressWarnings("unchecked")
+	@TLFunctionAnnotation("Returns number of output ports for this subgraph")
+    public static Integer getSubgraphOutputPortsCount(TLFunctionCallContext context) {
+		return ((TLObjectCache<Integer>) context.getCache()).getObject();
+    }
+    
+    @TLFunctionInitAnnotation()
+    public static final void getSubgraphOutputPortsCountInit(TLFunctionCallContext context) {
+    	if (context.getGraph().getStaticJobType().isSubJob()) {
+    		context.setCache(new TLObjectCache<Integer>(context.getGraph().getSubgraphOutputPorts().getPorts().size()));
+    	} else {
+    		context.setCache(new TLObjectCache<Integer>(null));
+    	}
+    }
+
+    class GetSubgraphOutputPortsCountFunction implements TLFunctionPrototype {
+    	
+    	@Override
+    	public void init(TLFunctionCallContext context) {
+    		getSubgraphOutputPortsCountInit(context);
+    	}
+    	
+    	@Override
+    	public void execute(Stack stack, TLFunctionCallContext context) {
+    		stack.push(getSubgraphOutputPortsCount(context));
+    	}
+    }
+
+    // IS SUBGRAPH INPUT PORT CONNECTED
+	@TLFunctionAnnotation("Returns true if specified input port is connected")
+    public static boolean isSubgraphInputPortConnected(TLFunctionCallContext context, int portIndex) {
+    	if (context.getGraph().getStaticJobType().isSubJob()) {
+    		List<SubgraphPort> subgraphInputPorts = context.getGraph().getSubgraphInputPorts().getPorts();
+    		if (portIndex < 0 || portIndex >= subgraphInputPorts.size()) {
+    			throw new IllegalArgumentException("Input port with index " + portIndex + " does not exists.");
+    		}
+    		return subgraphInputPorts.get(portIndex).isConnected();
+    	} else {
+    		throw new IllegalStateException("Function can be invoked only within subgraph.");
+    	}
+    }
+    
+    class IsSubgraphInputPortConnectedFunction implements TLFunctionPrototype {
+    	
+    	@Override
+    	public void init(TLFunctionCallContext context) {
+    	}
+    	
+    	@Override
+    	public void execute(Stack stack, TLFunctionCallContext context) {
+			Integer portIndex = stack.popInt();
+
+    		stack.push(isSubgraphInputPortConnected(context, portIndex));
+    	}
+    }
+
+    // IS SUBGRAPH OUTPUT PORT CONNECTED
+	@TLFunctionAnnotation("Returns true if specified output port is connected")
+    public static boolean isSubgraphOutputPortConnected(TLFunctionCallContext context, int portIndex) {
+    	if (context.getGraph().getStaticJobType().isSubJob()) {
+    		List<SubgraphPort> subgraphOutputPorts = context.getGraph().getSubgraphOutputPorts().getPorts();
+    		if (portIndex < 0 || portIndex >= subgraphOutputPorts.size()) {
+    			throw new IllegalArgumentException("Output port with index " + portIndex + " does not exists.");
+    		}
+    		return subgraphOutputPorts.get(portIndex).isConnected();
+    	} else {
+    		throw new IllegalStateException("Function can be invoked only within subgraph.");
+    	}
+    }
+    
+    class IsSubgraphOutputPortConnectedFunction implements TLFunctionPrototype {
+    	
+    	@Override
+    	public void init(TLFunctionCallContext context) {
+    	}
+    	
+    	@Override
+    	public void execute(Stack stack, TLFunctionCallContext context) {
+			Integer portIndex = stack.popInt();
+
+    		stack.push(isSubgraphOutputPortConnected(context, portIndex));
+    	}
+    }
+
 }

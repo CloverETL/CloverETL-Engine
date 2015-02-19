@@ -19,45 +19,26 @@
 package org.jetel.graph;
 
 /**
- * This object represents input and output port of a subgraph with relating settings.
+ * This object represents input port of a subgraph with relating settings.
  * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 2. 12. 2014
+ * @created 18. 2. 2015
  */
-public abstract class SubgraphPort {
+public class SubgraphInputPort extends SubgraphPort {
 
-	protected SubgraphPorts subgraphPorts;
-	
-	protected int index;
-	
-	protected boolean required = true;
-	
-	public SubgraphPort(SubgraphPorts subgraphPorts, int index, boolean required) {
-		this.subgraphPorts = subgraphPorts;
-		this.index = index;
-		this.required = required;
+	public SubgraphInputPort(SubgraphPorts parentSubgraphPorts, int index, boolean required) {
+		super(parentSubgraphPorts, index, required);
 	}
 
-	public int getIndex() {
-		return index;
+	@Override
+	public boolean isConnected() {
+		if (getGraph().getRuntimeJobType().isSubJob()) {
+			return getGraph().getAuthorityProxy().getParentGraphSourceEdge(index) != null;
+		} else {
+			return isRequired() ? true : getGraph().getSubgraphInputComponent().getInputPort(index) != null;
+		}
 	}
-	
-	public boolean isRequired() {
-		return required;
-	}
-	
-	/**
-	 * @return graph of this port 
-	 */
-	public TransformationGraph getGraph() {
-		return subgraphPorts.getGraph();
-	}
-	
-	/**
-	 * @return true if the port is connected (optional ports do not need to be connected)
-	 */
-	public abstract boolean isConnected();
 	
 }

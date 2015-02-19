@@ -31,9 +31,12 @@ import java.util.List;
  */
 public class SubgraphPorts {
 
+	private TransformationGraph graph;
+	
 	private List<SubgraphPort> ports;
 	
-	public SubgraphPorts() {
+	public SubgraphPorts(TransformationGraph graph) {
+		this.graph = graph;
 		ports = new ArrayList<>();
 	}
 	
@@ -41,12 +44,15 @@ public class SubgraphPorts {
 		return ports;
 	}
 
-	public void addPort(SubgraphPort port) {
-		ports.add(port);
-	}
-	
 	public boolean hasPort(int index) {
 		return index >= 0 && index < ports.size();
+	}
+	
+	/**
+	 * @return related graph
+	 */
+	public TransformationGraph getGraph() {
+		return graph;
 	}
 	
 }
