@@ -31,11 +31,9 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
-import org.jetel.data.DataRecordFactory;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
-import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.metadata.DataRecordMetadata;
@@ -415,8 +413,8 @@ public class MultiFileReader {
         
         //check for index of last returned record
         if(numRecords > 0 && numRecords <= autoFilling.getGlobalCounter()) {
-        	//read remaining input records if any (it is necessary to avoid CLO-5716)
-        	readRestInputRecords();
+        	//read remaining input records if any (it is necessary to avoid CLO-5716 and CLO-4577) 
+			channelIterator.blankRead(); 
             return false;
         }
 
@@ -437,25 +435,6 @@ public class MultiFileReader {
 	}
 	
 	/**
-	 * Blank reading of all input records. This is used in case no more records should be read
-	 * by the reader component but some other input records can be still available.
-	 * And components should read all records till the EOF flag.
-	 * @throws InterruptedException 
-	 * 
-	 */
-	private void readRestInputRecords() throws InterruptedException {
-    	if (inputPort != null) {
-    		DataRecord record = DataRecordFactory.newRecord(inputPort.getMetadata());
-    		record.init();
-    		try {
-				while (inputPort.readRecord(record) != null);
-			} catch (IOException e) {
-				throw new JetelRuntimeException(e);
-			}
-    	}
-	}
-
-	/**
 	 * Tries to obtain one record
 	 * @param record Instance to be filled with obtained data
 	 * @return null on error, the record otherwise
@@ -465,7 +444,6 @@ public class MultiFileReader {
 	public DataRecord getNext(DataRecord record) throws JetelException, InterruptedException {
 		// checks skip/numRecords
 		if (!checkRowAndPrepareSource()) {
-			channelIterator.blankRead(); // CLO-4577
 			return null;
 		}
 		
