@@ -39,6 +39,7 @@ import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.enums.ProcessingType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.InputPort;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.WcardPattern;
@@ -192,6 +193,7 @@ public class ReadableChannelPortIterator {
 			try {
 				while ((record = inputPort.readRecord(record)) != null) {}
 			} catch (Exception e) {
+				throw new JetelRuntimeException("Blank data records reading failed.", e);
 			}
 		}
 	}
