@@ -2,6 +2,15 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-3-5-5
+---------
+
+* FIXES:
+    - MultiFileReader: checkConfig warning for port protocol
+* COMPATIBILITY:
+	- Writers do not decode escape sequences in sandbox URLs
+
+
 REL-3-5-4
 ---------
 
