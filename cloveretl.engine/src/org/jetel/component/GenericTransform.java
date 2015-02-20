@@ -20,6 +20,7 @@ package org.jetel.component;
 
 import java.util.Properties;
 
+
 /**
  * Transformation for GenericComponent.
  * 
@@ -30,7 +31,7 @@ import java.util.Properties;
  */
 public interface GenericTransform extends Transform {
 	
-	public void init();
+	public void init(Properties properties);
 	
 	//this should probably be renamed to transform() everywhere
 	public void execute();

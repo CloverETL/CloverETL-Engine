@@ -402,8 +402,9 @@ public class MultiFileReader {
 	 * Checks skip/numRecords. Returns true if the source could return a record.
 	 * @return
 	 * @throws JetelException
+	 * @throws InterruptedException 
 	 */
-	private final boolean checkRowAndPrepareSource() throws JetelException {
+	private final boolean checkRowAndPrepareSource() throws JetelException, InterruptedException {
         //in case that fileURL doesn't contain valid file url
         initializeDataDependentSource();
         if(noInputFile) {
@@ -412,6 +413,8 @@ public class MultiFileReader {
         
         //check for index of last returned record
         if(numRecords > 0 && numRecords <= autoFilling.getGlobalCounter()) {
+        	//read remaining input records if any (it is necessary to avoid CLO-5716 and CLO-4577) 
+			channelIterator.blankRead(); 
             return false;
         }
 
@@ -436,11 +439,11 @@ public class MultiFileReader {
 	 * @param record Instance to be filled with obtained data
 	 * @return null on error, the record otherwise
 	 * @throws JetelException
+	 * @throws InterruptedException 
 	 */
-	public DataRecord getNext(DataRecord record) throws JetelException {
+	public DataRecord getNext(DataRecord record) throws JetelException, InterruptedException {
 		// checks skip/numRecords
 		if (!checkRowAndPrepareSource()) {
-			channelIterator.blankRead(); // CLO-4577
 			return null;
 		}
 		
@@ -470,7 +473,7 @@ public class MultiFileReader {
         return rec;
 	}
 	
-	 public int getNextDirect(CloverBuffer targetBuffer) throws JetelException {
+	 public int getNextDirect(CloverBuffer targetBuffer) throws JetelException, InterruptedException {
 		 	int success;
 		 	// checks skip/numRecords
 			if (!checkRowAndPrepareSource()) {
@@ -516,8 +519,9 @@ public class MultiFileReader {
 	 * @param record Instance to be filled with obtained data
 	 * @return null on error, the record otherwise
 	 * @throws JetelException
+	 * @throws InterruptedException 
 	 */
-	public DataRecord getNext() throws JetelException {
+	public DataRecord getNext() throws JetelException, InterruptedException {
 		// checks skip/numRecords
 		if (!checkRowAndPrepareSource()) {
 			return null;

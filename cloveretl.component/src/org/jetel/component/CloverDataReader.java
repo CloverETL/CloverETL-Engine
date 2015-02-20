@@ -48,6 +48,8 @@ import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.PolicyType;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
@@ -571,7 +573,21 @@ public class CloverDataReader extends Node implements MultiFileListener, Metadat
 				
 				@Override
 				public Thread newThread(Runnable r) {
-					Thread t = new Thread(r);
+					Thread t = new Thread(r) {
+
+						@Override
+						public void run() {
+							// register thread with ContextProvider to enable sandbox wildcard resolution
+							Context context = null;
+							try {
+								context = ContextProvider.registerNode(CloverDataReader.this);
+								super.run();
+							} finally {
+								ContextProvider.unregister(context);
+							}
+						}
+						
+					};
 					registerChildThread(t);
 					t.setName(getId() + "_metadataLoader");
 					return t;

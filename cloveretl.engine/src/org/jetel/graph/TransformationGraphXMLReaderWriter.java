@@ -584,9 +584,9 @@ public class TransformationGraphXMLReaderWriter {
 					recordMetadata=MetadataFactory.fromXML(graph, attributes.getChildNode(metadataElements.get(i),METADATA_RECORD_ELEMENT));
 				}
 			} catch (AttributeNotFoundException ex) {
-				throwXMLConfigurationException("Metadata - Attributes missing", ex);
+				throwXMLConfigurationException("Metadata - Attributes missing (id='" + metadataID + "').", ex);
 			} catch (Exception e) {
-				throwXMLConfigurationException("Metadata cannot be instantiated.", e);
+				throwXMLConfigurationException("Metadata cannot be instantiated (id='" + metadataID + "').", e);
 			}
 			//set metadataId
 			if (recordMetadata != null) {
@@ -760,7 +760,12 @@ public class TransformationGraphXMLReaderWriter {
 				graphEdge = EdgeFactory.newEdge(edgeID, (DataRecordMetadata) metadataObj);
 			}else{ 
 				// stub
-				graphEdge = EdgeFactory.newEdge(edgeID, (DataRecordMetadataStub) metadataObj);
+				try {
+					graphEdge = EdgeFactory.newEdge(edgeID, (DataRecordMetadataStub) metadataObj);
+				} catch (Exception e) {
+					throwXMLConfigurationException("Edge '" + edgeID + "' cannot be created.", e);
+					graphEdge = EdgeFactory.newEdge(edgeID, (DataRecordMetadata) null);
+				}
 			}
 			graphEdge.setDebugMode(debugMode);
 			graphEdge.setDebugMaxRecords(debugMaxRecords);
@@ -1167,19 +1172,22 @@ public class TransformationGraphXMLReaderWriter {
 			        	}
 
 			        	// create entry 
-			        	if (!entryProperties.isEmpty()) {
-				        	try {
-								dictionary.setValueFromProperties(name, type, entryProperties);
-							} catch (UnsupportedDictionaryOperation e) {
-								//probably only if the dictionary type does not support initialization from Properties and an ID attribute or others was passed
-								//so just create dictionary entry without value
+			        	if (!dictionary.hasEntry(name)) {
+							if (!entryProperties.isEmpty()) {
+								try {
+									dictionary.setValueFromProperties(name, type, entryProperties);
+								} catch (UnsupportedDictionaryOperation e) {
+									// probably only if the dictionary type does not support initialization from
+									// Properties and an ID attribute or others was passed
+									// so just create dictionary entry without value
+									dictionary.setValue(name, type, null);
+								}
+							} else {
+								if (dictionary.getEntry(name) != null) {
+									throw new ComponentNotReadyException("Duplicate dictionary entry name: " + name);
+								}
 								dictionary.setValue(name, type, null);
 							}
-						} else {
-							if (dictionary.getEntry(name) != null) {
-								throw new ComponentNotReadyException("Duplicate dictionary entry name: " + name);
-							}
-							dictionary.setValue(name, type, null);
 						}
 			        	
 			        	if (attributes.exists(DICTIONARY_ENTRY_INPUT) && attributes.getBoolean(DICTIONARY_ENTRY_INPUT)) {

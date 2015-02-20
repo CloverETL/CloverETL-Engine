@@ -18,6 +18,8 @@
  */
 package org.jetel.component;
 
+import java.util.Properties;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
@@ -31,6 +33,7 @@ import org.jetel.util.ExceptionUtils;
 
 /**
  * Implementation of {@link GenericTransform} interface which is used for CTL2.
+ * Currently not used since GenericComponent doesn't support CTL.
  * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -38,6 +41,8 @@ import org.jetel.util.ExceptionUtils;
  * @created 5. 1. 2015
  */
 public final class CTLGenericTransformAdapter extends CTLAbstractTransformAdapter implements GenericTransform {
+	
+	Properties additionalProperties;
 
 	private final Object[] onErrorArguments = new Object[2];
 
@@ -83,7 +88,8 @@ public final class CTLGenericTransformAdapter extends CTLAbstractTransformAdapte
 	 * @return True if successful, otherwise False
 	 */
 	@Override
-	public void init() {
+	public final void init(Properties properties) {
+		additionalProperties = properties;
         // initialize global scope and call user initialization function
 		try {
 			super.init();

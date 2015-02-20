@@ -173,6 +173,9 @@
 	      <property category="advanced" displayName="Create empty files" modifiable="true" name="createEmptyFiles" nullable="true" defaultHint="true">
 	        <singleType name="bool" />
 	      </property>
+	      <property category="advanced" displayName="Skip last record delimiter" modifiable="true" name="skipLastRecordDelimiter" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
 	    </properties>
 	  </ETLComponent>
 	</extension>
@@ -697,7 +700,7 @@
 	      <property category="advanced" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" redundant="transform|transformURL" required="false">
 	        <singleType name="class"/>
 	      </property>
-	      <property category="advanced" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	      <property category="advanced" displayName="Transform source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
 	        <singleType name="charset"/>
 	      </property>
 	    </properties>
@@ -2723,7 +2726,7 @@ Sends all resulting records to all connected output ports.</description>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="Algorithm" modifiable="true" name="genericTransform" nullable="true" required="!genericTransformClass,!genericTransformURL">
-	        <singleType name="multilineEditableJava" />
+	        <singleType name="genericComponentMultiline" />
 	      </property>
 	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform">
 	        <singleType name="file" />
@@ -2731,7 +2734,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Algorithm class" modifiable="true" name="genericTransformClass" nullable="true" required="!genericTransform,!genericTransformURL">
 	        <singleType name="class" />
 	      </property>
-	      <property category="basic" displayName="Runnable source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	      <property category="basic" displayName="Algorithm source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
 	        <singleType name="charset" />
 	      </property>
 	    </properties>

@@ -27,7 +27,7 @@ import java.net.URI;
 import java.net.URL;
 
 import org.jetel.graph.ContextProvider;
-import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.IAuthorityProxy;
 
 /**
  * Utility class for working with sandbox URLs.
@@ -211,11 +211,12 @@ public final class SandboxUrlUtils {
      * @throws IOException
      */
     public static OutputStream getSandboxOutputStream(URL url, boolean appendData) throws IOException {
-		TransformationGraph graph = ContextProvider.getGraph();
-		if (graph == null) {
-			throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
+		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
+		try {
+			return authorityProxy.getSandboxResourceOutput(ContextProvider.getComponentId(), url.getHost(), FileUtils.getUrlFile(url), appendData);
+		} catch (UnsupportedOperationException uoe) {
+			throw new IOException("Failed to open sandbox output stream", uoe);
 		}
-    	return graph.getAuthorityProxy().getSandboxResourceOutput(ContextProvider.getComponentId(), url.getHost(), FileUtils.getUrlFile(url), appendData);
     }
     
     /**
@@ -226,11 +227,12 @@ public final class SandboxUrlUtils {
      * @throws IOException
      */
     public static InputStream getSandboxInputStream(URL url) throws IOException {
-		TransformationGraph graph = ContextProvider.getGraph();
-		if (graph == null) {
-			throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
+		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
+		try {
+			return authorityProxy.getSandboxResourceInput(ContextProvider.getComponentId(), url.getHost(), FileUtils.getUrlFile(url));
+		} catch (UnsupportedOperationException uoe) {
+			throw new IOException("Failed to open sandbox input stream", uoe);
 		}
-		return graph.getAuthorityProxy().getSandboxResourceInput(ContextProvider.getComponentId(), url.getHost(), FileUtils.getUrlFile(url));
     }
 
 	private SandboxUrlUtils() {

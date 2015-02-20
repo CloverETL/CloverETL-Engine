@@ -39,6 +39,7 @@ import org.jetel.exception.TempFileCreationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
+import org.jetel.graph.runtime.CloverWorker;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.exec.DataConsumer;
@@ -414,23 +415,21 @@ public abstract class BulkLoader extends Node {
 	 * This class cannot be anonymous, since "ProGuard" obfuscator cannot handle it.
 	 * @author MVarecha - created from anonymous inner class
 	 */
-	private class PipeThread extends Thread {
+	private class PipeThread extends CloverWorker {
+		public PipeThread() {
+			super(BulkLoader.this, "PipedThread");
+		}
+
 		@Override
-		public void run() {
-			try {
-				readFromPortAndWriteByFormatter();
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
+		public void work() throws Exception, InterruptedException {
+			readFromPortAndWriteByFormatter();
 		}
 	}
 	
 	protected int runWithPipe() throws Exception {
     	createNamedPipe();
     	ProcBox box = createProcBox();
-    	Thread t = new PipeThread();
-		registerChildThread(t);
-		t.start();
+    	new PipeThread().startWorker();
 		return box.join();
     }
 	
