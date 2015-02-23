@@ -158,7 +158,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	}
 	
 	private void finishJMX() {
-		if(provideJMX) {
+		if (provideJMX && finishJMX && jmxObjectName != null) {
 			try {
 				getMBeanServer().unregisterMBean(jmxObjectName);
 			} catch (InstanceNotFoundException e) {
@@ -348,9 +348,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
             //we have to unregister current watchdog's thread from context provider
 			ContextProvider.unregister(c);
 
-			if (finishJMX) {
-            	finishJMX();
-            }
+			finishJMX();
             
 			CURRENT_PHASE_LOCK.unlock();
 			
@@ -848,5 +846,15 @@ public class WatchDog implements Callable<Result>, CloverPost {
     	return mbs;
     }
 
+    /**
+     * This method can be used to free all resources allocated by {@link #init()} method.
+     * By default, all resources are deallocated automatically by {@link #call()} method, but
+     * if the {@link #call()} method is not invoked or cannot be invoked due some error or exception,
+     * this method should be used to clean up. See CLO-5764.
+     */
+    public void freeOnError() {
+    	finishJMX();
+    }
+    
 }
 
