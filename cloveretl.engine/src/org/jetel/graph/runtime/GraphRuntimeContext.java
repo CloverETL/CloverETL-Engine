@@ -19,7 +19,10 @@
 package org.jetel.graph.runtime;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Level;
@@ -110,7 +113,18 @@ public class GraphRuntimeContext {
 	 * the Subgraph is in a loop, so all edges between SGI and SGO components has to be
 	 * fast-propagated. */
 	private boolean fastPropagateExecution;
-	
+	/**
+	 * This list contains indexes of all input ports of Subgraph component from parent graph
+	 * which have an edge connected. It has sense only for subgraphs. This information about
+	 * attached edges in parent graph is used to remove optional edges.
+	 */
+	private List<Integer> connectedParentGraphInputPorts; 
+	/**
+	 * This list contains indexes of all output ports of Subgraph component from parent graph
+	 * which have an edge connected. It has sense only for subgraphs. This information about
+	 * attached edges in parent graph is used to remove optional edges.
+	 */
+	private List<Integer> connectedParentGraphOutputPorts; 
 	
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
@@ -135,6 +149,8 @@ public class GraphRuntimeContext {
 		timeZone = null;
 		validateRequiredParameters = DEFAULT_VALIDATE_REQUIRED_PARAMETERS;
 		fastPropagateExecution = false;
+		connectedParentGraphInputPorts = Collections.emptyList(); 
+		connectedParentGraphOutputPorts = Collections.emptyList(); 
 	}
 	
 	/* (non-Javadoc)
@@ -176,7 +192,8 @@ public class GraphRuntimeContext {
 		ret.metadataProvider = getMetadataProvider();
 		ret.validateRequiredParameters = isValidateRequiredParameters();
 		ret.fastPropagateExecution = isFastPropagateExecution();
-		
+		ret.connectedParentGraphInputPorts = new ArrayList<>(getConnectedParentGraphInputPorts());
+		ret.connectedParentGraphOutputPorts = new ArrayList<>(getConnectedParentGraphOutputPorts());
 		return ret;
 	}
 
@@ -211,6 +228,8 @@ public class GraphRuntimeContext {
 		prop.setProperty("executionType", String.valueOf(getExecutionType()));
 		prop.setProperty("validateRequiredParameters", Boolean.toString(isValidateRequiredParameters()));
 		prop.setProperty("fastPropagateExecution", Boolean.toString(isFastPropagateExecution()));
+		prop.setProperty("connectedParentGraphInputPorts", getConnectedParentGraphInputPorts().toString());
+		prop.setProperty("connectedParentGraphOutputPorts", getConnectedParentGraphOutputPorts().toString());
 		
 		return prop;
 	}
@@ -834,6 +853,41 @@ public class GraphRuntimeContext {
 		this.fastPropagateExecution = fastPropagateExecution;
 	}
 	
+	/**
+	 * @return list of all input port indexes from parent Subgraph component, which are attached
+	 */
+	public List<Integer> getConnectedParentGraphInputPorts() {
+		return connectedParentGraphInputPorts;
+	}
+
+	/**
+	 * @param connectedParentGraphInputPorts list of all input port indexes from parent Subgraph component, which are attached
+	 */
+	public void setConnectedParentGraphInputPorts(List<Integer> connectedParentGraphInputPorts) {
+		if (connectedParentGraphInputPorts != null) {
+			this.connectedParentGraphInputPorts = Collections.unmodifiableList(connectedParentGraphInputPorts);
+		} else {
+			this.connectedParentGraphInputPorts = Collections.emptyList();
+		}
+	}
+
+	/**
+	 * @return list of all output port indexes from parent Subgraph component, which are attached
+	 */
+	public List<Integer> getConnectedParentGraphOutputPorts() {
+		return connectedParentGraphOutputPorts;
+	}
+
+	/**
+	 * @param connectedParentGraphOutputPorts list of all output port indexes from parent Subgraph component, which are attached
+	 */
+	public void setConnectedParentGraphOutputPorts(List<Integer> connectedParentGraphOutputPorts) {
+		if (connectedParentGraphOutputPorts != null) {
+			this.connectedParentGraphOutputPorts = Collections.unmodifiableList(connectedParentGraphOutputPorts);
+		} else {
+			this.connectedParentGraphOutputPorts = Collections.emptyList();
+		}
+	}
 
 	/**
 	 * This enum is attempt to provide a more generic way to this runtime configuration.
