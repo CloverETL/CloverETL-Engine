@@ -1322,7 +1322,7 @@ public class TypeChecker extends NavigatingVisitor {
 		// general (mixed-type) multiplication
 		TLType result = checkArithmeticOperator(lhs, rhs);
 		if (result.isError()) {
-			error(lhs, "Operator '*' is not defined for types: " + "'" + lhs.getType().name() + "' and '" + rhs.getType().name() + "'");
+			error(node, "Operator '*' is not defined for types: " + "'" + lhs.getType().name() + "' and '" + rhs.getType().name() + "'");
 		} else {
 			/* 
 			 * NOTE: 
