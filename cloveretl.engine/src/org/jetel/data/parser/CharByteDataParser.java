@@ -273,6 +273,11 @@ public class CharByteDataParser extends AbstractTextParser {
 		int counter;
 		for (counter = 0; counter < nRec; counter++) {
 			try {
+				// CLO-5654: update outer mark to prevent the buffer from filling up
+				if (verboseInputReader != null) {
+					verboseInputReader.setOuterMark();
+					lastRawRecord = null;
+				}
 				if (!recordSkipper.skipInput(0)) {
 					break;
 				}
