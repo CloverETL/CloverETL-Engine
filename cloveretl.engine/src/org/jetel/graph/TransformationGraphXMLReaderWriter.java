@@ -200,6 +200,7 @@ public class TransformationGraphXMLReaderWriter {
 	public final static String SUBGRAPH_SINGLE_PORT_ELEMENT= "singlePort";
 	public final static String SUBGRAPH_PORT_NAME_ATTRIBUTE = "name";
 	public final static String SUBGRAPH_PORT_REQUIRED_ATTRIBUTE = "required";
+	public final static String SUBGRAPH_PORT_KEEP_EDGE_ATTRIBUTE = "keepEdge";
 	
 	private final static String DICTIONARY_ELEMENT = "Dictionary";
 	private final static String DICTIONARY_ENTRY_ELEMENT = "Entry";
@@ -880,11 +881,12 @@ public class TransformationGraphXMLReaderWriter {
                 continue;
             }
             boolean required = attributes.getBoolean(SUBGRAPH_PORT_REQUIRED_ATTRIBUTE, true);
+            boolean keepEdge = attributes.getBoolean(SUBGRAPH_PORT_KEEP_EDGE_ATTRIBUTE, false);
             SubgraphPort subgraphPort;
             if (inputPorts) {
-            	subgraphPort = new SubgraphInputPort(subgraphPorts, index, required);
+            	subgraphPort = new SubgraphInputPort(subgraphPorts, index, required, keepEdge);
             } else {
-            	subgraphPort = new SubgraphOutputPort(subgraphPorts, index, required);
+            	subgraphPort = new SubgraphOutputPort(subgraphPorts, index, required, keepEdge);
             }
             subgraphPorts.getPorts().add(subgraphPort);
 		}

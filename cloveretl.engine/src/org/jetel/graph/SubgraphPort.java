@@ -34,10 +34,18 @@ public abstract class SubgraphPort {
 	
 	protected boolean required = true;
 	
-	public SubgraphPort(SubgraphPorts subgraphPorts, int index, boolean required) {
+	/**
+	 * This flag is used only for optional ports (required == false) and 
+	 * indicates whether the edge related with this port should be kept in the subgraph
+	 * or should be removed from the subgraph.
+	 */
+	protected boolean keepEdge = false;
+	
+	public SubgraphPort(SubgraphPorts subgraphPorts, int index, boolean required, boolean keepEdge) {
 		this.subgraphPorts = subgraphPorts;
 		this.index = index;
 		this.required = required;
+		this.keepEdge = keepEdge;
 	}
 
 	public int getIndex() {
@@ -46,6 +54,14 @@ public abstract class SubgraphPort {
 	
 	public boolean isRequired() {
 		return required;
+	}
+	
+	/**
+	 * @return for optional ports returns flag which indicates the related edge
+	 * to this port is kept or remove
+	 */
+	public boolean isKeptEdge() {
+		return keepEdge;
 	}
 	
 	/**

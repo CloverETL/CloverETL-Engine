@@ -91,6 +91,9 @@ public class TransformationGraphAnalyzer {
 			throw new JetelRuntimeException("Removing disabled nodes failed.", e);
 		}
 
+		//remove optional input and output edges in subgraphs
+		removeOptionalEdges(graph);
+		
 		//analyse subgraph - check layout and removes debug components if necessary
 		boolean subJobRuntime = runtimeContext.getJobType().isSubJob();
 		boolean subJobFile = runtimeContext.getJobType().isSubJob() || graph.getStaticJobType().isSubJob();
@@ -130,6 +133,50 @@ public class TransformationGraphAnalyzer {
         graph.setAnalysed(true);
 	}
 	
+	/**
+	 * This method removes all edges which are connected to subgraph's ports,
+	 * which are optional, where the related edge should be removed (SubgraphPort.isKeptEdge() == false).
+	 */
+	private static void removeOptionalEdges(TransformationGraph graph) {
+		try {
+			for (SubgraphPort subgraphPort : graph.getSubgraphInputPorts().getPorts()) {
+				if (!subgraphPort.isRequired() && !subgraphPort.isKeptEdge()) {
+					boolean removeEdge;
+					if (graph.getRuntimeJobType().isSubJob()) {
+						removeEdge = !graph.getRuntimeContext().getConnectedParentGraphInputPorts().contains(subgraphPort.getIndex());
+					} else {
+						removeEdge = (graph.getSubgraphInputComponent().getInputPort(subgraphPort.getIndex()) == null);
+					}
+					if (removeEdge) {
+						Edge edge = graph.getSubgraphInputComponent().getOutputPort(subgraphPort.getIndex()).getEdge();
+						graph.deleteEdge(edge);
+						edge.getReader().removeInputPort(edge);
+						edge.getWriter().removeOutputPort(edge);
+					}
+				}
+			}
+	
+			for (SubgraphPort subgraphPort : graph.getSubgraphInputPorts().getPorts()) {
+				if (!subgraphPort.isRequired() && !subgraphPort.isKeptEdge()) {
+					boolean removeEdge;
+					if (graph.getRuntimeJobType().isSubJob()) {
+						removeEdge = !graph.getRuntimeContext().getConnectedParentGraphInputPorts().contains(subgraphPort.getIndex());
+					} else {
+						removeEdge = (graph.getSubgraphInputComponent().getInputPort(subgraphPort.getIndex()) == null);
+					}
+					if (removeEdge) {
+						Edge edge = graph.getSubgraphInputComponent().getOutputPort(subgraphPort.getIndex()).getEdge();
+						graph.deleteEdge(edge);
+						edge.getReader().removeInputPort(edge);
+						edge.getWriter().removeOutputPort(edge);
+					}
+				}
+			}
+		} catch (Exception e) {
+			throw new JetelRuntimeException("Subgraph port optional edges cannot be removed.", e);
+		}
+	}
+
 	/**
 	 * Check whether subgraph calling hierarchy of the given graph is not recursive.
 	 * @param graph

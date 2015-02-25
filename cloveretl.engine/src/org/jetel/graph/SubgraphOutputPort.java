@@ -28,8 +28,16 @@ package org.jetel.graph;
  */
 public class SubgraphOutputPort extends SubgraphPort {
 
-	public SubgraphOutputPort(SubgraphPorts parentSubgraphPorts, int index, boolean required) {
-		super(parentSubgraphPorts, index, required);
+	/**
+	 * Creates engine model for output port of a subgraph
+	 * @param parentSubgraphPorts subgraph ports container
+	 * @param index index of the subgraph port
+	 * @param required true if an edge attached to the port is required
+	 * @param keepEdge if the port is not required (is optional),
+	 * the related edge is either kept or removed from the subgraph
+	 */
+	public SubgraphOutputPort(SubgraphPorts parentSubgraphPorts, int index, boolean required, boolean keepEdge) {
+		super(parentSubgraphPorts, index, required, keepEdge);
 	}
 
 	@Override
