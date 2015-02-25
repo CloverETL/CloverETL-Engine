@@ -245,7 +245,11 @@ public class CharByteDataParser extends AbstractTextParser {
 				return parsingErrorFound(e.getSimpleMessage(), record, consumerIdx, null);
 			} catch (BadDataFormatException e) {
 				if (recordSkipper != null) {
-					recordSkipper.skipInput(consumerIdx);
+					try {
+						recordSkipper.skipInput(consumerIdx);
+					} catch (OperationNotSupportedException ex2) { // CLO-5703
+						e.addSuppressed(ex2);
+					}
 				}
 				if (cfg.isVerbose()) {
 					lastRawRecord = getLastRawRecord(); 
@@ -1506,12 +1510,20 @@ public class CharByteDataParser extends AbstractTextParser {
 		protected AhoCorasick delimPatterns;
 		protected boolean[] isDelimited;
 		protected int numFields;
+		protected boolean fixedMetadata = true;
 
 		public RecordSkipper(ICharByteInputReader inputReader, AhoCorasick delimPatterns, boolean[] isDelimited) {
 			this.inputReader = inputReader;
 			this.delimPatterns = delimPatterns;
 			this.isDelimited = isDelimited;
 			this.numFields = isDelimited.length;
+			
+			for (boolean delimited: isDelimited) {
+				if (delimited) {
+					fixedMetadata = false;
+					break;
+				}
+			}
 		}
 
 		/**
@@ -1544,6 +1556,9 @@ public class CharByteDataParser extends AbstractTextParser {
 
 		@Override
 		public boolean skipInput(int nextField) throws OperationNotSupportedException, IOException {
+			if (fixedMetadata) { // CLO-5703:
+				throw new OperationNotSupportedException("Skipping not supported, no record delimiter found");
+			}
 			delimPatterns.reset();
 			inputReader.mark();
 			int ichr;
