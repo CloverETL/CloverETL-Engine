@@ -349,7 +349,7 @@
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL" redundant="transformClass|transformURL">
 	        <singleType name="transform" />
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform" redundant="transform|transformClass">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform" redundant="transform|transformClass" delegate="transform">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL" redundant="transformURL|transform">
@@ -694,7 +694,7 @@
 		  <property category="advanced" displayName="Transform" modifiable="true" name="transform" nullable="true" redundant="transformClass|transformURL" required="false" defaultHint="Default transformation maps fields by order">
 	        <singleType name="transform"/>
 	      </property>
-	      <property category="advanced" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" redundant="transformClass|transform" required="false">
+	      <property category="advanced" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" redundant="transformClass|transform" required="false" delegate="transform">
 	        <singleType name="file"/>
 	      </property>
 	      <property category="advanced" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" redundant="transform|transformURL" required="false">
@@ -944,7 +944,7 @@
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL">
 	        <singleType name="transform" />
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform" delegate="transform">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
@@ -1325,7 +1325,7 @@
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL">
 	        <singleType name="transform" outputPortName="1" shiftPortIndexing="true"/>
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transform,!transformClass">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transform,!transformClass" delegate="transform">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
@@ -1665,7 +1665,7 @@
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL">
 	        <singleType name="transform" outputPortName="0"/>
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transform,!transformClass">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transform,!transformClass" delegate="transform">
 	        <singleType name="file"/>
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
@@ -1741,7 +1741,7 @@
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true">
 	        <singleType name="transform" outputPortName="0" />
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" delegate="transform">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true">
@@ -2347,7 +2347,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL">
 	        <singleType name="transform" outputPortName="0"/>
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transform,!transformClass">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transform,!transformClass" delegate="transform">
 	        <singleType name="file"/>
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
