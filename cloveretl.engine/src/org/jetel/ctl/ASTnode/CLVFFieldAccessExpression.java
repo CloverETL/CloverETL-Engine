@@ -53,6 +53,7 @@ public class CLVFFieldAccessExpression extends SimpleNode {
 		this.fieldId = node.fieldId;
 		this.isOutput = node.isOutput;
 		this.isWildcard = node.isWildcard;
+		this.discriminator = node.discriminator;
 	}
 
 
