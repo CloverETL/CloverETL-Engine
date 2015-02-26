@@ -16,6 +16,7 @@
 	<property name="dir.plugin.dist" value="${dir.dist}/plugins/${plugin.dir.name}"/>
 
 	<property name="dir.engine" value="${basedir}/../cloveretl.engine"/>
+	<property name="dir.gui" value="${basedir}/../cloveretl.gui"/>
 	<property file="${dir.engine}/build.properties"/>		
 	<property name="dir.engine.lib" value="${dir.engine}/lib"/>
 	<property name="dir.engine.tools" value="${dir.engine}/tools"/>
