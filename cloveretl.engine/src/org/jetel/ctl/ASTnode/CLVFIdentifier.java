@@ -42,6 +42,8 @@ public class CLVFIdentifier extends SimpleNode {
 		super(node);
 		this.name = node.name;
 		this.variable = node.variable;
+		this.blockOffset = node.blockOffset;
+		this.variableOffset = node.variableOffset;
 	}
 
 	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */
