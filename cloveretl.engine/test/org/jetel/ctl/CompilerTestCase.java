@@ -636,7 +636,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			outMetadata[i] = outRecords[i].getMetadata();
 		}
 
-		ITLCompiler compiler = TLCompilerFactory.createCompiler(graph, inMetadata, outMetadata, "UTF-8");
+		ITLCompiler compiler = createCompiler(graph, inMetadata, outMetadata);
 		// *** NOTE: please don't remove this commented code. It is used for debugging
 		// ***       Uncomment the code to get the compiled Java code during test execution.
 		// ***       Please don't commit this code uncommented.
@@ -663,6 +663,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		executeCode(compiler);
 	}
+
+	protected ITLCompiler createCompiler(TransformationGraph graph, DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata) {
+		return TLCompilerFactory.createCompiler(graph, inMetadata, outMetadata, "UTF-8");
+	}
 	
 	protected void doCompileExpectError(TransformationGraph graph, String expStr, String testIdentifier, List<String> errCodes) {
 		this.graph = graph;
@@ -677,7 +681,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		print_code(expStr);
 
-		ITLCompiler compiler = TLCompilerFactory.createCompiler(graph, inMetadata, outMetadata, "UTF-8");
+		ITLCompiler compiler = createCompiler(graph, inMetadata, outMetadata);
 		List<ErrorMessage> messages = compiler.compile(expStr, CTLRecordTransform.class, testIdentifier);
 		printMessages(messages);
 

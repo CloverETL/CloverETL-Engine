@@ -152,7 +152,7 @@ public class TLCompiler implements ITLCompiler {
 			ContextProvider.unregister(ctx);
 		}
 		
-		ASTBuilder astBuilder = new ASTBuilder(graph,inMetadata,outMetadata,parser.getFunctions(),problemReporter);
+		ASTBuilder astBuilder = createASTBuilder();
 		astBuilder.setLenient(lenient);
 		astBuilder.resolveAST(parseTree);
 		if (problemReporter.errorCount() > 0) {
@@ -242,7 +242,7 @@ public class TLCompiler implements ITLCompiler {
 			ContextProvider.unregister(ctx);
 		}
 		
-		ASTBuilder astBuilder = new ASTBuilder(graph,inMetadata,outMetadata,parser.getFunctions(),problemReporter);
+		ASTBuilder astBuilder = createASTBuilder();
 		astBuilder.setLenient(lenient);
 		astBuilder.resolveAST(parseTree);
 		if (problemReporter.errorCount() > 0) {
@@ -264,6 +264,15 @@ public class TLCompiler implements ITLCompiler {
 		}
 		
 		return getDiagnosticMessages();
+	}
+
+	/**
+	 * Can be overridden for DuplicationTest.
+	 * 
+	 * @return
+	 */
+	protected ASTBuilder createASTBuilder() {
+		return new ASTBuilder(graph,inMetadata,outMetadata,parser.getFunctions(),problemReporter);
 	}
 	
 	/**
