@@ -248,6 +248,7 @@ public class CharByteDataParser extends AbstractTextParser {
 					try {
 						recordSkipper.skipInput(consumerIdx);
 					} catch (OperationNotSupportedException ex2) { // CLO-5703
+						logger.warn("Record skipping failed", ex2);
 						e.addSuppressed(ex2);
 					}
 				}
@@ -536,10 +537,13 @@ public class CharByteDataParser extends AbstractTextParser {
 				idx++;
 			}
 		} // loop
-		if (needByteInput) {
-			recordSkipper = new ByteRecordSkipper(inputReader, getCharDelimSearcher(), isDelimited);
-		} else {
-			recordSkipper = new CharRecordSkipper(inputReader, getCharDelimSearcher(), isDelimited);
+		// CLO-5703: disable record skipping if last non-autofilled field has no delimiter
+		if (metadata.isSpecifiedRecordDelimiter() || isDelimited[lastNonAutoFilledField]) {
+			if (needByteInput) {
+				recordSkipper = new ByteRecordSkipper(inputReader, getCharDelimSearcher(), isDelimited);
+			} else {
+				recordSkipper = new CharRecordSkipper(inputReader, getCharDelimSearcher(), isDelimited);
+			}
 		}
 		if (metadata.isSpecifiedRecordDelimiter() && !metadata.getField(lastNonAutoFilledField).isDelimited()) {
 			// last field without autofilling doesn't have delimiter - special consumer needed for record delimiter
@@ -1510,20 +1514,12 @@ public class CharByteDataParser extends AbstractTextParser {
 		protected AhoCorasick delimPatterns;
 		protected boolean[] isDelimited;
 		protected int numFields;
-		protected boolean fixedMetadata = true;
 
 		public RecordSkipper(ICharByteInputReader inputReader, AhoCorasick delimPatterns, boolean[] isDelimited) {
 			this.inputReader = inputReader;
 			this.delimPatterns = delimPatterns;
 			this.isDelimited = isDelimited;
 			this.numFields = isDelimited.length;
-			
-			for (boolean delimited: isDelimited) {
-				if (delimited) {
-					fixedMetadata = false;
-					break;
-				}
-			}
 		}
 
 		/**
@@ -1556,9 +1552,6 @@ public class CharByteDataParser extends AbstractTextParser {
 
 		@Override
 		public boolean skipInput(int nextField) throws OperationNotSupportedException, IOException {
-			if (fixedMetadata) { // CLO-5703:
-				throw new OperationNotSupportedException("Skipping not supported, no record delimiter found");
-			}
 			delimPatterns.reset();
 			inputReader.mark();
 			int ichr;
