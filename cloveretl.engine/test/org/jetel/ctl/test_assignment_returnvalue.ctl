@@ -26,6 +26,10 @@ firstMultivalueOutput[] function_call_original_list;
 firstMultivalueOutput[] function_call_copied_list;
 firstMultivalueOutput function_call_list_newrecord;
 
+integer incrementCounter = 0;
+string incrementTest;
+string[] incrementTestList;
+
 
 // stupid implementation - poor performance
 function string listToString(string[] input) {
@@ -124,6 +128,13 @@ function integer transform() {
 	testReturnValue13 = ["aa", "bb", "cc"];
 	recordMap1[2] = tmpReturnValueRecord1;
 	(recordMap1[2].stringListField = testReturnValue13).clear();
+	
+	string[] emptyList1;
+	string[] emptyList2;
+	// length(emptyList1 + emptyList2) translates to multiple statements in compiled mode:
+	incrementTest = incrementTestList[length(emptyList1 + emptyList2)] = "oldValue";
+	// incrementCounter++ requires a temp variable in compiled mode
+	incrementTest = incrementTestList[incrementCounter++] = "newValue";
 	
 	
 	return 0;
