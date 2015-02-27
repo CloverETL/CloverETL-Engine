@@ -731,7 +731,7 @@ public class XmlSaxParser {
 		}
 
 		private String escapeXmlEntity(String entity) {
-			return entity.replace("&", "&amp;").replace("\"", "&quot").replace("'", "&apos;").replace("<", "&lt;").replace(">", "&gt;");
+			return entity.replace("&", "&amp;").replace("\"", "&quot;").replace("'", "&apos;").replace("<", "&lt;").replace(">", "&gt;");
 		}
 
 		/**
