@@ -2734,7 +2734,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			assertFalse(testReturnValue13.isEmpty());
 			assertTrue(((List<?>) recordMap1.get(2).getField("stringListField").getValue()).isEmpty());
 			
-			
+			check("incrementTest", "newValue");
+			check("incrementTestList", Arrays.asList("newValue"));
+			check("incrementCounter", 1);
 		}
 	}
 	
