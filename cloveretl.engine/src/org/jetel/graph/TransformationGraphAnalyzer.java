@@ -156,16 +156,16 @@ public class TransformationGraphAnalyzer {
 				}
 			}
 	
-			for (SubgraphPort subgraphPort : graph.getSubgraphInputPorts().getPorts()) {
+			for (SubgraphPort subgraphPort : graph.getSubgraphOutputPorts().getPorts()) {
 				if (!subgraphPort.isRequired() && !subgraphPort.isKeptEdge()) {
 					boolean removeEdge;
 					if (graph.getRuntimeJobType().isSubJob()) {
-						removeEdge = !graph.getRuntimeContext().getConnectedParentGraphInputPorts().contains(subgraphPort.getIndex());
+						removeEdge = !graph.getRuntimeContext().getConnectedParentGraphOutputPorts().contains(subgraphPort.getIndex());
 					} else {
-						removeEdge = (graph.getSubgraphInputComponent().getInputPort(subgraphPort.getIndex()) == null);
+						removeEdge = (graph.getSubgraphOutputComponent().getOutputPort(subgraphPort.getIndex()) == null);
 					}
 					if (removeEdge) {
-						Edge edge = graph.getSubgraphInputComponent().getOutputPort(subgraphPort.getIndex()).getEdge();
+						Edge edge = graph.getSubgraphOutputComponent().getInputPort(subgraphPort.getIndex()).getEdge();
 						graph.deleteEdge(edge);
 						edge.getReader().removeInputPort(edge);
 						edge.getWriter().removeOutputPort(edge);
