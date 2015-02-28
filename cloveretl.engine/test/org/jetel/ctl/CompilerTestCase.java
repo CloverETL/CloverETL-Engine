@@ -4277,6 +4277,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("emptyList1", true);
 		check("fullList", false);
 		check("fullList1", false);
+		check("emptyString",true);
+		check("fullString",false);
 	}
 
 	public void test_containerlib_isEmpty_expect_error(){
@@ -5835,6 +5837,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("trim1", "im  The QUICk !!$  broWn fox juMPS over the lazy DOG");
 		check("trim_empty", "");
 		check("trim_null", null);
+	}
+	
+	public void test_stringlib_reverse_chars() {
+		doCompile("test_stringlib_reverseChars");
+		check("reversed1", "hgfedcba");
+		check("reversed2", "a");
+		check("reversed3", null);
 	}
 	
 	public void test_stringlib_upperCase() {
@@ -10485,6 +10494,22 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("query_empty", null);
 	}
 
+	public void test_stringlib_getPathParts() {
+		doCompile("test_stringlib_getPathParts");
+		
+		check("path_1","foo/../bar/../baz/");
+		check("path_2","a\\b\\");
+		check("path_full","C:\\a\\b\\");
+		check("normalized_1","/baz/out5.txt");
+		check("ext_1","txt");
+		check("ext_2","jpg");
+		check("name_1","c.ab.jpg");
+		check("name_2","out5.txt");
+		check("name_noext_1","c.ab");
+		check("name_noext_2","out5");
+	}
+
+	
 	public void test_utillib_iif() throws UnsupportedEncodingException{
 		doCompile("test_utillib_iif");
 		check("ret1", "Renektor");
