@@ -2714,10 +2714,11 @@ Sends all resulting records to all connected output ports.</description>
 	  </ETLComponent>
 	</extension>
 
+	<!-- GenericComponent - descriptor for Generic Reader -->
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/others/JavaExecute" name="GenericReader" type="GENERIC_READER" className="org.jetel.component.GenericComponent">
-	    <shortDescription>Allows you to make custom component</shortDescription>
-	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports.</description>
+	  <ETLComponent category="readers" iconPath="icons/others/JavaExecute" name="CustomJavaReader" type="GENERIC_READER" className="org.jetel.component.GenericComponent">
+	    <shortDescription>Generic component that allows you to create custom reader.</shortDescription>
+	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports. This is a GenericComponent customized for implementing a Reader.</description>
 	    <inputPorts>
 	      <multiplePort required="false" />
 	    </inputPorts>
@@ -2741,10 +2742,11 @@ Sends all resulting records to all connected output ports.</description>
 	  </ETLComponent>
 	</extension>
 	
+	<!-- GenericComponent - descriptor for Generic Writer -->
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/others/JavaExecute" name="GenericWriter" type="GENERIC_WRITER" className="org.jetel.component.GenericComponent">
-	    <shortDescription>Allows you to make custom component</shortDescription>
-	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports.</description>
+	  <ETLComponent category="writers" iconPath="icons/others/JavaExecute" name="CustomJavaWriter" type="GENERIC_WRITER" className="org.jetel.component.GenericComponent">
+	    <shortDescription>Generic component that allows you to create custom writer.</shortDescription>
+	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports. This is a GenericComponent customized for implementing a Writer</description>
 	    <inputPorts>
 	      <multiplePort required="false" />
 	    </inputPorts>
@@ -2768,10 +2770,11 @@ Sends all resulting records to all connected output ports.</description>
 	  </ETLComponent>
 	</extension>
 	
+	<!-- GenericComponent - descriptor for Generic Transformer -->
 	<extension point-id="component">
-	  <ETLComponent category="transformers" iconPath="icons/others/JavaExecute" name="GenericTransformer" type="GENERIC_TRANSFORMER" className="org.jetel.component.GenericComponent">
-	    <shortDescription>Allows you to make custom component</shortDescription>
-	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports.</description>
+	  <ETLComponent category="transformers" iconPath="icons/others/JavaExecute" name="CustomJavaTransformer" type="GENERIC_TRANSFORMER" className="org.jetel.component.GenericComponent">
+	    <shortDescription>Generic component that allows you to create custom transformer.</shortDescription>
+	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports. This is a GenericComponent customized for implementing a Transformer.</description>
 	    <inputPorts>
 	      <multiplePort required="false" />
 	    </inputPorts>
@@ -2781,6 +2784,34 @@ Sends all resulting records to all connected output ports.</description>
 	    <properties>
 	      <property category="basic" displayName="Algorithm" modifiable="true" name="genericTransform" nullable="true" required="!genericTransformClass,!genericTransformURL">
 	        <singleType name="genericComponentMultiline" genericType="transformer" />
+	      </property>
+	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Algorithm class" modifiable="true" name="genericTransformClass" nullable="true" required="!genericTransform,!genericTransformURL">
+	        <singleType name="class" />
+	      </property>
+	      <property category="basic" displayName="Algorithm source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
+	</extension>
+	
+	<!-- GenericComponent - main generic descriptor -->
+	<extension point-id="component">
+	  <ETLComponent category="others" iconPath="icons/others/JavaExecute" name="GenericComponent" type="GENERIC_COMPONENT" className="org.jetel.component.GenericComponent">
+	    <shortDescription>Allows you to create custom component in Java.</shortDescription>
+	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports. This is a GenericComponent without customization.</description>
+	    <inputPorts>
+	      <multiplePort required="false" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="false" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Algorithm" modifiable="true" name="genericTransform" nullable="true" required="!genericTransformClass,!genericTransformURL">
+	        <singleType name="genericComponentMultiline" genericType="none" />
 	      </property>
 	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform">
 	        <singleType name="file" />
