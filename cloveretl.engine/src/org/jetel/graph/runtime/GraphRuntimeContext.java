@@ -28,6 +28,7 @@ import org.jetel.data.Defaults;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.dictionary.DictionaryValuesContainer;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.string.StringUtils;
@@ -111,6 +112,11 @@ public class GraphRuntimeContext {
 	 * fast-propagated. */
 	private boolean fastPropagateExecution;
 	
+	/**
+	 * This flag can be used to decide, whether some flaws in graph xml file should be reported or somehow ignored.
+	 * See, {@link TransformationGraphXMLReaderWriter#setStrictParsing(boolean)}. 
+	 */
+	private boolean strictGraphFactorization;
 	
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
@@ -135,6 +141,7 @@ public class GraphRuntimeContext {
 		timeZone = null;
 		validateRequiredParameters = DEFAULT_VALIDATE_REQUIRED_PARAMETERS;
 		fastPropagateExecution = false;
+		setStrictGraphFactorization(true);
 	}
 	
 	/* (non-Javadoc)
@@ -176,6 +183,7 @@ public class GraphRuntimeContext {
 		ret.metadataProvider = getMetadataProvider();
 		ret.validateRequiredParameters = isValidateRequiredParameters();
 		ret.fastPropagateExecution = isFastPropagateExecution();
+		ret.strictGraphFactorization = isStrictGraphFactorization();
 		
 		return ret;
 	}
@@ -211,6 +219,7 @@ public class GraphRuntimeContext {
 		prop.setProperty("executionType", String.valueOf(getExecutionType()));
 		prop.setProperty("validateRequiredParameters", Boolean.toString(isValidateRequiredParameters()));
 		prop.setProperty("fastPropagateExecution", Boolean.toString(isFastPropagateExecution()));
+		prop.setProperty("strictGraphFactorization", Boolean.toString(isStrictGraphFactorization()));
 		
 		return prop;
 	}
@@ -834,6 +843,19 @@ public class GraphRuntimeContext {
 		this.fastPropagateExecution = fastPropagateExecution;
 	}
 	
+	/**
+	 * @return the strictGraphFactorization
+	 */
+	public boolean isStrictGraphFactorization() {
+		return strictGraphFactorization;
+	}
+
+	/**
+	 * @param strictGraphFactorization the strictGraphFactorization to set
+	 */
+	public void setStrictGraphFactorization(boolean strictGraphFactorization) {
+		this.strictGraphFactorization = strictGraphFactorization;
+	}
 
 	/**
 	 * This enum is attempt to provide a more generic way to this runtime configuration.
