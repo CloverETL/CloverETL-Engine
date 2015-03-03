@@ -738,7 +738,16 @@ public class DynamicLib extends TLFunctionLibrary {
 		return record.getField(position).getMetadata().getDataType().getName();
 	}
 
-	//GETFIELDTYPE
+	@TLFunctionAnnotation("Returns data type of field name of passed-in record")
+	public static final String getFieldType(TLFunctionCallContext context, DataRecord record, String fieldName) {
+		try{
+			return record.getField(fieldName).getMetadata().getDataType().getName();
+		}catch(Exception ex){
+			throw new JetelRuntimeException("field with name " + fieldName + " does not exist in metadata '" + record.getMetadata().getName() + "'");
+		}
+	}
+	
+	// GETFIELDTYPE
 	class GetFieldTypeFunction implements TLFunctionPrototype {
 
 		@Override
@@ -747,9 +756,15 @@ public class DynamicLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			Integer position = stack.popInt();
-			DataRecord record = stack.popRecord();
-			stack.push(getFieldType(context, record, position));
+			if (context.getParams()[1].isInteger()) {
+				int index = stack.popInt();
+				DataRecord record = stack.popRecord();
+				stack.push(getFieldType(context, record, index));
+			} else if (context.getParams()[1].isString()) {
+				String name = stack.popString();
+				DataRecord record = stack.popRecord();
+				stack.push(getFieldType(context, record, name));
+			}
 		}
 	}
 }
