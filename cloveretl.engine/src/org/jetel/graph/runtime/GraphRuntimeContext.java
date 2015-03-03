@@ -126,6 +126,12 @@ public class GraphRuntimeContext {
 	 */
 	private List<Integer> connectedParentGraphOutputPorts; 
 	
+	/**
+	 * This flag can be used to decide, whether some flaws in graph xml file should be reported or somehow ignored.
+	 * See, {@link TransformationGraphXMLReaderWriter#setStrictParsing(boolean)}. 
+	 */
+	private boolean strictGraphFactorization;
+	
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
 		useJMX = DEFAULT_USE_JMX;
@@ -151,6 +157,7 @@ public class GraphRuntimeContext {
 		fastPropagateExecution = false;
 		connectedParentGraphInputPorts = Collections.emptyList(); 
 		connectedParentGraphOutputPorts = Collections.emptyList(); 
+		setStrictGraphFactorization(true);
 	}
 	
 	/* (non-Javadoc)
@@ -194,6 +201,8 @@ public class GraphRuntimeContext {
 		ret.fastPropagateExecution = isFastPropagateExecution();
 		ret.connectedParentGraphInputPorts = new ArrayList<>(getConnectedParentGraphInputPorts());
 		ret.connectedParentGraphOutputPorts = new ArrayList<>(getConnectedParentGraphOutputPorts());
+		ret.strictGraphFactorization = isStrictGraphFactorization();
+
 		return ret;
 	}
 
@@ -887,6 +896,20 @@ public class GraphRuntimeContext {
 		} else {
 			this.connectedParentGraphOutputPorts = Collections.emptyList();
 		}
+	}
+	
+	/**
+	 * @return the strictGraphFactorization
+	 */
+	public boolean isStrictGraphFactorization() {
+		return strictGraphFactorization;
+	}
+
+	/**
+	 * @param strictGraphFactorization the strictGraphFactorization to set
+	 */
+	public void setStrictGraphFactorization(boolean strictGraphFactorization) {
+		this.strictGraphFactorization = strictGraphFactorization;
 	}
 
 	/**

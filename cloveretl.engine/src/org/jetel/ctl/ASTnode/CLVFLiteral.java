@@ -45,6 +45,7 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 		super(node);
 		this.valueImage = node.valueImage;
 		this.valueObj = node.valueObj;
+		this.tokenKind = node.tokenKind;
 	}
 
 	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */

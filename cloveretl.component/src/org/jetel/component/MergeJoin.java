@@ -621,9 +621,17 @@ public class MergeJoin extends Node {
 			fields[i] = metaData.getFieldPosition(joiners[i].getKeyName());
 			if (joiners[i].getOrdering() == OrderEnum.ASC) {
 				aOrdering[i] = true;
-			} else if (joiners[i].getOrdering() == null) {	// old fashion - field name without ordering
-				joiners[i].setOrdering(ascendingInputs ? OrderEnum.ASC : OrderEnum.DESC);
-				aOrdering[i] = ascendingInputs;
+			} else if (joiners[i].getOrdering() == null) {	
+				boolean isAsc;
+				if (driverKey != null && driverKey.getKeyOrderings().length > i) {
+					// set the same ordering as the master has
+					isAsc = driverKey.getKeyOrderings()[i];
+				} else {
+					// old fashion - field name without ordering - use global setting
+					isAsc = ascendingInputs;
+				}
+				joiners[i].setOrdering(isAsc ? OrderEnum.ASC : OrderEnum.DESC);
+				aOrdering[i] = isAsc;
 			} else if (joiners[i].getOrdering() != OrderEnum.DESC) {
 				throw new ComponentNotReadyException("Wrong order definition in join key: " + joiners[i].getOrdering());
 			}

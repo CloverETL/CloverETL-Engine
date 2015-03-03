@@ -16,6 +16,7 @@
 	<property name="dir.plugin.dist" value="${dir.dist}/plugins/${plugin.dir.name}"/>
 
 	<property name="dir.engine" value="${basedir}/../cloveretl.engine"/>
+	<property name="dir.gui" value="${basedir}/../cloveretl.gui"/>
 	<property file="${dir.engine}/build.properties"/>		
 	<property name="dir.engine.lib" value="${dir.engine}/lib"/>
 	<property name="dir.engine.tools" value="${dir.engine}/tools"/>
@@ -588,18 +589,38 @@
 
 		<!-- Create plugin directory. -->
 		<mkdir dir="${dir.plugin.dist}"/>
-
+		
+		<echo message="*** Creating jar dir.plugin.dist/plugin.name.jar - ${dir.plugin.dist}/${plugin.name}.jar of dir.package.classes - ${dir.package.classes} including **/*" />
 		<jar destfile="${dir.plugin.dist}/${plugin.name}.jar" basedir="${dir.package.classes}">
 			<include name="**/*"/>
 		</jar>
+		
+		<!-- CLO-5776 -->
+		
+		<if>
+		<or>
+		    <contains string="${plugin.list}" substring="${plugin.name}"/>
+		</or>
+			<then>
+				<echo message="*** Creating jar dir.plugin.dist/plugin.name.src.jar - ${dir.plugin.dist}/${plugin.name}.src.jar of dir.src.improved - ${dir.src.improved}" />
+				<jar destfile="${dir.plugin.dist}/${plugin.name}.src.jar" basedir="${dir.src.improved}"/>
+			</then>
+		</if>
+		
+		<!-- ======== -->
+		
 		<!-- copy plugin manifest -->
+		<echo message="*** Copying plugin manifest ${dir.package.manifest}/plugin.xml to ${dir.plugin.dist}" />
 		<copy file="${dir.package.manifest}/plugin.xml" todir="${dir.plugin.dist}" />
 		
 		<!-- copy all libraries from lib directory -->
+		<echo message="*** Copying all libraries from lib directory to ${dir.plugin.dist}/lib" />
 		<copy todir="${dir.plugin.dist}/lib">
 			<fileset refid="plugin-lib-files"/>
 		</copy>
+		
 		<!-- copy all icons -->
+		<echo message="*** Copying all icons to ${dir.plugin.dist}/icons" />
 		<copy todir="${dir.plugin.dist}/icons">
 			<fileset refid="plugin-icons"/>
 		</copy>

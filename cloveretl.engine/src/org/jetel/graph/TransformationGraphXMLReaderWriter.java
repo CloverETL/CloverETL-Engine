@@ -428,7 +428,11 @@ public class TransformationGraphXMLReaderWriter {
 			//it is necessary for correct edge factorisation in EdgeFactory (maybe will be useful even somewhere else)
 			c = ContextProvider.registerGraph(graph);
 			
+			//set information about strict parsing into runtime context - this can
+			//be used whenever is necessary inside the graph factorization using ContextProvider.getRuntimeContext() 
+			runtimeContext.setStrictGraphFactorization(strictParsing);
 			graph.setInitialRuntimeContext(runtimeContext);
+			
 			// get graph name
 			ComponentXMLAttributes grfAttributes=new ComponentXMLAttributes((Element)graphElement.item(0), graph);
 			try {

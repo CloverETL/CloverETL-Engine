@@ -40,6 +40,7 @@ public class CLVFMemberAccessExpression extends SimpleNode {
 		super(node);
 		this.name = node.name;
 		this.fieldId = node.fieldId;
+		this.isWildcard = node.isWildcard;
 	}
 
 	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */

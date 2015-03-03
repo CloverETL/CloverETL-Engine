@@ -636,7 +636,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			outMetadata[i] = outRecords[i].getMetadata();
 		}
 
-		ITLCompiler compiler = TLCompilerFactory.createCompiler(graph, inMetadata, outMetadata, "UTF-8");
+		ITLCompiler compiler = createCompiler(graph, inMetadata, outMetadata);
 		// *** NOTE: please don't remove this commented code. It is used for debugging
 		// ***       Uncomment the code to get the compiled Java code during test execution.
 		// ***       Please don't commit this code uncommented.
@@ -663,6 +663,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		executeCode(compiler);
 	}
+
+	protected ITLCompiler createCompiler(TransformationGraph graph, DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata) {
+		return TLCompilerFactory.createCompiler(graph, inMetadata, outMetadata, "UTF-8");
+	}
 	
 	protected void doCompileExpectError(TransformationGraph graph, String expStr, String testIdentifier, List<String> errCodes) {
 		this.graph = graph;
@@ -677,7 +681,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		print_code(expStr);
 
-		ITLCompiler compiler = TLCompilerFactory.createCompiler(graph, inMetadata, outMetadata, "UTF-8");
+		ITLCompiler compiler = createCompiler(graph, inMetadata, outMetadata);
 		List<ErrorMessage> messages = compiler.compile(expStr, CTLRecordTransform.class, testIdentifier);
 		printMessages(messages);
 
@@ -1284,6 +1288,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_dynamiclib_getFieldType");
 		check("ret1", "string");
 		check("ret2", "number");
+		check("ret3", "number");
 	}
 	
 	public void test_dynamiclib_getFieldType_expect_error(){
@@ -1301,6 +1306,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 		try {
 			doCompile("function integer transform(){firstInput fi = null; string str = fi.getFieldType(5); return 0;}","test_dynamiclib_getFieldType_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput fi = null; string str = fi.getFieldType(\"XYZABC\"); return 0;}","test_dynamiclib_getFieldType_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
@@ -2730,7 +2741,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			assertFalse(testReturnValue13.isEmpty());
 			assertTrue(((List<?>) recordMap1.get(2).getField("stringListField").getValue()).isEmpty());
 			
-			
+			check("incrementTest", "newValue");
+			check("incrementTestList", Arrays.asList("newValue"));
+			check("incrementCounter", 1);
 		}
 	}
 	
@@ -4271,6 +4284,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("emptyList1", true);
 		check("fullList", false);
 		check("fullList1", false);
+		check("emptyString",true);
+		check("fullString",false);
 	}
 
 	public void test_containerlib_isEmpty_expect_error(){
@@ -5829,6 +5844,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("trim1", "im  The QUICk !!$  broWn fox juMPS over the lazy DOG");
 		check("trim_empty", "");
 		check("trim_null", null);
+	}
+	
+	public void test_stringlib_reverse_chars() {
+		doCompile("test_stringlib_reverseChars");
+		check("reversed1", "hgfedcba");
+		check("reversed2", "a");
+		check("reversed3", null);
 	}
 	
 	public void test_stringlib_upperCase() {
@@ -10479,6 +10501,22 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("query_empty", null);
 	}
 
+	public void test_stringlib_getPathParts() {
+		doCompile("test_stringlib_getPathParts");
+		
+		check("path_1","foo/../bar/../baz/");
+		check("path_2","a\\b\\");
+		check("path_full","C:\\a\\b\\");
+		check("normalized_1","/baz/out5.txt");
+		check("ext_1","txt");
+		check("ext_2","jpg");
+		check("name_1","c.ab.jpg");
+		check("name_2","out5.txt");
+		check("name_noext_1","c.ab");
+		check("name_noext_2","out5");
+	}
+
+	
 	public void test_utillib_iif() throws UnsupportedEncodingException{
 		doCompile("test_utillib_iif");
 		check("ret1", "Renektor");

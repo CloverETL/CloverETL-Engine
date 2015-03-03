@@ -629,10 +629,14 @@ This software is licensed under the terms you may find in the file named "LICENS
 		<!-- Create directory for dist. -->
 		<mkdir dir="${dir.package}/lib"/>
 
+		<echo message="*** Creating jar ${dir.package}/lib/cloveretl.engine.jar from dir.package.classes." />
 		<jar destfile="${dir.package}/lib/cloveretl.engine.jar" basedir="${dir.package.classes}">
 			<include name="**/*"/>
 			<exclude name="test/**/*"/>
 		</jar>
+		
+		<echo message="*** Creating jar ${dir.package}/lib/cloveretl.engine.src.jar from dir.src.improved" />
+		<jar destfile="${dir.package}/lib/cloveretl.engine.src.jar" basedir="${dir.src.improved}" />
 
 		<!-- copy all libraries from lib directory -->
 		<copy todir="${dir.package}/lib">

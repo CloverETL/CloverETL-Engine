@@ -32,6 +32,7 @@ import org.jetel.ctl.Stack;
 import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLType.TLTypeList;
 import org.jetel.data.DataRecord;
+import org.jetel.util.string.StringUtils;
 
 public class ContainerLib extends TLFunctionLibrary {
 	
@@ -369,6 +370,11 @@ public class ContainerLib extends TLFunctionLibrary {
 		return map.isEmpty();
 	}
 	
+	@TLFunctionAnnotation("Checks if the string is null or of zero length.")
+	public static final boolean isEmpty(TLFunctionCallContext context, String input) {
+		return StringUtils.isEmpty(input);
+	}
+	
 	class IsEmptyFunction implements TLFunctionPrototype{
 		
 		@Override
@@ -377,10 +383,13 @@ public class ContainerLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			if (context.getParams()[0].isMap()) {
+			final TLType type=context.getParams()[0];
+			if (type.isMap()) {
 				stack.push(isEmpty(context, stack.popMap()));
-			} else {
+			} else if (type.isList()){
 				stack.push(isEmpty(context, stack.popList()));
+			} else {
+				stack.push(isEmpty(context, stack.popString()));
 			}
 		}
 	}
