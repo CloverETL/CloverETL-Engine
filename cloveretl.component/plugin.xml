@@ -887,7 +887,7 @@
 	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery">
 			<singleType name="file" fields="input" dictionary="input" />
 	      </property>
-	      <property category="basic" displayName="Query source charset" modifiable="true" name="charset" nullable="true">
+	      <property category="basic" displayName="Query source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
 	        <singleType name="charset" />
 	      </property>
 	      <property category="basic" displayName="SQL statement delimiter" modifiable="true" name="sqlStatementDelimiter" nullable="true">
