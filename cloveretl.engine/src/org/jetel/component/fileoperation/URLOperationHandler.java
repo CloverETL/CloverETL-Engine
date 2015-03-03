@@ -229,7 +229,7 @@ public class URLOperationHandler implements IOperationHandler {
 						// When no URLStreamHandler is found, a MalformedURLException is thrown and we know that the protocol is not supported.
 						new URL(operation.scheme(), null, -1, "", null);
 					} catch (MalformedURLException e) {
-						if (e.getMessage().contains("unknown protocol: " + operation.scheme().toLowerCase())) {
+						if (e.getMessage().toLowerCase().contains("unknown protocol: " + operation.scheme().toLowerCase())) {
 							// The protocol of the operation is not supported.
 							protocolSupportMemory.put(protocol, false);
 							return false;
