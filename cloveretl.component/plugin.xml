@@ -382,11 +382,11 @@
 	      <property category="basic" displayName="DB connection" modifiable="true" name="dbConnection" nullable="false" required="true">
 	        <singleType name="connection" />
 	      </property>
-	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery">
-			<singleType name="file" fields="input" dictionary="input" />
-	      </property>
 	      <property category="basic" displayName="SQL query" modifiable="true" name="sqlQuery" nullable="true" required="!url" redundant="url">
 	        <singleType name="sqlQuery" type="select" outputPortName="0" />
+	      </property>
+	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery">
+			<singleType name="file" fields="input" dictionary="input" />
 	      </property>
 	      <property category="basic" displayName="Query source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
 	        <singleType name="charset" />
@@ -459,11 +459,14 @@
 	      <property category="basic" displayName="DB connection" modifiable="true" name="dbConnection" nullable="false" required="true">
 	        <singleType name="connection" />
 	      </property>
+	      <property category="basic" displayName="SQL query" modifiable="true" name="sqlQuery" nullable="true" required="!dbTable,!url" redundant="dbTable|url">
+			<singleType name="sqlQuery" type="insert" inputPortName="0" outputPortName="1" />
+	      </property>
 	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!dbTable,!sqlQuery" redundant="dbTable|sqlQuery">
 	        <singleType name="file" dictionary="input" />
 	      </property>
-	      <property category="basic" displayName="SQL query" modifiable="true" name="sqlQuery" nullable="true" required="!dbTable,!url" redundant="dbTable|url">
-			<singleType name="sqlQuery" type="insert" inputPortName="0" outputPortName="1" />
+	      <property category="basic" displayName="Query source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
+	        <singleType name="charset" />
 	      </property>
 	      <property category="basic" displayName="DB table" modifiable="true" name="dbTable" nullable="true" required="!sqlQuery,!url" redundant="sqlQuery|url">
 	        <singleType name="table" />
@@ -476,9 +479,6 @@
 	      </property>
 	      <property category="basic" displayName="DB fields" modifiable="true" name="dbFields" nullable="true">
 	        <singleType name="string" />
-	      </property>
-	      <property category="basic" displayName="Query source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
-	        <singleType name="charset" />
 	      </property>
 	      <property category="basic" displayName="Batch mode" modifiable="true" name="batchMode" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
@@ -881,13 +881,13 @@
 	      <property category="basic" displayName="DB connection" modifiable="true" name="dbConnection" nullable="false" required="true">
 	        <singleType name="connection" />
 	      </property>
-	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery">
-			<singleType name="file" fields="input" dictionary="input" />
-	      </property>
 	      <property category="basic" displayName="SQL query" modifiable="true" name="sqlQuery" nullable="true" required="!url" redundant="url">
 	        <singleType name="multiline" />
 	      </property>
-	      <property category="advanced" displayName="Query source charset" modifiable="true" name="charset" nullable="true">
+	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery">
+			<singleType name="file" fields="input" dictionary="input" />
+	      </property>
+	      <property category="basic" displayName="Query source charset" modifiable="true" name="charset" nullable="true">
 	        <singleType name="charset" />
 	      </property>
 	      <property category="basic" displayName="SQL statement delimiter" modifiable="true" name="sqlStatementDelimiter" nullable="true">
