@@ -593,7 +593,6 @@
 		<echo message="*** Creating jar dir.plugin.dist/plugin.name.jar - ${dir.plugin.dist}/${plugin.name}.jar of dir.package.classes - ${dir.package.classes} including **/*" />
 		<jar destfile="${dir.plugin.dist}/${plugin.name}.jar" basedir="${dir.package.classes}">
 			<include name="**/*"/>
-			<exclude name="log4j.properties"/>
 		</jar>
 		
 		<!-- CLO-5776 -->
