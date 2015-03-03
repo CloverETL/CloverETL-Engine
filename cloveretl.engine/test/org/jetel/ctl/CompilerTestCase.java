@@ -1288,6 +1288,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_dynamiclib_getFieldType");
 		check("ret1", "string");
 		check("ret2", "number");
+		check("ret3", "number");
 	}
 	
 	public void test_dynamiclib_getFieldType_expect_error(){
@@ -1305,6 +1306,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 		try {
 			doCompile("function integer transform(){firstInput fi = null; string str = fi.getFieldType(5); return 0;}","test_dynamiclib_getFieldType_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput fi = null; string str = fi.getFieldType(\"XYZABC\"); return 0;}","test_dynamiclib_getFieldType_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
