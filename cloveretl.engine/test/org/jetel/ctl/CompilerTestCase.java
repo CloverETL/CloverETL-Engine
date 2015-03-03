@@ -2747,6 +2747,145 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	public void test_assignment_compound() {
+		doCompile("test_assignment_compound");
+		
+		check("int1", 3);
+		check("intList1", Arrays.asList(3));
+		check("intList2", Arrays.asList(1, 4));
+		check("cnt1", 1);
+		
+		check("str1", "str1_append");
+		check("str2", "str22");
+		check("str3", "str3true");
+		check("str4", "str4[1, 2]");
+		check("str5", "str5" + inputRecords[0]);
+		check("strList1", Arrays.asList("strList1_append"));
+		check("strList2", Arrays.asList("strList2", "strList3_1", "strList3_2"));
+		check("strList4", Arrays.asList("strList4_strList4append"));
+		check("cnt2", 1);
+		check("strList5", Arrays.asList("strList5", "l1", "l2"));
+		
+		{
+			Map<String, String> expected = new LinkedHashMap<String, String>();
+			expected.put("strMap1_key1", "strMap1_value1_strMap1_append");
+			expected.put("strMap1_key2", "strMap1_value2_overwritten");
+			expected.put("strMap2_key1", "strMap2_value1");
+			expected.put("strMap2_key2", "strMap2_value2");
+			check("strMap1", expected);
+		}
+		
+		check("long1", 3L);
+		check("long2", 5L);
+		
+		check("decimal1", new BigDecimal(3));
+		check("decimal2", new BigDecimal(4));
+		check("decimal3", new BigDecimal(5));
+		
+		check("num1", 3.0);
+		check("num2", 4.0);
+		check("num3", 5.0);
+		
+		assertEquals("Verdon_sVerdonAppend", graph.getDictionary().getValue("sVerdon"));
+		assertEquals(454L, graph.getDictionary().getValue("l452"));
+		assertEquals(new BigDecimal("623.5"), graph.getDictionary().getValue("d621"));
+		assertEquals(936.2, graph.getDictionary().getValue("n9342"));
+		assertEquals(Arrays.asList("aa_1", "bb_2", null, "cc", "dictionary.stringList_1", "dictionary.stringList_2"), graph.getDictionary().getValue("stringList"));
+		check("cnt3", 1);
+		{
+			Map<String, String> expected = new LinkedHashMap<>();
+			expected.put("key1", "value1");
+			expected.put("key2", "value2_dictionaryMap_append");
+			assertEquals(expected, graph.getDictionary().getValue("stringMap"));
+		}
+		check("cnt4", 1);
+		
+		{
+			DataRecord r = outputRecords[0];
+			assertEquals(NAME_VALUE + "_out0Name_append", r.getField("Name").getValue().toString());
+			assertEquals(AGE_VALUE + 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE + 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE + 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.add(new BigDecimal(2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+		}
+
+		{
+			DataRecord r = (DataRecord) getVariable("myRecord1");
+			assertEquals(NAME_VALUE + "_myRecord1_append", r.getField("Name").getValue().toString());
+			assertEquals(AGE_VALUE + 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE + 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE + 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.add(new BigDecimal(2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+		}
+
+		{
+			DataRecord r = (DataRecord) ((List<?>) getVariable("recordList1")).get(0);
+			assertEquals(NAME_VALUE + "_recordList1_append", r.getField("Name").getValue().toString());
+			assertEquals(AGE_VALUE + 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE + 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE + 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.add(new BigDecimal(2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+			check("cnt5", 1);
+		}
+		
+		{
+			DataRecord r = (DataRecord) ((Map<?, ?>) getVariable("recordMap1")).get("key");
+			assertEquals(NAME_VALUE + "_recordMap1_append", r.getField("Name").getValue().toString());
+			assertEquals(AGE_VALUE + 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE + 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE + 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.add(new BigDecimal(2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+			check("cnt6", 1);
+		}
+		
+		{
+			// check that tmpRecord is unmodified
+			DataRecord r = (DataRecord) getVariable("tmpRecord");
+			assertNull(r.getField("Name").getValue());
+			assertNull(r.getField("Age").getValue());
+			assertNull(r.getField("BornMillisec").getValue());
+			assertNull(r.getField("Value").getValue());
+			assertNull(r.getField("Currency").getValue());
+		}
+		
+		{
+			Map<String, String> expected = new LinkedHashMap<>();
+			expected.put("key", "val555");
+			check("singleEvaluationTest", expected);
+			check("cnt7", 2);
+		}
+
+		{
+			Map<?, ?> singleEvaluationMap = (Map<?, ?>) getVariable("singleEvaluationMap");
+			DataRecord record = (DataRecord) singleEvaluationMap.get("key");
+			assertEquals("singleEvaluationMap123", record.getField("Name").getValue().toString());
+			check("cnt8", 2);
+		}
+		
+		check("minus", -2);
+		check("multiply", 6);
+		check("divide", 3);
+		check("modulus", 2);
+		
+		check("nullAppend", "nullAppend_null");
+		
+		check("mergeTest", Arrays.asList("mergeTest_mergeTestAppend"));
+		
+		{
+			List<?> stringListField = (List<?>) outputRecords[4].getField("stringListField").getValue();
+			assertEquals(stringListField.get(0).toString(), "stringListField_stringListFieldAppend");
+			check("cnt9", 2);
+		}
+	}
+	
+	public void test_assignment_compound_expect_error() {
+		doCompileExpectError("function integer transform(){"
+				+ "integer i;"
+				+ "i += null;"
+				+ "return 0;}","test_assignment_compound_expect_error",
+				Arrays.asList("Operator '+' is not defined for types: 'integer' and 'null'"));
+	}
+
 	// CLO-403
 	public void test_container_assignment_initialization() {
 		doCompile("test_container_assignment_initialization");
