@@ -598,12 +598,13 @@
 		<!-- CLO-5776 -->
 		
 		<if>
+		<or>
 		    <contains string="${plugin.list}" substring="${plugin.name}"/>
+			<equals arg1="${plugin.name}" arq2="cloveretl.engine"/>
+		</or>
 			<then>
 				<echo message="*** Creating jar dir.plugin.dist/plugin.name.src.jar - ${dir.plugin.dist}/${plugin.name}.src.jar of dir.src.improved - ${dir.src.improved}" />
 				<jar destfile="${dir.plugin.dist}/${plugin.name}.src.jar" basedir="${dir.src.improved}"/>
-				<echo message="*** Copying ${dir.plugin.dist}/${plugin.name}.src.jar to ${dir.gui}/lib/lib/${plugin.name}.src.jar"/>
-				<copy  tofile="${dir.gui}/lib/lib/${plugin.name}.src.jar" file="${dir.plugin.dist}/${plugin.name}.src.jar"/>
 			</then>
 		</if>
 		
