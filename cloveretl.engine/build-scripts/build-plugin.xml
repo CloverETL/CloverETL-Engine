@@ -600,7 +600,6 @@
 		<if>
 		<or>
 		    <contains string="${plugin.list}" substring="${plugin.name}"/>
-			<equals arg1="${plugin.name}" arq2="cloveretl.engine"/>
 		</or>
 			<then>
 				<echo message="*** Creating jar dir.plugin.dist/plugin.name.src.jar - ${dir.plugin.dist}/${plugin.name}.src.jar of dir.src.improved - ${dir.src.improved}" />
