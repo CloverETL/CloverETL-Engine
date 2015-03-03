@@ -636,7 +636,9 @@ This software is licensed under the terms you may find in the file named "LICENS
 		</jar>
 		
 		<echo message="*** Creating jar ${dir.package}/lib/cloveretl.engine.src.jar from dir.src.improved" />
-		<jar destfile="${dir.package}/lib/cloveretl.engine.src.jar" basedir="${dir.src.improved}" />
+		<jar destfile="${dir.package}/lib/cloveretl.engine.src.jar" basedir="${dir.src.improved}">
+			<exclude name="log4j.properties"/>
+		</jar>
 
 		<!-- copy all libraries from lib directory -->
 		<copy todir="${dir.package}/lib">
