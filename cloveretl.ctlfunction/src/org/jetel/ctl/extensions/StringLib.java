@@ -1709,7 +1709,7 @@ public class StringLib extends TLFunctionLibrary {
 		@TLFunctionAnnotation("Returns the path from a full filename, which excludes the prefix.")
 		public static final String getPath(TLFunctionCallContext context, String filename) {
 			if (filename != null) {
-				return org.apache.commons.io.FilenameUtils.getPath(filename);
+				return org.apache.commons.io.FilenameUtils.separatorsToUnix(org.apache.commons.io.FilenameUtils.getPath(filename));
 			} else {
 				return null;
 			}
@@ -1733,7 +1733,7 @@ public class StringLib extends TLFunctionLibrary {
 		@TLFunctionAnnotation("Returns the base name, minus the full path and extension, from a full filename.")
 		public static final String getFullPath(TLFunctionCallContext context, String filename) {
 			if (filename != null) {
-				return org.apache.commons.io.FilenameUtils.getFullPath(filename);
+				return org.apache.commons.io.FilenameUtils.separatorsToUnix(org.apache.commons.io.FilenameUtils.getFullPath(filename));
 			} else {
 				return null;
 			}
@@ -1757,7 +1757,7 @@ public class StringLib extends TLFunctionLibrary {
 		@TLFunctionAnnotation("Normalizes a path, removing double and single dot path steps.")
 		public static final String normalizePath(TLFunctionCallContext context, String filename) {
 			if (filename != null) {
-				return org.apache.commons.io.FilenameUtils.normalize(filename);
+				return org.apache.commons.io.FilenameUtils.separatorsToUnix(org.apache.commons.io.FilenameUtils.normalize(filename));
 			} else {
 				return null;
 			}

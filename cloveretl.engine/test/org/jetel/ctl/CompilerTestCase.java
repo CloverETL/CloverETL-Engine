@@ -10646,8 +10646,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_stringlib_getPathParts");
 		
 		check("path_1","foo/../bar/../baz/");
-		check("path_2","a\\b\\");
-		check("path_full","C:\\a\\b\\");
+		check("path_2","a/b/");
+		check("path_full","C:/a/b/");
 		check("normalized_1","/baz/out5.txt");
 		check("ext_1","txt");
 		check("ext_2","jpg");
