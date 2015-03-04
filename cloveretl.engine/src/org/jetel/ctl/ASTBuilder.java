@@ -733,8 +733,12 @@ public class ASTBuilder extends NavigatingVisitor {
 					node.setDefaultCaseIndex(i);
 				} else {
 					caseIndices.add(i);
-					CLVFLiteral caseLiteral = (CLVFLiteral) child.jjtGetChild(0);
-					Object value = caseLiteral.getValue();
+					final SimpleNode caseLiteral = (SimpleNode)child.jjtGetChild(0);
+					if(!(caseLiteral instanceof CLVFLiteral)){
+						error(caseLiteral,"Not a literal");
+						return node;
+					}
+					Object value = ((CLVFLiteral)caseLiteral).getValue();
 					SimpleNode otherNode;
 					if ((otherNode = map.get(value)) != null) {
 						duplicates.add(child);
