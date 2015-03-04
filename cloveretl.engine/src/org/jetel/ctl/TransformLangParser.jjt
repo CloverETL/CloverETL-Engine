@@ -1878,7 +1878,7 @@ void EmptyStatement() #void :
   
 }void CaseStatement(CLVFSwitchStatement switchStatement) :{}{  ( 
     "case" { jjtThis.begin(token.beginLine,token.beginColumn); }
-	  UnaryExpression() ":" 
+	  UnaryExpression() ":"  // CLO-5038
     { jjtThis.end(token.endLine,token.endColumn); }
   )
   |
