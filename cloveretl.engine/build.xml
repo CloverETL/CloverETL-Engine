@@ -2,6 +2,7 @@
 <project name="cloveretl.engine" default="build" basedir=".">
 
 	<property environment="env"/>
+	<property name="script.name" value="cloveretl.engine\build.xml"/>
 
 	<property name="dir.tools" value="${basedir}/tools"/>
 	<property name="dir.findbugs" value="/opt/findbugs"/>
@@ -675,7 +676,8 @@ This software is licensed under the terms you may find in the file named "LICENS
 
 	<!-- make a temp copy of source - necessary to substitute release number constants in the source code -->
 	<target name="improve-java-sources">
-		<echo message="Copying source code.." />
+		<echo message="*** ${script.name}, target: improve-java-sources" />
+		<echo message="Copying source code - from dir.src-${dir.src} to dir.src.improved-${dir.src.improved}." />
 		<copy todir="${dir.src.improved}" encoding="UTF-8">
 			<fileset dir="${dir.src}" />
 		</copy>
@@ -693,7 +695,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 				<equals arg1="${java.src.header.file}" arg2="" trim="true"/>
 			</not>
 			<then>
-				<echo>Changing license of all files - license file ${java.src.header.file}</echo>
+				<echo>Changing license of all files - license file java.src.header.file:${java.src.header.file} for all in dir.src.improved:${dir.src.improved}</echo>
 				<fileheading heading="${java.src.header.file}">
 					<fileset dir="${dir.src.improved}" includes="**/*.java"/>
 				</fileheading>
