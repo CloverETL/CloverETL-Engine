@@ -152,8 +152,11 @@
 
 	<!-- make a temp copy of source - necessary for substitute release number constants in source code -->
 	<target name="improve-java-sources" depends="copy-java-sources">
-		<echo message="*** ${script.name}, target: improve-java-sources" />
-		<if><not><equals arg1="${java.src.header.file}" arg2="" trim="true"/></not>
+		<echo message="*** ${script.name}, target: improve-java-sources, java.src.header.file - ${java.src.header.file} " />
+		<if>
+			<not>
+				<equals arg1="${java.src.header.file}" arg2="" trim="true"/>
+			</not>
 			<then>
 				<echo>Changing license of all files - license file java.src.header.file:${java.src.header.file} for all in dir.src.improved:${dir.src.improved}</echo>
 				<fileheading heading="${java.src.header.file}">
