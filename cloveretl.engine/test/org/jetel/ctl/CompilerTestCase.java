@@ -1316,6 +1316,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+		
+		doCompileExpectError("function integer transform(){firstInput fi; fi.getFieldType(null); return 0;}","test_dynamiclib_getFieldType_expect_error",Arrays.asList("Function 'getFieldType' is ambiguous"));
 	}
 	
 	public void test_dynamiclib_getIntValue(){
