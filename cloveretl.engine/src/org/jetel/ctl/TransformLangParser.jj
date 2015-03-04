@@ -3410,12 +3410,12 @@ void EmptyStatement()       :
   try {
 /*@egen*/  ( 
     "case" { jjtn000.begin(token.beginLine,token.beginColumn); }
-    Literal() ":"/*@bgen(jjtree)*/
+	  UnaryExpression() ":"/*@bgen(jjtree)*/
     {
       jjtree.closeNodeScope(jjtn000, true);
       jjtc000 = false;
     }
-/*@egen*/ 
+/*@egen*/  // CLO-5038
     { jjtn000.end(token.endLine,token.endColumn); }
   )
   |

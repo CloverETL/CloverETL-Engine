@@ -3405,7 +3405,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
       case CASE:
         jj_consume_token(CASE);
              jjtn000.begin(token.beginLine,token.beginColumn);
-        Literal();
+        UnaryExpression();
         jj_consume_token(COLON);
       jjtree.closeNodeScope(jjtn000, true);
       jjtc000 = false;
