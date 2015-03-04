@@ -101,6 +101,7 @@ public class StringLib extends TLFunctionLibrary {
 			"getFullPath".equals(functionName) ? new GetFullPathFunction() :  //$NON-NLS-1$
 			"normalizePath".equals(functionName) ? new NormalizePathFunction() :  //$NON-NLS-1$
 			"reverseChars".equals(functionName) ? new ReverseCharsFunction() :  //$NON-NLS-1$
+    		"isEmpty".equals(functionName) ? new IsEmptyFunction() : //$NON-NLS-1$
 				null;
 
 		if (ret == null) {
@@ -1805,5 +1806,23 @@ public class StringLib extends TLFunctionLibrary {
 			stack.push(reverseChars(context, value));
 		}
 	}
+	
+	@TLFunctionAnnotation("Checks if the string is null or of zero length.")
+	public static final boolean isEmpty(TLFunctionCallContext context, String input) {
+		return StringUtils.isEmpty(input);
+	}
+	
+	class IsEmptyFunction implements TLFunctionPrototype{
+		
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(isEmpty(context, stack.popString()));
+		}
+	}
+	
 
 }
