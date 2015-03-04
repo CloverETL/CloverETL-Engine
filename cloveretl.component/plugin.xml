@@ -2691,7 +2691,7 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="others" iconPath="icons/others/JavaExecute" name="JavaExecute" type="JAVA_EXECUTE" defaultVisibility="etlGraph" className="org.jetel.component.JavaExecute">
+	  <ETLComponent category="deprecated" iconPath="icons/others/JavaExecute" name="JavaExecute" type="JAVA_EXECUTE" defaultVisibility="etlGraph" className="org.jetel.component.JavaExecute">
 	    <shortDescription>Executes Java transformations.</shortDescription>
 	    <description>Executes Java commands using runnable transformation.</description>
 	    <properties>
