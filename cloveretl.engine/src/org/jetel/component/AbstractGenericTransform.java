@@ -39,6 +39,7 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public abstract class AbstractGenericTransform extends AbstractDataTransform implements GenericTransform {
 	
+	/** Custom component properties are saved here */
 	protected Properties additionalProperties;
 	
 	protected DataRecord[] inRecords;
