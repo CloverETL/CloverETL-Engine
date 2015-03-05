@@ -1885,7 +1885,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 						final TLType varType = ((TLTypeList)arrNode.getType()).getElementType();
 						
-						while (list.size() <= index) { // if we are trying to write past the of the array
+						while (list.size() < index) { // if we are trying to write past the of the array
+							list.add(null); // CLO-5829
+						}
+						if (list.size() == index) {
 							list.add(createNewRecord((TLTypeRecord) varType));
 						}
 						

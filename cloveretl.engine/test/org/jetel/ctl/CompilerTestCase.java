@@ -2289,7 +2289,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		if ((o1 == null) && (o2 == null)) {
 			return;
 		}
-		assertTrue((o1 == null) == (o2 == null));
+		assertTrue("Expected " + o1 + " but was " + o2, (o1 == null) == (o2 == null));
 		if (o1 instanceof DataRecord) {
 			DataRecord r1 = (DataRecord) o1;
 			DataRecord r2 = (DataRecord) o2;
@@ -2888,6 +2888,31 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				Arrays.asList("Operator '+' is not defined for types: 'integer' and 'null'"));
 	}
 
+	public void test_assignment_list_initialization() {
+		doCompile("test_assignment_list_initialization");
+		
+		check("stringList", Arrays.asList(null, null, null, "test"));
+		check("integerList", Arrays.asList(null, null, null, 8));
+		check("longList", Arrays.asList(null, null, null, 77L));
+		check("numberList", Arrays.asList(null, null, null, 5.4));
+		check("booleanList", Arrays.asList(null, null, null, true));
+		check("decimalList", Arrays.asList(null, null, null, new BigDecimal("8.7")));
+		{
+			List<byte[]> expected = Arrays.asList(null, null, null, new byte[] {(byte) 0xFF});
+			assertDeepEquals(expected, getVariable("byteList"));
+		}
+		check("recordList1", Arrays.asList(null, null, null, inputRecords[0]));
+		{
+			DataRecord r = DataRecordFactory.newRecord(inputRecords[0].getMetadata());
+			r.init();
+			r.reset();
+			r.getField(0).setValue("test");
+			List<DataRecord> expected = Arrays.asList(null, null, null, r);
+			assertDeepEquals(expected, getVariable("recordList2"));
+		}
+		
+	}
+	
 	// CLO-403
 	public void test_container_assignment_initialization() {
 		doCompile("test_container_assignment_initialization");
