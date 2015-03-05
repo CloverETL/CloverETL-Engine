@@ -608,8 +608,8 @@
 		    <contains string="${plugin.list}" substring="${plugin.name}"/>
 		</or>
 			<then>
-				<echo message="*** Creating jar dir.plugin.dist/plugin.name.src.jar - ${dir.plugin.dist}/${plugin.name}.src.jar of dir.src.improved - ${dir.src.improved}" />
-				<jar destfile="${dir.plugin.dist}/${plugin.name}.src.jar" basedir="${dir.src.improved}"/>
+				<echo message="*** Creating zip dir.plugin.dist/plugin.name.src.zip - ${dir.plugin.dist}/${plugin.name}.src.zip of dir.src.improved - ${dir.src.improved}" />		
+				<zip destfile="${dir.plugin.dist}/${plugin.name}.src.zip" basedir="${dir.src.improved}"/>
 			</then>
 		</if>
 		
