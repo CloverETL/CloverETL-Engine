@@ -1782,13 +1782,10 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Reverses the order of characters in string.")
 	public static final String reverseChars(TLFunctionCallContext context, String value) {
 		if (value != null) {
-			if (value.length()<2) return value.toString();
-			StringBuilder newVal = new StringBuilder(value.length());
-			for(int i=value.length()-1;i>=0;i--){
-				newVal.append(value.charAt(i));
-			}
+			if (value.length()<2) return value;
+			StringBuilder newVal = new StringBuilder(value);
+			newVal.reverse(); // handles surrogate pairs
 			return newVal.toString();
-				
 		} else {
 			return null;
 		}
