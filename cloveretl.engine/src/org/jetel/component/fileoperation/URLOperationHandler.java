@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 
+import org.apache.log4j.Logger;
 import org.jetel.component.fileoperation.Info.Type;
 import org.jetel.component.fileoperation.SimpleParameters.CopyParameters;
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
@@ -227,17 +228,21 @@ public class URLOperationHandler implements IOperationHandler {
 					try {
 						// We create a dummy URL, which causes JVM to find a URLStreamHandler for the protocol of our operation.
 						// When no URLStreamHandler is found, a MalformedURLException is thrown and we know that the protocol is not supported.
+						Logger.getLogger(URLOperationHandler.class).debug("Instantiating URL for scheme " + operation.scheme());
 						new URL(operation.scheme(), null, -1, "", null);
-					} catch (MalformedURLException e) {
-						if (e.getMessage().contains("unknown protocol: " + operation.scheme().toLowerCase())) {
+					} catch (Exception e) {
+						if (e.getMessage().toLowerCase().contains("unknown protocol: " + operation.scheme().toLowerCase())) {
 							// The protocol of the operation is not supported.
+							Logger.getLogger(URLOperationHandler.class).debug("Protocol not supported: " + operation.scheme());
 							protocolSupportMemory.put(protocol, false);
 							return false;
 						}
 					}
+					Logger.getLogger(URLOperationHandler.class).debug("Protocol is supported: " + operation.scheme());
 					protocolSupportMemory.put(protocol, true);
 					return true;
 				} else {
+					Logger.getLogger(URLOperationHandler.class).debug("Protocol support found in memory: " + supported + " for " + protocol);
 					return supported;
 				}
 			default: 

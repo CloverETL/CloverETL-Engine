@@ -32,6 +32,8 @@ import org.jetel.metadata.DataRecordMetadata;
  * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
+ * @author salamonp (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 20. 11. 2014
  */
@@ -60,8 +62,11 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	}
 	
 	/**
-	 * DataRecord objects returned by this method are re-used when this method is called repeatedly. If you need to hold data from input DataRecords
-	 * between multiple calls, use {@link DataRecord#duplicate} on objects returned by this method or save the data elsewhere.
+	 * DataRecord objects returned by this method are re-used
+	 * when this method is called repeatedly. If you need to hold
+	 * data from input DataRecords between multiple calls, use
+	 * {@link DataRecord#duplicate} on objects returned by this
+	 * method or save the data elsewhere.
 	 * 
 	 * @param portIdx index of port to read from
 	 * @return null if there are no more records

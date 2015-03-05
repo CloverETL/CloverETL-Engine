@@ -447,6 +447,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 
         DBLookup lookup;
         key.init();
+        key.setEqualNULLs(true); //see CLO-5786
 
         try {
         	lookup = new DBLookup(new SQLCloverStatement(sqlConnection, sqlQuery, keyRecord, key.getKeyFieldNames()),

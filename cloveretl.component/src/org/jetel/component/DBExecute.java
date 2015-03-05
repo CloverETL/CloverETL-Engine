@@ -561,7 +561,10 @@ public class DBExecute extends Node {
 		try {
     		if (channelIterator != null) {
     			Object readableByteChannel;
-    			Charset nioCharset = this.charset != null ? Charset.forName(this.charset) : Charset.defaultCharset();
+    			if (charset == null) {
+    				charset = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
+    			}
+    			Charset nioCharset = Charset.forName(charset);
     			while (channelIterator.hasNext()) {
     				readableByteChannel = channelIterator.next();
     				if (readableByteChannel == null) break;

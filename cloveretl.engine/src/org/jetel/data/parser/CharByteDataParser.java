@@ -245,7 +245,12 @@ public class CharByteDataParser extends AbstractTextParser {
 				return parsingErrorFound(e.getSimpleMessage(), record, consumerIdx, null);
 			} catch (BadDataFormatException e) {
 				if (recordSkipper != null) {
-					recordSkipper.skipInput(consumerIdx);
+					try {
+						recordSkipper.skipInput(consumerIdx);
+					} catch (OperationNotSupportedException ex2) { // CLO-5703
+						logger.warn("Record skipping failed", ex2);
+						e.addSuppressed(ex2);
+					}
 				}
 				if (cfg.isVerbose()) {
 					lastRawRecord = getLastRawRecord(); 
@@ -532,10 +537,13 @@ public class CharByteDataParser extends AbstractTextParser {
 				idx++;
 			}
 		} // loop
-		if (needByteInput) {
-			recordSkipper = new ByteRecordSkipper(inputReader, getCharDelimSearcher(), isDelimited);
-		} else {
-			recordSkipper = new CharRecordSkipper(inputReader, getCharDelimSearcher(), isDelimited);
+		// CLO-5703: disable record skipping if last non-autofilled field has no delimiter
+		if (metadata.isSpecifiedRecordDelimiter() || isDelimited[lastNonAutoFilledField]) {
+			if (needByteInput) {
+				recordSkipper = new ByteRecordSkipper(inputReader, getCharDelimSearcher(), isDelimited);
+			} else {
+				recordSkipper = new CharRecordSkipper(inputReader, getCharDelimSearcher(), isDelimited);
+			}
 		}
 		if (metadata.isSpecifiedRecordDelimiter() && !metadata.getField(lastNonAutoFilledField).isDelimited()) {
 			// last field without autofilling doesn't have delimiter - special consumer needed for record delimiter

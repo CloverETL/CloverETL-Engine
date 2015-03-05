@@ -68,9 +68,7 @@ public class GenericComponent extends Node {
 	 * Just for blank reading records that the transformation left unread.
 	 */
 	private DataRecord[] inRecords;
-	private DataRecord[] outRecords;
 
-	
 	public GenericComponent(String id) {
 		super(id);
 	}
@@ -81,13 +79,6 @@ public class GenericComponent extends Node {
 		for (int i = 0; i < inRecords.length; i++) {
 			inRecords[i] = DataRecordFactory.newRecord(inMeta[i]);
 			inRecords[i].init();
-		}
-		
-		DataRecordMetadata[] outMeta = getOutMetadataArray();
-		outRecords = new DataRecord[outMeta.length];
-		for (int i = 0; i < outRecords.length; i++) {
-			outRecords[i] = DataRecordFactory.newRecord(outMeta[i]);
-			outRecords[i].init();
 		}
 	}
 	

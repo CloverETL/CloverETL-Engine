@@ -2,6 +2,7 @@
 <project name="cloveretl.engine" default="build" basedir=".">
 
 	<property environment="env"/>
+	<property name="script.name" value="cloveretl.engine\build.xml"/>
 
 	<property name="dir.tools" value="${basedir}/tools"/>
 	<property name="dir.findbugs" value="/opt/findbugs"/>
@@ -629,9 +630,15 @@ This software is licensed under the terms you may find in the file named "LICENS
 		<!-- Create directory for dist. -->
 		<mkdir dir="${dir.package}/lib"/>
 
+		<echo message="*** Creating jar ${dir.package}/lib/cloveretl.engine.jar from dir.package.classes." />
 		<jar destfile="${dir.package}/lib/cloveretl.engine.jar" basedir="${dir.package.classes}">
 			<include name="**/*"/>
 			<exclude name="test/**/*"/>
+		</jar>
+		
+		<echo message="*** Creating jar ${dir.package}/lib/cloveretl.engine.src.jar from dir.src.improved" />
+		<jar destfile="${dir.package}/lib/cloveretl.engine.src.jar" basedir="${dir.src.improved}">
+			<exclude name="log4j.properties"/>
 		</jar>
 
 		<!-- copy all libraries from lib directory -->
@@ -669,7 +676,8 @@ This software is licensed under the terms you may find in the file named "LICENS
 
 	<!-- make a temp copy of source - necessary to substitute release number constants in the source code -->
 	<target name="improve-java-sources">
-		<echo message="Copying source code.." />
+		<echo message="*** ${script.name}, target: improve-java-sources" />
+		<echo message="Copying source code - from dir.src-${dir.src} to dir.src.improved-${dir.src.improved}." />
 		<copy todir="${dir.src.improved}" encoding="UTF-8">
 			<fileset dir="${dir.src}" />
 		</copy>
@@ -687,7 +695,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 				<equals arg1="${java.src.header.file}" arg2="" trim="true"/>
 			</not>
 			<then>
-				<echo>Changing license of all files - license file ${java.src.header.file}</echo>
+				<echo>Changing license of all files - license file java.src.header.file:${java.src.header.file} for all in dir.src.improved:${dir.src.improved}</echo>
 				<fileheading heading="${java.src.header.file}">
 					<fileset dir="${dir.src.improved}" includes="**/*.java"/>
 				</fileheading>
@@ -1297,9 +1305,12 @@ This software is licensed under the terms you may find in the file named "LICENS
 		</pmd>
 	</target>
 	
-	<target name="check-sources" depends="check-sources-engine,check-sources-plugins"/>
+	<target name="check-sources" depends="check-sources-engine,check-sources-plugins">
+		<echo message="*** ${script.name}, target: check-sources" />	
+	</target>
 	
 	<target name="check-sources-engine">
+		<echo message="*** ${script.name}, target: check-sources-engine, java.src.header.file.opensource - ${java.src.header.file.opensource}" />	
 		<fileheading heading="${java.src.header.file.opensource}" dryrun="true" propertyifrewritten="java.src.header.invalid">
 			<fileset dir="${dir.src}">
 				<include name="**/*.java"/>
@@ -1317,9 +1328,13 @@ This software is licensed under the terms you may find in the file named "LICENS
 	</target>
 	
 	<target name="check-sources-plugins">
+		<echo message="*** ${script.name}, target: check-sources-plugins"/>
+		<echo message="*** Running target check-sources-plugin for each from plugin.list: ${plugin.list} with param plugin.dir - ${plugin.dir} " />
 		<foreach list="${plugin.list}" inheritall="true" target="check-sources-plugin" param="plugin.dir"/>
 	</target>
+	
 	<target name="check-sources-plugin">
+		<echo message="*** ${script.name}, target: check-sources-engine, java.src.header.file.opensource - ${java.src.header.file.opensource}" />
 		<echo message="Check file heading plugin - ${plugin.dir}"/>
 		<ant dir="../${plugin.dir}" target="check-sources" inheritAll="false" inheritrefs="false">
 		</ant>

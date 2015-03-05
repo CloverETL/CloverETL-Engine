@@ -207,7 +207,7 @@ public class JoinKeyUtils {
 	/**
 	 * Parses join string for MergeJoin component
 	 * 
-	 * Magda's notes: before was used also in GUI of keys of type "join" (CheckForeignKey, DataIntersection), 
+	 * Magda's notes: before this function was used also in GUI for keys of type "join" (CheckForeignKey, DataIntersection), 
 	 * parses also the "$field1=$aa;$field2=$bb" format, but expects complete mapping
 	 * 
 	 * @param joinBy input string

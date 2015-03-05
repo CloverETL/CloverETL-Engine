@@ -16,6 +16,7 @@
 	<property name="dir.plugin.dist" value="${dir.dist}/plugins/${plugin.dir.name}"/>
 
 	<property name="dir.engine" value="${basedir}/../cloveretl.engine"/>
+	<property name="dir.gui" value="${basedir}/../cloveretl.gui"/>
 	<property file="${dir.engine}/build.properties"/>		
 	<property name="dir.engine.lib" value="${dir.engine}/lib"/>
 	<property name="dir.engine.tools" value="${dir.engine}/tools"/>
@@ -44,6 +45,8 @@
 
 	<property file="${basedir}/build-plugin.properties"/>
 	<property name="javadoc.limited.include" value="**"/>
+	
+	<property name="script.name" value="cloveretl.engine\build-scripts\build-plugin.xml"/>
 	
 	<!-- ProGuard task definition -->
 	<taskdef resource="proguard/ant/task.properties" classpath="${dir.engine.tools}/proguard.jar" />
@@ -149,9 +152,13 @@
 
 	<!-- make a temp copy of source - necessary for substitute release number constants in source code -->
 	<target name="improve-java-sources" depends="copy-java-sources">
-		<if><not><equals arg1="${java.src.header.file}" arg2="" trim="true"/></not>
+		<echo message="*** ${script.name}, target: improve-java-sources, java.src.header.file - ${java.src.header.file} " />
+		<if>
+			<not>
+				<equals arg1="${java.src.header.file}" arg2="" trim="true"/>
+			</not>
 			<then>
-				<echo>Changing license of all files - license file ${java.src.header.file}</echo> 
+				<echo>Changing license of all files - license file java.src.header.file:${java.src.header.file} for all in dir.src.improved:${dir.src.improved}</echo>
 				<fileheading heading="${java.src.header.file}">
 					<fileset dir="${dir.src.improved}" includes="**/*.java"/>
 				</fileheading>
@@ -588,18 +595,38 @@
 
 		<!-- Create plugin directory. -->
 		<mkdir dir="${dir.plugin.dist}"/>
-
+		
+		<echo message="*** Creating jar dir.plugin.dist/plugin.name.jar - ${dir.plugin.dist}/${plugin.name}.jar of dir.package.classes - ${dir.package.classes} including **/*" />
 		<jar destfile="${dir.plugin.dist}/${plugin.name}.jar" basedir="${dir.package.classes}">
 			<include name="**/*"/>
 		</jar>
+		
+		<!-- CLO-5776 -->
+		
+		<if>
+		<or>
+		    <contains string="${plugin.list}" substring="${plugin.name}"/>
+		</or>
+			<then>
+				<echo message="*** Creating jar dir.plugin.dist/plugin.name.src.jar - ${dir.plugin.dist}/${plugin.name}.src.jar of dir.src.improved - ${dir.src.improved}" />
+				<jar destfile="${dir.plugin.dist}/${plugin.name}.src.jar" basedir="${dir.src.improved}"/>
+			</then>
+		</if>
+		
+		<!-- ======== -->
+		
 		<!-- copy plugin manifest -->
+		<echo message="*** Copying plugin manifest ${dir.package.manifest}/plugin.xml to ${dir.plugin.dist}" />
 		<copy file="${dir.package.manifest}/plugin.xml" todir="${dir.plugin.dist}" />
 		
 		<!-- copy all libraries from lib directory -->
+		<echo message="*** Copying all libraries from lib directory to ${dir.plugin.dist}/lib" />
 		<copy todir="${dir.plugin.dist}/lib">
 			<fileset refid="plugin-lib-files"/>
 		</copy>
+		
 		<!-- copy all icons -->
+		<echo message="*** Copying all icons to ${dir.plugin.dist}/icons" />
 		<copy todir="${dir.plugin.dist}/icons">
 			<fileset refid="plugin-icons"/>
 		</copy>

@@ -28,10 +28,13 @@ string res71;
 string res72;
 string res73;
 string res74;
+boolean res80;
+boolean res81;
 
 
 function integer transform() {
 	// simple switch
+	
 	cond1 = 1;
 	res11 = false; 
 	res12 = false; 
@@ -204,5 +207,20 @@ function integer transform() {
 			break;
 	}
 	
+	cond8 = -1;
+	switch(cond8){
+		case 1:
+			res80=false;
+			break;
+		case -1:
+			res80=true;
+			break;
+		case -999:
+			res80=false;
+			break;
+		default:
+			res80=false;
+		}
+			
 	return 0;
 }

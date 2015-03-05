@@ -229,6 +229,10 @@ public abstract class IAuthorityProxy {
 		public long getDataTargetRunId() {
 			return dataTargetRunId;
 		}
+		@Override
+		public String toString() {
+			return "RemoteEdgeDataTarget; target="+dataTargetRunId;
+		}
 	}
 
 	/**
@@ -254,6 +258,10 @@ public abstract class IAuthorityProxy {
 		 */
 		public long getDataSourceRunId() {
 			return dataSourceRunId;
+		}
+		@Override
+		public String toString() {
+			return "RemoteEdgeDataSource; source="+dataSourceRunId;
 		}
 	}
 
