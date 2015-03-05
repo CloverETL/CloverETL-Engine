@@ -806,8 +806,9 @@
 		</copy>
 	</target>
 	
-	
 	<target name="check-sources">
+		<echo message="*** ${script.name}, target: check-sources" />
+		<echo message="*** If matched pattern (commercial or initiatesystem) in plugin.dir.name - ${plugin.dir.name} set license to commercial otherwise gpl." />
 		<if><matches pattern=".*\.commercial|.*\.initiatesystems\..*" string="${plugin.dir.name}"/>
 			<then>
 				<property name="plugin.java.src.header.file" value="${dir.build-scripts}/engine.commercial.license.txt"/>
@@ -816,7 +817,7 @@
 				<property name="plugin.java.src.header.file" value="${dir.build-scripts}/engine.gpl.license.txt"/>
 			</else>
 		</if>
-		<echo message="plugin.java.src.header.file=${plugin.java.src.header.file}"/>
+		<echo message="*** plugin.java.src.header.file=${plugin.java.src.header.file}"/>
 		
 		<fileheading heading="${plugin.java.src.header.file}" dryrun="true" propertyifrewritten="java.src.header.invalid">
 			<fileset dir="${dir.src}">
@@ -824,6 +825,7 @@
 				<exclude name="ConsoleDemoJava.java"/>
 			</fileset>
 		</fileheading>
+		
 		<fail message="File ${java.src.header.invalid} has invalid header - must be ${plugin.java.src.header.file}" if="java.src.header.invalid"/>
 	</target>
 	
