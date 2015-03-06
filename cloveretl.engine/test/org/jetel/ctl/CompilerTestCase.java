@@ -2983,6 +2983,15 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 	}
 	
+	// CLO-5789
+	public void test_assignment_increment() {
+		doCompile("test_assignment_increment");
+		
+		check("incrementCounter", 1);
+		check("incrementTest", "newValue");
+		check("incrementTestList", Arrays.asList("newValue"));
+	}
+
 	// CLO-403
 	public void test_container_assignment_initialization() {
 		doCompile("test_container_assignment_initialization");
