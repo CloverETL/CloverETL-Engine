@@ -6094,7 +6094,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		String nonBMP = "\u4DB5\u4E26\u4E27\u4E21\u3402\uD840\uDC0B\u5345\u4E94\u4E92\u4E30\u4E0D\u29EC\u29ED\u29F0\u29EF\uD83D\uDE04\uD835\uDC9E";
 		check("nonBMP", nonBMP);
 		check("compositeCharacters1", "\u00E9\u00E1o"); // reverse called on composed characters
-		check("compositeCharacters2", "e\u0301a\u0301o"); // revernse called on decomposed characters
+		check("compositeCharacters2", "e\u0301a\u0301o"); // reverse called on decomposed characters
 		check("compositeCharacters3", "ea\u0301o\u0301"); // reverse called on canonical composition, then decomposed again
 		
 		check("emptyStr", "");
