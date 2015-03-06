@@ -48,6 +48,7 @@ import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
@@ -2788,17 +2789,19 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("num2", 4.0);
 		check("num3", 5.0);
 		
-		assertEquals("Verdon_sVerdonAppend", graph.getDictionary().getValue("sVerdon"));
-		assertEquals(454L, graph.getDictionary().getValue("l452"));
-		assertEquals(new BigDecimal("623.5"), graph.getDictionary().getValue("d621"));
-		assertEquals(936.2, graph.getDictionary().getValue("n9342"));
-		assertEquals(Arrays.asList("aa_1", "bb_2", null, "cc", "dictionary.stringList_1", "dictionary.stringList_2"), graph.getDictionary().getValue("stringList"));
+		Dictionary dictionary = graph.getDictionary();
+		assertEquals("Verdon_sVerdonAppend", dictionary.getValue("sVerdon"));
+		assertEquals(454L, dictionary.getValue("l452"));
+		assertEquals(new BigDecimal("623.5"), dictionary.getValue("d621"));
+		assertEquals(936.2, dictionary.getValue("n9342"));
+		assertEquals(Arrays.asList("aa_1", "bb_2", "_3", "cc", "dictionary.stringList_1", "dictionary.stringList_2"), dictionary.getValue("stringList"));
 		check("cnt3", 1);
 		{
 			Map<String, String> expected = new LinkedHashMap<>();
 			expected.put("key1", "value1");
 			expected.put("key2", "value2_dictionaryMap_append");
-			assertEquals(expected, graph.getDictionary().getValue("stringMap"));
+			expected.put("nonExistingKey", "newValue");
+			assertEquals(expected, dictionary.getValue("stringMap"));
 		}
 		check("cnt4", 1);
 		
@@ -2878,6 +2881,73 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			assertEquals(stringListField.get(0).toString(), "stringListField_stringListFieldAppend");
 			check("cnt9", 2);
 		}
+		
+		check("stringInit", "stringInit");
+		check("integerInit", 5);
+		check("longInit", 77L);
+		check("numberInit", 5.4);
+		check("decimalInit", new BigDecimal("7.8"));
+		check("listInit1", Arrays.asList(null, null, "listInit1"));
+		check("listInit2", Arrays.asList(null, "listInit2tmp"));
+		{
+			Map<String, String> expected = new HashMap<>(1);
+			expected.put("key", "mapInit1");
+			check("mapInit1", expected);
+		}
+		{
+			Map<String, String> expected = new HashMap<>(1);
+			expected.put("key", "mapInit2tmp");
+			check("mapInit2", expected);
+		}
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(INPUT_1));
+			expected.init();
+			expected.reset();
+			expected.getField("Name").setValue("recordInit1");
+			assertDeepEquals(expected, getVariable("recordInit1"));
+		}
+		
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
+			expected.init();
+			expected.reset();
+			expected.getField("stringListField").setValue(Arrays.asList(null, null, "recordInit3"));
+			Map<String, String> map = new HashMap<>(1);
+			map.put("key", "recordInit3");
+			expected.getField("stringMapField").setValue(map);
+			assertDeepEquals(expected, getVariable("recordInit3"));
+		}
+		
+		{
+			DataRecord r = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
+			r.init();
+			r.reset();
+			r.getField("stringListField").setValue(Arrays.asList(null, null, "recordListInit"));
+			assertDeepEquals(Arrays.asList(null, null, r), getVariable("recordListInit"));
+		}
+
+		assertEquals("dictStringInit", dictionary.getValue("s"));
+		assertEquals(5, dictionary.getValue("i"));
+		assertEquals(77L, dictionary.getValue("l"));
+		assertEquals(new BigDecimal("7.8"), dictionary.getValue("d"));
+		assertEquals(5.4, dictionary.getValue("n"));
+		
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(OUTPUT_2));
+			expected.init();
+			expected.reset();
+			
+			expected.getField("Name").setValue("_out1Name_append");
+			expected.getField("Age").setValue(2);
+			expected.getField("BornMillisec").setValue(2L);
+			expected.getField("Value").setValue(2.0);
+			expected.getField("Currency").setValue(new BigDecimal("2.0"));
+			assertDeepEquals(expected, outputRecords[1]);
+			
+			expected.getField("Name").setValue("_out2Name_append");
+			assertDeepEquals(expected, outputRecords[2]);
+		}
+		
 	}
 	
 	public void test_assignment_compound_expect_error() {

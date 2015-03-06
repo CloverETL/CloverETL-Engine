@@ -1591,6 +1591,32 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		record.reset();
 		return record;
 	}
+	
+	private Object getDefaultValue(TLType varType) {
+		if (varType.isInteger()) {
+			return Integer.valueOf(0);
+		} else if (varType.isBoolean()) {
+			return false;
+		} else if (varType.isString()) {
+			return "";
+		} else if (varType.isList()) {
+			return new ArrayList<Object>();
+		} else if (varType.isDouble()) {
+			return Double.valueOf(0); 
+		} else if (varType.isLong()) {
+			return Long.valueOf(0);
+		} else if (varType.isDate()) {
+			return new Date(0);
+		} else if (varType.isDecimal()) {
+			return new BigDecimal(0);
+		}  else if (varType.isMap()) {
+			return new LinkedHashMap<Object,Object>();
+		}  else if (varType.isRecord()) {
+			return createNewRecord((TLTypeRecord) varType);
+		} 
+		
+		return null;
+	}
 
 	/*
 	 * Variable declarations
@@ -1614,36 +1640,22 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		}
 		
 		// default initializers
-		final TLType varType = node.getType();
-		if (varType.isInteger()) {
-			setVariable(node,Integer.valueOf(0));
-		} else if (varType.isBoolean()) {
-			setVariable(node,false);
-		} else if (varType.isString()) {
-			setVariable(node,"");
-		} else if (varType.isList()) {
-			setVariable(node,new ArrayList<Object>());
-		} else if (varType.isDouble()) {
-			setVariable(node,Double.valueOf(0)); 
-		} else if (varType.isLong()) {
-			setVariable(node,Long.valueOf(0));
-		} else if (varType.isDate()) {
-			setVariable(node,new Date(0));
-		} else if (varType.isDecimal()) {
-			setVariable(node,new BigDecimal(0));
-		}  else if (varType.isMap()) {
-			setVariable(node,new LinkedHashMap<Object,Object>());
-		}  else if (varType.isRecord()) {
-			setVariable(node, createNewRecord((TLTypeRecord) varType));
-		} 
+		Object value = getDefaultValue(node.getType());
+		if (value != null) {
+			setVariable(node, value);
+		}
 		
 		return data;
 	}
 	
-	private Object computeAssignment(Object rhsValue, SimpleNode lhs, int operator, ValueProvider lhsValue) {
+	private Object computeAssignment(Object rhsValue, SimpleNode lhs, int operator, ValueProvider lhsValueProvider) {
 		Object result = rhsValue;
-		if (lhsValue != null) {
-			lhsValue.push(); // lhs
+		if (lhsValueProvider != null) {
+			Object lhsValue = lhsValueProvider.getValue();
+			if (lhsValue == null) {
+				lhsValue = getDefaultValue(lhs.getType());
+			}
+			stack.push(lhsValue); // lhs
 			stack.push(result); // rhs
 
 			TLType type = lhs.getType();
@@ -1677,7 +1689,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	/**
 	 * Used to implement compound assignment operators.
 	 * 
-	 * {@link #push()} is only called on demand,
+	 * {@link #getValue()} is only called on demand,
 	 * if the LHS value is needed. 
 	 * 
 	 * @author krivanekm (info@cloveretl.com)
@@ -1688,9 +1700,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	private static interface ValueProvider {
 		
 		/**
-		 * Pushes a value onto the stack.
+		 * Returns RHS value.
 		 */
-		public void push();
+		public Object getValue();
 	}
 	
 	@Override
@@ -1708,8 +1720,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 				lhsValue = new ValueProvider() {
 					
 					@Override
-					public void push() {
+					public Object getValue() {
 						lhs.jjtAccept(TransformLangExecutor.this, data);
+						return stack.pop();
 					}
 				};
 			}
@@ -1745,26 +1758,26 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 				}
 				lhs.jjtGetChild(1).jjtAccept(this, data);
 				final int index = stack.popInt();
+				
+				// this prevents IndexOutOfBoundsException when index >= size
+				while (list.size() <= index) {
+					list.add(null);
+				}
 
 				if (compound) {
 					final List<Object> finalList = list;
 					lhsValue = new ValueProvider() {
 						
 						@Override
-						public void push() {
-							stack.push(finalList.get(index));
+						public Object getValue() {
+							return finalList.get(index);
 						}
 					};
 				}
 				value = getDeepCopy(computeAssignment(data, lhs, rhs, operator, lhsValue));
 				
-				if (index < list.size()) {
-					list.set(index, value);
-				} else {
-					// this prevents IndexOutOfBoundsException when index > size
-					for (; list.size() <= index; list.add(null));
-					list.set(index, value);
-				}
+				list.set(index, value);
+
 				if (assignedIntoNullContainer) {
 					setVariable(argNode, list);
 				}
@@ -1785,8 +1798,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 					lhsValue = new ValueProvider() {
 						
 						@Override
-						public void push() {
-							stack.push(finalMap.get(key));
+						public Object getValue() {
+							return finalMap.get(key);
 						}
 					};
 				}
@@ -1825,8 +1838,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 					lhsValue = new ValueProvider() {
 						
 						@Override
-						public void push() {
-							stack.push(fieldValue(record.getField(accessNode.getFieldId())));
+						public Object getValue() {
+							return fieldValue(record.getField(accessNode.getFieldId()));
 						}
 					};
 				}
@@ -1852,8 +1865,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 						lhsValue = new ValueProvider() {
 							
 							@Override
-							public void push() {
-								stack.push(graph.getDictionary().getValue(memberAccNode.getName()));
+							public Object getValue() {
+								return graph.getDictionary().getValue(memberAccNode.getName());
 							}
 						};
 					}
@@ -1961,8 +1974,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 				lhsValue = new ValueProvider() {
 					
 					@Override
-					public void push() {
-						stack.push(fieldValue(varRecord.getField(memberAccNode.getFieldId())));
+					public Object getValue() {
+						if (varRecord == null) {
+							return null;
+						}
+						return fieldValue(varRecord.getField(memberAccNode.getFieldId()));
 					}
 				};
 			}
@@ -2834,18 +2850,24 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	
 	private void setVariable(SimpleNode lhs, Object value) {
 		if (lhs.getId() == TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION) {
-			if (((SimpleNode) lhs.jjtGetChild(0)).getId() == TransformLangParserTreeConstants.JJTDICTIONARYNODE) {
+			SimpleNode firstChild = (SimpleNode) lhs.jjtGetChild(0);
+			if (firstChild.getId() == TransformLangParserTreeConstants.JJTDICTIONARYNODE) {
 				try {
 					graph.getDictionary().setValue(((CLVFMemberAccessExpression) lhs).getName(), value);
 				} catch (ComponentNotReadyException e) {
 					throw new TransformLangExecutorRuntimeException("Dictionary is not initialized",e);
 				}
-			} else {
-				final CLVFIdentifier recId = (CLVFIdentifier) lhs.jjtGetChild(0);
+			} else if (firstChild.getId() == TransformLangParserTreeConstants.JJTIDENTIFIER) {
+				final CLVFIdentifier recId = (CLVFIdentifier) firstChild;
 				final int fieldId = ((CLVFMemberAccessExpression) lhs).getFieldId();
 
 				DataRecord record = (DataRecord) stack.getVariable(recId.getBlockOffset(), recId.getVariableOffset());
 				record.getField(fieldId).setValue(value);
+			} else {
+				// TODO? TransformLangParserTreeConstants.JJTARRAYACCESSEXPRESSION
+				// too difficult to implement - we would need to re-evaluate LHS to get the variable
+				// containing the list or map, to be fixed with CL-2580
+				throw new TransformLangExecutorRuntimeException(firstChild, "variable initialization failed");
 			}
 		} else if(lhs.getId() == TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION) {
 			final CLVFFieldAccessExpression faNode = (CLVFFieldAccessExpression) lhs;
