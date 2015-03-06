@@ -62,6 +62,23 @@ integer modulus = 11;
 
 string nullAppend = "nullAppend_";
 
+string stringInit = null;
+integer integerInit = null;
+long longInit = null;
+number numberInit = null;
+decimal decimalInit = null;
+string[] listInit1 = null;
+string[] listInit2 = null;
+map[string, string] mapInit1 = null;
+map[string, string] mapInit2 = null;
+firstInput recordInit1;
+recordInit1.Name = null;
+firstInput recordInit2 = null;
+multivalueInput recordInit3;
+recordInit3.stringListField = null;
+recordInit3.stringMapField = null;
+multivalueInput[] recordListInit;
+
 integer counter = 0;
 
 function integer echo(integer i) {
@@ -139,7 +156,12 @@ function integer transform() {
 	dictionary.stringMap[echo("key2")] += "_dictionaryMap_append";
 	cnt4 = counter;
 	counter = 0;
-	
+
+	// null list element
+	dictionary.stringList[2] += "_3";
+	// null map value
+	dictionary.stringMap["nonExistingKey"] += "newValue";
+
 	$out.0.* = $in.0.*;
 	$out.0.Name += "_out0Name_append";
 	$out.0.Age += 2L;
@@ -201,6 +223,53 @@ function integer transform() {
 	echo($out.firstMultivalueOutput.stringListField)[echo(0)] += "stringListFieldAppend";
 	cnt9 = counter;
 	counter = 0;
+	
+	stringInit += "stringInit";
+	integerInit += 5;
+	longInit += 77L;
+	numberInit += 5.4;
+	decimalInit += 7.8D;
+	listInit1[2] += "listInit1";
+	string[] listInit2tmp = [null, "listInit2tmp"];
+	listInit2 += listInit2tmp;
+	mapInit1["key"] += "mapInit1";
+	map[string, string] mapInit2tmp;
+	mapInit2tmp["key"] = "mapInit2tmp";
+	mapInit2 += mapInit2tmp;
+	recordInit1.Name += "recordInit1";
+	//recordInit2.Name += "recordInit2"; // does not work even with regular assignment
+	recordInit3.stringListField[2] += "recordInit3";
+	recordInit3.stringMapField["key"] += "recordInit3";
+	
+	multivalueInput tmpMultivalueRecord;
+	recordListInit[2] = tmpMultivalueRecord; // should not be necessary, but recursive initialization does not work
+	recordListInit[2].stringListField = emptyList1; // should not be necessary
+	recordListInit[2].stringListField[2] += "recordListInit";
+	
+	dictionary.s += "dictStringInit";
+	dictionary.i += 5;
+	dictionary.l += 77L;
+	dictionary.d += 7.8D;
+	dictionary.n += 5.4;
+	
+	$out.1.* = null;
+	$out.1.Name += "_out1Name_append";
+	$out.1.Age += 2L;
+	$out.1.BornMillisec += 2;
+	$out.1.Value += 2;
+	$out.1.Currency += 2.0;
+	
+	$out.2.* = null;
+	$out.2.Name = null;
+	$out.2.Name += "_out2Name_append";
+	$out.2.Age = null;
+	$out.2.Age += 2L;
+	$out.2.BornMillisec = null;
+	$out.2.BornMillisec += 2;
+	$out.2.Value = null;
+	$out.2.Value += 2;
+	$out.2.Currency = null;
+	$out.2.Currency += 2.0;
 	
 	return 0;
 }
