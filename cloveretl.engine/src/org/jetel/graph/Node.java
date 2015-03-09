@@ -567,6 +567,12 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
                     new ErrorMsgBody(Result.ERROR.code(), Result.ERROR.message(), resultException));
             sendMessage(msg);
         } finally {
+        	try {
+        		//abort all still running child threads - CLO-5841
+        		abortChildThreads();
+        	} catch (Exception e) {
+        		logger.error(e);
+        	}
 			ContextProvider.unregister(c);
         	setNodeThread(null);
         	sendFinishMessage();
