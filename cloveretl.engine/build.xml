@@ -690,6 +690,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 			<replacefilter token="LIBRARY_BUILD_DATETIME = &quot;&quot;" value="LIBRARY_BUILD_DATETIME = &quot;${build.time}&quot;"/>
 			<replacefilter token="LIBRARY_BUILD_YEAR = &quot;&quot;" value="LIBRARY_BUILD_YEAR = &quot;${build.year}&quot;"/>
 		</replace>
+		
 		<if>
 			<not>
 				<equals arg1="${java.src.header.file}" arg2="" trim="true"/>
@@ -1320,8 +1321,8 @@ This software is licensed under the terms you may find in the file named "LICENS
 				<exclude name="org/jetel/ctl/JJTTransformLangParserState.java"/>
 				<exclude name="org/jetel/graph/dictionary/jaxb/**"/>
 				<exclude name="org/jetel/util/ddl2clover/DDL2*"/>
-				<exclude name="org/jetel/util/bytes/UTF8CloverBufferReader.java"/>
-				<exclude name="org/jetel/util/bytes/UTF8CloverBufferWriter.java"/>
+				<!--<exclude name="org/jetel/util/bytes/UTF8CloverBufferReader.java"/>
+				<exclude name="org/jetel/util/bytes/UTF8CloverBufferWriter.java"/>-->
 			</fileset>
 		</fileheading>
 		<fail message="File ${java.src.header.invalid} has invalid header - must match ${java.src.header.file.opensource}" if="java.src.header.invalid"/>
