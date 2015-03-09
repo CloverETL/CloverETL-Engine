@@ -107,4 +107,12 @@ public abstract class DataPartitionFunction extends AbstractDataTransform implem
 		return getOutputPort(directRecord.buf());
 	}
 
+	@Override
+	public boolean supportsDirectRecord() {
+		// False by default. If somebody wants to read records directly, they can override this method.
+		return false;
+	}
+	
+	
+
 }
