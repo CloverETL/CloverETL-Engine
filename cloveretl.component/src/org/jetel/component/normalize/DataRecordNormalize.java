@@ -46,6 +46,15 @@ public abstract class DataRecordNormalize extends AbstractDataTransform implemen
 		this.sourceMetadata = sourceMetadata;
 		this.targetMetadata = targetMetadata;
 
+		return init();
+	}
+	
+	/**
+	 * Override this method to provide user-desired initialization.
+	 * 
+	 * @throws ComponentNotReadyException if the initialization fails for any reason
+	 */
+	protected boolean init() throws ComponentNotReadyException {
 		return true;
 	}
 
