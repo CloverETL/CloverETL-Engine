@@ -55,11 +55,6 @@ map[string, firstInput] singleEvaluationMap;
 
 string[] mergeTest;
 
-integer minus = 1;
-integer multiply = 2;
-integer divide = 10;
-integer modulus = 11;
-
 string nullAppend = "nullAppend_";
 
 string stringInit = null;
@@ -141,6 +136,7 @@ function integer transform() {
 	num3 += 2L;
 	
 	dictionary.sVerdon += "_sVerdonAppend";
+	dictionary.i211 += 2;
 	dictionary.l452 += 2;
 	dictionary.d621 += 2.5;
 	dictionary.n9342 += 2L;
@@ -206,11 +202,6 @@ function integer transform() {
 	singleEvaluationTestResult = echo2(singleEvaluationMap)[echo("key")].Name += 123;
 	cnt8 = counter;
 	counter = 0;
-	
-	minus -= 3;
-	multiply *= 3;
-	divide /= 3;
-	modulus %= 3;
 	
 	nullAppend += null;
 	
