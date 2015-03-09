@@ -215,7 +215,11 @@ public final class SandboxUrlUtils {
 		if (graph == null) {
 			throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
 		}
-    	return graph.getAuthorityProxy().getSandboxResourceOutput(ContextProvider.getComponentId(), url.getHost(), FileUtils.getUrlFile(url), appendData);
+		String filePath = FileUtils.getUrlFile(url);
+		if (filePath.startsWith("/")) {
+			filePath = filePath.substring(1);
+		}
+    	return graph.getAuthorityProxy().getSandboxResourceOutput(ContextProvider.getComponentId(), url.getHost(), filePath, appendData);
     }
     
     /**
@@ -230,7 +234,11 @@ public final class SandboxUrlUtils {
 		if (graph == null) {
 			throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
 		}
-		return graph.getAuthorityProxy().getSandboxResourceInput(ContextProvider.getComponentId(), url.getHost(), FileUtils.getUrlFile(url));
+		String filePath = FileUtils.getUrlFile(url);
+		if (filePath.startsWith("/")) {
+			filePath = filePath.substring(1);
+		}
+		return graph.getAuthorityProxy().getSandboxResourceInput(ContextProvider.getComponentId(), url.getHost(), filePath);
     }
 
 	private SandboxUrlUtils() {
