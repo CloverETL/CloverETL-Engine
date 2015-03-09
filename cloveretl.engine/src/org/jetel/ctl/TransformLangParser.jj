@@ -577,6 +577,15 @@ TOKEN:
 | < COLON: ":" > 
 }
 
+/* Assigment operators */
+TOKEN:
+{
+  < ASSIGN_PLUS: "+=" >
+| < ASSIGN_MINUS: "-=" >
+| < ASSIGN_MULTIPLY: "*=" >
+| < ASSIGN_DIVIDE: "/=" >
+| < ASSIGN_MODULO: "%=" >}
+
 /* Types */
 TOKEN : 
 { 	
@@ -1675,6 +1684,26 @@ void Expression()       :
 	AssignmentExpression()
 }
 
+void AssignmentOp(CLVFAssignment assignment)       :
+{}
+{
+  	 ( 
+  	  <ASSIGN>
+  	  |
+  	  (
+  	    <MAPPING>
+  	    {
+  	    	warn(token,"Operator ':=' is obsolete","Use '=' operator instead");
+  	    }
+  	  )
+  	  |
+  	  <ASSIGN_PLUS> | <ASSIGN_MINUS> | <ASSIGN_MULTIPLY> | <ASSIGN_DIVIDE> | <ASSIGN_MODULO> 
+  	) 
+  {
+    assignment.setOperator(token.kind);
+  }
+}
+
  // Cascades of assignment allowed: x=y=z=3. Achieved by recursion inside  [...]void AssignmentExpression()                 : 
 {/*@bgen(jjtree) #Assignment(> 1) */
   CLVFAssignment jjtn000 = new CLVFAssignment(this, JJTASSIGNMENT);
@@ -1684,17 +1713,8 @@ void Expression()       :
         try {
 /*@egen*/  	ConditionalFailExpression()
   	
-	[  	 ( 
-  	  <ASSIGN>
-  	  |
-  	  (
-  	    <MAPPING>
-  	    {
-  	    	warn(token,"Operator ':=' is obsolete","Use '=' operator instead");
-  	    }
-  	  ) 
-  	) 
-  	{
+	[
+	AssignmentOp(jjtn000)  	{
   		// We check if the LHS is a variable reference
   		// The check can't be done immediately after ConditionalFailExpression()
   		// because of the recursive call to AssignmentExpression() below
@@ -3390,12 +3410,12 @@ void EmptyStatement()       :
   try {
 /*@egen*/  ( 
     "case" { jjtn000.begin(token.beginLine,token.beginColumn); }
-    Literal() ":"/*@bgen(jjtree)*/
+	  UnaryExpression() ":"/*@bgen(jjtree)*/
     {
       jjtree.closeNodeScope(jjtn000, true);
       jjtc000 = false;
     }
-/*@egen*/ 
+/*@egen*/  // CLO-5038
     { jjtn000.end(token.endLine,token.endColumn); }
   )
   |

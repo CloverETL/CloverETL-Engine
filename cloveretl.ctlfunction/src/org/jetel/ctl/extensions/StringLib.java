@@ -93,7 +93,16 @@ public class StringLib extends TLFunctionLibrary {
 			"toAbsolutePath".equals(functionName) ? new ToAbsolutePathFunction() : //$NON-NLS-1$
 			"toProjectUrl".equals(functionName) ? new ToProjectUrlFunction() : //$NON-NLS-1$
 			"escapeUrl".equals(functionName) ? new EscapeUrlFunction() : //$NON-NLS-1$
-			"unescapeUrl".equals(functionName) ? new UnescapeUrlFunction() : null; //$NON-NLS-1$
+			"unescapeUrl".equals(functionName) ? new UnescapeUrlFunction() :  //$NON-NLS-1$
+			"getFileExtension".equals(functionName) ? new GetFileExtensionFunction() :  //$NON-NLS-1$
+			"getFileName".equals(functionName) ? new GetFileNameFunction() :  //$NON-NLS-1$
+			"getFileNameWithoutExtension".equals(functionName) ? new GetFileNameWithoutExtensionFunction() :  //$NON-NLS-1$
+			"getPath".equals(functionName) ? new GetPathFunction() :  //$NON-NLS-1$
+			"getFullPath".equals(functionName) ? new GetFullPathFunction() :  //$NON-NLS-1$
+			"normalizePath".equals(functionName) ? new NormalizePathFunction() :  //$NON-NLS-1$
+			"reverseChars".equals(functionName) ? new ReverseCharsFunction() :  //$NON-NLS-1$
+    		"isEmpty".equals(functionName) ? new IsEmptyFunction() : //$NON-NLS-1$
+				null;
 
 		if (ret == null) {
     		throw new IllegalArgumentException(CtlExtensionsMessages.getString("StringLib.unknown_function") + functionName + "'"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -615,7 +624,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 
 	}
-
+	
 	// IS ASCII
 	@TLFunctionAnnotation("Checks if the string contains only characters from the US-ASCII encoding")
 	public static final boolean isAscii(TLFunctionCallContext context, String input) {
@@ -1625,4 +1634,192 @@ public class StringLib extends TLFunctionLibrary {
 		context.setCache(new TLPropertyRefResolverCache(refResolver));
 	}
 	
+	// GET FILE EXTENSION FUNCTION
+
+	@TLFunctionAnnotation("Returns the extension of a filename.")
+	public static final String getFileExtension(TLFunctionCallContext context, String filename) {
+		if (filename != null) {
+			return org.apache.commons.io.FilenameUtils.getExtension(filename);
+		} else {
+			return null;
+		}
+	}
+
+	class GetFileExtensionFunction implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final String filename = stack.popString();
+			stack.push(getFileExtension(context, filename));
+		}
+	}
+
+	// GET FILE NAME FUNCTION
+
+	@TLFunctionAnnotation("Returns the name minus the path from a full filename.")
+	public static final String getFileName(TLFunctionCallContext context, String filename) {
+		if (filename != null) {
+			return org.apache.commons.io.FilenameUtils.getName(filename);
+		} else {
+			return null;
+		}
+	}
+
+	class GetFileNameFunction implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final String filename = stack.popString();
+			stack.push(getFileName(context, filename));
+		}
+	}
+
+	// GET FILE NAME WITHOUT EXTENSION FUNCTION
+
+		@TLFunctionAnnotation("Returns the base name, minus the full path and extension, from a full filename.")
+		public static final String getFileNameWithoutExtension(TLFunctionCallContext context, String filename) {
+			if (filename != null) {
+				return org.apache.commons.io.FilenameUtils.getBaseName(filename);
+			} else {
+				return null;
+			}
+		}
+
+		class GetFileNameWithoutExtensionFunction implements TLFunctionPrototype {
+
+			@Override
+			public void init(TLFunctionCallContext context) {
+			}
+
+			@Override
+			public void execute(Stack stack, TLFunctionCallContext context) {
+				final String filename = stack.popString();
+				stack.push(getFileNameWithoutExtension(context, filename));
+			}
+		}
+		// GET PATH FUNCTION
+
+		@TLFunctionAnnotation("Returns the path from a full filename, which excludes the prefix.")
+		public static final String getPath(TLFunctionCallContext context, String filename) {
+			if (filename != null) {
+				return org.apache.commons.io.FilenameUtils.separatorsToUnix(org.apache.commons.io.FilenameUtils.getPath(filename));
+			} else {
+				return null;
+			}
+		}
+
+		class GetPathFunction implements TLFunctionPrototype {
+
+			@Override
+			public void init(TLFunctionCallContext context) {
+			}
+
+			@Override
+			public void execute(Stack stack, TLFunctionCallContext context) {
+				final String filename = stack.popString();
+				stack.push(getPath(context, filename));
+			}
+		}
+
+		// GET FULL PATH FUNCTION
+
+		@TLFunctionAnnotation("Returns the base name, minus the full path and extension, from a full filename.")
+		public static final String getFullPath(TLFunctionCallContext context, String filename) {
+			if (filename != null) {
+				return org.apache.commons.io.FilenameUtils.separatorsToUnix(org.apache.commons.io.FilenameUtils.getFullPath(filename));
+			} else {
+				return null;
+			}
+		}
+
+		class GetFullPathFunction implements TLFunctionPrototype {
+
+			@Override
+			public void init(TLFunctionCallContext context) {
+			}
+
+			@Override
+			public void execute(Stack stack, TLFunctionCallContext context) {
+				final String filename = stack.popString();
+				stack.push(getFullPath(context, filename));
+			}
+		}
+
+		// NORMALIZE PATH FUNCTION
+
+		@TLFunctionAnnotation("Normalizes a path, removing double and single dot path steps.")
+		public static final String normalizePath(TLFunctionCallContext context, String filename) {
+			if (filename != null) {
+				return org.apache.commons.io.FilenameUtils.separatorsToUnix(org.apache.commons.io.FilenameUtils.normalize(filename));
+			} else {
+				return null;
+			}
+		}
+
+		class NormalizePathFunction implements TLFunctionPrototype {
+
+			@Override
+			public void init(TLFunctionCallContext context) {
+			}
+
+			@Override
+			public void execute(Stack stack, TLFunctionCallContext context) {
+				final String filename = stack.popString();
+				stack.push(normalizePath(context, filename));
+			}
+		}
+
+	// REVERSE CHARS FUNCTION
+
+	@TLFunctionAnnotation("Reverses the order of characters in string.")
+	public static final String reverseChars(TLFunctionCallContext context, String value) {
+		if (value != null) {
+			if (value.length()<2) return value;
+			StringBuilder newVal = new StringBuilder(value);
+			newVal.reverse(); // handles surrogate pairs
+			return newVal.toString();
+		} else {
+			return null;
+		}
+	}
+
+	class ReverseCharsFunction implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final String value = stack.popString();
+			stack.push(reverseChars(context, value));
+		}
+	}
+	
+	@TLFunctionAnnotation("Checks if the string is null or of zero length.")
+	public static final boolean isEmpty(TLFunctionCallContext context, String input) {
+		return StringUtils.isEmpty(input);
+	}
+	
+	class IsEmptyFunction implements TLFunctionPrototype{
+		
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(isEmpty(context, stack.popString()));
+		}
+	}
+	
+
 }

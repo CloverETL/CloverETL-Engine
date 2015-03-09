@@ -53,6 +53,8 @@ public class CLVFLookupNode extends SimpleNode {
 	public CLVFLookupNode(CLVFLookupNode node) {
 		super(node);
 		this.lookupTable = node.lookupTable;
+		this.lookupName = node.lookupName;
+		this.opType = node.opType;
 	}
 
 	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */

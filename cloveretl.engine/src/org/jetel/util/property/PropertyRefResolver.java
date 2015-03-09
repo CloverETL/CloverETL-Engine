@@ -385,12 +385,16 @@ public class PropertyRefResolver {
 			if (parameters.hasGraphParameter(reference)) {
 				GraphParameter param = parameters.getGraphParameter(reference);
 				if (param.isSecure()) {
-					//secure parameters are resolved in all attributes for now
-//					if (flag.resolveSecureParameters()) {
+					try {
 						resolvedReference = getAuthorityProxy().getSecureParamater(param.getName(), param.getValue());
-//					} else {
-//						throw new JetelRuntimeException("Secure parameter reference " + reference + " cannot be resolved. Secure parameters can be used only in dedicated locations.");
-//					}
+					} catch (Exception e) {
+						JetelRuntimeException ee = new JetelRuntimeException("Secure graph parameter '" + param.getName() + "' has invalid value.", e);
+						if (ContextProvider.getRuntimeContext() == null || ContextProvider.getRuntimeContext().isStrictGraphFactorization()) {
+							throw ee;
+						} else {
+							logger.warn(ee);
+						}
+					}
 				} else {
 					resolvedReference = parameters.getGraphParameter(reference).getValue();
 				}

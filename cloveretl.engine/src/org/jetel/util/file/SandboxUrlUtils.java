@@ -211,9 +211,13 @@ public final class SandboxUrlUtils {
      * @throws IOException
      */
     public static OutputStream getSandboxOutputStream(URL url, boolean appendData) throws IOException {
+		String filePath = FileUtils.getUrlFile(url);
+		if (filePath.startsWith("/")) {
+			filePath = filePath.substring(1);
+		}
 		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
 		try {
-			return authorityProxy.getSandboxResourceOutput(ContextProvider.getComponentId(), url.getHost(), FileUtils.getUrlFile(url), appendData);
+			return authorityProxy.getSandboxResourceOutput(ContextProvider.getComponentId(), url.getHost(), filePath, appendData);
 		} catch (UnsupportedOperationException uoe) {
 			throw new IOException("Failed to open sandbox output stream", uoe);
 		}
@@ -227,9 +231,13 @@ public final class SandboxUrlUtils {
      * @throws IOException
      */
     public static InputStream getSandboxInputStream(URL url) throws IOException {
+		String filePath = FileUtils.getUrlFile(url);
+		if (filePath.startsWith("/")) {
+			filePath = filePath.substring(1);
+		}
 		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
 		try {
-			return authorityProxy.getSandboxResourceInput(ContextProvider.getComponentId(), url.getHost(), FileUtils.getUrlFile(url));
+			return authorityProxy.getSandboxResourceInput(ContextProvider.getComponentId(), url.getHost(), filePath);
 		} catch (UnsupportedOperationException uoe) {
 			throw new IOException("Failed to open sandbox input stream", uoe);
 		}
