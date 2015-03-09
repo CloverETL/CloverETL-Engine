@@ -173,7 +173,6 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		inPorts = new TreeMap<Integer, InputPort>();
         phase = null;
         setResultCode(Result.N_A); // result is not known yet
-        childThreads = new ArrayList<Thread>();
         allocation = EngineComponentAllocation.createNeighboursAllocation();
 	}
 
@@ -467,6 +466,9 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();
     	
+    	//list of child threads is wiped out for each graph execution
+        childThreads = new ArrayList<Thread>();
+
         //cluster related settings can be used only in cluster environment
         if (!getGraph().getAuthorityProxy().isClusterEnabled()) {
         	//cluster components cannot be used in non-cluster environment
@@ -653,11 +655,16 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 
 	private void abortChildThreads() {
 		synchronized(nodeThreadMonitor) {
-			for (Thread childThread : childThreads) {
-				if (logger.isDebugEnabled()) {
-					logger.debug("trying to interrupt child thread " + childThread);
+			if (childThreads != null) { //the child threads list can be null for already finished component
+				for (Thread childThread : childThreads) {
+					if (logger.isDebugEnabled()) {
+						logger.info("trying to interrupt child thread " + childThread);
+					}
+		    		logger.info("!!! interrupt thread " + childThread);
+					childThread.interrupt();
 				}
-				childThread.interrupt();
+				//no more threads can be registered as child threads
+				childThreads = null;
 			}
 		}
 	}
@@ -1343,7 +1350,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      */
     public void registerChildThread(Thread childThread) {
     	synchronized(nodeThreadMonitor) {
-	    	if (runIt) {
+	    	if (runIt && childThreads != null) {
 	    		//new child thread can be registered only for running components
 	    		childThreads.add(childThread);
 	    	} else {
@@ -1359,7 +1366,9 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      */
     public void unregisterChildThread(Thread childThread) {
     	synchronized(nodeThreadMonitor) {
-    		childThreads.remove(childThread);
+    		if (childThreads != null) {
+    			childThreads.remove(childThread);
+    		}
     	}
     }
     
@@ -1371,7 +1380,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      */
     protected void registerChildThreads(List<Thread> childThreads) {
     	synchronized(nodeThreadMonitor) {
-	    	if (runIt) {
+	    	if (runIt && this.childThreads != null) {
 	    		//new child thread can be registered only for running components
 	    		this.childThreads.addAll(childThreads);
 	    	} else {
@@ -1385,7 +1394,11 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      */
     public List<Thread> getChildThreads() {
     	synchronized(nodeThreadMonitor) {
-    		return new ArrayList<Thread>(childThreads); //duplicate is returned to ensure thread safety
+    		if (childThreads != null) {
+    			return new ArrayList<Thread>(childThreads); //duplicate is returned to ensure thread safety
+    		} else {
+    			return new ArrayList<>();
+    		}
     	}
     }
 
