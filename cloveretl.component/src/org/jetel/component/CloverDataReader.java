@@ -588,7 +588,6 @@ public class CloverDataReader extends Node implements MultiFileListener, Metadat
 						}
 						
 					};
-					registerChildThread(t);
 					t.setName(getId() + "_metadataLoader");
 					return t;
 				}
