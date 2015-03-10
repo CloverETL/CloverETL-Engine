@@ -71,7 +71,7 @@ public interface RecordNormalize extends Transform {
 	 * @param exception an exception that caused {@link #count(DataRecord)} to fail
 	 * @param source Input record
 	 *
-	 * @return Number of output records which will be create from specified input record 
+	 * @return Number of output records which will be created from specified input record 
 	 */
 	public int countOnError(Exception exception, DataRecord source) throws TransformException;
 
