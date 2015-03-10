@@ -294,6 +294,28 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	}
 
 	/**
+	 * @return index of last connected input port
+	 */
+	public int getInputPortsMaxIndex() {
+		if (!inPorts.isEmpty()) {
+			return inPorts.lastKey();
+		} else {
+			return -1;
+		}
+	}
+
+	/**
+	 * @return index of last connected output port
+	 */
+	public int getOutputPortsMaxIndex() {
+		if (!outPorts.isEmpty()) {
+			return outPorts.lastKey();
+		} else {
+			return -1;
+		}
+	}
+
+	/**
 	 * @return map with all input ports (key is index of input port)
 	 */
 	public Map<Integer, InputPort> getInputPorts() {
