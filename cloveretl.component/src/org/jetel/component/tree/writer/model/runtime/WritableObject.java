@@ -20,6 +20,7 @@ package org.jetel.component.tree.writer.model.runtime;
 
 import java.io.IOException;
 
+import org.jetel.component.RecordsFilter;
 import org.jetel.component.tree.writer.TreeFormatter;
 import org.jetel.component.tree.writer.model.design.ObjectNode;
 import org.jetel.component.tree.writer.model.runtime.WritableMapping.MappingWriteState;
@@ -61,6 +62,16 @@ public class WritableObject extends WritableContainer {
 				child.write(formatter, availableData);
 			}
 		} else if (!isNodeEmpty(formatter, availableData)) {
+			if (getPortBinding() != null) {
+				// This allows filtering records on the "top" level. CLO-4852
+				// The "top" level means partitionElement of WritableMapping, not the xml root.
+				RecordsFilter recordFilter = getPortBinding().getRecordFilter();
+				if (recordFilter != null && !recordFilter.isValid(availableData)) {
+					// record didn't pass through filter, just skip it
+					return;
+				}
+			}
+			
 			MappingWriteState state = formatter.getMapping().getState();
 			char[] nodeName = name.getValue(availableData);
 			if (!hidden && (state == MappingWriteState.ALL || state == MappingWriteState.HEADER)) {
