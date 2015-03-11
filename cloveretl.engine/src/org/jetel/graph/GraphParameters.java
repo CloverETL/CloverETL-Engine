@@ -51,9 +51,14 @@ import org.jetel.util.string.StringUtils;
 @XmlRootElement(name = "GraphParameters")
 public class GraphParameters {
 
-	/** Wrapped properties container. Access must be synchronized to avoid ConcurrentModificationEx. 
+	/** User's graph parameters. Access must be synchronized to avoid ConcurrentModificationException. 
 	 * SynchronizedMap wouldn't be sufficient, since it doesn't synchronize iteration.  */
-	private final Map<String, GraphParameter> parameters = new LinkedHashMap<String, GraphParameter>();
+	private final Map<String, GraphParameter> userParameters = new LinkedHashMap<String, GraphParameter>();
+	
+	/**
+	 * This class handles built-in graph parameters.
+	 */
+	private BuiltInGraphParameters builtInParameters;
 	
 	@XmlTransient
 	private TransformationGraph parentGraph;
@@ -63,16 +68,13 @@ public class GraphParameters {
 
 	public GraphParameters(TransformationGraph parentGraph) {
 		this.parentGraph = parentGraph;
+		builtInParameters = new BuiltInGraphParameters(parentGraph, this);
 	}
 	
 	public GraphParameters(Properties properties) {
 		addProperties(properties);
 	}
 
-	public void setParentGraph(TransformationGraph parentGraph) {
-		this.parentGraph = parentGraph;
-	}
-	
 	/**
 	 * @return parent transformation graph or null
 	 */
@@ -82,39 +84,59 @@ public class GraphParameters {
 	}
 	
 	/**
+	 * Both user's and built-in graph parameters are considered.
 	 * @param name name of searched parameter
 	 * @return true if parameter with given name is in this parameters container
 	 */
 	public boolean hasGraphParameter(String name) {
-		synchronized (parameters) {
-			return parameters.containsKey(name);
+		synchronized (userParameters) {
+			return userParameters.containsKey(name)
+					|| (builtInParameters != null && builtInParameters.hasGraphParameter(name));
 		}
 	}
 	
 	/**
+	 * Both user's and built-in graph parameters are considered.
 	 * @param name
 	 * @return {@link GraphParameter} for given parameter name;
 	 * if no parameter with the given name is part of this container,
 	 * dummy graph parameter is returned anyway with null value
 	 */
 	public GraphParameter getGraphParameter(String name) {
-		synchronized (parameters) {
-			GraphParameter result = parameters.get(name);
+		synchronized (userParameters) {
+			GraphParameter result = userParameters.get(name);
 			if (result != null) {
 				return result;
 			} else {
-				return new GraphParameter(name, null, this);
+				if (builtInParameters != null && builtInParameters.hasGraphParameter(name)) {
+					return builtInParameters.getGraphParameter(name);
+				} else {
+					return new GraphParameter(name, null, this);
+				}
 			}
 		}
 	}
 	
 	/**
-	 * @return list of all graph parameters from this container
+	 * @return list of all graph parameters from this container (only user's graph parameters are considered)
 	 */
 	@XmlElement(name = "GraphParameter")
 	public List<GraphParameter> getAllGraphParameters() {
-		synchronized (parameters) {
-			return new ArrayList<GraphParameter>(parameters.values());
+		synchronized (userParameters) {
+			return new ArrayList<GraphParameter>(userParameters.values());
+		}
+	}
+	
+	/**
+	 * @return list of all built-in parameters
+	 */
+	public List<GraphParameter> getAllBuiltInParameters() {
+		synchronized (userParameters) {
+			if (builtInParameters != null) {
+				return builtInParameters.getAllGraphParameters();
+			} else {
+				return new ArrayList<>();
+			}
 		}
 	}
 	
@@ -141,10 +163,10 @@ public class GraphParameters {
 		if (StringUtils.isEmpty(graphParameter.getName())) {
 			throw new JetelRuntimeException("empty graph paramater name");
 		}
-		synchronized (parameters) {
-			if (!parameters.containsKey(graphParameter.getName())) {
+		synchronized (userParameters) {
+			if (!userParameters.containsKey(graphParameter.getName())) {
 				graphParameter.setParentGraphParameters(this);
-				parameters.put(graphParameter.getName(), graphParameter);
+				userParameters.put(graphParameter.getName(), graphParameter);
 				return true;
 			} else {
 				return false;
@@ -169,8 +191,8 @@ public class GraphParameters {
 	 * @param properties
 	 */
 	public void setProperties(Properties properties) {
-		synchronized (parameters) {
-			parameters.clear();
+		synchronized (userParameters) {
+			userParameters.clear();
 			addProperties(properties);
 		}
 	}
@@ -205,13 +227,13 @@ public class GraphParameters {
 	}
 
 	/**
-	 * @return content of this container in properties form
+	 * @return content of this container in properties form (only user's graph parameters are considered)
 	 */
 	public TypedProperties asProperties() {
 		TypedProperties result = new TypedProperties();
 		
-		synchronized (parameters) {
-			for (GraphParameter parameter : parameters.values()) {
+		synchronized (userParameters) {
+			for (GraphParameter parameter : userParameters.values()) {
 				result.setProperty(parameter.getName(), parameter.getValue());
 			}
 		}
@@ -222,8 +244,8 @@ public class GraphParameters {
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
-		synchronized (parameters) {
-			List<GraphParameter> orderedParams = new ArrayList<>(parameters.values());
+		synchronized (userParameters) {
+			List<GraphParameter> orderedParams = new ArrayList<>(userParameters.values());
 			Collections.sort(orderedParams, new Comparator<GraphParameter>() {
 				@Override
 				public int compare(GraphParameter p1, GraphParameter p2) {
@@ -251,9 +273,9 @@ public class GraphParameters {
 	 * Clears this graph parameters.
 	 */
 	public void clear() {
-		synchronized (parameters) {
+		synchronized (userParameters) {
 			List<GraphParameter> oldGraphParameters = getAllGraphParameters();
-			parameters.clear();
+			userParameters.clear();
 			//clear references to parent GraphParameters
 			for (GraphParameter oldGraphParameter : oldGraphParameters) {
 				oldGraphParameter.setParentGraphParameters(null);
@@ -262,8 +284,8 @@ public class GraphParameters {
 	}
 	
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-		synchronized (parameters) {
-			for (GraphParameter param: parameters.values()) {
+		synchronized (userParameters) {
+			for (GraphParameter param: userParameters.values()) {
 				if (!StringUtils.isValidObjectName(param.getName())) {
 					status.add("Invalid name of graph parameter: '" + param.getName() + "'", Severity.ERROR, null, Priority.HIGH);
 				}

@@ -31,6 +31,7 @@ import org.jetel.data.Defaults;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.dictionary.DictionaryValuesContainer;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.string.StringUtils;
@@ -118,13 +119,13 @@ public class GraphRuntimeContext {
 	 * which have an edge connected. It has sense only for subgraphs. This information about
 	 * attached edges in parent graph is used to remove optional edges.
 	 */
-	private List<Integer> connectedParentGraphInputPorts; 
+	private List<Integer> parentGraphInputPortsConnected; 
 	/**
 	 * This list contains indexes of all output ports of Subgraph component from parent graph
 	 * which have an edge connected. It has sense only for subgraphs. This information about
 	 * attached edges in parent graph is used to remove optional edges.
 	 */
-	private List<Integer> connectedParentGraphOutputPorts; 
+	private List<Integer> parentGraphOutputPortsConnected; 
 	
 	/**
 	 * This flag can be used to decide, whether some flaws in graph xml file should be reported or somehow ignored.
@@ -155,9 +156,9 @@ public class GraphRuntimeContext {
 		timeZone = null;
 		validateRequiredParameters = DEFAULT_VALIDATE_REQUIRED_PARAMETERS;
 		fastPropagateExecution = false;
-		connectedParentGraphInputPorts = Collections.emptyList(); 
-		connectedParentGraphOutputPorts = Collections.emptyList(); 
-		setStrictGraphFactorization(true);
+		parentGraphInputPortsConnected = null; 
+		parentGraphOutputPortsConnected = null; 
+		strictGraphFactorization = true;
 	}
 	
 	/* (non-Javadoc)
@@ -199,8 +200,8 @@ public class GraphRuntimeContext {
 		ret.metadataProvider = getMetadataProvider();
 		ret.validateRequiredParameters = isValidateRequiredParameters();
 		ret.fastPropagateExecution = isFastPropagateExecution();
-		ret.connectedParentGraphInputPorts = new ArrayList<>(getConnectedParentGraphInputPorts());
-		ret.connectedParentGraphOutputPorts = new ArrayList<>(getConnectedParentGraphOutputPorts());
+		ret.parentGraphInputPortsConnected = parentGraphInputPortsConnected != null ? new ArrayList<>(parentGraphInputPortsConnected) : null;
+		ret.parentGraphOutputPortsConnected = parentGraphOutputPortsConnected != null ? new ArrayList<>(parentGraphOutputPortsConnected) : null;
 		ret.strictGraphFactorization = isStrictGraphFactorization();
 
 		return ret;
@@ -237,8 +238,8 @@ public class GraphRuntimeContext {
 		prop.setProperty("executionType", String.valueOf(getExecutionType()));
 		prop.setProperty("validateRequiredParameters", Boolean.toString(isValidateRequiredParameters()));
 		prop.setProperty("fastPropagateExecution", Boolean.toString(isFastPropagateExecution()));
-		prop.setProperty("connectedParentGraphInputPorts", getConnectedParentGraphInputPorts().toString());
-		prop.setProperty("connectedParentGraphOutputPorts", getConnectedParentGraphOutputPorts().toString());
+		prop.setProperty("connectedParentGraphInputPorts", String.valueOf(getParentGraphInputPortsConnected()));
+		prop.setProperty("connectedParentGraphOutputPorts", String.valueOf(getParentGraphOutputPortsConnected()));
 		
 		return prop;
 	}
@@ -863,38 +864,64 @@ public class GraphRuntimeContext {
 	}
 	
 	/**
-	 * @return list of all input port indexes from parent Subgraph component, which are attached
+	 * @return true if optional subgraph input port is connected by parent graph
 	 */
-	public List<Integer> getConnectedParentGraphInputPorts() {
-		return connectedParentGraphInputPorts;
-	}
-
-	/**
-	 * @param connectedParentGraphInputPorts list of all input port indexes from parent Subgraph component, which are attached
-	 */
-	public void setConnectedParentGraphInputPorts(List<Integer> connectedParentGraphInputPorts) {
-		if (connectedParentGraphInputPorts != null) {
-			this.connectedParentGraphInputPorts = Collections.unmodifiableList(connectedParentGraphInputPorts);
+	public boolean isParentGraphInputPortConnected(int portIndex) {
+		if (parentGraphInputPortsConnected != null) {
+			return parentGraphInputPortsConnected.contains(portIndex);
 		} else {
-			this.connectedParentGraphInputPorts = Collections.emptyList();
+			return true;
 		}
 	}
 
 	/**
-	 * @return list of all output port indexes from parent Subgraph component, which are attached
+	 * @return list of subgraph input port indexes, which are connected by parent graph or null,
+	 * which indicates all ports are connected
 	 */
-	public List<Integer> getConnectedParentGraphOutputPorts() {
-		return connectedParentGraphOutputPorts;
+	public List<Integer> getParentGraphInputPortsConnected() {
+		return parentGraphInputPortsConnected;
 	}
 
 	/**
-	 * @param connectedParentGraphOutputPorts list of all output port indexes from parent Subgraph component, which are attached
+	 * @param connectedParentGraphInputPorts list of all subgraph input port indexes connected by parent graph or null
+	 * which indicates all ports are connected
 	 */
-	public void setConnectedParentGraphOutputPorts(List<Integer> connectedParentGraphOutputPorts) {
-		if (connectedParentGraphOutputPorts != null) {
-			this.connectedParentGraphOutputPorts = Collections.unmodifiableList(connectedParentGraphOutputPorts);
+	public void setParentGraphInputPortsConnected(List<Integer> parentGraphInputPortsConnected) {
+		if (parentGraphInputPortsConnected != null) {
+			this.parentGraphInputPortsConnected = Collections.unmodifiableList(parentGraphInputPortsConnected);
 		} else {
-			this.connectedParentGraphOutputPorts = Collections.emptyList();
+			this.parentGraphInputPortsConnected = null;
+		}
+	}
+
+	/**
+	 * @return true if optional subgraph output port is connected by parent graph
+	 */
+	public boolean isParentGraphOutputPortConnected(int portIndex) {
+		if (parentGraphOutputPortsConnected != null) {
+			return parentGraphOutputPortsConnected.contains(portIndex);
+		} else {
+			return true;
+		}
+	}
+
+	/**
+	 * @return list of subgraph output port indexes, which are connected by parent graph or null,
+	 * which indicates all ports are connected
+	 */
+	public List<Integer> getParentGraphOutputPortsConnected() {
+		return parentGraphOutputPortsConnected;
+	}
+	
+	/**
+	 * @param connectedParentGraphOutputPorts list of all subgraph output port indexes connected by parent graph or null
+	 * which indicates all ports are connected
+	 */
+	public void setParentGraphOutputPortsConnected(List<Integer> parentGraphOutputPortsConnected) {
+		if (parentGraphOutputPortsConnected != null) {
+			this.parentGraphOutputPortsConnected = Collections.unmodifiableList(parentGraphOutputPortsConnected);
+		} else {
+			this.parentGraphOutputPortsConnected = null;
 		}
 	}
 	

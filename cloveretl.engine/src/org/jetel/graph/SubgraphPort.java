@@ -41,11 +41,18 @@ public abstract class SubgraphPort {
 	 */
 	protected boolean keepEdge = false;
 	
-	public SubgraphPort(SubgraphPorts subgraphPorts, int index, boolean required, boolean keepEdge) {
+	/**
+	 * This flag is loaded from sgrf file and indicates whether the optional port should
+	 * be considered as connected. It is used only for top-level execution of the subgraph.
+	 */
+	protected boolean connected;
+	
+	public SubgraphPort(SubgraphPorts subgraphPorts, int index, boolean required, boolean keepEdge, boolean connected) {
 		this.subgraphPorts = subgraphPorts;
 		this.index = index;
 		this.required = required;
 		this.keepEdge = keepEdge;
+		this.connected = connected;
 	}
 
 	public int getIndex() {
@@ -75,5 +82,15 @@ public abstract class SubgraphPort {
 	 * @return true if the port is connected (optional ports do not need to be connected)
 	 */
 	public abstract boolean isConnected();
-	
+
+	/**
+	 * @return true for input port and false for output port
+	 */
+	public abstract boolean isInputPort();
+
+	/**
+	 * @return true for output port and false for input port
+	 */
+	public abstract boolean isOutputPort();
+
 }

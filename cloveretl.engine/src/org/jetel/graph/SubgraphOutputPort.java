@@ -34,19 +34,30 @@ public class SubgraphOutputPort extends SubgraphPort {
 	 * @param index index of the subgraph port
 	 * @param required true if an edge attached to the port is required
 	 * @param keepEdge if the port is not required (is optional),
+	 * @param connected true if the optional port should be considered as connected for root execution 
 	 * the related edge is either kept or removed from the subgraph
 	 */
-	public SubgraphOutputPort(SubgraphPorts parentSubgraphPorts, int index, boolean required, boolean keepEdge) {
-		super(parentSubgraphPorts, index, required, keepEdge);
+	public SubgraphOutputPort(SubgraphPorts parentSubgraphPorts, int index, boolean required, boolean keepEdge, boolean connected) {
+		super(parentSubgraphPorts, index, required, keepEdge, connected);
 	}
 
 	@Override
 	public boolean isConnected() {
 		if (getGraph().getRuntimeJobType().isSubJob()) {
-			return getGraph().getAuthorityProxy().getParentGraphTargetEdge(index) != null;
+			return getGraph().getRuntimeContext().isParentGraphOutputPortConnected(index);
 		} else {
-			return isRequired() ? true : getGraph().getSubgraphOutputComponent().getOutputPort(index) != null;
+			return isRequired() || connected;
 		}
 	}
-	
+
+	@Override
+	public boolean isInputPort() {
+		return false;
+	}
+
+	@Override
+	public boolean isOutputPort() {
+		return true;
+	}
+
 }

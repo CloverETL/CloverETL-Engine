@@ -201,6 +201,7 @@ public class TransformationGraphXMLReaderWriter {
 	public final static String SUBGRAPH_PORT_NAME_ATTRIBUTE = "name";
 	public final static String SUBGRAPH_PORT_REQUIRED_ATTRIBUTE = "required";
 	public final static String SUBGRAPH_PORT_KEEP_EDGE_ATTRIBUTE = "keepEdge";
+	public final static String SUBGRAPH_PORT_CONNECTED_ATTRIBUTE = "connected";
 	
 	private final static String DICTIONARY_ELEMENT = "Dictionary";
 	private final static String DICTIONARY_ENTRY_ELEMENT = "Entry";
@@ -253,7 +254,12 @@ public class TransformationGraphXMLReaderWriter {
     
     private GraphRuntimeContext runtimeContext;
     
-    private boolean strictParsing = true;
+    /**
+     * This is already deprecated way to set strict or lenient graph parsing.
+     * It is recommended to used {@link GraphRuntimeContext#setStrictGraphFactorization(boolean)} instead.
+     */
+    @Deprecated
+    private Boolean strictParsing;
 
     /** Should be metadata automatically propagated? */
     private boolean metadataPropagation = true;
@@ -428,9 +434,10 @@ public class TransformationGraphXMLReaderWriter {
 			//it is necessary for correct edge factorisation in EdgeFactory (maybe will be useful even somewhere else)
 			c = ContextProvider.registerGraph(graph);
 			
-			//set information about strict parsing into runtime context - this can
-			//be used whenever is necessary inside the graph factorization using ContextProvider.getRuntimeContext() 
-			runtimeContext.setStrictGraphFactorization(strictParsing);
+			//deprecated strictParsing flag is stored into runtimeContext, which is preferable way
+			if (strictParsing != null) {
+				runtimeContext.setStrictGraphFactorization(strictParsing);
+			}
 			graph.setInitialRuntimeContext(runtimeContext);
 			
 			// get graph name
@@ -685,7 +692,7 @@ public class TransformationGraphXMLReaderWriter {
                 nodePassThroughInputPort = attributes.getInteger("passThroughInputPort", 0);
                 nodePassThroughOutputPort = attributes.getInteger("passThroughOutputPort", 0);
                 if (EnabledEnum.fromString(nodeEnabled, EnabledEnum.ENABLED).isEnabled()) {
-					graphNode = ComponentFactory.createComponent(graph, nodeType, nodeElements.item(i), isStrictParsing());
+					graphNode = ComponentFactory.createComponent(graph, nodeType, nodeElements.item(i));
                 } else {
                     graphNode = ComponentFactory.createDummyComponent(graph, nodeType, null, nodeElements.item(i));
                 }
@@ -886,11 +893,12 @@ public class TransformationGraphXMLReaderWriter {
             }
             boolean required = attributes.getBoolean(SUBGRAPH_PORT_REQUIRED_ATTRIBUTE, true);
             boolean keepEdge = attributes.getBoolean(SUBGRAPH_PORT_KEEP_EDGE_ATTRIBUTE, false);
+            boolean connected = attributes.getBoolean(SUBGRAPH_PORT_CONNECTED_ATTRIBUTE, true);
             SubgraphPort subgraphPort;
             if (inputPorts) {
-            	subgraphPort = new SubgraphInputPort(subgraphPorts, index, required, keepEdge);
+            	subgraphPort = new SubgraphInputPort(subgraphPorts, index, required, keepEdge, connected);
             } else {
-            	subgraphPort = new SubgraphOutputPort(subgraphPorts, index, required, keepEdge);
+            	subgraphPort = new SubgraphOutputPort(subgraphPorts, index, required, keepEdge, connected);
             }
             subgraphPorts.getPorts().add(subgraphPort);
 		}
@@ -1299,9 +1307,15 @@ public class TransformationGraphXMLReaderWriter {
 	
 	/**
 	 * @return the strictParsing
+	 * @deprecated use {@link GraphRuntimeContext#isStrictGraphFactorization()} instead
 	 */
+	@Deprecated
 	public boolean isStrictParsing() {
-		return strictParsing;
+		if (strictParsing != null) {
+			return strictParsing;
+		} else {
+			return runtimeContext.isStrictGraphFactorization();
+		}
 	}
 
 	/**
@@ -1310,7 +1324,9 @@ public class TransformationGraphXMLReaderWriter {
 	 * does not	cause failure of graph reading.
 	 * 
 	 * @param strictParsing the strictParsing to set
+	 * @deprecated use {@link GraphRuntimeContext#setStrictGraphFactorization(boolean)} instead
 	 */
+	@Deprecated
 	public void setStrictParsing(boolean strictParsing) {
 		this.strictParsing = strictParsing;
 	}

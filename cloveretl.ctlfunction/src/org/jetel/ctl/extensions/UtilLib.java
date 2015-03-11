@@ -188,6 +188,10 @@ public class UtilLib extends TLFunctionLibrary {
     	GraphParameters parameters = refResolver.getGraphParameters();
 		
 		Map<String, String> map = new HashMap<String, String>();
+		//built-in graph parameters are taken first to be potentially overridden by user's graph parameters
+		for (GraphParameter param : parameters.getAllBuiltInParameters()) {
+			map.put(param.getName(), refResolver.getResolvedPropertyValue(param.getName(), RefResFlag.SPEC_CHARACTERS_OFF));
+		}
 		for (GraphParameter param : parameters.getAllGraphParameters()) {
 			map.put(param.getName(), refResolver.getResolvedPropertyValue(param.getName(), RefResFlag.SPEC_CHARACTERS_OFF));
 		}
