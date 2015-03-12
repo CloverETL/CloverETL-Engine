@@ -920,6 +920,9 @@ This software is licensed under the terms you may find in the file named "LICENS
 	<target name="reports-hudson-detail" depends="pmd,dist,runtests-with-testdb-coverage,coverage-html,coverage-xml,findbugs-xml,findbugs-xml-plugins,javadoc">
 	</target>
 	
+	<target name="reports-hudson-jacoco" depends="dist,runtests-jacoco">
+	</target>
+	
 	<target name="reports-hudson-optimalized"  depends="dist,runtests-with-testdb">
 	</target>
 		
@@ -1136,6 +1139,21 @@ This software is licensed under the terms you may find in the file named "LICENS
 		</ant>
 	</target>
 	
+	<target name="runtests-scenario-jacoco" if="cte.environment.config">
+		<echo message="Executing Clover Test Environment environment - jacoco"/>
+		<ant target="run-scenarios-with-engine-build-jacoco" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
+			<property name="environment.config" value="${cte.environment.config}"/>
+			<property name="scenarios" value="detail.ts" />
+			<property name="dir.engine.classes" value="${dir.package.classes}"/>
+			<property name="dir.engine.build" value="${dir.package}/lib"/>
+			<property name="dir.plugins" value="${dir.package}/plugins"/>
+			<property name="version.full" value="${version.full}"/>
+			<property name="hudson.link" value="${cte.hudson.link}"/>
+			<property name="logpath" value="${cte.logpath}"/>
+			<property name="testenv.etlenvironment" value="engine"/>
+		</ant>
+	</target>
+	
 	<!-- this target is here to ensure that plugins are built before the target runtests-engine is called -->
 	<target name="runtests-tests-reset">
 		<echo message="Executing Clover Test Environment environment - tests reset"/>
@@ -1194,6 +1212,13 @@ This software is licensed under the terms you may find in the file named "LICENS
 				<antcall target="clean-eval-license" />
 			</sequential>
 		</parallel>
+	</target>
+	
+	<target name="runtests-jacoco">
+		<antcall target="generate-eval-license" />
+		<antcall target="runtests-scenario-jacoco" />
+		<!-- <antcall target="runtests-coverage" /> temporarily disabled -->
+		<antcall target="clean-eval-license" />
 	</target>
 	
 	<target name="start-testdb">
