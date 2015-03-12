@@ -517,6 +517,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         setResultCode(Result.RUNNING); // set running result, so we know run() method was started
         
 		Context c = ContextProvider.registerNode(this);
+		Message<ErrorMsgBody> msg = null;
         try {
     		//store the current thread like a node executor
             setNodeThread(Thread.currentThread());
@@ -552,10 +553,10 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         	setResultCode(result);
 
     		if (result == Result.ERROR) {
-                Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
+                msg = Message.createErrorMessage(this,
                         new ErrorMsgBody(Result.ERROR.code(), 
                                 resultMessage != null ? resultMessage : Result.ERROR.message(), null));
-                sendMessage(msg);
+                return;
             }
             
             if (result == Result.FINISHED_OK) {
@@ -567,9 +568,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	            		//if the edge base of the input port is not shared due this component and some data records are still in input port, report an error
 	            		if (!inputPort.getEdge().isSharedEdgeBaseFromReader() && !inputPort.isEOF()) {
 	            			setResultCode(Result.ERROR);
-	            			Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
+	            			msg = Message.createErrorMessage(this,
 	            					new ErrorMsgBody(Result.ERROR.code(), Result.ERROR.message(), createNodeException(new JetelRuntimeException("Component has finished and input port " + inputPort.getInputPortNumber() + " still contains some unread records."))));
-	            			sendMessage(msg);
 	            			return;
 	            		}
 	            	}
@@ -580,20 +580,22 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         } catch (Exception ex) {
             setResultCode(Result.ERROR);
             resultException = createNodeException(ex);
-            Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
+            msg = Message.createErrorMessage(this,
                     new ErrorMsgBody(Result.ERROR.code(), Result.ERROR.message(), resultException));
-            sendMessage(msg);
         } catch (Throwable ex) {
         	logger.fatal(ex); 
             setResultCode(Result.ERROR);
             resultException = createNodeException(ex);
-            Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
+            msg = Message.createErrorMessage(this,
                     new ErrorMsgBody(Result.ERROR.code(), Result.ERROR.message(), resultException));
-            sendMessage(msg);
         } finally {
         	try {
         		//abort all still running child threads - CLO-5841
         		abortChildThreads();
+        		//send message if any
+        		if (msg != null) {
+        			sendMessage(msg);
+        		}
         	} catch (Exception e) {
         		logger.error(e);
         	}
@@ -680,9 +682,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 			if (childThreads != null) { //the child threads list can be null for already finished component
 				for (Thread childThread : childThreads) {
 					if (logger.isDebugEnabled()) {
-						logger.info("trying to interrupt child thread " + childThread);
+						logger.debug("trying to interrupt child thread " + childThread);
 					}
-		    		logger.info("!!! interrupt thread " + childThread);
 					childThread.interrupt();
 				}
 				//no more threads can be registered as child threads
