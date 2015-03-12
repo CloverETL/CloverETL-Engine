@@ -24,6 +24,7 @@ import org.jetel.component.RecordsFilter;
 import org.jetel.component.tree.writer.TreeFormatter;
 import org.jetel.component.tree.writer.model.design.ObjectNode;
 import org.jetel.component.tree.writer.model.runtime.WritableMapping.MappingWriteState;
+import org.jetel.component.tree.writer.util.WriteNullElement;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelException;
 
@@ -40,15 +41,15 @@ public class WritableObject extends WritableContainer {
 	private final boolean root;
 	protected final String dataType;
 
-	public WritableObject(WritableValue name, WritableValue prefix, boolean writeNull, boolean root, String dataType) {
+	public WritableObject(WritableValue name, WritableValue prefix, WriteNullElement writeNull, boolean root, String dataType) {
 		this(name, prefix, writeNull, null, ObjectNode.HIDE_DEFAULT, root, dataType);
 	}
 	
-	public WritableObject(WritableValue name, WritableValue prefix, boolean writeNull, boolean hidden, boolean root, String dataType) {
+	public WritableObject(WritableValue name, WritableValue prefix, WriteNullElement writeNull, boolean hidden, boolean root, String dataType) {
 		this(name, prefix, writeNull, null, hidden, root, dataType);
 	}
 
-	public WritableObject(WritableValue name, WritableValue prefix, boolean writeNull, PortBinding portBinding, boolean hidden, boolean root, String dataType) {
+	public WritableObject(WritableValue name, WritableValue prefix, WriteNullElement writeNull, PortBinding portBinding, boolean hidden, boolean root, String dataType) {
 		super(name, prefix, writeNull, portBinding);
 		this.hidden = hidden;
 		this.root = root;
@@ -112,6 +113,11 @@ public class WritableObject extends WritableContainer {
 		if (!super.isNodeEmpty(formatter, availableData)) {
 			return false;
 		}
+		if (writeNull == WriteNullElement.FALSE_EXCLUDE_IF_INNER_CONTENT_IS_NULL) {
+			return true; // CLO-4852
+		}
+		
+		// check attributes
 		for (Writable attribute : attributes) {
 			if (!attribute.isEmpty(formatter, availableData)) {
 				return false;

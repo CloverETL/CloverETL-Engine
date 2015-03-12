@@ -22,6 +22,7 @@ import java.io.IOException;
 
 import org.jetel.component.tree.writer.TreeFormatter;
 import org.jetel.component.tree.writer.model.runtime.WritableMapping.MappingWriteState;
+import org.jetel.component.tree.writer.util.WriteNullElement;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelException;
 
@@ -32,11 +33,11 @@ import org.jetel.exception.JetelException;
  */
 public class WritableCollection extends WritableContainer {
 	
-	public WritableCollection(WritableValue name, WritableValue prefix, boolean writeNull) {
+	public WritableCollection(WritableValue name, WritableValue prefix, WriteNullElement writeNull) {
 		super(name, prefix, writeNull, null);
 	}
 	
-	public WritableCollection(WritableValue name, WritableValue prefix, boolean writeNull, PortBinding portBinding) {
+	public WritableCollection(WritableValue name, WritableValue prefix, WriteNullElement writeNull, PortBinding portBinding) {
 		super(name, prefix, writeNull, portBinding);
 	}
 
