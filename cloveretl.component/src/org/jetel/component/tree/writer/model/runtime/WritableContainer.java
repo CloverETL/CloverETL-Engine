@@ -22,6 +22,7 @@ import java.io.IOException;
 
 import org.jetel.component.tree.writer.TreeFormatter;
 import org.jetel.component.tree.writer.model.runtime.WritableMapping.MappingWriteState;
+import org.jetel.component.tree.writer.util.WriteNullElement;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelException;
 
@@ -35,13 +36,13 @@ public abstract class WritableContainer extends BaseWritable {
 	private PortBinding portBinding;
 
 	protected final DynamicName name;
-	protected final boolean writeNull;
+	protected final WriteNullElement writeNull;
 
 	protected Writable[] children = new Writable[0];
 	protected WritableNamespace[] namespaces = new WritableNamespace[0];
 	protected WritableAttribute[] attributes = new WritableAttribute[0];
 
-	public WritableContainer(WritableValue name, WritableValue prefix, boolean writeNull, PortBinding portBinding) {
+	public WritableContainer(WritableValue name, WritableValue prefix, WriteNullElement writeNull, PortBinding portBinding) {
 		this.name = new DynamicName(name, prefix);
 		this.writeNull = writeNull;
 		
@@ -122,7 +123,7 @@ public abstract class WritableContainer extends BaseWritable {
 			throws JetelException, IOException;
 
 	protected boolean isNodeEmpty(TreeFormatter formatter, DataRecord[] availableData) {
-		if (writeNull) {
+		if (writeNull.isTrue()) {
 			return false;
 		}
 		for (Writable child : children) {

@@ -182,7 +182,8 @@ public class MappingCompiler extends AbstractVisitor {
 			WritableValue name = WritableValue.newInstance(new StaticValue(dataFieldWrapper.dataFieldMetadata.getName()));
 			WritableValue namespace = WritableValue.newInstance(new StaticValue(dataFieldWrapper.namespace));
 			WritableValue value = WritableValue.newInstance(new NodeValue[] { new DynamicValue(dataFieldWrapper.port, dataFieldWrapper.fieldIndex, dataFieldWrapper.dataFieldMetadata.getContainerType()) });
-			WritableObject subNode = new WritableObject(name, namespace, writeNullSet.contains(dataFieldWrapper), false, dataType);
+			WriteNullElement writeNullElementValue = WriteNullElement.fromString(String.valueOf(writeNullSet.contains(dataFieldWrapper)));
+			WritableObject subNode = new WritableObject(name, namespace, writeNullElementValue, false, dataType);
 			subNode.addChild(value);
 			currentParent.addChild(subNode);
 		}
@@ -318,7 +319,7 @@ public class MappingCompiler extends AbstractVisitor {
 
 		if (tag != null) {
 			PortBinding portBinding = compilePortBinding(element, tag);
-			writableNode = new WritableObject(name, namespace, isWriteNull(element), portBinding, isHidden, element.getParent() == null, dataType);
+			writableNode = new WritableObject(name, namespace, getWriteNull(element), portBinding, isHidden, element.getParent() == null, dataType);
 			if (currentParent != null) {
 				currentParent.addChild(writableNode);
 			}
@@ -327,7 +328,7 @@ public class MappingCompiler extends AbstractVisitor {
 				partitionElement = writableNode;
 			}
 		} else {
-			writableNode = new WritableObject(name, namespace, isWriteNull(element), isHidden, element.getParent() == null, dataType);
+			writableNode = new WritableObject(name, namespace, getWriteNull(element), isHidden, element.getParent() == null, dataType);
 			if (currentParent != null) {
 				currentParent.addChild(writableNode);
 			}
@@ -372,7 +373,7 @@ public class MappingCompiler extends AbstractVisitor {
 		Tag tag = tagMap.get(collection);
 		if (tag != null) {
 			PortBinding portBinding = compilePortBinding(collection, tag);
-			writableContainer = new WritableCollection(name, namespace, isWriteNull(collection), portBinding);
+			writableContainer = new WritableCollection(name, namespace, getWriteNull(collection), portBinding);
 			if (currentParent != null) {
 				currentParent.addChild(writableContainer);
 			}
@@ -384,7 +385,7 @@ public class MappingCompiler extends AbstractVisitor {
 			}
 
 		} else {
-			writableContainer = new WritableCollection(name, namespace, isWriteNull(collection));
+			writableContainer = new WritableCollection(name, namespace, getWriteNull(collection));
 			if (currentParent != null) {
 				currentParent.addChild(writableContainer);
 			}
@@ -406,13 +407,18 @@ public class MappingCompiler extends AbstractVisitor {
 		}
 	}
 
-	private boolean isWriteNull(ContainerNode container) {
+	private WriteNullElement getWriteNull(ContainerNode container) {
 		String writeNullString = container.getProperty(MappingProperty.WRITE_NULL_ELEMENT);
+		WriteNullElement writeNull = null;
 		if (writeNullString != null) {
-			return Boolean.parseBoolean(writeNullString);
+			writeNull = WriteNullElement.fromString(writeNullString);
+		}
+		
+		if (writeNull == null) {
+			writeNull = WriteNullElement.FALSE; // default is FALSE
 		}
 
-		return ObjectNode.WRITE_NULL_DEFAULT;
+		return writeNull;
 	}
 
 	private PortBinding compilePortBinding(ContainerNode container, Tag tag) throws ComponentNotReadyException {
