@@ -19,6 +19,8 @@
 package org.jetel.component;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Properties;
 
 import org.jetel.data.DataRecord;
@@ -26,6 +28,8 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Node;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.SandboxUrlUtils;
 
 /**
  * The only abstract implementation of {@link GenericTransform} interface.
@@ -80,6 +84,21 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	
 	protected void writeRecordToPort(int portIdx, DataRecord record) throws IOException, InterruptedException {
 		component.writeRecord(portIdx, record);
+	}
+	
+	/**
+	 * Transforms project-relative path to absolute path. Use this method to work with files in your project.
+	 * @param projectRelativePath e.g. "data-in/myInput.txt"
+	 * @return absolute path
+	 * @throws MalformedURLException
+	 */
+	protected String toValidPath(String projectRelativePath) throws MalformedURLException {
+		URL contextURL = component.getGraph().getRuntimeContext().getContextURL();
+		URL fileUrl = FileUtils.getFileURL(contextURL, projectRelativePath);
+		if (SandboxUrlUtils.isSandboxUrl(fileUrl)) {
+			fileUrl = SandboxUrlUtils.toLocalFileUrl(fileUrl);
+		}
+		return fileUrl.toExternalForm();
 	}
 	
 	/**
