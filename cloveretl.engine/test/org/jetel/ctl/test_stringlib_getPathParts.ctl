@@ -1,37 +1,38 @@
 string[] paths = [
+	null,
+	"",
 	"/foo/../bar/../baz/out5.txt",
-	"/cloveretl.test.scenarios/data-in/fileOperation/input.txt",
-	"/data/file.txt",
-	"C:\\a\\b\\c.txt",
-	"a/b/c.ab.jpg"
+	"/cloveretl.test.scenarios/./data-in/fileOperation/input.xlsx",
+	"/data/file.dat",
+	"C:/a/b/c.cdf",
+	"C:\\a\\b\\c.xml",
+	"a/b/c.ab.jpg",
+	"file:/C:/Users/krivanekm/workspace/Experiments/",
+	"sandbox://cloveretl.test.scenarios/",
+	"sandbox://cloveretl.test.scenarios/a/b/c.dbf",
+	"ftp://user:password@hostname.com/a/b",
+	"ftp://user:password@hostname.com/a/../b/c.gz",
+	"s3://user:password@hostname.com/a/b/c.Z",
+	"sftp://user:password@hostname.com/../a/b",
+	"sandbox://cloveretl.test.scenarios",
+	"sandbox://cloveretl.test.scenarios/file_with_query?and#hash.txt"
 ];
 
-string path_1;
-string path_2;
-string path_3;
-string path_full;
-string normalized_1;
-string ext_1;
-string ext_2;
-string name_1;
-string name_2;
-string name_noext_1;
-string name_noext_2;
-
+string[] extensions;
+string[] filenames;
+string[] filenamesWithoutExtension;
+string[] filepaths;
+string[] normalized;
 
 function integer transform() {
 
-	path_1=getPath(paths[0]);
-	path_2=getPath(paths[3]);
-	path_full=getFullPath(paths[3]);
-	normalized_1=normalizePath(paths[0]);
-	ext_1=getFileExtension(paths[0]);
-	ext_2=getFileExtension(paths[4]);
-	name_1=getFileName(paths[4]);
-	name_2=getFileName(paths[0]);
-	name_noext_1=getFileNameWithoutExtension(paths[4]);
-	name_noext_2=getFileNameWithoutExtension(paths[0]);
-	
+	for (integer i = 0; i < paths.length(); i++) {
+		extensions[i] = getFileExtension(paths[i]);
+		filenames[i] = getFileName(paths[i]);
+		filenamesWithoutExtension[i] = getFileNameWithoutExtension(paths[i]);
+		filepaths[i] = getFilePath(paths[i]);
+		normalized[i] = normalizePath(paths[i]);
+	}
 	
 	return 0;
 }
