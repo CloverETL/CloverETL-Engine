@@ -5497,12 +5497,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
-		try {
-			doCompile("function integer transform(){reverse(null); return 0;}","test_containerlib_reverse_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
+		doCompileExpectError(
+				"function integer transform(){reverse(null); return 0;}",
+				"test_containerlib_reverse_expect_error",
+				Arrays.asList("Function 'reverse' is ambiguous"));
 		try {
 			doCompile("function integer transform(){long[] longList = null; long[] reversed = longList.reverse(); return 0;}","test_containerlib_reverse_expect_error");
 			fail();
@@ -6792,8 +6790,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("trim_null", null);
 	}
 	
-	public void test_stringlib_reverse_chars() {
-		doCompile("test_stringlib_reverseChars");
+	public void test_stringlib_reverse() {
+		doCompile("test_stringlib_reverse");
 		check("reversed1", "hgfedcba");
 		check("reversed2", "a");
 		check("reversed3", null);

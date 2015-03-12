@@ -99,7 +99,7 @@ public class StringLib extends TLFunctionLibrary {
 			"getFileNameWithoutExtension".equals(functionName) ? new GetFileNameWithoutExtensionFunction() :  //$NON-NLS-1$
 			"getFilePath".equals(functionName) ? new GetFilePathFunction() :  //$NON-NLS-1$
 			"normalizePath".equals(functionName) ? new NormalizePathFunction() :  //$NON-NLS-1$
-			"reverseChars".equals(functionName) ? new ReverseCharsFunction() :  //$NON-NLS-1$
+			"reverse".equals(functionName) ? new ReverseFunction() :  //$NON-NLS-1$
     		"isEmpty".equals(functionName) ? new IsEmptyFunction() : //$NON-NLS-1$
 				null;
 
@@ -1736,7 +1736,7 @@ public class StringLib extends TLFunctionLibrary {
 	// REVERSE CHARS FUNCTION
 
 	@TLFunctionAnnotation("Reverses the order of characters in string.")
-	public static final String reverseChars(TLFunctionCallContext context, String value) {
+	public static final String reverse(TLFunctionCallContext context, String value) {
 		if (value != null) {
 			if (value.length()<2) return value;
 			StringBuilder newVal = new StringBuilder(value);
@@ -1747,7 +1747,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 
-	class ReverseCharsFunction implements TLFunctionPrototype {
+	class ReverseFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1756,7 +1756,7 @@ public class StringLib extends TLFunctionLibrary {
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String value = stack.popString();
-			stack.push(reverseChars(context, value));
+			stack.push(reverse(context, value));
 		}
 	}
 	
