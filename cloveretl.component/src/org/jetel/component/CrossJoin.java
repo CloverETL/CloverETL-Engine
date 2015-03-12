@@ -234,10 +234,8 @@ public class CrossJoin extends Node implements MetadataProvider {
 	}
 	
 	/**
-	 * Reads record from specified slave port and inserts it at the current position of the iterator.
-	 * Subsequent call to iterator.next() will return the newly read record. 
+	 * Reads record from specified slave port. 
 	 * @param slaveIdx
-	 * @param iter
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
