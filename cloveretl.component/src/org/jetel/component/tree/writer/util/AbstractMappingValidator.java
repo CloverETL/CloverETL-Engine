@@ -329,7 +329,7 @@ public abstract class AbstractMappingValidator extends AbstractVisitor {
 			return;
 		}
 		
-		checkCorrectBooleanValue(element, MappingProperty.WRITE_NULL_ELEMENT);
+		checkCorrectEnumValue(element, MappingProperty.WRITE_NULL_ELEMENT, WriteNullElement.getValues());
 		
 		List<Integer> addedPorts = null;
 		Relation recurringInfo = element.getRelation();
@@ -465,6 +465,16 @@ public abstract class AbstractMappingValidator extends AbstractVisitor {
 		}
 		if (!Boolean.TRUE.toString().equalsIgnoreCase(value) && !Boolean.FALSE.toString().equalsIgnoreCase(value)) {
 			addProblem(element, property, new MappingError("Attribute accepts only boolean type values (true/false)", Severity.ERROR));
+		}
+	}
+	
+	private void checkCorrectEnumValue(ObjectNode element, MappingProperty property, List<String> allowedValues) {
+		String value = element.getProperty(property);
+		if (StringUtils.isEmpty(value)) {
+			return; // empty value is ok
+		}
+		if (!allowedValues.contains(value)) {
+			addProblem(element, property, new MappingError("Attribute accepts only predefined enum values", Severity.ERROR));
 		}
 	}
 	

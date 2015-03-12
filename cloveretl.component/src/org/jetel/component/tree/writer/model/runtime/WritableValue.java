@@ -20,6 +20,7 @@ package org.jetel.component.tree.writer.model.runtime;
 
 import org.jetel.component.tree.writer.TreeFormatter;
 import org.jetel.component.tree.writer.model.runtime.WritableMapping.MappingWriteState;
+import org.jetel.component.tree.writer.util.WriteNullElement;
 import org.jetel.data.DataRecord;
 import org.jetel.data.ListDataField;
 import org.jetel.exception.JetelException;
@@ -34,7 +35,7 @@ import org.jetel.metadata.DataFieldContainerType;
  */
 public abstract class WritableValue extends BaseWritable {
 	
-	boolean writeNull;
+	WriteNullElement writeNull;
 	String dataType;
 	
 	public static WritableValue newInstance(NodeValue... value) {
@@ -147,12 +148,12 @@ public abstract class WritableValue extends BaseWritable {
 									attr.write(formatter, availableData);
 								}
 							}
-							formatter.getTreeWriter().writeLeaf(field.getField(i), dataType, false);
+							formatter.getTreeWriter().writeLeaf(field.getField(i), dataType, WriteNullElement.FALSE);
 							/*
 							 * last element will be closed by parent
 							 */
 							if (i < field.getValue().size() - 1) {
-								formatter.getTreeWriter().writeEndNode(currentName, false);
+								formatter.getTreeWriter().writeEndNode(currentName, WriteNullElement.FALSE);
 							}
 						}
 					}

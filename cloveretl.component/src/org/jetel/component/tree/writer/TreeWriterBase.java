@@ -18,6 +18,7 @@
  */
 package org.jetel.component.tree.writer;
 
+import org.jetel.component.tree.writer.util.WriteNullElement;
 import org.jetel.exception.JetelException;
 
 /**
@@ -29,7 +30,7 @@ import org.jetel.exception.JetelException;
 public abstract class TreeWriterBase implements TreeWriter {
 
 	@Override
-	public void writeLeaf(Object value, String dataType, boolean writeNullElement) throws JetelException {
+	public void writeLeaf(Object value, String dataType, WriteNullElement writeNullElement) throws JetelException {
 		writeLeaf(value, writeNullElement);
 	}
 }

@@ -18,6 +18,7 @@
  */
 package org.jetel.component.tree.writer;
 
+import org.jetel.component.tree.writer.util.WriteNullElement;
 import org.jetel.exception.JetelException;
 
 /**
@@ -30,6 +31,6 @@ public interface CollectionWriter {
 	
 	void writeStartCollection(char[] collectionName) throws JetelException;
 	
-	void writeEndCollection(char[] collectionName, boolean writeNullElement) throws JetelException;
+	void writeEndCollection(char[] collectionName, WriteNullElement writeNullElement) throws JetelException;
 
 }

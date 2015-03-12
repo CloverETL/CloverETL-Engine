@@ -732,6 +732,9 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 		@Override
 		public void processInput(Object input, DataRecord inputRecord) throws Exception {
+			//clear last failure, which can come from previous graph execution
+			failure = null;
+			
 			if (input instanceof ReadableByteChannel) {
 				/*
 				 * Convert input stream to XML

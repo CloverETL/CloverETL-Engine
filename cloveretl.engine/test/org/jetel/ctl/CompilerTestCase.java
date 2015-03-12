@@ -5497,12 +5497,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
-		try {
-			doCompile("function integer transform(){reverse(null); return 0;}","test_containerlib_reverse_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
+		doCompileExpectError(
+				"function integer transform(){reverse(null); return 0;}",
+				"test_containerlib_reverse_expect_error",
+				Arrays.asList("Function 'reverse' is ambiguous"));
 		try {
 			doCompile("function integer transform(){long[] longList = null; long[] reversed = longList.reverse(); return 0;}","test_containerlib_reverse_expect_error");
 			fail();
@@ -6792,8 +6790,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("trim_null", null);
 	}
 	
-	public void test_stringlib_reverse_chars() {
-		doCompile("test_stringlib_reverseChars");
+	public void test_stringlib_reverse() {
+		doCompile("test_stringlib_reverse");
 		check("reversed1", "hgfedcba");
 		check("reversed2", "a");
 		check("reversed3", null);
@@ -11462,16 +11460,140 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_stringlib_getPathParts() {
 		doCompile("test_stringlib_getPathParts");
 		
-		check("path_1","foo/../bar/../baz/");
-		check("path_2","a/b/");
-		check("path_full","C:/a/b/");
-		check("normalized_1","/baz/out5.txt");
-		check("ext_1","txt");
-		check("ext_2","jpg");
-		check("name_1","c.ab.jpg");
-		check("name_2","out5.txt");
-		check("name_noext_1","c.ab");
-		check("name_noext_2","out5");
+		{
+			List<String> expected = Arrays.asList(
+					null,
+					"",
+					"txt",
+					"xlsx",
+					"dat",
+					"cdf",
+					"xml",
+					"jpg",
+					"",
+					"",
+					"dbf",
+					"",
+					"gz",
+					"Z",
+					"",
+					"",
+					"txt"
+			);
+			List<?> extensions = (List<?>) getVariable("extensions");
+			assertEquals(expected.size(), extensions.size());
+			for (int i = 0; i < expected.size(); i++) {
+				assertEquals(String.valueOf(i), expected.get(i), extensions.get(i));
+			}
+		}
+		
+		{
+			List<String> expected = Arrays.asList(
+					null,
+					"",
+					"out5.txt",
+					"input.xlsx",
+					"file.dat",
+					"c.cdf",
+					"c.xml",
+					"c.ab.jpg",
+					"",
+					"",
+					"c.dbf",
+					"b",
+					"c.gz",
+					"c.Z",
+					"b",
+					"",
+					"file_with_query?and#hash.txt"
+			);
+			List<?> filenames = (List<?>) getVariable("filenames");
+			assertEquals(expected.size(), filenames.size());
+			for (int i = 0; i < expected.size(); i++) {
+				assertEquals(String.valueOf(i), expected.get(i), filenames.get(i));
+			}
+		}
+
+		{
+			List<String> expected = Arrays.asList(
+					null,
+					"",
+					"out5",
+					"input",
+					"file",
+					"c",
+					"c",
+					"c.ab",
+					"",
+					"",
+					"c",
+					"b",
+					"c",
+					"c",
+					"b",
+					"",
+					"file_with_query?and#hash"
+			);
+			List<?> filenamesWithoutExtension = (List<?>) getVariable("filenamesWithoutExtension");
+			assertEquals(expected.size(), filenamesWithoutExtension.size());
+			for (int i = 0; i < expected.size(); i++) {
+				assertEquals(String.valueOf(i), expected.get(i), filenamesWithoutExtension.get(i));
+			}
+		}
+
+		{
+			List<String> expected = Arrays.asList(
+					null,
+					"",
+					"/foo/../bar/../baz/",
+					"/cloveretl.test.scenarios/./data-in/fileOperation/",
+					"/data/",
+					"C:/a/b/",
+					"C:/a/b/",
+					"a/b/",
+					"file:/C:/Users/krivanekm/workspace/Experiments/",
+					"sandbox://cloveretl.test.scenarios/",
+					"sandbox://cloveretl.test.scenarios/a/b/",
+					"ftp://user:password@hostname.com/a/",
+					"ftp://user:password@hostname.com/a/../b/",
+					"s3://user:password@hostname.com/a/b/",
+					"sftp://user:password@hostname.com/../a/",
+					"sandbox://cloveretl.test.scenarios",
+					"sandbox://cloveretl.test.scenarios/"
+			);
+			List<?> filepaths = (List<?>) getVariable("filepaths");
+			assertEquals(expected.size(), filepaths.size());
+			for (int i = 0; i < expected.size(); i++) {
+				assertEquals(String.valueOf(i), expected.get(i), filepaths.get(i));
+			}
+		}
+
+		{
+			List<String> expected = Arrays.asList(
+					null,
+					"",
+					"/baz/out5.txt",
+					"/cloveretl.test.scenarios/data-in/fileOperation/input.xlsx",
+					"/data/file.dat",
+					"C:/a/b/c.cdf",
+					"C:/a/b/c.xml",
+					"a/b/c.ab.jpg",
+					"file:/C:/Users/krivanekm/workspace/Experiments/",
+					"sandbox://cloveretl.test.scenarios/",
+					"sandbox://cloveretl.test.scenarios/a/b/c.dbf",
+					"ftp://user:password@hostname.com/a/b",
+					"ftp://user:password@hostname.com/b/c.gz",
+					"s3://user:password@hostname.com/a/b/c.Z",
+					null,
+					"sandbox://cloveretl.test.scenarios",
+					"sandbox://cloveretl.test.scenarios/file_with_query?and#hash.txt"
+			);
+			List<?> normalized = (List<?>) getVariable("normalized");
+			assertEquals(expected.size(), normalized.size());
+			for (int i = 0; i < expected.size(); i++) {
+				assertEquals(String.valueOf(i), expected.get(i), normalized.get(i));
+			}
+		}
 	}
 
 	

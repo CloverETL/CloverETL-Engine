@@ -147,4 +147,7 @@ public class PortBinding {
 		this.iterator = iterator;
 	}
 
+	public RecordsFilter getRecordFilter() {
+		return recordFilter;
+	}
 }
