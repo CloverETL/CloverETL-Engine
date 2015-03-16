@@ -2258,7 +2258,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <singlePort name="0" required="true" />
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="Jms connection" modifiable="true" name="connection" nullable="false" required="true">
+	      <property category="basic" displayName="JMS connection" modifiable="true" name="connection" nullable="false" required="true">
 	        <singleType name="jmsConnection" />
 	      </property>
 	      <property category="basic" displayName="Processor code" modifiable="true" name="processorCode" nullable="true">
@@ -2301,7 +2301,7 @@ Sends all resulting records to all connected output ports.</description>
 	    </inputPorts>
 	    <outputPorts />
 	    <properties>
-	      <property category="basic" displayName="Jms connection" modifiable="true" name="connection" nullable="false" required="true">
+	      <property category="basic" displayName="JMS connection" modifiable="true" name="connection" nullable="false" required="true">
 	        <singleType name="jmsConnection" />
 	      </property>
 	      <property category="basic" displayName="Processor code" modifiable="true" name="processorCode" nullable="true">
