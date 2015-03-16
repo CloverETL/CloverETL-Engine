@@ -759,6 +759,12 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				
 				pipeTransformerFuture.get();
 				pipeParserFuture.get();
+				if (pipeTransformerFuture.getRunnable().getException() != null) {
+					throw new JetelRuntimeException("Pipe transformer failed.", pipeTransformerFuture.getRunnable().getException());
+				}
+				if (pipeParserFuture.getRunnable().getException() != null) {
+					throw new JetelRuntimeException("Pipe parser failed.", pipeParserFuture.getRunnable().getException());
+				}
 			} else {
 				throw new JetelRuntimeException("Could not read input " + input);
 			}
