@@ -8,7 +8,7 @@ Use Apache ANT to build binary - run with
 Before compilation, update "cloveretl.engine/build.properties" file
 to reflect your set-up.
 
-CloverETL requires Java version 1.6
+CloverETL requires Java version 1.7
 All other required third party libraries can be found in "cloveretl.engine/lib/" directory.
 
 These are:
