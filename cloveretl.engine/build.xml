@@ -924,7 +924,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 	<target name="reports-hudson-detail" depends="pmd,dist,runtests-with-testdb-coverage,coverage-html,coverage-xml,findbugs-xml,findbugs-xml-plugins,javadoc">
 	</target>
 	
-	<target name="reports-hudson-jacoco" depends="dist,runtests-detail">
+	<target name="reports-hudson-jacoco" depends="runtests-detail">
 	</target>
 	
 	<target name="reports-hudson-optimalized"  depends="dist,runtests-with-testdb">
