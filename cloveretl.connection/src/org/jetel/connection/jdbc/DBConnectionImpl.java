@@ -36,7 +36,6 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.AbstractDBConnection.SqlQueryOptimizeOption;
 import org.jetel.connection.jdbc.driver.JdbcDriverDescription;
 import org.jetel.connection.jdbc.driver.JdbcDriverFactory;
 import org.jetel.connection.jdbc.driver.JdbcDriverImpl;
@@ -293,7 +292,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
         try {
             if (StringUtils.isEmpty(getJndiName())) {
             	if (!getJdbcDriver().getDriver().acceptsURL(getDbUrl())) {
-            		throw new ComponentNotReadyException("Unacceptable connection url: '" + getDbUrl() + "'");
+            		throw new ComponentNotReadyException("Unacceptable connection URL: '" + getDbUrl() + "'");
             	}
             }
         } catch (SQLException e) {
