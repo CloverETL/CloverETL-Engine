@@ -971,6 +971,125 @@ public class FileUtilsTest extends CloverTestCase {
 				"file:/home/krivanekm/file.doc", // normalized
 		},
 		
+		new String[] {
+				"/path/filename.txt", // input
+				"/path/", // path
+				"filename.txt", // filename
+				"filename", // basename
+				"txt", // extension
+				"/path/filename.txt", // normalized
+		},
+		
+		new String[] {
+				"/path/filename?.txt", // input
+				"/path/", // path
+				"filename?.txt", // filename
+				"filename?", // basename
+				"txt", // extension
+				"/path/filename?.txt", // normalized
+		},
+		
+		new String[] {
+				"/path/./*", // input
+				"/path/./", // path
+				"*", // filename
+				"*", // basename
+				"", // extension
+				"/path/*", // normalized
+		},
+		
+		new String[] {
+				"tar:(/path/../file.tar)#innerfolder/../filename.txt", // input
+				"tar:(/path/../file.tar)#innerfolder/../", // path
+				"filename.txt", // filename
+				"filename", // basename
+				"txt", // extension
+				"tar:(/file.tar)#filename.txt", // normalized
+		},
+
+		new String[] {
+				"zip:(zip:(/path\\..\\name?.zip)#innerfolder/./file.zip)#innermostfolder?\\../filename*.html", // input
+				"zip:(zip:(/path/../name?.zip)#innerfolder/./file.zip)#innermostfolder?/../", // path
+				"filename*.html", // filename
+				"filename*", // basename
+				"html", // extension
+				"zip:(zip:(/name?.zip)#innerfolder/file.zip)#filename*.html", // normalized
+		},
+		
+		new String[] {
+				"http://access_key_id:secret_access_key@bucketname.s3.amazonaws.com/file%20name*.out", // input
+				"http://access_key_id:secret_access_key@bucketname.s3.amazonaws.com/", // path
+				"file%20name*.out", // filename
+				"file%20name*", // basename
+				"out", // extension
+				"http://access_key_id:secret_access_key@bucketname.s3.amazonaws.com/file%20name*.out", // normalized
+		},
+		
+		new String[] {
+				"hdfs://CONN_ID/path/file#name.dat.tmp", // input
+				"hdfs://CONN_ID/path/", // path
+				"file#name.dat.tmp", // filename
+				"file#name.dat", // basename
+				"tmp", // extension
+				"hdfs://CONN_ID/path/file#name.dat.tmp", // normalized
+		},
+		
+		new String[] {
+				"smb://domain%3Buser:pa55word@server/path/file name.txt", // input
+				"smb://domain%3Buser:pa55word@server/path/", // path
+				"file name.txt", // filename
+				"file name", // basename
+				"txt", // extension
+				"smb://domain%3Buser:pa55word@server/path/file name.txt", // normalized
+		},
+		
+		new String[] {
+				"sftp:(proxy://66.11.122.193:443)//user:password@server/pa@th/.././file$.dat", // input
+				"sftp:(proxy://66.11.122.193:443)//user:password@server/pa@th/.././", // path
+				"file$.dat", // filename
+				"file$", // basename
+				"dat", // extension
+				"sftp:(proxy://66.11.122.193:443)//user:password@server/file$.dat", // normalized
+		},
+		
+		new String[] {
+				"sandbox://data/path to/file/.project", // input
+				"sandbox://data/path to/file/", // path
+				".project", // filename
+				"", // basename
+				"project", // extension
+				"sandbox://data/path to/file/.project", // normalized
+		},
+		
+		new String[] {
+				"sftp:(proxy://66.11.122.193:443)//user:password@server/.././file$.dat", // input
+				"sftp:(proxy://66.11.122.193:443)//user:password@server/.././", // path
+				"file$.dat", // filename
+				"file$", // basename
+				"dat", // extension
+				null, // normalized
+		},
+		
+		new String[] {
+				"file:///home/user1/my.documents/log", // input
+				"file:///home/user1/my.documents/", // path
+				"log", // filename
+				"log", // basename
+				"", // extension
+				"file:///home/user1/my.documents/log", // normalized
+		},
+		
+		new String[] {
+				"zip:(C:\\Data\\..\\archive.zip)#inner1/../inner2/./data.txt", // input
+				"zip:(C:/Data/../archive.zip)#inner1/../inner2/./", // path
+				"data.txt", // filename
+				"data", // basename
+				"txt", // extension
+				"zip:(C:/archive.zip)#inner2/data.txt", // normalized
+		},
+		
+		
+		
 	};
 
 
