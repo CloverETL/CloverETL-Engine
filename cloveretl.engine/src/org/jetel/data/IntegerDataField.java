@@ -34,6 +34,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.BinaryFormat;
 import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.HashCodeUtil;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -51,6 +52,7 @@ import org.jetel.util.string.StringUtils;
  * @created     January 26, 2003
  * @see         org.jetel.metadata.DataFieldMetadata
  */
+@CloverPublicAPI
 public class IntegerDataField extends DataFieldImpl implements Numeric, Comparable<Object> {
 
 	private static final long serialVersionUID = 3959941332738498948L;

@@ -39,6 +39,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.StringUtils;
 
@@ -55,6 +56,7 @@ import org.jetel.util.string.StringUtils;
  * @since 11/28/06  
  * @see javax.jms.TextMessage
  */
+@CloverPublicAPI
 public class JmsMsg2DataRecordProperties extends JmsMsg2DataRecordBase {
 	private static final String DEFAULT_BODYFIELD_VALUE = "bodyField";
 	private final String PROPNAME_BODYFIELD = "bodyField";

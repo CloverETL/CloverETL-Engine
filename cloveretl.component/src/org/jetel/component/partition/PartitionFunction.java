@@ -27,6 +27,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -40,6 +41,7 @@ import org.jetel.util.bytes.CloverBuffer;
  *
  * @see org.jetel.component.Partition
  */
+@CloverPublicAPI
 public interface PartitionFunction extends Transform {
 
 	/**

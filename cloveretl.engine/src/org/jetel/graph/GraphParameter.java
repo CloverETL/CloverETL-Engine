@@ -37,6 +37,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.parameter.GraphParameterAttributeNode;
 import org.jetel.graph.parameter.GraphParameterDynamicValueProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.SubgraphUtils;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
@@ -55,6 +56,7 @@ import org.w3c.dom.NamedNodeMap;
  */
 @XmlRootElement(name = "GraphParameter")
 @XmlType(propOrder = { "name", "value", "secure", "componentReference", "attrs", "singleType" })
+@CloverPublicAPI
 public class GraphParameter {
 
 	public static final String HIDDEN_SECURE_PARAMETER = "*****";

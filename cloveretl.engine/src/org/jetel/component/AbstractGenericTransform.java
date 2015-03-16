@@ -28,6 +28,7 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Node;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.SandboxUrlUtils;
 
@@ -41,6 +42,7 @@ import org.jetel.util.file.SandboxUrlUtils;
  *
  * @created 20. 11. 2014
  */
+@CloverPublicAPI
 public abstract class AbstractGenericTransform extends AbstractDataTransform implements GenericTransform {
 	
 	/** Custom component properties are saved here */

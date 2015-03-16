@@ -25,6 +25,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 
 /**
  * <p>Represents an interface of a rollup transform which processes groups of data records. Each group of data records
@@ -73,6 +74,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @version 17th June 2010
  * @since 24th February 2009
  */
+@CloverPublicAPI
 public interface RecordRollup extends Transform {
 
     /** the return value of the transform() method specifying that the record will be sent to all the output ports */

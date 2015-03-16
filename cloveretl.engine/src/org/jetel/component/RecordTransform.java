@@ -24,6 +24,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 
 /**
  * Interface used by all components performing some sort of reformat operation - Reformat, Join, etc.<br>
@@ -44,6 +45,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @version 17th June 2010
  * @created 4th February 2003
  */
+@CloverPublicAPI
 public interface RecordTransform extends Transform {
 
 	/** the return value of the transform() method specifying that the record will be sent to all the output ports */
