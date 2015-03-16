@@ -2402,7 +2402,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Generator" modifiable="true" name="generate" nullable="true">
 	        <singleType name="transformGenerator" input="key" />
 	      </property>
-	      <property category="basic" displayName="Generator URL" modifiable="true" name="generateURL" nullable="true">
+	      <property category="basic" displayName="Generator URL" modifiable="true" name="generateURL" nullable="true" delegate="generate">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Generator class" modifiable="true" name="generateClass" nullable="true">
