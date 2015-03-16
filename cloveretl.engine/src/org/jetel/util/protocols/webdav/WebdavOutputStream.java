@@ -93,6 +93,7 @@ public class WebdavOutputStream extends OutputStream {
 			this.username = username;
 			this.password = password;
 			this.proxyString = proxyString;
+			this.setName(Thread.currentThread().getName() + "_SardinePutThread");
 		}
 		
 		public Throwable getError() {
