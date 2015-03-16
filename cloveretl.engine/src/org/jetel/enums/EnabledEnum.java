@@ -19,6 +19,7 @@
 package org.jetel.enums;
 
 
+
 /**
  * This enum expresses state of component - enabled, disabled or pass through component state.
  *  

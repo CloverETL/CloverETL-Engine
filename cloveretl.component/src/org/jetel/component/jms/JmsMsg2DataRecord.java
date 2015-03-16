@@ -27,6 +27,7 @@ import org.jetel.component.Transform;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 
 /**
  * Interface to be implemented by message processors for component JmsReader.
@@ -35,6 +36,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @see org.jetel.component.JmsReader
  *
  */
+@CloverPublicAPI
 public interface JmsMsg2DataRecord extends Transform {
 
 	/**

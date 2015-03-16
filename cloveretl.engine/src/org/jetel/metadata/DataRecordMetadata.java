@@ -53,6 +53,7 @@ import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.TimeZoneProvider;
 import org.jetel.util.primitive.BitArray;
@@ -77,6 +78,7 @@ import org.jetel.util.string.StringUtils;
  * @see org.jetel.data.DataField
  * 
  */
+@CloverPublicAPI
 public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetadata>, IGraphElement {
 
 	private static final long serialVersionUID = 7032218607804024730L;

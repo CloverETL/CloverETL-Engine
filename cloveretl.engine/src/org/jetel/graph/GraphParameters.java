@@ -35,6 +35,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.CompareUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
@@ -49,6 +50,7 @@ import org.jetel.util.string.StringUtils;
  * @created 2.8.2013
  */
 @XmlRootElement(name = "GraphParameters")
+@CloverPublicAPI
 public class GraphParameters {
 
 	/** Wrapped properties container. Access must be synchronized to avoid ConcurrentModificationEx. 

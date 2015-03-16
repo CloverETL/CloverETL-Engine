@@ -18,6 +18,7 @@
  */
 package org.jetel.metadata;
 
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -26,6 +27,7 @@ import org.jetel.util.string.StringUtils;
  *
  * @created 11.1.2012
  */
+@CloverPublicAPI
 public enum DataFieldFormatType {
 	JAVA("java", "Default system date/time/number format"),
 	JODA("joda", "Joda date/time format"),

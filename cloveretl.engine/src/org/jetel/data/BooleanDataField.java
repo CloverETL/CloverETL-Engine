@@ -22,6 +22,7 @@ import java.nio.BufferOverflowException;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.HashCodeUtil;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.BooleanFormatter;
@@ -41,6 +42,7 @@ import org.jetel.util.string.Compare;
  * @created Nov 20, 2007
  * @since Nov 20, 2007
  */
+@CloverPublicAPI
 public class BooleanDataField extends DataFieldImpl implements Comparable<Object> {
 
 	private static final long serialVersionUID = 7318127447273839212L;

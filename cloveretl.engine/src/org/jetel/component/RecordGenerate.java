@@ -24,6 +24,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 
 /**
  * Interface used by all components performing some sort of generate operation - ExtRecordGenerator, Join, etc.<br>
@@ -44,6 +45,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @version 17th June 2010
  * @created 4th February 2009
  */
+@CloverPublicAPI
 public interface RecordGenerate extends Transform {
 
 	/** the return value of the generate() method specifying that the record will be sent to all the output ports */

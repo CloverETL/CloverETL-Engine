@@ -19,6 +19,7 @@
 package org.jetel.metadata;
 
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.util.CloverPublicAPI;
 
 
 /**
@@ -30,6 +31,7 @@ import org.jetel.exception.JetelRuntimeException;
  *
  * @created 16 Jan 2012
  */
+@CloverPublicAPI
 public enum DataRecordParsingType {
 
 	/**

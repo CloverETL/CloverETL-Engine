@@ -53,6 +53,7 @@ import org.jetel.graph.runtime.tracker.ComplexComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.PrimitiveComponentTokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.ClusterUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -68,6 +69,7 @@ import org.w3c.dom.Element;
  *@since       April 2, 2002
  *@see         org.jetel.component
  */
+@CloverPublicAPI
 public abstract class Node extends GraphElement implements Runnable, CloverWorkerListener {
 
     private static final Log logger = LogFactory.getLog(Node.class);

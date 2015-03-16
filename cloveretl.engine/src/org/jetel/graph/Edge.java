@@ -35,6 +35,7 @@ import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.MetadataFactory;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.EdgeDebugUtils;
 import org.jetel.util.ReferenceState;
 import org.jetel.util.ReferenceUtils;
@@ -52,6 +53,7 @@ import org.jetel.util.bytes.CloverBuffer;
  * @see        org.jetel.graph.OutputPort
  * @see EdgeFactory
  */
+@CloverPublicAPI
 public class Edge extends GraphElement implements InputPort, OutputPort, InputPortDirect, OutputPortDirect {
 
     private static Log logger = LogFactory.getLog(Edge.class);

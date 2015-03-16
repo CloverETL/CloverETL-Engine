@@ -16,31 +16,23 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.component;
+package org.jetel.util;
 
-import java.util.Properties;
-
-import org.jetel.util.CloverPublicAPI;
-
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Transformation for GenericComponent.
- * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 21. 11. 2014
+ * @created 12. 3. 2015
  */
-@CloverPublicAPI
-public interface GenericTransform extends Transform {
-	
-	public void init(Properties properties);
-	
-	//this should probably be renamed to transform() everywhere
-	public void execute();
-	
-	public void executeOnError(Exception e);
-	
-	public void free();
-	
+@Documented
+@Retention(value = RetentionPolicy.SOURCE)
+@Target(value = { ElementType.TYPE }) 
+public @interface CloverPublicAPI {
+
 }
