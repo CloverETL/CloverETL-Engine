@@ -85,6 +85,7 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.CloverWorker;
+import org.jetel.graph.runtime.FutureOfRunnable;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
@@ -715,10 +716,6 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		MappingContext rootContext;
 
 		private String charset;
-		/*
-		 * Pointer to exception thrown in different thread
-		 */
-		volatile Throwable failure;
 
 		public StreamConvertingXPathProcessor(TreeReaderParserProvider parserProvider, XPathPushParser pushParser,
 				MappingContext rootContext, String charset) {
@@ -732,9 +729,6 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 		@Override
 		public void processInput(Object input, DataRecord inputRecord) throws Exception {
-			//clear last failure, which can come from previous graph execution
-			failure = null;
-			
 			if (input instanceof ReadableByteChannel) {
 				/*
 				 * Convert input stream to XML
@@ -760,51 +754,15 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 					throw new JetelRuntimeException("Failed to instantiate transformer", e);
 				}
 
-				Thread transformingThread = pipeTransformer.startWorker();
-				Thread parsingThread = pipeParser.startWorker();
-
-				manageThread(transformingThread);
-				manageThread(parsingThread);
+				FutureOfRunnable<PipeTransformer> pipeTransformerFuture = CloverWorker.startWorker(pipeTransformer);
+				FutureOfRunnable<PipeParser> pipeParserFuture = CloverWorker.startWorker(pipeParser);
+				
+				pipeTransformerFuture.get();
+				pipeParserFuture.get();
 			} else {
 				throw new JetelRuntimeException("Could not read input " + input);
 			}
 
-		}
-
-		private void manageThread(Thread thread) throws Exception {
-			while (thread.getState() != Thread.State.TERMINATED) {
-				if (killIt) {
-					thread.interrupt();
-					break;
-				}
-				
-				checkThrownException();
-
-				killIt = !runIt;
-				try {
-					thread.join(1000);
-				} catch (InterruptedException e) {
-					LOG.debug(getId() + " thread interrupted, it will interrupt child threads", e);
-					killIt = true;
-				}
-			}
-			
-			checkThrownException();
-		}
-		
-		private void checkThrownException() throws Exception {
-			try {
-				if (failure != null) {
-					if (failure instanceof AbortParsingException) {
-						throw (AbortParsingException) failure;
-					} else {
-						throw new Exception(failure);
-					}
-				}
-			} finally {
-				// clear exception for case this instance would be re-used 
-				failure = null;
-			}
 		}
 
 		private class PipeTransformer extends CloverWorker {
@@ -827,14 +785,10 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			}
 
 			@Override
-			public void work() {
+			public void work() throws Exception {
 				javax.xml.transform.Result result = new StreamResult(pipedWriter);
-				try {
-					transformer.transform(new SAXSource(treeXmlReader, source), result);
-					pipedWriter.close();
-				} catch (Throwable t) {
-					StreamConvertingXPathProcessor.this.failure = t;
-				}
+				transformer.transform(new SAXSource(treeXmlReader, source), result);
+				pipedWriter.close();
 			}
 
 			public void setInputOutput(Writer pipedWriter, InputSource source) {
@@ -861,12 +815,8 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			}
 
 			@Override
-			public void work() throws InterruptedException {
-				try {
-					pushParser.parse(rootContext, new SAXSource(new InputSource(pipedReader)), inputRecord);
-				} catch (Throwable t) {
-					StreamConvertingXPathProcessor.this.failure = t;
-				}
+			public void work() throws InterruptedException, AbortParsingException {
+				pushParser.parse(rootContext, new SAXSource(new InputSource(pipedReader)), inputRecord);
 			}
 			
 			private void setInput(Reader pipedReader) {
