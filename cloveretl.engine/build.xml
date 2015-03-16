@@ -1143,7 +1143,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 		<echo message="Executing Clover Test Environment environment - jacoco"/>
 		<ant target="run-scenarios-with-engine-build-jacoco" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
 			<property name="environment.config" value="${cte.environment.config}"/>
-			<property name="scenarios" value="detail.ts" />
+			<property name="scenarios" value="after-commit.ts" />
 			<property name="dir.engine.classes" value="${dir.package.classes}"/>
 			<property name="dir.engine.build" value="${dir.package}/lib"/>
 			<property name="dir.plugins" value="${dir.package}/plugins"/>
