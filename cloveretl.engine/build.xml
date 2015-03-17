@@ -1067,8 +1067,8 @@ This software is licensed under the terms you may find in the file named "LICENS
 	<target name="runtests-engine-jacoco" depends="init,compile,compile-tests" description="Runs Clover engine JUnit tests and JaCoCo">
 		<mkdir dir="${dir.testsresult}"/>
 		<echo message="Running all tests from ${dir.src.test} includes ${test.include} excludes ${test.exclude}"/>
-		<echo message="Run JaCoCo: ${run.coverage}"/>
-		<jacoco:coverage enabled="run.coverage">
+		<echo message="Running coverage (JaCoCo): ${run.coverage}"/>
+		<jacoco:coverage enabled="run.coverage" destfile="${basedir}/../jacoco-junit.exec">
 			<junit 
 						showoutput="true"
 						haltonerror="false" 
