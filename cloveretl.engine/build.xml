@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="us-ascii"?>
-<project name="cloveretl.engine" default="build" basedir=".">
+<project name="cloveretl.engine" default="build" basedir="." xmlns:jacoco="antlib:org.jacoco.ant">
 
 	<property environment="env"/>
 	<property name="script.name" value="cloveretl.engine\build.xml"/>
@@ -26,6 +26,10 @@
 				<include name="*.zip"/>
 			</fileset>
 		</classpath>
+	</taskdef>
+	
+	<taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
+		<classpath path="${dir.tools}/jacocoant.jar"/>
 	</taskdef>
 
 	<!-- ProGuard task definition -->
@@ -71,6 +75,8 @@
 	<property name="dir.pmdreport" value="${dir.build}/pmdreport" />
 	<property name="pmd.ruleset.file" value="${dir.build-scripts}/pmd-ruleset.xml" />
 	<property name="dir.licenses" value="${basedir}/licenses" />
+	<property name="run.coverage" value="false" />
+	<property name="jacoco.exec.file" location="${basedir}/jacoco.exec"/>
 	
 	<!--load external properties-->
 	<property file="build-local.properties"/>
@@ -920,7 +926,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 	<target name="reports-hudson-detail" depends="pmd,dist,runtests-with-testdb-coverage,coverage-html,coverage-xml,findbugs-xml,findbugs-xml-plugins,javadoc">
 	</target>
 	
-	<target name="reports-hudson-jacoco" depends="dist,runtests-jacoco">
+	<target name="reports-hudson-jacoco" depends="dist,runtests-detail">
 	</target>
 	
 	<target name="reports-hudson-optimalized"  depends="dist,runtests-with-testdb">
@@ -1006,6 +1012,12 @@ This software is licensed under the terms you may find in the file named "LICENS
 		<antcall target="runtests-plugins" inheritall="true" inheritrefs="true"/>
 	</target>
 	
+	<target name="runtests-jacoco" depends="" description="Runs engine and plugins JUnit tests with JaCoCo">
+		<property name="test.cloveretl.plugins" value="${dir.package}/plugins"/>
+		<antcall target="runtests-engine-jacoco" inheritall="true" inheritrefs="true"/>
+		<!--<antcall target="runtests-plugins-jacoco" inheritall="true" inheritrefs="true"/>-->
+	</target>
+	
 	<target name="runtests-coverage" depends="coverage-instrument" description="Runs engine and plugins JUnit tests with test coverage report">
 		<property name="test.cloveretl.plugins" value="${dir.coverage.plugins}/plugins"/>
 		<property name="dir.test.additional.classpath" value="${dir.coverage.bin}"/>
@@ -1051,6 +1063,47 @@ This software is licensed under the terms you may find in the file named "LICENS
 			<formatter type="plain"/>
 			<formatter classname="eu.javlin.ant.junit.ExtXMLJUnitResultFormatter" extension=".xml"/>
 		</junit>
+	</target>
+	
+	<target name="runtests-engine-jacoco" depends="init,compile,compile-tests" description="Runs Clover engine JUnit tests and JaCoCo">
+		<mkdir dir="${dir.testsresult}"/>
+		<echo message="Running all tests from ${dir.src.test} includes ${test.include} excludes ${test.exclude}"/>
+		<echo message="Running coverage (JaCoCo): ${run.coverage}"/>
+		<jacoco:coverage destfile="${jacoco.exec.file}">
+			<junit 
+						showoutput="true"
+						haltonerror="false" 
+						haltonfailure="false" 
+						printsummary="true"
+						fork="true"
+						forkmode="once" 
+						>
+				<sysproperty key="file.encoding" value="UTF-8" />
+				<jvmarg value="-Xmx2048m"/>
+				<jvmarg value="-XX:MaxPermSize=512m"/>
+				<jvmarg value="-Dderby.system.home=${dir.examples}/ExtExamples"/>
+				<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
+				<classpath>
+					<pathelement path="${dir.classestest}"/>
+					<pathelement path="${dir.test.additional.classpath}"/>
+					<pathelement path="${dir.package.classes}"/>
+					<fileset dir="${dir.lib}">
+						<include name="*.jar"/>
+					</fileset>
+					<pathelement path="${dir.examples}/ExtExamples/lib/derby/lib/derby.jar"/>
+					<pathelement path="${dir.tools}/junit-4.11.jar"/>
+					<pathelement path="${dir.tools}/hamcrest-core-1.3.jar"/>
+					<pathelement path="${dir.tools}/junit.xml.formatter.jar"/>
+				</classpath>
+				<batchtest todir="${dir.testsresult}">
+					<fileset dir="${dir.src.test}" excludes="${test.exclude}">
+						<include name="${test.include}"/>
+					</fileset>
+				</batchtest>
+				<formatter type="plain"/>
+				<formatter classname="eu.javlin.ant.junit.ExtXMLJUnitResultFormatter" extension=".xml"/>
+			</junit>
+		</jacoco:coverage>
 	</target>
 	
 	<target name="runtests-plugins" depends="compile-tests,build-plugins" unless="runtests-plugins-dontrun">
@@ -1214,10 +1267,10 @@ This software is licensed under the terms you may find in the file named "LICENS
 		</parallel>
 	</target>
 	
-	<target name="runtests-jacoco">
+	<target name="runtests-detail">
 		<antcall target="generate-eval-license" />
 		<antcall target="runtests-scenario-jacoco" />
-		<!-- <antcall target="runtests-coverage" /> temporarily disabled -->
+		<antcall target="runtests-jacoco" />
 		<antcall target="clean-eval-license" />
 	</target>
 	

@@ -57,6 +57,8 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
@@ -226,7 +228,9 @@ import org.w3c.dom.Element;
  * @created     22. July 2003
  * @see         org.jetel.database.AnalyzeDB
  */
-public class DBOutputTable extends Node {
+public class DBOutputTable extends Node implements MetadataProvider {
+	
+	private final static String OUT_METADATA_ID_SUFFIX = "_outMetadata";
 	
 	public static final String XML_MAXERRORS_ATRIBUTE = "maxErrors";
 	public static final String XML_BATCHMODE_ATTRIBUTE = "batchMode";
@@ -1437,6 +1441,30 @@ public class DBOutputTable extends Node {
 			super(element, ex);
 		}
 		
+	}
+
+	@Override
+	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		return null;
+	}
+
+	@Override
+	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		if(portIndex == 0){
+			InputPort inputPort = getInputPort(0);
+			if(inputPort != null){
+				MVMetadata inputMetadata = metadataPropagationResolver.findMetadata(inputPort.getEdge());
+				if (inputMetadata != null) {
+					DataRecordMetadata recordMetadata = inputMetadata.getModel().duplicate();
+					recordMetadata.addField(new DataFieldMetadata("ErrCode", inputMetadata.getModel().getFieldDelimiter()));
+					recordMetadata.addField(new DataFieldMetadata("ErrText", inputMetadata.getModel().getRecordDelimiter()));
+					recordMetadata.getRecordProperties().remove(new String("previewAttachment"));
+					MVMetadata metadata = metadataPropagationResolver.createMVMetadata(recordMetadata, this, OUT_METADATA_ID_SUFFIX);
+					return metadata;
+				}
+			}
+		}
+		return null;
 	}
 	
 	

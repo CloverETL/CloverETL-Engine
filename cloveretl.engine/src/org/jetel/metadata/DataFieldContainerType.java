@@ -18,6 +18,7 @@
  */
 package org.jetel.metadata;
 
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -28,6 +29,7 @@ import org.jetel.util.string.StringUtils;
  *
  * @created 17 Jan 2012
  */
+@CloverPublicAPI
 public enum DataFieldContainerType {
 
 	SINGLE("", (byte) 0), LIST("list", (byte) 1), MAP("map", (byte) 2);

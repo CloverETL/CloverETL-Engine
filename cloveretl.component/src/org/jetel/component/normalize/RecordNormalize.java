@@ -25,6 +25,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 
 /**
  * Interface to be implemented by classes implementing normalization, i.e. decomposition of one input record to several
@@ -38,6 +39,7 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  * @see org.jetel.component.Normalizer
  */
+@CloverPublicAPI
 public interface RecordNormalize extends Transform {
 	
 	/** the return value of the transform() method specifying that the record will be sent to output port */

@@ -19,6 +19,7 @@
 package org.jetel.data;
 
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -29,6 +30,7 @@ import org.jetel.util.bytes.CloverBuffer;
  *
  * @created 27 Apr 2012
  */
+@CloverPublicAPI
 public final class DataRecordFactory {
 
     /**

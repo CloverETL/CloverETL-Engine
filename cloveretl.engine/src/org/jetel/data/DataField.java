@@ -26,6 +26,7 @@ import java.nio.charset.CharsetEncoder;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -37,6 +38,7 @@ import org.jetel.util.bytes.CloverBuffer;
  * @since       March 26, 2002
  * @see         OtherClasses
  */
+@CloverPublicAPI
 public abstract class DataField implements Serializable, Comparable<Object> {
 
 	private static final long serialVersionUID = -6730581502799121071L;

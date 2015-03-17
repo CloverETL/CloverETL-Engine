@@ -95,6 +95,7 @@ import org.jetel.util.protocols.sftp.SFTPConnection;
 import org.jetel.util.protocols.sftp.SFTPStreamHandler;
 import org.jetel.util.protocols.webdav.WebdavOutputStream;
 import org.jetel.util.stream.StreamUtils;
+import org.jetel.util.stream.TZipOutputStream;
 import org.jetel.util.string.StringUtils;
 
 import com.jcraft.jsch.ChannelSftp;
@@ -1547,7 +1548,8 @@ public class FileUtils {
 			if (appendData) {
 				throw new IOException("Appending to remote archives is not supported");
 			}
-			de.schlichtherle.truezip.zip.ZipOutputStream zout = new de.schlichtherle.truezip.zip.ZipOutputStream(os);
+			// CLO-2572: Use TZipOutputStream to prevent active deadlock on SMB and WebDAV
+			TZipOutputStream zout = new TZipOutputStream(os);
 			if (compressLevel != -1) {
 				zout.setLevel(compressLevel);
 			}
