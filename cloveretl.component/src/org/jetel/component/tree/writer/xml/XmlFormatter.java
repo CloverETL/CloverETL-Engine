@@ -68,12 +68,18 @@ public class XmlFormatter extends TreeFormatter {
 	public void setDataTarget(Object outputDataTarget) throws IOException {
 		close();
 
-		if (outputDataTarget instanceof WritableByteChannel) {
+		if (outputDataTarget instanceof Object[]) {
+			Object[] output = (Object[]) outputDataTarget;
+			outStream = (OutputStream) output[2];
+		} else if (outputDataTarget instanceof WritableByteChannel) {
 			outStream = Channels.newOutputStream((WritableByteChannel) outputDataTarget);
-			writer = new XmlWriter(outStream, charset, version, omitNewLines);
+		} else if (outputDataTarget instanceof OutputStream) {
+			outStream = (OutputStream) outputDataTarget;
 		} else {
 			throw new IllegalArgumentException("parameter " + outputDataTarget + " is not instance of WritableByteChannel");
 		}
+		
+		writer = new XmlWriter(outStream, charset, version, omitNewLines);
 	}
 
 	@Override
