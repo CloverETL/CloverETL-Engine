@@ -35,7 +35,7 @@ import org.jetel.util.string.UnicodeBlanks;
  */
 public class StringLibExt extends TLFunctionLibraryExt {
 
-	private static final String LIBRARY_NAME = "StringLib";
+	private static final String LIBRARY_NAME = "String";
 
 	public StringLibExt() {
 		super(LIBRARY_NAME);
