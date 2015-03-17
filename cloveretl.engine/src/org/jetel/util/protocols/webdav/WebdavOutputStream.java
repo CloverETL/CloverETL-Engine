@@ -48,7 +48,14 @@ public class WebdavOutputStream extends OutputStream {
 	 */
 	private static final Pattern SUBDIR_REGEXP = Pattern.compile("(http[s]?://[^/]+)/(.+)/([^/]+)$");
 	
-	private OutputStream os;
+	/*
+	 * CLO-2572:
+	 * 
+	 * Final fields should be visible to other threads without synchronization 
+	 * after the constructor finishes. This should ensure that close()
+	 * can see os as not null even when called by a different thread.
+	 */
+	private final OutputStream os;
 	private SardinePutThread sardineThread;
 	
 	public URL stripUserinfo(URL url) throws MalformedURLException {
@@ -66,7 +73,25 @@ public class WebdavOutputStream extends OutputStream {
 		String password = WebdavClientImpl.getPassword(parsedUrl);
 		URL outputURL = parsedUrl;
 
-		PipedOutputStream pos = new PipedOutputStream();
+		PipedOutputStream pos = new PipedOutputStream() {
+
+			/**
+			 * CLO-2572:
+			 * 
+			 * Added "synchronized" to ensure that {@code super.close()}
+			 * can see the current {@code sink} set by {@code connect()}
+			 * even if called by a different thread, 
+			 * e.g. during asynchronous interruption.
+			 * 
+			 * @see PipedOutputStream#close()
+			 * @see PipedOutputStream#connect(PipedInputStream)
+			 */
+			@Override
+			public synchronized void close() throws IOException {
+				super.close();
+			}
+			
+		};
 		os = pos;
 		
 		InputStream is = new PipedInputStream(pos);
@@ -228,6 +253,10 @@ public class WebdavOutputStream extends OutputStream {
 	 * @throws IOException
 	 */
 	private void processException(IOException ioe) throws IOException {
+		// CLO-2572: PipedOutputStream MUST be closed before Thread.join() to prevent deadlock
+		// better close it twice than not at all
+		FileUtils.closeQuietly(os);
+		
 		try {
 			sardineThread.join();
 		} catch (InterruptedException e) {
