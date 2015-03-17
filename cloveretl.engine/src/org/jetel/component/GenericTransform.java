@@ -36,7 +36,6 @@ public interface GenericTransform extends Transform {
 	
 	public void init(Properties properties);
 	
-	//this should probably be renamed to transform() everywhere
 	public void execute();
 	
 	public void executeOnError(Exception e);
