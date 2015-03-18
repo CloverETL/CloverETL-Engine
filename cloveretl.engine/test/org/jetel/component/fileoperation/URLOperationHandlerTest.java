@@ -52,7 +52,7 @@ public class URLOperationHandlerTest extends OperationHandlerTestTemplate {
 		super.setUp();
 		WebdavOperationHandler webdavHandler = new WebdavOperationHandler();
 		manager.registerHandler(VERBOSE ? new ObservableHandler(webdavHandler) : webdavHandler);
-		S3OperationHandler s3handler = new S3OperationHandler();
+		HttpS3OperationHandler s3handler = new HttpS3OperationHandler();
 		manager.registerHandler(VERBOSE ? new ObservableHandler(s3handler) : s3handler);
 	}
 
