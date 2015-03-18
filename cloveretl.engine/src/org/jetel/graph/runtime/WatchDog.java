@@ -566,13 +566,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
 					node.abort();
 					logger.warn("Interrupted node: " + node.getId());
 				}
-		        
-		        //all components seem to be aborted - let's postExecute them
-		        try {
-					currentPhase.postExecute();
-				} catch (Exception e) {
-					ExceptionUtils.logException(logger, null, e, Level.WARN);
-				}
 			}
 			//if the graph is waiting on a phase synchronization point the watchdog is woken up with current status ABORTED 
 			if (watchDogStatus == Result.WAITING) {

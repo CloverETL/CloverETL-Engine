@@ -87,9 +87,10 @@ if( !runTests ){
 		antArgs += "-Druntests-dontrun=true"
 		antArgs += "-Druntests-target=runtests-scenario-after-commit-with-engine-classes"
 	} else if( jobGoal == "detail"){
-		antTarget = "reports-hudson-detail"
+		antTarget = "reports-hudson-jacoco"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.7-Sun_detail"
 		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java"
+		antArgs += "-Drun.coverage=true"
 		antArgs += "-Druntests-target=runtests-scenario-after-commit"
 	} else if( jobGoal == "tests-reset"){
 		antTarget = "runtests-tests-reset"
@@ -204,21 +205,6 @@ if( env['ComSpec'] ) {
 antArgs.each{arg-> antC += arg}
 antC.executeSave(subEnv(antCustomEnv), antBaseD)
 	
-println "hostName=" + InetAddress.localHost.hostName
-if( InetAddress.localHost.hostName != "linda" && InetAddress.localHost.hostName != "virt-linda" ) {
-	rsyncC = ["rsync", "-rv", "--remove-source-files", "/data/cte-logs/", "jenkins@linda:/data/cte-logs"]
-	keyFile = new File("/hudson/id_dsa")
-	if( keyFile.exists() ){
-		rsyncC += "--rsh=ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${keyFile.absolutePath}"
-		println "using key ${keyFile.absolutePath}" 
-	} else {
-		println "using default key" 
-	}
-	rsyncC.executeRsync()
-}
-
-
-
 /* some common Groovy extensions */
 
 void init(){

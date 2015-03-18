@@ -19,6 +19,7 @@
 package org.jetel.enums;
 
 
+
 /**
  * This enumeration represents all possible values of 'enable' attribute of components.
  * Actually the enum has only two meaningful values true (ENABLED and TRUE)

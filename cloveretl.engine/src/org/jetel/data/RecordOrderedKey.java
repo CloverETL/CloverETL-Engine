@@ -23,6 +23,7 @@ import java.util.Arrays;
 
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.key.OrderType;
 import org.jetel.util.key.RecordKeyTokens;
 
@@ -43,6 +44,7 @@ import org.jetel.util.key.RecordKeyTokens;
  * @since       May 2, 2002
  * @created     January 26, 2003
  */
+@CloverPublicAPI
 public class RecordOrderedKey extends RecordKey {
 
 	private boolean keyOrderings[]; // TODO: erase this comment .... ascending is true

@@ -55,6 +55,7 @@ import org.jetel.graph.runtime.WatchDog;
 import org.jetel.graph.runtime.tracker.TokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SubgraphUtils;
 import org.jetel.util.crypto.Enigma;
@@ -72,6 +73,7 @@ import org.jetel.util.string.StringUtils;
  * @since       April 2, 2002
  * @see         org.jetel.graph.runtime.WatchDog
  */
+@CloverPublicAPI
 public final class TransformationGraph extends GraphElement {
 
 	public static final String DEFAULT_GRAPH_ID = "DEFAULT_GRAPH_ID";

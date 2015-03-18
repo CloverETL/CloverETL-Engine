@@ -18,6 +18,7 @@
  */
 package org.jetel.component.tree.writer;
 
+import org.jetel.component.tree.writer.util.WriteNullElement;
 import org.jetel.exception.JetelException;
 
 /**
@@ -32,11 +33,11 @@ public interface TreeWriter {
 
 	void writeStartNode(char[] name) throws JetelException;
 
-	void writeLeaf(Object value, boolean writeNullElement) throws JetelException;
+	void writeLeaf(Object value, WriteNullElement writeNullElement) throws JetelException;
 	
-	void writeLeaf(Object value, String dataType, boolean writeNullElement) throws JetelException;
+	void writeLeaf(Object value, String dataType, WriteNullElement writeNullElement) throws JetelException;
 
-	void writeEndNode(char[] name, boolean writeNullElement) throws JetelException;
+	void writeEndNode(char[] name, WriteNullElement writeNullElement) throws JetelException;
 
 	void writeEndTree() throws JetelException;
 

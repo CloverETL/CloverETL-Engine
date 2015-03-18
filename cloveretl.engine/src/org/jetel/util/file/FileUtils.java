@@ -64,6 +64,7 @@ import java.util.zip.ZipInputStream;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.io.FilenameUtils;
 import org.jetel.component.fileoperation.CloverURI;
 import org.jetel.component.fileoperation.FileManager;
 import org.jetel.component.fileoperation.Operation;
@@ -94,6 +95,7 @@ import org.jetel.util.protocols.sftp.SFTPConnection;
 import org.jetel.util.protocols.sftp.SFTPStreamHandler;
 import org.jetel.util.protocols.webdav.WebdavOutputStream;
 import org.jetel.util.stream.StreamUtils;
+import org.jetel.util.stream.TZipOutputStream;
 import org.jetel.util.string.StringUtils;
 
 import com.jcraft.jsch.ChannelSftp;
@@ -1546,7 +1548,8 @@ public class FileUtils {
 			if (appendData) {
 				throw new IOException("Appending to remote archives is not supported");
 			}
-			de.schlichtherle.truezip.zip.ZipOutputStream zout = new de.schlichtherle.truezip.zip.ZipOutputStream(os);
+			// CLO-2572: Use TZipOutputStream to prevent active deadlock on SMB and WebDAV
+			TZipOutputStream zout = new TZipOutputStream(os);
 			if (compressLevel != -1) {
 				zout.setLevel(compressLevel);
 			}
@@ -2441,6 +2444,269 @@ public class FileUtils {
 		
 		URL url = FileUtils.getFileURL(contextURL, fileURL);
 		return url.toString();
+	}
+
+	/**
+	 * Gets the name minus the path from a full filename, handles URLs specifically.
+	 * <p>
+	 * This method will handle a file in either Unix or Windows format.
+	 * The text after the last forward or backslash is returned.
+	 * </p>
+	 *  
+	 * @param url - input URL or File path
+	 * 
+	 * @return the filename
+	 * 
+	 * @see FilenameUtils#getName(String)
+	 * @see #getPrefixLength(String)
+	 */
+    public static String getFileName(String url) {
+		if (url == null) {
+			return null;
+		}
+		return FilenameUtils.getName(splitFilePath(url)[1]);
+	}
+	
+	/**
+	 * Gets the full path from a full filename, handles URLs specifically.
+	 * Replaces backslashes with forward slashes. 
+	 * <p>
+	 * This method will handle a file in either Unix or Windows format.
+	 * The method is entirely text based, and returns the text before and including the last forward or backslash.
+	 * </p>
+	 *  
+	 * @param url - input URL or File path
+	 * 
+	 * @return the file path
+	 * 
+	 * @see FilenameUtils#getFullPath(String)
+	 * @see #getPrefixLength(String)
+	 */
+	public static String getFilePath(String url) {
+		if (url == null) {
+			return null;
+		}
+		String[] parts = splitFilePath(url);
+		return FilenameUtils.separatorsToUnix(parts[0] + FilenameUtils.getFullPath(parts[1]));
+	}
+	
+	/**
+	 * Gets the extension of a filename, handles URLs specifically.
+	 * <p>
+	 * This method returns the textual part of the filename after the last dot.
+	 * There must be no directory separator after the dot.
+	 * </p>
+	 *  
+	 * @param url - input URL or File path
+	 * 
+	 * @return the file path
+	 * 
+	 * @see FilenameUtils#getExtension(String)
+	 * @see #getPrefixLength(String)
+	 */
+	public static String getFileExtension(String url) {
+		if (url == null) {
+			return null;
+		}
+		return FilenameUtils.getExtension(splitFilePath(url)[1]);
+	}
+
+	/**
+	 * Gets the file name without path and extension, from a full filename, handles URLs specifically.
+	 * <p>
+	 * This method will handle a file in either Unix or Windows format.
+	 * The text after the last forward or backslash and before the last dot is returned.
+	 * </p>
+	 *  
+	 * @param url - input URL or File path
+	 * 
+	 * @return the file path
+	 * 
+	 * @see FilenameUtils#getBaseName(String)
+	 * @see #getPrefixLength(String)
+	 */
+	public static String getBaseName(String url) {
+		if (url == null) {
+			return null;
+		}
+		return FilenameUtils.getBaseName(splitFilePath(url)[1]);
+	}
+
+	/**
+	 * Removes all "." segments and ".." segments.
+	 * Also replaces backslashes with forward slashes.
+	 * Handles URLs specifically.
+	 * 
+	 * If there is a ".." segment that cannot be removed,
+	 * returns {@code null} (this can happen if the segment
+	 * is not preceded by a removable non-".." segment).
+	 *  
+	 * @param url - input URL or File path
+	 * 
+	 * @return normalized input string or {@code null}
+	 * 
+	 * @see FilenameUtils#normalize(String)
+	 * @see #getPrefixLength(String)
+	 */
+	public static String normalize(String url) {
+		if (url == null) {
+			return null;
+		}
+		String[] parts = splitFilePath(url);
+		String suffix = FilenameUtils.normalize(parts[1], true);
+		if (suffix == null) {
+			return null;
+		}
+		String prefix = parts[0];
+		Matcher m = getInnerInput(prefix); // only matches archives!
+		if (m == null) { // no nested URL, just fix slashes
+			prefix = FilenameUtils.separatorsToUnix(prefix);
+		} else { // archive
+			String inner = normalize(m.group(5)); // recursion
+			if (inner == null) {
+				return null;
+			} else {
+				StringBuilder sb = new StringBuilder(m.group(1)); // URL prefix up to '('
+				sb.append(inner);
+				sb.append(m.group(6)); // '('
+				sb.append(m.group(7)); // URL suffix
+				
+				sb.append(suffix); // sb + suffix, avoid another string concatenation later
+				return sb.toString();
+			}
+		}
+		return prefix + suffix; 
+	}
+	
+	/**
+	 * Returns {@code true} if the argument 
+	 * is a Windows drive letter (A-Z, case insensitive).
+	 * 
+	 * @param ch
+	 * @return {@code true} if {@code ch} is {@code 'A'-'Z'} or {@code 'a'-'z'}
+	 */
+	private static boolean isDriveLetter(char ch) {
+		ch = Character.toUpperCase(ch);
+		return (ch >= 'A') && (ch <= 'Z');
+	}
+	
+	/**
+	 * Returns {@code true} if the given string
+	 * contains a drive letter followed by a colon
+	 * at the specified offset.
+	 * 
+	 * @param path		- input string
+	 * @param offset	- expected index of the drive letter
+	 * 
+	 * @return {@code true} if {@code path[offset]} is a drive letter and {@code path[offset+1] == ':'}
+	 */
+	private static boolean hasDriveLetter(String path, int offset) {
+		if (path.length() > offset + 1) {
+			if (path.charAt(offset + 1) == ':') {
+				return isDriveLetter(path.charAt(offset));
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Helper method for {@link #getPrefixLength(String)}.
+	 * Returns the length of the scheme-specific part of the URL.
+	 * <p>
+	 * Handles "file" protocol differently - ignores the leading slash,
+	 * if it is followed by a drive letter.
+	 * </p>
+	 * @param url
+	 * @return length(url.getFile + "#" + url.getRef())
+	 */
+	private static int getUrlFileLength(URL url) {
+		String protocol = url.getProtocol();
+		String urlFile = url.getFile();
+		int length = urlFile.length();
+		if (protocol.equalsIgnoreCase(FILE_PROTOCOL) && urlFile.startsWith("/") && hasDriveLetter(urlFile, 1)) {
+			// remove leading slash: "/c:/foo" --> "c:/foo"
+			length--;
+		}
+		String ref = url.getRef();
+		if (!StringUtils.isEmpty(ref)) {
+			length += (ref.length() + 1); // "#" + ref
+		}
+		return length;
+	}
+
+	/**
+	 * Returns the length of the prefix of {@code path}
+	 * that should <em>NOT</em> be passed to {@link FilenameUtils}.
+	 * <p>
+	 * If the input string is a 
+	 * <a href="https://tools.ietf.org/html/rfc2396#section-3">hierarchical URL</a>
+	 * (contains a slash after the protocol),
+	 * the beginning of the URL, including protocol, userinfo, hostname and port,
+	 * is considered the prefix.
+	 * </p><p>
+	 * The method considers the query (?) and ref (#) parts of the URL
+	 * to be a part of the URL path (? may represent a wildcard).
+	 * </p>
+	 * <h4>Examples:</h4>
+	 * <code>
+	 * <ul>
+	 * 	<li><u>sandbox://cloveretl.test.scenarios</u>/dir/file.txt</li>
+	 * 	<li><u>file:/</u>C:/Users/krivanekm/workspace/Experiments/</li>
+	 * 	<li><u>file:</u>/home/krivanekm/file.doc</li>
+	 * 	<li><u>file://</u>/home/krivanekm/workspace/Experiments/</li>
+	 * 	<li><u>ftp://user:pass%40word@hostname.com:21</u>/a/b</li>
+	 * 	<li><u>zip:(C:/a/b/c.zip)#</u>zipEntry/file.txt</li>
+	 * 	<li><u>http:(proxy://user:password@212.93.193.82:443)//seznam.cz:8080</u>/dir/index.html</li>
+	 * </ul>
+	 * </code>
+	 * 
+	 * @param path
+	 * @return
+	 */
+	private static int getPrefixLength(String path) {
+		int colonIdx = path.indexOf(':');
+		if (colonIdx >= 0) {
+			try {
+				Matcher m = FileURLParser.getURLMatcher(path);
+				if (m != null) { // nested URL: archive or proxy
+					StringBuilder innerInput = new StringBuilder(); // TODO optimize, we only need the anchor
+					StringBuilder anchor = new StringBuilder();
+					ArchiveType archiveType = getArchiveType(path, innerInput, anchor);
+					if (archiveType != null) { // archive
+						return path.length() - anchor.length();
+					} else { // proxy
+						String proxyRemoved = m.group(2) + m.group(3) + m.group(7);
+						URL url = new URL(null, proxyRemoved, GENERIC_HANDLER);
+						return path.length() - getUrlFileLength(url);
+					}
+				} else if (path.indexOf(":/") >= 0) { // hierarchical URL (contains slash after protocol)
+					URL url = new URL(null, path, GENERIC_HANDLER);
+					String protocol = url.getProtocol();
+					// if the prefix length is 1 and the first character is a drive letter, threat the string as a File path instead
+					if ((protocol.length() > 1) || 
+							((protocol.length() == 1) && !isDriveLetter(protocol.charAt(0)))) {
+						return path.length() - getUrlFileLength(url);
+					}
+				}
+			} catch (MalformedURLException ex) {
+			}
+		}
+		
+		return 0;
+	}
+	
+	/**
+	 * Splits the path to a prefix and suffix.
+	 * The suffix can be passed to {@link FilenameUtils}.
+	 * 
+	 * @param path
+	 * 
+	 * @return [prefix, suffix]
+	 */
+	private static String[] splitFilePath(String path) {
+		int prefixLength = getPrefixLength(path);
+		return new String[] {path.substring(0, prefixLength), path.substring(prefixLength)};
 	}
 }
 

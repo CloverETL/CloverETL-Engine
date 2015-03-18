@@ -31,6 +31,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.CloverPublicAPI;
 
 /**
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
@@ -38,6 +39,7 @@ import org.jetel.graph.TransformationGraph;
  *
  * @created Jul 15, 2008
  */
+@CloverPublicAPI
 public class Dictionary extends GraphElement {
 
 	/**

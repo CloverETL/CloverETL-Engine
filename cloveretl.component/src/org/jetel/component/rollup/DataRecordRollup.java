@@ -25,6 +25,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 
 /**
  * The base class for all rollup transformations.
@@ -34,6 +35,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @version 18th June 2010
  * @since 4th January 2010
  */
+@CloverPublicAPI
 public abstract class DataRecordRollup extends AbstractDataTransform implements RecordRollup {
 
 	/** parameters used during the initialization of this rollup transform */

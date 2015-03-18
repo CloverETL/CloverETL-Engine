@@ -27,6 +27,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -37,6 +38,7 @@ import org.jetel.util.bytes.CloverBuffer;
  * @version 17th June 2010
  * @since 7th January 2010
  */
+@CloverPublicAPI
 public abstract class DataPartitionFunction extends AbstractDataTransform implements PartitionFunction {
 
 	/** how many partitions we have */
@@ -106,5 +108,13 @@ public abstract class DataPartitionFunction extends AbstractDataTransform implem
 	public int getOutputPort(CloverBuffer directRecord) throws TransformException {
 		return getOutputPort(directRecord.buf());
 	}
+
+	@Override
+	public boolean supportsDirectRecord() {
+		// False by default. If somebody wants to read records directly, they can override this method.
+		return false;
+	}
+	
+	
 
 }

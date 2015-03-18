@@ -25,6 +25,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 
 /**
  * Base class for various normalization implementations.
@@ -33,6 +34,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @since 11/21/06
  * @see org.jetel.component.Denormalizer
  */
+@CloverPublicAPI
 public abstract class DataRecordNormalize extends AbstractDataTransform implements RecordNormalize {
 
 	protected Properties parameters;
@@ -46,6 +48,15 @@ public abstract class DataRecordNormalize extends AbstractDataTransform implemen
 		this.sourceMetadata = sourceMetadata;
 		this.targetMetadata = targetMetadata;
 
+		return init();
+	}
+	
+	/**
+	 * Override this method to provide user-desired initialization.
+	 * 
+	 * @throws ComponentNotReadyException if the initialization fails for any reason
+	 */
+	protected boolean init() throws ComponentNotReadyException {
 		return true;
 	}
 

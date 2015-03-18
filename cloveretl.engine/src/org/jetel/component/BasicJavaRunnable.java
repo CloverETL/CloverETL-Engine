@@ -22,7 +22,9 @@ import java.util.Properties;
 
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.CloverPublicAPI;
 
+@CloverPublicAPI
 public abstract class BasicJavaRunnable extends AbstractDataTransform implements JavaRunnable {
 
 	protected Properties parameters;

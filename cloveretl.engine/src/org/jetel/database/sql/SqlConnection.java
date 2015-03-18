@@ -25,6 +25,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 
+import org.jetel.util.CloverPublicAPI;
+
 /**
  * Clover specific extension of regular java.sql.Connection interface
  * 
@@ -34,6 +36,7 @@ import java.util.Set;
  * @created May 29, 2008
  * @see DBConnection#getConnection(String)
  */
+@CloverPublicAPI
 public interface SqlConnection extends Connection {
 
 	public JdbcSpecific getJdbcSpecific();

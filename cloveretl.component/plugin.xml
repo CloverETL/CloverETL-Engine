@@ -680,7 +680,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="joiners" iconPath="icons/joiners/MergeJoin" name="CrossJoin"  type="CROSS_JOIN" className="org.jetel.component.CrossJoin">
+	  <ETLComponent category="joiners" iconPath="icons/joiners/CrossJoin" name="CrossJoin"  type="CROSS_JOIN" className="org.jetel.component.CrossJoin">
 	    <shortDescription>Performs cartesian product.</shortDescription>
 	    <description>Receives data records through all connected input ports and performs cartesian product on them. Each connected input port represents one set of records. Results are sent to the connected output port.</description>
 	    <inputPorts>
@@ -2258,7 +2258,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <singlePort name="0" required="true" />
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="Jms connection" modifiable="true" name="connection" nullable="false" required="true">
+	      <property category="basic" displayName="JMS connection" modifiable="true" name="connection" nullable="false" required="true">
 	        <singleType name="jmsConnection" />
 	      </property>
 	      <property category="basic" displayName="Processor code" modifiable="true" name="processorCode" nullable="true">
@@ -2301,7 +2301,7 @@ Sends all resulting records to all connected output ports.</description>
 	    </inputPorts>
 	    <outputPorts />
 	    <properties>
-	      <property category="basic" displayName="Jms connection" modifiable="true" name="connection" nullable="false" required="true">
+	      <property category="basic" displayName="JMS connection" modifiable="true" name="connection" nullable="false" required="true">
 	        <singleType name="jmsConnection" />
 	      </property>
 	      <property category="basic" displayName="Processor code" modifiable="true" name="processorCode" nullable="true">
@@ -2691,7 +2691,7 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="others" iconPath="icons/others/JavaExecute" name="JavaExecute" type="JAVA_EXECUTE" defaultVisibility="etlGraph" className="org.jetel.component.JavaExecute">
+	  <ETLComponent category="deprecated" iconPath="icons/others/JavaExecute" name="JavaExecute" type="JAVA_EXECUTE" defaultVisibility="etlGraph" className="org.jetel.component.JavaExecute">
 	    <shortDescription>Executes Java transformations.</shortDescription>
 	    <description>Executes Java commands using runnable transformation.</description>
 	    <properties>
@@ -2718,7 +2718,7 @@ Sends all resulting records to all connected output ports.</description>
 	<extension point-id="component">
 	  <ETLComponent category="readers" iconPath="icons/others/JavaExecute" name="CustomJavaReader" type="GENERIC_READER" className="org.jetel.component.GenericComponent">
 	    <shortDescription>Generic component that allows you to create custom reader.</shortDescription>
-	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports. This is a GenericComponent customized for implementing a Reader.</description>
+	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports. This is a CustomJavaComponent customized for implementing a Reader.</description>
 	    <inputPorts>
 	      <multiplePort required="false" />
 	    </inputPorts>
@@ -2746,7 +2746,7 @@ Sends all resulting records to all connected output ports.</description>
 	<extension point-id="component">
 	  <ETLComponent category="writers" iconPath="icons/others/JavaExecute" name="CustomJavaWriter" type="GENERIC_WRITER" className="org.jetel.component.GenericComponent">
 	    <shortDescription>Generic component that allows you to create custom writer.</shortDescription>
-	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports. This is a GenericComponent customized for implementing a Writer</description>
+	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports. This is a CustomJavaComponent customized for implementing a Writer</description>
 	    <inputPorts>
 	      <multiplePort required="false" />
 	    </inputPorts>
@@ -2774,7 +2774,7 @@ Sends all resulting records to all connected output ports.</description>
 	<extension point-id="component">
 	  <ETLComponent category="transformers" iconPath="icons/others/JavaExecute" name="CustomJavaTransformer" type="GENERIC_TRANSFORMER" className="org.jetel.component.GenericComponent">
 	    <shortDescription>Generic component that allows you to create custom transformer.</shortDescription>
-	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports. This is a GenericComponent customized for implementing a Transformer.</description>
+	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports. This is a CustomJavaComponent customized for implementing a Transformer.</description>
 	    <inputPorts>
 	      <multiplePort required="false" />
 	    </inputPorts>
@@ -2800,9 +2800,9 @@ Sends all resulting records to all connected output ports.</description>
 	
 	<!-- GenericComponent - main generic descriptor -->
 	<extension point-id="component">
-	  <ETLComponent category="others" iconPath="icons/others/JavaExecute" name="GenericComponent" type="GENERIC_COMPONENT" className="org.jetel.component.GenericComponent">
+	  <ETLComponent category="others" iconPath="icons/others/JavaExecute" name="CustomJavaComponent" type="GENERIC_COMPONENT" className="org.jetel.component.GenericComponent">
 	    <shortDescription>Allows you to create custom component in Java.</shortDescription>
-	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports. This is a GenericComponent without customization.</description>
+	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports. This is a CustomJavaComponent without customization.</description>
 	    <inputPorts>
 	      <multiplePort required="false" />
 	    </inputPorts>

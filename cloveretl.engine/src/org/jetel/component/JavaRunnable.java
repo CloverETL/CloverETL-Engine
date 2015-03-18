@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.CloverPublicAPI;
 
 /**
  * Interface used by Java Execute component, which needs instance of this interface in order
@@ -33,6 +34,7 @@ import org.jetel.graph.TransformationGraph;
  * @created Dec 5, 2007
  *
  */
+@CloverPublicAPI
 public interface JavaRunnable extends Transform {
 	
 	/**

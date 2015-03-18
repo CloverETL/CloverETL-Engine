@@ -97,7 +97,10 @@ public class LoopsInspector {
 			Node engineComponent = component.getComponent();
 			//if one of inspected components is a Subgraph, the subgraph has to be executed in fast-propagate mode
 			if (SubgraphUtils.isSubJobComponent(engineComponent.getType())) {
-				((SubgraphComponent) engineComponent).setFastPropagateExecution(true);
+				//the component can be also instance of MockupComponent, which is used for cluster graph analyse 
+				if (engineComponent instanceof SubgraphComponent) {
+					((SubgraphComponent) engineComponent).setFastPropagateExecution(true);
+				}
 			}
 			engineComponents.add(engineComponent);
 		}

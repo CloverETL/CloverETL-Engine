@@ -97,10 +97,10 @@ public class StringLib extends TLFunctionLibrary {
 			"getFileExtension".equals(functionName) ? new GetFileExtensionFunction() :  //$NON-NLS-1$
 			"getFileName".equals(functionName) ? new GetFileNameFunction() :  //$NON-NLS-1$
 			"getFileNameWithoutExtension".equals(functionName) ? new GetFileNameWithoutExtensionFunction() :  //$NON-NLS-1$
-			"getPath".equals(functionName) ? new GetPathFunction() :  //$NON-NLS-1$
-			"getFullPath".equals(functionName) ? new GetFullPathFunction() :  //$NON-NLS-1$
+			"getFilePath".equals(functionName) ? new GetFilePathFunction() :  //$NON-NLS-1$
 			"normalizePath".equals(functionName) ? new NormalizePathFunction() :  //$NON-NLS-1$
-			"reverseChars".equals(functionName) ? new ReverseCharsFunction() :  //$NON-NLS-1$
+			"reverse".equals(functionName) ? new ReverseFunction() :  //$NON-NLS-1$
+    		"isEmpty".equals(functionName) ? new IsEmptyFunction() : //$NON-NLS-1$
 				null;
 
 		if (ret == null) {
@@ -1636,12 +1636,8 @@ public class StringLib extends TLFunctionLibrary {
 	// GET FILE EXTENSION FUNCTION
 
 	@TLFunctionAnnotation("Returns the extension of a filename.")
-	public static final String getFileExtension(TLFunctionCallContext context, String filename) {
-		if (filename != null) {
-			return org.apache.commons.io.FilenameUtils.getExtension(filename);
-		} else {
-			return null;
-		}
+	public static final String getFileExtension(TLFunctionCallContext context, String url) {
+		return FileUtils.getFileExtension(url);
 	}
 
 	class GetFileExtensionFunction implements TLFunctionPrototype {
@@ -1660,12 +1656,8 @@ public class StringLib extends TLFunctionLibrary {
 	// GET FILE NAME FUNCTION
 
 	@TLFunctionAnnotation("Returns the name minus the path from a full filename.")
-	public static final String getFileName(TLFunctionCallContext context, String filename) {
-		if (filename != null) {
-			return org.apache.commons.io.FilenameUtils.getName(filename);
-		} else {
-			return null;
-		}
+	public static final String getFileName(TLFunctionCallContext context, String url) {
+		return FileUtils.getFileName(url);
 	}
 
 	class GetFileNameFunction implements TLFunctionPrototype {
@@ -1684,12 +1676,8 @@ public class StringLib extends TLFunctionLibrary {
 	// GET FILE NAME WITHOUT EXTENSION FUNCTION
 
 		@TLFunctionAnnotation("Returns the base name, minus the full path and extension, from a full filename.")
-		public static final String getFileNameWithoutExtension(TLFunctionCallContext context, String filename) {
-			if (filename != null) {
-				return org.apache.commons.io.FilenameUtils.getBaseName(filename);
-			} else {
-				return null;
-			}
+		public static final String getFileNameWithoutExtension(TLFunctionCallContext context, String url) {
+			return FileUtils.getBaseName(url);
 		}
 
 		class GetFileNameWithoutExtensionFunction implements TLFunctionPrototype {
@@ -1704,18 +1692,15 @@ public class StringLib extends TLFunctionLibrary {
 				stack.push(getFileNameWithoutExtension(context, filename));
 			}
 		}
-		// GET PATH FUNCTION
 
-		@TLFunctionAnnotation("Returns the path from a full filename, which excludes the prefix.")
-		public static final String getPath(TLFunctionCallContext context, String filename) {
-			if (filename != null) {
-				return org.apache.commons.io.FilenameUtils.getPath(filename);
-			} else {
-				return null;
-			}
+		// GET FILE PATH FUNCTION
+
+		@TLFunctionAnnotation("Returns the path, minus the filename, from a full filename.")
+		public static final String getFilePath(TLFunctionCallContext context, String url) {
+			return FileUtils.getFilePath(url);
 		}
 
-		class GetPathFunction implements TLFunctionPrototype {
+		class GetFilePathFunction implements TLFunctionPrototype {
 
 			@Override
 			public void init(TLFunctionCallContext context) {
@@ -1724,43 +1709,15 @@ public class StringLib extends TLFunctionLibrary {
 			@Override
 			public void execute(Stack stack, TLFunctionCallContext context) {
 				final String filename = stack.popString();
-				stack.push(getPath(context, filename));
-			}
-		}
-
-		// GET FULL PATH FUNCTION
-
-		@TLFunctionAnnotation("Returns the base name, minus the full path and extension, from a full filename.")
-		public static final String getFullPath(TLFunctionCallContext context, String filename) {
-			if (filename != null) {
-				return org.apache.commons.io.FilenameUtils.getFullPath(filename);
-			} else {
-				return null;
-			}
-		}
-
-		class GetFullPathFunction implements TLFunctionPrototype {
-
-			@Override
-			public void init(TLFunctionCallContext context) {
-			}
-
-			@Override
-			public void execute(Stack stack, TLFunctionCallContext context) {
-				final String filename = stack.popString();
-				stack.push(getFullPath(context, filename));
+				stack.push(getFilePath(context, filename));
 			}
 		}
 
 		// NORMALIZE PATH FUNCTION
 
-		@TLFunctionAnnotation("Normalizes a path, removing double and single dot path steps.")
-		public static final String normalizePath(TLFunctionCallContext context, String filename) {
-			if (filename != null) {
-				return org.apache.commons.io.FilenameUtils.normalize(filename);
-			} else {
-				return null;
-			}
+		@TLFunctionAnnotation("Normalizes a path, removing double and single dot path segments.")
+		public static final String normalizePath(TLFunctionCallContext context, String url) {
+			return FileUtils.normalize(url);
 		}
 
 		class NormalizePathFunction implements TLFunctionPrototype {
@@ -1779,21 +1736,18 @@ public class StringLib extends TLFunctionLibrary {
 	// REVERSE CHARS FUNCTION
 
 	@TLFunctionAnnotation("Reverses the order of characters in string.")
-	public static final String reverseChars(TLFunctionCallContext context, String value) {
+	public static final String reverse(TLFunctionCallContext context, String value) {
 		if (value != null) {
-			if (value.length()<2) return value.toString();
-			StringBuilder newVal = new StringBuilder(value.length());
-			for(int i=value.length()-1;i>=0;i--){
-				newVal.append(value.charAt(i));
-			}
+			if (value.length()<2) return value;
+			StringBuilder newVal = new StringBuilder(value);
+			newVal.reverse(); // handles surrogate pairs
 			return newVal.toString();
-				
 		} else {
 			return null;
 		}
 	}
 
-	class ReverseCharsFunction implements TLFunctionPrototype {
+	class ReverseFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1802,8 +1756,26 @@ public class StringLib extends TLFunctionLibrary {
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String value = stack.popString();
-			stack.push(reverseChars(context, value));
+			stack.push(reverse(context, value));
 		}
 	}
+	
+	@TLFunctionAnnotation("Checks if the string is null or of zero length.")
+	public static final boolean isEmpty(TLFunctionCallContext context, String input) {
+		return StringUtils.isEmpty(input);
+	}
+	
+	class IsEmptyFunction implements TLFunctionPrototype{
+		
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(isEmpty(context, stack.popString()));
+		}
+	}
+	
 
 }

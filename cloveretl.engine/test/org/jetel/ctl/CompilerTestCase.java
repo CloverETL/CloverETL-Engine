@@ -48,6 +48,7 @@ import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
@@ -247,12 +248,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			g.getDictionary().setValue("yFib", "byte", new byte[]{1,2,3,5,8,13,21,34,55,89} );
 			g.getDictionary().setValue("stringList", "list", Arrays.asList("aa", "bb", null, "cc"));
 			g.getDictionary().setContentType("stringList", "string");
+			g.getDictionary().setValue("integerList", "list", Arrays.asList(1, 2, null, 4));
+			g.getDictionary().setContentType("integerList", "integer");
 			g.getDictionary().setValue("dateList", "list", Arrays.asList(new Date(12000), new Date(34000), null, new Date(56000)));
 			g.getDictionary().setContentType("dateList", "date");
 			g.getDictionary().setValue("byteList", "list", Arrays.asList(new byte[] {0x12}, new byte[] {0x34, 0x56}, null, new byte[] {0x78}));
 			g.getDictionary().setContentType("byteList", "byte");
 			g.getDictionary().setValue("stringMap", "map", new LinkedHashMap<String,String>());
 			g.getDictionary().setContentType("stringMap", "string");
+			g.getDictionary().setValue("integerMap", "map", new LinkedHashMap<String,Integer>());
+			g.getDictionary().setContentType("integerMap", "integer");
 		} catch (ComponentNotReadyException e) {
 			throw new RuntimeException("Error init default dictionary", e);
 		}
@@ -1316,6 +1321,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+		
+		doCompileExpectError("function integer transform(){firstInput fi; fi.getFieldType(null); return 0;}","test_dynamiclib_getFieldType_expect_error",Arrays.asList("Function 'getFieldType' is ambiguous"));
 	}
 	
 	public void test_dynamiclib_getIntValue(){
@@ -2287,11 +2294,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		if ((o1 == null) && (o2 == null)) {
 			return;
 		}
-		assertTrue((o1 == null) == (o2 == null));
+		assertTrue("Expected " + o1 + " but was " + o2, (o1 == null) == (o2 == null));
 		if (o1 instanceof DataRecord) {
 			DataRecord r1 = (DataRecord) o1;
 			DataRecord r2 = (DataRecord) o2;
-			assertEquals(r1.getNumFields(), r2.getNumFields());
+			assertEquals(r1.getMetadata(), r2.getMetadata());
 			for (int i = 0; i < r1.getNumFields(); i++) {
 				assertDeepEquals(r1.getField(i).getValue(), r2.getField(i).getValue());
 			}
@@ -2747,8 +2754,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
-	public void test_assignment_compound() {
-		doCompile("test_assignment_compound");
+	public void test_assignment_compound_plus() {
+		doCompile("test_assignment_compound_plus");
 		
 		check("int1", 3);
 		check("intList1", Arrays.asList(3));
@@ -2781,22 +2788,26 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("decimal1", new BigDecimal(3));
 		check("decimal2", new BigDecimal(4));
 		check("decimal3", new BigDecimal(5));
+		check("decimal4", new BigDecimal("6.5"));
 		
 		check("num1", 3.0);
 		check("num2", 4.0);
 		check("num3", 5.0);
 		
-		assertEquals("Verdon_sVerdonAppend", graph.getDictionary().getValue("sVerdon"));
-		assertEquals(454L, graph.getDictionary().getValue("l452"));
-		assertEquals(new BigDecimal("623.5"), graph.getDictionary().getValue("d621"));
-		assertEquals(936.2, graph.getDictionary().getValue("n9342"));
-		assertEquals(Arrays.asList("aa_1", "bb_2", null, "cc", "dictionary.stringList_1", "dictionary.stringList_2"), graph.getDictionary().getValue("stringList"));
+		Dictionary dictionary = graph.getDictionary();
+		assertEquals("Verdon_sVerdonAppend", dictionary.getValue("sVerdon"));
+		assertEquals(213, dictionary.getValue("i211"));
+		assertEquals(454L, dictionary.getValue("l452"));
+		assertEquals(new BigDecimal("623.5"), dictionary.getValue("d621"));
+		assertEquals(936.2, dictionary.getValue("n9342"));
+		assertEquals(Arrays.asList("aa_1", "bb_2", "_3", "cc", "dictionary.stringList_1", "dictionary.stringList_2"), dictionary.getValue("stringList"));
 		check("cnt3", 1);
 		{
 			Map<String, String> expected = new LinkedHashMap<>();
 			expected.put("key1", "value1");
 			expected.put("key2", "value2_dictionaryMap_append");
-			assertEquals(expected, graph.getDictionary().getValue("stringMap"));
+			expected.put("nonExistingKey", "newValue");
+			assertEquals(expected, dictionary.getValue("stringMap"));
 		}
 		check("cnt4", 1);
 		
@@ -2862,11 +2873,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			check("cnt8", 2);
 		}
 		
-		check("minus", -2);
-		check("multiply", 6);
-		check("divide", 3);
-		check("modulus", 2);
-		
 		check("nullAppend", "nullAppend_null");
 		
 		check("mergeTest", Arrays.asList("mergeTest_mergeTestAppend"));
@@ -2876,14 +2882,815 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			assertEquals(stringListField.get(0).toString(), "stringListField_stringListFieldAppend");
 			check("cnt9", 2);
 		}
+		
+		check("stringInit", "stringInit");
+		check("integerInit", 5);
+		check("longInit", 77L);
+		check("numberInit", 5.4);
+		check("decimalInit", new BigDecimal("7.8"));
+		check("listInit1", Arrays.asList(null, null, "listInit1"));
+		check("listInit2", Arrays.asList(null, "listInit2tmp"));
+		{
+			Map<String, String> expected = new HashMap<>(1);
+			expected.put("key", "mapInit1");
+			check("mapInit1", expected);
+		}
+		{
+			Map<String, String> expected = new HashMap<>(1);
+			expected.put("key", "mapInit2tmp");
+			check("mapInit2", expected);
+		}
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(INPUT_1));
+			expected.init();
+			expected.reset();
+			expected.getField("Name").setValue("recordInit1");
+			assertDeepEquals(expected, getVariable("recordInit1"));
+		}
+		
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
+			expected.init();
+			expected.reset();
+			expected.getField("stringListField").setValue(Arrays.asList(null, null, "recordInit3"));
+			Map<String, String> map = new HashMap<>(1);
+			map.put("key", "recordInit3");
+			expected.getField("stringMapField").setValue(map);
+			assertDeepEquals(expected, getVariable("recordInit3"));
+		}
+		
+		{
+			DataRecord r = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
+			r.init();
+			r.reset();
+			r.getField("stringListField").setValue(Arrays.asList(null, null, "recordListInit"));
+			assertDeepEquals(Arrays.asList(null, null, r), getVariable("recordListInit"));
+		}
+
+		assertEquals("dictStringInit", dictionary.getValue("s"));
+		assertEquals(5, dictionary.getValue("i"));
+		assertEquals(77L, dictionary.getValue("l"));
+		assertEquals(new BigDecimal("7.8"), dictionary.getValue("d"));
+		assertEquals(5.4, dictionary.getValue("n"));
+		
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(OUTPUT_2));
+			expected.init();
+			expected.reset();
+			
+			expected.getField("Name").setValue("_out1Name_append");
+			expected.getField("Age").setValue(2);
+			expected.getField("BornMillisec").setValue(2L);
+			expected.getField("Value").setValue(2.0);
+			expected.getField("Currency").setValue(new BigDecimal("2.0"));
+			assertDeepEquals(expected, outputRecords[1]);
+			
+			expected.getField("Name").setValue("_out2Name_append");
+			assertDeepEquals(expected, outputRecords[2]);
+		}
+		
 	}
 	
+	public void test_assignment_compound_minus() {
+		doCompile("test_assignment_compound_minus");
+		
+		check("int1", -1);
+		check("intList1", Arrays.asList(-1));
+		check("intList2", Arrays.asList(1, -2));
+		check("cnt1", 1);
+		
+		check("intList3", Arrays.asList(-1, 2));
+		check("cnt2", 1);
+		
+		{
+			Map<String, Integer> expected = new LinkedHashMap<String, Integer>();
+			expected.put("intMap1_key1", 3);
+			expected.put("intMap1_key2", 8);
+			check("intMap1", expected);
+		}
+		
+		check("long1", -1L);
+		check("long2", -1L);
+		
+		check("decimal1", new BigDecimal(-1));
+		check("decimal2", new BigDecimal(0));
+		check("decimal3", new BigDecimal(1));
+		check("decimal4", new BigDecimal("1.5"));
+		
+		check("num1", -1.0);
+		check("num2", 0.0);
+		check("num3", 1.0);
+		
+		Dictionary dictionary = graph.getDictionary();
+		assertEquals(209, dictionary.getValue("i211"));
+		assertEquals(450L, dictionary.getValue("l452"));
+		assertEquals(new BigDecimal("618.5"), dictionary.getValue("d621"));
+		assertEquals(932.2, dictionary.getValue("n9342"));
+		assertEquals(Arrays.asList(-2, -3, -8, 4), dictionary.getValue("integerList"));
+		check("cnt3", 1);
+		{
+			Map<String, Integer> expected = new LinkedHashMap<>();
+			expected.put("key2", -9);
+			expected.put("nonExistingKey", -7);
+			assertEquals(expected, dictionary.getValue("integerMap"));
+		}
+		check("cnt4", 1);
+		
+		{
+			DataRecord r = outputRecords[0];
+			assertEquals(AGE_VALUE - 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE - 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE - 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.add(new BigDecimal(-2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+		}
+
+		{
+			DataRecord r = (DataRecord) getVariable("myRecord1");
+			assertEquals(AGE_VALUE - 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE - 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE - 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.add(new BigDecimal(-2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+		}
+
+		{
+			DataRecord r = (DataRecord) ((List<?>) getVariable("recordList1")).get(0);
+			assertEquals(AGE_VALUE - 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE - 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE - 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.add(new BigDecimal(-2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+			check("cnt5", 1);
+		}
+		
+		{
+			DataRecord r = (DataRecord) ((Map<?, ?>) getVariable("recordMap1")).get("key");
+			assertEquals(AGE_VALUE - 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE - 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE - 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.add(new BigDecimal(-2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+			check("cnt6", 1);
+		}
+		
+		{
+			// check that tmpRecord is unmodified
+			DataRecord r = (DataRecord) getVariable("tmpRecord");
+			assertNull(r.getField("Age").getValue());
+			assertNull(r.getField("BornMillisec").getValue());
+			assertNull(r.getField("Value").getValue());
+			assertNull(r.getField("Currency").getValue());
+		}
+		
+		{
+			Map<String, Integer> expected = new LinkedHashMap<>();
+			expected.put("key", -333);
+			check("singleEvaluationTest", expected);
+			check("cnt7", 2);
+		}
+
+		{
+			Map<?, ?> singleEvaluationMap = (Map<?, ?>) getVariable("singleEvaluationMap");
+			DataRecord record = (DataRecord) singleEvaluationMap.get("key");
+			assertEquals(531, record.getField("Value").getValue());
+			check("cnt8", 2);
+		}
+		
+		{
+			List<?> integerListField = (List<?>) outputRecords[4].getField("integerListField").getValue();
+			assertEquals(integerListField.get(0), 543);
+			check("cnt9", 2);
+		}
+		
+		check("integerInit", -5);
+		check("longInit", -77L);
+		check("numberInit", -5.4);
+		check("decimalInit", new BigDecimal("-7.8"));
+		check("listInit1", Arrays.asList(null, null, -12L));
+		{
+			Map<String, BigDecimal> expected = new HashMap<>(1);
+			expected.put("key", new BigDecimal(-987));
+			check("mapInit1", expected);
+		}
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(INPUT_1));
+			expected.init();
+			expected.reset();
+			expected.getField("Age").setValue(-12.34);
+			assertDeepEquals(expected, getVariable("recordInit1"));
+		}
+		
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
+			expected.init();
+			expected.reset();
+			expected.getField("integerListField").setValue(Arrays.asList(null, null, -42));
+			Map<String, BigDecimal> map = new HashMap<>(1);
+			map.put("key", new BigDecimal("-88.8"));
+			expected.getField("decimalMapField").setValue(map);
+			assertDeepEquals(expected, getVariable("recordInit3"));
+		}
+		
+		{
+			DataRecord r = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
+			r.init();
+			r.reset();
+			r.getField("integerListField").setValue(Arrays.asList(null, null, -24));
+			assertDeepEquals(Arrays.asList(null, null, r), getVariable("recordListInit"));
+		}
+
+		assertEquals(-5, dictionary.getValue("i"));
+		assertEquals(-77L, dictionary.getValue("l"));
+		assertEquals(new BigDecimal("-7.8"), dictionary.getValue("d"));
+		assertEquals(-5.4, dictionary.getValue("n"));
+		
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(OUTPUT_2));
+			expected.init();
+			expected.reset();
+			
+			expected.getField("Age").setValue(-2);
+			expected.getField("BornMillisec").setValue(-2L);
+			expected.getField("Value").setValue(-2.0);
+			expected.getField("Currency").setValue(new BigDecimal("-2.0"));
+
+			assertDeepEquals(expected, outputRecords[1]);
+			assertDeepEquals(expected, outputRecords[2]);
+		}
+		
+	}
+
+	public void test_assignment_compound_multiply() {
+		doCompile("test_assignment_compound_multiply");
+		
+		check("int1", 2);
+		check("intList1", Arrays.asList(2));
+		check("intList2", Arrays.asList(1, 8));
+		check("cnt1", 1);
+		
+		check("intList3", Arrays.asList(2, 2));
+		check("cnt2", 1);
+		
+		{
+			Map<String, Integer> expected = new LinkedHashMap<String, Integer>();
+			expected.put("intMap1_key1", 10);
+			expected.put("intMap1_key2", 8);
+			check("intMap1", expected);
+		}
+		
+		check("long1", 2L);
+		check("long2", 6L);
+		
+		check("decimal1", new BigDecimal(2));
+		check("decimal2", new BigDecimal(4));
+		check("decimal3", new BigDecimal(6));
+		check("decimal4", new BigDecimal("10.0"));
+		
+		check("num1", 2.0);
+		check("num2", 4.0);
+		check("num3", 6.0);
+		
+		Dictionary dictionary = graph.getDictionary();
+		assertEquals(422, dictionary.getValue("i211"));
+		assertEquals(904L, dictionary.getValue("l452"));
+		assertEquals(new BigDecimal("1552.5"), dictionary.getValue("d621"));
+		assertEquals(1868.4, dictionary.getValue("n9342"));
+		assertEquals(Arrays.asList(3, 10, 0, 4), dictionary.getValue("integerList"));
+		check("cnt3", 1);
+		{
+			Map<String, Integer> expected = new LinkedHashMap<>();
+			expected.put("key2", 0);
+			expected.put("nonExistingKey", 0);
+			assertEquals(expected, dictionary.getValue("integerMap"));
+		}
+		check("cnt4", 1);
+		
+		{
+			DataRecord r = outputRecords[0];
+			assertEquals(AGE_VALUE * 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE * 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE * 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.multiply(new BigDecimal(2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+		}
+
+		{
+			DataRecord r = (DataRecord) getVariable("myRecord1");
+			assertEquals(AGE_VALUE * 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE * 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE * 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.multiply(new BigDecimal(2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+		}
+
+		{
+			DataRecord r = (DataRecord) ((List<?>) getVariable("recordList1")).get(0);
+			assertEquals(AGE_VALUE * 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE * 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE * 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.multiply(new BigDecimal(2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+			check("cnt5", 1);
+		}
+		
+		{
+			DataRecord r = (DataRecord) ((Map<?, ?>) getVariable("recordMap1")).get("key");
+			assertEquals(AGE_VALUE * 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE * 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE * 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.multiply(new BigDecimal(2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+			check("cnt6", 1);
+		}
+		
+		{
+			// check that tmpRecord is unmodified
+			DataRecord r = (DataRecord) getVariable("tmpRecord");
+			assertNull(r.getField("Age").getValue());
+			assertNull(r.getField("BornMillisec").getValue());
+			assertNull(r.getField("Value").getValue());
+			assertNull(r.getField("Currency").getValue());
+		}
+		
+		{
+			Map<String, Integer> expected = new LinkedHashMap<>();
+			expected.put("key", 123210);
+			check("singleEvaluationTest", expected);
+			check("cnt7", 2);
+		}
+
+		{
+			Map<?, ?> singleEvaluationMap = (Map<?, ?>) getVariable("singleEvaluationMap");
+			DataRecord record = (DataRecord) singleEvaluationMap.get("key");
+			assertEquals(80442, record.getField("Value").getValue());
+			check("cnt8", 2);
+		}
+		
+		{
+			List<?> integerListField = (List<?>) outputRecords[4].getField("integerListField").getValue();
+			assertEquals(integerListField.get(0), 72594);
+			check("cnt9", 2);
+		}
+		
+		check("integerInit", 0);
+		check("longInit", 0L);
+		check("numberInit", 0.0);
+		check("decimalInit", new BigDecimal("0.0"));
+		check("listInit1", Arrays.asList(null, null, 0L));
+		{
+			Map<String, BigDecimal> expected = new HashMap<>(1);
+			expected.put("key", new BigDecimal("0"));
+			check("mapInit1", expected);
+		}
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(INPUT_1));
+			expected.init();
+			expected.reset();
+			expected.getField("Age").setValue(0.0);
+			assertDeepEquals(expected, getVariable("recordInit1"));
+		}
+		
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
+			expected.init();
+			expected.reset();
+			expected.getField("integerListField").setValue(Arrays.asList(null, null, 0));
+			Map<String, BigDecimal> map = new HashMap<>(1);
+			map.put("key", new BigDecimal("0"));
+			expected.getField("decimalMapField").setValue(map);
+			assertDeepEquals(expected, getVariable("recordInit3"));
+		}
+		
+		{
+			DataRecord r = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
+			r.init();
+			r.reset();
+			r.getField("integerListField").setValue(Arrays.asList(null, null, 0));
+			assertDeepEquals(Arrays.asList(null, null, r), getVariable("recordListInit"));
+		}
+
+		assertEquals(0, dictionary.getValue("i"));
+		assertEquals(0L, dictionary.getValue("l"));
+		assertEquals(new BigDecimal("0.0"), dictionary.getValue("d"));
+		assertEquals(0.0, dictionary.getValue("n"));
+		
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(OUTPUT_2));
+			expected.init();
+			expected.reset();
+			
+			expected.getField("Age").setValue(0.0);
+			expected.getField("BornMillisec").setValue(0L);
+			expected.getField("Value").setValue(0);
+			expected.getField("Currency").setValue(new BigDecimal("0.0"));
+
+			assertDeepEquals(expected, outputRecords[1]);
+			assertDeepEquals(expected, outputRecords[2]);
+		}
+		
+	}
+
+	public void test_assignment_compound_divide() {
+		doCompile("test_assignment_compound_divide");
+		
+		check("int1", 5);
+		check("intList1", Arrays.asList(5));
+		check("intList2", Arrays.asList(11, 3));
+		check("cnt1", 1);
+		
+		check("intList3", Arrays.asList(5, 12));
+		check("cnt2", 1);
+		
+		{
+			Map<String, Integer> expected = new LinkedHashMap<String, Integer>();
+			expected.put("intMap1_key1", 2);
+			expected.put("intMap1_key2", 8);
+			check("intMap1", expected);
+		}
+		
+		check("long1", 2L);
+		check("long2", 3L);
+		
+		check("decimal1", new BigDecimal("0.5"));
+		check("decimal2", new BigDecimal(1));
+		check("decimal3", new BigDecimal("1.5"));
+		check("decimal4", new BigDecimal("1.6"));
+		
+		check("num1", 0.5);
+		check("num2", 1.0);
+		check("num3", 1.5);
+		
+		Dictionary dictionary = graph.getDictionary();
+		assertEquals(105, dictionary.getValue("i211"));
+		assertEquals(226L, dictionary.getValue("l452"));
+		assertEquals(new BigDecimal("248.4"), dictionary.getValue("d621"));
+		assertEquals(467.1, dictionary.getValue("n9342"));
+		assertEquals(Arrays.asList(0, 0, 0, 4), dictionary.getValue("integerList"));
+		check("cnt3", 1);
+		{
+			Map<String, Integer> expected = new LinkedHashMap<>();
+			expected.put("key2", 0);
+			expected.put("nonExistingKey", 0);
+			assertEquals(expected, dictionary.getValue("integerMap"));
+		}
+		check("cnt4", 1);
+		
+		{
+			DataRecord r = outputRecords[0];
+			assertEquals(AGE_VALUE / 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE / 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE / 2, r.getField("Value").getValue());
+			compareDecimals(CURRENCY_VALUE.divide(new BigDecimal("2.0"), 3, RoundingMode.DOWN), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+		}
+
+		{
+			DataRecord r = (DataRecord) getVariable("myRecord1");
+			assertEquals(AGE_VALUE / 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE / 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE / 2, r.getField("Value").getValue());
+			compareDecimals(CURRENCY_VALUE.divide(new BigDecimal("2.0"), 3, RoundingMode.DOWN), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+		}
+
+		{
+			DataRecord r = (DataRecord) ((List<?>) getVariable("recordList1")).get(0);
+			assertEquals(AGE_VALUE / 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE / 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE / 2, r.getField("Value").getValue());
+			compareDecimals(CURRENCY_VALUE.divide(new BigDecimal("2.0"), 3, RoundingMode.DOWN), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+			check("cnt5", 1);
+		}
+		
+		{
+			DataRecord r = (DataRecord) ((Map<?, ?>) getVariable("recordMap1")).get("key");
+			assertEquals(AGE_VALUE / 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE / 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE / 2, r.getField("Value").getValue());
+			compareDecimals(CURRENCY_VALUE.divide(new BigDecimal("2.0"), 3, RoundingMode.DOWN), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+			check("cnt6", 1);
+		}
+		
+		{
+			// check that tmpRecord is unmodified
+			DataRecord r = (DataRecord) getVariable("tmpRecord");
+			assertNull(r.getField("Age").getValue());
+			assertNull(r.getField("BornMillisec").getValue());
+			assertNull(r.getField("Value").getValue());
+			assertNull(r.getField("Currency").getValue());
+		}
+		
+		{
+			Map<String, Integer> expected = new LinkedHashMap<>();
+			expected.put("key", 4);
+			check("singleEvaluationTest", expected);
+			check("cnt7", 2);
+		}
+
+		{
+			Map<?, ?> singleEvaluationMap = (Map<?, ?>) getVariable("singleEvaluationMap");
+			DataRecord record = (DataRecord) singleEvaluationMap.get("key");
+			assertEquals(10, record.getField("Value").getValue());
+			check("cnt8", 2);
+		}
+		
+		{
+			List<?> integerListField = (List<?>) outputRecords[4].getField("integerListField").getValue();
+			assertEquals(integerListField.get(0), 5);
+			check("cnt9", 2);
+		}
+		
+		check("integerInit", 0);
+		check("longInit", 0L);
+		check("numberInit", 0.0);
+		checkEqualValue("decimalInit", BigDecimal.ZERO);
+		check("listInit1", Arrays.asList(null, null, 0L));
+		{
+			Map<String, BigDecimal> expected = new HashMap<>(1);
+			expected.put("key", new BigDecimal("0"));
+			check("mapInit1", expected);
+		}
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(INPUT_1));
+			expected.init();
+			expected.reset();
+			expected.getField("Age").setValue(0.0);
+			assertDeepEquals(expected, getVariable("recordInit1"));
+		}
+		
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
+			expected.init();
+			expected.reset();
+			expected.getField("integerListField").setValue(Arrays.asList(null, null, 0));
+			Map<String, BigDecimal> map = new HashMap<>(1);
+			map.put("key", BigDecimal.ZERO);
+			expected.getField("decimalMapField").setValue(map);
+			assertDeepEquals(expected, getVariable("recordInit3"));
+		}
+		
+		{
+			DataRecord r = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
+			r.init();
+			r.reset();
+			r.getField("integerListField").setValue(Arrays.asList(null, null, 0));
+			assertDeepEquals(Arrays.asList(null, null, r), getVariable("recordListInit"));
+		}
+
+		assertEquals(0, dictionary.getValue("i"));
+		assertEquals(0L, dictionary.getValue("l"));
+		compareDecimals(BigDecimal.ZERO, (BigDecimal) dictionary.getValue("d"));
+		assertEquals(0.0, dictionary.getValue("n"));
+		
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(OUTPUT_2));
+			expected.init();
+			expected.reset();
+			
+			expected.getField("Age").setValue(0.0);
+			expected.getField("BornMillisec").setValue(0L);
+			expected.getField("Value").setValue(0);
+			expected.getField("Currency").setValue(BigDecimal.ZERO);
+
+			assertDeepEquals(expected, outputRecords[1]);
+			assertDeepEquals(expected, outputRecords[2]);
+		}
+		
+	}
+
+	public void test_assignment_compound_modulo() {
+		doCompile("test_assignment_compound_modulo");
+		
+		check("int1", 1);
+		check("intList1", Arrays.asList(2));
+		check("intList2", Arrays.asList(12, 3));
+		check("cnt1", 1);
+		
+		check("intList3", Arrays.asList(2, 12));
+		check("cnt2", 1);
+		
+		{
+			Map<String, Integer> expected = new LinkedHashMap<String, Integer>();
+			expected.put("intMap1_key1", 2);
+			expected.put("intMap1_key2", 8);
+			check("intMap1", expected);
+		}
+		
+		check("long1", 2L);
+		check("long2", 1L);
+		
+		check("decimal1", BigDecimal.ONE);
+		check("decimal2", new BigDecimal(2));
+		check("decimal3", BigDecimal.ZERO);
+		check("decimal4", new BigDecimal("0.5"));
+		
+		check("num1", 1.0);
+		check("num2", 2.0);
+		check("num3", 0.0);
+		
+		Dictionary dictionary = graph.getDictionary();
+		assertEquals(3, dictionary.getValue("i211"));
+		assertEquals(4L, dictionary.getValue("l452"));
+		assertEquals(new BigDecimal("0.5"), dictionary.getValue("d621"));
+		assertEquals(6.2, (Double) dictionary.getValue("n9342"), 0.0001);
+		assertEquals(Arrays.asList(1, 2, 0, 4), dictionary.getValue("integerList"));
+		check("cnt3", 1);
+		{
+			Map<String, Integer> expected = new LinkedHashMap<>();
+			expected.put("key2", 0);
+			expected.put("nonExistingKey", 0);
+			assertEquals(expected, dictionary.getValue("integerMap"));
+		}
+		check("cnt4", 1);
+		
+		{
+			DataRecord r = outputRecords[0];
+			assertEquals(AGE_VALUE % 3, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE % 3, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE % 3, r.getField("Value").getValue());
+			compareDecimals(CURRENCY_VALUE.remainder(new BigDecimal("3.0")), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+		}
+
+		{
+			DataRecord r = (DataRecord) getVariable("myRecord1");
+			assertEquals(AGE_VALUE % 3, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE % 3, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE % 3, r.getField("Value").getValue());
+			compareDecimals(CURRENCY_VALUE.remainder(new BigDecimal("3.0")), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+		}
+
+		{
+			DataRecord r = (DataRecord) ((List<?>) getVariable("recordList1")).get(0);
+			assertEquals(AGE_VALUE % 3, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE % 3, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE % 3, r.getField("Value").getValue());
+			compareDecimals(CURRENCY_VALUE.remainder(new BigDecimal("3.0")), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+			check("cnt5", 1);
+		}
+		
+		{
+			DataRecord r = (DataRecord) ((Map<?, ?>) getVariable("recordMap1")).get("key");
+			assertEquals(AGE_VALUE % 3, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE % 3, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE % 3, r.getField("Value").getValue());
+			compareDecimals(CURRENCY_VALUE.remainder(new BigDecimal("3.0")), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+			check("cnt6", 1);
+		}
+		
+		{
+			// check that tmpRecord is unmodified
+			DataRecord r = (DataRecord) getVariable("tmpRecord");
+			assertNull(r.getField("Age").getValue());
+			assertNull(r.getField("BornMillisec").getValue());
+			assertNull(r.getField("Value").getValue());
+			assertNull(r.getField("Currency").getValue());
+		}
+		
+		{
+			Map<String, Integer> expected = new LinkedHashMap<>();
+			expected.put("key", 22);
+			check("singleEvaluationTest", expected);
+			check("cnt7", 2);
+		}
+
+		{
+			Map<?, ?> singleEvaluationMap = (Map<?, ?>) getVariable("singleEvaluationMap");
+			DataRecord record = (DataRecord) singleEvaluationMap.get("key");
+			assertEquals(54, record.getField("Value").getValue());
+			check("cnt8", 2);
+		}
+		
+		{
+			List<?> integerListField = (List<?>) outputRecords[4].getField("integerListField").getValue();
+			assertEquals(integerListField.get(0), 99);
+			check("cnt9", 2);
+		}
+		
+		check("integerInit", 0);
+		check("longInit", 0L);
+		check("numberInit", 0.0);
+		checkEqualValue("decimalInit", BigDecimal.ZERO);
+		check("listInit1", Arrays.asList(null, null, 0L));
+		{
+			Map<String, BigDecimal> expected = new HashMap<>(1);
+			expected.put("key", new BigDecimal("0"));
+			check("mapInit1", expected);
+		}
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(INPUT_1));
+			expected.init();
+			expected.reset();
+			expected.getField("Age").setValue(0.0);
+			assertDeepEquals(expected, getVariable("recordInit1"));
+		}
+		
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
+			expected.init();
+			expected.reset();
+			expected.getField("integerListField").setValue(Arrays.asList(null, null, 0));
+			Map<String, BigDecimal> map = new HashMap<>(1);
+			map.put("key", BigDecimal.ZERO);
+			expected.getField("decimalMapField").setValue(map);
+			assertDeepEquals(expected, getVariable("recordInit3"));
+		}
+		
+		{
+			DataRecord r = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
+			r.init();
+			r.reset();
+			r.getField("integerListField").setValue(Arrays.asList(null, null, 0));
+			assertDeepEquals(Arrays.asList(null, null, r), getVariable("recordListInit"));
+		}
+
+		assertEquals(0, dictionary.getValue("i"));
+		assertEquals(0L, dictionary.getValue("l"));
+		compareDecimals(BigDecimal.ZERO, (BigDecimal) dictionary.getValue("d"));
+		assertEquals(0.0, dictionary.getValue("n"));
+		
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(OUTPUT_2));
+			expected.init();
+			expected.reset();
+			
+			expected.getField("Age").setValue(0.0);
+			expected.getField("BornMillisec").setValue(0L);
+			expected.getField("Value").setValue(0);
+			expected.getField("Currency").setValue(BigDecimal.ZERO);
+
+			assertDeepEquals(expected, outputRecords[1]);
+			assertDeepEquals(expected, outputRecords[2]);
+		}
+		
+	}
+
 	public void test_assignment_compound_expect_error() {
 		doCompileExpectError("function integer transform(){"
 				+ "integer i;"
 				+ "i += null;"
 				+ "return 0;}","test_assignment_compound_expect_error",
 				Arrays.asList("Operator '+' is not defined for types: 'integer' and 'null'"));
+
+		doCompileExpectError("function integer transform(){"
+				+ "integer i;"
+				+ "i -= 'aaa';"
+				+ "return 0;}","test_assignment_compound_expect_error",
+				Arrays.asList("Operator '-' is not defined for types: 'integer' and 'string'"));
+
+		doCompileExpectError("function integer transform(){"
+				+ "integer i;"
+				+ "i -= 0L;"
+				+ "return 0;}","test_assignment_compound_expect_error",
+				Arrays.asList("Type mismatch: cannot convert from 'long' to 'integer'"));
+
+		try {
+			doCompile("function integer transform(){"
+					+ "integer i;"
+					+ "i /= 0;"
+					+ "return 0;}","test_assignment_compound_expect_error");
+			fail();
+		} catch (RuntimeException ex) {
+			if (!isCausedBy(ex, ArithmeticException.class)) {
+				throw ex;
+			}
+		}
+
+		try {
+			doCompile("function integer transform(){"
+					+ "long l;"
+					+ "l /= 0;"
+					+ "return 0;}","test_assignment_compound_expect_error");
+			fail();
+		} catch (RuntimeException ex) {
+			if (!isCausedBy(ex, ArithmeticException.class)) {
+				throw ex;
+			}
+		}
+	}
+
+	public void test_assignment_list_initialization() {
+		doCompile("test_assignment_list_initialization");
+		
+		check("stringList", Arrays.asList(null, null, null, "test"));
+		check("integerList", Arrays.asList(null, null, null, 8));
+		check("longList", Arrays.asList(null, null, null, 77L));
+		check("numberList", Arrays.asList(null, null, null, 5.4));
+		check("booleanList", Arrays.asList(null, null, null, true));
+		check("decimalList", Arrays.asList(null, null, null, new BigDecimal("8.7")));
+		{
+			List<byte[]> expected = Arrays.asList(null, null, null, new byte[] {(byte) 0xFF});
+			assertDeepEquals(expected, getVariable("byteList"));
+		}
+		check("recordList1", Arrays.asList(null, null, null, inputRecords[0]));
+		{
+			DataRecord r = DataRecordFactory.newRecord(inputRecords[0].getMetadata());
+			r.init();
+			r.reset();
+			r.getField(0).setValue("test");
+			List<DataRecord> expected = Arrays.asList(null, null, null, r);
+			assertDeepEquals(expected, getVariable("recordList2"));
+		}
+		
+	}
+	
+	// CLO-5789
+	public void test_assignment_increment() {
+		doCompile("test_assignment_increment");
+		
+		check("incrementCounter", 1);
+		check("incrementTest", "newValue");
+		check("incrementTestList", Arrays.asList("newValue"));
 	}
 
 	// CLO-403
@@ -4690,12 +5497,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
-		try {
-			doCompile("function integer transform(){reverse(null); return 0;}","test_containerlib_reverse_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
+		doCompileExpectError(
+				"function integer transform(){reverse(null); return 0;}",
+				"test_containerlib_reverse_expect_error",
+				Arrays.asList("Function 'reverse' is ambiguous"));
 		try {
 			doCompile("function integer transform(){long[] longList = null; long[] reversed = longList.reverse(); return 0;}","test_containerlib_reverse_expect_error");
 			fail();
@@ -5985,11 +6790,23 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("trim_null", null);
 	}
 	
-	public void test_stringlib_reverse_chars() {
-		doCompile("test_stringlib_reverseChars");
+	public void test_stringlib_reverse() {
+		doCompile("test_stringlib_reverse");
 		check("reversed1", "hgfedcba");
 		check("reversed2", "a");
 		check("reversed3", null);
+		
+		check("czechString", "\u017Elu\u0165ou\u010Dk\u00FD k\u016F\u0148 \u00FAp\u011Bl \u010F\u00E1belsk\u00E9 \u00F3dy");
+		
+		// contains 3 non-BMP code points (those which consist of 2 chars)
+		String nonBMP = "\u4DB5\u4E26\u4E27\u4E21\u3402\uD840\uDC0B\u5345\u4E94\u4E92\u4E30\u4E0D\u29EC\u29ED\u29F0\u29EF\uD83D\uDE04\uD835\uDC9E";
+		check("nonBMP", nonBMP);
+		check("compositeCharacters1", "\u00E9\u00E1o"); // reverse called on composed characters
+		check("compositeCharacters2", "e\u0301a\u0301o"); // reverse called on decomposed characters
+		check("compositeCharacters3", "ea\u0301o\u0301"); // reverse called on canonical composition, then decomposed again
+		
+		check("emptyStr", "");
+		check("singleChar", "c");
 	}
 	
 	public void test_stringlib_upperCase() {
@@ -10643,16 +11460,140 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_stringlib_getPathParts() {
 		doCompile("test_stringlib_getPathParts");
 		
-		check("path_1","foo/../bar/../baz/");
-		check("path_2","a\\b\\");
-		check("path_full","C:\\a\\b\\");
-		check("normalized_1","/baz/out5.txt");
-		check("ext_1","txt");
-		check("ext_2","jpg");
-		check("name_1","c.ab.jpg");
-		check("name_2","out5.txt");
-		check("name_noext_1","c.ab");
-		check("name_noext_2","out5");
+		{
+			List<String> expected = Arrays.asList(
+					null,
+					"",
+					"txt",
+					"xlsx",
+					"dat",
+					"cdf",
+					"xml",
+					"jpg",
+					"",
+					"",
+					"dbf",
+					"",
+					"gz",
+					"Z",
+					"",
+					"",
+					"txt"
+			);
+			List<?> extensions = (List<?>) getVariable("extensions");
+			assertEquals(expected.size(), extensions.size());
+			for (int i = 0; i < expected.size(); i++) {
+				assertEquals(String.valueOf(i), expected.get(i), extensions.get(i));
+			}
+		}
+		
+		{
+			List<String> expected = Arrays.asList(
+					null,
+					"",
+					"out5.txt",
+					"input.xlsx",
+					"file.dat",
+					"c.cdf",
+					"c.xml",
+					"c.ab.jpg",
+					"",
+					"",
+					"c.dbf",
+					"b",
+					"c.gz",
+					"c.Z",
+					"b",
+					"",
+					"file_with_query?and#hash.txt"
+			);
+			List<?> filenames = (List<?>) getVariable("filenames");
+			assertEquals(expected.size(), filenames.size());
+			for (int i = 0; i < expected.size(); i++) {
+				assertEquals(String.valueOf(i), expected.get(i), filenames.get(i));
+			}
+		}
+
+		{
+			List<String> expected = Arrays.asList(
+					null,
+					"",
+					"out5",
+					"input",
+					"file",
+					"c",
+					"c",
+					"c.ab",
+					"",
+					"",
+					"c",
+					"b",
+					"c",
+					"c",
+					"b",
+					"",
+					"file_with_query?and#hash"
+			);
+			List<?> filenamesWithoutExtension = (List<?>) getVariable("filenamesWithoutExtension");
+			assertEquals(expected.size(), filenamesWithoutExtension.size());
+			for (int i = 0; i < expected.size(); i++) {
+				assertEquals(String.valueOf(i), expected.get(i), filenamesWithoutExtension.get(i));
+			}
+		}
+
+		{
+			List<String> expected = Arrays.asList(
+					null,
+					"",
+					"/foo/../bar/../baz/",
+					"/cloveretl.test.scenarios/./data-in/fileOperation/",
+					"/data/",
+					"C:/a/b/",
+					"C:/a/b/",
+					"a/b/",
+					"file:/C:/Users/krivanekm/workspace/Experiments/",
+					"sandbox://cloveretl.test.scenarios/",
+					"sandbox://cloveretl.test.scenarios/a/b/",
+					"ftp://user:password@hostname.com/a/",
+					"ftp://user:password@hostname.com/a/../b/",
+					"s3://user:password@hostname.com/a/b/",
+					"sftp://user:password@hostname.com/../a/",
+					"sandbox://cloveretl.test.scenarios",
+					"sandbox://cloveretl.test.scenarios/"
+			);
+			List<?> filepaths = (List<?>) getVariable("filepaths");
+			assertEquals(expected.size(), filepaths.size());
+			for (int i = 0; i < expected.size(); i++) {
+				assertEquals(String.valueOf(i), expected.get(i), filepaths.get(i));
+			}
+		}
+
+		{
+			List<String> expected = Arrays.asList(
+					null,
+					"",
+					"/baz/out5.txt",
+					"/cloveretl.test.scenarios/data-in/fileOperation/input.xlsx",
+					"/data/file.dat",
+					"C:/a/b/c.cdf",
+					"C:/a/b/c.xml",
+					"a/b/c.ab.jpg",
+					"file:/C:/Users/krivanekm/workspace/Experiments/",
+					"sandbox://cloveretl.test.scenarios/",
+					"sandbox://cloveretl.test.scenarios/a/b/c.dbf",
+					"ftp://user:password@hostname.com/a/b",
+					"ftp://user:password@hostname.com/b/c.gz",
+					"s3://user:password@hostname.com/a/b/c.Z",
+					null,
+					"sandbox://cloveretl.test.scenarios",
+					"sandbox://cloveretl.test.scenarios/file_with_query?and#hash.txt"
+			);
+			List<?> normalized = (List<?>) getVariable("normalized");
+			assertEquals(expected.size(), normalized.size());
+			for (int i = 0; i < expected.size(); i++) {
+				assertEquals(String.valueOf(i), expected.get(i), normalized.get(i));
+			}
+		}
 	}
 
 	

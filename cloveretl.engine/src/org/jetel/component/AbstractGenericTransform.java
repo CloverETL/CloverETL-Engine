@@ -19,6 +19,8 @@
 package org.jetel.component;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Properties;
 
 import org.jetel.data.DataRecord;
@@ -26,6 +28,9 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Node;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
+import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.SandboxUrlUtils;
 
 /**
  * The only abstract implementation of {@link GenericTransform} interface.
@@ -37,8 +42,10 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  * @created 20. 11. 2014
  */
+@CloverPublicAPI
 public abstract class AbstractGenericTransform extends AbstractDataTransform implements GenericTransform {
 	
+	/** Custom component properties are saved here */
 	protected Properties additionalProperties;
 	
 	protected DataRecord[] inRecords;
@@ -62,11 +69,9 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	}
 	
 	/**
-	 * DataRecord objects returned by this method are re-used
-	 * when this method is called repeatedly. If you need to hold
-	 * data from input DataRecords between multiple calls, use
-	 * {@link DataRecord#duplicate} on objects returned by this
-	 * method or save the data elsewhere.
+	 * DataRecord objects returned by this method are re-used when this method is called repeatedly.
+	 * If you need to hold data from input DataRecords between multiple calls, use* {@link DataRecord#duplicate}
+	 * on objects returned by this method or save the data elsewhere.
 	 * 
 	 * @param portIdx index of port to read from
 	 * @return null if there are no more records
@@ -79,6 +84,21 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	
 	protected void writeRecordToPort(int portIdx, DataRecord record) throws IOException, InterruptedException {
 		component.writeRecord(portIdx, record);
+	}
+	
+	/**
+	 * Transforms project-relative path to absolute path. Use this method to work with files in your project.
+	 * @param projectRelativePath e.g. "data-in/myInput.txt"
+	 * @return absolute path
+	 * @throws MalformedURLException
+	 */
+	protected String toValidPath(String projectRelativePath) throws MalformedURLException {
+		URL contextURL = component.getGraph().getRuntimeContext().getContextURL();
+		URL fileUrl = FileUtils.getFileURL(contextURL, projectRelativePath);
+		if (SandboxUrlUtils.isSandboxUrl(fileUrl)) {
+			fileUrl = SandboxUrlUtils.toLocalFileUrl(fileUrl);
+		}
+		return fileUrl.getPath();
 	}
 	
 	/**
@@ -96,7 +116,7 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	
 	@Override
 	public void executeOnError(Exception e) {
-		throw new JetelRuntimeException("Transform failed!", e);
+		throw new JetelRuntimeException("Execute failed!", e);
 	}
 	
 	@Override

@@ -45,7 +45,7 @@ import org.jetel.util.protocols.amazon.S3OutputStream;
  *
  * @created Jun 19, 2012
  */
-public class S3OperationHandler implements IOperationHandler {
+public class HttpS3OperationHandler implements IOperationHandler {
 
 	static final String HTTP_SCHEME = "http"; //$NON-NLS-1$
 	static final String HTTPS_SCHEME = "https"; //$NON-NLS-1$
