@@ -75,8 +75,8 @@
 	<property name="dir.pmdreport" value="${dir.build}/pmdreport" />
 	<property name="pmd.ruleset.file" value="${dir.build-scripts}/pmd-ruleset.xml" />
 	<property name="dir.licenses" value="${basedir}/licenses" />
-	<property name="run.coverage" value="false" />
-	<property name="jacoco.exec.file" location="${basedir}/jacoco.exec"/>
+	<property name="run.coverage" value="false"/>
+	<property name="jacoco.dest.file" location="${basedir}/jacoco.exec"/>
 	
 	<!--load external properties-->
 	<property file="build-local.properties"/>
@@ -1069,8 +1069,8 @@ This software is licensed under the terms you may find in the file named "LICENS
 		<mkdir dir="${dir.testsresult}"/>
 		<echo message="Running all tests from ${dir.src.test} includes ${test.include} excludes ${test.exclude}"/>
 		<echo message="Running coverage (JaCoCo): ${run.coverage}"/>
-		<echo message="JaCoCo destination file: ${jacoco.exec.file}"/>
-		<jacoco:coverage enabled="${run.coverage}" destfile="${jacoco.exec.file}">
+		<echo message="JaCoCo destination file: ${jacoco.dest.file}"/>
+		<jacoco:coverage enabled="${run.coverage}" destfile="${jacoco.dest.file}">
 			<junit 
 						showoutput="true"
 						haltonerror="false" 
