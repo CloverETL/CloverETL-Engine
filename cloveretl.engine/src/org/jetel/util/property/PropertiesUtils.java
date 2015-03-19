@@ -23,7 +23,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import org.jetel.exception.JetelRuntimeException;
@@ -213,4 +217,26 @@ public class PropertiesUtils {
 		}
 	}
 	
+	/**
+	 * Prints properties as sorted multiline string without escaping non ISO-9959-1 characters.
+	 * @param props
+	 * @return
+	 */
+	public static String printProperties(Properties props) {
+		if (props == null) {
+			return null;
+		}
+		StringBuilder sb = new StringBuilder();
+		List<String> names = new ArrayList<>(props.stringPropertyNames());
+		Collections.sort(names);
+		for (Iterator<String> it = names.iterator(); it.hasNext();) {
+			String name = it.next();
+			sb.append(name).append('=');
+			sb.append(props.getProperty(name));
+			if (it.hasNext()) {
+				sb.append('\n');
+			}
+		}
+		return sb.toString();
+	}
 }
