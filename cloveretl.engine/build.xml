@@ -1014,7 +1014,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 	
 	<target name="runtests-jacoco" depends="" description="Runs engine and plugins JUnit tests with JaCoCo">
 		<property name="test.cloveretl.plugins" value="${dir.package}/plugins"/>
-		<antcall target="runtests-engine-jacoco" inheritall="true" inheritrefs="true"/>
+		<antcall target="runtests-engine" inheritall="true" inheritrefs="true"/>
 		<!--<antcall target="runtests-plugins-jacoco" inheritall="true" inheritrefs="true"/>-->
 	</target>
 	
@@ -1028,49 +1028,8 @@ This software is licensed under the terms you may find in the file named "LICENS
 	<target name="runtests-engine" depends="init,compile,compile-tests" description="Runs Clover engine JUnit tests">
 		<mkdir dir="${dir.testsresult}"/>
 		<echo message="Running all tests from ${dir.src.test} includes ${test.include} excludes ${test.exclude}"/>
-		<junit 
-					showoutput="true"
-					haltonerror="false" 
-					haltonfailure="false" 
-					printsummary="true"
-					fork="true"
-					forkmode="once" 
-					>
-			<sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser}" />
-			<sysproperty key="file.encoding" value="UTF-8" />
-			<jvmarg value="-Xmx2048m"/>
-			<jvmarg value="-XX:MaxPermSize=512m"/>
-			<jvmarg value="-Dderby.system.home=${dir.examples}/ExtExamples"/>
-			<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
-			<classpath>
-				<pathelement path="${dir.classestest}"/>
-				<pathelement path="${dir.test.additional.classpath}"/>
-				<pathelement path="${dir.package.classes}"/>
-				<fileset dir="${dir.lib}">
-					<include name="*.jar"/>
-				</fileset>
-				<pathelement path="${dir.examples}/ExtExamples/lib/derby/lib/derby.jar"/>
-				<pathelement path="${dir.tools}/junit-4.11.jar"/>
-				<pathelement path="${dir.tools}/hamcrest-core-1.3.jar"/>
-				<pathelement path="${dir.tools}/junit.xml.formatter.jar"/>
-				<path refid="cp.cobertura"/>
-			</classpath>
-			<batchtest todir="${dir.testsresult}">
-				<fileset dir="${dir.src.test}" excludes="${test.exclude}">
-					<include name="${test.include}"/>
-				</fileset>
-			</batchtest>
-			<formatter type="plain"/>
-			<formatter classname="eu.javlin.ant.junit.ExtXMLJUnitResultFormatter" extension=".xml"/>
-		</junit>
-	</target>
-	
-	<target name="runtests-engine-jacoco" depends="init,compile,compile-tests" description="Runs Clover engine JUnit tests and JaCoCo">
-		<mkdir dir="${dir.testsresult}"/>
-		<echo message="Running all tests from ${dir.src.test} includes ${test.include} excludes ${test.exclude}"/>
-		<echo message="Running coverage (JaCoCo): ${run.coverage}"/>
-		<echo message="JaCoCo destination file: ${jacoco.dest.file}"/>
-		<jacoco:coverage enabled="${run.coverage}" destfile="${jacoco.dest.file}">
+		<echo message="Running coverage (JaCoCo): ${run.coverage}, destination file is set to: ${jacoco.dest.file}"/>
+		<jacoco:coverage enabled="${run.coverage}" destfile="${jacoco.dest.file}"> <!-- run JaCoCo if run.coverage=true -->
 			<junit 
 						showoutput="true"
 						haltonerror="false" 
@@ -1079,6 +1038,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 						fork="true"
 						forkmode="once" 
 						>
+				<sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser}" />
 				<sysproperty key="file.encoding" value="UTF-8" />
 				<jvmarg value="-Xmx2048m"/>
 				<jvmarg value="-XX:MaxPermSize=512m"/>
@@ -1095,6 +1055,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 					<pathelement path="${dir.tools}/junit-4.11.jar"/>
 					<pathelement path="${dir.tools}/hamcrest-core-1.3.jar"/>
 					<pathelement path="${dir.tools}/junit.xml.formatter.jar"/>
+					<path refid="cp.cobertura"/>
 				</classpath>
 				<batchtest todir="${dir.testsresult}">
 					<fileset dir="${dir.src.test}" excludes="${test.exclude}">
@@ -1194,7 +1155,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 	</target>
 	
 	<target name="runtests-scenario-jacoco" if="cte.environment.config">
-		<echo message="Executing Clover Test Environment environment - jacoco"/>
+		<echo message="Executing Clover Test Environment environment with JaCoCo coverage"/>
 		<ant target="run-scenarios-with-engine-build" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
 			<property name="environment.config" value="${cte.environment.config}"/>
 			<property name="scenarios" value="detail.ts" />
