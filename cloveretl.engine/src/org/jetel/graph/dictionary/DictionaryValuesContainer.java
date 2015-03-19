@@ -25,8 +25,12 @@ import java.io.Serializable;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -283,7 +287,6 @@ public final class DictionaryValuesContainer implements Serializable {
 	}
 
 	public boolean isDirty(String key) {
-		Serializable s = null;
 		synchronized (values) {
 			return dirtyKeys.contains(key);
 		}
@@ -327,23 +330,37 @@ public final class DictionaryValuesContainer implements Serializable {
 	
 	@Override
 	public String toString() {
-		StringBuilder result = new StringBuilder("{ ");
-		boolean first = true;
+		return toString(true);
+	}
+	
+	public String toString(final boolean singleLine) {
+		
+		StringBuilder sb = new StringBuilder();
+		if (singleLine) {
+			sb.append("{ ");
+		}
 		synchronized (values) {
-			for (Entry<String, Serializable> entry : values.entrySet()) {
-				if (!first) {
-					result.append(", ");
-				} else {
-					first = false;
+			List<String> entries = new ArrayList<>(values.keySet());
+			Collections.sort(entries);
+			for (Iterator<String> it = entries.iterator(); it.hasNext();) {
+				String name = it.next();
+				if (isDirty(name)) {
+					sb.append('*');
 				}
-				if (isDirty(entry.getKey())) {
-					result.append("*");
+				sb.append(name).append('=').append(String.valueOf(values.get(name)));
+				if (it.hasNext()) {
+					if (singleLine) {
+						sb.append(", ");
+					} else {
+						sb.append('\n');
+					}
 				}
-				result.append(entry.getKey()).append("=").append(String.valueOf(entry.getValue()));
 			}
 		}
-		result.append(" }");
-		return result.toString();
+		if (singleLine) {
+			sb.append(" }");
+		}
+		return sb.toString();
 	}
 	
 	private void writeObject(java.io.ObjectOutputStream out) throws IOException {
