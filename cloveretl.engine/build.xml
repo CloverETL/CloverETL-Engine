@@ -974,7 +974,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 	<target name="runtests-jacoco" depends="" description="Runs engine and plugins JUnit tests with JaCoCo">
 		<property name="test.cloveretl.plugins" value="${dir.package}/plugins"/>
 		<antcall target="runtests-engine" inheritall="true" inheritrefs="true"/>
-		<!--<antcall target="runtests-plugins-jacoco" inheritall="true" inheritrefs="true"/>-->
+		<antcall target="runtests-plugins" inheritall="true" inheritrefs="true"/>
 	</target>
 	
 	<target name="runtests-coverage" description="Runs engine and plugins JUnit tests with test coverage report">
