@@ -1271,7 +1271,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 	<target name="runtests-detail">
 		<antcall target="generate-eval-license" />
 		<antcall target="runtests-scenario-jacoco" />
-		<antcall target="runtests-jacoco" />
+		<!--<antcall target="runtests-jacoco" />-->
 		<antcall target="clean-eval-license" />
 	</target>
 	
