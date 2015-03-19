@@ -917,13 +917,13 @@ This software is licensed under the terms you may find in the file named "LICENS
 		<mkdir dir="${dir.build}"/>
 	</target>
 	
-	<target name="reports" depends="check-sources,reporttests,findbugs-html,coverage-html">
+	<target name="reports" depends="check-sources,reporttests,findbugs-html">
 	</target>
 	
 	<target name="reports-hudson" depends="dist,check-sources,runtests-with-testdb,javadoc">
 	</target>
 	
-	<target name="reports-hudson-detail" depends="pmd,dist,runtests-with-testdb-coverage,coverage-html,coverage-xml,findbugs-xml,findbugs-xml-plugins,javadoc">
+	<target name="reports-hudson-detail" depends="pmd,dist,runtests-with-testdb-coverage,findbugs-xml,findbugs-xml-plugins,javadoc">
 	</target>
 	
 	<target name="reports-hudson-jacoco" depends="dist,runtests-detail">
@@ -964,47 +964,6 @@ This software is licensed under the terms you may find in the file named "LICENS
 		</copy>
 	</target>
 	
-	<target name="coverage-instrument" depends="coverage-instrument-engine,coverage-instrument-plugins">
-	</target>
-	
-	<target name="coverage-instrument-engine" depends="compile">
-		<echo message="Cobertura auxClasspath - tools: ${tools}" />
-		<echo message="Cobertura auxClasspath - engine-libs: ${toString:engine-libs}" />
-		<echo message="Cobertura auxClasspath - engine-tools: ${toString:engine-tools}" />
-		<cobertura-instrument todir="${dir.coverage.bin}" datafile="${cobertura.ser}">
-			<auxClasspath>
-				<pathelement path="${tools}"/>
-				<fileset refid="engine-libs"/>
-				<fileset refid="engine-tools"/>
-			</auxClasspath>
-			<fileset dir="${dir.bin}">
-				<include name="**/*.class" />
-			</fileset>
-		</cobertura-instrument>
-		<copy todir="${dir.coverage.plugins}/plugins/org.jetel.engine">
-			<fileset dir="${dir.package}/plugins/org.jetel.engine"/>
-		</copy>
-	</target>
-	
-	<target name="coverage-instrument-plugins" depends="init">
-		<mkdir dir="${dir.coverage.plugins}"/>
-		<foreach list="${plugin.list}" inheritall="true" target="plugin-coverage-instrument" param="plugin.dir"/>
-	</target>
-	
-	<target name="plugin-coverage-instrument">
-		<echo message="Coverage instrument plugin - ${plugin.dir}"/>
-		<ant target="coverage-instrument" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
-			<property name="dir.dist" value="${dir.package}"/>
-			<property name="dir.coverage.dist" value="${dir.coverage.plugins}"/>
-			<property name="cobertura.ser" value="${cobertura.ser}"/>
-			<property name="version.full" value="${version.full}"/>
-			<property name="java.src.header.file" value="${java.src.header.file}"/>
-			<property name="java.src.target" value="${java.src.target}"/>
-			<property name="java.src.exclude" value="${java.src.exclude}"/>
-			<property name="plugin.xml.xslt" value="${plugin.xml.xslt}"/>
-		</ant>
-	</target>
-	
 	<target name="runtests" depends="" description="Runs engine and plugins JUnit tests" unless="runtests-dontrun">
 		<property name="test.cloveretl.plugins" value="${dir.package}/plugins"/>
 		<property name="dir.test.additional.classpath" value=""/>
@@ -1018,7 +977,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 		<!--<antcall target="runtests-plugins-jacoco" inheritall="true" inheritrefs="true"/>-->
 	</target>
 	
-	<target name="runtests-coverage" depends="coverage-instrument" description="Runs engine and plugins JUnit tests with test coverage report">
+	<target name="runtests-coverage" description="Runs engine and plugins JUnit tests with test coverage report">
 		<property name="test.cloveretl.plugins" value="${dir.coverage.plugins}/plugins"/>
 		<property name="dir.test.additional.classpath" value="${dir.coverage.bin}"/>
 		<antcall target="runtests-engine" inheritall="true" inheritrefs="true" />
@@ -1138,7 +1097,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 		</ant>
 	</target>
 
-	<target name="runtests-scenario-coverage" depends="build,coverage-instrument">
+	<target name="runtests-scenario-coverage" depends="build">
 		<echo message="Executing Clover Test Environment environment - coverage"/>
 		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
 			<property name="environment.config" value="${cte.environment.config}"/>
@@ -1307,28 +1266,6 @@ This software is licensed under the terms you may find in the file named "LICENS
 			<property name="dir.dist" value="${dir.package}"/>
 			<property name="dir.engine.classestest" value="${dir.classestest}"/>
 		</ant>
-	</target>
-	
-	<target name="coverage-html" depends="runtests,collect-javadoc-src">
-		<cobertura-report 
-				datafile="${cobertura.ser}" 
-				format="html" 
-				destdir="${dir.coverage.html}" >
-			<fileset dir="${dir.src.javadoc}">
-				<include name="**/*.java"/>
-			</fileset>
-		</cobertura-report>
-	</target>
-	
-	<target name="coverage-xml" depends="runtests,collect-javadoc-src">
-		<cobertura-report 
-				datafile="${cobertura.ser}"
-				format="xml"
-				destdir="${dir.coverage.xml}">
-			<fileset dir="${dir.src.javadoc}">
-				<include name="**/*.java"/>
-			</fileset>
-		</cobertura-report>
 	</target>
 	
 	<target name="pmd-init">
