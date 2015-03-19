@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="us-ascii"?>
-<project name="cloveretl plugin" default="build" basedir=".">
+<project name="cloveretl plugin" default="build" basedir="." xmlns:jacoco="antlib:org.jacoco.ant">
 
 	<!-- =========================== DEFAULT DIRECTORIES =========================== -->
 	<basename property="plugin.name" file="${basedir}" />
@@ -42,6 +42,9 @@
 
 	<property file="${basedir}/build-plugin.properties"/>
 	<property name="javadoc.limited.include" value="**"/>
+
+	<property name="run.coverage" value="false"/>
+	<property name="jacoco.dest.file" location="${basedir}/jacoco.exec"/>
 	
 	<property name="script.name" value="cloveretl.engine\build-scripts\build-plugin.xml"/>
 	
@@ -52,6 +55,10 @@
 	  <classpath>
 	    <pathelement location="${dir.engine.tools}/mathan-ant-contrib.jar"/>
 	  </classpath>
+	</taskdef>
+
+	<taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
+		<classpath path="${dir.engine.tools}/jacocoant.jar"/>
 	</taskdef>
 		
 	<!-- =========================== LIBRARIES ============================= -->
@@ -677,43 +684,46 @@
 	<target name="runtests" depends="init,compile-tests" if="tests-available">
 		<mkdir dir="${dir.testsresult}"/>
 		<echo message="Running all tests from ${dir.src.test} excluding ${test.exclude}"/>
-		<junit 
-				haltonerror="false" 
-				haltonfailure="false" 
-				printsummary="true" 
-				fork="true" 
-				forkmode="once"
-				dir="${basedir}"
-				>
-			<assertions>
-			  <enable package="org.jetel"/>
-			  <enable package="com.opensys.cloveretl"/>
-			</assertions>
-    		<sysproperty key="file.encoding" value="UTF-8" />
-			<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
-			<classpath path="${cp.compile.junit}">
-				<pathelement path="${dir.classestest}"/>
-				<pathelement path="${dir.engine.classestest}"/>
-				<fileset dir="${test.cloveretl.plugins}/${plugin.dir.name}/">
-					<include name="**/*.jar"/>
-				</fileset>
-				<!--
-				// bring about difficulties with class files on classpath
-				<fileset dir="${dir.engine.classestest}">
-				</fileset>-->
-				<fileset refid="plugin-libs"/>
-				<fileset refid="engine-libs"/>
-				<fileset refid="engine-tools"/>
-			</classpath>
-			<batchtest todir="${dir.testsresult}">
-				<fileset dir="${dir.src.test}" excludes="${test.exclude}">
-					<include name="**/*Test.java" />
-					<include name="**/Test*.java" />
-				</fileset>
-			</batchtest>
-			<formatter type="plain"/>
-			<formatter type="xml"/>
-		</junit>
+		<echo message="Running coverage (JaCoCo): ${run.coverage}, destination file is set to: ${jacoco.dest.file}"/>
+		<jacoco:coverage enabled="${run.coverage}" destfile="${jacoco.dest.file}"> <!-- run JaCoCo if run.coverage=true -->
+			<junit 
+					haltonerror="false" 
+					haltonfailure="false" 
+					printsummary="true" 
+					fork="true" 
+					forkmode="once"
+					dir="${basedir}"
+					>
+				<assertions>
+				  <enable package="org.jetel"/>
+				  <enable package="com.opensys.cloveretl"/>
+				</assertions>
+	    		<sysproperty key="file.encoding" value="UTF-8" />
+				<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
+				<classpath path="${cp.compile.junit}">
+					<pathelement path="${dir.classestest}"/>
+					<pathelement path="${dir.engine.classestest}"/>
+					<fileset dir="${test.cloveretl.plugins}/${plugin.dir.name}/">
+						<include name="**/*.jar"/>
+					</fileset>
+					<!--
+					// bring about difficulties with class files on classpath
+					<fileset dir="${dir.engine.classestest}">
+					</fileset>-->
+					<fileset refid="plugin-libs"/>
+					<fileset refid="engine-libs"/>
+					<fileset refid="engine-tools"/>
+				</classpath>
+				<batchtest todir="${dir.testsresult}">
+					<fileset dir="${dir.src.test}" excludes="${test.exclude}">
+						<include name="**/*Test.java" />
+						<include name="**/Test*.java" />
+					</fileset>
+				</batchtest>
+				<formatter type="plain"/>
+				<formatter type="xml"/>
+			</junit>
+		</jacoco:coverage>
 	</target>
 
 	
