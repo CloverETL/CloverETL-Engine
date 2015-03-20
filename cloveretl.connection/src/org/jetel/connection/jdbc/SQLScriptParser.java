@@ -197,7 +197,6 @@ public class SQLScriptParser implements Iterable<String> {
 				continue;
 			}
 			else if (match(delimiter)) {
-				sb.append(delimiter);
 				break;
 			}
 			else {
