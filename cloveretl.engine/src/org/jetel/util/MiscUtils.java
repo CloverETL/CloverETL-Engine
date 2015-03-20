@@ -294,6 +294,23 @@ public final class MiscUtils {
 	}
 	
 	/**
+	 * Wrapper for method {@link System#getProperty(String)} method.
+	 * Possible {@link SecurityException} is caught and null is returned.
+	 * Null value is returned even for null variable name.
+	 */
+	public static String getSystemPropertySafe(String property) {
+		if (property == null) {
+			return null;
+		}
+		try {
+			return System.getProperty(property);
+		} catch (SecurityException e) {
+			logger.debug("Could not resolve system property '" + property + "' due security manager.", e);
+			return null;
+		}
+	}
+	
+	/**
 	 * Returns information about number of received and sent records from/to the given component.
 	 * The resulted string could look like 'In0: 15, In1: 30, Out0:5'
 	 */
