@@ -269,7 +269,7 @@ public class SimpleGather extends Node {
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 
-		if (!checkInputPorts(status, 1, Integer.MAX_VALUE) || !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
+		if (!checkInputPorts(status, 1, Integer.MAX_VALUE, false) || !checkOutputPorts(status, 1, Integer.MAX_VALUE, false)) {
 			return status;
 		}
 
