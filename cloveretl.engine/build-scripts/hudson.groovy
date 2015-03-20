@@ -87,7 +87,7 @@ if( !runTests ){
 		antArgs += "-Druntests-dontrun=true"
 		antArgs += "-Druntests-target=runtests-scenario-after-commit-with-engine-classes"
 	} else if( jobGoal == "detail"){
-		antTarget = "reports-hudson-jacoco"
+		antTarget = "reports-hudson-detail"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.7-Sun_detail"
 		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java"
 		antArgs += "-Drun.coverage=true"

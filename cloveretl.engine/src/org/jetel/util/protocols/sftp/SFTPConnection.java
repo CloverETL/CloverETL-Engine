@@ -23,15 +23,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Proxy;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Vector;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jetel.component.fileoperation.pool.Authority;
-import org.jetel.component.fileoperation.pool.ConnectionPool;
 import org.jetel.component.fileoperation.pool.PooledSFTPConnection;
 import org.jetel.component.fileoperation.pool.SFTPAuthority;
+import org.jetel.util.protocols.AbstractURLConnection;
 import org.jetel.util.protocols.ProxyAuthenticable;
 import org.jetel.util.protocols.UserInfo;
 
@@ -48,16 +45,10 @@ import com.jcraft.jsch.SftpException;
  *
  * @created Jan 28, 2013
  */
-public class SFTPConnection extends URLConnection implements ProxyAuthenticable {
-
-	private static final ConnectionPool pool = ConnectionPool.getInstance();
-	
-	private static final Log logger = LogFactory.getLog(SFTPConnection.class);
+public class SFTPConnection extends AbstractURLConnection implements ProxyAuthenticable {
 
 	private int mode;
 
-	private SFTPAuthority authority;
-	
 	/**
 	 * SFTP constructor.
 	 * @param url
@@ -72,8 +63,7 @@ public class SFTPConnection extends URLConnection implements ProxyAuthenticable 
 	 * @param proxy
 	 */
 	protected SFTPConnection(URL url, Proxy proxy) {
-		super(url);
-		this.authority = new SFTPAuthority(url, proxy);
+		super(url, new SFTPAuthority(url, proxy));
 		mode = ChannelSftp.OVERWRITE;
 	}
 
@@ -102,39 +92,9 @@ public class SFTPConnection extends URLConnection implements ProxyAuthenticable 
 		}
 	}
 	
-	private PooledSFTPConnection connect(Authority authority) throws IOException {
-		try {
-			PooledSFTPConnection connection = (PooledSFTPConnection) pool.borrowObject(authority);
-			
-			return connection;
-		} catch (IOException ioe) {
-			throw ioe;
-		} catch (Exception e) {
-			throw new IOException(e);
-		}
-	}
-
-	private void disconnectQuietly(PooledSFTPConnection connection) {
-		// make sure the object is returned to the pool
-		if (connection != null) {
-			try {
-				pool.returnObject(connection.getAuthority(), connection);
-			} catch (Exception ex) {
-				logger.debug("Failed to return the connection to the pool", ex);
-			}
-		}
-	}
-
 	@Override
-	public void connect() throws IOException {
-		PooledSFTPConnection connection = null;
-		try {
-			// obtain a pooled connection or perform a connection attempt
-			connection = connect(authority);
-		} finally {
-			// return the connection to the pool, subsequent operations will retrieve it from there
-			disconnectQuietly(connection);
-		}
+	protected PooledSFTPConnection connect(Authority authority) throws IOException {
+		return (PooledSFTPConnection) super.connect(authority);
 	}
 
 	/**
@@ -245,6 +205,6 @@ public class SFTPConnection extends URLConnection implements ProxyAuthenticable 
 
 	@Override
 	public void setProxyCredentials(UserInfo userInfo) {
-		authority.setProxyCredentials(userInfo);
+		((SFTPAuthority) authority).setProxyCredentials(userInfo);
 	}
 }
