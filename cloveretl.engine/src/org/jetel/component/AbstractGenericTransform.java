@@ -98,7 +98,7 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 		if (SandboxUrlUtils.isSandboxUrl(fileUrl)) {
 			fileUrl = SandboxUrlUtils.toLocalFileUrl(fileUrl);
 		}
-		return fileUrl.toString();
+		return fileUrl.getPath();
 	}
 	
 	/**
