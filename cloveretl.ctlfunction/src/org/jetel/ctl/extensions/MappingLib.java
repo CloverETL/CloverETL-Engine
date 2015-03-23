@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 
 import org.jetel.ctl.Stack;
 import org.jetel.data.Defaults;
+import org.jetel.util.string.StringUtils;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -160,14 +161,25 @@ public class MappingLib extends TLFunctionLibrary {
     	return new Mapping(mapping);
     }
     
+    private static String getElementName(String inputName){
+    	if(inputName.startsWith("$")){
+    		String resultName = inputName.substring(1);
+    		if(StringUtils.isValidObjectName(resultName)){
+        		return resultName;
+        	}
+    	}
+    	throw new IllegalArgumentException(inputName);
+    }
+    
     private static class MappingElement {
     	public final String source;
     	public final String target;
 
 		public MappingElement(String mapping) {
 			String[] split = ASSIGNMENT_PATTERN.split(mapping, 2);
-			target = split[0].substring(1);
-			source = split[1].substring(1);
+			
+			target = getElementName(split[0]);
+			source = getElementName(split[1]);
 		}
     }
     
