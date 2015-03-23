@@ -4685,6 +4685,17 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_mapping_whitespace() {
 		doCompileExpectError("test_mapping_whitespace", "Invalid member access expression");
 	}
+	
+	public void test_mapping_field_parsing(){
+		doCompile("test_mapping_field_parsing");
+
+		check("sourceFields1", Arrays.asList("name", "firstName"));
+		check("sourceFields2", Arrays.asList());
+		check("targetFields", Arrays.asList("name", "countryName"));
+		check("isSourceMapped1", new Boolean(true));
+		check("isSourceMapped2", new Boolean(false));
+		check("isTargetMapped", new Boolean(true));
+	}
 
 	public void test_copyByName() {
 		doCompile("test_copyByName");
