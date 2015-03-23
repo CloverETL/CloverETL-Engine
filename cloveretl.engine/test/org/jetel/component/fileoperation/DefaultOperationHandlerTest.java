@@ -130,6 +130,21 @@ public class DefaultOperationHandlerTest extends LocalOperationHandlerTest {
 			
 		};
 		manager.registerHandler(VERBOSE ? new ObservableHandler(sftpHandler) : sftpHandler);
+
+		S3OperationHandler s3Handler = new S3OperationHandler() {
+
+			@Override
+			public boolean canPerform(Operation operation) {
+				switch (operation.kind) {
+					case RESOLVE:
+						return false;
+					default: 
+						return super.canPerform(operation);
+				}
+			}
+			
+		};
+		manager.registerHandler(VERBOSE ? new ObservableHandler(s3Handler) : s3Handler);
 	}
 
 	@Override

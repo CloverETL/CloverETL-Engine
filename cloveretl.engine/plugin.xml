@@ -83,6 +83,11 @@
 		<parameter id="type" value="SMB"/>
 	</extension>
 	
+	<extension point-id="urlResolver">
+		<parameter id="className" value="org.jetel.util.protocols.amazon.S3PathResolver"/>
+		<parameter id="type" value="S3"/>
+	</extension>
+	
 	<extension point-id="authorityProxy">
 		<parameter id="type" value="PrimitiveAuthorityProxy"/>
 		<parameter id="className" value="org.jetel.graph.runtime.PrimitiveAuthorityProxy"/>

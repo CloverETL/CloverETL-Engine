@@ -230,6 +230,7 @@ public class FileManager {
 			manager.registerHandler(new PooledSFTPOperationHandler());
 			manager.registerHandler(new PooledFTPOperationHandler());
 			manager.registerHandler(new SMBOperationHandler());
+			manager.registerHandler(new S3OperationHandler());
 		}
 	}
 	
