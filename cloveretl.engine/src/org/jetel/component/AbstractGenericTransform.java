@@ -18,8 +18,10 @@
  */
 package org.jetel.component;
 
+import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.Properties;
 
@@ -30,7 +32,6 @@ import org.jetel.graph.Node;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.file.FileUtils;
-import org.jetel.util.file.SandboxUrlUtils;
 
 /**
  * The only abstract implementation of {@link GenericTransform} interface.
@@ -87,18 +88,37 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	}
 	
 	/**
-	 * Transforms project-relative path to absolute path. Use this method to work with files in your project.
-	 * @param projectRelativePath e.g. "data-in/myInput.txt"
-	 * @return absolute path
-	 * @throws MalformedURLException
+	 * Returns {@link File} for given FileURL.
+	 * @param fileUrl e.g. "data-in/myInput.txt"
+	 * @return {@link File} instance
 	 */
-	protected String toValidPath(String projectRelativePath) throws MalformedURLException {
+	protected File getFile(String fileUrl) {
 		URL contextURL = component.getGraph().getRuntimeContext().getContextURL();
-		URL fileUrl = FileUtils.getFileURL(contextURL, projectRelativePath);
-		if (SandboxUrlUtils.isSandboxUrl(fileUrl)) {
-			fileUrl = SandboxUrlUtils.toLocalFileUrl(fileUrl);
-		}
-		return fileUrl.getPath();
+		File file = FileUtils.getJavaFile(contextURL, fileUrl);
+		return file;
+	}
+	
+	/**
+	 * Returns {@link InputStream} for given FileURL.
+	 *@param fileUrl e.g. "data-in/myInput.txt"
+	 * @throws IOException
+	 */
+	protected InputStream getInputStream(String fileUrl) throws IOException {
+		URL contextURL = component.getGraph().getRuntimeContext().getContextURL();
+		InputStream is = FileUtils.getInputStream(contextURL, fileUrl);
+		return is;
+	}
+	
+	/**
+	 * Returns {@link OutputStream} for given FileURL.
+	 * @param fileUrl e.g. "data-in/myInput.txt"
+	 * @param append - If true, writing will append data to the end of the stream. This may not work for all protocols.
+	 * @throws IOException
+	 */
+	protected OutputStream getOutputStream(String fileUrl, boolean append) throws IOException {
+		URL contextURL = component.getGraph().getRuntimeContext().getContextURL();
+		OutputStream is = FileUtils.getOutputStream(contextURL, fileUrl, append, -1);
+		return is;
 	}
 	
 	/**
