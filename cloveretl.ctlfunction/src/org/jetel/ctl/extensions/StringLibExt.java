@@ -23,7 +23,6 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
-
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.util.string.UnicodeBlanks;
@@ -773,46 +772,35 @@ public class StringLibExt extends TLFunctionLibraryExt {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			// Stack layout: [arg_n], ..., arg_1, separator
+			// Stack layout: [arg_n], ..., [arg_1], separator
 
-			// Below is basically a copy of code from concatWithSeparator, but modified to use stack instead of array
-			String separator = (String) context.getParamValue(0);
-			
-			if (separator == null) {
-				for (int i = 0; i < context.getParams().length; ++i) {
-					stack.pop();
-				}
-				throw new IllegalArgumentException("Separator cannot be null.");
-			}
-			
 			if (context.getParams().length == 1) {
-				// Only one argument and this has to be separator
-				stack.popString(); // Throw away the separator argument
+				// Only one argument and this has to be separator (2 parameters required BTW)
 				stack.push("");
 				return;
 			}
-			
+
+			String[] parameters = new String[context.getParams().length - 1];
+			for (int i = parameters.length - 1; i >= 0; --i) {
+				parameters[i] = stack.popString();
+			}
+
+			String separator = stack.popString();
+			if (separator == null) {
+				throw new IllegalArgumentException("Separator cannot be null.");
+			}
+
 			StringBuilder builder = new StringBuilder();
-			Object[] stackElements = stack.getStackContents();
-			
-			for (int i = 1; i < stackElements.length; ++i) {
-				String arg = (String) stackElements[i];
-				if (UnicodeBlanks.isBlank(arg)) {
+			for (int i = 0; i < parameters.length; ++i) {
+				if (UnicodeBlanks.isBlank(parameters[i])) {
 					continue;
 				}
-
 				if (builder.length() != 0) {
 					builder.append(separator);
 				}
-				
-				builder.append(arg);
+				builder.append(parameters[i]);
 			}
 
-			//Now pop everything from the stack
-			for (int i = 0; i < context.getParams().length; ++i) {
-				stack.pop();
-			}
-			
 			stack.push(builder.toString());
 		}
 
