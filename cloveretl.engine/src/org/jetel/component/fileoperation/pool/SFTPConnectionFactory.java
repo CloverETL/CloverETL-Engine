@@ -45,7 +45,7 @@ public class SFTPConnectionFactory implements ConnectionFactory {
 
 	@Override
 	public boolean validateObject(Authority key, PoolableConnection obj) {
-		return ((PooledSFTPConnection) obj).isOpen();
+		return obj.isOpen();
 	}
 
 	@Override

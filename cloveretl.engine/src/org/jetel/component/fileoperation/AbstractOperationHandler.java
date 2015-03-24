@@ -319,11 +319,13 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 				for (URI child: simpleHandler.list(target)) {
 					delete(child, params);
 				}
+				return simpleHandler.removeDir(target);
 			} else {
 				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.cannot_remove_directory"), target)); //$NON-NLS-1$
 			}
+		} else {
+			return simpleHandler.deleteFile(target);
 		}
-		return info.isDirectory() ? simpleHandler.removeDir(target) : simpleHandler.deleteFile(target);
 	}
 
 	@Override
