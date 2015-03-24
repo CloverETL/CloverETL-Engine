@@ -70,10 +70,16 @@ public class MappingLib extends TLFunctionLibrary {
     	return m.getMappedSourceFields(targetField, sourceIdx);
     }
     
+    @TLFunctionInitAnnotation()
+    public static final void getMappedSourceFieldsInit(TLFunctionCallContext context){
+    	context.setCache(new TLMappingCache(context, 0));
+    }
+    
     private static class GetMappedSourceFieldsFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
+			getMappedSourceFieldsInit(context);
 		}
 
 		@Override
@@ -94,10 +100,16 @@ public class MappingLib extends TLFunctionLibrary {
     	return m.getMappedTargetFields(sourceField, sourceIdx);
     }
     
+    @TLFunctionInitAnnotation()
+    public static final void getMappedTargetFieldsInit(TLFunctionCallContext context){
+    	context.setCache(new TLMappingCache(context, 0));
+    }
+    
     private static class GetMappedTargetFieldsFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
+			getMappedSourceFieldsInit(context);
 		}
 
 		@Override
@@ -118,10 +130,16 @@ public class MappingLib extends TLFunctionLibrary {
     	return m.isTargetFieldMapped(targetField);
     }
     
+    @TLFunctionInitAnnotation()
+    public static final void isTargetFieldMappedInit(TLFunctionCallContext context){
+    	context.setCache(new TLMappingCache(context, 0));
+    }
+    
     private static class IsTargetFieldMappedFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
+			isTargetFieldMappedInit(context);
 		}
 
 		@Override
@@ -141,10 +159,16 @@ public class MappingLib extends TLFunctionLibrary {
     	return m.isSourceFieldMapped(sourceField, sourceIdx);
     }
     
+    @TLFunctionInitAnnotation()
+    public static final void isSourceFieldMappedInit(TLFunctionCallContext context){
+    	context.setCache(new TLMappingCache(context, 0));
+    }
+    
     private static class IsSourceFieldMappedFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
+			isSourceFieldMappedInit(context);
 		}
 
 		@Override
@@ -157,8 +181,9 @@ public class MappingLib extends TLFunctionLibrary {
 
     }
     
-    private static Mapping getMapping(TLFunctionCallContext context, String mapping) {
-    	return new Mapping(mapping);
+    private static Mapping getMapping(TLFunctionCallContext context, String mappingCode) {
+    	return ((TLMappingCache)context.getCache()).getCachedMapping(context, mappingCode);
+//    	return new Mapping(mapping);
     }
     
     private static String getElementName(String inputName){
@@ -183,7 +208,7 @@ public class MappingLib extends TLFunctionLibrary {
 		}
     }
     
-    private static class Mapping {
+    static class Mapping {
     	
     	private MappingElement[][] elements;
     	
