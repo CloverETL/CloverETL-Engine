@@ -39,12 +39,18 @@ public class ArchiveUtils {
 
 	public static final byte ZIP_HEADER[] = new byte[] {0x50, 0x4b};
 	public static final byte GZIP_HEADER[] = new byte[] {0x1f, (byte)0x8b};
-	public static final byte[] PACKD_HEADER = new byte[] {0x1F, (byte) 0x9D};
+	
+	/**
+	 * A file produced by the {@code compress} Linux utility.
+	 */
+	public static final byte[] Z_COMPRESSOR_HEADER = new byte[] {0x1F, (byte) 0x9D};
 	public static final byte TAR_HEADER[] = new byte[] {0x75, 0x73, 0x74, 0x61, 0x72};
 	
 	private static final int TAR_HEADER_OFFSET = 257;
 	
 	public static final int PUSH_BACK_SIZE = TAR_HEADER_OFFSET + TAR_HEADER.length;
+	
+	private static final int Z_COMPRESSOR_HEADER_LENGTH = Z_COMPRESSOR_HEADER.length;
 	
 	public static ArchiveType getArchiveType(PushbackInputStream stream) throws IOException {
 		
@@ -85,16 +91,17 @@ public class ArchiveUtils {
 	}
 	
 	public static InputStream getGzipInputStream(InputStream innerStream, int bufferSize) throws IOException {
-    	byte[] magic = new byte[2];
+    	byte[] magic = new byte[Z_COMPRESSOR_HEADER_LENGTH];
     	int len = 0;
 		if (innerStream.markSupported()) {
-			innerStream.mark(2);
+			innerStream.mark(Z_COMPRESSOR_HEADER_LENGTH);
 	    	len = innerStream.read(magic);
 	    	innerStream.reset();
 		} else {
 			PushbackInputStream pushBackStream = null;
 			try {
-		    	pushBackStream = new PushbackInputStream(innerStream, 2); // two bytes pushback buffer for magic header
+				// two bytes pushback buffer for magic header
+		    	pushBackStream = new PushbackInputStream(innerStream, Z_COMPRESSOR_HEADER_LENGTH);
 		    	len = pushBackStream.read(magic);
 		    	if (len > 0) {
 		    		pushBackStream.unread(magic, 0, len);
@@ -105,7 +112,7 @@ public class ArchiveUtils {
 				throw ioe;
 			}
 		}
-    	if ((len == 2) && Arrays.equals(magic, PACKD_HEADER)) {
+    	if ((len == Z_COMPRESSOR_HEADER_LENGTH) && Arrays.equals(magic, Z_COMPRESSOR_HEADER)) {
     		return new ZCompressorInputStream(innerStream);
     	}
         return new GZIPInputStream(innerStream, bufferSize);
