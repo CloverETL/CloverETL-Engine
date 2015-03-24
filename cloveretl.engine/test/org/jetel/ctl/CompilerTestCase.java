@@ -4686,11 +4686,81 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompileExpectError("test_mapping_whitespace", "Invalid member access expression");
 	}
 	
-	public void test_mapping_field_parsing(){
-		doCompile("test_mapping_field_parsing");
+	public void test_mappinglib_field_parsing(){
+		try {
+			// mapping code can not be null
+			doCompile("function integer transform(){\n" + "getMappedSourceFields(null, \"name\", 0);" + "\nreturn 0;}", "test_mappinglib_field_parsing");
+			fail();
+		} catch (RuntimeException e) {
+			if (!isCausedBy(e, NullPointerException.class)) {
+				throw e;
+			}
+		}
+
+		try {
+			// index can not be null
+			doCompile("function integer transform(){\n" + "getMappedSourceFields(\"$name=$name;$name=$firstName;$countryName=$countryName;#$phone=$field1;\", \"name\", null);" + "\nreturn 0;}", "test_mappinglib_field_parsing");
+			fail();
+		} catch (RuntimeException e) {
+			if (!isCausedBy(e, NullPointerException.class)) {
+				throw e;
+			}
+		}
+
+		try {
+			// index out of bound
+			doCompile("function integer transform(){\n" + "getMappedSourceFields(\"$name=$name;$name=$firstName;$countryName=$countryName;#$phone=$field1;\", \"name\", 2);" + "\nreturn 0;}", "test_mappinglib_field_parsing");
+			fail();
+		} catch (RuntimeException e) {
+			if (!isCausedBy(e, ArrayIndexOutOfBoundsException.class)) {
+				throw e;
+			}
+		}
+
+		try {
+			// invalid fieldname ""
+			doCompile("function integer transform(){\n" + "getMappedSourceFields(\"$name=$name;$name=;$countryName=$countryName;#$phone=$field1;\", \"name\", 0);" + "\nreturn 0;}", "test_mappinglib_field_parsing");
+			fail();
+		} catch (RuntimeException e) {
+			if (!isCausedBy(e, IllegalArgumentException.class)) {
+				throw e;
+			}
+			if (e instanceof IllegalArgumentException) {
+				assertEquals(e.getMessage(), "field name \"\" is not valid.");
+			}
+		}
+
+		try {
+			// invalid fieldname "$01myName"
+			doCompile("function integer transform(){\n" + "getMappedSourceFields(\"$name=$name;$name=$01myName;$countryName=$countryName;#$phone=$field1;\", \"name\", 0);" + "\nreturn 0;}", "test_mappinglib_field_parsing");
+			fail();
+		} catch (RuntimeException e) {
+			if (!isCausedBy(e, IllegalArgumentException.class)) {
+				throw e;
+			}
+			if (e instanceof IllegalArgumentException) {
+				assertEquals(e.getMessage(), "field name \"$01myName\" is not valid.");
+			}
+		}
+
+		try {
+			// invalid fieldname "$name(i)" - ordering allowed only on target fields
+			doCompile("function integer transform(){\n" + "getMappedSourceFields(\"$name=$name(i);#$phone=$field1;\", \"name\", 0);" + "\nreturn 0;}", "test_mappinglib_field_parsing");
+			fail();
+		} catch (RuntimeException e) {
+			if (!isCausedBy(e, IllegalArgumentException.class)) {
+				throw e;
+			}
+			if (e instanceof IllegalArgumentException) {
+				assertEquals(e.getMessage(), "field name \"$name(i)\" is not valid.");
+			}
+		}
+
+		doCompile("test_mappinglib_field_parsing");
 
 		check("sourceFields1", Arrays.asList("name", "firstName"));
 		check("sourceFields2", Arrays.asList());
+		check("sourceFields3", Arrays.asList("a", "b", "c"));
 		check("targetFields", Arrays.asList("name", "countryName"));
 		check("isSourceMapped1", new Boolean(true));
 		check("isSourceMapped2", new Boolean(false));
