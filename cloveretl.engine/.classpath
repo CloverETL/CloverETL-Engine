@@ -22,7 +22,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/xmlbeans-2.5.0-modified-for-WSC.jar" sourcepath="lib.src/xmlbeans-2.5.0-modified-for-WSC-source.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/dom4j-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-net-3.3.jar"/>
-	<classpathentry kind="lib" path="lib/commons-codec-1.6.jar"/>
+	<classpathentry kind="lib" path="lib/commons-codec-1.8.jar"/>
 	<classpathentry kind="lib" path="lib/ftp4j-1.7.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/XmlSchema-1.4.7-modified-for-WSC.jar" sourcepath="lib.src/XmlSchema-1.4.7-modified-for-WSC-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-io-2.2.jar"/>
