@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jetel.ctl.Stack;
@@ -62,7 +63,7 @@ public class MappingLib extends TLFunctionLibrary {
 	private static final Pattern SEMICOLON_PATTERN = Pattern.compile(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 	private static final Pattern ASSIGNMENT_PATTERN = Pattern.compile("\\s*=\\s*");
 	
-	private static final String ORDER_REGEX = ".*\\([adir]\\)";
+	private static final Pattern ORDER_PATTERN = Pattern.compile("(.*)\\([adir]\\)");
 	
 	// GET MAPPED SOURCE FIELDS
 	
@@ -190,8 +191,11 @@ public class MappingLib extends TLFunctionLibrary {
 	private static String getElementName(String inputName, boolean allowOrder) {
 		if (inputName.startsWith("$")) {
 			String resultName = inputName.substring(1);
-			if (allowOrder && resultName.matches(ORDER_REGEX)) {
-				resultName = resultName.substring(0, resultName.length() - 3);
+			if (allowOrder) {
+				Matcher matcher = ORDER_PATTERN.matcher(resultName);
+				if (matcher.matches()) {
+					resultName = matcher.group(1);
+				}
 			}
 			if (StringUtils.isValidObjectName(resultName)) {
 				return resultName;
