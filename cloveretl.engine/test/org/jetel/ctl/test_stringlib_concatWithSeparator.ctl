@@ -2,6 +2,7 @@ string result1;
 string result2;
 string result3;
 string result4;
+string result5;
 
 string blank;
 string variables;
@@ -14,6 +15,9 @@ function integer transform() {
 	result2 = concatWithSeparator(", ", "a", "b", "c");
 	result3 = concatWithSeparator("", "a", "b");
 	result4 = concatWithSeparator(", ", "x", " ", "\t", "y", null, "z");
+	
+	string separator = "#";
+	result5 = concatWithSeparator(separator, "a", concatWithSeparator(",", "a", "b", "c"), "b", "c");
 
 	blank = concatWithSeparator(",", null, " ");
 
@@ -23,7 +27,7 @@ function integer transform() {
 	variables = concatWithSeparator(", ", a, b, null, c, "c");
 	
 	oneElement = concatWithSeparator(",", "a");
-	//noElements = concatWithSeparator(",");
+	// noElements = concatWithSeparator(",");
 
 	return 0;
 }
