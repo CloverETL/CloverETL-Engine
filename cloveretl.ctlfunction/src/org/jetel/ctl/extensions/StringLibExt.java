@@ -786,22 +786,8 @@ public class StringLibExt extends TLFunctionLibraryExt {
 			}
 
 			String separator = stack.popString();
-			if (separator == null) {
-				throw new IllegalArgumentException("Separator cannot be null.");
-			}
 
-			StringBuilder builder = new StringBuilder();
-			for (int i = 0; i < parameters.length; ++i) {
-				if (UnicodeBlanks.isBlank(parameters[i])) {
-					continue;
-				}
-				if (builder.length() != 0) {
-					builder.append(separator);
-				}
-				builder.append(parameters[i]);
-			}
-
-			stack.push(builder.toString());
+			stack.push(concatWithSeparator(context, separator, parameters));
 		}
 
 		@Override
