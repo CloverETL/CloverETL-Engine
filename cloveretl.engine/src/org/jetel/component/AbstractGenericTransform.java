@@ -72,19 +72,25 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	/**
 	 * DataRecord objects returned by this method are re-used when this method is called repeatedly.
 	 * If you need to hold data from input DataRecords between multiple calls, use* {@link DataRecord#duplicate}
-	 * on objects returned by this method or save the data elsewhere.
+	 * on records returned by this method or save the data elsewhere.
 	 * 
 	 * @param portIdx index of port to read from
 	 * @return null if there are no more records
-	 * @throws IOException
-	 * @throws InterruptedException
 	 */
-	protected DataRecord readRecordFromPort(int portIdx) throws IOException, InterruptedException {
-		return component.readRecord(portIdx, inRecords[portIdx]);
+	protected DataRecord readRecordFromPort(int portIdx) {
+		try {
+			return component.readRecord(portIdx, inRecords[portIdx]);
+		} catch (IOException | InterruptedException e) {
+			throw new JetelRuntimeException(e);
+		}
 	}
 	
-	protected void writeRecordToPort(int portIdx, DataRecord record) throws IOException, InterruptedException {
-		component.writeRecord(portIdx, record);
+	protected void writeRecordToPort(int portIdx, DataRecord record) {
+		try {
+			component.writeRecord(portIdx, record);
+		} catch (IOException | InterruptedException e) {
+			throw new JetelRuntimeException(e);
+		}
 	}
 	
 	/**
@@ -100,7 +106,7 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	
 	/**
 	 * Returns {@link InputStream} for given FileURL.
-	 *@param fileUrl e.g. "data-in/myInput.txt"
+	 * @param fileUrl e.g. "data-in/myInput.txt"
 	 * @throws IOException
 	 */
 	protected InputStream getInputStream(String fileUrl) throws IOException {
