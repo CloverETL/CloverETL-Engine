@@ -210,6 +210,11 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	    		//print out runtime context
 	    		logger.debug("Graph runtime context: " + graph.getRuntimeContext().getAllProperties());
 	    		
+	    		if (graph.getRuntimeJobType().isSubJob()) {
+	    			logger.info("Connected input ports: " + graph.getRuntimeContext().getParentGraphInputPortsConnected());
+	    			logger.info("Connected output ports: " + graph.getRuntimeContext().getParentGraphOutputPortsConnected());
+	    		}
+	    		
 	    		//print initial dictionary content
 	    		graph.getDictionary().printContent(logger, "Initial dictionary content:");
 	    		
