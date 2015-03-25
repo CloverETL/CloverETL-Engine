@@ -61,7 +61,7 @@ public class ArchiveUtils {
 		if (Arrays.equals(ZIP_HEADER, buf)) {
 			return ArchiveType.ZIP;
 		}
-		if (Arrays.equals(GZIP_HEADER, buf)) {
+		if (Arrays.equals(GZIP_HEADER, buf) || Arrays.equals(Z_COMPRESSOR_HEADER, buf)) {
 			return ArchiveType.GZIP;
 		}
 		buf = new byte[TAR_HEADER.length + TAR_HEADER_OFFSET];
