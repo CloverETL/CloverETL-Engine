@@ -139,7 +139,7 @@ public class PooledS3Connection extends AbstractPoolableConnection {
 		}
 	}
 
-	private S3Service createService(Authority authority) throws IOException {
+	private S3Service createService(Authority authority) {
 		String accessKey = getAccessKey(authority);
 		String secretKey = getSecretKey(authority);
 
@@ -157,11 +157,7 @@ public class PooledS3Connection extends AbstractPoolableConnection {
 		}
 		// TODO https
 		
-		try {
-			return new RestS3Service(credentials, null, null, properties);
-		} catch (S3ServiceException e) {
-			throw new IOException(e);
-		}
+		return new RestS3Service(credentials, null, null, properties);
 	}
 	
 	/**
