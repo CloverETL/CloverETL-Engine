@@ -419,7 +419,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 					StorageObjectsChunk chunk = service.listObjectsChunked(bucketName, prefix, FORWARD_SLASH, Integer.MAX_VALUE, null, true);
 					String[] directories = chunk.getCommonPrefixes();
 					StorageObject[] files = chunk.getObjects();
-					result = new ArrayList<URI>(directories.length + files.length - 1);
+					result = new ArrayList<URI>(directories.length + files.length);
 					int prefixLength = prefix.length();
 					
 					for (String directory: directories) {

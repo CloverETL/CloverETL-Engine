@@ -28,6 +28,8 @@ import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
 import org.jetel.component.fileoperation.result.CreateResult;
 import org.jetel.component.fileoperation.result.DeleteResult;
+import org.jetel.component.fileoperation.result.ListResult;
+import org.jetel.util.ExceptionUtils;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -39,7 +41,8 @@ public class S3OperationHandlerTest extends OperationHandlerTestTemplate {
 
 	private S3OperationHandler handler;
 	
-	private static final String testingUri = "s3://AKIAIKRLDHY2RYHSICYA:eaA5%2fhPAsa9SNcagdNjn07SufxdNsyUQ5xsjuhzX@s3.amazonaws.com/cloveretl.engine.test/test-fo/";
+	private static final String rootUri = "s3://AKIAIKRLDHY2RYHSICYA:eaA5%2fhPAsa9SNcagdNjn07SufxdNsyUQ5xsjuhzX@s3.amazonaws.com";
+	private static final String testingUri = rootUri + "/cloveretl.engine.test/test-fo/";
 	
 	@Override
 	protected IOperationHandler createOperationHandler() {
@@ -115,6 +118,24 @@ public class S3OperationHandlerTest extends OperationHandlerTestTemplate {
 			String name = String.valueOf(i);
 			URI child = URIUtils.getChildURI(root, name);
 			manager.create(CloverURI.createSingleURI(child));
+		}
+	}
+
+	@Override
+	public void testList() throws Exception {
+		super.testList();
+		
+		// test listing a newly created bucket - used to throw IllegalArgumentException: Illegal Capacity: -1
+		CloverURI emptyBucket = CloverURI.createSingleURI(URI.create(rootUri), "cloveretl.test.empty.bucket");
+		try {
+			assumeTrue(manager.create(emptyBucket, new CreateParameters().setDirectory(true)).success());
+			ListResult listResult = manager.list(emptyBucket);
+			assertTrue(ExceptionUtils.stackTraceToString(listResult.getFirstError()), listResult.success());
+		} finally {
+			DeleteResult deleteResult = manager.delete(emptyBucket, new DeleteParameters().setRecursive(true));
+			if (!deleteResult.success()) {
+				System.err.println("Failed to delete " + deleteResult.getURI(0));
+			}
 		}
 	}
 
