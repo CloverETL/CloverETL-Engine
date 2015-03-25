@@ -7695,15 +7695,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	public void test_stringlib_concatWithSeparator() {
 		doCompile("test_stringlib_concatWithSeparator");
-		
+
 		check("result1", "a,b,c");
 		check("result2", "a, b, c");
 		check("result3", "ab");
 		check("result4", "x, y, z");
-		
+		check("result5", "a#a,b,c#b#c");
+
 		check("blank", "");
 		check("variables", "a, b, c");
-		
+
 		check("oneElement", "a");
 	}
 
