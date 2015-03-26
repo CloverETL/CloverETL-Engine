@@ -33,10 +33,10 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Element;
-
 
 /**
  * Generic component, also called Hercules.
@@ -104,6 +104,10 @@ public class GenericComponent extends Node {
 		try {
 			genericTransform.execute();
 		} catch (Exception e) {
+			if (ExceptionUtils.instanceOf(e, InterruptedException.class)) {
+				// return as fast as possible when interrupted
+				return Result.ABORTED;
+			}
 			genericTransform.executeOnError(e);
 		}
 		

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jetel.ctl.Stack;
@@ -62,6 +63,8 @@ public class MappingLib extends TLFunctionLibrary {
 	private static final Pattern SEMICOLON_PATTERN = Pattern.compile(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 	private static final Pattern ASSIGNMENT_PATTERN = Pattern.compile("\\s*=\\s*");
 	
+	private static final Pattern ORDER_PATTERN = Pattern.compile("(.*)\\([adir]\\)");
+	
 	// GET MAPPED SOURCE FIELDS
 	
     @TLFunctionAnnotation("Returns fields from the specified source mapped to the specified target field")
@@ -70,10 +73,16 @@ public class MappingLib extends TLFunctionLibrary {
     	return m.getMappedSourceFields(targetField, sourceIdx);
     }
     
+    @TLFunctionInitAnnotation()
+    public static final void getMappedSourceFieldsInit(TLFunctionCallContext context){
+    	context.setCache(new TLMappingCache(context, 0));
+    }
+    
     private static class GetMappedSourceFieldsFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
+			getMappedSourceFieldsInit(context);
 		}
 
 		@Override
@@ -94,10 +103,16 @@ public class MappingLib extends TLFunctionLibrary {
     	return m.getMappedTargetFields(sourceField, sourceIdx);
     }
     
+    @TLFunctionInitAnnotation()
+    public static final void getMappedTargetFieldsInit(TLFunctionCallContext context){
+    	context.setCache(new TLMappingCache(context, 0));
+    }
+    
     private static class GetMappedTargetFieldsFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
+			getMappedSourceFieldsInit(context);
 		}
 
 		@Override
@@ -118,10 +133,16 @@ public class MappingLib extends TLFunctionLibrary {
     	return m.isTargetFieldMapped(targetField);
     }
     
+    @TLFunctionInitAnnotation()
+    public static final void isTargetFieldMappedInit(TLFunctionCallContext context){
+    	context.setCache(new TLMappingCache(context, 0));
+    }
+    
     private static class IsTargetFieldMappedFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
+			isTargetFieldMappedInit(context);
 		}
 
 		@Override
@@ -141,10 +162,16 @@ public class MappingLib extends TLFunctionLibrary {
     	return m.isSourceFieldMapped(sourceField, sourceIdx);
     }
     
+    @TLFunctionInitAnnotation()
+    public static final void isSourceFieldMappedInit(TLFunctionCallContext context){
+    	context.setCache(new TLMappingCache(context, 0));
+    }
+    
     private static class IsSourceFieldMappedFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
+			isSourceFieldMappedInit(context);
 		}
 
 		@Override
@@ -157,19 +184,25 @@ public class MappingLib extends TLFunctionLibrary {
 
     }
     
-    private static Mapping getMapping(TLFunctionCallContext context, String mapping) {
-    	return new Mapping(mapping);
-    }
+	private static Mapping getMapping(TLFunctionCallContext context, String mappingCode) {
+		return ((TLMappingCache) context.getCache()).getCachedMapping(context, mappingCode);
+	}
     
-    private static String getElementName(String inputName){
-    	if(inputName.startsWith("$")){
-    		String resultName = inputName.substring(1);
-    		if(StringUtils.isValidObjectName(resultName)){
-        		return resultName;
-        	}
-    	}
-    	throw new IllegalArgumentException(inputName);
-    }
+	private static String getElementName(String inputName, boolean allowOrder) {
+		if (inputName.startsWith("$")) {
+			String resultName = inputName.substring(1);
+			if (allowOrder) {
+				Matcher matcher = ORDER_PATTERN.matcher(resultName);
+				if (matcher.matches()) {
+					resultName = matcher.group(1);
+				}
+			}
+			if (StringUtils.isValidObjectName(resultName)) {
+				return resultName;
+			}
+		}
+		throw new IllegalArgumentException("field name \"" + inputName + "\" is not valid.");
+	}
     
     private static class MappingElement {
     	public final String source;
@@ -177,20 +210,24 @@ public class MappingLib extends TLFunctionLibrary {
 
 		public MappingElement(String mapping) {
 			String[] split = ASSIGNMENT_PATTERN.split(mapping, 2);
-			
-			target = getElementName(split[0]);
-			source = getElementName(split[1]);
+
+			target = getElementName(split[0], true);
+			source = getElementName(split[1], false);
 		}
-    }
+	}
     
-    private static class Mapping {
+    static class Mapping {
     	
     	private MappingElement[][] elements;
     	
     	public Mapping(String code) {
-    		String[] sources = HASH_PATTERN.split(code);
+			String[] sources = HASH_PATTERN.split(code, -1);
     		elements = new MappingElement[sources.length][];
     		for (int i = 0; i < sources.length; i++) {
+				if (sources[i].trim().length() == 0) { // Ignore empty string
+					elements[i] = new MappingElement[0];
+					continue;
+				}
     			String[] elementsStr = SEMICOLON_PATTERN.split(sources[i]);
     			MappingElement[] elems = new MappingElement[elementsStr.length];
     			elements[i] = elems;

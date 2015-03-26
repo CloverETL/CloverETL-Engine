@@ -207,5 +207,13 @@ public class TLFunctionCallContext {
 	public Locale getDefaultLocale() {
 		return transformationContext.getDefaultLocale();
 	}
+	
+	/**
+	 * @param cl - target class
+	 * @return instance of {@code cl} shared by all TLFunctionCallContexts for the current transformation 
+	 */
+	public <T> T getSharedInstance(Class<T> cl) {
+		return transformationContext.getCachedInstance(cl);
+	}
 
 }
