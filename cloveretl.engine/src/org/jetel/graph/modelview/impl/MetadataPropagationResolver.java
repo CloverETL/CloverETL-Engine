@@ -131,12 +131,16 @@ public class MetadataPropagationResolver {
 		MVMetadata result = null;
 		
 		MVEdge referencedEdge = edge.getMetadataRef();
-		if (referencedEdge != null && edge.getModel().getMetadataReferenceState() == ReferenceState.VALID_REFERENCE) {
+		if (referencedEdge != null && ReferenceState.isValidState(edge.getModel().getMetadataReferenceState())) {
 			//metadata are dedicated by an edge reference
 			result = findMetadata(referencedEdge);
 			if (result != null) {
 				result.setPriority(MVMetadata.HIGH_PRIORITY);
-				result.addToOriginPath(referencedEdge);
+			} else if (isSelfReferenced(edge)) {
+				//this is used for cyclic edge references, for example edge A refers to edge B and edge B refers back to edge A
+				//in this case if we do not find metadata in the referenced edge, we try neighbour components
+				//it is necessary to allow to make two way references, for example CustomJavaComponent which propagates metadata like SimpleCopy
+				result = findMetadataFromNeighbours(edge);
 			}
 		} else if (!ReferenceState.isInvalidState(edge.getModel().getMetadataReferenceState())) {
 			//otherwise try to ask your neighbours
@@ -245,5 +249,20 @@ public class MetadataPropagationResolver {
 	public MVGraph getRootMVGraph() {
 		return mvGraph;
 	}
-	
+
+	/**
+	 * @return true if the given edge refers an other edge which recursively refers back to the given edge, false otherwise
+	 */
+	private boolean isSelfReferenced(MVEdge edge) {
+		MVEdge startEdge = edge;
+		while (edge.getMetadataRef() != null
+				&& ReferenceState.isValidState(edge.getModel().getMetadataReferenceState())) {
+			edge = edge.getMetadataRef();
+			if (edge == startEdge) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }
