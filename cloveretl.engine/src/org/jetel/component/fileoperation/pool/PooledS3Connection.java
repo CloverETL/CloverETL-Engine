@@ -84,7 +84,7 @@ public class PooledS3Connection extends AbstractPoolableConnection {
 	}
 	
 	public void init() throws IOException {
-		this.service = createService(authority);
+		this.service = createService((S3Authority) authority);
 	}
 
 	@Override
@@ -92,8 +92,8 @@ public class PooledS3Connection extends AbstractPoolableConnection {
 		this.service = null;
 	}
 
-	public static String getAccessKey(Authority uri) {
-		String userinfo = uri.getUserInfo();
+	public static String getAccessKey(S3Authority authority) {
+		String userinfo = authority.getUri().getRawUserInfo();
 		if (userinfo == null) {
 			return "";
 		}
@@ -107,8 +107,8 @@ public class PooledS3Connection extends AbstractPoolableConnection {
 		}
 	}
 	
-	public static String getSecretKey(Authority uri) {
-		String userinfo = uri.getUserInfo();
+	public static String getSecretKey(S3Authority authority) {
+		String userinfo = authority.getUri().getRawUserInfo();
 		if (userinfo == null) {
 			return "";
 		}
@@ -126,7 +126,7 @@ public class PooledS3Connection extends AbstractPoolableConnection {
 		}
 	}
 
-	private S3Service createService(Authority authority) {
+	private S3Service createService(S3Authority authority) {
 		String accessKey = getAccessKey(authority);
 		String secretKey = getSecretKey(authority);
 
