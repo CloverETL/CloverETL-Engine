@@ -18,6 +18,7 @@
  */
 package org.jetel.util;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -507,4 +508,17 @@ public class ExceptionUtils {
 		}
     }
 
+    /**
+     * Converts a {@link Throwable} to {@link IOException}.
+     * 
+     * @param t - {@link Throwable} to convert
+     * @return {@code t} wrapped in an {@link IOException}, if necessary
+     */
+	public static IOException getIOException(Throwable t) {
+		if (t instanceof IOException) {
+			return (IOException) t;
+		} else {
+			return new IOException(t);
+		}
+	}
 }

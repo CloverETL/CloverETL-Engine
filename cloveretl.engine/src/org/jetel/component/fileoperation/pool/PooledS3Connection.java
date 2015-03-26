@@ -18,32 +18,19 @@
  */
 package org.jetel.component.fileoperation.pool;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FilterInputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.jetel.graph.ContextProvider;
-import org.jetel.graph.runtime.IAuthorityProxy;
+import org.jetel.component.fileoperation.PrimitiveS3OperationHandler;
 import org.jets3t.service.Constants;
 import org.jets3t.service.Jets3tProperties;
 import org.jets3t.service.S3Service;
-import org.jets3t.service.S3ServiceException;
 import org.jets3t.service.impl.rest.httpclient.RestS3Service;
-import org.jets3t.service.model.S3Bucket;
-import org.jets3t.service.model.S3Object;
-import org.jets3t.service.model.StorageObject;
 import org.jets3t.service.security.AWSCredentials;
-import org.jets3t.service.utils.MultipartUtils;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -178,28 +165,18 @@ public class PooledS3Connection extends AbstractPoolableConnection {
 		return baseUri;
 	}
 	
-	public InputStream getInputStream(String bucketName, String key) throws IOException {
-		try {
-			S3Object object = service.getObject(bucketName, key);
-			InputStream is = object.getDataInputStream();
-			if (is == null) {
-				throw new IOException("No data available");
-			}
-			is = new FilterInputStream(is) {
-				@Override
-				public void close() throws IOException {
-					try {
-						super.close();
-					} finally {
-						returnToPool();
-					}
-				}
-			};
-			return is;
-		} catch (Exception e) {
-			returnToPool();
-			throw getIOException(e);
-		}
+	/**
+	 * Returns an {@link InputStream} for reading from the specified {@link URI}.
+	 * <p>
+	 * <b>Calling this method passes ownership of the connection to the stream.</b>
+	 * </p>
+	 * 
+	 * @param uri - source {@link URI}
+	 * @return new {@link InputStream} that takes ownership of the connection
+	 * @throws IOException
+	 */
+	public InputStream getInputStream(URI uri) throws IOException {
+		return PrimitiveS3OperationHandler.getInputStream(uri, this);
 	}
 
 	/**
@@ -208,86 +185,16 @@ public class PooledS3Connection extends AbstractPoolableConnection {
 	 * and deletes the temp file.
 	 * 
 	 * If the file size exceeds 5 GB, performs multipart upload.
+	 * <p>
+	 * <b>Calling this method passes ownership of the connection to the stream.</b>
+	 * </p>
 	 * 
-	 * @param bucketName
-	 * @param key
-	 * @return
+	 * @param uri - target {@link URI}
+	 * @return new {@link OutputStream} that takes ownership of the connection
 	 * @throws IOException
 	 */
-	public OutputStream getOutputStream(final String bucketName, final String key) throws IOException {
-		try {
-			final File tempFile = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph()).newTempFile("cloveretl-amazons3-buffer", -1);
-			
-			OutputStream os = new FilterOutputStream(new FileOutputStream(tempFile)) {
-				
-				private final AtomicBoolean uploaded = new AtomicBoolean(false);
-
-				@Override
-				public void close() throws IOException {
-					upload(); // closes and uploads the file
-				}
-
-				@Override
-				protected void finalize() throws Throwable {
-					try {
-						super.finalize();
-					} finally {
-						upload();
-					}
-				}
-				
-				private void upload() throws IOException {
-					try {
-						super.close(); // the file must be closed before upload
-					} finally {
-						if (uploaded.compareAndSet(false, true)) {
-							try {
-								S3Bucket s3bucket = new S3Bucket(bucketName); 
-								
-								S3Object uploadObject;
-								try {
-									uploadObject = new S3Object(s3bucket, tempFile);
-								} catch (NoSuchAlgorithmException e) {
-									throw new IOException(e);
-								}
-								uploadObject.setKey(key);
-								
-								if (tempFile.length() <= MultipartUtils.MAX_OBJECT_SIZE) {
-									try {
-										service.putObject(s3bucket, uploadObject);
-									} catch (S3ServiceException e) {
-										throw getIOException(e);
-									}
-								} else {
-									// CLO-4724:
-									try {
-										MultipartUtils mpUtils = new MultipartUtils(MultipartUtils.MAX_OBJECT_SIZE);
-										mpUtils.uploadObjects(bucketName, service, Arrays.asList((StorageObject) uploadObject),
-											    null // eventListener : Provide one to monitor the upload progress
-										);
-									} catch (S3ServiceException e) {
-										throw getIOException(e);
-									} catch (IOException e) {
-										throw e;
-									} catch (Exception e) {
-										throw new IOException("Multi-part file upload failed", e);
-									}
-								}
-							} finally {
-								returnToPool();
-								tempFile.delete();
-							}
-						}
-					}
-				}
-				
-			};
-			
-			return os;
-		} catch (Exception e) {
-			returnToPool();
-			throw getIOException(e);
-		}
+	public OutputStream getOutputStream(URI uri) throws IOException {
+		return PrimitiveS3OperationHandler.getOutputStream(uri, this);
 	}
 	
 }

@@ -26,7 +26,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 
-import org.jetel.component.fileoperation.PrimitiveS3OperationHandler;
 import org.jetel.component.fileoperation.pool.Authority;
 import org.jetel.component.fileoperation.pool.PooledS3Connection;
 import org.jetel.component.fileoperation.pool.S3Authority;
@@ -64,18 +63,14 @@ public class S3URLConnection extends AbstractURLConnection {
 
 	@Override
 	public InputStream getInputStream() throws IOException {
-		PooledS3Connection obj = connect(authority);
-		URI uri = getAuthority().getUri();
-		String[] path = PrimitiveS3OperationHandler.getPath(uri);
-		return obj.getInputStream(path[0], path[1]);
+		PooledS3Connection pooledConnection = connect(authority);
+		return pooledConnection.getInputStream(getAuthority().getUri());
 	}
 
 	@Override
 	public OutputStream getOutputStream() throws IOException {
-		PooledS3Connection obj = connect(authority);
-		URI uri = getAuthority().getUri();
-		String[] path = PrimitiveS3OperationHandler.getPath(uri);
-		return obj.getOutputStream(path[0], path[1]);
+		PooledS3Connection pooledConnection = connect(authority);
+		return pooledConnection.getOutputStream(getAuthority().getUri());
 	}
 
 	@Override
