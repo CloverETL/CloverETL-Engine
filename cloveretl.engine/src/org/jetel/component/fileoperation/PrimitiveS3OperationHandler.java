@@ -339,6 +339,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 						for (String dir: directories) {
 							if (dir.equals(key)) {
 								S3Object object = new S3Object(key);
+								object.setBucketName(bucketName); // important!
 								return new S3ObjectInfo(object, connection.getBaseUri());
 							}
 						}
