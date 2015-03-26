@@ -18,8 +18,10 @@
  */
 package org.jetel.component;
 
+import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.Properties;
 
@@ -30,7 +32,6 @@ import org.jetel.graph.Node;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.file.FileUtils;
-import org.jetel.util.file.SandboxUrlUtils;
 
 /**
  * The only abstract implementation of {@link GenericTransform} interface.
@@ -71,34 +72,59 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	/**
 	 * DataRecord objects returned by this method are re-used when this method is called repeatedly.
 	 * If you need to hold data from input DataRecords between multiple calls, use* {@link DataRecord#duplicate}
-	 * on objects returned by this method or save the data elsewhere.
+	 * on records returned by this method or save the data elsewhere.
 	 * 
 	 * @param portIdx index of port to read from
 	 * @return null if there are no more records
-	 * @throws IOException
-	 * @throws InterruptedException
 	 */
-	protected DataRecord readRecordFromPort(int portIdx) throws IOException, InterruptedException {
-		return component.readRecord(portIdx, inRecords[portIdx]);
+	protected DataRecord readRecordFromPort(int portIdx) {
+		try {
+			return component.readRecord(portIdx, inRecords[portIdx]);
+		} catch (IOException | InterruptedException e) {
+			throw new JetelRuntimeException(e);
+		}
 	}
 	
-	protected void writeRecordToPort(int portIdx, DataRecord record) throws IOException, InterruptedException {
-		component.writeRecord(portIdx, record);
+	protected void writeRecordToPort(int portIdx, DataRecord record) {
+		try {
+			component.writeRecord(portIdx, record);
+		} catch (IOException | InterruptedException e) {
+			throw new JetelRuntimeException(e);
+		}
 	}
 	
 	/**
-	 * Transforms project-relative path to absolute path. Use this method to work with files in your project.
-	 * @param projectRelativePath e.g. "data-in/myInput.txt"
-	 * @return absolute path
-	 * @throws MalformedURLException
+	 * Returns {@link File} for given FileURL.
+	 * @param fileUrl e.g. "data-in/myInput.txt"
+	 * @return {@link File} instance
 	 */
-	protected String toValidPath(String projectRelativePath) throws MalformedURLException {
+	protected File getFile(String fileUrl) {
 		URL contextURL = component.getGraph().getRuntimeContext().getContextURL();
-		URL fileUrl = FileUtils.getFileURL(contextURL, projectRelativePath);
-		if (SandboxUrlUtils.isSandboxUrl(fileUrl)) {
-			fileUrl = SandboxUrlUtils.toLocalFileUrl(fileUrl);
-		}
-		return fileUrl.getPath();
+		File file = FileUtils.getJavaFile(contextURL, fileUrl);
+		return file;
+	}
+	
+	/**
+	 * Returns {@link InputStream} for given FileURL.
+	 * @param fileUrl e.g. "data-in/myInput.txt"
+	 * @throws IOException
+	 */
+	protected InputStream getInputStream(String fileUrl) throws IOException {
+		URL contextURL = component.getGraph().getRuntimeContext().getContextURL();
+		InputStream is = FileUtils.getInputStream(contextURL, fileUrl);
+		return is;
+	}
+	
+	/**
+	 * Returns {@link OutputStream} for given FileURL.
+	 * @param fileUrl e.g. "data-in/myInput.txt"
+	 * @param append - If true, writing will append data to the end of the stream. This may not work for all protocols.
+	 * @throws IOException
+	 */
+	protected OutputStream getOutputStream(String fileUrl, boolean append) throws IOException {
+		URL contextURL = component.getGraph().getRuntimeContext().getContextURL();
+		OutputStream is = FileUtils.getOutputStream(contextURL, fileUrl, append, -1);
+		return is;
 	}
 	
 	/**

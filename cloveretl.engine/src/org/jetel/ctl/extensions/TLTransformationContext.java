@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Node;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.formatter.TimeZoneProvider;
@@ -75,4 +76,17 @@ public class TLTransformationContext {
 		return locale;
 	}
 
+	public <T> T getCachedInstance(Class<T> cl) throws JetelRuntimeException {
+		@SuppressWarnings("unchecked")
+		T instance = (T) cache.get(cl);
+		if (instance == null) {
+			try {
+				instance = cl.newInstance();
+				cache.put(cl, instance);
+			} catch (Exception e) {
+				throw new JetelRuntimeException("Failed to create an instance of " + cl, e);
+			}
+		}
+		return instance;
+	}
 }
