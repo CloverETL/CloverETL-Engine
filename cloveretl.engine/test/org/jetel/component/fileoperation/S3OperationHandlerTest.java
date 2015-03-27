@@ -26,6 +26,8 @@ import java.net.URISyntaxException;
 
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
+import org.jetel.component.fileoperation.pool.PooledS3Connection;
+import org.jetel.component.fileoperation.pool.S3Authority;
 import org.jetel.component.fileoperation.result.CreateResult;
 import org.jetel.component.fileoperation.result.DeleteResult;
 import org.jetel.component.fileoperation.result.ListResult;
@@ -138,5 +140,15 @@ public class S3OperationHandlerTest extends OperationHandlerTestTemplate {
 			}
 		}
 	}
-
+	
+	public void testGetSecretKey() {
+		URI uri = URI.create("s3://ACCESSKEY:5XyJ3MFWZKd%2BBJ4C3ushhLQYIXBqbNTSK7EDzXLw@s3.amazonaws.com/jharazim.redshift.etl");
+		S3Authority authority = new S3Authority(uri);
+		String secretKey = PooledS3Connection.getSecretKey(authority);
+		assertEquals("5XyJ3MFWZKd+BJ4C3ushhLQYIXBqbNTSK7EDzXLw", secretKey);
+		
+		authority = new S3Authority(baseUri);
+		assertEquals("eaA5/hPAsa9SNcagdNjn07SufxdNsyUQ5xsjuhzX", PooledS3Connection.getSecretKey(authority));
+	}
+	
 }
