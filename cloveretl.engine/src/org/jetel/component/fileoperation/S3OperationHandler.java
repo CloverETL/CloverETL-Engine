@@ -36,11 +36,14 @@ import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 public class S3OperationHandler extends AbstractOperationHandler {
 	
 	public static final String S3_SCHEME = "s3";
+	
+	private final PrimitiveS3OperationHandler s3handler;
 
 	private FileManager manager = FileManager.getInstance();
 
 	public S3OperationHandler() {
 		super(new PrimitiveS3OperationHandler());
+		this.s3handler = (PrimitiveS3OperationHandler) simpleHandler;
 	}
 
 	@Override
@@ -124,6 +127,14 @@ public class S3OperationHandler extends AbstractOperationHandler {
 		} else {
 			throw new UnsupportedOperationException();
 		}
+	}
+
+	/**
+	 * Overridden to speed up directory listing in File URL dialog.
+	 */
+	@Override
+	protected List<Info> listDirectory(URI uri) throws IOException {
+		return s3handler.listFiles(uri);
 	}
 
 	@Override

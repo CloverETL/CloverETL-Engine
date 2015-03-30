@@ -309,6 +309,13 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		return info;
 	}
 	
+	private static Info getDirectoryInfo(String dirName, URI uri) {
+		if (dirName.endsWith(FORWARD_SLASH)) {
+			dirName = dirName.substring(0, dirName.length() - 1);
+		}
+		return new SimpleInfo(dirName, uri).setType(Type.DIR);
+	}
+	
 	/**
 	 * Returns an {@link Info} instance for the specified bucketName and key.
 	 * If the key does not end with a slash,
@@ -402,9 +409,8 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 			disconnect(connection);
 		}
 	}
-
-	@Override
-	public List<URI> list(URI target) throws IOException {
+	
+	public List<Info> listFiles(URI target) throws IOException {
 		target = target.normalize();
 		PooledS3Connection connection = null;
 		try {
@@ -417,33 +423,32 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 				prefix = appendSlash(path[1]);
 			}
 			try {
-				List<URI> result;
+				URI baseUri = connection.getBaseUri();
+				List<Info> result;
 				if (bucketName.isEmpty()) { // root - list buckets
 					S3Bucket[] buckets = service.listAllBuckets();
-					result = new ArrayList<URI>(buckets.length);
-					URI baseUri = connection.getBaseUri();
+					result = new ArrayList<Info>(buckets.length);
 					for (S3Bucket bucket: buckets) {
-						result.add(getUri(baseUri, bucket.getName() + FORWARD_SLASH));
+						result.add(getBucketInfo(bucket.getName(), baseUri));
 					}
 				} else {
 					StorageObjectsChunk chunk = service.listObjectsChunked(bucketName, prefix, FORWARD_SLASH, Integer.MAX_VALUE, null, true);
 					String[] directories = chunk.getCommonPrefixes();
 					StorageObject[] files = chunk.getObjects();
-					result = new ArrayList<URI>(directories.length + files.length);
+					result = new ArrayList<Info>(directories.length + files.length);
 					int prefixLength = prefix.length();
 					
 					for (String directory: directories) {
 						String name = directory.substring(prefixLength);
 						URI uri = URIUtils.getChildURI(target, name);
-						result.add(uri);
+						result.add(getDirectoryInfo(name, uri));
 					}
 					
 					for (StorageObject object: files) {
 						String key = object.getKey();
 						if (key.length() > prefixLength) { // skip the parent directory itself
-							S3ObjectInfo info = new S3ObjectInfo(object);
-							URI uri = URIUtils.getChildURI(target, info.getName());
-							result.add(uri);
+							S3ObjectInfo info = new S3ObjectInfo(object, baseUri);
+							result.add(info);
 						}
 					}
 				}
@@ -454,6 +459,16 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		} finally {
 			disconnect(connection);
 		}
+	}
+
+	@Override
+	public List<URI> list(URI target) throws IOException {
+		List<Info> files = listFiles(target);
+		List<URI> result = new ArrayList<>(files.size());
+		for (Info file: files) {
+			result.add(file.getURI());
+		}
+		return result;
 	}
 	
 	/**
@@ -483,13 +498,6 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		
 		private final boolean directory;
 		
-		/**
-		 * @param object
-		 */
-		public S3ObjectInfo(StorageObject object) throws IOException {
-			this(object, null);
-		}
-
 		public S3ObjectInfo(StorageObject object, URI baseUri) throws IOException {
 			this.object = object;
 			if (baseUri != null) {
