@@ -259,6 +259,9 @@ public class TransformationGraphXMLReaderWriter {
     private final Marshaller graphParameterMarshaller;
     private final Unmarshaller graphParameterUnmarshaller;
     
+    /**  List of exceptions, which were suppressed with lenient parsing */
+    private List<Throwable> suppressedExceptions = new ArrayList<>();
+    
     /**
      * Instantiates transformation graph from a given input stream and presets a given properties.
      * @param graphStream graph in XML form stored in character stream
@@ -1246,11 +1249,13 @@ public class TransformationGraphXMLReaderWriter {
 	}
 
 	private void throwXMLConfigurationException(String message, Throwable cause) throws XMLConfigurationException {
+		XMLConfigurationException e = new XMLConfigurationException(message, cause);
 		if (isStrictParsing()) {
-			throw new XMLConfigurationException(message, cause);
+			throw e;
 		} else {
 			//strict mode is off, so exception is logged only on debug level
-			logger.debug("Graph factorization failed (strictMode = false): " + message, cause);
+			logger.debug("Graph factorization failed (strictMode = false)", e);
+			suppressedExceptions.add(e);
 		}
 	}
 	
@@ -1284,6 +1289,14 @@ public class TransformationGraphXMLReaderWriter {
 	 */
 	public void setOnlyParamsAndDict(boolean onlyParamsAndDict) {
 		this.onlyParamsAndDict = onlyParamsAndDict;
+	}
+	
+	/**
+	 * @return list of exceptions, which were suppressed with lenient parsing
+	 * @see #setStrictParsing(boolean) 
+	 */
+	public List<Throwable> getSuppressedExceptions() {
+		return suppressedExceptions;
 	}
 	
 	@Deprecated
