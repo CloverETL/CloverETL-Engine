@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.graph.GraphElement;
+import org.jetel.util.CloverPublicAPI;
 
 /**
  * This class is return value of all checkConfig() methods in the engine.
@@ -32,6 +33,7 @@ import org.jetel.graph.GraphElement;
  *
  * @created 24.11.2006
  */
+@CloverPublicAPI
 public class ConfigurationStatus extends LinkedList<ConfigurationProblem> {
 
 	private static final long serialVersionUID = -8680194056314131978L;

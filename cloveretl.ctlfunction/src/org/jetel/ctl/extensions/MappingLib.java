@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jetel.ctl.Stack;
@@ -61,6 +62,8 @@ public class MappingLib extends TLFunctionLibrary {
 	private static final Pattern HASH_PATTERN = Pattern.compile("#");
 	private static final Pattern SEMICOLON_PATTERN = Pattern.compile(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 	private static final Pattern ASSIGNMENT_PATTERN = Pattern.compile("\\s*=\\s*");
+	
+	private static final Pattern ORDER_PATTERN = Pattern.compile("(.*)\\([adir]\\)");
 	
 	// GET MAPPED SOURCE FIELDS
 	
@@ -181,20 +184,25 @@ public class MappingLib extends TLFunctionLibrary {
 
     }
     
-    private static Mapping getMapping(TLFunctionCallContext context, String mappingCode) {
-    	return ((TLMappingCache)context.getCache()).getCachedMapping(context, mappingCode);
-//    	return new Mapping(mapping);
-    }
+	private static Mapping getMapping(TLFunctionCallContext context, String mappingCode) {
+		return ((TLMappingCache) context.getCache()).getCachedMapping(context, mappingCode);
+	}
     
-    private static String getElementName(String inputName){
-    	if(inputName.startsWith("$")){
-    		String resultName = inputName.substring(1);
-    		if(StringUtils.isValidObjectName(resultName)){
-        		return resultName;
-        	}
-    	}
-    	throw new IllegalArgumentException(inputName);
-    }
+	private static String getElementName(String inputName, boolean allowOrder) {
+		if (inputName.startsWith("$")) {
+			String resultName = inputName.substring(1);
+			if (allowOrder) {
+				Matcher matcher = ORDER_PATTERN.matcher(resultName);
+				if (matcher.matches()) {
+					resultName = matcher.group(1);
+				}
+			}
+			if (StringUtils.isValidObjectName(resultName)) {
+				return resultName;
+			}
+		}
+		throw new IllegalArgumentException("field name \"" + inputName + "\" is not valid.");
+	}
     
     private static class MappingElement {
     	public final String source;
@@ -202,20 +210,24 @@ public class MappingLib extends TLFunctionLibrary {
 
 		public MappingElement(String mapping) {
 			String[] split = ASSIGNMENT_PATTERN.split(mapping, 2);
-			
-			target = getElementName(split[0]);
-			source = getElementName(split[1]);
+
+			target = getElementName(split[0], true);
+			source = getElementName(split[1], false);
 		}
-    }
+	}
     
     static class Mapping {
     	
     	private MappingElement[][] elements;
     	
     	public Mapping(String code) {
-    		String[] sources = HASH_PATTERN.split(code);
+			String[] sources = HASH_PATTERN.split(code, -1);
     		elements = new MappingElement[sources.length][];
     		for (int i = 0; i < sources.length; i++) {
+				if (sources[i].trim().length() == 0) { // Ignore empty string
+					elements[i] = new MappingElement[0];
+					continue;
+				}
     			String[] elementsStr = SEMICOLON_PATTERN.split(sources[i]);
     			MappingElement[] elems = new MappingElement[elementsStr.length];
     			elements[i] = elems;

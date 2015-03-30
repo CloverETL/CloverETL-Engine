@@ -56,7 +56,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
@@ -639,11 +638,11 @@ public class FileUtils {
         if (archiveType == ArchiveType.ZIP) {
         	return getZipInputStream(innerStream, anchor); // CL-2579
         } else if (archiveType == ArchiveType.GZIP) {
-            return new GZIPInputStream(innerStream, Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+            return ArchiveUtils.getGzipInputStream(innerStream);
         } else if (archiveType == ArchiveType.TAR) {
         	return getTarInputStream(innerStream, anchor);
         } else if (archiveType == ArchiveType.TGZ) {
-        	return getTarInputStream(new GZIPInputStream(innerStream, Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE), anchor);
+        	return getTarInputStream(ArchiveUtils.getGzipInputStream(innerStream), anchor);
         }
         
         return innerStream;

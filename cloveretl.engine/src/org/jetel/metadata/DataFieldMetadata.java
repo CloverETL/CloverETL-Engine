@@ -868,6 +868,14 @@ public class DataFieldMetadata implements Serializable {
 			return trim;
 		}
 	}
+	
+	/**
+	 * Allows to find out if trim is set explicitly (returns null if it isn't)
+	 * CLO-5975
+	 */
+	public Boolean getTrim() {
+		return trim;
+	}
 
 	/**
 	 * @return true if leading blank characters should be skipped
