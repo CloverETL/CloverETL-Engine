@@ -19,7 +19,6 @@
 package org.jetel.component;
 
 import java.nio.charset.Charset;
-import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
@@ -62,7 +61,6 @@ public class GenericComponent extends Node {
 	private String charset = null;
 	
 	private GenericTransform genericTransform = null;
-	private Properties transformationParameters = null;
 	
 	/**
 	 * Just for blank reading records that the transformation left unread.
@@ -90,7 +88,7 @@ public class GenericComponent extends Node {
 		super.init();
 		initRecords();
 		genericTransform = getTransformFactory().createTransform();
-		genericTransform.init(transformationParameters);
+		genericTransform.init();
 	}
 
     @Override
@@ -172,8 +170,8 @@ public class GenericComponent extends Node {
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
 		
-		//check GenericTransform
-		getTransformFactory().checkConfig(status);
+		GenericTransform transform = getTransformFactory().createTransform();
+		transform.checkConfig(status); // delegating to implemented method
 		
         return status;
 	}
@@ -195,16 +193,7 @@ public class GenericComponent extends Node {
         genericComponent.setGenericTransformURL(xattribs.getStringEx(XML_GENERIC_TRANSFORM_URL_ATTRIBUTE, null, RefResFlag.URL));
         genericComponent.setGenericTransformClass(xattribs.getString(XML_GENERIC_TRANSFORM_CLASS_ATTRIBUTE, null));
         
-        genericComponent.setTransformationParameters(xattribs.attributes2Properties(new String[] {
-        		XML_ID_ATTRIBUTE,
-        		XML_GENERIC_TRANSFORM_ATTRIBUTE,
-        		XML_GENERIC_TRANSFORM_URL_ATTRIBUTE,
-        		XML_GENERIC_TRANSFORM_CLASS_ATTRIBUTE}));
 		return genericComponent;
-	}
-
-	public void setTransformationParameters(Properties transformationParameters) {
-		this.transformationParameters = transformationParameters;
 	}
 
 	public String getCharset() {

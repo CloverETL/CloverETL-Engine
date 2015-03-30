@@ -23,11 +23,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Node;
 import org.jetel.metadata.DataRecordMetadata;
@@ -57,15 +57,19 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 		DataRecordMetadata[] inMeta = getComponent().getInMetadataArray();
 		inRecords = new DataRecord[inMeta.length];
 		for (int i = 0; i < inRecords.length; i++) {
-			inRecords[i] = DataRecordFactory.newRecord(inMeta[i]);
-			inRecords[i].init();
+			if (inMeta[i] != null) {
+				inRecords[i] = DataRecordFactory.newRecord(inMeta[i]);
+				inRecords[i].init();
+			}
 		}
-		
+
 		DataRecordMetadata[] outMeta = getComponent().getOutMetadataArray();
 		outRecords = new DataRecord[outMeta.length];
 		for (int i = 0; i < outRecords.length; i++) {
-			outRecords[i] = DataRecordFactory.newRecord(outMeta[i]);
-			outRecords[i].init();
+			if (outMeta[i] != null) {
+				outRecords[i] = DataRecordFactory.newRecord(outMeta[i]);
+				outRecords[i].init();
+			}
 		}
 	}
 	
@@ -146,8 +150,13 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	 * If you override this method, ALWAYS call super.init()
 	 */
 	@Override
-	public void init(Properties properties) {
+	public void init() {
 		initRecords();
+	}
+	
+	@Override
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		return status;
 	}
 
 	@Override

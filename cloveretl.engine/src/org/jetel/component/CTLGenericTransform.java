@@ -42,8 +42,6 @@ import org.jetel.util.ExceptionUtils;
  * @created 5. 1. 2015
  */
 public abstract class CTLGenericTransform extends CTLAbstractTransform implements GenericTransform {
-	
-	Properties additionalProperties;
 
     public static final String EXECUTE_FUNCTION_NAME = "execute";
 
@@ -57,8 +55,7 @@ public abstract class CTLGenericTransform extends CTLAbstractTransform implement
 	private DataRecord[] outputRecords = null;
 
 	@Override
-	public final void init(Properties properties) {
-		additionalProperties = properties;
+	public final void init() {
 		try {
 			globalScopeInit();
 
