@@ -4761,6 +4761,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("sourceFields1", Arrays.asList("name", "firstName"));
 		check("sourceFields2", Arrays.asList());
 		check("sourceFields3", Arrays.asList("a", "b", "c"));
+		check("sourceFields4", Arrays.asList("name", "firstName"));
 		check("targetFields", Arrays.asList("name", "countryName"));
 		check("isSourceMapped1", new Boolean(true));
 		check("isSourceMapped2", new Boolean(false));
