@@ -29,6 +29,7 @@ import org.jetel.component.fileoperation.PrimitiveS3OperationHandler;
 import org.jets3t.service.Constants;
 import org.jets3t.service.Jets3tProperties;
 import org.jets3t.service.S3Service;
+import org.jets3t.service.ServiceException;
 import org.jets3t.service.impl.rest.httpclient.RestS3Service;
 import org.jets3t.service.security.AWSCredentials;
 
@@ -80,7 +81,7 @@ public class PooledS3Connection extends AbstractPoolableConnection {
 	
 	@Override
 	public boolean isOpen() {
-		return (service != null);
+		return (service != null) && !service.isShutdown();
 	}
 	
 	public void init() throws IOException {
@@ -89,7 +90,15 @@ public class PooledS3Connection extends AbstractPoolableConnection {
 
 	@Override
 	public void close() throws IOException {
-		this.service = null;
+		if (service != null) {
+			try {
+				service.shutdown();
+			} catch (ServiceException e) {
+				throw new IOException(e);
+			} finally {
+				this.service = null;
+			}
+		}
 	}
 
 	public static String getAccessKey(S3Authority authority) {
