@@ -27,6 +27,8 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -170,9 +172,12 @@ public class GenericComponent extends Node {
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
 		
-		GenericTransform transform = getTransformFactory().createTransform();
-		transform.checkConfig(status); // delegating to implemented method
-		
+		try {
+			GenericTransform transform = getTransformFactory().createTransform();
+			transform.checkConfig(status); // delegating to implemented method
+		} catch (org.jetel.exception.LoadClassException e) {
+			status.add(e.getMessage() + " . Make sure to set classpath correctly.", Severity.WARNING, this, Priority.NORMAL);
+		}
         return status;
 	}
 	
