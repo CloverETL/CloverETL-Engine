@@ -49,6 +49,7 @@ import org.jetel.component.fileoperation.pool.S3Authority;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.util.ExceptionUtils;
+import org.jetel.util.string.StringUtils;
 import org.jets3t.service.S3Service;
 import org.jets3t.service.S3ServiceException;
 import org.jets3t.service.ServiceException;
@@ -609,7 +610,11 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 			uri = uri.normalize();
 			S3Service service = connection.getService();
 			String[] path = getPath(uri);
-			S3Object object = service.getObject(path[0], path[1]);
+			String bucketName = path[0];
+			if (path.length < 2) {
+				throw new IOException(StringUtils.isEmpty(bucketName) ? "Cannot read from the root directory" : "Cannot read from bucket root directory");
+			}
+			S3Object object = service.getObject(bucketName, path[1]);
 			InputStream is = object.getDataInputStream();
 			if (is == null) {
 				throw new IOException("No data available");
@@ -649,6 +654,9 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 			final S3Service service = connection.getService();
 			String[] path = getPath(uri);
 			final String bucketName = path[0];
+			if (path.length < 2) {
+				throw new IOException(StringUtils.isEmpty(bucketName) ? "Cannot write to the root directory" : "Cannot write to bucket root directory");
+			}
 			final String key = path[1];
 			
 			URI parentUri = URIUtils.getParentURI(uri);
