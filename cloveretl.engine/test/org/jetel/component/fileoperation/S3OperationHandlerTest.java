@@ -23,6 +23,7 @@ import static org.junit.Assume.assumeTrue;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Date;
 
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
@@ -108,9 +109,26 @@ public class S3OperationHandlerTest extends OperationHandlerTestTemplate {
 		assertTrue(handler.canPerform(Operation.write(S3OperationHandler.S3_SCHEME)));
 	}
 
+	// overridden - setting last modified date is not supported
 	@Override
 	public void testCreateDated() throws Exception {
-		// FIXME overridden - setting last modified date is not supported
+		CloverURI uri;
+		CreateResult result;
+		UnsupportedOperationException exception;
+				
+		uri = relativeURI("lastModified.tmp");
+		result = manager.create(uri, new CreateParameters().setMakeParents(true).setLastModified(new Date()));
+		assertFalse(result.success());
+		assertFalse(manager.exists(uri));
+		exception = (UnsupportedOperationException) ExceptionUtils.getRootCause(result.getFirstError());
+		assertEquals("Setting last modification date is not supported by S3", exception.getMessage());
+		
+		uri = relativeURI("lastModifiedDir");
+		result = manager.create(uri, new CreateParameters().setMakeParents(true).setDirectory(true).setLastModified(new Date()));
+		assertFalse(result.success());
+		assertFalse(manager.exists(uri));
+		exception = (UnsupportedOperationException) ExceptionUtils.getRootCause(result.getFirstError());
+		assertEquals("Setting last modification date is not supported by S3", exception.getMessage());
 	}
 
 	@Override

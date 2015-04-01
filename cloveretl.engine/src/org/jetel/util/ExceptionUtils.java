@@ -374,6 +374,19 @@ public class ExceptionUtils {
 		
 		return result;
 	}
+	
+	/**
+	 * Returns the root cause exception of {@code t}.
+	 * 
+	 * @param t - a {@link Throwable}
+	 * @return root cause exception
+	 */
+	public static Throwable getRootCause(Throwable t) {
+		while (t.getCause() != null) {
+			t = t.getCause();
+		}
+		return t;
+	}
 
 	/**
 	 * Print given message to logger. The message is surrounded in an ascii-art frame.  

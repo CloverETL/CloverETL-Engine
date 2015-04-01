@@ -138,6 +138,14 @@ public class S3OperationHandler extends AbstractOperationHandler {
 	}
 
 	@Override
+	public SingleCloverURI create(SingleCloverURI target, CreateParameters params) throws IOException {
+		if (params.getLastModified() != null) {
+			throw new UnsupportedOperationException("Setting last modification date is not supported by S3");
+		}
+		return super.create(target, params);
+	}
+
+	@Override
 	public String toString() {
 		return "S3OperationHandler";
 	}
