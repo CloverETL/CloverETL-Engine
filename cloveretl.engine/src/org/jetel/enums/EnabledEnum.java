@@ -38,8 +38,8 @@ import org.jetel.graph.TransformationGraph;
  * To enabled a component use one of instances ENABLED and TRUE, and to disable a component
  * use one of the instances DISABLED, PASS_THROUGH and FALSE.
  * 
- * For conditional enabling use following pattern ENABLE_WHEN_(INPUT_PORT|OUTPUT_PORT)_(\\d?)_IS_(CONNECTED|DISCONNECTED),
- * for example: ENABLE_WHEN_INPUT_PORT_0_IS_CONNECTED, ENABLE_WHEN_OUTPUT_PORT_1_IS_DISCONNECTED 
+ * For conditional enabling use following pattern enableWhen(InputPort|OutputPort)_(\\d?)Is(Connected|Disconnected),
+ * for example: enableWhenInputPort0IsConnected, enableWhenOutputPort1IsDisconnected 
  *  
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
@@ -48,24 +48,27 @@ import org.jetel.graph.TransformationGraph;
  */
 public class EnabledEnum {
    
-    public static final EnabledEnum ENABLED = new EnabledEnum("enabled", true);
-    public static final EnabledEnum DISABLED = new EnabledEnum("disabled", false);
-    public static final EnabledEnum PASS_THROUGH = new EnabledEnum("passThrough", false); //deprecated - use DISABLED or FALSE
-    public static final EnabledEnum TRUE = new EnabledEnum("true", true);
-    public static final EnabledEnum FALSE = new EnabledEnum("false", false);
+    public static final EnabledEnum ENABLED = new EnabledEnum("enabled", "Enabled", true);
+    public static final EnabledEnum DISABLED = new EnabledEnum("disabled", "Disabled", false);
+    public static final EnabledEnum PASS_THROUGH = new EnabledEnum("passThrough", "Pass through", false); //deprecated - use DISABLED or FALSE
+    public static final EnabledEnum TRUE = new EnabledEnum("true", "Enabled", true);
+    public static final EnabledEnum FALSE = new EnabledEnum("false", "Disabled", false);
     
     private static final EnabledEnum[] values = new EnabledEnum[] { ENABLED, DISABLED, PASS_THROUGH, TRUE, FALSE }; 
     
     private String id;
     
+    private String label;
+    
     private boolean enabled;
 
 	private EnabledEnum(String id) {
-		this.id = id;
+		this(id, null, false);
 	}
     
-    private EnabledEnum(String id, boolean enabled) {
+    private EnabledEnum(String id, String label, boolean enabled) {
         this.id = id;
+        this.label = label;
         this.enabled = enabled;
     }
     
@@ -91,6 +94,10 @@ public class EnabledEnum {
         return result != null ? result : defaultValue;
     }
     
+    public String getLabel() {
+    	return label;
+    }
+    
 	/**
      * @return true if a component with this value is kept enabled, false 
      *  if a component with this value is removed from graph
@@ -100,7 +107,7 @@ public class EnabledEnum {
     }
     
     /**
-     * @return true for dynamic enable values (for example ENABLE_WHEN_INPUT_PORT_0_IS_CONNECTED)
+     * @return true for dynamic enable values (for example enableWhenInputPort0IsConnected)
      */
     public boolean isDynamic() {
     	return false;
@@ -115,7 +122,7 @@ public class EnabledEnum {
      * This class handles dynamic 'enable' constants derived from subgraph ports.
      */
     public static class SubgraphPortsDynamicValues {
-    	private static final String PATTERN_STRING = "ENABLE_WHEN_(INPUT_PORT|OUTPUT_PORT)_(\\d?)_IS_(CONNECTED|DISCONNECTED)";
+    	private static final String PATTERN_STRING = "enableWhen(InputPort|OutputPort)(\\d?)Is(Connected|Disconnected)";
     	
     	private static final Pattern PATTERN = Pattern.compile(PATTERN_STRING);
     	
@@ -126,9 +133,9 @@ public class EnabledEnum {
 		private static EnabledEnum fromString(String id) {
 			Matcher matcher = PATTERN.matcher(id);
 			if (matcher.matches()) {
-				boolean inputPort = matcher.group(1).equals("INPUT_PORT");
+				boolean inputPort = matcher.group(1).equals("InputPort");
 				int portIndex = Integer.parseInt(matcher.group(2));
-				boolean connected = matcher.group(3).equals("CONNECTED");
+				boolean connected = matcher.group(3).equals("Connected");
 				return new SubgraphPortsEnabledEnum(id, inputPort, portIndex, connected);
 			} else {
 				return null;
@@ -141,10 +148,14 @@ public class EnabledEnum {
 		 * @param connected true for connected subgraph port
 		 * @return name of dynamic 'enable' constant based on subgraph ports 
 		 */
-		public static String getName(boolean inputPort, int portIndex, boolean connected) {
-			return "ENABLE_WHEN_" + (inputPort ? "INPUT_PORT" : "OUTPUT_PORT") + "_" + portIndex + "_IS_" + (connected ? "CONNECTED" : "DISCONNECTED");
+		public static String getId(boolean inputPort, int portIndex, boolean connected) {
+			return "enableWhen" + (inputPort ? "InputPort" : "OutputPort") + portIndex + "Is" + (connected ? "Connected" : "Disconnected");
 		}
-		
+
+		public static String getLabel(boolean inputPort, int portIndex, boolean connected) {
+			return "Enable when " + (inputPort ? "input port" : "output port") + " " + portIndex + " is " + (connected ? "connected" : "disconnected");
+		}
+
     	/**
     	 * EnabledEnum which represents dynamic 'enable' constant base on subgraph ports.
     	 */
@@ -160,6 +171,11 @@ public class EnabledEnum {
 				this.connected = connected;
 			}
     		
+			@Override
+			public String getLabel() {
+				return SubgraphPortsDynamicValues.getLabel(inputPort, portIndex, connected);
+			}
+			
     		@Override
     		public boolean isEnabled() {
     			TransformationGraph graph = ContextProvider.getGraph();
