@@ -344,12 +344,14 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
     			throw new ComponentNotReadyException("Unable to read metadata definition from CloverData file", e);
     		}
         	
-        	// CLO-4591:
-        	DataRecordMetadata nonAutofilledFieldsMetadata = MetadataUtils.getNonAutofilledFieldsMetadata(metadata);
-	    	if (!nonAutofilledFieldsMetadata.equals(version.metadata, false)) {
-				logger.error("Data structure of input file is not compatible with used metadata. File data structure: " + version.metadata.toStringDataTypes());
-				throw new ComponentNotReadyException("Data structure of input file is not compatible with used metadata. More details available in log.");
-	    	}
+        	if (metadata != null) {
+            	// CLO-4591:
+            	DataRecordMetadata nonAutofilledFieldsMetadata = MetadataUtils.getNonAutofilledFieldsMetadata(metadata);
+    	    	if (!nonAutofilledFieldsMetadata.equals(version.metadata, false)) {
+    				logger.error("Data structure of input file is not compatible with used metadata. File data structure: " + version.metadata.toStringDataTypes());
+    				throw new ComponentNotReadyException("Data structure of input file is not compatible with used metadata. More details available in log.");
+    	    	}
+        	}
         	
     		break;
     		default:
