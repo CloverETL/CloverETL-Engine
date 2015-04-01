@@ -18,8 +18,7 @@
  */
 package org.jetel.component;
 
-import java.util.Properties;
-
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.util.CloverPublicAPI;
 
 
@@ -34,12 +33,14 @@ import org.jetel.util.CloverPublicAPI;
 @CloverPublicAPI
 public interface GenericTransform extends Transform {
 	
-	public void init(Properties properties);
+	public void init();
 	
 	public void execute();
 	
 	public void executeOnError(Exception e);
 	
 	public void free();
+
+	public ConfigurationStatus checkConfig(ConfigurationStatus status);
 	
 }

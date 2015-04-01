@@ -28,6 +28,7 @@ import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.ExceptionUtils;
 
@@ -41,8 +42,6 @@ import org.jetel.util.ExceptionUtils;
  * @created 5. 1. 2015
  */
 public final class CTLGenericTransformAdapter extends CTLAbstractTransformAdapter implements GenericTransform {
-	
-	Properties additionalProperties;
 
 	private final Object[] onErrorArguments = new Object[2];
 
@@ -88,8 +87,7 @@ public final class CTLGenericTransformAdapter extends CTLAbstractTransformAdapte
 	 * @return True if successful, otherwise False
 	 */
 	@Override
-	public final void init(Properties properties) {
-		additionalProperties = properties;
+	public final void init() {
         // initialize global scope and call user initialization function
 		try {
 			super.init();
@@ -131,6 +129,12 @@ public final class CTLGenericTransformAdapter extends CTLAbstractTransformAdapte
 		if (freeFunction != null) {
 			executor.executeFunction(freeFunction, NO_ARGUMENTS, inputRecords, outputRecords);
 		}
+	}
+
+	@Override
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		// no action, only java is supported in GenericComponent for now
+		return status;
 	}
 
 }

@@ -395,24 +395,24 @@ public final class TransformationGraph extends GraphElement {
 	/**
 	 * Gets the dataRecordMetadata registered under given name (ID)
 	 * 
-	 * @param name name (the ID) under which dataRecordMetadata has been registered with graph
+	 * @param metadataId The ID under which dataRecordMetadata has been registered with graph
 	 * @return
 	 */
-	public DataRecordMetadata getDataRecordMetadata(String name) {
-		return getDataRecordMetadata(name, true);
+	public DataRecordMetadata getDataRecordMetadata(String metadataId) {
+		return getDataRecordMetadata(metadataId, true);
 	}
 	
-	public DataRecordMetadata getDataRecordMetadata(String name, boolean forceFromStub) {
-		Object metadata = dataRecordMetadata.get(name);
+	public DataRecordMetadata getDataRecordMetadata(String metadataId, boolean forceFromStub) {
+		Object metadata = dataRecordMetadata.get(metadataId);
 		if (metadata != null && metadata instanceof DataRecordMetadataStub) {
 			if (forceFromStub) {
 				try {
 					metadata = ((DataRecordMetadataStub)metadata).createMetadata();
-					dataRecordMetadata.put(name, (DataRecordMetadata) metadata);
+					dataRecordMetadata.put(metadataId, (DataRecordMetadata) metadata);
 				} catch (UnsupportedOperationException e) {
-					throw new JetelRuntimeException("Creating metadata '" + name + "' from stub not defined for this connection: ", e);
+					throw new JetelRuntimeException("Creating metadata '" + metadataId + "' from stub not defined for this connection: ", e);
 				} catch (Exception e) {
-					throw new JetelRuntimeException("Creating metadata '" + name + "' from stub failed: ", e);
+					throw new JetelRuntimeException("Creating metadata '" + metadataId + "' from stub failed: ", e);
 				}
 			} else {
 				metadata = null;
@@ -432,7 +432,7 @@ public final class TransformationGraph extends GraphElement {
 	}
 	
 	/**
-	 * Returns metadata with given name.
+	 * Returns ID of metadata with given name.
 	 * WARNING: DataRecordMetadataStub is ignored
 	 */
 	public String getDataRecordMetadataByName(String name) {

@@ -236,4 +236,24 @@ public class TypedProperties extends Properties {
         logger.debug(message + " " + this);
 	}
 
+	/**
+	 * Values returned by this method are NOT resolved.
+	 * Use {@link #getStringProperty(String)} to obtain values with resolved graph parameters. 
+	 */
+	@Override
+	public String getProperty(String key) {
+		return super.getProperty(key);
+	}
+
+	/**
+	 * Values returned by this method are NOT resolved.
+	 * Use {@link #getStringProperty(String, String)} to obtain values with resolved graph parameters. 
+	 */
+	@Override
+	public String getProperty(String key, String defaultValue) {
+		return super.getProperty(key, defaultValue);
+	}
+	
+	
+
 }
