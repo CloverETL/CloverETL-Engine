@@ -729,12 +729,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		final StringBuilder sourceCode = new StringBuilder();
 		String line = null;
-		try {
-			BufferedReader rd = new BufferedReader(new InputStreamReader(importLoc.openStream()));
+		try (BufferedReader rd = new BufferedReader(new InputStreamReader(importLoc.openStream()))) {
 			while ((line = rd.readLine()) != null) {
 				sourceCode.append(line).append("\n");
 			}
-			rd.close();
 		} catch (IOException e) {
 			throw new RuntimeException("I/O error occured when reading source file", e);
 		}
@@ -757,12 +755,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		final StringBuilder sourceCode = new StringBuilder();
 		String line = null;
-		try {
-			BufferedReader rd = new BufferedReader(new InputStreamReader(importLoc.openStream()));
+		try (BufferedReader rd = new BufferedReader(new InputStreamReader(importLoc.openStream()))) {
 			while ((line = rd.readLine()) != null) {
 				sourceCode.append(line).append("\n");
 			}
-			rd.close();
 		} catch (IOException e) {
 			throw new RuntimeException("I/O error occured when reading source file", e);
 		}

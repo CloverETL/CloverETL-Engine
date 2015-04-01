@@ -77,21 +77,18 @@ public class ByteCharBufferSpeedTest extends CloverTestCase {
 
 	
 	private double doInputStreamReader() throws Exception {
-		
-		
-		BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(bigFile), "utf-8"));
-		
-		
-		long s = System.currentTimeMillis();
-		System.out.print("-- Running InputStreamReader(buffered)... ");
-		int c;
-		while ( (c = r.read()) != -1) {
-//			System.out.print((char)c);
+		try (BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(bigFile), "utf-8"))) {
+			long s = System.currentTimeMillis();
+			System.out.print("-- Running InputStreamReader(buffered)... ");
+			int c;
+			while ((c = r.read()) != -1) {
+				// System.out.print((char)c);
+			}
+
+			double el = (System.currentTimeMillis() - s) / 1000.0;
+			System.out.println("finished in " + el + " s --");
+			return el;
 		}
-		
-		double el = (System.currentTimeMillis() - s)/1000.0;
-		System.out.println("finished in " + el + " s --");
-		return el;
 		
 	}
 	
