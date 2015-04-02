@@ -1175,9 +1175,9 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     	}
     	
     	//check enabled attribute
-    	String rawEnabledAttribute = getGraph().getRawComponentEnabledAttribute().get(this); //raw value is taken from dedicated cache
-    	if (!EnabledEnum.isValid(getPropertyRefResolver().resolveRef(rawEnabledAttribute))) {
-    		status.add("Invalid enabled attribute value: " + getPropertyRefResolver().resolveRef(rawEnabledAttribute), Severity.ERROR, this, Priority.NORMAL, Node.XML_ENABLED_ATTRIBUTE);
+    	String errorMessage = getEnabled().validate();
+    	if (!StringUtils.isEmpty(errorMessage)) {
+    		status.add(errorMessage, Severity.ERROR, this, Priority.NORMAL, Node.XML_ENABLED_ATTRIBUTE);
     	}
     	
     	return status;

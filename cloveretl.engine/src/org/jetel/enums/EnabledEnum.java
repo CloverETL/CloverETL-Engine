@@ -21,7 +21,6 @@ package org.jetel.enums;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.SubgraphPort;
 import org.jetel.graph.SubgraphPorts;
@@ -56,7 +55,9 @@ public class EnabledEnum {
     public static final EnabledEnum FALSE = new EnabledEnum("false", "Disabled", false);
     
     private static final EnabledEnum[] values = new EnabledEnum[] { ENABLED, DISABLED, PASS_THROUGH, TRUE, FALSE }; 
-    
+
+	public static final EnabledEnum DEFAULT_VALUE = ENABLED;
+
     private String id;
     
     private String label;
@@ -92,22 +93,14 @@ public class EnabledEnum {
         //try dynamic values
         EnabledEnum result = SubgraphPortsDynamicValues.fromString(id);
         
-        return result != null ? result : defaultValue;
+        return result != null ? result : new UnknownEnabledEnum(id);
     }
     
-	/**
-	 * @param resolveRef
-	 * @return
-	 */
-	public static boolean isValid(String id) {
-		return id == null || fromString(id) != null;
-	}
-
     /**
      * @return human readable specification of enabled value, which is used mainly in designer widgets
      */
     public String getLabel() {
-    	return label;
+    	return label != null ? label : toString();
     }
     
 	/**
@@ -128,6 +121,13 @@ public class EnabledEnum {
     }
     
     /**
+     * @return null for valid {@link EnabledEnum} instance or error message otherwise
+     */
+    public String validate() {
+    	return null;
+    }
+    
+    /**
      * @return true for dynamic enable values (for example enableWhenInputPort0IsConnected)
      */
     public boolean isDynamic() {
@@ -139,6 +139,26 @@ public class EnabledEnum {
         return id;
     }
  
+    /**
+     * This class represents unknown type of {@link EnabledEnum}.
+     * It considered as invalid value, see {@link #validate()} method.
+     */
+    private static class UnknownEnabledEnum extends EnabledEnum {
+		public UnknownEnabledEnum(String id) {
+			super(id);
+		}
+		
+		@Override
+		public boolean isEnabled() {
+			return DEFAULT_VALUE.isEnabled();
+		}
+		
+		@Override
+		public String validate() {
+			return "Invalid component enabled attribute: '" + this + "'.";
+		}
+    }
+    
     /**
      * This class handles dynamic 'enable' constants derived from subgraph ports.
      */
@@ -208,23 +228,39 @@ public class EnabledEnum {
 			
     		@Override
     		public boolean isEnabled() {
-    			TransformationGraph graph = ContextProvider.getGraph();
-    			if (graph != null) {
+    			if (validate() == null) {
+        			TransformationGraph graph = ContextProvider.getGraph();
     				SubgraphPorts subgraphPorts = inputPort ? graph.getSubgraphInputPorts() : graph.getSubgraphOutputPorts();
-    				if (subgraphPorts.hasPort(portIndex)) {
-    					SubgraphPort port = subgraphPorts.getPorts().get(portIndex);
-    					return connected ? port.isConnected() : !port.isConnected();
-    				} else {
-    					throw new JetelRuntimeException("Component enable attribute cannot be resolved, subgraph port " + portIndex + " does not exist.");
-    				}
+					SubgraphPort port = subgraphPorts.getPorts().get(portIndex);
+					return connected ? port.isConnected() : !port.isConnected();
     			} else {
-    				throw new JetelRuntimeException("Component enable attribute cannot be resolved, no graph available.");
+    				return true;
     			}
     		}
     		
     		@Override
     		public boolean isDynamic() {
     			return true;
+    		}
+    		
+    		@Override
+    		public String validate() {
+    			TransformationGraph graph = ContextProvider.getGraph();
+    			if (graph != null) {
+    				SubgraphPorts subgraphPorts = inputPort ? graph.getSubgraphInputPorts() : graph.getSubgraphOutputPorts();
+    				if (subgraphPorts.hasPort(portIndex)) {
+    					SubgraphPort port = subgraphPorts.getPorts().get(portIndex);
+    					if (!port.isRequired()) {
+    						return null;
+    					} else {
+        					return "Component enabled attribute cannot be resolved, subgraph " + (inputPort ? "input" : "output") + " port " + portIndex + " is not optional.";
+    					}
+    				} else {
+    					return "Component enabled attribute cannot be resolved, subgraph port " + portIndex + " does not exist.";
+    				}
+    			} else {
+    				return "Component enabled attribute cannot be resolved, no graph available.";
+    			}
     		}
     	}
     }
