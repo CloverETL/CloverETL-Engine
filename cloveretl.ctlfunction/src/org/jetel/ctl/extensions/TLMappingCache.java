@@ -43,7 +43,7 @@ public class TLMappingCache extends TLCache {
 	
 	public Mapping getCachedMapping(TLFunctionCallContext context, String mappingCode) {
 
-		if (context.isLiteral(1) || (cachedMappingCode != null && mappingCode.equals(cachedMappingCode))) {
+		if (context.isLiteral(0) || (cachedMappingCode != null && mappingCode.equals(cachedMappingCode))) {
 			return cachedMapping; 
 		} else {
 			cachedMappingCode = mappingCode;

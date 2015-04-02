@@ -454,8 +454,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				if (field.getNullValuesOnField() != null) {
 					fieldElement.setAttribute(NULL_VALUE_ATTR, StringUtils.join(field.getNullValuesOnField(), Defaults.DataFormatter.DELIMITER_DELIMITERS));
 				}
-				if (field.isTrim()) {
-					fieldElement.setAttribute(TRIM_ATTR, String.valueOf(field.isTrim()));
+				if (field.getTrim() != null) {
+					fieldElement.setAttribute(TRIM_ATTR, String.valueOf(field.getTrim()));
 				}
 				if (field.getTimeZoneStr() != null) {
 					fieldElement.setAttribute(TIMEZONE_ATTR, field.getTimeZoneStrFieldOnly());

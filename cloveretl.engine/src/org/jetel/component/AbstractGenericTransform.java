@@ -23,15 +23,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Node;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.primitive.TypedProperties;
 
 /**
  * The only abstract implementation of {@link GenericTransform} interface.
@@ -46,27 +48,44 @@ import org.jetel.util.file.FileUtils;
 @CloverPublicAPI
 public abstract class AbstractGenericTransform extends AbstractDataTransform implements GenericTransform {
 	
-	/** Custom component properties are saved here */
-	protected Properties additionalProperties;
-	
 	protected DataRecord[] inRecords;
 	protected DataRecord[] outRecords;
-	protected Node component;
+	
+	private TypedProperties properties = null;
 	
 	private void initRecords() {
-		DataRecordMetadata[] inMeta = component.getInMetadataArray();
+		DataRecordMetadata[] inMeta = getComponent().getInMetadataArray();
 		inRecords = new DataRecord[inMeta.length];
 		for (int i = 0; i < inRecords.length; i++) {
-			inRecords[i] = DataRecordFactory.newRecord(inMeta[i]);
-			inRecords[i].init();
+			if (inMeta[i] != null) {
+				inRecords[i] = DataRecordFactory.newRecord(inMeta[i]);
+				inRecords[i].init();
+			}
 		}
-		
-		DataRecordMetadata[] outMeta = component.getOutMetadataArray();
+
+		DataRecordMetadata[] outMeta = getComponent().getOutMetadataArray();
 		outRecords = new DataRecord[outMeta.length];
 		for (int i = 0; i < outRecords.length; i++) {
-			outRecords[i] = DataRecordFactory.newRecord(outMeta[i]);
-			outRecords[i].init();
+			if (outMeta[i] != null) {
+				outRecords[i] = DataRecordFactory.newRecord(outMeta[i]);
+				outRecords[i].init();
+			}
 		}
+	}
+	
+	protected Node getComponent() {
+		return getNode();
+	}
+	
+	protected TypedProperties getProperties() {
+		if (properties == null) {
+			properties = new TypedProperties(getNode().getAttributes(), getGraph());
+		}
+		return properties;
+	}
+	
+	protected Logger getLogger() {
+		return getNode().getLog();
 	}
 	
 	/**
@@ -79,7 +98,7 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	 */
 	protected DataRecord readRecordFromPort(int portIdx) {
 		try {
-			return component.readRecord(portIdx, inRecords[portIdx]);
+			return getComponent().readRecord(portIdx, inRecords[portIdx]);
 		} catch (IOException | InterruptedException e) {
 			throw new JetelRuntimeException(e);
 		}
@@ -87,7 +106,7 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	
 	protected void writeRecordToPort(int portIdx, DataRecord record) {
 		try {
-			component.writeRecord(portIdx, record);
+			getComponent().writeRecord(portIdx, record);
 		} catch (IOException | InterruptedException e) {
 			throw new JetelRuntimeException(e);
 		}
@@ -99,7 +118,7 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	 * @return {@link File} instance
 	 */
 	protected File getFile(String fileUrl) {
-		URL contextURL = component.getGraph().getRuntimeContext().getContextURL();
+		URL contextURL = getComponent().getGraph().getRuntimeContext().getContextURL();
 		File file = FileUtils.getJavaFile(contextURL, fileUrl);
 		return file;
 	}
@@ -110,7 +129,7 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	 * @throws IOException
 	 */
 	protected InputStream getInputStream(String fileUrl) throws IOException {
-		URL contextURL = component.getGraph().getRuntimeContext().getContextURL();
+		URL contextURL = getComponent().getGraph().getRuntimeContext().getContextURL();
 		InputStream is = FileUtils.getInputStream(contextURL, fileUrl);
 		return is;
 	}
@@ -122,7 +141,7 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	 * @throws IOException
 	 */
 	protected OutputStream getOutputStream(String fileUrl, boolean append) throws IOException {
-		URL contextURL = component.getGraph().getRuntimeContext().getContextURL();
+		URL contextURL = getComponent().getGraph().getRuntimeContext().getContextURL();
 		OutputStream is = FileUtils.getOutputStream(contextURL, fileUrl, append, -1);
 		return is;
 	}
@@ -131,10 +150,13 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	 * If you override this method, ALWAYS call super.init()
 	 */
 	@Override
-	public void init(Properties properties) {
-		additionalProperties = properties;
-		component = getNode();
+	public void init() {
 		initRecords();
+	}
+	
+	@Override
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		return status;
 	}
 
 	@Override
