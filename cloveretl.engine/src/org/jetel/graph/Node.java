@@ -85,7 +85,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      * It is component's responsibility to register all inner threads via addChildThread() method.
      */
     protected List<Thread> childThreads; // is guarded by nodeThreadMonitor
-    protected EnabledEnum enabled;
+    private EnabledEnum enabled = EnabledEnum.ENABLED;
     protected int passThroughInputPort;
     protected int passThroughOutputPort;
     
@@ -1087,7 +1087,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	}
 
     /**
-     * @return <b>true</b> if node is enabled; <b>false</b> else
+     * @return enabled value for this component (cannot be null)
      */
     public EnabledEnum getEnabled() {
         return enabled;
