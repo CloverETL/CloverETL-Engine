@@ -26,9 +26,16 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.SeekableByteChannel;
 
+import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.parser.CloverDataParser;
 import org.jetel.data.parser.CloverDataParser.FileConfig;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -52,6 +59,69 @@ public class CloverDataFormatterTest extends CloverTestCase {
 	@After
 	protected void tearDown() throws Exception {
 		super.tearDown();
+	}
+	
+	/**
+	 * CLO-6015:
+	 */
+	@Test
+	public void testAppend() throws Exception {
+		// the real cause of CLO-6015:
+		{
+			DataRecordMetadata metadata = new DataRecordMetadata("testRecord", DataRecordParsingType.DELIMITED);
+			metadata.addField(new DataFieldMetadata("field", DataFieldType.BOOLEAN, "|"));
+			DataRecord record = DataRecordFactory.newRecord(metadata);
+			record.init();
+			record.getField(0).setValue(true);
+			CloverBuffer buffer = CloverBuffer.allocate(1); // just one boolean
+			record.serialize(buffer);
+			buffer.flip(); // prepare the buffer for reading
+			
+			
+			File tmpFile = null;
+			try {
+				tmpFile = File.createTempFile("CloverDataFormatterTest", ".tmp");
+				try (CloverDataFormatter formatter = new CloverDataFormatter()) {
+					formatter.setAppend(true);
+					formatter.init(metadata);
+					
+					int iterations = 130; // CloverDataStream.DEFAULT_BLOCK_INDEX_SIZE + 10;
+					for (int i = 0; i < iterations; i++) {
+						formatter.setDataTarget(tmpFile);
+						formatter.writeDirect(buffer);
+						buffer.rewind();
+						formatter.close();
+					}
+				}
+				
+			} finally {
+				org.apache.commons.io.FileUtils.deleteQuietly(tmpFile);
+			}
+		}
+
+		// another potential problem found at the same time:
+		{
+			File file = new File("test/CDW_append_checksum.cdf");
+			// check that the file is not corrupted
+			assertEquals(725508159L, FileUtils.calculateFileCheckSum(file.getAbsolutePath()));
+			try (
+				// open the file in read-only mode to prevent it from being modified
+				RandomAccessFile raf = new RandomAccessFile(file, "r");
+				FileChannel channel = raf.getChannel();
+				SeekableByteChannel testChannel = new TestChannel(channel);
+				CloverDataFormatter formatter = new CloverDataFormatter();
+			) {
+				formatter.setAppend(true);
+				FileConfig config = CloverDataParser.checkCompatibilityHeader(testChannel, null);
+				testChannel.position(0);
+				formatter.init(config.metadata);
+				formatter.setDataTarget(testChannel);
+				assertTrue(channel.position() < channel.size() - 1);
+			} catch (NonWritableChannelException ex) {
+				// thrown by CloverDataFormatter.close() - expected, ignore
+			}
+		}
+		
 	}
 
 	/**
@@ -119,33 +189,6 @@ public class CloverDataFormatterTest extends CloverTestCase {
 			return delegate.truncate(size);
 		}
 		
-		
-	}
-
-	/**
-	 * CLO-6015:
-	 */
-	@Test
-	public void testAppend() throws Exception {
-		File file = new File("test/CDW_append_checksum.cdf");
-		// check that the file is not corrupted
-		assertEquals(725508159L, FileUtils.calculateFileCheckSum(file.getAbsolutePath()));
-		try (
-			// open the file in read-only mode to prevent it from being modified
-			RandomAccessFile raf = new RandomAccessFile(file, "r");
-			FileChannel channel = raf.getChannel();
-			SeekableByteChannel testChannel = new TestChannel(channel);
-			CloverDataFormatter formatter = new CloverDataFormatter();
-		) {
-			formatter.setAppend(true);
-			FileConfig config = CloverDataParser.checkCompatibilityHeader(testChannel, null);
-			testChannel.position(0);
-			formatter.init(config.metadata);
-			formatter.setDataTarget(testChannel);
-			assertTrue(channel.position() < channel.size() - 1);
-		} catch (NonWritableChannelException ex) {
-			// thrown by CloverDataFormatter.close() - expected, ignore
-		}
 	}
 
 }
