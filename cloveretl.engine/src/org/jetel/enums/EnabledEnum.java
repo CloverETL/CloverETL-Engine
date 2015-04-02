@@ -26,6 +26,7 @@ import org.jetel.graph.ContextProvider;
 import org.jetel.graph.SubgraphPort;
 import org.jetel.graph.SubgraphPorts;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.WatchDog;
 
 
 /**
@@ -94,10 +95,30 @@ public class EnabledEnum {
         return result != null ? result : defaultValue;
     }
     
+	/**
+	 * @param resolveRef
+	 * @return
+	 */
+	public static boolean isValid(String id) {
+		return id == null || fromString(id) != null;
+	}
+
+    /**
+     * @return human readable specification of enabled value, which is used mainly in designer widgets
+     */
     public String getLabel() {
     	return label;
     }
     
+	/**
+	 * This is very similar to {@link #getLabel()} with slightly different label composition.
+	 * @return human readable status of enabled value, which is used by engine logging
+	 * @see WatchDog#printComponentsEnabledStatus()
+	 */
+	public String getStatus() {
+		return getLabel();
+	}
+
 	/**
      * @return true if a component with this value is kept enabled, false 
      *  if a component with this value is removed from graph
@@ -156,6 +177,10 @@ public class EnabledEnum {
 			return "Enable when " + (inputPort ? "input port" : "output port") + " " + portIndex + " is " + (connected ? "connected" : "disconnected");
 		}
 
+		public static String getStatus(boolean inputPort, int portIndex, boolean connected) {
+			return (inputPort ? "Input port" : "Output port") + " " + portIndex + " is " + (connected ? "connected" : "disconnected");
+		}
+
     	/**
     	 * EnabledEnum which represents dynamic 'enable' constant base on subgraph ports.
     	 */
@@ -174,6 +199,11 @@ public class EnabledEnum {
 			@Override
 			public String getLabel() {
 				return SubgraphPortsDynamicValues.getLabel(inputPort, portIndex, connected);
+			}
+			
+			@Override
+			public String getStatus() {
+				return SubgraphPortsDynamicValues.getStatus(inputPort, portIndex, connected);
 			}
 			
     		@Override

@@ -704,6 +704,7 @@ public class TransformationGraphXMLReaderWriter {
                     graphNode.setEnabled(nodeEnabled);
                     graphNode.setPassThroughInputPort(nodePassThroughInputPort);
                     graphNode.setPassThroughOutputPort(nodePassThroughOutputPort);
+                    persistRawComponentEnabledAttribute(attributes, graphNode);
 				} else {
 					throwXMLConfigurationException("Error when creating Component type '" + nodeType + "'.");
 				}
@@ -715,7 +716,15 @@ public class TransformationGraphXMLReaderWriter {
 		}
 	}
 
-
+	/** This method persists raw value of enabled attribute of given component. */
+	private void persistRawComponentEnabledAttribute(ComponentXMLAttributes attributes, Node graphNode) {
+        attributes.setResolveReferences(false);
+        try {
+        	graph.getRawComponentEnabledAttribute().put(graphNode, attributes.getStringEx(Node.XML_ENABLED_ATTRIBUTE, null, RefResFlag.ALL_OFF));
+        } finally {
+        	attributes.setResolveReferences(true);
+        }
+	}
 
 	/**
 	 *  Description of the Method

@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -210,6 +211,15 @@ public final class TransformationGraph extends GraphElement {
 	 */
 	private Node subgraphOutputComponent = null;
 
+	/**
+	 * This map contains all raw values of enabled attributes of all components
+	 * (disabled components are included). This value cannot be persisted in {@link Node}
+	 * class, since disabled components are not available in {@link TransformationGraph}.
+	 * This cache is used for logging purpose, see {@link WatchDog#printComponentsEnabledStatus()}.
+	 * Moreover, this cache is used also for check component configuration, see {@link Node#checkConfig(ConfigurationStatus)}. 
+	 */
+	private Map<Node, String> rawComponentEnabledAttribute = new HashMap<>();
+	
 	public TransformationGraph() {
 		this(DEFAULT_GRAPH_ID);
 	}
@@ -1665,6 +1675,20 @@ public final class TransformationGraph extends GraphElement {
 			}
 		}
 		return subgraphOutputComponent;
+	}
+
+	/**
+	 * @return the rawComponentEnabledAttribute
+	 */
+	public Map<Node, String> getRawComponentEnabledAttribute() {
+		return rawComponentEnabledAttribute;
+	}
+
+	/**
+	 * @param rawComponentEnabledAttribute the rawComponentEnabledAttribute to set
+	 */
+	public void setRawComponentEnabledAttribute(Map<Node, String> rawComponentEnabledAttribute) {
+		this.rawComponentEnabledAttribute = rawComponentEnabledAttribute;
 	}
 
 }
