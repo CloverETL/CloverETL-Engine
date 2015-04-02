@@ -623,9 +623,10 @@ public class CloverDataStream {
 				position = channel.size() - CLOVER_BLOCK_HEADER_LENGTH - size - CLOVER_BLOCK_HEADER_LENGTH;
 			} else {
 				// seek to the end
-				position = channel.size() - 1;
+				position = channel.size() - 1; // FIXME krivanekm: I don't think this is correct, it overwrites the last byte
 			}
 			channel.position(position);
+			channel.truncate(position); // real fix for CLO-6015 - remove remains of old index block 
 		}
 		
 		/**
