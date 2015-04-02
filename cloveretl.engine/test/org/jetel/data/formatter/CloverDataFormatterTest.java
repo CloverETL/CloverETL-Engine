@@ -33,7 +33,6 @@ import org.jetel.util.file.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.internal.AssumptionViolatedException;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -130,10 +129,7 @@ public class CloverDataFormatterTest extends CloverTestCase {
 	public void testAppend() throws Exception {
 		File file = new File("test/CDW_append_checksum.cdf");
 		// check that the file is not corrupted
-		long checksum = FileUtils.calculateFileCheckSum(file.getAbsolutePath());
-		if (checksum != 725508159L) {
-			throw new AssumptionViolatedException(String.valueOf(checksum));
-		}
+		assertEquals(725508159L, FileUtils.calculateFileCheckSum(file.getAbsolutePath()));
 		try (
 			// open the file in read-only mode to prevent it from being modified
 			RandomAccessFile raf = new RandomAccessFile(file, "r");
