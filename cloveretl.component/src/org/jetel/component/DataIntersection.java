@@ -743,6 +743,7 @@ public class DataIntersection extends Node implements MetadataProvider {
 				}
 			} catch (ComponentNotReadyException e) {
 				status.add(e, Severity.WARNING, this, Priority.NORMAL, XML_JOINKEY_ATTRIBUTE);
+				return status;
 			}
 		}
 		recordKeys = new RecordKey[2];
