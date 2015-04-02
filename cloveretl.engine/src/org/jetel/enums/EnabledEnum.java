@@ -203,7 +203,7 @@ public class EnabledEnum {
 			
 			@Override
 			public String getStatus() {
-				return SubgraphPortsDynamicValues.getStatus(inputPort, portIndex, connected);
+				return SubgraphPortsDynamicValues.getStatus(inputPort, portIndex, isEnabled() ? connected : !connected);
 			}
 			
     		@Override

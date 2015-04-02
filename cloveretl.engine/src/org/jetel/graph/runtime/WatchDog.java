@@ -900,7 +900,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		sb.append(" - ");
 		sb.append(component.getEnabled().isEnabled() ? EnabledEnum.ENABLED.getLabel() : EnabledEnum.DISABLED.getLabel());
 		sb.append(": ");
-		if (PropertyRefResolver.isPropertyReference(rawComponentEnabledAttribute)) {
+		if (getGraphRuntimeContext().getJobType().isSubJob() && (component.isPartOfDebugInput() || component.isPartOfDebugOutput())) {
+			sb.append("Part of subgraph debug area");
+		} else if (PropertyRefResolver.isPropertyReference(rawComponentEnabledAttribute)) {
 			String graphParameterName = PropertyRefResolver.getReferencedProperty(rawComponentEnabledAttribute);
 			sb.append(graphParameterName);
 			sb.append("=");
