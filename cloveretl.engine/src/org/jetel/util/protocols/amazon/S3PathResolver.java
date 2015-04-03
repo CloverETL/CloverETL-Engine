@@ -70,6 +70,9 @@ public class S3PathResolver implements CustomPathResolver {
 	public OutputStream getOutputStream(URL contextURL, String output, boolean appendData, int compressLevel)
 			throws IOException {
 		if (handlesURL(contextURL, output)) {
+			if (appendData) {
+				throw new IOException("Appending is not supported by S3");
+			}
 			return getURL(contextURL, output).openConnection().getOutputStream();
 		}
 		return null;
