@@ -92,9 +92,8 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 				}
 			}
 			boolean success = true;
-			for (URI child: simpleHandler.list(sourceUri)) {
-				Info childInfo = simpleHandler.info(child);
-				success &= copyInternal(child, URIUtils.getChildURI(targetUri, childInfo.getName()), params);
+			for (Info child: listDirectory(sourceUri)) {
+				success &= copyInternal(child.getURI(), URIUtils.getChildURI(targetUri, child.getName()), params);
 			}
 			return success;
 		} else {
@@ -195,9 +194,8 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 					throw new IOException(format(FileOperationMessages.getString("IOperationHandler.create_failed"), target.getURI())); //$NON-NLS-1$
 				}
 				boolean success = true;
-				for (URI child: simpleHandler.list(sourceUri)) {
-					Info childInfo = simpleHandler.info(child);
-					success &= moveInternal(child, URIUtils.getChildURI(targetUri, childInfo.getName()), params);
+				for (Info child: listDirectory(sourceUri)) {
+					success &= moveInternal(child.getURI(), URIUtils.getChildURI(targetUri, child.getName()), params);
 				}
 				return success && simpleHandler.removeDir(sourceUri);
 			} catch (IOException ioe) {
@@ -342,6 +340,24 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 		throw new UnsupportedOperationException();
 	}
 	
+	/**
+	 * Should be overridden if it is easy for the {@link PrimitiveOperationHandler}
+	 * to return {@link Info} instead of {@link URI}.
+	 * 
+	 * @param uri
+	 * @return
+	 * @throws IOException
+	 */
+	protected List<Info> listDirectory(URI uri) throws IOException {
+		List<URI> children = simpleHandler.list(uri); 
+		List<Info> result = new ArrayList<Info>(children.size());
+		for (URI child: children) {
+			Info childInfo = simpleHandler.info(child);
+			result.add(childInfo);
+		}
+		return result;
+	}
+	
 	protected List<Info> list(URI uri, ListParameters params) throws IOException {
 		if (Thread.currentThread().isInterrupted()) {
 			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
@@ -354,13 +370,12 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 			throw new FileNotFoundException(format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), uri)); //$NON-NLS-1$
 		}
 		if (info.isDirectory()) {
-			List<URI> children = simpleHandler.list(uri); 
-			List<Info> result = new ArrayList<Info>(children.size());
-			for (URI child: children) {
-				Info childInfo = simpleHandler.info(child);
-				result.add(childInfo);
-				if (params.isRecursive() && childInfo.isDirectory()) {
-					result.addAll(list(child, params));
+			List<Info> children = listDirectory(uri); 
+			List<Info> result = new ArrayList<>(children.size());
+			for (Info child: children) {
+				result.add(child);
+				if (params.isRecursive() && child.isDirectory()) {
+					result.addAll(list(child.getURI(), params));
 				}
 			}
 			return result;
