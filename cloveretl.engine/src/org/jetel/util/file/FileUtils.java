@@ -224,6 +224,14 @@ public class FileUtils {
 			if (handler != null) {
 				return new URL(null, url, handler);
 			} else {
+				// CLO-6011:
+				for (CustomPathResolver resolver: customPathResolvers) {
+					if (resolver.handlesURL(null, url)) {
+						try {
+							return resolver.getURL(null, url);
+						} catch (MalformedURLException e2) {}
+					}
+				}
 				throw e;
 			}
 		}
