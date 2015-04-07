@@ -142,19 +142,25 @@ public class TransformationGraphAnalyzer {
 			for (SubgraphPort subgraphPort : graph.getSubgraphInputPorts().getPorts()) {
 				if (!subgraphPort.isRequired() && !subgraphPort.isKeptEdge() && !subgraphPort.isConnected()) {
 					//remove the edge
-					Edge edge = graph.getSubgraphInputComponent().getOutputPort(subgraphPort.getIndex()).getEdge();
-					graph.deleteEdge(edge);
-					edge.getReader().removeInputPort(edge);
-					edge.getWriter().removeOutputPort(edge);
+					OutputPort outputPort = graph.getSubgraphInputComponent().getOutputPort(subgraphPort.getIndex());
+					if (outputPort != null) {
+						Edge edge = outputPort.getEdge();
+						graph.deleteEdge(edge);
+						edge.getReader().removeInputPort(edge);
+						edge.getWriter().removeOutputPort(edge);
+					}
 				}
 			}
 	
 			for (SubgraphPort subgraphPort : graph.getSubgraphOutputPorts().getPorts()) {
 				if (!subgraphPort.isRequired() && !subgraphPort.isKeptEdge() && !subgraphPort.isConnected()) {
-					Edge edge = graph.getSubgraphOutputComponent().getInputPort(subgraphPort.getIndex()).getEdge();
-					graph.deleteEdge(edge);
-					edge.getReader().removeInputPort(edge);
-					edge.getWriter().removeOutputPort(edge);
+					InputPort inputPort = graph.getSubgraphOutputComponent().getInputPort(subgraphPort.getIndex());
+					if (inputPort != null) {
+						Edge edge = inputPort.getEdge();
+						graph.deleteEdge(edge);
+						edge.getReader().removeInputPort(edge);
+						edge.getWriter().removeOutputPort(edge);
+					}
 				}
 			}
 		} catch (Exception e) {
