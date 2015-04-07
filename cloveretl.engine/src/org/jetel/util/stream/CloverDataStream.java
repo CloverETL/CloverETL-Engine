@@ -27,6 +27,7 @@ import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.util.Arrays;
 import java.util.zip.Checksum;
@@ -628,7 +629,7 @@ public class CloverDataStream {
 		public void seekToAppend(SeekableByteChannel channel) throws IOException {
 			ByteBuffer buffer = ByteBuffer.allocate(CLOVER_BLOCK_HEADER_LENGTH);
 			channel.position(channel.size() - CLOVER_BLOCK_HEADER_LENGTH);
-			channel.read(buffer);
+			readFully(channel, buffer);
 			buffer.flip();
 			// test that it is our Index block
 			if (testBlockHeader(buffer, DataBlockType.INDEX)) {
@@ -637,7 +638,7 @@ public class CloverDataStream {
 				// reallocate bytebuffer
 				buffer = ByteBuffer.wrap(new byte[CLOVER_BLOCK_HEADER_LENGTH + size]);
 				channel.position(channel.size() - CLOVER_BLOCK_HEADER_LENGTH - size);
-				channel.read(buffer);
+				readFully(channel, buffer);
 				buffer.flip();
 				// validate checksum
 				checksum.reset();
@@ -659,9 +660,25 @@ public class CloverDataStream {
 				position = channel.size() - CLOVER_BLOCK_HEADER_LENGTH - size - CLOVER_BLOCK_HEADER_LENGTH;
 			} else {
 				// seek to the end
-				position = channel.size() - 1;
+				position = channel.size() - 1; // FIXME krivanekm: I don't think this is correct, it overwrites the last byte
 			}
 			channel.position(position);
+			channel.truncate(position); // real fix for CLO-6015 - remove remains of old index block 
+		}
+		
+		/**
+		 * CLO-6015:
+		 * Blocking read from the channel.
+		 * Throws {@link IOException} if less then {@code buffer.capacity()} bytes are read.
+		 * 
+		 * @param channel
+		 * @param buffer
+		 * @throws IOException
+		 */
+		private static void readFully(ReadableByteChannel channel, ByteBuffer buffer) throws IOException {
+			if (StreamUtils.readBlocking(channel, buffer) != buffer.capacity()) {
+				throw new IOException("Unexpected end of file");
+			}
 		}
 
 	}
