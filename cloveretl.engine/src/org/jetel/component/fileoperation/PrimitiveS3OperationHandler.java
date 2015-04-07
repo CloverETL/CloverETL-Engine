@@ -419,10 +419,6 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 			S3Service service = connection.getService();
 			String[] path = getPath(target);
 			String bucketName = path[0];
-			String prefix = "";
-			if (path.length > 1) {
-				prefix = appendSlash(path[1]);
-			}
 			try {
 				URI baseUri = connection.getBaseUri();
 				List<Info> result;
@@ -433,6 +429,10 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 						result.add(getBucketInfo(bucket.getName(), baseUri));
 					}
 				} else {
+					String prefix = "";
+					if (path.length > 1) {
+						prefix = appendSlash(path[1]);
+					}
 					StorageObjectsChunk chunk = service.listObjectsChunked(bucketName, prefix, FORWARD_SLASH, Integer.MAX_VALUE, null, true);
 					String[] directories = chunk.getCommonPrefixes();
 					StorageObject[] files = chunk.getObjects();
