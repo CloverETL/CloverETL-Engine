@@ -19,7 +19,9 @@
 package org.jetel.data.formatter;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -81,11 +83,12 @@ public class CloverDataFormatterTest extends CloverTestCase {
 			File tmpFile = null;
 			try {
 				tmpFile = File.createTempFile("CloverDataFormatterTest", ".tmp");
+				int iterations = 130; // CloverDataStream.DEFAULT_BLOCK_INDEX_SIZE + 10;
 				try (CloverDataFormatter formatter = new CloverDataFormatter()) {
 					formatter.setAppend(true);
 					formatter.init(metadata);
 					
-					int iterations = 130; // CloverDataStream.DEFAULT_BLOCK_INDEX_SIZE + 10;
+					// assumes that a new data block is created every time the file is closed
 					for (int i = 0; i < iterations; i++) {
 						formatter.setDataTarget(tmpFile);
 						formatter.writeDirect(buffer);
@@ -94,6 +97,25 @@ public class CloverDataFormatterTest extends CloverTestCase {
 					}
 				}
 				
+				// verify that the output file is valid
+				CloverDataParser parser = new CloverDataParser(metadata);
+				parser.init();
+				int counter = 0;
+				try (InputStream is = new FileInputStream(tmpFile)) {
+					parser.setDataSource(is);
+					int count;
+					do {
+						buffer.clear();
+						count = parser.getNextDirect(buffer);
+						if (count > 0) {
+							record.deserialize(buffer);
+							counter++;
+						}
+					} while (count > 0);
+				} finally {
+					parser.close();
+				}
+				assertEquals(iterations, counter);
 			} finally {
 				org.apache.commons.io.FileUtils.deleteQuietly(tmpFile);
 			}
