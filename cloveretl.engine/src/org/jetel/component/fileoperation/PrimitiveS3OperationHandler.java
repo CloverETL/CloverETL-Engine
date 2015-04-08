@@ -338,7 +338,8 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 			StorageObject object = service.getObjectDetails(bucketName, key);
 			return new S3ObjectInfo(object, connection.getBaseUri());
 		} catch (ServiceException e) {
-			if (e.getResponseCode() == HttpStatus.SC_NOT_FOUND) {
+			if ((e.getResponseCode() == HttpStatus.SC_NOT_FOUND)
+	                || "NoSuchKey".equals(e.getErrorCode())) {
 				if (key.endsWith(FORWARD_SLASH)) { // try to find a "virtual" directory
 					try {
 						// directory object may not physically exist, but there may be a matching prefix
@@ -358,6 +359,8 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 						throw new IOException(listingException);
 					}
 				}
+				return null;
+			} else if ("NoSuchBucket".equals(e.getErrorCode())) {
 				return null;
 			} else {
 				throw new IOException(e);
