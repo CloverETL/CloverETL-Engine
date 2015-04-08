@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.TreeMap;
@@ -343,7 +344,13 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 * @return array of output ports metadata
 	 */
 	public DataRecordMetadata[] getOutMetadataArray() {
-		return getOutMetadata().toArray(new DataRecordMetadata[0]);
+		DataRecordMetadata[] result = new DataRecordMetadata[getOutputPortsMaxIndex() + 1];
+		for (Entry<Integer, OutputPort> entry : getOutputPorts().entrySet()) {
+			if (entry.getValue() != null) {
+				result[entry.getKey()] = entry.getValue().getMetadata();
+			}
+		}
+	    return result;
 	}
 
 	/**
@@ -365,7 +372,13 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 * @return array of input ports metadata
 	 */
 	public DataRecordMetadata[] getInMetadataArray() {
-		return getInMetadata().toArray(new DataRecordMetadata[0]);
+		DataRecordMetadata[] result = new DataRecordMetadata[getInputPortsMaxIndex() + 1];
+		for (Entry<Integer, InputPort> entry : getInputPorts().entrySet()) {
+			if (entry.getValue() != null) {
+				result[entry.getKey()] = entry.getValue().getMetadata();
+			}
+		}
+	    return result;
 	}
 	
 	/**
