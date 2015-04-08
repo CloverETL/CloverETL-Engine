@@ -3,6 +3,9 @@ string[] urls = [
 	"sandbox://cloveretl.test.scenarios/data-in/fileOperation/input.txt",
 	"ftp://test:test@ftp.test.com:21/data/file.txt",
 	"https://test:test@www.test.com:80/data/file.txt",
+	"smb://user:password@hostname/share/dir/file.txt",
+	"hdfs://HADOOP0/dir/file.txt",
+	"s3://ACCESSKEY:secretkey@s3.amazonaws.com/bucketname/dir/file.txt",
 	"unknown://test:test@unknown.host.com:123/dir/file"
 ];
 

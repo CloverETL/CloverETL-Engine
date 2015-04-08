@@ -84,14 +84,8 @@ public class S3OutputStream extends OutputStream {
 			}
 			
 			AWSCredentials credentials = new AWSCredentials(accessKey, secretKey);
-			RestS3Service service;
+			RestS3Service service = new RestS3Service(credentials);
 			
-			try {
-				service = new RestS3Service(credentials);
-			} catch (S3ServiceException e) {
-				throw new IOException(e);
-			}
-	
 			String bucket = S3InputStream.getBucket(url);
 			S3Bucket s3bucket = new S3Bucket(bucket); 
 	

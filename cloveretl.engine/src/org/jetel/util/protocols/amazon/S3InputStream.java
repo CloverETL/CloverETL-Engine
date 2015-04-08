@@ -167,12 +167,7 @@ public class S3InputStream extends InputStream {
 		}
 		else {
 			AWSCredentials credentials = new AWSCredentials(accessKey, secretKey);
-			RestS3Service service;
-			try {
-				service = new RestS3Service(credentials);
-			} catch (S3ServiceException e) {
-				throw new IOException(e);
-			}
+			RestS3Service service = new RestS3Service(credentials);
 			
 			String bucket = getBucket(url);
 			String file = url.getFile();

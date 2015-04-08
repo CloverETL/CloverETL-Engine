@@ -5,7 +5,7 @@
 	<property name="script.name" value="cloveretl.engine\build.xml"/>
 
 	<property name="dir.tools" value="${basedir}/tools"/>
-	<property name="dir.findbugs" value="/opt/findbugs"/>
+	<property name="dir.findbugs" value="/opt/findbugs-new"/>
 
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
 		<classpath>
