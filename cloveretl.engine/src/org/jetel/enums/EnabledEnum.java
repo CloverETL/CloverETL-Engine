@@ -143,7 +143,7 @@ public class EnabledEnum {
      * This class represents unknown type of {@link EnabledEnum}.
      * It considered as invalid value, see {@link #validate()} method.
      */
-    private static class UnknownEnabledEnum extends EnabledEnum {
+    public static class UnknownEnabledEnum extends EnabledEnum {
 		public UnknownEnabledEnum(String id) {
 			super(id);
 		}
