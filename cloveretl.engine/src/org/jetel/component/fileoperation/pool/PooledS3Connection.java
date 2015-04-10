@@ -21,15 +21,15 @@ package org.jetel.component.fileoperation.pool;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URLDecoder;
 
 import org.jetel.component.fileoperation.PrimitiveS3OperationHandler;
 import org.jetel.component.fileoperation.URIUtils;
+import org.jetel.util.protocols.Validable;
 import org.jets3t.service.Constants;
 import org.jets3t.service.Jets3tProperties;
 import org.jets3t.service.S3Service;
+import org.jets3t.service.S3ServiceException;
 import org.jets3t.service.ServiceException;
 import org.jets3t.service.impl.rest.httpclient.RestS3Service;
 import org.jets3t.service.security.AWSCredentials;
@@ -40,7 +40,7 @@ import org.jets3t.service.security.AWSCredentials;
  *
  * @created 18. 3. 2015
  */
-public class PooledS3Connection extends AbstractPoolableConnection {
+public class PooledS3Connection extends AbstractPoolableConnection implements Validable {
 
 	/*
 	 * Jets3tProperties configuration keys
@@ -87,6 +87,17 @@ public class PooledS3Connection extends AbstractPoolableConnection {
 	
 	public void init() throws IOException {
 		this.service = createService((S3Authority) authority);
+		validate();
+	}
+	
+	@Override
+	public void validate() throws IOException {
+		try {
+			// validate connection
+			service.listAllBuckets();
+		} catch (S3ServiceException e) {
+			throw new IOException("Connection validation failed", e);
+		}
 	}
 
 	@Override
