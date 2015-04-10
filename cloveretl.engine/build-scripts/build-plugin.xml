@@ -604,11 +604,14 @@
 		</jar>
 		
 		<!-- CLO-5776 -->
-		
+		<echo message="Plugin list: ${plugin.list}"/>
 		<if>
-		<or>
-		    <contains string="${plugin.list}" substring="${plugin.name}"/>
-		</or>
+		<and>
+			<contains string="${plugin.list}" substring="${plugin.name}"/>
+			<not>
+				<equals arg1="${plugin.name}" arg2="cloveretl.license.engine"/>
+			</not>
+		</and>
 			<then>
 				<echo message="*** Creating zip dir.plugin.dist/plugin.name.src.zip - ${dir.plugin.dist}/${plugin.name}.src.zip of dir.src.improved - ${dir.src.improved}" />		
 				<zip destfile="${dir.plugin.dist}/${plugin.name}.src.zip" basedir="${dir.src.improved}"/>

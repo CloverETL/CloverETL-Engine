@@ -18,6 +18,7 @@
  */
 package org.jetel.util;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -373,6 +374,19 @@ public class ExceptionUtils {
 		
 		return result;
 	}
+	
+	/**
+	 * Returns the root cause exception of {@code t}.
+	 * 
+	 * @param t - a {@link Throwable}
+	 * @return root cause exception
+	 */
+	public static Throwable getRootCause(Throwable t) {
+		while (t.getCause() != null) {
+			t = t.getCause();
+		}
+		return t;
+	}
 
 	/**
 	 * Print given message to logger. The message is surrounded in an ascii-art frame.  
@@ -507,4 +521,17 @@ public class ExceptionUtils {
 		}
     }
 
+    /**
+     * Converts a {@link Throwable} to {@link IOException}.
+     * 
+     * @param t - {@link Throwable} to convert
+     * @return {@code t} wrapped in an {@link IOException}, if necessary
+     */
+	public static IOException getIOException(Throwable t) {
+		if (t instanceof IOException) {
+			return (IOException) t;
+		} else {
+			return new IOException(t);
+		}
+	}
 }
