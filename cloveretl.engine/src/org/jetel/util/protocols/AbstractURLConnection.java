@@ -114,7 +114,9 @@ public abstract class AbstractURLConnection extends URLConnection implements Val
 				validable.validate();
 			}
 		} finally {
-			pooledConnection.returnToPool();
+			if (pooledConnection != null) {
+				pooledConnection.returnToPool();
+			}
 		}
 	}
 
