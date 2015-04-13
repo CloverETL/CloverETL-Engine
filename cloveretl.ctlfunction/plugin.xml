@@ -58,4 +58,9 @@
 		<parameter id="className" value="org.jetel.ctl.extensions.MappingLib"/>
 	</extension>
 
+	<extension point-id="ctlfunction">
+		<parameter id="libraryName" value="dynamic"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.DynamicLibExt"/>
+	</extension>
+
 </plugin>
