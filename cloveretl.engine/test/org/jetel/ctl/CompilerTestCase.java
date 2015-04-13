@@ -1321,6 +1321,164 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompileExpectError("function integer transform(){firstInput fi; fi.getFieldType(null); return 0;}","test_dynamiclib_getFieldType_expect_error",Arrays.asList("Function 'getFieldType' is ambiguous"));
 	}
 	
+	public void test_dynamiclib_getFieldProperties(){
+		doCompile("test_dynamiclib_getFieldProperties");
+		
+		Map<String, String> expected = new LinkedHashMap<>();
+		
+		expected.clear();
+		expected.put("name", "Name");
+		expected.put("label", "Name");
+		expected.put("type", "string");
+		expected.put("delimiter", "|");
+		expected.put("nullable", "true");
+		expected.put("nullValue", "");
+		expected.put("trim", "false");
+		for (String key: new String[] {"length", "scale", "containerType", "default", "description", "format", "locale", "size", "timeZone"}) {
+			expected.put(key, null);
+		}
+		check("ret1", expected);
+
+		expected.clear();
+		expected.put("name", "Age");
+		expected.put("label", "Age");
+		expected.put("type", "number");
+		expected.put("delimiter", "|");
+		expected.put("nullable", "true");
+		expected.put("nullValue", "");
+		expected.put("trim", "true");
+		for (String key: new String[] {"length", "scale", "containerType", "default", "description", "format", "locale", "size", "timeZone"}) {
+			expected.put(key, null);
+		}
+		check("ret2", expected);
+
+		expected.clear();
+		expected.put("name", "Currency");
+		expected.put("label", "Currency");
+		expected.put("type", "decimal");
+		expected.put("delimiter", "\n");
+		expected.put("length", "7");
+		expected.put("scale", "3");
+		expected.put("nullable", "true");
+		expected.put("nullValue", "");
+		expected.put("trim", "true");
+		for (String key: new String[] {"containerType", "default", "description", "format", "locale", "size", "timeZone"}) {
+			expected.put(key, null);
+		}
+		check("lastField", expected);
+		
+	}
+	
+	public void test_dynamiclib_getFieldProperties_expect_error(){
+		// ambiguity
+		doCompileExpectError("function integer transform(){getFieldProperties($in.0, null); return 0;}","test_dynamiclib_getFieldProperties_expect_error", Arrays.asList("Function 'getFieldProperties' is ambiguous"));
+		
+		// null record
+		try {
+			doCompile("function integer transform(){firstInput r = null; getFieldProperties(r, 0); return 0;}","test_dynamiclib_getFieldProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+		try {
+			doCompile("function integer transform(){firstInput r = null; getFieldProperties(r, 'Name'); return 0;}","test_dynamiclib_getFieldProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+
+		// null string
+		try {
+			doCompile("function integer transform(){string s = null; getFieldProperties($in.0, s); return 0;}","test_dynamiclib_getFieldProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+
+		// null integer
+		try {
+			doCompile("function integer transform(){integer i = null; getFieldProperties($in.0, i); return 0;}","test_dynamiclib_getFieldProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+		
+		// invalid string
+		try {
+			doCompile("function integer transform(){string s = null; getFieldProperties($in.0, 'NoSuchField'); return 0;}","test_dynamiclib_getFieldProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, IllegalArgumentException.class));
+		}
+
+		// index out of bounds
+		try {
+			doCompile("function integer transform(){string s = null; getFieldProperties($in.0, -1); return 0;}","test_dynamiclib_getFieldProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, IndexOutOfBoundsException.class));
+		}
+		try {
+			doCompile("function integer transform(){string s = null; getFieldProperties($in.0, 100); return 0;}","test_dynamiclib_getFieldProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, IndexOutOfBoundsException.class));
+		}
+	}
+
+	public void test_dynamiclib_getRecordProperties(){
+		doCompile("test_dynamiclib_getRecordProperties");
+		
+		Map<String, String> expected = new LinkedHashMap<>();
+		
+		expected.clear();
+		expected.put("name", "firstInput");
+		expected.put("label", "firstInput");
+		expected.put("type", "mixed");
+		expected.put("quotedStrings", "false");
+		expected.put("eofAsDelimiter", "false");
+		expected.put("nullValue", "");
+		for (String key: new String[] {"recordDelimiter", "fieldDelimiter", "quoteChar", "description", "locale", "timeZone"}) {
+			expected.put(key, null);
+		}
+		check("ret1", expected);
+
+		expected.clear();
+		expected.put("name", "secondInput");
+		expected.put("label", "secondInput");
+		expected.put("type", "mixed");
+		expected.put("quotedStrings", "false");
+		expected.put("eofAsDelimiter", "false");
+		expected.put("nullValue", "");
+		for (String key: new String[] {"recordDelimiter", "fieldDelimiter", "quoteChar", "description", "locale", "timeZone"}) {
+			expected.put(key, null);
+		}
+		check("ret2", expected);
+
+	}
+	
+	public void test_dynamiclib_getRecordProperties_expect_error(){
+		// null record
+		try {
+			doCompile("function integer transform(){getRecordProperties(null); return 0;}","test_dynamiclib_getRecordProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+		try {
+			doCompile("function integer transform(){firstInput r = null; getRecordProperties(r); return 0;}","test_dynamiclib_getRecordProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+		try {
+			doCompile("function integer transform(){firstInput r = null; getRecordProperties(r); return 0;}","test_dynamiclib_getRecordProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+	}
+
 	public void test_dynamiclib_getIntValue(){
 		doCompile("test_dynamiclib_getIntValue");
 		check("ret1", CompilerTestCase.VALUE_VALUE);

@@ -142,8 +142,8 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	 */
 	protected OutputStream getOutputStream(String fileUrl, boolean append) throws IOException {
 		URL contextURL = getComponent().getGraph().getRuntimeContext().getContextURL();
-		OutputStream is = FileUtils.getOutputStream(contextURL, fileUrl, append, -1);
-		return is;
+		OutputStream os = FileUtils.getOutputStream(contextURL, fileUrl, append, -1);
+		return os;
 	}
 	
 	/**

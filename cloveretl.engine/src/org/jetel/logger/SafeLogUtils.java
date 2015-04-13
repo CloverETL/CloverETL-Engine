@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
  */
 public class SafeLogUtils {
 	/** Pattern for identifying URL with password in a given text */
-	private static final Pattern URL_PASSWORD_PATTERN = Pattern.compile(".+://([^/]*?):([^\\*]*?)@.+");
+	private static final Pattern URL_PASSWORD_PATTERN = Pattern.compile(".+://([^/]*?):([^\\*]*?)@.+", Pattern.DOTALL);
 	
 	/*
 	 * a://b:c@d
