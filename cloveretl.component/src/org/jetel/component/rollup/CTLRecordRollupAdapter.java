@@ -123,10 +123,6 @@ public final class CTLRecordRollupAdapter extends CTLAbstractTransformAdapter im
 
 		// check if all required functions are present, otherwise we cannot continue
 		checkRequiredFunctions();
-
-		// initialize an empty data record to be used instead of a null group accumulator
-        emptyRecord.init();
-        emptyRecord.reset();
     }
 
     private void checkRequiredFunctions() throws ComponentNotReadyException {

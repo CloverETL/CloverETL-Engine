@@ -270,10 +270,8 @@ public class LdapReader extends Node {
 		// we need to create data record - take the metadata from first output port
 		StringBuilder filename=new StringBuilder();
 		DataRecord record = DataRecordFactory.newRecord(this.getOutputPort(OUTPUT_PORT).getMetadata());
-		record.init();
 		DataRecord outRecord;
 		DataRecord inRecord = (this.getInPorts().size() > 0) ? DataRecordFactory.newRecord(getInputPort(INPUT_PORT).getMetadata()) : null;
-		if (inRecord != null) inRecord.init();
 		boolean loop = true;
 
 		try {

@@ -65,7 +65,6 @@ public class PortBinding {
 
 		DataRecordMetadata metadata = portData.getInPort().getMetadata();
 		record = DataRecordFactory.newRecord(metadata);
-		record.init();
 
 		portIndex = portData.getInPort().getInputPortNumber();
 	}

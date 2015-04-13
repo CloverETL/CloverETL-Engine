@@ -68,7 +68,6 @@ public class CloverDataParserTest extends CloverDataParser35Test {
 			formatter.setDataTarget(os);
 			formatter.writeHeader();
 			DataRecord record = DataRecordFactory.newRecord(metadata);
-			record.init();
 			CloverBuffer buffer = null;
 			if (formatter.isDirect()) {
 				buffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);

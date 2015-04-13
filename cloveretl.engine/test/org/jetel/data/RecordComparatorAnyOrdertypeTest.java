@@ -55,9 +55,7 @@ public class RecordComparatorAnyOrdertypeTest extends CloverTestCase {
 		metadata.addField(new DataFieldMetadata("int_field", DataFieldMetadata.INTEGER_FIELD, ";"));
 		metadata.addField(new DataFieldMetadata("string_field", DataFieldMetadata.STRING_FIELD, ";"));
 		record = DataRecordFactory.newRecord(metadata);
-		record.init();
 		next = DataRecordFactory.newRecord(metadata);
-		next.init();
 	}
 
 	@Override
@@ -178,7 +176,6 @@ public class RecordComparatorAnyOrdertypeTest extends CloverTestCase {
 		drm.addField(dfm3);
 		
 		DataRecord dr1 = DataRecordFactory.newRecord(drm);
-		dr1.init();
 		
 		RecordComapratorAnyOrderType comparator = RecordComapratorAnyOrderType.createRecordComparator(recordKeyTokens, drm);
 		

@@ -73,7 +73,6 @@ public class CloverDataFormatterTest extends CloverTestCase {
 			DataRecordMetadata metadata = new DataRecordMetadata("testRecord", DataRecordParsingType.DELIMITED);
 			metadata.addField(new DataFieldMetadata("field", DataFieldType.BOOLEAN, "|"));
 			DataRecord record = DataRecordFactory.newRecord(metadata);
-			record.init();
 			record.getField(0).setValue(true);
 			CloverBuffer buffer = CloverBuffer.allocate(1); // just one boolean
 			record.serialize(buffer);

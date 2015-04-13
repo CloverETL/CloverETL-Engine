@@ -49,7 +49,6 @@ public class DataRecordTest extends CloverTestCase {
 		}
 
 		record = DataRecordFactory.newRecord(metadata);
-		record.init();
 
 		for (int i = 0; i < NUMBER_OF_FIELDS; i++) {
 			record.getField(i).setValue((((1 << i) & NULL_FIELDS) != 0) ? null : i);
@@ -61,7 +60,6 @@ public class DataRecordTest extends CloverTestCase {
 	 */
 	public void testSerialize() {
 		DataRecord deserializedRecord = DataRecordFactory.newRecord(record.getMetadata());
-		deserializedRecord.init();
 
 		CloverBuffer buffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE);
 		record.serialize(buffer);

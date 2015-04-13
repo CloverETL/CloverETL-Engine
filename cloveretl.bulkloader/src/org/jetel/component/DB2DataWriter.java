@@ -1602,7 +1602,6 @@ public class DB2DataWriter extends Node {
 		inRecord =null;
 		if (inMetadata != null) {
 			inRecord = DataRecordFactory.newRecord(fileMetadata);
-			inRecord.init();
 		}
 		
 		consumer = new DB2DataConsumer(LoggerDataConsumer.LVL_DEBUG, warningNumber, getOutputPort(ERROR_PORT));
@@ -2021,7 +2020,6 @@ class DB2DataConsumer implements DataConsumer {
 		errPort = port;
 		if (errPort != null) {
 			errRecord = DataRecordFactory.newRecord(errPort.getMetadata());
-			errRecord.init();
 		}
 	}
 	

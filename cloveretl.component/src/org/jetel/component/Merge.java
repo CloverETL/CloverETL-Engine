@@ -200,7 +200,6 @@ public class Merge extends Node {
 		// initialize array of data records (for each input port one)
 		for (int i = 0; i < inPorts.length; i++) {
 			inputRecords[i] = DataRecordFactory.newRecord(inPorts[i].getMetadata());
-			inputRecords[i].init();
 		}
 
 		// initially load in records from all connected inputs

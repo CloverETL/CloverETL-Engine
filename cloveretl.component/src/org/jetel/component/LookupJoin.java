@@ -323,13 +323,10 @@ public class LookupJoin extends Node implements MetadataProvider {
 		// initialize in and out records
 		InputPort inPort = getInputPort(WRITE_TO_PORT);
 		DataRecord inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-		inRecord.init();
 		lookup = getGraph().getLookupTable(lookupTableName).createLookup(recordKey, inRecord);
 		OutputPort rejectedPort = getOutputPort(REJECTED_PORT);
 		DataRecord[] outRecord = { DataRecordFactory.newRecord(getOutputPort(READ_FROM_PORT)
 				.getMetadata()) };
-		outRecord[0].init();
-		outRecord[0].reset();
 		DataRecord[] inRecords = new DataRecord[] { inRecord, null };
 		int counter = 0;
 		

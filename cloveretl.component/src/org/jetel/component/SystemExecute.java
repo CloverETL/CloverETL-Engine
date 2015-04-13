@@ -315,7 +315,6 @@ public class SystemExecute extends Node{
 		if (inPort!=null) {
 			DataRecordMetadata meta=inPort.getMetadata();
 			in_record = DataRecordFactory.newRecord(meta);
-			in_record.init();
 			formatter = charset != null ? new DataFormatter(charset) : new DataFormatter();
 		}else{
 			formatter=null;
@@ -327,7 +326,6 @@ public class SystemExecute extends Node{
 		if (outPort!=null) {
 			DataRecordMetadata meta=outPort.getMetadata();
 			out_record= DataRecordFactory.newRecord(meta);
-			out_record.init();
 			parser = TextParserFactory.getParser(getOutputPort(OUTPUT_PORT).getMetadata(), charset);
 		}else{
 			parser=null;

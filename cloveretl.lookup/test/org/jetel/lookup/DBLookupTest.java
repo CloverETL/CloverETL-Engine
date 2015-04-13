@@ -39,7 +39,6 @@ public class DBLookupTest extends CloverTestCase {
 		p.put("sqlQuery", "select * from customer");
 		DataRecordMetadata customerMetadata = conn.createMetadata(p);
 		customer = DataRecordFactory.newRecord(customerMetadata);
-		customer.init();
 		parser = new SQLDataParser(customerMetadata, "select * from customer");
 		parser.init();
 		parser.setDataSource(sqlConnection);
@@ -61,7 +60,6 @@ public class DBLookupTest extends CloverTestCase {
 		lookup = lookupTable.createLookup(recordKey, customer);
 		RecordKey key = new RecordKey(recordKey.getKeyFields(), customer.getMetadata());
 		DataRecord inRecord = DataRecordFactory.newRecord(customer.getMetadata());
-		inRecord.init();
 		Lookup lookup2 = lookupTable.createLookup(key, inRecord);
 		DataRecord record;
 		long start = System.currentTimeMillis();

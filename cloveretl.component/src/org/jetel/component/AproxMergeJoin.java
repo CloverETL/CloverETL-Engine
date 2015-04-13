@@ -562,7 +562,6 @@ public class AproxMergeJoin extends Node implements MetadataProvider {
 
 		for (int i = 0; i < count; i++) {
 			data[i] = DataRecordFactory.newRecord(metadata);
-			data[i].init();
 		}
 		return data;
 	}
@@ -611,13 +610,9 @@ public class AproxMergeJoin extends Node implements MetadataProvider {
 		// initialize output record
 		DataRecordMetadata outConformingMetadata = conformingPort.getMetadata();
 		DataRecord outConformingRecord = DataRecordFactory.newRecord(outConformingMetadata);
-		outConformingRecord.init();
-		outConformingRecord.reset();
 
 		DataRecordMetadata outSuspiciousMetadata = suspiciousPort.getMetadata();
 		DataRecord outSuspiciousRecord = DataRecordFactory.newRecord(outSuspiciousMetadata);
-		outSuspiciousRecord.init();
-		outSuspiciousRecord.reset();
 
 		// tmp record for switching contents
 		DataRecord tmpRec;

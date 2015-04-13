@@ -35,7 +35,6 @@ public class TLRecordValue extends TLContainerValue {
 	public TLRecordValue(DataRecordMetadata metadata){
 		super(TLValueType.RECORD);
 		record=DataRecordFactory.newRecord(metadata);
-		record.init();
 		record.getMetadata().getFieldTypes();
 	}
 	

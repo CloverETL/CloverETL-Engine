@@ -328,12 +328,10 @@ public class DBExecute extends Node {
         }
 		if ((outPort = getOutputPort(WRITE_TO_PORT)) != null) {
 			outRecord = DataRecordFactory.newRecord(outPort.getMetadata());
-			outRecord.init();
 		}
 		errPort = getOutputPort(ERROR_PORT);
 		if (errPort != null){
 			errRecord = DataRecordFactory.newRecord(errPort.getMetadata());
-			errRecord.init();
 			errorCodeFieldNum = errRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_CODE);
 			errMessFieldNum = errRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_MESSAGE);
 		}
@@ -376,7 +374,6 @@ public class DBExecute extends Node {
 		}
 		if (getInPorts().size() > 0) {
 			inRecord = DataRecordFactory.newRecord(getInputPort(READ_FROM_PORT).getMetadata());
-			inRecord.init();
 		}
 		initStatements();
 		if (errorLogURL != null) {

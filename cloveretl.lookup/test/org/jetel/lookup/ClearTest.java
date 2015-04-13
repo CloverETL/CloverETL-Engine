@@ -50,7 +50,6 @@ public class ClearTest extends CloverTestCase {
 		slt.init();
 		
 		DataRecord dr = DataRecordFactory.newRecord(metadata);
-		dr.init();
 		slt.put(setRecord(dr, 1, "1"));
 		slt.put(setRecord(dr, 2, "2"));
 		slt.put(setRecord(dr, 2, "2.5"));
@@ -92,7 +91,6 @@ public class ClearTest extends CloverTestCase {
 		rlt.init();
 		
 		DataRecord ldr = DataRecordFactory.newRecord(lookupMetadata);
-		ldr.init();
 		rlt.put(setRecord(ldr, 10, 20, "10-20"));
 		rlt.put(setRecord(ldr, 12, 22, "12-22"));
 		rlt.put(setRecord(ldr, 30, 50, "30-50"));
@@ -100,7 +98,6 @@ public class ClearTest extends CloverTestCase {
 		DataRecordMetadata inputMetadata = createMetadata("testInputMetadata", "intKeyValue", "payload");
 		Lookup lookup1 = rlt.createLookup(new RecordKey(new String[] { "intKeyValue" }, inputMetadata));
 		DataRecord idr = DataRecordFactory.newRecord(inputMetadata);
-		idr.init();
 		lookup1.seek(setRecord(idr, 15, "2"));
 		
 		Assert.assertEquals(2, lookup1.getNumFound());

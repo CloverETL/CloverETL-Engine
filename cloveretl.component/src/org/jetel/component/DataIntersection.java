@@ -458,7 +458,6 @@ public class DataIntersection extends Node implements MetadataProvider {
 		
 		// initialize output record
 		DataRecord outRecord = DataRecordFactory.newRecord(outPortAB.getMetadata());
-		outRecord.init();
 		driverReader.loadNextRun();
 		slaveReader.loadNextRun();
 		driverReaderOrdering = driverReader.getOrdering();

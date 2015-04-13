@@ -63,7 +63,6 @@ public class EdgeTest extends CloverTestCase {
 	public void test_1_sendData() throws IOException, InterruptedException {
 	    final int NUM_REC=1;
 	    DataRecord record=DataRecordFactory.newRecord(aDelimitedDataRecordMetadata);
-	    record.init();
 	    
 		edge=new DirectEdgeFastPropagate(new Edge("testEdge",aDelimitedDataRecordMetadata));
 		
@@ -89,8 +88,6 @@ public class EdgeTest extends CloverTestCase {
 
 		final DataRecord record1=DataRecordFactory.newRecord(aDelimitedDataRecordMetadata);
 	    final DataRecord record2=DataRecordFactory.newRecord(aDelimitedDataRecordMetadata);
-	    record2.init();
-	    record1.init();
 	    assertTrue(!edge.isEOF());
 		assertFalse(edge.hasData());
 		

@@ -235,7 +235,9 @@ public abstract class DataRecord implements Serializable, Comparable<Object>, It
 	 * <p>This method has to be called before accessing any of the record's fields.
 	 *
 	 * @since    April 5, 2002
+	 * @deprecated it is no more necessary to call this method, just call {@link DataRecordFactory#newRecord(DataRecordMetadata)}
 	 */
+	@Deprecated
 	public abstract void init();
 
 	/**

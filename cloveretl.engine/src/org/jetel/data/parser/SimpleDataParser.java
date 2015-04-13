@@ -154,7 +154,6 @@ public class SimpleDataParser extends AbstractTextParser {
 	@Override
 	public DataRecord getNext() throws JetelException {
 		DataRecord record = DataRecordFactory.newRecord(cfg.getMetadata());
-		record.init();
 
 		return getNext(record);
 	}

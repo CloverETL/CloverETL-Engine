@@ -135,10 +135,8 @@ public class DataRecordGenerator extends AbstractParser {
 		specialValue = new Object[metadata.getNumFields()][4];
 		// create and initialize output record
 		DataRecord record = DataRecordFactory.newRecord(metadata);
-		record.init();
 
 		reusableRecord = DataRecordFactory.newRecord(metadata);
-		reusableRecord.init();
 
 		// create metadata for pattern record - fields are set from pattern (not random and sequence values)
 		DataRecordMetadata cutMetadata = metadata.duplicate();
@@ -286,7 +284,6 @@ public class DataRecordGenerator extends AbstractParser {
 		}
 		if (cutMetadata.getNumFields() > 0) {
 			patternRecord = DataRecordFactory.newRecord(cutMetadata);
-			patternRecord.init();
 			// prepare approperiate data parser
 			switch (metadata.getRecType()) {
 			case DataRecordMetadata.DELIMITED_RECORD:

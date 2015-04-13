@@ -673,7 +673,6 @@ public abstract class TreeWriter extends Node {
 			while (runIt) {
 				try {
 					DataRecord record = DataRecordFactory.newRecord(inPort.getMetadata());
-					record.init();
 					if (inPort.readRecord(record) == null) {
 						return;
 					}

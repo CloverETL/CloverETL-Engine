@@ -211,7 +211,6 @@ public abstract class FixLenDataParser extends AbstractParser implements TextPar
 	@Override
 	public DataRecord getNext() throws JetelException {
 		DataRecord rec = DataRecordFactory.newRecord(metadata);
-		rec.init();
 		return getNext(rec);
 	}
 

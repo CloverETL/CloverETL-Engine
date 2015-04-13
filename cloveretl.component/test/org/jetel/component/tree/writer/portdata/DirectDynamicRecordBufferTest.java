@@ -46,8 +46,6 @@ public class DirectDynamicRecordBufferTest extends CloverTestCase {
 		CloverBuffer cloverBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 		
 		DataRecord record = DataRecordFactory.newRecord(DynamicRecordBuffer1Test.getMetadata());
-		record.init();
-		record.reset();
 		
 		for (int iteration = 0; iteration < 3; iteration++) {
 			List<IndexKey> positions = new ArrayList<IndexKey>();
@@ -81,8 +79,6 @@ public class DirectDynamicRecordBufferTest extends CloverTestCase {
 		buffer.init();
 		
 		DataRecord record = DataRecordFactory.newRecord(DynamicRecordBuffer1Test.getMetadata());
-		record.init();
-		record.reset();
 		
 		for (int iteration = 0; iteration < 3; iteration++) {
 
@@ -118,8 +114,6 @@ public class DirectDynamicRecordBufferTest extends CloverTestCase {
 		buffer.init();
 		
 		DataRecord record = DataRecordFactory.newRecord(DynamicRecordBuffer1Test.getMetadata());
-		record.init();
-		record.reset();
 
 		for (int iteration = 0; iteration < 3; iteration++) {
 		

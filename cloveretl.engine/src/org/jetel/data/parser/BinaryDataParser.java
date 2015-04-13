@@ -154,7 +154,6 @@ public class BinaryDataParser extends AbstractParser {
 	@Override
 	public DataRecord getNext() throws JetelException {
 		DataRecord record = DataRecordFactory.newRecord(metadata);
-		record.init();
 		return getNext(record);
 	}
 

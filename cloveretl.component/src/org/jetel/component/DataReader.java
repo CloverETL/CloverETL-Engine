@@ -254,14 +254,12 @@ public class DataReader extends Node {
 		// we need to create data record - take the metadata from first output
 		// port
 		DataRecord record = DataRecordFactory.newRecord(getOutputPort(OUTPUT_PORT).getMetadata());
-		record.init();
 		// if we have second output port we can logging - create data record for
 		// log port
 		DataRecord logRecord = null;
 		boolean hasFileNameField = false;
 		if (logging) {
 			logRecord = DataRecordFactory.newRecord(getOutputPort(LOG_PORT).getMetadata());
-			logRecord.init();
 			hasFileNameField = logRecord.getNumFields() == 5;
 		}
 		int errorCount = 0;

@@ -19,30 +19,20 @@
 package org.jetel.component;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.activation.MimeType;
-
-import org.apache.commons.io.input.NullReader;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.content.InputStreamBody;
-import org.apache.poi.util.ByteField;
 import org.jetel.component.HttpConnector.PartWithName;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.NullRecord;
-import org.jetel.data.NullRecordTest;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.graph.InputPort;
-import org.jetel.graph.InputPortDirect;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
-import org.jetel.util.CTLMapping;
 
 /**
  * @author sedlacek (info@cloveretl.com)
@@ -357,7 +347,6 @@ public class HttpConnectorTest  extends CloverTestCase {
 			metadata.addField(new DataFieldMetadata(key, "|"));
 		}
 		DataRecord record = DataRecordFactory.newRecord(metadata );
-		record.init();
 		for(String key : fieldValues.keySet()) {
 			record.getField(key).setValue(fieldValues.get(key));
 		}

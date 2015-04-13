@@ -25,10 +25,8 @@ import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.interpreter.Stack;
-import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.interpreter.TransformLangParser;
 import org.jetel.interpreter.TransformLangParserVisitor;
-import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -94,7 +92,6 @@ public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
 	  }
 	  RecordKey lookupKey = new RecordKey(keyFields, lookupMetadata);
 	  lookupRecord = DataRecordFactory.newRecord(lookupMetadata);
-	  lookupRecord.init();
 	  lookup = lookupTable.createLookup(lookupKey, lookupRecord);
   }
 	
@@ -104,7 +101,6 @@ public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
 	 */
 	private void prepareLookupRecord() {
 		lookupRecord = DataRecordFactory.newRecord(lookup.getKey().generateKeyRecordMetadata());
-		lookupRecord.init();
 	}
   
 	  /**

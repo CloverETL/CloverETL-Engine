@@ -46,7 +46,6 @@ public class RangeLookupTest extends CloverTestCase {
 		lookup.preExecute();
 		lookupNotOverlap.preExecute();
 		record = DataRecordFactory.newRecord(lookupMetadata);
-		record.init();
 		record.getField("name").setValue("10-20,100-200");
 		record.getField("start").setValue(10);
 		record.getField("end").setValue(20);
@@ -162,7 +161,6 @@ public class RangeLookupTest extends CloverTestCase {
 		metadata.addField(new DataFieldMetadata("value", DataFieldMetadata.INTEGER_FIELD, ";"));
 		metadata.addField(new DataFieldMetadata("value1", DataFieldMetadata.INTEGER_FIELD, ";"));
 		record = DataRecordFactory.newRecord(metadata);
-		record.init();
 		RecordKey key = new RecordKey(new int[] { 1, 2 }, metadata);
 		lookupResult = lookup.createLookup(key, record);
 		lookupNOResult = lookupNotOverlap.createLookup(key, record);
@@ -217,7 +215,6 @@ public class RangeLookupTest extends CloverTestCase {
 		lookup.preExecute();
 		lookupNotOverlap.preExecute();
 		record = DataRecordFactory.newRecord(lookupMetadata);
-		record.init();
 		record.getField("name").setValue("10-20,100-200");
 		record.getField("start").setValue(10);
 		record.getField("end").setValue(20);
@@ -333,7 +330,6 @@ public class RangeLookupTest extends CloverTestCase {
 		metadata.addField(new DataFieldMetadata("value", DataFieldMetadata.INTEGER_FIELD, ";"));
 		metadata.addField(new DataFieldMetadata("value1", DataFieldMetadata.INTEGER_FIELD, ";"));
 		record = DataRecordFactory.newRecord(metadata);
-		record.init();
 		RecordKey key = new RecordKey(new int[] { 1, 2 }, metadata);
 		lookupResult = lookup.createLookup(key, record);
 		lookupNOResult = lookupNotOverlap.createLookup(key, record);
@@ -416,8 +412,6 @@ public class RangeLookupTest extends CloverTestCase {
 		
 		DataRecord tmp = DataRecordFactory.newRecord(lookupMetadata);
 		DataRecord tmp1 = DataRecordFactory.newRecord(lookupMetadata);
-		tmp.init();
-		tmp1.init();
 
 		Iterator<DataRecord> iter = lookup.iterator();
 		tmp1 = iter.next();
@@ -444,7 +438,6 @@ public class RangeLookupTest extends CloverTestCase {
 		metadata.addField(fieldMetadata);
 
 		record = DataRecordFactory.newRecord(metadata);
-		record.init();
 		RecordKey key = new RecordKey(new int[] { 1, 2, 3, 4, 5, 6, 7, 8 }, metadata);
 		lookupResult = lookup.createLookup(key, record);
 
@@ -492,7 +485,6 @@ public class RangeLookupTest extends CloverTestCase {
 		lookup.init();
 		lookup.preExecute();
 		record = DataRecordFactory.newRecord(lookupMetadata);
-		record.init();
 		record.getField("name").setValue("10-20,100-200");
 		record.getField("start").setValue(10);
 		record.getField("end").setValue(20);
@@ -527,7 +519,6 @@ public class RangeLookupTest extends CloverTestCase {
 		metadata.addField(new DataFieldMetadata("id", DataFieldMetadata.INTEGER_FIELD, ";"));
 		metadata.addField(new DataFieldMetadata("value", DataFieldMetadata.INTEGER_FIELD, ";"));
 		record = DataRecordFactory.newRecord(metadata);
-		record.init();
 		RecordKey key = new RecordKey(new int[]{0,1}, metadata);
 		
 		Integer[] keys = new Integer[2];
@@ -574,7 +565,6 @@ public class RangeLookupTest extends CloverTestCase {
 		lookup.init();
 		lookup.preExecute();
 		record = DataRecordFactory.newRecord(lookupMetadata);
-		record.init();
 		record.getField("name").setValue("p1");
 		record.getField("start").setValue("aaaaa");
 		record.getField("end").setValue("baaaa");
@@ -619,7 +609,6 @@ public class RangeLookupTest extends CloverTestCase {
 		metadata = new DataRecordMetadata("in", DataRecordMetadata.DELIMITED_RECORD);
 		metadata.addField(new DataFieldMetadata("value", DataFieldMetadata.STRING_FIELD, ";"));
 		record = DataRecordFactory.newRecord(metadata);
-		record.init();
 		RecordKey key = new RecordKey(new int[]{0}, metadata);
 		lookupResult = lookup.createLookup(key, record);
 
@@ -648,7 +637,6 @@ public class RangeLookupTest extends CloverTestCase {
 		lookup.init();
 		lookup.preExecute();
 		record = DataRecordFactory.newRecord(lookupMetadata);
-		record.init();
 		record.getField("name").setValue("start is null");
 		record.getField("start").setValue(null);
 		record.getField("end").setValue(20);
@@ -670,7 +658,6 @@ public class RangeLookupTest extends CloverTestCase {
 		metadata = new DataRecordMetadata("in", DataRecordMetadata.DELIMITED_RECORD);
 		metadata.addField(new DataFieldMetadata("id", DataFieldMetadata.INTEGER_FIELD, ";"));
 		record = DataRecordFactory.newRecord(metadata);
-		record.init();
 		RecordKey key = new RecordKey(new int[]{0}, metadata);
 		lookupResult = lookup.createLookup(key, record);
 

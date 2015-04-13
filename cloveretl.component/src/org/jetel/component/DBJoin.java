@@ -224,8 +224,6 @@ public class DBJoin extends Node {
 	public Result execute() throws Exception {
 		//initialize in and out records
 		DataRecord[] outRecord = {DataRecordFactory.newRecord(getOutputPort(WRITE_TO_PORT).getMetadata())};
-		outRecord[0].init();
-		outRecord[0].reset();
 		DataRecord[] inRecords = new DataRecord[] {inRecord,null};
 		OutputPort rejectedPort = getOutputPort(REJECTED_PORT);
 
@@ -521,7 +519,6 @@ public class DBJoin extends Node {
 		lookupTable.preExecute();
 		
 		inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-		inRecord.init();
 		lookup = lookupTable.createLookup(recordKey, inRecord);
 		if (errorLogURL != null) {
 			try {
