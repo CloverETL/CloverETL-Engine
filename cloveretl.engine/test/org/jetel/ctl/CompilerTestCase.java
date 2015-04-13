@@ -464,7 +464,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	 */
 	protected DataRecord createDefaultMultivalueRecord(DataRecordMetadata dataRecordMetadata) {
 		final DataRecord ret = DataRecordFactory.newRecord(dataRecordMetadata);
-		ret.init();
 
 		for (int i = 0; i < ret.getNumFields(); i++) {
 			DataField field = ret.getField(i);
@@ -562,7 +561,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	 */
 	protected DataRecord createDefaultRecord(DataRecordMetadata dataRecordMetadata) {
 		final DataRecord ret = DataRecordFactory.newRecord(dataRecordMetadata);
-		ret.init();
 
 		SetVal.setString(ret, "Name", NAME_VALUE);
 		SetVal.setDouble(ret, "Age", AGE_VALUE);
@@ -586,7 +584,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	 */
 	protected DataRecord createEmptyRecord(DataRecordMetadata metadata) {
 		DataRecord ret = DataRecordFactory.newRecord(metadata);
-		ret.init();
 
 		for (int i = 0; i < ret.getNumFields(); i++) {
 			SetVal.setNull(ret, i);
@@ -3056,16 +3053,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 		{
 			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(INPUT_1));
-			expected.init();
-			expected.reset();
 			expected.getField("Name").setValue("recordInit1");
 			assertDeepEquals(expected, getVariable("recordInit1"));
 		}
 		
 		{
 			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
-			expected.init();
-			expected.reset();
 			expected.getField("stringListField").setValue(Arrays.asList(null, null, "recordInit3"));
 			Map<String, String> map = new HashMap<>(1);
 			map.put("key", "recordInit3");
@@ -3075,8 +3068,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		{
 			DataRecord r = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
-			r.init();
-			r.reset();
 			r.getField("stringListField").setValue(Arrays.asList(null, null, "recordListInit"));
 			assertDeepEquals(Arrays.asList(null, null, r), getVariable("recordListInit"));
 		}
@@ -3089,8 +3080,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		{
 			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(OUTPUT_2));
-			expected.init();
-			expected.reset();
 			
 			expected.getField("Name").setValue("_out1Name_append");
 			expected.getField("Age").setValue(2);
@@ -3225,16 +3214,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 		{
 			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(INPUT_1));
-			expected.init();
-			expected.reset();
 			expected.getField("Age").setValue(-12.34);
 			assertDeepEquals(expected, getVariable("recordInit1"));
 		}
 		
 		{
 			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
-			expected.init();
-			expected.reset();
 			expected.getField("integerListField").setValue(Arrays.asList(null, null, -42));
 			Map<String, BigDecimal> map = new HashMap<>(1);
 			map.put("key", new BigDecimal("-88.8"));
@@ -3244,8 +3229,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		{
 			DataRecord r = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
-			r.init();
-			r.reset();
 			r.getField("integerListField").setValue(Arrays.asList(null, null, -24));
 			assertDeepEquals(Arrays.asList(null, null, r), getVariable("recordListInit"));
 		}
@@ -3257,8 +3240,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		{
 			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(OUTPUT_2));
-			expected.init();
-			expected.reset();
 			
 			expected.getField("Age").setValue(-2);
 			expected.getField("BornMillisec").setValue(-2L);
@@ -3391,16 +3372,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 		{
 			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(INPUT_1));
-			expected.init();
-			expected.reset();
 			expected.getField("Age").setValue(0.0);
 			assertDeepEquals(expected, getVariable("recordInit1"));
 		}
 		
 		{
 			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
-			expected.init();
-			expected.reset();
 			expected.getField("integerListField").setValue(Arrays.asList(null, null, 0));
 			Map<String, BigDecimal> map = new HashMap<>(1);
 			map.put("key", new BigDecimal("0"));
@@ -3410,8 +3387,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		{
 			DataRecord r = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
-			r.init();
-			r.reset();
 			r.getField("integerListField").setValue(Arrays.asList(null, null, 0));
 			assertDeepEquals(Arrays.asList(null, null, r), getVariable("recordListInit"));
 		}
@@ -3423,8 +3398,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		{
 			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(OUTPUT_2));
-			expected.init();
-			expected.reset();
 			
 			expected.getField("Age").setValue(0.0);
 			expected.getField("BornMillisec").setValue(0L);
@@ -3557,16 +3530,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 		{
 			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(INPUT_1));
-			expected.init();
-			expected.reset();
 			expected.getField("Age").setValue(0.0);
 			assertDeepEquals(expected, getVariable("recordInit1"));
 		}
 		
 		{
 			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
-			expected.init();
-			expected.reset();
 			expected.getField("integerListField").setValue(Arrays.asList(null, null, 0));
 			Map<String, BigDecimal> map = new HashMap<>(1);
 			map.put("key", BigDecimal.ZERO);
@@ -3576,8 +3545,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		{
 			DataRecord r = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
-			r.init();
-			r.reset();
 			r.getField("integerListField").setValue(Arrays.asList(null, null, 0));
 			assertDeepEquals(Arrays.asList(null, null, r), getVariable("recordListInit"));
 		}
@@ -3589,8 +3556,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		{
 			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(OUTPUT_2));
-			expected.init();
-			expected.reset();
 			
 			expected.getField("Age").setValue(0.0);
 			expected.getField("BornMillisec").setValue(0L);
@@ -3723,16 +3688,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 		{
 			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(INPUT_1));
-			expected.init();
-			expected.reset();
 			expected.getField("Age").setValue(0.0);
 			assertDeepEquals(expected, getVariable("recordInit1"));
 		}
 		
 		{
 			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
-			expected.init();
-			expected.reset();
 			expected.getField("integerListField").setValue(Arrays.asList(null, null, 0));
 			Map<String, BigDecimal> map = new HashMap<>(1);
 			map.put("key", BigDecimal.ZERO);
@@ -3742,8 +3703,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		{
 			DataRecord r = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
-			r.init();
-			r.reset();
 			r.getField("integerListField").setValue(Arrays.asList(null, null, 0));
 			assertDeepEquals(Arrays.asList(null, null, r), getVariable("recordListInit"));
 		}
@@ -3755,8 +3714,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		{
 			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(OUTPUT_2));
-			expected.init();
-			expected.reset();
 			
 			expected.getField("Age").setValue(0.0);
 			expected.getField("BornMillisec").setValue(0L);
@@ -3829,8 +3786,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("recordList1", Arrays.asList(null, null, null, inputRecords[0]));
 		{
 			DataRecord r = DataRecordFactory.newRecord(inputRecords[0].getMetadata());
-			r.init();
-			r.reset();
 			r.getField(0).setValue("test");
 			List<DataRecord> expected = Arrays.asList(null, null, null, r);
 			assertDeepEquals(expected, getVariable("recordList2"));
@@ -4994,16 +4949,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		DataRecord input2 = DataRecordFactory.newRecord(m2);
 		DataRecord output1 = DataRecordFactory.newRecord(m2);
 		DataRecord output2 = DataRecordFactory.newRecord(m1);
-		
-		input1.init();
-		input2.init();
-		output1.init();
-		output2.init();
-		
-		input1.reset();
-		input2.reset();
-		output1.reset();
-		output2.reset();
 		
 		input1.getField("field1").setValue("abc");
 		input1.getField("field2").setValue("def");

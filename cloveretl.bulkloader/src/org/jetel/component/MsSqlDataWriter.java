@@ -1224,12 +1224,10 @@ public class MsSqlDataWriter extends BulkLoader {
 			checkErrPortMetadata();
 
 			errRecord = DataRecordFactory.newRecord(errMetadata);
-			errRecord.init();
 
 			this.dbOutMetadata = createDbOutMetadata();
 
 			dbOutRecord = DataRecordFactory.newRecord(dbOutMetadata);
-			dbOutRecord.init();
 
 			dbParser = new DelimitedDataParser(dbOutMetadata, Defaults.DataParser.DEFAULT_CHARSET_DECODER);
 			dbParser.init();

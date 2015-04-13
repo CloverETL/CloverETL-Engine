@@ -62,10 +62,7 @@ public class BufferedFastPropagateEdgeTest extends CloverTestCase {
 		fieldMetadata = new DataFieldMetadata("field4", DataFieldType.STRING, "");
 		metadata.addField(fieldMetadata);
 		
-		DataRecord record = DataRecordFactory.newRecord(metadata);
-		record.init();
-		record.reset();
-		return record;
+		return DataRecordFactory.newRecord(metadata);
 	}
 
 	private static void populateRecord(DataRecord record, DataGenerator randomGenerator, int index) {

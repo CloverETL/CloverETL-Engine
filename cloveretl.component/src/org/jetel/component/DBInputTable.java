@@ -317,7 +317,6 @@ public class DBInputTable extends Node {
 					if (source == null) break; // no more data in input port
 					inputParser.setDataSource(source);
 					DataRecord statementRecord = DataRecordFactory.newRecord(statementMetadata);
-					statementRecord.init();
     				//read statements from byte channel
     				while ((statementRecord = inputParser.getNext(statementRecord)) != null) {
     					String sqlStatement = propertyResolver.resolveRef(statementRecord.getField(0).toString());
@@ -351,8 +350,6 @@ public class DBInputTable extends Node {
 
     		// we need to create data record - take the metadata from first output port
     		DataRecord record = DataRecordFactory.newRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
-    		record.init();
-    		record.reset();
 			parser.setDataSource(connection.getConnection(getId(), OperationType.READ));
     		autoFilling.setFilename(sqlQuery);
 

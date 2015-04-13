@@ -245,7 +245,6 @@ public class SQLIncremental {
 		}
 		keyMetadata.normalize();
 		keyRecord = DataRecordFactory.newRecord(keyMetadata);
-		keyRecord.init();
 		//prepare trans map for filling key record with updated values
 		for (int i = 0; i < keyDef.length; i++) {
 			try {
@@ -407,7 +406,6 @@ public class SQLIncremental {
 	 */
 	public void mergePosition(Properties position) {
 		DataRecord posKeyRecord = DataRecordFactory.newRecord(keyRecord.getMetadata());
-		posKeyRecord.init();
 		posKeyRecord.setToNull();
 		initPositionKeyRecord(posKeyRecord, position);
 		

@@ -96,11 +96,9 @@ public class EdgeDebuger {
     	recordOrdinalMetadata.addField(new DataFieldMetadata("ordinal", DataFieldMetadata.INTEGER_FIELD, ";"));
 
     	recordOrdinal = DataRecordFactory.newRecord(recordOrdinalMetadata);
-    	recordOrdinal.init();
 
     	if (!StringUtils.isEmpty(filterExpression)) {
 	    	filterTmpRecord = DataRecordFactory.newRecord(metadata);
-	    	filterTmpRecord.init();
     	}
 
     	dataTape = new DataRecordTape(debugFile, !readMode, false);
@@ -277,7 +275,6 @@ public class EdgeDebuger {
 		try {
 			if (recordBuffer != null) {
 				DataRecord dataRecord = DataRecordFactory.newRecord(metadata);
-				dataRecord.init();
 
 				while (recordBuffer.popRecord(recordOrdinal) != null && recordBuffer.popRecord(dataRecord) != null) {
 					dataTape.put(recordOrdinal);

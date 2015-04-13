@@ -42,12 +42,15 @@ public final class DataRecordFactory {
     @SuppressWarnings("deprecation")
 	public static DataRecord newRecord(DataRecordMetadata metadata) {
     	if (metadata.getNature() == DataRecordNature.TOKEN) {
-			return new Token(metadata);
+			return newToken(metadata);
 		} else {
-			return new DataRecordImpl(metadata);
+			DataRecord record = new DataRecordImpl(metadata);
+    		record.init();
+			record.reset();
+			return record;
 		}
     }
-
+    
     /**
      * Creates new instance of Token based on specified metadata.
      */

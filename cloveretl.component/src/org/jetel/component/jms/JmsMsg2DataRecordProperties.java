@@ -115,7 +115,6 @@ public class JmsMsg2DataRecordProperties extends JmsMsg2DataRecordBase {
 		}
 		
 		record = DataRecordFactory.newRecord(metadata);
-		record.init();
 	}
 
 	@Override

@@ -104,9 +104,7 @@ public class CloverDebugParser extends CloverDataParser implements DebugParser {
 	public void init() throws ComponentNotReadyException {
 		super.init();
 		tmpRecord = DataRecordFactory.newRecord(metadata);
-		tmpRecord.init();
 		externalRecord = DataRecordFactory.newRecord(externalMetadata);
-		externalRecord.init();
 	}
 	
 	private static DataRecordMetadata removeFirstField(DataRecordMetadata metadata) {

@@ -330,7 +330,6 @@ public class SQLCloverStatement {
 		}
 		if (outMetadata == null) return status;
 		DataRecord outRecord = DataRecordFactory.newRecord(outMetadata);
-		outRecord.init();
 		try {
 			prepareMapping(outRecord);
 		} catch (Exception e) {

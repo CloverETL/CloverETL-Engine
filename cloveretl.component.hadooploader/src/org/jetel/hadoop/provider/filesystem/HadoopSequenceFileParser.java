@@ -86,7 +86,6 @@ public class HadoopSequenceFileParser extends AbstractParser implements IHadoopS
 	public DataRecord getNext() throws JetelException {
 		// create a new data record
 		DataRecord record = DataRecordFactory.newRecord(metadata);
-		record.init();
 		return getNext(record);
 	}
 

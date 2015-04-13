@@ -242,8 +242,6 @@ public class XMLExtractTest extends CloverTestCase {
 		
 		DataRecord actualRecord = DataRecordFactory.newRecord(edge.getMetadata());
 		DataRecord expectedRecord = DataRecordFactory.newRecord(edge.getMetadata());
-		actualRecord.init();
-		expectedRecord.init();
 		expectedRecord.setToNull(); // fields excluded from expectedRecords[i] are considered to be nulls
 
 		int recordNum = 0;
@@ -287,7 +285,6 @@ public class XMLExtractTest extends CloverTestCase {
 
 	private void printEdgeRecords(Edge edge) throws IOException, InterruptedException {
 		DataRecord record = DataRecordFactory.newRecord(edge.getMetadata());
-		record.init();
 		while (edge.readRecord(record) != null) {
 			System.out.println(record);
 		}

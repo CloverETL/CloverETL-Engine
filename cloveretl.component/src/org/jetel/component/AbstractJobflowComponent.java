@@ -258,27 +258,19 @@ public abstract class AbstractJobflowComponent extends Node {
 		// create input params record, no matter if input edge is connected
 		// used to resolve default values
 		attributesRecord = DataRecordFactory.newRecord(createInputMetadata());
-		attributesRecord.init();
 		
 		if (hasInputPort) {
 			inputRecord = DataRecordFactory.newRecord(inputPort.getMetadata());
-			inputRecord.init();
 		}
 		
 		if (hasOutputPort) {
 			resultRecord = DataRecordFactory.newRecord(createOutputMetadata());
-			resultRecord.init();
-
 			outputRecord = DataRecordFactory.newRecord(outputPort.getMetadata());
-			outputRecord.init();
 		}
 		
 		if (hasErrorPort) {
 			errorResultRecord = DataRecordFactory.newRecord(createErrorMetadata());
-			errorResultRecord.init();
-			
 			errorRecord = DataRecordFactory.newRecord(errorPort.getMetadata());
-			errorRecord.init();
 		}
 		
 		//create input mapping

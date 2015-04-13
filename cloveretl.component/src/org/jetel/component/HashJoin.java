@@ -381,11 +381,8 @@ public class HashJoin extends Node {
 
 		inRecords = new DataRecord[1 + slaveCnt];
 		inRecords[0] = DataRecordFactory.newRecord(driverPort.getMetadata());
-		inRecords[0].init();
 		outRecords = new DataRecord[1];
 		outRecords[0] = DataRecordFactory.newRecord(outPort.getMetadata());
-		outRecords[0].init();
-		outRecords[0].reset();
 
 		driverKeys = new RecordKey[slaveCnt];
 		slaveKeys = new RecordKey[slaveCnt];
@@ -446,7 +443,6 @@ public class HashJoin extends Node {
 			// all necessary elements have been initialized in init()
 		} else {
 			inRecords[0] = DataRecordFactory.newRecord(driverPort.getMetadata());
-			inRecords[0].init();
 			transformation.reset();
 		}
 		if (errorLogURL != null) {
@@ -929,10 +925,8 @@ public class HashJoin extends Node {
 
 			inRecords = new DataRecord[1 + slaveCnt];
 			inRecords[0] = DataRecordFactory.newRecord(driverPort.getMetadata());
-			inRecords[0].init();
 			outRecords = new DataRecord[1];
 			outRecords[0] = DataRecordFactory.newRecord(outPort.getMetadata());
-			outRecords[0].init();
 
 			driverKeys = new RecordKey[slaveCnt];
 			slaveKeys = new RecordKey[slaveCnt];
@@ -1003,7 +997,6 @@ public class HashJoin extends Node {
 		@Override
 		public void work() throws Exception, InterruptedException {
 			DataRecord record = DataRecordFactory.newRecord(metadata);
-			record.init();
 
 			while (runIt) {
 				try {

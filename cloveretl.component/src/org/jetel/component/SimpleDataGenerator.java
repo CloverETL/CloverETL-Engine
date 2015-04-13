@@ -175,7 +175,6 @@ public class SimpleDataGenerator extends DataGenerator {
 	@Override
 	public Result execute() throws Exception {
 		DataRecord record = DataRecordFactory.newRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
-		record.init();
 		for (long i=0;i<recordsNumber && runIt;i++){
 			record = recordGenerator.getNext(record);
 			autoFilling.setAutoFillingFields(record);

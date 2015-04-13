@@ -127,10 +127,6 @@ public class AggregateOld extends Node {
 			DataRecord tempRecord;
 			DataRecord outRecord = DataRecordFactory.newRecord(outPort.getMetadata());
 
-			currentRecord.init();
-			previousRecord.init();
-			outRecord.init();
-
 			while (currentRecord != null && runIt) {
 				currentRecord = inPort.readRecord(currentRecord);
 				if (!firstLoop) {
@@ -156,9 +152,6 @@ public class AggregateOld extends Node {
 			OutputPort outPort = getOutputPort(WRITE_TO_PORT);
 			DataRecord currentRecord = DataRecordFactory.newRecord(inPort.getMetadata());
 			DataRecord outRecord = DataRecordFactory.newRecord(outPort.getMetadata());
-
-			currentRecord.init();
-			outRecord.init();
 
 			// read all data from input port to aggregateRecord
 			while ((currentRecord = inPort.readRecord(currentRecord)) != null && runIt) {

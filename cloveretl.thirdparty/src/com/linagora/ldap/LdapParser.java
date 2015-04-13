@@ -27,10 +27,9 @@ import java.util.List;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.SizeLimitExceededException;
+import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchResult;
-import javax.naming.directory.Attribute;
-import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -395,7 +394,6 @@ public class LdapParser extends AbstractParser {
 	@Override
 	public DataRecord getNext() throws JetelException {
 		DataRecord localOutRecord = DataRecordFactory.newRecord(metadata);
-		localOutRecord.init();
 		return getNext(localOutRecord);
 	}
 

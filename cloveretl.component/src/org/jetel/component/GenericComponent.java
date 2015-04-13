@@ -79,7 +79,6 @@ public class GenericComponent extends Node {
 		inRecords = new DataRecord[inMeta.length];
 		for (int i = 0; i < inRecords.length; i++) {
 			inRecords[i] = DataRecordFactory.newRecord(inMeta[i]);
-			inRecords[i].init();
 		}
 	}
 	

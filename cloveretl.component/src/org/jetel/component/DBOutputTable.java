@@ -19,7 +19,6 @@
 package org.jetel.component;
 
 import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
 import java.sql.BatchUpdateException;
 import java.sql.SQLException;
 import java.sql.Savepoint;
@@ -65,7 +64,6 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.ExceptionUtils;
-import org.jetel.util.ReadableChannelDictionaryIterator;
 import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
@@ -434,7 +432,6 @@ public class DBOutputTable extends Node implements MetadataProvider {
 		rejectedPort = getOutputPort(WRITE_REJECTED_TO_PORT);
 		rejectedRecord = rejectedPort != null ? DataRecordFactory.newRecord(rejectedPort.getMetadata()) : null;
 		if (rejectedRecord != null) {
-			rejectedRecord.init();
 			errorCodeFieldNum = rejectedRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_CODE);
 			errMessFieldNum = rejectedRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_MESSAGE);
 			if (errMessFieldNum == -1) {
@@ -488,7 +485,6 @@ public class DBOutputTable extends Node implements MetadataProvider {
 				dictParser.init();
 				dictParser.setDataSource(next);
 				DataRecord queryRecord = DataRecordFactory.newRecord(queryMetadata);
-				queryRecord.init();
 				if ((queryRecord = dictParser.getNext(queryRecord)) != null) {
 					sqlQuery[0] = getPropertyRefResolver().resolveRef(queryRecord.getField(0).toString());
 				}
@@ -501,10 +497,6 @@ public class DBOutputTable extends Node implements MetadataProvider {
 		returnResult = new boolean[sqlQuery.length];
 		Arrays.fill(returnResult, false);
 		keysRecord = keysPort != null ? DataRecordFactory.newRecord(keysPort.getMetadata()) : null;
-		if (keysRecord != null) {
-			keysRecord.init();
-			keysRecord.reset();
-		}
 
 		// prepare set of statements
 		statement = new SQLCloverStatement[sqlQuery.length];
@@ -522,7 +514,6 @@ public class DBOutputTable extends Node implements MetadataProvider {
 		super.preExecute();
 		
 		inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-		inRecord.init();
 		
 		// create connection instance, which represents connection to a database
 		try {
@@ -835,7 +826,6 @@ public class DBOutputTable extends Node implements MetadataProvider {
 	        for (int i = 0; i < statement.length; i++) {
 				for (int j = 0; j < batchSize; j++) {
 					dataRecordHolder[i][j] = DataRecordFactory.newRecord(rejectedMetadata);
-					dataRecordHolder[i][j].init();
 				}
 			}
 	    }else{
@@ -1070,7 +1060,6 @@ public class DBOutputTable extends Node implements MetadataProvider {
 							}
 						}else if (records != null){//records[i][count] == null - it wasn't added to batch, prepare for next batch
 							records[i][count] = DataRecordFactory.newRecord(rejectedPort.getMetadata());
-							records[i][count].init();
 						}
 					}
 					count++;
@@ -1103,7 +1092,6 @@ public class DBOutputTable extends Node implements MetadataProvider {
 						rejectedPort.writeRecord(records[i][count]);
 					}else if (records != null){
 						records[i][count] = DataRecordFactory.newRecord(rejectedPort.getMetadata());
-						records[i][count].init();
 					}
 					count++;
 		        }
@@ -1296,7 +1284,6 @@ public class DBOutputTable extends Node implements MetadataProvider {
 			}
 			if (inPort.getMetadata() != null) {
 				inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-				inRecord.init();
 				int start = 0, end;
 				for (int i = 0; i < sqlQuery.length; i++) {
 					String[] tmpCloverFields = null;
