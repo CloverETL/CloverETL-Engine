@@ -91,6 +91,10 @@ public class TransformationGraphAnalyzer {
 			throw new JetelRuntimeException("Removing disabled nodes failed.", e);
 		}
 
+		//remove optional input and output edges in subgraphs
+		removeOptionalEdges(graph);
+		
+		//analyse subgraph - check layout and removes debug components if necessary
 		boolean subJobRuntime = runtimeContext.getJobType().isSubJob();
 		boolean subJobFile = runtimeContext.getJobType().isSubJob() || graph.getStaticJobType().isSubJob();
 		if (subJobRuntime || subJobFile) {
@@ -129,6 +133,41 @@ public class TransformationGraphAnalyzer {
         graph.setAnalysed(true);
 	}
 	
+	/**
+	 * This method removes all edges which are connected to subgraph's ports,
+	 * which are optional, where the related edge should be removed (SubgraphPort.isKeptEdge() == false).
+	 */
+	private static void removeOptionalEdges(TransformationGraph graph) {
+		try {
+			for (SubgraphPort subgraphPort : graph.getSubgraphInputPorts().getPorts()) {
+				if (!subgraphPort.isRequired() && !subgraphPort.isKeptEdge() && !subgraphPort.isConnected()) {
+					//remove the edge
+					OutputPort outputPort = graph.getSubgraphInputComponent().getOutputPort(subgraphPort.getIndex());
+					if (outputPort != null) {
+						Edge edge = outputPort.getEdge();
+						graph.deleteEdge(edge);
+						edge.getReader().removeInputPort(edge);
+						edge.getWriter().removeOutputPort(edge);
+					}
+				}
+			}
+	
+			for (SubgraphPort subgraphPort : graph.getSubgraphOutputPorts().getPorts()) {
+				if (!subgraphPort.isRequired() && !subgraphPort.isKeptEdge() && !subgraphPort.isConnected()) {
+					InputPort inputPort = graph.getSubgraphOutputComponent().getInputPort(subgraphPort.getIndex());
+					if (inputPort != null) {
+						Edge edge = inputPort.getEdge();
+						graph.deleteEdge(edge);
+						edge.getReader().removeInputPort(edge);
+						edge.getWriter().removeOutputPort(edge);
+					}
+				}
+			}
+		} catch (Exception e) {
+			throw new JetelRuntimeException("Subgraph port optional edges cannot be removed.", e);
+		}
+	}
+
 	/**
 	 * Check whether subgraph calling hierarchy of the given graph is not recursive.
 	 * @param graph
@@ -568,10 +607,7 @@ public class TransformationGraphAnalyzer {
 		for (int i = 0; i < phases.length; i++) {
 			nodesToRemove.clear();
 			for (Node node : phases[i].getNodes().values()) {
-				if (node.getEnabled() == EnabledEnum.DISABLED) {
-					nodesToRemove.add(node);
-					disconnectAllEdges(node);
-				} else if (node.getEnabled() == EnabledEnum.PASS_THROUGH) {
+				if (!node.getEnabled().isEnabled()) {
 					nodesToRemove.add(node);
 					final InputPort inputPort = node.getInputPort(node.getPassThroughInputPort());
 					final OutputPort outputPort = node.getOutputPort(node.getPassThroughOutputPort());

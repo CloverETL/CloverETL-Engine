@@ -158,6 +158,7 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		assertFalse(PropertyRefResolver.isPropertyReference("${123}"));
 		assertFalse(PropertyRefResolver.isPropertyReference("${123abc}"));
 		assertTrue(PropertyRefResolver.isPropertyReference("${abc123}"));
+		assertFalse(PropertyRefResolver.isPropertyReference("${a}${b}"));
 	}
 
 	public void testContainsProperty() {
@@ -209,6 +210,28 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		} catch (IllegalArgumentException e) {
 			//CORRECT
 		}
+	}
+	
+	public void testGetReferencedProperty() {
+		assertEquals(null, PropertyRefResolver.getReferencedProperty(null));
+		assertEquals(null, PropertyRefResolver.getReferencedProperty(""));
+		assertEquals(null, PropertyRefResolver.getReferencedProperty("a"));
+		assertEquals(null, PropertyRefResolver.getReferencedProperty("$"));
+		assertEquals(null, PropertyRefResolver.getReferencedProperty("${}"));
+		assertEquals(null, PropertyRefResolver.getReferencedProperty("${a"));
+		assertEquals(null, PropertyRefResolver.getReferencedProperty("$a}"));
+		assertEquals(null, PropertyRefResolver.getReferencedProperty("$a"));
+		assertEquals("a", PropertyRefResolver.getReferencedProperty("${a}"));
+		assertEquals("abc", PropertyRefResolver.getReferencedProperty("${abc}"));
+		assertEquals(null, PropertyRefResolver.getReferencedProperty("b${a}"));
+		assertEquals(null, PropertyRefResolver.getReferencedProperty("${{}"));
+		assertEquals("a_b", PropertyRefResolver.getReferencedProperty("${a_b}"));
+		assertEquals(null, PropertyRefResolver.getReferencedProperty("${aa.cc}"));
+		assertEquals(null, PropertyRefResolver.getReferencedProperty("${aa.cc}asd"));
+		assertEquals(null, PropertyRefResolver.getReferencedProperty("${123}"));
+		assertEquals(null, PropertyRefResolver.getReferencedProperty("${123abc}"));
+		assertEquals("abc123", PropertyRefResolver.getReferencedProperty("${abc123}"));
+		assertEquals(null, PropertyRefResolver.getReferencedProperty("${a}${b}"));
 	}
 	
 }
