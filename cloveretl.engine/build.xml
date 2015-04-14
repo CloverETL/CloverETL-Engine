@@ -1137,9 +1137,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 					reportlevel="low"
 					jvmargs="-Xmx500m">
 			<class location="${dir.bin}"/>
-			<class location="${dir.classestest}"/>
 			<sourcePath path="${dir.src}" />
-			<sourcePath path="${dir.src.test}" />
 			<auxclasspath path="${tools}"/>
 			<auxClasspath>
 				<fileset refid="engine-libs"/>
@@ -1159,9 +1157,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 					reportlevel="low"
 					jvmargs="-Xmx600m">
 			<class location="${dir.bin}"/>
-			<class location="${dir.classestest}"/>
 			<sourcePath path="${dir.src}" />
-			<sourcePath path="${dir.src.test}" />
 			<auxclasspath path="${tools}"/>
 			<auxClasspath>
 				<fileset refid="engine-libs"/>
@@ -1178,7 +1174,6 @@ This software is licensed under the terms you may find in the file named "LICENS
 		<ant dir="../${plugin.dir}" target="findbugs-xml" inheritAll="false" inheritrefs="false">
 			<property name="dir.findbugs" value="${dir.findbugs}"/>
 			<property name="dir.dist" value="${dir.package}"/>
-			<property name="dir.engine.classestest" value="${dir.classestest}"/>
 		</ant>
 	</target>
 	
