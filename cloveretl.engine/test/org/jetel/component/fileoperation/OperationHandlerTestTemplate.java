@@ -1275,6 +1275,13 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		result = manager.list(relativeURI("file-vs-dir/file/"), new ListParameters().setRecursive(true)).getResult();
 		System.out.println(result);
 		assertEquals(0, result.size());
+
+		{
+			URI root = baseUri.resolve("/");
+			CloverURI uri = CloverURI.createURI(root + ".");
+			ListResult listResult = manager.list(uri);
+			assertTrue(listResult.getFirstErrorMessage(), listResult.success());
+		}
 	}
 	
 	protected CloverURI relativeURI(String uri) throws URISyntaxException {
@@ -1298,7 +1305,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		uri = relativeURI("topdir1/subdir/subsubdir/file");
 		System.out.println(uri.getAbsoluteURI());
 		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
-		assertFalse(manager.create(uri).success());
+		assertFalse(String.format("Created %s even though the parent dir did not exist", uri), manager.create(uri).success());
 		assertFalse(String.format("Created %s even though the parent dir did not exist", uri), manager.exists(uri));
 		
 		uri = relativeURI("topdir2/subdir/subsubdir/dir");

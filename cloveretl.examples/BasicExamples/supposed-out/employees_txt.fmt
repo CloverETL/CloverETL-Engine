@@ -3,7 +3,7 @@
 <Field delimiter="|" label="First name" name="first_name" type="string"/>
 <Field delimiter="|" label="Last name" name="last_name" type="string"/>
 <Field delimiter="|" label="Age" name="age" type="integer"/>
-<Field delimiter="|" format="yyyy-MM-dd" label="Joined" name="joined" type="date"/>
+<Field delimiter="|" label="Joined" name="joined" type="date"/>
 <Field delimiter="|" label="Salary" name="salary" type="decimal"/>
 </Record>
 

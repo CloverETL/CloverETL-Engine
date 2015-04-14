@@ -178,7 +178,6 @@ public class XSLDataTransformer extends Node {
 		DataRecord outRecord = null;
 		if (outputPort != null) {
 			outRecord = DataRecordFactory.newRecord(outputPort.getMetadata());
-			outRecord.init();
 		}
 
 		xsltIs = null;
@@ -253,7 +252,6 @@ public class XSLDataTransformer extends Node {
 	public Result executeMapping() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-		inRecord.init();
 		DataRecord outRecord;
 		
 		while (inRecord != null && runIt) {
@@ -360,7 +358,6 @@ public class XSLDataTransformer extends Node {
 			if (outputPort == null) throw new ComponentNotReadyException(ERR_OUTPUT_PORT_NOT_FOUND);
 			
 			DataRecord outRecord = DataRecordFactory.newRecord(outputPort.getMetadata());
-			outRecord.init();
 			
 			XSLTMappingTransition xsltTransition = new XSLTMappingTransition(outRecord, mapping, null);
 			xsltTransition.setInMatadata(inputPort.getMetadata());

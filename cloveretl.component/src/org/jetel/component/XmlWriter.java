@@ -515,7 +515,6 @@ public class XmlWriter extends Node {
 			while (runIt) {
 				try {
 					DataRecord record = DataRecordFactory.newRecord(metadata);
-					record.init();
 					if (inPort.readRecord(record) == null) // no more input data
 						return;
 

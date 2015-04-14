@@ -195,6 +195,14 @@ public class TransformationGraphXMLReaderWriter {
 	private final static String GRAPH_PARAMETERS_ELEMENT = "GraphParameters";
 	private final static String GRAPH_PARAMETER_FILE_ELEMENT = "GraphParameterFile";
 	
+	public final static String SUBGRAPH_INPUT_PORTS_ELEMENT = "inputPorts";
+	public final static String SUBGRAPH_OUTPUT_PORTS_ELEMENT = "outputPorts";
+	public final static String SUBGRAPH_SINGLE_PORT_ELEMENT= "singlePort";
+	public final static String SUBGRAPH_PORT_NAME_ATTRIBUTE = "name";
+	public final static String SUBGRAPH_PORT_REQUIRED_ATTRIBUTE = "required";
+	public final static String SUBGRAPH_PORT_KEEP_EDGE_ATTRIBUTE = "keepEdge";
+	public final static String SUBGRAPH_PORT_CONNECTED_ATTRIBUTE = "connected";
+	
 	private final static String DICTIONARY_ELEMENT = "Dictionary";
 	private final static String DICTIONARY_ENTRY_ELEMENT = "Entry";
 	private final static String DICTIONARY_ENTRY_ID = "id";
@@ -246,7 +254,12 @@ public class TransformationGraphXMLReaderWriter {
     
     private GraphRuntimeContext runtimeContext;
     
-    private boolean strictParsing = true;
+    /**
+     * This is already deprecated way to set strict or lenient graph parsing.
+     * It is recommended to used {@link GraphRuntimeContext#setStrictGraphFactorization(boolean)} instead.
+     */
+    @Deprecated
+    private Boolean strictParsing;
 
     /** Should be metadata automatically propagated? */
     private boolean metadataPropagation = true;
@@ -258,6 +271,9 @@ public class TransformationGraphXMLReaderWriter {
     
     private final Marshaller graphParameterMarshaller;
     private final Unmarshaller graphParameterUnmarshaller;
+    
+    /**  List of exceptions, which were suppressed with lenient parsing */
+    private List<Throwable> suppressedExceptions = new ArrayList<>();
     
     /**
      * Instantiates transformation graph from a given input stream and presets a given properties.
@@ -421,9 +437,10 @@ public class TransformationGraphXMLReaderWriter {
 			//it is necessary for correct edge factorisation in EdgeFactory (maybe will be useful even somewhere else)
 			c = ContextProvider.registerGraph(graph);
 			
-			//set information about strict parsing into runtime context - this can
-			//be used whenever is necessary inside the graph factorization using ContextProvider.getRuntimeContext() 
-			runtimeContext.setStrictGraphFactorization(strictParsing);
+			//deprecated strictParsing flag is stored into runtimeContext, which is preferable way
+			if (strictParsing != null) {
+				runtimeContext.setStrictGraphFactorization(strictParsing);
+			}
 			graph.setInitialRuntimeContext(runtimeContext);
 			
 			// get graph name
@@ -455,6 +472,14 @@ public class TransformationGraphXMLReaderWriter {
 	        graph.setLargeIconPath(grfAttributes.getString(LARGE_ICON_PATH_ATTRIBUTE, null));
 	        graph.setStaticJobType(JobType.fromString(grfAttributes.getString(JOB_TYPE_ATTRIBUTE, null)));
 	
+	        //read subgraph input ports
+			List<Element> subgraphInputPortsElements = getChildElements(getGlobalElement(document), SUBGRAPH_INPUT_PORTS_ELEMENT);
+	        instantiateSubgraphPorts(true, graph.getSubgraphInputPorts(), subgraphInputPortsElements);
+
+	        //read subgraph output ports
+			List<Element> subgraphOutputPortsElements = getChildElements(getGlobalElement(document), SUBGRAPH_OUTPUT_PORTS_ELEMENT);
+	        instantiateSubgraphPorts(false, graph.getSubgraphOutputPorts(), subgraphOutputPortsElements);
+
 			// handle all defined graph parameters - old-fashion
 			NodeList PropertyElements = document.getElementsByTagName(PROPERTY_ELEMENT);
 			instantiateProperties(PropertyElements);
@@ -669,9 +694,8 @@ public class TransformationGraphXMLReaderWriter {
                 nodeEnabled = attributes.getString(Node.XML_ENABLED_ATTRIBUTE, EnabledEnum.ENABLED.toString());
                 nodePassThroughInputPort = attributes.getInteger("passThroughInputPort", 0);
                 nodePassThroughOutputPort = attributes.getInteger("passThroughOutputPort", 0);
-				if(!nodeEnabled.equalsIgnoreCase(EnabledEnum.DISABLED.toString()) 
-                        && !nodeEnabled.equalsIgnoreCase(EnabledEnum.PASS_THROUGH.toString())) {
-					graphNode = ComponentFactory.createComponent(graph, nodeType, nodeElements.item(i), isStrictParsing());
+                if (EnabledEnum.fromString(nodeEnabled, EnabledEnum.ENABLED).isEnabled()) {
+					graphNode = ComponentFactory.createComponent(graph, nodeType, nodeElements.item(i));
                 } else {
                     graphNode = ComponentFactory.createDummyComponent(graph, nodeType, null, nodeElements.item(i));
                 }
@@ -680,6 +704,7 @@ public class TransformationGraphXMLReaderWriter {
                     graphNode.setEnabled(nodeEnabled);
                     graphNode.setPassThroughInputPort(nodePassThroughInputPort);
                     graphNode.setPassThroughOutputPort(nodePassThroughOutputPort);
+                    persistRawComponentEnabledAttribute(attributes, graphNode);
 				} else {
 					throwXMLConfigurationException("Error when creating Component type '" + nodeType + "'.");
 				}
@@ -691,7 +716,15 @@ public class TransformationGraphXMLReaderWriter {
 		}
 	}
 
-
+	/** This method persists raw value of enabled attribute of given component. */
+	private void persistRawComponentEnabledAttribute(ComponentXMLAttributes attributes, Node graphNode) {
+        attributes.setResolveReferences(false);
+        try {
+        	graph.getRawComponentEnabledAttribute().put(graphNode, attributes.getStringEx(Node.XML_ENABLED_ATTRIBUTE, null, RefResFlag.ALL_OFF));
+        } finally {
+        	attributes.setResolveReferences(true);
+        }
+	}
 
 	/**
 	 *  Description of the Method
@@ -852,6 +885,36 @@ public class TransformationGraphXMLReaderWriter {
 		}
 	}
 
+	private void instantiateSubgraphPorts(boolean inputPorts, SubgraphPorts subgraphPorts, List<Element> subgraphPortsElements) throws XMLConfigurationException {
+		if (subgraphPortsElements.isEmpty()) {
+			return;
+		}
+		if (subgraphPortsElements.size() > 1) {
+			throw new JetelRuntimeException("XML element 'input/outputPorts' has max occurences 1, but is " + subgraphPortsElements.size());
+		}
+
+		List<Element> subgraphPortElements = getChildElements(subgraphPortsElements.get(0), SUBGRAPH_SINGLE_PORT_ELEMENT);
+		for (Element subgraphPortElement : subgraphPortElements) {
+            ComponentXMLAttributes attributes = new ComponentXMLAttributes(subgraphPortElement, graph);
+            int index;
+            try {
+                index = attributes.getInteger(SUBGRAPH_PORT_NAME_ATTRIBUTE);
+            } catch (AttributeNotFoundException ex) {
+                throwXMLConfigurationException("Attribute name at singlePort is missing.", ex);
+                continue;
+            }
+            boolean required = attributes.getBoolean(SUBGRAPH_PORT_REQUIRED_ATTRIBUTE, true);
+            boolean keepEdge = attributes.getBoolean(SUBGRAPH_PORT_KEEP_EDGE_ATTRIBUTE, false);
+            boolean connected = attributes.getBoolean(SUBGRAPH_PORT_CONNECTED_ATTRIBUTE, true);
+            SubgraphPort subgraphPort;
+            if (inputPorts) {
+            	subgraphPort = new SubgraphInputPort(subgraphPorts, index, required, keepEdge, connected);
+            } else {
+            	subgraphPort = new SubgraphOutputPort(subgraphPorts, index, required, keepEdge, connected);
+            }
+            subgraphPorts.getPorts().add(subgraphPort);
+		}
+	}
 
 	/**
 	 *  Description of the Method
@@ -1246,19 +1309,27 @@ public class TransformationGraphXMLReaderWriter {
 	}
 
 	private void throwXMLConfigurationException(String message, Throwable cause) throws XMLConfigurationException {
+		XMLConfigurationException e = new XMLConfigurationException(message, cause);
 		if (isStrictParsing()) {
-			throw new XMLConfigurationException(message, cause);
+			throw e;
 		} else {
 			//strict mode is off, so exception is logged only on debug level
-			logger.debug("Graph factorization failed (strictMode = false): " + message, cause);
+			logger.debug("Graph factorization failed (strictMode = false)", e);
+			suppressedExceptions.add(e);
 		}
 	}
 	
 	/**
 	 * @return the strictParsing
+	 * @deprecated use {@link GraphRuntimeContext#isStrictGraphFactorization()} instead
 	 */
+	@Deprecated
 	public boolean isStrictParsing() {
-		return strictParsing;
+		if (strictParsing != null) {
+			return strictParsing;
+		} else {
+			return runtimeContext.isStrictGraphFactorization();
+		}
 	}
 
 	/**
@@ -1267,7 +1338,9 @@ public class TransformationGraphXMLReaderWriter {
 	 * does not	cause failure of graph reading.
 	 * 
 	 * @param strictParsing the strictParsing to set
+	 * @deprecated use {@link GraphRuntimeContext#setStrictGraphFactorization(boolean)} instead
 	 */
+	@Deprecated
 	public void setStrictParsing(boolean strictParsing) {
 		this.strictParsing = strictParsing;
 	}
@@ -1284,6 +1357,14 @@ public class TransformationGraphXMLReaderWriter {
 	 */
 	public void setOnlyParamsAndDict(boolean onlyParamsAndDict) {
 		this.onlyParamsAndDict = onlyParamsAndDict;
+	}
+	
+	/**
+	 * @return list of exceptions, which were suppressed with lenient parsing
+	 * @see #setStrictParsing(boolean) 
+	 */
+	public List<Throwable> getSuppressedExceptions() {
+		return suppressedExceptions;
 	}
 	
 	@Deprecated

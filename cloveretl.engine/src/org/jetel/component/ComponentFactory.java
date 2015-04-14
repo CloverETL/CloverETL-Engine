@@ -123,6 +123,9 @@ public class ComponentFactory {
 	/**
 	 *  Method for creating various types of Components based on component type & XML parameter definition.<br>
 	 *  If component type is not registered, it tries to use componentType parameter directly as a class name.
+	 *  If the instance of the component cannot be created due failure in Node.fromXML() method and strict is false
+	 *  then dummy component implementation is returned. This dummy implementation provides only
+	 *  component id, type and name of the component.
 	 *  
 	 * @param  componentType  Type of the component (e.g. SimpleCopy, Gather, Join ...)
 	 * @param  xmlNode        XML element containing appropriate Node parameters
@@ -130,23 +133,6 @@ public class ComponentFactory {
 	 * @since                 May 27, 2002
 	 */
 	public final static Node createComponent(TransformationGraph graph, String componentType, org.w3c.dom.Node nodeXML) {
-		return createComponent(graph, componentType, nodeXML, true);
-	}
-	
-	/**
-	 *  Method for creating various types of Components based on component type & XML parameter definition.<br>
-	 *  If component type is not registered, it tries to use componentType parameter directly as a class name.
-	 *  If the instance of the component cannot be created due failure in Node.fromXML() method and strict is false
-	 *  then dummy component implementation is returned. This dummy implementation provides only
-	 *  component id, type and name of the component.
-	 *  
-	 * @param  componentType  Type of the component (e.g. SimpleCopy, Gather, Join ...)
-	 * @param  xmlNode        XML element containing appropriate Node parameters
-	 * @param  strict		  if false errors in Node.fromXML() is ignored and dummy component implementation is returned
-	 * @return                requested Component (Node) object or null if creation failed 
-	 * @since                 May 27, 2002
-	 */
-	public final static Node createComponent(TransformationGraph graph, String componentType, org.w3c.dom.Node nodeXML, boolean strict) {
 		Class<? extends Node> tClass = getComponentClass(componentType);
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes((Element) nodeXML, graph);
 		Node result = null;
@@ -158,7 +144,7 @@ public class ComponentFactory {
 	        loadCommonAttributes(graph, componentType, result, nodeXML);
 			return result;
 		} catch (Exception e) {
-			if (strict) {
+			if (graph.getRuntimeContext().isStrictGraphFactorization()) {
 				throw createException(xattribs, e);
 			} else {
 				return createDummyComponent(graph, componentType, tClass, nodeXML);

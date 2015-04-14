@@ -133,8 +133,6 @@ public class ExtDataGenerator extends DataGenerator {
 		DataRecord outRecord[] = new DataRecord[numOutputPorts];
 		for (int i = 0; i < numOutputPorts; i++) {
 			outRecord[i] = DataRecordFactory.newRecord(getOutputPort(i).getMetadata());
-			outRecord[i].init();
-			outRecord[i].reset();
 		}
 		if (generatorClass != null)
 			executeGenerate(outRecord);

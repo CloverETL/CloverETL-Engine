@@ -1102,7 +1102,6 @@ public class MysqlDataWriter extends BulkLoader {
 			checkErrPortMetadata();
 
 			errRecord = DataRecordFactory.newRecord(errMetadata);
-			errRecord.init();
 
 			Pattern badRowPattern = Pattern.compile(strBadRowPattern);
 			badRowMatcher = badRowPattern.matcher("");

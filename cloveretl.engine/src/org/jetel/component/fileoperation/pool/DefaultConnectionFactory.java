@@ -30,6 +30,7 @@ public class DefaultConnectionFactory implements KeyedPoolableObjectFactory<Auth
 	public DefaultConnectionFactory() {
 		factories.add(new SFTPConnectionFactory());
 		factories.add(new FTPConnectionFactory());
+		factories.add(new S3ConnectionFactory());
 //		factories.add(new FTPSConnectionFactory());
 	}
 	

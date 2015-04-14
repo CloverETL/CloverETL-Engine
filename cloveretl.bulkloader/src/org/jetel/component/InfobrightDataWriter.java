@@ -496,7 +496,6 @@ public class InfobrightDataWriter extends Node {
 		Throwable ex = null;
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-		inRecord.init();
 		//thread that writes data to database
 		InfoBrightWriter infobrightWriter = 
 			new InfoBrightWriter(Thread.currentThread(), inPort, inRecord, cloverFieldIndexes, bRecord, converter, loader);
@@ -507,7 +506,6 @@ public class InfobrightDataWriter extends Node {
 		if (dataParser != null) {
 			OutputPort outPort = getOutputPort(WRITE_TO_PORT);
 			DataRecord out_record = DataRecordFactory.newRecord(outPort.getMetadata());
-			out_record.init();
 			portWriter  = new PortWriter(Thread.currentThread(), outPort, out_record, dataParser);
 			portWriter.start();
 			registerChildThread(portWriter);

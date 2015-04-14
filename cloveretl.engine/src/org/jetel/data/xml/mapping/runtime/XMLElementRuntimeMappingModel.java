@@ -402,8 +402,6 @@ public class XMLElementRuntimeMappingModel extends XMLRuntimeMappingModel {
 				DataRecordMetadata dataRecordMetadata = outPort.getMetadata();
 				getContext().getAutoFilling().addAutoFillingFields(dataRecordMetadata);
 				outputRecord = DataRecordFactory.newRecord(dataRecordMetadata);
-				outputRecord.init();
-				outputRecord.reset();
 			} // Original code is commented, it is valid to have null port now
 			/*
 			 * else { LOG .warn(getId() + ": Port " + getOutPort() +

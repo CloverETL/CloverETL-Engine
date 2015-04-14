@@ -158,7 +158,6 @@ public class ReadableChannelIteratorTest extends CloverTestCase {
 		metadata.addField(new DataFieldMetadata("field", null));
 		
 		DataRecord record = DataRecordFactory.newRecord(metadata);
-		record.init();
 		
 		InputPortMock inputPort = new InputPortMock("portReadingield", fileURLs);
 		

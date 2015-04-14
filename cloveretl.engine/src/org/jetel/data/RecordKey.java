@@ -35,6 +35,7 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -57,6 +58,7 @@ import org.jetel.util.string.StringUtils;
  * @since       May 2, 2002
  * @created     January 26, 2003
  */
+@CloverPublicAPI
 public class RecordKey {
 
 	protected int keyFields[];

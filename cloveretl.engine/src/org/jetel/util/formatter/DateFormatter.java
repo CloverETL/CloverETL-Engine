@@ -21,6 +21,8 @@ package org.jetel.util.formatter;
 import java.util.Date;
 import java.util.Locale;
 
+import org.jetel.util.CloverPublicAPI;
+
 /**
  * Unified interface of internally used date formatters.
  *
@@ -30,6 +32,7 @@ import java.util.Locale;
  * @version 16th April 2010
  * @created 10th August 2009
  */
+@CloverPublicAPI
 public interface DateFormatter {
 
 	/**

@@ -132,7 +132,6 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 	@Override
 	public DataRecord getNext() throws JetelException {
 		DataRecord record = DataRecordFactory.newRecord(metadata);
-		record.init();
 		return getNext(record);
 	}
 
@@ -153,7 +152,6 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 			}
 		} else {
 			DataRecord record = DataRecordFactory.newRecord(metadata);
-			record.init();
 			for (int skipped = 0; skipped < nRec; skipped++) {
 				if (getNext(record) == null) {
 					return skipped;
@@ -355,6 +353,10 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
         	int metasize;
         	try {
     			metasize=ByteBufferUtils.decodeLength(recordFile);
+    			if (metasize < 0) {
+    				// CLO-5868: error reporting improved
+    				throw new IOException("Unexpected end of data stream");
+    			}
     			byte[] metadef=new byte[metasize];
     			if (StreamUtils.readBlocking(recordFile, metadef) != metasize){ 
     				throw new IOException("Not enough data in file.");

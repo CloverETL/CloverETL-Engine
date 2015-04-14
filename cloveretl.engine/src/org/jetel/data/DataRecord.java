@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -39,6 +40,7 @@ import org.jetel.util.bytes.CloverBuffer;
  * @created     May 18, 2003
  * @see         org.jetel.metadata.DataRecordMetadata
  */
+@CloverPublicAPI
 public abstract class DataRecord implements Serializable, Comparable<Object>, Iterable<DataField> {
 
 	private static final long serialVersionUID = 3312575262868262204L;
@@ -233,7 +235,9 @@ public abstract class DataRecord implements Serializable, Comparable<Object>, It
 	 * <p>This method has to be called before accessing any of the record's fields.
 	 *
 	 * @since    April 5, 2002
+	 * @deprecated it is no more necessary to call this method, just call {@link DataRecordFactory#newRecord(DataRecordMetadata)}
 	 */
+	@Deprecated
 	public abstract void init();
 
 	/**

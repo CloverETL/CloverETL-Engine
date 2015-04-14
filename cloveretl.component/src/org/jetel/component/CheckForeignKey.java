@@ -221,7 +221,6 @@ import org.w3c.dom.Element;
             }
             // get record consisting of key-fields only
             defaultRecord = DataRecordFactory.newRecord(foreignKey.generateKeyRecordMetadata());
-            defaultRecord.init();
             for(int i=0;i<defaultForeignKeys.length;i++){
                 try{
                     defaultRecord.getField(i).fromString(defaultForeignKeys[i]);
@@ -256,7 +255,6 @@ import org.w3c.dom.Element;
     		DataRecord storeRecord;
     
     		primaryRecord=DataRecordFactory.newRecord(inPrimaryPort.getMetadata());
-    		primaryRecord.init();
     		while (primaryRecord!=null && runIt) {
    				if ((primaryRecord=inPrimaryPort.readRecord(primaryRecord)) != null) {
    				    storeRecord=primaryRecord.duplicate();
@@ -266,7 +264,6 @@ import org.w3c.dom.Element;
     		}
 
     		foreignRecord = DataRecordFactory.newRecord(inForeignPort.getMetadata());
-    		foreignRecord.init();
     		HashKey foreignHashKey = new HashKey(foreignKey, foreignRecord);
     		int numFields=defaultRecord.getNumFields();
             int keyFields[]=foreignKey.getKeyFields();

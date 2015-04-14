@@ -35,6 +35,7 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.BooleanFormatter;
@@ -59,6 +60,7 @@ import org.jetel.util.string.StringUtils;
  * @see org.jetel.metadata.DataRecordMetadata
  *
  */
+@CloverPublicAPI
 public class DataFieldMetadata implements Serializable {
 
 	private static final long serialVersionUID = -880873886732472663L;
@@ -865,6 +867,14 @@ public class DataFieldMetadata implements Serializable {
 		} else {
 			return trim;
 		}
+	}
+	
+	/**
+	 * Allows to find out if trim is set explicitly (returns null if it isn't)
+	 * CLO-5975
+	 */
+	public Boolean getTrim() {
+		return trim;
 	}
 
 	/**

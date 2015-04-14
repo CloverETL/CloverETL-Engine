@@ -169,8 +169,6 @@ public class SequenceChecker extends Node {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		boolean isOutPort = !getOutPorts().isEmpty();
 		DataRecord[] records = {DataRecordFactory.newRecord(inPort.getMetadata()), DataRecordFactory.newRecord(inPort.getMetadata())};
-		records[0].init();
-		records[1].init();
 		boolean error = false; 
 		int row = 1;
 		

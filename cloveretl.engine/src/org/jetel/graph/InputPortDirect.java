@@ -20,6 +20,7 @@ package org.jetel.graph;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -31,6 +32,7 @@ import org.jetel.util.bytes.CloverBuffer;
  * @since    August 13, 2002
  * @see        InputPort
  */
+@CloverPublicAPI
 public interface InputPortDirect extends InputPort {
 
 	/**

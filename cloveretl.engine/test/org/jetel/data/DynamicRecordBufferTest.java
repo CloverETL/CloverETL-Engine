@@ -72,7 +72,6 @@ public class DynamicRecordBufferTest extends CloverTestCase {
 		metadata.addField(new DataFieldMetadata("Value", DataFieldMetadata.INTEGER_FIELD, "\n"));
 
 		record = DataRecordFactory.newRecord(metadata);
-		record.init();
 
 		SetVal.setString(record, 0, "  HELLO ");
 		SetVal.setInt(record, 1, 135);

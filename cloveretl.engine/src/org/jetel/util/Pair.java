@@ -28,8 +28,8 @@ import java.util.Objects;
  * @created Apr 15, 2011
  */
 public class Pair<T,U> {
-	private T first;
-	private U second;
+	protected T first;
+	protected U second;
 	
 	public Pair() {
 	}
@@ -57,16 +57,14 @@ public class Pair<T,U> {
 	
 	@Override
 	public String toString() {
-		String firstStr = this.first != null ? this.first.toString() : "null";
-		String secondStr = this.second != null ? this.second.toString() : "null";
 		return new StringBuilder()
-				.append("(").append(firstStr).append(", ")
-				.append(secondStr).append(")").toString();
+				.append("(").append(first).append(", ")
+				.append(second).append(")").toString();
 	}
 	
 	@Override
 	public boolean equals(Object o) {
-		if (o != null && o instanceof Pair<?, ?>) {
+		if (o instanceof Pair<?, ?>) {
 			Pair<?, ?> p = (Pair<?, ?>) o;
 			return Objects.equals(this.first, p.first) && Objects.equals(this.second, p.second);
 		}
@@ -75,8 +73,6 @@ public class Pair<T,U> {
 
 	@Override
 	public int hashCode() {
-		int firstCode = (this.first != null) ? this.first.hashCode() : 0;
-		int secondCode = (this.second != null) ? this.second.hashCode() : 0;
-		return firstCode ^ secondCode;
+		return Objects.hash(first, second);
 	}
 }

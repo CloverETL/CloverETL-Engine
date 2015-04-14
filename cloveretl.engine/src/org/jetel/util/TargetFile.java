@@ -324,7 +324,6 @@ public class TargetFile {
 
 		// prepare output record
 		record = DataRecordFactory.newRecord(outputPort.getMetadata());
-		record.init();
 
 		// parse target url
 		String[] aField = fileURL.substring(PORT_PROTOCOL.length()).split(PARAM_DELIMITER);

@@ -250,7 +250,6 @@ public class LdapWriter extends Node {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		OutputPort rejectedPort=getOutputPort(WRITE_REJECTED_TO_PORT);
 		DataRecord inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-		inRecord.init();
 		try {
 			while (null != inRecord && runIt) {
 				try {

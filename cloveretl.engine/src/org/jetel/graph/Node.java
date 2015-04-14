@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.TreeMap;
@@ -53,6 +54,7 @@ import org.jetel.graph.runtime.tracker.ComplexComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.PrimitiveComponentTokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.ClusterUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -68,6 +70,7 @@ import org.w3c.dom.Element;
  *@since       April 2, 2002
  *@see         org.jetel.component
  */
+@CloverPublicAPI
 public abstract class Node extends GraphElement implements Runnable, CloverWorkerListener {
 
     private static final Log logger = LogFactory.getLog(Node.class);
@@ -83,7 +86,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      * It is component's responsibility to register all inner threads via addChildThread() method.
      */
     protected List<Thread> childThreads; // is guarded by nodeThreadMonitor
-    protected EnabledEnum enabled;
+    private EnabledEnum enabled = EnabledEnum.ENABLED;
     protected int passThroughInputPort;
     protected int passThroughOutputPort;
     
@@ -341,7 +344,13 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 * @return array of output ports metadata
 	 */
 	public DataRecordMetadata[] getOutMetadataArray() {
-		return getOutMetadata().toArray(new DataRecordMetadata[0]);
+		DataRecordMetadata[] result = new DataRecordMetadata[getOutputPortsMaxIndex() + 1];
+		for (Entry<Integer, OutputPort> entry : getOutputPorts().entrySet()) {
+			if (entry.getValue() != null) {
+				result[entry.getKey()] = entry.getValue().getMetadata();
+			}
+		}
+	    return result;
 	}
 
 	/**
@@ -363,7 +372,13 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 * @return array of input ports metadata
 	 */
 	public DataRecordMetadata[] getInMetadataArray() {
-		return getInMetadata().toArray(new DataRecordMetadata[0]);
+		DataRecordMetadata[] result = new DataRecordMetadata[getInputPortsMaxIndex() + 1];
+		for (Entry<Integer, InputPort> entry : getInputPorts().entrySet()) {
+			if (entry.getValue() != null) {
+				result[entry.getKey()] = entry.getValue().getMetadata();
+			}
+		}
+	    return result;
 	}
 	
 	/**
@@ -1085,7 +1100,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	}
 
     /**
-     * @return <b>true</b> if node is enabled; <b>false</b> else
+     * @return enabled value for this component (cannot be null)
      */
     public EnabledEnum getEnabled() {
         return enabled;
@@ -1170,6 +1185,12 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     		if (!getAllocation().isNeighboursAllocation()) {
         		status.add("Invalid component allocation. Only regular ETL graphs can be distributed.", Severity.ERROR, this, Priority.NORMAL);
     		}
+    	}
+    	
+    	//check enabled attribute
+    	String errorMessage = getEnabled().validate();
+    	if (!StringUtils.isEmpty(errorMessage)) {
+    		status.add(errorMessage, Severity.ERROR, this, Priority.NORMAL, Node.XML_ENABLED_ATTRIBUTE);
     	}
     	
     	return status;

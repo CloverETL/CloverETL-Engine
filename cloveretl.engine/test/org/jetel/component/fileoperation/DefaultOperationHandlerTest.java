@@ -113,7 +113,7 @@ public class DefaultOperationHandlerTest extends LocalOperationHandlerTest {
 		WebdavOperationHandler webdavHandler = new WebdavOperationHandler();
 		manager.registerHandler(VERBOSE ? new ObservableHandler(webdavHandler) : webdavHandler);
 	
-		S3OperationHandler s3handler = new S3OperationHandler();
+		HttpS3OperationHandler s3handler = new HttpS3OperationHandler();
 		manager.registerHandler(VERBOSE ? new ObservableHandler(s3handler) : s3handler);
 
 		PooledSFTPOperationHandler sftpHandler = new PooledSFTPOperationHandler() {
@@ -130,6 +130,21 @@ public class DefaultOperationHandlerTest extends LocalOperationHandlerTest {
 			
 		};
 		manager.registerHandler(VERBOSE ? new ObservableHandler(sftpHandler) : sftpHandler);
+
+		S3OperationHandler s3Handler = new S3OperationHandler() {
+
+			@Override
+			public boolean canPerform(Operation operation) {
+				switch (operation.kind) {
+					case RESOLVE:
+						return false;
+					default: 
+						return super.canPerform(operation);
+				}
+			}
+			
+		};
+		manager.registerHandler(VERBOSE ? new ObservableHandler(s3Handler) : s3Handler);
 	}
 
 	@Override

@@ -56,7 +56,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
@@ -95,6 +94,7 @@ import org.jetel.util.protocols.sftp.SFTPConnection;
 import org.jetel.util.protocols.sftp.SFTPStreamHandler;
 import org.jetel.util.protocols.webdav.WebdavOutputStream;
 import org.jetel.util.stream.StreamUtils;
+import org.jetel.util.stream.TZipOutputStream;
 import org.jetel.util.string.StringUtils;
 
 import com.jcraft.jsch.ChannelSftp;
@@ -224,6 +224,14 @@ public class FileUtils {
 			if (handler != null) {
 				return new URL(null, url, handler);
 			} else {
+				// CLO-6011:
+				for (CustomPathResolver resolver: customPathResolvers) {
+					if (resolver.handlesURL(null, url)) {
+						try {
+							return resolver.getURL(null, url);
+						} catch (MalformedURLException e2) {}
+					}
+				}
 				throw e;
 			}
 		}
@@ -638,11 +646,11 @@ public class FileUtils {
         if (archiveType == ArchiveType.ZIP) {
         	return getZipInputStream(innerStream, anchor); // CL-2579
         } else if (archiveType == ArchiveType.GZIP) {
-            return new GZIPInputStream(innerStream, Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+            return ArchiveUtils.getGzipInputStream(innerStream);
         } else if (archiveType == ArchiveType.TAR) {
         	return getTarInputStream(innerStream, anchor);
         } else if (archiveType == ArchiveType.TGZ) {
-        	return getTarInputStream(new GZIPInputStream(innerStream, Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE), anchor);
+        	return getTarInputStream(ArchiveUtils.getGzipInputStream(innerStream), anchor);
         }
         
         return innerStream;
@@ -1547,7 +1555,8 @@ public class FileUtils {
 			if (appendData) {
 				throw new IOException("Appending to remote archives is not supported");
 			}
-			de.schlichtherle.truezip.zip.ZipOutputStream zout = new de.schlichtherle.truezip.zip.ZipOutputStream(os);
+			// CLO-2572: Use TZipOutputStream to prevent active deadlock on SMB and WebDAV
+			TZipOutputStream zout = new TZipOutputStream(os);
 			if (compressLevel != -1) {
 				zout.setLevel(compressLevel);
 			}

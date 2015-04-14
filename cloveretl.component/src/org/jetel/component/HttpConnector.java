@@ -1834,7 +1834,6 @@ public class HttpConnector extends Node {
 
 		DataRecordMetadata paramsMetadata = createInputParametersMetadata();
 		inputParamsRecord = DataRecordFactory.newRecord(paramsMetadata);
-		inputParamsRecord.init();
 
 		if (requestCookiesStr != null) {
 			requestCookies = new Properties();
@@ -1845,7 +1844,6 @@ public class HttpConnector extends Node {
 			}
 
 			requestCookiesRecord = DataRecordFactory.newRecord(createMetadataFromProperties(requestCookies, REQUEST_COOKIES_RECORD_NAME));
-			requestCookiesRecord.init();
 		}
 
 		// build properties from request headers
@@ -1855,7 +1853,6 @@ public class HttpConnector extends Node {
 				additionalRequestHeaders.load(new StringReader(additionalRequestHeadersStr));
 
 				additionalHeadersRecord = DataRecordFactory.newRecord(createMetadataFromProperties(additionalRequestHeaders, ADDITIONAL_HTTP_HEADERS_RECORD_NAME));
-				additionalHeadersRecord.init();
 			} catch (Exception e) {
 				throw new ComponentNotReadyException(this, "Unexpected exception during request headers reading.", e);
 			}
@@ -1865,7 +1862,6 @@ public class HttpConnector extends Node {
 		if (!StringUtils.isEmpty(this.multipartEntities)) {
 			try {
 				this.multipartRequestPropertiesRecord = DataRecordFactory.newRecord(createMultipartMetadataFromString(multipartEntities, MULTIPART_ENTITIES_RECORD_NAME, MULTIPART_ENTITIES_SEPARATOR));
-				this.multipartRequestPropertiesRecord.init();
 			} catch (Exception e) {
 				throw new ComponentNotReadyException(this, "Unexpected exception during request headers reading.", e);
 			}
@@ -1879,7 +1875,6 @@ public class HttpConnector extends Node {
 				requestParameters.load(new StringReader(requestParametersStr));
 
 				requestParametersRecord = DataRecordFactory.newRecord(createMetadataFromProperties(requestParameters, REQUEST_PARAMETERS_RECORD_NAME));
-				requestParametersRecord.init();
 			} catch (Exception e) {
 				throw new ComponentNotReadyException(this, "Unexpected exception during request headers reading.", e);
 			}
@@ -1889,11 +1884,9 @@ public class HttpConnector extends Node {
 		if (hasStandardOutputPort) {
 			DataRecordMetadata resultMetadata = createResultMetadata();
 			resultRecord = DataRecordFactory.newRecord(resultMetadata);
-			resultRecord.init();
 
 			if (responseCookies != null) {
 				responseCookiesRecord = DataRecordFactory.newRecord(createResponseCookiesMetadata(responseCookies));
-				responseCookiesRecord.init();
 			}
 		}
 
@@ -1901,20 +1894,16 @@ public class HttpConnector extends Node {
 		if (hasErrorOutputPort || redirectErrorOutput) {
 			DataRecordMetadata errorMetadata = createErrorMetadata();
 			errorRecord = DataRecordFactory.newRecord(errorMetadata);
-			errorRecord.init();
 		}
 
 		// create input data record, if necessary
 		if (hasInputPort) {
 			inputRecord = DataRecordFactory.newRecord(inputPort.getMetadata());
-			inputRecord.init();
 		}
 
 		// create output data records, if necessary
 		if (hasStandardOutputPort) {
 			standardOutputRecord = DataRecordFactory.newRecord(standardOutputPort.getMetadata());
-			standardOutputRecord.init();
-			standardOutputRecord.reset();
 			if (outputFieldName != null) {
 				outField = (StringDataField) standardOutputRecord.getField(outputFieldName);
 			} else if (standardOutputMapping == null) {
@@ -1924,8 +1913,6 @@ public class HttpConnector extends Node {
 
 		if (hasErrorOutputPort) {
 			errorOutputRecord = DataRecordFactory.newRecord(errorOutputPort.getMetadata());
-			errorOutputRecord.init();
-			errorOutputRecord.reset();
 		}
 
 		// create input records for input mapping

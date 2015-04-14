@@ -348,10 +348,7 @@ public class Denormalizer extends Node {
 	 */
 	protected void processInput() throws IOException, InterruptedException, TransformException {
 		DataRecord outRecord = DataRecordFactory.newRecord(outMetadata);
-		outRecord.init();
 		DataRecord srcRecord[] = new DataRecord[] {DataRecordFactory.newRecord(inMetadata),DataRecordFactory.newRecord(inMetadata)} ;
-		srcRecord[0].init();
-		srcRecord[1].init();
 		int src=0;
 		int counter = 0;
 		DataRecord prevRecord = null;

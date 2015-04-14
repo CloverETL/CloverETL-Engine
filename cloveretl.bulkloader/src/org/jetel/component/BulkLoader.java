@@ -315,7 +315,6 @@ public abstract class BulkLoader extends Node {
 		
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = DataRecordFactory.newRecord(dbMetadata);
-		record.init();
 
 		try {
 			while (runIt && ((record = inPort.readRecord(record)) != null)) {

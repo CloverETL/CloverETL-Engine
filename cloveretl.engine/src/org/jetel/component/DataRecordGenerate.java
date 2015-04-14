@@ -28,8 +28,9 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Base class used for generating any kind of data generation. Subclass this one to create your own generations.
@@ -48,7 +49,8 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @created November 1, 2003
  * @see org.jetel.component.RecordTransform
  */
-@SuppressWarnings("EI")
+@SuppressFBWarnings("EI")
+@CloverPublicAPI
 public abstract class DataRecordGenerate extends AbstractDataTransform implements RecordGenerate {
 
 	protected String generateName;

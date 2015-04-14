@@ -22,6 +22,7 @@ import java.util.Iterator;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
+import org.jetel.util.CloverPublicAPI;
 
 /**
  * This interface serves as a provider to lookup table data. Whenever user wants to access to lookup table data
@@ -36,6 +37,7 @@ import org.jetel.data.RecordKey;
  *
  * @created 29.10.2008
  */
+@CloverPublicAPI
 public interface Lookup extends Iterator<DataRecord> {
 
 	/**

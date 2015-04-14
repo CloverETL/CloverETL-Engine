@@ -19,7 +19,6 @@
 package org.jetel.component;
 
 import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
 import java.sql.BatchUpdateException;
 import java.sql.SQLException;
 import java.sql.Savepoint;
@@ -57,13 +56,14 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.ExceptionUtils;
-import org.jetel.util.ReadableChannelDictionaryIterator;
 import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
@@ -226,7 +226,9 @@ import org.w3c.dom.Element;
  * @created     22. July 2003
  * @see         org.jetel.database.AnalyzeDB
  */
-public class DBOutputTable extends Node {
+public class DBOutputTable extends Node implements MetadataProvider {
+	
+	private final static String OUT_METADATA_ID_SUFFIX = "_outMetadata";
 	
 	public static final String XML_MAXERRORS_ATRIBUTE = "maxErrors";
 	public static final String XML_BATCHMODE_ATTRIBUTE = "batchMode";
@@ -430,7 +432,6 @@ public class DBOutputTable extends Node {
 		rejectedPort = getOutputPort(WRITE_REJECTED_TO_PORT);
 		rejectedRecord = rejectedPort != null ? DataRecordFactory.newRecord(rejectedPort.getMetadata()) : null;
 		if (rejectedRecord != null) {
-			rejectedRecord.init();
 			errorCodeFieldNum = rejectedRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_CODE);
 			errMessFieldNum = rejectedRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_MESSAGE);
 			if (errMessFieldNum == -1) {
@@ -484,7 +485,6 @@ public class DBOutputTable extends Node {
 				dictParser.init();
 				dictParser.setDataSource(next);
 				DataRecord queryRecord = DataRecordFactory.newRecord(queryMetadata);
-				queryRecord.init();
 				if ((queryRecord = dictParser.getNext(queryRecord)) != null) {
 					sqlQuery[0] = getPropertyRefResolver().resolveRef(queryRecord.getField(0).toString());
 				}
@@ -497,10 +497,6 @@ public class DBOutputTable extends Node {
 		returnResult = new boolean[sqlQuery.length];
 		Arrays.fill(returnResult, false);
 		keysRecord = keysPort != null ? DataRecordFactory.newRecord(keysPort.getMetadata()) : null;
-		if (keysRecord != null) {
-			keysRecord.init();
-			keysRecord.reset();
-		}
 
 		// prepare set of statements
 		statement = new SQLCloverStatement[sqlQuery.length];
@@ -518,7 +514,6 @@ public class DBOutputTable extends Node {
 		super.preExecute();
 		
 		inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-		inRecord.init();
 		
 		// create connection instance, which represents connection to a database
 		try {
@@ -831,7 +826,6 @@ public class DBOutputTable extends Node {
 	        for (int i = 0; i < statement.length; i++) {
 				for (int j = 0; j < batchSize; j++) {
 					dataRecordHolder[i][j] = DataRecordFactory.newRecord(rejectedMetadata);
-					dataRecordHolder[i][j].init();
 				}
 			}
 	    }else{
@@ -1066,7 +1060,6 @@ public class DBOutputTable extends Node {
 							}
 						}else if (records != null){//records[i][count] == null - it wasn't added to batch, prepare for next batch
 							records[i][count] = DataRecordFactory.newRecord(rejectedPort.getMetadata());
-							records[i][count].init();
 						}
 					}
 					count++;
@@ -1099,7 +1092,6 @@ public class DBOutputTable extends Node {
 						rejectedPort.writeRecord(records[i][count]);
 					}else if (records != null){
 						records[i][count] = DataRecordFactory.newRecord(rejectedPort.getMetadata());
-						records[i][count].init();
 					}
 					count++;
 		        }
@@ -1292,7 +1284,6 @@ public class DBOutputTable extends Node {
 			}
 			if (inPort.getMetadata() != null) {
 				inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-				inRecord.init();
 				int start = 0, end;
 				for (int i = 0; i < sqlQuery.length; i++) {
 					String[] tmpCloverFields = null;
@@ -1437,6 +1428,30 @@ public class DBOutputTable extends Node {
 			super(element, ex);
 		}
 		
+	}
+
+	@Override
+	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		return null;
+	}
+
+	@Override
+	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		if(portIndex == 0){
+			InputPort inputPort = getInputPort(0);
+			if(inputPort != null){
+				MVMetadata inputMetadata = metadataPropagationResolver.findMetadata(inputPort.getEdge());
+				if (inputMetadata != null) {
+					DataRecordMetadata recordMetadata = inputMetadata.getModel().duplicate();
+					recordMetadata.addField(new DataFieldMetadata("ErrCode", inputMetadata.getModel().getFieldDelimiter()));
+					recordMetadata.addField(new DataFieldMetadata("ErrText", inputMetadata.getModel().getRecordDelimiter()));
+					recordMetadata.getRecordProperties().remove(new String("previewAttachment"));
+					MVMetadata metadata = metadataPropagationResolver.createMVMetadata(recordMetadata, this, OUT_METADATA_ID_SUFFIX);
+					return metadata;
+				}
+			}
+		}
+		return null;
 	}
 	
 	

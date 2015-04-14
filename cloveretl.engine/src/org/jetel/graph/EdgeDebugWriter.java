@@ -100,7 +100,6 @@ public class EdgeDebugWriter {
     public void init() {
     	try {
 	    	tempRecord = DataRecordFactory.newRecord(metadata);
-	    	tempRecord.init();
 	    	
 	    	if (outputChannel == null) {
 	    		outputChannel = FileUtils.getWritableChannel(getContextURL(), debugFile, false);
@@ -117,7 +116,6 @@ public class EdgeDebugWriter {
 	        	recordOrdinalMetadata.addField(new DataFieldMetadata("ordinal", DataFieldType.LONG, null));
 	
 	        	recordOrdinal = DataRecordFactory.newRecord(recordOrdinalMetadata);
-	        	recordOrdinal.init();
 	        }
 	
 	        if (filterExpression != null) {
@@ -233,7 +231,6 @@ public class EdgeDebugWriter {
 		try {
 			if (ringRecordBuffer != null) {
 				DataRecord dataRecord = DataRecordFactory.newRecord(metadata);
-				dataRecord.init();
 
 				while (ringRecordBuffer.popRecord(recordOrdinal) != null && ringRecordBuffer.popRecord(dataRecord) != null) {
 					formatter.writeLong((Long) recordOrdinal.getField(0).getValue());

@@ -526,27 +526,31 @@ public class runGraph {
 	}
 
 	private static void printHelp() {
-		System.out.println("Usage: runGraph [-(v|cfg|logcfg|loglevel|P:|tracking|info|plugins|pass)] <graph definition file>");
-		System.out.println("Options:");
-		System.out.println("-v\t\t\tbe verbose - print even graph layout");
-		System.out.println("-P:<key>=<value>\tadd definition of property to global graph's property list");
-		System.out.println("-cfg <filename>\t\tload definitions of properties from specified file");
-		System.out.println("-logcfg <filename>\tload log4j configuration from specified file; \n\t\t\tif not specified, \"log4j.properties\" should be in classpath");
-		System.out.println("-loglevel <level>\toverrides log4j configuration and sets specified logging level for rootLogger; \n\t\t\tpossible levels are: ALL | TRACE | DEBUG | INFO | WARN | ERROR | FATAL | OFF");
-		System.out.println("-tracking <seconds>\thow frequently output the graph processing status");
-		System.out.println("-info\t\t\tprint info about Clover library version");
-        System.out.println("-plugins\t\tdirectory where to look for plugins/components");
-        System.out.println("-pass\t\t\tpassword for decrypting of hidden connections passwords");
-        System.out.println("-stdin\t\t\tload graph definition from STDIN");
-        System.out.println("-loghost\t\tdefine host and port number for socket appender of log4j (log4j library is required); i.e. localhost:4445");
-        System.out.println("-skipcheckconfig\t\tskip checking of graph configuration");
-        System.out.println("-noJMX\t\t\tturns off sending graph tracking information");
-        System.out.println("-config <filename>\t\tload default engine properties from specified file");
-        System.out.println("-nodebug\t\tturns off all runtime debugging e.g edge debugging");
-        System.out.println("-debugdirectory <foldername>\t\tdirectory dedicated to store temporary debug data; default is java's temporary folder");
+		System.out.println("***  CloverETL, (c) 2002-" + JetelVersion.LIBRARY_BUILD_YEAR + " Javlin a.s. info@cloveretl.com ***");
+		System.out.println("\nusage: runGraph [options] <graph definition file>");
+		System.out.println("\noptions:");
+		System.out.println("\t-v\t\t\tVerbose mode - print extended runtime information");
+		System.out.println("\t-P:<key>=<value>\tAdd definition of property to global graph's property list");
+		System.out.println("\t-cfg <filename>\t\tLoad definitions of properties from specified file");
+		System.out.println("\t-logcfg <filename>\tLoad log4j configuration from specified file; \n\t\t\t\tIf not specified, \"log4j.properties\" should be in classpath");
+		System.out.println("\t-loglevel <level>\tOverrides log4j configuration and sets specified logging level for rootLogger; \n\t\t\t\tpossible levels are: ALL | TRACE | DEBUG | INFO | WARN | ERROR | FATAL | OFF");
+		System.out.println("\t-tracking <seconds>\tFrequency (seconds) of outputting the processing status of transformation graph");
+		System.out.println("\t-info\t\t\tPrint info about CloverETL library version");
+        System.out.println("\t-plugins\t\tDirectory where to look for engine plugins/components");
+        System.out.println("\t-pass\t\t\tPassword for decrypting of hidden connections passwords");
+        System.out.println("\t-stdin\t\t\tLoad graph definition from STDIN instead of file");
+        System.out.println("\t-loghost\t\tHost and port number for socket appender of log4j (log4j library is required); i.e. localhost:4445");
+        System.out.println("\t-skipcheckconfig\tSkip checking of graph configuration");
+        System.out.println("\t-noJMX\t\t\tTurn off sending graph tracking information via JMX");
+        System.out.println("\t-config <filename>\tLoad engine config properties from specified file (override defaults)");
+        System.out.println("\t-nodebug\t\tTurn off all runtime debugging - e.g edge debugging");
+        System.out.println();
+        System.out.println("\t-contexturl <foldername>\tAll relative paths in graph xml will be relative to this folder; default is current folder");
+        System.out.println("\t-debugdirectory <foldername>\tDirectory where temporary files will be created; default is java's temporary folder");
         
         System.out.println();
         System.out.println("Note: <graph definition file> can be either local filename or URL of local/remote file");
+        System.out.println();
         
 	}
 

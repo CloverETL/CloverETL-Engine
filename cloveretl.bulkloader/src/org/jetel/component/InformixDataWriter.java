@@ -853,10 +853,7 @@ public class InformixDataWriter extends BulkLoader {
     		dbParser = new DelimitedDataParser(dbOutMetadata,CHARSET_NAME);
 
     		dbRecord = DataRecordFactory.newRecord(dbOutMetadata);
-    		dbRecord.init();
-    		
 			errRecord = DataRecordFactory.newRecord(errMetadata);
-			errRecord.init();
     		
 			Pattern badRowPattern = Pattern.compile(strBadRowPattern);
 			badRowMatcher = badRowPattern.matcher("");

@@ -188,7 +188,6 @@ public final class DBLookup implements Lookup {
 				}
 			}
 			DataRecord record = DataRecordFactory.newRecord(dbMetadata);
-			record.init();
 			HashKey key = null;
 			if (isCached()) {
 				key = new HashKey(this.key.getRecordKey(), this.key.getDataRecord().duplicate());

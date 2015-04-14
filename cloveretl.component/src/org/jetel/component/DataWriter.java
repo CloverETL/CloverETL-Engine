@@ -181,7 +181,6 @@ public class DataWriter extends Node {
 	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = DataRecordFactory.newRecord(inPort.getMetadata());
-		record.init();
 		while (record != null && runIt) {
 			record = inPort.readRecord(record);
 			if (record != null) {

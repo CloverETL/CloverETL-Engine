@@ -125,7 +125,6 @@ public class ExternalSortDataRecord implements ISortDataRecord {
         sourceRecords = new DataRecord[numberOfTapes];
         for (int i = 0; i < sourceRecords.length; i++) {
             sourceRecords[i] = DataRecordFactory.newRecord(inMetadata);
-            sourceRecords[i].init();
         }
 
         //initialize sourceRecordsFlags

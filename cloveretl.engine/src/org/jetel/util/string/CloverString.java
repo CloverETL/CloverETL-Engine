@@ -26,6 +26,8 @@ import java.nio.BufferOverflowException;
 import java.nio.CharBuffer;
 import java.util.Arrays;
 
+import org.jetel.util.CloverPublicAPI;
+
 /**
  * This class was derived from {@link StringBuilder}. We need direct access to underlying char array
  * for better cooperation with {@link CharBuffer} class.
@@ -37,6 +39,7 @@ import java.util.Arrays;
  * @created 21 Oct 2011
  * @inspired by java.lang.StringBuilder
  */
+@CloverPublicAPI
 public class CloverString implements Appendable, CharSequence, Serializable {
 	/**
 	 * 

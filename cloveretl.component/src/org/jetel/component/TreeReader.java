@@ -302,7 +302,6 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		if (errorPortLogging) {
 			LOG.info("Using port " + getErrorPortIndex() + " as error logging port");
 			errorLogRecord = DataRecordFactory.newRecord(getOutputPort(getErrorPortIndex()).getMetadata());
-			errorLogRecord.init();
 		}
 	}
 
@@ -316,8 +315,6 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			outputPorts[i] = port;
 
 			DataRecord record = DataRecordFactory.newRecord(port.getMetadata());
-			record.init();
-			record.reset();
 			outputRecords[i] = record;
 		}
 	}
@@ -759,6 +756,12 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				
 				pipeTransformerFuture.get();
 				pipeParserFuture.get();
+				if (pipeTransformerFuture.getRunnable().getException() != null) {
+					throw new JetelRuntimeException("Pipe transformer failed.", pipeTransformerFuture.getRunnable().getException());
+				}
+				if (pipeParserFuture.getRunnable().getException() != null) {
+					throw new JetelRuntimeException("Pipe parser failed.", pipeParserFuture.getRunnable().getException());
+				}
 			} else {
 				throw new JetelRuntimeException("Could not read input " + input);
 			}

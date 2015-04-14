@@ -680,7 +680,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="joiners" iconPath="icons/joiners/MergeJoin" name="CrossJoin"  type="CROSS_JOIN" className="org.jetel.component.CrossJoin">
+	  <ETLComponent category="joiners" iconPath="icons/joiners/CrossJoin" name="CrossJoin"  type="CROSS_JOIN" className="org.jetel.component.CrossJoin">
 	    <shortDescription>Performs cartesian product.</shortDescription>
 	    <description>Receives data records through all connected input ports and performs cartesian product on them. Each connected input port represents one set of records. Results are sent to the connected output port.</description>
 	    <inputPorts>
@@ -2258,7 +2258,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <singlePort name="0" required="true" />
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="Jms connection" modifiable="true" name="connection" nullable="false" required="true">
+	      <property category="basic" displayName="JMS connection" modifiable="true" name="connection" nullable="false" required="true">
 	        <singleType name="jmsConnection" />
 	      </property>
 	      <property category="basic" displayName="Processor code" modifiable="true" name="processorCode" nullable="true">
@@ -2301,7 +2301,7 @@ Sends all resulting records to all connected output ports.</description>
 	    </inputPorts>
 	    <outputPorts />
 	    <properties>
-	      <property category="basic" displayName="Jms connection" modifiable="true" name="connection" nullable="false" required="true">
+	      <property category="basic" displayName="JMS connection" modifiable="true" name="connection" nullable="false" required="true">
 	        <singleType name="jmsConnection" />
 	      </property>
 	      <property category="basic" displayName="Processor code" modifiable="true" name="processorCode" nullable="true">
@@ -2691,7 +2691,7 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="deprecated" iconPath="icons/others/JavaExecute" name="JavaExecute" type="JAVA_EXECUTE" defaultVisibility="etlGraph" className="org.jetel.component.JavaExecute">
+	  <ETLComponent category="deprecated" iconPath="icons/others/JavaExecute" name="JavaExecute" type="JAVA_EXECUTE" className="org.jetel.component.JavaExecute" defaultVisibility="false">
 	    <shortDescription>Executes Java transformations.</shortDescription>
 	    <description>Executes Java commands using runnable transformation.</description>
 	    <properties>

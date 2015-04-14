@@ -148,31 +148,31 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private static final String RECORD_ELEMENT = "Record";
 	private static final String FIELD_ELEMENT = "Field";
 	//private static final String CODE_ELEMENT = "Code";
-	private static final String NAME_ATTR = "name"; 
-	private static final String LABEL_ATTR = "label"; 
-    private static final String TYPE_ATTR = "type";
-    private static final String CONTAINER_TYPE_ATTR = "containerType";
+	public static final String NAME_ATTR = "name"; 
+	public static final String LABEL_ATTR = "label"; 
+    public static final String TYPE_ATTR = "type";
+    public static final String CONTAINER_TYPE_ATTR = "containerType";
     private static final String RECORD_SIZE_ATTR = "recordSize";
     public  static final String RECORD_DELIMITER_ATTR = "recordDelimiter";
     public  static final String FIELD_DELIMITER_ATTR = "fieldDelimiter";
-	private static final String DELIMITER_ATTR = "delimiter";
+	public static final String DELIMITER_ATTR = "delimiter";
 	public static final String EOF_AS_DELIMITER_ATTR = "eofAsDelimiter";
-	private static final String FORMAT_ATTR = "format";
-	private static final String DEFAULT_ATTR = "default";
-	private static final String LOCALE_ATTR = "locale";
-	private static final String TIMEZONE_ATTR = "timeZone";
-	private static final String NULLABLE_ATTR = "nullable";
-	private static final String NULL_VALUE_ATTR = "nullValue";
+	public static final String FORMAT_ATTR = "format";
+	public static final String DEFAULT_ATTR = "default";
+	public static final String LOCALE_ATTR = "locale";
+	public static final String TIMEZONE_ATTR = "timeZone";
+	public static final String NULLABLE_ATTR = "nullable";
+	public static final String NULL_VALUE_ATTR = "nullValue";
 	private static final String COMPRESSED_ATTR = "compressed";
 	private static final String SHIFT_ATTR = "shift";
-	private static final String SIZE_ATTR = "size";
-	private static final String TRIM_ATTR = "trim";
+	public static final String SIZE_ATTR = "size";
+	public static final String TRIM_ATTR = "trim";
 	private static final String SKIP_SOURCE_ROW_ATTR = "skipSourceRows";
-	private static final String QUOTED_STRINGS = "quotedStrings";
-	private static final String QUOTE_CHAR = "quoteChar";
-	private static final String KEY_FIELD_NAMES_ATTR = "keyFieldNames";
+	public static final String QUOTED_STRINGS = "quotedStrings";
+	public static final String QUOTE_CHAR = "quoteChar";
+	public static final String KEY_FIELD_NAMES_ATTR = "keyFieldNames";
 	private static final String AUTO_FILLING_ATTR = "auto_filling";
-	private static final String DESCRIPTION_ATTR = "description";
+	public static final String DESCRIPTION_ATTR = "description";
 	public static final String CONNECTION_ATTR = "connection";
 	private static final String COLLATOR_SENSITIVITY_ATTR = "collator_sensitivity";
 	private static final String NATURE_ATTR = "nature";
@@ -331,14 +331,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			metadataElement.setAttribute(LABEL_ATTR, StringUtils.specCharToString(label));
 		}
 
-		if (record.getParsingType() == DataRecordParsingType.DELIMITED) {
-			rt = "delimited";
-		} else if (record.getParsingType() == DataRecordParsingType.FIXEDLEN) {
-			rt = "fixed";
-		} else {
-			rt = "mixed";
-		}
-
+		rt = toString(record.getParsingType());
         metadataElement.setAttribute(TYPE_ATTR, rt);
 
         if (record.isSpecifiedRecordDelimiter()) {
@@ -454,8 +447,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				if (field.getNullValuesOnField() != null) {
 					fieldElement.setAttribute(NULL_VALUE_ATTR, StringUtils.join(field.getNullValuesOnField(), Defaults.DataFormatter.DELIMITER_DELIMITERS));
 				}
-				if (field.isTrim()) {
-					fieldElement.setAttribute(TRIM_ATTR, String.valueOf(field.isTrim()));
+				if (field.getTrim() != null) {
+					fieldElement.setAttribute(TRIM_ATTR, String.valueOf(field.getTrim()));
 				}
 				if (field.getTimeZoneStr() != null) {
 					fieldElement.setAttribute(TIMEZONE_ATTR, field.getTimeZoneStrFieldOnly());
@@ -1008,6 +1001,23 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		return Integer.parseInt(fieldSizeStr);
 	}
 
+	/**
+	 * Converts {@link DataRecordParsingType} to its name,
+	 * as used in metadata XML.
+	 * 
+	 * @param type
+	 * @return [delimited|fixed|mixed]
+	 */
+	public static String toString(DataRecordParsingType type) {
+		if (type == DataRecordParsingType.DELIMITED) {
+			return "delimited";
+		} else if (type == DataRecordParsingType.FIXEDLEN) {
+			return "fixed";
+		} else {
+			return "mixed";
+		}
+	}
+	
 //	/**
 //	 * Description of the Method
 //	 * 
