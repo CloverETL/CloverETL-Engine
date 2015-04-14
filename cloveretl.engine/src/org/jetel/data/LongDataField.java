@@ -507,7 +507,7 @@ public class LongDataField extends DataFieldImpl implements Numeric, Comparable<
 					|| (tmpValue.compareTo(LONG_MAX_VALUE) > 0)) {
 				throw new BadDataFormatException("The packed decimal value does not fit into Long range");
 			} else {
-				this.value = tmpValue.longValue();
+				setValue(tmpValue.longValue());
 			}
 		} else {
 			super.fromByteBuffer(dataBuffer, decoder);
