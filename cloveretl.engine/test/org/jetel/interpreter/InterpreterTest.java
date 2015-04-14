@@ -2509,7 +2509,7 @@ public class InterpreterTest extends CloverTestCase {
 		      assertEquals("My City "+record.getField("City").getValue().toString(), out.getField("City").getValue().toString());
 		      assertEquals(record1.getField("Born").getValue(), out.getField("Born").getValue());
 		      assertEquals(0,out.getField("Value").getValue());
-		      assertEquals("",out1.getField("Name").getValue().toString());
+		      assertNull(out1.getField("Name").getValue());
 		      assertEquals(record.getField("Age").getValue(), out1.getField("Age").getValue());
 		      assertEquals(record1.getField("City").getValue().toString(), out1.getField("City").getValue().toString());
 		      assertNull(out1.getField("Born").getValue());
