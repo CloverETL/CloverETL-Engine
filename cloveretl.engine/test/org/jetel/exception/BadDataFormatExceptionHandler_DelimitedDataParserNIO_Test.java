@@ -54,7 +54,6 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 
 		aParser = new DelimitedDataParser(metadata);
 		record = DataRecordFactory.newRecord(metadata);
-		record.init();
 	}
 	
 	@Override

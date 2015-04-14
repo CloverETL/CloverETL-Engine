@@ -283,7 +283,6 @@ public class StructureWriter extends Node {
 		//main loop: processing "body" records
 		InputPort bodyPort = getInputPort(BODY_PORT);
 		DataRecord record = DataRecordFactory.newRecord(bodyPort.getMetadata());
-		record.init();
 
 		//this initialization has to be here not in pre-execute method,
 		//since the header and the footer were prepared in execute() method
@@ -696,7 +695,6 @@ public class StructureWriter extends Node {
 		@Override
 		public void run() {
 			DataRecord record = DataRecordFactory.newRecord(inputPort.getMetadata());
-			record.init();
 			try {
 				while (record != null && runIt) {
 					record = inputPort.readRecord(record);

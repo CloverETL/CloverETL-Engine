@@ -382,7 +382,6 @@ public class Rollup extends Node {
 
         for (int i = 0; i < outputRecords.length; i++) {
             outputRecords[i] = DataRecordFactory.newRecord(getOutputPort(i).getMetadata());
-            outputRecords[i].init();
         }
     }
 
@@ -442,8 +441,6 @@ public class Rollup extends Node {
 
         if (groupAccumulatorMetadataId != null) {
             groupAccumulator = DataRecordFactory.newRecord(getGraph().getDataRecordMetadata(groupAccumulatorMetadataId));
-            groupAccumulator.init();
-            groupAccumulator.reset();
         }
 
         if (inputPort.readRecord(inputRecords.getCurrent()) != null) {
@@ -546,7 +543,6 @@ public class Rollup extends Node {
         InputPort inputPort = getInputPort(INPUT_PORT_NUMBER);
 
         DataRecord inputRecord = DataRecordFactory.newRecord(inputPort.getMetadata());
-        inputRecord.init();
 
         DataRecordMetadata groupAccumulatorMetadata = (groupAccumulatorMetadataId != null)
                 ? getGraph().getDataRecordMetadata(groupAccumulatorMetadataId) : null;
@@ -560,8 +556,6 @@ public class Rollup extends Node {
             if (groupAccumulator == null && !groupAccumulators.containsKey(lookupKey)) {
                 if (groupAccumulatorMetadata != null) {
                     groupAccumulator = DataRecordFactory.newRecord(groupAccumulatorMetadata);
-                    groupAccumulator.init();
-                    groupAccumulator.reset();
                 }
 
                 groupAccumulators.put(new HashKey(groupKey, inputRecord.duplicate()), groupAccumulator);

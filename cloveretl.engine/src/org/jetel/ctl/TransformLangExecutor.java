@@ -1586,10 +1586,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	
 	private DataRecord createNewRecord(TLTypeRecord type) {
 		final DataRecordMetadata metaData = type.getMetadata();
-		final DataRecord record = DataRecordFactory.newRecord(metaData);
-		record.init();
-		record.reset();
-		return record;
+		return DataRecordFactory.newRecord(metaData);
 	}
 	
 	private Object getDefaultValue(TLType varType) {
@@ -2925,7 +2922,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 				// phase to receive information about key fields
 				DataRecord keyRecord = null;
 				keyRecord = DataRecordFactory.newRecord(keyRecordMetadata);
-				keyRecord.init();
 				
 				node.setLookup(node.getLookupTable().createLookup(new RecordKey(keyFields,keyRecordMetadata),keyRecord));
 				node.setLookupRecord(keyRecord);

@@ -83,7 +83,6 @@ public class InputPortReadableChannel implements ReadableByteChannel {
     	this.opened = true;
     	
     	record = DataRecordFactory.newRecord(inputPort.getMetadata());
-    	record.init();
     	
     	//buffer should look like empty at the start of processing
     	buffer.flip();

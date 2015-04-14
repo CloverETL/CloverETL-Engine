@@ -144,10 +144,6 @@ public class RecordRollupTL extends AbstractTransformTL implements RecordRollup 
         updateTransformOnErrorFunction = wrapper.prepareOptionalFunctionExecution(UPDATE_TRANSFORM_ON_ERROR_FUNCTION_NAME);
         transformFunction = wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
         transformOnErrorFunction = wrapper.prepareOptionalFunctionExecution(TRANSFORM_ON_ERROR_FUNCTION_NAME);
-
-		// initialize an empty data record to be used instead of a null group accumulator
-        emptyRecord.init();
-        emptyRecord.reset();
     }
 
     @Override

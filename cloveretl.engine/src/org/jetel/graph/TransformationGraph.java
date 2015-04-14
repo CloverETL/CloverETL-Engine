@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -90,6 +91,10 @@ public final class TransformationGraph extends GraphElement {
 	
 	private Map <String, Object> dataRecordMetadata;
 
+	private SubgraphPorts subgraphInputPorts = new SubgraphPorts(this);
+	
+	private SubgraphPorts subgraphOutputPorts = new SubgraphPorts(this);
+	
 	/**
 	 * Set of all persisted implicit metadata, which are used
 	 * for validation purpose. All edges with implicit metadata
@@ -193,6 +198,27 @@ public final class TransformationGraph extends GraphElement {
 	 * @see TransformationGraphAnalyzer
 	 */
 	private ConfigurationStatus preCheckConfigStatus = new ConfigurationStatus();
+	
+	/**
+	 * Reference to SubgraphInput component or null if the graph is not subjob.
+	 * Lazy initialised variable.
+	 */
+	private Node subgraphInputComponent = null;
+
+	/**
+	 * Reference to SubgraphOutput component or null if the graph is not subjob.
+	 * Lazy initialised variable.
+	 */
+	private Node subgraphOutputComponent = null;
+
+	/**
+	 * This map contains all raw values of enabled attributes of all components
+	 * (disabled components are included). This value cannot be persisted in {@link Node}
+	 * class, since disabled components are not available in {@link TransformationGraph}.
+	 * This cache is used for logging purpose, see {@link WatchDog#printComponentsEnabledStatus()}.
+	 * Moreover, this cache is used also for check component configuration, see {@link Node#checkConfig(ConfigurationStatus)}. 
+	 */
+	private Map<Node, String> rawComponentEnabledAttribute = new HashMap<>();
 	
 	public TransformationGraph() {
 		this(DEFAULT_GRAPH_ID);
@@ -1193,6 +1219,14 @@ public final class TransformationGraph extends GraphElement {
     	phase.deleteEdge(edge);
     }
     
+    public SubgraphPorts getSubgraphInputPorts() {
+    	return subgraphInputPorts;
+    }
+
+    public SubgraphPorts getSubgraphOutputPorts() {
+    	return subgraphOutputPorts;
+    }
+
     @Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
     	super.checkConfig(status);
@@ -1605,6 +1639,56 @@ public final class TransformationGraph extends GraphElement {
 	@Override
 	public String toString() {
 		return getId() + ":" + getRuntimeContext().getRunId();
+	}
+
+	/**
+	 * @return reference to SubgraphInput component in this graph if any
+	 */
+	public Node getSubgraphInputComponent() {
+		if (subgraphInputComponent == null) {
+			for (Node component : getNodes().values()) {
+				if (SubgraphUtils.isSubJobInputComponent(component.getType())) {
+					subgraphInputComponent = component;
+					break;
+				}
+			}
+			if (subgraphInputComponent == null) {
+				throw new JetelRuntimeException("SubgraphInput component is not available.");
+			}
+		}
+		return subgraphInputComponent;
+	}
+
+	/**
+	 * @return reference to SubgraphOutput component in this graph if any
+	 */
+	public Node getSubgraphOutputComponent() {
+		if (subgraphOutputComponent == null) {
+			for (Node component : getNodes().values()) {
+				if (SubgraphUtils.isSubJobOutputComponent(component.getType())) {
+					subgraphOutputComponent = component;
+					break;
+				}
+			}
+			if (subgraphOutputComponent == null) {
+				throw new JetelRuntimeException("SubgraphOutput component is not available.");
+			}
+		}
+		return subgraphOutputComponent;
+	}
+
+	/**
+	 * @return the rawComponentEnabledAttribute
+	 */
+	public Map<Node, String> getRawComponentEnabledAttribute() {
+		return rawComponentEnabledAttribute;
+	}
+
+	/**
+	 * @param rawComponentEnabledAttribute the rawComponentEnabledAttribute to set
+	 */
+	public void setRawComponentEnabledAttribute(Map<Node, String> rawComponentEnabledAttribute) {
+		this.rawComponentEnabledAttribute = rawComponentEnabledAttribute;
 	}
 
 }

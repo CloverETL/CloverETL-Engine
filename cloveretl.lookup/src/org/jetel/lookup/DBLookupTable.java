@@ -407,7 +407,6 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 				}
 		   }
 		   DataRecord record = DataRecordFactory.newRecord(dbMetadata);
-		   record.init();
 			CopySQLData[] transMap = AbstractCopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(dbMetadata, sqlConnection.getJdbcSpecific()), 
 					dbMetadata, record, sqlConnection.getJdbcSpecific());
 			ArrayList<DataRecord> records = new ArrayList<DataRecord>();

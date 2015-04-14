@@ -59,7 +59,6 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 		for (int i = 0; i < inRecords.length; i++) {
 			if (inMeta[i] != null) {
 				inRecords[i] = DataRecordFactory.newRecord(inMeta[i]);
-				inRecords[i].init();
 			}
 		}
 
@@ -68,7 +67,6 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 		for (int i = 0; i < outRecords.length; i++) {
 			if (outMeta[i] != null) {
 				outRecords[i] = DataRecordFactory.newRecord(outMeta[i]);
-				outRecords[i].init();
 			}
 		}
 	}

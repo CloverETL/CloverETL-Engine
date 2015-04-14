@@ -252,12 +252,9 @@ public class Reformat extends Node implements MetadataProvider {
 		int numOutputPorts=getOutPorts().size();
 		DataRecord outRecord[] = new DataRecord[numOutputPorts]; 
 		
-		inRecord[0].init();
 		// initialize output ports
 		for (int i = 0; i < numOutputPorts; i++) {
 			outRecord[i] = DataRecordFactory.newRecord(getOutputPort(i).getMetadata());
-			outRecord[i].init();
-			outRecord[i].reset();
 		}
 
 		int counter = 0;

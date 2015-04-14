@@ -60,7 +60,6 @@ abstract class InternalPortData extends PortData {
 		super.init();
 		records = createRecordMap();
 		keyRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-		keyRecord.init();
 	}
 	
 	protected MultiValueMap createRecordMap() {

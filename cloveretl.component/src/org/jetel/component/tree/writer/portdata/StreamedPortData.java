@@ -73,11 +73,8 @@ class StreamedPortData extends StreamedPortDataBase {
 	public void init() throws ComponentNotReadyException {
 		super.init();
 		next = DataRecordFactory.newRecord(inPort.getMetadata());
-		next.init();
 		current = DataRecordFactory.newRecord(inPort.getMetadata());
-		current.init();
 		unused = DataRecordFactory.newRecord(inPort.getMetadata());
-		unused.init();
 	}
 
 	@Override

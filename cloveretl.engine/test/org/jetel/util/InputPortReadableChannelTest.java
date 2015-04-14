@@ -240,7 +240,6 @@ public class InputPortReadableChannelTest extends CloverTestCase {
 		channel.close(); // should skip "b", "c" and "null" records
 		
 		DataRecord record = DataRecordFactory.newRecord(port.getMetadata());
-		record.init();
 		record = port.readRecord(record); // steals "d", the following "file" will start at "e"
 		assertEquals("d123456789", record.getField(0).getValue().toString());
 		
@@ -248,7 +247,6 @@ public class InputPortReadableChannelTest extends CloverTestCase {
 		buffer.clear();
 		assertTrue(channel.read(buffer) == 5); // starts reading from "e"
 		record = DataRecordFactory.newRecord(port.getMetadata());
-		record.init();
 		record = port.readRecord(record); // steals "f"
 		assertEquals("f123456789", record.getField(0).getValue().toString());
 		channel.close(); // should skip "g" record

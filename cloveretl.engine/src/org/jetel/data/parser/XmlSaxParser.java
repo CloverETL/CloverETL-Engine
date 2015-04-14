@@ -702,7 +702,13 @@ public class XmlSaxParser {
 					// TODO Labels replace:
 					if (m_activeMapping.getOutputRecord() != null && m_activeMapping.getOutputRecord().hasField(fieldName)) {
 						String val = attributes.getValue(i);
-						m_activeMapping.getOutputRecord().getField(fieldName).fromString(trim ? val.trim() : val);
+						DataField field = m_activeMapping.getOutputRecord().getField(fieldName);
+                    	// CLO-5793: XMLExtract - mapping of element content breaks functionality of empty string as value of empty element
+                    	if (field.getMetadata().getDataType() == DataFieldType.STRING) {
+                    		field.setValue(trim ? val.trim() : val);
+                    	} else {
+                    		field.fromString(trim ? val.trim() : val);
+                    	}
 					}
 				}
 			}
@@ -1160,7 +1166,13 @@ public class XmlSaxParser {
 				// write the value - if the field value is not already set or if it is set because of implicit mapping (I am not really sure about the second condition, but it was already there...)
 				if (field.getValue() == null || !cloverAttributes.contains(fieldName)) {
                     try {
-                        field.fromString(getCurrentValue(startIndex, endIndex, excludeCDataTag));
+                    	String currentValue = getCurrentValue(startIndex, endIndex, excludeCDataTag);
+                    	// CLO-5793: XMLExtract - mapping of element content breaks functionality of empty string as value of empty element
+                    	if (field.getMetadata().getDataType() == DataFieldType.STRING) {
+                    		field.setValue(currentValue);
+                    	} else {
+                    		field.fromString(currentValue);
+                    	}
                     } catch (BadDataFormatException ex) {
                         // This is a bit hacky here SOOO let me explain...
                         if (field.getType() == DataFieldMetadata.DATE_FIELD) {

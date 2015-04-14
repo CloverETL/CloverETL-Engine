@@ -51,8 +51,6 @@ protected void setUp() throws Exception {
     
     testRecordA=DataRecordFactory.newRecord(metadata);
     testRecordB=DataRecordFactory.newRecord(metadata);
-    testRecordA.init();
-    testRecordB.init();
     testRecordA.getField(0).setValue("First");
     testRecordA.getField(1).setValue("Second field");
     testRecordA.getField(2).setValue(Integer.valueOf(-1234567));

@@ -123,7 +123,6 @@ public class HadoopReader extends Node {
 	public Result execute() throws Exception {
 		// we need to create data record - take the metadata from first output port
 		DataRecord record = DataRecordFactory.newRecord(getOutputPort(OUTPUT_PORT).getMetadata());
-		record.init();
 
 		// till it reaches end of data or it is stopped from outside
 		try {

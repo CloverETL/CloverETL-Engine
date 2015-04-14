@@ -99,7 +99,6 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
 	@Override
 	public DataRecord getNext() throws JetelException {
 		DataRecord record = DataRecordFactory.newRecord(metadata);
-		record.init();
 		return getNext(record);
 	}
 
@@ -112,7 +111,6 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
 			return 0;
 		}
 		DataRecord record = DataRecordFactory.newRecord(metadata);
-		record.init();
 		for (int skipped = 0; skipped < nRec; skipped++) {
 			if (getNext(record) == null) {
 				return skipped;

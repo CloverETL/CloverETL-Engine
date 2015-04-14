@@ -184,9 +184,7 @@ class ExternalComplexPortData extends ExternalPortData {
 			index = dataMap.get(indexKey);
 
 			current = DataRecordFactory.newRecord(metadata);
-			current.init();
 			next = DataRecordFactory.newRecord(metadata);
-			next.init();
 			tuple = new Tuple<byte[], byte[]>();
 
 			serializedKey = getDatabaseKey(current, key, keyData, parentKey);
@@ -244,9 +242,7 @@ class ExternalComplexPortData extends ExternalPortData {
 			DataRecordMetadata metadata = inPort.getMetadata();
 
 			current = DataRecordFactory.newRecord(metadata);
-			current.init();
 			next = DataRecordFactory.newRecord(metadata);
-			next.init();
 			tuple = new Tuple<byte[], byte[]>();
 
 			browser = dataMap.get(NULL_INDEX_NAME).browse();

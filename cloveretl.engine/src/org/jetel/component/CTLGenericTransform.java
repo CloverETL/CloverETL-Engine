@@ -70,7 +70,6 @@ public abstract class CTLGenericTransform extends CTLAbstractTransform implement
 			int i = 0;
 			for (DataRecordMetadata metadata : inMetadata) {
 				inputRecords[i] = DataRecordFactory.newRecord(metadata);
-				inputRecords[i].init();
 				i++;
 			}
 			//prepare output records
@@ -79,7 +78,6 @@ public abstract class CTLGenericTransform extends CTLAbstractTransform implement
 			i = 0;
 			for (DataRecordMetadata metadata : outMetadata) {
 				outputRecords[i] = DataRecordFactory.newRecord(metadata);
-				outputRecords[i].init();
 				i++;
 			}
 		} catch (Exception e) {

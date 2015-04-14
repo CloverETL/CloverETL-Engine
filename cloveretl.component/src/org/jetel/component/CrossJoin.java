@@ -161,7 +161,6 @@ public class CrossJoin extends Node implements MetadataProvider {
 		//init input
 		masterPort = getInputPort(MASTER_PORT);
 		masterRecord = DataRecordFactory.newRecord(masterPort.getMetadata());
-		masterRecord.init();
 		slavePorts = new InputPort[slaveCount];
 		slaveRecords = new DataRecord[slaveCount];
 		slaveFinishedReading = new boolean[slaveCount];
@@ -169,7 +168,6 @@ public class CrossJoin extends Node implements MetadataProvider {
 		for (int slaveIdx = 0; slaveIdx < slaveCount; slaveIdx++) {
 			slavePorts[slaveIdx] = getInputPort(FIRST_SLAVE_PORT + slaveIdx);
 			slaveRecords[slaveIdx] = DataRecordFactory.newRecord(slavePorts[slaveIdx].getMetadata());
-			slaveRecords[slaveIdx].init();
 			slaveFinishedReading[slaveIdx] = false;
 			slaveRecordsMemory[slaveIdx] = new ShiftingFileBuffer(SLAVE_BUFFER_SIZE);
 		}
@@ -177,8 +175,6 @@ public class CrossJoin extends Node implements MetadataProvider {
 		// init output
 		outPort = getOutputPort(WRITE_TO_PORT);
 		outRecord[WRITE_TO_PORT] = DataRecordFactory.newRecord(outPort.getMetadata());
-		outRecord[WRITE_TO_PORT].init();
-		outRecord[WRITE_TO_PORT].reset();
 	}
 
 	@Override

@@ -147,8 +147,6 @@ public class DelimitedDataParser extends AbstractParser {
 		// create a new data record
 		DataRecord record = DataRecordFactory.newRecord(metadata);
 
-		record.init();
-
 		boolean success = parseNext(record);
 		if(exceptionHandler != null ) {  //use handler only if configured
 			while(exceptionHandler.isExceptionThrowed()) {

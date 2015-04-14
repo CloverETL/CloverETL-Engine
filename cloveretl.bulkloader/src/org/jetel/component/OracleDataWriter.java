@@ -1007,7 +1007,6 @@ public class OracleDataWriter extends BulkLoader {
 	    	parser.setDataSource(new BufferedInputStream(new FileInputStream(sourceFile)));
 	    	
 	    	DataRecord record = DataRecordFactory.newRecord(metadata);
-			record.init();
 	    	
 	    	while ((record = parser.getNext(record)) != null) {
 	    		outPort.writeRecord(record);

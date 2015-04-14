@@ -51,17 +51,14 @@ public class SimpleLookupTest extends CloverTestCase {
 		meta.addField(new DataFieldMetadata("integer_field", DataFieldMetadata.INTEGER_FIELD, null));
 		RecordKey key = new RecordKey(new int[]{0}, meta);
 		inRecord = DataRecordFactory.newRecord(meta);
-		inRecord.init();
 		lookup = lookupTable.createLookup(key, inRecord);
 
 		RecordKey key2 = new RecordKey(new int[]{0}, meta);
 		inRecord2 = DataRecordFactory.newRecord(meta);
-		inRecord2.init();
 		lookup2 = lookupTable.createLookup(key2, inRecord2);
 		
 		RecordKey key3 = new RecordKey(new int[]{0}, meta);
 		inRecord3 = DataRecordFactory.newRecord(meta);
-		inRecord3.init();
 		lookup3 = lookupTable.createLookup(key3, inRecord3);
 	}
 

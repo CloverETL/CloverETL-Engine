@@ -208,8 +208,6 @@ public class CTLMapping {
 		
 		if (inputMetadata != null) {
 			DataRecord inputRecord = DataRecordFactory.newRecord(inputMetadata);
-			inputRecord.init();
-			inputRecord.reset();
 			addInputRecord(name, inputRecord);
 			return inputRecord;
 		} else {
@@ -242,8 +240,6 @@ public class CTLMapping {
 	public DataRecord addOutputMetadata(String name, DataRecordMetadata outputMetadata) {
 		if (outputMetadata != null) {
 			DataRecord outputRecord = DataRecordFactory.newRecord(outputMetadata);
-			outputRecord.init();
-			outputRecord.reset();
 			addOutputRecord(name, outputRecord);
 			return outputRecord;
 		} else {

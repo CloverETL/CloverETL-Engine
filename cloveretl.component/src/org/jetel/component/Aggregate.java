@@ -167,11 +167,6 @@ public class Aggregate extends Node {
 			DataRecord tempRecord;
 			DataRecord outRecord = DataRecordFactory.newRecord(outPort.getMetadata());
 
-			currentRecord.init();
-			previousRecord.init();
-			outRecord.init();
-			outRecord.reset();
-
 			int sortDirection = UNDETECTED_DIRECTION;
 			int currentSortDirection = UNDETECTED_DIRECTION;
 			int recordCount = 0;
@@ -226,10 +221,6 @@ public class Aggregate extends Node {
 			OutputPort outPort = getOutputPort(WRITE_TO_PORT);
 			DataRecord currentRecord = DataRecordFactory.newRecord(inPort.getMetadata());
 			DataRecord outRecord = DataRecordFactory.newRecord(outPort.getMetadata());
-
-			currentRecord.init();
-			outRecord.init();
-			outRecord.reset();
 
 			// read all data from input port to aggregateRecord
 			while ((currentRecord = inPort.readRecord(currentRecord)) != null && runIt) {

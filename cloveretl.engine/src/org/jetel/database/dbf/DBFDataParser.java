@@ -143,7 +143,6 @@ public class DBFDataParser extends AbstractParser {
 	public DataRecord getNext() throws JetelException {
         // create a new data record
         DataRecord record = DataRecordFactory.newRecord(metadata);
-        record.init();
         record = parseNext(record);
         if (exceptionHandler != null) { //use handler only if configured
             while (exceptionHandler.isExceptionThrowed()) {

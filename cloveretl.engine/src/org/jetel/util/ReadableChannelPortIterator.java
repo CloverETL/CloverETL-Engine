@@ -102,7 +102,6 @@ public class ReadableChannelPortIterator {
 
 		// data record
 		record = DataRecordFactory.newRecord(inputPort.getMetadata());
-		record.init();
 
 		for (int i=0; i<portFileURL.length; i++) {
 			// parse field url

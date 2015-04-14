@@ -210,7 +210,6 @@ public class JmsWriter extends Node {
 	@Override
 	public Result execute() throws Exception {
 		DataRecord nextRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-		nextRecord.init();
 		try {
 			while (runIt) {
 				// read next
