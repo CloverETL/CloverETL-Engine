@@ -514,9 +514,9 @@ public class NumericDataField extends DataFieldImpl implements Numeric, Comparab
 				dataBuffer.order(binaryFormat.byteOrder); //set the field's byte order
 				try {
 					if (binaryFormat.size == 4) {
-						this.value = dataBuffer.getFloat();
+						setValue(dataBuffer.getFloat());
 					} else if(binaryFormat.size == 8) {
-						this.value = dataBuffer.getDouble();
+						setValue(dataBuffer.getDouble());
 					}
 				} catch(BufferUnderflowException bue) {
 					throw new BadDataFormatException(String.format("The buffer contains less than %d bytes", binaryFormat.size), bue);
