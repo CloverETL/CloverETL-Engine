@@ -39,13 +39,10 @@
      </Match>
 
      <Match>
-     	<Bug code="PZLA" />
+     	<Bug code="PZLA,UwF,Dm,EI2" />
      </Match>
      <Match>
-     	<Bug code="UwF" />
-     </Match>
-     <Match>
-     	<Bug code="Dm" />
+     	<Bug pattern="SIC_INNER_SHOULD_BE_STATIC_ANON,RCN_REDUNDANT_NULLCHECK_OF_NULL_VALUE,RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE" />
      </Match>
 
 </FindBugsFilter>
