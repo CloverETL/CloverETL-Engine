@@ -738,7 +738,7 @@
 		</taskdef>
 	</target>
 	
-	<target name="findbugs-xml" depends="init,findbugs-init,compile,compile-tests">
+	<target name="findbugs-xml" depends="init,findbugs-init,compile">
 		<mkdir dir="${dir.findbugsreport}"/>
 		<findbugs 
 				home="${dir.findbugs}" 
@@ -749,11 +749,8 @@
 				reportlevel="low"
 				jvmargs="-Xmx500m">
 			<class location="${dir.classes}"/>
-			<class location="${dir.classestest}"/>
 			<sourcePath path="${dir.src}" />
-			<sourcePath path="${dir.src.test}" />
 			<auxClasspath path="${cp.compile} "/>
-			<auxClasspath path="${dir.engine.classestest}"/>
 			<auxClasspath>
 				<fileset refid="engine-libs"/>
 				<fileset refid="plugin-libs"/>
