@@ -314,11 +314,15 @@ public class FileUtilsTest extends CloverTestCase {
 	public void testIsLocalFile() {
 		assertFalse(FileUtils.isLocalFile(null, "dict:filename"));
 		assertFalse(FileUtils.isLocalFile(null, "port:$0.field1:discrete"));
+		assertFalse(FileUtils.isLocalFile(null, "s3://accessKey:secretKey@s3.amazonaws.com"));
+		assertFalse(FileUtils.isLocalFile(null, "hdfs://CONNECTION0/"));
 	}
 	
 	public void testIsRemoteFile() {
 		assertFalse(FileUtils.isRemoteFile("dict:filename"));
 		assertFalse(FileUtils.isRemoteFile("port:$0.field1:discrete"));
+		assertTrue(FileUtils.isRemoteFile("s3://accessKey:secretKey@s3.amazonaws.com"));
+		assertTrue(FileUtils.isRemoteFile("hdfs://CONNECTION0/"));
 	}
 	
 	public void testNormalizeFilePath() {
