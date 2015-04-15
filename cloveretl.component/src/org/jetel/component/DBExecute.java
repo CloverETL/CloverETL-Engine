@@ -412,7 +412,10 @@ public class DBExecute extends Node {
 		} catch (SQLException e) {
 			logger.warn("SQLException when closing statement", e);
 		}
-		dbConnection.closeConnection(getId(), procedureCall ? OperationType.CALL : OperationType.WRITE);
+		// CLO-6100: do not close the connection, as we expect the graph to perform commit
+		if (transaction != InTransaction.NEVER_COMMIT) {
+			dbConnection.closeConnection(getId(), procedureCall ? OperationType.CALL : OperationType.WRITE);
+		}
 	}
 
 	private void acquireConnection() throws ComponentNotReadyException {
