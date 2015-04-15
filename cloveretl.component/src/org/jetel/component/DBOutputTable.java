@@ -634,8 +634,11 @@ public class DBOutputTable extends Node implements MetadataProvider {
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
+		if (recordsInCommit != Integer.MAX_VALUE) {
+			// CLO-6100: do not close the connection, as we expect the graph to perform commit
 			dbConnection.closeConnection(getId(), OperationType.WRITE);
 		}
+	}
 	
 	/**
 	 * @param dbTableName The dbTableName to set.

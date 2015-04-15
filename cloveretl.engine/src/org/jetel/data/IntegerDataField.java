@@ -497,7 +497,7 @@ public class IntegerDataField extends DataFieldImpl implements Numeric, Comparab
 					|| (tmpValue.compareTo(INTEGER_MAX_VALUE) > 0)) {
 				throw new BadDataFormatException("The packed decimal value does not fit into Integer range");
 			} else {
-				this.value = tmpValue.intValue();
+				setValue(tmpValue.intValue());
 			}
 		} else {
 			super.fromByteBuffer(dataBuffer, decoder);
