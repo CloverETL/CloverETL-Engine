@@ -325,10 +325,6 @@ public class NodeTrackingDetail implements NodeTracking {
 			result = node.getResultCode();
 		}
 
-		if (result != Result.RUNNING && result != Result.WAITING && result != Result.FINISHED_OK) {
-			return;
-		}
-
 		long phaseExecutionTime = getParentPhaseTracking().getExecutionTime();
 		
 		if (CloverJMX.isThreadCpuTimeSupported()) {
