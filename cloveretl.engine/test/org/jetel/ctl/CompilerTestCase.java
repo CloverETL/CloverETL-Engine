@@ -148,6 +148,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		  assertEquals(varName, expectedResult, getVariable(varName));
 	}
 	
+	protected void check(String varName, double expectedResult, double delta) {
+		  assertEquals(varName, expectedResult, (double) getVariable(varName), delta);
+	}
+	
 	protected void checkEqualValue(String varName, Object expectedResult) {
 		  assertTrue(varName, ((Comparable)expectedResult).compareTo(getVariable(varName))==0);
 	}
@@ -2903,6 +2907,30 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			check("incrementTestList", Arrays.asList("newValue"));
 			check("incrementCounter", 1);
 		}
+	}
+	
+	/**
+	 * Tests examples from the User Guide.
+	 */
+	public void test_assignment_compound() {
+		doCompile("test_assignment_compound");
+		check("i", 9);
+		check("ni", 5);
+		check("s", "hello world 123");
+		check("ns", "hello");
+		check("ns2", "nullhello");
+		check("list1", Arrays.asList(1, 2, 3, 4, 5));
+		{
+			Map<String, Integer> expected = new HashMap<>();
+			expected.put("1", 1);
+			expected.put("2", 22);
+			expected.put("3", 3);
+			check("map1", expected);
+		}
+		check("l", 6L);
+		check("d", new BigDecimal("24.68"));
+		check("n", 4.1, 0.0000001);
+		check("r", 7L);
 	}
 	
 	public void test_assignment_compound_plus() {
