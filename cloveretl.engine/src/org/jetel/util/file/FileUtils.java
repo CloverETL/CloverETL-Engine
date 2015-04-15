@@ -624,6 +624,11 @@ public class FileUtils {
         		return SandboxUrlUtils.getSandboxInputStream(url);
         	}
         	
+        	//CLO-6036
+    		if (url.toString().startsWith("dict:")) {
+    			throw new IOException("Access to dictionary through file url is not supported.");
+    		}
+        	
         	try {
         		if (S3InputStream.isS3File(url)) {
         			return new S3InputStream(url);
