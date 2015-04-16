@@ -44,7 +44,7 @@ public class S3OperationHandlerTest extends OperationHandlerTestTemplate {
 
 	private S3OperationHandler handler;
 	
-	private static final String rootUri = "s3://AKIAIKRLDHY2RYHSICYA:eaA5%2fhPAsa9SNcagdNjn07SufxdNsyUQ5xsjuhzX@s3.amazonaws.com";
+	private static final String rootUri = "s3://AKIAIN22BDZO35DANLGQ:JazDFBhDlMaJwKO5c6pDSzuKFW0LMTV%2FfVeszyEo@s3.amazonaws.com";
 	private static final String testingUri = rootUri + "/cloveretl.engine.test/test-fo/";
 	
 	@Override
@@ -76,7 +76,7 @@ public class S3OperationHandlerTest extends OperationHandlerTestTemplate {
 			URI base = new URI(testingUri);
 			CloverURI tmpDirUri = CloverURI.createURI(base.resolve(String.format("CloverTemp%d/", System.nanoTime())));
 			CreateResult result = manager.create(tmpDirUri, new CreateParameters().setDirectory(true).setMakeParents(true));
-			assumeTrue(result.success());
+			assumeTrue(result.getFirstErrorMessage(), result.success());
 			return tmpDirUri.getSingleURI().toURI();
 		} catch (URISyntaxException ex) {
 			return null;
@@ -166,7 +166,7 @@ public class S3OperationHandlerTest extends OperationHandlerTestTemplate {
 		assertEquals("5XyJ3MFWZKd+BJ4C3ushhLQYIXBqbNTSK7EDzXLw", secretKey);
 		
 		authority = new S3Authority(baseUri);
-		assertEquals("eaA5/hPAsa9SNcagdNjn07SufxdNsyUQ5xsjuhzX", PooledS3Connection.getSecretKey(authority));
+		assertEquals("JazDFBhDlMaJwKO5c6pDSzuKFW0LMTV/fVeszyEo", PooledS3Connection.getSecretKey(authority));
 	}
 	
 }
