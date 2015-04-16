@@ -701,36 +701,19 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 					} finally {
 						if (uploaded.compareAndSet(false, true)) {
 							try {
-								S3Bucket s3bucket = new S3Bucket(bucketName); 
-								
 								S3Object uploadObject;
 								try {
-									uploadObject = new S3Object(s3bucket, tempFile);
+									uploadObject = new S3Object(tempFile);
 								} catch (NoSuchAlgorithmException e) {
 									throw new IOException(e);
 								}
 								uploadObject.setKey(key);
 								
-								if (tempFile.length() <= MultipartUtils.MAX_OBJECT_SIZE) {
-									try {
-										service.putObject(s3bucket, uploadObject);
-									} catch (S3ServiceException e) {
-										throw ExceptionUtils.getIOException(e);
-									}
-								} else {
+								try {
 									// CLO-4724:
-									try {
-										MultipartUtils mpUtils = new MultipartUtils(MultipartUtils.MAX_OBJECT_SIZE);
-										mpUtils.uploadObjects(bucketName, service, Arrays.asList((StorageObject) uploadObject),
-											    null // eventListener : Provide one to monitor the upload progress
-										);
-									} catch (S3ServiceException e) {
-										throw ExceptionUtils.getIOException(e);
-									} catch (IOException e) {
-										throw e;
-									} catch (Exception e) {
-										throw new IOException("Multi-part file upload failed", e);
-									}
+									service.putObjectMaybeAsMultipart(bucketName, uploadObject, MultipartUtils.MAX_OBJECT_SIZE);
+								} catch (ServiceException e) {
+									throw getIOException(e);
 								}
 							} finally {
 								connection.returnToPool();
