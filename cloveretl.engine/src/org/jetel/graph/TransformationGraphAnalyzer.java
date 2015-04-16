@@ -91,6 +91,9 @@ public class TransformationGraphAnalyzer {
 			throw new JetelRuntimeException("Removing disabled nodes failed.", e);
 		}
 
+		//consolidate subgraph ports - create missing subgraph ports
+		consolidateSubgraphPorts(graph);
+
 		//remove optional input and output edges in subgraphs
 		removeOptionalEdges(graph);
 		
@@ -133,6 +136,25 @@ public class TransformationGraphAnalyzer {
         graph.setAnalysed(true);
 	}
 	
+	/**
+	 * Creates missing subgraph input and output ports based on edges attached to SubgraphInput/Output components.
+	 * This is necessary for backward compatibility with subgraphs created in previous version (rel-4-0), where
+	 * subgraph ports do not have model in TransformationGraph.
+	 * @param graph
+	 */
+	private static void consolidateSubgraphPorts(TransformationGraph graph) {
+		if (graph.getStaticJobType().isSubJob()) {
+			for (int i = graph.getSubgraphInputPorts().getPorts().size(); i <= graph.getSubgraphInputComponent().getOutputPortsMaxIndex(); i++) {
+				graph.getSubgraphInputPorts().getPorts().add(
+						new SubgraphInputPort(graph.getSubgraphInputPorts(), i, true, true, true));
+			}
+			for (int i = graph.getSubgraphOutputPorts().getPorts().size(); i <= graph.getSubgraphOutputComponent().getInputPortsMaxIndex(); i++) {
+				graph.getSubgraphOutputPorts().getPorts().add(
+						new SubgraphOutputPort(graph.getSubgraphOutputPorts(), i, true, true, true));
+			}
+		}
+	}
+
 	/**
 	 * This method removes all edges which are connected to subgraph's ports,
 	 * which are optional, where the related edge should be removed (SubgraphPort.isKeptEdge() == false).
