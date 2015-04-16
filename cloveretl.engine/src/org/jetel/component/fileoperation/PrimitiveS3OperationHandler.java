@@ -635,7 +635,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 			return is;
 		} catch (Exception e) {
 			connection.returnToPool();
-			throw ExceptionUtils.getIOException(e);
+			throw getIOException(e);
 		}
 	}
 
@@ -745,7 +745,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 			return os;
 		} catch (Exception e) {
 			connection.returnToPool();
-			throw ExceptionUtils.getIOException(e);
+			throw getIOException(e);
 		}
 	}
 
@@ -773,6 +773,36 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 	@Override
 	public String toString() {
 		return "PrimitiveS3OperationHandler";
+	}
+	
+	private static IOException s3ExceptionToIOException(S3ServiceException e) {
+		StringBuilder msg = new StringBuilder();
+		msg.append("S3 Service Error.");
+		appendInfoIfNotNull("Response code=" + e.getResponseCode(), msg);
+		appendInfoIfNotNull(e.getResponseStatus(), msg);
+		appendInfoIfNotNull(e.getS3ErrorCode(), msg);
+		appendInfoIfNotNull(e.getS3ErrorMessage(), msg);
+		appendInfoIfNotNull(e.toString(), msg);
+		return new IOException(msg.toString(), e);
+	}
+	
+	private static void appendInfoIfNotNull(String info, StringBuilder text) {
+		if (info != null && !info.isEmpty()) {
+			if (text.length() > 0) {
+				text.append(" ");
+			}
+			text.append(info);
+			if (!info.endsWith(".")) {
+				text.append(".");
+			}
+		}
+	}
+
+	public static IOException getIOException(Throwable t) {
+		if (t instanceof S3ServiceException) {
+			return s3ExceptionToIOException((S3ServiceException) t);
+		}
+		return ExceptionUtils.getIOException(t);
 	}
 
 }

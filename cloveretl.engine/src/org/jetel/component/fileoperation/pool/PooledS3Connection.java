@@ -96,7 +96,7 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 			// validate connection
 			service.listAllBuckets();
 		} catch (S3ServiceException e) {
-			throw new IOException("Connection validation failed", e);
+			throw new IOException("Connection validation failed", PrimitiveS3OperationHandler.getIOException(e));
 		}
 	}
 
@@ -106,7 +106,7 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 			try {
 				service.shutdown();
 			} catch (ServiceException e) {
-				throw new IOException(e);
+				throw PrimitiveS3OperationHandler.getIOException(e);
 			} finally {
 				this.service = null;
 			}
