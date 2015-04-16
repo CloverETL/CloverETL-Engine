@@ -35,8 +35,8 @@ import org.jetel.graph.runtime.WatchDog;
  * 
  * The core method is {@link #isEnabled()}, which indicates the 'enability' of related component(s).
 
- * To enabled a component use one of instances ENABLED and TRUE, and to disable a component
- * use one of the instances DISABLED, PASS_THROUGH and FALSE.
+ * To enabled a component use one of instances ALWAYS, ENABLED and TRUE, and to disable a component
+ * use one of the instances NEVER, DISABLED, PASS_THROUGH and FALSE.
  * 
  * For conditional enabling use following pattern enableWhen(InputPort|OutputPort)_(\\d?)Is(Connected|Disconnected),
  * for example: enableWhenInputPort0IsConnected, enableWhenOutputPort1IsDisconnected 
@@ -48,15 +48,17 @@ import org.jetel.graph.runtime.WatchDog;
  */
 public class EnabledEnum {
    
+    public static final EnabledEnum ALWAYS = new EnabledEnum("always", "Always", true);
+    public static final EnabledEnum NEVER = new EnabledEnum("never", "Never", false);
     public static final EnabledEnum ENABLED = new EnabledEnum("enabled", "Enabled", true);
     public static final EnabledEnum DISABLED = new EnabledEnum("disabled", "Disabled", false);
     public static final EnabledEnum PASS_THROUGH = new EnabledEnum("passThrough", "Pass through", false); //deprecated - use DISABLED or FALSE
     public static final EnabledEnum TRUE = new EnabledEnum("true", "Enabled", true);
     public static final EnabledEnum FALSE = new EnabledEnum("false", "Disabled", false);
-    
-    private static final EnabledEnum[] values = new EnabledEnum[] { ENABLED, DISABLED, PASS_THROUGH, TRUE, FALSE }; 
 
-	public static final EnabledEnum DEFAULT_VALUE = ENABLED;
+    private static final EnabledEnum[] values = new EnabledEnum[] { ALWAYS, NEVER, ENABLED, DISABLED, PASS_THROUGH, TRUE, FALSE }; 
+
+	public static final EnabledEnum DEFAULT_VALUE = ALWAYS;
 
     private String id;
     
