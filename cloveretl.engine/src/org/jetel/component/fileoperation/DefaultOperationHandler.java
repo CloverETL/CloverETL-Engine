@@ -74,13 +74,18 @@ public class DefaultOperationHandler implements IOperationHandler {
 		}
 	}
 	
-	private boolean copyFile(SingleCloverURI source, SingleCloverURI target, long sourceSize) throws IOException {
+	private boolean copyFile(SingleCloverURI source, SingleCloverURI target, Long sourceSize) throws IOException {
 		ReadableByteChannel inputChannel = null;
 		WritableByteChannel outputChannel = null;
 		try {
 			inputChannel = manager.getInput(source).channel();
 			outputChannel = manager.getOutput(target).channel();
-			StreamUtils.copy(inputChannel, outputChannel, sourceSize);
+			if (sourceSize != null) {
+				StreamUtils.copy(inputChannel, outputChannel, sourceSize);
+			} else {
+				// fallback to handle cases when source size is unknown
+				StreamUtils.copy(inputChannel, outputChannel);
+			}
 			return true;
 		} finally {
 			FileUtils.closeAll(outputChannel, inputChannel);
