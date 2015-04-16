@@ -43,7 +43,6 @@ import org.jetel.component.fileoperation.result.CopyResult;
 import org.jetel.component.fileoperation.result.DeleteResult;
 import org.jetel.component.fileoperation.result.InfoResult;
 import org.jetel.component.fileoperation.result.ListResult;
-import org.jetel.util.file.FileUtils;
 import org.jetel.util.stream.StreamUtils;
 
 public class DefaultOperationHandler implements IOperationHandler {
@@ -75,11 +74,10 @@ public class DefaultOperationHandler implements IOperationHandler {
 	}
 	
 	private boolean copyFile(SingleCloverURI source, SingleCloverURI target, Long sourceSize) throws IOException {
-		ReadableByteChannel inputChannel = null;
-		WritableByteChannel outputChannel = null;
-		try {
-			inputChannel = manager.getInput(source).channel();
-			outputChannel = manager.getOutput(target).channel();
+		try (
+			ReadableByteChannel inputChannel = manager.getInput(source).channel();
+			WritableByteChannel outputChannel = manager.getOutput(target).channel();
+		) {
 			if (sourceSize != null) {
 				StreamUtils.copy(inputChannel, outputChannel, sourceSize);
 			} else {
@@ -87,8 +85,6 @@ public class DefaultOperationHandler implements IOperationHandler {
 				StreamUtils.copy(inputChannel, outputChannel);
 			}
 			return true;
-		} finally {
-			FileUtils.closeAll(outputChannel, inputChannel);
 		}
 	}
 	
