@@ -24,7 +24,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilterInputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -56,6 +55,7 @@ import org.jetel.component.fileoperation.SimpleParameters.ReadParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.WriteParameters;
 import org.jetel.component.fileoperation.URLOperationHandler.URLContent;
+import org.jetel.util.stream.DelegatingOutputStream;
 import org.jetel.util.string.StringUtils;
 
 public class FTPOperationHandler implements IOperationHandler {
@@ -627,7 +627,7 @@ public class FTPOperationHandler implements IOperationHandler {
 		
 	}
 
-	private static class FTPOutputStream extends FilterOutputStream {
+	private static class FTPOutputStream extends DelegatingOutputStream {
 
 		private final FTPClient ftp;
 		

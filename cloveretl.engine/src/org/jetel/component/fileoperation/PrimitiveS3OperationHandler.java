@@ -21,7 +21,6 @@ package org.jetel.component.fileoperation;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilterInputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -33,7 +32,6 @@ import java.nio.channels.WritableByteChannel;
 import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -49,6 +47,7 @@ import org.jetel.component.fileoperation.pool.S3Authority;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.util.ExceptionUtils;
+import org.jetel.util.stream.DelegatingOutputStream;
 import org.jetel.util.string.StringUtils;
 import org.jets3t.service.S3Service;
 import org.jets3t.service.S3ServiceException;
@@ -677,7 +676,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 			
 			final File tempFile = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph()).newTempFile("cloveretl-amazons3-buffer", -1);
 			
-			OutputStream os = new FilterOutputStream(new FileOutputStream(tempFile)) {
+			OutputStream os = new DelegatingOutputStream(new FileOutputStream(tempFile)) {
 				
 				private final AtomicBoolean uploaded = new AtomicBoolean(false);
 
