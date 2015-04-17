@@ -26,10 +26,12 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 import org.jetel.component.fileoperation.pool.PooledS3Connection;
 import org.jetel.component.fileoperation.result.DeleteResult;
 import org.jetel.component.fileoperation.result.InfoResult;
+import org.jetel.component.fileoperation.result.ListResult;
 import org.jetel.util.stream.StreamUtils;
 import org.jets3t.service.S3Service;
 import org.jets3t.service.ServiceException;
@@ -150,5 +152,20 @@ public class PrimitiveS3CopyOperationHandler extends PrimitiveS3OperationHandler
 		
 		return super.deleteFile(target);
 	}
+
+	@Override
+	public List<Info> listFiles(URI target) throws IOException {
+		if (!target.getScheme().equals(S3OperationHandler.S3_SCHEME)) {
+			ListResult listResult = manager.list(CloverURI.createSingleURI(target));
+			if (listResult.success()) {
+				return listResult.getResult();
+			} else {
+				throw new IOException(listResult.getFirstError());
+			}
+		}
+
+		return super.listFiles(target);
+	}
+
 
 }
