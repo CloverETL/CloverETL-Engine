@@ -96,6 +96,11 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 			// validate connection
 			service.listAllBuckets();
 		} catch (S3ServiceException e) {
+			if (e.getCause() instanceof IllegalArgumentException) {
+				if ("Empty key".equals(e.getCause().getMessage())) {
+					throw new IOException("S3 URL does not contain valid keys. Please supply access key and secret key in the following format: s3://<AccessKey:SecretKey>@s3.amazonaws.com/<bucket>", PrimitiveS3OperationHandler.getIOException(e));
+				}
+			}
 			throw new IOException("Connection validation failed", PrimitiveS3OperationHandler.getIOException(e));
 		}
 	}
