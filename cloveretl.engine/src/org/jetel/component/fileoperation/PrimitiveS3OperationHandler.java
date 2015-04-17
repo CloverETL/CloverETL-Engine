@@ -81,7 +81,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 	 * @param uri
 	 * @return [bucketName, key] or [bucketName]
 	 */
-	private static String[] getPath(URI uri) {
+	protected static String[] getPath(URI uri) {
 		String path = uri.getPath();
 		if (path.startsWith(FORWARD_SLASH)) {
 			path = path.substring(1);
@@ -234,6 +234,10 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		return null;
 	}
 
+	protected static void putObject(S3Service service, String targetBucket, S3Object targetObject) throws ServiceException, IOException {
+		service.putObjectMaybeAsMultipart(targetBucket, targetObject, MultipartUtils.MAX_OBJECT_SIZE);
+	}
+	
 	/**
 	 * Performs server-side copy of a regular file.
 	 */
@@ -367,7 +371,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		}
 	}
 
-	private static Info info(URI target, PooledS3Connection connection) throws IOException {
+	protected static Info info(URI target, PooledS3Connection connection) throws IOException {
 		String[] path = getPath(target);
 		return info(path, connection);
 	}
@@ -710,7 +714,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 								
 								try {
 									// CLO-4724:
-									service.putObjectMaybeAsMultipart(bucketName, uploadObject, MultipartUtils.MAX_OBJECT_SIZE);
+									putObject(service, bucketName, uploadObject);
 								} catch (ServiceException e) {
 									throw getIOException(e);
 								}
@@ -731,7 +735,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		}
 	}
 
-	private PooledS3Connection connect(URI uri) throws IOException {
+	protected PooledS3Connection connect(URI uri) throws IOException {
 		try {
 			Authority authority = new S3Authority(uri);
 			return (PooledS3Connection) pool.borrowObject(authority);
@@ -742,7 +746,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		}
 	}
 
-	private void disconnect(PooledS3Connection connection) {
+	protected void disconnect(PooledS3Connection connection) {
 		if (connection != null) {
 			try {
 				pool.returnObject(connection.getAuthority(), connection);
