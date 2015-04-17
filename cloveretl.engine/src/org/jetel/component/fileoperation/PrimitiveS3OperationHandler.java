@@ -235,6 +235,9 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 	}
 
 	protected static void putObject(S3Service service, String targetBucket, S3Object targetObject) throws ServiceException, IOException {
+		if (Thread.currentThread().isInterrupted()) {
+			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
+		}
 		service.putObjectMaybeAsMultipart(targetBucket, targetObject, MultipartUtils.MAX_OBJECT_SIZE);
 	}
 	
