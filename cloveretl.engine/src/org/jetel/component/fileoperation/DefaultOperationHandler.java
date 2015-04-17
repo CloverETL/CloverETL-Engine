@@ -43,6 +43,7 @@ import org.jetel.component.fileoperation.result.CopyResult;
 import org.jetel.component.fileoperation.result.DeleteResult;
 import org.jetel.component.fileoperation.result.InfoResult;
 import org.jetel.component.fileoperation.result.ListResult;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.stream.StreamUtils;
 
 public class DefaultOperationHandler implements IOperationHandler {
@@ -95,7 +96,13 @@ public class DefaultOperationHandler implements IOperationHandler {
 			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
 		}
 		InfoResult sourceInfo = manager.info(source);
+		if (!sourceInfo.success()) {
+			throw ExceptionUtils.getIOException(sourceInfo.getFirstError());
+		}
 		InfoResult targetInfo = manager.info(target);
+		if (!targetInfo.success()) {
+			throw ExceptionUtils.getIOException(targetInfo.getFirstError());
+		}
 		if (targetInfo.exists()) {
 			URI sourceUri = sourceInfo.getURI();
 			URI targetUri = targetInfo.getURI();
