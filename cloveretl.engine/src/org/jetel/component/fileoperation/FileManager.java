@@ -231,6 +231,7 @@ public class FileManager {
 			manager.registerHandler(new PooledFTPOperationHandler());
 			manager.registerHandler(new SMBOperationHandler());
 			manager.registerHandler(new S3OperationHandler());
+			manager.registerHandler(new S3CopyOperationHandler());
 		}
 	}
 	

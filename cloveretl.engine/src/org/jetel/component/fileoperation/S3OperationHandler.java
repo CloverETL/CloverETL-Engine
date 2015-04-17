@@ -46,6 +46,11 @@ public class S3OperationHandler extends AbstractOperationHandler {
 		this.s3handler = (PrimitiveS3OperationHandler) simpleHandler;
 	}
 
+	protected S3OperationHandler(PrimitiveS3OperationHandler handler) {
+		super(handler);
+		this.s3handler = (PrimitiveS3OperationHandler) simpleHandler;
+	}
+
 	@Override
 	public int getPriority(Operation operation) {
 		return TOP_PRIORITY;
