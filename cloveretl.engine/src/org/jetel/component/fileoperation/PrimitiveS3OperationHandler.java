@@ -55,6 +55,9 @@ import org.jets3t.service.S3Service;
 import org.jets3t.service.S3ServiceException;
 import org.jets3t.service.ServiceException;
 import org.jets3t.service.StorageObjectsChunk;
+import org.jets3t.service.model.MultipleDeleteResult;
+import org.jets3t.service.model.MultipleDeleteResult.ErrorResult;
+import org.jets3t.service.model.container.ObjectKeyAndVersion;
 import org.jets3t.service.model.S3Bucket;
 import org.jets3t.service.model.S3Object;
 import org.jets3t.service.model.StorageObject;
@@ -230,6 +233,60 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 			}
 		} finally {
 			disconnect(connection);
+		}
+	}
+
+	/**
+	 * CLO-6159:
+	 * 
+	 * @param target
+	 * @return
+	 */
+	public boolean removeDirRecursively(URI target) throws IOException {
+		target = target.normalize();
+		PooledS3Connection connection = null;
+		try {
+			connection = connect(target);
+			S3Service service = connection.getService();
+			String[] path = getPath(target);
+			String bucketName = path[0];
+			try {
+				if (path.length == 1) {
+					if (bucketName.isEmpty()) {
+						throw new IOException("Unable to delete root directory");
+					}
+					S3Object[] objects = service.listObjects(bucketName);
+					deleteObjects(service, bucketName, objects);
+					service.deleteBucket(bucketName);
+				} else {
+					String dirName = appendSlash(path[1]);
+					S3Object[] objects = service.listObjects(bucketName, dirName, null); // no delimiter!
+					deleteObjects(service, bucketName, objects);
+				}
+				return true;
+			} catch (ServiceException e) {
+				throw new IOException(e);
+			}
+		} finally {
+			disconnect(connection);
+		}
+	}
+
+	private void deleteObjects(S3Service service, String bucketName, S3Object[] objects) throws S3ServiceException {
+		if (objects.length > 0) {
+			ObjectKeyAndVersion[] keys = new ObjectKeyAndVersion[objects.length];
+			for (int i = 0; i < objects.length; i++) {
+				keys[i] = new ObjectKeyAndVersion(objects[i].getKey());
+			}
+			MultipleDeleteResult result = service.deleteMultipleObjects(bucketName, keys, true); // quiet
+			if (result.hasErrors()) {
+				ErrorResult err = result.getErrorResults().get(0);
+				// TODO add remaining errors as suppressed exceptions
+				S3ServiceException ex = new S3ServiceException("Failed to delete " + err.getKey());
+				ex.setErrorMessage(err.getMessage());
+				ex.setErrorCode(ex.getErrorCode());
+				throw ex;
+			}
 		}
 	}
 
