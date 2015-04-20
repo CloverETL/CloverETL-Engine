@@ -25,7 +25,6 @@ import java.net.URI;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 import org.jetel.component.fileoperation.pool.PooledS3Connection;
@@ -34,8 +33,6 @@ import org.jetel.component.fileoperation.result.InfoResult;
 import org.jetel.component.fileoperation.result.ListResult;
 import org.jetel.util.stream.StreamUtils;
 import org.jets3t.service.S3Service;
-import org.jets3t.service.ServiceException;
-import org.jets3t.service.model.S3Object;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -110,19 +107,8 @@ public class PrimitiveS3CopyOperationHandler extends PrimitiveS3OperationHandler
 		}
 		String targetBucket = targetPath[0];
 		String targetKey = targetPath[1];
-		S3Object targetObject;
-		try {
-			targetObject = new S3Object(source);
-		} catch (NoSuchAlgorithmException e) {
-			throw new IOException(e);
-		}
-		targetObject.setKey(targetKey);
-		try {
-			putObject(service, targetBucket, targetObject);
-			return target;
-		} catch (ServiceException e) {
-			throw new IOException(e);
-		}
+		putObject(service, source, targetBucket, targetKey);
+		return target;
 	}
 
 	@Override

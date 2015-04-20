@@ -19,6 +19,8 @@
 package org.jetel.component.fileoperation;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -29,7 +31,6 @@ import java.net.URISyntaxException;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -48,6 +49,7 @@ import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.stream.DelegatingOutputStream;
+import org.jetel.util.stream.InterruptibleInputStream;
 import org.jetel.util.string.StringUtils;
 import org.jets3t.service.S3Service;
 import org.jets3t.service.S3ServiceException;
@@ -56,7 +58,9 @@ import org.jets3t.service.StorageObjectsChunk;
 import org.jets3t.service.model.S3Bucket;
 import org.jets3t.service.model.S3Object;
 import org.jets3t.service.model.StorageObject;
+import org.jets3t.service.utils.Mimetypes;
 import org.jets3t.service.utils.MultipartUtils;
+import org.jets3t.service.utils.ServiceUtils;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -234,11 +238,63 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		return null;
 	}
 
-	protected static void putObject(S3Service service, String targetBucket, S3Object targetObject) throws ServiceException, IOException {
+	protected static void putObject(S3Service service, File file, String targetBucket, String targetKey) throws IOException {
+		S3Object targetObject = createS3Object(file, targetKey);
 		if (Thread.currentThread().isInterrupted()) {
 			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
 		}
-		service.putObjectMaybeAsMultipart(targetBucket, targetObject, MultipartUtils.MAX_OBJECT_SIZE);
+		try {
+			service.putObjectMaybeAsMultipart(targetBucket, targetObject, MultipartUtils.MAX_OBJECT_SIZE);
+		} catch (ServiceException e) {
+			throw getIOException(e);
+		}
+	}
+
+	/*
+	 * Wraps all used InputStreams in InterruptibleInputStream
+	 * to make uploads interruptible.
+	 * ------------------------------------------------------------------------
+	 * Based on org.jets3t.service.model.S3Object.S3Object(File):
+	 * 
+	 * JetS3t : Java S3 Toolkit
+	 * Project hosted at http://bitbucket.org/jmurty/jets3t/
+	 *
+	 * Copyright 2006-2010 James Murty
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 *     http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 */
+    private static S3Object createS3Object(File file, String key) throws IOException {
+		try {
+			S3Object o = new S3Object(key) {
+
+				@Override
+				public InputStream getDataInputStream() throws ServiceException {
+					return new InterruptibleInputStream(super.getDataInputStream());
+				}
+				
+			};
+	        o.setContentLength(file.length());
+	        o.setContentType(Mimetypes.getInstance().getMimetype(file));
+	        if (!file.exists()) {
+	            throw new FileNotFoundException("Cannot read from file: " + file.getAbsolutePath());
+	        }
+	        o.setDataInputFile(file);
+	        o.setMd5Hash(ServiceUtils.computeMD5Hash(new InterruptibleInputStream(new FileInputStream(file))));
+	        o.setSHA256Hash(ServiceUtils.hashSHA256(new InterruptibleInputStream(new FileInputStream(file))));
+			return o;
+		} catch (Exception ex) {
+			throw getIOException(ex);
+		}
 	}
 	
 	/**
@@ -707,20 +763,8 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 					} finally {
 						if (uploaded.compareAndSet(false, true)) {
 							try {
-								S3Object uploadObject;
-								try {
-									uploadObject = new S3Object(tempFile);
-								} catch (NoSuchAlgorithmException e) {
-									throw new IOException(e);
-								}
-								uploadObject.setKey(key);
-								
-								try {
-									// CLO-4724:
-									putObject(service, bucketName, uploadObject);
-								} catch (ServiceException e) {
-									throw getIOException(e);
-								}
+								// CLO-4724:
+								putObject(service, tempFile, bucketName, key);
 							} finally {
 								connection.returnToPool();
 								tempFile.delete();
