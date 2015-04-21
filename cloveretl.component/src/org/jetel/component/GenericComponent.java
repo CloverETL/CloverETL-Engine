@@ -177,11 +177,10 @@ public class GenericComponent extends Node {
 			transform.checkConfig(status); // delegating to implemented method
 		} catch (org.jetel.exception.LoadClassException e) {
 			if (ExceptionUtils.instanceOf(e, CompilationException.class)) {
-				status.add(e.getMessage(), Severity.WARNING, this, Priority.NORMAL);
+				status.add(ExceptionUtils.getMessage(e), Severity.WARNING, this, Priority.NORMAL);
 			} else {
-				status.add(e.getMessage() + " . Make sure to set classpath correctly.", Severity.WARNING, this, Priority.NORMAL);
+				status.add(ExceptionUtils.getMessage(e) + ". Make sure to set classpath correctly.", Severity.WARNING, this, Priority.NORMAL);
 			}
-	
 		}
         return status;
 	}
