@@ -8,7 +8,7 @@
 	    	 <DBUnitFeature name="http://www.dbunit.org/features/skipOracleRecycleBinTables" enabled="true"/>
 	</DBConnection>
 	<DBConnection ident="mysql" type="MYSQL" user="test" password="test" URL="jdbc:mysql://koule/test?zeroDateTimeBehavior=convertToNull" driver="org.gjt.mm.mysql.Driver" />
-	<DBConnection ident="db2" type="DB2" user="db2inst" password="semafor" URL="jdbc:db2://koule:50002/test" driver="com.ibm.db2.jcc.DB2Driver" />
+	<DBConnection ident="db2" type="DB2" user="db2inst" password="semafor" URL="jdbc:db2://virt-db2:50002/test" driver="com.ibm.db2.jcc.DB2Driver" />
 	<DBConnection ident="infobright" type="MYSQL" user="root" password="" URL="jdbc:mysql://koule:5029/test" driver="org.gjt.mm.mysql.Driver" />
 	<DBConnection ident="infobright_3_5" type="MYSQL" user="root" password="" URL="jdbc:mysql://koule:5030/test" driver="org.gjt.mm.mysql.Driver" />
 	
