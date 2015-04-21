@@ -227,7 +227,7 @@ public class Plugins {
     			pluginDescriptor.init();
     		} catch (ComponentNotReadyException e) {
     			//manifest is not parsable
-				//logger.error("Plugin manifest '" + pluginManifestUrl + "' is not parsable (skipped).", e);
+				logger.warn("Plugin manifest '" + pluginManifestUrl + "' is not parsable (skipped).", e);
     			continue;
     		}
     		//stores prepared plugin descriptor
