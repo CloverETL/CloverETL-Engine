@@ -157,6 +157,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assumeTrue(manager.create(relativeURI("nonexisting/file.tmp;nonexisting/dir/content.tmp"), new CreateParameters().setMakeParents(true)).success());
 		assumeTrue(manager.create(relativeURI("into-itself/srcdir/subdir/file.tmp"), new CreateParameters().setMakeParents(true)).success());
 		assumeTrue(manager.create(relativeURI("normalization/file.tmp"), new CreateParameters().setMakeParents(true)).success());
+		assumeTrue(manager.create(relativeURI("trailingSlash/file.tmp"), new CreateParameters().setMakeParents(true)).success());
 		
 		CloverURI source;
 		CloverURI target;
@@ -375,6 +376,15 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertTrue(manager.copy(source, target).success());
 			assertTrue(manager.isFile(relativeURI(dir, "copy.tmp")));
 		}
+
+		{
+			// CLO-6088
+			source = relativeURI("trailingSlash");
+			target = relativeURI("trailingSlashCopy/");
+			assertTrue(manager.copy(source, target, new CopyParameters().setRecursive(true)).success());
+			assertTrue(manager.isFile(relativeURI("trailingSlashCopy/file.tmp")));
+			assertFalse(manager.exists(relativeURI("trailingSlashCopy/trailingSlash")));
+		}
 	}
 	
 	public void testSpecialCharacters() throws Exception {
@@ -499,6 +509,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assumeTrue(manager.create(relativeURI("samefile/f.tmp;samefile/dir/"), new CreateParameters().setMakeParents(true)).success());
 		assumeTrue(manager.create(relativeURI("into-itself/srcdir/subdir/file.tmp"), new CreateParameters().setMakeParents(true)).success());
 		assumeTrue(manager.create(relativeURI("normalization/file.tmp"), new CreateParameters().setMakeParents(true)).success());
+		assumeTrue(manager.create(relativeURI("trailingSlash/file.tmp"), new CreateParameters().setMakeParents(true)).success());
 		
 		CloverURI source;
 		CloverURI target;
@@ -755,6 +766,15 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			target = relativeURI(dir, "./../normalization/moved.tmp");
 			assertTrue(manager.copy(source, target).success());
 			assertTrue(manager.isFile(relativeURI(dir, "moved.tmp")));
+		}
+
+		{
+			// CLO-6088
+			source = relativeURI("trailingSlash");
+			target = relativeURI("trailingSlashMoved/");
+			assertTrue(manager.copy(source, target, new CopyParameters().setRecursive(true)).success());
+			assertTrue(manager.isFile(relativeURI("trailingSlashMoved/file.tmp")));
+			assertFalse(manager.exists(relativeURI("trailingSlashMoved/trailingSlash")));
 		}
 	}
 	
