@@ -18,6 +18,9 @@
  */
 package org.jetel.graph.modelview.impl;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jetel.graph.Edge;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.TransformationGraph;
@@ -255,8 +258,11 @@ public class MetadataPropagationResolver {
 	 */
 	private boolean isSelfReferenced(MVEdge edge) {
 		MVEdge startEdge = edge;
-		while (edge.getMetadataRef() != null
+		Set<MVEdge> visitedEdges = new HashSet<>();
+		while (!visitedEdges.contains(edge)
+				&& edge.getMetadataRef() != null
 				&& ReferenceState.isValidState(edge.getModel().getMetadataReferenceState())) {
+			visitedEdges.add(edge);
 			edge = edge.getMetadataRef();
 			if (edge == startEdge) {
 				return true;

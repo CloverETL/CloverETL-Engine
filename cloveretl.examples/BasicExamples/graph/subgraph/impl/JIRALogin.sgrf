@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="User" created="Thu May 22 10:10:35 CEST 2014" guiVersion="4.0.0.M2" id="1400746470340" licenseType="Evaluation" modified="Fri Jun 27 16:49:33 CEST 2014" modifiedBy="User" name="Default graph name" nature="subgraph" revision="1.47" showComponentDetails="true">
+<Graph author="User" created="Thu May 22 10:10:35 CEST 2014" guiVersion="4.1.0.M1" id="1400746470340" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Apr 21 16:19:17 CEST 2015" modifiedBy="User" name="Default graph name" nature="subgraph" revision="1.51" showComponentDetails="true">
 <Global>
+<inputPorts/>
+<outputPorts>
+<singlePort connected="false" name="0"/>
+</outputPorts>
 <Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="jira_login" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
 <Field eofAsDelimiter="false" name="session_name" nullable="true" shift="0" size="0" type="string"/>
@@ -30,8 +34,8 @@
 </Metadata>
 <GraphParameters>
 <GraphParameter name="JIRA_LOGIN_URL" value="${JIRA_URL}/rest/auth/1/session"/>
-<GraphParameter name="USER" public="true" required="true"/>
-<GraphParameter name="PASSWORD" public="true" required="true" secure="false"/>
+<GraphParameter name="USER" public="true" required="false"/>
+<GraphParameter name="PASSWORD" public="true" required="false" secure="true"/>
 <GraphParameterFile fileURL="workspace.prm"/>
 <GraphParameterFile fileURL="jira.prm"/>
 </GraphParameters>
@@ -242,17 +246,17 @@ $in.0.login_rest_status_code == 200]]></attr>
 <Port guiY="-40" name="1"/>
 </Node>
 <Edge debugMode="true" fromNode="COMBINE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="LOGIN_SUCCESS:0"/>
-<Edge debugMode="true" fromNode="CREATE_EMPTY_RESULT_ANONYMOUS_LOGIN:0" guiBendpoints="" guiRouter="Manhattan" id="Edge14" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="SIMPLE_GATHER:0"/>
+<Edge debugMode="true" fromNode="CREATE_EMPTY_RESULT_ANONYMOUS_LOGIN:0" guiBendpoints="" guiRouter="Manhattan" id="Edge14" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata2" toNode="SIMPLE_GATHER:0"/>
 <Edge debugMode="true" fromNode="GET_JOB_INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="LOGIN_PROVIDED:0"/>
 <Edge debugMode="true" fromNode="HTTPCONNECTOR:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_COPY:0"/>
 <Edge debugMode="true" fromNode="JSONEXTRACT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="COMBINE:0"/>
-<Edge debugMode="true" fromNode="LOGIN_PROVIDED:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" outPort="Port 0 (accepted)" toNode="HTTPCONNECTOR:0"/>
-<Edge debugMode="true" fromNode="LOGIN_PROVIDED:1" guiBendpoints="" guiRouter="Manhattan" id="Edge15" inPort="Port 0 (in)" outPort="Port 1 (rejected)" toNode="CREATE_EMPTY_RESULT_ANONYMOUS_LOGIN:0"/>
-<Edge debugMode="true" fromNode="LOGIN_SUCCESS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 1 (in)" outPort="Port 0 (accepted)" toNode="SIMPLE_GATHER:1"/>
-<Edge debugMode="true" fromNode="LOGIN_SUCCESS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" outPort="Port 1 (rejected)" toNode="LOGIN_FAILED:0"/>
-<Edge debugMode="true" fromNode="REST_SUCCESS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (input)" outPort="Port 0 (accepted)" toNode="JSONEXTRACT:0"/>
-<Edge debugMode="true" fromNode="SIMPLE_COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="REST_SUCCESS:0"/>
-<Edge fromNode="SIMPLE_COPY:1" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 1 (in)" outPort="Port 1 (out)" toNode="COMBINE:1"/>
+<Edge debugMode="true" fromNode="LOGIN_PROVIDED:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" outPort="Port 0 (accepted)" persistedImplicitMetadata="Metadata3" toNode="HTTPCONNECTOR:0"/>
+<Edge debugMode="true" fromNode="LOGIN_PROVIDED:1" guiBendpoints="" guiRouter="Manhattan" id="Edge15" inPort="Port 0 (in)" outPort="Port 1 (rejected)" persistedImplicitMetadata="Metadata3" toNode="CREATE_EMPTY_RESULT_ANONYMOUS_LOGIN:0"/>
+<Edge debugMode="true" fromNode="LOGIN_SUCCESS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 1 (in)" outPort="Port 0 (accepted)" persistedImplicitMetadata="Metadata2" toNode="SIMPLE_GATHER:1"/>
+<Edge debugMode="true" fromNode="LOGIN_SUCCESS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" outPort="Port 1 (rejected)" persistedImplicitMetadata="Metadata2" toNode="LOGIN_FAILED:0"/>
+<Edge debugMode="true" fromNode="REST_SUCCESS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (input)" outPort="Port 0 (accepted)" persistedImplicitMetadata="Metadata0" toNode="JSONEXTRACT:0"/>
+<Edge debugMode="true" fromNode="SIMPLE_COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata0" toNode="REST_SUCCESS:0"/>
+<Edge fromNode="SIMPLE_COPY:1" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 1 (in)" outPort="Port 1 (out)" persistedImplicitMetadata="Metadata0" toNode="COMBINE:1"/>
 <Edge debugMode="true" fromNode="SIMPLE_GATHER:0" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SUBGRAPH_OUTPUT:0"/>
 </Phase>
 </Graph>
