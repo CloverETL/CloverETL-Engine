@@ -45,10 +45,10 @@
      	<Bug pattern="EI_EXPOSE_REP" />
      </Match>
      <Match>
-     	<Bug pattern="NM_CONFUSING,NP_GUARANTEED_DEREF_ON_EXCEPTION_PATH" />
+     	<Bug pattern="NM_CONFUSING" />
      </Match>
      <Match>
-     	<Bug pattern="OBL_UNSATISFIED_OBLIGATION_EXCEPTION_EDGE,ODR_OPEN_DATABASE_RESOURCE_EXCEPTION_PATH" />
+     	<Bug pattern="OBL_UNSATISFIED_OBLIGATION_EXCEPTION_EDGE" />
      </Match>
      <Match>
      	<Bug pattern="REC_CATCH_EXCEPTION,RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE,RCN_REDUNDANT_NULLCHECK_OF_NULL_VALUE" />
