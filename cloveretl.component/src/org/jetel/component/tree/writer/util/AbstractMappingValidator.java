@@ -288,8 +288,15 @@ public abstract class AbstractMappingValidator extends AbstractVisitor {
 					addProblem(element, MappingProperty.PARENT_KEY, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.countOfFieldsMustMatchParentKeyError"), Severity.ERROR)); //$NON-NLS-1$
 				}
 			}
-
 		}
+		checkRelationPortAndParentKeyBinding(element, parentKeyString, inPortString, inPortIndex);
+	}
+
+	protected void checkRelationPortAndParentKeyBinding(Relation element, String parentKeyString, String inPortString, Integer inPortIndex) {
+		checkRelationPortAndParentKeyBinding(element, parentKeyString, inPortString, inPortIndex, Severity.ERROR);
+	}
+
+	protected void checkRelationPortAndParentKeyBinding(Relation element, String parentKeyString, String inPortString, Integer inPortIndex, Severity severity) {
 		if (parentKeyString != null) {
 			inPortString = null;
 			ContainerNode parent = getRecurringParent(element.getParent());
@@ -297,18 +304,18 @@ public abstract class AbstractMappingValidator extends AbstractVisitor {
 				inPortString = parent.getRelation().getProperty(MappingProperty.INPUT_PORT);
 			}
 			if (inPortString == null) {
-				addProblem(element, MappingProperty.PARENT_KEY, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.noDataForParentError"), Severity.ERROR)); //$NON-NLS-1$
+				addProblem(element, MappingProperty.PARENT_KEY, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.noDataForParentError"), severity)); //$NON-NLS-1$
 			} else {
 				inPortIndex = getAvailableInputPort(inPortString, element, MappingProperty.PARENT_KEY);
 				if (inPortIndex == null) {
-					addProblem(element, MappingProperty.PARENT_KEY, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.noDataForParentError"), Severity.ERROR)); //$NON-NLS-1$
+					addProblem(element, MappingProperty.PARENT_KEY, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.noDataForParentError"), severity)); //$NON-NLS-1$
 				} else {
 					checkAvailableData(element, MappingProperty.PARENT_KEY, inPorts.get(inPortIndex), parentKeyString.split(TreeWriterMapping.DELIMITER));
 				}
 			}
 		}
 	}
-	
+
 	protected abstract void validateRelation(Relation element);
 	
 	@Override
@@ -463,22 +470,30 @@ public abstract class AbstractMappingValidator extends AbstractVisitor {
 	 * @param property MappingProperty
 	 */
 	protected void checkCorrectBooleanValue(AbstractNode element, MappingProperty property) {
+		checkCorrectBooleanValue(element, property, Severity.ERROR);
+	}
+	
+	protected void checkCorrectBooleanValue(AbstractNode element, MappingProperty property, Severity severity) {
 		String value = element.getProperty(property);
 		if (StringUtils.isEmpty(value)) {
 			return;
 		}
 		if (!Boolean.TRUE.toString().equalsIgnoreCase(value) && !Boolean.FALSE.toString().equalsIgnoreCase(value)) {
-			addProblem(element, property, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.acceptsOnlyBooleanError"), Severity.ERROR)); //$NON-NLS-1$
+			addProblem(element, property, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.acceptsOnlyBooleanError"), severity)); //$NON-NLS-1$
 		}
 	}
-	
-	private void checkCorrectEnumValue(ObjectNode element, MappingProperty property, List<String> allowedValues) {
+
+	protected void checkCorrectEnumValue(ObjectNode element, MappingProperty property, List<String> allowedValues) {
+		checkCorrectEnumValue(element, property, allowedValues, Severity.ERROR);
+	}
+
+	protected void checkCorrectEnumValue(ObjectNode element, MappingProperty property, List<String> allowedValues, Severity severity) {
 		String value = element.getProperty(property);
 		if (StringUtils.isEmpty(value)) {
 			return; // empty value is ok
 		}
 		if (!allowedValues.contains(value)) {
-			addProblem(element, property, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.acceptsOnlyPredefinedError"), Severity.ERROR)); //$NON-NLS-1$
+			addProblem(element, property, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.acceptsOnlyPredefinedError"), severity)); //$NON-NLS-1$
 		}
 	}
 	

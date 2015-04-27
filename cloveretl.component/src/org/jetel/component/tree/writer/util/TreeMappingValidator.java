@@ -133,11 +133,15 @@ public abstract class TreeMappingValidator extends AbstractMappingValidator {
 	}
 
 	protected void wildcardIncludeExcludeCheck(String includeString, String excludeString, AbstractNode wildcard) {
+		wildcardIncludeExcludeCheck(includeString, excludeString, wildcard, Severity.ERROR);
+	}
+	
+	protected void wildcardIncludeExcludeCheck(String includeString, String excludeString, AbstractNode wildcard, Severity severity) {
 		if (includeString == null && excludeString == null) {
-			MappingError error = new MappingError(MessageFormat.format(ValidatorMessages.getString("TreeMappingValidator.missingAttributeError"), MappingProperty.INCLUDE.getName()), Severity.ERROR); //$NON-NLS-1$
+			MappingError error = new MappingError(MessageFormat.format(ValidatorMessages.getString("TreeMappingValidator.missingAttributeError"), MappingProperty.INCLUDE.getName()), severity); //$NON-NLS-1$
 			addProblem(wildcard, MappingProperty.INCLUDE, error);
 
-			error = new MappingError(MessageFormat.format(ValidatorMessages.getString("TreeMappingValidator.missingAttributeError"), MappingProperty.EXCLUDE.getName()), Severity.ERROR); //$NON-NLS-1$
+			error = new MappingError(MessageFormat.format(ValidatorMessages.getString("TreeMappingValidator.missingAttributeError"), MappingProperty.EXCLUDE.getName()), severity); //$NON-NLS-1$
 			addProblem(wildcard, MappingProperty.EXCLUDE, error);
 		}
 	}
@@ -203,8 +207,13 @@ public abstract class TreeMappingValidator extends AbstractMappingValidator {
 	 */
 	protected boolean checkAggregateExpressionFormat(String aggregateExpression, AbstractNode errorElement,
 			MappingProperty property) {
+		return checkAggregateExpressionFormat(aggregateExpression, errorElement, property, Severity.ERROR);
+	}
+
+	protected boolean checkAggregateExpressionFormat(String aggregateExpression, AbstractNode errorElement,
+			MappingProperty property, Severity severity) {
 		if (!aggregateExpression.matches(QUALIFIED_FIELD_REFERENCE_PATTERN)) {
-			addProblem(errorElement, property, new MappingError(MessageFormat.format(ValidatorMessages.getString("TreeMappingValidator.invalidExpressionError"), aggregateExpression), Severity.ERROR)); //$NON-NLS-1$
+			addProblem(errorElement, property, new MappingError(MessageFormat.format(ValidatorMessages.getString("TreeMappingValidator.invalidExpressionError"), aggregateExpression), severity)); //$NON-NLS-1$
 			return false;
 		}
 		return true;
@@ -221,7 +230,7 @@ public abstract class TreeMappingValidator extends AbstractMappingValidator {
 	 *            subexpression with no effect
 	 */
 	protected void addNoEffectWarning(AbstractNode errorElement, MappingProperty property, String expression) {
-		addProblem(errorElement, property, new MappingError(MessageFormat.format(ValidatorMessages.getString("TreeMappingValidator.noEffectExpressionErrror"), expression), Severity.WARNING)); //$NON-NLS-1$
+		addProblem(errorElement, property, new MappingError(MessageFormat.format(ValidatorMessages.getString("TreeMappingValidator.noEffectExpressionError"), expression), Severity.WARNING)); //$NON-NLS-1$
 	}
 
 	@Override
@@ -245,12 +254,25 @@ public abstract class TreeMappingValidator extends AbstractMappingValidator {
 				validateFieldValue(element, name, MappingProperty.NAME);
 				return true;
 			} else {
-				addProblem(element, MappingProperty.NAME, new MappingError(MessageFormat.format(ValidatorMessages.getString("TreeMappingValidator.invalidNameError"), name), Severity.ERROR)); //$NON-NLS-1$
+				return validateBasicName(element, name);
 			}
 		}
 		return false;
 	}
 
+	/**
+	 * Validates basic name which is not QName.
+	 * Basic validation returns problem, because such name is not valid tag name.
+	 * 
+	 * @param element
+	 * @param name
+	 * @return
+	 */
+	protected boolean validateBasicName(AbstractNode element, String name) {
+		addProblem(element, MappingProperty.NAME, new MappingError(MessageFormat.format(ValidatorMessages.getString("TreeMappingValidator.invalidNameError"), name), Severity.ERROR)); //$NON-NLS-1$
+		return false; 
+	}
+	
 	@Override
 	protected void validateRelation(Relation element) {
 		// No format specific validation
@@ -267,8 +289,13 @@ public abstract class TreeMappingValidator extends AbstractMappingValidator {
 
 	protected void checkNamespacePrefixAvailable(AbstractNode source, ContainerNode parent, String prefix,
 			MappingProperty property) {
+		checkNamespacePrefixAvailable(source, parent, prefix, property, Severity.ERROR);
+	}
+
+	protected void checkNamespacePrefixAvailable(AbstractNode source, ContainerNode parent, String prefix,
+			MappingProperty property, Severity severity) {
 		if (!prefix.matches(FIELD_REFERENCE_PATTERN) && !TreeWriterMappingUtil.isNamespacePrefixAvailable(parent, prefix)) {
-			addProblem(source, property, new MappingError(MessageFormat.format(ValidatorMessages.getString("TreeMappingValidator.namespaceNotAvailableError"), prefix), Severity.ERROR)); //$NON-NLS-1$
+			addProblem(source, property, new MappingError(MessageFormat.format(ValidatorMessages.getString("TreeMappingValidator.namespaceNotAvailableError"), prefix), severity)); //$NON-NLS-1$
 		}
 	}
 
