@@ -289,16 +289,16 @@ public abstract class AbstractMappingValidator extends AbstractVisitor {
 				}
 			}
 		}
-		checkRelationPortAndParentKeyBinding(element, parentKeyString, inPortString, inPortIndex);
+		checkRelationPortAndParentKeyBinding(element, parentKeyString, inPortIndex);
 	}
 
-	protected void checkRelationPortAndParentKeyBinding(Relation element, String parentKeyString, String inPortString, Integer inPortIndex) {
-		checkRelationPortAndParentKeyBinding(element, parentKeyString, inPortString, inPortIndex, Severity.ERROR);
+	protected void checkRelationPortAndParentKeyBinding(Relation element, String parentKeyString, Integer inPortIndex) {
+		checkRelationPortAndParentKeyBinding(element, parentKeyString, inPortIndex, Severity.ERROR);
 	}
 
-	protected void checkRelationPortAndParentKeyBinding(Relation element, String parentKeyString, String inPortString, Integer inPortIndex, Severity severity) {
+	protected void checkRelationPortAndParentKeyBinding(Relation element, String parentKeyString, Integer inPortIndex, Severity severity) {
 		if (parentKeyString != null) {
-			inPortString = null;
+			String inPortString = null;
 			ContainerNode parent = getRecurringParent(element.getParent());
 			if (parent != null) {
 				inPortString = parent.getRelation().getProperty(MappingProperty.INPUT_PORT);
