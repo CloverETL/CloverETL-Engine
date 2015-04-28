@@ -1,0 +1,8 @@
+great|true
+bigger|true
+better|true
+forefront|true
+hard|false
+challenge|false
+miss|false
+myth|false
