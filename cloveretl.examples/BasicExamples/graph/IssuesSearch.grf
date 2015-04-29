@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="User" created="Wed May 28 13:40:15 CEST 2014" guiVersion="4.1.0.M1" id="1401282602437" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Apr 21 16:15:50 CEST 2015" modifiedBy="User" name="Issues Search" revision="1.30" showComponentDetails="true">
+<Graph author="User" created="Wed May 28 13:40:15 CEST 2014" guiVersion="4.1.0.M1" id="1401282602437" licenseCode="Commercial Devel" licenseType="Commercial" modified="Mon Apr 27 16:33:21 CEST 2015" modifiedBy="User" name="Issues Search" revision="1.31" showComponentDetails="true">
 <Global>
 <inputPorts/>
 <outputPorts/>
@@ -33,7 +33,7 @@ JIRASearch is a subgraph that searches in JIRA via its REST API - it calls the A
 </Global>
 <Phase number="0">
 <Node __QUERY="fixVersion = rel-3-5-0 AND labels = release-notes" enabled="enabled" guiName="JIRASearch" guiX="32" guiY="341" id="JIRA_SEARCH" jobURL="${SUBGRAPH_DIR}/JIRASearch.sgrf" type="SUBGRAPH"/>
-<Node enabled="enabled" existingSheetsActions="REMOVE_SHEETS" fileURL="${DATAOUT_DIR}/release-notes-${VERSION}.xlsx" guiName="Release notes" guiX="239" guiY="341" id="RELEASE_NOTES" sheet="Sheet0" templateFileURL="${DATAIN_DIR}/release-notes-template.xlsx" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY">
+<Node enabled="enabled" existingSheetsActions="REMOVE_SHEETS" fileURL="${DATAOUT_DIR}/release-notes-rel-3-5-0.xlsx" guiName="Release notes" guiX="239" guiY="341" id="RELEASE_NOTES" sheet="Sheet0" templateFileURL="${DATAIN_DIR}/release-notes-template.xlsx" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
     <globalAttributes>

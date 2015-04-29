@@ -374,23 +374,22 @@ public class InfobrightDataWriter extends Node {
 	 * @throws ComponentNotReadyException for wrong number or type of the fields 
 	 */
 	private BrighthouseRecord createBrighthouseRecord(DataRecordMetadata metadata, JdbcSpecific jdbcSpecific, 
-			EtlLogger logger) throws Exception{
-	    Statement stmt = sqlConnection.createStatement();
-	    ResultSet rs = stmt.executeQuery("select * from `" + table + "` limit 0");
-	    ResultSetMetaData md = rs.getMetaData();
-	    if (md.getColumnCount() != cloverFieldIndexes.length) {
-	    	throw new ComponentNotReadyException(this, "Number of db fields (" + md.getColumnCount()+ ") is different then " +
-					"number of clover fields (" + cloverFieldIndexes.length + ")." );
-	    }
-		List<AbstractColumnType> columns = new ArrayList<AbstractColumnType>(md.getColumnCount());
-		AbstractColumnType col;
-		for (int i = 0; i < cloverFieldIndexes.length; i++) {
-			col = jetelType2Brighthouse(metadata.getField(cloverFieldIndexes[i]), md.getPrecision(i + 1), jdbcSpecific, logger);
-			col.setCheckValues(checkValues);
-			columns.add(col);
+			EtlLogger logger) throws Exception {
+		
+	    List<AbstractColumnType> columns;
+		try (Statement stmt = sqlConnection.createStatement(); ResultSet rs = stmt.executeQuery("select * from `" + table + "` limit 0")) {
+			ResultSetMetaData md = rs.getMetaData();
+			if (md.getColumnCount() != cloverFieldIndexes.length) {
+				throw new ComponentNotReadyException(this, "Number of db fields (" + md.getColumnCount() + ") is different then " + "number of clover fields (" + cloverFieldIndexes.length + ").");
+			}
+			columns = new ArrayList<>(md.getColumnCount());
+			AbstractColumnType col;
+			for (int i = 0; i < cloverFieldIndexes.length; i++) {
+				col = jetelType2Brighthouse(metadata.getField(cloverFieldIndexes[i]), md.getPrecision(i + 1), jdbcSpecific, logger);
+				col.setCheckValues(checkValues);
+				columns.add(col);
+			}
 		}
-	    rs.close();
-	    stmt.close();
 		return dataFormat.createRecord(columns, chset, logger);
 	}
 	
