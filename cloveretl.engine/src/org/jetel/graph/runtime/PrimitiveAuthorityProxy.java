@@ -47,6 +47,7 @@ import org.apache.log4j.spi.Filter;
 import org.apache.log4j.spi.LoggingEvent;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
@@ -420,6 +421,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		throw new UnsupportedOperationException("Subgraph execution is available only in CloverETL Server environment!");
 	}
 
+	@Override
+	public ConfigurationStatus checkConfig(String graphUrl, GraphRuntimeContext runtimeContext) {
+		throw new UnsupportedOperationException("Subgraph configuration check is available only in CloverETL Server environment!");
+	}
+	
 	@Override
 	public File newTempFile(String label, String suffix, int allocationHint) throws TempFileCreationException {
 		try {
