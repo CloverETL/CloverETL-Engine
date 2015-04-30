@@ -2,6 +2,37 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-1-0-M1
+------------
+
+* Optional ports in subgraphs
+* New compponents:
+	- CrossJoin
+	- GenericComponent
+	- RecordToKeyValues
+	- KeyValuesToRecord
+* Deprecated components:
+	- Pivot
+	- MetaPivot
+	- ApproximativeJoin
+* Amazon S3 support in file operations
+* Vertica JDBC driver added
+* JSONReader/XMLReader input->output mapping
+* Metadata extraction from Clover data file
+- FIXES:
+	- Incorrect handling of "where" in (nested) sql when used in Dynamic metadata query
+	- FastSort may lose records for extremely small run size
+	- LDAP authentication - optional LDAP groups
+	- XMLWriter: 'Write null element' does not work for elements with attributes
+	- CTL2: switch does not allow negative number in cases
+	- UniversalDataReader: "Character decoding error" results in graph failure in lenient and controlled mode
+	- minor bugfixes
+- COMPATIBILITY:
+	- DB components do not resolve parameters in external SQL scripts - fixed
+    - UniversalDataReader: "Character decoding error" results in graph failure in lenient and controlled mode
+    - CTL2: Inconsistent list assignment semantics
+    - DBExecute uses wrong default charset for queries in url
+
 REL-4-0-4
 ---------
 
