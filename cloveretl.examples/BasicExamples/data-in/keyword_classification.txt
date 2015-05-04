@@ -6,3 +6,11 @@ hard|false
 challenge|false
 miss|false
 myth|false
+problem|false
+problems|false
+issue|false
+issues|false
+fear|false
+super|true
+good|true
+top|true
