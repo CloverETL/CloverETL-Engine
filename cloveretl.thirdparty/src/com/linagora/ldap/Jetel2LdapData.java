@@ -70,7 +70,7 @@ abstract public class Jetel2LdapData {
 	static Log logger = LogFactory.getLog(Jetel2LdapData.class);
 	
 	/*
-	 * This fonction set the value of the field df to the the value 
+	 * This function set the value of the field df to the value 
 	 * find in Attribute attr. Type must match.
 	 * the comportment of the function with multi-valuated attribute 
 	 * has to be managed in implementation.
