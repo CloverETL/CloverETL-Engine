@@ -38,6 +38,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.StackTraceWrapperException;
 import org.jetel.exception.TempFileCreationException;
@@ -321,6 +322,14 @@ public abstract class IAuthorityProxy {
 	public abstract RunStatus executeProfilerJobAsync(String profilerJobUrl, GraphRuntimeContext runtimeContext);
 	
 	public abstract RunStatus executeProfilerJobSync(String profilerJobUrl, GraphRuntimeContext runtimeContext, Long timeout);
+	
+	/**
+	 * Checks configuration of the given graph, see {@link TransformationGraph#checkConfig(ConfigurationStatus)}.
+	 * @param graphUrl URL to checked graph
+	 * @param runtimeContext associated runtime context
+	 * @return set of configuration problems
+	 */
+	public abstract ConfigurationStatus checkConfig(String graphUrl, GraphRuntimeContext runtimeContext);
 	
 	public abstract DataSource getProfilerResultsDataSource();
 	
