@@ -62,7 +62,7 @@ public abstract class Ldap2JetelData {
 	}
 
 	/*
-	 * This fonction set the value of the field df to the the value find in
+	 * This function set the value of the field df to the value find in
 	 * Attribute attr. Type must match. the comportment of the function with
 	 * multi-valuated attribute has to be managed in implementation.
 	 */
