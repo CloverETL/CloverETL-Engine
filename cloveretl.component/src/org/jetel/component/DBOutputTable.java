@@ -1222,7 +1222,7 @@ public class DBOutputTable extends Node {
 
 			inPort = getInputPort(READ_FROM_PORT);
 			connection.getJdbcSpecific().checkMetadata(status, getInMetadata(), this);
-			if (sqlQuery == null) {
+			if (sqlQuery == null && queryURL == null) {
 				sqlQuery = new String[1];
 				// TODO Labels replace:
 				if (dbFields != null) {
@@ -1250,6 +1250,10 @@ public class DBOutputTable extends Node {
 //							.getMetadata(), quotedTableName);
 //				}
 				// TODO Labels replace with end
+			}
+			if (sqlQuery == null) {
+				// no more checking, this branch is reached when query is specified using Query URL
+				return status;
 			}
 			boolean supportsConnectionKeyGenaration = false;
 			try {
