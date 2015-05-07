@@ -55,8 +55,13 @@ public class EnabledEnum {
     public static final EnabledEnum PASS_THROUGH = new EnabledEnum("passThrough", "Pass through", false); //deprecated - use DISABLED or FALSE
     public static final EnabledEnum TRUE = new EnabledEnum("true", "Enabled", true);
     public static final EnabledEnum FALSE = new EnabledEnum("false", "Disabled", false);
-
-    private static final EnabledEnum[] values = new EnabledEnum[] { ALWAYS, NEVER, ENABLED, DISABLED, PASS_THROUGH, TRUE, FALSE }; 
+    
+    //discard is non-public enabled status which is used by clustered graphs to remove components from graph with all related edges
+    //regular disabled component is replaced by a 'pass-through' edge if possible, discarded component wipes out all related edges
+    //see TransformationGraphAnalyser#disableNodesInPhases()
+    public static final EnabledEnum DISCARD = new EnabledEnum("discard", "Discard", false);
+    
+    private static final EnabledEnum[] values = new EnabledEnum[] { ALWAYS, NEVER, ENABLED, DISABLED, PASS_THROUGH, TRUE, FALSE, DISCARD }; 
 
 	public static final EnabledEnum DEFAULT_VALUE = ALWAYS;
 
