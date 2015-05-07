@@ -18,21 +18,10 @@
  */
 package org.jetel.component.fileoperation;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.util.List;
 
-import org.jetel.component.fileoperation.SimpleParameters.CopyParameters;
-import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
-import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
-import org.jetel.component.fileoperation.SimpleParameters.FileParameters;
-import org.jetel.component.fileoperation.SimpleParameters.InfoParameters;
-import org.jetel.component.fileoperation.SimpleParameters.ListParameters;
-import org.jetel.component.fileoperation.SimpleParameters.MoveParameters;
-import org.jetel.component.fileoperation.SimpleParameters.ReadParameters;
-import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.WriteParameters;
 import org.jetel.util.protocols.webdav.WebdavOutputStream;
 
@@ -42,7 +31,7 @@ import org.jetel.util.protocols.webdav.WebdavOutputStream;
  *
  * @created Jun 18, 2012
  */
-public class WebdavOperationHandler implements IOperationHandler {
+public class WebdavOperationHandler extends BaseOperationHandler {
 
 	static final String HTTP_SCHEME = "http"; //$NON-NLS-1$
 	static final String HTTPS_SCHEME = "https"; //$NON-NLS-1$
@@ -68,55 +57,8 @@ public class WebdavOperationHandler implements IOperationHandler {
 	}
 	
 	@Override
-	public SingleCloverURI copy(SingleCloverURI source, SingleCloverURI target, CopyParameters params)
-			throws IOException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public SingleCloverURI move(SingleCloverURI source, SingleCloverURI target, MoveParameters params)
-			throws IOException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public ReadableContent getInput(SingleCloverURI source, ReadParameters params) throws IOException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public WritableContent getOutput(SingleCloverURI target, WriteParameters params) throws IOException {
 		return new WebdavContent(target.getPath());
-	}
-
-	@Override
-	public SingleCloverURI delete(SingleCloverURI target, DeleteParameters params) throws IOException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public List<SingleCloverURI> resolve(SingleCloverURI uri, ResolveParameters params) throws IOException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public List<Info> list(SingleCloverURI parent, ListParameters params) throws IOException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Info info(SingleCloverURI target, InfoParameters params) throws IOException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public SingleCloverURI create(SingleCloverURI target, CreateParameters params) throws IOException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public File getFile(SingleCloverURI uri, FileParameters params) throws IOException {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
