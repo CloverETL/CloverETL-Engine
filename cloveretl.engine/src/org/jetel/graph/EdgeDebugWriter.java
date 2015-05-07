@@ -149,12 +149,12 @@ public class EdgeDebugWriter {
 
         if (ringRecordBuffer != null) {
         	if (checkRecordToWrite(record)) {
-	    		recordOrdinal.getField(0).setValue(recordsCounter);
+	    		recordOrdinal.getField(0).setValue(recordsCounter + (int) debugStartRecord - 1); // CLO-5919, adding starting index
 	    		ringRecordBuffer.pushRecord(recordOrdinal);
 	    		ringRecordBuffer.pushRecord(record);
             }
         } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(record)) {
-        	formatter.writeInt(recordsCounter);
+        	formatter.writeInt(recordsCounter + (int) debugStartRecord - 1); // CLO-5919, adding starting index
         	formatter.write(record);
         	flushIfNeeded();
         	debuggedRecords++;
