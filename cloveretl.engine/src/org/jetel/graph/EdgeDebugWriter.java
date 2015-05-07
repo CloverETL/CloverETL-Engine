@@ -143,18 +143,26 @@ public class EdgeDebugWriter {
     		return ContextProvider.getContextURL();
     	}
     }
+
+    /**
+     * To set the correct record counter before calling writeRecord(DataRecord record)
+     * @param recordsCounter
+     */
+	public void setRecordsCounter(int recordsCounter) {
+		this.recordsCounter = recordsCounter;
+	}
     
     public void writeRecord(DataRecord record) throws IOException, InterruptedException {
         recordsCounter++;
 
         if (ringRecordBuffer != null) {
         	if (checkRecordToWrite(record)) {
-	    		recordOrdinal.getField(0).setValue(recordsCounter + (int) debugStartRecord - 1); // CLO-5919, adding starting index
+	    		recordOrdinal.getField(0).setValue(recordsCounter);
 	    		ringRecordBuffer.pushRecord(recordOrdinal);
 	    		ringRecordBuffer.pushRecord(record);
             }
         } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(record)) {
-        	formatter.writeInt(recordsCounter + (int) debugStartRecord - 1); // CLO-5919, adding starting index
+        	formatter.writeInt(recordsCounter);
         	formatter.write(record);
         	flushIfNeeded();
         	debuggedRecords++;
@@ -327,6 +335,7 @@ public class EdgeDebugWriter {
 	public boolean isSampleData() {
 		return sampleData;
 	}
+	
 
 	/**
 	 * @param sampleData the sampleData to set
