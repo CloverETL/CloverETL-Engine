@@ -31,6 +31,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jetel.exception.CompoundException;
 import org.jetel.exception.SerializableException;
+import org.jetel.exception.StackTraceWrapperException;
 import org.jetel.exception.UserAbortException;
 import org.jetel.logger.SafeLogUtils;
 import org.jetel.util.string.StringUtils;
@@ -207,7 +208,8 @@ public class ExceptionUtils {
 		}
 		
 		//if the last item in the exception chain does not have an message, class name is used instead of message
-		if (!(t instanceof RootException) && message == null && t.getCause() == null) {
+		//artificial exceptions are not considered RootException and StackTraceWrapperException
+		if (!(t instanceof RootException) && !(t instanceof StackTraceWrapperException) && message == null && t.getCause() == null) {
 			message = getClassName(t);
 		}
 

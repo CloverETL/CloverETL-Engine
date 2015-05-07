@@ -624,6 +624,11 @@ public class FileUtils {
         		return SandboxUrlUtils.getSandboxInputStream(url);
         	}
         	
+        	//CLO-6036
+    		if (url.toString().startsWith("dict:")) {
+    			throw new IOException("Access to dictionary through file url is not supported.");
+    		}
+        	
         	try {
         		if (S3InputStream.isS3File(url)) {
         			return new S3InputStream(url);
@@ -1173,9 +1178,17 @@ public class FileUtils {
 	}
 	
 	public static boolean isRemoteFile(String input) {
-		return input.startsWith("http:")
-			|| input.startsWith("https:")
-			|| input.startsWith("ftp:") || input.startsWith("sftp:") || input.startsWith("scp:");
+		if (input.startsWith("http:")
+				|| input.startsWith("https:")
+				|| input.startsWith("ftp:") || input.startsWith("sftp:") || input.startsWith("scp:")) {
+			return true;
+		}
+		for (CustomPathResolver resolver: customPathResolvers) {
+			if (resolver.handlesURL(null, input)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private static boolean isConsole(String input) {
@@ -1204,11 +1217,6 @@ public class FileUtils {
 		} else if (isRemoteFile(input) || isConsole(input) || isSandbox(input) || isArchive(input) || isDictionary(input) || isPort(input)) {
 			return false;
 		} else {
-			for (CustomPathResolver resolver: customPathResolvers) {
-				if (resolver.handlesURL(contextUrl, input)) {
-					return false;
-				}
-			}
 			try {
 				URL url = getFileURL(contextUrl, input);
 				return !isSandbox(url.toString());

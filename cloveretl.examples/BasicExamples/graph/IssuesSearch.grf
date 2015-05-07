@@ -1,13 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="User" created="Wed May 28 13:40:15 CEST 2014" guiVersion="4.0.0.M2" id="1401282602437" licenseType="Evaluation" modified="Thu Jul 03 17:54:29 CEST 2014" modifiedBy="User" name="testing_search" revision="1.24" showComponentDetails="true">
+<Graph author="User" created="Wed May 28 13:40:15 CEST 2014" guiVersion="4.1.0.M1" id="1401282602437" licenseCode="Commercial Devel" licenseType="Commercial" modified="Mon Apr 27 16:33:21 CEST 2015" modifiedBy="User" name="Issues Search" revision="1.31" showComponentDetails="true">
 <Global>
+<inputPorts/>
+<outputPorts/>
+<MetadataGroup name="Implicit metadata" type="implicit">
+<Metadata id="JIRA_SEARCH_RUN_SEARCH_REST_Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="jira_search_result" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="issue_id" type="string"/>
+<Field name="type" type="string"/>
+<Field name="summary" type="string"/>
+</Record>
+</Metadata>
+</MetadataGroup>
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
-<GraphParameterFile fileURL="jira_login.prm"/>
-<GraphParameterFile fileURL="jira.prm"/>
 </GraphParameters>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="183" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="299" x="662" y="92">
-<attr name="text"><![CDATA[Configure your JIRA URL in the jira.prm file and your login in jira_login.prm file.]]></attr>
+<attr name="text"><![CDATA[Configure your JIRA URL in the jira.prm file.]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="183" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="343" x="32" y="92">
 <attr name="text"><![CDATA[We would like to generate release notes document by searching for all JIRA issues that match a certain search query.
@@ -23,8 +32,8 @@ JIRASearch is a subgraph that searches in JIRA via its REST API - it calls the A
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node __PASSWORD="${PASSWORD}" __QUERY="${DEFAULT_QUERY}" __USER="${USER}" enabled="enabled" guiName="JIRASearch" guiX="32" guiY="341" id="JIRA_SEARCH" jobURL="${SUBGRAPH_DIR}/JIRASearch.sgrf" type="SUBGRAPH"/>
-<Node enabled="enabled" existingSheetsActions="REMOVE_SHEETS" fileURL="${DATAOUT_DIR}/release-notes-${VERSION}.xlsx" guiName="Release notes" guiX="239" guiY="341" id="RELEASE_NOTES" sheet="Sheet0" templateFileURL="${DATAIN_DIR}/release-notes-template.xlsx" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY">
+<Node __QUERY="fixVersion = rel-3-5-0 AND labels = release-notes" enabled="enabled" guiName="JIRASearch" guiX="32" guiY="341" id="JIRA_SEARCH" jobURL="${SUBGRAPH_DIR}/JIRASearch.sgrf" type="SUBGRAPH"/>
+<Node enabled="enabled" existingSheetsActions="REMOVE_SHEETS" fileURL="${DATAOUT_DIR}/release-notes-rel-3-5-0.xlsx" guiName="Release notes" guiX="239" guiY="341" id="RELEASE_NOTES" sheet="Sheet0" templateFileURL="${DATAIN_DIR}/release-notes-template.xlsx" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
     <globalAttributes>
@@ -56,6 +65,6 @@ JIRASearch is a subgraph that searches in JIRA via its REST API - it calls the A
 </mapping>
 ]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="JIRA_SEARCH:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (input)" outPort="Port 0 (out)" toNode="RELEASE_NOTES:0"/>
+<Edge debugMode="true" fromNode="JIRA_SEARCH:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (input)" outPort="Port 0 (out)" persistedImplicitMetadata="JIRA_SEARCH_RUN_SEARCH_REST_Metadata0" toNode="RELEASE_NOTES:0"/>
 </Phase>
 </Graph>

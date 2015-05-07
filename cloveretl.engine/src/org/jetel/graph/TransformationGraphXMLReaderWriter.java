@@ -691,10 +691,10 @@ public class TransformationGraphXMLReaderWriter {
 			try {
 				nodeID = attributes.getString(IGraphElement.XML_ID_ATTRIBUTE);
 				nodeType = attributes.getString(IGraphElement.XML_TYPE_ATTRIBUTE);
-                nodeEnabled = attributes.getString(Node.XML_ENABLED_ATTRIBUTE, EnabledEnum.ENABLED.toString());
+                nodeEnabled = attributes.getString(Node.XML_ENABLED_ATTRIBUTE, EnabledEnum.DEFAULT_VALUE.toString());
                 nodePassThroughInputPort = attributes.getInteger("passThroughInputPort", 0);
                 nodePassThroughOutputPort = attributes.getInteger("passThroughOutputPort", 0);
-                if (EnabledEnum.fromString(nodeEnabled, EnabledEnum.ENABLED).isEnabled()) {
+                if (EnabledEnum.fromString(nodeEnabled, EnabledEnum.DEFAULT_VALUE).isEnabled()) {
 					graphNode = ComponentFactory.createComponent(graph, nodeType, nodeElements.item(i));
                 } else {
                     graphNode = ComponentFactory.createDummyComponent(graph, nodeType, null, nodeElements.item(i));

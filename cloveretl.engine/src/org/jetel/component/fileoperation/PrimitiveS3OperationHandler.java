@@ -19,9 +19,10 @@
 package org.jetel.component.fileoperation;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilterInputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,10 +31,8 @@ import java.net.URISyntaxException;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -49,15 +48,22 @@ import org.jetel.component.fileoperation.pool.S3Authority;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.util.ExceptionUtils;
+import org.jetel.util.stream.DelegatingOutputStream;
+import org.jetel.util.stream.InterruptibleInputStream;
 import org.jetel.util.string.StringUtils;
 import org.jets3t.service.S3Service;
 import org.jets3t.service.S3ServiceException;
 import org.jets3t.service.ServiceException;
 import org.jets3t.service.StorageObjectsChunk;
+import org.jets3t.service.model.MultipleDeleteResult;
+import org.jets3t.service.model.MultipleDeleteResult.ErrorResult;
+import org.jets3t.service.model.container.ObjectKeyAndVersion;
 import org.jets3t.service.model.S3Bucket;
 import org.jets3t.service.model.S3Object;
 import org.jets3t.service.model.StorageObject;
+import org.jets3t.service.utils.Mimetypes;
 import org.jets3t.service.utils.MultipartUtils;
+import org.jets3t.service.utils.ServiceUtils;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -82,7 +88,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 	 * @param uri
 	 * @return [bucketName, key] or [bucketName]
 	 */
-	private static String[] getPath(URI uri) {
+	protected static String[] getPath(URI uri) {
 		String path = uri.getPath();
 		if (path.startsWith(FORWARD_SLASH)) {
 			path = path.substring(1);
@@ -230,11 +236,124 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		}
 	}
 
+	/**
+	 * CLO-6159:
+	 * 
+	 * @param target
+	 * @return
+	 */
+	public boolean removeDirRecursively(URI target) throws IOException {
+		target = target.normalize();
+		PooledS3Connection connection = null;
+		try {
+			connection = connect(target);
+			S3Service service = connection.getService();
+			String[] path = getPath(target);
+			String bucketName = path[0];
+			try {
+				if (path.length == 1) {
+					if (bucketName.isEmpty()) {
+						throw new IOException("Unable to delete root directory");
+					}
+					S3Object[] objects = service.listObjects(bucketName);
+					deleteObjects(service, bucketName, objects);
+					service.deleteBucket(bucketName);
+				} else {
+					String dirName = appendSlash(path[1]);
+					S3Object[] objects = service.listObjects(bucketName, dirName, null); // no delimiter!
+					deleteObjects(service, bucketName, objects);
+				}
+				return true;
+			} catch (ServiceException e) {
+				throw new IOException(e);
+			}
+		} finally {
+			disconnect(connection);
+		}
+	}
+
+	private void deleteObjects(S3Service service, String bucketName, S3Object[] objects) throws S3ServiceException {
+		if (objects.length > 0) {
+			ObjectKeyAndVersion[] keys = new ObjectKeyAndVersion[objects.length];
+			for (int i = 0; i < objects.length; i++) {
+				keys[i] = new ObjectKeyAndVersion(objects[i].getKey());
+			}
+			MultipleDeleteResult result = service.deleteMultipleObjects(bucketName, keys, true); // quiet
+			if (result.hasErrors()) {
+				ErrorResult err = result.getErrorResults().get(0);
+				// TODO add remaining errors as suppressed exceptions
+				S3ServiceException ex = new S3ServiceException("Failed to delete " + err.getKey());
+				ex.setErrorMessage(err.getMessage());
+				ex.setErrorCode(ex.getErrorCode());
+				throw ex;
+			}
+		}
+	}
+
 	@Override
 	public URI moveFile(URI source, URI target) throws IOException {
 		return null;
 	}
 
+	protected static void putObject(S3Service service, File file, String targetBucket, String targetKey) throws IOException {
+		S3Object targetObject = createS3Object(file, targetKey);
+		if (Thread.currentThread().isInterrupted()) {
+			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
+		}
+		try {
+			service.putObjectMaybeAsMultipart(targetBucket, targetObject, MultipartUtils.MAX_OBJECT_SIZE);
+		} catch (ServiceException e) {
+			throw getIOException(e);
+		}
+	}
+
+	/*
+	 * Wraps all used InputStreams in InterruptibleInputStream
+	 * to make uploads interruptible.
+	 * ------------------------------------------------------------------------
+	 * Based on org.jets3t.service.model.S3Object.S3Object(File):
+	 * 
+	 * JetS3t : Java S3 Toolkit
+	 * Project hosted at http://bitbucket.org/jmurty/jets3t/
+	 *
+	 * Copyright 2006-2010 James Murty
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 *     http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 */
+    private static S3Object createS3Object(File file, String key) throws IOException {
+		try {
+			S3Object o = new S3Object(key) {
+
+				@Override
+				public InputStream getDataInputStream() throws ServiceException {
+					return new InterruptibleInputStream(super.getDataInputStream());
+				}
+				
+			};
+	        o.setContentLength(file.length());
+	        o.setContentType(Mimetypes.getInstance().getMimetype(file));
+	        if (!file.exists()) {
+	            throw new FileNotFoundException("Cannot read from file: " + file.getAbsolutePath());
+	        }
+	        o.setDataInputFile(file);
+	        o.setMd5Hash(ServiceUtils.computeMD5Hash(new InterruptibleInputStream(new FileInputStream(file))));
+	        o.setSHA256Hash(ServiceUtils.hashSHA256(new InterruptibleInputStream(new FileInputStream(file))));
+			return o;
+		} catch (Exception ex) {
+			throw getIOException(ex);
+		}
+	}
+	
 	/**
 	 * Performs server-side copy of a regular file.
 	 */
@@ -368,7 +487,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		}
 	}
 
-	private static Info info(URI target, PooledS3Connection connection) throws IOException {
+	protected static Info info(URI target, PooledS3Connection connection) throws IOException {
 		String[] path = getPath(target);
 		return info(path, connection);
 	}
@@ -458,7 +577,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 				}
 				return result;
 			} catch (ServiceException e) {
-				throw new IOException(e);
+				throw getIOException(e);
 			}
 		} finally {
 			disconnect(connection);
@@ -635,7 +754,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 			return is;
 		} catch (Exception e) {
 			connection.returnToPool();
-			throw ExceptionUtils.getIOException(e);
+			throw getIOException(e);
 		}
 	}
 
@@ -677,7 +796,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 			
 			final File tempFile = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph()).newTempFile("cloveretl-amazons3-buffer", -1);
 			
-			OutputStream os = new FilterOutputStream(new FileOutputStream(tempFile)) {
+			OutputStream os = new DelegatingOutputStream(new FileOutputStream(tempFile)) {
 				
 				private final AtomicBoolean uploaded = new AtomicBoolean(false);
 
@@ -701,37 +820,8 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 					} finally {
 						if (uploaded.compareAndSet(false, true)) {
 							try {
-								S3Bucket s3bucket = new S3Bucket(bucketName); 
-								
-								S3Object uploadObject;
-								try {
-									uploadObject = new S3Object(s3bucket, tempFile);
-								} catch (NoSuchAlgorithmException e) {
-									throw new IOException(e);
-								}
-								uploadObject.setKey(key);
-								
-								if (tempFile.length() <= MultipartUtils.MAX_OBJECT_SIZE) {
-									try {
-										service.putObject(s3bucket, uploadObject);
-									} catch (S3ServiceException e) {
-										throw ExceptionUtils.getIOException(e);
-									}
-								} else {
-									// CLO-4724:
-									try {
-										MultipartUtils mpUtils = new MultipartUtils(MultipartUtils.MAX_OBJECT_SIZE);
-										mpUtils.uploadObjects(bucketName, service, Arrays.asList((StorageObject) uploadObject),
-											    null // eventListener : Provide one to monitor the upload progress
-										);
-									} catch (S3ServiceException e) {
-										throw ExceptionUtils.getIOException(e);
-									} catch (IOException e) {
-										throw e;
-									} catch (Exception e) {
-										throw new IOException("Multi-part file upload failed", e);
-									}
-								}
+								// CLO-4724:
+								putObject(service, tempFile, bucketName, key);
 							} finally {
 								connection.returnToPool();
 								tempFile.delete();
@@ -745,11 +835,11 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 			return os;
 		} catch (Exception e) {
 			connection.returnToPool();
-			throw ExceptionUtils.getIOException(e);
+			throw getIOException(e);
 		}
 	}
 
-	private PooledS3Connection connect(URI uri) throws IOException {
+	protected PooledS3Connection connect(URI uri) throws IOException {
 		try {
 			Authority authority = new S3Authority(uri);
 			return (PooledS3Connection) pool.borrowObject(authority);
@@ -760,7 +850,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		}
 	}
 
-	private void disconnect(PooledS3Connection connection) {
+	protected void disconnect(PooledS3Connection connection) {
 		if (connection != null) {
 			try {
 				pool.returnObject(connection.getAuthority(), connection);
@@ -773,6 +863,51 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 	@Override
 	public String toString() {
 		return "PrimitiveS3OperationHandler";
+	}
+	
+	private static IOException s3ExceptionToIOException(S3ServiceException e) {
+		StringBuilder msg = new StringBuilder();
+		msg.append("S3 Service Error.");
+		appendInfoIfNotNull("Response code=" + e.getResponseCode(), msg);
+		appendInfoIfNotNull(e.getResponseStatus(), msg);
+		appendInfoIfNotNull(e.getS3ErrorCode(), msg);
+		appendInfoIfNotNull(e.getS3ErrorMessage(), msg);
+		appendInfoIfNotNull(e.toString(), msg);
+		msg.append('\n');
+		return new IOException(msg.toString(), e);
+	}
+	
+	private static IOException serviceExceptionToIOException(ServiceException e) {
+		StringBuilder msg = new StringBuilder();
+		msg.append("S3 Service Error.");
+		appendInfoIfNotNull("Response code=" + e.getResponseCode(), msg);
+		appendInfoIfNotNull(e.getResponseStatus(), msg);
+		appendInfoIfNotNull(e.getErrorCode(), msg);
+		appendInfoIfNotNull(e.getErrorMessage(), msg);
+		msg.append('\n');
+		appendInfoIfNotNull(e.toString(), msg);
+		return new IOException(msg.toString(), e);
+	}
+	
+	private static void appendInfoIfNotNull(String info, StringBuilder text) {
+		if (info != null && !info.isEmpty()) {
+			if (text.length() > 0) {
+				text.append(" ");
+			}
+			text.append(info);
+			if (!info.endsWith(".")) {
+				text.append(".");
+			}
+		}
+	}
+
+	public static IOException getIOException(Throwable t) {
+		if (t instanceof S3ServiceException) {
+			return s3ExceptionToIOException((S3ServiceException) t);
+		} else if (t instanceof ServiceException) {
+			return serviceExceptionToIOException((ServiceException) t);
+		}
+		return ExceptionUtils.getIOException(t);
 	}
 
 }

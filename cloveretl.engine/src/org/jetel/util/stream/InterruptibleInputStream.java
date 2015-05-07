@@ -16,52 +16,45 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.component.fileoperation;
+package org.jetel.util.stream;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
-import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
+import org.jetel.component.fileoperation.FileOperationMessages;
 
 /**
  * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 21.3.2012
+ * @created 17. 4. 2015
  */
-public class WildcardResolver extends BaseOperationHandler {
-	
-	private final String[] schemes;
-	
-	private FileManager manager = FileManager.getInstance();
-	
-	public WildcardResolver(String... schemas) {
-		String[] tmp = Arrays.copyOf(schemas, schemas.length);
-		Arrays.sort(tmp);
-		this.schemes = tmp;
+public class InterruptibleInputStream extends FilterInputStream {
+
+	/**
+	 * @param in
+	 */
+	public InterruptibleInputStream(InputStream in) {
+		super(in);
 	}
 
-	@Override
-	public List<SingleCloverURI> resolve(SingleCloverURI uri, ResolveParameters params) {
-		try {
-			return manager.defaultResolve(uri);
-		} catch (Exception ex) {
-			return new ArrayList<SingleCloverURI>(0);
+	private void checkInterrupted() throws IOException {
+		if (Thread.currentThread().isInterrupted()) {
+			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
 		}
 	}
 
 	@Override
-	public int getPriority(Operation operation) {
-		return Integer.MIN_VALUE;
+	public int read() throws IOException {
+		checkInterrupted();
+		return super.read();
 	}
 
 	@Override
-	public boolean canPerform(Operation operation) {
-		if (operation.kind == OperationKind.RESOLVE) {
-			return Arrays.binarySearch(schemes, operation.scheme()) >= 0;
-		}
-		return false;
+	public int read(byte[] b, int off, int len) throws IOException {
+		checkInterrupted();
+		return super.read(b, off, len);
 	}
 
 }

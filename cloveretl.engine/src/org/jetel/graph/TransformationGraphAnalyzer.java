@@ -91,6 +91,9 @@ public class TransformationGraphAnalyzer {
 			throw new JetelRuntimeException("Removing disabled nodes failed.", e);
 		}
 
+		//consolidate subgraph ports - create missing subgraph ports
+		consolidateSubgraphPorts(graph);
+
 		//remove optional input and output edges in subgraphs
 		removeOptionalEdges(graph);
 		
@@ -133,6 +136,25 @@ public class TransformationGraphAnalyzer {
         graph.setAnalysed(true);
 	}
 	
+	/**
+	 * Creates missing subgraph input and output ports based on edges attached to SubgraphInput/Output components.
+	 * This is necessary for backward compatibility with subgraphs created in previous version (rel-4-0), where
+	 * subgraph ports do not have model in TransformationGraph.
+	 * @param graph
+	 */
+	private static void consolidateSubgraphPorts(TransformationGraph graph) {
+		if (graph.getStaticJobType().isSubJob()) {
+			for (int i = graph.getSubgraphInputPorts().getPorts().size(); i <= graph.getSubgraphInputComponent().getOutputPortsMaxIndex(); i++) {
+				graph.getSubgraphInputPorts().getPorts().add(
+						new SubgraphInputPort(graph.getSubgraphInputPorts(), i, true, true, true));
+			}
+			for (int i = graph.getSubgraphOutputPorts().getPorts().size(); i <= graph.getSubgraphOutputComponent().getInputPortsMaxIndex(); i++) {
+				graph.getSubgraphOutputPorts().getPorts().add(
+						new SubgraphOutputPort(graph.getSubgraphOutputPorts(), i, true, true, true));
+			}
+		}
+	}
+
 	/**
 	 * This method removes all edges which are connected to subgraph's ports,
 	 * which are optional, where the related edge should be removed (SubgraphPort.isKeptEdge() == false).
@@ -507,10 +529,10 @@ public class TransformationGraphAnalyzer {
 
 	private static void removeDebugNodes(TransformationGraph graph, SubgraphAnalysisResult analysisResult) {
 		for (Node node : analysisResult.getDebugInputNodes()) {
-			node.setEnabled(EnabledEnum.DISABLED);
+			node.setEnabled(EnabledEnum.NEVER);
 		}
 		for (Node node : analysisResult.getDebugOutputNodes()) {
-			node.setEnabled(EnabledEnum.DISABLED);
+			node.setEnabled(EnabledEnum.NEVER);
 		}
 
 		try {
@@ -607,7 +629,10 @@ public class TransformationGraphAnalyzer {
 		for (int i = 0; i < phases.length; i++) {
 			nodesToRemove.clear();
 			for (Node node : phases[i].getNodes().values()) {
-				if (!node.getEnabled().isEnabled()) {
+				if (node.getEnabled() == EnabledEnum.DISCARD) { // component and all related edges are removed
+					nodesToRemove.add(node);
+					disconnectAllEdges(node);
+				} else if (!node.getEnabled().isEnabled()) { // component and related edges is substituted by 'passThrough' edge
 					nodesToRemove.add(node);
 					final InputPort inputPort = node.getInputPort(node.getPassThroughInputPort());
 					final OutputPort outputPort = node.getOutputPort(node.getPassThroughOutputPort());

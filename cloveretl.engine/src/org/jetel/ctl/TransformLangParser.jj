@@ -787,7 +787,9 @@ CLVFStart Start() :         // Start -> Exp
 		error(e.beginLine,e.beginColumn,e.endLine,e.endColumn,"Unterminated string literal encountered");
   	} catch (ParseException e) {
   		error(e.currentToken, "Syntax error");
-	} catch (Exception e) {
+	} catch (EscapeCharacterException e){
+		error(e.getLine(), e.getColumn()-1, e.getLine(), e.getColumn(), e.getMessage());
+    } catch (Exception e) {
 		error(1,1,1,2,"Parser error: " + e.getMessage());
 		e.printStackTrace();
 	} catch (TokenMgrError e) {
@@ -851,7 +853,9 @@ CLVFStartExpression StartExpression() : {/*@bgen(jjtree) StartExpression */
 		// Parsing deliberately terminated in unknownToken() due to EOF token
   	} catch (ParseException e) {
   		error(1,1,1,2, "Syntax error");
-	} catch (Exception e) {
+	} catch (EscapeCharacterException e){
+		error(e.getLine(), e.getColumn()-1, e.getLine(), e.getColumn(), e.getMessage());
+    } catch (Exception e) {
 		error(1,1,1,2,"Parser error: " + e.getMessage());
 		e.printStackTrace();
 	} catch (TokenMgrError e) {
