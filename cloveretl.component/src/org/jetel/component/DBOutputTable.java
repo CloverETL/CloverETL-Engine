@@ -482,28 +482,6 @@ public class DBOutputTable extends Node implements MetadataProvider {
 //				sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(inPort.getMetadata(), quotedTableName);
 //			}
 			// TODO Labels replace with end
-		} else if (sqlQuery == null && queryURL.startsWith("dict:")) {
-			channelReadingIterator = new ReadableChannelIterator(null, getGraph().getRuntimeContext().getContextURL(), queryURL);
-			channelReadingIterator.setCharset(charset);
-			channelReadingIterator.setDictionary(getGraph().getDictionary());
-			channelReadingIterator.init();
-			try {
-				Object next = channelReadingIterator.next();
-				DataRecordMetadata queryMetadata = new DataRecordMetadata("_query_metadata_", DataRecordParsingType.DELIMITED);
-				DataFieldMetadata queryField = new DataFieldMetadata("_query_field_", DataFieldType.STRING, null);
-				queryField.setEofAsDelimiter(true);
-				queryField.setTrim(true);
-				queryMetadata.addField(queryField);
-				TextParser dictParser = TextParserFactory.getParser(queryMetadata, charset);
-				dictParser.init();
-				dictParser.setDataSource(next);
-				DataRecord queryRecord = DataRecordFactory.newRecord(queryMetadata);
-				if ((queryRecord = dictParser.getNext(queryRecord)) != null) {
-					sqlQuery = new String[] { getPropertyRefResolver().resolveRef(queryRecord.getField(0).toString()) };
-				}
-			} catch (JetelException | IOException e) {
-				throw new ComponentNotReadyException(e);
-			}
 		}
 
 		// The rest of initialization the connection is required, so it is done in first run of preExecute
@@ -526,9 +504,33 @@ public class DBOutputTable extends Node implements MetadataProvider {
 		if (firstRun()) {// a phase-dependent part of initialization
 
 			// get query from query url
-			if (sqlQuery == null && queryURL != null && !queryURL.startsWith("dict:")) {
-				String rawContents = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), queryURL, charset);
-				setSqlQuery(SQLUtil.split(getGraph().getPropertyRefResolver().resolveRef(rawContents, null)));
+			if (sqlQuery == null && queryURL != null) {
+				if (queryURL.startsWith("dict:")) {
+					channelReadingIterator = new ReadableChannelIterator(null, getGraph().getRuntimeContext().getContextURL(), queryURL);
+					channelReadingIterator.setCharset(charset);
+					channelReadingIterator.setDictionary(getGraph().getDictionary());
+					channelReadingIterator.init();
+					try {
+						Object next = channelReadingIterator.next();
+						DataRecordMetadata queryMetadata = new DataRecordMetadata("_query_metadata_", DataRecordParsingType.DELIMITED);
+						DataFieldMetadata queryField = new DataFieldMetadata("_query_field_", DataFieldType.STRING, null);
+						queryField.setEofAsDelimiter(true);
+						queryField.setTrim(true);
+						queryMetadata.addField(queryField);
+						TextParser dictParser = TextParserFactory.getParser(queryMetadata, charset);
+						dictParser.init();
+						dictParser.setDataSource(next);
+						DataRecord queryRecord = DataRecordFactory.newRecord(queryMetadata);
+						if ((queryRecord = dictParser.getNext(queryRecord)) != null) {
+							sqlQuery = new String[] { getPropertyRefResolver().resolveRef(queryRecord.getField(0).toString()) };
+						}
+					} catch (JetelException | IOException e) {
+						throw new ComponentNotReadyException(e);
+					}
+				} else {
+					String rawContents = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), queryURL, charset);
+					setSqlQuery(SQLUtil.split(getGraph().getPropertyRefResolver().resolveRef(rawContents, null)));
+				}
 			}
 			
 			keysPort = getOutputPort(WRITE_AUTO_KEY_TO_PORT);
