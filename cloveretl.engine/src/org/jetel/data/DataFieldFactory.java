@@ -43,6 +43,17 @@ public abstract class DataFieldFactory {
 	};
 	
 	/**
+	 * This field factory creates {@link DataFieldWithLazyLoading} instead of regular {@link DataFieldImpl}.
+	 */
+	public static DataFieldFactory DATA_FIELD_WITH_LAZY_LOADING = new DataFieldFactory() {
+		@Override
+		public DataField create(DataFieldType fieldType, DataFieldMetadata fieldMetadata, boolean plain) {
+			DataField dataField = createDataField(fieldType, fieldMetadata, plain);
+			return new DataFieldWithLazyLoading(dataField);
+		}
+	};
+
+	/**
 	 * Creates an {@link DataField} instance.
 	 */
 	public abstract DataField create(DataFieldType fieldType, DataFieldMetadata fieldMetadata,boolean plain);
