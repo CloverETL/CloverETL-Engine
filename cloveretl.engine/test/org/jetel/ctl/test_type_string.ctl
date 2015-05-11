@@ -22,6 +22,8 @@ string literalParserTest5 = "some \\\" string";
 string literalParserTest6 = "some \\\\\" string";
 string literalParserTest7 = "some \\\\\\\" string";
 
+string \u0054\u0045S\u0054 = "Variable 'TEST' defined from escape characters";
+
 
 function integer transform() {
 	i="0";

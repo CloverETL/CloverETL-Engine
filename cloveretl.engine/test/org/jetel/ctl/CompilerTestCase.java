@@ -629,6 +629,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		// prepend the compilation mode prefix
 		if (compileToJava) {
 			expStr = "//#CTL2:COMPILE\n" + expStr;
+		} else {
+			expStr = "//#CTL2:INTERPRET\n" + expStr;
 		}
 
 		print_code(expStr);
@@ -683,6 +685,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		// prepend the compilation mode prefix
 		if (compileToJava) {
 			expStr = "//#CTL2:COMPILE\n" + expStr;
+		} else {
+			expStr = "//#CTL2:INTERPRET\n" + expStr;
 		}
 
 		print_code(expStr);
@@ -2279,6 +2283,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		checkNull("varWithNullInitializer");
 		
 		doCompileExpectError("string promenna = \"^\\..*\"; function integer transform() { return 0;}", "test_type_string", Arrays.asList("Invalid escape sequence: \\."));
+		doCompileExpectError("string promenna = \"\\uaxax\"; function integer transform() { return 0;}", "test_type_string", Arrays.asList("Invalid escape character at line 2 column 21."));
+		doCompileExpectError("string \ffff = \"\\uaaaa\"; function integer transform() { return 0;}", "test_type_string", Arrays.asList("Syntax error on token ''"));
+
 	}
 	
 	public void test_type_string_long() {
