@@ -38,6 +38,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.util.file.FileUtils;
@@ -145,7 +146,7 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 		return decodeString(userInfo).split(":");
 	}
 	
-	private Set<String> getPrivateKeys() {
+	private Set<URI> getPrivateKeys() {
 		return ((SFTPAuthority) authority).getPrivateKeys();
 	}
 
@@ -169,7 +170,7 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 	
 	private Session getSession() throws IOException {
 		JSch jsch = new JSch();
-		Set<String> keys = getPrivateKeys();
+		Set<URI> keys = getPrivateKeys();
 		String[] user = getUserInfo();
 		String username = user[0];
 		String password = user.length == 2 ? user[1] : null;
@@ -180,10 +181,14 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 				log.debug("SFTP connecting to " + authority.getHost() + " using the following private keys: " + keys);
 			}
 			if (keys != null) {
-				for (String key: keys) {
+				for (URI key: keys) {
 					try {
 						log.debug("Adding new identity from " + key);
-						jsch.addIdentity(key);
+						String keyName = key.toString();
+						try (InputStream is = FileUtils.getInputStream(null, keyName)) {
+							byte[] prvKey = IOUtils.toByteArray(is);
+							jsch.addIdentity(keyName, prvKey, null, null);
+						}
 					} catch (Exception e) {
 						log.warn("Failed to read private key", e);
 					}
