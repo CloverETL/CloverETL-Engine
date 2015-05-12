@@ -24,12 +24,12 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
 
 /**
- * @author Kokon (info@cloveretl.com)
+ * @author salamonp (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 13. 4. 2015
+ * @created 12. 5. 2015
  */
-public class DataRecordFactoryTest extends CloverTestCase {
+public class DataRecordWithLazyLoadingTest extends CloverTestCase {
 	
 	DataRecordMetadata metadata;
 	
@@ -43,35 +43,19 @@ public class DataRecordFactoryTest extends CloverTestCase {
 		metadata.getField(1).setDefaultValueStr("123");
 		metadata.getField(1).setNullable(false);
 	}
-
-	public void testNewRecord() {
-		try {
-			DataRecordFactory.newRecord(null);
-			assertTrue(false);
-		} catch (NullPointerException e) {
-			//correct
-		}
-		
-		DataRecord record = DataRecordFactory.newRecord(metadata);
-		assertNotNull(record);
-		//test the record is initialized and reset
-		assertNull(record.getField("field1").getValue());
-		assertEquals(123, record.getField("field2").getValue());
-	}
 	
-	public void testNewRecordWithLazyLoading() {
-		try {
-			DataRecordFactory.newRecordWithLazyLoading(null);
-			assertTrue(false);
-		} catch (NullPointerException e) {
-			//correct
-		}
-
+	public void testLazyLoading() {
 		DataRecordWithLazyLoading record = DataRecordFactory.newRecordWithLazyLoading(metadata);
-		assertNotNull(record);
-		//test the record is initialized and reset
 		assertNull(record.getField("field1").getValue());
+		
+		record.getField("field2").setSourceData(11);
+		assertEquals(11, record.getField("field2").getValue());
+		
+		record.getField("field2").setSourceData(150);
+		assertEquals(150, record.getField("field2").getValue());
+		
+		record.getField("field2").setSourceData(1000);
+		record.getField("field2").setToDefaultValue();
 		assertEquals(123, record.getField("field2").getValue());
 	}
-	
 }
