@@ -140,10 +140,29 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 		}
 	}
 
+	/**
+	 * Always returns an array with two elements.
+	 * The first element is the user name and it is never null.
+	 * The second element is the password and it is null if the userInfo does not contain a colon.
+	 * 
+	 * @return [username, password]
+	 */
 	private String[] getUserInfo() {
 		String userInfo = authority.getUserInfo();
-		if (userInfo == null) return new String[] {""};
-		return decodeString(userInfo).split(":");
+		if (userInfo == null) {
+			return new String[] {"", null};
+		}
+		
+		if (userInfo.indexOf(':') >= 0) {
+			String[] parts = userInfo.split(":", 2);
+			for (int i = 0; i < parts.length; i++) {
+				parts[i] = decodeString(parts[i]);
+			}
+			return parts;
+		} else {
+			return new String[] {decodeString(userInfo), null};
+		}
+		
 	}
 	
 	private Set<URI> getPrivateKeys() {
@@ -171,38 +190,34 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 	private Session getSession() throws IOException {
 		JSch jsch = new JSch();
 		Set<URI> keys = getPrivateKeys();
-		String[] user = getUserInfo();
-		String username = user[0];
-		String password = user.length == 2 ? user[1] : null;
+		String[] userInfo = getUserInfo();
+		String username = userInfo[0];
+		String password = userInfo[1];
 		
 		if (password == null) {
+			if (keys == null || keys.isEmpty()) { // CLO-5770
+				throw new IOException("No password or private key specified for user " + username);
+			}
 			// CLO-4562: use private key authentication only if password is not set
 			if (log.isDebugEnabled()) {
 				log.debug("SFTP connecting to " + authority.getHost() + " using the following private keys: " + keys);
 			}
-			if (keys != null) {
-				for (URI key: keys) {
-					try {
-						log.debug("Adding new identity from " + key);
-						String keyName = key.toString();
-						try (InputStream is = FileUtils.getInputStream(null, keyName)) {
-							byte[] prvKey = IOUtils.toByteArray(is);
-							jsch.addIdentity(keyName, prvKey, null, null);
-						}
-					} catch (Exception e) {
-						log.warn("Failed to read private key", e);
+			for (URI key: keys) {
+				try {
+					log.debug("Adding new identity from " + key);
+					String keyName = key.toString();
+					try (InputStream is = FileUtils.getInputStream(null, keyName)) {
+						byte[] prvKey = IOUtils.toByteArray(is);
+						jsch.addIdentity(keyName, prvKey, null, null);
 					}
+				} catch (Exception e) {
+					log.warn("Failed to read private key", e);
 				}
 			}
 		} else if (log.isDebugEnabled()) {
 			log.debug("SFTP connecting to " + authority.getHost() + " using password");
 		}
 		
-		if (log.isWarnEnabled()) {
-			if (!StringUtils.isEmpty(username) && StringUtils.isEmpty(password) && (keys == null || keys.isEmpty())) {
-				log.warn("No password or private key specified for user " + username);
-			}
-		}
 
 		Proxy[] proxies = getProxies();
 		try {
