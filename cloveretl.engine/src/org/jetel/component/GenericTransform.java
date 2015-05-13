@@ -35,7 +35,7 @@ public interface GenericTransform extends Transform {
 	
 	public void init();
 	
-	public void execute();
+	public void execute() throws Exception;
 	
 	public void executeOnError(Exception e);
 	

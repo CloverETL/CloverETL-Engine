@@ -88,7 +88,7 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	
 	/**
 	 * DataRecord objects returned by this method are re-used when this method is called repeatedly.
-	 * If you need to hold data from input DataRecords between multiple calls, use* {@link DataRecord#duplicate}
+	 * If you need to hold data from input DataRecords between multiple calls, use {@link DataRecord#duplicate()}
 	 * on records returned by this method or save the data elsewhere.
 	 * 
 	 * @param portIdx index of port to read from
@@ -122,7 +122,7 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	}
 	
 	/**
-	 * Returns {@link InputStream} for given FileURL.
+	 * Returns {@link InputStream} for given FileURL. Caller is responsible for closing the stream.
 	 * @param fileUrl e.g. "data-in/myInput.txt"
 	 * @throws IOException
 	 */
@@ -133,7 +133,7 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	}
 	
 	/**
-	 * Returns {@link OutputStream} for given FileURL.
+	 * Returns {@link OutputStream} for given FileURL. Caller is responsible for closing the stream.
 	 * @param fileUrl e.g. "data-in/myInput.txt"
 	 * @param append - If true, writing will append data to the end of the stream. This may not work for all protocols.
 	 * @throws IOException
@@ -158,7 +158,7 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	}
 
 	@Override
-	public abstract void execute();
+	public abstract void execute() throws Exception;
 	
 	@Override
 	public void executeOnError(Exception e) {
