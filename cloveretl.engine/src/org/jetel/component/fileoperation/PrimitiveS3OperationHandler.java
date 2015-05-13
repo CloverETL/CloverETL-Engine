@@ -824,7 +824,9 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 								putObject(service, tempFile, bucketName, key);
 							} finally {
 								connection.returnToPool();
-								tempFile.delete();
+								if (!tempFile.delete()) {
+									log.warn("Failed to delete temp file: " + tempFile);
+								}
 							}
 						}
 					}
