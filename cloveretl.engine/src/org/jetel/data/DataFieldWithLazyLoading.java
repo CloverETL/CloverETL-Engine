@@ -47,12 +47,12 @@ public class DataFieldWithLazyLoading extends DataField {
 	private Object sourceData;
 
 	private boolean needsToBeLoaded = false;
-	private LazyDataFieldLoader lazyLoader;
+	private transient LazyDataFieldLoader lazyLoader;
 
 	/**
 	 * The default loader just sets the source data into the field.
 	 */
-	public static LazyDataFieldLoader DEFAULT_LAZY_LOADER = new LazyDataFieldLoader() {
+	public static final LazyDataFieldLoader DEFAULT_LAZY_LOADER = new LazyDataFieldLoader() {
 
 		@Override
 		public void load(DataFieldWithLazyLoading field) {

@@ -34,7 +34,7 @@ public abstract class DataFieldFactory {
 	/**
 	 * This field factory creates {@link DataFieldWithInvalidState} instead of regular {@link DataFieldImpl}.
 	 */
-	public static DataFieldFactory DATA_FIELD_WITH_INVALID_STATE = new DataFieldFactory() {
+	public static final DataFieldFactory DATA_FIELD_WITH_INVALID_STATE = new DataFieldFactory() {
 		@Override
 		public DataField create(DataFieldType fieldType, DataFieldMetadata fieldMetadata, boolean plain) {
 			DataField dataField = createDataField(fieldType, fieldMetadata, plain);
@@ -45,7 +45,7 @@ public abstract class DataFieldFactory {
 	/**
 	 * This field factory creates {@link DataFieldWithLazyLoading} instead of regular {@link DataFieldImpl}.
 	 */
-	public static DataFieldFactory DATA_FIELD_WITH_LAZY_LOADING = new DataFieldFactory() {
+	public static final DataFieldFactory DATA_FIELD_WITH_LAZY_LOADING = new DataFieldFactory() {
 		@Override
 		public DataField create(DataFieldType fieldType, DataFieldMetadata fieldMetadata, boolean plain) {
 			DataField dataField = createDataField(fieldType, fieldMetadata, plain);
