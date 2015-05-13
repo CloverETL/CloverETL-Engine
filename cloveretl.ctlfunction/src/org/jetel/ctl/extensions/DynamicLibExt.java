@@ -360,7 +360,7 @@ public class DynamicLibExt extends TLFunctionLibraryExt {
 			properties.put(DataRecordMetadataXMLReaderWriter.DEFAULT_ATTR, field.getDefaultValueStr());
 			properties.put(DataRecordMetadataXMLReaderWriter.TRIM_ATTR, Boolean.toString(field.isTrim()));
 			properties.put(DataRecordMetadataXMLReaderWriter.NULL_VALUE_ATTR, field.getNullValue());
-			properties.put(DataRecordMetadataXMLReaderWriter.FORMAT_ATTR, DynamicLibExt.toString(field.getFormat()));
+			properties.put(DataRecordMetadataXMLReaderWriter.FORMAT_ATTR, field.getFormatStr());
 			properties.put(DataRecordMetadataXMLReaderWriter.LOCALE_ATTR, field.getLocaleStr());
 			properties.put(DataRecordMetadataXMLReaderWriter.TIMEZONE_ATTR, field.getTimeZoneStr());
 			properties.put(DataRecordMetadataXMLReaderWriter.DESCRIPTION_ATTR, field.getDescription());
