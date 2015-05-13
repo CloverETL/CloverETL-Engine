@@ -93,7 +93,8 @@ public class SFTPAuthority extends AbstractAuthority implements Authority {
 	private void loadPrivateKeys() {
 		// CLO-5529: do not load private keys if password is specified
 		if (!StringUtils.isEmpty(userInfo) && (userInfo.indexOf(':') >= 0)) {
-			String password = userInfo.split(":")[1];
+			String[] parts = userInfo.split(":");
+			String password = (parts.length > 1) ? parts[1] : "";
 			if (!StringUtils.isEmpty(password)) {
 				return;
 			}
