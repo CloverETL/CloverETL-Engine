@@ -1374,6 +1374,17 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 	}
 	
+	public void test_dynamiclib_getFieldProperties_CLO_6293() {
+		TransformationGraph graph = createDefaultGraph(); 
+		graph.getDataRecordMetadata(INPUT_1).getField("Born").setFormatStr("joda:yyyy-MM-dd HH:mm:ss;yyyy-MM-dd HH:mm:ss");
+		
+		DataRecord[] inRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(INPUT_3)), createDefaultMultivalueRecord(graph.getDataRecordMetadata(INPUT_4)) };
+		DataRecord[] outRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_3)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_4)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_5)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_6)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_7)) };
+		
+		doCompile("string format; function integer transform(){format = getFieldProperties($in.0, 'Born')['format']; return 0;}", "test_dynamiclib_getFieldProperties", graph, inRecords, outRecords);
+		check("format", "joda:yyyy-MM-dd HH:mm:ss;yyyy-MM-dd HH:mm:ss");
+	}
+	
 	public void test_dynamiclib_getFieldProperties_expect_error(){
 		// ambiguity
 		doCompileExpectError("function integer transform(){getFieldProperties($in.0, null); return 0;}","test_dynamiclib_getFieldProperties_expect_error", Arrays.asList("Function 'getFieldProperties' is ambiguous"));
@@ -10830,6 +10841,19 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("nullRet4", null);
 		check("nullRet5", null);
 		check("nullRet6", null);
+		
+		// CLO-6306:
+		cal.clear();
+		cal.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+		cal.set(2015, 04, 04, 11, 04, 13);
+		check("CLO_6306_1", cal.getTime());
+		check("CLO_6306_3", cal.getTime());
+
+		cal.clear();
+		cal.setTimeZone(TimeZone.getTimeZone("GMT+5"));
+		cal.set(2015, 04, 04, 11, 04, 13);
+		check("CLO_6306_2", cal.getTime());
+		check("CLO_6306_4", cal.getTime());
 	}
 
 	public void test_convertlib_str2date_expect_error(){
