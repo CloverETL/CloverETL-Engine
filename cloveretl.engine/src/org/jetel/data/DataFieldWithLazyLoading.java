@@ -18,6 +18,8 @@
  */
 package org.jetel.data;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
@@ -335,4 +337,8 @@ public class DataFieldWithLazyLoading extends DataField {
 		return dataField.getSizeSerialized();
 	}
 
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+		in.defaultReadObject();
+		lazyLoader = DEFAULT_LAZY_LOADER;
+	}
 }
