@@ -21,6 +21,7 @@ package org.jetel.util.stream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * CLO-6145:
@@ -29,6 +30,10 @@ import java.io.OutputStream;
  * when used as a base delegating {@link OutputStream} implementation.
  * Overrides {@link #write(byte[], int, int)}
  * to prevent potential performance issues.
+ * <p>
+ * CLO-6340:
+ * DelegatingOutputStream assures that its underlying stream
+ * is closed only once.
  * 
  * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -37,6 +42,8 @@ import java.io.OutputStream;
  * @see <a href="https://bug.javlin.eu/browse/CLO-6145">CLO-6145</a>
  */
 public class DelegatingOutputStream extends FilterOutputStream {
+	
+	private AtomicBoolean isClosed = new AtomicBoolean(false);
 
     /**
      * Creates a decorating output stream built on top of the specified
@@ -79,4 +86,25 @@ public class DelegatingOutputStream extends FilterOutputStream {
 		out.write(b, off, len);
 	}
 
+	/**
+     * Closes this output stream and releases any system resources
+     * associated with the stream.
+     * <p>
+     * The <code>close</code> method of <code>FilterOutputStream</code>
+     * calls its <code>flush</code> method, and then calls the
+     * <code>close</code> method of its underlying output stream.
+     * <p>
+     * Calling the <code>close</code> method of <code>DelegatingOutputStream</code>
+     * after it has already been closed does nothing.
+     *
+     * @exception  IOException  if an I/O error occurs.
+     * @see        java.io.FilterOutputStream#flush()
+     * @see        java.io.FilterOutputStream#out
+     */
+	@Override
+	public void close() throws IOException {
+		if (!isClosed.getAndSet(true)) {
+			super.close();
+		}
+	}
 }
