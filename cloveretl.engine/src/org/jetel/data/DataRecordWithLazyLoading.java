@@ -31,8 +31,6 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class DataRecordWithLazyLoading extends DataRecordImpl {
 
-	private static final long serialVersionUID = 5573341054723558756L;
-
 	@SuppressWarnings("deprecation")
 	DataRecordWithLazyLoading(DataRecordMetadata _metadata) {
 		super(_metadata);

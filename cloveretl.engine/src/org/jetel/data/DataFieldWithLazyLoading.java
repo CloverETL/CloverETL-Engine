@@ -18,8 +18,6 @@
  */
 package org.jetel.data;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
@@ -40,8 +38,6 @@ import org.jetel.util.bytes.CloverBuffer;
  */
 public class DataFieldWithLazyLoading extends DataField {
 
-	private static final long serialVersionUID = -6856258973924338387L;
-
 	/** Wrapped data field. */
 	private DataField dataField;
 
@@ -49,7 +45,7 @@ public class DataFieldWithLazyLoading extends DataField {
 	private Object sourceData;
 
 	private boolean needsToBeLoaded = false;
-	private transient LazyDataFieldLoader lazyLoader;
+	private LazyDataFieldLoader lazyLoader;
 
 	/**
 	 * The default loader just sets the source data into the field.
@@ -335,10 +331,5 @@ public class DataFieldWithLazyLoading extends DataField {
 	@Override
 	public int getSizeSerialized() {
 		return dataField.getSizeSerialized();
-	}
-
-	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-		in.defaultReadObject();
-		lazyLoader = DEFAULT_LAZY_LOADER;
 	}
 }
