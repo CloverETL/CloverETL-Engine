@@ -34,8 +34,6 @@ import org.jetel.util.bytes.CloverBuffer;
  * @see TokenTracker
  */
 public class Token extends DataRecordImpl {
-
-	private static final long serialVersionUID = -6335039894273092797L;
 	
 	private static final int TOKEN_ID_LENGTH = Long.SIZE / 8;
 	

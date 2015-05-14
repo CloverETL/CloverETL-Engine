@@ -54,8 +54,6 @@ import org.jetel.util.string.Compare;
  */
 @CloverPublicAPI
 public class DecimalDataField extends DataFieldImpl implements Numeric, Comparable<Object> {
-
-	private static final long serialVersionUID = -9212721402316376203L;
 	
 	private Decimal value;
 	private int precision;
