@@ -44,6 +44,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.protocols.sftp.URLUserInfo;
 import org.jetel.util.protocols.sftp.URLUserInfoIteractive;
+import org.jetel.util.stream.CloseOnceOutputStream;
 import org.jetel.util.string.StringUtils;
 
 import com.jcraft.jsch.ChannelSftp;
@@ -392,7 +393,7 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 	public OutputStream getOutputStream(String file, int mode) throws IOException {
 		try {
 			channel = getChannelSftp();
-			OutputStream os = new BufferedOutputStream(channel.put(file, mode)) {
+			OutputStream os = new CloseOnceOutputStream(new BufferedOutputStream(channel.put(file, mode)) {
 				@Override
 				public void close() throws IOException {
 					try {
@@ -401,7 +402,7 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 						returnToPool();
 					}
 				}
-			};
+			}, null) ;
 			return os;
 		} catch (Exception e) {
 			returnToPool();
