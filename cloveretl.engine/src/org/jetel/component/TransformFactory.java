@@ -235,7 +235,7 @@ public class TransformFactory<T> {
     	
     	TransformLanguage language = TransformLanguageDetector.guessLanguage(transformCode);
     	if (language == null) {
-    		throw new LoadClassException("Can't determine transformation code.");
+    		throw new LoadClassException("Can't determine transformation language.");
     	}
     	
         switch (language) {
