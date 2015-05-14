@@ -865,7 +865,7 @@ public class DB2DataWriter extends Node {
 		for (String cloverField : cloverFields) {
 			if (cloverField.isEmpty()) {
 				status.add(new ConfigurationProblem("Clover field cannot be empty", Severity.ERROR, this, Priority.NORMAL, fieldMappingOverride ? XML_FIELDMAP_ATTRIBUTE : XML_CLOVERFIELDS_ATTRIBUTE));
-			} else if (inMetadata.getField(cloverField) == null) {
+			} else if (inMetadata != null && inMetadata.getField(cloverField) == null) {
 				status.add(new ConfigurationProblem("Clover field \"" + cloverField + "\" is not present in input data", Severity.ERROR, this, Priority.NORMAL, fieldMappingOverride ? XML_FIELDMAP_ATTRIBUTE : XML_CLOVERFIELDS_ATTRIBUTE));
 			}
 		}
