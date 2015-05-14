@@ -10,6 +10,10 @@ date nullRet4;
 date nullRet5;
 date nullRet6;
 
+date CLO_6306_1;
+date CLO_6306_2;
+date CLO_6306_3;
+date CLO_6306_4;
 
 function integer transform() {
 	date1 = str2date('2005-19-11', 'yyyy-dd-MM');
@@ -24,5 +28,13 @@ function integer transform() {
 	nullRet4 = str2date(null, 'yyyy-dd-MM', 'en.US');
 	nullRet5 = str2date(str, 'yyyy-dd-MM', 'cs.CZ','GMT+8');
 	nullRet6 = str2date(null, 'yyyy-dd-MM', 'en.US', 'GMT+2');
+
+	// CLO-6306:
+	string s = "2015-05-04 11:04:13";
+	CLO_6306_1 = str2date(s, "yyyy-MM-dd HH:mm:ss", null, "GMT+8");
+	CLO_6306_2 = str2date(s, "yyyy-MM-dd HH:mm:ss", null, "GMT+5");
+	CLO_6306_3 = str2date(s, "yyyy-MM-dd HH:mm:ss", "", "GMT+8");
+	CLO_6306_4 = str2date(s, "yyyy-MM-dd HH:mm:ss", "", "GMT+5");
+
 	return 0;
 }
