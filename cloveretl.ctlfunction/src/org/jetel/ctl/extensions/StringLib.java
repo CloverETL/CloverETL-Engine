@@ -130,7 +130,7 @@ public class StringLib extends TLFunctionLibrary {
 		return buf.toString();
 	}
 
-	class ConcatFunction implements TLFunctionPrototype {
+	static class ConcatFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -156,7 +156,7 @@ public class StringLib extends TLFunctionLibrary {
 		return input.toUpperCase();
 	}
 
-	class UpperCaseFunction implements TLFunctionPrototype {
+	static class UpperCaseFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -177,7 +177,7 @@ public class StringLib extends TLFunctionLibrary {
 		return input.toLowerCase();
 	}
 
-	class LowerCaseFunction implements TLFunctionPrototype {
+	static class LowerCaseFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -248,7 +248,7 @@ public class StringLib extends TLFunctionLibrary {
 		return input.substring(beginIndex);
 	}
 	
-	class SubstringFunction implements TLFunctionPrototype {
+	static class SubstringFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -297,7 +297,7 @@ public class StringLib extends TLFunctionLibrary {
 		return input.substring(0, length);
 	}
 	
-	class LeftFunction implements TLFunctionPrototype {
+	static class LeftFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -344,7 +344,7 @@ public class StringLib extends TLFunctionLibrary {
 		return input.substring(input.length() - length, input.length());
 	}
 
-	class RightFunction implements TLFunctionPrototype {
+	static class RightFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -374,7 +374,7 @@ public class StringLib extends TLFunctionLibrary {
 		return StringUtils.trim(buf).toString();
 
 	}
-	class TrimFunction implements TLFunctionPrototype {
+	static class TrimFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -427,7 +427,7 @@ public class StringLib extends TLFunctionLibrary {
 		return input.getNumFields();
 	}
 
-	class LengthFunction implements TLFunctionPrototype {
+	static class LengthFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -482,7 +482,7 @@ public class StringLib extends TLFunctionLibrary {
 		return m.replaceAll(replacement);
 	}
 
-	class ReplaceFunction implements TLFunctionPrototype {
+	static class ReplaceFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -553,7 +553,7 @@ public class StringLib extends TLFunctionLibrary {
 		return result;
 	}
 	
-	class SplitFunction implements TLFunctionPrototype {
+	static class SplitFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -590,7 +590,7 @@ public class StringLib extends TLFunctionLibrary {
 		return String.valueOf(input.charAt(position));
 	}
 
-	class CharAtFunction implements TLFunctionPrototype {
+	static class CharAtFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -611,7 +611,7 @@ public class StringLib extends TLFunctionLibrary {
 				|| StringUtils.isBlank(input);
 	}
 
-	class IsBlankFunction implements TLFunctionPrototype {
+	static class IsBlankFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -630,7 +630,7 @@ public class StringLib extends TLFunctionLibrary {
 		return StringUtils.isAscii(input);
 	}
 
-	class IsAsciiFunction implements TLFunctionPrototype {
+	static class IsAsciiFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -649,7 +649,7 @@ public class StringLib extends TLFunctionLibrary {
 		return StringUtils.isNumber(input);
 	}
 
-	class IsNumberFunction implements TLFunctionPrototype {
+	static class IsNumberFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -676,7 +676,7 @@ public class StringLib extends TLFunctionLibrary {
 		return StringUtils.isNumber(value);
 	}
 	
-	public class IsDecimalFunction implements TLFunctionPrototype {
+	public static class IsDecimalFunction implements TLFunctionPrototype {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -695,7 +695,7 @@ public class StringLib extends TLFunctionLibrary {
 		return result == 0 || result == 1;
 	}
 
-	class IsIntegerFunction implements TLFunctionPrototype {
+	static class IsIntegerFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -714,7 +714,7 @@ public class StringLib extends TLFunctionLibrary {
 		return result >= 0 && result < 3;
 	}
 
-	class IsLongFunction implements TLFunctionPrototype {
+	static class IsLongFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -749,7 +749,7 @@ public class StringLib extends TLFunctionLibrary {
 		return formatter.tryParse(input);
 	}
 
-	class IsDateFunction implements TLFunctionPrototype {
+	static class IsDateFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -783,7 +783,7 @@ public class StringLib extends TLFunctionLibrary {
 		return StringUtils.removeDiacritic(input);
 	}
 
-	class RemoveDiacriticFunction implements TLFunctionPrototype {
+	static class RemoveDiacriticFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -801,7 +801,7 @@ public class StringLib extends TLFunctionLibrary {
 		return StringUtils.removeBlankSpace(input);
 	}
 
-	class RemoveBlankSpaceFunction implements TLFunctionPrototype {
+	static class RemoveBlankSpaceFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -819,7 +819,7 @@ public class StringLib extends TLFunctionLibrary {
 		return StringUtils.removeNonPrintable(input);
 	}
 
-	class RemoveNonPrintableFunction implements TLFunctionPrototype {
+	static class RemoveNonPrintableFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -838,7 +838,7 @@ public class StringLib extends TLFunctionLibrary {
 		return StringUtils.removeNonAscii(input);
 	}
 
-	class RemoveNonAsciiFunction implements TLFunctionPrototype {
+	static class RemoveNonAsciiFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -864,7 +864,7 @@ public class StringLib extends TLFunctionLibrary {
 				takeNumeric);
 	}
 
-	class GetAlphanumericCharsFunction implements TLFunctionPrototype {
+	static class GetAlphanumericCharsFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -898,7 +898,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 
-	class TranslateFunction implements TLFunctionPrototype {
+	static class TranslateFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -954,7 +954,7 @@ public class StringLib extends TLFunctionLibrary {
 		return buf.toString();
 	}
 
-	class JoinFunction implements TLFunctionPrototype {
+	static class JoinFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -992,7 +992,7 @@ public class StringLib extends TLFunctionLibrary {
 		return StringUtils.indexOf(input, pattern, from);
 	}
 
-	class IndexOfFunction implements TLFunctionPrototype {
+	static class IndexOfFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1019,7 +1019,7 @@ public class StringLib extends TLFunctionLibrary {
 		return StringUtils.count(input, character.charAt(0));
 	}
 
-	class CountCharFunction implements TLFunctionPrototype {
+	static class CountCharFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1075,7 +1075,7 @@ public class StringLib extends TLFunctionLibrary {
 
 	
 
-	class FindFunction implements TLFunctionPrototype {
+	static class FindFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1117,7 +1117,7 @@ public class StringLib extends TLFunctionLibrary {
 		return IntegralLib.matches(context, input, pattern);			
 	}
 
-	class MatchesFunction implements TLFunctionPrototype {
+	static class MatchesFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1164,7 +1164,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 
-	class MatchGroupsFunction implements TLFunctionPrototype {
+	static class MatchGroupsFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1201,7 +1201,7 @@ public class StringLib extends TLFunctionLibrary {
 		return m.replaceAll(""); //$NON-NLS-1$
 
 	}
-	class ChopFunction implements TLFunctionPrototype {
+	static class ChopFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1242,7 +1242,7 @@ public class StringLib extends TLFunctionLibrary {
 		return ret;
 	}
 
-	class CutFunction implements TLFunctionPrototype {
+	static class CutFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1274,7 +1274,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	class IsUrlFunction implements TLFunctionPrototype {
+	static class IsUrlFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1296,7 +1296,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	class GetUrlProtocolFunction implements TLFunctionPrototype {
+	static class GetUrlProtocolFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1319,7 +1319,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	class GetUrlUserInfo implements TLFunctionPrototype {
+	static class GetUrlUserInfo implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1341,7 +1341,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	class GetUrlHostFunction implements TLFunctionPrototype {
+	static class GetUrlHostFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1363,7 +1363,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	class GetUrlPortFunction implements TLFunctionPrototype {
+	static class GetUrlPortFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1385,7 +1385,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	class GetUrlPathFunction implements TLFunctionPrototype {
+	static class GetUrlPathFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1408,7 +1408,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	class GetUrlQueryFunction implements TLFunctionPrototype {
+	static class GetUrlQueryFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1431,7 +1431,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	class GetUrlRefFunction implements TLFunctionPrototype {
+	static class GetUrlRefFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1466,7 +1466,7 @@ public class StringLib extends TLFunctionLibrary {
 		return null;
 	}
 	
-	class ToAbsolutePathFunction implements TLFunctionPrototype {
+	static class ToAbsolutePathFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1492,7 +1492,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	class ToProjectUrlFunction implements TLFunctionPrototype {
+	static class ToProjectUrlFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1522,7 +1522,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	class EscapeUrlFunction implements TLFunctionPrototype {
+	static class EscapeUrlFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1567,7 +1567,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	class UnescapeUrlFunction implements TLFunctionPrototype {
+	static class UnescapeUrlFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1607,7 +1607,7 @@ public class StringLib extends TLFunctionLibrary {
 		return refResolver.resolveRef(value, refResFlag);
 	}
 	
-	class ResolveParamsFunction implements TLFunctionPrototype {
+	static class ResolveParamsFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1640,7 +1640,7 @@ public class StringLib extends TLFunctionLibrary {
 		return FileUtils.getFileExtension(url);
 	}
 
-	class GetFileExtensionFunction implements TLFunctionPrototype {
+	static class GetFileExtensionFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1660,7 +1660,7 @@ public class StringLib extends TLFunctionLibrary {
 		return FileUtils.getFileName(url);
 	}
 
-	class GetFileNameFunction implements TLFunctionPrototype {
+	static class GetFileNameFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1680,7 +1680,7 @@ public class StringLib extends TLFunctionLibrary {
 			return FileUtils.getBaseName(url);
 		}
 
-		class GetFileNameWithoutExtensionFunction implements TLFunctionPrototype {
+		static class GetFileNameWithoutExtensionFunction implements TLFunctionPrototype {
 
 			@Override
 			public void init(TLFunctionCallContext context) {
@@ -1700,7 +1700,7 @@ public class StringLib extends TLFunctionLibrary {
 			return FileUtils.getFilePath(url);
 		}
 
-		class GetFilePathFunction implements TLFunctionPrototype {
+		static class GetFilePathFunction implements TLFunctionPrototype {
 
 			@Override
 			public void init(TLFunctionCallContext context) {
@@ -1720,7 +1720,7 @@ public class StringLib extends TLFunctionLibrary {
 			return FileUtils.normalize(url);
 		}
 
-		class NormalizePathFunction implements TLFunctionPrototype {
+		static class NormalizePathFunction implements TLFunctionPrototype {
 
 			@Override
 			public void init(TLFunctionCallContext context) {
@@ -1747,7 +1747,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 
-	class ReverseFunction implements TLFunctionPrototype {
+	static class ReverseFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1765,7 +1765,7 @@ public class StringLib extends TLFunctionLibrary {
 		return StringUtils.isEmpty(input);
 	}
 	
-	class IsEmptyFunction implements TLFunctionPrototype{
+	static class IsEmptyFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {

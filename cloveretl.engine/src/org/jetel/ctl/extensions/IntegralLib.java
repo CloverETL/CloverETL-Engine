@@ -84,7 +84,7 @@ public class IntegralLib extends TLFunctionLibrary {
 		return to;
 	}
 	
-	class CopyByNameFunction implements TLFunctionPrototype {
+	static class CopyByNameFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -107,7 +107,7 @@ public class IntegralLib extends TLFunctionLibrary {
 		return to;
 	}
 	
-	class CopyByPositionFunction implements TLFunctionPrototype {
+	static class CopyByPositionFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -128,7 +128,7 @@ public class IntegralLib extends TLFunctionLibrary {
 		record.reset();
 	}
 	
-	class ResetRecordFunction implements TLFunctionPrototype {
+	static class ResetRecordFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {

@@ -23,6 +23,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
+
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.util.string.UnicodeBlanks;
@@ -672,7 +673,7 @@ public class StringLibExt extends TLFunctionLibraryExt {
 //		return WordUtils.uncapitalize(input);
 //	}
 	
-	public class RPadFunction implements TLFunctionPrototype {
+	public static class RPadFunction implements TLFunctionPrototype {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -704,7 +705,7 @@ public class StringLibExt extends TLFunctionLibraryExt {
 		}
 	}
 
-	public class LPadFunction implements TLFunctionPrototype {
+	public static class LPadFunction implements TLFunctionPrototype {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -735,7 +736,7 @@ public class StringLibExt extends TLFunctionLibraryExt {
 		public void init(TLFunctionCallContext context) {
 		}
 	}
-	public class LastIndexOfFunction implements TLFunctionPrototype {
+	public static class LastIndexOfFunction implements TLFunctionPrototype {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -768,7 +769,7 @@ public class StringLibExt extends TLFunctionLibraryExt {
 		}
 	}
 	
-	public class ConcatWithSeparatorFunction implements TLFunctionPrototype {
+	public static class ConcatWithSeparatorFunction implements TLFunctionPrototype {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -795,7 +796,7 @@ public class StringLibExt extends TLFunctionLibraryExt {
 		}
 	}
 	
-	public class EscapeUrlFragmentFunction implements TLFunctionPrototype {
+	public static class EscapeUrlFragmentFunction implements TLFunctionPrototype {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -822,7 +823,7 @@ public class StringLibExt extends TLFunctionLibraryExt {
 		}
 	}
 
-	public class UnescapeUrlFragmentFunction implements TLFunctionPrototype {
+	public static class UnescapeUrlFragmentFunction implements TLFunctionPrototype {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -849,7 +850,7 @@ public class StringLibExt extends TLFunctionLibraryExt {
 		}
 	}
 	
-	public class StartsWithFunction implements TLFunctionPrototype {
+	public static class StartsWithFunction implements TLFunctionPrototype {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -865,7 +866,7 @@ public class StringLibExt extends TLFunctionLibraryExt {
 		}
 	}
 	
-	public class EndsWithFunction implements TLFunctionPrototype {
+	public static class EndsWithFunction implements TLFunctionPrototype {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -881,7 +882,7 @@ public class StringLibExt extends TLFunctionLibraryExt {
 		}
 	}
 
-	public class CodePointToCharFunction implements TLFunctionPrototype {
+	public static class CodePointToCharFunction implements TLFunctionPrototype {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -894,7 +895,7 @@ public class StringLibExt extends TLFunctionLibraryExt {
 		}
 	}
 	
-	public class CodePointAtFunction implements TLFunctionPrototype {
+	public static class CodePointAtFunction implements TLFunctionPrototype {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -910,7 +911,7 @@ public class StringLibExt extends TLFunctionLibraryExt {
 		}
 	}
 	
-	public class CodePointLengthFunction implements TLFunctionPrototype {
+	public static class CodePointLengthFunction implements TLFunctionPrototype {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -923,7 +924,7 @@ public class StringLibExt extends TLFunctionLibraryExt {
 		}
 	}
 	
-	public class IsValidCodePointFunction implements TLFunctionPrototype {
+	public static class IsValidCodePointFunction implements TLFunctionPrototype {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -936,7 +937,7 @@ public class StringLibExt extends TLFunctionLibraryExt {
 		}
 	}
 	
-	public class UnicodeNormalizeFunction implements TLFunctionPrototype {
+	public static class UnicodeNormalizeFunction implements TLFunctionPrototype {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -951,7 +952,7 @@ public class StringLibExt extends TLFunctionLibraryExt {
 		}
 	}
 	
-	public class IsUnicodeNormalizedFunction implements TLFunctionPrototype {
+	public static class IsUnicodeNormalizedFunction implements TLFunctionPrototype {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -966,7 +967,7 @@ public class StringLibExt extends TLFunctionLibraryExt {
 		}
 	}
 
-	public class ContainsFunction implements TLFunctionPrototype {
+	public static class ContainsFunction implements TLFunctionPrototype {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
