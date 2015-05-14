@@ -32,8 +32,6 @@ import org.jetel.metadata.DataFieldMetadata;
  */
 public class AggregateLongNumeric extends LongDataField {
 
-	private static final long serialVersionUID = 1041354863302055685L;
-
 	public AggregateLongNumeric(DataFieldMetadata _metadata) {
 		super(_metadata);
 	}
