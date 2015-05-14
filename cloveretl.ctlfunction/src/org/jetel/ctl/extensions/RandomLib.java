@@ -86,7 +86,7 @@ public class RandomLib extends TLFunctionLibrary {
 	}
 
 	// RANDOM
-	class RandomFunction implements TLFunctionPrototype {
+	static class RandomFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -110,7 +110,7 @@ public class RandomLib extends TLFunctionLibrary {
 	}
 
 	// RANDOM Gaussian
-	class RandomGaussianFunction implements TLFunctionPrototype {
+	static class RandomGaussianFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -134,7 +134,7 @@ public class RandomLib extends TLFunctionLibrary {
 	}
 
 	// RANDOM Boolean
-	class RandomBooleanFunction implements TLFunctionPrototype {
+	static class RandomBooleanFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -163,7 +163,7 @@ public class RandomLib extends TLFunctionLibrary {
 	}
 
 	// RANDOMINTEGER
-	class RandomIntegerFunction implements TLFunctionPrototype {
+	static class RandomIntegerFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -200,7 +200,7 @@ public class RandomLib extends TLFunctionLibrary {
 	}
 
 	// RANDOMLONG
-	class RandomLongFunction implements TLFunctionPrototype {
+	static class RandomLongFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -231,7 +231,7 @@ public class RandomLib extends TLFunctionLibrary {
 		return ((TLDataGeneratorCache) context.getCache()).getDataGenerator().nextString(minLength, maxLength);
 	}
 
-	class RandomStringFunction implements TLFunctionPrototype {
+	static class RandomStringFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -247,7 +247,7 @@ public class RandomLib extends TLFunctionLibrary {
 	}
 
 	// Random date
-	class RandomDateFunction implements TLFunctionPrototype {
+	static class RandomDateFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -345,7 +345,7 @@ public class RandomLib extends TLFunctionLibrary {
 		((TLDataGeneratorCache) context.getCache()).getDataGenerator().setSeed(randomSeed);
 	}
 
-	class SetRandomSeedFunction implements TLFunctionPrototype {
+	static class SetRandomSeedFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {

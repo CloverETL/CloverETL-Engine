@@ -202,8 +202,6 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		indexKey.init();
 		indexKey.setEqualNULLs(true);
 
-		DataRecord record = DataRecordFactory.newRecord(metadata);
-
 		if (lookupTable == null) {
 			lookupTable = new DataRecordMap(indexKey, keyDuplicates, tableInitialSize);
 		}

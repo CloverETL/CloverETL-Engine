@@ -545,7 +545,7 @@ public class DynamicLib extends TLFunctionLibrary {
 		return record.getMetadata().getField(fieldName).getLabelOrName();
 	}
 
-	class GetValueFunction implements TLFunctionPrototype {
+	static class GetValueFunction implements TLFunctionPrototype {
 		
 		private Class<?> targetType;
 		
@@ -578,7 +578,7 @@ public class DynamicLib extends TLFunctionLibrary {
 		}
 	}
 	
-	abstract class SetValueFunction<T> implements TLFunctionPrototype {
+	abstract static class SetValueFunction<T> implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -603,7 +603,7 @@ public class DynamicLib extends TLFunctionLibrary {
 		protected abstract void setFieldValueName(TLFunctionCallContext context, DataRecord record, String fieldName, T value);
 	}
 
-	class IsNullFunction implements TLFunctionPrototype {
+	static class IsNullFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -627,7 +627,7 @@ public class DynamicLib extends TLFunctionLibrary {
 		}
 	}
 
-	class GetValueAsStringFunction implements TLFunctionPrototype {
+	static class GetValueAsStringFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -649,7 +649,7 @@ public class DynamicLib extends TLFunctionLibrary {
 		}
 	}
 
-	class CompareFunction implements TLFunctionPrototype {
+	static class CompareFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -673,7 +673,7 @@ public class DynamicLib extends TLFunctionLibrary {
 		}
 	}
 
-	class GetFieldIndexFunction implements TLFunctionPrototype {
+	static class GetFieldIndexFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -687,7 +687,7 @@ public class DynamicLib extends TLFunctionLibrary {
 		}
 	}
 
-	class GetFieldLabelFunction implements TLFunctionPrototype {
+	static class GetFieldLabelFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -716,7 +716,7 @@ public class DynamicLib extends TLFunctionLibrary {
 	}
 	
 	//GETFIELDNAME
-	class GetFieldNameFunction implements TLFunctionPrototype {
+	static class GetFieldNameFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -765,7 +765,7 @@ public class DynamicLib extends TLFunctionLibrary {
 	}
 	
 	// GETFIELDTYPE
-	class GetFieldTypeFunction implements TLFunctionPrototype {
+	static class GetFieldTypeFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
