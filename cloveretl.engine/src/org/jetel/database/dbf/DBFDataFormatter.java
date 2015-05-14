@@ -150,7 +150,10 @@ public class DBFDataFormatter extends AbstractFormatter {
 
 	@Override
 	public void close() throws IOException {
-		if (writer!=null) writer.close();
+		if (writer == null || !writer.isOpen()) {
+			return;
+		}
+		writer.close();
 	}
 
 	@Override
