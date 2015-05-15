@@ -162,7 +162,7 @@ public class EnabledEnum {
 		
 		@Override
 		public String validate() {
-			return "Invalid component enabled attribute: '" + this + "'.";
+			return "Invalid 'enabled' attribute: '" + this + "'.";
 		}
     }
     
@@ -260,13 +260,13 @@ public class EnabledEnum {
     					if (!port.isRequired()) {
     						return null;
     					} else {
-        					return "Component enabled attribute cannot be resolved, subgraph " + (inputPort ? "input" : "output") + " port " + portIndex + " is not optional.";
+        					return "'Enabled' attribute cannot be resolved, subgraph " + (inputPort ? "input" : "output") + " port " + portIndex + " is not optional.";
     					}
     				} else {
-    					return "Component enabled attribute cannot be resolved, subgraph port " + portIndex + " does not exist.";
+    					return "'Enabled' attribute cannot be resolved, subgraph " + (inputPort ? "input" : "output") + " port " + portIndex + " does not exist.";
     				}
     			} else {
-    				return "Component enabled attribute cannot be resolved, no graph available.";
+    				return "'Enabled' attribute cannot be resolved, no graph available.";
     			}
     		}
     	}
