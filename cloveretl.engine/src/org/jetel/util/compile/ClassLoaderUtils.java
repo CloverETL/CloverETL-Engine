@@ -245,6 +245,19 @@ public class ClassLoaderUtils {
     		throw new LoadClassException("Provided class '" + className + "' does not extend/implement " + expectedType.getName(), e);
     	}
     }
+    
+    /**
+     * Instantiates class from the given className.
+     * @throws LoadClassException
+     */
+    public static <T> T loadClassInstance(Class<T> expectedType, String className, ClassLoader cl) {
+    	Object instance = loadClassInstance(className, cl);
+    	try {
+    		return expectedType.cast(instance);
+    	} catch (ClassCastException e) {
+    		throw new LoadClassException("Provided class '" + className + "' does not extend/implement " + expectedType.getName(), e);
+    	}
+    }
 
     /**
      * Instantiates class from the given className.

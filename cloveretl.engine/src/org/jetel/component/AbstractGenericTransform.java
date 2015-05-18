@@ -30,6 +30,8 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Node;
+import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.file.FileUtils;
@@ -46,7 +48,7 @@ import org.jetel.util.primitive.TypedProperties;
  * @created 20. 11. 2014
  */
 @CloverPublicAPI
-public abstract class AbstractGenericTransform extends AbstractDataTransform implements GenericTransform {
+public abstract class AbstractGenericTransform extends AbstractDataTransform implements GenericTransform, MetadataProvider {
 	
 	protected DataRecord[] inRecords;
 	protected DataRecord[] outRecords;
@@ -168,6 +170,16 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	@Override
 	public void free() {
 		// do nothing by default
+	}
+	
+	@Override
+	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		return null;
+	}
+
+	@Override
+	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		return null;
 	}
 	
 }
