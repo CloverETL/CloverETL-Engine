@@ -18,27 +18,14 @@
  */
 package org.jetel.component;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.jetel.data.DataRecord;
-import org.jetel.data.DataRecordFactory;
-import org.jetel.data.Defaults;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
-import org.jetel.graph.OutputPortDirect;
-import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.tracker.BasicComponentTokenTracker;
-import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.util.ExceptionUtils;
-import org.jetel.util.SynchronizeUtils;
-import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
@@ -140,178 +127,69 @@ import org.w3c.dom.Element;
  * @see		org.jetel.graph.Node
  * @see 	org.jetel.graph.Edge
  */
-public class ExtFilter extends org.jetel.graph.Node {
+public class ExtFilter extends ExtFilterBase {
 
-	private static final String XML_FILTEREXPRESSION_ATTRIBUTE = "filterExpression";
 	private static final String XML_FILTERCLASS_ATTRIBUTE = "filterClass";
-	public final static String COMPONENT_TYPE="EXT_FILTER";
-	private final static int READ_FROM_PORT=0;
-	
-	private final static int WRITE_TO_PORT=0;
-	private final static int REJECTED_PORT=1;
-	
-	
-	private RecordFilter filter = null;
-	private String filterExpression;
+	public final static String COMPONENT_TYPE = "EXT_FILTER";
+
 	private String filterClass;
-	
-    static Log logger = LogFactory.getLog(ExtFilter.class);
-    
-	public ExtFilter(String id){
+
+	public ExtFilter(String id) {
 		super(id);
-		
 	}
 
-	public ExtFilter(String id, String filterExpression){
-		super(id);
-		this.filterExpression = filterExpression;
-	}
-
-	@Override
-	public Result execute() throws Exception {
-		InputPortDirect inPort=getInputPortDirect(READ_FROM_PORT);
-		OutputPortDirect outPort=getOutputPortDirect(WRITE_TO_PORT);
-		OutputPortDirect rejectedPort=getOutputPortDirect(REJECTED_PORT);
-		boolean isData=true;
-        DataRecord record = DataRecordFactory.newRecord(getInputPort(READ_FROM_PORT).getMetadata());
-        CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
-        
-		while(isData && runIt){
-			try{
-				if (!inPort.readRecordDirect(recordBuffer)){
-					isData = false;
-					break;
-				}
-                record.deserialize(recordBuffer);
-				if (filter.isValid(record)){
-                    recordBuffer.rewind();
-					outPort.writeRecordDirect(recordBuffer);
-				}else if (rejectedPort!=null){
-                    recordBuffer.rewind();
-					rejectedPort.writeRecordDirect(recordBuffer);
-				}
-
-			}catch(ClassCastException ex){
-				throw new JetelException("Invalid filter expression - does not evaluate to TRUE/FALSE !", ex);
-			}
-			SynchronizeUtils.cloverYield();
-		}
-		broadcastEOF();
-        return runIt ? Result.FINISHED_OK : Result.ABORTED;
-	}
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @since    July 23, 2002
-	 */
 	@Override
 	public void init() throws ComponentNotReadyException {
-        if(isInitialized()) return;
+		if (isInitialized()) {
+			return;
+		}
 		super.init();
-		if (filterExpression != null) {
-			initFilterExpression();
-		} else if (filterClass != null) {
-			filter = RecordFilterFactory.createFilter(filterClass, this);
-		} else {
+		if (filterExpression == null && filterClass == null) {
 			throw new ComponentNotReadyException("Either filter expression or filter class is expected.");
+		} else if (filterExpression == null && filterClass != null) {
+			filter = RecordFilterFactory.createFilter(filterClass, this);
 		}
 	}
-		
-	private void initFilterExpression() throws ComponentNotReadyException {
-		filter = RecordFilterFactory.createFilter(filterExpression, getInMetadata().get(READ_FROM_PORT), getGraph(), getId(), logger);
-	}
-	
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  nodeXML  Description of Parameter
-	 * @return          Description of the Returned Value
-	 * @throws AttributeNotFoundException 
-	 * @since           July 23, 2002
-	 */
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
-		ExtFilter filter;
-		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(xmlElement, graph);
-		
-		filter = new ExtFilter(xattribs.getString(XML_ID_ATTRIBUTE));
-		if (xattribs.exists(XML_FILTEREXPRESSION_ATTRIBUTE)){
-			filter.setFilterExpression(xattribs.getStringEx(XML_FILTEREXPRESSION_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
-		}else{
-			try {
-				filter.setFilterExpression(xattribs.getText(xmlElement, false));
-			} catch (AttributeNotFoundException e) {
-					// ignore
-			}
+
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException,
+			AttributeNotFoundException {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
+		ExtFilter filter = new ExtFilter(xattribs.getString(XML_ID_ATTRIBUTE));
+
+		if (xattribs.exists(XML_FILTEREXPRESSION_ATTRIBUTE)) {
+			filter.setFilterExpression(xattribs.getStringEx(XML_FILTEREXPRESSION_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
 		}
-			if (xattribs.exists(XML_FILTERCLASS_ATTRIBUTE)) {
-				filter.setFilterClass(xattribs.getString(XML_FILTERCLASS_ATTRIBUTE));
-			}
-			if (filter.filterClass == null && filter.filterExpression == null) {
-				throw new XMLConfigurationException("One of 'filterExpression' or 'filterClass' attributes is required.");
-			}
+		if (xattribs.exists(XML_FILTERCLASS_ATTRIBUTE)) {
+			filter.setFilterClass(xattribs.getString(XML_FILTERCLASS_ATTRIBUTE));
+		}
 		return filter;
 	}
 
-	/**  Description of the Method */
-    @Override
-    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        super.checkConfig(status);
-        
-        if(!checkInputPorts(status, 1, 1)
-        		|| !checkOutputPorts(status, 1, 2)) {
-        	return status;
-        }
-        
-        checkMetadata(status, getInMetadata(), getOutMetadata());
+	@Override
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		super.checkConfig(status);
 
-        try {
-        	if (filterExpression != null) {
-        		initFilterExpression();
-        	} else if (filterClass == null) {
-        		throw new ComponentNotReadyException("Either 'filterClass' or 'filterExpression' is required.");
-        	}
-        } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
-        } finally {
-        	free();
-        }
-        
-        return status;
-    }
+		try {
+			if (filterExpression != null) {
+				initFilterExpression();
+			} else if (filterClass == null) {
+				throw new ComponentNotReadyException("Either 'filterClass' or 'filterExpression' is required.");
+			}
+		} catch (ComponentNotReadyException e) {
+			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+			if (!StringUtils.isEmpty(e.getAttributeName())) {
+				problem.setAttributeName(e.getAttributeName());
+			}
+			status.add(problem);
+		} finally {
+			free();
+		}
 
-	/**
-	 * @param filterExpression The filterExpression to set.
-	 */
-	public void setFilterExpression(String filterExpression) {
-		this.filterExpression = filterExpression;
+		return status;
 	}
-	
-	/**
-	 * @param filterClass the filterClass to set
-	 */
+
 	public void setFilterClass(String filterClass) {
 		this.filterClass = filterClass;
 	}
-	
-	public RecordFilter getRecordFilter() {
-		return filter;
-	}
-	
-	@Override
-	public void reset() throws ComponentNotReadyException  {
-		super.reset();
-		// Nothing more to reinitialize
-	}
-	
-	@Override
-	protected ComponentTokenTracker createComponentTokenTracker() {
-		return new BasicComponentTokenTracker(this);
-	}
+
 }
-
-
