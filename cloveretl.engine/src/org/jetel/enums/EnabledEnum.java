@@ -170,7 +170,7 @@ public class EnabledEnum {
      * This class handles dynamic 'enable' constants derived from subgraph ports.
      */
     public static class SubgraphPortsDynamicValues {
-    	private static final String PATTERN_STRING = "enableWhen(InputPort|OutputPort)(\\d?)Is(Connected|Disconnected)";
+    	private static final String PATTERN_STRING = "enableWhen(InputPort|OutputPort)(\\d+)Is(Connected|Disconnected)";
     	
     	private static final Pattern PATTERN = Pattern.compile(PATTERN_STRING);
     	
