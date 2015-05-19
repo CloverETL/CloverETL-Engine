@@ -51,6 +51,12 @@
 	</extension>
 	
 	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="H2"/>
+		<parameter id="name" value="H2"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.H2Specific"/>
+	</extension>
+	
+	<extension point-id="jdbcSpecific">
 		<parameter id="database" value="HIVE"/>
 		<parameter id="name" value="Hive"/>
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.HiveSpecific"/>
