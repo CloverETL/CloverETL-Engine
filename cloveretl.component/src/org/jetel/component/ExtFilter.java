@@ -137,6 +137,11 @@ public class ExtFilter extends ExtFilterBase {
 	public ExtFilter(String id) {
 		super(id);
 	}
+	
+	public ExtFilter(String id, String filterExpression){
+		super(id);
+		this.filterExpression = filterExpression;
+	}
 
 	@Override
 	public void init() throws ComponentNotReadyException {
