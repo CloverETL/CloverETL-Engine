@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URL;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -34,6 +35,7 @@ import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.jetel.hadoop.provider.HadoopConfigurationUtils;
 import org.jetel.hadoop.provider.filesystem.FileSystemRegistry;
 import org.jetel.hadoop.service.mapreduce.HadoopConnectingMapReduceService;
@@ -125,14 +127,33 @@ public class HadoopConnectingMapReduceProvider implements HadoopConnectingMapRed
 			throw new NullPointerException("connData");
 		}
 
-		JobConf config = new JobConf(HadoopConfigurationUtils.property2Configuration(additionalSettings));
+		final JobConf config = new JobConf(HadoopConfigurationUtils.property2Configuration(additionalSettings));
 		if (connData.getUser() != null) {
 			config.setUser(connData.getUser());
 		}
 		config.set(NAMENODE_URL_KEY, String.format(connData.getFsUrlTemplate(), connData.getFsMasterHost(), connData
 				.getFsMasterPort()));
 		config.set(JOBTRACKER_URL_KEY, connData.getJobtrackerHost() + ":" + connData.getJobtrackerPort());
-		client = new JobClient(config);
+		
+		if (connData.getUser() != null) {
+			// CLO-6417: create JobClient as a privileged action;
+			// requires javax.security.auth.AuthPermission "doAs" if SecurityManager is installed.
+			UserGroupInformation ugi = UserGroupInformation.createRemoteUser(connData.getUser());
+			try {
+				client = ugi.doAs(new PrivilegedExceptionAction<JobClient>() {
+					@Override
+					public JobClient run() throws Exception {
+						// Submit a job
+						return new JobClient(config);
+					}
+				});
+			} catch (Exception e) {
+				LOGGER.warn("Failed to switch user to " + connData.getUser(), e);
+			}
+		}
+		if (client == null) {
+			client = new JobClient(config);
+		}
 	}
 
 	@Override
