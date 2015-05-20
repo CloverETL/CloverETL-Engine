@@ -18,7 +18,6 @@
  */
 package org.jetel.component;
 
-import java.net.URL;
 import java.nio.charset.Charset;
 
 import org.apache.log4j.Logger;
@@ -34,8 +33,6 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.modelview.MVMetadata;
-import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.compile.CompilationException;
@@ -51,7 +48,7 @@ import org.w3c.dom.Element;
  *
  * @created 5. 1. 2015
  */
-public class GenericComponent extends Node implements MetadataProvider {
+public class GenericComponent extends Node /*implements MetadataProvider*/ {
 
 	public final static String COMPONENT_TYPE = "GENERIC_COMPONENT";
 	private static final Logger logger = Logger.getLogger(GenericComponent.class);
@@ -242,17 +239,14 @@ public class GenericComponent extends Node implements MetadataProvider {
 		this.genericTransformURL = genericTransformURL;
 	}
 	
-	private void loadTransformForMetadataPropagation() {
-		if (genericTransform == null && (genericTransformCode != null || genericTransformURL != null || genericTransformClass != null)) {
-			URL[] classpath = getGraph().getRuntimeContext().getCompileClassPath();
-			ClassLoader cl = getAuthorityProxy().createClassLoader(classpath, GenericTransform.class.getClassLoader(), false);
-			genericTransform = getTransformFactory().createTransform(cl);
-		}
-	}
-
+	// Currently hercules can't propagate metadata.
+	// When CLO-6437 is resolved, we can uncomment these methods (don't forget to implement MetadataProvider in AbstractGenericTransform!)
+	/*
 	@Override
 	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
-		loadTransformForMetadataPropagation();
+		if (genericTransform == null && (genericTransformCode != null || genericTransformURL != null || genericTransformClass != null)) {
+			genericTransform = getTransformFactory().createTransform();
+		}
 
 		if (genericTransform instanceof MetadataProvider) {
 			return ((MetadataProvider) genericTransform).getInputMetadata(portIndex, metadataPropagationResolver);
@@ -262,11 +256,14 @@ public class GenericComponent extends Node implements MetadataProvider {
 
 	@Override
 	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
-		loadTransformForMetadataPropagation();
+		if (genericTransform == null && (genericTransformCode != null || genericTransformURL != null || genericTransformClass != null)) {
+			genericTransform = getTransformFactory().createTransform();
+		}
 		
 		if (genericTransform instanceof MetadataProvider) {
 			return ((MetadataProvider) genericTransform).getOutputMetadata(portIndex, metadataPropagationResolver);
 		}
 		return null;
 	}
+	*/
 }
