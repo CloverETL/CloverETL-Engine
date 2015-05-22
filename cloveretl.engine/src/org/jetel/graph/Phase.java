@@ -338,6 +338,12 @@ public class Phase extends GraphElement implements Comparable {
         		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, node, Priority.HIGH);
         		problem.setCauseException(e);
         		status.add(problem);
+        	} catch (NoClassDefFoundError e) {
+        		// NoClassDefFoundError is thrown e.g. when you use class from .jar that is not on classpath during checkconfig
+        		status.add(ExceptionUtils.getMessage("java.lang.NoClassDefFoundError:\n", e), Severity.ERROR, node, Priority.HIGH);
+        	} catch (Error e) {
+        		// java.lang.Error is thrown when you try to load invalid class (Eclipse produces invalid .class files when you don't set classpath correctly for compilation)
+        		status.add(ExceptionUtils.getMessage(e), Severity.ERROR, node, Priority.HIGH);
         	}
         }
 
