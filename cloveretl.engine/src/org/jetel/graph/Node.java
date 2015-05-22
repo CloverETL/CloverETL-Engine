@@ -19,6 +19,7 @@
 package org.jetel.graph;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -1207,14 +1208,21 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     protected boolean checkInputPorts(ConfigurationStatus status, int min, int max, boolean checkNonAssignedPorts) {
     	boolean retValue = true;
     	Collection<InputPort> inPorts = getInPorts();
-        if(inPorts.size() < min) {
-            status.add(new ConfigurationProblem("At least " + min + " input port must be defined!", Severity.ERROR, this, Priority.NORMAL));
-            retValue = false;
-        }
-        if(inPorts.size() > max) {
-            status.add(new ConfigurationProblem("At most " + max + " input ports can be defined!", Severity.ERROR, this, Priority.NORMAL));
-            retValue = false;
-        }
+    	if (min == max) {
+    		if (inPorts.size() != min) {
+                status.add(new ConfigurationProblem(MessageFormat.format("{0,choice,0#No input port may|1#1 input port must|1<{0} input ports must} be defined!", min), Severity.ERROR, this, Priority.NORMAL));
+                retValue = false;
+    		}
+    	} else {
+            if(inPorts.size() < min) {
+                status.add(new ConfigurationProblem(MessageFormat.format("At least {0} input {0,choice,1#port|1<ports} must be defined!", min), Severity.ERROR, this, Priority.NORMAL));
+                retValue = false;
+            }
+            if(inPorts.size() > max) {
+                status.add(new ConfigurationProblem(MessageFormat.format("At most {0} input {0,choice,1#port|1<ports} can be defined!", max), Severity.ERROR, this, Priority.NORMAL));
+                retValue = false;
+            }
+    	}
 
         int index = 0;
         for (InputPort inputPort : inPorts) {
@@ -1247,14 +1255,21 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      */
     protected boolean checkOutputPorts(ConfigurationStatus status, int min, int max, boolean checkNonAssignedPorts) {
     	Collection<OutputPort> outPorts = getOutPorts();
-        if(outPorts.size() < min) {
-            status.add(new ConfigurationProblem("At least " + min + " output port must be defined!", Severity.ERROR, this, Priority.NORMAL));
-            return false;
-        }
-        if(outPorts.size() > max) {
-            status.add(new ConfigurationProblem("At most " + max + " output ports can be defined!", Severity.ERROR, this, Priority.NORMAL));
-            return false;
-        }
+    	if (min == max) {
+    		if (outPorts.size() != min) {
+                status.add(new ConfigurationProblem(MessageFormat.format("{0,choice,0#No output port may|1#1 output port must|1<{0} output ports must} be defined!", min), Severity.ERROR, this, Priority.NORMAL));
+                return false;
+    		}
+    	} else {
+            if(outPorts.size() < min) {
+                status.add(new ConfigurationProblem(MessageFormat.format("At least {0} output {0,choice,1#port|1<ports} must be defined!", min), Severity.ERROR, this, Priority.NORMAL));
+                return false;
+            }
+            if(outPorts.size() > max) {
+                status.add(new ConfigurationProblem(MessageFormat.format("At most {0} output {0,choice,1#port|1<ports} can be defined!", max), Severity.ERROR, this, Priority.NORMAL));
+                return false;
+            }
+    	}
         int index = 0;
         for (OutputPort outputPort : outPorts) {
 			if (outputPort.getMetadata() == null){

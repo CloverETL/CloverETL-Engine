@@ -289,14 +289,14 @@ public abstract class AbstractMappingValidator extends AbstractVisitor {
 				}
 			}
 		}
-		checkRelationPortAndParentKeyBinding(element, parentKeyString, inPortIndex);
+		checkRelationPortAndParentKeyBinding(element, parentKeyString);
 	}
 
-	protected void checkRelationPortAndParentKeyBinding(Relation element, String parentKeyString, Integer inPortIndex) {
-		checkRelationPortAndParentKeyBinding(element, parentKeyString, inPortIndex, Severity.ERROR);
+	protected void checkRelationPortAndParentKeyBinding(Relation element, String parentKeyString) {
+		checkRelationPortAndParentKeyBinding(element, parentKeyString, Severity.ERROR);
 	}
 
-	protected void checkRelationPortAndParentKeyBinding(Relation element, String parentKeyString, Integer inPortIndex, Severity severity) {
+	protected void checkRelationPortAndParentKeyBinding(Relation element, String parentKeyString, Severity severity) {
 		if (parentKeyString != null) {
 			String inPortString = null;
 			ContainerNode parent = getRecurringParent(element.getParent());
@@ -306,7 +306,7 @@ public abstract class AbstractMappingValidator extends AbstractVisitor {
 			if (inPortString == null) {
 				addProblem(element, MappingProperty.PARENT_KEY, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.noDataForParentError"), severity)); //$NON-NLS-1$
 			} else {
-				inPortIndex = getAvailableInputPort(inPortString, element, MappingProperty.PARENT_KEY);
+				Integer inPortIndex = getAvailableInputPort(inPortString, element, MappingProperty.PARENT_KEY);
 				if (inPortIndex == null) {
 					addProblem(element, MappingProperty.PARENT_KEY, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.noDataForParentError"), severity)); //$NON-NLS-1$
 				} else {

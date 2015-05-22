@@ -296,8 +296,6 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			dataParser = TextParserFactory.getParser(metadata, charset);
 	    }
 	    
-	    DataRecord tmpRecord = DataRecordFactory.newRecord(metadata);
-
 	    //read records from file
         if (dataParser != null) {
             dataParser.init();

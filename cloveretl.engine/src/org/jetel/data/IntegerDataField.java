@@ -54,8 +54,6 @@ import org.jetel.util.string.StringUtils;
  */
 @CloverPublicAPI
 public class IntegerDataField extends DataFieldImpl implements Numeric, Comparable<Object> {
-
-	private static final long serialVersionUID = 3959941332738498948L;
 	
 	private int value;
 	private final NumericFormatter numericFormatter;

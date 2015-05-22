@@ -38,11 +38,13 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.protocols.sftp.URLUserInfo;
 import org.jetel.util.protocols.sftp.URLUserInfoIteractive;
+import org.jetel.util.stream.CloseOnceOutputStream;
 import org.jetel.util.string.StringUtils;
 
 import com.jcraft.jsch.ChannelSftp;
@@ -139,13 +141,32 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 		}
 	}
 
+	/**
+	 * Always returns an array with two elements.
+	 * The first element is the user name and it is never null.
+	 * The second element is the password and it is null if the userInfo does not contain a colon.
+	 * 
+	 * @return [username, password]
+	 */
 	private String[] getUserInfo() {
 		String userInfo = authority.getUserInfo();
-		if (userInfo == null) return new String[] {""};
-		return decodeString(userInfo).split(":");
+		if (userInfo == null) {
+			return new String[] {"", null};
+		}
+		
+		if (userInfo.indexOf(':') >= 0) {
+			String[] parts = userInfo.split(":", 2);
+			for (int i = 0; i < parts.length; i++) {
+				parts[i] = decodeString(parts[i]);
+			}
+			return parts;
+		} else {
+			return new String[] {decodeString(userInfo), null};
+		}
+		
 	}
 	
-	private Set<String> getPrivateKeys() {
+	private Set<URI> getPrivateKeys() {
 		return ((SFTPAuthority) authority).getPrivateKeys();
 	}
 
@@ -169,35 +190,35 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 	
 	private Session getSession() throws IOException {
 		JSch jsch = new JSch();
-		Set<String> keys = getPrivateKeys();
-		String[] user = getUserInfo();
-		String username = user[0];
-		String password = user.length == 2 ? user[1] : null;
+		Set<URI> keys = getPrivateKeys();
+		String[] userInfo = getUserInfo();
+		String username = userInfo[0];
+		String password = userInfo[1];
 		
 		if (password == null) {
+			if (keys == null || keys.isEmpty()) { // CLO-5770
+				throw new IOException("No password or private key specified for user " + username);
+			}
 			// CLO-4562: use private key authentication only if password is not set
 			if (log.isDebugEnabled()) {
 				log.debug("SFTP connecting to " + authority.getHost() + " using the following private keys: " + keys);
 			}
-			if (keys != null) {
-				for (String key: keys) {
-					try {
-						log.debug("Adding new identity from " + key);
-						jsch.addIdentity(key);
-					} catch (Exception e) {
-						log.warn("Failed to read private key", e);
+			for (URI key: keys) {
+				try {
+					log.debug("Adding new identity from " + key);
+					String keyName = key.toString();
+					try (InputStream is = FileUtils.getInputStream(null, keyName)) {
+						byte[] prvKey = IOUtils.toByteArray(is);
+						jsch.addIdentity(keyName, prvKey, null, null);
 					}
+				} catch (Exception e) {
+					log.warn("Failed to read private key", e);
 				}
 			}
 		} else if (log.isDebugEnabled()) {
 			log.debug("SFTP connecting to " + authority.getHost() + " using password");
 		}
 		
-		if (log.isWarnEnabled()) {
-			if (!StringUtils.isEmpty(username) && StringUtils.isEmpty(password) && (keys == null || keys.isEmpty())) {
-				log.warn("No password or private key specified for user " + username);
-			}
-		}
 
 		Proxy[] proxies = getProxies();
 		try {
@@ -372,7 +393,7 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 	public OutputStream getOutputStream(String file, int mode) throws IOException {
 		try {
 			channel = getChannelSftp();
-			OutputStream os = new BufferedOutputStream(channel.put(file, mode)) {
+			OutputStream os = new CloseOnceOutputStream(new BufferedOutputStream(channel.put(file, mode)) {
 				@Override
 				public void close() throws IOException {
 					try {
@@ -381,7 +402,7 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 						returnToPool();
 					}
 				}
-			};
+			}, null) ;
 			return os;
 		} catch (Exception e) {
 			returnToPool();

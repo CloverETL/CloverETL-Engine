@@ -45,7 +45,7 @@
      	<Bug pattern="EI_EXPOSE_REP" />
      </Match>
      <Match>
-     	<Bug pattern="NM_CONFUSING" />
+     	<Bug pattern="NM_CONFUSING,NP_BOOLEAN_RETURN_NULL" />
      </Match>
      <Match>
      	<Bug pattern="OBL_UNSATISFIED_OBLIGATION_EXCEPTION_EDGE" />

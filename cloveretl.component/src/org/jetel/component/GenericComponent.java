@@ -48,7 +48,7 @@ import org.w3c.dom.Element;
  *
  * @created 5. 1. 2015
  */
-public class GenericComponent extends Node {
+public class GenericComponent extends Node /*implements MetadataProvider*/ {
 
 	public final static String COMPONENT_TYPE = "GENERIC_COMPONENT";
 	private static final Logger logger = Logger.getLogger(GenericComponent.class);
@@ -173,8 +173,10 @@ public class GenericComponent extends Node {
         }
 		
 		try {
-			GenericTransform transform = getTransformFactory().createTransform();
-			transform.checkConfig(status); // delegating to implemented method
+			if (genericTransform == null) {
+				genericTransform = getTransformFactory().createTransform();
+			}
+			genericTransform.checkConfig(status); // delegating to implemented method
 		} catch (org.jetel.exception.LoadClassException e) {
 			if (ExceptionUtils.instanceOf(e, CompilationException.class)) {
 				status.add(ExceptionUtils.getMessage(e), Severity.WARNING, this, Priority.NORMAL);
@@ -236,4 +238,32 @@ public class GenericComponent extends Node {
 	public void setGenericTransformURL(String genericTransformURL) {
 		this.genericTransformURL = genericTransformURL;
 	}
+	
+	// Currently hercules can't propagate metadata.
+	// When CLO-6437 is resolved, we can uncomment these methods (don't forget to implement MetadataProvider in AbstractGenericTransform!)
+	/*
+	@Override
+	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		if (genericTransform == null && (genericTransformCode != null || genericTransformURL != null || genericTransformClass != null)) {
+			genericTransform = getTransformFactory().createTransform();
+		}
+
+		if (genericTransform instanceof MetadataProvider) {
+			return ((MetadataProvider) genericTransform).getInputMetadata(portIndex, metadataPropagationResolver);
+		}
+		return null;
+	}
+
+	@Override
+	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		if (genericTransform == null && (genericTransformCode != null || genericTransformURL != null || genericTransformClass != null)) {
+			genericTransform = getTransformFactory().createTransform();
+		}
+		
+		if (genericTransform instanceof MetadataProvider) {
+			return ((MetadataProvider) genericTransform).getOutputMetadata(portIndex, metadataPropagationResolver);
+		}
+		return null;
+	}
+	*/
 }

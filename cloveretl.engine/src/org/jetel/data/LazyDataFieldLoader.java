@@ -16,31 +16,22 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.component;
-
-import org.jetel.exception.ConfigurationStatus;
-import org.jetel.util.CloverPublicAPI;
-
+package org.jetel.data;
 
 /**
- * Transformation for GenericComponent.
  * 
- * @author Kokon (info@cloveretl.com)
- *         (c) Javlin, a.s. (www.cloveretl.com)
- *
- * @created 21. 11. 2014
+ * @author salamonp (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+ * 
+ * @created 11. 5. 2015
  */
-@CloverPublicAPI
-public interface GenericTransform extends Transform {
-	
-	public void init();
-	
-	public void execute() throws Exception;
-	
-	public void executeOnError(Exception e);
-	
-	public void free();
+public interface LazyDataFieldLoader {
 
-	public ConfigurationStatus checkConfig(ConfigurationStatus status);
-	
+	/**
+	 * Loads data to the specified field.
+	 * 
+	 * @param field
+	 *            Field to load data in. The source of data should already be defined in the field.
+	 */
+	public void load(DataFieldWithLazyLoading field);
+
 }

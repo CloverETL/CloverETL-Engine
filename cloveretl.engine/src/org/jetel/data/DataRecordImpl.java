@@ -43,8 +43,6 @@ import org.jetel.util.bytes.CloverBuffer;
  */
 public class DataRecordImpl extends DataRecord {
 
-	private static final long serialVersionUID = -7715142837674671119L;
-
 	/** The most significant bit in a byte */
 	private static final int HIGHEST_BIT = 0x80;
 
@@ -59,7 +57,7 @@ public class DataRecordImpl extends DataRecord {
      * Reference to metadata object describing this record 
 	 * @since
 	 */
-	private transient DataRecordMetadata metadata;
+	private DataRecordMetadata metadata;
 
     
     /**

@@ -16,31 +16,29 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.component;
-
-import org.jetel.exception.ConfigurationStatus;
-import org.jetel.util.CloverPublicAPI;
-
+package org.jetel.connection.jdbc.specific.impl;
 
 /**
- * Transformation for GenericComponent.
- * 
- * @author Kokon (info@cloveretl.com)
+ * @author salamonp (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 21. 11. 2014
+ * @created 19. 5. 2015
  */
-@CloverPublicAPI
-public interface GenericTransform extends Transform {
+public class H2Specific extends AbstractJdbcSpecific {
 	
-	public void init();
+	private static final H2Specific INSTANCE = new H2Specific();
 	
-	public void execute() throws Exception;
+	public static H2Specific getInstance() {
+		return INSTANCE;
+	}
 	
-	public void executeOnError(Exception e);
+	protected H2Specific() {
+		super();
+	}
 	
-	public void free();
+	@Override
+	public boolean canCloseResultSetBeforeCreatingNewOne() {
+		return false; // CLO-6418
+	}
 
-	public ConfigurationStatus checkConfig(ConfigurationStatus status);
-	
 }

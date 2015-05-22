@@ -1193,10 +1193,10 @@
 	      <singlePort name="1" label="rejected"/>
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="Filter expression" modifiable="true" name="filterExpression" nullable="true" required="!filterClass">
+	      <property category="basic" displayName="Filter expression" modifiable="true" name="filterExpression" nullable="true" required="!filterClass" redundant="filterClass">
 	        <singleType name="filter"/>
 	      </property>
-	      <property category="advanced" displayName="Filter class" modifiable="true" name="filterClass" nullable="true" required="!filterExpression">
+	      <property category="advanced" displayName="Filter class" modifiable="true" name="filterClass" nullable="true" required="!filterExpression" redundant="filterExpression">
 	        <singleType name="class" />
 	      </property>
 	    </properties>

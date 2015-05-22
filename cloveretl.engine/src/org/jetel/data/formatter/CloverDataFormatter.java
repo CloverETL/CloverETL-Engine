@@ -40,6 +40,7 @@ import org.jetel.data.parser.CloverDataParser.FileConfig;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.metadata.MetadataUtils;
@@ -407,6 +408,10 @@ public class CloverDataFormatter extends AbstractFormatter {
 	}
 
 	protected byte[] metadataSerialize(DataRecordMetadata metadata) {
+		metadata = metadata.duplicate(); // CLO-6311 - create a duplicate to safely remove autofilling
+		for (DataFieldMetadata field: metadata) {
+			field.setAutoFilling(null);
+		}
 		ByteArrayOutputStream  outStream = new ByteArrayOutputStream();
 		DataRecordMetadataXMLReaderWriter.write(metadata, outStream);
 		return outStream.toByteArray();

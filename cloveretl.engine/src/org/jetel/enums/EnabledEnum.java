@@ -162,7 +162,7 @@ public class EnabledEnum {
 		
 		@Override
 		public String validate() {
-			return "Invalid component enabled attribute: '" + this + "'.";
+			return "Invalid 'enabled' attribute: '" + this + "'.";
 		}
     }
     
@@ -170,7 +170,7 @@ public class EnabledEnum {
      * This class handles dynamic 'enable' constants derived from subgraph ports.
      */
     public static class SubgraphPortsDynamicValues {
-    	private static final String PATTERN_STRING = "enableWhen(InputPort|OutputPort)(\\d?)Is(Connected|Disconnected)";
+    	private static final String PATTERN_STRING = "enableWhen(InputPort|OutputPort)(\\d+)Is(Connected|Disconnected)";
     	
     	private static final Pattern PATTERN = Pattern.compile(PATTERN_STRING);
     	
@@ -260,13 +260,13 @@ public class EnabledEnum {
     					if (!port.isRequired()) {
     						return null;
     					} else {
-        					return "Component enabled attribute cannot be resolved, subgraph " + (inputPort ? "input" : "output") + " port " + portIndex + " is not optional.";
+        					return "'Enabled' attribute cannot be resolved, subgraph " + (inputPort ? "input" : "output") + " port " + portIndex + " is not optional.";
     					}
     				} else {
-    					return "Component enabled attribute cannot be resolved, subgraph port " + portIndex + " does not exist.";
+    					return "'Enabled' attribute cannot be resolved, subgraph " + (inputPort ? "input" : "output") + " port " + portIndex + " does not exist.";
     				}
     			} else {
-    				return "Component enabled attribute cannot be resolved, no graph available.";
+    				return "'Enabled' attribute cannot be resolved, no graph available.";
     			}
     		}
     	}
