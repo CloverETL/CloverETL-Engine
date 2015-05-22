@@ -351,6 +351,8 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                 error(e.beginLine,e.beginColumn,e.endLine,e.endColumn,"Unterminated string literal encountered");
       } catch (ParseException e) {
                 error(e.currentToken, "Syntax error");
+      } catch (EscapeCharacterException e) {
+                error(e.getLine(), e.getColumn()-1, e.getLine(), e.getColumn(), e.getMessage());
       } catch (Exception e) {
                 error(1,1,1,2,"Parser error: " + e.getMessage());
                 e.printStackTrace();
@@ -405,6 +407,8 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 
       } catch (ParseException e) {
                 error(1,1,1,2, "Syntax error");
+      } catch (EscapeCharacterException e) {
+                error(e.getLine(), e.getColumn()-1, e.getLine(), e.getColumn(), e.getMessage());
       } catch (Exception e) {
                 error(1,1,1,2,"Parser error: " + e.getMessage());
                 e.printStackTrace();
@@ -4400,35 +4404,6 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     finally { jj_save(9, xla); }
   }
 
-  private boolean jj_3R_164() {
-    if (jj_scan_token(INTEGER_LITERAL)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_94() {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_99()) {
-    jj_scanpos = xsp;
-    if (jj_3R_100()) {
-    jj_scanpos = xsp;
-    if (jj_3R_101()) {
-    jj_scanpos = xsp;
-    if (jj_3R_102()) return true;
-    }
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_133() {
-    if (jj_3R_142()) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_177()) jj_scanpos = xsp;
-    return false;
-  }
-
   private boolean jj_3R_163() {
     if (jj_scan_token(LONG_LITERAL)) return true;
     return false;
@@ -5850,6 +5825,35 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 
   private boolean jj_3R_99() {
     if (jj_scan_token(RETURN_OK)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_164() {
+    if (jj_scan_token(INTEGER_LITERAL)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_94() {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_99()) {
+    jj_scanpos = xsp;
+    if (jj_3R_100()) {
+    jj_scanpos = xsp;
+    if (jj_3R_101()) {
+    jj_scanpos = xsp;
+    if (jj_3R_102()) return true;
+    }
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_133() {
+    if (jj_3R_142()) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_177()) jj_scanpos = xsp;
     return false;
   }
 

@@ -84,7 +84,7 @@ public class ContainerLib extends TLFunctionLibrary {
     	map.clear();
     }
     
-    class ClearFunction implements TLFunctionPrototype {
+    static class ClearFunction implements TLFunctionPrototype {
     	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -106,7 +106,7 @@ public class ContainerLib extends TLFunctionLibrary {
     public static final <E> E pop(TLFunctionCallContext context, List<E> list) {
     	return list.size() > 0 ? list.remove(list.size()-1) : null;
     }
-	class PopFunction implements TLFunctionPrototype{
+    static class PopFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -124,7 +124,7 @@ public class ContainerLib extends TLFunctionLibrary {
 	public static final <E> E poll(TLFunctionCallContext context, List<E> list) {
 		return list.size() > 0 ? list.remove(0) : null;
 	}
-	class PollFunction implements TLFunctionPrototype{
+	static class PollFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -145,7 +145,7 @@ public class ContainerLib extends TLFunctionLibrary {
 		return list;
 	}
 	
-	class AppendFunction implements TLFunctionPrototype {
+	static class AppendFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -166,7 +166,7 @@ public class ContainerLib extends TLFunctionLibrary {
 		return list;
 	}
 	
-	class PushFunction implements TLFunctionPrototype{
+	static class PushFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -198,7 +198,7 @@ public class ContainerLib extends TLFunctionLibrary {
 		return list;
 	}
 	
-	class InsertFunction implements TLFunctionPrototype {
+	static class InsertFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -229,7 +229,7 @@ public class ContainerLib extends TLFunctionLibrary {
 	public static final <E> E remove(TLFunctionCallContext context, List<E> list, int position) {
 		return list.remove(position);
 	}
-	class RemoveFunction implements TLFunctionPrototype{
+	static class RemoveFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -269,7 +269,7 @@ public class ContainerLib extends TLFunctionLibrary {
 		Collections.sort(list, new MyComparator<E>());
 		return list;
 	}
-	class SortFunction implements TLFunctionPrototype{
+	static class SortFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -317,7 +317,7 @@ public class ContainerLib extends TLFunctionLibrary {
 	}
 		
 	// REVERSE
-	class ReverseFunction implements TLFunctionPrototype{
+	static class ReverseFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -369,7 +369,7 @@ public class ContainerLib extends TLFunctionLibrary {
 		return map.isEmpty();
 	}
 	
-	class IsEmptyFunction implements TLFunctionPrototype{
+	static class IsEmptyFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -397,7 +397,7 @@ public class ContainerLib extends TLFunctionLibrary {
 		to.putAll(from);
 		return to;
 	}
-	class CopyFunction implements TLFunctionPrototype{
+	static class CopyFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -423,7 +423,7 @@ public class ContainerLib extends TLFunctionLibrary {
 	public static final <E> boolean containsAll(TLFunctionCallContext context, List<E> collection, List<E> subList) {
 		return collection.containsAll(subList);
 	}
-	class ContainsAllFunction implements TLFunctionPrototype{
+	static class ContainsAllFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -443,7 +443,7 @@ public class ContainerLib extends TLFunctionLibrary {
 	public static final <K, V> boolean containsKey(TLFunctionCallContext context, Map<K, V> map, K key) {
 		return map.containsKey(key);
 	}
-	class ContainsKeyFunction implements TLFunctionPrototype{
+	static class ContainsKeyFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -469,7 +469,7 @@ public class ContainerLib extends TLFunctionLibrary {
 		return list.contains(value);
 	}
 	
-	class ContainsValueFunction implements TLFunctionPrototype{
+	static class ContainsValueFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -501,7 +501,7 @@ public class ContainerLib extends TLFunctionLibrary {
 		return Collections.binarySearch(((List<? extends Comparable<? super V>>) list), value);
 	}
 	
-	class BinarySearchFunction implements TLFunctionPrototype{
+	static class BinarySearchFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -519,7 +519,7 @@ public class ContainerLib extends TLFunctionLibrary {
 	public static final <K, V> List<K> getKeys(TLFunctionCallContext context, Map<K, V> map) {
 		return new ArrayList<K>(map.keySet());
 	}
-	class GetKeysFunction implements TLFunctionPrototype{
+	static class GetKeysFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -538,7 +538,7 @@ public class ContainerLib extends TLFunctionLibrary {
 	public static final <K, V> List<V> getValues(TLFunctionCallContext context, Map<K, V> map) {
 		return new ArrayList<V>(map.values());
 	}
-	class GetValuesFunction implements TLFunctionPrototype{
+	static class GetValuesFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -577,7 +577,7 @@ public class ContainerLib extends TLFunctionLibrary {
 		
 	}
 	
-	class ToMapFunction implements TLFunctionPrototype{
+	static class ToMapFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {

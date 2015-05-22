@@ -714,6 +714,7 @@ public class DB2DataWriter extends Node {
 	private DataRecord inRecord;
 	private String command;
 	private Properties properties = new Properties();
+	private boolean fieldMappingOverride = false;
 	private String[] cloverFields;
 	private String[] dbFields;
 	private String batchURL;
@@ -853,7 +854,29 @@ public class DB2DataWriter extends Node {
 		} catch (TempFileCreationException e) {
 			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_BATCHURL_ATTRIBUTE));
 		}
-        return status;
+		
+		// Check field mapping
+		if (cloverFields.length != dbFields.length) {
+			String countNotSame = "Count of fields is not the same for clover and DB fields (" + cloverFields.length + " vs. " + dbFields.length + ")";
+			status.add(new ConfigurationProblem(countNotSame, Severity.ERROR, this, Priority.NORMAL, XML_CLOVERFIELDS_ATTRIBUTE));
+			status.add(new ConfigurationProblem(countNotSame, Severity.ERROR, this, Priority.NORMAL, XML_DBFIELDS_ATTRIBUTE));
+		}
+
+		for (String cloverField : cloverFields) {
+			if (cloverField.isEmpty()) {
+				status.add(new ConfigurationProblem("Clover field cannot be empty", Severity.ERROR, this, Priority.NORMAL, fieldMappingOverride ? XML_FIELDMAP_ATTRIBUTE : XML_CLOVERFIELDS_ATTRIBUTE));
+			} else if (inMetadata != null && inMetadata.getField(cloverField) == null) {
+				status.add(new ConfigurationProblem("Clover field \"" + cloverField + "\" is not present in input data", Severity.ERROR, this, Priority.NORMAL, fieldMappingOverride ? XML_FIELDMAP_ATTRIBUTE : XML_CLOVERFIELDS_ATTRIBUTE));
+			}
+		}
+
+		for (String dbField : dbFields) {
+			if ("\"\"".equals(dbField)) {
+				status.add(new ConfigurationProblem("DB field cannot be empty" + (fieldMappingOverride ? ". Expected syntax is sequence of $CloverField:=DBField": ""), Severity.ERROR, this, Priority.NORMAL, fieldMappingOverride ? XML_FIELDMAP_ATTRIBUTE : XML_DBFIELDS_ATTRIBUTE));
+			}
+		}
+
+		return status;
 	}
 
 	@Override
@@ -1719,7 +1742,9 @@ public class DB2DataWriter extends Node {
                 LoadMode.valueOf(xattribs.getString(XML_MODE_ATTRIBUTE, DEFAULT_TABLE_LOAD_MODE).toLowerCase()),
                 xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.URL),
                 xattribs.getStringEx(XML_FILEMETADATA_ATTRIBUTE, null, RefResFlag.URL));
-		if (xattribs.exists(XML_FIELDMAP_ATTRIBUTE)){
+        boolean fieldMappingOverride = xattribs.exists(XML_FIELDMAP_ATTRIBUTE);
+        writer.setFieldMappingOverride(fieldMappingOverride);
+		if (fieldMappingOverride){
 			String[] pairs = StringUtils.split(xattribs.getString(XML_FIELDMAP_ATTRIBUTE));
 			String[] cloverFields = new String[pairs.length];
 			String[] dbFields = new String[pairs.length];
@@ -1727,7 +1752,8 @@ public class DB2DataWriter extends Node {
 			for (int i=0;i<pairs.length;i++){
 				pair = JoinKeyUtils.getMappingItemsFromMappingString(pairs[i]);
 				cloverFields[i] = pair[0];
-				dbFields[i] = StringUtils.quote(pair[1]);
+				String dbField = pair[1];
+				dbFields[i] = StringUtils.quote(dbField == null ? "" : dbField);
 			}
 			writer.setCloverFields(cloverFields);
 			writer.setDBFields(dbFields);
@@ -1870,6 +1896,14 @@ public class DB2DataWriter extends Node {
 
 	public void setFailOnWarnings(boolean failOnWarnings) {
 		this.failOnWarnings = failOnWarnings;
+	}
+
+	public boolean isFieldMappingOverride() {
+		return fieldMappingOverride;
+	}
+
+	public void setFieldMappingOverride(boolean fieldMappingOverride) {
+		this.fieldMappingOverride = fieldMappingOverride;
 	}
 
 	/**

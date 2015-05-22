@@ -18,7 +18,6 @@
  */
 package org.jetel.data;
 
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
@@ -39,9 +38,7 @@ import org.jetel.util.bytes.CloverBuffer;
  * @see         OtherClasses
  */
 @CloverPublicAPI
-public abstract class DataField implements Serializable, Comparable<Object> {
-
-	private static final long serialVersionUID = -6730581502799121071L;
+public abstract class DataField implements Comparable<Object> {
 
 
 	/**

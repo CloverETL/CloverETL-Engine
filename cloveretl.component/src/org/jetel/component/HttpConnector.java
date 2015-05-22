@@ -2053,9 +2053,18 @@ public class HttpConnector extends Node {
 
 		HttpResponse response = buildAndSendRequest(configuration);
 
-		// warn if the HTTP response code isn't 200
-		if (response != null && response.getStatusLine().getStatusCode() != 200) {
-			logger.warn("Returned code for http request " + configuration.getTarget() + " is " + response.getStatusLine().getStatusCode());
+		if (response != null) {
+			int statusCode = response.getStatusLine().getStatusCode();
+			if (statusCode != 200) {
+				String message = "Returned code for http request " + configuration.getTarget() + " is " + statusCode;
+				if (statusCode >= 300) { // CLO-6152
+					// warn if the HTTP response code isn't 2xx
+					logger.warn(message);
+				} else {
+					// log 1xx and 2xx status codes as info (except for 200)
+					logger.info(message);
+				}
+			}
 		}
 
 		result.setResponse(response);

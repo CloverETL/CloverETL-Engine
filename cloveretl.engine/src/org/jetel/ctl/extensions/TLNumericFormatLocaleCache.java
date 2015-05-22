@@ -51,35 +51,35 @@ public class TLNumericFormatLocaleCache extends TLFormatterCache {
 		this(context, false);
 	}
 
-	public void createCachedLocaleFormat(TLFunctionCallContext context, int pos1, int pos2) {
+	public void createCachedLocaleFormat(TLFunctionCallContext context, int patternPos, int localePos) {
 
-		if (context.getLiteralsSize() <= pos1)
+		if (context.getLiteralsSize() <= patternPos)
 			return;
 
-		if (!(context.getParamValue(pos1) instanceof String))
+		if (!(context.getParamValue(patternPos) instanceof String))
 			return;
 
-		if (context.getLiteralsSize() <= pos2 || !(context.getParamValue(pos2) instanceof String)) {
-			String paramPattern = (String) context.getParamValue(pos1);
-			if (context.isLiteral(pos1)) {
+		if (context.getLiteralsSize() <= localePos || !(context.getParamValue(localePos) instanceof String)) {
+			String paramPattern = (String) context.getParamValue(patternPos);
+			if (context.isLiteral(patternPos)) {
 				prepareCachedFormatter(context, paramPattern, context.getDefaultLocale());
 			}
 			return;
 		}
 
-		String paramPattern = (String) context.getParamValue(pos1);
-		String paramLocale = (String) context.getParamValue(pos2);
-		if (context.isLiteral(pos1) && context.isLiteral(pos2)) {
+		String paramPattern = (String) context.getParamValue(patternPos);
+		String paramLocale = (String) context.getParamValue(localePos);
+		if (context.isLiteral(patternPos) && context.isLiteral(localePos)) {
 			prepareCachedFormatter(context, paramPattern, getLocale(paramLocale));
 		}
 	}
 	
-	public NumericFormatter getCachedLocaleFormat(TLFunctionCallContext context, String format, String locale, int pos1, int pos2) {
+	public NumericFormatter getCachedLocaleFormat(TLFunctionCallContext context, String format, String locale, int patternPos, int localePos) {
 
-		if (context.getLiteralsSize() > Math.max(pos1, pos2)) {
+		if (context.getLiteralsSize() > Math.max(patternPos, localePos)) {
 			// if we use the variant with both format and locale specified
 			if (cachedFormatter != null && 
-					((context.isLiteral(pos1) && context.isLiteral(pos2))
+					((context.isLiteral(patternPos) && context.isLiteral(localePos))
 					// either both format and locale were literals (thus cached at init)
 					|| (cachedFormatter != null && format.equals(previousFormatString) && locale.equals(previousLocaleString))
 					// or format is already cached and previous inputs match the current ones
@@ -92,10 +92,10 @@ public class TLNumericFormatLocaleCache extends TLFormatterCache {
 				return cachedFormatter;
 			}
 		}
-		if (context.getLiteralsSize() > pos1 && context.getLiteralsSize() <= pos2) {
+		if (context.getLiteralsSize() > patternPos && context.getLiteralsSize() <= localePos) {
 			// just format is specified, but not locale
 			if (cachedFormatter != null &&
-					(context.isLiteral(pos1) || (cachedFormatter != null && format.equals(previousFormatString)))) {
+					(context.isLiteral(patternPos) || (cachedFormatter != null && format.equals(previousFormatString)))) {
 				return cachedFormatter;
 			} else {
 				// same as above but just for format (default locale is used)

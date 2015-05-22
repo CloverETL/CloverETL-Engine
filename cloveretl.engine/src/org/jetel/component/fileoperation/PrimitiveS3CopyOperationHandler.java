@@ -34,6 +34,8 @@ import org.jetel.component.fileoperation.result.ListResult;
 import org.jetel.util.stream.StreamUtils;
 import org.jets3t.service.S3Service;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -44,6 +46,7 @@ public class PrimitiveS3CopyOperationHandler extends PrimitiveS3OperationHandler
 	
 	private FileManager manager = FileManager.getInstance();
 
+	@SuppressFBWarnings("NP_LOAD_OF_KNOWN_NULL_VALUE")
 	@Override
 	public URI copyFile(URI source, URI target) throws IOException {
 		target = target.normalize();

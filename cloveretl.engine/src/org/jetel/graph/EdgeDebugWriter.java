@@ -138,6 +138,14 @@ public class EdgeDebugWriter {
     		return ContextProvider.getContextURL();
     	}
     }
+
+    /**
+     * To set the correct record counter before calling writeRecord(DataRecord record)
+     * @param recordsCounter
+     */
+	public void setRecordsCounter(int recordsCounter) {
+		this.recordsCounter = recordsCounter;
+	}
     
     public void writeRecord(DataRecord record) throws IOException, InterruptedException {
         recordsCounter++;
@@ -324,6 +332,7 @@ public class EdgeDebugWriter {
 	public boolean isSampleData() {
 		return sampleData;
 	}
+	
 
 	/**
 	 * @param sampleData the sampleData to set

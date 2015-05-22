@@ -20,7 +20,6 @@ package org.jetel.component.fileoperation;
 
 import static java.text.MessageFormat.format;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
@@ -32,13 +31,8 @@ import java.util.List;
 import org.jetel.component.fileoperation.SimpleParameters.CopyParameters;
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
-import org.jetel.component.fileoperation.SimpleParameters.FileParameters;
-import org.jetel.component.fileoperation.SimpleParameters.InfoParameters;
-import org.jetel.component.fileoperation.SimpleParameters.ListParameters;
 import org.jetel.component.fileoperation.SimpleParameters.MoveParameters;
-import org.jetel.component.fileoperation.SimpleParameters.ReadParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
-import org.jetel.component.fileoperation.SimpleParameters.WriteParameters;
 import org.jetel.component.fileoperation.result.CopyResult;
 import org.jetel.component.fileoperation.result.DeleteResult;
 import org.jetel.component.fileoperation.result.InfoResult;
@@ -46,7 +40,7 @@ import org.jetel.component.fileoperation.result.ListResult;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.stream.StreamUtils;
 
-public class DefaultOperationHandler implements IOperationHandler {
+public class DefaultOperationHandler extends BaseOperationHandler {
 	
 	protected FileManager manager = FileManager.getInstance();
 	
@@ -246,43 +240,8 @@ public class DefaultOperationHandler implements IOperationHandler {
 	}
 
 	@Override
-	public SingleCloverURI create(SingleCloverURI target, CreateParameters params) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Info info(SingleCloverURI target, InfoParameters params) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public SingleCloverURI delete(SingleCloverURI target, DeleteParameters params) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public List<SingleCloverURI> resolve(SingleCloverURI wildcards, ResolveParameters params) throws IOException {
 		return manager.defaultResolve(wildcards);
-	}
-
-	@Override
-	public List<Info> list(SingleCloverURI parent, ListParameters params) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public ReadableContent getInput(SingleCloverURI source, ReadParameters params) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public WritableContent getOutput(SingleCloverURI target, WriteParameters params) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public File getFile(SingleCloverURI uri, FileParameters params) throws IOException {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override

@@ -75,6 +75,11 @@ public class Plugins {
 
     private static boolean simpleClassLoading = false;
 
+    /**
+     * Monitor which guards activation and de-activation of all plugins.
+     */
+    protected static final Object pluginActivationMonitor = new Object();
+    
 	public static void init() {
         init((String) null);
     }
@@ -289,53 +294,59 @@ public class Plugins {
      * Activate all not yet activated plugins. All already deactivated plugins are skipped.
      * @param lazyClassLoading whether the class references are actively loaded by the plugin system 
      */
-    public static synchronized void activateAllPlugins() {
-    	for(String pluginId : pluginDescriptors.keySet()) {
-    		if(!activePlugins.containsKey(pluginId) && !deactivePlugins.containsKey(pluginId)) {
-    			activatePlugin(pluginId);
-    		}
+    public static void activateAllPlugins() {
+    	synchronized (Plugins.pluginActivationMonitor) {
+	    	for(String pluginId : pluginDescriptors.keySet()) {
+	    		if(!activePlugins.containsKey(pluginId) && !deactivePlugins.containsKey(pluginId)) {
+	    			activatePlugin(pluginId);
+	    		}
+	    	}
     	}
     }
     
-    public static synchronized void activatePlugin(String pluginID) {
-        //some validation tests
-        if(!pluginDescriptors.containsKey(pluginID)) {
-            logger.error("Attempt activate unknown plugin: " + pluginID);
-            return;
-        }
-        if(activePlugins.containsKey(pluginID)) {
-            logger.error("Attempt activate already actived plugin: " + pluginID);
-            return;
-        }
-        if(deactivePlugins.containsKey(pluginID)) {
-            logger.error("Attempt activate already deactived plugin: " + pluginID);
-            return;
-        }
-        //activation
-        PluginDescriptor pluginDescriptor = pluginDescriptors.get(pluginID);
-        activePlugins.put(pluginID, pluginDescriptor);
-        pluginDescriptor.activate();
+    public static void activatePlugin(String pluginID) {
+    	synchronized (Plugins.pluginActivationMonitor) {
+	        //some validation tests
+	        if(!pluginDescriptors.containsKey(pluginID)) {
+	            logger.error("Attempt activate unknown plugin: " + pluginID);
+	            return;
+	        }
+	        if(activePlugins.containsKey(pluginID)) {
+	            logger.error("Attempt activate already actived plugin: " + pluginID);
+	            return;
+	        }
+	        if(deactivePlugins.containsKey(pluginID)) {
+	            logger.error("Attempt activate already deactived plugin: " + pluginID);
+	            return;
+	        }
+	        //activation
+	        PluginDescriptor pluginDescriptor = pluginDescriptors.get(pluginID);
+	        activePlugins.put(pluginID, pluginDescriptor);
+	        pluginDescriptor.activate();
+    	}
     }
 
-    public static synchronized void deactivatePlugin(String pluginID) {
-        //some validation tests
-        if(!pluginDescriptors.containsKey(pluginID)) {
-            logger.error("Attempt deactivate unknown plugin: " + pluginID);
-            return;
-        }
-        if(!activePlugins.containsKey(pluginID)) {
-            logger.error("Attempt deactivate inactive plugin: " + pluginID);
-            return;
-        }
-        if(deactivePlugins.containsKey(pluginID)) {
-            logger.error("Attempt deactivate already deactive plugin: " + pluginID);
-            return;
-        }
-        //deactivation
-        PluginDescriptor pluginDescriptor = pluginDescriptors.get(pluginID);
-        activePlugins.remove(pluginID);
-        deactivePlugins.put(pluginID, pluginDescriptor);
-        pluginDescriptor.deactivate();
+    public static void deactivatePlugin(String pluginID) {
+    	synchronized (Plugins.pluginActivationMonitor) {
+	        //some validation tests
+	        if(!pluginDescriptors.containsKey(pluginID)) {
+	            logger.error("Attempt deactivate unknown plugin: " + pluginID);
+	            return;
+	        }
+	        if(!activePlugins.containsKey(pluginID)) {
+	            logger.error("Attempt deactivate inactive plugin: " + pluginID);
+	            return;
+	        }
+	        if(deactivePlugins.containsKey(pluginID)) {
+	            logger.error("Attempt deactivate already deactive plugin: " + pluginID);
+	            return;
+	        }
+	        //deactivation
+	        PluginDescriptor pluginDescriptor = pluginDescriptors.get(pluginID);
+	        activePlugins.remove(pluginID);
+	        deactivePlugins.put(pluginID, pluginDescriptor);
+	        pluginDescriptor.deactivate();
+    	}
     }
 
     /**

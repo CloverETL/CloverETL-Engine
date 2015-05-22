@@ -55,8 +55,13 @@ public class EnabledEnum {
     public static final EnabledEnum PASS_THROUGH = new EnabledEnum("passThrough", "Pass through", false); //deprecated - use DISABLED or FALSE
     public static final EnabledEnum TRUE = new EnabledEnum("true", "Enabled", true);
     public static final EnabledEnum FALSE = new EnabledEnum("false", "Disabled", false);
-
-    private static final EnabledEnum[] values = new EnabledEnum[] { ALWAYS, NEVER, ENABLED, DISABLED, PASS_THROUGH, TRUE, FALSE }; 
+    
+    //discard is non-public enabled status which is used by clustered graphs to remove components from graph with all related edges
+    //regular disabled component is replaced by a 'pass-through' edge if possible, discarded component wipes out all related edges
+    //see TransformationGraphAnalyser#disableNodesInPhases()
+    public static final EnabledEnum DISCARD = new EnabledEnum("discard", "Discard", false);
+    
+    private static final EnabledEnum[] values = new EnabledEnum[] { ALWAYS, NEVER, ENABLED, DISABLED, PASS_THROUGH, TRUE, FALSE, DISCARD }; 
 
 	public static final EnabledEnum DEFAULT_VALUE = ALWAYS;
 
@@ -157,7 +162,7 @@ public class EnabledEnum {
 		
 		@Override
 		public String validate() {
-			return "Invalid component enabled attribute: '" + this + "'.";
+			return "Invalid 'enabled' attribute: '" + this + "'.";
 		}
     }
     
@@ -165,7 +170,7 @@ public class EnabledEnum {
      * This class handles dynamic 'enable' constants derived from subgraph ports.
      */
     public static class SubgraphPortsDynamicValues {
-    	private static final String PATTERN_STRING = "enableWhen(InputPort|OutputPort)(\\d?)Is(Connected|Disconnected)";
+    	private static final String PATTERN_STRING = "enableWhen(InputPort|OutputPort)(\\d+)Is(Connected|Disconnected)";
     	
     	private static final Pattern PATTERN = Pattern.compile(PATTERN_STRING);
     	
@@ -255,13 +260,13 @@ public class EnabledEnum {
     					if (!port.isRequired()) {
     						return null;
     					} else {
-        					return "Component enabled attribute cannot be resolved, subgraph " + (inputPort ? "input" : "output") + " port " + portIndex + " is not optional.";
+        					return "'Enabled' attribute cannot be resolved, subgraph " + (inputPort ? "input" : "output") + " port " + portIndex + " is not optional.";
     					}
     				} else {
-    					return "Component enabled attribute cannot be resolved, subgraph port " + portIndex + " does not exist.";
+    					return "'Enabled' attribute cannot be resolved, subgraph " + (inputPort ? "input" : "output") + " port " + portIndex + " does not exist.";
     				}
     			} else {
-    				return "Component enabled attribute cannot be resolved, no graph available.";
+    				return "'Enabled' attribute cannot be resolved, no graph available.";
     			}
     		}
     	}

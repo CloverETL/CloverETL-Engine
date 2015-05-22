@@ -85,7 +85,7 @@ public class UtilLib extends TLFunctionLibrary {
 		}
     }
 
-    class SleepFunction implements TLFunctionPrototype {
+    static class SleepFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -105,7 +105,7 @@ public class UtilLib extends TLFunctionLibrary {
     	return UUID.randomUUID().toString();
     }
     
-    class RandomUuidFunction implements TLFunctionPrototype {
+    static class RandomUuidFunction implements TLFunctionPrototype {
     	
     	@Override
     	public void init(TLFunctionCallContext context) {
@@ -135,7 +135,7 @@ public class UtilLib extends TLFunctionLibrary {
 		context.setCache(new TLPropertyRefResolverCache(refResolver));
     }
 
-    class GetParamValueFunction implements TLFunctionPrototype {
+    static class GetParamValueFunction implements TLFunctionPrototype {
     	
     	@Override
     	public void init(TLFunctionCallContext context) {
@@ -161,7 +161,7 @@ public class UtilLib extends TLFunctionLibrary {
 		return null;
     }
     
-    class GetRawParamValueFunction implements TLFunctionPrototype {
+	static class GetRawParamValueFunction implements TLFunctionPrototype {
     	
     	@Override
     	public void init(TLFunctionCallContext context) {
@@ -198,7 +198,7 @@ public class UtilLib extends TLFunctionLibrary {
 		context.setCache(new TLObjectCache<Map<String, String>>(Collections.unmodifiableMap(map)));
     }
 
-    class GetParamValuesFunction implements TLFunctionPrototype {
+    static class GetParamValuesFunction implements TLFunctionPrototype {
     	
     	@Override
     	public void init(TLFunctionCallContext context) {
@@ -231,7 +231,7 @@ public class UtilLib extends TLFunctionLibrary {
 		context.setCache(new TLObjectCache<Map<String, String>>(Collections.unmodifiableMap(map)));
     }
 
-    class GetRawParamValuesFunction implements TLFunctionPrototype {
+    static class GetRawParamValuesFunction implements TLFunctionPrototype {
     	
     	@Override
     	public void init(TLFunctionCallContext context) {
@@ -257,7 +257,7 @@ public class UtilLib extends TLFunctionLibrary {
 		return (Map<String, String>) map;
     }
     
-    class GetJavaPropertiesFunction implements TLFunctionPrototype {
+    static class GetJavaPropertiesFunction implements TLFunctionPrototype {
     	
     	@Override
     	public void init(TLFunctionCallContext context) {
@@ -275,7 +275,7 @@ public class UtilLib extends TLFunctionLibrary {
 		return System.getenv();
     }
     
-    class GetEnvironmentVariablesFunction implements TLFunctionPrototype {
+    static class GetEnvironmentVariablesFunction implements TLFunctionPrototype {
     	
     	@Override
     	public void init(TLFunctionCallContext context) {
@@ -300,7 +300,7 @@ public class UtilLib extends TLFunctionLibrary {
 		return node.getAttributes().getProperty(name);
     }
     
-    class GetComponentPropertyFunction implements TLFunctionPrototype {
+    static class GetComponentPropertyFunction implements TLFunctionPrototype {
     	
     	@Override
     	public void init(TLFunctionCallContext context) {
@@ -372,7 +372,7 @@ public class UtilLib extends TLFunctionLibrary {
  	}
     
       
-    class HashCodeFunction implements TLFunctionPrototype {
+    static class HashCodeFunction implements TLFunctionPrototype {
 
     	private class ParamCache extends TLCache{
     		TLTypeEnum type;
@@ -441,7 +441,7 @@ public class UtilLib extends TLFunctionLibrary {
  		return Integer.valueOf(0xff & input[position]);
  	}
 
- 	class  ByteAtFunction implements TLFunctionPrototype {
+ 	static class ByteAtFunction implements TLFunctionPrototype {
 
  		@Override
  		public void init(TLFunctionCallContext context) {
@@ -494,7 +494,7 @@ public class UtilLib extends TLFunctionLibrary {
     	}
     }
 
-    class GetSubgraphInputPortsCountFunction implements TLFunctionPrototype {
+    static class GetSubgraphInputPortsCountFunction implements TLFunctionPrototype {
     	
     	@Override
     	public void init(TLFunctionCallContext context) {
@@ -523,7 +523,7 @@ public class UtilLib extends TLFunctionLibrary {
     	}
     }
 
-    class GetSubgraphOutputPortsCountFunction implements TLFunctionPrototype {
+    static class GetSubgraphOutputPortsCountFunction implements TLFunctionPrototype {
     	
     	@Override
     	public void init(TLFunctionCallContext context) {
@@ -550,7 +550,7 @@ public class UtilLib extends TLFunctionLibrary {
     	}
     }
     
-    class IsSubgraphInputPortConnectedFunction implements TLFunctionPrototype {
+	static class IsSubgraphInputPortConnectedFunction implements TLFunctionPrototype {
     	
     	@Override
     	public void init(TLFunctionCallContext context) {
@@ -578,7 +578,7 @@ public class UtilLib extends TLFunctionLibrary {
     	}
     }
     
-    class IsSubgraphOutputPortConnectedFunction implements TLFunctionPrototype {
+	static class IsSubgraphOutputPortConnectedFunction implements TLFunctionPrototype {
     	
     	@Override
     	public void init(TLFunctionCallContext context) {

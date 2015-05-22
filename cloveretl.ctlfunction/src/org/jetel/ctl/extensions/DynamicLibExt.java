@@ -155,7 +155,7 @@ public class DynamicLibExt extends TLFunctionLibraryExt {
 		context.setCache(context.getSharedInstance(RecordPropertyCache.class));
 	}
 	
-	public class GetFieldPropertiesFunction implements TLFunctionPrototype {
+	public static class GetFieldPropertiesFunction implements TLFunctionPrototype {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -180,7 +180,7 @@ public class DynamicLibExt extends TLFunctionLibraryExt {
 		}
 	}
 	
-	public class GetRecordPropertiesFunction implements TLFunctionPrototype {
+	public static class GetRecordPropertiesFunction implements TLFunctionPrototype {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -278,11 +278,15 @@ public class DynamicLibExt extends TLFunctionLibraryExt {
 
 		@Override
 		public boolean equals(Object o) {
-			if (o instanceof DataFieldWrapper) {
-				DataFieldWrapper p = (DataFieldWrapper) o;
-				return (this.first == p.first) && Objects.equals(this.second, p.second);
+			if (this == o) {
+				return true;
 			}
-			return false;
+			if ((o == null) || (getClass() != o.getClass())) {
+				return false;
+			}
+			
+			DataFieldWrapper p = (DataFieldWrapper) o;
+			return (this.first == p.first) && Objects.equals(this.second, p.second);
 		}
 
 		@Override
@@ -356,7 +360,7 @@ public class DynamicLibExt extends TLFunctionLibraryExt {
 			properties.put(DataRecordMetadataXMLReaderWriter.DEFAULT_ATTR, field.getDefaultValueStr());
 			properties.put(DataRecordMetadataXMLReaderWriter.TRIM_ATTR, Boolean.toString(field.isTrim()));
 			properties.put(DataRecordMetadataXMLReaderWriter.NULL_VALUE_ATTR, field.getNullValue());
-			properties.put(DataRecordMetadataXMLReaderWriter.FORMAT_ATTR, DynamicLibExt.toString(field.getFormat()));
+			properties.put(DataRecordMetadataXMLReaderWriter.FORMAT_ATTR, field.getFormatStr());
 			properties.put(DataRecordMetadataXMLReaderWriter.LOCALE_ATTR, field.getLocaleStr());
 			properties.put(DataRecordMetadataXMLReaderWriter.TIMEZONE_ATTR, field.getTimeZoneStr());
 			properties.put(DataRecordMetadataXMLReaderWriter.DESCRIPTION_ATTR, field.getDescription());

@@ -32,6 +32,9 @@ public class XSLTFormatter extends AbstractFormatter {
 	
 	@Override
 	public void close() throws IOException {
+		if (writableByteChannel == null || !writableByteChannel.isOpen()) {
+			return;
+		}
 		writableByteChannel.close();
 	}
 	

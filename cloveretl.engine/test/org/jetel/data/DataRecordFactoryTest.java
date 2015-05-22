@@ -30,6 +30,19 @@ import org.jetel.test.CloverTestCase;
  * @created 13. 4. 2015
  */
 public class DataRecordFactoryTest extends CloverTestCase {
+	
+	DataRecordMetadata metadata;
+	
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+
+		metadata = new DataRecordMetadata("record");
+		metadata.addField(new DataFieldMetadata("field1", DataFieldType.STRING, ";"));
+		metadata.addField(new DataFieldMetadata("field2", DataFieldType.INTEGER, ";"));
+		metadata.getField(1).setDefaultValueStr("123");
+		metadata.getField(1).setNullable(false);
+	}
 
 	public void testNewRecord() {
 		try {
@@ -39,12 +52,22 @@ public class DataRecordFactoryTest extends CloverTestCase {
 			//correct
 		}
 		
-		DataRecordMetadata metadata = new DataRecordMetadata("record");
-		metadata.addField(new DataFieldMetadata("field1", DataFieldType.STRING, ";"));
-		metadata.addField(new DataFieldMetadata("field2", DataFieldType.INTEGER, ";"));
-		metadata.getField(1).setDefaultValueStr("123");
-		metadata.getField(1).setNullable(false);
 		DataRecord record = DataRecordFactory.newRecord(metadata);
+		assertNotNull(record);
+		//test the record is initialized and reset
+		assertNull(record.getField("field1").getValue());
+		assertEquals(123, record.getField("field2").getValue());
+	}
+	
+	public void testNewRecordWithLazyLoading() {
+		try {
+			DataRecordFactory.newRecordWithLazyLoading(null);
+			assertTrue(false);
+		} catch (NullPointerException e) {
+			//correct
+		}
+
+		DataRecordWithLazyLoading record = DataRecordFactory.newRecordWithLazyLoading(metadata);
 		assertNotNull(record);
 		//test the record is initialized and reset
 		assertNull(record.getField("field1").getValue());

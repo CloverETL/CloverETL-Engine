@@ -21,6 +21,7 @@ package org.jetel.component.tree.writer.xml;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.WritableByteChannel;
 
 import org.jetel.component.tree.writer.AttributeWriter;
@@ -95,10 +96,17 @@ public class XmlFormatter extends TreeFormatter {
 			return;
 		}
 		
+		// CLO-5977, following try block performs flush and close, ClosedChannelExceptions are eaten (not thrown)
 		try {
 			flush();
+		} catch (ClosedChannelException e) {
+			// no action
 		} finally {
-			writer.close();
+			try {
+				writer.close();
+			} catch (ClosedChannelException e) {
+				// no action
+			}
 		}
 		writer = null;
 	}

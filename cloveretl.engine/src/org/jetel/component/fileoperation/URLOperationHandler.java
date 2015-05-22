@@ -18,7 +18,6 @@
  */
 package org.jetel.component.fileoperation;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -39,13 +38,8 @@ import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
 import org.jetel.component.fileoperation.Info.Type;
-import org.jetel.component.fileoperation.SimpleParameters.CopyParameters;
-import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
-import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
-import org.jetel.component.fileoperation.SimpleParameters.FileParameters;
 import org.jetel.component.fileoperation.SimpleParameters.InfoParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ListParameters;
-import org.jetel.component.fileoperation.SimpleParameters.MoveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ReadParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.WriteParameters;
@@ -58,7 +52,7 @@ import org.jetel.util.file.FileUtils;
  *
  * @created 21.3.2012
  */
-public class URLOperationHandler implements IOperationHandler {
+public class URLOperationHandler extends BaseOperationHandler {
 	
 	public static final int TIMEOUT = 1000;
 	private static final ConcurrentHashMap<String, Boolean> protocolSupportMemory = new ConcurrentHashMap<>();
@@ -182,31 +176,6 @@ public class URLOperationHandler implements IOperationHandler {
 	@Override
 	public Info info(SingleCloverURI target, InfoParameters params) throws IOException {
 		return info(target.toURI());
-	}
-
-	@Override
-	public SingleCloverURI create(SingleCloverURI target, CreateParameters params) throws IOException {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public SingleCloverURI copy(SingleCloverURI source, SingleCloverURI target, CopyParameters params) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public SingleCloverURI move(SingleCloverURI source, SingleCloverURI target, MoveParameters params) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public SingleCloverURI delete(SingleCloverURI target, DeleteParameters params) throws IOException {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public File getFile(SingleCloverURI uri, FileParameters params) throws IOException {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override

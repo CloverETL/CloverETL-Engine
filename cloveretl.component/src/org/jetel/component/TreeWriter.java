@@ -57,6 +57,7 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
@@ -108,14 +109,12 @@ public abstract class TreeWriter extends Node {
 		writer.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 		String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null, RefResFlag.URL);
 		String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
-		if (mappingURL != null)
+		if (mappingURL != null) {
 			writer.setMappingURL(mappingURL);
-		else if (mapping != null)
+		} else if (mapping != null) {
 			writer.setMappingString(mapping);
-		else {
-			// throw configuration exception
-			xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.URL);
 		}
+
 		if (xattribs.exists(XML_CACHE_SIZE)) {
 			writer.setCacheSize(StringUtils.parseMemory(xattribs.getString(XML_CACHE_SIZE)));
 		}
@@ -195,6 +194,11 @@ public abstract class TreeWriter extends Node {
 		if (checkPorts(status)) {
 			return status;
 		}
+		
+		if (fileURL == null) {
+			status.add("Missing File URL attribute.", Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_FILE_URL_ATTRIBUTE);
+			return status;
+		}
 
 		try {
 			validateMapping(status);
@@ -221,6 +225,11 @@ public abstract class TreeWriter extends Node {
 	}
 
 	private void validateMapping(ConfigurationStatus status) throws ComponentNotReadyException {
+		if (mappingURL == null && mappingString == null) {
+			status.add("Mapping is not defined.", Severity.ERROR, this, Priority.NORMAL);
+			return;
+		}
+		
 		TreeWriterMapping mapping = initMapping();
 		Map<Integer, DataRecordMetadata> connectedPorts = prepareConnectedData();
 		AbstractMappingValidator validator = createValidator(connectedPorts);

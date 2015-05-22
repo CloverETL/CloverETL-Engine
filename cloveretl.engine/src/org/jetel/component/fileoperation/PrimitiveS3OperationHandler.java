@@ -577,7 +577,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 				}
 				return result;
 			} catch (ServiceException e) {
-				throw new IOException(e);
+				throw getIOException(e);
 			}
 		} finally {
 			disconnect(connection);
@@ -824,7 +824,9 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 								putObject(service, tempFile, bucketName, key);
 							} finally {
 								connection.returnToPool();
-								tempFile.delete();
+								if (!tempFile.delete()) {
+									log.warn("Failed to delete temp file: " + tempFile);
+								}
 							}
 						}
 					}
@@ -873,6 +875,19 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		appendInfoIfNotNull(e.getS3ErrorCode(), msg);
 		appendInfoIfNotNull(e.getS3ErrorMessage(), msg);
 		appendInfoIfNotNull(e.toString(), msg);
+		msg.append('\n');
+		return new IOException(msg.toString(), e);
+	}
+	
+	private static IOException serviceExceptionToIOException(ServiceException e) {
+		StringBuilder msg = new StringBuilder();
+		msg.append("S3 Service Error.");
+		appendInfoIfNotNull("Response code=" + e.getResponseCode(), msg);
+		appendInfoIfNotNull(e.getResponseStatus(), msg);
+		appendInfoIfNotNull(e.getErrorCode(), msg);
+		appendInfoIfNotNull(e.getErrorMessage(), msg);
+		msg.append('\n');
+		appendInfoIfNotNull(e.toString(), msg);
 		return new IOException(msg.toString(), e);
 	}
 	
@@ -891,6 +906,8 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 	public static IOException getIOException(Throwable t) {
 		if (t instanceof S3ServiceException) {
 			return s3ExceptionToIOException((S3ServiceException) t);
+		} else if (t instanceof ServiceException) {
+			return serviceExceptionToIOException((ServiceException) t);
 		}
 		return ExceptionUtils.getIOException(t);
 	}

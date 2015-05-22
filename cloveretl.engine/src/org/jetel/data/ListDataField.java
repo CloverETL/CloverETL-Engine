@@ -55,8 +55,6 @@ import org.jetel.util.primitive.IdentityArrayList;
 @CloverPublicAPI
 public class ListDataField extends DataFieldImpl implements Iterable<DataField> {
 
-	private static final long serialVersionUID = -3584218178444143371L;
-
 	//representation of nested fields
 	private List<DataField> fields;
 	
