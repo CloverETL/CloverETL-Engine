@@ -245,22 +245,11 @@ public class JdbcDriverImpl implements JdbcDriver {
 			 * Therefore we need to obtain code that deregisters driver from the library class loader.
 			 */
 			ClassLoader loader = getClassLoader();
-			if (driver.getClass().getClassLoader() == loader && loader instanceof ClassDefinitionFactory) {
-				ClassDefinitionFactory factory = (ClassDefinitionFactory)loader;
-				// get DriverUnregisterer's code, load it using driver's class loader and perform deregistration
-				final ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
+			if (driver.getClass().getClassLoader() == loader) {
 				try {
-					Thread.currentThread().setContextClassLoader(DriverUnregisterer.class.getClassLoader()); // prevents CLO-4787
-					InputStream classData = DriverUnregisterer.class.getResourceAsStream(DriverUnregisterer.class.getSimpleName().concat(".class"));
-					byte classBytes[] = IOUtils.toByteArray(classData);
-					IOUtils.closeQuietly(classData);
-					Class<?> unregisterer = factory.defineClass(DriverUnregisterer.class.getName(), classBytes);
-					Method unregister = unregisterer.getMethod("unregisterDrivers", ClassLoader.class);
-					unregister.invoke(unregisterer.newInstance(), loader);
+					DriverUnregisterer.run(loader);
 				} catch (Throwable t) {
 					logger.warn("Error occurred during JDBC driver deregistration.", t);
-				} finally {
-					Thread.currentThread().setContextClassLoader(originalLoader);
 				}
 			}
 			if (jdbcSpecific != null) {
