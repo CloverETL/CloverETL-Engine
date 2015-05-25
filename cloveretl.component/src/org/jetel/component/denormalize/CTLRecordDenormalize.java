@@ -72,11 +72,12 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 	}
 
 	@Override
-	public final int append(DataRecord inRecord) throws TransformException {
+	public final int append(DataRecord inRecord, DataRecord outRecord) throws TransformException {
 		int result = 0;
 
-		// only input record is accessible within the append() function
+		//both input and output records are accessible within the append() function
 		inputRecord = inRecord;
+		outputRecord = outRecord;
 
 		try {
 			result = appendDelegate();
@@ -87,7 +88,8 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 
 		// make the input record inaccessible again
 		inputRecord = null;
-
+		outputRecord = null;
+		
 		return result;
 	}
 
@@ -102,11 +104,12 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 	protected abstract Integer appendDelegate() throws ComponentNotReadyException, TransformException;
 
 	@Override
-	public final int appendOnError(Exception exception, DataRecord inRecord) throws TransformException {
+	public final int appendOnError(Exception exception, DataRecord inRecord, DataRecord outRecord) throws TransformException {
 		int result = 0;
 
-		// only input record is accessible within the appendOnError() function
+		// both input and output records are accessible within the appendOnError() function
 		inputRecord = inRecord;
+		outputRecord = outRecord;
 
 		try {
 			result = appendOnErrorDelegate(ExceptionUtils.getMessage(null, exception), ExceptionUtils.stackTraceToString(exception));
@@ -120,6 +123,7 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 
 		// make the input record inaccessible again
 		inputRecord = null;
+		outputRecord = null;
 
 		return result;
 	}
@@ -143,10 +147,11 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 	}
 	
 	@Override
-	public final int transform(DataRecord outRecord) throws TransformException {
+	public final int transform(DataRecord inRecord, DataRecord outRecord) throws TransformException {
 		int result = 0;
 
-		// only output record is accessible within the transform() function
+		// both input and output records are accessible within the transform() function
+		inputRecord = inRecord;
 		outputRecord = outRecord;
 
 		try {
@@ -157,6 +162,7 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 		}
 
 		// make the input record inaccessible again
+		inputRecord = null;
 		outputRecord = null;
 
 		return result;
@@ -173,10 +179,11 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 	protected abstract Integer transformDelegate() throws ComponentNotReadyException, TransformException;
 
 	@Override
-	public final int transformOnError(Exception exception, DataRecord outRecord) throws TransformException {
+	public final int transformOnError(Exception exception, DataRecord inRecord, DataRecord outRecord) throws TransformException {
 		int result = 0;
 
-		// only output record is accessible within the transformOnError() function
+		// both input and output records are accessible within the transformOnError() function
+		inputRecord = inRecord;
 		outputRecord = outRecord;
 
 		try {
@@ -190,6 +197,7 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 		}
 
 		// make the input record inaccessible again
+		inputRecord = null;
 		outputRecord = null;
 
 		return result;
@@ -243,6 +251,31 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 		}
 
 		return outputRecord;
+	}
+
+	//these methods override deprecated method, see CLO-6389
+	@Deprecated
+	@Override
+	public int append(DataRecord inRecord) throws TransformException {
+		return append(inRecord, null);
+	}
+
+	@Deprecated
+	@Override
+	public int appendOnError(Exception exception, DataRecord inRecord) throws TransformException {
+		return appendOnError(exception, inRecord, null);
+	}
+
+	@Deprecated
+	@Override
+	public int transform(DataRecord outRecord) throws TransformException {
+		return transform(null, outRecord);
+	}
+
+	@Deprecated
+	@Override
+	public int transformOnError(Exception exception, DataRecord outRecord) throws TransformException {
+		return transformOnError(exception, null, outRecord);
 	}
 
 }
