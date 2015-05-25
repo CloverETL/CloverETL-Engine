@@ -97,12 +97,12 @@ public class CTLRecordDenormalizeAdapter extends CTLAbstractTransformAdapter imp
 	}
 
 	@Override
-	public int append(DataRecord inRecord) throws TransformException {
-		return appendImpl(appendFunction, inRecord, NO_ARGUMENTS);
+	public int append(DataRecord inRecord, DataRecord outRecord) throws TransformException {
+		return appendImpl(appendFunction, inRecord, outRecord, NO_ARGUMENTS);
 	}
 
 	@Override
-	public int appendOnError(Exception exception, DataRecord inRecord) throws TransformException {
+	public int appendOnError(Exception exception, DataRecord inRecord, DataRecord outRecord) throws TransformException {
 		if (appendOnErrorFunction == null) {
 			// no custom error handling implemented, throw an exception so the transformation fails
 			throw new TransformException("Denormalization failed!", exception);
@@ -111,13 +111,14 @@ public class CTLRecordDenormalizeAdapter extends CTLAbstractTransformAdapter imp
 		onErrorArguments[0] = ExceptionUtils.getMessage(null, exception);
 		onErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 
-		return appendImpl(appendOnErrorFunction, inRecord, onErrorArguments);
+		return appendImpl(appendOnErrorFunction, inRecord, outRecord, onErrorArguments);
 	}
 
-	private int appendImpl(CLVFFunctionDeclaration function, DataRecord inRecord, Object[] arguments) {
+	private int appendImpl(CLVFFunctionDeclaration function, DataRecord inRecord, DataRecord outRecord, Object[] arguments) {
 		inputRecords[0] = inRecord;
+		outputRecords[0] = outRecord;
 
-		Object result = executor.executeFunction(function, arguments, inputRecords, NO_DATA_RECORDS);
+		Object result = executor.executeFunction(function, arguments, inputRecords, outputRecords);
 
 		if (result == null || !(result instanceof Integer)) {
 			throw new TransformLangExecutorRuntimeException(function.getName() + "() function must return 'int'");
@@ -127,12 +128,12 @@ public class CTLRecordDenormalizeAdapter extends CTLAbstractTransformAdapter imp
 	}
 
 	@Override
-	public int transform(DataRecord outRecord) throws TransformException {
-		return transformImpl(transformFunction, outRecord, NO_ARGUMENTS);
+	public int transform(DataRecord inRecord, DataRecord outRecord) throws TransformException {
+		return transformImpl(transformFunction, inRecord, outRecord, NO_ARGUMENTS);
 	}
 
 	@Override
-	public int transformOnError(Exception exception, DataRecord outRecord) throws TransformException {
+	public int transformOnError(Exception exception, DataRecord inRecord, DataRecord outRecord) throws TransformException {
 		if (transformOnErrorFunction == null) {
 			// no custom error handling implemented, throw an exception so the transformation fails
 			throw new TransformException("Denormalization failed!", exception);
@@ -141,13 +142,14 @@ public class CTLRecordDenormalizeAdapter extends CTLAbstractTransformAdapter imp
 		onErrorArguments[0] = ExceptionUtils.getMessage(null, exception);
 		onErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 
-		return transformImpl(transformOnErrorFunction, outRecord, onErrorArguments);
+		return transformImpl(transformOnErrorFunction, inRecord, outRecord, onErrorArguments);
 	}
 
-	private int transformImpl(CLVFFunctionDeclaration function, DataRecord outRecord, Object[] arguments) {
+	private int transformImpl(CLVFFunctionDeclaration function, DataRecord inRecord, DataRecord outRecord, Object[] arguments) {
+		inputRecords[0] = inRecord;
 		outputRecords[0] = outRecord;
 
-		Object result = executor.executeFunction(function, arguments, NO_DATA_RECORDS, outputRecords);
+		Object result = executor.executeFunction(function, arguments, inputRecords, outputRecords);
 
 		if (result == null || !(result instanceof Integer)) {
 			throw new TransformLangExecutorRuntimeException(function.getName() + "() function must return 'int'");
@@ -167,6 +169,31 @@ public class CTLRecordDenormalizeAdapter extends CTLAbstractTransformAdapter imp
 		} catch (TransformLangExecutorRuntimeException exception) {
 			logger.warn("Failed to execute " + cleanFunction.getName() + "() function", exception);
 		}
+	}
+
+	//these methods override deprecated method, see CLO-6389
+	@Deprecated
+	@Override
+	public int append(DataRecord inRecord) throws TransformException {
+		return append(inRecord, null);
+	}
+
+	@Deprecated
+	@Override
+	public int appendOnError(Exception exception, DataRecord inRecord) throws TransformException {
+		return appendOnError(exception, inRecord, null);
+	}
+
+	@Deprecated
+	@Override
+	public int transform(DataRecord outRecord) throws TransformException {
+		return transform(null, outRecord);
+	}
+
+	@Deprecated
+	@Override
+	public int transformOnError(Exception exception, DataRecord outRecord) throws TransformException {
+		return transformOnError(exception, null, outRecord);
 	}
 
 }

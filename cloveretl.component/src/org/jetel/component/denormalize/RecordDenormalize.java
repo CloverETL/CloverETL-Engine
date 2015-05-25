@@ -68,8 +68,22 @@ public interface RecordDenormalize extends Transform {
 	 * -1 -- error / skip record<br/>
 	 * >= 0 -- OK
 	 * @throws TransformException
+	 * @Deprecated invoke {@link #append(DataRecord, DataRecord)} instead
 	 */
+	@Deprecated
 	public int append(DataRecord inRecord) throws TransformException;
+
+	/**
+	 * Passes one input record to the composing class.
+	 * 
+	 * @param inRecord
+	 * @param outRecord final group transformation can be performed already in append method
+	 * @return < -1 -- fatal error / user defined<br/>
+	 * -1 -- error / skip record<br/>
+	 * >= 0 -- OK
+	 * @throws TransformException
+	 */
+	public int append(DataRecord inRecord, DataRecord outRecord) throws TransformException;
 
 	/**
 	 * Passes one input record to the composing class. Called only if {@link #append(DataRecord)} throws an exception.
@@ -82,8 +96,25 @@ public interface RecordDenormalize extends Transform {
 	 * >= 0 -- OK
 	 *
 	 * @throws TransformException
+	 * @Deprecated invoke {@link #appendOnError(Exception, DataRecord, DataRecord)} instead
 	 */
+	@Deprecated
 	public int appendOnError(Exception exception, DataRecord inRecord) throws TransformException;
+
+	/**
+	 * Passes one input record to the composing class. Called only if {@link #append(DataRecord)} throws an exception.
+	 * 
+	 * @param exception an exception that caused {@link #append(DataRecord)} to fail
+	 * @param inRecord
+	 *
+	 * @return < -1 -- fatal error / user defined<br/>
+	 * -1 -- error / skip record<br/>
+	 * >= 0 -- OK
+	 *
+	 * @throws TransformException
+	 * 
+	 */
+	public int appendOnError(Exception exception, DataRecord inRecord, DataRecord outRecord) throws TransformException;
 
 	/**
 	 * Retrieves composed output record.
@@ -93,8 +124,22 @@ public interface RecordDenormalize extends Transform {
 	 * -1 -- error / skip record<br/>
 	 * >= 0 -- OK
 	 * @throws TransformException
+	 * @Deprecated invoke {@link #transform(DataRecord, DataRecord)} instead
 	 */
+	@Deprecated
 	public int transform(DataRecord outRecord) throws TransformException;
+
+	/**
+	 * Retrieves composed output record.
+	 * 
+	 * @param inRecord last input record from the group
+	 * @param outRecord
+	 * @return < -1 -- fatal error / user defined<br/>
+	 * -1 -- error / skip record<br/>
+	 * >= 0 -- OK
+	 * @throws TransformException
+	 */
+	public int transform(DataRecord inRecord, DataRecord outRecord) throws TransformException;
 
 	/**
 	 * Retrieves composed output record. Called only if {@link #transform(DataRecord)} throws an exception.
@@ -107,8 +152,25 @@ public interface RecordDenormalize extends Transform {
 	 * >= 0 -- OK
 	 *
 	 * @throws TransformException
+	 * @Deprecated invoke {@link #transformOnError(Exception, DataRecord, DataRecord)} instead
 	 */
+	@Deprecated
 	public int transformOnError(Exception exception, DataRecord outRecord) throws TransformException;
+
+	/**
+	 * Retrieves composed output record. Called only if {@link #transform(DataRecord)} throws an exception.
+	 * 
+	 * @param exception an exception that caused {@link #transform(DataRecord)} to fail
+	 * @param inRecord last input record from the group
+	 * @param outRecord
+	 *
+	 * @return < -1 -- fatal error / user defined<br/>
+	 * -1 -- error / skip record<br/>
+	 * >= 0 -- OK
+	 *
+	 * @throws TransformException
+	 */
+	public int transformOnError(Exception exception, DataRecord inRecord, DataRecord outRecord) throws TransformException;
 
 	/**
 	 * Finalize current round/clean after current round - called after the transform method was called for the input
