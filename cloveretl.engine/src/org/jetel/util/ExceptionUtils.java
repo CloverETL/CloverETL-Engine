@@ -536,4 +536,22 @@ public class ExceptionUtils {
 			return new IOException(t);
 		}
 	}
+	
+	/**
+	 * Tries to return the message from the cause
+	 * {@link ClassNotFoundException}, if available.
+	 * Otherwise, returns the original message.
+	 * 
+	 * @param error {@link NoClassDefFoundError}
+	 * @return
+	 */
+	public static String getClassName(NoClassDefFoundError error) {
+		Throwable cause = error.getCause();
+		if (cause instanceof ClassNotFoundException) {
+			if (!StringUtils.isEmpty(cause.getMessage())) {
+				return cause.getMessage();
+			}
+		}
+		return error.getMessage();
+	}
 }
