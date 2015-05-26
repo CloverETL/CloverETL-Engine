@@ -46,6 +46,7 @@ public class CloseOnceOutputStream extends OutputStream {
 	 * @see #close()
 	 */
 	private AtomicBoolean isClosed = new AtomicBoolean(false);
+	private AtomicBoolean isClosing = new AtomicBoolean(false);
 	
 	public CloseOnceOutputStream(OutputStream os, Object objectToNotifyWhenClosed) {
 		super();
@@ -54,23 +55,27 @@ public class CloseOnceOutputStream extends OutputStream {
 	}
 
 	/**
-	 * Closes the underlying stream, if it hasn't been already closed.
+	 * Closes the underlying stream, if it hasn't been already closed or is not closing right now.
 	 * 
 	 * The method is thread-safe, uses AtomicBoolean to prevent race condition,
 	 * e.g. when the stream is asynchronously closed from an interruptible Channel.  
 	 */
 	@Override
 	public void close() throws IOException {
-		if (isClosed.getAndSet(true)) {
-			log.debug("Stream "+this+" already closed. Skipping.");
+		if (isClosing.getAndSet(true)) {
+			log.debug("Stream "+this+" already closing or is closed. Skipping.");
 		} else {
 			log.debug("Stream "+this+" closing...");
-			os.close();
-			log.debug("Stream "+this+" closed.");
-		}
-		if (objectToNotifyWhenClosed != null) {
-			synchronized (objectToNotifyWhenClosed) {
-				objectToNotifyWhenClosed.notifyAll();
+			try {
+				os.close();
+				log.debug("Stream "+this+" closed.");
+			} finally {
+				isClosed.set(true);
+				if (objectToNotifyWhenClosed != null) {
+					synchronized (objectToNotifyWhenClosed) {
+						objectToNotifyWhenClosed.notifyAll();
+					}
+				}
 			}
 		}
 	}
