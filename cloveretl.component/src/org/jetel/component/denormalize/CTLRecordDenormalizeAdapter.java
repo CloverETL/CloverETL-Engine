@@ -21,6 +21,7 @@ package org.jetel.component.denormalize;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.jetel.component.TransformUtils;
 import org.jetel.ctl.CTLAbstractTransformAdapter;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
@@ -108,7 +109,7 @@ public class CTLRecordDenormalizeAdapter extends CTLAbstractTransformAdapter imp
 			throw new TransformException("Denormalization failed!", exception);
 		}
 
-		onErrorArguments[0] = ExceptionUtils.getMessage(null, exception);
+		onErrorArguments[0] = TransformUtils.getMessage(exception);
 		onErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 
 		return appendImpl(appendOnErrorFunction, inRecord, outRecord, onErrorArguments);
@@ -139,7 +140,7 @@ public class CTLRecordDenormalizeAdapter extends CTLAbstractTransformAdapter imp
 			throw new TransformException("Denormalization failed!", exception);
 		}
 
-		onErrorArguments[0] = ExceptionUtils.getMessage(null, exception);
+		onErrorArguments[0] = TransformUtils.getMessage(exception);
 		onErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 
 		return transformImpl(transformOnErrorFunction, inRecord, outRecord, onErrorArguments);

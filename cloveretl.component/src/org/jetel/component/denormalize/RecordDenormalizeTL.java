@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.jetel.component.AbstractTransformTL;
+import org.jetel.component.TransformUtils;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
@@ -109,7 +110,7 @@ public class RecordDenormalizeTL extends AbstractTransformTL implements RecordDe
 			throw new TransformException("Denormalization failed!", exception);
 		}
 
-		onErrorArguments[0].setValue(ExceptionUtils.getMessage(null, exception));
+		onErrorArguments[0].setValue(TransformUtils.getMessage(exception));
 		onErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 
 		return appendImpl(appendOnErrorFunction, inRecord, outRecord, onErrorArguments);
@@ -133,7 +134,7 @@ public class RecordDenormalizeTL extends AbstractTransformTL implements RecordDe
 			throw new TransformException("Denormalization failed!", exception);
 		}
 
-		onErrorArguments[0].setValue(ExceptionUtils.getMessage(null, exception));
+		onErrorArguments[0].setValue(TransformUtils.getMessage(exception));
 		onErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 
 		return transformImpl(transformFunction, inRecord, outRecord, onErrorArguments);

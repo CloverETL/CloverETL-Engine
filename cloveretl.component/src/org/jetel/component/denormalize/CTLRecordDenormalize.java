@@ -20,6 +20,7 @@ package org.jetel.component.denormalize;
 
 import java.util.Properties;
 
+import org.jetel.component.TransformUtils;
 import org.jetel.ctl.CTLAbstractTransform;
 import org.jetel.ctl.CTLEntryPoint;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
@@ -112,7 +113,7 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 		outputRecord = outRecord;
 
 		try {
-			result = appendOnErrorDelegate(ExceptionUtils.getMessage(null, exception), ExceptionUtils.stackTraceToString(exception));
+			result = appendOnErrorDelegate(TransformUtils.getMessage(exception), ExceptionUtils.stackTraceToString(exception));
 		} catch (UnsupportedOperationException ex) {
 			// no custom error handling implemented, throw an exception so the transformation fails
 			throw new TransformException("Denormalization failed!", exception);
@@ -187,7 +188,7 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 		outputRecord = outRecord;
 
 		try {
-			result = transformOnErrorDelegate(ExceptionUtils.getMessage(null, exception), ExceptionUtils.stackTraceToString(exception));
+			result = transformOnErrorDelegate(TransformUtils.getMessage(exception), ExceptionUtils.stackTraceToString(exception));
 		} catch (UnsupportedOperationException ex) {
 			// no custom error handling implemented, throw an exception so the transformation fails
 			throw new TransformException("Denormalization failed!", exception);

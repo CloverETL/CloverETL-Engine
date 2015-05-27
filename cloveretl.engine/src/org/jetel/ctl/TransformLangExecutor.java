@@ -128,7 +128,7 @@ import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.CharSequenceReader;
 import org.jetel.util.string.StringUtils;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * CTL interpreter implementation. It represents a simple stack-machine performing
@@ -335,7 +335,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * @param inputRecords
 	 *            array of input data records carrying values
 	 */
-	@SuppressWarnings(value = "EI2")
+	@SuppressFBWarnings(value = "EI2")
 	public void setInputRecords(DataRecord[] inputRecords) {
 		this.inputRecords = inputRecords;
 		for (int i = 0; i < this.inputRecords.length; i++) {
@@ -353,7 +353,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * @param outputRecords
 	 *            array of output data records for setting values
 	 */
-	@SuppressWarnings(value = "EI2")
+	@SuppressFBWarnings(value = "EI2")
 	public void setOutputRecords(DataRecord[] outputRecords) {
 		this.outputRecords = outputRecords;
 	}
@@ -2054,9 +2054,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	@Override
 	public Object visit(CLVFRaiseErrorNode node, Object data) {
 		node.jjtGetChild(0).jjtAccept(this, data);
-		String message = stack.popString();
-		throw new TransformLangExecutorRuntimeException(node, null, "Exception raised by user: " + ((message != null) ? message.toString() : "no message"));
-
+		throw new RaiseErrorException(node, stack.popString());
 	}
 
 	public Object visit(CLVFEvalNode node, Object data) {
@@ -2750,6 +2748,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	
 			//return result
 	        return this.lastReturnValue;
+		} catch (RaiseErrorException ex) {
+			throw ex; // CLO-4084
 		} catch (TransformLangExecutorRuntimeException ex) {
 			// CLO-2104: decorate the exception with an ErrorReporter instance to provide more detailed error reporting
 			String source = parser.getSource();

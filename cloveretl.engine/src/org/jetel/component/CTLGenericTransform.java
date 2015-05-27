@@ -123,7 +123,7 @@ public abstract class CTLGenericTransform extends CTLAbstractTransform implement
 	@Override
 	public void executeOnError(Exception exception) {
 		try {
-			executeOnErrorDelegate(ExceptionUtils.getMessage(null, exception), ExceptionUtils.stackTraceToString(exception));
+			executeOnErrorDelegate(TransformUtils.getMessage(exception), ExceptionUtils.stackTraceToString(exception));
 		} catch (UnsupportedOperationException ex) {
 			// no custom error handling implemented, throw an exception so the transformation fails
 			throw new JetelRuntimeException("GenericComponent failed!", exception);
