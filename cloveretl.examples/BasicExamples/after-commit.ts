@@ -15,7 +15,7 @@
 	
 	<FunctionalTest ident="DebuggingGraph" graphFile="graph/DebuggingGraph.grf" assertion="false">
 		<ExcludeRegEx ident="error"/>
-		<RegEx expression="Exception raised by user: O is not a valid gender\. Go to record No\. 5820 and replace with \'M\' or \'F\'\." occurences="4"/>
+		<RegEx expression="O is not a valid gender\. Go to record No\. 5820 and replace with \'M\' or \'F\'\." occurences="4"/>
 	</FunctionalTest>
 	
 	<FunctionalTest ident="ExecutingExternal" graphFile="graph/ExecutingExternal.grf" />
