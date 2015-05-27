@@ -21,6 +21,7 @@ package org.jetel.component.partition;
 import java.nio.ByteBuffer;
 import java.util.Properties;
 
+import org.jetel.component.TransformUtils;
 import org.jetel.ctl.CTLAbstractTransform;
 import org.jetel.ctl.CTLEntryPoint;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
@@ -123,7 +124,7 @@ public abstract class CTLRecordPartition extends CTLAbstractTransform implements
 		int result = 0;
 
 		try {
-			result = getOutputPortOnErrorDelegate(ExceptionUtils.getMessage(null, exception), ExceptionUtils.stackTraceToString(exception));
+			result = getOutputPortOnErrorDelegate(TransformUtils.getMessage(exception), ExceptionUtils.stackTraceToString(exception));
 		} catch (UnsupportedOperationException ex) {
 			// no custom error handling implemented, throw an exception so the transformation fails
 			throw new TransformException("Partitioning failed!", exception);

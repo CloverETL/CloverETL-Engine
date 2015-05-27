@@ -113,7 +113,7 @@ public abstract class CTLRecordTransform extends CTLAbstractTransform implements
 		outputRecords = targets;
 
 		try {
-			result = transformOnErrorDelegate(ExceptionUtils.getMessage(null, exception), ExceptionUtils.stackTraceToString(exception));
+			result = transformOnErrorDelegate(TransformUtils.getMessage(exception), ExceptionUtils.stackTraceToString(exception));
 		} catch (UnsupportedOperationException ex) {
 			// no custom error handling implemented, throw an exception so the transformation fails
 			throw new TransformException("Transform failed!", exception);
