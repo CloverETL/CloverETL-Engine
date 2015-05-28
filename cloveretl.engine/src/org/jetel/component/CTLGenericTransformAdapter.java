@@ -18,8 +18,6 @@
  */
 package org.jetel.component;
 
-import java.util.Properties;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
@@ -118,7 +116,7 @@ public final class CTLGenericTransformAdapter extends CTLAbstractTransformAdapte
 			throw new JetelRuntimeException("GenericComponent failed!", exception);
 		}
 
-		onErrorArguments[0] = ExceptionUtils.getMessage(null, exception);
+		onErrorArguments[0] = TransformUtils.getMessage(exception);
 		onErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 
 		executor.executeFunction(executeOnErrorFunction, onErrorArguments, inputRecords, outputRecords);

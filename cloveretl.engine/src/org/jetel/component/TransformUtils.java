@@ -16,29 +16,37 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.connection.jdbc.specific.impl;
+package org.jetel.component;
+
+import org.jetel.ctl.RaiseErrorException;
+import org.jetel.util.ExceptionUtils;
 
 /**
- * @author salamonp (info@cloveretl.com)
+ * CLO-4084:
+ * 
+ * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 19. 5. 2015
+ * @created 27. 5. 2015
+ * 
+ * @see <a href="https://bug.javlin.eu/browse/CLO-4084">CLO-4084</a>
  */
-public class H2Specific extends AbstractJdbcSpecific {
+public class TransformUtils {
 	
-	private static final H2Specific INSTANCE = new H2Specific();
-	
-	public static H2Specific getInstance() {
-		return INSTANCE;
-	}
-	
-	protected H2Specific() {
-		super();
-	}
-	
-	@Override
-	public boolean canCloseResultSetBeforeCreatingNewOne() {
-		return false; // CLO-6418
+	/**
+	 * Returns the error message passed to "onError" functions.
+	 * Handles {@link RaiseErrorException} in a specific way.
+	 * 
+	 * @param t
+	 * @return
+	 */
+	public static String getMessage(Throwable t) {
+		if (t instanceof RaiseErrorException) {
+			RaiseErrorException exception = (RaiseErrorException) t;
+			return exception.getUserMessage();
+		} else {
+			return ExceptionUtils.getMessage(t);
+		}
 	}
 
 }
