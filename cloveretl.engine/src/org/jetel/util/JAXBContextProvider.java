@@ -85,14 +85,15 @@ public class JAXBContextProvider {
 		return getContext(new ContextKey(contextPath, null));
 	}
 	
-	private synchronized JAXBContext getContext(ContextKey key) throws JAXBException {
-		
-		JAXBContext ctx = cache.get(key);
-		if (ctx == null) {
-			ctx = key.createContext();
-			cache.put(key, ctx);
+	private JAXBContext getContext(ContextKey key) throws JAXBException {
+		synchronized (cache) {
+			JAXBContext ctx = cache.get(key);
+			if (ctx == null) {
+				ctx = key.createContext();
+				cache.put(key, ctx);
+			}
+			return ctx;
 		}
-		return ctx;
 	}
 	
 	private static class ContextKey {
