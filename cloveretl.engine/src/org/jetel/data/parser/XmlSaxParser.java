@@ -639,7 +639,7 @@ public class XmlSaxParser {
 				if (m_activeMapping!=null  && m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_AS_TEXT) && m_level == m_activeMapping.getLevel()) {
 					this.m_elementContentStartIndexStack.add(new CharacterBufferMarker(CharacterBufferMarkerType.SUBTREE_WITH_TAG_START, m_characters.length(), m_level));
 				};
-				m_characters.append("<").append(localName);
+				m_characters.append("<").append(qualifiedName);
 				grabElement = true;
 			}
 
@@ -717,7 +717,7 @@ public class XmlSaxParser {
 			// should be extracted (including tags) or when we are already within the element
 			if (grabElement) {
 				for (int i = 0; i < attributes.getLength(); i++) {
-					m_characters.append(" ").append(attributes.getLocalName(i)).append("=\"").append(escapeXmlEntity(attributes.getValue(i))).append("\"");
+					m_characters.append(" ").append(attributes.getQName(i)).append("=\"").append(escapeXmlEntity(attributes.getValue(i))).append("\"");
 				}
 				m_characters.append(">");
 			}
@@ -781,7 +781,7 @@ public class XmlSaxParser {
 				// (including tags) or when we are already within the element
 				if (m_element_as_text && (m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_AS_TEXT) || m_level >= m_activeMapping.getLevel())) {
 					//logger.trace("endElement(" + qualifiedName + "): storing element name; m_element_as_text");
-					m_characters.append("</").append(localName).append(">");
+					m_characters.append("</").append(qualifiedName).append(">");
 				}
 
 				// if we are finishing the mapping, check for the mapping on this element through parent
