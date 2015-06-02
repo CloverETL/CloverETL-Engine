@@ -32,7 +32,7 @@
 	      </singlePort>
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" dropUrlTarget="true">
 	        <singleType name="file" fields="input" dictionary="input" selectionMode="file_only"/>
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
@@ -113,7 +113,7 @@
 	      <singlePort name="0" required="false" />
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" dropUrlTarget="true">
 	        <singleType name="file" fields="output" dictionary="output" selectionMode="file_or_directory" mandatory_existing_file="false" />
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
@@ -191,7 +191,7 @@
 	      <multiplePort required="true"/>
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" dropUrlTarget="true">
 	        <singleType name="file" fields="input" dictionary="input" selectionMode="file_only"/>
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
@@ -243,7 +243,7 @@
 	      <singlePort name="0" required="false" />
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" dropUrlTarget="true">
 	        <singleType name="file" fields="output" dictionary="output" selectionMode="file_only" mandatory_existing_file="false" />
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
@@ -349,7 +349,7 @@
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL" redundant="transformClass|transformURL">
 	        <singleType name="transform" />
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform" redundant="transform|transformClass">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform" redundant="transform|transformClass" dropUrlTarget="true">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL" redundant="transformURL|transform">
@@ -385,7 +385,7 @@
 	      <property category="basic" displayName="SQL query" modifiable="true" name="sqlQuery" nullable="true" required="!url" redundant="url">
 	        <singleType name="sqlQuery" type="select" outputPortName="0" />
 	      </property>
-	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery">
+	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery" dropUrlTarget="true">
 			<singleType name="file" fields="input" dictionary="input" />
 	      </property>
 	      <property category="basic" displayName="Query source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
@@ -462,7 +462,7 @@
 	      <property category="basic" displayName="SQL query" modifiable="true" name="sqlQuery" nullable="true" required="!dbTable,!url" redundant="dbTable|url">
 			<singleType name="sqlQuery" type="insert" inputPortName="0" outputPortName="1" />
 	      </property>
-	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!dbTable,!sqlQuery" redundant="dbTable|sqlQuery">
+	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!dbTable,!sqlQuery" redundant="dbTable|sqlQuery" dropUrlTarget="true">
 	        <singleType name="file" dictionary="input" />
 	      </property>
 	      <property category="basic" displayName="Query source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
@@ -516,7 +516,7 @@
 	      <singlePort name="0" required="false" />
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" dropUrlTarget="true">
 	        <singleType name="file" fields="output" dictionary="output" selectionMode="file_only" mandatory_existing_file="false" />
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
@@ -610,7 +610,7 @@
 	      <multiplePort required="true" />
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" dropUrlTarget="true">
 	        <singleType name="file" fields="input" dictionary="input" selectionMode="file_only" />
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
@@ -694,7 +694,7 @@
 		  <property category="advanced" displayName="Transform" modifiable="true" name="transform" nullable="true" redundant="transformClass|transformURL" required="false" defaultHint="Default transformation maps fields by order">
 	        <singleType name="transform"/>
 	      </property>
-	      <property category="advanced" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" redundant="transformClass|transform" required="false">
+	      <property category="advanced" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" redundant="transformClass|transform" required="false" dropUrlTarget="true">
 	        <singleType name="file"/>
 	      </property>
 	      <property category="advanced" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" redundant="transform|transformURL" required="false">
@@ -725,7 +725,7 @@
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL">
 	        <singleType name="transform"/>
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform" dropUrlTarget="true">
 	        <singleType name="file"/>
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
@@ -787,7 +787,7 @@
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL">
 	        <singleType name="transform"/>
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform" dropUrlTarget="true">
 	        <singleType name="file"/>
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
@@ -841,7 +841,7 @@
 	      <property category="basic" displayName="Debug print" modifiable="true" name="debugPrint" nullable="true" defaultHint="false">
 	        <singleType name="bool"/>
 	      </property>
-	      <property category="basic" displayName="Debug file URL" modifiable="true" name="debugFilename" nullable="true">
+	      <property category="basic" displayName="Debug file URL" modifiable="true" name="debugFilename" nullable="true" dropUrlTarget="true">
 	        <singleType name="file" mandatory_existing_file="false"/>
 	      </property>
 	      <property category="basic" displayName="Debug append" modifiable="true" name="debugAppend" nullable="true" defaultHint="false">
@@ -884,7 +884,7 @@
 	      <property category="basic" displayName="SQL query" modifiable="true" name="sqlQuery" nullable="true" required="!url" redundant="url">
 	        <singleType name="multiline" />
 	      </property>
-	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery">
+	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery" dropUrlTarget="true">
 			<singleType name="file" fields="input" dictionary="input" />
 	      </property>
 	      <property category="basic" displayName="Query source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
@@ -944,7 +944,7 @@
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL">
 	        <singleType name="transform" />
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform" dropUrlTarget="true">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
@@ -1000,7 +1000,7 @@
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL">
 	        <singleType name="transform"/>
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform" dropUrlTarget="true">
 	        <singleType name="file"/>
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
@@ -1074,7 +1074,7 @@
 	      <multiplePort required="true" />
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" dropUrlTarget="true">
 	        <singleType name="file" fields="input" dictionary="input" selectionMode="file_only" />
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="DBFCharset">
@@ -1118,7 +1118,7 @@
 	    </inputPorts>
 	    <outputPorts />
 	    <properties>
-	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" dropUrlTarget="true">
 	        <singleType name="file" mandatory_existing_file="false" selectionMode="file_only" />
 	      </property>
 	      <property category="basic" displayName="Append" modifiable="true" name="append" nullable="true" defaultHint="false">
@@ -1280,7 +1280,7 @@
 	      <property category="basic" displayName="Partition" modifiable="true" name="partitionSource" nullable="true">
 	        <singleType name="transformPartition" />
 	      </property>
-	      <property category="basic" displayName="Partition URL" modifiable="true" name="partitionURL" nullable="true">
+	      <property category="basic" displayName="Partition URL" modifiable="true" name="partitionURL" nullable="true" dropUrlTarget="true">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Partition class" modifiable="true" name="partitionClass" nullable="true">
@@ -1325,7 +1325,7 @@
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL">
 	        <singleType name="transform" outputPortName="1" shiftPortIndexing="true"/>
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transform,!transformClass">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transform,!transformClass" dropUrlTarget="true">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
@@ -1403,7 +1403,7 @@
 	      <property category="basic" displayName="Process input/output charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
 	        <singleType name="charset" />
 	      </property>
-	      <property category="basic" displayName="Output file URL" modifiable="true" name="outputFile" nullable="true">
+	      <property category="basic" displayName="Output file URL" modifiable="true" name="outputFile" nullable="true" dropUrlTarget="true">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Append" modifiable="true" name="append" nullable="true" defaultHint="false">
@@ -1449,7 +1449,7 @@
 		  </singlePort>
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="Graph URL" modifiable="true" name="graphName" nullable="true" openActionLabel="Open Graph">
+	      <property category="basic" displayName="Graph URL" modifiable="true" name="graphName" nullable="true" openActionLabel="Open Graph" dropUrlTarget="true">
 	        <singleType name="file" />
 	      </property>
 		  <property category="basic" displayName="The same JVM" modifiable="true" name="sameInstance" nullable="true" defaultHint="true">
@@ -1671,7 +1671,7 @@
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL">
 	        <singleType name="transform" outputPortName="0"/>
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transform,!transformClass">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transform,!transformClass" dropUrlTarget="true">
 	        <singleType name="file"/>
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
@@ -1738,7 +1738,7 @@
 	      <property category="basic" displayName="DB Metadata" modifiable="true" name="metadata" nullable="true">
 	        <singleType name="metadata" />
 	      </property>
-	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery">
+	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery" dropUrlTarget="true">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="SQL query" modifiable="true" name="sqlQuery" nullable="true" required="!url" redundant="url">
@@ -1787,7 +1787,7 @@
 	          <item displayValue="XLSX" value="XLSX" />
 	        </enumType>
 	      </property>
-	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" dropUrlTarget="true">
 	        <singleType name="file" fields="input" dictionary="input" selectionMode="file_only" />
 	      </property>
 	      <property category="basic" displayName="Sheet name" modifiable="true" name="sheetName" nullable="true" redundant="sheetNumber">
@@ -1867,7 +1867,7 @@
 	          <item displayValue="XLSX" value="XLSX"/>
 	        </enumType>
 	      </property>
-	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" dropUrlTarget="true">
 	        <singleType name="file" fields="output" dictionary="output" selectionMode="file_only" mandatory_existing_file="false"/>
 	      </property>
 	      <property category="basic" displayName="Sheet name" modifiable="true" name="sheetName" nullable="true" redundant="sheetNumber">
@@ -1948,7 +1948,7 @@
 	      <singlePort name="0" required="false" />
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" dropUrlTarget="true">
 	        <singleType name="file" fields="output" dictionary="output" mandatory_existing_file="false" selectionMode="file_only" />
 	      </property>
 	      <property category="basic" displayName="Append" modifiable="true" name="append" nullable="true" defaultHint="false">
@@ -2027,7 +2027,7 @@
 	      <multiplePort required="true" />
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" dropUrlTarget="true">
 	        <singleType name="file" selectionMode="file_only" fields="input" dictionary="input" />
 	      </property>
 	      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="skipRows" nullable="true" redundant="startRecord|finalRecord">
@@ -2068,7 +2068,7 @@
 	      <singlePort name="0" required="false" />
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" dropUrlTarget="true">
 	        <singleType name="file" fields="output" dictionary="output" selectionMode="file_only" mandatory_existing_file="false" />
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
@@ -2143,7 +2143,7 @@
 	      <property category="basic" displayName="Normalize" modifiable="true" name="normalize" nullable="true" required="!normalizeClass,!normalizeURL">
 	        <singleType name="transformNormalize" />
 	      </property>
-	      <property category="basic" displayName="Normalize URL" modifiable="true" name="normalizeURL" nullable="true" required="!normalize,!normalizeClass">
+	      <property category="basic" displayName="Normalize URL" modifiable="true" name="normalizeURL" nullable="true" required="!normalize,!normalizeClass" dropUrlTarget="true">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Normalize class" modifiable="true" name="normalizeClass" nullable="true" required="!normalize,!normalizeURL">
@@ -2183,7 +2183,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Denormalize" modifiable="true" name="denormalize" nullable="true" required="!denormalizeClass,!denormalizeURL">
 	        <singleType name="transformDenormalize" />
 	      </property>
-	      <property category="basic" displayName="Denormalize URL" modifiable="true" name="denormalizeURL" nullable="true" required="!denormalize,!denormalizeClass">
+	      <property category="basic" displayName="Denormalize URL" modifiable="true" name="denormalizeURL" nullable="true" required="!denormalize,!denormalizeClass" dropUrlTarget="true">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Denormalize class" modifiable="true" name="denormalizeClass" nullable="true" required="!denormalize,!denormalizeURL">
@@ -2236,7 +2236,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformUrl,!transformClassName">
 	        <singleType name="transformRollup" charsetAttributeName="transformUrlCharset" />
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformUrl" nullable="true" required="!transform,!transformClassName">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformUrl" nullable="true" required="!transform,!transformClassName" dropUrlTarget="true">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClassName" nullable="true" required="!transform,!transformUrl">
@@ -2270,7 +2270,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Processor code" modifiable="true" name="processorCode" nullable="true">
 	        <singleType name="multilineEditableJava" />
 	      </property>
-	      <property category="basic" displayName="Processor URL" modifiable="true" name="processorURL" nullable="true">
+	      <property category="basic" displayName="Processor URL" modifiable="true" name="processorURL" nullable="true" dropUrlTarget="true">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Processor class" modifiable="true" name="processorClass" nullable="true">
@@ -2313,7 +2313,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Processor code" modifiable="true" name="processorCode" nullable="true">
 	        <singleType name="multilineEditableJava" />
 	      </property>
-	      <property category="basic" displayName="Processor URL" modifiable="true" name="processorURL" nullable="true">
+	      <property category="basic" displayName="Processor URL" modifiable="true" name="processorURL" nullable="true" dropUrlTarget="true">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Processor class" modifiable="true" name="processorClass" nullable="true">
@@ -2353,7 +2353,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL">
 	        <singleType name="transform" outputPortName="0"/>
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transform,!transformClass">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transform,!transformClass" dropUrlTarget="true">
 	        <singleType name="file"/>
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
@@ -2408,7 +2408,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Generator" modifiable="true" name="generate" nullable="true">
 	        <singleType name="transformGenerator" input="key" />
 	      </property>
-	      <property category="basic" displayName="Generator URL" modifiable="true" name="generateURL" nullable="true">
+	      <property category="basic" displayName="Generator URL" modifiable="true" name="generateURL" nullable="true" dropUrlTarget="true">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Generator class" modifiable="true" name="generateClass" nullable="true">
@@ -2487,7 +2487,7 @@ Sends all resulting records to all connected output ports.</description>
 	      </multiplePort>
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" dropUrlTarget="true">
 	        <singleType name="file" fields="input" dictionary="input" selectionMode="file_only" />
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
@@ -2530,7 +2530,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <multiplePort required="true" />
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="File URL" modifiable="true" name="sourceUri" nullable="true" required="true" openActionLabel="Open input XML">
+	      <property category="basic" displayName="File URL" modifiable="true" name="sourceUri" nullable="true" required="true" openActionLabel="Open input XML" dropUrlTarget="true">
 	        <singleType name="file" fields="input" dictionary="input" />
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
@@ -2581,7 +2581,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <multiplePort required="true" />
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="File URL" modifiable="true" name="sourceUri" nullable="true" required="true" openActionLabel="Open input JSON">
+	      <property category="basic" displayName="File URL" modifiable="true" name="sourceUri" nullable="true" required="true" openActionLabel="Open input JSON" dropUrlTarget="true">
 	        <singleType name="file" fields="input" dictionary="input" />
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
@@ -2625,7 +2625,7 @@ Sends all resulting records to all connected output ports.</description>
 	      </multiplePort>
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" dropUrlTarget="true">
 	        <singleType name="file" fields="input" dictionary="input" selectionMode="file_only" />
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHint="Auto">
@@ -2704,7 +2704,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Runnable" modifiable="true" name="runnable" nullable="true" required="!runnableClass,!runnableURL">
 	        <singleType name="multilineEditableJava" />
 	      </property>
-	      <property category="basic" displayName="Runnable URL" modifiable="true" name="runnableURL" nullable="true" required="!runnableClass,!runnable">
+	      <property category="basic" displayName="Runnable URL" modifiable="true" name="runnableURL" nullable="true" required="!runnableClass,!runnable" dropUrlTarget="true">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Runnable class" modifiable="true" name="runnableClass" nullable="true" required="!runnable,!runnableURL">
@@ -2735,7 +2735,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Algorithm" modifiable="true" name="genericTransform" nullable="true" required="!genericTransformClass,!genericTransformURL">
 	        <singleType name="genericComponentMultiline" genericType="reader" />
 	      </property>
-	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform">
+	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform" dropUrlTarget="true">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Algorithm class" modifiable="true" name="genericTransformClass" nullable="true" required="!genericTransform,!genericTransformURL">
@@ -2763,7 +2763,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Algorithm" modifiable="true" name="genericTransform" nullable="true" required="!genericTransformClass,!genericTransformURL">
 	        <singleType name="genericComponentMultiline" genericType="writer" />
 	      </property>
-	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform">
+	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform" dropUrlTarget="true">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Algorithm class" modifiable="true" name="genericTransformClass" nullable="true" required="!genericTransform,!genericTransformURL">
@@ -2791,7 +2791,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Algorithm" modifiable="true" name="genericTransform" nullable="true" required="!genericTransformClass,!genericTransformURL">
 	        <singleType name="genericComponentMultiline" genericType="transformer" />
 	      </property>
-	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform">
+	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform" dropUrlTarget="true">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Algorithm class" modifiable="true" name="genericTransformClass" nullable="true" required="!genericTransform,!genericTransformURL">
@@ -2819,7 +2819,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Algorithm" modifiable="true" name="genericTransform" nullable="true" required="!genericTransformClass,!genericTransformURL">
 	        <singleType name="genericComponentMultiline" genericType="none" />
 	      </property>
-	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform">
+	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform" dropUrlTarget="true">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Algorithm class" modifiable="true" name="genericTransformClass" nullable="true" required="!genericTransform,!genericTransformURL">
@@ -2843,7 +2843,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <singlePort name="0" required="false" />
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="File URL" modifiable="true" name="fileUrl" nullable="true" required="true">
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileUrl" nullable="true" required="true" dropUrlTarget="true">
 	        <singleType name="file" fields="output" dictionary="output" mandatory_existing_file="false"/>
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
@@ -2912,7 +2912,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <singlePort name="0" required="false" />
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" dropUrlTarget="true">
 	        <singleType name="file" fields="output" dictionary="output" mandatory_existing_file="false"/>
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
@@ -2990,7 +2990,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <singlePort name="0" required="false"/>
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="Xslt file" modifiable="true" name="xsltFile" nullable="true" required="!xslt">
+	      <property category="basic" displayName="Xslt file" modifiable="true" name="xsltFile" nullable="true" required="!xslt" dropUrlTarget="true">
 	        <singleType name="file"/>
 	      </property>
 	      <property category="basic" displayName="Xslt" modifiable="true" name="xslt" nullable="true" required="!xsltFile">
