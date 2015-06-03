@@ -1611,7 +1611,7 @@
 	        <singleType name="bool" />
 	      </property>   
 	      <property category="advanced" displayName="Timeout" modifiable="true" name="timeout" nullable="true" defaultHint="">
-	        <singleType name="long" />
+	        <singleType name="interval"/>
 	      </property>   
 	      <property category="advanced" displayName="Retry Count" modifiable="true" name="retryCount" nullable="true" defaultHint="0 (do not retry in case of failure)">
 	        <singleType name="int" />
