@@ -133,6 +133,14 @@ public class GraphRuntimeContext {
 	 */
 	private boolean strictGraphFactorization;
 	
+	/**
+	 * Flag which indicates, whether new classloaders should be created for each transformation
+	 * component or should be shared with the others.
+	 * @see IAuthorityProxy#createClassLoader(URL[], ClassLoader, boolean)
+	 * @see IAuthorityProxy#getClassLoader(URL[], ClassLoader, boolean)
+	 */
+	private boolean classLoaderCaching;
+	
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
 		useJMX = DEFAULT_USE_JMX;
@@ -159,6 +167,7 @@ public class GraphRuntimeContext {
 		parentGraphInputPortsConnected = null; 
 		parentGraphOutputPortsConnected = null; 
 		strictGraphFactorization = true;
+		classLoaderCaching = false;
 	}
 	
 	/* (non-Javadoc)
@@ -203,6 +212,7 @@ public class GraphRuntimeContext {
 		ret.parentGraphInputPortsConnected = parentGraphInputPortsConnected != null ? new ArrayList<>(parentGraphInputPortsConnected) : null;
 		ret.parentGraphOutputPortsConnected = parentGraphOutputPortsConnected != null ? new ArrayList<>(parentGraphOutputPortsConnected) : null;
 		ret.strictGraphFactorization = isStrictGraphFactorization();
+		ret.classLoaderCaching = isClassLoaderCaching();
 
 		return ret;
 	}
@@ -238,9 +248,11 @@ public class GraphRuntimeContext {
 		prop.setProperty("executionType", String.valueOf(getExecutionType()));
 		prop.setProperty("validateRequiredParameters", Boolean.toString(isValidateRequiredParameters()));
 		prop.setProperty("fastPropagateExecution", Boolean.toString(isFastPropagateExecution()));
-		prop.setProperty("connectedParentGraphInputPorts", String.valueOf(getParentGraphInputPortsConnected()));
-		prop.setProperty("connectedParentGraphOutputPorts", String.valueOf(getParentGraphOutputPortsConnected()));
-		
+		prop.setProperty("parentGraphInputPortsConnected", String.valueOf(getParentGraphInputPortsConnected()));
+		prop.setProperty("parentGraphOutputPortsConnected", String.valueOf(getParentGraphOutputPortsConnected()));
+		prop.setProperty("strictGraphFactorization", Boolean.toString(isStrictGraphFactorization()));
+		prop.setProperty("classLoaderCaching", Boolean.toString(isClassLoaderCaching()));
+
 		return prop;
 	}
 
@@ -937,6 +949,17 @@ public class GraphRuntimeContext {
 	 */
 	public void setStrictGraphFactorization(boolean strictGraphFactorization) {
 		this.strictGraphFactorization = strictGraphFactorization;
+	}
+
+	/**
+	 * @return true if classloaders for java transformations should be shared; false otherwise
+	 */
+	public boolean isClassLoaderCaching() {
+		return classLoaderCaching;
+	}
+
+	public void setClassLoaderCaching(boolean classLoaderCaching) {
+		this.classLoaderCaching = classLoaderCaching;
 	}
 
 	/**
