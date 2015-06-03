@@ -33,6 +33,16 @@ REL-4-1-0-M1
     - CTL2: Inconsistent list assignment semantics
     - DBExecute uses wrong default charset for queries in url
 
+REL-4-0-5
+---------
+
+* FIXES:
+	- CloverDataWriter may report invalid checksum on append
+	- Different behavior of DBInputTable with declared variable in TSQL between versions
+	- DBOutputTable does not commit with Commit=MAX_INT
+	- HTTPConnector returns WARN message even when successful status code is received
+	- DBOutputTable does not use not most current version of query specified via Query URL
+
 REL-4-0-4
 ---------
 
