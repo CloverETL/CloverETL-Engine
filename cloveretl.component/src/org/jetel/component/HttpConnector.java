@@ -2527,7 +2527,7 @@ public class HttpConnector extends Node {
 		httpConnector.setStreaming(xattribs.getBoolean(XML_STREAMING_ATTRIBUTE, true));
 		httpConnector.setRequestParametersStr(xattribs.getString(XML_REQUEST_PARAMETERS_ATTRIBUTE, null));
 		httpConnector.setDisableSSLCertValidation(xattribs.getBoolean(XML_DISABLE_SSL_CERT_VALIDATION, false));
-		httpConnector.setTimeout(xattribs.getLong(XML_TIMEOUT_ATTRIBUTE, -1));
+		httpConnector.setTimeout(xattribs.getTimeInterval(XML_TIMEOUT_ATTRIBUTE, -1));
 		httpConnector.setRetryCount(xattribs.getInteger(XML_RETRY_COUNT_ATTRIBUTE, 0));
 
 		/** job flow related properties */
@@ -3221,7 +3221,7 @@ public class HttpConnector extends Node {
 		retryHandler = new HttpRequestRetryHandler() {
 			@Override
 			public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
-				if(executionCount < HttpConnector.this.retryCountToUse) {
+				if(executionCount <= HttpConnector.this.retryCountToUse) {
 					return true;
 				}
 				return false;
