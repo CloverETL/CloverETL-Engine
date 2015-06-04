@@ -76,6 +76,13 @@ public class SubgraphUtils {
 	public static final String CUSTOM_SUBGRAPH_ATTRIBUTE_PREFIX = "__";
 
 	/**
+	 * @return true iff given component is SubgraphInput or SubgraphOutput component
+	 */
+	public static boolean isSubgraphInputOutputComponent(String componentType){
+		return SUBGRAPH_INPUT_TYPE.equals(componentType) || SUBGRAPH_OUTPUT_TYPE.equals(componentType);
+	}
+	
+	/**
 	 * @return true if and only if the given component type is SubgraphInput or SubjobflowInput component.
 	 */
 	public static boolean isSubJobInputComponent(String componentType) {
