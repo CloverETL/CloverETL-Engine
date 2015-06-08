@@ -189,8 +189,10 @@ public class CrossJoin extends Node implements MetadataProvider {
 	public void free() {
 		super.free();
 		try {
-			for (int i = 0; i < slaveRecordsMemory.length; i++) {
-				slaveRecordsMemory[i].close();
+			if (slaveRecordsMemory != null) {
+				for (int i = 0; i < slaveRecordsMemory.length; i++) {
+					slaveRecordsMemory[i].close();
+				}
 			}
 		} catch (IOException e) {
 			logger.debug("Exception while clearing slave records memory of " + this.getName() + ". Message: " + e.getMessage());
