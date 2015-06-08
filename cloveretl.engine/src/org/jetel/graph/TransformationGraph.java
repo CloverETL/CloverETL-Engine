@@ -1319,6 +1319,7 @@ public final class TransformationGraph extends GraphElement {
     	        
     	        return status;
     		} finally {
+    			afterCheckConfigCleanup();
     			//unregister current thread from ContextProvider
     			ContextProvider.unregister(c);
     		}
@@ -1332,6 +1333,18 @@ public final class TransformationGraph extends GraphElement {
     		return status;
     	}
 
+    }
+    
+    /*
+     * Some components may have initialized connections during check config (CLO-4820).
+     */
+    private void afterCheckConfigCleanup() {
+    	
+    	for (IConnection connection : connections.values()) {
+    		if (connection.isInitialized()) {
+    			connection.free();
+    		}
+    	}
     }
     
     public CloverPost getPost(){
