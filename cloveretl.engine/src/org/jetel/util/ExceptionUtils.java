@@ -202,6 +202,12 @@ public class ExceptionUtils {
 				(StringUtils.isEmpty(t.getMessage()) || t.getMessage().equalsIgnoreCase("null"))) {
 			//the NPE can be wrapped also in SerializableException
 			message = "Unexpected null value.";
+		} else if (t instanceof ClassNotFoundException) {
+			//message of ClassNotFoundException exception is insufficient, message should be more explanatory
+			message = "Class with the specified name cannot be found" + (!StringUtils.isEmpty(t.getMessage()) ? ": " + t.getMessage() : ".");
+		} else if (t instanceof NoClassDefFoundError) {
+			//message of NoClassDefFoundError exception is insufficient, message should be more explanatory
+			message = "No definition for the class with the specified name can be found" + (!StringUtils.isEmpty(t.getMessage()) ? ": " + t.getMessage() : ".");
 		} else if (!StringUtils.isEmpty(t.getMessage())) {
 			//only non-empty messages are considered
 			message = t.getMessage();

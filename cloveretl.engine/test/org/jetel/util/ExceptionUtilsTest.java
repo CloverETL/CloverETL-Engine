@@ -124,6 +124,8 @@ public class ExceptionUtilsTest extends CloverTestCase {
 
 		assertEquals("abc\n java.lang.Exception", ExceptionUtils.getMessage("abc", new Exception(new Exception(new Exception()))));
 
+		assertEquals("Class with the specified name cannot be found: a.b.c\n No definition for the class with the specified name can be found: a/b/c", ExceptionUtils.getMessage(new ClassNotFoundException("a.b.c", new NoClassDefFoundError("a/b/c"))));
+
 		
 		Exception e = new Exception();
 		e.addSuppressed(new Exception());
