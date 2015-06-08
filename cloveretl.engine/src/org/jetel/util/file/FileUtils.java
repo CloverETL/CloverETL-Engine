@@ -2112,7 +2112,8 @@ public class FileUtils {
 			}
 		} else if (protocol.equals(SandboxUrlUtils.SANDBOX_PROTOCOL)) {
 			try {
-				CloverURI cloverUri = CloverURI.createURI(url.toURI());
+				URI uri = SandboxUrlUtils.toURI(url);
+				CloverURI cloverUri = CloverURI.createURI(uri);
 				File file = FileManager.getInstance().getFile(cloverUri); 
 				if (file != null) {
 					return file;
