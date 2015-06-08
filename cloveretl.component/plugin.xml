@@ -3003,7 +3003,7 @@ Sends all resulting records to all connected output ports.</description>
 	        <singleType name="file" fields="input" dictionary="input" single_url="true"/>
 	      </property>
 	      <property category="basic" displayName="XML output file or field" modifiable="true" name="xmlOutputFile" nullable="true" required="!mapping" redundant="mapping">
-	        <singleType name="file" fields="output" dictionary="output" single_url="true"/>
+	        <singleType name="file" fields="output" dictionary="output" single_url="true" mandatory_existing_file="false"/>
 	      </property>
 	      <property category="advanced" displayName="Output charset" modifiable="true" name="charset" nullable="true" defaultHint="UTF-8">
 	        <singleType name="charset"/>
