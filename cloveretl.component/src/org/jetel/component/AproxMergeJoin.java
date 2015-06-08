@@ -539,7 +539,7 @@ public class AproxMergeJoin extends Node implements MetadataProvider {
 				if (conformityFieldsForSuspicious.length>0){
 					for (int i=0;i<conformityFieldsForSuspicious.length;i++){
 						if (conformityFieldsForSuspicious[i]>-1){
-							outSuspicious.getField(conformityFieldsForSuspicious[i]).setValue(new Double(conformity[i]));
+							outSuspicious.getField(conformityFieldsForSuspicious[i]).setValue(Double.valueOf(conformity[i]));
 						}
 					}
 				}
@@ -649,6 +649,8 @@ public class AproxMergeJoin extends Node implements MetadataProvider {
 					slaveRecords[TEMPORARY] = tmpRec;
 					isDriverDifferent = false;
 					break;
+				default:
+					throw new IllegalStateException();
 				}
 			}
 			flushCombinations(driverRecords[CURRENT], slaveRecords[TEMPORARY],
