@@ -3032,6 +3032,12 @@ public class HttpConnector extends Node {
 		} catch (AuthenticationException e) {
 			logger.warn("Preemptive authentication. Authorization header generation failed.", e);
 		}
+		
+		//CLO-6504 - put Accept header to request, because some servers interprets missing accept header wrongly
+		Header[] headers = method.getHeaders("Accept");
+		if((headers==null) || headers.length == 0) {
+			method.addHeader("Accept", "*/*");
+		}
 				
 		return method;
 	}
