@@ -18,20 +18,16 @@
  */
 package org.jetel.connection.jdbc.driver;
 
-import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.sql.Driver;
 import java.util.Properties;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.database.sql.JdbcDriver;
 import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.ContextProvider;
-import org.jetel.util.classloader.ClassDefinitionFactory;
 import org.jetel.util.classloader.MultiParentClassLoader;
 import org.jetel.util.string.StringUtils;
 

@@ -43,6 +43,10 @@ import org.jetel.util.classloader.ClassDefinitionFactory;
  */
 public class DriverUnregisterer {
 	
+	/* Cannot to reference log4j here, for it is not on the classpath of the classloader in most cases
+	private static final Logger log = Logger.getLogger(DriverUnregisterer.class); 
+	*/
+	
 	public static void unregisterDrivers(ClassLoader classLoader) {
 		
 		// unload each driver loaded by the given classLoader
