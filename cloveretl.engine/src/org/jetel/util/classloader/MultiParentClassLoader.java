@@ -122,6 +122,10 @@ public final class MultiParentClassLoader extends ClassLoader {
 		this.parents = parents; 
 	}
 	
+	public ClassLoader[] getParents() {
+		return parents.clone();
+	}
+	
 	public URL[] getAllURLs() {
 		
 		Set<URL> urls = new LinkedHashSet<URL>();
