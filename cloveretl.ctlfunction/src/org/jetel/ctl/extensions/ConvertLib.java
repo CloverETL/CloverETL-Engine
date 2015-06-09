@@ -983,6 +983,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of its argument")
+	public static final String toString(TLFunctionCallContext context, Boolean b) {
+		return toStringInternal(b);
+	}
+	
+	@TLFunctionAnnotation("Returns string representation of its argument")
 	public static final String toString(TLFunctionCallContext context, Integer i) {
 		return toStringInternal(i);
 	}

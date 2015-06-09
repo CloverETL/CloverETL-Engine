@@ -11140,6 +11140,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	public void test_convertlib_toString() {
 		doCompile("test_convertlib_toString");
+		check("booleanString", "true");
 		check("integerString", "10");
 		check("longString", "110654321874");
 		check("doubleString", "1.547874E-14");
