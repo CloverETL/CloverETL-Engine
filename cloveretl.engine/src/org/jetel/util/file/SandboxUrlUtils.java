@@ -281,7 +281,11 @@ public final class SandboxUrlUtils {
 		String relativePath = SandboxUrlUtils.getRelativeUrl(url.toString());
 		try {
 			urlString = SandboxUrlUtils.getSandboxUrl(sandboxName, relativePath).toString();
-		} catch (MalformedURLException e) {}
+		} catch (MalformedURLException e) {
+			URISyntaxException ex = new URISyntaxException(urlString, e.getMessage());
+			ex.initCause(e);
+			throw ex;
+		}
 		return new URI(urlString);
 	}
 	
