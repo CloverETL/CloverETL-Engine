@@ -223,6 +223,7 @@ public class TransformationGraphXMLReaderWriter {
 	public final static String LICENSE_TYPE_ATTRIBUTE = "licenseType";
 	public final static String LICENSE_CODE_ATTRIBUTE = "licenseCode";
 	public final static String GUI_VERSION_ATTRIBUTE = "guiVersion";
+	public final static String DESCRIPTION_ATTRIBUTE = "description";
 	public final static String EXECUTION_LABEL_ATTRIBUTE = "executionLabel";
 	public final static String CATEGORY_ATTRIBUTE = "category";
 	public final static String SMALL_ICON_PATH_ATTRIBUTE = "smallIconPath";
@@ -465,6 +466,7 @@ public class TransformationGraphXMLReaderWriter {
 	        graph.setLicenseType(grfAttributes.getString(LICENSE_TYPE_ATTRIBUTE, null));
 	        graph.setLicenseCode(grfAttributes.getString(LICENSE_CODE_ATTRIBUTE, null));
 	        graph.setGuiVersion(grfAttributes.getString(GUI_VERSION_ATTRIBUTE, null));
+	        graph.setDescription(grfAttributes.getString(DESCRIPTION_ATTRIBUTE, null));
 	        graph.setExecutionLabel(grfAttributes.getString(EXECUTION_LABEL_ATTRIBUTE, null));
 	        graph.setCategory(grfAttributes.getString(CATEGORY_ATTRIBUTE, null));
 	        graph.setSmallIconPath(grfAttributes.getString(SMALL_ICON_PATH_ATTRIBUTE, null));
