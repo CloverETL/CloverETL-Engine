@@ -769,6 +769,19 @@ public class XmlSaxParser {
 			if (m_activeMapping != null) {
 				String fullName = "{" + namespaceURI + "}" + localName;
 
+				// Also check parent mapping first for element text match
+				// See. CLO-915
+				if (m_activeMapping.getParent() != null && m_level == m_activeMapping.getLevel()) {
+					XMLElementRuntimeMappingModel childMapping = m_activeMapping;
+					m_activeMapping = m_activeMapping.getParent();
+					m_level--;
+
+					processCharacters(namespaceURI, localName, m_level == m_activeMapping.getLevel());
+
+					m_level++;
+					m_activeMapping = childMapping;
+				}
+
 				// cache characters value if the xml field is referenced by descendant
 				if (m_level - 1 <= m_activeMapping.getLevel() && m_activeMapping.getDescendantReferences().containsKey(fullName)) {
 					m_activeMapping.getDescendantReferences().put(fullName, getCurrentValue());
