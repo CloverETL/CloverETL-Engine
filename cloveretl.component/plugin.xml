@@ -1048,7 +1048,7 @@
 	        <singleType name="joinKey" labels="Foreign key definition;Foreign key;Primary key;;Foreign key definition;Foreign key;Primary key;" />
 	      </property>
 	      <property category="basic" displayName="Default foreign key" modifiable="true" name="defaultForeignKey" nullable="true" required="true">
-	        <singleType name="recordPattern" outputPortName="0" />
+	        <singleType name="recordPattern" inputPortName="0" />
 	      </property>
 	      <property category="basic" displayName="Equal NULL" modifiable="true" name="equalNULL" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
