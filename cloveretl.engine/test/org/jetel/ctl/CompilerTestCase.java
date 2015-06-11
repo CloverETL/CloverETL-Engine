@@ -183,8 +183,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	@Override
 	protected void setUp() {
-		// set default locale to English to prevent various parsing errors
-		Locale.setDefault(Locale.ENGLISH);
+		// set default locale to en.US to prevent various parsing errors
+		Locale.setDefault(new Locale("en", "US"));
 		initEngine();
 	}
 
@@ -1339,7 +1339,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		expected.put("nullable", "true");
 		expected.put("nullValue", "");
 		expected.put("trim", "false");
-		for (String key: new String[] {"length", "scale", "containerType", "default", "description", "format", "locale", "size", "timeZone"}) {
+		expected.put("locale", "en.US");
+		expected.put("timeZone", "'java:Europe/Prague';'joda:Europe/Prague'");
+		for (String key: new String[] {"length", "scale", "containerType", "default", "description", "format", "size"}) {
 			expected.put(key, null);
 		}
 		check("ret1", expected);
@@ -1352,7 +1354,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		expected.put("nullable", "true");
 		expected.put("nullValue", "");
 		expected.put("trim", "true");
-		for (String key: new String[] {"length", "scale", "containerType", "default", "description", "format", "locale", "size", "timeZone"}) {
+		expected.put("locale", "en.US");
+		expected.put("timeZone", "'java:Europe/Prague';'joda:Europe/Prague'");
+		for (String key: new String[] {"length", "scale", "containerType", "default", "description", "format", "size"}) {
 			expected.put(key, null);
 		}
 		check("ret2", expected);
@@ -1367,7 +1371,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		expected.put("nullable", "true");
 		expected.put("nullValue", "");
 		expected.put("trim", "true");
-		for (String key: new String[] {"containerType", "default", "description", "format", "locale", "size", "timeZone"}) {
+		expected.put("locale", "en.US");
+		expected.put("timeZone", "'java:Europe/Prague';'joda:Europe/Prague'");
+		for (String key: new String[] {"containerType", "default", "description", "format", "size"}) {
 			expected.put(key, null);
 		}
 		check("lastField", expected);
@@ -1454,7 +1460,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		expected.put("quotedStrings", "false");
 		expected.put("eofAsDelimiter", "false");
 		expected.put("nullValue", "");
-		for (String key: new String[] {"recordDelimiter", "fieldDelimiter", "quoteChar", "description", "locale", "timeZone"}) {
+		expected.put("locale", "en.US");
+		expected.put("timeZone", "'java:Europe/Prague';'joda:Europe/Prague'");
+		for (String key: new String[] {"recordDelimiter", "fieldDelimiter", "quoteChar", "description"}) {
 			expected.put(key, null);
 		}
 		check("ret1", expected);
@@ -1466,7 +1474,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		expected.put("quotedStrings", "false");
 		expected.put("eofAsDelimiter", "false");
 		expected.put("nullValue", "");
-		for (String key: new String[] {"recordDelimiter", "fieldDelimiter", "quoteChar", "description", "locale", "timeZone"}) {
+		expected.put("locale", "en.US");
+		expected.put("timeZone", "'java:Europe/Prague';'joda:Europe/Prague'");
+		for (String key: new String[] {"recordDelimiter", "fieldDelimiter", "quoteChar", "description"}) {
 			expected.put(key, null);
 		}
 		check("ret2", expected);
