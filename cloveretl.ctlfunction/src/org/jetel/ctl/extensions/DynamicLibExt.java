@@ -18,12 +18,16 @@
  */
 package org.jetel.ctl.extensions;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.jetel.ctl.Stack;
@@ -45,6 +49,14 @@ import org.jetel.util.primitive.TypedProperties;
 public class DynamicLibExt extends TLFunctionLibraryExt {
 
 	private static final String LIBRARY_NAME = "DynamicLib";
+	
+	private static final Set<String> EXCLUDED_RECORD_PROPERTIES;
+	
+	static {
+		List<String> initializer = Arrays.asList("previewAttachment", "previewAttachmentCharset", "previewAttachmentMetadataRow", "previewAttachmentSampleDataRow");
+		EXCLUDED_RECORD_PROPERTIES = new HashSet<String>(initializer.size());
+		EXCLUDED_RECORD_PROPERTIES.addAll(initializer);
+	}
 
 	public DynamicLibExt() {
 		super(LIBRARY_NAME);
@@ -246,7 +258,9 @@ public class DynamicLibExt extends TLFunctionLibraryExt {
 			// add custom properties
 			TypedProperties p = metadata.getRecordProperties();
 			for (String s: p.stringPropertyNames()) {
-				properties.put(s, p.getStringProperty(s));
+				if (!EXCLUDED_RECORD_PROPERTIES.contains(s)) { // CLO-6293
+					properties.put(s, p.getStringProperty(s));
+				}
 			}
 
 			properties = Collections.unmodifiableMap(new LinkedHashMap< String, String >(properties));
