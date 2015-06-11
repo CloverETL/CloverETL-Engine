@@ -14,6 +14,8 @@ assert workspace
 def jenkinsBuildUrl = env['BUILD_URL']
 assert jenkinsBuildUrl
 
+def javaVersion = System.getProperty("java.specification.version", "")
+
 def testName
 jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-after-commit-windows-java-1.7-Sun|tests-after-commit-windows-java-1.7-IBM|tests-after-commit-windows-java-1.7-IBM|tests-after-commit-proxy-java-1.7-Sun|tests-after-commit-java-8-Sun|tests-after-commit-java-1.7-IBM|tests-night-java-1.6-IBM|tests-night-java-1.6-JRockit|tests-night-functional-java-1.7-Sun|tests-after-commit|tests-reset|tests-performance-java-1.7-Sun|detail)-)?(.+)$/
 assert jobNameM.matches() 
@@ -49,6 +51,7 @@ if( runTests ){
 } 
 println "versionSuffix = " + versionSuffix 
 println "buildNumber   = " + buildNumber 
+println "javaVersion   = " + javaVersion 
 println "====================================================="
 
 //println "Environment variables:"
@@ -74,6 +77,7 @@ if( !runTests ){
 		"-Dcteguiloglink=${jenkinsBuildUrl}/artifact/cte-logs/",
 		"-Dcte.hudson.link=job/${jobName}/${buildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
+		"-Djavaversion=${javaVersion}",
 	]
 	if( jobGoal == "after-commit" ) {
 		antTarget = "reports-hudson"
@@ -132,6 +136,7 @@ if( !runTests ){
 		"-Dhudson.engine.link=job/${engineJobName}/${engineBuildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
 		"-Dtestenv.etlenvironment=engine",
+		"-Djavaversion=${javaVersion}"
 	]
 
 	antTarget = "run-scenarios-with-engine-build-with-testdb"
