@@ -18,23 +18,19 @@
  */
 package org.jetel.component;
 
-import java.io.Serializable;
-
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 
 /**
  * This is basic implementation of MetadataProvider which has
- * static set of provided metadata. This class is serializable.
+ * static set of provided metadata.
  *  
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 25. 2. 2014
  */
-public class StaticMetadataProvider implements MetadataProvider, Serializable {
-	
-	private static final long serialVersionUID = -8436473524226111583L;
+public class StaticMetadataProvider implements MetadataProvider {
 	
 	private MVMetadata[] inputMetadata;
 	private MVMetadata[] outputMetadata;
