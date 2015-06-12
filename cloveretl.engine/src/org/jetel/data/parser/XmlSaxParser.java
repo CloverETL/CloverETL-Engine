@@ -787,8 +787,6 @@ public class XmlSaxParser {
 					Map<String, String> xml2clover = m_activeMapping.getFieldsMap();
 
 					if (xml2clover != null) {
-						Set<String> keys = xml2clover.keySet();
-						
 						for (int counter = 0; counter < m_activeMapping.getSubtreeKeys().length + 1; counter++) {
 
 							String key = universalName;
@@ -811,10 +809,10 @@ public class XmlSaxParser {
 									if (startIndexPosition >= 0) {
 										int endIndexPosition = this.firstIndexWithType(new HashSet<CharacterBufferMarkerType>(Arrays.asList(CharacterBufferMarkerType.SUBTREE_WITH_TAG_START, CharacterBufferMarkerType.SUBTREE_WITH_TAG_END, CharacterBufferMarkerType.SUBTREE_END, CharacterBufferMarkerType.SUBTREE_START)), startIndexPosition);
 										endIndexPosition--; // we need one marker before found
-										if (endIndexPosition < 0 && startIndexPosition >= 0) {
+										if (endIndexPosition < 0) {
 											endIndexPosition = this.lastIndexWithType(CharacterBufferMarkerType.CHARACTERS_END);
 										}
-
+										
 										if (endIndexPosition > 0) {
 											endIndex = this.m_elementContentStartIndexStack.get(endIndexPosition).index;
 										}
