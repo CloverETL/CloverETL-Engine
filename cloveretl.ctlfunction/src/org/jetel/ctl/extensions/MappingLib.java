@@ -73,6 +73,11 @@ public class MappingLib extends TLFunctionLibrary {
     	return m.getMappedSourceFields(targetField, sourceIdx);
     }
     
+    @TLFunctionAnnotation("Returns fields mapped to the specified target field")
+    public static final List<String> getMappedSourceFields(TLFunctionCallContext context, String mapping, String targetField) {
+    	return getMappedSourceFields(context, mapping, targetField, null);
+    }
+    
     @TLFunctionInitAnnotation()
     public static final void getMappedSourceFieldsInit(TLFunctionCallContext context){
     	context.setCache(new TLMappingCache(context, 0));
@@ -87,7 +92,10 @@ public class MappingLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			Integer sourceIdx = stack.popInt();
+			Integer sourceIdx = null;
+			if (context.getParams().length > 2) {
+				sourceIdx = stack.popInt();
+			}
 			String target = stack.popString();
 			String mapping = stack.popString();
 			stack.push(getMappedSourceFields(context, mapping, target, sourceIdx));
@@ -101,6 +109,11 @@ public class MappingLib extends TLFunctionLibrary {
     public static final List<String> getMappedTargetFields(TLFunctionCallContext context, String mapping, String sourceField, Integer sourceIdx) {
     	Mapping m = getMapping(context, mapping);
     	return m.getMappedTargetFields(sourceField, sourceIdx);
+    }
+    
+    @TLFunctionAnnotation("Returns target fields mapped from source field with the specified name")
+    public static final List<String> getMappedTargetFields(TLFunctionCallContext context, String mapping, String sourceField) {
+    	return getMappedTargetFields(context, mapping, sourceField, null);
     }
     
     @TLFunctionInitAnnotation()
@@ -117,7 +130,10 @@ public class MappingLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			Integer sourceIdx = stack.popInt();
+			Integer sourceIdx = null;
+			if (context.getParams().length > 2) {
+				sourceIdx = stack.popInt();
+			}
 			String sourceField = stack.popString();
 			String mapping = stack.popString();
 			stack.push(getMappedTargetFields(context, mapping, sourceField, sourceIdx));
@@ -162,6 +178,11 @@ public class MappingLib extends TLFunctionLibrary {
     	return m.isSourceFieldMapped(sourceField, sourceIdx);
     }
     
+    @TLFunctionAnnotation("Returns true if source field with the specified name is mapped")
+    public static final Boolean isSourceFieldMapped(TLFunctionCallContext context, String mapping, String sourceField) {
+    	return isSourceFieldMapped(context, mapping, sourceField, null);
+    }
+    
     @TLFunctionInitAnnotation()
     public static final void isSourceFieldMappedInit(TLFunctionCallContext context){
     	context.setCache(new TLMappingCache(context, 0));
@@ -176,7 +197,10 @@ public class MappingLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			Integer sourceIdx = stack.popInt();
+			Integer sourceIdx = null;
+			if (context.getParams().length > 2) {
+				sourceIdx = stack.popInt();
+			}
 			String sourceField = stack.popString();
 			String mapping = stack.popString();
 			stack.push(isSourceFieldMapped(context, mapping, sourceField, sourceIdx));
@@ -238,39 +262,68 @@ public class MappingLib extends TLFunctionLibrary {
     		}
     	}
     	
-    	private MappingElement[] getGroup(int sourceIdx) {
-    		return elements[sourceIdx];
+    	private MappingElement[][] getGroups(Integer sourceIdx) {
+    		if (sourceIdx == null) {
+    			return elements;
+    		}
+    		return new MappingElement[][] { elements[sourceIdx] };
     	}
     	
+    	/**
+    	 * Returns the set of fields from the specified source
+    	 * mapped to the specified target field.
+    	 * If sourceIdx is null, returns the set of fields from all sources.
+    	 * It is not possible to determine the source index,
+    	 * should only be used for single source or disjoint sets.
+    	 * 
+    	 * @param targetField
+    	 * @param sourceIdx
+    	 * @return
+    	 */
     	public List<String> getMappedSourceFields(String targetField, Integer sourceIdx) {
-    		MappingElement[] group = getGroup(sourceIdx);
+    		MappingElement[][] groups = getGroups(sourceIdx);
     		Set<String> result = new LinkedHashSet<String>();
-    		for (MappingElement mappingElement: group) {
-    			if (mappingElement.target.equals(targetField)) {
-    				result.add(mappingElement.source);
-    			}
+    		for (MappingElement[] group: groups) {
+        		for (MappingElement mappingElement: group) {
+        			if (mappingElement.target.equals(targetField)) {
+        				result.add(mappingElement.source);
+        			}
+        		}
     		}
     		return new ArrayList<String>(result);
     	}
 
+    	/**
+    	 * Returns the set of target fields mapped from the specified source field.
+    	 * If sourceIdx is null, returns the set of target fields
+    	 * mapped from source fields with the specified name from all sources.
+    	 * 
+    	 * @param targetField
+    	 * @param sourceIdx
+    	 * @return
+    	 */
     	public List<String> getMappedTargetFields(String sourceField, Integer sourceIdx) {
-    		MappingElement[] group = getGroup(sourceIdx);
+    		MappingElement[][] groups = getGroups(sourceIdx);
     		Set<String> result = new LinkedHashSet<String>();
-    		for (MappingElement mappingElement: group) {
-    			if (mappingElement.source.equals(sourceField)) {
-    				result.add(mappingElement.target);
+    		for (MappingElement[] group: groups) {
+    			for (MappingElement mappingElement: group) {
+    				if (mappingElement.source.equals(sourceField)) {
+    					result.add(mappingElement.target);
+    				}
     			}
     		}
     		return new ArrayList<String>(result);
     	}
 
     	public boolean isSourceFieldMapped(String sourceField, Integer sourceIdx) {
-    		MappingElement[] group = getGroup(sourceIdx);
-			for (MappingElement mappingElement: group) {
-				if (mappingElement.source.equals(sourceField)) {
-					return true;
-				}
-			}
+    		MappingElement[][] groups = getGroups(sourceIdx);
+    		for (MappingElement[] group: groups) {
+    			for (MappingElement mappingElement: group) {
+    				if (mappingElement.source.equals(sourceField)) {
+    					return true;
+    				}
+    			}
+    		}
     		return false;
     	}
 
