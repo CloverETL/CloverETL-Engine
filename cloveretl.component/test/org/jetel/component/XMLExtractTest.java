@@ -109,7 +109,7 @@ public class XMLExtractTest extends CloverTestCase {
 				);
 		//printEdgeRecords(xmlExtract, 1);
 		checkOutPortRecords(xmlExtract, 1,
-				rec(),
+				rec("fooVal3"),
 				rec("eAttrFoo1")
 				);
 
