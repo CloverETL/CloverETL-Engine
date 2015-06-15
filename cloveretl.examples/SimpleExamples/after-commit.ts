@@ -19,12 +19,16 @@
 </FunctionalTest>
 
 
-<FunctionalTest ident="AggregateUnsorted" graphFile="graph/graphAggregateUnsorted.grf">
-	 <FlatFile outputFile="data-out/orders.aggregated" supposedFile="supposed-out/order.aggregated.AggregateUnsorted"/>	                                                                    
-	 
-	     <DeleteFile file="data-out/orders.aggregated"/>
-	 
+<FunctionalTest ident="AggregateUnsorted" graphFile="graph/graphAggregateUnsorted.grf" excludedJavaVersions="1.8">
+	 <FlatFile outputFile="data-out/orders.aggregated" supposedFile="supposed-out/order.aggregated.AggregateUnsorted"/>
+	 <DeleteFile file="data-out/orders.aggregated"/>
 </FunctionalTest>
+
+<FunctionalTest ident="AggregateUnsorted_java8" graphFile="graph/graphAggregateUnsorted.grf" excludedJavaVersions="1.7">
+	 <FlatFile outputFile="data-out/orders.aggregated" supposedFile="supposed-out/order.aggregated.AggregateUnsorted_java8"/>
+	 <DeleteFile file="data-out/orders.aggregated"/>
+</FunctionalTest>
+
 
 	<FunctionalTest ident="ApproximativeJoin" graphFile="graph/graphApproximativeJoin.grf">
 	 	  <FlatFile outputFile="data-out/conformingSubstring.txt" supposedFile="supposed-out/conformingSubstring.AproximativeJoin.txt"/>	                                                                 
