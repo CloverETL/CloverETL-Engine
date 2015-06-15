@@ -25,10 +25,10 @@ import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.Objects;
 
 import org.jetel.component.fileoperation.CloverURI;
 import org.jetel.component.fileoperation.FileManager;
@@ -53,6 +53,10 @@ public class SFTPAuthority extends AbstractAuthority implements Authority {
 	private static boolean accept(String filename) {
 		return filename.toLowerCase().endsWith(".key");
 	}
+	
+	private static String getKeyName(String filename) {
+		return filename.substring(0, filename.length() - 4);
+	}
 
 	private static final FileFilter KEY_FILE_FILTER = new FileFilter() {
 
@@ -66,7 +70,7 @@ public class SFTPAuthority extends AbstractAuthority implements Authority {
 	private final Proxy proxy;
 	private UserInfo proxyCredentials;
 	private String proxyString = null;
-	private Set<URI> privateKeys = null;
+	private Map<String, URI> privateKeys = null;
 	
 	public SFTPAuthority(URL url, Proxy proxy) {
 		super(url);
@@ -112,9 +116,9 @@ public class SFTPAuthority extends AbstractAuthority implements Authority {
 				if (file.isDirectory()) {
 					File[] keys = file.listFiles(KEY_FILE_FILTER);
 					if ((keys != null) && (keys.length > 0)) {
-						this.privateKeys = new HashSet<URI>(keys.length);
+						this.privateKeys = new LinkedHashMap<String, URI>(keys.length);
 						for (File key: keys) {
-							this.privateKeys.add(key.toURI());
+							this.privateKeys.put(getKeyName(key.getName()), key.toURI());
 						}
 					}
 				}
@@ -125,14 +129,15 @@ public class SFTPAuthority extends AbstractAuthority implements Authority {
 					ListResult listResult = manager.list(uri);
 					if (listResult.success()) {
 						List<Info> files = listResult.getResult();
-						List<URI> keys = new ArrayList<>();
+						Map<String, URI> keys = new LinkedHashMap<>(files.size());
 						for (Info info: files) {
-							if (accept(info.getName())) {
-								keys.add(info.getURI());
+							String name = info.getName();
+							if (accept(name)) {
+								keys.put(getKeyName(name), info.getURI());
 							}
 						}
 						if (!keys.isEmpty()) {
-							this.privateKeys = new HashSet<URI>(keys);
+							this.privateKeys = keys;
 						}
 					}
 				}
@@ -181,7 +186,7 @@ public class SFTPAuthority extends AbstractAuthority implements Authority {
 	/**
 	 * @return the privateKeys
 	 */
-	public Set<URI> getPrivateKeys() {
+	public Map<String, URI> getPrivateKeys() {
 		return privateKeys;
 	}
 
@@ -192,7 +197,7 @@ public class SFTPAuthority extends AbstractAuthority implements Authority {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + ((privateKeys == null) ? 0 : privateKeys.hashCode());
+		result = prime * result + Objects.hashCode(privateKeys);
 		return result;
 	}
 

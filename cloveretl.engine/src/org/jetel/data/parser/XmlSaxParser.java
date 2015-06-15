@@ -769,6 +769,78 @@ public class XmlSaxParser {
 			if (m_activeMapping != null) {
 				String fullName = "{" + namespaceURI + "}" + localName;
 
+				// Also check parent mapping first for element exact text match in cloverFields
+				// See. CLO-915
+				if (m_activeMapping.getParent() != null && m_level == m_activeMapping.getLevel()) {
+					XMLElementRuntimeMappingModel childMapping = m_activeMapping;
+					m_activeMapping = m_activeMapping.getParent();
+					m_level--;
+
+					// Create universal name
+					String universalName = null;
+					if (localName != null) {
+						universalName = augmentURIAndLocalName(namespaceURI, localName);
+					}
+
+					String fieldName = null;
+					// use fields mapping 
+					Map<String, String> xml2clover = m_activeMapping.getFieldsMap();
+
+					if (xml2clover != null) {
+						for (int counter = 0; counter < m_activeMapping.getSubtreeKeys().length + 1; counter++) {
+
+							String key = universalName;
+							if (counter < m_activeMapping.getSubtreeKeys().length) {
+								key = m_activeMapping.getSubtreeKeys()[counter];
+							}
+
+							if (key == null) {
+								continue;
+							}
+
+							int startIndex = -1;
+							int endIndex = -1;
+
+							if (key.equals(universalName)) {
+								fieldName = xml2clover.get(universalName);
+
+								if (m_element_as_text) {
+									int startIndexPosition = this.lastIndexWithType(CharacterBufferMarkerType.CHARACTERS_START);
+									if (startIndexPosition >= 0) {
+										int endIndexPosition = this.firstIndexWithType(new HashSet<CharacterBufferMarkerType>(Arrays.asList(CharacterBufferMarkerType.SUBTREE_WITH_TAG_START, CharacterBufferMarkerType.SUBTREE_WITH_TAG_END, CharacterBufferMarkerType.SUBTREE_END, CharacterBufferMarkerType.SUBTREE_START)), startIndexPosition);
+										endIndexPosition--; // we need one marker before found
+										if (endIndexPosition < 0) {
+											endIndexPosition = this.lastIndexWithType(CharacterBufferMarkerType.CHARACTERS_END);
+										}
+										
+										if (endIndexPosition > 0) {
+											endIndex = this.m_elementContentStartIndexStack.get(endIndexPosition).index;
+										}
+										startIndex = this.m_elementContentStartIndexStack.get(startIndexPosition).index;
+									}
+								}
+
+								if (fieldName == null && m_activeMapping.isImplicit()) {
+									fieldName = localName;
+								}
+
+								if (isMappingPossible(fieldName)) {
+									DataField field = m_activeMapping.getOutputRecord().getField(fieldName);
+
+									// Fill value only if no attribute matched
+									if (field.isNull()) {
+										writeToOutput(fieldName, startIndex, endIndex, false);
+									}
+								}
+							}
+						}
+					}
+
+					m_level++;
+					m_activeMapping = childMapping;
+				}
+				// End CLO-915
+
 				// cache characters value if the xml field is referenced by descendant
 				if (m_level - 1 <= m_activeMapping.getLevel() && m_activeMapping.getDescendantReferences().containsKey(fullName)) {
 					m_activeMapping.getDescendantReferences().put(fullName, getCurrentValue());

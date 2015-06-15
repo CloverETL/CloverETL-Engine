@@ -177,12 +177,10 @@ public class ComponentFactory {
 					Constructor<? extends Node> constructor = componentClass.getConstructor(String.class, TransformationGraph.class);
 					result = constructor.newInstance(componentId, graph);
 				} catch (Exception e1) {
-					//DO NOTHING
+					result = new SimpleNode(componentId, componentType, graph);
 				}
 			}
-		}
-
-		if (result == null) {
+		} else {
 			result = new SimpleNode(componentId, componentType, graph);
 		}
 

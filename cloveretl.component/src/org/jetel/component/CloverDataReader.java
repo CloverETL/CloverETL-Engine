@@ -180,14 +180,10 @@ public class CloverDataReader extends Node implements MultiFileListener, Metadat
     	int status;
     	// direct reading may not be supported for all input files, e.g. mixed versions in one directory
     	if (attemptDirectReading && parser.isDirectReadingSupported()) {
-    		if (recordBuffer == null) {
-    			recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
-    		}
+    		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
     	} 
-    	if (record == null) {
-    		record = DataRecordFactory.newRecord(getOutputPort(OUTPUT_PORT).getMetadata());
-    		record.setDeserializeAutofilledFields(false); // CLO-4591
-    	}
+		record = DataRecordFactory.newRecord(getOutputPort(OUTPUT_PORT).getMetadata());
+		record.setDeserializeAutofilledFields(false); // CLO-4591
     	while (runIt) {
     		if (readDirect){
     			status = reader.getNextDirect(recordBuffer); 
@@ -340,7 +336,7 @@ public class CloverDataReader extends Node implements MultiFileListener, Metadat
 				parser.free();
 			}
 		}catch(Exception ex){
-			//do nothing;
+			getLog().warn(null, ex);
 		}
 	}
 	

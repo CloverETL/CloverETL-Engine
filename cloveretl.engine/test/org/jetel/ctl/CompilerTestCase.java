@@ -183,8 +183,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	@Override
 	protected void setUp() {
-		// set default locale to English to prevent various parsing errors
-		Locale.setDefault(Locale.ENGLISH);
+		// set default locale to en.US to prevent various parsing errors
+		Locale.setDefault(new Locale("en", "US"));
 		initEngine();
 	}
 
@@ -1339,7 +1339,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		expected.put("nullable", "true");
 		expected.put("nullValue", "");
 		expected.put("trim", "false");
-		for (String key: new String[] {"length", "scale", "containerType", "default", "description", "format", "locale", "size", "timeZone"}) {
+		expected.put("locale", "en.US");
+		expected.put("timeZone", "'java:Europe/Prague';'joda:Europe/Prague'");
+		for (String key: new String[] {"length", "scale", "containerType", "default", "description", "format", "size"}) {
 			expected.put(key, null);
 		}
 		check("ret1", expected);
@@ -1352,7 +1354,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		expected.put("nullable", "true");
 		expected.put("nullValue", "");
 		expected.put("trim", "true");
-		for (String key: new String[] {"length", "scale", "containerType", "default", "description", "format", "locale", "size", "timeZone"}) {
+		expected.put("locale", "en.US");
+		expected.put("timeZone", "'java:Europe/Prague';'joda:Europe/Prague'");
+		for (String key: new String[] {"length", "scale", "containerType", "default", "description", "format", "size"}) {
 			expected.put(key, null);
 		}
 		check("ret2", expected);
@@ -1367,7 +1371,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		expected.put("nullable", "true");
 		expected.put("nullValue", "");
 		expected.put("trim", "true");
-		for (String key: new String[] {"containerType", "default", "description", "format", "locale", "size", "timeZone"}) {
+		expected.put("locale", "en.US");
+		expected.put("timeZone", "'java:Europe/Prague';'joda:Europe/Prague'");
+		for (String key: new String[] {"containerType", "default", "description", "format", "size"}) {
 			expected.put(key, null);
 		}
 		check("lastField", expected);
@@ -1454,7 +1460,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		expected.put("quotedStrings", "false");
 		expected.put("eofAsDelimiter", "false");
 		expected.put("nullValue", "");
-		for (String key: new String[] {"recordDelimiter", "fieldDelimiter", "quoteChar", "description", "locale", "timeZone"}) {
+		expected.put("locale", "en.US");
+		expected.put("timeZone", "'java:Europe/Prague';'joda:Europe/Prague'");
+		for (String key: new String[] {"recordDelimiter", "fieldDelimiter", "quoteChar", "description"}) {
 			expected.put(key, null);
 		}
 		check("ret1", expected);
@@ -1466,7 +1474,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		expected.put("quotedStrings", "false");
 		expected.put("eofAsDelimiter", "false");
 		expected.put("nullValue", "");
-		for (String key: new String[] {"recordDelimiter", "fieldDelimiter", "quoteChar", "description", "locale", "timeZone"}) {
+		expected.put("locale", "en.US");
+		expected.put("timeZone", "'java:Europe/Prague';'joda:Europe/Prague'");
+		for (String key: new String[] {"recordDelimiter", "fieldDelimiter", "quoteChar", "description"}) {
 			expected.put(key, null);
 		}
 		check("ret2", expected);
@@ -4853,21 +4863,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 
 		try {
-			// index can not be null
-			doCompile("function integer transform(){\n" + "getMappedSourceFields(\"$name=$name;$name=$firstName;$countryName=$countryName;#$phone=$field1;\", \"name\", null);" + "\nreturn 0;}", "test_mappinglib_field_parsing");
-			fail();
-		} catch (RuntimeException e) {
-			if (!isCausedBy(e, NullPointerException.class)) {
-				throw e;
-			}
-		}
-
-		try {
 			// index out of bound
 			doCompile("function integer transform(){\n" + "getMappedSourceFields(\"$name=$name;$name=$firstName;$countryName=$countryName;#$phone=$field1;\", \"name\", 2);" + "\nreturn 0;}", "test_mappinglib_field_parsing");
 			fail();
 		} catch (RuntimeException e) {
-			if (!isCausedBy(e, ArrayIndexOutOfBoundsException.class)) {
+			if (!isCausedBy(e, IndexOutOfBoundsException.class)) {
 				throw e;
 			}
 		}
@@ -4917,9 +4917,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("sourceFields2", Arrays.asList());
 		check("sourceFields3", Arrays.asList("a", "b", "c"));
 		check("sourceFields4", Arrays.asList("name", "firstName"));
+		check("sourceFields5", Arrays.asList("name", "firstName", "countryName"));
+		check("sourceFields6", Arrays.asList("name", "firstName", "countryName"));
 		check("targetFields", Arrays.asList("name", "countryName"));
+		check("targetFields1", Arrays.asList("name"));
+		check("targetFields2", Arrays.asList("name"));
+		check("targetFields3", Arrays.asList("field1", "field2"));
 		check("isSourceMapped1", new Boolean(true));
 		check("isSourceMapped2", new Boolean(false));
+		check("isSourceMapped3", true);
+		check("isSourceMapped4", true);
 		check("isTargetMapped", new Boolean(true));
 	}
 
@@ -11140,6 +11147,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	public void test_convertlib_toString() {
 		doCompile("test_convertlib_toString");
+		check("booleanString", "true");
 		check("integerString", "10");
 		check("longString", "110654321874");
 		check("doubleString", "1.547874E-14");

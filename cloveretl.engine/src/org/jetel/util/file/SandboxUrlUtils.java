@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.jetel.graph.ContextProvider;
@@ -262,6 +263,30 @@ public final class SandboxUrlUtils {
 		}
 		String sandboxName = getSandboxName(contextSandboxUrl);
 		return getSandboxPath(sandboxName, sandboxUrl);
+	}
+	
+	/**
+	 * CLO-6374: encode spaces in sandbox name to prevent URISyntaxException.
+	 * TODO encode all spaces?
+	 * 
+	 * @param url
+	 * @return
+	 * @throws URISyntaxException
+	 */
+	public static URI toURI(URL url) throws URISyntaxException {
+		// CLO-6374: encode spaces in sandbox name to prevent URISyntaxException
+		String urlString = url.toString();
+		String sandboxName = SandboxUrlUtils.getSandboxName(url);
+		sandboxName = sandboxName.replace(" ", "%20");
+		String relativePath = SandboxUrlUtils.getRelativeUrl(url.toString());
+		try {
+			urlString = SandboxUrlUtils.getSandboxUrl(sandboxName, relativePath).toString();
+		} catch (MalformedURLException e) {
+			URISyntaxException ex = new URISyntaxException(urlString, e.getMessage());
+			ex.initCause(e);
+			throw ex;
+		}
+		return new URI(urlString);
 	}
 	
 }

@@ -142,6 +142,7 @@ public final class TransformationGraph extends GraphElement {
 	private String licenseType;
 	private String licenseCode;
 	private String guiVersion;
+	private String description;
 	
 	/**
 	 * This runtime context is necessary to be given in the initialization time.
@@ -1548,6 +1549,14 @@ public final class TransformationGraph extends GraphElement {
 
 	public void setGuiVersion(String guiVersion) {
 		this.guiVersion = guiVersion;
+	}
+	
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	/**

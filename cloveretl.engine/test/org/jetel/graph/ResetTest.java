@@ -225,7 +225,8 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("ExtSort_missing_sort_key_CLO-4741.grf") // ok, is to fail
 							&& !file.getName().equals("Transformations_invalid_language.grf") // ok, is to fail
 							&& !file.getName().equals("graphCloverData.grf") // remove after CLO-4360 fixed
-							&& !file.getName().equals("MetadataWriting.grf"); // server test
+							&& !file.getName().equals("MetadataWriting.grf") // server test
+							&& !file.getName().equals("EclipseClasspathParsing_CLO-6013.grf"); // server test
 					
 				}
 			};
@@ -357,7 +358,7 @@ public class ResetTest extends CloverTestCase {
 			}
 
 		} catch (Throwable e) {
-			throw new IllegalStateException("Error executing grap " + graphFile, e);
+			throw new IllegalStateException("Error executing graph " + graphFile, e);
 		} finally {
 			if (cleanUp) {
 				cleanupData();
