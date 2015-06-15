@@ -988,6 +988,21 @@ public class SQLUtil {
 		splitter.run();
 		return splitter.getResult();
 	}
+
+
+	/**
+	 * Removes terminating semicolon(s) from the query if the semicolon(s) is last non-whitespace character(s).
+	 * Also trims the query.
+	 * @param query
+	 * @return stripped and trimmed query
+	 */
+	public static String stripTerminatingSemicolons(String query) {
+		query = query.trim();
+		while (query.endsWith(DEFAULT_DELIMITER)) {
+			query = query.substring(0, query.length() - DEFAULT_DELIMITER.length()).trim();
+		}
+		return query;
+	}
 	
 }
 

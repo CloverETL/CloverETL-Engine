@@ -643,4 +643,9 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	public ClassLoader getDriverClassLoaderParent() {
 		return ClassLoader.getSystemClassLoader();
 	}
+	
+	@Override
+	public boolean supportsTerminatingSemicolons() {
+		return true;
+	}
 }
