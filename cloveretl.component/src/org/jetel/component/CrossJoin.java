@@ -215,6 +215,20 @@ public class CrossJoin extends Node implements MetadataProvider {
 				transformResult = transformation.transformOnError(exception, currentRecords, outRecord);
 			}
 			
+			if (transformResult == RecordTransform.ALL) {
+				outPort.writeRecord(outRecord[WRITE_TO_PORT]);
+				outRecord[WRITE_TO_PORT].reset();
+			} else if (transformResult >= 0) {
+				writeRecord(transformResult, outRecord[transformResult]);
+			} else if (transformResult == RecordTransform.SKIP) {
+				return;
+			} else {
+				// transformResult is <= RecordTransform.STOP
+				String message = "Transformation finished with code: " + transformResult + ". Error message: " + 
+						transformation.getMessage();
+				throw new TransformException(message);
+			}
+			
 		} else {
 			int outFieldIndex = 0;
 			DataField[] outFields = outRecord[WRITE_TO_PORT].getFields();
@@ -224,11 +238,9 @@ public class CrossJoin extends Node implements MetadataProvider {
 					outFieldIndex++;
 				}
 			}
-			
+			outPort.writeRecord(outRecord[WRITE_TO_PORT]);
+			outRecord[WRITE_TO_PORT].reset();
 		}
-		
-		outPort.writeRecord(outRecord[WRITE_TO_PORT]);
-		outRecord[WRITE_TO_PORT].reset();
 	}
 	
 	/**
