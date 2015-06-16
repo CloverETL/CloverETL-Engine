@@ -280,7 +280,8 @@ public class Reformat extends Node implements MetadataProvider {
 				writeRecord(transformResult, outRecord[transformResult]);
 			} else if (transformResult == RecordTransform.SKIP) {
 				// DO NOTHING - skip the record
-			} else if (transformResult <= RecordTransform.STOP) {
+			} else {
+				// transformResult is <= RecordTransform.STOP
 				ErrorAction action = errorActions.get(transformResult);
 				if (action == null) {
 					action = errorActions.get(Integer.MIN_VALUE);

@@ -222,7 +222,8 @@ public class CrossJoin extends Node implements MetadataProvider {
 				writeRecord(transformResult, outRecord[transformResult]);
 			} else if (transformResult == RecordTransform.SKIP) {
 				return;
-			} else if (transformResult <= RecordTransform.STOP) {
+			} else {
+				// transformResult is <= RecordTransform.STOP
 				String message = "Transformation finished with code: " + transformResult + ". Error message: " + 
 						transformation.getMessage();
 				throw new TransformException(message);
