@@ -110,5 +110,10 @@ public class DerbySpecific extends AbstractJdbcSpecific {
 	public boolean isSchemaRequired() {
 		return true;
 	}
+	
+	@Override
+	public boolean supportsTerminatingSemicolons() {
+		return false;
+	}
 
 }
