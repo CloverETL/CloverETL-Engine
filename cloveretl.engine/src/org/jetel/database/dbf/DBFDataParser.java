@@ -70,6 +70,8 @@ public class DBFDataParser extends AbstractParser {
 
     private CharBuffer charBuffer;
 
+    private byte[] record;
+
     private ByteBuffer buffer;
 
     private int recordCounter;
@@ -143,7 +145,6 @@ public class DBFDataParser extends AbstractParser {
 	public DataRecord getNext() throws JetelException {
         // create a new data record
         DataRecord record = DataRecordFactory.newRecord(metadata);
-        record.init();
         record = parseNext(record);
         if (exceptionHandler != null) { //use handler only if configured
             while (exceptionHandler.isExceptionThrowed()) {
@@ -177,26 +178,22 @@ public class DBFDataParser extends AbstractParser {
      * @see org.jetel.data.DataParser#getNext(org.jetel.data.DataRecord)
      */
     private DataRecord parseNext(DataRecord record) throws JetelException {
-        int fieldCounter = 0;
-        int limit = 0;
-        int position = 0;
         if (recordCounter >= totalRecords) { 
             bytesProcessed = dbfAnalyzer.getNumRows() * dbfAnalyzer.getRecSize();
         	return null; 
         }
-        loadRecordIntoCharBuffer();
+        loadRecord();
         // populate all data fields
-        while (fieldCounter < metadata.getNumFields()) {
-        	if (isAutoFilling[fieldCounter]) {
-                fieldCounter++;
-                continue;
+        ByteBuffer recordBuffer = ByteBuffer.wrap(this.record);
+        recordBuffer.limit(0);
+        for (int i = 0; i < metadata.getNumFields(); i++) {
+        	recordBuffer.limit(recordBuffer.limit() + metadata.getField(i).getSize());
+        	if (!isAutoFilling[i]) {
+                charBuffer.clear();
+				decoder.decode(recordBuffer, charBuffer, false);
+                charBuffer.flip();
+                populateField(record, i, charBuffer);
         	}
-            limit += fieldSizes[fieldCounter];
-            charBuffer.limit(limit);
-            charBuffer.position(position);
-            populateField(record, fieldCounter, charBuffer);
-            position = limit;
-            fieldCounter++;
         }
         recordCounter++;
         return record;
@@ -301,6 +298,7 @@ public class DBFDataParser extends AbstractParser {
         }
         //set-up buffers
         charBuffer = CharBuffer.allocate(dbfAnalyzer.getRecSize());
+        record = new byte[dbfAnalyzer.getRecSize()];
         buffer = ByteBuffer
                 .allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
         
@@ -320,17 +318,6 @@ public class DBFDataParser extends AbstractParser {
         } catch (IOException ex) {
             throw new ComponentNotReadyException("Error when setting initial reading position", ex);
         }
-        //verify that metadata correspond to num of fields (plus 1 - deleted flag)
-        int dbfFieldCount=0;
-        for (int i=0; i<metadata.getNumFields(); i++) {
-        	if (metadata.getField(i).getAutoFilling() == null) {
-        		dbfFieldCount++;
-        	}
-        }
-        
-//        if (dbfFieldCount!=(dbfAnalyzer.getNumFields()+1)){
-//            throw new ComponentNotReadyException("Invalid metadata - DBF file indicates different number of fields than metadata!"); 
-//        }
         // initialize array of fields sizes
         fieldSizes = new int[metadata.getNumFields()];
         for (int i = 0; i < fieldSizes.length; i++) {
@@ -366,94 +353,24 @@ public class DBFDataParser extends AbstractParser {
 		buffer.flip();
 	}
 	
-    /**
-     * Method which populates charbuffer with the whole record. Then individual
-     * fields are extracted using their size & calculated offset
-     * 
-     * @return true if the whole record was read
-     * @throws IOException
-     */
-    private boolean populateCharBuffer() throws IOException {
-        int size;
-        charBuffer.clear();
-        decoder.decode(buffer, charBuffer, false);
-        // the whole record should be read at once
-        if (charBuffer.position() < charBuffer.limit()) {
-            // we need to read more - buffer is not completely
-            // filled
-            buffer.clear();
-            size = dbfFile.read(buffer);
-            buffer.flip();
-            // if no more data, return -1
-            if (size == -1) return false;
-            decoder.decode(buffer, charBuffer, false);
-            if (charBuffer.position() < charBuffer.limit()) {
-            	// still not enough data - some problem
-            	return false;
-            }
-        }
-        charBuffer.flip();
-        return true;
-    }
-
-	/**
-	 * Calls {@link #populateCharBuffer()} and throws exception if it fails.
-	 * @throws JetelException if a complete record could not be read into charBuffer.
-	 */
-	private void loadRecordIntoCharBuffer() throws JetelException {
+	private void loadRecord() throws JetelException {
+		
 		try {
-		    if (!populateCharBuffer()) {
-		    	throw new JetelException("Data error - incomplete record read!! " +
-		            "Possible problem with encoding - " + StringUtils.quote(charSet) + " used for parsing"); 
-		    }
+			if (buffer.remaining() < dbfAnalyzer.getRecSize()) {
+				buffer.compact();
+				int size = dbfFile.read(buffer);
+        		buffer.flip();
+        		if (size < 0) {
+        			throw new JetelException("Data error - incomplete record read!! " +
+    			            "Possible problem with encoding - " + StringUtils.quote(charSet) + " used for parsing"); 
+        		}
+			}
+			buffer.get(record);
+			
 		} catch (IOException e) {
 		    throw new JetelException("Failed to read record", e);
 		}
 	}
-
-    /**
-     * Reads chars from right and removes all binary zeros - 0x0000. It finishes
-     * when finds first valid/non-zero character or reaches the begin of the
-     * buffer
-     * 
-     * @param buffer
-     */
-    /* never used
-    private void removeBinaryZeros(CharBuffer buffer) {
-        for (int i = buffer.limit() - 1; i >= buffer.position(); i--) {
-            if (buffer.charAt(i) == (char) 0) {
-                buffer.put(i, ' ');
-            } else {
-                return;
-            }
-        }
-    }
-    */
-
-    /**
-     * Assembles error message when exception occures during parsing
-     * 
-     * @param exceptionMessage
-     *            message from exception getMessage() call
-     * @param recNo
-     *            recordNumber
-     * @param fieldNo
-     *            fieldNumber
-     * @return error message
-     * @since September 19, 2002
-     */
-    /* never used
-    private String getErrorMessage(String exceptionMessage, int recNo,
-            int fieldNo) {
-        StringBuffer message = new StringBuffer();
-        message.append(exceptionMessage);
-        message.append(" when parsing record #");
-        message.append(recordCounter);
-        message.append(" field ");
-        message.append(metadata.getField(fieldNo).getName());
-        return message.toString();
-    }
-    */
 
     /**
      * Assembles error message when exception occures during parsing
@@ -489,7 +406,7 @@ public class DBFDataParser extends AbstractParser {
 	public int skip(int nRec) throws JetelException {
 		for (int i = 0; i < nRec; i++) {
 			// just read record data, no parsing performed
-	        loadRecordIntoCharBuffer();
+	        loadRecord();
 	        recordCounter++;
 		}
 		

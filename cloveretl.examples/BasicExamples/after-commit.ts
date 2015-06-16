@@ -13,10 +13,9 @@
 		<RegEx expression="# 2 *\|Venezuela *\|46" occurences="1"/>
 	</FunctionalTest>
 	
-	<!-- excluded on websphere85 because of CLO-3267 -->
-	<FunctionalTest ident="DebuggingGraph" graphFile="graph/DebuggingGraph.grf" assertion="false" excludedContainers="websphere85">
+	<FunctionalTest ident="DebuggingGraph" graphFile="graph/DebuggingGraph.grf" assertion="false">
 		<ExcludeRegEx ident="error"/>
-		<RegEx expression="Exception raised by user: O is not a valid gender\. Go to record No\. 5820 and replace with \'M\' or \'F\'\." occurences="4"/>
+		<RegEx expression="O is not a valid gender\. Go to record No\. 5820 and replace with \'M\' or \'F\'\." occurences="3"/>
 	</FunctionalTest>
 	
 	<FunctionalTest ident="ExecutingExternal" graphFile="graph/ExecutingExternal.grf" />
@@ -68,10 +67,18 @@
 	<FunctionalTest ident="CreditCardFraudDetection" graphFile="graph/CreditCardFraudDetection.grf" />
 	
 	<!-- runs too long on cluster; fails on websphere because of different order in outputs -->
-	<FunctionalTest ident="EmailValidation" graphFile="graph/EmailValidation.grf" excludedEtlEnvironment="cluster" excludedContainers="websphere7">
+	<FunctionalTest ident="EmailValidation" graphFile="graph/EmailValidation.grf" excludedEtlEnvironment="cluster" excludedContainers="websphere7" excludedJavaVersions="1.8">
 		<FlatFile outputFile="data-out/emails_domain_accept.txt" supposedFile="supposed-out/emails_domain_accept.txt"/>
 		<FlatFile outputFile="data-out/emails_domain_reject.txt" supposedFile="supposed-out/emails_domain_reject.txt"/>
 		<FlatFile outputFile="data-out/emails_smtp_accept.txt" supposedFile="supposed-out/emails_smtp_accept.txt"/>
+		<FlatFile outputFile="data-out/emails_syntax_accept.txt" supposedFile="supposed-out/emails_syntax_accept.txt"/>
+		<FlatFile outputFile="data-out/emails_syntax_reject.txt" supposedFile="supposed-out/emails_syntax_reject.txt"/>
+	</FunctionalTest>
+	
+	<FunctionalTest ident="EmailValidation_java8" graphFile="graph/EmailValidation.grf" excludedEtlEnvironment="cluster" excludedContainers="websphere7" excludedJavaVersions="1.7">
+		<FlatFile outputFile="data-out/emails_domain_accept.txt" supposedFile="supposed-out/emails_domain_accept_java8.txt"/>
+		<FlatFile outputFile="data-out/emails_domain_reject.txt" supposedFile="supposed-out/emails_domain_reject_java8.txt"/>
+		<FlatFile outputFile="data-out/emails_smtp_accept.txt" supposedFile="supposed-out/emails_smtp_accept_java8.txt"/>
 		<FlatFile outputFile="data-out/emails_syntax_accept.txt" supposedFile="supposed-out/emails_syntax_accept.txt"/>
 		<FlatFile outputFile="data-out/emails_syntax_reject.txt" supposedFile="supposed-out/emails_syntax_reject.txt"/>
 	</FunctionalTest>

@@ -192,13 +192,10 @@ public class TransformFactory<T> {
 		return status;
 	}
 
-    /**
-     * Core method of the factory.
-     * @return instance of transformation class
-     * @throws MissingFieldException if the CTL transformation tried to access non-existing field
-     * @throws LoadClassException transformation cannot be instantiated
-     */
-    public T createTransform() {
+	/**
+	 * Uses specified ClassLoader in case the transform is defined by a class
+	 */
+    public T createTransform(ClassLoader cl) {
 		validateSettings();
 
         T transformation = null;
@@ -215,7 +212,11 @@ public class TransformFactory<T> {
         	transformCode = refResolver.resolveRef(transformCode, RefResFlag.SPEC_CHARACTERS_OFF);
     		transformation = createTransformFromCode(transformCode);
     	} else if (!StringUtils.isEmpty(transformClass)) {
-    		transformation = ClassLoaderUtils.loadClassInstance(transformDescriptor.getTransformClass(), transformClass, component);
+    		if (cl != null) {
+    			transformation = ClassLoaderUtils.loadClassInstance(transformDescriptor.getTransformClass(), transformClass, cl);
+    		} else {
+    			transformation = ClassLoaderUtils.loadClassInstance(transformDescriptor.getTransformClass(), transformClass, component);
+    		}
     	} else {
     		throw new JetelRuntimeException("Transformation is not defined.");
     	}
@@ -226,7 +227,17 @@ public class TransformFactory<T> {
         
     	return transformation;
     }
-
+    
+    /**
+     * Core method of the factory.
+     * @return instance of transformation class
+     * @throws MissingFieldException if the CTL transformation tried to access non-existing field
+     * @throws LoadClassException transformation cannot be instantiated
+     */
+    public T createTransform() {
+    	return createTransform(null);
+    }
+    
     /**
      * Creates transform based on the given source code.
      */
@@ -235,7 +246,7 @@ public class TransformFactory<T> {
     	
     	TransformLanguage language = TransformLanguageDetector.guessLanguage(transformCode);
     	if (language == null) {
-    		throw new LoadClassException("Can't determine transformation code.");
+    		throw new LoadClassException("Can't determine transformation language.");
     	}
     	
         switch (language) {

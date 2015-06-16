@@ -392,49 +392,57 @@ public class PluginDescriptor {
     /**
      * Activate this plugin. Method registers this plugin description in Plugins class as active plugin.
      */
-    public synchronized void activatePlugin() {
-    	if (!isActive()) {
-    		Plugins.activatePlugin(getId());
+    public void activatePlugin() {
+    	synchronized (Plugins.pluginActivationMonitor) {
+	    	if (!isActive()) {
+	    		Plugins.activatePlugin(getId());
+	    	}
     	}
     }
     
     /**
      * Deactivate this plugin. Method registers this plugin description in Plugins class as deactive plugin.
      */
-    public synchronized void deactivatePlugin() {
-        Plugins.deactivatePlugin(getId());
+    public void deactivatePlugin() {
+    	synchronized (Plugins.pluginActivationMonitor) {
+    		Plugins.deactivatePlugin(getId());
+    	}
     }
     
     /**
      * This method is called only from Plugins.activatePlugin() method.
      */
-    protected synchronized void activate() {
-        isActive = true;
-        
-        //first, we activate all prerequisites plugins
-        for(Iterator it = getPrerequisites().iterator(); it.hasNext();) {
-            PluginPrerequisite prerequisite = (PluginPrerequisite) it.next();
-            if(!Plugins.isActive(prerequisite.getPluginId())) {
-                Plugins.activatePlugin(prerequisite.pluginId);
-            }
-        }
-        //invoke plugin activator
-        pluginActivator = instantiatePlugin();
-        if(pluginActivator != null) {
-            pluginActivator.activate();
-        }
-        //update java.library.path according native libraries
-        applyNativeLibraries();
+    protected void activate() {
+    	synchronized (Plugins.pluginActivationMonitor) {
+	        isActive = true;
+	        
+	        //first, we activate all prerequisites plugins
+	        for(Iterator it = getPrerequisites().iterator(); it.hasNext();) {
+	            PluginPrerequisite prerequisite = (PluginPrerequisite) it.next();
+	            if(!Plugins.isActive(prerequisite.getPluginId())) {
+	                Plugins.activatePlugin(prerequisite.pluginId);
+	            }
+	        }
+	        //invoke plugin activator
+	        pluginActivator = instantiatePlugin();
+	        if(pluginActivator != null) {
+	            pluginActivator.activate();
+	        }
+	        //update java.library.path according native libraries
+	        applyNativeLibraries();
+    	}
     }
 
     /**
      * This method is called only from Plugins.deactivatePlugin() method.
      */
-    protected synchronized void deactivate() {
-        isActive = false;
-        if(pluginActivator != null) {
-            pluginActivator.deactivate();
-        }
+    protected void deactivate() {
+    	synchronized (Plugins.pluginActivationMonitor) {
+	        isActive = false;
+	        if(pluginActivator != null) {
+	            pluginActivator.deactivate();
+	        }
+    	}
     }
 
     public boolean isActive() {

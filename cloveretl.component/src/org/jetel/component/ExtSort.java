@@ -213,7 +213,6 @@ public class ExtSort extends Node {
         
         inPort = getInputPort(READ_FROM_PORT);
         inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-        inRecord.init();
         DataRecord tmpRecord = inRecord;
          
         while (tmpRecord != null && runIt) {

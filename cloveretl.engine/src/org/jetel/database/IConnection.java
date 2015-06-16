@@ -23,7 +23,9 @@ import java.util.Properties;
 
 import org.jetel.graph.IGraphElement;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 
+@CloverPublicAPI
 public interface IConnection extends IGraphElement {
 
 //    /**

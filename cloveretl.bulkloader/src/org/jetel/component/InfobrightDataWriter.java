@@ -374,23 +374,22 @@ public class InfobrightDataWriter extends Node {
 	 * @throws ComponentNotReadyException for wrong number or type of the fields 
 	 */
 	private BrighthouseRecord createBrighthouseRecord(DataRecordMetadata metadata, JdbcSpecific jdbcSpecific, 
-			EtlLogger logger) throws Exception{
-	    Statement stmt = sqlConnection.createStatement();
-	    ResultSet rs = stmt.executeQuery("select * from `" + table + "` limit 0");
-	    ResultSetMetaData md = rs.getMetaData();
-	    if (md.getColumnCount() != cloverFieldIndexes.length) {
-	    	throw new ComponentNotReadyException(this, "Number of db fields (" + md.getColumnCount()+ ") is different then " +
-					"number of clover fields (" + cloverFieldIndexes.length + ")." );
-	    }
-		List<AbstractColumnType> columns = new ArrayList<AbstractColumnType>(md.getColumnCount());
-		AbstractColumnType col;
-		for (int i = 0; i < cloverFieldIndexes.length; i++) {
-			col = jetelType2Brighthouse(metadata.getField(cloverFieldIndexes[i]), md.getPrecision(i + 1), jdbcSpecific, logger);
-			col.setCheckValues(checkValues);
-			columns.add(col);
+			EtlLogger logger) throws Exception {
+		
+	    List<AbstractColumnType> columns;
+		try (Statement stmt = sqlConnection.createStatement(); ResultSet rs = stmt.executeQuery("select * from `" + table + "` limit 0")) {
+			ResultSetMetaData md = rs.getMetaData();
+			if (md.getColumnCount() != cloverFieldIndexes.length) {
+				throw new ComponentNotReadyException(this, "Number of db fields (" + md.getColumnCount() + ") is different then " + "number of clover fields (" + cloverFieldIndexes.length + ").");
+			}
+			columns = new ArrayList<>(md.getColumnCount());
+			AbstractColumnType col;
+			for (int i = 0; i < cloverFieldIndexes.length; i++) {
+				col = jetelType2Brighthouse(metadata.getField(cloverFieldIndexes[i]), md.getPrecision(i + 1), jdbcSpecific, logger);
+				col.setCheckValues(checkValues);
+				columns.add(col);
+			}
 		}
-	    rs.close();
-	    stmt.close();
 		return dataFormat.createRecord(columns, chset, logger);
 	}
 	
@@ -496,7 +495,6 @@ public class InfobrightDataWriter extends Node {
 		Throwable ex = null;
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-		inRecord.init();
 		//thread that writes data to database
 		InfoBrightWriter infobrightWriter = 
 			new InfoBrightWriter(Thread.currentThread(), inPort, inRecord, cloverFieldIndexes, bRecord, converter, loader);
@@ -507,7 +505,6 @@ public class InfobrightDataWriter extends Node {
 		if (dataParser != null) {
 			OutputPort outPort = getOutputPort(WRITE_TO_PORT);
 			DataRecord out_record = DataRecordFactory.newRecord(outPort.getMetadata());
-			out_record.init();
 			portWriter  = new PortWriter(Thread.currentThread(), outPort, out_record, dataParser);
 			portWriter.start();
 			registerChildThread(portWriter);

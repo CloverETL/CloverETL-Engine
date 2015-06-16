@@ -35,6 +35,7 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.BooleanFormatter;
@@ -59,6 +60,7 @@ import org.jetel.util.string.StringUtils;
  * @see org.jetel.metadata.DataRecordMetadata
  *
  */
+@CloverPublicAPI
 public class DataFieldMetadata implements Serializable {
 
 	private static final long serialVersionUID = -880873886732472663L;
@@ -552,6 +554,39 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
+	 * This method returns all possible delimiters for this field.
+	 * The returned delimiters are either delimiters defined on this field
+	 * or default delimiters from parent record metadata. The record delimiter is
+	 * ignored by this method. 
+	 * @param excludeAutofillingFields
+	 * @return
+	 * @see #getDelimiters(boolean)
+	 */
+	public String[] getDelimitersWithoutRecordDelimiter(boolean excludeAutofillingFields) {
+		if (isDelimited()) {
+			String[] delimiters = null;
+
+			if (delimiter != null) {
+				delimiters = delimiter.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX);
+			} else {
+				if (!isLastField(excludeAutofillingFields)) { // if the field is not last
+					delimiters = getDataRecordMetadata().getFieldDelimiters();
+				} else {
+					if (getDataRecordMetadata().getRecordDelimiters() == null) {
+						delimiters = getDataRecordMetadata().getFieldDelimiters();
+					} else {
+						delimiters = null;
+					}
+				}
+			}
+
+			return delimiters;
+		}
+
+		return null;
+	}
+	
+	/**
 	 * @return <code>true</code> if any field delimiter contains a carriage return, <code>false</code> otherwise
 	 */
 	public boolean containsCarriageReturnInDelimiters() {
@@ -832,6 +867,14 @@ public class DataFieldMetadata implements Serializable {
 		} else {
 			return trim;
 		}
+	}
+	
+	/**
+	 * Allows to find out if trim is set explicitly (returns null if it isn't)
+	 * CLO-5975
+	 */
+	public Boolean getTrim() {
+		return trim;
 	}
 
 	/**

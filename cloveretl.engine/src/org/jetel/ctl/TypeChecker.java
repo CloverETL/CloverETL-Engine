@@ -271,8 +271,42 @@ public class TypeChecker extends NavigatingVisitor {
 		TLType rhs = rhsNode.getType();
 		
 		// CLO-2049: generate a warning for number literal to decimal assignments
-		if ((rhsNode.getId() == TransformLangParserTreeConstants.JJTLITERAL) && lhs.isDecimal() && rhs.isDouble()) {
+		if ((rhsNode.getId() == TransformLangParserTreeConstants.JJTLITERAL) && lhs.isDecimal() && rhs.isDouble() && !CLVFAssignment.isCompound(node.getOperator())) {
 			warn(node, "Assignment of a number literal to a decimal variable. Consider using a decimal literal, e.g. '" + ((CLVFLiteral) rhsNode).getValueImage() + "D'");
+		}
+
+		// a bit hacky, delegate type check to respective node types
+		SimpleNode operation = null;
+		switch (node.getOperator()) {
+		case TransformLangParserConstants.ASSIGN_PLUS:
+			operation = new CLVFAddNode(TransformLangParserTreeConstants.JJTADDNODE);
+			break;
+		case TransformLangParserConstants.ASSIGN_MINUS:
+			operation = new CLVFSubNode(TransformLangParserTreeConstants.JJTSUBNODE);
+			break;
+		case TransformLangParserConstants.ASSIGN_MULTIPLY:
+			operation = new CLVFMulNode(TransformLangParserTreeConstants.JJTMULNODE);
+			break;
+		case TransformLangParserConstants.ASSIGN_DIVIDE:
+			operation = new CLVFDivNode(TransformLangParserTreeConstants.JJTDIVNODE);
+			break;
+		case TransformLangParserConstants.ASSIGN_MODULO:
+			operation = new CLVFModNode(TransformLangParserTreeConstants.JJTMODNODE);
+			break;
+		}
+		if (operation != null) {
+//			SyntacticPosition begin = node.getBegin();
+//			SyntacticPosition end = node.getEnd();
+//			operation.begin(begin.getLine(), begin.getColumn());
+//			operation.end(end.getLine(), end.getColumn());
+			operation.jjtAddChild(node.jjtGetChild(0), 0);
+			operation.jjtAddChild(node.jjtGetChild(1), 1);
+			operation.jjtAccept(this, data);
+			
+			if (operation.getType().isError()) {
+				node.setType(TLType.ERROR);
+				return data;
+			}
 		}
 
 		/*
@@ -282,7 +316,9 @@ public class TypeChecker extends NavigatingVisitor {
 		 * float f;
 		 * t = f = 3; // results in type error, value of assignment is the LHS (not RHS)
 		 */
-		if (lhs.canAssign(rhs)) {
+		if (lhs.canAssign(rhs) || 
+				// CLO-1895: string concatenation:
+				((node.getOperator() == TransformLangParserConstants.ASSIGN_PLUS) && lhs.isString())) {
 			castIfNeeded(node, 1, lhs);
 			node.setType(lhs);
 		} else if (lhs.isRecord() && rhs.isRecord()) {
@@ -323,7 +359,7 @@ public class TypeChecker extends NavigatingVisitor {
 			error(node, "Type mismatch: cannot convert from " + "'" + rhs.name() + "' to '" + lhs.name() + "'");
 			node.setType(TLType.ERROR);
 		}
-
+		
 		return data;
 	}
 	
@@ -1322,7 +1358,7 @@ public class TypeChecker extends NavigatingVisitor {
 		// general (mixed-type) multiplication
 		TLType result = checkArithmeticOperator(lhs, rhs);
 		if (result.isError()) {
-			error(lhs, "Operator '*' is not defined for types: " + "'" + lhs.getType().name() + "' and '" + rhs.getType().name() + "'");
+			error(node, "Operator '*' is not defined for types: " + "'" + lhs.getType().name() + "' and '" + rhs.getType().name() + "'");
 		} else {
 			/* 
 			 * NOTE: 

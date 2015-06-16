@@ -136,10 +136,8 @@ public class TransformFactoryTest extends CloverTestCase {
 		RecordTransform recordTransform = transformFactory.createTransform();
 		recordTransform.init(null, getInMetadata(), getOutMetadata());
 		DataRecord inRecord = DataRecordFactory.newRecord(getInMetadata()[0]);
-		inRecord.init();
 		inRecord.getField("inField").setValue("input data string");
 		DataRecord outRecord = DataRecordFactory.newRecord(getOutMetadata()[0]);
-		outRecord.init();
 		
 		recordTransform.transform(new DataRecord[] { inRecord }, new DataRecord[] { outRecord });
 		assertEquals("input data string!", outRecord.getField("outField").getValue().toString());
@@ -159,10 +157,8 @@ public class TransformFactoryTest extends CloverTestCase {
 		RecordTransform recordTransform = transformFactory.createTransform();
 		recordTransform.init(null, getInMetadata(), getOutMetadata());
 		DataRecord inRecord = DataRecordFactory.newRecord(getInMetadata()[0]);
-		inRecord.init();
 		inRecord.getField("inField").setValue("input data string");
 		DataRecord outRecord = DataRecordFactory.newRecord(getOutMetadata()[0]);
-		outRecord.init();
 		
 		recordTransform.transform(new DataRecord[] { inRecord }, new DataRecord[] { outRecord });
 		assertEquals("input data string CTL1 external", outRecord.getField("outField").getValue().toString());
@@ -187,10 +183,8 @@ public class TransformFactoryTest extends CloverTestCase {
 		RecordTransform recordTransform = transformFactory.createTransform();
 		recordTransform.init(null, getInMetadata(), getOutMetadata());
 		DataRecord inRecord = DataRecordFactory.newRecord(getInMetadata()[0]);
-		inRecord.init();
 		inRecord.getField("inField").setValue("input data string");
 		DataRecord outRecord = DataRecordFactory.newRecord(getOutMetadata()[0]);
-		outRecord.init();
 		
 		recordTransform.transform(new DataRecord[] { inRecord }, new DataRecord[] { outRecord });
 		assertEquals("input data string!", outRecord.getField("outField").getValue().toString());
@@ -210,10 +204,8 @@ public class TransformFactoryTest extends CloverTestCase {
 		RecordTransform recordTransform = transformFactory.createTransform();
 		recordTransform.init(null, getInMetadata(), getOutMetadata());
 		DataRecord inRecord = DataRecordFactory.newRecord(getInMetadata()[0]);
-		inRecord.init();
 		inRecord.getField("inField").setValue("input data string");
 		DataRecord outRecord = DataRecordFactory.newRecord(getOutMetadata()[0]);
-		outRecord.init();
 		
 		recordTransform.transform(new DataRecord[] { inRecord }, new DataRecord[] { outRecord });
 		assertEquals("input data string CTL2 external", outRecord.getField("outField").getValue().toString());

@@ -503,8 +503,9 @@ public class TableauWriter extends Node  {
 	        	try {
 	        		defaultTableCollation = Collation.valueOf(rawTableCollation);
 	        	} catch (IllegalArgumentException e) {
+	        		errMessage = "Illegal value for default table collation: " + rawTableCollation;
 	        		if (status != null) {
-	        			status.add(new ConfigurationProblem("Illegal value for default table collation: " + rawTableCollation, Severity.ERROR,	this, Priority.NORMAL, XML_DEFAULT_TABLE_COLLATION));
+	        			status.add(new ConfigurationProblem(errMessage, Severity.ERROR,	this, Priority.NORMAL, XML_DEFAULT_TABLE_COLLATION));
 	        		} else {
 	        			logger.error(errMessage);
 	        		}

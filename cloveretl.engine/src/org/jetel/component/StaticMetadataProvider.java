@@ -18,29 +18,24 @@
  */
 package org.jetel.component;
 
-import java.io.Serializable;
-
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
-import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * This is basic implementation of MetadataProvider which has
- * static set of provided metadata. This class is serializable.
+ * static set of provided metadata.
  *  
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 25. 2. 2014
  */
-public class StaticMetadataProvider implements MetadataProvider, Serializable {
+public class StaticMetadataProvider implements MetadataProvider {
 	
-	private static final long serialVersionUID = -8436473524226111583L;
-	
-	private DataRecordMetadata[] inputMetadata;
-	private DataRecordMetadata[] outputMetadata;
+	private MVMetadata[] inputMetadata;
+	private MVMetadata[] outputMetadata;
 
-	public StaticMetadataProvider(DataRecordMetadata[] inputMetadata, DataRecordMetadata[] outputMetadata) {
+	public StaticMetadataProvider(MVMetadata[] inputMetadata, MVMetadata[] outputMetadata) {
 		this.inputMetadata = inputMetadata;
 		this.outputMetadata = outputMetadata;
 	}
@@ -48,7 +43,7 @@ public class StaticMetadataProvider implements MetadataProvider, Serializable {
 	@Override
 	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		if (portIndex < outputMetadata.length && outputMetadata[portIndex] != null) {
-			return metadataPropagationResolver.createMVMetadata(outputMetadata[portIndex], null, "output_" + portIndex, MVMetadata.TOP_PRIORITY);
+			return metadataPropagationResolver.createMVMetadata(outputMetadata[portIndex].getModel(), null, "output_" + portIndex, outputMetadata[portIndex].getPriority());
 		} else {
 			return null;
 		}
@@ -57,7 +52,7 @@ public class StaticMetadataProvider implements MetadataProvider, Serializable {
 	@Override
 	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		if (portIndex < inputMetadata.length && inputMetadata[portIndex] != null) {
-			return metadataPropagationResolver.createMVMetadata(inputMetadata[portIndex], null, "input_" + portIndex, MVMetadata.TOP_PRIORITY);
+			return metadataPropagationResolver.createMVMetadata(inputMetadata[portIndex].getModel(), null, "input_" + portIndex, inputMetadata[portIndex].getPriority());
 		} else {
 			return null;
 		}

@@ -89,7 +89,7 @@ public class StructureFormatter extends AbstractFormatter {
 	public static String createDefaultMask(DataRecordMetadata metadata){
 		StringBuilder maskBuilder = new StringBuilder();
 		String recordLabel = metadata.getLabelOrName();
-		maskBuilder.append("< ");
+		maskBuilder.append("<");
 		maskBuilder.append(recordLabel);
 		maskBuilder.append(">\n");
 		for (int i=0;i<metadata.getNumFields();i++){

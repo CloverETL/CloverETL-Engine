@@ -18,6 +18,7 @@
  */
 package org.jetel.data.parser;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,6 +46,7 @@ import org.jetel.exception.PolicyType;
 import org.jetel.graph.ContextProvider;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
+import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.metadata.MetadataUtils;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -130,7 +132,6 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 	@Override
 	public DataRecord getNext() throws JetelException {
 		DataRecord record = DataRecordFactory.newRecord(metadata);
-		record.init();
 		return getNext(record);
 	}
 
@@ -151,7 +152,6 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 			}
 		} else {
 			DataRecord record = DataRecordFactory.newRecord(metadata);
-			record.init();
 			for (int skipped = 0; skipped < nRec; skipped++) {
 				if (getNext(record) == null) {
 					return skipped;
@@ -260,6 +260,35 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
     	return checkCompatibilityHeader(Channels.newInputStream(recordFile),metadata);
     }
     
+    /**
+     * Reads file header from the provided stream, including metadata. 
+     * It is assumed the stream will be closed afterwards.
+     * 
+     * @param recordFile
+     * @return file header with metadata
+     * @throws IOException
+     */
+    public static FileConfig readHeader(InputStream recordFile) throws IOException {
+    	try {
+    		BufferedInputStream bis = new BufferedInputStream(recordFile);
+			FileConfig header = checkCompatibilityHeader(bis, null);
+			if (header.formatVersion == CloverDataFormatter.DataFormatVersion.VERSION_35) {
+				DataRecordMetadata metadata = DataRecordMetadata.deserialize(bis);
+				metadata.setParsingType(DataRecordParsingType.DELIMITED);
+				metadata.setRecordDelimiter("\r\n");
+				metadata.setFieldDelimiter("|");
+				header.metadata = metadata;
+			}
+			return header;
+		} catch (ComponentNotReadyException e) {
+			if (e.getCause() instanceof IOException) {
+				throw (IOException) e.getCause();
+			} else {
+				throw new IOException(e.getMessage(), e.getCause());
+			}
+		}
+    }
+    
     public static FileConfig checkCompatibilityHeader(InputStream recordFile, DataRecordMetadata metadata) throws ComponentNotReadyException {
     	byte[] extraBytes;
     	CloverBuffer buffer = CloverBuffer.wrap(new byte[CloverDataFormatter.CLOVER_DATA_HEADER_LENGTH]);
@@ -324,6 +353,10 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
         	int metasize;
         	try {
     			metasize=ByteBufferUtils.decodeLength(recordFile);
+    			if (metasize < 0) {
+    				// CLO-5868: error reporting improved
+    				throw new IOException("Unexpected end of data stream");
+    			}
     			byte[] metadef=new byte[metasize];
     			if (StreamUtils.readBlocking(recordFile, metadef) != metasize){ 
     				throw new IOException("Not enough data in file.");

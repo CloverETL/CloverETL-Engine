@@ -18,15 +18,20 @@
  */
 package org.jetel.util;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jetel.exception.CompoundException;
 import org.jetel.exception.SerializableException;
+import org.jetel.exception.StackTraceWrapperException;
 import org.jetel.exception.UserAbortException;
 import org.jetel.logger.SafeLogUtils;
 import org.jetel.util.string.StringUtils;
@@ -105,25 +110,18 @@ public class ExceptionUtils {
      * @return resulted overall message
      */
     public static String getMessage(String message, Throwable exception) {
-    	List<ErrorMessage> errMessages = getMessages(new RootException(message, exception), 0);
+    	List<ErrorMessage> errMessages = getMessages(new RootException(message, exception));
     	StringBuilder result = new StringBuilder();
     	for (ErrorMessage errMessage : errMessages) {
-    		appendMessage(result, errMessage.message, errMessage.depth);
+    		if (errMessage.suppressed) {
+    			appendMessage(result, "Suppressed: " + errMessage.message, errMessage.depth);
+    		} else {
+    			appendMessage(result, errMessage.message, errMessage.depth);
+    		}
     	}
     	return SafeLogUtils.obfuscateSensitiveInformation(result.toString());
     }
 
-    private static class ErrorMessage {
-    	int depth;
-    	
-    	String message;
-
-    	public ErrorMessage(int depth, String message) {
-    		this.depth = depth;
-    		this.message = message;
-		}
-    }
-    
     /**
      * Extract message from the given exception chain. All messages from all exceptions are concatenated
      * to the resulted string.
@@ -131,44 +129,61 @@ public class ExceptionUtils {
      * @param exception converted exception
      * @return resulted overall message
      */
-    private static List<ErrorMessage> getMessages(Throwable exception, int depth) {
+    private static List<ErrorMessage> getMessages(Throwable rootException) {
     	List<ErrorMessage> result = new ArrayList<ErrorMessage>();
-    	Throwable exceptionIterator = exception;
-    	String lastMessage = "";
-    	while (true) {
+    	
+    	//algorithm recursively go through exception hierarchy - recursion is implemented in this stack
+    	Deque<StackElement> stack = new LinkedList<StackElement>();
+    	
+    	//add initial stack element with root exception
+    	stack.add(new StackElement(rootException, "", 0, false));
+    	while (!stack.isEmpty()) {
+    		StackElement stackElement = stack.removeFirst();
+    		Throwable exception = stackElement.exception;
+    		String lastMessage = stackElement.lastMessage;
+    		int depth = stackElement.depth;
+    		boolean suppressed = stackElement.suppressed;
+    		
+    		//this is list of new stack elements, which will be added into stack in the end of processing of current stackElement
+    		List<StackElement> stackElements = new ArrayList<>();
+    		
     		//extract message from current exception
-    		String newMessage = getMessageNonRecursive(exceptionIterator, lastMessage);
+    		String newMessage = getMessageNonRecursive(exception, lastMessage);
     		
     		if (newMessage != null) {
-    			result.add(new ErrorMessage(depth, newMessage));
+    			//non-empty message is reported
+    			result.add(new ErrorMessage(depth, newMessage, suppressed));
+    			suppressed = false;
 	    		depth++;
 	    		lastMessage = newMessage;
     		}
 
     		//CompoundException needs special handling
-    		if (exceptionIterator instanceof CompoundException) {
-    			for (Throwable t : ((CompoundException) exceptionIterator).getCauses()) {
-    				result.addAll(getMessages(t, depth));
+    		if (basicInstanceOf(exception, CompoundException.class)) {
+    			if (suppressed) {
+    				//the CompoundException does not have message, but is suppressed by parent exception
+    				//empty message with "Suppressed: " prefix is reported
+        			result.add(new ErrorMessage(++depth, "", suppressed));
+        			suppressed = false;
     			}
-    			break;
-    		}
-    		
-			//the CompoundException could be wrapped in SerializableException
-			//special handling is needed
-    		if (exceptionIterator instanceof SerializableException) {
-    			SerializableException se = (SerializableException) exceptionIterator;
-    			if (se.instanceOf(CompoundException.class)) {
-        			for (Throwable t : se.getCauses()) {
-        				result.addAll(getMessages(t, depth));
-        			}
-        			break;
+    			for (Throwable t : getCompountExceptionCauses(exception)) {
+    				stackElements.add(new StackElement(t, "", depth, false));
     			}
-    		}
-    		
-    		if (exceptionIterator.getCause() == null || exceptionIterator.getCause() == exceptionIterator) {
-    			break;
     		} else {
-    			exceptionIterator = exceptionIterator.getCause();
+	    		//otherwise simply process the cause
+	    		if (exception.getCause() != null && exception.getCause() != exception) {
+	    			stackElements.add(new StackElement(exception.getCause(), lastMessage, depth, suppressed));
+	    		}
+    		}
+
+    		//handle suppressed exceptions
+    		for (Throwable t : Arrays.asList(exception.getSuppressed())) {
+    			stackElements.add(new StackElement(t, "", depth, true));
+    		}
+    		
+    		//add all new stack elements into stack in opposite order
+    		for (int i = stackElements.size() - 1; i >= 0; i--) {
+    			stack.addFirst(stackElements.get(i));
     		}
     	}
     	return result;
@@ -187,13 +202,20 @@ public class ExceptionUtils {
 				(StringUtils.isEmpty(t.getMessage()) || t.getMessage().equalsIgnoreCase("null"))) {
 			//the NPE can be wrapped also in SerializableException
 			message = "Unexpected null value.";
+		} else if (t instanceof ClassNotFoundException) {
+			//message of ClassNotFoundException exception is insufficient, message should be more explanatory
+			message = "Class with the specified name cannot be found" + (!StringUtils.isEmpty(t.getMessage()) ? ": " + t.getMessage() : ".");
+		} else if (t instanceof NoClassDefFoundError) {
+			//message of NoClassDefFoundError exception is insufficient, message should be more explanatory
+			message = "No definition for the class with the specified name can be found" + (!StringUtils.isEmpty(t.getMessage()) ? ": " + t.getMessage() : ".");
 		} else if (!StringUtils.isEmpty(t.getMessage())) {
 			//only non-empty messages are considered
 			message = t.getMessage();
 		}
 		
 		//if the last item in the exception chain does not have an message, class name is used instead of message
-		if (!(t instanceof RootException) && message == null && t.getCause() == null) {
+		//artificial exceptions are not considered RootException and StackTraceWrapperException
+		if (!(t instanceof RootException) && !(t instanceof StackTraceWrapperException) && message == null && t.getCause() == null) {
 			message = getClassName(t);
 		}
 
@@ -268,34 +290,26 @@ public class ExceptionUtils {
 	 */
 	public static boolean instanceOf(Throwable t, Class<? extends Throwable> exceptionClass) {
 		while (t != null) {
-			//special handling of SerializableException
-			if (t instanceof SerializableException) {
-				SerializableException se = (SerializableException) t;
-				if (se.instanceOf(exceptionClass)) {
-					return true;
-				}
-				
-				if (se.instanceOf(CompoundException.class)) {
-					for (Throwable cause : se.getCauses()) {
-						if (instanceOf(cause, exceptionClass)) {
-							return true;
-						}
+			if (basicInstanceOf(t, exceptionClass)) {
+				return true;
+			}
+			
+			//check inner exceptions in CompoundException
+			if (basicInstanceOf(t, CompoundException.class)) {
+				for (Throwable cause : getCompountExceptionCauses(t)) {
+					if (instanceOf(cause, exceptionClass)) {
+						return true;
 					}
-					return false;
-				}
-			} else {
-				if (exceptionClass.isInstance(t)) {
-					return true;
-				}
-				if (t instanceof CompoundException) {
-					for (Throwable cause : ((CompoundException) t).getCauses()) {
-						if (instanceOf(cause, exceptionClass)) {
-							return true;
-						}
-					}
-					return false;
 				}
 			}
+			
+			//check suppressed exceptions
+			for (Throwable suppressedException : t.getSuppressed()) {
+				if (instanceOf(suppressedException, exceptionClass)) {
+					return true;
+				}
+			}
+			
 			if (t != t.getCause()) {
 				t = t.getCause();
 			} else {
@@ -304,7 +318,40 @@ public class ExceptionUtils {
 		}
 		return false;
 	}
-	
+
+	/**
+	 * This method is substitution for "t instanceof Class" operator.
+	 * {@link SerializableException} is handled correctly by this method.
+	 * @param t tested throwable instance
+	 * @param exceptionClass expected class
+	 * @return true if the tested throwable "is" instance of expected class
+	 */
+	private static <T extends Throwable> boolean basicInstanceOf(Throwable t, Class<T> exceptionClass) {
+		if (t instanceof SerializableException) {
+			return ((SerializableException) t).instanceOf(exceptionClass);
+		} else {
+			return exceptionClass.isInstance(t);
+		}
+	}
+
+	/**
+	 * This method returns all causes of the given {@link CompoundException}.
+	 * Serialised form of {@link CompoundException} (@see {@link SerializableException}) is correctly handled.
+	 * @param compoundException
+	 * @return list of causes of the given {@link CompoundException}
+	 */
+	private static List<? extends Throwable> getCompountExceptionCauses(Throwable compoundException) {
+		if (compoundException instanceof SerializableException) {
+			if (((SerializableException) compoundException).instanceOf(CompoundException.class)) {
+				return ((SerializableException) compoundException).getCauses();
+			}
+		} else {
+			if (compoundException instanceof CompoundException) {
+				return ((CompoundException) compoundException).getCauses();
+			}
+		}
+		throw new IllegalStateException("The given exception does not represents a CompoundException.", compoundException);
+	}
 	/**
 	 * Returns list of all exceptions of a given type in the given exception chain.
 	 * @param t root of searched exception chain
@@ -334,6 +381,19 @@ public class ExceptionUtils {
 		}
 		
 		return result;
+	}
+	
+	/**
+	 * Returns the root cause exception of {@code t}.
+	 * 
+	 * @param t - a {@link Throwable}
+	 * @return root cause exception
+	 */
+	public static Throwable getRootCause(Throwable t) {
+		while (t.getCause() != null) {
+			t = t.getCause();
+		}
+		return t;
 	}
 
 	/**
@@ -401,6 +461,34 @@ public class ExceptionUtils {
 	}
 	
 	/**
+	 * If <code>suppressed</code> is not <code>null</code>,
+	 * adds it as a suppressed {@link Throwable} to <code>t</code>.
+	 * Returns <code>t</code>.
+	 * <p>
+	 * Sample usage:
+	 * <pre>
+	 * Exception suppressedException;
+	 * try {
+	 *     return file.getCanonicalPath();
+	 * } catch (IOException ioe) {
+	 *     throw ExceptionUtils.addSuppressed(ioe, suppressedException);
+	 * }
+	 * </pre>
+	 * </p>
+	 * 
+	 * @param t				- thrown exception, must <b>not</b> be <code>null</code>
+	 * @param suppressed	- suppressed exception, may be <code>null</code>
+	 * 
+	 * @return <code>t</code> with registered suppressed throwable, if available
+	 */
+	public static <T extends Throwable> T addSuppressed(T t, Throwable suppressed) {
+		if (suppressed != null) {
+			t.addSuppressed(suppressed);
+		}
+		return t;
+	}
+	
+	/**
 	 * This exception type is used only in {@link #getMessage(String, Throwable)} as a root exception,
 	 * which wraps given message and exception. Specific exception type is necessary to distinguish
 	 * regular exception from exceptions chain and this artificial root exception. 
@@ -412,5 +500,64 @@ public class ExceptionUtils {
 			super(message, cause);
 		}
 	}
+
+    private static class ErrorMessage {
+    	int depth;
+    	
+    	String message;
+
+    	boolean suppressed = false;
+    	
+    	public ErrorMessage(int depth, String message, boolean suppressed) {
+    		this.depth = depth;
+    		this.message = message;
+    		this.suppressed = suppressed;
+		}
+    }
+
+    private static class StackElement {
+    	Throwable exception;
+    	String lastMessage;
+    	int depth;
+    	boolean suppressed;
+
+    	public StackElement(Throwable exception, String lastMessage, int depth, boolean suppressed) {
+    		this.exception = exception;
+    		this.lastMessage = lastMessage;
+    		this.depth = depth;
+    		this.suppressed = suppressed;
+		}
+    }
+
+    /**
+     * Converts a {@link Throwable} to {@link IOException}.
+     * 
+     * @param t - {@link Throwable} to convert
+     * @return {@code t} wrapped in an {@link IOException}, if necessary
+     */
+	public static IOException getIOException(Throwable t) {
+		if (t instanceof IOException) {
+			return (IOException) t;
+		} else {
+			return new IOException(t);
+		}
+	}
 	
+	/**
+	 * Tries to return the message from the cause
+	 * {@link ClassNotFoundException}, if available.
+	 * Otherwise, returns the original message.
+	 * 
+	 * @param error {@link NoClassDefFoundError}
+	 * @return
+	 */
+	public static String getClassName(NoClassDefFoundError error) {
+		Throwable cause = error.getCause();
+		if (cause instanceof ClassNotFoundException) {
+			if (!StringUtils.isEmpty(cause.getMessage())) {
+				return cause.getMessage();
+			}
+		}
+		return error.getMessage();
+	}
 }

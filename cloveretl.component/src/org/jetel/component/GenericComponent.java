@@ -19,21 +19,26 @@
 package org.jetel.component;
 
 import java.nio.charset.Charset;
-import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
+import org.jetel.util.compile.CompilationException;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Element;
-
 
 /**
  * Generic component, also called Hercules.
@@ -43,8 +48,9 @@ import org.w3c.dom.Element;
  *
  * @created 5. 1. 2015
  */
-public class GenericComponent extends Node {
+public class GenericComponent extends Node /*implements MetadataProvider*/ {
 
+	public final static String COMPONENT_TYPE = "GENERIC_COMPONENT";
 	private static final Logger logger = Logger.getLogger(GenericComponent.class);
 
 	private static final String XML_GENERIC_TRANSFORM_CLASS_ATTRIBUTE = "genericTransformClass";
@@ -55,32 +61,41 @@ public class GenericComponent extends Node {
     private String genericTransformCode = null;
 	private String genericTransformClass = null;
 	private String genericTransformURL = null;
-	private String charset = null;	
+	private String charset = null;
 	
 	private GenericTransform genericTransform = null;
+	
+	/**
+	 * Just for blank reading records that the transformation left unread.
+	 */
+	private DataRecord[] inRecords;
 
 	public GenericComponent(String id) {
 		super(id);
 	}
 	
+	private void initRecords() {
+		DataRecordMetadata[] inMeta = getInMetadataArray();
+		inRecords = new DataRecord[inMeta.length];
+		for (int i = 0; i < inRecords.length; i++) {
+			inRecords[i] = DataRecordFactory.newRecord(inMeta[i]);
+		}
+	}
+	
 	@Override
 	public void init() throws ComponentNotReadyException {
-		if (isInitialized()) return;
+		if (isInitialized()) {
+			return;
+		}
 		super.init();
-
+		initRecords();
 		genericTransform = getTransformFactory().createTransform();
-		
 		genericTransform.init();
 	}
 
-	/**
-    /* (non-Javadoc)
-     * @see org.jetel.graph.Node#preExecute()
-     */
     @Override
     public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();
-    	
     	genericTransform.preExecute();
     }
 
@@ -89,45 +104,62 @@ public class GenericComponent extends Node {
 		try {
 			genericTransform.execute();
 		} catch (Exception e) {
+			if (ExceptionUtils.instanceOf(e, InterruptedException.class)) {
+				// return as fast as possible when interrupted
+				return Result.ABORTED;
+			}
 			genericTransform.executeOnError(e);
+		}
+		
+		for (int i = 0; i < inRecords.length; i++) {
+			boolean firstUnreadRecord = true;
+			while (readRecord(i, inRecords[i]) != null) {
+				if (firstUnreadRecord) {
+					firstUnreadRecord = false;
+					logger.warn(COMPONENT_TYPE + ": Component had unread records on input port " + i);
+				}
+				// blank read
+			}
 		}
 		
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
-    /* (non-Javadoc)
-     * @see org.jetel.graph.GraphElement#postExecute(org.jetel.graph.TransactionMethod)
-     */
     @Override
     public void postExecute() throws ComponentNotReadyException {
     	super.postExecute();
-    	
     	genericTransform.postExecute();
     }
     
 	@Override
 	public synchronized void free() {	
 		super.free();
-		
 		if (genericTransform != null) {
 			genericTransform.free();
 		}
 	}
 
+	/** 
+	 * You can turn on CTL support in this method. Just change the commented lines accordingly.
+	 * @return
+	 */
 	private TransformFactory<GenericTransform> getTransformFactory() {
-		//this way of getting a transform factory allows only java implementation, CTL will not work
-		//TransformFactory<GenericTransform> transformFactory = TransformFactory.createTransformFactory(GenericTransform.class);
 		
+		/** This is Java only version */
+		TransformFactory<GenericTransform> transformFactory = TransformFactory.createTransformFactory(GenericTransform.class);
+		
+		/** This is Java and CTL version */
+		/*
 		TransformFactory<GenericTransform> transformFactory = TransformFactory.createTransformFactory(GenericTransformDescriptor.newInstance());
+		transformFactory.setInMetadata(getInMetadata());
+    	transformFactory.setOutMetadata(getOutMetadata());
+    	*/
+		
 		transformFactory.setTransform(genericTransformCode);
 		transformFactory.setTransformClass(genericTransformClass);
 		transformFactory.setTransformUrl(genericTransformURL);
 		transformFactory.setCharset(charset);
 		transformFactory.setComponent(this);
-		
-		//this is only needed for ctl? - delete it if ctl is disabled in the component?
-		transformFactory.setInMetadata(getInMetadata());
-    	transformFactory.setOutMetadata(getOutMetadata());
 		return transformFactory;
 	}
 	
@@ -140,9 +172,18 @@ public class GenericComponent extends Node {
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
 		
-		//check GenericTransform
-		getTransformFactory().checkConfig(status);
-		
+		try {
+			if (genericTransform == null) {
+				genericTransform = getTransformFactory().createTransform();
+			}
+			genericTransform.checkConfig(status); // delegating to implemented method
+		} catch (org.jetel.exception.LoadClassException e) {
+			if (ExceptionUtils.instanceOf(e, CompilationException.class)) {
+				status.add(ExceptionUtils.getMessage(e), Severity.WARNING, this, Priority.NORMAL);
+			} else {
+				status.add(ExceptionUtils.getMessage(e) + ". Make sure to set classpath correctly.", Severity.WARNING, this, Priority.NORMAL);
+			}
+		}
         return status;
 	}
 	
@@ -159,8 +200,6 @@ public class GenericComponent extends Node {
 
 		GenericComponent genericComponent = new GenericComponent(xattribs.getString(XML_ID_ATTRIBUTE));
         genericComponent.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
-        
-        //TODO ctl expressions are still turned on? - this might cause trouble if the code is java?
         genericComponent.setGenericTransformCode(xattribs.getStringEx(XML_GENERIC_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
         genericComponent.setGenericTransformURL(xattribs.getStringEx(XML_GENERIC_TRANSFORM_URL_ATTRIBUTE, null, RefResFlag.URL));
         genericComponent.setGenericTransformClass(xattribs.getString(XML_GENERIC_TRANSFORM_CLASS_ATTRIBUTE, null));
@@ -176,46 +215,55 @@ public class GenericComponent extends Node {
 		this.charset = charset;
 	}
 
-	/**
-	 * @return the genericTransformCode
-	 */
 	public String getGenericTransformCode() {
 		return genericTransformCode;
 	}
 
-	/**
-	 * @param genericTransformCode the genericTransformCode to set
-	 */
 	public void setGenericTransformCode(String genericTransformCode) {
 		this.genericTransformCode = genericTransformCode;
 	}
 
-	/**
-	 * @return the genericTransformClass
-	 */
 	public String getGenericTransformClass() {
 		return genericTransformClass;
 	}
 
-	/**
-	 * @param genericTransformClass the genericTransformClass to set
-	 */
 	public void setGenericTransformClass(String genericTransformClass) {
 		this.genericTransformClass = genericTransformClass;
 	}
 
-	/**
-	 * @return the genericTransformURL
-	 */
 	public String getGenericTransformURL() {
 		return genericTransformURL;
 	}
 
-	/**
-	 * @param genericTransformURL the genericTransformURL to set
-	 */
 	public void setGenericTransformURL(String genericTransformURL) {
 		this.genericTransformURL = genericTransformURL;
 	}
 	
+	// Currently hercules can't propagate metadata.
+	// When CLO-6437 is resolved, we can uncomment these methods (don't forget to implement MetadataProvider in AbstractGenericTransform!)
+	/*
+	@Override
+	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		if (genericTransform == null && (genericTransformCode != null || genericTransformURL != null || genericTransformClass != null)) {
+			genericTransform = getTransformFactory().createTransform();
+		}
+
+		if (genericTransform instanceof MetadataProvider) {
+			return ((MetadataProvider) genericTransform).getInputMetadata(portIndex, metadataPropagationResolver);
+		}
+		return null;
+	}
+
+	@Override
+	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		if (genericTransform == null && (genericTransformCode != null || genericTransformURL != null || genericTransformClass != null)) {
+			genericTransform = getTransformFactory().createTransform();
+		}
+		
+		if (genericTransform instanceof MetadataProvider) {
+			return ((MetadataProvider) genericTransform).getOutputMetadata(portIndex, metadataPropagationResolver);
+		}
+		return null;
+	}
+	*/
 }

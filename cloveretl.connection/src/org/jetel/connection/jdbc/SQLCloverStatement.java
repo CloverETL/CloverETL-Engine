@@ -195,6 +195,7 @@ public class SQLCloverStatement {
 		SQLScriptParser preprocessor = new SQLScriptParser(query, SQLScriptParser.DEFAULT_SQL_DELIMITER);
         preprocessor.setBackslashQuoteEscaping(connection.getJdbcSpecific().isBackslashEscaping());
         preprocessor.setRequireLastDelimiter(false);
+        preprocessor.setSplitQueries(false); // fix CLO-6413 - we must not split multiple queries
         // query stripped of single-line comments
         String cleanQuery;
         try {
@@ -330,7 +331,6 @@ public class SQLCloverStatement {
 		}
 		if (outMetadata == null) return status;
 		DataRecord outRecord = DataRecordFactory.newRecord(outMetadata);
-		outRecord.init();
 		try {
 			prepareMapping(outRecord);
 		} catch (Exception e) {
@@ -796,6 +796,7 @@ public class SQLCloverStatement {
 		stringReplacer.setBackslashQuoteEscaping(connection.getJdbcSpecific().isBackslashEscaping());
 		stringReplacer.setRequireLastDelimiter(false);
 		stringReplacer.setReplaceStrings(true);
+		stringReplacer.setSplitQueries(false);
         try {
         	sql = stringReplacer.getNextStatement(); // get sql with comments removed and strings replaced
         } catch (IOException e) {

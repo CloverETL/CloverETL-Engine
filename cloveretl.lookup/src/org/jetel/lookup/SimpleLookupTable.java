@@ -202,9 +202,6 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		indexKey.init();
 		indexKey.setEqualNULLs(true);
 
-		DataRecord record = DataRecordFactory.newRecord(metadata);
-		record.init();
-
 		if (lookupTable == null) {
 			lookupTable = new DataRecordMap(indexKey, keyDuplicates, tableInitialSize);
 		}
@@ -248,7 +245,6 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 			 * the lookup table will be populated later by calling put() method
 			 */
 			DataRecord record = DataRecordFactory.newRecord(metadata);
-			record.init();
 			try {
 				if (fileURL != null) {
 					dataParser.setDataSource(FileUtils.getReadableChannel(getContextURL(), fileURL));

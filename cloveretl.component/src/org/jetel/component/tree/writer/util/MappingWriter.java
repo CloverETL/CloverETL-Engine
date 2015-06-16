@@ -109,6 +109,9 @@ public class MappingWriter implements MappingVisitor {
 			}
 
 			String name = element.getProperty(MappingProperty.NAME);
+			if (name == null) {
+				name = "";
+			}
 			boolean writeNameAsAttribute = !TagName.isValidName(name, namespaceNames);
 
 			String elementName = writeNameAsAttribute ? TreeWriterMapping.MAPPING_KEYWORDS_PREFIX + ":" + ObjectNode.XML_ELEMENT_WITH_NAME_ATTRIBUTE : name;

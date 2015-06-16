@@ -28,6 +28,7 @@ import org.jetel.database.IConnection;
 import org.jetel.database.sql.JdbcSpecific.OperationType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.primitive.TypedProperties;
 
 
@@ -39,6 +40,7 @@ import org.jetel.util.primitive.TypedProperties;
  *
  * @created 29.1.2013
  */
+@CloverPublicAPI
 public interface DBConnection extends IConnection {
 
 	public final static String XML_JDBC_SPECIFIC_ATTRIBUTE = "jdbcSpecific";

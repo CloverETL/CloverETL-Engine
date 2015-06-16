@@ -545,7 +545,7 @@ public class DynamicLib extends TLFunctionLibrary {
 		return record.getMetadata().getField(fieldName).getLabelOrName();
 	}
 
-	class GetValueFunction implements TLFunctionPrototype {
+	static class GetValueFunction implements TLFunctionPrototype {
 		
 		private Class<?> targetType;
 		
@@ -578,7 +578,7 @@ public class DynamicLib extends TLFunctionLibrary {
 		}
 	}
 	
-	abstract class SetValueFunction<T> implements TLFunctionPrototype {
+	abstract static class SetValueFunction<T> implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -603,7 +603,7 @@ public class DynamicLib extends TLFunctionLibrary {
 		protected abstract void setFieldValueName(TLFunctionCallContext context, DataRecord record, String fieldName, T value);
 	}
 
-	class IsNullFunction implements TLFunctionPrototype {
+	static class IsNullFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -627,7 +627,7 @@ public class DynamicLib extends TLFunctionLibrary {
 		}
 	}
 
-	class GetValueAsStringFunction implements TLFunctionPrototype {
+	static class GetValueAsStringFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -649,7 +649,7 @@ public class DynamicLib extends TLFunctionLibrary {
 		}
 	}
 
-	class CompareFunction implements TLFunctionPrototype {
+	static class CompareFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -673,7 +673,7 @@ public class DynamicLib extends TLFunctionLibrary {
 		}
 	}
 
-	class GetFieldIndexFunction implements TLFunctionPrototype {
+	static class GetFieldIndexFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -687,7 +687,7 @@ public class DynamicLib extends TLFunctionLibrary {
 		}
 	}
 
-	class GetFieldLabelFunction implements TLFunctionPrototype {
+	static class GetFieldLabelFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -716,7 +716,7 @@ public class DynamicLib extends TLFunctionLibrary {
 	}
 	
 	//GETFIELDNAME
-	class GetFieldNameFunction implements TLFunctionPrototype {
+	static class GetFieldNameFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -730,6 +730,15 @@ public class DynamicLib extends TLFunctionLibrary {
 		}
 	}
 	
+	/**
+	 * Get the data type of the metadata field.
+	 * 
+	 * @param context function call context.
+	 * @param record record to query. Cannot be null.
+	 * @param position index of the field to query. Cannot be null and must be <code>0 <= position < length(record)</code>.
+	 * 
+	 * @return type of the queried field in the metadata.
+	 */
 	@TLFunctionAnnotation("Returns data type of i-th field of passed-in record")
 	public static final String getFieldType(TLFunctionCallContext context, DataRecord record, Integer position) {
 		if (position < 0 || position >= record.getNumFields()) {
@@ -738,8 +747,25 @@ public class DynamicLib extends TLFunctionLibrary {
 		return record.getField(position).getMetadata().getDataType().getName();
 	}
 
-	//GETFIELDTYPE
-	class GetFieldTypeFunction implements TLFunctionPrototype {
+	/**
+	 * Get the data type of the metadata field.
+	 * 
+	 * @param context function call context.
+	 * @param record record to query. Cannot be null.
+	 * @param fieldName name of the field to query. Cannot be <code>null</code> and the field has to exist within the metadata.
+	 * 
+	 * @return type of the queried field in the metadata.
+	 */
+	@TLFunctionAnnotation("Returns data type of field name of passed-in record")
+	public static final String getFieldType(TLFunctionCallContext context, DataRecord record, String fieldName) {
+		if (!record.hasField(fieldName)) {
+			throw new JetelRuntimeException("field with name " + fieldName + " does not exist in metadata '" + record.getMetadata().getName() + "'");
+		}
+		return record.getField(fieldName).getMetadata().getDataType().getName();
+	}
+	
+	// GETFIELDTYPE
+	static class GetFieldTypeFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -747,9 +773,15 @@ public class DynamicLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			Integer position = stack.popInt();
-			DataRecord record = stack.popRecord();
-			stack.push(getFieldType(context, record, position));
+			if (context.getParams()[1].isInteger()) {
+				int index = stack.popInt();
+				DataRecord record = stack.popRecord();
+				stack.push(getFieldType(context, record, index));
+			} else if (context.getParams()[1].isString()) {
+				String name = stack.popString();
+				DataRecord record = stack.popRecord();
+				stack.push(getFieldType(context, record, name));
+			}
 		}
 	}
 }

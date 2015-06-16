@@ -29,6 +29,7 @@ import java.net.URLDecoder;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.jetel.component.fileoperation.FileOperationMessages;
+import org.jetel.util.stream.CloseOnceOutputStream;
 
 public class PooledFTPConnection extends AbstractPoolableConnection {
 
@@ -191,7 +192,7 @@ public class PooledFTPConnection extends AbstractPoolableConnection {
 				os.close();
 				throw new IOException(ftp.getReplyString());
 			}
-			os = new BufferedOutputStream(os) {
+			os = new CloseOnceOutputStream (new BufferedOutputStream(os) {
 				@Override
 				public void close() throws IOException {
 					try {
@@ -206,7 +207,7 @@ public class PooledFTPConnection extends AbstractPoolableConnection {
 						}
 					}
 				}
-			};
+			}, null);
 			return os;
 		} catch (Exception e) {
 			returnToPool();

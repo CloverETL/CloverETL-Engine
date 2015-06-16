@@ -65,6 +65,11 @@ public class DataFormatter extends AbstractFormatter {
 	private CloverBuffer footer; 
 	private CloverBuffer header; 
 	private boolean quotedStrings;
+	/** This flag indicates the last record does not have record delimiter **/
+	private boolean skipLastRecordDelimiter = false;
+	/** This flag is just indication of first record to be written.
+	 * This is just implementation detail of skipping last record delimiter. **/
+	private boolean firstRecord;
 	
 	private String[] excludedFieldNames;
 	private int[] includedFieldIndices;
@@ -126,7 +131,8 @@ public class DataFormatter extends AbstractFormatter {
 						&& metadata.getField(i).getDataType() != DataFieldType.BYTE
 						&& metadata.getField(i).getDataType() != DataFieldType.CBYTE;
                 try {
-                	String[] fDelimiters = metadata.getField(i).getDelimiters(false); // CLO-5293
+                	String[] fDelimiters = null;
+                	fDelimiters = metadata.getField(i).getDelimitersWithoutRecordDelimiter(false); //record delimiter is written manually
                 	if (fDelimiters != null) { //for eof delimiter
     					delimiters[i] = fDelimiters[0].getBytes(charSet);
                 	}
@@ -188,6 +194,8 @@ public class DataFormatter extends AbstractFormatter {
         } else {
             writer = Channels.newChannel((OutputStream) out);
         }
+        
+        firstRecord = true;
     }
     
 	/**
@@ -241,6 +249,16 @@ public class DataFormatter extends AbstractFormatter {
 		int encLen = 0;
 		int i = 0;
 		try {
+			//write record delimiter if necessary
+			if (skipLastRecordDelimiter) {
+				//in case the last record delimiter should be skipped
+				//record delimiter is actually written at the beginning of each written record expect the first one
+				if (!firstRecord) {
+					encLen += writeRecordDelimiter();
+				} else {
+					firstRecord = false;
+				}
+			}
 			for (int index : includedFieldIndices) {
 				i = index;
 				if(metadata.getField(i).isDelimited()) {
@@ -289,13 +307,12 @@ public class DataFormatter extends AbstractFormatter {
 						flush();
 					}
 					dataBuffer.put(fieldBuffer);
-
 					encLen += fieldBuffer.limit();
-					if (i == metadata.getNumFields() -1 && recordDelimiter != null){
-						dataBuffer.put(recordDelimiter);
-						encLen += recordDelimiter.length;
-					}
 				}
+			}
+			//write record delimiter if necessary
+			if (!skipLastRecordDelimiter) {
+				encLen += writeRecordDelimiter();
 			}
 		} catch (BufferOverflowException exception) {
     		throw new RuntimeException("The size of data buffer is only " + dataBuffer.maximumCapacity()
@@ -306,6 +323,19 @@ public class DataFormatter extends AbstractFormatter {
             		+ ".\nRecord: " +record.toString(), e);
 		}
         return encLen;
+	}
+	
+	/**
+	 * Writes record delimiter.
+	 * @return length of written record delimiter
+	 */
+	private int writeRecordDelimiter() {
+		if (recordDelimiter != null){
+			dataBuffer.put(recordDelimiter);
+			return recordDelimiter.length;
+		} else {
+			return 0;
+		}
 	}
 	
 	/**
@@ -400,4 +430,9 @@ public class DataFormatter extends AbstractFormatter {
     public void setQuoteChar(Character quoteChar) {
     	quotingDecoder.setQuoteChar(quoteChar);
     }
+    
+    public void setSkipLastRecordDelimiter(boolean skipLastRecordDelimiter) {
+    	this.skipLastRecordDelimiter = skipLastRecordDelimiter;
+    }
+    
 }

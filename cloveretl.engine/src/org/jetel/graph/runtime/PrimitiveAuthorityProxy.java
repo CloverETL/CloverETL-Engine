@@ -47,6 +47,7 @@ import org.apache.log4j.spi.Filter;
 import org.apache.log4j.spi.LoggingEvent;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
@@ -421,6 +422,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	}
 
 	@Override
+	public ConfigurationStatus checkConfig(String graphUrl, GraphRuntimeContext runtimeContext) {
+		throw new UnsupportedOperationException("Subgraph configuration check is available only in CloverETL Server environment!");
+	}
+	
+	@Override
 	public File newTempFile(String label, String suffix, int allocationHint) throws TempFileCreationException {
 		try {
 			label = decorateTempFileLabel(label);
@@ -442,11 +448,6 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		} catch (IOException e) {
 			throw new TempFileCreationException(e, label, allocationHint, null, TempSpace.ENGINE_DEFAULT);
 		}
-	}
-	
-	@Override
-	public boolean isProfilerResultsDataSourceSupported() {
-		return false;
 	}
 	
 	@Override
@@ -481,14 +482,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 	@Override
 	public ClassLoader getClassLoader(URL[] urls, ClassLoader parent, boolean greedy) {
-		//return ClassLoaderUtils.createClassLoader(urls, parent, greedy);
 		return createClassLoader(urls, parent, greedy);
 	}
 
 	@Override
 	public ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy) {
-		//return ClassLoaderUtils.createClassLoader(urls, parent, greedy);
-		
 		if (parent == null) {
 			parent = PrimitiveAuthorityProxy.class.getClassLoader();
 		}

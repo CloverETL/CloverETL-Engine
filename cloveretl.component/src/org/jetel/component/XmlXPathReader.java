@@ -245,7 +245,6 @@ public class XmlXPathReader extends Node {
 			if (outputPort == null) 
 				throw new ComponentNotReadyException("Error: output port '"+ outputPortNumber +"' doesn't exist");
 			records[outputPortNumber] = DataRecordFactory.newRecord(outputPort.getMetadata());
-			records[outputPortNumber].init();
 			parser.assignRecord(records[outputPortNumber], outputPortNumber);
 		}
 		try {

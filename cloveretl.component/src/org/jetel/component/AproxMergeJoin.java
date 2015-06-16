@@ -539,7 +539,7 @@ public class AproxMergeJoin extends Node implements MetadataProvider {
 				if (conformityFieldsForSuspicious.length>0){
 					for (int i=0;i<conformityFieldsForSuspicious.length;i++){
 						if (conformityFieldsForSuspicious[i]>-1){
-							outSuspicious.getField(conformityFieldsForSuspicious[i]).setValue(new Double(conformity[i]));
+							outSuspicious.getField(conformityFieldsForSuspicious[i]).setValue(Double.valueOf(conformity[i]));
 						}
 					}
 				}
@@ -562,7 +562,6 @@ public class AproxMergeJoin extends Node implements MetadataProvider {
 
 		for (int i = 0; i < count; i++) {
 			data[i] = DataRecordFactory.newRecord(metadata);
-			data[i].init();
 		}
 		return data;
 	}
@@ -611,13 +610,9 @@ public class AproxMergeJoin extends Node implements MetadataProvider {
 		// initialize output record
 		DataRecordMetadata outConformingMetadata = conformingPort.getMetadata();
 		DataRecord outConformingRecord = DataRecordFactory.newRecord(outConformingMetadata);
-		outConformingRecord.init();
-		outConformingRecord.reset();
 
 		DataRecordMetadata outSuspiciousMetadata = suspiciousPort.getMetadata();
 		DataRecord outSuspiciousRecord = DataRecordFactory.newRecord(outSuspiciousMetadata);
-		outSuspiciousRecord.init();
-		outSuspiciousRecord.reset();
 
 		// tmp record for switching contents
 		DataRecord tmpRec;
@@ -654,6 +649,8 @@ public class AproxMergeJoin extends Node implements MetadataProvider {
 					slaveRecords[TEMPORARY] = tmpRec;
 					isDriverDifferent = false;
 					break;
+				default:
+					throw new IllegalStateException();
 				}
 			}
 			flushCombinations(driverRecords[CURRENT], slaveRecords[TEMPORARY],

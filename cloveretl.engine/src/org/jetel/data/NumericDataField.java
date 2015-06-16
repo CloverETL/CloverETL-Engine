@@ -35,6 +35,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.BinaryFormat;
 import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.HashCodeUtil;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.NumericFormatter;
@@ -50,9 +51,8 @@ import org.jetel.util.string.StringUtils;
  *@since      March 27, 2002
  *@see        org.jetel.metadata.DataFieldMetadata
  */
+@CloverPublicAPI
 public class NumericDataField extends DataFieldImpl implements Numeric, Comparable<Object> {
-
-	private static final long serialVersionUID = -3824088924871267023L;
 	
 	private double value;
 	private final NumericFormatter numericFormatter;
@@ -512,9 +512,9 @@ public class NumericDataField extends DataFieldImpl implements Numeric, Comparab
 				dataBuffer.order(binaryFormat.byteOrder); //set the field's byte order
 				try {
 					if (binaryFormat.size == 4) {
-						this.value = dataBuffer.getFloat();
+						setValue(dataBuffer.getFloat());
 					} else if(binaryFormat.size == 8) {
-						this.value = dataBuffer.getDouble();
+						setValue(dataBuffer.getDouble());
 					}
 				} catch(BufferUnderflowException bue) {
 					throw new BadDataFormatException(String.format("The buffer contains less than %d bytes", binaryFormat.size), bue);

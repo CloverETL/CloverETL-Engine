@@ -31,12 +31,13 @@ import java.util.List;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.HashCodeUtil;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.Compare;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  *  A class that represents array of bytes field.<br>
@@ -49,10 +50,9 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  *@since      October 29, 2002
  *@see        org.jetel.metadata.DataFieldMetadata
  */
-@SuppressWarnings("EI")
+@SuppressFBWarnings("EI")
+@CloverPublicAPI
 public class ByteDataField extends DataFieldImpl implements Comparable<Object> {
-
-	private static final long serialVersionUID = 3823545028385612760L;
 
 	/**
 	 *  Description of the Field

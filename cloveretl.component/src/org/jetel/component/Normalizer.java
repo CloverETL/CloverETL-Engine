@@ -197,10 +197,7 @@ public class Normalizer extends Node {
         errorActions = ErrorAction.createMap(errorActionsString);
         
         inRecord = DataRecordFactory.newRecord(inMetadata);
-		inRecord.init();
 		outRecord = DataRecordFactory.newRecord(outMetadata);
-		outRecord.init();
-		outRecord.reset();
 	}
 
 	private TransformFactory<RecordNormalize> getTransformFactory() {

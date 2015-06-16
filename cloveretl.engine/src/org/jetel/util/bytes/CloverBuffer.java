@@ -33,6 +33,7 @@ import java.nio.ShortBuffer;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.util.CloverPublicAPI;
 
 /**
  * This class is substitution for originally very intensive using of {@link ByteBuffer} class.
@@ -49,6 +50,7 @@ import org.jetel.data.Defaults;
  * @see DynamicCloverBuffer only implementation
  * @see org.apache.mina.core.buffer.IoBuffer This class was inspired by similar class from Apache MINA Project  
  */
+@CloverPublicAPI
 public abstract class CloverBuffer {
 
 	private static final boolean DEFAULT_DIRECT = false;

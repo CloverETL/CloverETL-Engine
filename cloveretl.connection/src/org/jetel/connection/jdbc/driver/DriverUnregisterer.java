@@ -18,11 +18,15 @@
  */
 package org.jetel.connection.jdbc.driver;
 
+import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.util.Enumeration;
 
+import org.apache.commons.io.IOUtils;
 import org.jetel.database.sql.JdbcDriver;
+import org.jetel.util.classloader.ClassDefinitionFactory;
 
 /**
  * This class is used to deregister drivers from 
@@ -39,7 +43,11 @@ import org.jetel.database.sql.JdbcDriver;
  */
 public class DriverUnregisterer {
 	
-	public void unregisterDrivers(ClassLoader classLoader) {
+	/* Cannot to reference log4j here, for it is not on the classpath of the classloader in most cases
+	private static final Logger log = Logger.getLogger(DriverUnregisterer.class); 
+	*/
+	
+	public static void unregisterDrivers(ClassLoader classLoader) {
 		
 		// unload each driver loaded by the given classLoader
 		for (Enumeration<Driver> e = DriverManager.getDrivers(); e.hasMoreElements();) {
@@ -50,6 +58,25 @@ public class DriverUnregisterer {
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}
+			}
+		}
+	}
+	
+	public static void run(ClassLoader loader) throws Throwable {
+		if (loader instanceof ClassDefinitionFactory) {
+			ClassDefinitionFactory factory = (ClassDefinitionFactory) loader;
+			final ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
+			try {
+				Thread.currentThread().setContextClassLoader(DriverUnregisterer.class.getClassLoader()); // prevents CLO-4787
+				// get DriverUnregisterer's code, load it using driver's class loader and perform deregistration
+				InputStream classData = DriverUnregisterer.class.getResourceAsStream(DriverUnregisterer.class.getSimpleName().concat(".class"));
+				byte classBytes[] = IOUtils.toByteArray(classData);
+				IOUtils.closeQuietly(classData);
+				Class<?> unregisterer = factory.defineClass(DriverUnregisterer.class.getName(), classBytes);
+				Method unregister = unregisterer.getMethod("unregisterDrivers", ClassLoader.class);
+				unregister.invoke(null, loader);
+			} finally {
+				Thread.currentThread().setContextClassLoader(originalLoader);
 			}
 		}
 	}

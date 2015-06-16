@@ -37,21 +37,23 @@ public class TrackingMetadataToolkitTest extends CloverTestCase {
 	}
 
 	public void testCreateMetadata() throws XMLConfigurationException, GraphConfigurationException, IOException {
-		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("./test-data/TrackingMetadataToolkitTest.grf"),
-				new GraphRuntimeContext());
-		DataRecordMetadata metadata = TrackingMetadataToolkit.createMetadata(graph);
-		for (Entry<String, String> fieldEntry : getMetadataConcept().entrySet()) {
-			assertTrue(metadata.getField(fieldEntry.getKey()) != null);
-			assertTrue(metadata.getField(fieldEntry.getKey()).getDataType().getName().equals(fieldEntry.getValue()));
+		try (FileInputStream fis = new FileInputStream("./test-data/TrackingMetadataToolkitTest.grf")) {
+			TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(fis, new GraphRuntimeContext());
+			DataRecordMetadata metadata = TrackingMetadataToolkit.createMetadata(graph);
+			for (Entry<String, String> fieldEntry : getMetadataConcept().entrySet()) {
+				assertTrue(metadata.getField(fieldEntry.getKey()) != null);
+				assertTrue(metadata.getField(fieldEntry.getKey()).getDataType().getName().equals(fieldEntry.getValue()));
+			}
 		}
 	}
 	
 	private Map<String, String> getMetadataConcept() throws IOException {
-		Map<String, String> result = new HashMap<String, String>();
-		BufferedReader br = new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream("MetadataConcept.txt")));
-		String line;
-		while ((line = br.readLine()) != null) {
-			result.put(line.substring(0, line.indexOf(' ')), line.substring(line.indexOf(' ') + 1, line.length()));
+		Map<String, String> result = new HashMap<>();
+		try (BufferedReader br = new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream("MetadataConcept.txt")))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				result.put(line.substring(0, line.indexOf(' ')), line.substring(line.indexOf(' ') + 1, line.length()));
+			}
 		}
 		return result;
 	}

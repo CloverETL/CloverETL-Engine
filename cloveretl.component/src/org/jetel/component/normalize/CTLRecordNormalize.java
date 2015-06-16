@@ -20,6 +20,7 @@ package org.jetel.component.normalize;
 
 import java.util.Properties;
 
+import org.jetel.component.TransformUtils;
 import org.jetel.ctl.CTLAbstractTransform;
 import org.jetel.ctl.CTLEntryPoint;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
@@ -108,7 +109,7 @@ public abstract class CTLRecordNormalize extends CTLAbstractTransform implements
 		inputRecord = source;
 
 		try {
-			result = countOnErrorDelegate(ExceptionUtils.getMessage(null, exception), ExceptionUtils.stackTraceToString(exception));
+			result = countOnErrorDelegate(TransformUtils.getMessage(exception), ExceptionUtils.stackTraceToString(exception));
 		} catch (UnsupportedOperationException ex) {
 			// no custom error handling implemented, throw an exception so the transformation fails
 			throw new TransformException("Normalization failed!", exception);

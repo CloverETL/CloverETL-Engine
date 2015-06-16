@@ -21,8 +21,6 @@ package org.jetel.util;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.SeekableByteChannel;
@@ -326,7 +324,6 @@ public class TargetFile {
 
 		// prepare output record
 		record = DataRecordFactory.newRecord(outputPort.getMetadata());
-		record.init();
 
 		// parse target url
 		String[] aField = fileURL.substring(PORT_PROTOCOL.length()).split(PARAM_DELIMITER);
@@ -615,35 +612,46 @@ public class TargetFile {
 				}
             }
             
-			boolean exceptionThrown = false;
-			try {
-				if (getPreferredDataTargetType() == DataTargetType.FILE) {
-					setDataTarget(FileUtils.getJavaFile(contextURL, fName));
-				}
-				else if (getPreferredDataTargetType() == DataTargetType.URI) {
-					try {
-						URI uri = CloverURI.createSingleURI(contextURL != null ? contextURL.toURI() : null, fName).getAbsoluteURI().toURI();
-						setDataTarget(uri);
-					} catch (IOException ex) {
-						throw ex;
-					} catch (URISyntaxException ex) {
-						throw new IOException(ex);
+            DataTargetType preferredTargetType = getPreferredDataTargetType();
+			Exception caughtException = null;
+			if (preferredTargetType == DataTargetType.FILE || preferredTargetType == DataTargetType.URI) {
+				Object dataTarget = null;
+				try {
+					if (getPreferredDataTargetType() == DataTargetType.FILE) {
+						dataTarget = FileUtils.getJavaFile(contextURL, fName);
+					} else if (getPreferredDataTargetType() == DataTargetType.URI) {
+						dataTarget = CloverURI.createSingleURI(contextURL != null ? contextURL.toURI() : null, fName).getAbsoluteURI().toURI();
 					}
+				} catch (Exception ex) {
+					// obtaining the file or URI failed
+					caughtException = ex;
 				}
-			} catch (Exception e) {
-				logger.warn("Failed to set data target", e);
-				exceptionThrown = true;
+				if (dataTarget != null) {
+					setDataTarget(dataTarget); // do not catch exceptions thrown here
+				}
+			}
+			// true if getting the File or URI failed
+			boolean exceptionThrown = (caughtException != null);
+			if (exceptionThrown) {
+				logger.warn("Failed to set data target", caughtException);
 			}
 
 			// If steps for FILE and URI failed, try to open a stream based on the fName
-			if (getPreferredDataTargetType() == DataTargetType.CHANNEL || exceptionThrown) {
-				OutputStream os = FileUtils.getOutputStream(contextURL, fName, appendData, compressLevel);
-				byteChannel = Channels.newChannel(os);
+			if (preferredTargetType == DataTargetType.CHANNEL || exceptionThrown) {
+				try {
+					OutputStream os = FileUtils.getOutputStream(contextURL, fName, appendData, compressLevel);
+					byteChannel = Channels.newChannel(os);
 
-				if (useChannel) {
-					setDataTarget(byteChannel);
-				} else {
-					setDataTarget(new Object[] { contextURL, fName, os });
+					if (useChannel) {
+						setDataTarget(byteChannel);
+					} else {
+						setDataTarget(new Object[] { contextURL, fName, os });
+					}
+				} catch (Throwable t) {
+					if (exceptionThrown) {
+						t.addSuppressed(caughtException);
+					}
+					throw t;
 				}
 			}
             	

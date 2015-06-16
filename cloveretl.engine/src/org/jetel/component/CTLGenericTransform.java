@@ -34,6 +34,7 @@ import org.jetel.util.ExceptionUtils;
 
 /**
  * Implementation of {@link GenericTransform} interface which is used for CTL2 compile mode.
+ * Currently not used since GenericComponent doesn't support CTL.
  * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -69,7 +70,6 @@ public abstract class CTLGenericTransform extends CTLAbstractTransform implement
 			int i = 0;
 			for (DataRecordMetadata metadata : inMetadata) {
 				inputRecords[i] = DataRecordFactory.newRecord(metadata);
-				inputRecords[i].init();
 				i++;
 			}
 			//prepare output records
@@ -78,7 +78,6 @@ public abstract class CTLGenericTransform extends CTLAbstractTransform implement
 			i = 0;
 			for (DataRecordMetadata metadata : outMetadata) {
 				outputRecords[i] = DataRecordFactory.newRecord(metadata);
-				outputRecords[i].init();
 				i++;
 			}
 		} catch (Exception e) {
@@ -124,7 +123,7 @@ public abstract class CTLGenericTransform extends CTLAbstractTransform implement
 	@Override
 	public void executeOnError(Exception exception) {
 		try {
-			executeOnErrorDelegate(ExceptionUtils.getMessage(null, exception), ExceptionUtils.stackTraceToString(exception));
+			executeOnErrorDelegate(TransformUtils.getMessage(exception), ExceptionUtils.stackTraceToString(exception));
 		} catch (UnsupportedOperationException ex) {
 			// no custom error handling implemented, throw an exception so the transformation fails
 			throw new JetelRuntimeException("GenericComponent failed!", exception);

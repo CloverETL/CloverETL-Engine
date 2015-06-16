@@ -78,7 +78,7 @@ public class StringDataConsumer implements DataConsumer {
 			return true;
 		}
 
-		if (linesRead == maxLines + 1) {
+		if (maxLines != 0 && linesRead == maxLines + 1) {
 			msg.append(line).append("\n...\n");	// last line to remember
 		} else {
 			msg.append(line).append("\n");

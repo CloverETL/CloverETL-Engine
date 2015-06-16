@@ -65,9 +65,8 @@ public class TLDateFormatLocaleCache extends TLFormatterCache {
 			return;
 		}
 		
-		// this construction which allows overloading, where you can use the parameter on the same position as 'format' but 
-		// in different meaning with overloaded functions (as long as it is not 'String')
-		if (context.getLiteralsSize() <= localePos || !(context.getParamValue(localePos) instanceof String)) {
+		// CLO-6306: instanceof check removed
+		if (context.getLiteralsSize() <= localePos) {
 			String pattern = (String) paramPattern;
 			if (context.isLiteral(patternPos)) {
 				cachedFormatter = DateFormatterFactory.getFormatter(pattern, context.getDefaultLocale(), context.getDefaultTimeZone());

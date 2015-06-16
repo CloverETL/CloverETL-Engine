@@ -50,7 +50,9 @@ public class FileCloseTest extends CloverTestCase {
 		initEngine();
 		
 		properties = new Properties();
-		properties.load(new FileInputStream(new File(EXAMPLE_PATH + "workspace.prm")));
+		try (FileInputStream fis = new FileInputStream(new File(EXAMPLE_PATH + "workspace.prm"))) {
+			properties.load(fis);
+		}
 	}
 
 	
@@ -223,9 +225,7 @@ public class FileCloseTest extends CloverTestCase {
 	 * @param file2
 	 */
 	private void duplicateFile(File file1, File file2) {
-		try {
-			InputStream is = new FileInputStream(file1);
-			OutputStream os = new FileOutputStream(file2);
+		try (InputStream is = new FileInputStream(file1); OutputStream os = new FileOutputStream(file2)) {
 			byte[] data = new byte[1024];
 			int i;
 			while ((i = is.read(data)) != -1) {

@@ -256,9 +256,7 @@ import org.w3c.dom.Element;
 	@Override
 	public Result execute() throws Exception {
 		DataRecord inRecord = DataRecordFactory.newRecord(inMetadata);
-		inRecord.init();
 		DataRecord outRecord = DataRecordFactory.newRecord(outMetadata);
-		outRecord.init();
 		while (inRecord != null && runIt) {
 			inRecord = inPort.readRecord(inRecord);// readRecord(READ_FROM_PORT,inRecord);
 			if (inRecord != null) {

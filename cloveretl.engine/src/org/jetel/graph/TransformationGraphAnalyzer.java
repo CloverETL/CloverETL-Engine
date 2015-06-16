@@ -91,6 +91,13 @@ public class TransformationGraphAnalyzer {
 			throw new JetelRuntimeException("Removing disabled nodes failed.", e);
 		}
 
+		//consolidate subgraph ports - create missing subgraph ports
+		consolidateSubgraphPorts(graph);
+
+		//remove optional input and output edges in subgraphs
+		removeOptionalEdges(graph);
+		
+		//analyse subgraph - check layout and removes debug components if necessary
 		boolean subJobRuntime = runtimeContext.getJobType().isSubJob();
 		boolean subJobFile = runtimeContext.getJobType().isSubJob() || graph.getStaticJobType().isSubJob();
 		if (subJobRuntime || subJobFile) {
@@ -129,6 +136,60 @@ public class TransformationGraphAnalyzer {
         graph.setAnalysed(true);
 	}
 	
+	/**
+	 * Creates missing subgraph input and output ports based on edges attached to SubgraphInput/Output components.
+	 * This is necessary for backward compatibility with subgraphs created in previous version (rel-4-0), where
+	 * subgraph ports do not have model in TransformationGraph.
+	 * @param graph
+	 */
+	private static void consolidateSubgraphPorts(TransformationGraph graph) {
+		if (graph.getStaticJobType().isSubJob()) {
+			for (int i = graph.getSubgraphInputPorts().getPorts().size(); i <= graph.getSubgraphInputComponent().getOutputPortsMaxIndex(); i++) {
+				graph.getSubgraphInputPorts().getPorts().add(
+						new SubgraphInputPort(graph.getSubgraphInputPorts(), i, true, true, true));
+			}
+			for (int i = graph.getSubgraphOutputPorts().getPorts().size(); i <= graph.getSubgraphOutputComponent().getInputPortsMaxIndex(); i++) {
+				graph.getSubgraphOutputPorts().getPorts().add(
+						new SubgraphOutputPort(graph.getSubgraphOutputPorts(), i, true, true, true));
+			}
+		}
+	}
+
+	/**
+	 * This method removes all edges which are connected to subgraph's ports,
+	 * which are optional, where the related edge should be removed (SubgraphPort.isKeptEdge() == false).
+	 */
+	private static void removeOptionalEdges(TransformationGraph graph) {
+		try {
+			for (SubgraphPort subgraphPort : graph.getSubgraphInputPorts().getPorts()) {
+				if (!subgraphPort.isRequired() && !subgraphPort.isKeptEdge() && !subgraphPort.isConnected()) {
+					//remove the edge
+					OutputPort outputPort = graph.getSubgraphInputComponent().getOutputPort(subgraphPort.getIndex());
+					if (outputPort != null) {
+						Edge edge = outputPort.getEdge();
+						graph.deleteEdge(edge);
+						edge.getReader().removeInputPort(edge);
+						edge.getWriter().removeOutputPort(edge);
+					}
+				}
+			}
+	
+			for (SubgraphPort subgraphPort : graph.getSubgraphOutputPorts().getPorts()) {
+				if (!subgraphPort.isRequired() && !subgraphPort.isKeptEdge() && !subgraphPort.isConnected()) {
+					InputPort inputPort = graph.getSubgraphOutputComponent().getInputPort(subgraphPort.getIndex());
+					if (inputPort != null) {
+						Edge edge = inputPort.getEdge();
+						graph.deleteEdge(edge);
+						edge.getReader().removeInputPort(edge);
+						edge.getWriter().removeOutputPort(edge);
+					}
+				}
+			}
+		} catch (Exception e) {
+			throw new JetelRuntimeException("Subgraph port optional edges cannot be removed.", e);
+		}
+	}
+
 	/**
 	 * Check whether subgraph calling hierarchy of the given graph is not recursive.
 	 * @param graph
@@ -468,10 +529,10 @@ public class TransformationGraphAnalyzer {
 
 	private static void removeDebugNodes(TransformationGraph graph, SubgraphAnalysisResult analysisResult) {
 		for (Node node : analysisResult.getDebugInputNodes()) {
-			node.setEnabled(EnabledEnum.DISABLED);
+			node.setEnabled(EnabledEnum.NEVER);
 		}
 		for (Node node : analysisResult.getDebugOutputNodes()) {
-			node.setEnabled(EnabledEnum.DISABLED);
+			node.setEnabled(EnabledEnum.NEVER);
 		}
 
 		try {
@@ -568,10 +629,10 @@ public class TransformationGraphAnalyzer {
 		for (int i = 0; i < phases.length; i++) {
 			nodesToRemove.clear();
 			for (Node node : phases[i].getNodes().values()) {
-				if (node.getEnabled() == EnabledEnum.DISABLED) {
+				if (node.getEnabled() == EnabledEnum.DISCARD) { // component and all related edges are removed
 					nodesToRemove.add(node);
 					disconnectAllEdges(node);
-				} else if (node.getEnabled() == EnabledEnum.PASS_THROUGH) {
+				} else if (!node.getEnabled().isEnabled()) { // component and related edges is substituted by 'passThrough' edge
 					nodesToRemove.add(node);
 					final InputPort inputPort = node.getInputPort(node.getPassThroughInputPort());
 					final OutputPort outputPort = node.getOutputPort(node.getPassThroughOutputPort());

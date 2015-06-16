@@ -38,6 +38,11 @@ public class DataFormatterProvider implements SharedFormatterProvider {
 	private boolean append;
 	
 	private String[] excludedFieldNames;
+	
+	/**
+	 * This flag indicates the last record is written without record delimiter.
+	 */
+	private boolean skipLastRecordDelimiter = false;
 
 	/**
 	 * Contructors.
@@ -60,6 +65,7 @@ public class DataFormatterProvider implements SharedFormatterProvider {
 		formatter.setQuotedStrings(quotedStrings);
 		formatter.setQuoteChar(quoteChar);
 		formatter.setAppend(append);
+		formatter.setSkipLastRecordDelimiter(skipLastRecordDelimiter);
 	}
 
 	/**
@@ -134,6 +140,14 @@ public class DataFormatterProvider implements SharedFormatterProvider {
 	
 	public void setAppend(boolean append) {
 		this.append = append;
+	}
+
+	public boolean skipLastRecordDelimiter() {
+		return skipLastRecordDelimiter;
+	}
+	
+	public void setSkipLastRecordDelimiter(boolean skipLastRecordDelimiter) {
+		this.skipLastRecordDelimiter = skipLastRecordDelimiter;
 	}
 
 }

@@ -18,6 +18,8 @@
  */
 package org.jetel.util;
 
+import java.util.Objects;
+
 /**
  * Class is generic structure for holding two any type instances and offers type-safe getters/setters. 
  * @author "Jan Kucera" (info@cloveretl.com)
@@ -26,8 +28,8 @@ package org.jetel.util;
  * @created Apr 15, 2011
  */
 public class Pair<T,U> {
-	private T first;
-	private U second;
+	protected T first;
+	protected U second;
 	
 	public Pair() {
 	}
@@ -55,10 +57,22 @@ public class Pair<T,U> {
 	
 	@Override
 	public String toString() {
-		String firstStr = this.first != null ? this.first.toString() : "null";
-		String secondStr = this.second != null ? this.second.toString() : "null";
 		return new StringBuilder()
-				.append("(").append(firstStr).append(", ")
-				.append(secondStr).append(")").toString();
+				.append("(").append(first).append(", ")
+				.append(second).append(")").toString();
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof Pair<?, ?>) {
+			Pair<?, ?> p = (Pair<?, ?>) o;
+			return Objects.equals(this.first, p.first) && Objects.equals(this.second, p.second);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(first, second);
 	}
 }

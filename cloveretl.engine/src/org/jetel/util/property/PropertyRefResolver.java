@@ -385,12 +385,16 @@ public class PropertyRefResolver {
 			if (parameters.hasGraphParameter(reference)) {
 				GraphParameter param = parameters.getGraphParameter(reference);
 				if (param.isSecure()) {
-					//secure parameters are resolved in all attributes for now
-//					if (flag.resolveSecureParameters()) {
+					try {
 						resolvedReference = getAuthorityProxy().getSecureParamater(param.getName(), param.getValue());
-//					} else {
-//						throw new JetelRuntimeException("Secure parameter reference " + reference + " cannot be resolved. Secure parameters can be used only in dedicated locations.");
-//					}
+					} catch (Exception e) {
+						JetelRuntimeException ee = new JetelRuntimeException("Secure graph parameter '" + param.getName() + "' has invalid value.", e);
+						if (ContextProvider.getRuntimeContext() == null || ContextProvider.getRuntimeContext().isStrictGraphFactorization()) {
+							throw ee;
+						} else {
+							logger.warn(ee);
+						}
+					}
 				} else {
 					resolvedReference = parameters.getGraphParameter(reference).getValue();
 				}
@@ -534,6 +538,32 @@ public class PropertyRefResolver {
 		}
 	}
 
+	/**
+	 * This method extract name of parameter from the given value,
+	 * which has to be 'property reference', see {@link #isPropertyReference(String)}.
+	 * Null value is returned if the value is not simple property reference.
+	 * 
+	 * For example:
+	 * ${param} -> param
+	 * abc${param} -> null
+	 * ${param1}${param2} -> null
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static String getReferencedProperty(String value) {
+		if (!StringUtils.isEmpty(value)) {
+			Matcher matcher = propertyPattern.matcher(value);
+			if (matcher.matches()) {
+				return matcher.group(1);
+			} else {
+				return null;
+			}
+		} else {
+			return null;
+		}
+	}
+	
 	/**
 	 * @param value tested string
 	 * @return true if the given string represents CTL expression, for example "`today()`; false otherwise 

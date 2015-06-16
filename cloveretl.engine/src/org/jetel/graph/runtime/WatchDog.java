@@ -40,6 +40,7 @@ import javax.management.ObjectName;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.MDC;
+import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.CompoundException;
 import org.jetel.exception.JetelRuntimeException;
@@ -55,6 +56,7 @@ import org.jetel.graph.runtime.jmx.CloverJMX;
 import org.jetel.graph.runtime.tracker.TokenTracker;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.primitive.MultiValueMap;
+import org.jetel.util.property.PropertyRefResolver;
 
 
 /**
@@ -158,7 +160,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	}
 	
 	private void finishJMX() {
-		if(provideJMX) {
+		if (provideJMX && finishJMX && jmxObjectName != null) {
 			try {
 				getMBeanServer().unregisterMBean(jmxObjectName);
 			} catch (InstanceNotFoundException e) {
@@ -209,6 +211,14 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	    		
 	    		//print out runtime context
 	    		logger.debug("Graph runtime context: " + graph.getRuntimeContext().getAllProperties());
+	    		
+	    		if (graph.getRuntimeJobType().isSubJob()) {
+	    			logger.info("Connected input ports: " + graph.getRuntimeContext().getParentGraphInputPortsConnected());
+	    			logger.info("Connected output ports: " + graph.getRuntimeContext().getParentGraphOutputPortsConnected());
+	    		}
+	    		
+	    		//print information about conditionally enabled and all disabled components
+	    		printComponentsEnabledStatus();
 	    		
 	    		//print initial dictionary content
 	    		graph.getDictionary().printContent(logger, "Initial dictionary content:");
@@ -348,9 +358,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
             //we have to unregister current watchdog's thread from context provider
 			ContextProvider.unregister(c);
 
-			if (finishJMX) {
-            	finishJMX();
-            }
+			finishJMX();
             
 			CURRENT_PHASE_LOCK.unlock();
 			
@@ -567,13 +575,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		        for (Node node : currentPhase.getNodes().values()) {
 					node.abort();
 					logger.warn("Interrupted node: " + node.getId());
-				}
-		        
-		        //all components seem to be aborted - let's postExecute them
-		        try {
-					currentPhase.postExecute();
-				} catch (Exception e) {
-					ExceptionUtils.logException(logger, null, e, Level.WARN);
 				}
 			}
 			//if the graph is waiting on a phase synchronization point the watchdog is woken up with current status ABORTED 
@@ -848,5 +849,75 @@ public class WatchDog implements Callable<Result>, CloverPost {
     	return mbs;
     }
 
+    /**
+     * This method can be used to free all resources allocated by {@link #init()} method.
+     * By default, all resources are deallocated automatically by {@link #call()} method, but
+     * if the {@link #call()} method is not invoked or cannot be invoked due some error or exception,
+     * this method should be used to clean up. See CLO-5764.
+     */
+    public void freeOnError() {
+    	finishJMX();
+    }
+    
+	/**
+	 * Prints information about conditionally enabled and all disabled components into log.
+	 */
+	private void printComponentsEnabledStatus() {
+		//print information about conditionally enabled components
+		boolean headerPrinted = false;
+		for (Node component : graph.getNodes().values()) {
+			String rawComponentEnabledAttribute = graph.getRawComponentEnabledAttribute().get(component);
+			if (PropertyRefResolver.containsProperty(rawComponentEnabledAttribute)
+					|| component.getEnabled().isDynamic()) {
+				if (!headerPrinted) {
+					logger.info("Enabled components (conditional only):");
+					headerPrinted = true;
+				}
+				printSingleComponentEnabledStatus(component, rawComponentEnabledAttribute);
+			}
+		}
+		
+		//print information about disabled components
+		headerPrinted = false;
+		for (Node component : graph.getRawComponentEnabledAttribute().keySet()) {
+			if (!component.getEnabled().isEnabled()) {
+				if (!headerPrinted) {
+					logger.info("Disabled components:");
+					headerPrinted = true;
+				}
+				String rawComponentEnabledAttribute = graph.getRawComponentEnabledAttribute().get(component);
+				printSingleComponentEnabledStatus(component, rawComponentEnabledAttribute);
+			}
+		}
+	}
+
+	/**
+	 * Prints information about conditionally enabled and all disabled components into log.
+	 */
+	private void printSingleComponentEnabledStatus(Node component, String rawComponentEnabledAttribute) {
+		StringBuilder sb = new StringBuilder("\t");
+		sb.append(component);
+		sb.append(" - ");
+		sb.append(component.getEnabled().isEnabled() ? EnabledEnum.ENABLED.getLabel() : EnabledEnum.DISABLED.getLabel());
+		sb.append(": ");
+		if (getGraphRuntimeContext().getJobType().isSubJob() && (component.isPartOfDebugInput() || component.isPartOfDebugOutput())) {
+			sb.append("Part of subgraph debug area");
+		} else if (PropertyRefResolver.isPropertyReference(rawComponentEnabledAttribute)) {
+			String graphParameterName = PropertyRefResolver.getReferencedProperty(rawComponentEnabledAttribute);
+			sb.append(graphParameterName);
+			sb.append("=");
+			sb.append(graph.getGraphParameters().getGraphParameter(graphParameterName).getValueResolved(null));
+		} else if (PropertyRefResolver.containsProperty(rawComponentEnabledAttribute)) {
+			sb.append(rawComponentEnabledAttribute);
+			sb.append("=");
+			sb.append(graph.getPropertyRefResolver().resolveRef(rawComponentEnabledAttribute));
+		} else if (component.getEnabled().isDynamic()) {
+			sb.append(component.getEnabled().getStatus());
+		} else {
+			sb.append("Always");
+		}
+		logger.info(sb);
+	}
+	
 }
 

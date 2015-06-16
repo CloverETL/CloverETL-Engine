@@ -21,6 +21,7 @@ package org.jetel.component.tree.writer.xml;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.WritableByteChannel;
 
 import org.jetel.component.tree.writer.AttributeWriter;
@@ -68,12 +69,18 @@ public class XmlFormatter extends TreeFormatter {
 	public void setDataTarget(Object outputDataTarget) throws IOException {
 		close();
 
-		if (outputDataTarget instanceof WritableByteChannel) {
+		if (outputDataTarget instanceof Object[]) {
+			Object[] output = (Object[]) outputDataTarget;
+			outStream = (OutputStream) output[2];
+		} else if (outputDataTarget instanceof WritableByteChannel) {
 			outStream = Channels.newOutputStream((WritableByteChannel) outputDataTarget);
-			writer = new XmlWriter(outStream, charset, version, omitNewLines);
+		} else if (outputDataTarget instanceof OutputStream) {
+			outStream = (OutputStream) outputDataTarget;
 		} else {
 			throw new IllegalArgumentException("parameter " + outputDataTarget + " is not instance of WritableByteChannel");
 		}
+		
+		writer = new XmlWriter(outStream, charset, version, omitNewLines);
 	}
 
 	@Override
@@ -89,10 +96,17 @@ public class XmlFormatter extends TreeFormatter {
 			return;
 		}
 		
+		// CLO-5977, following try block performs flush and close, ClosedChannelExceptions are eaten (not thrown)
 		try {
 			flush();
+		} catch (ClosedChannelException e) {
+			// no action
 		} finally {
-			writer.close();
+			try {
+				writer.close();
+			} catch (ClosedChannelException e) {
+				// no action
+			}
 		}
 		writer = null;
 	}

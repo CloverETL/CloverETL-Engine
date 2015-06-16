@@ -33,6 +33,7 @@ import org.jetel.component.tree.writer.CDataWriter;
 import org.jetel.component.tree.writer.CommentWriter;
 import org.jetel.component.tree.writer.NamespaceWriter;
 import org.jetel.component.tree.writer.TreeWriterBase;
+import org.jetel.component.tree.writer.util.WriteNullElement;
 import org.jetel.data.Defaults;
 import org.jetel.exception.JetelException;
 
@@ -214,8 +215,8 @@ public class XmlWriter extends TreeWriterBase implements NamespaceWriter, Attrib
 	}
 
 	@Override
-	public void writeEndNode(char[] name, boolean writeNullElement) throws JetelException {
-		if (writeNullElement || depth == 1 || !isNodeEmpty()) {
+	public void writeEndNode(char[] name, WriteNullElement writeNullElement) throws JetelException {
+		if (writeNullElement.isTrue() || depth == 1 || !isNodeEmpty()) {
 			performDeferredWrite(depth != 1, null);
 			boolean tagClosed = false;
 			if (startTagOpened) {
@@ -255,7 +256,7 @@ public class XmlWriter extends TreeWriterBase implements NamespaceWriter, Attrib
 	}
 
 	@Override
-	public void writeLeaf(Object value, boolean writeNullElement) throws JetelException {
+	public void writeLeaf(Object value, WriteNullElement writeNullElement) throws JetelException {
 		performDeferredWrite(true, TagContent.VALUE_CHILD);
 		if (value != null) {
 			writeValue(value);

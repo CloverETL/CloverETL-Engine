@@ -20,16 +20,13 @@ package org.jetel.graph;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.parser.BinaryDataParser;
 import org.jetel.data.parser.BinaryDataParser.NoDataAvailableException;
+import org.jetel.data.parser.CloverDebugParser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.metadata.MetadataUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
 
@@ -52,35 +49,29 @@ public class EdgeDebugReader {
     private DataRecordMetadata metadata;
 
     /** Instance of parser, which is used for data records serialisation. */
-    private BinaryDataParser parser;
+    private CloverDebugParser parser;
 
     /** Data records source */
-    private ReadableByteChannel inputChannel;
+    private InputStream inputStream;
     
     public EdgeDebugReader(String debugFile) {
         this.debugFile = debugFile;
     }
     
     public EdgeDebugReader(InputStream inputStream) {
-    	inputChannel = Channels.newChannel(inputStream);
+    	this.inputStream = inputStream;
     	this.debugFile = null;
     }
     
     public void init() throws ComponentNotReadyException, IOException, InterruptedException {
-    	if (inputChannel == null) {
-    		inputChannel = FileUtils.getReadableChannel(ContextProvider.getContextURL(), debugFile);
+    	if (inputStream == null) {
+    		inputStream = FileUtils.getInputStream(ContextProvider.getContextURL(), debugFile);
     	}
     	
-    	try {
-    		metadata = MetadataUtils.readMetadata(inputChannel);
-    	} catch (Exception e) {
-    		throw new JetelRuntimeException("Metadata extraction from debug file '" + debugFile + "' failed.", e);
-    	}
-    	
-    	parser = new BinaryDataParser(metadata);
-    	parser.setUnitaryDeserialization(true);
+    	parser = new CloverDebugParser();
+    	parser.setDataSource(inputStream);
     	parser.init();
-    	parser.setDataSource(inputChannel);
+    	metadata = parser.getMetadata();
     }
 
     /**
@@ -97,11 +88,11 @@ public class EdgeDebugReader {
 	 *             if any I/O error occurs
 	 * @throws InterruptedException
 	 */
-    public int readRecord(DataRecord record) throws IOException, InterruptedException {
-    	int ordinal;
+    public long readRecord(DataRecord record) throws IOException, InterruptedException {
+    	long ordinal;
     	
     	try {
-    		ordinal = parser.getNextInt();
+    		ordinal = parser.getNextRecordNumber();
     	} catch(NoDataAvailableException e) {
     		return -1;
     	}
@@ -130,11 +121,11 @@ public class EdgeDebugReader {
 	 *             if any I/O error occurs
 	 * @throws InterruptedException
 	 */
-    public int readRecord(CloverBuffer record) throws IOException, InterruptedException {
-    	int ordinal;
+    public long readRecord(CloverBuffer record) throws IOException, InterruptedException {
+    	long ordinal;
     	
     	try {
-    		ordinal = parser.getNextInt();
+    		ordinal = parser.getNextRecordNumber();
     	} catch(NoDataAvailableException e) {
     		return -1;
     	}
@@ -155,7 +146,13 @@ public class EdgeDebugReader {
 	 * "Load more" functionality relies on this.
 	 */
 	public void close() {
-		parser.free();
+		try {
+			parser.free();
+		} catch (RuntimeException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new JetelRuntimeException(e);
+		}
 	}
 
 	/**

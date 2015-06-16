@@ -18,21 +18,11 @@
  */
 package org.jetel.component.fileoperation;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.jetel.component.fileoperation.SimpleParameters.CopyParameters;
-import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
-import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
-import org.jetel.component.fileoperation.SimpleParameters.FileParameters;
-import org.jetel.component.fileoperation.SimpleParameters.InfoParameters;
-import org.jetel.component.fileoperation.SimpleParameters.ListParameters;
-import org.jetel.component.fileoperation.SimpleParameters.MoveParameters;
-import org.jetel.component.fileoperation.SimpleParameters.ReadParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
-import org.jetel.component.fileoperation.SimpleParameters.WriteParameters;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -40,7 +30,7 @@ import org.jetel.component.fileoperation.SimpleParameters.WriteParameters;
  *
  * @created 21.3.2012
  */
-public class WildcardResolver implements IOperationHandler {
+public class WildcardResolver extends BaseOperationHandler {
 	
 	private final String[] schemes;
 	
@@ -59,51 +49,6 @@ public class WildcardResolver implements IOperationHandler {
 		} catch (Exception ex) {
 			return new ArrayList<SingleCloverURI>(0);
 		}
-	}
-
-	@Override
-	public SingleCloverURI copy(SingleCloverURI source, SingleCloverURI target, CopyParameters params) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public SingleCloverURI move(SingleCloverURI source, SingleCloverURI target, MoveParameters params) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Content getInput(SingleCloverURI source, ReadParameters params) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Content getOutput(SingleCloverURI target, WriteParameters params) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public SingleCloverURI delete(SingleCloverURI target, DeleteParameters params) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public List<Info> list(SingleCloverURI parent, ListParameters params) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Info info(SingleCloverURI target, InfoParameters params) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public SingleCloverURI create(SingleCloverURI target, CreateParameters params) {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public File getFile(SingleCloverURI uri, FileParameters params) {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override

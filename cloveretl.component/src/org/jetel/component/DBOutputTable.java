@@ -19,7 +19,6 @@
 package org.jetel.component;
 
 import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
 import java.sql.BatchUpdateException;
 import java.sql.SQLException;
 import java.sql.Savepoint;
@@ -57,13 +56,14 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.ExceptionUtils;
-import org.jetel.util.ReadableChannelDictionaryIterator;
 import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
@@ -226,7 +226,9 @@ import org.w3c.dom.Element;
  * @created     22. July 2003
  * @see         org.jetel.database.AnalyzeDB
  */
-public class DBOutputTable extends Node {
+public class DBOutputTable extends Node implements MetadataProvider {
+	
+	private final static String OUT_METADATA_ID_SUFFIX = "_outMetadata";
 	
 	public static final String XML_MAXERRORS_ATRIBUTE = "maxErrors";
 	public static final String XML_BATCHMODE_ATTRIBUTE = "batchMode";
@@ -255,6 +257,8 @@ public class DBOutputTable extends Node {
 	private String[] cloverFields;
 	private String[] dbFields;
 	private String[] sqlQuery;
+	private String queryURL;
+	private String charset;
 	private int recordsInCommit;
 	private int maxErrors;
 	private boolean useBatch;
@@ -264,7 +268,6 @@ public class DBOutputTable extends Node {
 	private boolean[] returnResult;
 	private ConnectionAction errorAction = ConnectionAction.COMMIT;
 	private boolean atomicSQL;
-	private String charset;
 	ReadableChannelIterator channelReadingIterator; // for reading the query from dictionary
 	
 	private InputPort inPort;
@@ -404,6 +407,18 @@ public class DBOutputTable extends Node {
 		this.sqlQuery = StringUtils.isEmpty(sqlQuery) ? null : new String[] { sqlQuery };
 	}
 
+	private void setCharset(String charset) {
+		this.charset = charset;
+	}
+
+	public String getCharset() {
+		return charset;
+	}
+
+	private void setQueryURL(String queryURL) {
+		this.queryURL = queryURL;
+	}
+
 	/**
 	 * Description of the Method
 	 * 
@@ -430,7 +445,6 @@ public class DBOutputTable extends Node {
 		rejectedPort = getOutputPort(WRITE_REJECTED_TO_PORT);
 		rejectedRecord = rejectedPort != null ? DataRecordFactory.newRecord(rejectedPort.getMetadata()) : null;
 		if (rejectedRecord != null) {
-			rejectedRecord.init();
 			errorCodeFieldNum = rejectedRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_CODE);
 			errMessFieldNum = rejectedRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_MESSAGE);
 			if (errMessFieldNum == -1) {
@@ -442,7 +456,7 @@ public class DBOutputTable extends Node {
 		}
 
 		// create insert query from db table name
-		if (sqlQuery == null) {
+		if (sqlQuery == null && queryURL == null) {
 			sqlQuery = new String[1];
 			
 			// TODO Labels replace:
@@ -468,47 +482,8 @@ public class DBOutputTable extends Node {
 //				sqlQuery[0] = SQLUtil.assembleInsertSQLStatement(inPort.getMetadata(), quotedTableName);
 //			}
 			// TODO Labels replace with end
-		} else if (sqlQuery[0] != null && sqlQuery[0].startsWith("dict:")) {
-			channelReadingIterator = new ReadableChannelIterator(null, getGraph().getRuntimeContext().getContextURL(), sqlQuery[0]);
-			channelReadingIterator.setCharset(charset);
-			channelReadingIterator.setDictionary(getGraph().getDictionary());
-			channelReadingIterator.init();
-			try {
-				Object next = channelReadingIterator.next();
-				DataRecordMetadata queryMetadata = new DataRecordMetadata("_query_metadata_", DataRecordParsingType.DELIMITED);
-				DataFieldMetadata queryField = new DataFieldMetadata("_query_field_", DataFieldType.STRING, null);
-				queryField.setEofAsDelimiter(true);
-				queryField.setTrim(true);
-				queryMetadata.addField(queryField);
-				TextParser dictParser = TextParserFactory.getParser(queryMetadata, charset);
-				dictParser.init();
-				dictParser.setDataSource(next);
-				DataRecord queryRecord = DataRecordFactory.newRecord(queryMetadata);
-				queryRecord.init();
-				if ((queryRecord = dictParser.getNext(queryRecord)) != null) {
-					sqlQuery[0] = getPropertyRefResolver().resolveRef(queryRecord.getField(0).toString());
-				}
-			} catch (JetelException | IOException e) {
-				throw new ComponentNotReadyException(e);
-			}
 		}
 
-		keysPort = getOutputPort(WRITE_AUTO_KEY_TO_PORT);
-		returnResult = new boolean[sqlQuery.length];
-		Arrays.fill(returnResult, false);
-		keysRecord = keysPort != null ? DataRecordFactory.newRecord(keysPort.getMetadata()) : null;
-		if (keysRecord != null) {
-			keysRecord.init();
-			keysRecord.reset();
-		}
-
-		// prepare set of statements
-		statement = new SQLCloverStatement[sqlQuery.length];
-		if (statement.length > 1 && autoGeneratedColumns != null) {
-			logger.warn("Found more then one sql query and " + XML_AUTOGENERATEDCOLUMNS_ATTRIBUTE + " parameter. The last one will be ignored");
-			autoGeneratedColumns = null;
-		}
-		
 		// The rest of initialization the connection is required, so it is done in first run of preExecute
 		
 	}
@@ -518,7 +493,6 @@ public class DBOutputTable extends Node {
 		super.preExecute();
 		
 		inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-		inRecord.init();
 		
 		// create connection instance, which represents connection to a database
 		try {
@@ -528,6 +502,48 @@ public class DBOutputTable extends Node {
 		}
 
 		if (firstRun()) {// a phase-dependent part of initialization
+
+			// get query from query url
+			if (sqlQuery == null && queryURL != null) {
+				if (queryURL.startsWith("dict:")) {
+					channelReadingIterator = new ReadableChannelIterator(null, getGraph().getRuntimeContext().getContextURL(), queryURL);
+					channelReadingIterator.setCharset(charset);
+					channelReadingIterator.setDictionary(getGraph().getDictionary());
+					channelReadingIterator.init();
+					try {
+						Object next = channelReadingIterator.next();
+						DataRecordMetadata queryMetadata = new DataRecordMetadata("_query_metadata_", DataRecordParsingType.DELIMITED);
+						DataFieldMetadata queryField = new DataFieldMetadata("_query_field_", DataFieldType.STRING, null);
+						queryField.setEofAsDelimiter(true);
+						queryField.setTrim(true);
+						queryMetadata.addField(queryField);
+						TextParser dictParser = TextParserFactory.getParser(queryMetadata, charset);
+						dictParser.init();
+						dictParser.setDataSource(next);
+						DataRecord queryRecord = DataRecordFactory.newRecord(queryMetadata);
+						if ((queryRecord = dictParser.getNext(queryRecord)) != null) {
+							sqlQuery = new String[] { getPropertyRefResolver().resolveRef(queryRecord.getField(0).toString()) };
+						}
+					} catch (JetelException | IOException e) {
+						throw new ComponentNotReadyException(e);
+					}
+				} else {
+					String rawContents = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), queryURL, charset);
+					setSqlQuery(SQLUtil.split(getGraph().getPropertyRefResolver().resolveRef(rawContents, null)));
+				}
+			}
+			
+			keysPort = getOutputPort(WRITE_AUTO_KEY_TO_PORT);
+			returnResult = new boolean[sqlQuery.length];
+			Arrays.fill(returnResult, false);
+			keysRecord = keysPort != null ? DataRecordFactory.newRecord(keysPort.getMetadata()) : null;
+
+			// prepare set of statements
+			statement = new SQLCloverStatement[sqlQuery.length];
+			if (statement.length > 1 && autoGeneratedColumns != null) {
+				logger.warn("Found more then one sql query and " + XML_AUTOGENERATEDCOLUMNS_ATTRIBUTE + " parameter. The last one will be ignored");
+				autoGeneratedColumns = null;
+			}
 
 			// prepare rejectedRecord and keysRecord
 			boolean supportsConnectionKeyGenaration = false;
@@ -639,8 +655,11 @@ public class DBOutputTable extends Node {
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
+		if (recordsInCommit != Integer.MAX_VALUE) {
+			// CLO-6100: do not close the connection, as we expect the graph to perform commit
 			dbConnection.closeConnection(getId(), OperationType.WRITE);
 		}
+	}
 	
 	/**
 	 * @param dbTableName The dbTableName to set.
@@ -831,7 +850,6 @@ public class DBOutputTable extends Node {
 	        for (int i = 0; i < statement.length; i++) {
 				for (int j = 0; j < batchSize; j++) {
 					dataRecordHolder[i][j] = DataRecordFactory.newRecord(rejectedMetadata);
-					dataRecordHolder[i][j].init();
 				}
 			}
 	    }else{
@@ -1066,7 +1084,6 @@ public class DBOutputTable extends Node {
 							}
 						}else if (records != null){//records[i][count] == null - it wasn't added to batch, prepare for next batch
 							records[i][count] = DataRecordFactory.newRecord(rejectedPort.getMetadata());
-							records[i][count].init();
 						}
 					}
 					count++;
@@ -1099,7 +1116,6 @@ public class DBOutputTable extends Node {
 						rejectedPort.writeRecord(records[i][count]);
 					}else if (records != null){
 						records[i][count] = DataRecordFactory.newRecord(rejectedPort.getMetadata());
-						records[i][count].init();
 					}
 					count++;
 		        }
@@ -1126,17 +1142,8 @@ public class DBOutputTable extends Node {
 
 		// allows specifying parameterized SQL (with ? - question marks)
 		if (xattribs.exists(XML_URL_ATTRIBUTE)){
-			String url = xattribs.getStringEx(XML_URL_ATTRIBUTE, RefResFlag.URL).trim();
-			
-			if (url.startsWith("dict:")) {
-				outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
-						new String[] {url});
-			} else {
-				outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
-						SQLUtil.split(xattribs.resolveReferences(FileUtils.getStringFromURL
-								(graph.getRuntimeContext().getContextURL(), url, xattribs.getString(XML_CHARSET_ATTRIBUTE, null)))));
-			}
+			outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(XML_DBCONNECTION_ATTRIBUTE));
+			outputTable.setQueryURL(xattribs.getStringEx(XML_URL_ATTRIBUTE, RefResFlag.URL));
 		}else if (xattribs.exists(XML_SQLQUERY_ATRIBUTE)) {
 				outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
 				xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
@@ -1210,14 +1217,6 @@ public class DBOutputTable extends Node {
 		return outputTable;
 	}
 
-	public void setCharset(String charset) {
-		this.charset = charset;
-	}
-	
-	public String getCharset() {
-		return charset;
-	}
-
 	@Override
      public ConfigurationStatus checkConfig(ConfigurationStatus status) {
          super.checkConfig(status);
@@ -1254,7 +1253,7 @@ public class DBOutputTable extends Node {
 
 			inPort = getInputPort(READ_FROM_PORT);
 			connection.getJdbcSpecific().checkMetadata(status, getInMetadata(), this);
-			if (sqlQuery == null) {
+			if (sqlQuery == null && queryURL == null) {
 				sqlQuery = new String[1];
 				// TODO Labels replace:
 				if (dbFields != null) {
@@ -1283,6 +1282,10 @@ public class DBOutputTable extends Node {
 //				}
 				// TODO Labels replace with end
 			}
+			if (sqlQuery == null) {
+				// no more checking, this branch is reached when query is specified using Query URL
+				return status;
+			}
 			boolean supportsConnectionKeyGenaration = false;
 			try {
 				supportsConnectionKeyGenaration = connection.getJdbcSpecific()
@@ -1292,7 +1295,6 @@ public class DBOutputTable extends Node {
 			}
 			if (inPort.getMetadata() != null) {
 				inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-				inRecord.init();
 				int start = 0, end;
 				for (int i = 0; i < sqlQuery.length; i++) {
 					String[] tmpCloverFields = null;
@@ -1437,6 +1439,30 @@ public class DBOutputTable extends Node {
 			super(element, ex);
 		}
 		
+	}
+
+	@Override
+	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		return null;
+	}
+
+	@Override
+	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		if(portIndex == 0){
+			InputPort inputPort = getInputPort(0);
+			if(inputPort != null){
+				MVMetadata inputMetadata = metadataPropagationResolver.findMetadata(inputPort.getEdge());
+				if (inputMetadata != null) {
+					DataRecordMetadata recordMetadata = inputMetadata.getModel().duplicate();
+					recordMetadata.addField(new DataFieldMetadata("ErrCode", inputMetadata.getModel().getFieldDelimiter()));
+					recordMetadata.addField(new DataFieldMetadata("ErrText", inputMetadata.getModel().getRecordDelimiter()));
+					recordMetadata.getRecordProperties().remove(new String("previewAttachment"));
+					MVMetadata metadata = metadataPropagationResolver.createMVMetadata(recordMetadata, this, OUT_METADATA_ID_SUFFIX);
+					return metadata;
+				}
+			}
+		}
+		return null;
 	}
 	
 	

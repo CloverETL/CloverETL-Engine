@@ -173,6 +173,9 @@
 	      <property category="advanced" displayName="Create empty files" modifiable="true" name="createEmptyFiles" nullable="true" defaultHint="true">
 	        <singleType name="bool" />
 	      </property>
+	      <property category="advanced" displayName="Skip last record delimiter" modifiable="true" name="skipLastRecordDelimiter" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
 	    </properties>
 	  </ETLComponent>
 	</extension>
@@ -379,11 +382,11 @@
 	      <property category="basic" displayName="DB connection" modifiable="true" name="dbConnection" nullable="false" required="true">
 	        <singleType name="connection" />
 	      </property>
-	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery">
-			<singleType name="file" fields="input" dictionary="input" />
-	      </property>
 	      <property category="basic" displayName="SQL query" modifiable="true" name="sqlQuery" nullable="true" required="!url" redundant="url">
 	        <singleType name="sqlQuery" type="select" outputPortName="0" />
+	      </property>
+	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery">
+			<singleType name="file" fields="input" dictionary="input" />
 	      </property>
 	      <property category="basic" displayName="Query source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
 	        <singleType name="charset" />
@@ -456,11 +459,14 @@
 	      <property category="basic" displayName="DB connection" modifiable="true" name="dbConnection" nullable="false" required="true">
 	        <singleType name="connection" />
 	      </property>
+	      <property category="basic" displayName="SQL query" modifiable="true" name="sqlQuery" nullable="true" required="!dbTable,!url" redundant="dbTable|url">
+			<singleType name="sqlQuery" type="insert" inputPortName="0" outputPortName="1" />
+	      </property>
 	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!dbTable,!sqlQuery" redundant="dbTable|sqlQuery">
 	        <singleType name="file" dictionary="input" />
 	      </property>
-	      <property category="basic" displayName="SQL query" modifiable="true" name="sqlQuery" nullable="true" required="!dbTable,!url" redundant="dbTable|url">
-			<singleType name="sqlQuery" type="insert" inputPortName="0" outputPortName="1" />
+	      <property category="basic" displayName="Query source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
+	        <singleType name="charset" />
 	      </property>
 	      <property category="basic" displayName="DB table" modifiable="true" name="dbTable" nullable="true" required="!sqlQuery,!url" redundant="sqlQuery|url">
 	        <singleType name="table" />
@@ -473,9 +479,6 @@
 	      </property>
 	      <property category="basic" displayName="DB fields" modifiable="true" name="dbFields" nullable="true">
 	        <singleType name="string" />
-	      </property>
-	      <property category="basic" displayName="Query source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
-	        <singleType name="charset" />
 	      </property>
 	      <property category="basic" displayName="Batch mode" modifiable="true" name="batchMode" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
@@ -677,7 +680,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="joiners" iconPath="icons/joiners/MergeJoin" name="CrossJoin"  type="CROSS_JOIN" className="org.jetel.component.CrossJoin">
+	  <ETLComponent category="joiners" iconPath="icons/joiners/CrossJoin" name="CrossJoin"  type="CROSS_JOIN" className="org.jetel.component.CrossJoin">
 	    <shortDescription>Performs cartesian product.</shortDescription>
 	    <description>Receives data records through all connected input ports and performs cartesian product on them. Each connected input port represents one set of records. Results are sent to the connected output port.</description>
 	    <inputPorts>
@@ -697,7 +700,7 @@
 	      <property category="advanced" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" redundant="transform|transformURL" required="false">
 	        <singleType name="class"/>
 	      </property>
-	      <property category="advanced" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	      <property category="advanced" displayName="Transform source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
 	        <singleType name="charset"/>
 	      </property>
 	    </properties>
@@ -878,13 +881,13 @@
 	      <property category="basic" displayName="DB connection" modifiable="true" name="dbConnection" nullable="false" required="true">
 	        <singleType name="connection" />
 	      </property>
-	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery">
-			<singleType name="file" fields="input" dictionary="input" />
-	      </property>
 	      <property category="basic" displayName="SQL query" modifiable="true" name="sqlQuery" nullable="true" required="!url" redundant="url">
 	        <singleType name="multiline" />
 	      </property>
-	      <property category="advanced" displayName="Query source charset" modifiable="true" name="charset" nullable="true">
+	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery">
+			<singleType name="file" fields="input" dictionary="input" />
+	      </property>
+	      <property category="basic" displayName="Query source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
 	        <singleType name="charset" />
 	      </property>
 	      <property category="basic" displayName="SQL statement delimiter" modifiable="true" name="sqlStatementDelimiter" nullable="true">
@@ -1045,7 +1048,7 @@
 	        <singleType name="joinKey" labels="Foreign key definition;Foreign key;Primary key;;Foreign key definition;Foreign key;Primary key;" />
 	      </property>
 	      <property category="basic" displayName="Default foreign key" modifiable="true" name="defaultForeignKey" nullable="true" required="true">
-	        <singleType name="recordPattern" outputPortName="0" />
+	        <singleType name="recordPattern" inputPortName="0" />
 	      </property>
 	      <property category="basic" displayName="Equal NULL" modifiable="true" name="equalNULL" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
@@ -1190,10 +1193,10 @@
 	      <singlePort name="1" label="rejected"/>
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="Filter expression" modifiable="true" name="filterExpression" nullable="true" required="!filterClass">
+	      <property category="basic" displayName="Filter expression" modifiable="true" name="filterExpression" nullable="true" required="!filterClass" redundant="filterClass">
 	        <singleType name="filter"/>
 	      </property>
-	      <property category="advanced" displayName="Filter class" modifiable="true" name="filterClass" nullable="true" required="!filterExpression">
+	      <property category="advanced" displayName="Filter class" modifiable="true" name="filterClass" nullable="true" required="!filterExpression" redundant="filterExpression">
 	        <singleType name="class" />
 	      </property>
 	    </properties>
@@ -1606,6 +1609,12 @@
 	      </property>	      
 	      <property category="advanced" displayName="Disable SSL Certificate Validation" modifiable="true" name="disableSSLCertValidation" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
+	      </property>   
+	      <property category="advanced" displayName="Timeout" modifiable="true" name="timeout" nullable="true" defaultHint="">
+	        <singleType name="interval" />
+	      </property>   
+	      <property category="advanced" displayName="Retry Count" modifiable="true" name="retryCount" nullable="true" defaultHint="0 (do not retry in case of failure)">
+	        <singleType name="int" />
 	      </property>   
 	      <property category="deprecated" displayName="URL from input field" modifiable="true" name="urlInputField" nullable="true">
 	        <singleType name="field" inputPortName="0" />
@@ -2255,7 +2264,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <singlePort name="0" required="true" />
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="Jms connection" modifiable="true" name="connection" nullable="false" required="true">
+	      <property category="basic" displayName="JMS connection" modifiable="true" name="connection" nullable="false" required="true">
 	        <singleType name="jmsConnection" />
 	      </property>
 	      <property category="basic" displayName="Processor code" modifiable="true" name="processorCode" nullable="true">
@@ -2298,7 +2307,7 @@ Sends all resulting records to all connected output ports.</description>
 	    </inputPorts>
 	    <outputPorts />
 	    <properties>
-	      <property category="basic" displayName="Jms connection" modifiable="true" name="connection" nullable="false" required="true">
+	      <property category="basic" displayName="JMS connection" modifiable="true" name="connection" nullable="false" required="true">
 	        <singleType name="jmsConnection" />
 	      </property>
 	      <property category="basic" displayName="Processor code" modifiable="true" name="processorCode" nullable="true">
@@ -2688,7 +2697,7 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="others" iconPath="icons/others/JavaExecute" name="JavaExecute" type="JAVA_EXECUTE" defaultVisibility="etlGraph" className="org.jetel.component.JavaExecute">
+	  <ETLComponent category="deprecated" iconPath="icons/others/JavaExecute" name="JavaExecute" type="JAVA_EXECUTE" className="org.jetel.component.JavaExecute" defaultVisibility="false">
 	    <shortDescription>Executes Java transformations.</shortDescription>
 	    <description>Executes Java commands using runnable transformation.</description>
 	    <properties>
@@ -2711,10 +2720,11 @@ Sends all resulting records to all connected output ports.</description>
 	  </ETLComponent>
 	</extension>
 
+	<!-- GenericComponent - descriptor for Generic Reader -->
 	<extension point-id="component">
-	  <ETLComponent category="others" iconPath="icons/others/JavaExecute" name="GenericComponent" type="GENERIC_COMPONENT" className="org.jetel.component.GenericComponent">
-	    <shortDescription>teh hercules</shortDescription>
-	    <description>teh ultimate hercules, son of zeus</description>
+	  <ETLComponent category="readers" iconPath="icons/others/JavaExecute" name="CustomJavaReader" type="GENERIC_READER" className="org.jetel.component.GenericComponent">
+	    <shortDescription>Generic component that allows you to create custom reader.</shortDescription>
+	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports. This is a CustomJavaComponent customized for implementing a Reader.</description>
 	    <inputPorts>
 	      <multiplePort required="false" />
 	    </inputPorts>
@@ -2723,7 +2733,7 @@ Sends all resulting records to all connected output ports.</description>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="Algorithm" modifiable="true" name="genericTransform" nullable="true" required="!genericTransformClass,!genericTransformURL">
-	        <singleType name="multilineEditableJava" />
+	        <singleType name="genericComponentMultiline" genericType="reader" />
 	      </property>
 	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform">
 	        <singleType name="file" />
@@ -2731,7 +2741,91 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Algorithm class" modifiable="true" name="genericTransformClass" nullable="true" required="!genericTransform,!genericTransformURL">
 	        <singleType name="class" />
 	      </property>
-	      <property category="basic" displayName="Runnable source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	      <property category="basic" displayName="Algorithm source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
+	</extension>
+	
+	<!-- GenericComponent - descriptor for Generic Writer -->
+	<extension point-id="component">
+	  <ETLComponent category="writers" iconPath="icons/others/JavaExecute" name="CustomJavaWriter" type="GENERIC_WRITER" className="org.jetel.component.GenericComponent">
+	    <shortDescription>Generic component that allows you to create custom writer.</shortDescription>
+	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports. This is a CustomJavaComponent customized for implementing a Writer</description>
+	    <inputPorts>
+	      <multiplePort required="false" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="false" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Algorithm" modifiable="true" name="genericTransform" nullable="true" required="!genericTransformClass,!genericTransformURL">
+	        <singleType name="genericComponentMultiline" genericType="writer" />
+	      </property>
+	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Algorithm class" modifiable="true" name="genericTransformClass" nullable="true" required="!genericTransform,!genericTransformURL">
+	        <singleType name="class" />
+	      </property>
+	      <property category="basic" displayName="Algorithm source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
+	</extension>
+	
+	<!-- GenericComponent - descriptor for Generic Transformer -->
+	<extension point-id="component">
+	  <ETLComponent category="transformers" iconPath="icons/others/JavaExecute" name="CustomJavaTransformer" type="GENERIC_TRANSFORMER" className="org.jetel.component.GenericComponent">
+	    <shortDescription>Generic component that allows you to create custom transformer.</shortDescription>
+	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports. This is a CustomJavaComponent customized for implementing a Transformer.</description>
+	    <inputPorts>
+	      <multiplePort required="false" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="false" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Algorithm" modifiable="true" name="genericTransform" nullable="true" required="!genericTransformClass,!genericTransformURL">
+	        <singleType name="genericComponentMultiline" genericType="transformer" />
+	      </property>
+	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Algorithm class" modifiable="true" name="genericTransformClass" nullable="true" required="!genericTransform,!genericTransformURL">
+	        <singleType name="class" />
+	      </property>
+	      <property category="basic" displayName="Algorithm source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
+	</extension>
+	
+	<!-- GenericComponent - main generic descriptor -->
+	<extension point-id="component">
+	  <ETLComponent category="others" iconPath="icons/others/JavaExecute" name="CustomJavaComponent" type="GENERIC_COMPONENT" className="org.jetel.component.GenericComponent">
+	    <shortDescription>Allows you to create custom component in Java.</shortDescription>
+	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports. This is a CustomJavaComponent without customization.</description>
+	    <inputPorts>
+	      <multiplePort required="false" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="false" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Algorithm" modifiable="true" name="genericTransform" nullable="true" required="!genericTransformClass,!genericTransformURL">
+	        <singleType name="genericComponentMultiline" genericType="none" />
+	      </property>
+	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Algorithm class" modifiable="true" name="genericTransformClass" nullable="true" required="!genericTransform,!genericTransformURL">
+	        <singleType name="class" />
+	      </property>
+	      <property category="basic" displayName="Algorithm source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
 	        <singleType name="charset" />
 	      </property>
 	    </properties>
@@ -2909,7 +3003,7 @@ Sends all resulting records to all connected output ports.</description>
 	        <singleType name="file" fields="input" dictionary="input" single_url="true"/>
 	      </property>
 	      <property category="basic" displayName="XML output file or field" modifiable="true" name="xmlOutputFile" nullable="true" required="!mapping" redundant="mapping">
-	        <singleType name="file" fields="output" dictionary="output" single_url="true"/>
+	        <singleType name="file" fields="output" dictionary="output" single_url="true" mandatory_existing_file="false"/>
 	      </property>
 	      <property category="advanced" displayName="Output charset" modifiable="true" name="charset" nullable="true" defaultHint="UTF-8">
 	        <singleType name="charset"/>

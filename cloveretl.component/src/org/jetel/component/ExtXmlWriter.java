@@ -75,6 +75,9 @@ public class ExtXmlWriter extends TreeWriter {
 		super.configureWriter();
 		writer.setMkDir(mkDir);
 		writer.setCreateEmptyFiles(createEmptyFiles);
+		
+		// CLO-2572: prevent OutputStream -> WritableByteChannel -> OutputStream conversion
+		writer.setUseChannel(false);
 	}
 
 	@Override

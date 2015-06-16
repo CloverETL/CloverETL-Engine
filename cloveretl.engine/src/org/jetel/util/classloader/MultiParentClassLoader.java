@@ -76,6 +76,7 @@ public final class MultiParentClassLoader extends ClassLoader {
 		private Enumeration<T> enums[];
 		private int index = 0;
 		
+		@SuppressWarnings("unchecked")
 		public EnumerationChain(Enumeration<T> ... enums) {
 			if (enums == null) {
 				throw new NullPointerException();
@@ -122,6 +123,11 @@ public final class MultiParentClassLoader extends ClassLoader {
 		this.parents = parents; 
 	}
 	
+	public ClassLoader[] getParents() {
+		return parents.clone();
+	}
+	
+	@SuppressWarnings("resource")
 	public URL[] getAllURLs() {
 		
 		Set<URL> urls = new LinkedHashSet<URL>();

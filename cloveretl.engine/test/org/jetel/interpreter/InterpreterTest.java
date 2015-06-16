@@ -119,18 +119,12 @@ public class InterpreterTest extends CloverTestCase {
 		metadataBinary.addField(new DataFieldMetadata("Compressed",DataFieldMetadata.BYTE_FIELD_COMPRESSED, "\n"));
 
 		record = DataRecordFactory.newRecord(metadata);
-		record.init();
 		record1 = DataRecordFactory.newRecord(metadata1);
-		record1.init();
 		out = DataRecordFactory.newRecord(metaOut);
-		out.init();
 		out1 = DataRecordFactory.newRecord(metaOut1);
-		out1.init();
 		
 		recBinary= DataRecordFactory.newRecord(metadataBinary);
-		recBinary.init();
 		recBinaryOut=DataRecordFactory.newRecord(metadataBinary);
-		recBinaryOut.init();
 		
 		SetVal.setString(record,0,"  HELLO ");
 		SetVal.setString(record1,0,"  My name ");
@@ -2515,7 +2509,7 @@ public class InterpreterTest extends CloverTestCase {
 		      assertEquals("My City "+record.getField("City").getValue().toString(), out.getField("City").getValue().toString());
 		      assertEquals(record1.getField("Born").getValue(), out.getField("Born").getValue());
 		      assertEquals(0,out.getField("Value").getValue());
-		      assertEquals("",out1.getField("Name").getValue().toString());
+		      assertNull(out1.getField("Name").getValue());
 		      assertEquals(record.getField("Age").getValue(), out1.getField("Age").getValue());
 		      assertEquals(record1.getField("City").getValue().toString(), out1.getField("City").getValue().toString());
 		      assertNull(out1.getField("Born").getValue());
@@ -2909,7 +2903,6 @@ public class InterpreterTest extends CloverTestCase {
 				outputMetadata[i] = metaOut.duplicate();
 				outputMetadata[i].setName("metaPort" + i);
 				outputRecords[i] = DataRecordFactory.newRecord(outputMetadata[i]);
-				outputRecords[i].init();
 			}
 
 			
@@ -2921,7 +2914,6 @@ public class InterpreterTest extends CloverTestCase {
 			
 			DataRecord[] inputRecords = new DataRecord[1];
 			inputRecords[0] = DataRecordFactory.newRecord(inputMetadata[0]);
-			inputRecords[0].init();
 			
 			final String NAME_CONTENTS = "  My name ";
 			final double AGE_CONTENTS = 13.5;
@@ -3165,7 +3157,6 @@ public class InterpreterTest extends CloverTestCase {
 				outputMetadata[i] = metaOut.duplicate();
 				outputMetadata[i].setName("metaPort" + i);
 				outputRecords[i] = DataRecordFactory.newRecord(outputMetadata[i]);
-				outputRecords[i].init();
 			}
 
 			
@@ -3177,7 +3168,6 @@ public class InterpreterTest extends CloverTestCase {
 			
 			DataRecord[] inputRecords = new DataRecord[1];
 			inputRecords[0] = DataRecordFactory.newRecord(inputMetadata[0]);
-			inputRecords[0].init();
 			
 			final String NAME_CONTENTS = "  My name ";
 			final double AGE_CONTENTS = 13.5;
@@ -3259,12 +3249,10 @@ public class InterpreterTest extends CloverTestCase {
 		for (int i = 0; i < inputRecords.length; i++) {
 			// init input records with their ordinal
 			inputRecords[i] = DataRecordFactory.newRecord(inputMetadata[0]);
-			inputRecords[i].init();
 			inputRecords[i].getField("Name").setValue(Integer.toString(i + 1));
 
 			// keep output records blank
 			outputRecords[i] = DataRecordFactory.newRecord(outputMetadata[0]);
-			outputRecords[i].init();
 		}
 
 		CLVFFunctionDeclaration testFunction = (CLVFFunctionDeclaration) parser.getFunctions().get("test");

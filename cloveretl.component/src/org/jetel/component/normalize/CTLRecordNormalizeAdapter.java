@@ -21,6 +21,7 @@ package org.jetel.component.normalize;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.jetel.component.TransformUtils;
 import org.jetel.ctl.CTLAbstractTransformAdapter;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
@@ -112,7 +113,7 @@ public final class CTLRecordNormalizeAdapter extends CTLAbstractTransformAdapter
 			throw new TransformException("Normalizer failed!", exception);
 		}
 
-		countOnErrorArguments[0] = ExceptionUtils.getMessage(null, exception);
+		countOnErrorArguments[0] = TransformUtils.getMessage(exception);
 		countOnErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 
 		return countImpl(countOnErrorFunction, source, countOnErrorArguments);
@@ -146,7 +147,7 @@ public final class CTLRecordNormalizeAdapter extends CTLAbstractTransformAdapter
 			throw new TransformException("Normalizer failed!", exception);
 		}
 
-		transformOnErrorArguments[0] = ExceptionUtils.getMessage(null, exception);
+		transformOnErrorArguments[0] = TransformUtils.getMessage(exception);
 		transformOnErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 		transformOnErrorArguments[2] = idx;
 

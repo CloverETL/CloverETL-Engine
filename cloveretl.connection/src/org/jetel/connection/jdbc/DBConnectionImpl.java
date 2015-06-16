@@ -36,7 +36,6 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.AbstractDBConnection.SqlQueryOptimizeOption;
 import org.jetel.connection.jdbc.driver.JdbcDriverDescription;
 import org.jetel.connection.jdbc.driver.JdbcDriverFactory;
 import org.jetel.connection.jdbc.driver.JdbcDriverImpl;
@@ -57,6 +56,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
@@ -293,7 +293,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
         try {
             if (StringUtils.isEmpty(getJndiName())) {
             	if (!getJdbcDriver().getDriver().acceptsURL(getDbUrl())) {
-            		throw new ComponentNotReadyException("Unacceptable connection url: '" + getDbUrl() + "'");
+            		throw new ComponentNotReadyException("Unacceptable connection URL: '" + getDbUrl() + "'");
             	}
             }
         } catch (SQLException e) {
@@ -989,7 +989,9 @@ public class DBConnectionImpl extends AbstractDBConnection {
 				return getJdbcSpecific().createSQLConnection(this, createConnection(), operationType);
 			} catch (JetelException e) {
 				throw new JetelException("Cannot establish DB connection (" + getId() + ").", e);
-			}
+			} catch (NoClassDefFoundError err) { // CLO-6337
+	        	throw new JetelException("Could not find required class definition: " + ExceptionUtils.getClassName((NoClassDefFoundError) err), err);
+	        }
     	}
     }
 }

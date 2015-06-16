@@ -35,6 +35,7 @@ import org.jetel.ctl.TLUtils;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.HashCodeUtil;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -51,9 +52,8 @@ import org.jetel.util.primitive.IdentityArrayList;
  *
  * @created 17 Jan 2012
  */
+@CloverPublicAPI
 public class ListDataField extends DataFieldImpl implements Iterable<DataField> {
-
-	private static final long serialVersionUID = -3584218178444143371L;
 
 	//representation of nested fields
 	private List<DataField> fields;

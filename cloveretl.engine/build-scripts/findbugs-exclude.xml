@@ -39,13 +39,22 @@
      </Match>
 
      <Match>
-     	<Bug code="PZLA" />
+     	<Bug code="PZLA,UwF,Dm,EI2" />
      </Match>
      <Match>
-     	<Bug code="UwF" />
+     	<Bug pattern="EI_EXPOSE_REP" />
      </Match>
      <Match>
-     	<Bug code="Dm" />
+     	<Bug pattern="NM_CONFUSING,NP_BOOLEAN_RETURN_NULL" />
+     </Match>
+     <Match>
+     	<Bug pattern="OBL_UNSATISFIED_OBLIGATION_EXCEPTION_EDGE" />
+     </Match>
+     <Match>
+     	<Bug pattern="REC_CATCH_EXCEPTION,RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE,RCN_REDUNDANT_NULLCHECK_OF_NULL_VALUE" />
+     </Match>
+     <Match>
+     	<Bug pattern="SIC_INNER_SHOULD_BE_STATIC_ANON,URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD" />
      </Match>
 
 </FindBugsFilter>

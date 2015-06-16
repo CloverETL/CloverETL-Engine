@@ -149,7 +149,6 @@ public class LookupTableReaderWriter extends Node {
 		if (writeToTable) {//putting records to lookup table
 			InputPort inPort = getInputPort(READ_FROM_PORT);
 			DataRecord inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-			inRecord.init();
 			while ((inRecord = inPort.readRecord(inRecord)) != null && runIt) {
 				lookupTable.put(inRecord);
 				SynchronizeUtils.cloverYield();

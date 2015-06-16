@@ -61,7 +61,7 @@ import org.w3c.dom.Element;
  */
 public class CrossJoin extends Node implements MetadataProvider {
 	public final static String COMPONENT_TYPE = "CROSS_JOIN";
-	private final static String OUT_METADATA_NAME = "CrossJoin_dynamic";
+	private final static String OUT_METADATA_NAME = "CrossJoin_Output";
 	private final static String OUT_METADATA_ID_SUFFIX = "_outMetadata";
 	
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
@@ -104,7 +104,7 @@ public class CrossJoin extends Node implements MetadataProvider {
 	
 	// output
 	private OutputPort outPort;
-	private DataRecord[] outRecord; // size 1
+	private DataRecord[] outRecord = new DataRecord[1];
 	
 	static Log logger = LogFactory.getLog(CrossJoin.class);
 
@@ -161,7 +161,6 @@ public class CrossJoin extends Node implements MetadataProvider {
 		//init input
 		masterPort = getInputPort(MASTER_PORT);
 		masterRecord = DataRecordFactory.newRecord(masterPort.getMetadata());
-		masterRecord.init();
 		slavePorts = new InputPort[slaveCount];
 		slaveRecords = new DataRecord[slaveCount];
 		slaveFinishedReading = new boolean[slaveCount];
@@ -169,16 +168,13 @@ public class CrossJoin extends Node implements MetadataProvider {
 		for (int slaveIdx = 0; slaveIdx < slaveCount; slaveIdx++) {
 			slavePorts[slaveIdx] = getInputPort(FIRST_SLAVE_PORT + slaveIdx);
 			slaveRecords[slaveIdx] = DataRecordFactory.newRecord(slavePorts[slaveIdx].getMetadata());
-			slaveRecords[slaveIdx].init();
 			slaveFinishedReading[slaveIdx] = false;
 			slaveRecordsMemory[slaveIdx] = new ShiftingFileBuffer(SLAVE_BUFFER_SIZE);
 		}
 		
 		// init output
 		outPort = getOutputPort(WRITE_TO_PORT);
-		outRecord =  new DataRecord[] { DataRecordFactory.newRecord(outPort.getMetadata()) };
-		outRecord[WRITE_TO_PORT].init();
-		outRecord[WRITE_TO_PORT].reset();
+		outRecord[WRITE_TO_PORT] = DataRecordFactory.newRecord(outPort.getMetadata());
 	}
 
 	@Override
@@ -193,8 +189,10 @@ public class CrossJoin extends Node implements MetadataProvider {
 	public void free() {
 		super.free();
 		try {
-			for (int i = 0; i < slaveRecordsMemory.length; i++) {
-				slaveRecordsMemory[i].close();
+			if (slaveRecordsMemory != null) {
+				for (int i = 0; i < slaveRecordsMemory.length; i++) {
+					slaveRecordsMemory[i].close();
+				}
 			}
 		} catch (IOException e) {
 			logger.debug("Exception while clearing slave records memory of " + this.getName() + ". Message: " + e.getMessage());
@@ -217,6 +215,20 @@ public class CrossJoin extends Node implements MetadataProvider {
 				transformResult = transformation.transformOnError(exception, currentRecords, outRecord);
 			}
 			
+			if (transformResult == RecordTransform.ALL) {
+				outPort.writeRecord(outRecord[WRITE_TO_PORT]);
+				outRecord[WRITE_TO_PORT].reset();
+			} else if (transformResult >= 0) {
+				writeRecord(transformResult, outRecord[transformResult]);
+			} else if (transformResult == RecordTransform.SKIP) {
+				return;
+			} else {
+				// transformResult is <= RecordTransform.STOP
+				String message = "Transformation finished with code: " + transformResult + ". Error message: " + 
+						transformation.getMessage();
+				throw new TransformException(message);
+			}
+			
 		} else {
 			int outFieldIndex = 0;
 			DataField[] outFields = outRecord[WRITE_TO_PORT].getFields();
@@ -226,18 +238,14 @@ public class CrossJoin extends Node implements MetadataProvider {
 					outFieldIndex++;
 				}
 			}
-			
+			outPort.writeRecord(outRecord[WRITE_TO_PORT]);
+			outRecord[WRITE_TO_PORT].reset();
 		}
-		
-		outPort.writeRecord(outRecord[WRITE_TO_PORT]);
-		outRecord[WRITE_TO_PORT].reset();
 	}
 	
 	/**
-	 * Reads record from specified slave port and inserts it at the current position of the iterator.
-	 * Subsequent call to iterator.next() will return the newly read record. 
+	 * Reads record from specified slave port. 
 	 * @param slaveIdx
-	 * @param iter
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */

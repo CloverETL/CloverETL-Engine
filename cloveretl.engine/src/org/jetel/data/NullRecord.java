@@ -37,13 +37,16 @@ import org.jetel.util.bytes.CloverBuffer;
  *@since April 21, 2008
  */
 public class NullRecord extends DataRecordImpl {
-	
-	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Constant used for representation of record will all fields with null value.
 	 */
-	public final static DataRecord NULL_RECORD = new NullRecord();
+	public final static DataRecord NULL_RECORD;
+	
+	static {
+		NULL_RECORD = new NullRecord();
+		NULL_RECORD.init();
+	}
 	
 	/**
 	 * Creates NullRecord object based on NullMetadata
@@ -206,8 +209,6 @@ final class NullMetadata extends DataRecordMetadata{
  *
  */
 final class NullField extends DataFieldImpl {
-	
-	private static final long serialVersionUID = 1L;
 
 	final static DataFieldMetadata NULL_FIELD_METADATA = new DataFieldMetadata("null_field",(short)0);
 	static{

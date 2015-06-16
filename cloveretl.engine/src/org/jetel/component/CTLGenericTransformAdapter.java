@@ -26,11 +26,13 @@ import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.ExceptionUtils;
 
 /**
  * Implementation of {@link GenericTransform} interface which is used for CTL2.
+ * Currently not used since GenericComponent doesn't support CTL.
  * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -83,7 +85,7 @@ public final class CTLGenericTransformAdapter extends CTLAbstractTransformAdapte
 	 * @return True if successful, otherwise False
 	 */
 	@Override
-	public void init() {
+	public final void init() {
         // initialize global scope and call user initialization function
 		try {
 			super.init();
@@ -114,7 +116,7 @@ public final class CTLGenericTransformAdapter extends CTLAbstractTransformAdapte
 			throw new JetelRuntimeException("GenericComponent failed!", exception);
 		}
 
-		onErrorArguments[0] = ExceptionUtils.getMessage(null, exception);
+		onErrorArguments[0] = TransformUtils.getMessage(exception);
 		onErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 
 		executor.executeFunction(executeOnErrorFunction, onErrorArguments, inputRecords, outputRecords);
@@ -125,6 +127,12 @@ public final class CTLGenericTransformAdapter extends CTLAbstractTransformAdapte
 		if (freeFunction != null) {
 			executor.executeFunction(freeFunction, NO_ARGUMENTS, inputRecords, outputRecords);
 		}
+	}
+
+	@Override
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		// no action, only java is supported in GenericComponent for now
+		return status;
 	}
 
 }

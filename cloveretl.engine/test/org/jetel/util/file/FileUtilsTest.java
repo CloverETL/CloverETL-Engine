@@ -314,11 +314,15 @@ public class FileUtilsTest extends CloverTestCase {
 	public void testIsLocalFile() {
 		assertFalse(FileUtils.isLocalFile(null, "dict:filename"));
 		assertFalse(FileUtils.isLocalFile(null, "port:$0.field1:discrete"));
+		assertFalse(FileUtils.isLocalFile(null, "s3://accessKey:secretKey@s3.amazonaws.com"));
+		assertFalse(FileUtils.isLocalFile(null, "hdfs://CONNECTION0/"));
 	}
 	
 	public void testIsRemoteFile() {
 		assertFalse(FileUtils.isRemoteFile("dict:filename"));
 		assertFalse(FileUtils.isRemoteFile("port:$0.field1:discrete"));
+		assertTrue(FileUtils.isRemoteFile("s3://accessKey:secretKey@s3.amazonaws.com"));
+		assertTrue(FileUtils.isRemoteFile("hdfs://CONNECTION0/"));
 	}
 	
 	public void testNormalizeFilePath() {
@@ -644,5 +648,487 @@ public class FileUtilsTest extends CloverTestCase {
 		input = "zip:(./path/*.zip)#entry/fil?.txt";
 		result = FileUtils.getAbsoluteURL(contextUrl, input);
 		assertEquals("zip:(http:(proxy://juzr:heslou@koule:3128)//www.google.com/path/*.zip)#entry/fil?.txt", result);
+	}
+	
+	private static String[][] paths = new String[][] {
+		new String[] {
+				null, // input
+				null, // path
+				null, // filename
+				null, // basename
+				null, // extension
+				null, // normalized
+		},
+
+		new String[] {
+				"", // input
+				"", // path
+				"", // filename
+				"", // basename
+				"", // extension
+				"", // normalized
+		},
+
+		new String[] {
+				"/foo/../bar/../baz/out5.txt", // input
+				"/foo/../bar/../baz/", // path
+				"out5.txt", // filename
+				"out5", // basename
+				"txt", // extension
+				"/baz/out5.txt", // normalized
+		},
+		
+		new String[] {
+				"/cloveretl.test.scenarios/./data-in/fileOperation/input.xlsx", // input
+				"/cloveretl.test.scenarios/./data-in/fileOperation/", // path
+				"input.xlsx", // filename
+				"input", // basename
+				"xlsx", // extension
+				"/cloveretl.test.scenarios/data-in/fileOperation/input.xlsx", // normalized
+		},
+		
+		new String[] {
+				"/data/./file.dat", // input
+				"/data/./", // path
+				"file.dat", // filename
+				"file", // basename
+				"dat", // extension
+				"/data/file.dat", // normalized
+		},
+		
+		new String[] {
+				"C:/./a\\b/c.cdf", // input
+				"C:/./a/b/", // path
+				"c.cdf", // filename
+				"c", // basename
+				"cdf", // extension
+				"C:/a/b/c.cdf", // normalized
+		},
+		
+		new String[] {
+				"C:\\a\\b\\c.xml", // input
+				"C:/a/b/", // path
+				"c.xml", // filename
+				"c", // basename
+				"xml", // extension
+				"C:/a/b/c.xml", // normalized
+		},
+		
+		new String[] {
+				"a/b/c.ab.jpg", // input
+				"a/b/", // path
+				"c.ab.jpg", // filename
+				"c.ab", // basename
+				"jpg", // extension
+				"a/b/c.ab.jpg", // normalized
+		},
+		
+		new String[] {
+				"file:/C:/Users/krivanekm/workspace/Experiments/", // input
+				"file:/C:/Users/krivanekm/workspace/Experiments/", // path
+				"", // filename
+				"", // basename
+				"", // extension
+				"file:/C:/Users/krivanekm/workspace/Experiments/", // normalized
+		},
+		
+		new String[] {
+				"file:/C:/", // input
+				"file:/C:/", // path
+				"", // filename
+				"", // basename
+				"", // extension
+				"file:/C:/", // normalized
+		},
+		
+		new String[] {
+				"file:/C:/..", // input
+				"file:/C:/", // path
+				"..", // filename
+				".", // basename
+				"", // extension
+				null, // normalized
+		},
+		
+		new String[] {
+				"sandbox://cloveretl.test.scenarios/", // input
+				"sandbox://cloveretl.test.scenarios/", // path
+				"", // filename
+				"", // basename
+				"", // extension
+				"sandbox://cloveretl.test.scenarios/", // normalized
+		},
+		
+		new String[] {
+				"sandbox://cloveretl.test.scenarios/a/b/c.dbf", // input
+				"sandbox://cloveretl.test.scenarios/a/b/", // path
+				"c.dbf", // filename
+				"c", // basename
+				"dbf", // extension
+				"sandbox://cloveretl.test.scenarios/a/b/c.dbf", // normalized
+		},
+		
+		new String[] {
+				"ftp://user:pass%40word@hostname.com/a/b", // input
+				"ftp://user:pass%40word@hostname.com/a/", // path
+				"b", // filename
+				"b", // basename
+				"", // extension
+				"ftp://user:pass%40word@hostname.com/a/b", // normalized
+		},
+		
+		new String[] {
+				"ftp://user:password@hostname.com/a/../b/c.gz", // input
+				"ftp://user:password@hostname.com/a/../b/", // path
+				"c.gz", // filename
+				"c", // basename
+				"gz", // extension
+				"ftp://user:password@hostname.com/b/c.gz", // normalized
+		},
+		
+		new String[] {
+				"s3://user:password@hostname.com/a/b/c.Z", // input
+				"s3://user:password@hostname.com/a/b/", // path
+				"c.Z", // filename
+				"c", // basename
+				"Z", // extension
+				"s3://user:password@hostname.com/a/b/c.Z", // normalized
+		},
+		
+		new String[] {
+				"sftp://user:password@hostname.com/../a/b", // input
+				"sftp://user:password@hostname.com/../a/", // path
+				"b", // filename
+				"b", // basename
+				"", // extension
+				null, // normalized
+		},
+		
+		new String[] {
+				"sandbox://cloveretl.test.scenarios", // input
+				"sandbox://cloveretl.test.scenarios", // path
+				"", // filename
+				"", // basename
+				"", // extension
+				"sandbox://cloveretl.test.scenarios", // normalized
+		},
+		
+		new String[] {
+				"sandbox://cloveretl.test.scenarios/dir 1/file_with_query?and#hash.txt", // input
+				"sandbox://cloveretl.test.scenarios/dir 1/", // path
+				"file_with_query?and#hash.txt", // filename
+				"file_with_query?and#hash", // basename
+				"txt", // extension
+				"sandbox://cloveretl.test.scenarios/dir 1/file_with_query?and#hash.txt", // normalized
+		},
+		
+		new String[] {
+				"zip:(C:/a/b/c.zip)", // input
+				"zip:(C:/a/b/c.zip)", // path
+				"", // filename
+				"", // basename
+				"", // extension
+				"zip:(C:/a/b/c.zip)", // normalized
+		},
+		
+		new String[] {
+				"zip:(C:/a/b/c.zip)#zipEntry/file.txt", // input
+				"zip:(C:/a/b/c.zip)#zipEntry/", // path
+				"file.txt", // filename
+				"file", // basename
+				"txt", // extension
+				"zip:(C:/a/b/c.zip)#zipEntry/file.txt", // normalized
+		},
+		
+		new String[] {
+				"http://seznam.cz", // input
+				"http://seznam.cz", // path
+				"", // filename
+				"", // basename
+				"", // extension
+				"http://seznam.cz", // normalized
+		},
+		
+		new String[] {
+				"http:(proxy://user:password@212.93.193.82:443)//seznam.cz", // input
+				"http:(proxy://user:password@212.93.193.82:443)//seznam.cz", // path
+				"", // filename
+				"", // basename
+				"", // extension
+				"http:(proxy://user:password@212.93.193.82:443)//seznam.cz", // normalized
+		},
+		
+		new String[] {
+				"http:(proxy://user:password@212.93.193.82:443)//seznam.cz/", // input
+				"http:(proxy://user:password@212.93.193.82:443)//seznam.cz/", // path
+				"", // filename
+				"", // basename
+				"", // extension
+				"http:(proxy://user:password@212.93.193.82:443)//seznam.cz/", // normalized
+		},
+		
+		new String[] {
+				"http:(proxy://user:password@212.93.193.82:443)//seznam.cz/index.html?query", // input
+				"http:(proxy://user:password@212.93.193.82:443)//seznam.cz/", // path
+				"index.html?query", // filename
+				"index", // basename
+				"html?query", // extension
+				"http:(proxy://user:password@212.93.193.82:443)//seznam.cz/index.html?query", // normalized
+		},
+		
+		new String[] {
+				"zip:(C:\\a\\b\\..\\c.zip)#zip Entry\\file.txt", // input
+				"zip:(C:/a/b/../c.zip)#zip Entry/", // path
+				"file.txt", // filename
+				"file", // basename
+				"txt", // extension
+				"zip:(C:/a/c.zip)#zip Entry/file.txt", // normalized
+		},
+		
+		new String[] {
+				"gzip:(C:\\a\\b\\..\\c%.gz)", // input
+				"gzip:(C:/a/b/../c%.gz)", // path
+				"", // filename
+				"", // basename
+				"", // extension
+				"gzip:(C:/a/c%.gz)", // normalized
+		},
+		
+		new String[] {
+				"http://illegal%escape%sequence/f%ile.tmp", // input
+				"http://illegal%escape%sequence/", // path
+				"f%ile.tmp", // filename
+				"f%ile", // basename
+				"tmp", // extension
+				"http://illegal%escape%sequence/f%ile.tmp", // normalized
+		},
+		
+		new String[] {
+				"http://illegal%escape%sequence/../f%ile.tmp", // input
+				"http://illegal%escape%sequence/../", // path
+				"f%ile.tmp", // filename
+				"f%ile", // basename
+				"tmp", // extension
+				null, // normalized
+		},
+		
+		new String[] {
+				"nonexisting://hostname/a/b/c.d.e.avi", // input
+				"nonexisting://hostname/a/b/", // path
+				"c.d.e.avi", // filename
+				"c.d.e", // basename
+				"avi", // extension
+				"nonexisting://hostname/a/b/c.d.e.avi", // normalized
+		},
+		
+		new String[] {
+				"dict:filename", // input
+				"", // path
+				"dict:filename", // filename
+				"dict:filename", // basename
+				"", // extension
+				"dict:filename", // normalized
+		},
+		
+		new String[] {
+				"mailto:milan.krivanek@cloveretl.com", // input
+				"", // path
+				"mailto:milan.krivanek@cloveretl.com", // filename
+				"mailto:milan.krivanek@cloveretl", // basename
+				"com", // extension
+				"mailto:milan.krivanek@cloveretl.com", // normalized
+		},
+		
+		new String[] {
+				"port:$0.FieldName:source", // input
+				"", // path
+				"port:$0.FieldName:source", // filename
+				"port:$0", // basename
+				"FieldName:source", // extension
+				"port:$0.FieldName:source", // normalized
+		},
+		
+		new String[] {
+				"ldap://localhost:389/ou=People,o=JNDITutorial", // input
+				"ldap://localhost:389/", // path
+				"ou=People,o=JNDITutorial", // filename
+				"ou=People,o=JNDITutorial", // basename
+				"", // extension
+				"ldap://localhost:389/ou=People,o=JNDITutorial", // normalized
+		},
+		
+		new String[] {
+				"ldap://localhost:389/ou=People,o=JNDITutorial??sub?(sn=Geisel)", // input
+				"ldap://localhost:389/", // path
+				"ou=People,o=JNDITutorial??sub?(sn=Geisel)", // filename
+				"ou=People,o=JNDITutorial??sub?(sn=Geisel)", // basename
+				"", // extension
+				"ldap://localhost:389/ou=People,o=JNDITutorial??sub?(sn=Geisel)", // normalized
+		},
+		
+		new String[] {
+				"file:/home/krivanekm/file.doc", // input
+				"file:/home/krivanekm/", // path
+				"file.doc", // filename
+				"file", // basename
+				"doc", // extension
+				"file:/home/krivanekm/file.doc", // normalized
+		},
+		
+		new String[] {
+				"/path/filename.txt", // input
+				"/path/", // path
+				"filename.txt", // filename
+				"filename", // basename
+				"txt", // extension
+				"/path/filename.txt", // normalized
+		},
+		
+		new String[] {
+				"/path/filename?.txt", // input
+				"/path/", // path
+				"filename?.txt", // filename
+				"filename?", // basename
+				"txt", // extension
+				"/path/filename?.txt", // normalized
+		},
+		
+		new String[] {
+				"/path/./*", // input
+				"/path/./", // path
+				"*", // filename
+				"*", // basename
+				"", // extension
+				"/path/*", // normalized
+		},
+		
+		new String[] {
+				"tar:(/path/../file.tar)#innerfolder/../filename.txt", // input
+				"tar:(/path/../file.tar)#innerfolder/../", // path
+				"filename.txt", // filename
+				"filename", // basename
+				"txt", // extension
+				"tar:(/file.tar)#filename.txt", // normalized
+		},
+
+		new String[] {
+				"zip:(zip:(/path\\..\\name?.zip)#innerfolder/./file.zip)#innermostfolder?\\../filename*.html", // input
+				"zip:(zip:(/path/../name?.zip)#innerfolder/./file.zip)#innermostfolder?/../", // path
+				"filename*.html", // filename
+				"filename*", // basename
+				"html", // extension
+				"zip:(zip:(/name?.zip)#innerfolder/file.zip)#filename*.html", // normalized
+		},
+		
+		new String[] {
+				"http://access_key_id:secret_access_key@bucketname.s3.amazonaws.com/file%20name*.out", // input
+				"http://access_key_id:secret_access_key@bucketname.s3.amazonaws.com/", // path
+				"file%20name*.out", // filename
+				"file%20name*", // basename
+				"out", // extension
+				"http://access_key_id:secret_access_key@bucketname.s3.amazonaws.com/file%20name*.out", // normalized
+		},
+		
+		new String[] {
+				"hdfs://CONN_ID/path/file#name.dat.tmp", // input
+				"hdfs://CONN_ID/path/", // path
+				"file#name.dat.tmp", // filename
+				"file#name.dat", // basename
+				"tmp", // extension
+				"hdfs://CONN_ID/path/file#name.dat.tmp", // normalized
+		},
+		
+		new String[] {
+				"smb://domain%3Buser:pa55word@server/path/file name.txt", // input
+				"smb://domain%3Buser:pa55word@server/path/", // path
+				"file name.txt", // filename
+				"file name", // basename
+				"txt", // extension
+				"smb://domain%3Buser:pa55word@server/path/file name.txt", // normalized
+		},
+		
+		new String[] {
+				"sftp:(proxy://66.11.122.193:443)//user:password@server/pa@th/.././file$.dat", // input
+				"sftp:(proxy://66.11.122.193:443)//user:password@server/pa@th/.././", // path
+				"file$.dat", // filename
+				"file$", // basename
+				"dat", // extension
+				"sftp:(proxy://66.11.122.193:443)//user:password@server/file$.dat", // normalized
+		},
+		
+		new String[] {
+				"sandbox://data/path to/file/.project", // input
+				"sandbox://data/path to/file/", // path
+				".project", // filename
+				"", // basename
+				"project", // extension
+				"sandbox://data/path to/file/.project", // normalized
+		},
+		
+		new String[] {
+				"sftp:(proxy://66.11.122.193:443)//user:password@server/.././file$.dat", // input
+				"sftp:(proxy://66.11.122.193:443)//user:password@server/.././", // path
+				"file$.dat", // filename
+				"file$", // basename
+				"dat", // extension
+				null, // normalized
+		},
+		
+		new String[] {
+				"file:///home/user1/my.documents/log", // input
+				"file:///home/user1/my.documents/", // path
+				"log", // filename
+				"log", // basename
+				"", // extension
+				"file:///home/user1/my.documents/log", // normalized
+		},
+		
+		new String[] {
+				"zip:(C:\\Data\\..\\archive.zip)#inner1/../inner2/./data.txt", // input
+				"zip:(C:/Data/../archive.zip)#inner1/../inner2/./", // path
+				"data.txt", // filename
+				"data", // basename
+				"txt", // extension
+				"zip:(C:/archive.zip)#inner2/data.txt", // normalized
+		},
+		
+		
+		
+	};
+
+
+	public void testGetFilePath() {
+		for (int i = 0; i < paths.length; i++) {
+			String[] row = paths[i];
+			assertEquals(row[0], row[1], FileUtils.getFilePath(row[0]));
+		}
+	}
+
+	public void testGetFileName() {
+		for (int i = 0; i < paths.length; i++) {
+			String[] row = paths[i];
+			assertEquals(row[0], row[2], FileUtils.getFileName(row[0]));
+		}
+	}
+
+	public void testGetBaseName() {
+		for (int i = 0; i < paths.length; i++) {
+			String[] row = paths[i];
+			assertEquals(row[0], row[3], FileUtils.getBaseName(row[0]));
+		}
+	}
+
+	public void testGetFileExtension() {
+		for (int i = 0; i < paths.length; i++) {
+			String[] row = paths[i];
+			assertEquals(row[0], row[4], FileUtils.getFileExtension(row[0]));
+		}
+	}
+
+	public void testNormalize() {
+		for (int i = 0; i < paths.length; i++) {
+			String[] row = paths[i];
+			assertEquals(i + " - " + row[0], row[5], FileUtils.normalize(row[0]));
+		}
 	}
 }

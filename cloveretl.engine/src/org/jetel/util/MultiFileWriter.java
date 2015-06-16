@@ -345,7 +345,6 @@ public class MultiFileWriter {
     	if (!deserialized) {
     		if (this.record == null) {
         		this.record = DataRecordFactory.newRecord(this.metadata);
-        		this.record.init();
     		}
     		record.deserialize(buffer);
     		buffer.rewind();

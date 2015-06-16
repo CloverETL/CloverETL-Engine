@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.jetel.component.AbstractTransformTL;
+import org.jetel.component.TransformUtils;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
@@ -55,6 +56,7 @@ public class RecordDenormalizeTL extends AbstractTransformTL implements RecordDe
 	public static final String TRANSFORM_ON_ERROR_FUNCTION_NAME = "transformOnError";
 	public static final String CLEAN_FUNCTION_NAME = "clean";
 
+	private final DataRecord[] inRec = new DataRecord[1];
 	private final DataRecord[] outRec = new DataRecord[1];
 
 	protected final TLValue[] onErrorArguments = new TLValue[] { 
@@ -97,49 +99,52 @@ public class RecordDenormalizeTL extends AbstractTransformTL implements RecordDe
 	}
 
 	@Override
-	public int append(DataRecord inRecord) throws TransformException {
-		return appendImpl(appendFunction, inRecord, null);
+	public int append(DataRecord inRecord, DataRecord outRecord) throws TransformException {
+		return appendImpl(appendFunction, inRecord, outRecord, null);
 	}
 
 	@Override
-	public int appendOnError(Exception exception, DataRecord inRecord) throws TransformException {
+	public int appendOnError(Exception exception, DataRecord inRecord, DataRecord outRecord) throws TransformException {
 		if (appendOnErrorFunction < 0) {
 			// no custom error handling implemented, throw an exception so the transformation fails
 			throw new TransformException("Denormalization failed!", exception);
 		}
 
-		onErrorArguments[0].setValue(ExceptionUtils.getMessage(null, exception));
+		onErrorArguments[0].setValue(TransformUtils.getMessage(exception));
 		onErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 
-		return appendImpl(appendOnErrorFunction, inRecord, onErrorArguments);
+		return appendImpl(appendOnErrorFunction, inRecord, outRecord, onErrorArguments);
 	}
 
-	private int appendImpl(int function, DataRecord inRecord, TLValue[] arguments) {
-		return convertResult(wrapper.executePreparedFunction(function, inRecord, arguments));
-	}
-
-	@Override
-	public int transform(DataRecord outRecord) throws TransformException {
-		return transformImpl(transformFunction, outRecord, null);
+	private int appendImpl(int function, DataRecord inRecord, DataRecord outRecord, TLValue[] arguments) {
+		this.inRec[0] = inRecord;
+		this.outRec[0] = outRecord;
+		return convertResult(wrapper.executePreparedFunction(function, inRec, outRec, arguments));
 	}
 
 	@Override
-	public int transformOnError(Exception exception, DataRecord outRecord) throws TransformException {
+	public int transform(DataRecord inRecord, DataRecord outRecord) throws TransformException {
+		return transformImpl(transformFunction, inRecord, outRecord, null);
+	}
+
+	@Override
+	public int transformOnError(Exception exception, DataRecord inRecord, DataRecord outRecord) throws TransformException {
 		if (transformOnErrorFunction < 0) {
 			// no custom error handling implemented, throw an exception so the transformation fails
 			throw new TransformException("Denormalization failed!", exception);
 		}
 
-		onErrorArguments[0].setValue(ExceptionUtils.getMessage(null, exception));
+		onErrorArguments[0].setValue(TransformUtils.getMessage(exception));
 		onErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 
-		return transformImpl(transformFunction, outRecord, onErrorArguments);
+		return transformImpl(transformFunction, inRecord, outRecord, onErrorArguments);
 	}
 
-	private int transformImpl(int function, DataRecord outRecord, TLValue[] arguments) {
+	private int transformImpl(int function, DataRecord inRecord, DataRecord outRecord, TLValue[] arguments) {
+		this.inRec[0] = inRecord;
 		this.outRec[0] = outRecord;
 
-		return convertResult(wrapper.executePreparedFunction(function, null, outRec, arguments));
+		return convertResult(wrapper.executePreparedFunction(function, inRec, outRec, arguments));
 	}
 
 	private int convertResult(TLValue result) {
@@ -164,6 +169,30 @@ public class RecordDenormalizeTL extends AbstractTransformTL implements RecordDe
 		if (cleanFunction != -1) {
 			wrapper.executePreparedFunction(cleanFunction);
 		}
+	}
+
+	@Deprecated
+	@Override
+	public int append(DataRecord inRecord) throws TransformException {
+		return append(inRecord, null);
+	}
+
+	@Deprecated
+	@Override
+	public int appendOnError(Exception exception, DataRecord inRecord) throws TransformException {
+		return appendOnError(exception, inRecord, null);
+	}
+
+	@Deprecated
+	@Override
+	public int transform(DataRecord outRecord) throws TransformException {
+		return transform(null, outRecord);
+	}
+
+	@Deprecated
+	@Override
+	public int transformOnError(Exception exception, DataRecord outRecord) throws TransformException {
+		return transformOnError(exception, null, outRecord);
 	}
 
 }

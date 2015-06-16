@@ -20,7 +20,6 @@ package org.jetel.component;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
 import java.text.MessageFormat;
 import java.util.Collection;
 
@@ -183,7 +182,6 @@ public class DBFDataReader extends Node {
 	public Result execute() throws Exception {
 		// we need to create data record - take the metadata from first output port
 		DataRecord record = DataRecordFactory.newRecord(getOutputPort(OUTPUT_PORT).getMetadata());
-		record.init();
 
 		// till it reaches end of data or it is stopped from outside
 		try {
@@ -374,21 +372,11 @@ public class DBFDataReader extends Node {
 			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
 		}
 
-        if (charset != null) {
-        	if (!Charset.isSupported(charset)) {
-				status.add(new ConfigurationProblem(
-						MessageFormat.format("Charset {0} not supported!", charset), 
-						ConfigurationStatus.Severity.ERROR, this, 
-						ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
-			} else {
-				CharsetEncoder encoder = Charset.forName(charset).newEncoder();
-				if (encoder.maxBytesPerChar() != 1) {
-					status.add(new ConfigurationProblem(
-							"Invalid charset used. 8bit fixed-width encoding needs to be used.", 
-							Severity.ERROR, 
-							this, Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
-				}
-			}
+        if (charset != null && !Charset.isSupported(charset)) {
+        	status.add(new ConfigurationProblem(
+					MessageFormat.format("Charset {0} not supported!", charset), 
+					ConfigurationStatus.Severity.ERROR, this, 
+					ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
         
         checkMetadata(status, getOutMetadata());

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jetel.exception.CompoundException;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.MissingFieldException;
 import org.jetel.exception.StackTraceWrapperException;
@@ -122,6 +123,63 @@ public class ExceptionUtilsTest extends CloverTestCase {
 		assertEquals("abc\n Unexpected null value.", ExceptionUtils.getMessage("abc", new Exception(new Exception(new NullPointerException()))));
 
 		assertEquals("abc\n java.lang.Exception", ExceptionUtils.getMessage("abc", new Exception(new Exception(new Exception()))));
+
+		assertEquals("Class with the specified name cannot be found: a.b.c\n No definition for the class with the specified name can be found: a/b/c", ExceptionUtils.getMessage(new ClassNotFoundException("a.b.c", new NoClassDefFoundError("a/b/c"))));
+
+		
+		Exception e = new Exception();
+		e.addSuppressed(new Exception());
+		assertEquals("java.lang.Exception\n Suppressed: java.lang.Exception", ExceptionUtils.getMessage(e));
+
+		e = new Exception("abc");
+		e.addSuppressed(new Exception());
+		assertEquals("abc\n Suppressed: java.lang.Exception", ExceptionUtils.getMessage(e));
+		assertEquals("abc\n Suppressed: java.lang.Exception", ExceptionUtils.getMessage(new Exception("abc", e)));
+
+		e = new Exception("abc");
+		e.addSuppressed(new Exception(new Exception("def")));
+		assertEquals("abc\n Suppressed: def", ExceptionUtils.getMessage(e));
+
+		e = new Exception("aaa");
+		e.addSuppressed(new Exception(new Exception("bbb")));
+		e.addSuppressed(new Exception(new Exception("ccc")));
+		assertEquals("aaa\n Suppressed: bbb\n Suppressed: ccc", ExceptionUtils.getMessage(e));
+
+		e = new Exception("aaa");
+		e.addSuppressed(new Exception(new Exception("bbb")));
+		e.addSuppressed(new Exception("ccc", new Exception("ccc")));
+		assertEquals("aaa\n Suppressed: bbb\n Suppressed: ccc", ExceptionUtils.getMessage(e));
+
+		e = new Exception("aaa");
+		e.addSuppressed(new Exception(new Exception("bbb")));
+		e.addSuppressed(new Exception("ccc", new Exception("ddd")));
+		assertEquals("aaa\n Suppressed: bbb\n Suppressed: ccc\n  ddd", ExceptionUtils.getMessage(e));
+
+		e = new Exception("aaa");
+		e.addSuppressed(new Exception(new Exception("bbb")));
+		e.addSuppressed(new Exception("ccc", new CompoundException(new Exception("ddd"), new Exception())));
+		assertEquals("aaa\n Suppressed: bbb\n Suppressed: ccc\n  ddd\n  java.lang.Exception", ExceptionUtils.getMessage(e));
+
+		e = new Exception("aaa");
+		e.addSuppressed(new Exception(new Exception("bbb")));
+		e.addSuppressed(new Exception("ccc", new CompoundException("ddd", new Exception("eee"), new Exception())));
+		assertEquals("aaa\n Suppressed: bbb\n Suppressed: ccc\n  ddd\n   eee\n   java.lang.Exception", ExceptionUtils.getMessage(e));
+
+		e = new Exception("aaa", new Exception("aaaa", new Exception()));
+		e.addSuppressed(new Exception(new Exception("bbb")));
+		e.addSuppressed(new Exception("ccc", new CompoundException("ddd", new Exception("eee"), new Exception())));
+		assertEquals("aaa\n aaaa\n  java.lang.Exception\n Suppressed: bbb\n Suppressed: ccc\n  ddd\n   eee\n   java.lang.Exception", ExceptionUtils.getMessage(e));
+
+		e = new Exception("aaa", new Exception("aaaa", new Exception()));
+		e.addSuppressed(new Exception(new Exception("bbb")));
+		CompoundException ce = new CompoundException("ddd", new Exception("eee"), new Exception());
+		ce.addSuppressed(new Exception("ce"));
+		e.addSuppressed(new Exception("ccc", ce));
+		assertEquals("aaa\n aaaa\n  java.lang.Exception\n Suppressed: bbb\n Suppressed: ccc\n  ddd\n   eee\n   java.lang.Exception\n   Suppressed: ce", ExceptionUtils.getMessage(e));
+
+		e = new Exception("second", new Exception("third"));
+		e.addSuppressed(new Exception("suppressed"));
+		assertEquals("abc\n first\n  second\n   third\n   Suppressed: suppressed", ExceptionUtils.getMessage("abc", new Exception("first", e)));
 	}
 
 	public void testInstanceOf() {
@@ -138,6 +196,13 @@ public class ExceptionUtilsTest extends CloverTestCase {
 		assertTrue(ExceptionUtils.instanceOf(new CompoundException(new JetelRuntimeException(), new NullPointerException()), NullPointerException.class));
 		assertTrue(ExceptionUtils.instanceOf(new RuntimeException(new CompoundException(new JetelRuntimeException(), new NullPointerException())), NullPointerException.class));
 		assertTrue(ExceptionUtils.instanceOf(new RuntimeException(new CompoundException(new JetelRuntimeException(), new NullPointerException())), RuntimeException.class));
+		
+		
+		Exception e = new JetelRuntimeException();
+		e.addSuppressed(new IllegalArgumentException(new JetelException("a")));
+		assertTrue(ExceptionUtils.instanceOf(new RuntimeException(new CompoundException(e, new NullPointerException())), IllegalArgumentException.class));
+		assertTrue(ExceptionUtils.instanceOf(new RuntimeException(new CompoundException(e, new NullPointerException())), JetelException.class));
+		assertFalse(ExceptionUtils.instanceOf(new RuntimeException(new CompoundException(e, new NullPointerException())), StackTraceWrapperException.class));
 	}
 	
 	public void testGetAllExceptions() {

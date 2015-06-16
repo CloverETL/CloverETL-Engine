@@ -23,6 +23,7 @@ import java.util.Date;
 import org.jetel.data.DataField;
 import org.jetel.data.StringDataField;
 import org.jetel.data.primitive.Decimal;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.string.CloverString;
 
 /**
@@ -34,6 +35,7 @@ import org.jetel.util.string.CloverString;
  *
  * @created 16 Jan 2012
  */
+@CloverPublicAPI
 public enum DataFieldType {
 
 	STRING("string", (byte) 0, CloverString.class, false, false, 'S') {

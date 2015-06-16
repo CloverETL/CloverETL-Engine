@@ -639,7 +639,7 @@ public class XmlSaxParser {
 				if (m_activeMapping!=null  && m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_AS_TEXT) && m_level == m_activeMapping.getLevel()) {
 					this.m_elementContentStartIndexStack.add(new CharacterBufferMarker(CharacterBufferMarkerType.SUBTREE_WITH_TAG_START, m_characters.length(), m_level));
 				};
-				m_characters.append("<").append(localName);
+				m_characters.append("<").append(qualifiedName);
 				grabElement = true;
 			}
 
@@ -702,7 +702,13 @@ public class XmlSaxParser {
 					// TODO Labels replace:
 					if (m_activeMapping.getOutputRecord() != null && m_activeMapping.getOutputRecord().hasField(fieldName)) {
 						String val = attributes.getValue(i);
-						m_activeMapping.getOutputRecord().getField(fieldName).fromString(trim ? val.trim() : val);
+						DataField field = m_activeMapping.getOutputRecord().getField(fieldName);
+                    	// CLO-5793: XMLExtract - mapping of element content breaks functionality of empty string as value of empty element
+                    	if (field.getMetadata().getDataType() == DataFieldType.STRING) {
+                    		field.setValue(trim ? val.trim() : val);
+                    	} else {
+                    		field.fromString(trim ? val.trim() : val);
+                    	}
 					}
 				}
 			}
@@ -711,7 +717,7 @@ public class XmlSaxParser {
 			// should be extracted (including tags) or when we are already within the element
 			if (grabElement) {
 				for (int i = 0; i < attributes.getLength(); i++) {
-					m_characters.append(" ").append(attributes.getLocalName(i)).append("=\"").append(escapeXmlEntity(attributes.getValue(i))).append("\"");
+					m_characters.append(" ").append(attributes.getQName(i)).append("=\"").append(escapeXmlEntity(attributes.getValue(i))).append("\"");
 				}
 				m_characters.append(">");
 			}
@@ -752,7 +758,7 @@ public class XmlSaxParser {
 		}
 
 		private String escapeXmlEntity(String entity) {
-			return entity.replace("&", "&amp;").replace("\"", "&quot").replace("'", "&apos;").replace("<", "&lt;").replace(">", "&gt;");
+			return entity.replace("&", "&amp;").replace("\"", "&quot;").replace("'", "&apos;").replace("<", "&lt;").replace(">", "&gt;");
 		}
 
 		/**
@@ -762,6 +768,78 @@ public class XmlSaxParser {
 		public void endElement(String namespaceURI, String localName, String qualifiedName) throws SAXException {
 			if (m_activeMapping != null) {
 				String fullName = "{" + namespaceURI + "}" + localName;
+
+				// Also check parent mapping first for element exact text match in cloverFields
+				// See. CLO-915
+				if (m_activeMapping.getParent() != null && m_level == m_activeMapping.getLevel()) {
+					XMLElementRuntimeMappingModel childMapping = m_activeMapping;
+					m_activeMapping = m_activeMapping.getParent();
+					m_level--;
+
+					// Create universal name
+					String universalName = null;
+					if (localName != null) {
+						universalName = augmentURIAndLocalName(namespaceURI, localName);
+					}
+
+					String fieldName = null;
+					// use fields mapping 
+					Map<String, String> xml2clover = m_activeMapping.getFieldsMap();
+
+					if (xml2clover != null) {
+						for (int counter = 0; counter < m_activeMapping.getSubtreeKeys().length + 1; counter++) {
+
+							String key = universalName;
+							if (counter < m_activeMapping.getSubtreeKeys().length) {
+								key = m_activeMapping.getSubtreeKeys()[counter];
+							}
+
+							if (key == null) {
+								continue;
+							}
+
+							int startIndex = -1;
+							int endIndex = -1;
+
+							if (key.equals(universalName)) {
+								fieldName = xml2clover.get(universalName);
+
+								if (m_element_as_text) {
+									int startIndexPosition = this.lastIndexWithType(CharacterBufferMarkerType.CHARACTERS_START);
+									if (startIndexPosition >= 0) {
+										int endIndexPosition = this.firstIndexWithType(new HashSet<CharacterBufferMarkerType>(Arrays.asList(CharacterBufferMarkerType.SUBTREE_WITH_TAG_START, CharacterBufferMarkerType.SUBTREE_WITH_TAG_END, CharacterBufferMarkerType.SUBTREE_END, CharacterBufferMarkerType.SUBTREE_START)), startIndexPosition);
+										endIndexPosition--; // we need one marker before found
+										if (endIndexPosition < 0) {
+											endIndexPosition = this.lastIndexWithType(CharacterBufferMarkerType.CHARACTERS_END);
+										}
+										
+										if (endIndexPosition > 0) {
+											endIndex = this.m_elementContentStartIndexStack.get(endIndexPosition).index;
+										}
+										startIndex = this.m_elementContentStartIndexStack.get(startIndexPosition).index;
+									}
+								}
+
+								if (fieldName == null && m_activeMapping.isImplicit()) {
+									fieldName = localName;
+								}
+
+								if (isMappingPossible(fieldName)) {
+									DataField field = m_activeMapping.getOutputRecord().getField(fieldName);
+
+									// Fill value only if no attribute matched
+									if (field.isNull()) {
+										writeToOutput(fieldName, startIndex, endIndex, false);
+									}
+								}
+							}
+						}
+					}
+
+					m_level++;
+					m_activeMapping = childMapping;
+				}
+				// End CLO-915
 
 				// cache characters value if the xml field is referenced by descendant
 				if (m_level - 1 <= m_activeMapping.getLevel() && m_activeMapping.getDescendantReferences().containsKey(fullName)) {
@@ -775,7 +853,7 @@ public class XmlSaxParser {
 				// (including tags) or when we are already within the element
 				if (m_element_as_text && (m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_AS_TEXT) || m_level >= m_activeMapping.getLevel())) {
 					//logger.trace("endElement(" + qualifiedName + "): storing element name; m_element_as_text");
-					m_characters.append("</").append(localName).append(">");
+					m_characters.append("</").append(qualifiedName).append(">");
 				}
 
 				// if we are finishing the mapping, check for the mapping on this element through parent
@@ -1160,7 +1238,13 @@ public class XmlSaxParser {
 				// write the value - if the field value is not already set or if it is set because of implicit mapping (I am not really sure about the second condition, but it was already there...)
 				if (field.getValue() == null || !cloverAttributes.contains(fieldName)) {
                     try {
-                        field.fromString(getCurrentValue(startIndex, endIndex, excludeCDataTag));
+                    	String currentValue = getCurrentValue(startIndex, endIndex, excludeCDataTag);
+                    	// CLO-5793: XMLExtract - mapping of element content breaks functionality of empty string as value of empty element
+                    	if (field.getMetadata().getDataType() == DataFieldType.STRING) {
+                    		field.setValue(currentValue);
+                    	} else {
+                    		field.fromString(currentValue);
+                    	}
                     } catch (BadDataFormatException ex) {
                         // This is a bit hacky here SOOO let me explain...
                         if (field.getType() == DataFieldMetadata.DATE_FIELD) {

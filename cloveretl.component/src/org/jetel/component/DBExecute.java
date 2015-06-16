@@ -328,12 +328,10 @@ public class DBExecute extends Node {
         }
 		if ((outPort = getOutputPort(WRITE_TO_PORT)) != null) {
 			outRecord = DataRecordFactory.newRecord(outPort.getMetadata());
-			outRecord.init();
 		}
 		errPort = getOutputPort(ERROR_PORT);
 		if (errPort != null){
 			errRecord = DataRecordFactory.newRecord(errPort.getMetadata());
-			errRecord.init();
 			errorCodeFieldNum = errRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_CODE);
 			errMessFieldNum = errRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_MESSAGE);
 		}
@@ -376,7 +374,6 @@ public class DBExecute extends Node {
 		}
 		if (getInPorts().size() > 0) {
 			inRecord = DataRecordFactory.newRecord(getInputPort(READ_FROM_PORT).getMetadata());
-			inRecord.init();
 		}
 		initStatements();
 		if (errorLogURL != null) {
@@ -415,7 +412,10 @@ public class DBExecute extends Node {
 		} catch (SQLException e) {
 			logger.warn("SQLException when closing statement", e);
 		}
-		dbConnection.closeConnection(getId(), procedureCall ? OperationType.CALL : OperationType.WRITE);
+		// CLO-6100: do not close the connection, as we expect the graph to perform commit
+		if (transaction != InTransaction.NEVER_COMMIT) {
+			dbConnection.closeConnection(getId(), procedureCall ? OperationType.CALL : OperationType.WRITE);
+		}
 	}
 
 	private void acquireConnection() throws ComponentNotReadyException {
@@ -561,7 +561,10 @@ public class DBExecute extends Node {
 		try {
     		if (channelIterator != null) {
     			Object readableByteChannel;
-    			Charset nioCharset = this.charset != null ? Charset.forName(this.charset) : Charset.defaultCharset();
+    			if (charset == null) {
+    				charset = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
+    			}
+    			Charset nioCharset = Charset.forName(charset);
     			while (channelIterator.hasNext()) {
     				readableByteChannel = channelIterator.next();
     				if (readableByteChannel == null) break;

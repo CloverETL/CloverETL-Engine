@@ -14,6 +14,8 @@ assert workspace
 def jenkinsBuildUrl = env['BUILD_URL']
 assert jenkinsBuildUrl
 
+def javaVersion = System.getProperty("java.specification.version", "")
+
 def testName
 jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-after-commit-windows-java-1.7-Sun|tests-after-commit-windows-java-1.7-IBM|tests-after-commit-windows-java-1.7-IBM|tests-after-commit-proxy-java-1.7-Sun|tests-after-commit-java-8-Sun|tests-after-commit-java-1.7-IBM|tests-night-java-1.6-IBM|tests-night-java-1.6-JRockit|tests-night-functional-java-1.7-Sun|tests-after-commit|tests-reset|tests-performance-java-1.7-Sun|detail)-)?(.+)$/
 assert jobNameM.matches() 
@@ -49,6 +51,7 @@ if( runTests ){
 } 
 println "versionSuffix = " + versionSuffix 
 println "buildNumber   = " + buildNumber 
+println "javaVersion   = " + javaVersion 
 println "====================================================="
 
 //println "Environment variables:"
@@ -74,11 +77,12 @@ if( !runTests ){
 		"-Dcteguiloglink=${jenkinsBuildUrl}/artifact/cte-logs/",
 		"-Dcte.hudson.link=job/${jobName}/${buildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
+		"-Djavaversion=${javaVersion}",
 	]
 	if( jobGoal == "after-commit" ) {
 		antTarget = "reports-hudson"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.7-Sun"
-		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/SFTPOperationHandlerTest.java,org/jetel/component/fileoperation/FTPOperationHandlerTest.java,com/opensys/cloveretl/component/EmailFilterTest.java"
+		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/S3OperationHandlerTest.java,org/jetel/component/fileoperation/SFTPOperationHandlerTest.java,org/jetel/component/fileoperation/FTPOperationHandlerTest.java,com/opensys/cloveretl/component/EmailFilterTest.java"
 		antArgs += "-Druntests-target=runtests-scenario-after-commit"
 	} else if( jobGoal == "optimalized"){
 		antTarget = "reports-hudson-optimalized"
@@ -90,6 +94,7 @@ if( !runTests ){
 		antTarget = "reports-hudson-detail"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.7-Sun_detail"
 		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java"
+		antArgs += "-Drun.coverage=true"
 		antArgs += "-Druntests-target=runtests-scenario-after-commit"
 	} else if( jobGoal == "tests-reset"){
 		antTarget = "runtests-tests-reset"
@@ -131,6 +136,7 @@ if( !runTests ){
 		"-Dhudson.engine.link=job/${engineJobName}/${engineBuildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
 		"-Dtestenv.etlenvironment=engine",
+		"-Djavaversion=${javaVersion}"
 	]
 
 	antTarget = "run-scenarios-with-engine-build-with-testdb"
@@ -204,21 +210,6 @@ if( env['ComSpec'] ) {
 antArgs.each{arg-> antC += arg}
 antC.executeSave(subEnv(antCustomEnv), antBaseD)
 	
-println "hostName=" + InetAddress.localHost.hostName
-if( InetAddress.localHost.hostName != "linda" && InetAddress.localHost.hostName != "virt-linda" ) {
-	rsyncC = ["rsync", "-rv", "--remove-source-files", "/data/cte-logs/", "jenkins@linda:/data/cte-logs"]
-	keyFile = new File("/hudson/id_dsa")
-	if( keyFile.exists() ){
-		rsyncC += "--rsh=ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${keyFile.absolutePath}"
-		println "using key ${keyFile.absolutePath}" 
-	} else {
-		println "using default key" 
-	}
-	rsyncC.executeRsync()
-}
-
-
-
 /* some common Groovy extensions */
 
 void init(){

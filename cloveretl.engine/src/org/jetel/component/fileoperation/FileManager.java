@@ -225,11 +225,13 @@ public class FileManager {
 			manager.registerHandler(new URLOperationHandler());
 			manager.registerHandler(new DefaultOperationHandler());
 			manager.registerHandler(new WebdavOperationHandler());
-			manager.registerHandler(new S3OperationHandler());
+			manager.registerHandler(new HttpS3OperationHandler());
 //			manager.registerHandler(new SFTPOperationHandler());
 			manager.registerHandler(new PooledSFTPOperationHandler());
 			manager.registerHandler(new PooledFTPOperationHandler());
 			manager.registerHandler(new SMBOperationHandler());
+			manager.registerHandler(new S3OperationHandler());
+			manager.registerHandler(new S3CopyOperationHandler());
 		}
 	}
 	
@@ -843,7 +845,13 @@ public class FileManager {
 			if (result.isEmpty()) {
 				return Arrays.asList(prefix);
 			} else {
-				result.set(0, prefix + result.get(0));
+				// CLO-5680:
+				String firstResult = result.get(0);
+				if (hasWildcards(firstResult)) {
+					result.add(0, prefix);
+				} else {
+					result.set(0, prefix + result.get(0));
+				}
 			}
 		}
 		return result;
