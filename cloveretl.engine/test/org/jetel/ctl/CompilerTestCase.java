@@ -10861,6 +10861,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		cal.set(2015, 04, 04, 11, 04, 13);
 		check("CLO_6306_2", cal.getTime());
 		check("CLO_6306_4", cal.getTime());
+		
+		// CLO-5961:
+		cal.clear();
+		cal.setTimeZone(TimeZone.getDefault());
+		cal.set(2015, 4, 25, 0, 0, 0);
+		check("CLO_5961_1", cal.getTime());
+		check("CLO_5961_2", cal.getTime());
+		cal.set(2015, 10, 25);
+		check("CLO_5961_3", cal.getTime());
+		check("CLO_5961_4", cal.getTime());
 	}
 
 	public void test_convertlib_str2date_expect_error(){
@@ -10883,17 +10893,60 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){date d = str2date('17.11.1987', 'yyyy-MM-dd', null); return 0;}","test_convertlib_str2date_expect_error");
+			doCompile("function integer transform(){date d = str2date('17.11.1987', 'yyyy-MM-dd'); return 0;}","test_convertlib_str2date_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){date d = str2date('17.11.1987', 'yyyy-MM-dd', 'cs.CZ', null); return 0;}","test_convertlib_str2date_expect_error");
+			doCompile("function integer transform(){date d = str2date('17.11.1987', 'yyyy-MM-dd', 'cs.CZ'); return 0;}","test_convertlib_str2date_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
+		try {
+			doCompile("function integer transform(){date d = str2date('1924011', 'yyyyMMdd', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-001-012', 'yyyy-MM-dd', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-1-12', 'yyyy-MM-dd', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-November-12', 'yyyy-MMM-dd', 'en.US', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-Nov-12', 'yyyy-MMMM-dd', 'en.US', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-Nov-12', 'yyyy-MM-dd', 'en.US', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-November-12', 'yyyy-MM-dd', 'en.US', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		
 	}
 	
 	public void test_convertlib_str2decimal() {
