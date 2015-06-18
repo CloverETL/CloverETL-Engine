@@ -28,6 +28,9 @@ import java.net.Proxy.Type;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -221,8 +224,10 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 				}
 				addIdentity(jsch, matchingKey);
 			} else {
-				for (Map.Entry<String, URI> entry: keys.entrySet()) {
-					addIdentity(jsch, entry.getValue());
+				List<String> names = new ArrayList<>(keys.keySet());
+				Collections.sort(names); // CLO-4868: add the keys in alphabetical order
+				for (String name: names) {
+					addIdentity(jsch, keys.get(name));
 				}
 			}
 		} else if (log.isDebugEnabled()) {
