@@ -4863,6 +4863,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 
 		try {
+			// index can not be null
+			doCompile("function integer transform(){\n" + "getMappedSourceFields(\"$name=$name;$name=$firstName;$countryName=$countryName;#$phone=$field1;\", \"name\", null);" + "\nreturn 0;}", "test_mappinglib_field_parsing");
+			fail();
+		} catch (RuntimeException e) {
+			if (!isCausedBy(e, NullPointerException.class)) {
+				throw e;
+			}
+		}
+
+		try {
 			// index out of bound
 			doCompile("function integer transform(){\n" + "getMappedSourceFields(\"$name=$name;$name=$firstName;$countryName=$countryName;#$phone=$field1;\", \"name\", 2);" + "\nreturn 0;}", "test_mappinglib_field_parsing");
 			fail();
@@ -4913,21 +4923,25 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		doCompile("test_mappinglib_field_parsing");
 
+		check("sourceFields_nullTarget", Collections.EMPTY_LIST);
 		check("sourceFields1", Arrays.asList("name", "firstName"));
 		check("sourceFields2", Arrays.asList());
 		check("sourceFields3", Arrays.asList("a", "b", "c"));
 		check("sourceFields4", Arrays.asList("name", "firstName"));
 		check("sourceFields5", Arrays.asList("name", "firstName", "countryName"));
 		check("sourceFields6", Arrays.asList("name", "firstName", "countryName"));
+		check("targetFields_nullSource", Collections.EMPTY_LIST);
 		check("targetFields", Arrays.asList("name", "countryName"));
 		check("targetFields1", Arrays.asList("name"));
-		check("targetFields2", Arrays.asList("name"));
-		check("targetFields3", Arrays.asList("field1", "field2"));
-		check("isSourceMapped1", new Boolean(true));
-		check("isSourceMapped2", new Boolean(false));
+		check("targetFields2", Arrays.asList("field1", "field2"));
+		check("targetFields3", Arrays.asList("field1", "field2", "field3"));
+		check("isSourceMapped1", true);
+		check("isSourceMapped2", false);
 		check("isSourceMapped3", true);
-		check("isSourceMapped4", true);
-		check("isTargetMapped", new Boolean(true));
+		check("isTargetMapped", true);
+		
+		check("sourceMapped_nullTarget", false);
+		check("targetMapped_nullSource", false);
 	}
 
 	public void test_copyByName() {
