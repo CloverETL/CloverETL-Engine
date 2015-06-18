@@ -252,8 +252,9 @@ public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 	@Override
 	public void testCreateDated() throws Exception {
 		if (!isSynchronized()) {
-			System.err.println("The Hadoop server is not synchronized, skipping testCreateDated()");
-			return;
+			System.err.println("The Hadoop server is not synchronized");
+			// CLO-6185: execute the test even if the servers are not synchronized
+//			return;
 		} else {
 			System.out.println("The server is properly synchronized, executing testCreateDated()");
 		}
