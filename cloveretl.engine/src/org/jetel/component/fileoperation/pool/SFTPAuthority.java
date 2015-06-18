@@ -25,7 +25,7 @@ import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URI;
 import java.net.URL;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -116,7 +116,7 @@ public class SFTPAuthority extends AbstractAuthority implements Authority {
 				if (file.isDirectory()) {
 					File[] keys = file.listFiles(KEY_FILE_FILTER);
 					if ((keys != null) && (keys.length > 0)) {
-						this.privateKeys = new LinkedHashMap<String, URI>(keys.length);
+						this.privateKeys = new HashMap<String, URI>(keys.length);
 						for (File key: keys) {
 							this.privateKeys.put(getKeyName(key.getName()), key.toURI());
 						}
@@ -129,7 +129,7 @@ public class SFTPAuthority extends AbstractAuthority implements Authority {
 					ListResult listResult = manager.list(uri);
 					if (listResult.success()) {
 						List<Info> files = listResult.getResult();
-						Map<String, URI> keys = new LinkedHashMap<>(files.size());
+						Map<String, URI> keys = new HashMap<>(files.size());
 						for (Info info: files) {
 							String name = info.getName();
 							if (accept(name)) {
