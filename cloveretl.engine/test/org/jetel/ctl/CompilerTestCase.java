@@ -7119,6 +7119,19 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isDate25", false);
 		check("isDate26", true);
 		check("isDate27", true);
+		
+		// CLO-6601
+		check("isDate28", false);
+		check("isDate29", false);
+		check("isDate30", false);
+		check("isDate31", false);
+		check("isDate32", false);
+		check("isDate33", false);
+		check("isDate34", false);
+		check("isDate35", true);
+		check("isDate36", true);
+		check("isDate37", true);
+		check("isDate38", true);
 
 		check("isDecimal", false);
 		check("isDecimal1", false);
@@ -10893,13 +10906,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){date d = str2date('17.11.1987', 'yyyy-MM-dd'); return 0;}","test_convertlib_str2date_expect_error");
+			doCompile("function integer transform(){date d = str2date('17.11.1987', 'yyyy-MM-dd', null, false); return 0;}","test_convertlib_str2date_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){date d = str2date('17.11.1987', 'yyyy-MM-dd', 'cs.CZ'); return 0;}","test_convertlib_str2date_expect_error");
+			doCompile("function integer transform(){date d = str2date('17.11.1987', 'yyyy-MM-dd', 'cs.CZ', null, false); return 0;}","test_convertlib_str2date_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
