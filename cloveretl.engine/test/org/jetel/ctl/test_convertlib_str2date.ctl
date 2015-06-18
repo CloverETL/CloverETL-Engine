@@ -15,6 +15,11 @@ date CLO_6306_2;
 date CLO_6306_3;
 date CLO_6306_4;
 
+date CLO_5961_1;
+date CLO_5961_2;
+date CLO_5961_3;
+date CLO_5961_4;
+
 function integer transform() {
 	date1 = str2date('2005-19-11', 'yyyy-dd-MM');
 	date2 = str2date('19.May♫2050','dd.MMM♫yyyy','en.US');
@@ -35,6 +40,12 @@ function integer transform() {
 	CLO_6306_2 = str2date(s, "yyyy-MM-dd HH:mm:ss", null, "GMT+5");
 	CLO_6306_3 = str2date(s, "yyyy-MM-dd HH:mm:ss", "", "GMT+8");
 	CLO_6306_4 = str2date(s, "yyyy-MM-dd HH:mm:ss", "", "GMT+5");
+	
+	// CLO-5961:
+	CLO_5961_1 = str2date("2015-May-25", "yyyy-MMM-dd", 'en.US', true);
+	CLO_5961_2 = str2date("2015-May-25", "yyyy-MMMM-dd", 'en.US', true);
+	CLO_5961_3 = str2date("2015-Nov-25", "yyyy-MMM-dd", 'en.US', true);
+	CLO_5961_4 = str2date("2015-November-25", "yyyy-MMMM-dd", 'en.US', true);
 
 	return 0;
 }
