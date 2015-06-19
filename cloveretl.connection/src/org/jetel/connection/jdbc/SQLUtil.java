@@ -224,14 +224,7 @@ public class SQLUtil {
 	
 	public static void setSizeAttributeToColumnSizeIfPossible(DataRecordMetadata recordMetadata,
 			ResultSetMetaData rsMetaData, JdbcSpecific jdbcSpecific, DatabaseMetaData dbMetaData, String tableName) {
-
-		ResultSet rsColumns;
-		try {
-			rsColumns = dbMetaData.getColumns(null, null, tableName, null);
-		} catch (SQLException e1) {
-			return;
-		}
-
+		
 		for (int i = 0; i < recordMetadata.getFields().length; i++) {
 			boolean limitedField = true;
 			int precision = 0;
@@ -240,13 +233,13 @@ public class SQLUtil {
 				limitedField = true;
 				int type = rsMetaData.getColumnType(i + 1);
 				precision = rsMetaData.getPrecision(i + 1);
+				String typeName = rsMetaData.getColumnTypeName(i + 1);
 				try {
 					cloverType = jdbcSpecific.sqlType2jetel(type, precision);
 				} catch (IllegalArgumentException e) {
 					cloverType = DataFieldType.UNKNOWN;
 				}
-				rsColumns.next();
-				if (isUnlimitedType(rsColumns.getString("TYPE_NAME"))) {
+				if (isUnlimitedType(typeName)) {
 					limitedField = false;
 				}
 			} catch (Exception e) {
