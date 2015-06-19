@@ -33,7 +33,7 @@ import org.joda.time.format.ISODateTimeFormat;
  *
  * @created 1.4.2014
  */
-class Iso8601DateFormatter extends AbstractDateFormatter implements DateFormatter {
+class Iso8601DateFormatter extends AbstractDateFormatter {
 	
 	private DateTimeFormatter parser;
 	private DateTimeFormatter printer;

@@ -66,7 +66,7 @@ import org.w3c.dom.Element;
  *              cached CDATA #IMPLIED&gt;
  *                                 
  */
-public class SimpleSequence extends AbstractSequence implements Sequence {
+public class SimpleSequence extends AbstractSequence {
 
     public final static String SEQUENCE_TYPE = "SIMPLE_SEQUENCE";
     public static final Log logger = LogFactory.getLog(SimpleSequence.class);

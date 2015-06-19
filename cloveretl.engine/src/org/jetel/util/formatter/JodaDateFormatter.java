@@ -35,7 +35,7 @@ import org.joda.time.format.DateTimeFormatter;
  * @version 17th August 2009
  * @since 10th August 2009
  */
-class JodaDateFormatter extends AbstractDateFormatter implements DateFormatter {
+class JodaDateFormatter extends AbstractDateFormatter {
 
 	/** Joda-Time date time formatter */
 	private final DateTimeFormatter dateTimeFormatter;

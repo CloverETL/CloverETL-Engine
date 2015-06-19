@@ -36,7 +36,7 @@ import org.jetel.util.MiscUtils;
  * @version 17th August 2009
  * @since 10th August 2009
  */
-class JavaDateFormatter extends AbstractDateFormatter implements DateFormatter {
+class JavaDateFormatter extends AbstractDateFormatter {
 
 	/** classic Java date format */
 	private final DateFormat dateFormat;
