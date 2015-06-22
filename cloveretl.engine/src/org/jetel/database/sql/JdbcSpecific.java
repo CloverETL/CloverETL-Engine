@@ -373,4 +373,10 @@ public interface JdbcSpecific {
 	 * @return
 	 */
 	public ClassLoader getDriverClassLoaderParent();
+
+	/**
+	 * Some JDBC connections do not accept queries terminated by semicolons.
+	 * @return true iff queries can be terminated by semicolon(s)
+	 */
+	public boolean supportsTerminatingSemicolons();
 }
