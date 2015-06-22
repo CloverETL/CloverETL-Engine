@@ -116,4 +116,9 @@ public class SybaseSpecific extends AbstractJdbcSpecific {
 		return true;
 	}
 	
+	@Override
+	public boolean supportsTerminatingSemicolons() {
+		return false;
+	}
+	
 }
