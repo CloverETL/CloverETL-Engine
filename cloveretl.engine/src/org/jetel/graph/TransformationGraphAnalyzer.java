@@ -529,10 +529,10 @@ public class TransformationGraphAnalyzer {
 
 	private static void removeDebugNodes(TransformationGraph graph, SubgraphAnalysisResult analysisResult) {
 		for (Node node : analysisResult.getDebugInputNodes()) {
-			node.setEnabled(EnabledEnum.NEVER);
+			node.setEnabled(EnabledEnum.DISABLED);
 		}
 		for (Node node : analysisResult.getDebugOutputNodes()) {
-			node.setEnabled(EnabledEnum.NEVER);
+			node.setEnabled(EnabledEnum.DISABLED);
 		}
 
 		try {
