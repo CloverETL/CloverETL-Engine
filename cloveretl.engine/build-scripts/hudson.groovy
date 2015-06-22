@@ -55,7 +55,7 @@ testEnvironmentD = new File( baseD, "cloveretl.test.environment" )
 
 jobIdent = testName ? testName : jobGoal
 jobIdent += "-${versionSuffix}"
-jobIdent = jobIdent.replaceAll('-', '_').toLowerCase()
+jobIdent = jobIdent.replaceAll('-', '_').toLowerCase().replaceAll("after_commit", "a_c")
 new File(baseD, "cloveretl.test.scenarios/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 new File(baseD, "cloveretl.examples/ExtExamples/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 
