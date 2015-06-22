@@ -22,7 +22,7 @@
 	      <singlePort name="1" label="rejected" />
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="Filter expression" modifiable="true" name="filterExpression" nullable="true" required="true" primaryAttribute="true>
+	      <property category="basic" displayName="Filter expression" modifiable="true" name="filterExpression" nullable="true" required="true" primaryAttribute="true">
 	        <singleType name="multiline" />
 	      </property>f
 	    </properties>

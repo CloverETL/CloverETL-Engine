@@ -2852,7 +2852,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Mapping URL" modifiable="true" name="mappingURL" nullable="true" required="!mapping" redundant="mapping">
 	        <singleType name="file"/>
 	      </property>
-	      <property category="basic" displayName="Mapping of ports to XML structure" modifiable="true" name="mapping" required="!mappingURL" redundant="mappingURL" primaryAttribute="true>
+	      <property category="basic" displayName="Mapping of ports to XML structure" modifiable="true" name="mapping" required="!mappingURL" redundant="mappingURL" primaryAttribute="true">
 	        <singleType name="multilineEditableXML"/>
 	      </property>
 	      <property category="advanced" displayName="Create directories" modifiable="true" name="makeDirs" nullable="true" defaultHint="false">
@@ -2918,7 +2918,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
 	        <singleType name="charset"/>
 	      </property>
-	      <property category="basic" displayName="Mapping" modifiable="true" name="mapping" required="!mappingURL" redundant="mappingURL" primaryAttribute="true>
+	      <property category="basic" displayName="Mapping" modifiable="true" name="mapping" required="!mappingURL" redundant="mappingURL" primaryAttribute="true">
 	        <singleType name="xmlWriterMapping"/>
 	      </property>
 	      <property category="basic" displayName="Mapping URL" modifiable="true" name="mappingURL" nullable="true" required="!mapping" redundant="mapping">
