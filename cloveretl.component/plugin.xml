@@ -32,7 +32,7 @@
 	      </singlePort>
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" primaryAttribute="true">
 	        <singleType name="file" fields="input" dictionary="input" selectionMode="file_only"/>
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
@@ -113,7 +113,7 @@
 	      <singlePort name="0" required="false" />
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" primaryAttribute="true">
 	        <singleType name="file" fields="output" dictionary="output" selectionMode="file_or_directory" mandatory_existing_file="false" />
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
@@ -346,7 +346,7 @@
 	      <multiplePort required="true" />
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL" redundant="transformClass|transformURL">
+	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL" redundant="transformClass|transformURL" primaryAttribute="true">
 	        <singleType name="transform" />
 	      </property>
 	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform" redundant="transform|transformClass">
@@ -1193,7 +1193,7 @@
 	      <singlePort name="1" label="rejected"/>
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="Filter expression" modifiable="true" name="filterExpression" nullable="true" required="!filterClass" redundant="filterClass">
+	      <property category="basic" displayName="Filter expression" modifiable="true" name="filterExpression" nullable="true" required="!filterClass" redundant="filterClass" primaryAttribute="true">
 	        <singleType name="filter"/>
 	      </property>
 	      <property category="advanced" displayName="Filter class" modifiable="true" name="filterClass" nullable="true" required="!filterExpression" redundant="filterExpression">
@@ -1217,7 +1217,7 @@
 	      <property category="deprecated" displayName="Sort order" modifiable="true" name="sortOrder" nullable="true" defaultHint="Ascending">
 	        <singleType name="order"/>
 	      </property>
-	      <property category="basic" displayName="Sort key" modifiable="true" name="sortKey" nullable="true" required="true">
+	      <property category="basic" displayName="Sort key" modifiable="true" name="sortKey" nullable="true" required="true" primaryAttribute="true">
 	        <singleType name="key" inputPortName="0" keyType="ordered" rightLabel="Sort key:" />
 	      </property>
 	      <property category="deprecated" displayName="Sorting locale" modifiable="true" name="locale" nullable="true" defaultHint="none">
