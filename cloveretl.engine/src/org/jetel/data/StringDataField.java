@@ -156,7 +156,7 @@ public class StringDataField extends DataFieldImpl implements CharSequence, Appe
             }
             setNull(fieldFrom.isNull());
         } else {
-            if (fieldFrom != null) {
+            if (fieldFrom != null && !fieldFrom.isNull()) {
                 setValue(fieldFrom.toString());
             } else {
                 setNull(true);
