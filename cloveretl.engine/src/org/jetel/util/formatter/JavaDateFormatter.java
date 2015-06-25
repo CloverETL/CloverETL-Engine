@@ -36,12 +36,11 @@ import org.jetel.util.MiscUtils;
  * @version 17th August 2009
  * @since 10th August 2009
  */
-class JavaDateFormatter implements DateFormatter {
+class JavaDateFormatter extends AbstractDateFormatter {
 
 	/** classic Java date format */
 	private final DateFormat dateFormat;
-	private ParsePosition position=new ParsePosition(0);
-	private Locale locale;
+	private ParsePosition position = new ParsePosition(0);
 	
 	public JavaDateFormatter() {
 		this(null);
@@ -72,6 +71,7 @@ class JavaDateFormatter implements DateFormatter {
 			this.dateFormat.setTimeZone(timeZone);
 		}
 		this.locale = locale;
+		this.pattern = pattern;
 	}
 
 	@Override
@@ -82,7 +82,7 @@ class JavaDateFormatter implements DateFormatter {
 	@Override
 	public Date parseDate(String value) {
 		position.setIndex(0);
-		final Date date=dateFormat.parse(value,position);
+		final Date date = dateFormat.parse(value, position);
 		if (position.getIndex()==0)
 			throw new IllegalArgumentException("Unparseable date: \"" + value + "\" at position "+
 	                position.getErrorIndex());
@@ -92,7 +92,7 @@ class JavaDateFormatter implements DateFormatter {
 	@Override
 	public Date parseDateStrict(String value) {
 		position.setIndex(0);
-		final Date date=dateFormat.parse(value,position);
+		final Date date = dateFormat.parse(value, position);
 		if (position.getIndex()==0)
 			throw new IllegalArgumentException("Unparseable date: \"" + value + "\" at position "+
 			        position.getErrorIndex());
@@ -109,21 +109,15 @@ class JavaDateFormatter implements DateFormatter {
 
 	@Override
 	public String getPattern() {
-		return ((SimpleDateFormat)dateFormat).toPattern();
-	}
-
-	@Override
-	public Locale getLocale() {
-		return locale;
+		return ((SimpleDateFormat) dateFormat).toPattern();
 	}
 	
 	@Override
 	public boolean tryParse(String value) {
-		if(value != null){
-		
+		if (value != null) {
 			position.setIndex(0);
-			dateFormat.parse(value,position);
-			if (position.getIndex()==0)
+			dateFormat.parse(value, position);
+			if (position.getIndex() == 0)
 				return false;
 			else
 				return true;

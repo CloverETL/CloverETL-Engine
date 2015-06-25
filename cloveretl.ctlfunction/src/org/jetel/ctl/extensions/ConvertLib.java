@@ -31,6 +31,7 @@ import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.data.DateFieldEnum;
+import org.jetel.ctl.data.TLType;
 import org.jetel.data.Defaults;
 import org.jetel.data.primitive.StringFormat;
 import org.jetel.exception.JetelRuntimeException;
@@ -345,19 +346,26 @@ public class ConvertLib extends TLFunctionLibrary {
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			String locale = null;
 			String timeZone = null;
+			Boolean strict = false;
 			
-			if (context.getParams().length > 3) {
+			TLType[] params = context.getParams();
+			boolean strictParamPresent = params[params.length - 1].isBoolean();
+			
+			if (strictParamPresent) {
+				strict = stack.popBoolean();
+			}
+			
+			if (params.length > 4 || (params.length == 4 && !strictParamPresent)) {
 				timeZone = stack.popString();
 			}
-			if (context.getParams().length > 2) {
-				
+			if (params.length > 3 || (params.length == 3 && !strictParamPresent)) {
 				locale = stack.popString();
 			}
 			
 			final String pattern = stack.popString();
 			final String input = stack.popString();
 		
-			stack.push(str2date(context, input, pattern, locale, timeZone));
+			stack.push(str2date(context, input, pattern, locale, timeZone, strict));
 		}
 	}
 
@@ -366,23 +374,42 @@ public class ConvertLib extends TLFunctionLibrary {
 		context.setCache(new TLDateFormatLocaleCache(context, 1, 2, 3));
 	}
 	
-	@TLFunctionAnnotation("Converts string to date using the specified pattern, locale and time zone")
-	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale, String timeZone) {
+	@TLFunctionAnnotation("Converts string to date using the specified pattern, locale, time zone and strict parsing flag")
+	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale, String timeZone, Boolean strict) {
 		if (input == null){
 			return null;
 		}
 		DateFormatter formatter = ((TLDateFormatLocaleCache) context.getCache()).getCachedLocaleFormatter(context, pattern, locale, timeZone, 1, 2, 3);
-		return formatter.parseDate(input);
+		if (strict != null && strict) {
+			return formatter.parseDateExactMatch(input);
+		} else {
+			return formatter.parseDate(input);
+		}
+	}
+	
+	@TLFunctionAnnotation("Converts string to date using the specified pattern, locale and time zone")
+	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale, String timeZone) {
+		return str2date(context, input, pattern, locale, timeZone, null);
 	}
 
+	@TLFunctionAnnotation("Converts string to date using the specified pattern, locale and strict parsing flag")
+	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale, Boolean strict) {
+		return str2date(context, input, pattern, locale, null, strict);
+	}
+	
 	@TLFunctionAnnotation("Converts string to date using the specified pattern and locale")
 	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale) {
-		return str2date(context, input, pattern, locale, null);
+		return str2date(context, input, pattern, locale, null, null);
+	}
+	
+	@TLFunctionAnnotation("Converts string to date using the specified pattern and strict parsing flag")
+	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, Boolean strict) {
+		return str2date(context, input, pattern, null, null, strict);
 	}
 
 	@TLFunctionAnnotation("Converts string to date using the specified pattern")
 	public static final Date str2date(TLFunctionCallContext context, String input, String pattern) {
-		return str2date(context, input, pattern, null);
+		return str2date(context, input, pattern, null, null, null);
 	}
 
 	// DATE2NUM

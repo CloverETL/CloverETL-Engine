@@ -47,19 +47,19 @@
 					</enumType>
 				</property>
 				<property category="advanced" displayName="Log file name" modifiable="true" name="log" nullable="true" defaultHint="[project_path/name_of_data_file_to_be_loaded].log">
-					<singleType name="file" />
+					<singleType name="file" mandatory_existing_file="false" />
 				</property>
 				<property category="advanced" displayName="Bad file name" modifiable="true" name="bad" nullable="true" defaultHint="[project_path/name_of_data_file_to_be_loaded].bad">
-					<singleType name="file" />
+					<singleType name="file" mandatory_existing_file="false" />
 				</property>
 				<property category="advanced" displayName="Discard file name" modifiable="true" name="discard" nullable="true" defaultHint="[project_path/name_of_data_file_to_be_loaded].dis">
-					<singleType name="file" />
+					<singleType name="file" mandatory_existing_file="false" />
 				</property>
 				<property category="advanced" displayName="DB column names" modifiable="true" name="dbFields" nullable="true">
 					<singleType name="string" />
 				</property>
 				<property category="advanced" displayName="Loader input file" modifiable="true" name="fileURL" nullable="true">
-					<singleType name="file" selectionMode="file_only" />
+					<singleType name="file" selectionMode="file_only" mandatory_existing_file="false" />
 	      		</property>
 	      		<property category="advanced" displayName="Max error count" modifiable="true" name="maxErrors" nullable="true" defaultHint="50">
 	        		<singleType name="int" />
@@ -130,7 +130,7 @@
 	        <singleType name="string" />
 	      </property>
 	      <property category="advanced" displayName="Loader input file" modifiable="true" name="fileURL" nullable="true">
-	        <singleType name="file" selectionMode="file_only" />
+	        <singleType name="file" selectionMode="file_only" mandatory_existing_file="false" />
 	      </property>
 	      <property category="advanced" displayName="Parameters" modifiable="true" name="parameters" nullable="true">
 	        <singleType name="parameters" />
@@ -139,7 +139,7 @@
 	        <singleType name="string" />
 	      </property>
 	      <property category="advanced" displayName="Batch file URL" modifiable="true" name="batchURL" nullable="true">
-	        <singleType name="file" />
+	        <singleType name="file" mandatory_existing_file="false" />
 	      </property>
 	      <property category="advanced" displayName="DB2 command interpreter" modifiable="true" name="sqlInterpreter" nullable="true">
 	        <singleType name="string" />
@@ -196,7 +196,7 @@
 	        <singleType name="multiline" />
 	      </property>
 	      <property category="advanced" displayName="Error log URL" modifiable="true" name="errorLog" nullable="true">
-	        <singleType name="file" />
+	        <singleType name="file" mandatory_existing_file="false" />
 	      </property>
 	      <property category="advanced" displayName="Max error count" modifiable="true" name="maxErrors" nullable="true" defaultHint="10">
 	        <singleType name="int" />
@@ -211,7 +211,7 @@
 	        <singleType name="string" />
 	      </property>
 	      <property category="advanced" displayName="Loader input file" modifiable="true" name="fileURL" nullable="true">
-	        <singleType name="file" selectionMode="file_only" />
+	        <singleType name="file" selectionMode="file_only" mandatory_existing_file="false" />
 	      </property>
 	      <property category="advanced" displayName="Use load utility" modifiable="true" name="useLoadUtility" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
@@ -271,7 +271,7 @@
 			<singleType name="string" />
 		  </property>
 	      <property category="advanced" displayName="Loader input file" modifiable="true" name="fileURL" nullable="true">
-	        <singleType name="file" selectionMode="file_only" />
+	        <singleType name="file" selectionMode="file_only" mandatory_existing_file="false" />
 	      </property>
 	      <property category="advanced" displayName="Parameters" modifiable="true" name="parameters" nullable="true" defaultValue="characterType">
 	        <singleType name="parameters" />
@@ -310,7 +310,7 @@
 				<singleType name="password" />
 			</property>
 			<property category="advanced" displayName="Path to control script" modifiable="true" name="commandURL" nullable="true">
-				<singleType name="file" />
+				<singleType name="file" mandatory_existing_file="false" />
 			</property>
 			<property category="advanced" displayName="Lock database table" modifiable="true" name="lockTable" nullable="true" defaultHint="false">
 				<singleType name="bool" />
@@ -322,7 +322,7 @@
 				<singleType name="string" />
 			</property>
 			<property category="advanced" displayName="Loader input file" modifiable="true" name="fileURL" nullable="true">
-				<singleType name="file" selectionMode="file_only" />
+				<singleType name="file" selectionMode="file_only" mandatory_existing_file="false" />
 	      	</property>
 			<property category="advanced" displayName="Control script parameters" modifiable="true" name="parameters" nullable="true">
 				<singleType name="parameters" />
@@ -360,13 +360,13 @@
 	        <singleType name="bool" />
 	      </property>
 	      <property category="advanced" displayName="Path to control script" modifiable="true" name="commandURL" nullable="true">
-	        <singleType name="file" />
+	        <singleType name="file" mandatory_existing_file="false" />
 	      </property>
 		  <property category="advanced" displayName="Column delimiter" modifiable="true" name="columnDelimiter" nullable="true">
 			<singleType name="string" />
 		  </property>
 	      <property category="advanced" displayName="Loader input file" modifiable="true" name="fileURL" nullable="true">
-	        <singleType name="file" selectionMode="file_only" />
+	        <singleType name="file" selectionMode="file_only" mandatory_existing_file="false" />
 	      </property>
 	      <property category="advanced" displayName="Parameters" modifiable="true" name="parameters" nullable="true">
 	        <singleType name="parameters" />
@@ -404,7 +404,7 @@
 	        <singleType name="key" inputPortName="0" rightLabel="Clover fields:" />
 	      </property>
 	      <property category="advanced" displayName="Log file" modifiable="true" name="logFile" nullable="true">
-	        <singleType name="file" />
+	        <singleType name="file" mandatory_existing_file="false" />
 	      </property>
 	      <property category="advanced" displayName="Append data to log file" modifiable="true" name="append" nullable="true" defaultHint="false">
 	        <singleType name="bool" />

@@ -244,6 +244,7 @@ public class LookupJoin extends Node implements MetadataProvider {
 	private Lookup lookup;
 
 	private String errorActionsString;
+	@SuppressWarnings("deprecation")
 	private Map<Integer, ErrorAction> errorActions = new HashMap<Integer, ErrorAction>();
 	private String errorLogURL;
 	private FileWriter errorLog;
@@ -279,16 +280,20 @@ public class LookupJoin extends Node implements MetadataProvider {
 		this.transformation = transform;
 	}
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();
-		transformation.preExecute();
+    	if (transformation != null) {
+    		transformation.preExecute();
+    	}
     	
     	if (firstRun()) {//a phase-dependent part of initialization
     		//all necessary elements have been initialized in init()
-    	}
-    	else {
-    		transformation.reset();
+    	} else {
+    		if (transformation != null) {
+    			transformation.reset();
+    		}
     	}
         if (errorLogURL != null) {
            	try {
@@ -302,11 +307,15 @@ public class LookupJoin extends Node implements MetadataProvider {
     /* (non-Javadoc)
      * @see org.jetel.graph.GraphElement#postExecute(org.jetel.graph.TransactionMethod)
      */
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     public void postExecute() throws ComponentNotReadyException {
     	super.postExecute();
-    	transformation.postExecute();
-        transformation.finished();
+    	
+    	if (transformation != null) {
+	    	transformation.postExecute();
+	        transformation.finished();
+    	}
         
     	try {
 		    if (errorLog != null) {
@@ -318,6 +327,7 @@ public class LookupJoin extends Node implements MetadataProvider {
     	}
     }
     
+	@SuppressWarnings("deprecation")
 	@Override
 	public Result execute() throws Exception {
 		// initialize in and out records
@@ -349,20 +359,13 @@ public class LookupJoin extends Node implements MetadataProvider {
     				DataRecordMetadata outMetadata[] = { getOutputPort(WRITE_TO_PORT).getMetadata() };
     				
     				// create the transformation
-    	        	TransformFactory<RecordTransform> transformFactory = TransformFactory.createTransformFactory(RecordTransformDescriptor.newInstance());
-    	        	transformFactory.setTransform(transformSource);
-    	        	transformFactory.setTransformClass(transformClassName);
-    	        	transformFactory.setTransformUrl(transformURL);
-    	        	transformFactory.setCharset(charset);
-    	        	transformFactory.setComponent(this);
-    	        	transformFactory.setInMetadata(inMetadata);
-    	        	transformFactory.setOutMetadata(outMetadata);
-    				transformation = transformFactory.createTransform();
+    				transformation = getTransformFactory(inMetadata, outMetadata).createTransform();
 
     				// init transformation
     		        if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
     		            throw new ComponentNotReadyException("Error when initializing tranformation function.");
     		        }
+    	    		transformation.preExecute();
     				createTransformation = false;
     			}
 
@@ -452,6 +455,7 @@ public class LookupJoin extends Node implements MetadataProvider {
         super.free();
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
@@ -518,6 +522,7 @@ public class LookupJoin extends Node implements MetadataProvider {
         return status;
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
@@ -577,6 +582,7 @@ public class LookupJoin extends Node implements MetadataProvider {
 		return lookupTable instanceof DBLookupTable && lookupTable.getMetadata() == null;
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();

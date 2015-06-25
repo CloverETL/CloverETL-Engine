@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
 
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
+import org.jetel.ctl.data.TLType;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.file.FileUtils;
@@ -735,18 +736,43 @@ public class StringLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern")
 	public static final boolean isDate(TLFunctionCallContext context, String input, String pattern) {
-		return isDate(context, input, pattern, null);
+		return isDate(context, input, pattern, null, null, null);
+	}
+	
+	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern and strict parsing flag")
+	public static final boolean isDate(TLFunctionCallContext context, String input, String pattern, Boolean strict) {
+		return isDate(context, input, pattern, null, null, strict);
 	}
 
-	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern and locale.")
+	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern and locale")
 	public static final boolean isDate(TLFunctionCallContext context, String input, String pattern, String locale) {
-		return isDate(context, input, pattern, locale, null);
+		return isDate(context, input, pattern, locale, null, null);
+	}
+	
+	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern, locale and strict parsing flag")
+	public static final boolean isDate(TLFunctionCallContext context, String input, String pattern, String locale, Boolean strict) {
+		return isDate(context, input, pattern, locale, null, strict);
 	}
 
-	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern, locale and time zone.")
+	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern, locale and time zone")
 	public static final boolean isDate(TLFunctionCallContext context, String input, String pattern, String locale, String timeZone) {
-		DateFormatter formatter = ((TLDateFormatLocaleCache)context.getCache()).getCachedLocaleFormatter(context, pattern, locale, timeZone, 1, 2, 3);
-		return formatter.tryParse(input);
+		return isDate(context, input, pattern, locale, timeZone, null);
+	}
+	
+	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern, locale, time zone and strict parsing flag")
+	public static final boolean isDate(TLFunctionCallContext context, String input, String pattern, String locale, String timeZone, Boolean strict) {
+		DateFormatter formatter = ((TLDateFormatLocaleCache) context.getCache()).getCachedLocaleFormatter(context, pattern, locale, timeZone, 1, 2, 3);
+		if (strict != null && strict) {
+			try {
+				formatter.parseDateExactMatch(input);
+			} catch (IllegalArgumentException e) {
+				return false;
+			}
+			return true;
+		} else {
+			return formatter.tryParse(input);
+		}
+		
 	}
 
 	static class IsDateFunction implements TLFunctionPrototype {
@@ -758,21 +784,28 @@ public class StringLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-
 			String locale = null;
 			String timeZone = null;
+			Boolean strict = false;
+			
+			TLType[] params = context.getParams();
+			boolean strictParamPresent = params[params.length - 1].isBoolean();
+			
+			if (strictParamPresent) {
+				strict = stack.popBoolean();
+			}
 
-			if (context.getParams().length > 3) {
+			if (params.length > 4 || (params.length == 4 && !strictParamPresent)) {
 				timeZone = stack.popString();
 			}
-			if (context.getParams().length > 2) {
+			if (params.length > 3 || (params.length == 3 && !strictParamPresent)) {
 				locale = stack.popString();
 			}
 
 			final String pattern = stack.popString();
 			final String input = stack.popString();
 
-			stack.push(isDate(context, input, pattern, locale, timeZone));
+			stack.push(isDate(context, input, pattern, locale, timeZone, strict));
 		}
 
 	}

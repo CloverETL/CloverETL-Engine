@@ -4863,6 +4863,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 
 		try {
+			// index can not be null
+			doCompile("function integer transform(){\n" + "getMappedSourceFields(\"$name=$name;$name=$firstName;$countryName=$countryName;#$phone=$field1;\", \"name\", null);" + "\nreturn 0;}", "test_mappinglib_field_parsing");
+			fail();
+		} catch (RuntimeException e) {
+			if (!isCausedBy(e, NullPointerException.class)) {
+				throw e;
+			}
+		}
+
+		try {
 			// index out of bound
 			doCompile("function integer transform(){\n" + "getMappedSourceFields(\"$name=$name;$name=$firstName;$countryName=$countryName;#$phone=$field1;\", \"name\", 2);" + "\nreturn 0;}", "test_mappinglib_field_parsing");
 			fail();
@@ -4913,21 +4923,25 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		doCompile("test_mappinglib_field_parsing");
 
+		check("sourceFields_nullTarget", Collections.EMPTY_LIST);
 		check("sourceFields1", Arrays.asList("name", "firstName"));
 		check("sourceFields2", Arrays.asList());
 		check("sourceFields3", Arrays.asList("a", "b", "c"));
 		check("sourceFields4", Arrays.asList("name", "firstName"));
 		check("sourceFields5", Arrays.asList("name", "firstName", "countryName"));
 		check("sourceFields6", Arrays.asList("name", "firstName", "countryName"));
+		check("targetFields_nullSource", Collections.EMPTY_LIST);
 		check("targetFields", Arrays.asList("name", "countryName"));
 		check("targetFields1", Arrays.asList("name"));
-		check("targetFields2", Arrays.asList("name"));
-		check("targetFields3", Arrays.asList("field1", "field2"));
-		check("isSourceMapped1", new Boolean(true));
-		check("isSourceMapped2", new Boolean(false));
+		check("targetFields2", Arrays.asList("field1", "field2"));
+		check("targetFields3", Arrays.asList("field1", "field2", "field3"));
+		check("isSourceMapped1", true);
+		check("isSourceMapped2", false);
 		check("isSourceMapped3", true);
-		check("isSourceMapped4", true);
-		check("isTargetMapped", new Boolean(true));
+		check("isTargetMapped", true);
+		
+		check("sourceMapped_nullTarget", false);
+		check("targetMapped_nullSource", false);
 	}
 
 	public void test_copyByName() {
@@ -7119,6 +7133,19 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isDate25", false);
 		check("isDate26", true);
 		check("isDate27", true);
+		
+		// CLO-6601
+		check("isDate28", false);
+		check("isDate29", false);
+		check("isDate30", false);
+		check("isDate31", false);
+		check("isDate32", false);
+		check("isDate33", false);
+		check("isDate34", false);
+		check("isDate35", true);
+		check("isDate36", true);
+		check("isDate37", true);
+		check("isDate38", true);
 
 		check("isDecimal", false);
 		check("isDecimal1", false);
@@ -10861,6 +10888,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		cal.set(2015, 04, 04, 11, 04, 13);
 		check("CLO_6306_2", cal.getTime());
 		check("CLO_6306_4", cal.getTime());
+		
+		// CLO-5961:
+		cal.clear();
+		cal.setTimeZone(TimeZone.getDefault());
+		cal.set(2015, 4, 25, 0, 0, 0);
+		check("CLO_5961_1", cal.getTime());
+		check("CLO_5961_2", cal.getTime());
+		cal.set(2015, 10, 25);
+		check("CLO_5961_3", cal.getTime());
+		check("CLO_5961_4", cal.getTime());
 	}
 
 	public void test_convertlib_str2date_expect_error(){
@@ -10883,17 +10920,60 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){date d = str2date('17.11.1987', 'yyyy-MM-dd', null); return 0;}","test_convertlib_str2date_expect_error");
+			doCompile("function integer transform(){date d = str2date('17.11.1987', 'yyyy-MM-dd', null, false); return 0;}","test_convertlib_str2date_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){date d = str2date('17.11.1987', 'yyyy-MM-dd', 'cs.CZ', null); return 0;}","test_convertlib_str2date_expect_error");
+			doCompile("function integer transform(){date d = str2date('17.11.1987', 'yyyy-MM-dd', 'cs.CZ', null, false); return 0;}","test_convertlib_str2date_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
+		try {
+			doCompile("function integer transform(){date d = str2date('1924011', 'yyyyMMdd', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-001-012', 'yyyy-MM-dd', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-1-12', 'yyyy-MM-dd', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-November-12', 'yyyy-MMM-dd', 'en.US', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-Nov-12', 'yyyy-MMMM-dd', 'en.US', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-Nov-12', 'yyyy-MM-dd', 'en.US', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-November-12', 'yyyy-MM-dd', 'en.US', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		
 	}
 	
 	public void test_convertlib_str2decimal() {
