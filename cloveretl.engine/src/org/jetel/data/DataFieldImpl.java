@@ -86,7 +86,7 @@ public abstract class DataFieldImpl extends DataField {
 	
 	@Override
 	public void setValue(DataField fromField){
-		if (fromField != null) {
+		if (fromField != null && !fromField.isNull()) {
             setValue(fromField.getValue());   
 		}else{
 			setNull(true);
