@@ -37,6 +37,8 @@ import org.apache.log4j.MDC;
 import org.jetel.component.ComponentDescription;
 import org.jetel.component.ComponentDescriptionImpl;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
+import org.jetel.data.Defaults;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -548,7 +550,9 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	        	
 	        	//preExecute() invocation
 	    		try {
-	    			preExecute();
+	    			if (!enabled.isBlocker()) {
+	    				preExecute();
+	    			}
 	    		} catch (Throwable e) {
 	    			throw new ComponentNotReadyException(this, "Component pre-execute initialization failed.", e);
 	    		} finally {
@@ -558,7 +562,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         	}
     		
     		//execute() invocation
-    		Result result = execute();
+    		Result result = enabled.isBlocker() ? executeTrash() : execute();
         	
     		//broadcast all output ports with EOF information
     		if (result == Result.FINISHED_OK) {
@@ -622,6 +626,22 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     }
     
     protected abstract Result execute() throws Exception;
+    
+    protected Result executeTrash() throws Exception {
+		for (OutputPort outPort : outPorts.values()) {
+			outPort.eof();
+		}
+
+		for (InputPort inPort : inPorts.values()) {
+			DataRecord record = DataRecordFactory.newRecord(inPort.getMetadata());
+			CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
+			while (runIt && ((InputPortDirect) inPort).readRecordDirect(recordBuffer)) {
+				record.deserialize(recordBuffer);
+			}
+		}
+		
+		return runIt() ? Result.FINISHED_OK : Result.ABORTED;
+	}
     
     private Exception createNodeException(Throwable cause) {
     	//compose error message, for example 

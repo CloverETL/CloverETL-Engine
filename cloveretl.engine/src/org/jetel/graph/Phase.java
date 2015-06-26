@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.CompoundException;
 import org.jetel.exception.ConfigurationProblem;
@@ -164,7 +165,9 @@ public class Phase extends GraphElement implements Comparable {
 			Context c = ContextProvider.registerNode(node);
 			try {
 				Thread.currentThread().setContextClassLoader(node.getClass().getClassLoader());
-				node.init();
+				if (!node.getEnabled().isBlocker()) {
+					node.init();
+				}
 				logger.debug("\t" + node.getId() + " ...OK");
 			} catch (Exception ex) {
 				node.setResultCode(Result.ERROR);
@@ -261,7 +264,9 @@ public class Phase extends GraphElement implements Comparable {
 		for (Node node : nodes.values()) {
 			Context c = ContextProvider.registerNode(node);
 			try {
-				node.postExecute();
+				if (!node.getEnabled().isBlocker()) {
+					node.postExecute();
+				}
                 if(logger.isDebugEnabled()){
 				    logger.debug("\t" + node.getId() + " ...OK");
                 }
@@ -333,7 +338,9 @@ public class Phase extends GraphElement implements Comparable {
 		//check nodes configuration
         for (Node node : nodes.values()) {
         	try {
-        		node.checkConfig(status);
+        		if (!node.getEnabled().isBlocker()) {
+        			node.checkConfig(status);
+        		}
         	} catch (Exception e) {
         		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, node, Priority.HIGH);
         		problem.setCauseException(e);

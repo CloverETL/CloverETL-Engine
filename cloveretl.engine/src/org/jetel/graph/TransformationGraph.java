@@ -25,12 +25,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -220,6 +222,12 @@ public final class TransformationGraph extends GraphElement {
 	 * Moreover, this cache is used also for check component configuration, see {@link Node#checkConfig(ConfigurationStatus)}. 
 	 */
 	private Map<Node, String> rawComponentEnabledAttribute = new HashMap<>();
+	
+	/**
+	 * This map contains set of blocked components for each blocker component. This map is used for displaying info about blockers
+	 * in GUI tooltips.
+	 */
+	private Map<Node, Set<Node>> blockingComponents = new HashMap<>();
 	
 	public TransformationGraph() {
 		this(DEFAULT_GRAPH_ID);
@@ -1699,5 +1707,34 @@ public final class TransformationGraph extends GraphElement {
 	public void setRawComponentEnabledAttribute(Map<Node, String> rawComponentEnabledAttribute) {
 		this.rawComponentEnabledAttribute = rawComponentEnabledAttribute;
 	}
+	
+	/**
+	 * 
+	 * @return Map with a set of blocked nodes for each blocker component.
+	 */
+	public Map<Node, Set<Node>> getBlockingComponentsInfo() {
+		return blockingComponents;
+	}
+
+	public void setBlockingComponentsInfo(Map<Node, Set<Node>> blockingComponents) {
+		this.blockingComponents = blockingComponents;
+	}
+	
+	/**
+	 * @return Set of IDs of blocked components. The info is gathered during graph analysis in {@link #computeBlockedComponents()}.
+	 */
+	public Set<String> getBlockedIds() {
+		Set<String> blocked = new HashSet<>();
+		
+		for (Node blockerComponent : blockingComponents.keySet()) {
+			for (Node blockedComponent : blockingComponents.get(blockerComponent)) {
+				blocked.add(blockedComponent.getId());
+			}
+		}
+		
+		return blocked;
+	}
+	
+	
 
 }

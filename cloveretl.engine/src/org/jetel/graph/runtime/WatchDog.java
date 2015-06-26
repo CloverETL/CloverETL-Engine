@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.BrokenBarrierException;
@@ -877,10 +878,21 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			}
 		}
 		
+		for (Node component : graph.getNodes().values()) {
+			String rawComponentEnabledAttribute = graph.getRawComponentEnabledAttribute().get(component);
+			if (component.getEnabled().isBlocker()) {
+				if (!headerPrinted) {
+					logger.info("Components disabled as trash:");
+					headerPrinted = true;
+				}
+				printSingleComponentEnabledStatus(component, rawComponentEnabledAttribute);
+			}
+		}
+		
 		//print information about disabled components
 		headerPrinted = false;
 		for (Node component : graph.getRawComponentEnabledAttribute().keySet()) {
-			if (!component.getEnabled().isEnabled()) {
+			if (!component.getEnabled().isEnabled() || graph.getBlockedIds().contains(component.getId())) {
 				if (!headerPrinted) {
 					logger.info("Disabled components:");
 					headerPrinted = true;
@@ -898,10 +910,21 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		StringBuilder sb = new StringBuilder("\t");
 		sb.append(component);
 		sb.append(" - ");
-		sb.append(component.getEnabled().isEnabled() ? EnabledEnum.ENABLED.getLabel() : EnabledEnum.DISABLED.getLabel());
-		sb.append(": ");
 		if (getGraphRuntimeContext().getJobType().isSubJob() && (component.isPartOfDebugInput() || component.isPartOfDebugOutput())) {
 			sb.append("Part of subgraph debug area");
+		} else if (graph.getBlockedIds().contains(component.getId())) {
+			sb.append("Blocked by: ");
+			String blockerListString = "";
+			Map<Node,Set<Node>> blockingInfo = graph.getBlockingComponentsInfo();
+			for (Node blocker : blockingInfo.keySet()) {
+				if (blockingInfo.get(blocker).contains(component)) {
+					if (blockerListString.length() != 0) {
+						blockerListString += ", ";
+					}
+					blockerListString += blocker.getId();
+				}
+			}
+			sb.append(blockerListString);
 		} else if (PropertyRefResolver.isPropertyReference(rawComponentEnabledAttribute)) {
 			String graphParameterName = PropertyRefResolver.getReferencedProperty(rawComponentEnabledAttribute);
 			sb.append(graphParameterName);
@@ -913,6 +936,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			sb.append(graph.getPropertyRefResolver().resolveRef(rawComponentEnabledAttribute));
 		} else if (component.getEnabled().isDynamic()) {
 			sb.append(component.getEnabled().getStatus());
+		} else if (EnabledEnum.TRASH.toString().equals(rawComponentEnabledAttribute)) {
+			sb.append("Disabled as trash");
 		} else {
 			sb.append("Always");
 		}
