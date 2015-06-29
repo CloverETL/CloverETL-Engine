@@ -910,10 +910,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		StringBuilder sb = new StringBuilder("\t");
 		sb.append(component);
 		sb.append(" - ");
-		if (getGraphRuntimeContext().getJobType().isSubJob() && (component.isPartOfDebugInput() || component.isPartOfDebugOutput())) {
-			sb.append("Part of subgraph debug area");
-		} else if (graph.getBlockedIds().contains(component.getId())) {
-			sb.append("Blocked by: ");
+		if (graph.getBlockedIds().contains(component.getId())) {
+			sb.append(EnabledEnum.DISABLED.getLabel() + ": ");
+			sb.append("blocked by ");
 			String blockerListString = "";
 			Map<Node,Set<Node>> blockingInfo = graph.getBlockingComponentsInfo();
 			for (Node blocker : blockingInfo.keySet()) {
@@ -925,21 +924,27 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				}
 			}
 			sb.append(blockerListString);
-		} else if (PropertyRefResolver.isPropertyReference(rawComponentEnabledAttribute)) {
-			String graphParameterName = PropertyRefResolver.getReferencedProperty(rawComponentEnabledAttribute);
-			sb.append(graphParameterName);
-			sb.append("=");
-			sb.append(graph.getGraphParameters().getGraphParameter(graphParameterName).getValueResolved(null));
-		} else if (PropertyRefResolver.containsProperty(rawComponentEnabledAttribute)) {
-			sb.append(rawComponentEnabledAttribute);
-			sb.append("=");
-			sb.append(graph.getPropertyRefResolver().resolveRef(rawComponentEnabledAttribute));
-		} else if (component.getEnabled().isDynamic()) {
-			sb.append(component.getEnabled().getStatus());
 		} else if (EnabledEnum.TRASH.toString().equals(rawComponentEnabledAttribute)) {
 			sb.append("Disabled as trash");
 		} else {
-			sb.append("Always");
+			sb.append(component.getEnabled().isEnabled() ? EnabledEnum.ENABLED.getLabel() : EnabledEnum.DISABLED.getLabel());
+			sb.append(": ");
+			if (getGraphRuntimeContext().getJobType().isSubJob() && (component.isPartOfDebugInput() || component.isPartOfDebugOutput())) {
+				sb.append("Part of subgraph debug area");
+			} else if (PropertyRefResolver.isPropertyReference(rawComponentEnabledAttribute)) {
+				String graphParameterName = PropertyRefResolver.getReferencedProperty(rawComponentEnabledAttribute);
+				sb.append(graphParameterName);
+				sb.append("=");
+				sb.append(graph.getGraphParameters().getGraphParameter(graphParameterName).getValueResolved(null));
+			} else if (PropertyRefResolver.containsProperty(rawComponentEnabledAttribute)) {
+				sb.append(rawComponentEnabledAttribute);
+				sb.append("=");
+				sb.append(graph.getPropertyRefResolver().resolveRef(rawComponentEnabledAttribute));
+			} else if (component.getEnabled().isDynamic()) {
+				sb.append(component.getEnabled().getStatus());
+			} else {
+				sb.append("Always");
+			}
 		}
 		logger.info(sb);
 	}
