@@ -550,7 +550,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	        	
 	        	//preExecute() invocation
 	    		try {
-	    			if (!enabled.isBlocker()) {
+	    			if (!enabled.isBlocker() && !getGraph().getBlockedIds().contains(this.getId())) {
 	    				preExecute();
 	    			}
 	    		} catch (Throwable e) {
@@ -562,7 +562,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         	}
     		
     		//execute() invocation
-    		Result result = enabled.isBlocker() ? executeTrash() : execute();
+    		Result result = (enabled.isBlocker() || getGraph().getBlockedIds().contains(this.getId())) ? executeTrash() : execute();
         	
     		//broadcast all output ports with EOF information
     		if (result == Result.FINISHED_OK) {

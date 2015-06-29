@@ -165,7 +165,7 @@ public class Phase extends GraphElement implements Comparable {
 			Context c = ContextProvider.registerNode(node);
 			try {
 				Thread.currentThread().setContextClassLoader(node.getClass().getClassLoader());
-				if (!node.getEnabled().isBlocker()) {
+				if (!node.getEnabled().isBlocker() && !getGraph().getBlockedIds().contains(node.getId())) {
 					node.init();
 				}
 				logger.debug("\t" + node.getId() + " ...OK");
@@ -264,7 +264,7 @@ public class Phase extends GraphElement implements Comparable {
 		for (Node node : nodes.values()) {
 			Context c = ContextProvider.registerNode(node);
 			try {
-				if (!node.getEnabled().isBlocker()) {
+				if (!node.getEnabled().isBlocker() && !getGraph().getBlockedIds().contains(node.getId())) {
 					node.postExecute();
 				}
                 if(logger.isDebugEnabled()){
@@ -338,7 +338,7 @@ public class Phase extends GraphElement implements Comparable {
 		//check nodes configuration
         for (Node node : nodes.values()) {
         	try {
-        		if (!node.getEnabled().isBlocker()) {
+        		if (!node.getEnabled().isBlocker() && !getGraph().getBlockedIds().contains(node.getId())) {
         			node.checkConfig(status);
         		}
         	} catch (Exception e) {

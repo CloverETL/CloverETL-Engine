@@ -683,6 +683,7 @@ public class TransformationGraphAnalyzer {
 	 * @throws GraphConfigurationException
 	 */
 	public static void removeBlockedNodes(TransformationGraph graph) throws GraphConfigurationException {
+		graph.getKeptBlockedComponents().clear();
 		Set<Node> nodesToRemove = new HashSet<Node>();
 		Set<String> blockedIds = graph.getBlockedIds();
 		Phase[] phases = graph.getPhases();
@@ -693,8 +694,19 @@ public class TransformationGraphAnalyzer {
 				if (node.getEnabled() == EnabledEnum.TRASH) {
 					disconnectOutputEdges(node);
 				} else if (blockedIds.contains(node.getId())) { // component and all related edges are removed
-					nodesToRemove.add(node);
-					disconnectAllEdges(node);
+					boolean keep = false; // some blocked components need to be kept (when there's enabled non-blocked component writing to them)
+					for (InputPort inPort : node.getInPorts()) {
+						Node predecessor = inPort.getWriter();
+						if (!predecessor.getEnabled().isBlocker() && !blockedIds.contains(predecessor.getId())) {
+							graph.getKeptBlockedComponents().add(node);
+							keep = true;
+							break;
+						}
+					}
+					if (!keep) {
+						nodesToRemove.add(node);
+						disconnectAllEdges(node);
+					}
 				}
 			}
 			for (Node node : nodesToRemove) {

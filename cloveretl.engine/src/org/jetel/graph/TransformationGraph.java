@@ -229,6 +229,11 @@ public final class TransformationGraph extends GraphElement {
 	 */
 	private Map<Node, Set<Node>> blockingComponents = new HashMap<>();
 	
+	/**
+	 * Set of components that are blocked but are kept in the graph so they can still accept records.
+	 */
+	private Set<Node> keptBlocked = new HashSet<Node>();
+	
 	public TransformationGraph() {
 		this(DEFAULT_GRAPH_ID);
 	}
@@ -1735,6 +1740,8 @@ public final class TransformationGraph extends GraphElement {
 		return blocked;
 	}
 	
-	
+	public Set<Node> getKeptBlockedComponents() {
+		return keptBlocked;
+	}
 
 }
