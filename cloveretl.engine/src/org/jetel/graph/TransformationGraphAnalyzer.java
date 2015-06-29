@@ -685,7 +685,7 @@ public class TransformationGraphAnalyzer {
 	public static void removeBlockedNodes(TransformationGraph graph) throws GraphConfigurationException {
 		graph.getKeptBlockedComponents().clear();
 		Set<Node> nodesToRemove = new HashSet<Node>();
-		Set<String> blockedIds = graph.getBlockedIds();
+		Set<String> blockedIds = graph.getBlockedIDs();
 		Phase[] phases = graph.getPhases();
 
 		for (int i = 0; i < phases.length; i++) {

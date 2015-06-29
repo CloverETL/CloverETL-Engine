@@ -1728,11 +1728,11 @@ public final class TransformationGraph extends GraphElement {
 	/**
 	 * @return Set of IDs of blocked components. The info is gathered during graph analysis in {@link #computeBlockedComponents()}.
 	 */
-	public Set<String> getBlockedIds() {
+	public Set<String> getBlockedIDs() {
 		Set<String> blocked = new HashSet<>();
 		
-		for (Node blockerComponent : blockingComponents.keySet()) {
-			for (Node blockedComponent : blockingComponents.get(blockerComponent)) {
+		for (Entry<Node, Set<Node>> blockerInfo : blockingComponents.entrySet()) {
+			for (Node blockedComponent : blockerInfo.getValue()) {
 				blocked.add(blockedComponent.getId());
 			}
 		}

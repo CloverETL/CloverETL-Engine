@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.BrokenBarrierException;
@@ -892,7 +893,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		//print information about disabled components
 		headerPrinted = false;
 		for (Node component : graph.getRawComponentEnabledAttribute().keySet()) {
-			if (!component.getEnabled().isEnabled() || graph.getBlockedIds().contains(component.getId())) {
+			if (!component.getEnabled().isEnabled() || graph.getBlockedIDs().contains(component.getId())) {
 				if (!headerPrinted) {
 					logger.info("Disabled components:");
 					headerPrinted = true;
@@ -910,20 +911,20 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		StringBuilder sb = new StringBuilder("\t");
 		sb.append(component);
 		sb.append(" - ");
-		if (graph.getBlockedIds().contains(component.getId())) {
+		if (graph.getBlockedIDs().contains(component.getId())) {
 			sb.append(EnabledEnum.DISABLED.getLabel() + ": ");
 			sb.append("blocked by ");
-			String blockerListString = "";
+			boolean needsDelim = false;
 			Map<Node,Set<Node>> blockingInfo = graph.getBlockingComponentsInfo();
-			for (Node blocker : blockingInfo.keySet()) {
-				if (blockingInfo.get(blocker).contains(component)) {
-					if (blockerListString.length() != 0) {
-						blockerListString += ", ";
+			for (Entry<Node, Set<Node>> blockerInfo : blockingInfo.entrySet()) {
+				if (blockerInfo.getValue().contains(component)) {
+					if (needsDelim) {
+						sb.append(", ");
 					}
-					blockerListString += blocker.getId();
+					needsDelim = true;
+					sb.append(blockerInfo.getKey().getId()).append(", ");
 				}
 			}
-			sb.append(blockerListString);
 		} else if (EnabledEnum.TRASH.toString().equals(rawComponentEnabledAttribute)) {
 			sb.append("Disabled as trash");
 		} else {
