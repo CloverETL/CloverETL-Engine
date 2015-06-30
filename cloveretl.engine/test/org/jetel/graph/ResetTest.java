@@ -234,7 +234,11 @@ public class ResetTest extends CloverTestCase {
 			IOFileFilter dirFilter = new AbstractFileFilter() {
 				@Override
 				public boolean accept(File file) {
-					return file.isDirectory() && file.getName().equals("hadoop");
+					return file.isDirectory() 
+							&& !file.getName().equals("bigRecords")
+							&& !file.getName().equals("cluster")
+							&& !file.getName().equals("S3")
+							&& !file.getName().equals("windows");
 				}
 			};
 			
