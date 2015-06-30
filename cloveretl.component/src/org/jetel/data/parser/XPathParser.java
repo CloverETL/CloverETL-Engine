@@ -451,8 +451,8 @@ public class XPathParser extends AbstractParser {
 		    if (exceptionHandler instanceof StrictParserExceptionHandler) {
 				ErrorListener errorListener = new ErrorListener() {
 					@Override
-					public void warning(TransformerException exception)
-							throws TransformerException {
+					public void warning(TransformerException exception) throws TransformerException {
+							logger.warn(exception); // CLO-6698: Saxon StandardErrorHandler.warning() swallows the exception
 							throw exception;
 					}
 					@Override
