@@ -1142,27 +1142,24 @@ public class DBOutputTable extends Node implements MetadataProvider {
 
 		// allows specifying parameterized SQL (with ? - question marks)
 		if (xattribs.exists(XML_URL_ATTRIBUTE)){
-			outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(XML_DBCONNECTION_ATTRIBUTE));
+			outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(XML_DBCONNECTION_ATTRIBUTE, null));
 			outputTable.setQueryURL(xattribs.getStringEx(XML_URL_ATTRIBUTE, RefResFlag.URL));
 		}else if (xattribs.exists(XML_SQLQUERY_ATRIBUTE)) {
 				outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
-				xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
+				xattribs.getString(XML_DBCONNECTION_ATTRIBUTE, null),
 				SQLUtil.split(xattribs.getString(XML_SQLQUERY_ATRIBUTE)));
 		}else if(xattribs.exists(XML_DBTABLE_ATTRIBUTE)){
 			outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
+					xattribs.getString(XML_DBCONNECTION_ATTRIBUTE, null),
 					xattribs.getString(XML_DBTABLE_ATTRIBUTE));
-		}else{
-		    childNode = xattribs.getChildNode(xmlElement, XML_SQLCODE_ELEMENT);
-            if (childNode == null) {
-                throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ": Can't find <SQLCode> node !");
-            }
+		}else if ((childNode = xattribs.getChildNode(xmlElement, XML_SQLCODE_ELEMENT)) != null) {
             xattribsChild = new ComponentXMLAttributes((Element)childNode, graph);
             outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
+					xattribs.getString(XML_DBCONNECTION_ATTRIBUTE, null),
 					SQLUtil.split(xattribsChild.getText(childNode)));
+		} else {
+			outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(XML_DBCONNECTION_ATTRIBUTE, null));
 		}
-		
 		
 		if (xattribs.exists(XML_DBTABLE_ATTRIBUTE)) {
 			outputTable.setDBTableName(xattribs.getString(XML_DBTABLE_ATTRIBUTE));
@@ -1223,6 +1220,17 @@ public class DBOutputTable extends Node implements MetadataProvider {
          
          if(!checkInputPorts(status, 1, 1)
         		 || !checkOutputPorts(status, 0, 2)) {
+        	 return status;
+         }
+         
+         if (sqlQuery == null && queryURL == null && dbTableName == null) {
+         	status.add("One of " + XML_SQLQUERY_ATRIBUTE + ", " + XML_URL_ATTRIBUTE + " or " + XML_DBTABLE_ATTRIBUTE + " must be specified.",
+         			Severity.ERROR, this, Priority.NORMAL);
+         }
+         if (dbConnectionName == null) {
+         	status.add("DB connection not defined.", Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+         }
+         if ((sqlQuery == null && queryURL == null && dbTableName == null ) || dbConnectionName == null) {
         	 return status;
          }
 
