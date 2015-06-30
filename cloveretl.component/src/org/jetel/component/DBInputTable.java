@@ -397,58 +397,49 @@ public class DBInputTable extends Node {
 	 * @since           September 27, 2002
 	 */
     public static Node fromXML(TransformationGraph graph, Element xmlElement) throws Exception {
-            ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
-            ComponentXMLAttributes xattribsChild;
-            DBInputTable aDBInputTable = null;
-            org.w3c.dom.Node childNode;
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
+		ComponentXMLAttributes xattribsChild;
+		DBInputTable aDBInputTable = null;
+		org.w3c.dom.Node childNode;
 
-            String query;
-            if (xattribs.exists(XML_URL_ATTRIBUTE)) {
-            	query = null;
-            } else if (xattribs.exists(XML_SQLQUERY_ATTRIBUTE)){
-                query = xattribs.getString(XML_SQLQUERY_ATTRIBUTE);
-            }else if (xattribs.exists(XML_SQLCODE_ELEMENT)){
-                query = xattribs.getString(XML_SQLCODE_ELEMENT);
-            }else{
-                
-                childNode = xattribs.getChildNode(xmlElement, XML_SQLCODE_ELEMENT);
-                if (childNode == null) {
-                    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ": Can't find <SQLCode> node !");
-                }
-                xattribsChild = new ComponentXMLAttributes(xmlElement, graph);
-                query=xattribsChild.getText(childNode);
+		String query = null, fileURL = null;
+		if (xattribs.exists(XML_URL_ATTRIBUTE)) {
+			fileURL = xattribs.getStringEx(XML_URL_ATTRIBUTE, RefResFlag.URL);
+		} else if (xattribs.exists(XML_SQLQUERY_ATTRIBUTE)) {
+			query = xattribs.getString(XML_SQLQUERY_ATTRIBUTE);
+		} else if (xattribs.exists(XML_SQLCODE_ELEMENT)) {
+			query = xattribs.getString(XML_SQLCODE_ELEMENT);
+		} else if ((childNode = xattribs.getChildNode(xmlElement, XML_SQLCODE_ELEMENT)) != null) {
+			xattribsChild = new ComponentXMLAttributes(xmlElement, graph);
+			query = xattribsChild.getText(childNode);
+		}
 
-    			
-            }
+		aDBInputTable = new DBInputTable(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(XML_DBCONNECTION_ATTRIBUTE, null), query);
 
-            aDBInputTable = new DBInputTable(xattribs.getString(XML_ID_ATTRIBUTE),
-                    xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
-                    query);
-            
-            aDBInputTable.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE,null));
-            if (xattribs.exists(XML_FETCHSIZE_ATTRIBUTE)){
-            	aDBInputTable.setFetchSize(xattribs.getInteger(XML_FETCHSIZE_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_URL_ATTRIBUTE)) {
-            	aDBInputTable.setURL(xattribs.getStringEx(XML_URL_ATTRIBUTE, RefResFlag.URL));
-            }
-            if (xattribs.exists(XML_PRINTSTATEMENTS_ATTRIBUTE)) {
-                aDBInputTable.setPrintStatements(xattribs.getBoolean(XML_PRINTSTATEMENTS_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-            	aDBInputTable.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)) {
-            	aDBInputTable.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE, RefResFlag.URL));
-            }
-            if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)) {
-            	aDBInputTable.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_AUTOCOMMIT_ATTRIBUTE)) {
-            	aDBInputTable.setAutoCommit(xattribs.getBoolean(XML_AUTOCOMMIT_ATTRIBUTE));
-            }                
+		aDBInputTable.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
+		if (xattribs.exists(XML_FETCHSIZE_ATTRIBUTE)) {
+			aDBInputTable.setFetchSize(xattribs.getInteger(XML_FETCHSIZE_ATTRIBUTE));
+		}
+		if (fileURL != null) {
+			aDBInputTable.setURL(fileURL);
+		}
+		if (xattribs.exists(XML_PRINTSTATEMENTS_ATTRIBUTE)) {
+			aDBInputTable.setPrintStatements(xattribs.getBoolean(XML_PRINTSTATEMENTS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+			aDBInputTable.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)) {
+			aDBInputTable.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE, RefResFlag.URL));
+		}
+		if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)) {
+			aDBInputTable.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_AUTOCOMMIT_ATTRIBUTE)) {
+			aDBInputTable.setAutoCommit(xattribs.getBoolean(XML_AUTOCOMMIT_ATTRIBUTE));
+		}
 
-            return aDBInputTable;
+		return aDBInputTable;
 	}
 
     /**
@@ -494,6 +485,14 @@ public class DBInputTable extends Node {
 
         checkMetadata(status, getOutMetadata());
         
+        if (sqlQuery == null && url == null) {
+        	status.add("SQL query not defined.", Severity.ERROR, this, Priority.NORMAL);
+        }
+        if (dbConnectionName == null) {
+        	status.add("DB connection not defined.", Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+        	return status;
+        }
+        
         try {
             IConnection conn = getGraph().getConnection(dbConnectionName);
             if (conn==null){
@@ -504,7 +503,7 @@ public class DBInputTable extends Node {
             }
             connection = (DBConnection)conn;
             connection.init();
-            SQLDataParser parser = new SQLDataParser(getOutputPort(WRITE_TO_PORT).getMetadata(), sqlQuery); // TODO is it OK?
+            SQLDataParser parser = new SQLDataParser(getOutputPort(WRITE_TO_PORT).getMetadata(), sqlQuery);
             parser.init();
     		if (incrementalFile != null) {
 				try {
