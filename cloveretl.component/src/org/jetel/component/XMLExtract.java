@@ -473,7 +473,9 @@ public class XMLExtract extends Node {
 			autoFilling.setFileSize(fileSize);
 			autoFilling.setFileTimestamp(fileTimestamp);
 
-			m_inputSource = new InputSource(this.handleBOM(stream, autoFilling.getFilename()));
+			String url = autoFilling.getFilename();
+			m_inputSource = new InputSource(this.handleBOM(stream, url));
+			XmlUtils.setSystemId(m_inputSource, getContextURL(), url);
 			return true;
 		}
 		readableChannelIterator.blankRead();
