@@ -27,6 +27,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
 
@@ -98,7 +99,8 @@ public final class SandboxUrlUtils {
 			slashIndex = sandboxUrl.length();
 		}
 
-		return sandboxUrl.substring(SANDBOX_PROTOCOL_URL_PREFIX.length(), slashIndex);
+		// CLO-6374: decode escape sequences
+		return URIUtils.urlDecode(sandboxUrl.substring(SANDBOX_PROTOCOL_URL_PREFIX.length(), slashIndex));
 	}
 
 	/**
@@ -112,7 +114,8 @@ public final class SandboxUrlUtils {
 			throw new IllegalArgumentException("sandboxUrl");
 		}
 		
-		return url.getHost();
+		// CLO-6374: decode escape sequences
+		return URIUtils.urlDecode(url.getHost());
 	}
 
 	/**
@@ -218,7 +221,7 @@ public final class SandboxUrlUtils {
 		}
 		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
 		try {
-			return authorityProxy.getSandboxResourceOutput(ContextProvider.getComponentId(), url.getHost(), filePath, appendData);
+			return authorityProxy.getSandboxResourceOutput(ContextProvider.getComponentId(), getSandboxName(url), filePath, appendData);
 		} catch (UnsupportedOperationException uoe) {
 			throw new IOException("Failed to open sandbox output stream", uoe);
 		}
@@ -238,7 +241,7 @@ public final class SandboxUrlUtils {
 		}
 		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
 		try {
-			return authorityProxy.getSandboxResourceInput(ContextProvider.getComponentId(), url.getHost(), filePath);
+			return authorityProxy.getSandboxResourceInput(ContextProvider.getComponentId(), getSandboxName(url), filePath);
 		} catch (UnsupportedOperationException uoe) {
 			throw new IOException("Failed to open sandbox input stream", uoe);
 		}
