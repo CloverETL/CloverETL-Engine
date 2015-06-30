@@ -23,11 +23,13 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.jetel.component.tree.reader.TreeReaderParserProvider;
 import org.jetel.component.tree.reader.xml.XmlReaderParserProvider;
+import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.SourceIterator;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -81,7 +83,7 @@ public class XmlReader extends TreeReader {
 		}
 	
 	
-		return new XmlReaderParserProvider(charset, xmlReader);
+		return new XmlReaderParserProvider(charset, xmlReader, getContextURL());
 	}
 	
 	private void initXmlFeatures(SAXParserFactory factory) throws ParserConfigurationException {
@@ -105,6 +107,13 @@ public class XmlReader extends TreeReader {
 				throw new JetelRuntimeException(e);
 			}
 		}
+	}
+
+	@Override
+	protected SourceIterator createSourceIterator() {
+		SourceIterator sourceIterator = super.createSourceIterator();
+		sourceIterator.setPreferredDataSourceType(DataSourceType.URI); // CLO-6632
+		return sourceIterator;
 	}
 
 	@Override
