@@ -44,8 +44,6 @@ import org.jetel.util.string.Compare;
  */
 public class StringDataField extends DataFieldImpl implements CharSequence, Appendable {
 	
-	private static final long serialVersionUID = 6350085938993427855L;
-	
 	protected CloverString value;
 	protected StringFormat stringFormat = null;
 	

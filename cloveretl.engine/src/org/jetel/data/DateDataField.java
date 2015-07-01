@@ -47,8 +47,6 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  */
 @SuppressWarnings("EI")
 public class DateDataField extends DataFieldImpl implements Comparable<Object> {
-
-	private static final long serialVersionUID = 1529319195864286249L;
 	
 	/** the actual date value */
 	private Date value;

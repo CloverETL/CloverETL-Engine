@@ -36,7 +36,6 @@ import org.jetel.util.string.Compare;
  * @since 12/01/06  
  */
 public class CompressedByteDataField extends ByteDataField {
-	private static final long serialVersionUID = 1L;
 	
 	/** lenght of data represented by the field. */ 
 	private int dataLen;

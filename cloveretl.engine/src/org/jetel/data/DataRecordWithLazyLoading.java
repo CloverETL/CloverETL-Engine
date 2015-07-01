@@ -23,51 +23,41 @@ import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * Implementation of {@link DataRecord} interface, which use
- * {@link DataFieldWithInvalidState} instead of regular {@link DataFieldImpl}.
- * This type of record is able to mark a field with validity flag. Access to an invalid value
- * in a field throw {@link DataFieldInvalidStateException}.
+ * DataRecord that contains fields of type {@link DataFieldWithLazyLoading}
  * 
- * @author Kokon (info@cloveretl.com)
- *         (c) Javlin, a.s. (www.cloveretl.com)
- *
- * @created 12. 5. 2014
+ * @author salamonp (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+ * 
+ * @created 11. 5. 2015
  */
-public class DataRecordWithInvalidState extends DataRecordImpl {
+public class DataRecordWithLazyLoading extends DataRecordImpl {
 
 	@SuppressWarnings("deprecation")
-	DataRecordWithInvalidState(DataRecordMetadata _metadata) {
+	DataRecordWithLazyLoading(DataRecordMetadata _metadata) {
 		super(_metadata);
 	}
 
 	@Override
 	protected DataRecordImpl newInstance(DataRecordMetadata metadata) {
-		return new DataRecordWithInvalidState(metadata);
-	}
-	
-	public void setValid(boolean valid) {
-		for (DataField field : this) {
-			((DataFieldWithInvalidState) field).setValid(valid);
-		}
-	}
-	
-	@Override
-	protected DataField createField(DataFieldType fieldType, DataFieldMetadata fieldMetadata, boolean plain) {
-		return DataFieldFactory.DATA_FIELD_WITH_INVALID_STATE.create(fieldType, fieldMetadata, plain);
-	}
-	
-	@Override
-	public DataFieldWithInvalidState getField(int _fieldNum) {
-		return (DataFieldWithInvalidState) super.getField(_fieldNum);
+		return new DataRecordWithLazyLoading(metadata);
 	}
 
 	@Override
-	public DataFieldWithInvalidState getField(String _name) {
-		return (DataFieldWithInvalidState) super.getField(_name);
+	protected DataField createField(DataFieldType fieldType, DataFieldMetadata fieldMetadata, boolean plain) {
+		return DataFieldFactory.DATA_FIELD_WITH_LAZY_LOADING.create(fieldType, fieldMetadata, plain);
 	}
-	
+
 	@Override
-	public DataFieldWithInvalidState getFieldByLabel(String _label) {
-		return (DataFieldWithInvalidState) super.getFieldByLabel(_label);
+	public DataFieldWithLazyLoading getField(int _fieldNum) {
+		return (DataFieldWithLazyLoading) super.getField(_fieldNum);
+	}
+
+	@Override
+	public DataFieldWithLazyLoading getField(String _name) {
+		return (DataFieldWithLazyLoading) super.getField(_name);
+	}
+
+	@Override
+	public DataFieldWithLazyLoading getFieldByLabel(String _label) {
+		return (DataFieldWithLazyLoading) super.getFieldByLabel(_label);
 	}
 }

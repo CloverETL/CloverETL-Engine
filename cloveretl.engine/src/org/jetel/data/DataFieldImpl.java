@@ -39,7 +39,6 @@ import org.jetel.util.string.StringUtils;
  * @since       March 26, 2002
  * @see         OtherClasses
  */
-@SuppressWarnings("serial")
 public abstract class DataFieldImpl extends DataField {
 
 	/**
@@ -47,7 +46,7 @@ public abstract class DataFieldImpl extends DataField {
      *  
 	 * @since
 	 */
-	protected transient DataFieldMetadata metadata;
+	protected DataFieldMetadata metadata;
 
 	/**
 	 *  Does this field currently contain NULL value ? 

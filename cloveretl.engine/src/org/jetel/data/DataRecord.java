@@ -39,9 +39,7 @@ import org.jetel.util.bytes.CloverBuffer;
  * @created     May 18, 2003
  * @see         org.jetel.metadata.DataRecordMetadata
  */
-public abstract class DataRecord implements Serializable, Comparable<Object>, Iterable<DataField> {
-
-	private static final long serialVersionUID = 3312575262868262204L;
+public abstract class DataRecord implements Comparable<Object>, Iterable<DataField> {
 
 	/**
 	 * Creates deep copy of existing record (field by field).
