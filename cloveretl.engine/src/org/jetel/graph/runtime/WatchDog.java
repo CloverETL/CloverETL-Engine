@@ -879,9 +879,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			}
 		}
 		
+		headerPrinted = false;
 		for (Node component : graph.getNodes().values()) {
 			String rawComponentEnabledAttribute = graph.getRawComponentEnabledAttribute().get(component);
-			if (component.getEnabled().isBlocker()) {
+			if (component.getEnabled().isBlocker() || graph.getKeptBlockedComponents().contains(component)) {
 				if (!headerPrinted) {
 					logger.info("Components disabled as trash:");
 					headerPrinted = true;
@@ -893,7 +894,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		//print information about disabled components
 		headerPrinted = false;
 		for (Node component : graph.getRawComponentEnabledAttribute().keySet()) {
-			if (!component.getEnabled().isEnabled() || graph.getBlockedIDs().contains(component.getId())) {
+			if (!component.getEnabled().isEnabled() ||
+					(graph.getBlockedIDs().contains(component.getId()) && !graph.getKeptBlockedComponents().contains(component))) {
+				
 				if (!headerPrinted) {
 					logger.info("Disabled components:");
 					headerPrinted = true;
@@ -912,7 +915,11 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		sb.append(component);
 		sb.append(" - ");
 		if (graph.getBlockedIDs().contains(component.getId())) {
-			sb.append(EnabledEnum.DISABLED.getLabel() + ": ");
+			if (graph.getKeptBlockedComponents().contains(component)) {
+				sb.append("Trash mode: ");
+			} else {
+				sb.append(EnabledEnum.DISABLED.getLabel() + ": ");
+			}
 			sb.append("blocked by ");
 			boolean needsDelim = false;
 			Map<Node,Set<Node>> blockingInfo = graph.getBlockingComponentsInfo();
@@ -922,11 +929,11 @@ public class WatchDog implements Callable<Result>, CloverPost {
 						sb.append(", ");
 					}
 					needsDelim = true;
-					sb.append(blockerInfo.getKey().getId()).append(", ");
+					sb.append(blockerInfo.getKey().getId());
 				}
 			}
 		} else if (EnabledEnum.TRASH.toString().equals(rawComponentEnabledAttribute)) {
-			sb.append("Disabled as trash");
+			sb.append("Trash mode");
 		} else {
 			sb.append(component.getEnabled().isEnabled() ? EnabledEnum.ENABLED.getLabel() : EnabledEnum.DISABLED.getLabel());
 			sb.append(": ");
