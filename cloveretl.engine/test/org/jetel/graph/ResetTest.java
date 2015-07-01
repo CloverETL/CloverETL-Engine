@@ -246,6 +246,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("bigRecords")
 							&& !file.getName().equals("cluster")
 							&& !file.getName().equals("S3")
+							&& !file.getName().equals("email")
 							&& !file.getName().equals("windows");
 				}
 			};
