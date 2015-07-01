@@ -128,6 +128,8 @@ public class XPathParser extends AbstractParser {
 	
 	private InputStream input;
 	
+	private String charset;
+	
 	private URL contextUrl = null;
 	
 	public XPathParser() {
@@ -542,6 +544,9 @@ public class XPathParser extends AbstractParser {
 		}
 		try {
 			InputSource source = new InputSource(input);
+			if (charset != null) { // CLO-6708
+				source.setEncoding(charset);
+			}
 			XmlUtils.setSystemId(source, contextUrl, uri);
 			xpathContext.init(new SAXSource(reader, source));
 		} catch (Exception e) {
@@ -664,6 +669,10 @@ public class XPathParser extends AbstractParser {
 	
 	public void setXmlFeatures(String xmlFeatures) {
 		this.xmlFeatures = xmlFeatures;
+	}
+
+	public void setCharset(String charset) {
+		this.charset = charset;
 	}
 
 	/**
