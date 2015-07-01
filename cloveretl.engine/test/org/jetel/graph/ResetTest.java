@@ -163,6 +163,14 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("SimpleZipWrite.grf") // used by ArchiveFlushTest.java, doesn't make sense to run it separately
 							&& !file.getName().equals("XMLExtract_TKLK_003_Back.grf") // needs output from XMLWriter_LKTW_003.grf
 							&& !file.getName().equals("XMLWriter-CL-2404-CNO_OTF_ITSS.grf") // runs too long
+							&& !file.getName().equals("WebAccessLog.grf") // runs too long
+							&& !file.getName().equals("EmailValidation.grf") // runs too long
+							&& !file.getName().equals("EmailFilterGreylistingExample.grf") // runs too long
+							&& !file.getName().equals("EmailFilterSimpleExample.grf") // runs too long
+							&& !file.getName().equals("graphXLSReadWrite.grf") // runs too long
+							&& !file.getName().equals("JoiningAggregating.grf") // runs too long
+							&& !file.getName().equals("UDW_sortedInput_manyFiles.grf") // runs too long
+							&& !file.getName().equals("CDW_sortedInput_manyFiles_CLO-5060.grf") // runs too long
 							&& !file.getName().equals("SQLDataParser_precision_CL2187.grf") // ok, is to fail
 							&& !file.getName().equals("incrementalReadingDB_explicitMapping.grf") // remove after CL-2239 solved
 							&& !file.getName().equals("HTTPConnector_get_bodyparams.grf") // ok, is to fail
