@@ -52,8 +52,6 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 @SuppressWarnings("EI")
 public class ByteDataField extends DataFieldImpl implements Comparable<Object> {
 
-	private static final long serialVersionUID = 3823545028385612760L;
-
 	/**
 	 *  Description of the Field
 	 *

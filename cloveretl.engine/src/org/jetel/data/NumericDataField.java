@@ -51,8 +51,6 @@ import org.jetel.util.string.StringUtils;
  *@see        org.jetel.metadata.DataFieldMetadata
  */
 public class NumericDataField extends DataFieldImpl implements Numeric, Comparable<Object> {
-
-	private static final long serialVersionUID = -3824088924871267023L;
 	
 	private double value;
 	private final NumericFormatter numericFormatter;

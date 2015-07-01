@@ -42,8 +42,6 @@ import org.jetel.util.string.Compare;
  * @since Nov 20, 2007
  */
 public class BooleanDataField extends DataFieldImpl implements Comparable<Object> {
-
-	private static final long serialVersionUID = 7318127447273839212L;
 	
 	private boolean value;
 	private final BooleanFormatter booleanFormatter;

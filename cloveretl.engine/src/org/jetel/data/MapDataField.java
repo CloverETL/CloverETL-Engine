@@ -55,8 +55,6 @@ import org.jetel.util.bytes.CloverBuffer;
  */
 public class MapDataField extends DataFieldImpl implements Iterable<DataField> {
 
-	private static final long serialVersionUID = 7934647976668962456L;
-
 	//representation of nested fields
 	private Map<String, DataField> fields;
 	

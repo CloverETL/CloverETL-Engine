@@ -92,4 +92,14 @@ public final class DataRecordFactory {
     	return result;
     }
     
+    /**
+     * @return data record with data fields which are able to use lazy loading
+     */
+    public static DataRecordWithLazyLoading newRecordWithLazyLoading(DataRecordMetadata metadata) {
+    	DataRecordWithLazyLoading result = new DataRecordWithLazyLoading(metadata);
+    	result.init();
+    	result.reset();
+    	return result;
+    }
+    
 }

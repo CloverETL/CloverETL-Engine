@@ -26,66 +26,91 @@ import java.nio.charset.CharsetEncoder;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.bytes.CloverBuffer;
 
-
 /**
- * This data field implementation is simple wrapper for a {@link DataField} instance.
- * Only additional functionality is possibility to mark the field as invalid.
- * Any access to invalid value throw {@link DataFieldInvalidStateException}.
+ * {@link DataField} that loads data lazily from specified source.
  * 
- * @author Kokon (info@cloveretl.com)
- *         (c) Javlin, a.s. (www.cloveretl.com)
- *
- * @created 12. 5. 2014
+ * Use {@link #setSourceData(Object)} to define a data source and {@link #setLazyLoader(LazyDataFieldLoader)} to assign
+ * a loader for the data.
+ * 
+ * @author salamonp (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+ * 
+ * @created 11. 5. 2015
  */
-public class DataFieldWithInvalidState extends DataField {
+public class DataFieldWithLazyLoading extends DataField {
 
 	/** Wrapped data field. */
 	private DataField dataField;
 
-	/** Validity flag. */
-	private boolean valid = true;
+	/** Data used for lazy loading */
+	private Object sourceData;
 
-	public DataFieldWithInvalidState(DataField dataField) {
+	private boolean needsToBeLoaded = false;
+	private LazyDataFieldLoader lazyLoader;
+
+	/**
+	 * The default loader just sets the source data into the field.
+	 */
+	public static final LazyDataFieldLoader DEFAULT_LAZY_LOADER = new LazyDataFieldLoader() {
+
+		@Override
+		public void load(DataFieldWithLazyLoading field) {
+			field.setValue(field.getSourceData());
+		}
+	};
+
+	public DataFieldWithLazyLoading(DataField dataField) {
 		this.dataField = dataField;
+		lazyLoader = DEFAULT_LAZY_LOADER;
+	}
+
+	public void setLazyLoader(LazyDataFieldLoader loader) {
+		this.lazyLoader = loader;
+	}
+
+	/** This method must be used if lazy loading feature is needed. */
+	public void setSourceData(Object data) {
+		sourceData = data;
+		needsToBeLoaded = true;
+	}
+
+	public Object getSourceData() {
+		return sourceData;
+	}
+
+	public boolean isLoaded() {
+		return !needsToBeLoaded;
+	}
+
+	private void loadIfNeeded() {
+		if (needsToBeLoaded) {
+			lazyLoader.load(this);
+			needsToBeLoaded = false;
+		}
 	}
 
 	/**
-	 * Sets validity flag for this data field.
-	 * Invalid value cannot be accessed.
-	 */
-	public void setValid(boolean valid) {
-		this.valid = valid;
-	}
-	
-	/**
-	 * @return validity flag for this data field, invalid value cannot be accessed
-	 */
-	public boolean isValid() {
-		return valid;
-	}
-	
-	/**
-	 * @see org.jetel.data.DataField#duplicate()
+	 * Source data for lazy loading are NOT cloned! Only reference is copied!
 	 */
 	@Override
 	public DataField duplicate() {
-		DataFieldWithInvalidState result = new DataFieldWithInvalidState(dataField.duplicate());
-		result.setValid(valid);
+		DataFieldWithLazyLoading result = new DataFieldWithLazyLoading(dataField.duplicate());
+		result.setSourceData(sourceData);
+		result.needsToBeLoaded = needsToBeLoaded;
+		result.lazyLoader = lazyLoader;
 		return result;
 	}
 
 	/**
-	 * @see org.jetel.data.DataField#copyFrom(org.jetel.data.DataField)
+	 * Source data for lazy loading are NOT cloned! Only reference is copied!
 	 */
-	@SuppressWarnings("deprecation")
 	@Deprecated
 	@Override
 	public void copyFrom(DataField fieldFrom) {
 		dataField.copyFrom(fieldFrom);
-		if (fieldFrom instanceof DataFieldWithInvalidState) {
-			setValid(((DataFieldWithInvalidState) fieldFrom).valid);
-		} else {
-			setValid(true);
+		if (fieldFrom instanceof DataFieldWithLazyLoading) {
+			setSourceData(((DataFieldWithLazyLoading) fieldFrom).sourceData);
+			((DataFieldWithLazyLoading) fieldFrom).needsToBeLoaded = needsToBeLoaded;
+			((DataFieldWithLazyLoading) fieldFrom).lazyLoader = lazyLoader;
 		}
 	}
 
@@ -95,7 +120,7 @@ public class DataFieldWithInvalidState extends DataField {
 	@Override
 	public void setValue(Object _value) {
 		dataField.setValue(_value);
-		setValid(true);
+		needsToBeLoaded = false;
 	}
 
 	/**
@@ -104,11 +129,7 @@ public class DataFieldWithInvalidState extends DataField {
 	@Override
 	public void setValue(DataField fromField) {
 		dataField.setValue(fromField);
-		if (fromField instanceof DataFieldWithInvalidState) {
-			setValid(((DataFieldWithInvalidState) fromField).valid);
-		} else {
-			setValid(true);
-		}
+		needsToBeLoaded = false;
 	}
 
 	/**
@@ -117,7 +138,7 @@ public class DataFieldWithInvalidState extends DataField {
 	@Override
 	public void setToDefaultValue() {
 		dataField.setToDefaultValue();
-		setValid(true);
+		needsToBeLoaded = false;
 	}
 
 	/**
@@ -126,7 +147,7 @@ public class DataFieldWithInvalidState extends DataField {
 	@Override
 	public void setNull(boolean isNull) {
 		dataField.setNull(isNull);
-		setValid(true);
+		needsToBeLoaded = false;
 	}
 
 	/**
@@ -135,7 +156,7 @@ public class DataFieldWithInvalidState extends DataField {
 	@Override
 	public void reset() {
 		dataField.reset();
-		setValid(true);
+		needsToBeLoaded = false;
 	}
 
 	/**
@@ -143,11 +164,8 @@ public class DataFieldWithInvalidState extends DataField {
 	 */
 	@Override
 	public Object getValue() {
-		if (isValid()) {
-			return dataField.getValue();
-		} else {
-			throw new DataFieldInvalidStateException();
-		}
+		loadIfNeeded();
+		return dataField.getValue();
 	}
 
 	/**
@@ -155,18 +173,14 @@ public class DataFieldWithInvalidState extends DataField {
 	 */
 	@Override
 	public Object getValueDuplicate() {
-		if (isValid()) {
-			return dataField.getValueDuplicate();
-		} else {
-			throw new DataFieldInvalidStateException();
-		}
+		loadIfNeeded();
+		return dataField.getValueDuplicate();
 	}
 
 	/**
 	 * @return
 	 * @see org.jetel.data.DataField#getType()
 	 */
-	@SuppressWarnings("deprecation")
 	@Deprecated
 	@Override
 	public char getType() {
@@ -186,11 +200,8 @@ public class DataFieldWithInvalidState extends DataField {
 	 */
 	@Override
 	public boolean isNull() {
-		if (isValid()) {
-			return dataField.isNull();
-		} else {
-			throw new DataFieldInvalidStateException();
-		}
+		loadIfNeeded();
+		return dataField.isNull();
 	}
 
 	/**
@@ -198,11 +209,8 @@ public class DataFieldWithInvalidState extends DataField {
 	 */
 	@Override
 	public String toString() {
-		if (isValid()) {
-			return dataField.toString();
-		} else {
-			throw new DataFieldInvalidStateException();
-		}
+		loadIfNeeded();
+		return dataField.toString();
 	}
 
 	/**
@@ -211,7 +219,7 @@ public class DataFieldWithInvalidState extends DataField {
 	@Override
 	public void fromString(CharSequence seq) {
 		dataField.fromString(seq);
-		setValid(true);
+		needsToBeLoaded = false;
 	}
 
 	/**
@@ -220,18 +228,17 @@ public class DataFieldWithInvalidState extends DataField {
 	@Override
 	public void fromByteBuffer(CloverBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
 		dataField.fromByteBuffer(dataBuffer, decoder);
-		setValid(true);
+		needsToBeLoaded = false;
 	}
 
 	/**
 	 * @see org.jetel.data.DataField#fromByteBuffer(java.nio.ByteBuffer, java.nio.charset.CharsetDecoder)
 	 */
-	@SuppressWarnings("deprecation")
 	@Deprecated
 	@Override
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
 		dataField.fromByteBuffer(dataBuffer, decoder);
-		setValid(true);
+		needsToBeLoaded = false;
 	}
 
 	/**
@@ -239,38 +246,29 @@ public class DataFieldWithInvalidState extends DataField {
 	 */
 	@Override
 	public int toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		if (isValid()) {
-			return dataField.toByteBuffer(dataBuffer, encoder);
-		} else {
-			throw new DataFieldInvalidStateException();
-		}
+		loadIfNeeded();
+		return dataField.toByteBuffer(dataBuffer, encoder);
 	}
 
 	/**
-	 * @see org.jetel.data.DataField#toByteBuffer(org.jetel.util.bytes.CloverBuffer, java.nio.charset.CharsetEncoder, int)
+	 * @see org.jetel.data.DataField#toByteBuffer(org.jetel.util.bytes.CloverBuffer, java.nio.charset.CharsetEncoder,
+	 *      int)
 	 */
 	@Override
 	public int toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder, int maxLength)
 			throws CharacterCodingException {
-		if (isValid()) {
-			return dataField.toByteBuffer(dataBuffer, encoder, maxLength);
-		} else {
-			throw new DataFieldInvalidStateException();
-		}
+		loadIfNeeded();
+		return dataField.toByteBuffer(dataBuffer, encoder, maxLength);
 	}
 
 	/**
 	 * @see org.jetel.data.DataField#toByteBuffer(java.nio.ByteBuffer, java.nio.charset.CharsetEncoder)
 	 */
-	@SuppressWarnings("deprecation")
 	@Deprecated
 	@Override
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		if (isValid()) {
-			dataField.toByteBuffer(dataBuffer, encoder);
-		} else {
-			throw new DataFieldInvalidStateException();
-		}
+		loadIfNeeded();
+		dataField.toByteBuffer(dataBuffer, encoder);
 	}
 
 	/**
@@ -278,32 +276,31 @@ public class DataFieldWithInvalidState extends DataField {
 	 */
 	@Override
 	public void serialize(CloverBuffer buffer) {
-		if (isValid()) {
-			dataField.serialize(buffer);
-		} else {
-			throw new DataFieldInvalidStateException();
-		}
+		loadIfNeeded();
+		dataField.serialize(buffer);
 	}
 
 	@Override
-	public void serialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+	public void serialize(CloverBuffer buffer, DataRecordSerializer serializer) {
+		loadIfNeeded();
 		dataField.serialize(buffer, serializer);
 	}
-	
+
 	/**
 	 * @see org.jetel.data.DataField#deserialize(org.jetel.util.bytes.CloverBuffer)
 	 */
 	@Override
 	public void deserialize(CloverBuffer buffer) {
 		dataField.deserialize(buffer);
-		setValid(true);
+		needsToBeLoaded = false;
 	}
 
 	@Override
-	public void deserialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+	public void deserialize(CloverBuffer buffer, DataRecordSerializer serializer) {
 		dataField.deserialize(buffer, serializer);
+		needsToBeLoaded = false;
 	}
-	
+
 	/**
 	 * @see org.jetel.data.DataField#equals(java.lang.Object)
 	 */
@@ -333,11 +330,6 @@ public class DataFieldWithInvalidState extends DataField {
 	 */
 	@Override
 	public int getSizeSerialized() {
-		if (isValid()) {
-			return dataField.getSizeSerialized();
-		} else {
-			throw new DataFieldInvalidStateException();
-		}
+		return dataField.getSizeSerialized();
 	}
-
 }

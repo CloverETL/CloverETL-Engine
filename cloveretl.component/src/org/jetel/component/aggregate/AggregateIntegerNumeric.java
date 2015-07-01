@@ -31,8 +31,6 @@ import org.jetel.metadata.DataFieldMetadata;
  * @created 4 Mar 2011
  */
 public class AggregateIntegerNumeric extends IntegerDataField {
-	
-	private static final long serialVersionUID = 4326386860836507397L;
 
 	public AggregateIntegerNumeric(DataFieldMetadata _metadata) {
 		super(_metadata);
