@@ -47,8 +47,8 @@ public class ResetTest extends CloverTestCase {
 			"../cloveretl.examples/BasicExamples/",
 			"../cloveretl.test.scenarios/",
 			"../cloveretl.examples.commercial/CommercialExamples/",
-			"../cloveretl.examples.commercial/DataQualityExamples/",
-			"../cloveretl.examples/CompanyTransactionsTutorial/"
+			"../cloveretl.examples.commercial/DataQualityExamples/"
+			//"../cloveretl.examples/CompanyTransactionsTutorial/"  // runs too long
 		};
 	
 	private final static String[] NEEDS_SCENARIOS_CONNECTION = {
@@ -152,6 +152,10 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().startsWith("AddressDoctor") //wrong path to db file, try to fix when AD installed on jenkins machines 
 							&& !file.getName().equals("EmailReader_Local.grf") // remove after CL-2167 solved
 							&& !file.getName().equals("EmailReader_Server.grf") // remove after CLD-3437 solved (or mail.javlin.eu has valid certificate)
+							&& !file.getName().equals("EmailValidation.grf") // runs too long
+							&& !file.getName().equals("EmailFilterGreylistingExample.grf") // runs too long
+							&& !file.getName().equals("EmailFilterSimpleExample.grf") // runs too long
+							&& !file.getName().equals("graphEmailFilterTestSmtp.grf") // runs too long
 							&& !file.getName().contains("firebird") // remove after CL-2170 solved
 							&& !file.getName().startsWith("ListOfRecords_Functions_02_") // remove after CL-2173 solved
 							&& !file.getName().equals("UDR_FileURL_OneZipMultipleFilesUnspecified.grf") // remove after CL-2174 solved
@@ -164,13 +168,13 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("XMLExtract_TKLK_003_Back.grf") // needs output from XMLWriter_LKTW_003.grf
 							&& !file.getName().equals("XMLWriter-CL-2404-CNO_OTF_ITSS.grf") // runs too long
 							&& !file.getName().equals("WebAccessLog.grf") // runs too long
-							&& !file.getName().equals("EmailValidation.grf") // runs too long
-							&& !file.getName().equals("EmailFilterGreylistingExample.grf") // runs too long
-							&& !file.getName().equals("EmailFilterSimpleExample.grf") // runs too long
 							&& !file.getName().equals("graphXLSReadWrite.grf") // runs too long
 							&& !file.getName().equals("JoiningAggregating.grf") // runs too long
 							&& !file.getName().equals("UDW_sortedInput_manyFiles.grf") // runs too long
+							&& !file.getName().equals("dataWriting.grf") // runs too long
+							&& !file.getName().equals("FSClosingTest-longRunning.grf") // runs too long
 							&& !file.getName().equals("CDW_sortedInput_manyFiles_CLO-5060.grf") // runs too long
+							&& !file.getName().equals("CreditCards.grf") // runs too long
 							&& !file.getName().equals("SQLDataParser_precision_CL2187.grf") // ok, is to fail
 							&& !file.getName().equals("incrementalReadingDB_explicitMapping.grf") // remove after CL-2239 solved
 							&& !file.getName().equals("HTTPConnector_get_bodyparams.grf") // ok, is to fail
@@ -183,6 +187,8 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("HTTPConnector_post_error_unknownprotocol.grf") // ok, is to fail
 							&& !file.getName().equals("HTTPConnector_inputmapping_null_values.grf") // ok, is to fail
 							&& !file.getName().equals("HttpConnector_errHandlingNoRedir.grf") // ok, is to fail
+							&& !file.getName().equals("HTTPConnector_retry_CLO-1251.grf") // runs too long
+							&& !file.getName().equals("HTTPConnector_timeout_CLO-1251.grf") // runs too long
 							&& !file.getName().equals("XMLExtract_fileURL_not_xml.grf") // ok, is to fail
 							&& !file.getName().equals("XMLExtract_charset_invalid.grf") // ok, is to fail
 							&& !file.getName().equals("XMLExtract_mappingURL_missing.grf") // ok, is to fail
@@ -243,11 +249,11 @@ public class ResetTest extends CloverTestCase {
 				@Override
 				public boolean accept(File file) {
 					return file.isDirectory() 
-							&& !file.getName().equals("bigRecords")
-							&& !file.getName().equals("cluster")
-							&& !file.getName().equals("S3")
-							&& !file.getName().equals("email")
-							&& !file.getName().equals("windows");
+							&& !file.getName().equals("bigRecords") // runs too long
+							&& !file.getName().equals("cluster") // cluster tests
+							&& !file.getName().equals("S3") 
+							&& !file.getName().equals("email") 
+							&& !file.getName().equals("windows"); // wokna only tests
 				}
 			};
 			
