@@ -550,7 +550,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	        	
 	        	//preExecute() invocation
 	    		try {
-	    			if (!enabled.isBlocker() && !getGraph().getBlockedIDs().contains(this.getId())) {
+	    			if (!isInTrashMode()) {
 	    				preExecute();
 	    			}
 	    		} catch (Throwable e) {
@@ -562,7 +562,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         	}
     		
     		//execute() invocation
-    		Result result = (enabled.isBlocker() || getGraph().getBlockedIDs().contains(this.getId())) ? executeTrash() : execute();
+    		Result result = isInTrashMode() ? executeTrash() : execute();
         	
     		//broadcast all output ports with EOF information
     		if (result == Result.FINISHED_OK) {
@@ -1630,6 +1630,10 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 */
 	public boolean isPartOfDebugOutput() {
 		return partOfDebugOutput;
+	}
+	
+	public boolean isInTrashMode() {
+		return enabled.isBlocker() || getGraph().getKeptBlockedComponents().contains(this);
 	}
 
 }

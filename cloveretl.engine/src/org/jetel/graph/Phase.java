@@ -165,7 +165,7 @@ public class Phase extends GraphElement implements Comparable {
 			Context c = ContextProvider.registerNode(node);
 			try {
 				Thread.currentThread().setContextClassLoader(node.getClass().getClassLoader());
-				if (!node.getEnabled().isBlocker() && !getGraph().getBlockedIDs().contains(node.getId())) {
+				if (!node.isInTrashMode()) {
 					node.init();
 				}
 				logger.debug("\t" + node.getId() + " ...OK");
@@ -264,7 +264,7 @@ public class Phase extends GraphElement implements Comparable {
 		for (Node node : nodes.values()) {
 			Context c = ContextProvider.registerNode(node);
 			try {
-				if (!node.getEnabled().isBlocker() && !getGraph().getBlockedIDs().contains(node.getId())) {
+				if (!node.isInTrashMode()) {
 					node.postExecute();
 				}
                 if(logger.isDebugEnabled()){
@@ -304,7 +304,9 @@ public class Phase extends GraphElement implements Comparable {
 
 		//commit of all nodes
 		for (Node node : nodes.values()) {
-			node.commit();
+			if (!node.isInTrashMode()) {
+				node.commit();
+			}
 		}
 	}
 
@@ -322,7 +324,9 @@ public class Phase extends GraphElement implements Comparable {
 
 		//rollback of all nodes
 		for (Node node : nodes.values()) {
-			node.rollback();
+			if (!node.isInTrashMode()) {
+				node.rollback();
+			}
 		}
 	}
 	
@@ -338,7 +342,7 @@ public class Phase extends GraphElement implements Comparable {
 		//check nodes configuration
         for (Node node : nodes.values()) {
         	try {
-        		if (!node.getEnabled().isBlocker() && !getGraph().getBlockedIDs().contains(node.getId())) {
+        		if (!node.isInTrashMode()) {
         			node.checkConfig(status);
         		}
         	} catch (Exception e) {
@@ -487,7 +491,9 @@ public class Phase extends GraphElement implements Comparable {
         for(Node node : nodes.values()) {
 			Context c = ContextProvider.registerNode(node);
         	try {
-        		node.free();
+        		if (!node.isInTrashMode()) {
+        			node.free();
+        		}
         	} catch (Exception e) {
         		logger.error("Node " + node.getId() + " releasing failed.", e);
         	} finally {
