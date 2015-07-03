@@ -969,6 +969,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 				<sysproperty key="file.encoding" value="UTF-8" />
 				<jvmarg value="-Xmx2048m"/>
 				<jvmarg value="-XX:MaxPermSize=512m"/>
+				<jvmarg value="-XX:+StartAttachListener"/>
 				<jvmarg value="-Dderby.system.home=${dir.examples}/ExtExamples"/>
 				<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
 				<classpath>
