@@ -240,7 +240,8 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("Transformations_invalid_language.grf") // ok, is to fail
 							&& !file.getName().equals("graphCloverData.grf") // remove after CLO-4360 fixed
 							&& !file.getName().equals("MetadataWriting.grf") // server test
-							&& !file.getName().equals("EclipseClasspathParsing_CLO-6013.grf"); // server test
+							&& !file.getName().equals("EclipseClasspathParsing_CLO-6013.grf") // server test
+							&& !file.getName().equals("ValidateData.grf"); // temporarily disabled (might cause OutOfMemoryError)
 					
 				}
 			};
