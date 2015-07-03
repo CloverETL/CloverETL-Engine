@@ -225,12 +225,13 @@ public final class TransformationGraph extends GraphElement {
 	
 	/**
 	 * This map contains set of blocked components for each blocker component. This map is used for displaying info about blockers
-	 * in GUI tooltips.
+	 * in GUI tooltips. Contains nodes of original components - i.e. not the Trashifiers that are used as replacements.
 	 */
 	private Map<Node, Set<Node>> blockingComponents = new HashMap<>();
 	
 	/**
 	 * Set of components that are blocked but are kept in the graph so they can still accept records.
+	 * Contains nodes of original components - i.e. not the Trashifiers that are used as replacements.
 	 */
 	private Set<Node> keptBlocked = new HashSet<Node>();
 	

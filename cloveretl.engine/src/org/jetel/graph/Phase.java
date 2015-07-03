@@ -165,9 +165,7 @@ public class Phase extends GraphElement implements Comparable {
 			Context c = ContextProvider.registerNode(node);
 			try {
 				Thread.currentThread().setContextClassLoader(node.getClass().getClassLoader());
-				if (!node.isInTrashMode()) {
-					node.init();
-				}
+				node.init();
 				logger.debug("\t" + node.getId() + " ...OK");
 			} catch (Exception ex) {
 				node.setResultCode(Result.ERROR);
@@ -264,9 +262,7 @@ public class Phase extends GraphElement implements Comparable {
 		for (Node node : nodes.values()) {
 			Context c = ContextProvider.registerNode(node);
 			try {
-				if (!node.isInTrashMode()) {
-					node.postExecute();
-				}
+				node.postExecute();
                 if(logger.isDebugEnabled()){
 				    logger.debug("\t" + node.getId() + " ...OK");
                 }
@@ -304,9 +300,7 @@ public class Phase extends GraphElement implements Comparable {
 
 		//commit of all nodes
 		for (Node node : nodes.values()) {
-			if (!node.isInTrashMode()) {
-				node.commit();
-			}
+			node.commit();
 		}
 	}
 
@@ -324,9 +318,7 @@ public class Phase extends GraphElement implements Comparable {
 
 		//rollback of all nodes
 		for (Node node : nodes.values()) {
-			if (!node.isInTrashMode()) {
-				node.rollback();
-			}
+			node.rollback();
 		}
 	}
 	
@@ -342,9 +334,7 @@ public class Phase extends GraphElement implements Comparable {
 		//check nodes configuration
         for (Node node : nodes.values()) {
         	try {
-        		if (!node.isInTrashMode()) {
-        			node.checkConfig(status);
-        		}
+        		node.checkConfig(status);
         	} catch (Exception e) {
         		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, node, Priority.HIGH);
         		problem.setCauseException(e);
@@ -491,9 +481,7 @@ public class Phase extends GraphElement implements Comparable {
         for(Node node : nodes.values()) {
 			Context c = ContextProvider.registerNode(node);
         	try {
-        		if (!node.isInTrashMode()) {
-        			node.free();
-        		}
+        		node.free();
         	} catch (Exception e) {
         		logger.error("Node " + node.getId() + " releasing failed.", e);
         	} finally {

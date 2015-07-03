@@ -34,6 +34,7 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.ComponentFactory;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ConfigurationStatus;
@@ -678,41 +679,74 @@ public class TransformationGraphAnalyzer {
 	}
 
 	/**
-	 * Removes blocked components from the graph
+	 * Removes blocked components from the graph.
+	 * Puts together a set of blocked components that still need to be kept in the graph as additional trashifiers.
+	 * 
 	 * @param graph
 	 * @throws GraphConfigurationException
 	 */
 	public static void removeBlockedNodes(TransformationGraph graph) throws GraphConfigurationException {
 		graph.getKeptBlockedComponents().clear();
-		Set<Node> nodesToRemove = new HashSet<Node>();
+		List<Node> nodesToRemove = new LinkedList<Node>();
+		List<Node> nodesToAdd = new LinkedList<Node>();
 		Set<String> blockedIds = graph.getBlockedIDs();
 		Phase[] phases = graph.getPhases();
 
 		for (int i = 0; i < phases.length; i++) {
 			nodesToRemove.clear();
+			nodesToAdd.clear();
 			for (Node node : phases[i].getNodes().values()) {
-				if (node.getEnabled() == EnabledEnum.TRASH) {
-					disconnectOutputEdges(node);
-				} else if (blockedIds.contains(node.getId())) { // component and all related edges are removed
-					boolean keep = false; // some blocked components need to be kept (when there's enabled non-blocked component writing to them)
-					for (InputPort inPort : node.getInPorts()) {
-						Node predecessor = inPort.getWriter();
-						if (!predecessor.getEnabled().isBlocker() && !blockedIds.contains(predecessor.getId())) {
-							graph.getKeptBlockedComponents().add(node);
-							keep = true;
-							break;
+				if (node.getEnabled() == EnabledEnum.TRASH || blockedIds.contains(node.getId())) {
+					nodesToRemove.add(node);
+					
+					if (node.getEnabled() == EnabledEnum.TRASH) {
+						Node trashifier = replaceByTrashifier(node);
+						nodesToAdd.add(trashifier);
+					} else {
+						// blocked component
+						boolean keep = false; // some blocked components need to be kept (when there's enabled non-blocked component writing to them)
+						for (InputPort inPort : node.getInPorts()) {
+							Node predecessor = inPort.getWriter();
+							if (!predecessor.getEnabled().isBlocker() && !blockedIds.contains(predecessor.getId())) {
+								graph.getKeptBlockedComponents().add(node);
+								keep = true;
+								Node trashifier = replaceByTrashifier(node);
+								nodesToAdd.add(trashifier);
+								break;
+							}
 						}
-					}
-					if (!keep) {
-						nodesToRemove.add(node);
-						disconnectAllEdges(node);
+						if (!keep) {
+							disconnectAllEdges(node);
+						}
 					}
 				}
 			}
 			for (Node node : nodesToRemove) {
 				phases[i].deleteNode(node);
 			}
+			for (Node node : nodesToAdd) {
+				phases[i].addNode(node);
+			}
 		}
+	}
+	
+	/**
+	 * Replaces given node by trashifier in its graph.
+	 * The edges are reconnected but the returned trashifier is not added to the graph and original node is not removed by this method.
+	 * @param node
+	 * @throws GraphConfigurationException 
+	 */
+	private static Node replaceByTrashifier(Node node) throws GraphConfigurationException {
+		Node trashifier = ComponentFactory.createComponent(node.getGraph(), "TRASHIFIER", node.getId(), node.getAttributes());
+		trashifier.setEnabled(node.getEnabled());
+		
+		// reconnect input edges
+		for (Entry<Integer, InputPort> entry : node.getInputPorts().entrySet()) {
+			trashifier.addInputPort(entry.getKey(), entry.getValue());
+		}
+		
+		disconnectOutputEdges(node);
+		return trashifier;
 	}
 	
 	private static void disconnectInputEdges(Node node) throws GraphConfigurationException {

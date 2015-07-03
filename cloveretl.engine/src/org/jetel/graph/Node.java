@@ -550,9 +550,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	        	
 	        	//preExecute() invocation
 	    		try {
-	    			if (!isInTrashMode()) {
-	    				preExecute();
-	    			}
+	    			preExecute();
 	    		} catch (Throwable e) {
 	    			throw new ComponentNotReadyException(this, "Component pre-execute initialization failed.", e);
 	    		} finally {
@@ -562,7 +560,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         	}
     		
     		//execute() invocation
-    		Result result = isInTrashMode() ? executeTrash() : execute();
+    		Result result = execute();
         	
     		//broadcast all output ports with EOF information
     		if (result == Result.FINISHED_OK) {
@@ -626,22 +624,6 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     }
     
     protected abstract Result execute() throws Exception;
-    
-    protected Result executeTrash() throws Exception {
-		for (OutputPort outPort : outPorts.values()) {
-			outPort.eof();
-		}
-
-		for (InputPort inPort : inPorts.values()) {
-			DataRecord record = DataRecordFactory.newRecord(inPort.getMetadata());
-			CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
-			while (runIt && ((InputPortDirect) inPort).readRecordDirect(recordBuffer)) {
-				record.deserialize(recordBuffer);
-			}
-		}
-		
-		return runIt() ? Result.FINISHED_OK : Result.ABORTED;
-	}
     
     private Exception createNodeException(Throwable cause) {
     	//compose error message, for example 
@@ -1630,10 +1612,6 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 */
 	public boolean isPartOfDebugOutput() {
 		return partOfDebugOutput;
-	}
-	
-	public boolean isInTrashMode() {
-		return enabled.isBlocker() || getGraph().getKeptBlockedComponents().contains(this);
 	}
 
 }
