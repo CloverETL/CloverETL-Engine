@@ -237,4 +237,9 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 		}
 	}
 	
+	@Override
+	public boolean supportsTerminatingSemicolons() {
+		return false;
+	}
+	
 }

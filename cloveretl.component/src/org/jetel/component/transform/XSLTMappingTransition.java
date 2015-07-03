@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.transform.Source;
+
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
@@ -46,7 +48,7 @@ public class XSLTMappingTransition {
 	 */
 	private DataRecord outRecord;
 	private String mapping;
-	private InputStream xslt;
+	private Source xslt;
 	private DataRecordMetadata inMetadata;
 	private String charset;
 
@@ -64,7 +66,7 @@ public class XSLTMappingTransition {
 	 * @param mapping
 	 * @param xslt
 	 */
-	public XSLTMappingTransition(DataRecord outRecord, String mapping, InputStream xslt) {
+	public XSLTMappingTransition(DataRecord outRecord, String mapping, Source xslt) {
 		this.outRecord = outRecord;
 		this.mapping = mapping;
 		this.xslt = xslt;

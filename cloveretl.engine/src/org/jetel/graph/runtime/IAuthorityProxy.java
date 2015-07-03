@@ -45,6 +45,7 @@ import org.jetel.exception.TempFileCreationException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Edge;
 import org.jetel.graph.EdgeBase;
+import org.jetel.graph.GraphElement;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
 import org.jetel.graph.Node;
@@ -611,6 +612,13 @@ public abstract class IAuthorityProxy {
 
 	public abstract ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy);
 
+	/**
+	 * Releases all URLClassLoaders created using {@link #createClassLoader(URL[], ClassLoader, boolean)}
+	 * method exclusively for the given graph element.
+	 * @param relatedGraphElement
+	 */
+	public abstract void freeRelatedClassLoaders(GraphElement relatedGraphElement);
+	
 	/**
 	 * Creates new classloader with multiple parent classloaders.
 	 * @return multi-parent classloader based on the given parent classloaders

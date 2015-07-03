@@ -45,6 +45,8 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -345,6 +347,19 @@ public class DBJoin extends Node {
         }
 
         dbMetadata = getGraph().getDataRecordMetadata(metadataName, false);
+        
+        if (query == null) {
+        	status.add("SQL query not defined.", Severity.ERROR, this, Priority.NORMAL);
+        }
+        if (connectionName == null) {
+        	status.add("DB connection not defined.", Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+        }
+        if (joinKey == null) {
+        	status.add("Join key not defined.", Severity.ERROR, this, Priority.NORMAL, XML_JOIN_KEY_ATTRIBUTE);
+        }
+        if (query == null || connectionName == null || joinKey == null) {
+        	return status;
+        }
 
         try {
         	
@@ -561,16 +576,20 @@ public class DBJoin extends Node {
 		DBJoin dbjoin;
 		String connectionName;
 		String query;
-		String[] joinKey;
+		String[] joinKey = null;
 		//get necessary parameters
-		connectionName = xattribs.getString(XML_DBCONNECTION_ATTRIBUTE);
+		connectionName = xattribs.getString(XML_DBCONNECTION_ATTRIBUTE, null);
 		if (xattribs.exists(XML_URL_ATTRIBUTE)) {
 			query=xattribs.resolveReferences(FileUtils.getStringFromURL(graph.getRuntimeContext().getContextURL(), 
          		   xattribs.getStringEx(XML_URL_ATTRIBUTE, RefResFlag.URL), xattribs.getString(XML_CHARSET_ATTRIBUTE, null)));
 		} else {
-			query = xattribs.getString(XML_SQL_QUERY_ATTRIBUTE);
+			query = xattribs.getString(XML_SQL_QUERY_ATTRIBUTE, null);
 		}
-		joinKey = xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+		String joinKeyRaw = xattribs.getString(XML_JOIN_KEY_ATTRIBUTE, null);
+		if (joinKeyRaw != null) {
+			joinKey = joinKeyRaw.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+		}
+		
 	
         dbjoin = new DBJoin(
                 xattribs.getString(XML_ID_ATTRIBUTE),

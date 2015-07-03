@@ -18,6 +18,8 @@
  */
 package org.jetel.component.tree.reader.xml;
 
+import java.net.URL;
+
 import org.jetel.component.tree.reader.InputAdapter;
 import org.jetel.component.tree.reader.ReadableByteChannelToSourceAdapter;
 import org.jetel.component.tree.reader.TreeReaderParserProvider;
@@ -36,10 +38,12 @@ public class XmlReaderParserProvider implements TreeReaderParserProvider {
 
 	private String charset;
 	private XMLReader xmlReader;
+	private URL contextUrl;
 	
-	public XmlReaderParserProvider(String charset, XMLReader xmlReader) {
+	public XmlReaderParserProvider(String charset, XMLReader xmlReader, URL contextUrl) {
 		this.charset = charset;
 		this.xmlReader = xmlReader;
+		this.contextUrl = contextUrl;
 	}
 
 	@Override
@@ -69,6 +73,6 @@ public class XmlReaderParserProvider implements TreeReaderParserProvider {
 
 	@Override
 	public InputAdapter getInputAdapter() {
-		return new ReadableByteChannelToSourceAdapter(charset, xmlReader);
+		return new ReadableByteChannelToSourceAdapter(charset, xmlReader, contextUrl);
 	}
 }

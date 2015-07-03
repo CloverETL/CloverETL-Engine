@@ -25,8 +25,8 @@ import org.jetel.data.GraphElementDescription;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.InvalidGraphObjectNameException;
-import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.graph.runtime.IAuthorityProxy;
+import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -149,6 +149,9 @@ public abstract class GraphElement implements IGraphElement {
     @Override
 	public void postExecute() throws ComponentNotReadyException {
     	firstRun = false;
+    	if (getAuthorityProxy() != null) {
+    		getAuthorityProxy().freeRelatedClassLoaders(this);
+    	}
     }
     
     /* (non-Javadoc)

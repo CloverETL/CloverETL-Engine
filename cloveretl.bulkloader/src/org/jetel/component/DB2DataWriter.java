@@ -856,26 +856,27 @@ public class DB2DataWriter extends Node {
 		}
 		
 		// Check field mapping
-		if (cloverFields.length != dbFields.length) {
-			String countNotSame = "Count of fields is not the same for clover and DB fields (" + cloverFields.length + " vs. " + dbFields.length + ")";
-			status.add(new ConfigurationProblem(countNotSame, Severity.ERROR, this, Priority.NORMAL, XML_CLOVERFIELDS_ATTRIBUTE));
-			status.add(new ConfigurationProblem(countNotSame, Severity.ERROR, this, Priority.NORMAL, XML_DBFIELDS_ATTRIBUTE));
-		}
+		if (cloverFields != null && dbFields != null) {
+			if (cloverFields.length != dbFields.length) {
+				String countNotSame = "Count of fields is not the same for clover and DB fields (" + cloverFields.length + " vs. " + dbFields.length + ")";
+				status.add(new ConfigurationProblem(countNotSame, Severity.ERROR, this, Priority.NORMAL, XML_CLOVERFIELDS_ATTRIBUTE));
+				status.add(new ConfigurationProblem(countNotSame, Severity.ERROR, this, Priority.NORMAL, XML_DBFIELDS_ATTRIBUTE));
+			}
 
-		for (String cloverField : cloverFields) {
-			if (cloverField.isEmpty()) {
-				status.add(new ConfigurationProblem("Clover field cannot be empty", Severity.ERROR, this, Priority.NORMAL, fieldMappingOverride ? XML_FIELDMAP_ATTRIBUTE : XML_CLOVERFIELDS_ATTRIBUTE));
-			} else if (inMetadata != null && inMetadata.getField(cloverField) == null) {
-				status.add(new ConfigurationProblem("Clover field \"" + cloverField + "\" is not present in input data", Severity.ERROR, this, Priority.NORMAL, fieldMappingOverride ? XML_FIELDMAP_ATTRIBUTE : XML_CLOVERFIELDS_ATTRIBUTE));
+			for (String cloverField : cloverFields) {
+				if (cloverField.isEmpty()) {
+					status.add(new ConfigurationProblem("Clover field cannot be empty", Severity.ERROR, this, Priority.NORMAL, fieldMappingOverride ? XML_FIELDMAP_ATTRIBUTE : XML_CLOVERFIELDS_ATTRIBUTE));
+				} else if (inMetadata != null && inMetadata.getField(cloverField) == null) {
+					status.add(new ConfigurationProblem("Clover field \"" + cloverField + "\" is not present in input data", Severity.ERROR, this, Priority.NORMAL, fieldMappingOverride ? XML_FIELDMAP_ATTRIBUTE : XML_CLOVERFIELDS_ATTRIBUTE));
+				}
+			}
+
+			for (String dbField : dbFields) {
+				if ("\"\"".equals(dbField)) {
+					status.add(new ConfigurationProblem("DB field cannot be empty" + (fieldMappingOverride ? ". Expected syntax is sequence of $CloverField:=DBField" : ""), Severity.ERROR, this, Priority.NORMAL, fieldMappingOverride ? XML_FIELDMAP_ATTRIBUTE : XML_DBFIELDS_ATTRIBUTE));
+				}
 			}
 		}
-
-		for (String dbField : dbFields) {
-			if ("\"\"".equals(dbField)) {
-				status.add(new ConfigurationProblem("DB field cannot be empty" + (fieldMappingOverride ? ". Expected syntax is sequence of $CloverField:=DBField": ""), Severity.ERROR, this, Priority.NORMAL, fieldMappingOverride ? XML_FIELDMAP_ATTRIBUTE : XML_DBFIELDS_ATTRIBUTE));
-			}
-		}
-
 		return status;
 	}
 
@@ -1735,10 +1736,10 @@ public class DB2DataWriter extends Node {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
         DB2DataWriter writer = new DB2DataWriter(xattribs.getString(XML_ID_ATTRIBUTE),
-                xattribs.getString(XML_DATABASE_ATTRIBUTE),
-                xattribs.getString(XML_USERNAME_ATTRIBUTE),
-                xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, RefResFlag.SECURE_PARAMATERS),
-                xattribs.getString(XML_TABLE_ATTRIBUTE),
+                xattribs.getString(XML_DATABASE_ATTRIBUTE, null),
+                xattribs.getString(XML_USERNAME_ATTRIBUTE, null),
+                xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, null, RefResFlag.SECURE_PARAMATERS),
+                xattribs.getString(XML_TABLE_ATTRIBUTE, null),
                 LoadMode.valueOf(xattribs.getString(XML_MODE_ATTRIBUTE, DEFAULT_TABLE_LOAD_MODE).toLowerCase()),
                 xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.URL),
                 xattribs.getStringEx(XML_FILEMETADATA_ATTRIBUTE, null, RefResFlag.URL));

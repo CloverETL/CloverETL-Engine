@@ -43,6 +43,8 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -820,7 +822,7 @@ public class HashJoin extends Node {
 		}
 
 		join = new HashJoin(xattribs.getString(XML_ID_ATTRIBUTE), 
-				xattribs.getString(XML_JOINKEY_ATTRIBUTE), 
+				xattribs.getString(XML_JOINKEY_ATTRIBUTE, null), 
 				xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
 				xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null), 
 				xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.URL), 
@@ -872,6 +874,11 @@ public class HashJoin extends Node {
             		"Charset "+charset+" not supported!", 
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
+		
+		
+		if (joinKey == null) {
+			status.add("Join key not defined.", Severity.ERROR, this, Priority.NORMAL, XML_JOINKEY_ATTRIBUTE);
+		}
 
 		int slaveCnt = inPorts.size() - FIRST_SLAVE_PORT;
 

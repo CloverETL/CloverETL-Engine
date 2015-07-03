@@ -163,22 +163,24 @@ public class ExtSort extends Node {
     public ExtSort(String id, String[] sortKeys, boolean oldAscendingOrder) {
         super(id);
 
-        this.sortKeysNames = sortKeys;
-        this.sortOrderings = new boolean[sortKeysNames.length];
-        Arrays.fill(sortOrderings, oldAscendingOrder);
-        
-        Pattern pat = Pattern.compile("^(.*)\\((.*)\\)$");
-        
-        for (int i = 0; i < sortKeys.length; i++) {
-        	Matcher matcher = pat.matcher(sortKeys[i]);
-        	if (matcher.find()) {
-	        	String keyPart = sortKeys[i].substring(matcher.start(1), matcher.end(1));
-	        	if (matcher.groupCount() > 1) {
-	        		sortOrderings[i] = (sortKeys[i].substring(matcher.start(2), matcher.end(2))).matches("^[Aa].*");	        		
-	        	}
-	        	sortKeys[i] = keyPart;
-        	}
-        }
+		if (sortKeys != null) {
+			this.sortKeysNames = sortKeys;
+			this.sortOrderings = new boolean[sortKeysNames.length];
+			Arrays.fill(sortOrderings, oldAscendingOrder);
+
+			Pattern pat = Pattern.compile("^(.*)\\((.*)\\)$");
+
+			for (int i = 0; i < sortKeys.length; i++) {
+				Matcher matcher = pat.matcher(sortKeys[i]);
+				if (matcher.find()) {
+					String keyPart = sortKeys[i].substring(matcher.start(1), matcher.end(1));
+					if (matcher.groupCount() > 1) {
+						sortOrderings[i] = (sortKeys[i].substring(matcher.start(2), matcher.end(2))).matches("^[Aa].*");
+					}
+					sortKeys[i] = keyPart;
+				}
+			}
+		}
         
         this.numberOfTapes = DEFAULT_NUMBER_OF_TAPES;
         internalBufferCapacity=-1;
@@ -311,9 +313,12 @@ public class ExtSort extends Node {
         } else 
         	oldAscendingOrder = true;
 
-    	sort = new ExtSort(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(
-                XML_SORTKEY_ATTRIBUTE).split(
-                Defaults.Component.KEY_FIELDS_DELIMITER_REGEX), oldAscendingOrder);
+        String sortKeyRaw = xattribs.getString(XML_SORTKEY_ATTRIBUTE, null);
+        String[] sortKey = null;
+        if (sortKeyRaw != null) {
+        	sortKey = sortKeyRaw.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+        }
+    	sort = new ExtSort(xattribs.getString(XML_ID_ATTRIBUTE), sortKey, oldAscendingOrder);
         if (xattribs.exists(XML_SORTORDER_ATTRIBUTE)) {
         	sort.setSortOrders(xattribs.getString(XML_SORTORDER_ATTRIBUTE), sort.getSortKeyCount());
         }
@@ -373,24 +378,15 @@ public class ExtSort extends Node {
         checkMetadata(status, getInMetadata(), getOutMetadata());
         
         DataRecordMetadata inMetadata = getInputPort(READ_FROM_PORT).getMetadata();
-        for (int i = 0; i < sortKeysNames.length; i++) {
-			if (inMetadata.getFieldPosition(sortKeysNames[i]) < 0) {
-				status.add("Key field '" + sortKeysNames[i] + "' does not exist in input metadata",
-						Severity.ERROR, this, Priority.NORMAL, XML_SORTKEY_ATTRIBUTE);
+		if (sortKeysNames == null) {
+			status.add("Sort key not defined.", Severity.ERROR, this, Priority.NORMAL, XML_SORTKEY_ATTRIBUTE);
+		} else {
+			for (int i = 0; i < sortKeysNames.length; i++) {
+				if (inMetadata.getFieldPosition(sortKeysNames[i]) < 0) {
+					status.add("Key field '" + sortKeysNames[i] + "' does not exist in input metadata", Severity.ERROR, this, Priority.NORMAL, XML_SORTKEY_ATTRIBUTE);
+				}
 			}
 		}
-
-//        try {
-//            init();
-//        } catch (ComponentNotReadyException e) {
-//            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-//            if(!StringUtils.isEmpty(e.getAttributeName())) {
-//                problem.setAttributeName(e.getAttributeName());
-//            }
-//            status.add(problem);
-//        } finally {
-//        	free();
-//        }
         
         return status;
     }

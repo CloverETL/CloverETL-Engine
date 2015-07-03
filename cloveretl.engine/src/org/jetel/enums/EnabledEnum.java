@@ -67,7 +67,7 @@ public class EnabledEnum {
     
     private static final EnabledEnum[] values = new EnabledEnum[] { ALWAYS, NEVER, ENABLED, DISABLED, PASS_THROUGH, TRUE, FALSE, DISCARD, TRASH }; 
 
-	public static final EnabledEnum DEFAULT_VALUE = ALWAYS;
+	public static final EnabledEnum DEFAULT_VALUE = ENABLED;
 
     private String id;
     

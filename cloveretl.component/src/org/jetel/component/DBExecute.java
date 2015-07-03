@@ -45,6 +45,8 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -707,19 +709,14 @@ public class DBExecute extends Node {
             query = xattribs.getString(XML_DBSQL_ATTRIBUTE);
         } else if (xattribs.exists(XML_SQLCODE_ELEMENT)) {
             query = xattribs.getString(XML_SQLCODE_ELEMENT);
-        } else {// we try to get it from child text node - slightly obsolete
-                // now
-            childNode = xattribs.getChildNode(xmlElement,
-                    XML_SQLCODE_ELEMENT);
-            if (childNode == null) {
-                throw new RuntimeException("Can't find <SQLCode> node !");
-            }
-            xattribsChild = new ComponentXMLAttributes((Element)childNode, graph);
-            query = xattribsChild.getText(childNode);
+		} else if ((childNode = xattribs.getChildNode(xmlElement, XML_SQLCODE_ELEMENT)) != null) {
+			// we try to get it from child text node - slightly obsolete now
+			xattribsChild = new ComponentXMLAttributes((Element) childNode, graph);
+			query = xattribsChild.getText(childNode);
         }
         executeSQL = new DBExecute(xattribs
                 .getString(XML_ID_ATTRIBUTE), xattribs
-                .getString(XML_DBCONNECTION_ATTRIBUTE), 
+                .getString(XML_DBCONNECTION_ATTRIBUTE, null), 
                 query);
         if (fileURL != null) {
         	executeSQL.setFileURL(fileURL);
@@ -844,9 +841,16 @@ public class DBExecute extends Node {
             		"Charset "+charset+" not supported!", 
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
+        
+        if (sqlQuery == null && fileUrl == null) {
+        	status.add("SQL query not defined.", Severity.ERROR, this, Priority.NORMAL);
+        }
+        if (dbConnectionName == null) {
+        	status.add("DB connection not defined.", Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+        }
 
 		try {
-		    if (dbConnection == null){
+		    if (dbConnection == null && dbConnectionName != null){
 		        IConnection conn = getGraph().getConnection(dbConnectionName);
 	            if(conn == null) {
 	                throw new ComponentNotReadyException("Can't find DBConnection ID: " + dbConnectionName, XML_DBCONNECTION_ATTRIBUTE);
