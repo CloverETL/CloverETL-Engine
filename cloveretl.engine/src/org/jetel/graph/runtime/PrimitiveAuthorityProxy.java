@@ -487,7 +487,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	}
 
 	@Override
-	public ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy) {
+	public ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy, boolean closeOnGraphFinish) {
 		if (parent == null) {
 			parent = PrimitiveAuthorityProxy.class.getClassLoader();
 		}
