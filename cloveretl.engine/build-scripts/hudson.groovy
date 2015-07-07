@@ -100,7 +100,7 @@ if( !runTests ){
 		antTarget = "runtests-tests-reset"
 		antArgs += "-Druntests-plugins-dontrun=true"	
 		antArgs += "-Dtest.include=org/jetel/graph/ResetTest.java"
-		antArgs += "-Dadditional.jvmargs=-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9010 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
+		antArgs += "-Dadditional.jvmargs= -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=9010 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=virt-whiskey.javlin.eu "
 	} else {
 		println "ERROR: Unknown goal '${jobGoal}'"
 		exit 1
