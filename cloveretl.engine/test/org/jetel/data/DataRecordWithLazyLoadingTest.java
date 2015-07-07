@@ -46,8 +46,6 @@ public class DataRecordWithLazyLoadingTest extends CloverTestCase {
 	
 	public void testLazyLoading() {
 		DataRecordWithLazyLoading record = DataRecordFactory.newRecordWithLazyLoading(metadata);
-		record.init();
-		record.reset();
 		assertNull(record.getField("field1").getValue());
 		
 		record.getField("field2").setSourceData(11);
