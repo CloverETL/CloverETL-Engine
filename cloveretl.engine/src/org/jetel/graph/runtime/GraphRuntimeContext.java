@@ -141,6 +141,14 @@ public class GraphRuntimeContext {
 	 */
 	private boolean classLoaderCaching;
 	
+	/**
+	 * For all edges is also calculated which metadata would be propagated
+	 * to this edge from neighbours, if the edge does not have any metadata directly assigned.
+	 * It is useful only for designer purpose (calculation is turned off by default).
+	 * Designer shows to user, which metadata would be on the edge, for "no metadata" option on the edge. 
+	 */
+	private boolean calculateNoMetadata;
+	
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
 		useJMX = DEFAULT_USE_JMX;
@@ -168,6 +176,7 @@ public class GraphRuntimeContext {
 		parentGraphOutputPortsConnected = null; 
 		strictGraphFactorization = true;
 		classLoaderCaching = false;
+		calculateNoMetadata = false;
 	}
 	
 	/* (non-Javadoc)
@@ -213,6 +222,7 @@ public class GraphRuntimeContext {
 		ret.parentGraphOutputPortsConnected = parentGraphOutputPortsConnected != null ? new ArrayList<>(parentGraphOutputPortsConnected) : null;
 		ret.strictGraphFactorization = isStrictGraphFactorization();
 		ret.classLoaderCaching = isClassLoaderCaching();
+		ret.calculateNoMetadata = isCalculateNoMetadata();
 
 		return ret;
 	}
@@ -252,6 +262,7 @@ public class GraphRuntimeContext {
 		prop.setProperty("parentGraphOutputPortsConnected", String.valueOf(getParentGraphOutputPortsConnected()));
 		prop.setProperty("strictGraphFactorization", Boolean.toString(isStrictGraphFactorization()));
 		prop.setProperty("classLoaderCaching", Boolean.toString(isClassLoaderCaching()));
+		prop.setProperty("calculateNoMetadata", Boolean.toString(isCalculateNoMetadata()));
 
 		return prop;
 	}
@@ -960,6 +971,26 @@ public class GraphRuntimeContext {
 
 	public void setClassLoaderCaching(boolean classLoaderCaching) {
 		this.classLoaderCaching = classLoaderCaching;
+	}
+
+	/**
+	 * For all edges is also calculated which metadata would be propagated
+	 * to this edge from neighbours, if the edge does not have any metadata directly assigned.
+	 * It is useful only for designer purpose (calculation is turned off by default).
+	 * Designer shows to user, which metadata would be on the edge, for "no metadata" option on the edge. 
+	 */
+	public boolean isCalculateNoMetadata() {
+		return calculateNoMetadata;
+	}
+
+	/**
+	 * For all edges is also calculated which metadata would be propagated
+	 * to this edge from neighbours, if the edge does not have any metadata directly assigned.
+	 * It is useful only for designer purpose (calculation is turned off by default).
+	 * Designer shows to user, which metadata would be on the edge, for "no metadata" option on the edge. 
+	 */
+	public void setCalculateNoMetadata(boolean calculateNoMetadata) {
+		this.calculateNoMetadata = calculateNoMetadata;
 	}
 
 	/**
