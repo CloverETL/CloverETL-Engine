@@ -39,6 +39,8 @@
 	<FunctionalTest ident="SpreadsheetReadWrite" graphFile="graph/SpreadsheetReadWrite.grf">
 		<FlatFile outputFile="data-out/orders_delimited.txt" supposedFile="supposed-out/orders_delimited.txt"/>
 		<FlatFile outputFile="data-out/tax_form_data.txt" supposedFile="supposed-out/tax_form_data.txt"/>
+		<DeleteFile file="data-out/orders.xlsx"/>
+		<DeleteFile file="data-out/sortedByTotalTax.xlsx"/>
 	</FunctionalTest>
 	
 	<FunctionalTest ident="WebServicesHTTP" graphFile="graph/WebServicesHTTP.grf">
@@ -97,6 +99,6 @@
 	<FunctionalTest ident="IssuesSearch" graphFile="graph/IssuesSearch.grf" excludedEtlEnvironment="engine" />
 	
 	<!-- fails on weblogic12 (CLO-5071) -->
-	<FunctionalTest ident="Twitter" graphFile="graph/Twitter.grf" excludedEtlEnvironment="engine" excludedContainers="weblogic12" />
+	<FunctionalTest ident="Twitter" graphFile="graph/Twitter.grf" excludedEtlEnvironment="engine" excludedContainers="weblogic12,weblogic-12-1-3" />
 
 </TestScenario>

@@ -95,6 +95,7 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 	
 	@Override
 	public boolean isOpen() {
+		// TODO perform a connection test request?
 		return (service != null) && !service.isShutdown();
 	}
 	
@@ -128,6 +129,18 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 			} finally {
 				this.service = null;
 			}
+		}
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		try {
+			if (isBorrowed()) {
+				// CLO-6688: leaked connections must be closed, as they may be already broken
+				close();
+			}
+		} finally {
+			super.finalize();
 		}
 	}
 

@@ -131,7 +131,7 @@ public class FileUtils {
 	public static final ProxyHandler proxyHandler = new ProxyHandler();
 
 	// file protocol name
-	private static final String FILE_PROTOCOL = "file";
+	public static final String FILE_PROTOCOL = "file";
 	private static final String FILE_PROTOCOL_ABSOLUTE_MARK = "file:./";
 	
 	// archive protocol names

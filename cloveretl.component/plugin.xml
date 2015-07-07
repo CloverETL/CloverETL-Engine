@@ -2490,7 +2490,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" primaryAttribute="true">
 	        <singleType name="file" fields="input" dictionary="input" selectionMode="file_only" />
 	      </property>
-	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHint="Auto">
 	        <singleType name="charset" />
 	      </property>
 	      <property category="basic" displayName="Data policy" modifiable="true" name="dataPolicy" nullable="true" defaultHint="Strict">
@@ -2533,7 +2533,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="File URL" modifiable="true" name="sourceUri" nullable="true" required="true" openActionLabel="Open input XML">
 	        <singleType name="file" fields="input" dictionary="input" />
 	      </property>
-	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHint="Auto">
 	        <singleType name="charset" />
 	      </property>
 	      <property category="basic" displayName="Mapping" modifiable="true" name="mapping" nullable="true" required="!mappingURL" redundant="mappingURL" primaryAttribute="true">

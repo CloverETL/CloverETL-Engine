@@ -63,7 +63,7 @@ testEnvironmentD = new File( baseD, "cloveretl.test.environment" )
 
 jobIdent = testName ? testName : jobGoal
 jobIdent += "-${versionSuffix}"
-jobIdent = jobIdent.replaceAll('-', '_').toLowerCase()
+jobIdent = jobIdent.replaceAll('-', '_').toLowerCase().replaceAll("after_commit", "a_c")
 new File(baseD, "cloveretl.test.scenarios/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 new File(baseD, "cloveretl.examples/ExtExamples/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 
@@ -100,8 +100,7 @@ if( !runTests ){
 		antTarget = "runtests-tests-reset"
 		antArgs += "-Druntests-plugins-dontrun=true"	
 		antArgs += "-Dtest.include=org/jetel/graph/ResetTest.java"
-		antCustomEnv["ANT_OPTS"] = antCustomEnv["ANT_OPTS"] + " -XX:MaxPermSize=128m"
-		// antArgs += "-Druntests-target=runtests-tests-reset"
+		antArgs += "-Dadditional.jvmargs=-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=9010 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
 	} else {
 		println "ERROR: Unknown goal '${jobGoal}'"
 		exit 1

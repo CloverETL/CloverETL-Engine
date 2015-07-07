@@ -739,7 +739,7 @@ public class MergeJoin extends Node {
 		}
 
 		join = new MergeJoin(xattribs.getString(XML_ID_ATTRIBUTE),
-				xattribs.getString(XML_JOINKEY_ATTRIBUTE),
+				xattribs.getString(XML_JOINKEY_ATTRIBUTE, null),
 				xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
 				xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
 				xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.URL),
@@ -810,6 +810,17 @@ public class MergeJoin extends Node {
 					ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
 		}
 		
+		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] {getOutputPort(WRITE_TO_PORT).getMetadata()};
+		
+		//check transformation
+		if (transformation == null) {
+			getTransformFactory(getInMetadataArray(), outMetadata).checkConfig(status);
+		}
+		if (joinKeys == null) {
+			status.add("Join key not defined.", Severity.ERROR, this, Priority.NORMAL, XML_JOINKEY_ATTRIBUTE);
+			return status;
+		}
+		
 		try {
 			inputCnt = inPorts.size();
 			slaveCnt = inputCnt - 1;
@@ -875,13 +886,6 @@ public class MergeJoin extends Node {
 			status.add(problem);
 		}
 		
-		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] {getOutputPort(WRITE_TO_PORT).getMetadata()};
-
-        //check transformation
-		if (transformation == null) {
-			getTransformFactory(getInMetadataArray(), outMetadata).checkConfig(status);
-		}
-
 		return status;
 	}
 	

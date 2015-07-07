@@ -43,6 +43,7 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
@@ -246,7 +247,7 @@ public class CloverDataReader extends Node implements MultiFileListener, Metadat
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
 		aDataReader = new CloverDataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.URL));
+					xattribs.getStringEx(XML_FILE_ATTRIBUTE, null, RefResFlag.URL));
 		if (xattribs.exists(XML_STARTRECORD_ATTRIBUTE)){
 			aDataReader.setStartRecord(xattribs.getInteger(XML_STARTRECORD_ATTRIBUTE));
 		}
@@ -282,6 +283,11 @@ public class CloverDataReader extends Node implements MultiFileListener, Metadat
         	return status;
         }
         checkMetadata(status, getOutMetadata());
+        
+        if (fileURL == null) {
+        	status.add("File URL not defined.", Severity.ERROR, this, Priority.NORMAL, XML_FILE_ATTRIBUTE);
+        	return status;
+        }
         
         // check files
     	try {
