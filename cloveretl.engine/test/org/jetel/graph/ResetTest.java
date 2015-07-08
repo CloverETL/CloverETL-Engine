@@ -248,12 +248,13 @@ public class ResetTest extends CloverTestCase {
 			IOFileFilter dirFilter = new AbstractFileFilter() {
 				@Override
 				public boolean accept(File file) {
-					return file.isDirectory() 
-							&& !file.getName().equals("bigRecords") // runs too long
-							&& !file.getName().equals("cluster") // cluster tests
-							&& !file.getName().equals("S3") 
-							&& !file.getName().equals("email") 
-							&& !file.getName().equals("windows"); // wokna only tests
+					return file.isDirectory() && file.getName().equals("hadoop");
+//					return file.isDirectory() 
+//							&& !file.getName().equals("bigRecords") // runs too long
+//							&& !file.getName().equals("cluster") // cluster tests
+//							&& !file.getName().equals("S3") 
+//							&& !file.getName().equals("email") 
+//							&& !file.getName().equals("windows"); // wokna only tests
 				}
 			};
 			
