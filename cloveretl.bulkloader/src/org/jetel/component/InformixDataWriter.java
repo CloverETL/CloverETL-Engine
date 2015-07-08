@@ -589,8 +589,8 @@ public class InformixDataWriter extends BulkLoader {
 
     	InformixDataWriter informixDataWriter = new InformixDataWriter(
     			xattribs.getString(XML_ID_ATTRIBUTE),
-                xattribs.getStringEx(XML_DB_LOADER_PATH_ATTRIBUTE, RefResFlag.URL),
-                xattribs.getString(XML_DATABASE_ATTRIBUTE));
+                xattribs.getStringEx(XML_DB_LOADER_PATH_ATTRIBUTE, null, RefResFlag.URL),
+                xattribs.getString(XML_DATABASE_ATTRIBUTE, null));
     	if (xattribs.exists(XML_TABLE_ATTRIBUTE)) {
     		informixDataWriter.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
     	}
@@ -688,7 +688,7 @@ public class InformixDataWriter extends BulkLoader {
 		}
 		if (StringUtils.isEmpty(command) && StringUtils.isEmpty(table)) {
 			status.add(new ConfigurationProblem(StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute has to be specified or " +
-					StringUtils.quote(XML_COMMAND_ATTRIBUTE) + " attribute has to be specified.", Severity.ERROR, this, Priority.NORMAL));
+					StringUtils.quote(XML_COMMAND_ATTRIBUTE) + " attribute has to be specified.", Severity.ERROR, this, Priority.NORMAL, XML_TABLE_ATTRIBUTE));
 		}
 		
 		if (!isDataReadFromPort) {
