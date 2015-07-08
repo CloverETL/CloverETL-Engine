@@ -27,6 +27,8 @@ import java.net.URLClassLoader;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -487,18 +489,24 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	}
 
 	@Override
-	public ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy, boolean closeOnGraphFinish) {
+	public ClassLoader createClassLoader(final URL[] urls, ClassLoader parent, final boolean greedy, boolean closeOnGraphFinish) {
 		if (parent == null) {
 			parent = PrimitiveAuthorityProxy.class.getClassLoader();
 		}
         if (urls == null || urls.length == 0) {
         	return parent;
         } else {
-        	if (greedy) {
-        		return new GreedyURLClassLoader(urls, parent);
-        	} else {
-        		return new URLClassLoader(urls, parent);
-        	}
+        	final ClassLoader parentFinal = parent; 
+        	return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+                @Override
+				public ClassLoader run() {
+                	if (greedy) {
+                		return new GreedyURLClassLoader(urls, parentFinal);
+                	} else {
+                		return new URLClassLoader(urls, parentFinal);
+                	}
+                }
+        	});
         }
 	}
 	
