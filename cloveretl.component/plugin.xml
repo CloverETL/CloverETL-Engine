@@ -869,6 +869,8 @@
 	<!-- CLO-397 -->
 	<extension point-id="component">
 	  <ETLComponent type="TRASHIFIER" className="org.jetel.component.Trashifier">
+	  <inputPorts/> <!-- empty element needed to fix CLO-6749, can be removed when CLO-6754 is fixed -->
+	  <outputPorts/> <!-- empty element needed to fix CLO-6749, can be removed when CLO-6754 is fixed -->
 	  </ETLComponent>
 	</extension>
 
