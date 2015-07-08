@@ -255,7 +255,7 @@ public final class HadoopProvidersFactory {
 		ClassLoader classLoader = classLoaderCache.get(classPathSet);
 		
 		if (classLoader == null) {
-			classLoader = ContextProvider.getAuthorityProxy().createClassLoader(libraries.toArray(new URL[0]), HadoopProvidersFactory.class.getClassLoader(), true); 
+			classLoader = ContextProvider.getAuthorityProxy().createClassLoader(libraries.toArray(new URL[0]), HadoopProvidersFactory.class.getClassLoader(), true, false); 
 			classLoaderCache.put(classPathSet, classLoader);
 			
 			LOG.debug("  using new classloader with classpath: " + libraries);

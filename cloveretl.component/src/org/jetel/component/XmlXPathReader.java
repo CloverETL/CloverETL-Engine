@@ -295,6 +295,7 @@ public class XmlXPathReader extends Node {
         parser.setNumRecords(numRecords);
         parser.setGraph(getGraph());
         parser.setXmlFeatures(xmlFeatures);
+        parser.setCharset(charset); // CLO-6708
         reader.setInputPort(getInputPort(INPUT_PORT)); //for port protocol: ReadableChannelIterator reads data
         reader.setCharset(charset);
         reader.setPropertyRefResolver(getPropertyRefResolver());

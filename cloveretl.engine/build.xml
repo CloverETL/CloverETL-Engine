@@ -970,6 +970,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 				<jvmarg value="-Xmx2048m"/>
 				<jvmarg value="-XX:MaxPermSize=512m"/>
 				<jvmarg value="-Dderby.system.home=${dir.examples}/ExtExamples"/>
+				<jvmarg line="${additional.jvmargs}" if="additional.jvmargs"/>
 				<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
 				<classpath>
 					<pathelement path="${dir.classestest}"/>

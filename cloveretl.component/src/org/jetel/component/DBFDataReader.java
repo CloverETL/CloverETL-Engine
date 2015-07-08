@@ -325,11 +325,11 @@ public class DBFDataReader extends Node {
 		
 		if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 			dbfDataReader = new DBFDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, RefResFlag.URL),
+					xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.URL),
 					xattribs.getString(XML_CHARSET_ATTRIBUTE));
 		} else {
 			dbfDataReader = new DBFDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, RefResFlag.URL));
+					xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.URL));
 		}
 		if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
 			dbfDataReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE));
@@ -380,6 +380,11 @@ public class DBFDataReader extends Node {
         }
         
         checkMetadata(status, getOutMetadata());
+        
+        if (fileURL == null) {
+        	status.add("File URL not defined.", Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE);
+        	return status;
+        }
 
         try { 
             // check inputs

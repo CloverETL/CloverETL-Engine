@@ -45,6 +45,7 @@ import org.jetel.exception.TempFileCreationException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Edge;
 import org.jetel.graph.EdgeBase;
+import org.jetel.graph.GraphElement;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
 import org.jetel.graph.Node;
@@ -55,6 +56,7 @@ import org.jetel.graph.runtime.jmx.GraphTracking;
 import org.jetel.graph.runtime.jmx.TrackingEvent;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.FileConstrains;
+import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.file.WcardPattern;
 import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.string.StringUtils;
@@ -609,8 +611,27 @@ public abstract class IAuthorityProxy {
 	
 	public abstract ClassLoader getClassLoader(URL[] urls, ClassLoader parent, boolean greedy);
 
-	public abstract ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy);
+	public ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy) {
+		return createClassLoader(urls, parent, greedy, true);
+	}
 
+	/**
+	 * Creates new classloader.
+	 * @param urls classloader classpath
+	 * @param parent parent classloader
+	 * @param greedy true if the classloader should be instance of {@link GreedyURLClassLoader}
+	 * @param closeOnGraphFinish true if the classloader should be closed on graph finish (true is recommended)
+	 * @return
+	 */
+	public abstract ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy, boolean closeOnGraphFinish);
+
+	/**
+	 * Releases all URLClassLoaders created using {@link #createClassLoader(URL[], ClassLoader, boolean)}
+	 * method exclusively for the given graph element.
+	 * @param relatedGraphElement
+	 */
+	public abstract void freeRelatedClassLoaders(GraphElement relatedGraphElement);
+	
 	/**
 	 * Creates new classloader with multiple parent classloaders.
 	 * @return multi-parent classloader based on the given parent classloaders

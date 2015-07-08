@@ -43,6 +43,7 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
@@ -246,7 +247,7 @@ public class CloverDataReader extends Node implements MultiFileListener, Metadat
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
 		aDataReader = new CloverDataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.URL));
+					xattribs.getStringEx(XML_FILE_ATTRIBUTE, null, RefResFlag.URL));
 		if (xattribs.exists(XML_STARTRECORD_ATTRIBUTE)){
 			aDataReader.setStartRecord(xattribs.getInteger(XML_STARTRECORD_ATTRIBUTE));
 		}
@@ -282,6 +283,11 @@ public class CloverDataReader extends Node implements MultiFileListener, Metadat
         	return status;
         }
         checkMetadata(status, getOutMetadata());
+        
+        if (fileURL == null) {
+        	status.add("File URL not defined.", Severity.ERROR, this, Priority.NORMAL, XML_FILE_ATTRIBUTE);
+        	return status;
+        }
         
         // check files
     	try {
@@ -541,22 +547,24 @@ public class CloverDataReader extends Node implements MultiFileListener, Metadat
 				@Override
 				public MVMetadata call() throws Exception {
 					URL url = FileUtils.getFirstInput(getContextURL(), fileURL);
-					try (InputStream stream = url.openStream()) {
-						FileConfig header = CloverDataParser.readHeader(stream);
-						DataRecordMetadata fileMetadata = header.metadata;
-						if (header.formatVersion == CloverDataFormatter.DataFormatVersion.VERSION_35) {
-							String file = url.getFile();
-							int idx = file.lastIndexOf("/");
-							if (idx >= 0) {
-								file = file.substring(idx + 1);
+					if (url != null) { // CLO-6714
+						try (InputStream stream = url.openStream()) {
+							FileConfig header = CloverDataParser.readHeader(stream);
+							DataRecordMetadata fileMetadata = header.metadata;
+							if (header.formatVersion == CloverDataFormatter.DataFormatVersion.VERSION_35) {
+								String file = url.getFile();
+								int idx = file.lastIndexOf("/");
+								if (idx >= 0) {
+									file = file.substring(idx + 1);
+								}
+								if (!file.isEmpty()) {
+									fileMetadata.setLabel(file);
+									fileMetadata.normalize();
+								}
 							}
-							if (!file.isEmpty()) {
-								fileMetadata.setLabel(file);
-								fileMetadata.normalize();
+							if (fileMetadata != null) { // 3.5 and newer
+								return metadataPropagationResolver.createMVMetadata(fileMetadata, CloverDataReader.this, null, MVMetadata.DEFAULT_PRIORITY);
 							}
-						}
-						if (fileMetadata != null) { // 3.5 and newer
-							return metadataPropagationResolver.createMVMetadata(fileMetadata, CloverDataReader.this, null, MVMetadata.DEFAULT_PRIORITY);
 						}
 					}
 					

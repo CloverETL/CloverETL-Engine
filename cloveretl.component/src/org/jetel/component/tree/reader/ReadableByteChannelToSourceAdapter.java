@@ -18,12 +18,18 @@
  */
 package org.jetel.component.tree.reader;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
 import javax.xml.transform.sax.SAXSource;
 
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.util.XmlUtils;
+import org.jetel.util.file.FileUtils;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
@@ -36,28 +42,44 @@ public class ReadableByteChannelToSourceAdapter implements InputAdapter {
 
 	private String charset;
 	private XMLReader xmlReader;
+	private URL contextUrl;
 
 	public ReadableByteChannelToSourceAdapter(String charset) {
-		this.charset = charset;
+		this(charset, null);
 	}
 	
 	public ReadableByteChannelToSourceAdapter(String charset, XMLReader xmlReader) {
+		this(charset, xmlReader, null);
+	}
+
+	public ReadableByteChannelToSourceAdapter(String charset, XMLReader xmlReader, URL contextUrl) {
 		this.charset = charset;
 		this.xmlReader = xmlReader;
+		this.contextUrl = contextUrl;
 	}
 
 	@Override
 	public Object adapt(Object input) {
-		if (input instanceof ReadableByteChannel) {
-			InputSource inputSource = new InputSource(Channels.newInputStream((ReadableByteChannel) input));
-			if (charset != null) {
-				inputSource.setEncoding(charset);
+		InputSource inputSource;
+		if (input instanceof URI) { // CLO-6632: URI is the preferred data source type for XML components
+			try {
+				String uri = input.toString();
+				InputStream is = FileUtils.getInputStream(contextUrl, uri);
+				inputSource = new InputSource(is);
+				XmlUtils.setSystemId(inputSource, contextUrl, uri);
+			} catch (IOException e) {
+				throw new JetelRuntimeException("Could not read input " + input);
 			}
-
-			return new SAXSource(xmlReader, inputSource);
+		} else if (input instanceof ReadableByteChannel) {
+			inputSource = new InputSource(Channels.newInputStream((ReadableByteChannel) input));
 		} else {
 			throw new JetelRuntimeException("Could not read input " + input);
 		}
+
+		if (charset != null) {
+			inputSource.setEncoding(charset);
+		}
+		return new SAXSource(xmlReader, inputSource);
 	}
 
 }
