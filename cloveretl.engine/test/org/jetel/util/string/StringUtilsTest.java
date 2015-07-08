@@ -851,6 +851,19 @@ public class StringUtilsTest extends CloverTestCase {
 		assertEquals("abcxxxxxxdefxxx", StringUtils.removeNewLineChars("abc\n\rdef\n", "xxx"));
 	}
 	
+	public void testIsMultiline() {
+		assertTrue(StringUtils.isMultiline("a\nb"));
+		assertTrue(StringUtils.isMultiline("a\rb"));
+		assertTrue(StringUtils.isMultiline("a\r\nb"));
+		assertTrue(StringUtils.isMultiline("a\n\rb"));
+		
+		assertFalse(StringUtils.isMultiline("ab"));
+		assertFalse(StringUtils.isMultiline("a b"));
+		assertFalse(StringUtils.isMultiline("a\tb"));
+		assertFalse(StringUtils.isMultiline(""));
+		assertFalse(StringUtils.isMultiline(null));
+	}
+	
 }
 
 /*
