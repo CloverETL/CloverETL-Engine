@@ -132,22 +132,24 @@ public class SequenceChecker extends Node {
 	 */
 	public SequenceChecker(String id, String[] keyFieldNames, boolean oldAscendingOrder) {
 		super(id);
-        this.sortOrderings = new boolean[keyFieldNames.length];
-        Arrays.fill(sortOrderings, oldAscendingOrder);
-		
-        Pattern pat = Pattern.compile("^(.*)\\((.*)\\)$");
-        
-        for (int i = 0; i < keyFieldNames.length; i++) {
-        	Matcher matcher = pat.matcher(keyFieldNames[i]);
-        	if (matcher.find()) {
-	        	String keyPart = keyFieldNames[i].substring(matcher.start(1), matcher.end(1));
-	        	if (matcher.groupCount() > 1) {
-	        		sortOrderings[i] = (keyFieldNames[i].substring(matcher.start(2), matcher.end(2))).matches("^[Aa].*");	        		
-	        	}
-	        	keyFieldNames[i] = keyPart;
-        	}
-        }
-		this.keyFieldNames = keyFieldNames;
+		if (keyFieldNames != null) {
+			this.sortOrderings = new boolean[keyFieldNames.length];
+			Arrays.fill(sortOrderings, oldAscendingOrder);
+
+			Pattern pat = Pattern.compile("^(.*)\\((.*)\\)$");
+
+			for (int i = 0; i < keyFieldNames.length; i++) {
+				Matcher matcher = pat.matcher(keyFieldNames[i]);
+				if (matcher.find()) {
+					String keyPart = keyFieldNames[i].substring(matcher.start(1), matcher.end(1));
+					if (matcher.groupCount() > 1) {
+						sortOrderings[i] = (keyFieldNames[i].substring(matcher.start(2), matcher.end(2))).matches("^[Aa].*");
+					}
+					keyFieldNames[i] = keyPart;
+				}
+			}
+			this.keyFieldNames = keyFieldNames;
+		}
 	}
 
 	/**
@@ -226,6 +228,10 @@ public class SequenceChecker extends Node {
         if(isInitialized()) return;
 		super.init();
 		
+		if (keyFieldNames == null) {
+			throw new ComponentNotReadyException("Sort key must be set.", XML_SORTKEY_ATTRIBUTE);
+		}
+		
 		int keyFields[];
         Integer position;
         keyFields = new int[keyFieldNames.length];
@@ -263,9 +269,11 @@ public class SequenceChecker extends Node {
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		SequenceChecker checker;
-		checker = new SequenceChecker(xattribs.getString(XML_ID_ATTRIBUTE),
-				xattribs.getString(XML_SORTKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-				xattribs.getString(XML_SORTORDER_ATTRIBUTE, "A").matches("^[Aa].*"));
+		
+		String sortKeyRaw = xattribs.getString(XML_SORTKEY_ATTRIBUTE, null);
+		String[] sortKey = sortKeyRaw != null ? sortKeyRaw.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX) : null;
+		
+		checker = new SequenceChecker(xattribs.getString(XML_ID_ATTRIBUTE), sortKey, xattribs.getString(XML_SORTORDER_ATTRIBUTE, "A").matches("^[Aa].*"));
 		if (xattribs.exists(XML_UNIQUE_ATTRIBUTE)){
 			checker.setUnique(xattribs.getBoolean(XML_UNIQUE_ATTRIBUTE));
 		}
