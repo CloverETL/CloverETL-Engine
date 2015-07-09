@@ -56,12 +56,16 @@ public class EnabledEnum {
     public static final EnabledEnum TRUE = new EnabledEnum("true", "Enabled", true);
     public static final EnabledEnum FALSE = new EnabledEnum("false", "Disabled", false);
     
+    //CLO-397 - this is the "cascade disable" option
+    //component will remain in graph and all subsequent "non-trashed" components will be considered as disabled
+    public static final EnabledEnum TRASH = new EnabledEnum("trash", "Trash", true);
+    
     //discard is non-public enabled status which is used by clustered graphs to remove components from graph with all related edges
     //regular disabled component is replaced by a 'pass-through' edge if possible, discarded component wipes out all related edges
     //see TransformationGraphAnalyser#disableNodesInPhases()
     public static final EnabledEnum DISCARD = new EnabledEnum("discard", "Discard", false);
     
-    private static final EnabledEnum[] values = new EnabledEnum[] { ALWAYS, NEVER, ENABLED, DISABLED, PASS_THROUGH, TRUE, FALSE, DISCARD }; 
+    private static final EnabledEnum[] values = new EnabledEnum[] { ALWAYS, NEVER, ENABLED, DISABLED, PASS_THROUGH, TRUE, FALSE, DISCARD, TRASH }; 
 
 	public static final EnabledEnum DEFAULT_VALUE = ENABLED;
 
@@ -125,6 +129,13 @@ public class EnabledEnum {
      */
     public boolean isEnabled() {
     	return enabled;
+    }
+    
+    /**
+     * @return true if a component with this value is kept in graph but "replaced" with trash
+     */
+    public boolean isBlocker() {
+    	return this == TRASH;
     }
     
     /**

@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
@@ -33,6 +34,7 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.ComponentFactory;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ConfigurationStatus;
@@ -56,6 +58,7 @@ import org.jetel.graph.runtime.SingleThreadWatchDog;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.MetadataUtils;
 import org.jetel.util.GraphUtils;
+import org.jetel.util.Pair;
 import org.jetel.util.SubgraphUtils;
 
 /*
@@ -84,6 +87,9 @@ public class TransformationGraphAnalyzer {
 	 * - correct edge types are detected
 	 */
 	public static void analyseGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext, boolean propagateMetadata) {
+		// analyze blockers and blocked components before we edit the graph
+		TransformationGraphAnalyzer.computeBlockedComponents(graph);
+		
         //remove disabled components and their edges
 		try {
 			TransformationGraphAnalyzer.disableNodesInPhases(graph);
@@ -124,6 +130,12 @@ public class TransformationGraphAnalyzer {
 			//compare implicit metadata with persisted implicit metadata
 			//this validation is now temporary turned off - will be enabled in future releases (maybe) - see CLO-4144
 			//validateImplicitMetadata(mvGraph);
+		}
+		
+		try {
+			TransformationGraphAnalyzer.removeBlockedNodes(graph);
+		} catch (GraphConfigurationException e) {
+			throw new JetelRuntimeException("Removing blocked nodes failed.", e);
 		}
 
         //analyze type of edges - specially buffered and phase edges
@@ -667,26 +679,139 @@ public class TransformationGraphAnalyzer {
 	}
 
 	/**
-	 * Disconnect all edges connected to the given node.
+	 * Removes blocked components from the graph.
+	 * Puts together a set of blocked components that still need to be kept in the graph as additional trashifiers.
 	 * 
-	 * @param node
+	 * @param graph
 	 * @throws GraphConfigurationException
 	 */
-	private static void disconnectAllEdges(Node node) throws GraphConfigurationException {
+	public static void removeBlockedNodes(TransformationGraph graph) throws GraphConfigurationException {
+		graph.getKeptBlockedComponents().clear();
+		List<Node> nodesToRemove = new LinkedList<Node>();
+		List<Node> nodesToAdd = new LinkedList<Node>();
+		Set<String> blockedIds = graph.getBlockedIDs();
+		Phase[] phases = graph.getPhases();
+
+		for (int i = 0; i < phases.length; i++) {
+			nodesToRemove.clear();
+			nodesToAdd.clear();
+			for (Node node : phases[i].getNodes().values()) {
+				if (node.getEnabled() == EnabledEnum.TRASH || blockedIds.contains(node.getId())) {
+					nodesToRemove.add(node);
+					
+					if (node.getEnabled() == EnabledEnum.TRASH) {
+						Node trashifier = replaceByTrashifier(node);
+						nodesToAdd.add(trashifier);
+					} else {
+						// blocked component
+						boolean keep = false; // some blocked components need to be kept (when there's enabled non-blocked component writing to them)
+						for (InputPort inPort : node.getInPorts()) {
+							Node predecessor = inPort.getWriter();
+							if (!predecessor.getEnabled().isBlocker() && !blockedIds.contains(predecessor.getId())) {
+								graph.getKeptBlockedComponents().add(node);
+								keep = true;
+								Node trashifier = replaceByTrashifier(node);
+								nodesToAdd.add(trashifier);
+								break;
+							}
+						}
+						if (!keep) {
+							disconnectAllEdges(node);
+						}
+					}
+				}
+			}
+			for (Node node : nodesToRemove) {
+				phases[i].deleteNode(node);
+			}
+			for (Node node : nodesToAdd) {
+				phases[i].addNode(node);
+			}
+		}
+	}
+	
+	/**
+	 * Replaces given node by trashifier in its graph.
+	 * The edges are reconnected but the returned trashifier is not added to the graph and original node is not removed by this method.
+	 * @param node
+	 * @throws GraphConfigurationException 
+	 */
+	private static Node replaceByTrashifier(Node node) throws GraphConfigurationException {
+		Node trashifier = ComponentFactory.createComponent(node.getGraph(), "TRASHIFIER", node.getId(), node.getAttributes());
+		trashifier.setEnabled(node.getEnabled());
+		
+		// reconnect input edges
+		for (Entry<Integer, InputPort> entry : node.getInputPorts().entrySet()) {
+			trashifier.addInputPort(entry.getKey(), entry.getValue());
+		}
+		
+		disconnectOutputEdges(node);
+		return trashifier;
+	}
+	
+	private static void disconnectInputEdges(Node node) throws GraphConfigurationException {
 		for (Iterator<InputPort> it1 = node.getInPorts().iterator(); it1.hasNext();) {
 			final Edge edge = it1.next().getEdge();
-			Node writer = edge.getWriter();
+			final Node writer = edge.getWriter();
 			if (writer != null)
 				writer.removeOutputPort(edge);
 			node.getGraph().deleteEdge(edge);
+			it1.remove();
 		}
-
+	}
+	
+	private static void disconnectOutputEdges(Node node) throws GraphConfigurationException {
 		for (Iterator<OutputPort> it1 = node.getOutPorts().iterator(); it1.hasNext();) {
 			final Edge edge = it1.next().getEdge();
 			final Node reader = edge.getReader();
 			if (reader != null)
 				reader.removeInputPort(edge);
 			node.getGraph().deleteEdge(edge);
+			it1.remove();
+		}
+	}
+
+	/**
+	 * Disconnect all edges connected to the given node.
+	 * 
+	 * @param node
+	 * @throws GraphConfigurationException
+	 */
+	private static void disconnectAllEdges(Node node) throws GraphConfigurationException {
+		disconnectInputEdges(node);
+		disconnectOutputEdges(node);		
+	}
+	
+	/**
+	 * Goes through the graph and saves information about blockers and blocked components to the graph.
+	 */
+	public static void computeBlockedComponents(TransformationGraph graph) {
+		Map<Node, Set<Node>> blockingComponentsInfo = graph.getBlockingComponentsInfo();
+		blockingComponentsInfo.clear();
+		
+		// stack of: Pair<source blocker component, blocked component>
+		Stack<Pair<Node, Node>> stack = new Stack<>();
+		
+		// add blockers
+		for (Node node : graph.getNodes().values()) {
+			if (node.getEnabled().isBlocker()) {
+				blockingComponentsInfo.put(node, new HashSet<Node>());
+				stack.push(new Pair<Node, Node>(node, node));
+			}
+		}
+		
+		// add downstream nodes
+		while (!stack.isEmpty()) {
+			Pair<Node, Node> blockerInfo = stack.pop();
+			for (OutputPort outPort : blockerInfo.getSecond().getOutPorts()) {
+				Node next = outPort.getEdge().getReader();
+				if (!next.getEnabled().isBlocker() // "disabled as trash" components can't be blocked
+						&& !blockingComponentsInfo.get(blockerInfo.getFirst()).contains(next) // component is blocked only once per each blocker
+						&& !SubgraphUtils.isSubJobInputOutputComponent(next.getType())) { // subgraphInput and subgraphOutput can't be blocked
+					stack.push(new Pair<Node, Node>(blockerInfo.getFirst(), next));
+					blockingComponentsInfo.get(blockerInfo.getFirst()).add(next);
+				}
+			}
 		}
 	}
 

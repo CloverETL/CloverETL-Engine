@@ -37,6 +37,8 @@ import org.apache.log4j.MDC;
 import org.jetel.component.ComponentDescription;
 import org.jetel.component.ComponentDescriptionImpl;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
+import org.jetel.data.Defaults;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
