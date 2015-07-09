@@ -58,7 +58,9 @@ public class MetadataPropagationResolver {
 	public void analyseGraph() {
 		//find "no metadata" for all edges with direct metadata
 		//"no metadata" is metadata, which would be used if the edge does not have the direct metadata associated
-		findAllNoMetadata();
+		if (mvGraph.getModel().getRuntimeContext().isCalculateNoMetadata()) {
+			findAllNoMetadata();
+		}
 
 		//go through all edges and search metadata if necessary
 		for (Edge edge : mvGraph.getModel().getEdges().values()) {

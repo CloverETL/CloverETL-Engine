@@ -39,6 +39,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.data.parser.XmlSaxParser;
 import org.jetel.data.parser.XmlSaxParser.MyHandler;
 import org.jetel.exception.AttributeNotFoundException;
@@ -411,6 +412,7 @@ public class XMLExtract extends Node {
 		this.readableChannelIterator.setCharset(charset);
 		this.readableChannelIterator.setPropertyRefResolver(getPropertyRefResolver());
 		this.readableChannelIterator.setDictionary(graph.getDictionary());
+		this.readableChannelIterator.setPreferredDataSourceType(DataSourceType.STREAM);
 	}
 
 	@Override
@@ -447,13 +449,19 @@ public class XMLExtract extends Node {
 	 * @throws JetelException
 	 */
 	private boolean nextSource() throws JetelException {
-		ReadableByteChannel stream = null;
+		Object input = null;
+		InputStream is = null;
 		while (readableChannelIterator.hasNext()) {
 			autoFilling.resetSourceCounter();
 			autoFilling.resetGlobalSourceCounter();
-			stream = readableChannelIterator.nextChannel();
-			if (stream == null)
+			input = readableChannelIterator.next();
+			if (input == null)
 				continue; // if record no record found
+			if (input instanceof InputStream) {
+				is = (InputStream) input;
+			} else if (input instanceof ReadableByteChannel) {
+				is = Channels.newInputStream((ReadableByteChannel) input);
+			}
 			autoFilling.setFilename(readableChannelIterator.getCurrentFileName());
 			long fileSize = 0;
 			Date fileTimestamp = null;
@@ -471,7 +479,7 @@ public class XMLExtract extends Node {
 			autoFilling.setFileTimestamp(fileTimestamp);
 
 			String url = autoFilling.getFilename();
-			m_inputSource = new InputSource(this.handleBOM(stream, url));
+			m_inputSource = new InputSource(this.handleBOM(is, url));
 			if (charset != null) {
 				m_inputSource.setEncoding(charset); // CLO-6692: override encoding detection
 			}
@@ -482,8 +490,11 @@ public class XMLExtract extends Node {
 		return false;
 	}
 
-	private InputStream handleBOM(ReadableByteChannel stream, String fileName) throws JetelException {
-		PushbackInputStream pushbackInputStream = new PushbackInputStream(Channels.newInputStream(stream), 4);
+	private InputStream handleBOM(InputStream is, String fileName) throws JetelException {
+		if (charset == null) {
+			return is;
+		}
+		PushbackInputStream pushbackInputStream = new PushbackInputStream(is, 4);
 
 		try {
 			byte[] bom = new byte[4];

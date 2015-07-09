@@ -193,12 +193,12 @@ public class SortWithinGroups extends Node {
 
         ComponentXMLAttributes componentAttributes = new ComponentXMLAttributes(xmlElement, transformationGraph);
 
-        String groupKey = componentAttributes.getString(XML_ATTRIBUTE_GROUP_KEY);
-        String sortKey = componentAttributes.getString(XML_ATTRIBUTE_SORT_KEY);
+        String groupKeyRaw = componentAttributes.getString(XML_ATTRIBUTE_GROUP_KEY, null);
+        String[] groupKey = groupKeyRaw != null ? groupKeyRaw.trim().split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX) : null;
+        String sortKeyRaw = componentAttributes.getString(XML_ATTRIBUTE_SORT_KEY, null);
+        String[] sortKey = sortKeyRaw != null ? sortKeyRaw.trim().split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX) : null;
 
-        sortWithinGroups = new SortWithinGroups(componentAttributes.getString(XML_ID_ATTRIBUTE),
-                groupKey.trim().split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-                sortKey.trim().split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+        sortWithinGroups = new SortWithinGroups(componentAttributes.getString(XML_ID_ATTRIBUTE), groupKey, sortKey);
 
         if (componentAttributes.exists(XML_NAME_ATTRIBUTE)) {
             sortWithinGroups.setName(componentAttributes.getString(XML_NAME_ATTRIBUTE));

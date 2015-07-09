@@ -282,7 +282,7 @@ public class JsonExtract extends Node {
 		extract = new JsonExtract(xattribs.getString(XML_ID_ATTRIBUTE));
 
 		// set input file
-		extract.setInputFile(xattribs.getStringEx(XML_SOURCEURI_ATTRIBUTE, RefResFlag.URL));
+		extract.setInputFile(xattribs.getStringEx(XML_SOURCEURI_ATTRIBUTE, null, RefResFlag.URL));
 
 		extract.setUseNestedNodes(xattribs.getBoolean(XML_USENESTEDNODES_ATTRIBUTE, true));
 
@@ -298,9 +298,6 @@ public class JsonExtract extends Node {
 			// old-fashioned version of mapping definition
 			// mapping xml elements are child nodes of the component
 			extract.setNodes(nodes);
-		} else {
-			xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.URL); // throw configuration
-																								// exception
 		}
 
 		// set a skip row attribute
@@ -444,6 +441,14 @@ public class JsonExtract extends Node {
 
 		if (charset != null && !Charset.isSupported(charset)) {
 			status.add(new ConfigurationProblem("Charset " + charset + " not supported!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+		}
+		
+		if (inputFile == null) {
+			status.add(new ConfigurationProblem("File URL not defined.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_SOURCEURI_ATTRIBUTE));
+		}
+		
+		if (mapping == null && mappingURL == null && mappingNodes == null) {
+			status.add(new ConfigurationProblem("Mapping not defined.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 		}
 
 		TransformationGraph graph = getGraph();

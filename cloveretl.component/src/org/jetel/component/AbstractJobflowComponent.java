@@ -19,10 +19,12 @@
 package org.jetel.component;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
@@ -36,8 +38,10 @@ import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CTLMapping;
 import org.jetel.util.CTLMapping.MissingRecordFieldMessage;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
+import org.jetel.util.string.StringUtils;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -340,7 +344,16 @@ public abstract class AbstractJobflowComponent extends Node {
 		try {
         	tryToInit(status);
         } catch (Exception e) {
-        	status.add("Initialization failed", e, Severity.ERROR, this, Priority.NORMAL);
+        	ConfigurationProblem problem = new ConfigurationProblem("Initialization failed", e, Severity.ERROR, this, Priority.NORMAL, null);
+        	
+        	List<ComponentNotReadyException> list = ExceptionUtils.getAllExceptions(e, ComponentNotReadyException.class);
+        	if (!list.isEmpty()) {
+        		String attrName = list.get(0).getAttributeName();
+        		if (!StringUtils.isEmpty(attrName)) {
+        			problem.setAttributeName(attrName);
+        		}
+        	}
+        	status.add(problem);
         }
         
 		if (redirectErrorOutput && !hasOutputPort) {

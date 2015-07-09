@@ -71,6 +71,7 @@
 	<property name="dir.licenses" value="${basedir}/licenses" />
 	<property name="run.coverage" value="false"/>
 	<property name="jacoco.dest.file" location="${basedir}/jacoco.exec"/>
+	<property name="additional.jvmargs" value=""/>
 	
 	<!--load external properties-->
 	<property file="build-local.properties"/>
@@ -970,6 +971,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 				<jvmarg value="-Xmx2048m"/>
 				<jvmarg value="-XX:MaxPermSize=512m"/>
 				<jvmarg value="-Dderby.system.home=${dir.examples}/ExtExamples"/>
+				<jvmarg line="${additional.jvmargs}"/>
 				<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
 				<classpath>
 					<pathelement path="${dir.classestest}"/>
