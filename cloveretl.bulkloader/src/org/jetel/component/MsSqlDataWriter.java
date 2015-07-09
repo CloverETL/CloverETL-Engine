@@ -1062,11 +1062,11 @@ public class MsSqlDataWriter extends BulkLoader {
         
 		//---checkParams
 		if (StringUtils.isEmpty(loadUtilityPath)) {
-			status.add(new ConfigurationProblem(StringUtils.quote(XML_BCP_UTILITY_PATH_ATTRIBUTE) + " attribute have to be set.",
+			status.add(new ConfigurationProblem(StringUtils.quote(XML_BCP_UTILITY_PATH_ATTRIBUTE) + " attribute has to be set.",
 					Severity.ERROR, this, Priority.HIGH, XML_BCP_UTILITY_PATH_ATTRIBUTE));			
 		}
 		if (StringUtils.isEmpty(database)) {
-			status.add(new ConfigurationProblem(StringUtils.quote(XML_DATABASE_ATTRIBUTE) + " attribute have to be set.",
+			status.add(new ConfigurationProblem(StringUtils.quote(XML_DATABASE_ATTRIBUTE) + " attribute has to be set.",
 					Severity.ERROR, this, Priority.HIGH, XML_DATABASE_ATTRIBUTE));			
 		}
 		if (StringUtils.isEmpty(table) && StringUtils.isEmpty(view)) {

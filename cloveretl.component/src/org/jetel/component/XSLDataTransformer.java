@@ -428,8 +428,8 @@ public class XSLDataTransformer extends Node {
 					xattribs.getString(XML_XSLT_ATTRIBUTE, null));
 		} else {
 			xslTransformer = new XSLDataTransformer(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_XML_INPUT_FILE_ATTRIBUTE, RefResFlag.URL),
-					xattribs.getStringEx(XML_XML_OUTPUT_FILE_ATTRIBUTE, RefResFlag.URL),
+					xattribs.getStringEx(XML_XML_INPUT_FILE_ATTRIBUTE, null, RefResFlag.URL),
+					xattribs.getStringEx(XML_XML_OUTPUT_FILE_ATTRIBUTE, null, RefResFlag.URL),
 					xattribs.getStringEx(XML_XSLT_FILE_ATTRIBUTE, null, RefResFlag.URL),
 					xattribs.getString(XML_XSLT_ATTRIBUTE, null));
 		}
