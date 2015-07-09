@@ -865,6 +865,14 @@
 	    </properties>
 	  </ETLComponent>
 	</extension>
+	
+	<!-- CLO-397 -->
+	<extension point-id="component">
+	  <ETLComponent type="TRASHIFIER" className="org.jetel.component.Trashifier">
+	  <inputPorts/> <!-- empty element needed to fix CLO-6749, can be removed when CLO-6754 is fixed -->
+	  <outputPorts/> <!-- empty element needed to fix CLO-6749, can be removed when CLO-6754 is fixed -->
+	  </ETLComponent>
+	</extension>
 
 	<extension point-id="component">
 	  <ETLComponent category="others" iconPath="icons/others/DBExecute" name="DBExecute" type="DB_EXECUTE" className="org.jetel.component.DBExecute">

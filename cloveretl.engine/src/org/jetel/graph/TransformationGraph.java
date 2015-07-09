@@ -25,12 +25,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -220,6 +222,18 @@ public final class TransformationGraph extends GraphElement {
 	 * Moreover, this cache is used also for check component configuration, see {@link Node#checkConfig(ConfigurationStatus)}. 
 	 */
 	private Map<Node, String> rawComponentEnabledAttribute = new HashMap<>();
+	
+	/**
+	 * This map contains set of blocked components for each blocker component. This map is used for displaying info about blockers
+	 * in GUI tooltips. Contains nodes of original components - i.e. not the Trashifiers that are used as replacements.
+	 */
+	private Map<Node, Set<Node>> blockingComponents = new HashMap<>();
+	
+	/**
+	 * Set of components that are blocked but are kept in the graph so they can still accept records.
+	 * Contains nodes of original components - i.e. not the Trashifiers that are used as replacements.
+	 */
+	private Set<Node> keptBlocked = new HashSet<Node>();
 	
 	public TransformationGraph() {
 		this(DEFAULT_GRAPH_ID);
@@ -1698,6 +1712,37 @@ public final class TransformationGraph extends GraphElement {
 	 */
 	public void setRawComponentEnabledAttribute(Map<Node, String> rawComponentEnabledAttribute) {
 		this.rawComponentEnabledAttribute = rawComponentEnabledAttribute;
+	}
+	
+	/**
+	 * 
+	 * @return Map with a set of blocked nodes for each blocker component.
+	 */
+	public Map<Node, Set<Node>> getBlockingComponentsInfo() {
+		return blockingComponents;
+	}
+
+	public void setBlockingComponentsInfo(Map<Node, Set<Node>> blockingComponents) {
+		this.blockingComponents = blockingComponents;
+	}
+	
+	/**
+	 * @return Set of IDs of blocked components. The info is gathered during graph analysis in {@link #computeBlockedComponents()}.
+	 */
+	public Set<String> getBlockedIDs() {
+		Set<String> blocked = new HashSet<>();
+		
+		for (Entry<Node, Set<Node>> blockerInfo : blockingComponents.entrySet()) {
+			for (Node blockedComponent : blockerInfo.getValue()) {
+				blocked.add(blockedComponent.getId());
+			}
+		}
+		
+		return blocked;
+	}
+	
+	public Set<Node> getKeptBlockedComponents() {
+		return keptBlocked;
 	}
 
 }
