@@ -28,12 +28,14 @@ import java.util.UUID;
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.data.TLTypeEnum;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.GraphParameter;
 import org.jetel.graph.GraphParameters;
 import org.jetel.graph.Node;
 import org.jetel.graph.SubgraphPort;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.HashCodeUtil;
+import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
@@ -59,6 +61,7 @@ public class UtilLib extends TLFunctionLibrary {
 				case "getSubgraphOutputPortsCount": return new GetSubgraphOutputPortsCountFunction();
 				case "isSubgraphInputPortConnected": return new IsSubgraphInputPortConnectedFunction();
 				case "isSubgraphOutputPortConnected": return new IsSubgraphOutputPortConnectedFunction();
+				case "parseProperties": return new ParsePropertiesFunction(); //$NON-NLS-1$
 //	    		case "byteSet": return new ByteSetFunction();
 			}
 		} 
@@ -589,5 +592,34 @@ public class UtilLib extends TLFunctionLibrary {
     		stack.push(isSubgraphOutputPortConnected(context, portIndex));
     	}
     }
+
+	// PARSE PROPERTIES FUNCTION
+
+	/**
+	 * @see PropertiesFactory#makeObject(String)
+	 * 
+	 * @param context
+	 * @param input
+	 * @return
+	 */
+	@TLFunctionAnnotation("Converts properties from a string to a map")
+	public static final Map<String, String> parseProperties(TLFunctionCallContext context, String input) {
+		try {
+			return PropertiesUtils.deserialize(input);
+		} catch (Exception e) {
+			// should never happen
+			throw new JetelRuntimeException("Parsing failed", e);
+		}
+	}
+	
+	private static class ParsePropertiesFunction extends TLFunctionAdapter {
+		
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(parseProperties(context, stack.popString()));
+		}
+
+	}
+	
 
 }
