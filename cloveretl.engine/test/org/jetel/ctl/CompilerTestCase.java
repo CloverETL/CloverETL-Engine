@@ -12089,4 +12089,28 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 	}
+
+	/**
+	 * @see PropertiesUtilsTest#testDeserialize()
+	 */
+	@SuppressWarnings("serial")
+	public void test_stringlib_parseProperties() {
+		doCompile("test_stringlib_parseProperties");
+		Map<String, String> expected = new HashMap<String, String>();
+		expected.put("xxx", "1");
+		expected.put("kkk", "2");
+		expected.put("aaa", "3");
+		expected.put("bbb", "4");
+		Map<?, ?> actual = (Map<?, ?>) getVariable("ret1");
+		List<?> keys = new ArrayList<>(actual.keySet());
+		assertEquals(Arrays.asList("xxx", "kkk", "aaa", "bbb"), keys); // check order
+		check("ret1", expected);
+		
+		expected = new HashMap<String, String>();
+		check("ret2", expected); // empty string
+		check("ret3", expected); // blank string
+		check("ret4", expected); // null string
+		check("ret5", new HashMap<String, String>() {{ put("include", "aaa"); }}); // include not ignored
+	}
+
 }

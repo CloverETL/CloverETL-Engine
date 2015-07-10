@@ -27,7 +27,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.jetel.exception.JetelRuntimeException;
@@ -239,4 +241,40 @@ public class PropertiesUtils {
 		}
 		return sb.toString();
 	}
+
+	/**
+	 * Serializes properties to a String.
+	 * 
+	 * @param propertiesMap - may be <code>null</code>
+	 * @return properties as a String
+	 * @throws IOException
+	 */
+	public static String serialize(Map<String, String> propertiesMap) throws IOException {
+		if (propertiesMap == null) {
+			return "";
+		}
+		try (StringWriter writer = new StringWriter()) {
+			OrderedProperties.store(propertiesMap, writer);
+			return writer.toString();
+		}
+	}
+	
+	/**
+	 * Parses properties from a String.
+	 * The order of the properties is preserved.
+	 * 
+	 * @param value - may be <code>null</code>
+	 * @return properties as a <code>Map&lt;String, String&gt;</code>, preserving the order
+	 * @throws IOException
+	 */
+	public static Map<String, String> deserialize(String value) throws IOException {
+		if (value == null) {
+			return new LinkedHashMap<String, String>(0);
+		}
+		
+		try (StringReader reader = new StringReader(value)) {
+			return OrderedProperties.load(reader);
+		}
+	}
+
 }
