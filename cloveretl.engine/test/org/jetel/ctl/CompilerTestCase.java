@@ -152,6 +152,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		  assertEquals(varName, expectedResult, (double) getVariable(varName), delta);
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected void checkEqualValue(String varName, Object expectedResult) {
 		  assertTrue(varName, ((Comparable)expectedResult).compareTo(getVariable(varName))==0);
 	}
@@ -5364,13 +5365,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		List<String> myList = new ArrayList<String>();
 		check("copyEmptyList", myList);
 		check("returnedEmptyList", myList);
-		assertTrue(((List<String>)(getVariable("copyEmptyList"))).isEmpty());
-		assertTrue(((List<String>)(getVariable("returnedEmptyList"))).isEmpty());
+		assertTrue(((List<?>)(getVariable("copyEmptyList"))).isEmpty());
+		assertTrue(((List<?>)(getVariable("returnedEmptyList"))).isEmpty());
 		Map<String, String> emptyMap = new HashMap<String, String>();
 		check("copyEmptyMap", emptyMap);
 		check("returnedEmptyMap", emptyMap);
-		assertTrue(((HashMap<String,String>)(getVariable("copyEmptyMap"))).isEmpty());
-		assertTrue(((HashMap<String,String>)(getVariable("returnedEmptyMap"))).isEmpty());
+		assertTrue(((HashMap<?,?>)(getVariable("copyEmptyMap"))).isEmpty());
+		assertTrue(((HashMap<?,?>)(getVariable("returnedEmptyMap"))).isEmpty());
 	}
 
 	public void test_containerlib_copy_expect_error(){
