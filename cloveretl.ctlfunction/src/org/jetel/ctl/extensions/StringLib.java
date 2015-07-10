@@ -50,67 +50,65 @@ public class StringLib extends TLFunctionLibrary {
 
 	@Override
 	public TLFunctionPrototype getExecutable(String functionName) {
-		TLFunctionPrototype ret = 
-			"concat".equals(functionName) ? new ConcatFunction() : //$NON-NLS-1$
-			"upperCase".equals(functionName) ? new UpperCaseFunction() : //$NON-NLS-1$
-			"lowerCase".equals(functionName) ? new LowerCaseFunction() : //$NON-NLS-1$
-			"substring".equals(functionName) ? new SubstringFunction() : //$NON-NLS-1$
-			"left".equals(functionName) ? new LeftFunction() : //$NON-NLS-1$
-			"right".equals(functionName) ? new RightFunction() : //$NON-NLS-1$
-			"trim".equals(functionName) ? new TrimFunction() :  //$NON-NLS-1$
-			"length".equals(functionName) ? new LengthFunction() : //$NON-NLS-1$
-			"replace".equals(functionName) ? new ReplaceFunction() : //$NON-NLS-1$
-			"split".equals(functionName) ? new SplitFunction() : //$NON-NLS-1$
-			"charAt".equals(functionName) ? new CharAtFunction() : //$NON-NLS-1$
-			"isBlank".equals(functionName) ? new IsBlankFunction() : //$NON-NLS-1$
-			"isAscii".equals(functionName) ? new IsAsciiFunction() : //$NON-NLS-1$
-			"isNumber".equals(functionName) ? new IsNumberFunction() : //$NON-NLS-1$
-			"isInteger".equals(functionName) ? new IsIntegerFunction() : //$NON-NLS-1$
-			"isLong".equals(functionName) ? new IsLongFunction() : //$NON-NLS-1$
-			"isDate".equals(functionName) ? new IsDateFunction() : //$NON-NLS-1$
-			"isDecimal".equals(functionName) ? new IsDecimalFunction() : //$NON-NLS-1$
-			"removeDiacritic".equals(functionName) ? new RemoveDiacriticFunction() : //$NON-NLS-1$
-			"removeBlankSpace".equals(functionName) ? new RemoveBlankSpaceFunction() : //$NON-NLS-1$
-			"removeNonPrintable".equals(functionName) ? new RemoveNonPrintableFunction() : //$NON-NLS-1$
-			"removeNonAscii".equals(functionName) ? new RemoveNonAsciiFunction() : //$NON-NLS-1$
-			"resolveParams".equals(functionName) ? new ResolveParamsFunction() : //$NON-NLS-1$
-			"getAlphanumericChars".equals(functionName) ? new GetAlphanumericCharsFunction() : //$NON-NLS-1$
-			"translate".equals(functionName) ? new TranslateFunction() : //$NON-NLS-1$
-			"join".equals(functionName) ? new JoinFunction() : //$NON-NLS-1$
-			"indexOf".equals(functionName) ? new IndexOfFunction() : //$NON-NLS-1$
-			"countChar".equals(functionName) ? new CountCharFunction() : //$NON-NLS-1$
-			"find".equals(functionName) ? new FindFunction() : //$NON-NLS-1$
-			"matches".equals(functionName) ? new MatchesFunction() : //$NON-NLS-1$
-			"matchGroups".equals(functionName) ? new MatchGroupsFunction() : //$NON-NLS-1$
-			"chop".equals(functionName) ? new ChopFunction() : //$NON-NLS-1$
-			"cut".equals(functionName) ? new CutFunction() : //$NON-NLS-1$
-			"isUrl".equals(functionName) ? new IsUrlFunction() : //$NON-NLS-1$
-			"getUrlProtocol".equals(functionName) ? new GetUrlProtocolFunction() : //$NON-NLS-1$
-			"getUrlUserInfo".equals(functionName) ? new GetUrlUserInfo() : //$NON-NLS-1$
-			"getUrlHost".equals(functionName) ? new GetUrlHostFunction() : //$NON-NLS-1$
-			"getUrlPort".equals(functionName) ? new GetUrlPortFunction() : //$NON-NLS-1$
-			"getUrlPath".equals(functionName) ? new GetUrlPathFunction() : //$NON-NLS-1$
-			"getUrlQuery".equals(functionName) ? new GetUrlQueryFunction() : //$NON-NLS-1$
-			"getUrlRef".equals(functionName) ? new GetUrlRefFunction() : //$NON-NLS-1$
-			"toAbsolutePath".equals(functionName) ? new ToAbsolutePathFunction() : //$NON-NLS-1$
-			"toProjectUrl".equals(functionName) ? new ToProjectUrlFunction() : //$NON-NLS-1$
-			"escapeUrl".equals(functionName) ? new EscapeUrlFunction() : //$NON-NLS-1$
-			"unescapeUrl".equals(functionName) ? new UnescapeUrlFunction() :  //$NON-NLS-1$
-			"getFileExtension".equals(functionName) ? new GetFileExtensionFunction() :  //$NON-NLS-1$
-			"getFileName".equals(functionName) ? new GetFileNameFunction() :  //$NON-NLS-1$
-			"getFileNameWithoutExtension".equals(functionName) ? new GetFileNameWithoutExtensionFunction() :  //$NON-NLS-1$
-			"getFilePath".equals(functionName) ? new GetFilePathFunction() :  //$NON-NLS-1$
-			"normalizePath".equals(functionName) ? new NormalizePathFunction() :  //$NON-NLS-1$
-			"reverse".equals(functionName) ? new ReverseFunction() :  //$NON-NLS-1$
-    		"isEmpty".equals(functionName) ? new IsEmptyFunction() : //$NON-NLS-1$
-    		"parseProperties".equals(functionName) ? new ParsePropertiesFunction() : //$NON-NLS-1$
-				null;
+		if (functionName != null) {
+			switch (functionName) {
+				case "concat": return new ConcatFunction(); //$NON-NLS-1$
+				case "upperCase": return new UpperCaseFunction(); //$NON-NLS-1$
+				case "lowerCase": return new LowerCaseFunction(); //$NON-NLS-1$
+				case "substring": return new SubstringFunction(); //$NON-NLS-1$
+				case "left": return new LeftFunction(); //$NON-NLS-1$
+				case "right": return new RightFunction(); //$NON-NLS-1$
+				case "trim": return new TrimFunction(); //$NON-NLS-1$
+				case "length": return new LengthFunction(); //$NON-NLS-1$
+				case "replace": return new ReplaceFunction(); //$NON-NLS-1$
+				case "split": return new SplitFunction(); //$NON-NLS-1$
+				case "charAt": return new CharAtFunction(); //$NON-NLS-1$
+				case "isBlank": return new IsBlankFunction(); //$NON-NLS-1$
+				case "isAscii": return new IsAsciiFunction(); //$NON-NLS-1$
+				case "isNumber": return new IsNumberFunction(); //$NON-NLS-1$
+				case "isInteger": return new IsIntegerFunction(); //$NON-NLS-1$
+				case "isLong": return new IsLongFunction(); //$NON-NLS-1$
+				case "isDate": return new IsDateFunction(); //$NON-NLS-1$
+				case "isDecimal": return new IsDecimalFunction(); //$NON-NLS-1$
+				case "removeDiacritic": return new RemoveDiacriticFunction(); //$NON-NLS-1$
+				case "removeBlankSpace": return new RemoveBlankSpaceFunction(); //$NON-NLS-1$
+				case "removeNonPrintable": return new RemoveNonPrintableFunction(); //$NON-NLS-1$
+				case "removeNonAscii": return new RemoveNonAsciiFunction(); //$NON-NLS-1$
+				case "resolveParams": return new ResolveParamsFunction(); //$NON-NLS-1$
+				case "getAlphanumericChars": return new GetAlphanumericCharsFunction(); //$NON-NLS-1$
+				case "translate": return new TranslateFunction(); //$NON-NLS-1$
+				case "join": return new JoinFunction(); //$NON-NLS-1$
+				case "indexOf": return new IndexOfFunction(); //$NON-NLS-1$
+				case "countChar": return new CountCharFunction(); //$NON-NLS-1$
+				case "find": return new FindFunction(); //$NON-NLS-1$
+				case "matches": return new MatchesFunction(); //$NON-NLS-1$
+				case "matchGroups": return new MatchGroupsFunction(); //$NON-NLS-1$
+				case "chop": return new ChopFunction(); //$NON-NLS-1$
+				case "cut": return new CutFunction(); //$NON-NLS-1$
+				case "isUrl": return new IsUrlFunction(); //$NON-NLS-1$
+				case "getUrlProtocol": return new GetUrlProtocolFunction(); //$NON-NLS-1$
+				case "getUrlUserInfo": return new GetUrlUserInfo(); //$NON-NLS-1$
+				case "getUrlHost": return new GetUrlHostFunction(); //$NON-NLS-1$
+				case "getUrlPort": return new GetUrlPortFunction(); //$NON-NLS-1$
+				case "getUrlPath": return new GetUrlPathFunction(); //$NON-NLS-1$
+				case "getUrlQuery": return new GetUrlQueryFunction(); //$NON-NLS-1$
+				case "getUrlRef": return new GetUrlRefFunction(); //$NON-NLS-1$
+				case "toAbsolutePath": return new ToAbsolutePathFunction(); //$NON-NLS-1$
+				case "toProjectUrl": return new ToProjectUrlFunction(); //$NON-NLS-1$
+				case "escapeUrl": return new EscapeUrlFunction(); //$NON-NLS-1$
+				case "unescapeUrl": return new UnescapeUrlFunction(); //$NON-NLS-1$
+				case "getFileExtension": return new GetFileExtensionFunction(); //$NON-NLS-1$
+				case "getFileName": return new GetFileNameFunction(); //$NON-NLS-1$
+				case "getFileNameWithoutExtension": return new GetFileNameWithoutExtensionFunction(); //$NON-NLS-1$
+				case "getFilePath": return new GetFilePathFunction(); //$NON-NLS-1$
+				case "normalizePath": return new NormalizePathFunction(); //$NON-NLS-1$
+				case "reverse": return new ReverseFunction(); //$NON-NLS-1$
+				case "isEmpty": return new IsEmptyFunction(); //$NON-NLS-1$
+				case "parseProperties": return new ParsePropertiesFunction(); //$NON-NLS-1$
+			}
+		}
 
-		if (ret == null) {
-    		throw new IllegalArgumentException(CtlExtensionsMessages.getString("StringLib.unknown_function") + functionName + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-    	}
-
-		return ret;
+		throw new IllegalArgumentException(CtlExtensionsMessages.getString("StringLib.unknown_function") + functionName + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	
 	private static String LIBRARY_NAME = "String"; //$NON-NLS-1$

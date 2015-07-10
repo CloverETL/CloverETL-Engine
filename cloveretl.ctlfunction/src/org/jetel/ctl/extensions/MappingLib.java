@@ -42,14 +42,16 @@ public class MappingLib extends TLFunctionLibrary {
 
 	@Override
 	public TLFunctionPrototype getExecutable(String functionName) throws IllegalArgumentException {
-		switch (functionName) {
-		case "getMappedSourceFields": return new GetMappedSourceFieldsFunction();
-		case "getMappedTargetFields": return new GetMappedTargetFieldsFunction();
-		case "isTargetFieldMapped": return new IsTargetFieldMappedFunction();
-		case "isSourceFieldMapped": return new IsSourceFieldMappedFunction();
-		default:
-    		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
+		if (functionName != null) {
+			switch (functionName) {
+				case "getMappedSourceFields": return new GetMappedSourceFieldsFunction();
+				case "getMappedTargetFields": return new GetMappedTargetFieldsFunction();
+				case "isTargetFieldMapped": return new IsTargetFieldMappedFunction();
+				case "isSourceFieldMapped": return new IsSourceFieldMappedFunction();
+			}
 		}
+		
+		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
 	}
 
 	@Override

@@ -35,150 +35,147 @@ public class DynamicLib extends TLFunctionLibrary {
 
 	@Override
 	public TLFunctionPrototype getExecutable(String functionName) {
-		TLFunctionPrototype ret = 
-       		"getBoolValue".equals(functionName) ? new GetValueFunction(Boolean.class) : 
-       		"getByteValue".equals(functionName) ? new GetValueFunction(byte[].class) : 
-       		"getDateValue".equals(functionName) ? new GetValueFunction(Date.class) : 
-       		"getDecimalValue".equals(functionName) ? new GetValueFunction(BigDecimal.class) : 
-       		"getIntValue".equals(functionName) ? new GetValueFunction(Integer.class) : 
-       		"getLongValue".equals(functionName) ? new GetValueFunction(Long.class) : 
-       		"getNumValue".equals(functionName) ? new GetValueFunction(Double.class) : 
-       		"getStringValue".equals(functionName) ? new GetValueFunction(String.class) :
-       		"setBoolValue".equals(functionName) ? new SetValueFunction<Boolean>() {
-
-				@Override
-				protected void setFieldValueIndex(TLFunctionCallContext context, DataRecord record, int fieldIndex,
-						Boolean value) {
-					setBoolValue(context, record, fieldIndex, value);
-				}
-
-				@Override
-				protected void setFieldValueName(TLFunctionCallContext context, DataRecord record, String fieldName,
-						Boolean value) {
-					setBoolValue(context, record, fieldName, value);
-				}
-       			
-       		} : 
-       		"setByteValue".equals(functionName) ? new SetValueFunction<byte[]>() {
-
-				@Override
-				protected void setFieldValueIndex(TLFunctionCallContext context, DataRecord record, int fieldIndex,
-						byte[] value) {
-					setByteValue(context, record, fieldIndex, value);
-				}
-
-				@Override
-				protected void setFieldValueName(TLFunctionCallContext context, DataRecord record, String fieldName,
-						byte[] value) {
-					setByteValue(context, record, fieldName, value);
-				}
-       			
-       		} : 
-       		"setDateValue".equals(functionName) ? new SetValueFunction<Date>() {
-
-				@Override
-				protected void setFieldValueIndex(TLFunctionCallContext context, DataRecord record, int fieldIndex,
-						Date value) {
-					setDateValue(context, record, fieldIndex, value);
-				}
-
-				@Override
-				protected void setFieldValueName(TLFunctionCallContext context, DataRecord record, String fieldName,
-						Date value) {
-					setDateValue(context, record, fieldName, value);
-				}
-       			
-       		} : 
-       		"setDecimalValue".equals(functionName) ? new SetValueFunction<BigDecimal>() {
-
-				@Override
-				protected void setFieldValueIndex(TLFunctionCallContext context, DataRecord record, int fieldIndex,
-						BigDecimal value) {
-					setDecimalValue(context, record, fieldIndex, value);
-				}
-
-				@Override
-				protected void setFieldValueName(TLFunctionCallContext context, DataRecord record, String fieldName,
-						BigDecimal value) {
-					setDecimalValue(context, record, fieldName, value);
-				}
-       			
-       		} : 
-       		"setIntValue".equals(functionName) ? new SetValueFunction<Integer>() {
-
-				@Override
-				protected void setFieldValueIndex(TLFunctionCallContext context, DataRecord record, int fieldIndex,
-						Integer value) {
-					setIntValue(context, record, fieldIndex, value);
-				}
-
-				@Override
-				protected void setFieldValueName(TLFunctionCallContext context, DataRecord record, String fieldName,
-						Integer value) {
-					setIntValue(context, record, fieldName, value);
-				}
-       			
-       		} : 
-       		"setLongValue".equals(functionName) ? new SetValueFunction<Long>() {
-
-				@Override
-				protected void setFieldValueIndex(TLFunctionCallContext context, DataRecord record, int fieldIndex,
-						Long value) {
-					setLongValue(context, record, fieldIndex, value);
-				}
-
-				@Override
-				protected void setFieldValueName(TLFunctionCallContext context, DataRecord record, String fieldName,
-						Long value) {
-					setLongValue(context, record, fieldName, value);
-				}
-       			
-       		} : 
-       		"setNumValue".equals(functionName) ? new SetValueFunction<Double>() {
-
-				@Override
-				protected void setFieldValueIndex(TLFunctionCallContext context, DataRecord record, int fieldIndex,
-						Double value) {
-					setNumValue(context, record, fieldIndex, value);
-				}
-
-				@Override
-				protected void setFieldValueName(TLFunctionCallContext context, DataRecord record, String fieldName,
-						Double value) {
-					setNumValue(context, record, fieldName, value);
-				}
-       			
-       		} : 
-       		"setStringValue".equals(functionName) ? new SetValueFunction<String>() {
-
-				@Override
-				protected void setFieldValueIndex(TLFunctionCallContext context, DataRecord record, int fieldIndex,
-						String value) {
-					setStringValue(context, record, fieldIndex, value);
-				}
-
-				@Override
-				protected void setFieldValueName(TLFunctionCallContext context, DataRecord record, String fieldName,
-						String value) {
-					setStringValue(context, record, fieldName, value);
-				}
-       			
-       		} :
-       		"isNull".equals(functionName) ? new IsNullFunction() :
-       		"getValueAsString".equals(functionName) ? new GetValueAsStringFunction() :
-       		"compare".equals(functionName) ? new CompareFunction() :
-       		"getFieldIndex".equals(functionName) ? new GetFieldIndexFunction() :
-           	"getFieldLabel".equals(functionName) ? new GetFieldLabelFunction() :
-		    "getFieldName".equals(functionName) ? new GetFieldNameFunction() : 
-		    "getFieldType".equals(functionName) ? new GetFieldTypeFunction() : 
-   			null; 
+		if (functionName != null) {
+			switch (functionName) {
+				case "getBoolValue": return new GetValueFunction(Boolean.class);
+				case "getByteValue": return new GetValueFunction(byte[].class);
+				case "getDateValue": return new GetValueFunction(Date.class);
+				case "getDecimalValue": return new GetValueFunction(BigDecimal.class);
+				case "getIntValue": return new GetValueFunction(Integer.class);
+				case "getLongValue": return new GetValueFunction(Long.class);
+				case "getNumValue": return new GetValueFunction(Double.class);
+				case "getStringValue": return new GetValueFunction(String.class);
+				case "setBoolValue": return new SetValueFunction<Boolean>() {
+	
+						@Override
+						protected void setFieldValueIndex(TLFunctionCallContext context, DataRecord record, int fieldIndex,
+								Boolean value) {
+							setBoolValue(context, record, fieldIndex, value);
+						}
+	
+						@Override
+						protected void setFieldValueName(TLFunctionCallContext context, DataRecord record, String fieldName,
+								Boolean value) {
+							setBoolValue(context, record, fieldName, value);
+						}
+						
+					};
+				case "setByteValue": return new SetValueFunction<byte[]>() {
+	
+						@Override
+						protected void setFieldValueIndex(TLFunctionCallContext context, DataRecord record, int fieldIndex,
+								byte[] value) {
+							setByteValue(context, record, fieldIndex, value);
+						}
+	
+						@Override
+						protected void setFieldValueName(TLFunctionCallContext context, DataRecord record, String fieldName,
+								byte[] value) {
+							setByteValue(context, record, fieldName, value);
+						}
+						
+					};
+				case "setDateValue": return new SetValueFunction<Date>() {
+	
+						@Override
+						protected void setFieldValueIndex(TLFunctionCallContext context, DataRecord record, int fieldIndex,
+								Date value) {
+							setDateValue(context, record, fieldIndex, value);
+						}
+	
+						@Override
+						protected void setFieldValueName(TLFunctionCallContext context, DataRecord record, String fieldName,
+								Date value) {
+							setDateValue(context, record, fieldName, value);
+						}
+						
+					};
+				case "setDecimalValue": return new SetValueFunction<BigDecimal>() {
+	
+						@Override
+						protected void setFieldValueIndex(TLFunctionCallContext context, DataRecord record, int fieldIndex,
+								BigDecimal value) {
+							setDecimalValue(context, record, fieldIndex, value);
+						}
+	
+						@Override
+						protected void setFieldValueName(TLFunctionCallContext context, DataRecord record, String fieldName,
+								BigDecimal value) {
+							setDecimalValue(context, record, fieldName, value);
+						}
+						
+					};
+				case "setIntValue": return new SetValueFunction<Integer>() {
+	
+						@Override
+						protected void setFieldValueIndex(TLFunctionCallContext context, DataRecord record, int fieldIndex,
+								Integer value) {
+							setIntValue(context, record, fieldIndex, value);
+						}
+	
+						@Override
+						protected void setFieldValueName(TLFunctionCallContext context, DataRecord record, String fieldName,
+								Integer value) {
+							setIntValue(context, record, fieldName, value);
+						}
+						
+					};
+				case "setLongValue": return new SetValueFunction<Long>() {
+	
+						@Override
+						protected void setFieldValueIndex(TLFunctionCallContext context, DataRecord record, int fieldIndex,
+								Long value) {
+							setLongValue(context, record, fieldIndex, value);
+						}
+	
+						@Override
+						protected void setFieldValueName(TLFunctionCallContext context, DataRecord record, String fieldName,
+								Long value) {
+							setLongValue(context, record, fieldName, value);
+						}
+						
+					};
+				case "setNumValue": return new SetValueFunction<Double>() {
+	
+						@Override
+						protected void setFieldValueIndex(TLFunctionCallContext context, DataRecord record, int fieldIndex,
+								Double value) {
+							setNumValue(context, record, fieldIndex, value);
+						}
+	
+						@Override
+						protected void setFieldValueName(TLFunctionCallContext context, DataRecord record, String fieldName,
+								Double value) {
+							setNumValue(context, record, fieldName, value);
+						}
+						
+					};
+				case "setStringValue": return new SetValueFunction<String>() {
+	
+						@Override
+						protected void setFieldValueIndex(TLFunctionCallContext context, DataRecord record, int fieldIndex,
+								String value) {
+							setStringValue(context, record, fieldIndex, value);
+						}
+	
+						@Override
+						protected void setFieldValueName(TLFunctionCallContext context, DataRecord record, String fieldName,
+								String value) {
+							setStringValue(context, record, fieldName, value);
+						}
+						
+					};
+				case "isNull": return new IsNullFunction();
+				case "getValueAsString": return new GetValueAsStringFunction();
+				case "compare": return new CompareFunction();
+				case "getFieldIndex": return new GetFieldIndexFunction();
+				case "getFieldLabel": return new GetFieldLabelFunction();
+				case "getFieldName": return new GetFieldNameFunction();
+				case "getFieldType": return new GetFieldTypeFunction();
+			}
+		} 
 		
-		if (ret == null) {
-    		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
-    	}
-		
-		return ret;
-			
+		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
 	}
 	
 	private static String LIBRARY_NAME = "Dynamic field access";
