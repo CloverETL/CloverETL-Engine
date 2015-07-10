@@ -102,6 +102,7 @@ if( !runTests ){
 		antArgs += "-Dtest.include=org/jetel/graph/ResetTest.java"
 		antArgs += "-Druntests.engine.Xmx=-Xmx2304m"
 		antArgs += "-Dadditional.jvmargs=-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=33333 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=172.22.2.28"
+		antCustomEnv = ["ANT_OPTS":"-Xmx2560m -XX:MaxPermSize=256m"]
 	} else {
 		println "ERROR: Unknown goal '${jobGoal}'"
 		exit 1
