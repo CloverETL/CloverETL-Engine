@@ -41,6 +41,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.formatter.DateFormatter;
+import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
@@ -102,6 +103,7 @@ public class StringLib extends TLFunctionLibrary {
 			"normalizePath".equals(functionName) ? new NormalizePathFunction() :  //$NON-NLS-1$
 			"reverse".equals(functionName) ? new ReverseFunction() :  //$NON-NLS-1$
     		"isEmpty".equals(functionName) ? new IsEmptyFunction() : //$NON-NLS-1$
+    		"parseProperties".equals(functionName) ? new ParsePropertiesFunction() : //$NON-NLS-1$
 				null;
 
 		if (ret == null) {
@@ -1808,6 +1810,34 @@ public class StringLib extends TLFunctionLibrary {
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(isEmpty(context, stack.popString()));
 		}
+	}
+	
+	// PARSE PROPERTIES FUNCTION
+
+	/**
+	 * @see PropertiesFactory#makeObject(String)
+	 * 
+	 * @param context
+	 * @param input
+	 * @return
+	 */
+	@TLFunctionAnnotation("Converts properties from a string to a map")
+	public static final Map<String, String> parseProperties(TLFunctionCallContext context, String input) {
+		try {
+			return PropertiesUtils.deserialize(input);
+		} catch (Exception e) {
+			// should never happen
+			throw new JetelRuntimeException("Parsing failed", e);
+		}
+	}
+	
+	private static class ParsePropertiesFunction extends TLFunctionAdapter {
+		
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(parseProperties(context, stack.popString()));
+		}
+
 	}
 	
 
