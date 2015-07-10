@@ -42,30 +42,28 @@ public class UtilLib extends TLFunctionLibrary {
 
     @Override
     public TLFunctionPrototype getExecutable(String functionName) {
-    	final TLFunctionPrototype ret = 
-    		"sleep".equals(functionName) ? new SleepFunction() :
-    		"randomUUID".equals(functionName) ? new RandomUuidFunction() : 
-           	"getParamValue".equals(functionName) ? new GetParamValueFunction() :
-        	"getParamValues".equals(functionName) ? new GetParamValuesFunction() :
-           	"getRawParamValue".equals(functionName) ? new GetRawParamValueFunction() :
-           	"getRawParamValues".equals(functionName) ? new GetRawParamValuesFunction() :
-        	"getJavaProperties".equals(functionName) ? new GetJavaPropertiesFunction() :
-    		"getEnvironmentVariables".equals(functionName) ? new GetEnvironmentVariablesFunction() : 
-        	"getComponentProperty".equals(functionName) ? new GetComponentPropertyFunction() : 
-    		"hashCode".equals(functionName)	? new HashCodeFunction() :	
-       		"byteAt".equals(functionName) ? new ByteAtFunction() : 
-       		"getSubgraphInputPortsCount".equals(functionName) ? new GetSubgraphInputPortsCountFunction() : 
-       		"getSubgraphOutputPortsCount".equals(functionName) ? new GetSubgraphOutputPortsCountFunction() : 
-       		"isSubgraphInputPortConnected".equals(functionName) ? new IsSubgraphInputPortConnectedFunction() : 
-       		"isSubgraphOutputPortConnected".equals(functionName) ? new IsSubgraphOutputPortConnectedFunction() : 
-//    		"byteSet".equals(functionName) ? new ByteSetFunction() :
-    		null; 
+		if (functionName != null) {
+			switch (functionName) {
+				case "sleep": return new SleepFunction();
+				case "randomUUID": return new RandomUuidFunction();
+				case "getParamValue": return new GetParamValueFunction();
+				case "getParamValues": return new GetParamValuesFunction();
+				case "getRawParamValue": return new GetRawParamValueFunction();
+				case "getRawParamValues": return new GetRawParamValuesFunction();
+				case "getJavaProperties": return new GetJavaPropertiesFunction();
+				case "getEnvironmentVariables": return new GetEnvironmentVariablesFunction();
+				case "getComponentProperty": return new GetComponentPropertyFunction();
+				case "hashCode": return new HashCodeFunction();
+				case "byteAt": return new ByteAtFunction();
+				case "getSubgraphInputPortsCount": return new GetSubgraphInputPortsCountFunction();
+				case "getSubgraphOutputPortsCount": return new GetSubgraphOutputPortsCountFunction();
+				case "isSubgraphInputPortConnected": return new IsSubgraphInputPortConnectedFunction();
+				case "isSubgraphOutputPortConnected": return new IsSubgraphOutputPortConnectedFunction();
+//	    		case "byteSet": return new ByteSetFunction();
+			}
+		} 
     		
-		if (ret == null) {
-    		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
-    	}
-    
-		return ret;
+		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
     }
     
 	private static String LIBRARY_NAME = "Util";

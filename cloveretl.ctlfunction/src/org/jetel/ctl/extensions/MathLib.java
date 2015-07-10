@@ -30,46 +30,43 @@ public class MathLib extends TLFunctionLibrary {
 	
 	@Override
 	public TLFunctionPrototype getExecutable(String functionName) {
-		TLFunctionPrototype ret = 
-			"sqrt".equals(functionName) ? new SqrtFunction() :
-			"log".equals(functionName) ? new LogFunction() :
-			"log10".equals(functionName) ? new Log10Function() :
-			"exp".equals(functionName) ? new ExpFunction() :
-			"floor".equals(functionName) ? new FloorFunction() :
-			"round".equals(functionName) ? new RoundFunction() :
-			"roundHalfToEven".equals(functionName) ? new RoundHalfToEvenFunction() :
-			"ceil".equals(functionName) ? new CeilFunction() :
-			"pow".equals(functionName) ? new PowFunction() :
-			"pi".equals(functionName) ? new PiFunction() :
-			"e".equals(functionName) ? new EFunction() :
-			"abs".equals(functionName) ? new AbsFunction() :
-			"bitOr".equals(functionName) ? new BitOrFunction() :
-			"bitAnd".equals(functionName) ? new BitAndFunction() :
-			"bitXor".equals(functionName) ? new BitXorFunction() :
-			"bitLShift".equals(functionName) ? new BitLShiftFunction() :
-			"bitRShift".equals(functionName) ? new BitRShiftFunction() :
-			"bitNegate".equals(functionName) ? new BitNegateFunction() :
-			"bitSet".equals(functionName) ? new BitSetFunction() :
-			"bitIsSet".equals(functionName) ? new BitIsSetFunction() :
-			"cos".equals(functionName) ? new CosFunction():
-			"sin".equals(functionName) ? new SinFunction():
-			"tan".equals(functionName) ? new TanFunction():
-			"acos".equals(functionName) ? new ACosFunction():
-			"asin".equals(functionName) ? new ASinFunction():
-			"atan".equals(functionName) ? new ATanFunction():
-			"min".equals(functionName) ? new MinFunction():
-			"max".equals(functionName) ? new MaxFunction():
-			"signum".equals(functionName) ? new SignumFunction():
-			"toDegrees".equals(functionName) ? new ToDegreesFunction():
-			"toRadians".equals(functionName) ? new ToRadiansFunction():
-				
-			null;
+		if (functionName != null) {
+			switch (functionName) {
+				case "sqrt": return new SqrtFunction();
+				case "log": return new LogFunction();
+				case "log10": return new Log10Function();
+				case "exp": return new ExpFunction();
+				case "floor": return new FloorFunction();
+				case "round": return new RoundFunction();
+				case "roundHalfToEven": return new RoundHalfToEvenFunction();
+				case "ceil": return new CeilFunction();
+				case "pow": return new PowFunction();
+				case "pi": return new PiFunction();
+				case "e": return new EFunction();
+				case "abs": return new AbsFunction();
+				case "bitOr": return new BitOrFunction();
+				case "bitAnd": return new BitAndFunction();
+				case "bitXor": return new BitXorFunction();
+				case "bitLShift": return new BitLShiftFunction();
+				case "bitRShift": return new BitRShiftFunction();
+				case "bitNegate": return new BitNegateFunction();
+				case "bitSet": return new BitSetFunction();
+				case "bitIsSet": return new BitIsSetFunction();
+				case "cos": return new CosFunction();
+				case "sin": return new SinFunction();
+				case "tan": return new TanFunction();
+				case "acos": return new ACosFunction();
+				case "asin": return new ASinFunction();
+				case "atan": return new ATanFunction();
+				case "min": return new MinFunction();
+				case "max": return new MaxFunction();
+				case "signum": return new SignumFunction();
+				case "toDegrees": return new ToDegreesFunction();
+				case "toRadians": return new ToRadiansFunction();
+			}
+		}
 			
-		if (ret == null) {
-    		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
-    	}
-
-		return ret;
+		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
 	}
 	
 	private static String LIBRARY_NAME = "Math";

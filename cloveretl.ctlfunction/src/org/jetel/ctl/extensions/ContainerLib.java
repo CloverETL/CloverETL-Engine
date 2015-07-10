@@ -38,31 +38,30 @@ public class ContainerLib extends TLFunctionLibrary {
     @Override
     public TLFunctionPrototype getExecutable(String functionName) 
     throws IllegalArgumentException {
-    	TLFunctionPrototype ret = 
-    		"clear".equals(functionName) ? new ClearFunction() :
-    		"pop".equals(functionName) ? new PopFunction() :
-    		"poll".equals(functionName) ? new PollFunction() :
-    		"push".equals(functionName) ? new PushFunction() :
-    		"append".equals(functionName) ? new AppendFunction() :
-    		"insert".equals(functionName) ? new InsertFunction() :
-    		"remove".equals(functionName) ? new RemoveFunction() :
-    		"sort".equals(functionName) ? new SortFunction() : 
-    		"reverse".equals(functionName) ? new ReverseFunction() : 
-    		"isEmpty".equals(functionName) ? new IsEmptyFunction() : 
-    		"copy".equals(functionName) ? new CopyFunction() : 
-    		"containsAll".equals(functionName) ? new ContainsAllFunction() :
-    		"containsKey".equals(functionName) ? new ContainsKeyFunction() :
-    		"containsValue".equals(functionName) ? new ContainsValueFunction() : 
-        	"binarySearch".equals(functionName) ? new BinarySearchFunction() : 
-    		"getKeys".equals(functionName) ? new GetKeysFunction() :
-    		"getValues".equals(functionName) ? new GetValuesFunction() :
-    		"toMap".equals(functionName) ? new ToMapFunction() : null;
+		if (functionName != null) {
+			switch (functionName) {
+				case "clear": return new ClearFunction();
+				case "pop": return new PopFunction();
+				case "poll": return new PollFunction();
+				case "push": return new PushFunction();
+				case "append": return new AppendFunction();
+				case "insert": return new InsertFunction();
+				case "remove": return new RemoveFunction();
+				case "sort": return new SortFunction();
+				case "reverse": return new ReverseFunction();
+				case "isEmpty": return new IsEmptyFunction();
+				case "copy": return new CopyFunction();
+				case "containsAll": return new ContainsAllFunction();
+				case "containsKey": return new ContainsKeyFunction();
+				case "containsValue": return new ContainsValueFunction();
+				case "binarySearch": return new BinarySearchFunction();
+				case "getKeys": return new GetKeysFunction();
+				case "getValues": return new GetValuesFunction();
+				case "toMap": return new ToMapFunction();
+			}
+		}
 
-    	if (ret == null) {
-    		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
-    	}
-    	
-    	return ret;
+    	throw new IllegalArgumentException("Unknown function '" + functionName + "'");
     }
     
 	private static String LIBRARY_NAME = "Container";
