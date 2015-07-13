@@ -59,6 +59,7 @@ import org.jetel.util.bytes.PackedDecimal;
 import org.jetel.util.crypto.Base64;
 import org.jetel.util.crypto.Digest;
 import org.jetel.util.crypto.Digest.DigestType;
+import org.jetel.util.formatter.TimeZoneProvider;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTime;
@@ -1393,13 +1394,23 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		DataRecord[] inRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(INPUT_3)), createDefaultMultivalueRecord(graph.getDataRecordMetadata(INPUT_4)) };
 		DataRecord[] outRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_3)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_4)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_5)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_6)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_7)) };
 		
-		doCompile("string format; map[string, string] recordProperties; function integer transform(){format = getFieldProperties($in.0, 'Born')['format']; recordProperties = getRecordProperties($in.0); return 0;}", "test_dynamiclib_getFieldProperties", graph, inRecords, outRecords);
+		doCompile("string format; map[string, string] recordProperties; map[string, string] fieldProperties; function integer transform(){format = getFieldProperties($in.0, 'Born')['format']; recordProperties = getRecordProperties($in.0); fieldProperties = getFieldProperties($in.0, 'Born'); return 0;}", "test_dynamiclib_getFieldProperties", graph, inRecords, outRecords);
 		check("format", "joda:yyyy-MM-dd HH:mm:ss;yyyy-MM-dd HH:mm:ss");
 		Map<?, ?> recordPropertiesValue = (Map<?, ?>) getVariable("recordProperties");
 		assertFalse(recordPropertiesValue.containsKey("previewAttachment"));
 		assertFalse(recordPropertiesValue.containsKey("previewAttachmentCharset"));
 		assertFalse(recordPropertiesValue.containsKey("previewAttachmentMetadataRow"));
 		assertFalse(recordPropertiesValue.containsKey("previewAttachmentSampleDataRow"));
+		
+		String expectedTimeZone = new TimeZoneProvider().toString();
+		assertFalse(StringUtils.isEmpty(expectedTimeZone));
+		
+		assertEquals("en.US", recordPropertiesValue.get("locale"));
+		assertEquals(expectedTimeZone, recordPropertiesValue.get("timeZone"));
+		
+		Map<?, ?> fieldPropertiesValue = (Map<?, ?>) getVariable("fieldProperties");
+		assertEquals("en.US", fieldPropertiesValue.get("locale"));
+		assertEquals(expectedTimeZone, fieldPropertiesValue.get("timeZone"));
 	}
 	
 	public void test_dynamiclib_getFieldProperties_expect_error(){
