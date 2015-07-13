@@ -1383,13 +1383,23 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_dynamiclib_getFieldProperties_CLO_6293() {
 		TransformationGraph graph = createDefaultGraph(); 
+		TypedProperties recordProperties = graph.getDataRecordMetadata(INPUT_1).getRecordProperties();
+		recordProperties.setProperty("previewAttachment", "previewAttachment");
+		recordProperties.setProperty("previewAttachmentCharset", "previewAttachmentCharset");
+		recordProperties.setProperty("previewAttachmentMetadataRow", "previewAttachmentMetadataRow");
+		recordProperties.setProperty("previewAttachmentSampleDataRow", "previewAttachmentSampleDataRow");
 		graph.getDataRecordMetadata(INPUT_1).getField("Born").setFormatStr("joda:yyyy-MM-dd HH:mm:ss;yyyy-MM-dd HH:mm:ss");
 		
 		DataRecord[] inRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(INPUT_3)), createDefaultMultivalueRecord(graph.getDataRecordMetadata(INPUT_4)) };
 		DataRecord[] outRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_3)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_4)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_5)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_6)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_7)) };
 		
-		doCompile("string format; function integer transform(){format = getFieldProperties($in.0, 'Born')['format']; return 0;}", "test_dynamiclib_getFieldProperties", graph, inRecords, outRecords);
+		doCompile("string format; map[string, string] recordProperties; function integer transform(){format = getFieldProperties($in.0, 'Born')['format']; recordProperties = getRecordProperties($in.0); return 0;}", "test_dynamiclib_getFieldProperties", graph, inRecords, outRecords);
 		check("format", "joda:yyyy-MM-dd HH:mm:ss;yyyy-MM-dd HH:mm:ss");
+		Map<?, ?> recordPropertiesValue = (Map<?, ?>) getVariable("recordProperties");
+		assertFalse(recordPropertiesValue.containsKey("previewAttachment"));
+		assertFalse(recordPropertiesValue.containsKey("previewAttachmentCharset"));
+		assertFalse(recordPropertiesValue.containsKey("previewAttachmentMetadataRow"));
+		assertFalse(recordPropertiesValue.containsKey("previewAttachmentSampleDataRow"));
 	}
 	
 	public void test_dynamiclib_getFieldProperties_expect_error(){
