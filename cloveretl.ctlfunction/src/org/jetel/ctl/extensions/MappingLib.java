@@ -156,7 +156,7 @@ public class MappingLib extends TLFunctionLibrary {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
-			getMappedSourceFieldsInit(context);
+			getMappedTargetFieldsInit(context);
 		}
 
 		@Override
