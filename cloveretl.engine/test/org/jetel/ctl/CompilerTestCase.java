@@ -4943,6 +4943,23 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		check("sourceMapped_nullTarget", false);
 		check("targetMapped_nullSource", false);
+		
+		// examples from the User Guide
+		check("example_getMappedSourceFields1", Arrays.asList("srcB4"));
+		check("example_getMappedSourceFields2", Arrays.asList("source1", "source3"));
+		check("example_getMappedSourceFields3", Arrays.asList("source1", "source3", "source4"));
+		
+		check("example_getMappedTargetFields1", Arrays.asList("target2"));
+		check("example_getMappedTargetFields2", Arrays.asList("target1", "target3", "target2"));
+		check("example_getMappedTargetFields3", Arrays.asList("target1", "target3"));
+		
+		check("example_isSourceFieldMapped1", true);
+		check("example_isSourceFieldMapped2", false);
+		check("example_isSourceFieldMapped3", true);
+		check("example_isSourceFieldMapped4", false);
+		
+		check("example_isTargetFieldMapped1", true);
+		check("example_isTargetFieldMapped2", false);
 	}
 
 	public void test_copyByName() {
