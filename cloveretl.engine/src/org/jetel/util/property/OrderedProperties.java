@@ -352,9 +352,10 @@ class OrderedProperties {
 			bw.newLine();
 		}
 		synchronized (properties) {
-			for (Iterator<String> it = properties.keySet().iterator(); it.hasNext();) {
-				String key = it.next();
-				String val = properties.get(key);
+			for (Iterator<Map.Entry<String, String>> it = properties.entrySet().iterator(); it.hasNext();) {
+				Map.Entry<String, String> entry = it.next();
+				String key = entry.getKey();
+				String val = entry.getValue();
 				key = saveConvert(key, true, escUnicode);
 				/*
 				 * No need to escape embedded and trailing spaces for value, hence pass false to flag.
