@@ -60,6 +60,8 @@ public class GraphParameterDynamicValueProvider {
 	private boolean initialized;
 	private GraphParameterValueFunction transform;
 	private boolean recursionFlag;
+	
+	private String value = null;
 
 	/**
 	 * CLO-5564:
@@ -161,22 +163,25 @@ public class GraphParameterDynamicValueProvider {
 			throw new JetelRuntimeException("Cannot initialize dynamic parameter", e1);
 		}
 		
-		try {
-			if (recursionFlag) {
-				throw new JetelRuntimeException(MessageFormat.format(
-						"Infinite recursion detected when resolving dynamic value for graph parameter ''{0}''",
-						parameterName));
+		// CLO-6809: cache the value
+		if (value == null) {
+			try {
+				if (recursionFlag) {
+					throw new JetelRuntimeException(MessageFormat.format(
+							"Infinite recursion detected when resolving dynamic value for graph parameter ''{0}''",
+							parameterName));
+				}
+				
+				recursionFlag = true;
+				value = toString(transform.getValue());
+			} catch (TransformException e) {
+				throw new JetelRuntimeException("Cannot get parameter value", e);
+			} finally {
+				recursionFlag = false;
 			}
-			
-			recursionFlag = true;
-			String parameterValue = toString(transform.getValue());
-			
-			return parameterValue;
-		} catch (TransformException e) {
-			throw new JetelRuntimeException("Cannot get parameter value", e);
-		} finally {
-			recursionFlag = false;
 		}
+		
+		return value;
 	}
 	
 	public String getTransformCode() {
