@@ -258,7 +258,11 @@ public class Merge extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
 		Merge merge = new Merge(xattribs.getString(XML_ID_ATTRIBUTE),graph);
-		merge.setMergeKeys(xattribs.getString(XML_MERGEKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+		String mergeKeysRaw = xattribs.getString(XML_MERGEKEY_ATTRIBUTE, null);
+		if (mergeKeysRaw != null) {
+			merge.setMergeKeys(mergeKeysRaw.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+		}
+		
         return merge;
 	}
 

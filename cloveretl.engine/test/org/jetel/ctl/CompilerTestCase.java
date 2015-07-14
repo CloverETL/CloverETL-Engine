@@ -59,6 +59,7 @@ import org.jetel.util.bytes.PackedDecimal;
 import org.jetel.util.crypto.Base64;
 import org.jetel.util.crypto.Digest;
 import org.jetel.util.crypto.Digest.DigestType;
+import org.jetel.util.formatter.TimeZoneProvider;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTime;
@@ -152,6 +153,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		  assertEquals(varName, expectedResult, (double) getVariable(varName), delta);
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected void checkEqualValue(String varName, Object expectedResult) {
 		  assertTrue(varName, ((Comparable)expectedResult).compareTo(getVariable(varName))==0);
 	}
@@ -1382,13 +1384,33 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_dynamiclib_getFieldProperties_CLO_6293() {
 		TransformationGraph graph = createDefaultGraph(); 
+		TypedProperties recordProperties = graph.getDataRecordMetadata(INPUT_1).getRecordProperties();
+		recordProperties.setProperty("previewAttachment", "previewAttachment");
+		recordProperties.setProperty("previewAttachmentCharset", "previewAttachmentCharset");
+		recordProperties.setProperty("previewAttachmentMetadataRow", "previewAttachmentMetadataRow");
+		recordProperties.setProperty("previewAttachmentSampleDataRow", "previewAttachmentSampleDataRow");
 		graph.getDataRecordMetadata(INPUT_1).getField("Born").setFormatStr("joda:yyyy-MM-dd HH:mm:ss;yyyy-MM-dd HH:mm:ss");
 		
 		DataRecord[] inRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(INPUT_3)), createDefaultMultivalueRecord(graph.getDataRecordMetadata(INPUT_4)) };
 		DataRecord[] outRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_3)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_4)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_5)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_6)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_7)) };
 		
-		doCompile("string format; function integer transform(){format = getFieldProperties($in.0, 'Born')['format']; return 0;}", "test_dynamiclib_getFieldProperties", graph, inRecords, outRecords);
+		doCompile("string format; map[string, string] recordProperties; map[string, string] fieldProperties; function integer transform(){format = getFieldProperties($in.0, 'Born')['format']; recordProperties = getRecordProperties($in.0); fieldProperties = getFieldProperties($in.0, 'Born'); return 0;}", "test_dynamiclib_getFieldProperties", graph, inRecords, outRecords);
 		check("format", "joda:yyyy-MM-dd HH:mm:ss;yyyy-MM-dd HH:mm:ss");
+		Map<?, ?> recordPropertiesValue = (Map<?, ?>) getVariable("recordProperties");
+		assertFalse(recordPropertiesValue.containsKey("previewAttachment"));
+		assertFalse(recordPropertiesValue.containsKey("previewAttachmentCharset"));
+		assertFalse(recordPropertiesValue.containsKey("previewAttachmentMetadataRow"));
+		assertFalse(recordPropertiesValue.containsKey("previewAttachmentSampleDataRow"));
+		
+		String expectedTimeZone = new TimeZoneProvider().toString();
+		assertFalse(StringUtils.isEmpty(expectedTimeZone));
+		
+		assertEquals("en.US", recordPropertiesValue.get("locale"));
+		assertEquals(expectedTimeZone, recordPropertiesValue.get("timeZone"));
+		
+		Map<?, ?> fieldPropertiesValue = (Map<?, ?>) getVariable("fieldProperties");
+		assertEquals("en.US", fieldPropertiesValue.get("locale"));
+		assertEquals(expectedTimeZone, fieldPropertiesValue.get("timeZone"));
 	}
 	
 	public void test_dynamiclib_getFieldProperties_expect_error(){
@@ -4942,6 +4964,23 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		check("sourceMapped_nullTarget", false);
 		check("targetMapped_nullSource", false);
+		
+		// examples from the User Guide
+		check("example_getMappedSourceFields1", Arrays.asList("srcB4"));
+		check("example_getMappedSourceFields2", Arrays.asList("source1", "source3"));
+		check("example_getMappedSourceFields3", Arrays.asList("source1", "source3", "source4"));
+		
+		check("example_getMappedTargetFields1", Arrays.asList("target2"));
+		check("example_getMappedTargetFields2", Arrays.asList("target1", "target3", "target2"));
+		check("example_getMappedTargetFields3", Arrays.asList("target1", "target3"));
+		
+		check("example_isSourceFieldMapped1", true);
+		check("example_isSourceFieldMapped2", false);
+		check("example_isSourceFieldMapped3", true);
+		check("example_isSourceFieldMapped4", false);
+		
+		check("example_isTargetFieldMapped1", true);
+		check("example_isTargetFieldMapped2", false);
 	}
 
 	public void test_copyByName() {
@@ -5364,13 +5403,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		List<String> myList = new ArrayList<String>();
 		check("copyEmptyList", myList);
 		check("returnedEmptyList", myList);
-		assertTrue(((List<String>)(getVariable("copyEmptyList"))).isEmpty());
-		assertTrue(((List<String>)(getVariable("returnedEmptyList"))).isEmpty());
+		assertTrue(((List<?>)(getVariable("copyEmptyList"))).isEmpty());
+		assertTrue(((List<?>)(getVariable("returnedEmptyList"))).isEmpty());
 		Map<String, String> emptyMap = new HashMap<String, String>();
 		check("copyEmptyMap", emptyMap);
 		check("returnedEmptyMap", emptyMap);
-		assertTrue(((HashMap<String,String>)(getVariable("copyEmptyMap"))).isEmpty());
-		assertTrue(((HashMap<String,String>)(getVariable("returnedEmptyMap"))).isEmpty());
+		assertTrue(((HashMap<?,?>)(getVariable("copyEmptyMap"))).isEmpty());
+		assertTrue(((HashMap<?,?>)(getVariable("returnedEmptyMap"))).isEmpty());
 	}
 
 	public void test_containerlib_copy_expect_error(){
@@ -12089,4 +12128,28 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 	}
+
+	/**
+	 * @see PropertiesUtilsTest#testDeserialize()
+	 */
+	@SuppressWarnings("serial")
+	public void test_stringlib_parseProperties() {
+		doCompile("test_stringlib_parseProperties");
+		Map<String, String> expected = new HashMap<String, String>();
+		expected.put("xxx", "1");
+		expected.put("kkk", "2");
+		expected.put("aaa", "3");
+		expected.put("bbb", "4");
+		Map<?, ?> actual = (Map<?, ?>) getVariable("ret1");
+		List<?> keys = new ArrayList<>(actual.keySet());
+		assertEquals(Arrays.asList("xxx", "kkk", "aaa", "bbb"), keys); // check order
+		check("ret1", expected);
+		
+		expected = new HashMap<String, String>();
+		check("ret2", expected); // empty string
+		check("ret3", expected); // blank string
+		check("ret4", expected); // null string
+		check("ret5", new HashMap<String, String>() {{ put("include", "aaa"); }}); // include not ignored
+	}
+
 }

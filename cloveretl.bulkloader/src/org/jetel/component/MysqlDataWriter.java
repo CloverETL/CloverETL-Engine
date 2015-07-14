@@ -865,9 +865,9 @@ public class MysqlDataWriter extends BulkLoader {
 
 		MysqlDataWriter mysqlDataWriter = new MysqlDataWriter(
 				xattribs.getString(XML_ID_ATTRIBUTE), 
-				xattribs.getStringEx(XML_MYSQL_PATH_ATTRIBUTE, RefResFlag.URL), 
-				xattribs.getString(XML_DATABASE_ATTRIBUTE), 
-				xattribs.getString(XML_TABLE_ATTRIBUTE));
+				xattribs.getStringEx(XML_MYSQL_PATH_ATTRIBUTE, null, RefResFlag.URL), 
+				xattribs.getString(XML_DATABASE_ATTRIBUTE, null), 
+				xattribs.getString(XML_TABLE_ATTRIBUTE, null));
 
 		if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
 			mysqlDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.URL));
@@ -929,7 +929,7 @@ public class MysqlDataWriter extends BulkLoader {
 			if (!fileExists(commandURL)) {
 				if (StringUtils.isEmpty(table)) {
 					status.add(new ConfigurationProblem(StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute has to be specified or " +
-							StringUtils.quote(XML_COMMAND_URL_ATTRIBUTE) + " attribute has to be specified and file at the URL must exists.",
+							StringUtils.quote(XML_COMMAND_URL_ATTRIBUTE) + " attribute has to be specified and file at the URL must exist.",
 							Severity.ERROR, this, Priority.NORMAL));				
 				}
 				if (!isDataReadFromPort && !fileUrlExists(dataURL)) {

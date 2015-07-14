@@ -55,50 +55,47 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@Override
 	public TLFunctionPrototype getExecutable(String functionName) {
-		TLFunctionPrototype ret = 
-			"num2str".equals(functionName) ? new Num2StrFunction() :
-			"date2str".equals(functionName) ? new Date2StrFunction() :
-			"str2date".equals(functionName) ? new Str2DateFunction() :
-			"date2num".equals(functionName) ? new Date2NumFunction() : 
-			"str2integer".equals(functionName) ? new Str2IntegerFunction() :
-			"str2long".equals(functionName) ? new Str2LongFunction() :
-			"str2double".equals(functionName) ? new Str2DoubleFunction() :
-			"str2decimal".equals(functionName) ? new Str2DecimalFunction() :
-			"long2integer".equals(functionName) ? new Long2IntegerFunction() :
-			"double2integer".equals(functionName) ? new Double2IntegerFunction() :
-			"decimal2integer".equals(functionName) ? new Decimal2IntegerFunction() :
-			"double2long".equals(functionName) ? new Double2LongFunction() :
-			"decimal2long".equals(functionName) ? new Decimal2LongFunction() :
-			"decimal2double".equals(functionName) ? new Decimal2DoubleFunction() : 
-			"num2bool".equals(functionName) ? new Num2BoolFunction() :
-			"bool2num".equals(functionName) ? new Bool2NumFunction() : 
-			"str2bool".equals(functionName) ? new Str2BoolFunction() :
-			"toString".equals(functionName) ? new ToStringFunction() :
-			"long2date".equals(functionName) ? new Long2DateFunction() :
-			"date2long".equals(functionName) ? new Date2LongFunction() : 
-			"base64byte".equals(functionName) ? new Base64ByteFunction() : 
-		    "byte2base64".equals(functionName) ? new Byte2Base64Function() : 
-		    "bits2str".equals(functionName) ? new Bits2StrFunction() : 
-		    "str2bits".equals(functionName) ? new Str2BitsFunction() : 
-      	    "str2byte".equals(functionName) ? new Str2ByteFunction() : 
-      	    "byte2str".equals(functionName) ? new Byte2StrFunction() : 
-		    "hex2byte".equals(functionName) ? new Hex2ByteFunction() : 
-		    "byte2hex".equals(functionName) ? new Byte2HexFunction() : 
-		    "long2packDecimal".equals(functionName) ? new Long2PackedDecimalFunction() : 
-		    "packDecimal2long".equals(functionName) ? new PackedDecimal2LongFunction() : 
-			"xml2json".equals(functionName) ? new Xml2JsonFunction() : 
-			"json2xml".equals(functionName) ? new Json2XmlFunction() : 
-		    "md5".equals(functionName) ? new MD5Function() : 
-		    "sha".equals(functionName) ? new SHAFunction() : 
-			"sha256".equals(functionName) ? new SHA256Function() : 
-			null;
+		if (functionName != null) {
+			switch (functionName) {
+				case "num2str": return new Num2StrFunction();
+				case "date2str": return new Date2StrFunction();
+				case "str2date": return new Str2DateFunction();
+				case "date2num": return new Date2NumFunction();
+				case "str2integer": return new Str2IntegerFunction();
+				case "str2long": return new Str2LongFunction();
+				case "str2double": return new Str2DoubleFunction();
+				case "str2decimal": return new Str2DecimalFunction();
+				case "long2integer": return new Long2IntegerFunction();
+				case "double2integer": return new Double2IntegerFunction();
+				case "decimal2integer": return new Decimal2IntegerFunction();
+				case "double2long": return new Double2LongFunction();
+				case "decimal2long": return new Decimal2LongFunction();
+				case "decimal2double": return new Decimal2DoubleFunction();
+				case "num2bool": return new Num2BoolFunction();
+				case "bool2num": return new Bool2NumFunction();
+				case "str2bool": return new Str2BoolFunction();
+				case "toString": return new ToStringFunction();
+				case "long2date": return new Long2DateFunction();
+				case "date2long": return new Date2LongFunction();
+				case "base64byte": return new Base64ByteFunction();
+				case "byte2base64": return new Byte2Base64Function();
+				case "bits2str": return new Bits2StrFunction();
+				case "str2bits": return new Str2BitsFunction();
+				case "str2byte": return new Str2ByteFunction();
+				case "byte2str": return new Byte2StrFunction();
+				case "hex2byte": return new Hex2ByteFunction();
+				case "byte2hex": return new Byte2HexFunction();
+				case "long2packDecimal": return new Long2PackedDecimalFunction();
+				case "packDecimal2long": return new PackedDecimal2LongFunction();
+				case "xml2json": return new Xml2JsonFunction();
+				case "json2xml": return new Json2XmlFunction();
+				case "md5": return new MD5Function();
+				case "sha": return new SHAFunction();
+				case "sha256": return new SHA256Function();
+			}
+		}
 		
-		if (ret == null) {
-    		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
-    	}
-		
-		return ret;
-			
+		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
 	}
 	
 	private static String LIBRARY_NAME = "Convert";

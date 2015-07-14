@@ -238,7 +238,7 @@ public class InfobrightDataWriter extends Node {
 		}
 		
 		// get dbConnection from graph
-	    if (dbConnection == null){
+	    if (dbConnection == null && connectionName != null){
 	        IConnection conn = getGraph().getConnection(connectionName);
             if(conn == null) {
                 status.add("Can't find DBConnection ID: " + connectionName, Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
@@ -248,6 +248,9 @@ public class InfobrightDataWriter extends Node {
             }else{
             	dbConnection = (DBConnection) conn;
             }
+	    } else if (connectionName == null) {
+	    	status.add("DB connection not defined.", Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+	    	return status;
 	    }
 	    //check connection
 		if (dbConnection != null && !dbConnection.isInitialized()) {
@@ -275,6 +278,12 @@ public class InfobrightDataWriter extends Node {
 				cloverFieldIndexes[i] = i;
 			}
 		}
+		
+		if (table == null) {
+			status.add("Database table not defined.", Severity.ERROR, this, Priority.NORMAL, XML_TABLE_ATTRIBUTE);
+			return status;
+		}
+		
 		//try to create loader and Brighthouse record
 		log = new CommonsLogger(logger);
 		try {
@@ -582,8 +591,8 @@ public class InfobrightDataWriter extends Node {
         InfobrightDataWriter loader;
 
         loader = new InfobrightDataWriter(xattribs.getString(XML_ID_ATTRIBUTE));
-        loader.setDbConnection(xattribs.getString(XML_DBCONNECTION_ATTRIBUTE));
-        loader.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
+        loader.setDbConnection(xattribs.getString(XML_DBCONNECTION_ATTRIBUTE, null));
+        loader.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE, null));
         if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 			loader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 		}

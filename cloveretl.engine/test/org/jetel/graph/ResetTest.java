@@ -100,6 +100,8 @@ public class ResetTest extends CloverTestCase {
 				public boolean accept(File file) {
 					return file.getName().endsWith(".grf") 
 							&& !file.getName().startsWith("TPCH")// ok, performance tests - last very long
+							&& !file.getName().startsWith("Subgraph") // need server
+							&& !file.getName().startsWith("clusterDictionary") // cluster tests
 							&& !file.getName().contains("Performance")// ok, performance tests - last very long
 							&& !file.getName().equals("graphJoinData.grf") // ok, uses class file that is not created
 							&& !file.getName().equals("graphJoinHash.grf") // ok, uses class file that is not created
@@ -253,6 +255,8 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("cluster") // cluster tests
 							&& !file.getName().equals("S3") 
 							&& !file.getName().equals("email") 
+							&& !file.getName().equals("dataPolicy") // negative tests 
+							&& !file.getName().equals("metadataPropagation") // mostly server tests
 							&& !file.getName().equals("windows"); // wokna only tests
 				}
 			};
