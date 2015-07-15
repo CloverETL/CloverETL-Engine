@@ -190,6 +190,10 @@ public abstract class GraphElement implements IGraphElement {
     @Override
 	synchronized public void free() {
         initialized = false;
+
+        if (getAuthorityProxy() != null) {
+    		getAuthorityProxy().freeRelatedClassLoaders(this);
+    	}
     }
     
     /* (non-Javadoc)
