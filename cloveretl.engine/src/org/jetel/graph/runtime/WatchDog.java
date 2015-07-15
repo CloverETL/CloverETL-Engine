@@ -19,6 +19,7 @@
 package org.jetel.graph.runtime;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -210,6 +211,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			  	
 	    		//print graph properties
 	    		logger.info("Job parameters: \n" + graph.getGraphParameters());
+	    		
+	    		//print runtime classpath
+	    		logger.info("Runtime classpath: " + Arrays.toString(graph.getRuntimeContext().getRuntimeClassPath()));
 	    		
 	    		//print out runtime context
 	    		logger.debug("Graph runtime context: " + graph.getRuntimeContext().getAllProperties());
