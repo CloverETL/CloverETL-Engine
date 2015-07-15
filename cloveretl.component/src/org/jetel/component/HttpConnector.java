@@ -2757,10 +2757,6 @@ public class HttpConnector extends Node {
 			}
 		}
 
-		if (redirectErrorOutput && standardOutputMapping == null) {
-			status.add(new ConfigurationProblem("Fields of error records redirected to standard output port will be empty unless Standard output mapping is defined", Severity.WARNING, this, Priority.NORMAL, XML_REDIRECT_ERROR_OUTPUT));
-		}
-
 		if (!StringUtils.isEmpty(rawHttpHeaders)) {
 			for (CharSequence rawHeader : parseRawHttpHeadersItems()) {
 				try {
