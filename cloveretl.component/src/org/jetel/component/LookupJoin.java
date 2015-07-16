@@ -471,7 +471,7 @@ public class LookupJoin extends Node implements MetadataProvider {
         }
 
         if (getOutputPort(REJECTED_PORT) != null) {
-            checkMetadata(status, getInputPort(READ_FROM_PORT).getMetadata(), getOutputPort(REJECTED_PORT).getMetadata());
+            checkMetadata(status, getInputPort(READ_FROM_PORT), getOutputPort(REJECTED_PORT));
         }
 
         if (errorActionsString != null){

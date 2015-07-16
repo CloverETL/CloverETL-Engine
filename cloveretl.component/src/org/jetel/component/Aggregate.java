@@ -338,7 +338,7 @@ public class Aggregate extends Node {
         	return status;
         }
         
-        checkMetadata(status, getOutMetadata());
+        checkMetadata(status, null, getOutPorts());
         
         if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(

@@ -305,7 +305,7 @@ public class SortWithinGroups extends Node {
 
         checkInputPorts(status, 1, 1);
         checkOutputPorts(status, 1, Integer.MAX_VALUE);
-        checkMetadata(status, getInMetadata(), getOutMetadata());
+        checkMetadata(status, getInPorts(), getOutPorts());
 
         DataRecordMetadata metadata = getInputPort(INPUT_PORT_NUMBER).getMetadata();
 

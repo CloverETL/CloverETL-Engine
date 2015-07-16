@@ -21,7 +21,7 @@ package org.jetel.component;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
-import java.util.Collection;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -379,7 +379,7 @@ public class DBFDataReader extends Node {
 					ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
         
-        checkMetadata(status, getOutMetadata());
+        checkMetadata(status);
         
         if (fileURL == null) {
         	status.add("File URL not defined.", Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE);
@@ -413,10 +413,9 @@ public class DBFDataReader extends Node {
         return status;
     }
     
-    @Override
-    protected ConfigurationStatus checkMetadata(ConfigurationStatus status, Collection<DataRecordMetadata> metadata) {
-    	
-    	ConfigurationStatus newStatus = super.checkMetadata(status, metadata);
+    private ConfigurationStatus checkMetadata(ConfigurationStatus status) {
+    	ConfigurationStatus newStatus = checkMetadata(status, null, getOutPorts());
+    	List<DataRecordMetadata> metadata = getOutMetadata();
     	if (metadata != null && !metadata.isEmpty()) {
     		DataFieldMetadata[] fields = metadata.iterator().next().getFields();
 			if (fields != null && fields.length > 0) {

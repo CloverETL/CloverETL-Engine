@@ -346,7 +346,7 @@ public class HadoopReader extends Node {
 			return status;
 		}
 
-		checkMetadata(status, getOutMetadata());
+		checkMetadata(status, null, getOutPorts());
 
 		if (!PolicyType.isPolicyType(policyTypeStr)) {
 			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
