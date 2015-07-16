@@ -19,8 +19,11 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Collection;
+import java.util.Properties;
 
 import org.jetel.connection.jdbc.specific.conn.MSAccessPureJavaConnection;
 import org.jetel.database.sql.DBConnection;
@@ -44,6 +47,8 @@ public class MSAccessPureJavaSpecific extends AbstractJdbcSpecific {
 	private static final MSAccessPureJavaSpecific INSTANCE = new MSAccessPureJavaSpecific();
 
 	private static final String CONVERT_STRING = "Convert the field to another type or use another matching field type.";
+	
+	private static final String SHOW_SCHEMA_PROPERTY = "showschema";
 
 	protected MSAccessPureJavaSpecific() {
 		super();
@@ -51,6 +56,26 @@ public class MSAccessPureJavaSpecific extends AbstractJdbcSpecific {
 
 	public static MSAccessPureJavaSpecific getInstance() {
 		return INSTANCE;
+	}
+	
+	@Override
+	public Connection connect(Driver driver, String url, Properties info) throws SQLException {
+		boolean schemaPropertyPresent = url.toLowerCase().replaceAll("\\s", "").contains(SHOW_SCHEMA_PROPERTY + "=");
+		
+		if (!schemaPropertyPresent) {
+			// search the custom properties
+			for (Object key : info.keySet()) {
+				if (key.toString().toLowerCase().equals(SHOW_SCHEMA_PROPERTY)) {
+					schemaPropertyPresent = true;
+					break;
+				}
+			}
+		}
+		if (!schemaPropertyPresent) {
+			info.put(SHOW_SCHEMA_PROPERTY, "true"); // needed for browsing, metadata extraction
+		}
+		
+		return super.connect(driver, url, info);
 	}
 	
 	@Override
@@ -99,14 +124,6 @@ public class MSAccessPureJavaSpecific extends AbstractJdbcSpecific {
 		switch (sqlType) {
 		case Types.TIMESTAMP:
 			return "DATETIME";
-		case Types.BOOLEAN:
-			return "BIT";
-		case Types.INTEGER:
-			return "INT";
-		case Types.NUMERIC:
-		case Types.DOUBLE:
-			return "FLOAT";
-			// TODO numeric should probably return "NUMERIC"
 		}
 		return super.sqlType2str(sqlType);
 	}
@@ -114,8 +131,6 @@ public class MSAccessPureJavaSpecific extends AbstractJdbcSpecific {
 	@Override
 	public int jetelType2sql(DataFieldMetadata field) {
 		switch (field.getDataType()) {
-		case BOOLEAN:
-			return Types.BIT;
 		case NUMBER:
 			return Types.DOUBLE;
 		default:
