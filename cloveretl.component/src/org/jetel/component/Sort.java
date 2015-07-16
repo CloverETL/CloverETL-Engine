@@ -258,7 +258,7 @@ public class Sort extends Node {
 			return status;
 		}
 
-		checkMetadata(status, getInMetadata(), getOutMetadata());
+		checkMetadata(status, getInPorts(), getOutPorts());
 
 		try {
 			init();

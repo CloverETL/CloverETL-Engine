@@ -598,9 +598,7 @@ public class Dedup extends Node {
         	 return status;
          }
          
-         if (getInputPort(READ_FROM_PORT) != null) {
-        	 checkMetadata(status, getInputPort(READ_FROM_PORT).getMetadata(), getOutMetadata());
-         }
+         checkMetadata(status, getInPorts(), getOutPorts());
 
          try {
              init();

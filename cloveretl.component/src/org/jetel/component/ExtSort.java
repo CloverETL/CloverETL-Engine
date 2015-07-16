@@ -375,7 +375,7 @@ public class ExtSort extends Node {
         	return status;
         }
         
-        checkMetadata(status, getInMetadata(), getOutMetadata());
+        checkMetadata(status, getInPorts(), getOutPorts());
         
         DataRecordMetadata inMetadata = getInputPort(READ_FROM_PORT).getMetadata();
 		if (sortKeysNames == null) {

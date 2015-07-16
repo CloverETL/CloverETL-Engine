@@ -362,7 +362,7 @@ public class DelimitedDataReader extends Node {
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
         
-        checkMetadata(status, getOutMetadata());
+        checkMetadata(status, null, getOutPorts());
 
         try {
         	prepareParser();

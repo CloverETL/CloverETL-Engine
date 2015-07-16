@@ -22,6 +22,7 @@ import java.nio.ByteBuffer;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -37,8 +38,6 @@ import org.apache.log4j.MDC;
 import org.jetel.component.ComponentDescription;
 import org.jetel.component.ComponentDescriptionImpl;
 import org.jetel.data.DataRecord;
-import org.jetel.data.DataRecordFactory;
-import org.jetel.data.Defaults;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -278,8 +277,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *@return    Collection of OutPorts
 	 *@since     April 18, 2002
 	 */
-	public Collection<OutputPort> getOutPorts() {
-		return outPorts.values();
+	public List<OutputPort> getOutPorts() {
+		return new ArrayList<>(outPorts.values());
 	}
 
 	/**
@@ -295,8 +294,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *@return    Collection of InPorts
 	 *@since     April 18, 2002
 	 */
-	public Collection<InputPort> getInPorts() {
-		return inPorts.values();
+	public List<InputPort> getInPorts() {
+		return new ArrayList<>(inPorts.values());
 	}
 
 	/**
@@ -1403,6 +1402,96 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		return checkMetadata(status, inputMetadata, outputMetadata);
 	}
 
+    /**
+     * Ensures that metadata on all passed ports are equal.
+     */
+    protected ConfigurationStatus checkMetadata(ConfigurationStatus status, InputPort inputPort, OutputPort outputPort) {
+    	return checkMetadata(status, Collections.singletonList(inputPort), Collections.singletonList(outputPort));
+    }
+
+    /**
+     * Ensures that metadata on all passed ports are equal.
+     */
+    protected ConfigurationStatus checkMetadata(ConfigurationStatus status, List<InputPort> inputPorts, List<OutputPort> outputPorts) {
+    	return checkMetadata(status, inputPorts, outputPorts, true);
+    }
+
+    /**
+     * Ensures that metadata on all passed ports are equal.
+     */
+    protected ConfigurationStatus checkMetadata(ConfigurationStatus status, List<InputPort> inputPorts, List<OutputPort> outputPorts, boolean checkFixDelType) {
+    	//all ports must have metadata
+    	boolean noMetadataFound = false;
+    	if (inputPorts != null) {
+	    	for (InputPort inputPort : inputPorts) {
+	    		if (inputPort.getMetadata() == null) {
+	    			noMetadataFound = true;
+	    			status.add(new ConfigurationProblem("Input port #" + inputPort.getInputPortNumber() + " does not have assigned metadata.", Severity.WARNING, this, Priority.NORMAL));
+	    		}
+	    	}
+    	}
+    	if (outputPorts != null) {
+	    	for (OutputPort outputPort : outputPorts) {
+	    		if (outputPort.getMetadata() == null) {
+	    			noMetadataFound = true;
+	    			status.add(new ConfigurationProblem("Output port #" + outputPort.getOutputPortNumber() + " does not have assigned metadata.", Severity.WARNING, this, Priority.NORMAL));
+	    		}
+	    	}
+    	}
+    	if (noMetadataFound) {
+    		return status;
+    	}
+    	
+    	//find an etalon - port, which will be compared with the other ports
+    	Port etalon = null;
+    	int etalonIndex = -1;
+    	boolean isEtalonInputPort = false;
+    	if (inputPorts != null && inputPorts.size() > 0) {
+    		etalon = inputPorts.get(0);
+    		etalonIndex = ((InputPort) etalon).getInputPortNumber();
+    		isEtalonInputPort = true;
+    	} else if (outputPorts != null && outputPorts.size() > 0) {
+    		etalon = outputPorts.get(0);
+    		etalonIndex = ((OutputPort) etalon).getOutputPortNumber();
+    		isEtalonInputPort = false;
+    	}
+    	if (etalon == null) {
+    		return status;
+    	}
+    	DataRecordMetadata etalonMetadata = etalon.getMetadata();
+    	
+    	//compare the etalon with input ports
+    	if (inputPorts != null) {
+	    	for (InputPort inputPort : inputPorts) {
+	    		if (!etalonMetadata.equals(inputPort.getMetadata(), checkFixDelType)) {
+	    			status.add(new ConfigurationProblem("Metadata " + 
+	    					StringUtils.quote(inputPort.getMetadata().getName()) +
+	    					" on input port #" + inputPort.getInputPortNumber() +
+	    					" does not equal to metadata " + 
+	    					StringUtils.quote(etalonMetadata.getName()) + " on " +
+	    					(isEtalonInputPort ? "input" : "output") + " port #" + etalonIndex + ".", 
+						Severity.ERROR, this, Priority.NORMAL));
+	    		}
+	    	}
+    	}
+    	//compare the etalon with output ports
+    	if (outputPorts != null) {
+	    	for (OutputPort outputPort : outputPorts) {
+	    		if (!etalonMetadata.equals(outputPort.getMetadata(), checkFixDelType)) {
+	    			status.add(new ConfigurationProblem("Metadata " + 
+	    					StringUtils.quote(outputPort.getMetadata().getName()) +
+	    					" on output port #" + outputPort.getOutputPortNumber() +
+	    					" does not equal to metadata " + 
+	    					StringUtils.quote(etalonMetadata.getName()) + " on " +
+	    					(isEtalonInputPort ? "input" : "output") + " port #" + etalonIndex + ".", 
+						Severity.ERROR, this, Priority.NORMAL));
+	    		}
+	    	}
+    	}
+    	
+    	return status;
+    }
+    
     /**
      * The given thread is registered as a child thread of this component.
      * The child threads are exploited for gathering of tracking information - CPU usage of this component

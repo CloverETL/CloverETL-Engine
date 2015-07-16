@@ -430,7 +430,7 @@ public class Partition extends Node {
                		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
          }
 
-        checkMetadata(status, getInMetadata(), getOutMetadata());
+        checkMetadata(status, getInPorts(), getOutPorts());
 
         DataRecordMetadata inMetadata = getInputPort(0).getMetadata();
         try {
