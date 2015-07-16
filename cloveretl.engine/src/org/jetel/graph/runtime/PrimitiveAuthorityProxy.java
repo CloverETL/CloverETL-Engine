@@ -55,7 +55,6 @@ import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Edge;
-import org.jetel.graph.GraphElement;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -510,11 +509,6 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
         }
 	}
 	
-	@Override
-	public void freeRelatedClassLoaders(GraphElement relatedGraphElement) {
-		//DO NOTHING
-	}
-
 	@Override
 	public ClassLoader createMultiParentClassLoader(ClassLoader... parents) {
 		return new MultiParentClassLoader(parents);
