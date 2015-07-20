@@ -25,7 +25,13 @@ function integer transform() {
 	tmpMap["a"] = "b";
 	results.append((dictionary.stringMapEntry = dictionary.stringMapEntry + tmpMap)["key"] == expected);
 	
-	// TODO compound assignment operators
+	results.append((dictionary.stringListEntry2 += ["bb"])[0] == expected);
+	dictionary.stringListEntry3.append("cc");
+	results.append(dictionary.stringListEntry3[0] == expected);
+	
+	results.append((dictionary.stringMapEntry2 += tmpMap)["key"] == expected);
+	dictionary.stringMapEntry3["key2"] = "value2";
+	results.append(dictionary.stringMapEntry3["key"] == expected);
 	
 	
 	return 0;
