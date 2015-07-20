@@ -2517,7 +2517,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		firstChild.jjtAccept(this, data);
 
 		if( firstChild.getId() == TransformLangParserTreeConstants.JJTDICTIONARYNODE){
-			final Object value = getGraph().getDictionary().getValue(node.getName());
+			final Object value = dictionaryValue(node);
 			stack.push(value);
 			return data;
 		} else {
@@ -2534,6 +2534,20 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			stack.push(fieldValue(record.getField(node.getFieldId())));
 			return data;
 		}
+	}
+	
+	private Object dictionaryValue(CLVFMemberAccessExpression node) {
+		Object value = getGraph().getDictionary().getValue(node.getName());
+		if (value == null) {
+			return null;
+		}
+		
+		TLType type = node.getType();
+		if (type.isList() || type.isMap()) {
+			value = wrapMultivalueField(value, Object.class);
+		}
+
+		return value;
 	}
 
 	@Override

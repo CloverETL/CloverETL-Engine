@@ -27,8 +27,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
 
-import junit.framework.AssertionFailedError;
-
 import org.jetel.component.CTLRecordTransform;
 import org.jetel.component.RecordTransform;
 import org.jetel.data.DataField;
@@ -38,6 +36,7 @@ import org.jetel.data.SetVal;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.primitive.Decimal;
+import org.jetel.data.primitive.IntegerDecimal;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.exception.ComponentNotReadyException;
@@ -61,11 +60,14 @@ import org.jetel.util.crypto.Digest;
 import org.jetel.util.crypto.Digest.DigestType;
 import org.jetel.util.formatter.TimeZoneProvider;
 import org.jetel.util.primitive.TypedProperties;
+import org.jetel.util.string.CloverString;
 import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Years;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
+
+import junit.framework.AssertionFailedError;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class CompilerTestCase extends CloverTestCase {
@@ -11422,6 +11424,47 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		@SuppressWarnings("unchecked")
 		List<byte[]> byteList = (List<byte[]>) getVariable("byteList"); 
 		assertDeepEquals(byteList, Arrays.asList(new byte[] {0x12}, new byte[] {0x34, 0x56}, null, new byte[] {0x78}));
+	}
+	
+	public void test_dictionary_read_CLO6850() {
+		String testIdentifier = "test_dictionary_read_CLO6850";
+		TransformationGraph graph = createDefaultGraph(); 
+		
+		DataRecord[] inRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(INPUT_3)), createDefaultMultivalueRecord(graph.getDataRecordMetadata(INPUT_4)) };
+		DataRecord[] outRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_3)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_4)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_5)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_6)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_7)) };
+		
+		Dictionary dictionary = graph.getDictionary();
+		
+		CloverString cs = new CloverString("hello");
+		Decimal d = new IntegerDecimal(10, 2);
+		d.setValue(123);
+		
+		try {
+			dictionary.setValue("stringEntry", "string", cs);
+			dictionary.setValue("stringListEntry", "list", Arrays.asList(cs));
+			dictionary.setContentType("stringListEntry", "string");
+			Map<String, Object> map = new HashMap<>();
+			map.put("key", cs);
+			dictionary.setValue("stringMapEntry", "map", map);
+			dictionary.setContentType("stringMapEntry", "string");
+			
+			dictionary.setValue("decimalEntry", "decimal", d);
+			dictionary.setValue("decimalListEntry", "list", Arrays.asList(d));
+			dictionary.setContentType("decimalListEntry", "decimal");
+			map = new HashMap<>();
+			map.put("key", d);
+			dictionary.setValue("decimalMapEntry", "map", map);
+			dictionary.setContentType("decimalMapEntry", "decimal");
+		} catch (ComponentNotReadyException e) {
+			throw new RuntimeException("Error init default dictionary", e);
+		}
+
+		String sourceCode = loadSourceCode(testIdentifier);
+		doCompile(sourceCode, testIdentifier, graph, inRecords, outRecords);
+
+		Boolean[] expected = new Boolean[10];
+		Arrays.fill(expected, true);
+		check("results", Arrays.asList(expected));
 	}
 	
 	public void test_dictionary_expect_error() throws Exception {
