@@ -113,6 +113,8 @@ public class MSAccessPureJavaSpecific extends AbstractJdbcSpecific {
 				case LONG:
 					status.add(new ConfigurationProblem("Metadata on input port must not use field of type long " + "because of restrictions of used driver." + CONVERT_STRING, ConfigurationStatus.Severity.ERROR, node, ConfigurationStatus.Priority.NORMAL));
 					break;
+				default:
+					break;
 				}
 			}
 		}
