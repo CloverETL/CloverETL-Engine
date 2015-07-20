@@ -11441,7 +11441,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		try {
 			dictionary.setValue("stringEntry", "string", cs);
-			dictionary.setValue("stringListEntry", "list", Arrays.asList(cs));
+			dictionary.setValue("stringListEntry", "list", new ArrayList<>(Arrays.asList(cs)));
 			dictionary.setContentType("stringListEntry", "string");
 			Map<String, Object> map = new HashMap<>();
 			map.put("key", cs);
@@ -11449,12 +11449,25 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			dictionary.setContentType("stringMapEntry", "string");
 			
 			dictionary.setValue("decimalEntry", "decimal", d);
-			dictionary.setValue("decimalListEntry", "list", Arrays.asList(d));
+			dictionary.setValue("decimalListEntry", "list", new ArrayList<>(Arrays.asList(d)));
 			dictionary.setContentType("decimalListEntry", "decimal");
 			map = new HashMap<>();
 			map.put("key", d);
 			dictionary.setValue("decimalMapEntry", "map", map);
 			dictionary.setContentType("decimalMapEntry", "decimal");
+
+			dictionary.setValue("stringListEntry2", "list", new ArrayList<>(Arrays.asList(cs)));
+			dictionary.setContentType("stringListEntry2", "string");
+			dictionary.setValue("stringListEntry3", "list", new ArrayList<>(Arrays.asList(cs)));
+			dictionary.setContentType("stringListEntry3", "string");
+			map = new HashMap<>();
+			map.put("key", cs);
+			dictionary.setValue("stringMapEntry2", "map", map);
+			dictionary.setContentType("stringMapEntry2", "string");
+			map = new HashMap<>();
+			map.put("key", cs);
+			dictionary.setValue("stringMapEntry3", "map", map);
+			dictionary.setContentType("stringMapEntry3", "string");
 		} catch (ComponentNotReadyException e) {
 			throw new RuntimeException("Error init default dictionary", e);
 		}
@@ -11462,9 +11475,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		String sourceCode = loadSourceCode(testIdentifier);
 		doCompile(sourceCode, testIdentifier, graph, inRecords, outRecords);
 
-		Boolean[] expected = new Boolean[10];
+		Boolean[] expected = new Boolean[14];
 		Arrays.fill(expected, true);
 		check("results", Arrays.asList(expected));
+		
+		// implementation detail, may change in the future
+		assertTrue(((List<?>) dictionary.getValue("stringListEntry3")).get(0) == cs);
+		assertTrue(((Map<?, ?>) dictionary.getValue("stringMapEntry3")).get("key") == cs);
 	}
 	
 	public void test_dictionary_expect_error() throws Exception {

@@ -1873,7 +1873,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 							
 							@Override
 							public Object getValue() {
-								return graph.getDictionary().getValue(memberAccNode.getName());
+								return dictionaryValue(memberAccNode);
 							}
 						};
 					}
