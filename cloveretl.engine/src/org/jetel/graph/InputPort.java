@@ -21,7 +21,6 @@ import java.io.IOException;
 
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CloverPublicAPI;
 
 /**
@@ -35,7 +34,7 @@ import org.jetel.util.CloverPublicAPI;
  * @see		Edge
  */
 @CloverPublicAPI
-public interface InputPort {
+public interface InputPort extends Port {
 
 	
 	// Operations
@@ -75,15 +74,6 @@ public interface InputPort {
      * @return
      */
     public boolean isEOF();
-
-	/**
-	 *  Gets the Metadata describing data records passing through this port
-	 *
-	 * @return    The Metadata value
-	 * @since     April 4, 2002
-	 */
-	public DataRecordMetadata getMetadata();
-
 
 	/**
 	 *  Gets the Writer (Node which writes into this port at the other end - if any)
@@ -156,11 +146,6 @@ public interface InputPort {
 	 * @return aggregated time how long the reader thread waits for data
 	 */
 	public long getReaderWaitingTime();
-	
-	/**
-	 * @return associated edge with this input port
-	 */
-	public Edge getEdge();
 	
 }
 /*

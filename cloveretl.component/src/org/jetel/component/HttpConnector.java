@@ -110,9 +110,7 @@ import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
 import org.apache.http.impl.client.TargetAuthenticationStrategy;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.impl.cookie.BestMatchSpecFactory;
@@ -2011,6 +2009,12 @@ public class HttpConnector extends Node {
 			initExecutionParametersFromComponentAttributes();
 		}
 
+		standardOutputMappingTransformation.addAutoMapping(INPUT_RECORD_NAME, STANDARD_OUTPUT_RECORD_NAME);
+		standardOutputMappingTransformation.addAutoMapping(RESULT_RECORD_NAME, STANDARD_OUTPUT_RECORD_NAME);
+
+		errorOutputMappingTransformation.addAutoMapping(INPUT_RECORD_NAME, ERROR_OUTPUT_RECORD_NAME);
+		errorOutputMappingTransformation.addAutoMapping(ERROR_RECORD_NAME, ERROR_OUTPUT_RECORD_NAME);
+		
 		inputMappingTransformation.init(status, XML_INPUT_MAPPING_ATTRIBUTE);
 		standardOutputMappingTransformation.init(status, XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE);
 		errorOutputMappingTransformation.init(status, XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE);
@@ -2395,20 +2399,9 @@ public class HttpConnector extends Node {
 				outField.setNull(true);
 			}
 
-			if (standardOutputMapping != null) {
-				standardOutputMappingTransformation.execute();
+			standardOutputMappingTransformation.execute();
 
-				mapOverridingOutput();
-			} else {
-				// //output transformation is not specified - default star mapping is performed
-				// // POSSIBLE PROBLEM FOR BACKWARD COMPATIBILITY
-				// mapByName(standardOutputMappingInRecords, standardOutputRecord);
-				//
-				// // as the output transformation is not specified, we must assume, that this is a
-				// // usage of HTTPConnector, that is not aware of output mapping. Thus map the fields
-				// // in an old way to preserve compatibility.
-				mapLegacyOutput();
-			}
+			mapOverridingOutput();
 
 			try {
 				standardOutputPort.writeRecord(standardOutputRecord);
@@ -2430,26 +2423,6 @@ public class HttpConnector extends Node {
 		// not set by a mapping
 		if (outputFieldName != null && outField != null && outField.isNull()) {
 			outField.setValue(resultRecord.getField(RP_CONTENT_INDEX));
-		}
-	}
-
-	/**
-	 * Maps fields based on the configuration to preserve compatibility.
-	 * 
-	 * @throws Exception
-	 */
-	private void mapLegacyOutput() {
-		// output field connected - set the value there.
-		// NOTE: no output mapping is defined.
-		if (outField != null) {
-			if (outputFileUrlToUse != null || storeResponseToTempFileToUse) {
-				// if we are storing the response to file, set the file URL into output field
-				outField.setValue(resultRecord.getField(RP_OUTPUTFILE_INDEX));
-
-			} else {
-				// otherwise store the content
-				outField.setValue(resultRecord.getField(RP_CONTENT_INDEX));
-			}
 		}
 	}
 
@@ -2782,10 +2755,6 @@ public class HttpConnector extends Node {
 			if (!StringUtils.isEmpty(inputFileUrl)) {
 				status.add(new ConfigurationProblem("Input file URL not allowed when " + requestMethod + " method is used.", Severity.ERROR, this, Priority.NORMAL, XML_INPUT_FILEURL_ATTRIBUTE));
 			}
-		}
-
-		if (redirectErrorOutput && standardOutputMapping == null) {
-			status.add(new ConfigurationProblem("Fields of error records redirected to standard output port will be empty unless Standard output mapping is defined", Severity.WARNING, this, Priority.NORMAL, XML_REDIRECT_ERROR_OUTPUT));
 		}
 
 		if (!StringUtils.isEmpty(rawHttpHeaders)) {

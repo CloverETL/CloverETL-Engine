@@ -1132,6 +1132,8 @@ public final class TransformationGraph extends GraphElement {
 		//register current thread in ContextProvider - it is necessary to static approach to transformation graph
 		Context c = ContextProvider.registerGraph(this);
 		try {
+			super.free();
+			
 	        freeResources();
 	    	
 	    	//free dictionary /some readers use dictionary in the free method for the incremental reading
