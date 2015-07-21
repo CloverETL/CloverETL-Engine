@@ -87,8 +87,8 @@ public class TransformationGraphAnalyzer {
 	 * - correct edge types are detected
 	 */
 	public static void analyseGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext, boolean propagateMetadata) {
-		// analyze blockers and blocked components before we edit the graph
-		TransformationGraphAnalyzer.computeBlockedComponents(graph);
+		// analyze blockers and blocked components before we edit the graph - this needs to be done first so we can display stuff correctly in GUI
+		TransformationGraphAnalyzer.computeBlockedComponents(graph, runtimeContext);
 		
         //remove disabled components and their edges
 		try {
@@ -837,7 +837,14 @@ public class TransformationGraphAnalyzer {
 	/**
 	 * Goes through the graph and saves information about blockers and blocked components to the graph.
 	 */
-	public static void computeBlockedComponents(TransformationGraph graph) {
+	public static void computeBlockedComponents(TransformationGraph graph, GraphRuntimeContext runtimeContext) {
+		Set<Node> ignoreComponents = new HashSet<>();
+		if (runtimeContext.getJobType().isSubJob()) {
+			// ignore debug input/output of subgraph if ran from parent job
+			ignoreComponents.addAll(TransformationGraphAnalyzer.findPrecedentNodesRecursive(graph.getSubgraphInputComponent(), null));
+			ignoreComponents.addAll(TransformationGraphAnalyzer.findFollowingNodesRecursive(graph.getSubgraphOutputComponent(), null));
+		}
+		
 		Map<Node, Set<Node>> blockingComponentsInfo = graph.getBlockingComponentsInfo();
 		blockingComponentsInfo.clear();
 		
@@ -846,7 +853,7 @@ public class TransformationGraphAnalyzer {
 		
 		// add blockers
 		for (Node node : graph.getNodes().values()) {
-			if (node.getEnabled().isBlocker()) {
+			if (!ignoreComponents.contains(node) && node.getEnabled().isBlocker()) {
 				blockingComponentsInfo.put(node, new HashSet<Node>());
 				stack.push(new Pair<>(node, node));
 			}
@@ -858,6 +865,11 @@ public class TransformationGraphAnalyzer {
 			for (OutputPort outPort : blockerInfo.getSecond().getOutPorts()) {
 				Node next = outPort.getEdge().getReader();
 				if (SubgraphUtils.isSubJobInputOutputComponent(next.getType())) {
+					if (runtimeContext.getJobType().isSubJob()) {
+						// ran from parent job, skip cascading through subgraphinput/output
+						continue;
+					}
+					
 					// move to subsequent component after subgraph input/output
 					outPort = next.getOutputPort(outPort.getEdge().getInputPortNumber());
 					if (outPort == null) {
