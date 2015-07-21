@@ -635,7 +635,7 @@ public class TransformationGraphAnalyzer {
 	 * @throws GraphConfigurationException
 	 */
 	public static void disableNodesInPhases(TransformationGraph graph) throws GraphConfigurationException {
-		Set<Node> nodesToRemove = new HashSet<Node>();
+		Set<Node> nodesToRemove = new HashSet<>();
 		Phase[] phases = graph.getPhases();
 
 		for (int i = 0; i < phases.length; i++) {
@@ -687,37 +687,68 @@ public class TransformationGraphAnalyzer {
 	 */
 	public static void removeBlockedNodes(TransformationGraph graph) throws GraphConfigurationException {
 		graph.getKeptBlockedComponents().clear();
-		List<Node> nodesToRemove = new LinkedList<Node>();
-		List<Node> nodesToAdd = new LinkedList<Node>();
+		List<Node> nodesToRemove = new LinkedList<>();
+		List<Node> nodesToAdd = new LinkedList<>();
 		Set<String> blockedIds = graph.getBlockedIDs();
 		Phase[] phases = graph.getPhases();
+		
+		// which ports of subgraphinput and subgraphoutput are "blocked" - i.e. which have blocker/blocked preceding them
+		Set<Integer> subgraphInputBlockedPorts = new HashSet<>();
+		Set<Integer> subgraphOutputBlockedPorts = new HashSet<>();
+		
+		if (graph.getStaticJobType().isSubJob()) {
+			// find blocked ports of subgraphinput and subgraphoutput
+			Node subInput = graph.getSubgraphInputComponent();
+			Node subOutput = graph.getSubgraphOutputComponent();
+
+			for (Entry<Integer, InputPort> entry : subInput.getInputPorts().entrySet()) {
+				Node precedingComponent = entry.getValue().getEdge().getWriter();
+				if (precedingComponent.getEnabled() == EnabledEnum.TRASH || blockedIds.contains(precedingComponent.getId())) {
+					subgraphInputBlockedPorts.add(entry.getKey());
+				}
+			}
+
+			for (Entry<Integer, InputPort> entry : subOutput.getInputPorts().entrySet()) {
+				Node precedingComponent = entry.getValue().getEdge().getWriter();
+				if (precedingComponent.getEnabled() == EnabledEnum.TRASH || blockedIds.contains(precedingComponent.getId())) {
+					subgraphOutputBlockedPorts.add(entry.getKey());
+				}
+			}
+		}
 
 		for (int i = 0; i < phases.length; i++) {
 			nodesToRemove.clear();
 			nodesToAdd.clear();
 			for (Node node : phases[i].getNodes().values()) {
-				if (node.getEnabled() == EnabledEnum.TRASH || blockedIds.contains(node.getId())) {
+				if (node.getEnabled() == EnabledEnum.TRASH) {
 					nodesToRemove.add(node);
-					
-					if (node.getEnabled() == EnabledEnum.TRASH) {
-						Node trashifier = replaceByTrashifier(node);
-						nodesToAdd.add(trashifier);
-					} else {
-						// blocked component
-						boolean keep = false; // some blocked components need to be kept (when there's enabled non-blocked component writing to them)
-						for (InputPort inPort : node.getInPorts()) {
-							Node predecessor = inPort.getWriter();
-							if (!predecessor.getEnabled().isBlocker() && !blockedIds.contains(predecessor.getId())) {
-								graph.getKeptBlockedComponents().add(node);
-								keep = true;
-								Node trashifier = replaceByTrashifier(node);
-								nodesToAdd.add(trashifier);
-								break;
-							}
+					Node trashifier = replaceByTrashifier(node);
+					nodesToAdd.add(trashifier);
+				} else if (blockedIds.contains(node.getId())) {
+					nodesToRemove.add(node);
+					boolean keep = false; // some blocked components need to be kept (when there's enabled non-blocked component writing to them)
+					for (InputPort inPort : node.getInPorts()) {
+						Node predecessor = inPort.getWriter();
+						if ((SubgraphUtils.isSubJobInputComponent(predecessor.getType()) &&
+								subgraphInputBlockedPorts.contains(new Integer(inPort.getEdge().getOutputPortNumber())))
+								||
+							(SubgraphUtils.isSubJobOutputComponent(predecessor.getType()) &&
+								subgraphOutputBlockedPorts.contains(new Integer(inPort.getEdge().getOutputPortNumber())))) {
+							// blocked port of subgraphinput/subgraphoutput does not count as non-blocked component -> skip it
+							continue;
 						}
-						if (!keep) {
-							disconnectAllEdges(node);
+						
+						if (!predecessor.getEnabled().isBlocker() && !blockedIds.contains(predecessor.getId())) {
+							graph.getKeptBlockedComponents().add(node);
+							keep = true;
+							Node trashifier = replaceByTrashifier(node);
+							nodesToAdd.add(trashifier);
+							break;
 						}
+					}
+					if (!keep) {
+						disconnectInputEdges(node);
+						disconnectOutputEdges(node, true);
 					}
 				}
 			}
@@ -745,7 +776,7 @@ public class TransformationGraphAnalyzer {
 			trashifier.addInputPort(entry.getKey(), entry.getValue());
 		}
 		
-		disconnectOutputEdges(node);
+		disconnectOutputEdges(node, true);
 		return trashifier;
 	}
 	
@@ -753,19 +784,40 @@ public class TransformationGraphAnalyzer {
 		for (Iterator<InputPort> it1 = node.getInPorts().iterator(); it1.hasNext();) {
 			final Edge edge = it1.next().getEdge();
 			final Node writer = edge.getWriter();
-			if (writer != null)
+			if (writer != null) {
 				writer.removeOutputPort(edge);
+			}
 			node.getGraph().deleteEdge(edge);
 			it1.remove();
 		}
 	}
 	
-	private static void disconnectOutputEdges(Node node) throws GraphConfigurationException {
+	/**
+	 * 
+	 * @param node the node whose output edges should be disconnected
+	 * @param disconnectBehindSubJobInputOutput - if some output edge leads to SubJobInputOutput component this allows disconnecting also
+	 * one more edge behind the SubJobInputOutput
+	 * @throws GraphConfigurationException
+	 */
+	private static void disconnectOutputEdges(Node node, boolean disconnectBehindSubJobInputOutput) throws GraphConfigurationException {
 		for (Iterator<OutputPort> it1 = node.getOutPorts().iterator(); it1.hasNext();) {
 			final Edge edge = it1.next().getEdge();
 			final Node reader = edge.getReader();
-			if (reader != null)
+			if (reader != null) {
 				reader.removeInputPort(edge);
+				
+				if (disconnectBehindSubJobInputOutput && SubgraphUtils.isSubJobInputOutputComponent(reader.getType())) {
+					OutputPort outPort = reader.getOutputPort(edge.getInputPortNumber());
+					if (outPort != null) {
+						final Edge nextEdge = outPort.getEdge();
+						reader.removeOutputPort(nextEdge);
+						nextEdge.getReader().removeInputPort(nextEdge);
+						
+						node.getGraph().deleteEdge(nextEdge);
+					}
+					
+				}
+			}
 			node.getGraph().deleteEdge(edge);
 			it1.remove();
 		}
@@ -779,7 +831,7 @@ public class TransformationGraphAnalyzer {
 	 */
 	private static void disconnectAllEdges(Node node) throws GraphConfigurationException {
 		disconnectInputEdges(node);
-		disconnectOutputEdges(node);		
+		disconnectOutputEdges(node, false);
 	}
 	
 	/**
@@ -796,7 +848,7 @@ public class TransformationGraphAnalyzer {
 		for (Node node : graph.getNodes().values()) {
 			if (node.getEnabled().isBlocker()) {
 				blockingComponentsInfo.put(node, new HashSet<Node>());
-				stack.push(new Pair<Node, Node>(node, node));
+				stack.push(new Pair<>(node, node));
 			}
 		}
 		
@@ -805,10 +857,18 @@ public class TransformationGraphAnalyzer {
 			Pair<Node, Node> blockerInfo = stack.pop();
 			for (OutputPort outPort : blockerInfo.getSecond().getOutPorts()) {
 				Node next = outPort.getEdge().getReader();
+				if (SubgraphUtils.isSubJobInputOutputComponent(next.getType())) {
+					// move to subsequent component after subgraph input/output
+					outPort = next.getOutputPort(outPort.getEdge().getInputPortNumber());
+					if (outPort == null) {
+						continue; // no connected component on this port pair
+					}
+					next = outPort.getEdge().getReader();
+				}
+				
 				if (!next.getEnabled().isBlocker() // "disabled as trash" components can't be blocked
-						&& !blockingComponentsInfo.get(blockerInfo.getFirst()).contains(next) // component is blocked only once per each blocker
-						&& !SubgraphUtils.isSubJobInputOutputComponent(next.getType())) { // subgraphInput and subgraphOutput can't be blocked
-					stack.push(new Pair<Node, Node>(blockerInfo.getFirst(), next));
+						&& !blockingComponentsInfo.get(blockerInfo.getFirst()).contains(next)) { // component is blocked only once per each blocker
+					stack.push(new Pair<>(blockerInfo.getFirst(), next));
 					blockingComponentsInfo.get(blockerInfo.getFirst()).add(next);
 				}
 			}

@@ -39,7 +39,7 @@ public interface Port {
 	public DataRecordMetadata getMetadata();
 
 	/**
-	 * @return associated edge with this output port
+	 * @return associated edge with this port
 	 */
 	public Edge getEdge();
 
