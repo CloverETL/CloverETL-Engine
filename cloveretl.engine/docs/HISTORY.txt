@@ -5,7 +5,9 @@
 REL-4-0-7
 ---------
 
-- no changes
+- Make UCanAccess default MS Access JDBC driver
+- FIXES:
+	- Add data type conversion for dictionary lists and maps
 
 REL-4-0-6
 ---------
