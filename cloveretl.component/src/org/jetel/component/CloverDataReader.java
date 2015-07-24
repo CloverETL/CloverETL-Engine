@@ -282,7 +282,7 @@ public class CloverDataReader extends Node implements MultiFileListener, Metadat
         		|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
         	return status;
         }
-        checkMetadata(status, getOutMetadata());
+        checkMetadata(status, null, getOutPorts());
         
         if (fileURL == null) {
         	status.add("File URL not defined.", Severity.ERROR, this, Priority.NORMAL, XML_FILE_ATTRIBUTE);

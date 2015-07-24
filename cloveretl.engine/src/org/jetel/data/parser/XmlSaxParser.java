@@ -44,6 +44,7 @@ import org.dom4j.io.SAXContentHandler;
 import org.jetel.component.RecordTransform;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.ListDataField;
 import org.jetel.data.StringDataField;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.data.xml.mapping.XMLMappingConstants;
@@ -63,6 +64,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.util.AutoFilling;
@@ -1234,17 +1236,16 @@ public class XmlSaxParser {
 
 			// If field is nullable and there's no character data set it to null
 			if (m_hasCharacters) {
-				
-				// write the value - if the field value is not already set or if it is set because of implicit mapping (I am not really sure about the second condition, but it was already there...)
-				if (field.getValue() == null || !cloverAttributes.contains(fieldName)) {
                     try {
                     	String currentValue = getCurrentValue(startIndex, endIndex, excludeCDataTag);
-                    	// CLO-5793: XMLExtract - mapping of element content breaks functionality of empty string as value of empty element
-                    	if (field.getMetadata().getDataType() == DataFieldType.STRING) {
-                    		field.setValue(currentValue);
-                    	} else {
-                    		field.fromString(currentValue);
-                    	}
+                    	
+                    	// write the value - if the field value is not already set or if it is set because of implicit mapping (I am not really sure about the second condition, but it was already there...)
+                    	if ((field.getValue() == null || !cloverAttributes.contains(fieldName)) && field.getMetadata().getContainerType() == DataFieldContainerType.SINGLE) {
+    						setFieldValue(field, currentValue);
+    					} else if (field.getMetadata().getContainerType() == DataFieldContainerType.LIST) {
+    						DataField myField = ((ListDataField) field).addField();
+    						setFieldValue(myField, currentValue);
+    					} 
                     } catch (BadDataFormatException ex) {
                         // This is a bit hacky here SOOO let me explain...
                         if (field.getType() == DataFieldMetadata.DATE_FIELD) {
@@ -1266,7 +1267,6 @@ public class XmlSaxParser {
                             throw ex;
                         }
                     }
-				}
 			} else if (field.getType() == DataFieldMetadata.STRING_FIELD
 			// and value wasn't already stored (from characters)
 			&& (field.getValue() == null || field.getValue().equals(field.getMetadata().getDefaultValueStr()))) {
@@ -1275,6 +1275,14 @@ public class XmlSaxParser {
 		}
 	}
 	
+	private void setFieldValue(DataField field, String currentValue) {
+		// CLO-5793: XMLExtract - mapping of element content breaks functionality of empty string as value of empty element
+		if (field.getMetadata().getDataType() == DataFieldType.STRING) {
+    		field.setValue(currentValue);
+    	} else {
+    		field.fromString(currentValue);
+    	}
+	}
 
 	/**
 	 * Augments the namespaceURIs with curly brackets to allow easy creation of qualified names E.g.

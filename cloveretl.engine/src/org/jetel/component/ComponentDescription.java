@@ -89,12 +89,21 @@ public interface ComponentDescription extends GraphElementDescription {
     	@XmlElement(name = "properties")
     	private Attributes attributes;
     	public Ports getInputPorts() {
+    		if (inputPorts == null) {
+    			inputPorts = new Ports();
+    		}
     		return inputPorts;
     	}
     	public Ports getOutputPorts() {
+    		if (outputPorts == null) {
+    			outputPorts = new Ports();
+    		}
     		return outputPorts;
     	}
     	public Attributes getAttributes() {
+    		if (attributes == null) {
+    			attributes = new Attributes();
+    		}
     		return attributes;
     	}
     	@XmlAttribute

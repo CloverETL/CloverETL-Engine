@@ -27,6 +27,19 @@ string mappingCode = "$name=$name;$name=$firstName;$countryName=$countryName;#$p
 string fieldName = "name";
 integer indexNum = 0;
 
+string[] example_getMappedSourceFields1;
+string[] example_getMappedSourceFields2;
+string[] example_getMappedSourceFields3;
+string[] example_getMappedTargetFields1;
+string[] example_getMappedTargetFields2;
+string[] example_getMappedTargetFields3;
+boolean example_isSourceFieldMapped1;
+boolean example_isSourceFieldMapped2;
+boolean example_isSourceFieldMapped3;
+boolean example_isSourceFieldMapped4;
+boolean example_isTargetFieldMapped1;
+boolean example_isTargetFieldMapped2;
+
 function integer transform() {
 	// white space allowed among separators
 	getMappedSourceFields("  #$phone  = $field1  ;  ", "name ", 1);
@@ -59,6 +72,23 @@ function integer transform() {
 	
 	sourceMapped_nullTarget = isSourceFieldMapped("$name=$name;$name=$firstName;$countryName=$name;#$phone=$field1;", null, 0);
 	targetMapped_nullSource = isTargetFieldMapped("$name=$name;$name=$firstName;$countryName=$name;#$phone=$field1;", null);
+
+	// examples from the documentation:
+	example_getMappedSourceFields1 = getMappedSourceFields("$target1=$srcA1;$target3=$srcA1;#$target1=$srcB4;$target2=$srcB2;", "target1", 1);
+	example_getMappedSourceFields2 = getMappedSourceFields("$target1=$source1;$target1=$source3;$target3=$source4;", "target1");
+	example_getMappedSourceFields3 = getMappedSourceFields("$target1=$source1;$target1=$source3;$target3=$source4;");
+	
+	example_getMappedTargetFields1 = getMappedTargetFields("$target1=$src1;$target3=$src1;#$target1=$src4;$target2=$src1;", "src1", 1);
+	example_getMappedTargetFields2 = getMappedTargetFields("$target1=$src1;$target3=$src1;#$target1=$src4;$target2=$src1;", "src1");
+	example_getMappedTargetFields3 = getMappedTargetFields("$target1=$source1;$target1=$source3;$target3=$source4;") ;
+	
+	example_isSourceFieldMapped1 = isSourceFieldMapped("$target1=$srcA1;$target3=$srcA1;#$target1=$srcB4;$target2=$srcB2;", "srcB2", 1);
+	example_isSourceFieldMapped2 = isSourceFieldMapped("$target1=$srcA1;$target3=$srcA1;#$target1=$srcB4;$target2=$srcB2;", "srcB2", 0);
+	example_isSourceFieldMapped3 = isSourceFieldMapped("$target1=$source1;$target1=$source3;$target3=$source4;", "source3");
+	example_isSourceFieldMapped4 = isSourceFieldMapped("$target1=$source1;$target1=$source3;$target3=$source4;", "source2");
+	
+	example_isTargetFieldMapped1 = isTargetFieldMapped("$target1=$srcA1;$target3=$srcA1;#$target1=$srcB4;$target2=$srcB2;", "target2");
+	example_isTargetFieldMapped2 = isTargetFieldMapped("$target1=$source1;$target1=$source3;$target3=$source4;", "target2");
 	
 	return 0;
 }

@@ -67,10 +67,14 @@
 	<property name="dir.pmd" value="/opt/pmd" />
 	<property name="dir.pmd.lib" value="${dir.pmd}/lib" />
 	<property name="dir.pmdreport" value="${dir.build}/pmdreport" />
-	<property name="pmd.ruleset.file" value="${dir.build-scripts}/pmd-ruleset.xml" />
 	<property name="dir.licenses" value="${basedir}/licenses" />
+	
+	<!-- =========================== TASKS PROPERTIES =========================== -->
+	<property name="pmd.ruleset.file" value="${dir.build-scripts}/pmd-ruleset.xml" />
 	<property name="run.coverage" value="false"/>
 	<property name="jacoco.dest.file" location="${basedir}/jacoco.exec"/>
+	<property name="additional.jvmargs" value=""/>
+	<property name="runtests.engine.Xmx" value="-Xmx2048m"/>
 	
 	<!--load external properties-->
 	<property file="build-local.properties"/>
@@ -967,10 +971,10 @@ This software is licensed under the terms you may find in the file named "LICENS
 						forkmode="once" 
 						>
 				<sysproperty key="file.encoding" value="UTF-8" />
-				<jvmarg value="-Xmx2048m"/>
+				<jvmarg value="${runtests.engine.Xmx}"/>
 				<jvmarg value="-XX:MaxPermSize=512m"/>
 				<jvmarg value="-Dderby.system.home=${dir.examples}/ExtExamples"/>
-				<jvmarg line="${additional.jvmargs}" if="additional.jvmargs"/>
+				<jvmarg line="${additional.jvmargs}"/>
 				<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
 				<classpath>
 					<pathelement path="${dir.classestest}"/>

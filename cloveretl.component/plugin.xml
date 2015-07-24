@@ -865,6 +865,12 @@
 	    </properties>
 	  </ETLComponent>
 	</extension>
+	
+	<!-- CLO-397 -->
+	<extension point-id="component">
+	  <ETLComponent type="TRASHIFIER" className="org.jetel.component.Trashifier">
+	  </ETLComponent>
+	</extension>
 
 	<extension point-id="component">
 	  <ETLComponent category="others" iconPath="icons/others/DBExecute" name="DBExecute" type="DB_EXECUTE" className="org.jetel.component.DBExecute">

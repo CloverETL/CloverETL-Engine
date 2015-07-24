@@ -192,7 +192,7 @@ public class SimpleDataGenerator extends DataGenerator {
 				|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
 			return status;
 		}
-        checkMetadata(status, getOutMetadata());
+        checkMetadata(status, null, getOutPorts());
         
         try {
             init();

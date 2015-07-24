@@ -1046,12 +1046,10 @@ public class AproxMergeJoin extends Node implements MetadataProvider {
         }
         
 		if (getOutputPort(NOT_MATCH_DRIVER_OUT) != null) {
-			checkMetadata(status, getInputPort(DRIVER_ON_PORT).getMetadata(),
-					getOutputPort(NOT_MATCH_DRIVER_OUT).getMetadata());
+			checkMetadata(status, getInputPort(DRIVER_ON_PORT), getOutputPort(NOT_MATCH_DRIVER_OUT));
 		}		
 		if (getOutputPort(NOT_MATCH_SLAVE_OUT) != null) {
-			checkMetadata(status, getInputPort(SLAVE_ON_PORT).getMetadata(),
-					getOutputPort(NOT_MATCH_SLAVE_OUT).getMetadata());
+			checkMetadata(status, getInputPort(SLAVE_ON_PORT), getOutputPort(NOT_MATCH_SLAVE_OUT));
 		}		
 		try {
         	

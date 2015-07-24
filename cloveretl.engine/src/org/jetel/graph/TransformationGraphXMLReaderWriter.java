@@ -801,7 +801,8 @@ public class TransformationGraphXMLReaderWriter {
 				// stub
 				try {
 					graphEdge = EdgeFactory.newEdge(edgeID, (DataRecordMetadataStub) metadataObj);
-				} catch (Exception e) {
+				} catch (Exception | LinkageError e) {
+					// LinkageErrors are caught because errors in jdbc driver loading should respect "strict" graph reading modifier
 					throwXMLConfigurationException("Edge '" + edgeID + "' cannot be created.", e);
 					graphEdge = EdgeFactory.newEdge(edgeID, (DataRecordMetadata) null);
 				}

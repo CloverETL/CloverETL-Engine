@@ -273,7 +273,7 @@ public class SimpleGather extends Node {
 			return status;
 		}
 
-		checkMetadata(status, getInMetadata(), getOutMetadata(), false);
+		checkMetadata(status, getInPorts(), getOutPorts(), false);
 
 		return status;
 	}

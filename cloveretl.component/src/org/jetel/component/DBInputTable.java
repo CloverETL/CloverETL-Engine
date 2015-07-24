@@ -44,7 +44,6 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
@@ -483,7 +482,7 @@ public class DBInputTable extends Node {
 			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
 		}
 
-        checkMetadata(status, getOutMetadata());
+        checkMetadata(status, null, getOutPorts());
         
         if (sqlQuery == null && url == null) {
         	status.add("SQL query not defined.", Severity.ERROR, this, Priority.NORMAL);

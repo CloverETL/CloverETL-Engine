@@ -43,10 +43,10 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.TransformException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.TransformException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -336,8 +336,7 @@ public class DBJoin extends Node {
         }
         
         if (getOutputPort(REJECTED_PORT) != null) {
-        	checkMetadata(status, getInputPort(READ_FROM_PORT).getMetadata(), 
-        			getOutputPort(REJECTED_PORT).getMetadata());
+        	checkMetadata(status, getInputPort(READ_FROM_PORT), getOutputPort(REJECTED_PORT));
         }
         
         if (charset != null && !Charset.isSupported(charset)) {

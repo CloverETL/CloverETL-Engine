@@ -112,7 +112,7 @@ public abstract class ExtFilterBase extends Node {
 		if (!checkInputPorts(status, 1, 1) || !checkOutputPorts(status, 1, 2)) {
 			return status;
 		}
-		checkMetadata(status, getInMetadata(), getOutMetadata());
+		checkMetadata(status, getInPorts(), getOutPorts());
 		return status;
 	}
 

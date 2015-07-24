@@ -33,6 +33,11 @@ REL-4-1-0-M1
     - CTL2: Inconsistent list assignment semantics
     - DBExecute uses wrong default charset for queries in url
 
+REL-4-0-7
+---------
+
+- no changes
+
 REL-4-0-6
 ---------
 

@@ -475,7 +475,8 @@ public class Phase extends GraphElement implements Comparable {
      */
     @Override
 	public void free() {
-        
+        super.free();
+    	
         //free all nodes in this phase
         for(Node node : nodes.values()) {
 			Context c = ContextProvider.registerNode(node);
