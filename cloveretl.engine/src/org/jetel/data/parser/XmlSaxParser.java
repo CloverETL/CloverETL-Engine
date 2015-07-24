@@ -1270,7 +1270,11 @@ public class XmlSaxParser {
 			} else if (field.getType() == DataFieldMetadata.STRING_FIELD
 			// and value wasn't already stored (from characters)
 			&& (field.getValue() == null || field.getValue().equals(field.getMetadata().getDefaultValueStr()))) {
-				field.setValue(""); 
+				if (field.getMetadata().getContainerType() == DataFieldContainerType.LIST) {
+					field.setValue(Collections.emptyList());
+				} else {
+					field.setValue("");
+				}
 			}
 		}
 	}
