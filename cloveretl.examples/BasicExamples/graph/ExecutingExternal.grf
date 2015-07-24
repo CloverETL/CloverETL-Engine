@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph ilustrates usage of System Ececute Component" guiVersion="0.0.0.devel" id="1204551079958" licenseType="Commercial" modified="Mon Jan 13 17:03:57 CET 2014" modifiedBy="User" name="graphSystemExecute" revision="1.106" showComponentDetails="true">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph ilustrates usage of System Ececute Component" guiVersion="4.1.0" id="1204551079958" licenseCode="CLP1DJAVLI58889773BY" licenseType="Commercial" modified="Fri Jul 24 11:49:34 CEST 2015" modifiedBy="magda" name="graphSystemExecute" revision="1.109" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0">
 <Record name="strings" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -7,7 +7,9 @@
 </Record>
 </Metadata>
 <GraphParameters>
-<GraphParameter name="MY_DIR" value="${GRAPH_DIR}"/>
+<GraphParameter name="MY_DIR" value="${GRAPH_DIR}">
+<SingleType multiple="false" name="file" selectionMode="directory_only"/>
+</GraphParameter>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="436" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="UNIX - Case III: Pass data to stdin and then read the output stdout" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="586" x="25" y="709">
@@ -99,8 +101,7 @@ the "save file list" writer.]]></attr>
 <attr name="deleteBatch"><![CDATA[true]]></attr>
 <attr name="command"><![CDATA[cat -n graph/ExecutingExternal.grf]]></attr>
 </Node>
-<Node append="true" enabled="enabled" guiName="list" guiX="254" guiY="438" id="SYS_EXECUTE1" interpreter="sh ${}" type="SYS_EXECUTE">
-<attr name="deleteBatch"><![CDATA[true]]></attr>
+<Node append="true" deleteBatch="true" enabled="enabled" guiName="list" guiX="254" guiY="438" id="SYS_EXECUTE1" interpreter="sh ${}" type="SYS_EXECUTE">
 <attr name="command"><![CDATA[ls ${MY_DIR}]]></attr>
 </Node>
 <Node enabled="enabled" guiName="execute batch" guiX="365" guiY="906" id="SYS_EXECUTE2" interpreter="sh ${}" type="SYS_EXECUTE">
