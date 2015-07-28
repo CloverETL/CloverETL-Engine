@@ -842,9 +842,13 @@ public class TransformationGraphAnalyzer {
 	public static void computeBlockedComponents(TransformationGraph graph, GraphRuntimeContext runtimeContext) {
 		Set<Node> ignoreComponents = new HashSet<>();
 		if (runtimeContext.getJobType().isSubJob()) {
-			// ignore debug input/output of subgraph if ran from parent job
-			ignoreComponents.addAll(TransformationGraphAnalyzer.findPrecedentNodesRecursive(graph.getSubgraphInputComponent(), null));
-			ignoreComponents.addAll(TransformationGraphAnalyzer.findFollowingNodesRecursive(graph.getSubgraphOutputComponent(), null));
+			Node subgraphInput = SubgraphUtils.getSubgraphInput(graph);
+			Node subgraphOutput = SubgraphUtils.getSubgraphOutput(graph);
+			if (subgraphInput != null && subgraphOutput != null) {
+				// ignore debuginput/output components of subgraph if ran from parent job
+				ignoreComponents.addAll(TransformationGraphAnalyzer.findPrecedentNodesRecursive(subgraphInput, null));
+				ignoreComponents.addAll(TransformationGraphAnalyzer.findFollowingNodesRecursive(subgraphOutput, null));
+			}
 		}
 		
 		Map<Node, Set<Node>> blockingComponentsInfo = graph.getBlockingComponentsInfo();
