@@ -468,7 +468,9 @@ public class XmlSaxParser {
 			// store value of parent of currently starting element (if appropriate)
 			if (m_activeMapping != null && m_hasCharacters && m_level == m_activeMapping.getLevel() + 1) {
 				if (m_activeMapping.getDescendantReferences().containsKey(XMLMappingConstants.ELEMENT_VALUE_REFERENCE)) {
-					m_activeMapping.getDescendantReferences().put(XMLMappingConstants.ELEMENT_VALUE_REFERENCE, getCurrentValue());
+					List<String> value = new ArrayList<String>();
+					value.add(getCurrentValue());
+					m_activeMapping.getDescendantReferences().put(XMLMappingConstants.ELEMENT_VALUE_REFERENCE, value);
 				}
 				if (!m_activeMapping.isCharactersProcessed()) {
 					processCharacters(null, null, true);
@@ -509,7 +511,7 @@ public class XmlSaxParser {
 				m_activeMapping.setCharactersProcessed(false);
 				// clear cached values of xml fields referenced by descendants (there may be values from previously read
 				// element of this m_activemapping)
-				for (Entry<String, String> e : m_activeMapping.getDescendantReferences().entrySet()) {
+				for (Entry<String, List<String>> e : m_activeMapping.getDescendantReferences().entrySet()) {
 					e.setValue(null);
 				}
 
@@ -620,7 +622,23 @@ public class XmlSaxParser {
 						if (m_activeMapping.hasFieldsFromAncestor()) {
 							for (AncestorFieldMapping afm : m_activeMapping.getFieldsFromAncestor()) {
 								if (m_activeMapping.getOutputRecord().hasField(afm.getCurrentField()) && afm.getAncestor() != null) {
-									m_activeMapping.getOutputRecord().getField(afm.getCurrentField()).fromString(afm.getAncestor().getDescendantReferences().get(afm.getAncestorField()));
+									
+									Map<String, List<String>> descRef = afm.getAncestor().getDescendantReferences();
+									
+									if (m_activeMapping.getOutputRecord().getField(afm.getCurrentField()).getMetadata().getContainerType() == DataFieldContainerType.LIST) {
+										
+										ListDataField field = (ListDataField) m_activeMapping.getOutputRecord().getField(afm.getCurrentField());
+										List<String> valueList = descRef.get(afm.getAncestorField());
+										
+										if (valueList != null) { 
+											for (int i = 0; i < valueList.size(); i++) {
+												DataField myField = ((ListDataField) field).addField();
+												setFieldValue(myField, valueList.get(i));
+											} 
+										}
+									} else {
+										setFieldValue(m_activeMapping.getOutputRecord().getField(afm.getCurrentField()), descRef.get(afm.getAncestorField()) == null ? null : descRef.get(afm.getAncestorField()).get(0));	
+									}
 								}
 							}
 						}
@@ -676,7 +694,9 @@ public class XmlSaxParser {
 
 					if (m_activeMapping.getDescendantReferences().containsKey(attrName)) {
 						String val = attributes.getValue(i);
-						m_activeMapping.getDescendantReferences().put(attrName, trim ? val.trim() : val);
+						List<String> listValue = new ArrayList<String>();
+						listValue.add(trim ? val.trim() : val);
+						m_activeMapping.getDescendantReferences().put(attrName, listValue);
 					}
 
 					// use fields mapping
@@ -845,7 +865,16 @@ public class XmlSaxParser {
 
 				// cache characters value if the xml field is referenced by descendant
 				if (m_level - 1 <= m_activeMapping.getLevel() && m_activeMapping.getDescendantReferences().containsKey(fullName)) {
-					m_activeMapping.getDescendantReferences().put(fullName, getCurrentValue());
+					List<String> value;
+					
+					if (m_activeMapping.getDescendantReferences().get(fullName) != null) { 
+						value = m_activeMapping.getDescendantReferences().get(fullName);
+					} else {
+						value = new ArrayList<String>();
+					}
+					
+					value.add(getCurrentValue());
+					m_activeMapping.getDescendantReferences().put(fullName, value);
 				}
 				if (m_element_as_text && m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT) && m_level == m_activeMapping.getLevel()) {
 					this.m_elementContentStartIndexStack.add(new CharacterBufferMarker(CharacterBufferMarkerType.SUBTREE_END, m_characters.length(), m_level));
