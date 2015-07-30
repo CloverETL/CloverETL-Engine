@@ -75,7 +75,10 @@ public class MSAccessPureJavaSpecific extends AbstractJdbcSpecific {
 			info.put(SHOW_SCHEMA_PROPERTY, "true"); // needed for browsing, metadata extraction
 		}
 		
-		return super.connect(driver, url, info);
+		// creating connections must be in synchronized block, see {@link MSAccessPureJavaConnection.UCANACCESS_LOCK}
+		synchronized (MSAccessPureJavaConnection.UCANACCESS_LOCK) {
+			return super.connect(driver, url, info);
+		}
 	}
 	
 	@Override
