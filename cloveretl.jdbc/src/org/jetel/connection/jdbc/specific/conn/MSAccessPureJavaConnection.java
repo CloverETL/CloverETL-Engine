@@ -37,7 +37,7 @@ public class MSAccessPureJavaConnection extends BasicSqlConnection {
 	 * FIX: CLO-6968 - UCanAccess deadlock
 	 * When ucanaccess connection uses singleconnection=true it can deadlock when you're opening and closing a connection at the same time
 	 */
-	public static Object UCANACCESS_LOCK = new Object();
+	public static final Object UCANACCESS_LOCK = new Object();
 
 	public MSAccessPureJavaConnection(DBConnection dbConnection, Connection connection, OperationType operationType) throws JetelException {
 		super(dbConnection, connection, operationType);
