@@ -138,6 +138,9 @@ public class MSAccessPureJavaSpecific extends AbstractJdbcSpecific {
 		switch (field.getDataType()) {
 		case NUMBER:
 			return Types.DOUBLE;
+		case INTEGER:
+			// MS Access integer is too small (only holds 65k values), use bigger type
+			return Types.BIGINT;
 		default:
 			return super.jetelType2sql(field);
 		}
