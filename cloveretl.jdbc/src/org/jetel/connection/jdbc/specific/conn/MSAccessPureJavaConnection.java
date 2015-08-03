@@ -19,6 +19,7 @@
 package org.jetel.connection.jdbc.specific.conn;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.JdbcSpecific.OperationType;
@@ -31,9 +32,22 @@ import org.jetel.exception.JetelException;
  * @created 16. 7. 2015
  */
 public class MSAccessPureJavaConnection extends BasicSqlConnection {
+	
+	/**
+	 * FIX: CLO-6968 - UCanAccess deadlock
+	 * When ucanaccess connection uses singleconnection=true it can deadlock when you're opening and closing a connection at the same time
+	 */
+	public static final Object UCANACCESS_LOCK = new Object();
 
 	public MSAccessPureJavaConnection(DBConnection dbConnection, Connection connection, OperationType operationType) throws JetelException {
 		super(dbConnection, connection, operationType);
+	}
+
+	@Override
+	public void close() throws SQLException {
+		synchronized (UCANACCESS_LOCK) {
+			super.close();
+		}
 	}
 
 }
