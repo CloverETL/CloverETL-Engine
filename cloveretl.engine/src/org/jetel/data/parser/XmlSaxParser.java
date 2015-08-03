@@ -892,7 +892,12 @@ public class XmlSaxParser {
 					if (m_activeMapping.hasFieldsFromAncestor()) {
 						for (AncestorFieldMapping afm : m_activeMapping.getFieldsFromAncestor()) {
 							if (afm.getAncestor() == m_activeMapping.getParent() && m_activeMapping.getOutputRecord() != null && m_activeMapping.getOutputRecord().hasField(afm.getCurrentField()) && afm.getAncestor() != null && afm.getAncestorField().equals(fullName)) {
-								m_activeMapping.getOutputRecord().getField(afm.getCurrentField()).fromString(getCurrentValue());
+								DataField field = m_activeMapping.getOutputRecord().getField(afm.getCurrentField());
+								if (m_activeMapping.getOutputRecord().getField(afm.getCurrentField()).getMetadata().getContainerType() == DataFieldContainerType.LIST) {
+									setFieldValue(((ListDataField) field).addField(), getCurrentValue());
+								} else {
+									setFieldValue(field, getCurrentValue());
+								}
 							}
 						}
 					}
