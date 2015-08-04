@@ -185,63 +185,67 @@ public interface TransformLangParserConstants {
   /** RegularExpression Id. */
   int LOOKUP_ADMIN = 98;
   /** RegularExpression Id. */
-  int DICTIONARY = 99;
+  int SEQUENCE = 99;
   /** RegularExpression Id. */
-  int SEQUENCE = 100;
+  int LOGLEVEL_DEBUG = 100;
   /** RegularExpression Id. */
-  int LOGLEVEL_DEBUG = 101;
+  int LOGLEVEL_INFO = 101;
   /** RegularExpression Id. */
-  int LOGLEVEL_INFO = 102;
+  int LOGLEVEL_WARN = 102;
   /** RegularExpression Id. */
-  int LOGLEVEL_WARN = 103;
+  int LOGLEVEL_ERROR = 103;
   /** RegularExpression Id. */
-  int LOGLEVEL_ERROR = 104;
+  int LOGLEVEL_FATAL = 104;
   /** RegularExpression Id. */
-  int LOGLEVEL_FATAL = 105;
+  int LOGLEVEL_TRACE = 105;
   /** RegularExpression Id. */
-  int LOGLEVEL_TRACE = 106;
+  int DICTIONARY = 106;
   /** RegularExpression Id. */
-  int YEAR = 107;
+  int DICT_SEPARATOR = 107;
   /** RegularExpression Id. */
-  int MONTH = 108;
+  int DICT_IDENTIFIER = 108;
   /** RegularExpression Id. */
-  int WEEK = 109;
+  int YEAR = 109;
   /** RegularExpression Id. */
-  int DAY = 110;
+  int MONTH = 110;
   /** RegularExpression Id. */
-  int HOUR = 111;
+  int WEEK = 111;
   /** RegularExpression Id. */
-  int MINUTE = 112;
+  int DAY = 112;
   /** RegularExpression Id. */
-  int SECOND = 113;
+  int HOUR = 113;
   /** RegularExpression Id. */
-  int MILLISEC = 114;
+  int MINUTE = 114;
   /** RegularExpression Id. */
-  int RETURN_OK = 115;
+  int SECOND = 115;
   /** RegularExpression Id. */
-  int RETURN_SKIP = 116;
+  int MILLISEC = 116;
   /** RegularExpression Id. */
-  int RETURN_ALL = 117;
+  int RETURN_OK = 117;
   /** RegularExpression Id. */
-  int RETURN_STOP = 118;
+  int RETURN_SKIP = 118;
   /** RegularExpression Id. */
-  int FIELD_ACCESS_OPERATOR = 119;
+  int RETURN_ALL = 119;
   /** RegularExpression Id. */
-  int RECORD_ACCESS_FIRST_PART = 120;
+  int RETURN_STOP = 120;
   /** RegularExpression Id. */
-  int RECORD_ACCESS_SECOND_PART = 121;
+  int FIELD_ACCESS_OPERATOR = 121;
   /** RegularExpression Id. */
-  int NUMERIC_ID = 122;
+  int RECORD_ACCESS_FIRST_PART = 122;
   /** RegularExpression Id. */
-  int STRING_ID = 123;
+  int RECORD_ACCESS_SECOND_PART = 123;
   /** RegularExpression Id. */
-  int IDENTIFIER = 124;
+  int NUMERIC_ID = 124;
   /** RegularExpression Id. */
-  int LETTER = 125;
+  int STRING_ID = 125;
   /** RegularExpression Id. */
-  int UNDERSCORE = 126;
+  int IDENTIFIER = 126;
   /** RegularExpression Id. */
-  int ERROR = 130;
+  int LETTER = 127;
+  /** RegularExpression Id. */
+  int UNDERSCORE = 128;
+  /** RegularExpression Id. */
+  int ERROR = 132;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -250,9 +254,13 @@ public interface TransformLangParserConstants {
   /** Lexical state. */
   int WithinSingleLineComment = 2;
   /** Lexical state. */
-  int WithinFieldIdentifier = 3;
+  int DictionaryEntrySeparator = 3;
   /** Lexical state. */
-  int ExpectingFieldIdentifier = 4;
+  int DictionaryEntryIdentifier = 4;
+  /** Lexical state. */
+  int WithinFieldIdentifier = 5;
+  /** Lexical state. */
+  int ExpectingFieldIdentifier = 6;
 
   /** Literal token values. */
   String[] tokenImage = {
@@ -355,7 +363,6 @@ public interface TransformLangParserConstants {
     "\"lookup_next\"",
     "\"lookup_found\"",
     "\"lookup_admin\"",
-    "\"dictionary\"",
     "\"sequence\"",
     "\"debug\"",
     "\"info\"",
@@ -363,6 +370,9 @@ public interface TransformLangParserConstants {
     "\"error\"",
     "\"fatal\"",
     "\"trace\"",
+    "\"dictionary\"",
+    "<DICT_SEPARATOR>",
+    "<DICT_IDENTIFIER>",
     "\"year\"",
     "\"month\"",
     "\"week\"",
