@@ -52,6 +52,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.PackedDecimal;
 import org.jetel.util.crypto.Base64;
@@ -3250,6 +3251,21 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("eq5", true);
 	}
 	
+	public void test_regex_CLO6907() {
+		try {
+			doCompile("function integer transform(){"
+					+ "string regex = null;"
+					+ "boolean b = 'a' ~= regex;"
+					+ "return 0;}","test_regex_CLO6907");
+			fail();
+		} catch (Exception e) {
+			Throwable cause = ExceptionUtils.getRootCause(e);
+			assertTrue(cause instanceof NullPointerException);
+			NullPointerException npe = (NullPointerException) cause;
+			assertEquals("Regular expression is null", npe.getMessage());
+		}
+	}
+		
 	public void test_if() {
 		doCompile("test_if");
 
