@@ -615,7 +615,6 @@ TOKEN :
 | < LOOKUP_NEXT: "lookup_next" > // obsolete
 | < LOOKUP_FOUND: "lookup_found" > // obsolete
 | < LOOKUP_ADMIN: "lookup_admin" > // obsolete
-| < DICTIONARY: "dictionary" >
 | < SEQUENCE: "sequence" >
 | < LOGLEVEL_DEBUG: "debug" >
 | < LOGLEVEL_INFO: "info" >
@@ -624,6 +623,29 @@ TOKEN :
 | < LOGLEVEL_FATAL: "fatal" >
 | < LOGLEVEL_TRACE: "trace" >
 }
+
+/* Reserved words - dictionary */
+TOKEN :
+{
+  < DICTIONARY: "dictionary" > : DictionaryEntrySeparator // CLO-6866
+}
+
+// CLO-6866: special lexer state that only allows a dot followed by a dictionary entry identifier
+<DictionaryEntrySeparator>
+TOKEN :
+{
+  // tokens must be renamed to prevent ambiguity
+  < DICT_SEPARATOR : <DOT> > : DictionaryEntryIdentifier
+}
+
+// CLO-6866: special lexer state that only dictionary entry identifier
+<DictionaryEntryIdentifier>
+TOKEN :
+{
+  // tokens must be renamed to prevent ambiguity
+  < DICT_IDENTIFIER: <IDENTIFIER> > : DEFAULT
+}
+
 
 /* Date parts */
 TOKEN : 
@@ -1397,6 +1419,26 @@ void PrimarySuffix(Node prefix) #void:
 }	
 
 {
+	( // CLO-6866: special lexical tokens just for the dictionary
+		t = <DICT_SEPARATOR>
+		 ( <DICT_IDENTIFIER> 
+		   { 
+		   	 jjtThis.begin(t.beginLine,t.beginColumn);
+		   	 jjtThis.end(token.endLine,token.endColumn);
+		   	 jjtThis.setName(token.image);
+		   	 jjtThis.setWildcard(false);
+		   }
+		   	 #MemberAccessExpression
+		   {
+		   	 // push the prefix as LHS of the member access selector
+		   	 memAcc = jjtree.peekNode();
+		   	 memAcc.jjtAddChild(prefix,0);
+		   	 memAcc.jjtSetParent(prefix.jjtGetParent());
+		   	 prefix.jjtSetParent(memAcc);
+		   } 
+		 )
+	)
+	|
 	(
 		t = "."
 		(

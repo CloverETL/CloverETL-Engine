@@ -10072,6 +10072,26 @@ public abstract class CompilerTestCase extends CloverTestCase {
         doCompileExpectErrors("test_dictionary_string_to_int", Arrays.asList("Type mismatch: cannot convert from 'string' to 'integer'","Type mismatch: cannot convert from 'string' to 'integer'"));
 	}
 	
+	public void test_dictionary_keywords_CLO6866() {
+		String ident = "test_dictionary_keywords_CLO6866";
+		
+		TransformationGraph g = createEmptyGraph();
+		try {
+			g.getDictionary().setValue("year", "integer", 10);
+			g.getDictionary().setValue("month", "integer", 10);
+			g.getDictionary().setValue("week", "integer", 10);
+			g.getDictionary().setValue("day", "integer", 10);
+			g.getDictionary().setValue("hour", "integer", 10);
+			g.getDictionary().setValue("minute", "integer", 10);
+			g.getDictionary().setValue("second", "integer", 10);
+			g.getDictionary().setValue("millisec", "integer", 10);
+		} catch (ComponentNotReadyException e) {
+			throw new RuntimeException(e);
+		}
+		
+		doCompile(loadSourceCode("test_dictionary_keywords_CLO6866"), ident, g, new DataRecord[0], new DataRecord[0]);
+	}
+	
 	public void test_utillib_sleep() {
 		long time = System.currentTimeMillis();
 		doCompile("test_utillib_sleep");
