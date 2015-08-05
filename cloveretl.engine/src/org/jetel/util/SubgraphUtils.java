@@ -19,7 +19,10 @@
 package org.jetel.util;
 
 import org.jetel.enums.EdgeTypeEnum;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Edge;
+import org.jetel.graph.Node;
+import org.jetel.graph.TransformationGraph;
 
 /**
  * Utility class for subgraph related code.
@@ -169,4 +172,26 @@ public class SubgraphUtils {
 		return CUSTOM_SUBGRAPH_ATTRIBUTE_PREFIX + publicGraphParameterName;
 	}
 	
+	/**
+	 * Finds SubgraphInput component in the graph. Returns null instead of throwing exception if component is missing.
+	 */
+	public static Node getSubgraphInput(TransformationGraph graph) {
+		try {
+			return graph.getSubgraphInputComponent();
+		} catch (JetelRuntimeException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Finds SubgraphOutput component in the graph. Returns null instead of throwing exception if component is missing.
+	 */
+	public static Node getSubgraphOutput(TransformationGraph graph) {
+		try {
+			return graph.getSubgraphOutputComponent();
+		} catch (JetelRuntimeException e) {
+			return null;
+		}
+	}
+
 }

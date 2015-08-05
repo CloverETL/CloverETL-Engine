@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="User" created="Wed May 28 13:40:15 CEST 2014" guiVersion="0.0.0.devel" id="1401291104482" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Apr 21 16:54:53 CEST 2015" modifiedBy="User" name="Default graph name" nature="subgraph" revision="1.36" showComponentDetails="true">
+<Graph author="User" created="Wed May 28 13:40:15 CEST 2014" guiVersion="4.1.0" id="1401291104482" licenseCode="CLP1DJAVLI58889773BY" licenseType="Commercial" modified="Fri Jul 24 11:12:37 CEST 2015" modifiedBy="magda" name="Default graph name" nature="subgraph" revision="1.37" showComponentDetails="true">
 <Global>
 <inputPorts>
 <singlePort connected="true" name="0"/>
@@ -53,7 +53,9 @@
 </Metadata>
 </MetadataGroup>
 <GraphParameters>
-<GraphParameter name="DEFAULT_MAX_RESULTS" value="1000"/>
+<GraphParameter name="DEFAULT_MAX_RESULTS" value="1000">
+<SingleType name="int"/>
+</GraphParameter>
 <GraphParameter name="JIRA_SEARCH_URL" value="${JIRA_REST_URL}/search?"/>
 <GraphParameterFile fileURL="workspace.prm"/>
 <GraphParameterFile fileURL="jira.prm"/>

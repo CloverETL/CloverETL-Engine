@@ -341,7 +341,9 @@ public abstract class GraphElement implements IGraphElement {
 	 */
 	public void addClassLoader(URLClassLoader classLoader) {
 		if (classLoader != null) {
-			classLoaders.add(classLoader);
+			synchronized (classLoaders) {
+				classLoaders.add(classLoader);
+			}
 		}
 	}
 	
@@ -349,11 +351,13 @@ public abstract class GraphElement implements IGraphElement {
 	 * Closes all classloaders associated with this graph element. 
 	 */
 	private void freeClassLoaders() {
-		for (URLClassLoader classLoader : classLoaders) {
-			try {
-				classLoader.close();
-			} catch (IOException e) {
-				logger.warn("URLClassLoader allocated for " + this + " cannot be closed.", e);
+		synchronized (classLoaders) {
+			for (URLClassLoader classLoader : classLoaders) {
+				try {
+					classLoader.close();
+				} catch (IOException e) {
+					logger.warn("URLClassLoader allocated for " + this + " cannot be closed.", e);
+				}
 			}
 		}
 	}

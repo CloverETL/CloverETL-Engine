@@ -692,7 +692,9 @@ public class TransformationGraphAnalyzer {
 		Set<String> blockedIds = graph.getBlockedIDs();
 		Phase[] phases = graph.getPhases();
 		
-		// which ports of subgraphinput and subgraphoutput are "blocked" - i.e. which have blocker/blocked preceding them
+		// Which ports of subgraphinput and subgraphoutput are "blocked" - i.e. which have blocker/blocked preceding them.
+		// Finding blocked ports allows us to properly decide whether to keep or remove blocked components behind SubgraphInput/Output
+		// Motivation: CLO-6756
 		Set<Integer> subgraphInputBlockedPorts = new HashSet<>();
 		Set<Integer> subgraphOutputBlockedPorts = new HashSet<>();
 		
@@ -730,10 +732,10 @@ public class TransformationGraphAnalyzer {
 					for (InputPort inPort : node.getInPorts()) {
 						Node predecessor = inPort.getWriter();
 						if ((SubgraphUtils.isSubJobInputComponent(predecessor.getType()) &&
-								subgraphInputBlockedPorts.contains(new Integer(inPort.getEdge().getOutputPortNumber())))
+								subgraphInputBlockedPorts.contains(Integer.valueOf(inPort.getEdge().getOutputPortNumber())))
 								||
 							(SubgraphUtils.isSubJobOutputComponent(predecessor.getType()) &&
-								subgraphOutputBlockedPorts.contains(new Integer(inPort.getEdge().getOutputPortNumber())))) {
+								subgraphOutputBlockedPorts.contains(Integer.valueOf(inPort.getEdge().getOutputPortNumber())))) {
 							// blocked port of subgraphinput/subgraphoutput does not count as non-blocked component -> skip it
 							continue;
 						}
@@ -840,9 +842,13 @@ public class TransformationGraphAnalyzer {
 	public static void computeBlockedComponents(TransformationGraph graph, GraphRuntimeContext runtimeContext) {
 		Set<Node> ignoreComponents = new HashSet<>();
 		if (runtimeContext.getJobType().isSubJob()) {
-			// ignore debug input/output of subgraph if ran from parent job
-			ignoreComponents.addAll(TransformationGraphAnalyzer.findPrecedentNodesRecursive(graph.getSubgraphInputComponent(), null));
-			ignoreComponents.addAll(TransformationGraphAnalyzer.findFollowingNodesRecursive(graph.getSubgraphOutputComponent(), null));
+			Node subgraphInput = SubgraphUtils.getSubgraphInput(graph);
+			Node subgraphOutput = SubgraphUtils.getSubgraphOutput(graph);
+			if (subgraphInput != null && subgraphOutput != null) {
+				// ignore debuginput/output components of subgraph if ran from parent job
+				ignoreComponents.addAll(TransformationGraphAnalyzer.findPrecedentNodesRecursive(subgraphInput, null));
+				ignoreComponents.addAll(TransformationGraphAnalyzer.findFollowingNodesRecursive(subgraphOutput, null));
+			}
 		}
 		
 		Map<Node, Set<Node>> blockingComponentsInfo = graph.getBlockingComponentsInfo();

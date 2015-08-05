@@ -24,7 +24,7 @@
 		<FlatFile outputFile="data-out/orders_late.txt" supposedFile="supposed-out/orders_late.txt"/>
 	</FunctionalTest>
 	
-	<FunctionalTest ident="JoiningAggregating" graphFile="graph/JoiningAggregating.grf">
+	<FunctionalTest ident="JoiningAggregating" graphFile="graph/JoiningAggregating.grf" limit="210">
 		<FlatFile outputFile="data-out/customers_without_order_region1.csv" supposedFile="supposed-out/customers_without_order_region1.csv"/>
 		<FlatFile outputFile="data-out/customers_without_order_region2.csv" supposedFile="supposed-out/customers_without_order_region2.csv"/>
 	</FunctionalTest>

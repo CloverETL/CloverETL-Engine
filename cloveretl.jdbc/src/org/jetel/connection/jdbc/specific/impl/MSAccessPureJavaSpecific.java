@@ -75,7 +75,10 @@ public class MSAccessPureJavaSpecific extends AbstractJdbcSpecific {
 			info.put(SHOW_SCHEMA_PROPERTY, "true"); // needed for browsing, metadata extraction
 		}
 		
-		return super.connect(driver, url, info);
+		// creating connections must be in synchronized block, see {@link MSAccessPureJavaConnection.UCANACCESS_LOCK}
+		synchronized (MSAccessPureJavaConnection.UCANACCESS_LOCK) {
+			return super.connect(driver, url, info);
+		}
 	}
 	
 	@Override
@@ -148,6 +151,16 @@ public class MSAccessPureJavaSpecific extends AbstractJdbcSpecific {
 		default:
 			return super.sqlType2jetel(sqlType);
 		}
+	}
+	
+	@Override
+	public String jetelType2sqlDDL(DataFieldMetadata field) {
+		if (field.getDataType() == DataFieldType.INTEGER) {
+			// MS Access integer is too small (only holds 65k values), use bigger type
+			return sqlType2str(Types.BIGINT);
+		}
+		
+		return super.jetelType2sqlDDL(field);
 	}
 
 	@Override
