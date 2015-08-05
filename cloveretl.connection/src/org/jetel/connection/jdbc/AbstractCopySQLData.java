@@ -541,7 +541,6 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 				for (int i = 0; i < transMap.length; i++) {
 					if (!jdbcSpecific.isJetelTypeConvertible2sql(pMeta.getParameterType(i + 1), inMetadata.getField(transMap[i].getFieldJetel()))) {
 						if (pMeta.getParameterType(i + 1) != Types.NULL) {
-							messages.add("Invalid SQL query. Incompatible Clover & JDBC field types - field " + inMetadata.getField(transMap[i].getFieldJetel()).getName() + ". Clover type: " + SQLUtil.jetelType2Str(inMetadata.getFieldType(transMap[i].getFieldJetel())) + ", sql type: " + SQLUtil.sqlType2str(pMeta.getParameterType(i + 1)));
 							messages.add("Invalid SQL query. Incompatible types - field " + inMetadata.getField(transMap[i].getFieldJetel()).getName() + ", clover type: " + inMetadata.getDataFieldType(transMap[i].getFieldJetel()).getName() + ", sql type: " + SQLUtil.sqlType2str(pMeta.getParameterType(i + 1)));
 						} else {
 							// MSSQL returns NULL parameter types
