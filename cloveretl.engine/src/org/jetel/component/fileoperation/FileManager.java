@@ -248,7 +248,7 @@ public class FileManager {
 				URL url = runtimeContext.getContextURL();
 				if (url != null) {
 					try {
-						return url.toURI();
+						return URIUtils.toURI(url); // CLO-7000
 					} catch (URISyntaxException ex) {
 						throw new IllegalStateException(FileOperationMessages.getString("FileManager.context_URI_not_available"), ex); //$NON-NLS-1$
 					}
