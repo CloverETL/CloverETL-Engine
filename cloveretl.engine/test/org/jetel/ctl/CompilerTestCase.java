@@ -53,6 +53,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.PackedDecimal;
 import org.jetel.util.crypto.Base64;
@@ -4474,6 +4475,21 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("eq5", true);
 	}
 	
+	public void test_regex_CLO6907() {
+		try {
+			doCompile("function integer transform(){"
+					+ "string regex = null;"
+					+ "boolean b = 'a' ~= regex;"
+					+ "return 0;}","test_regex_CLO6907");
+			fail();
+		} catch (Exception e) {
+			Throwable cause = ExceptionUtils.getRootCause(e);
+			assertTrue(cause instanceof NullPointerException);
+			NullPointerException npe = (NullPointerException) cause;
+			assertEquals("Regular expression is null", npe.getMessage());
+		}
+	}
+		
 	public void test_if() {
 		doCompile("test_if");
 
@@ -11552,6 +11568,26 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_dictionary_string_to_int(){
         doCompileExpectErrors("test_dictionary_string_to_int", Arrays.asList("Type mismatch: cannot convert from 'string' to 'integer'","Type mismatch: cannot convert from 'string' to 'integer'"));
+	}
+	
+	public void test_dictionary_keywords_CLO6866() {
+		String ident = "test_dictionary_keywords_CLO6866";
+		
+		TransformationGraph g = createEmptyGraph();
+		try {
+			g.getDictionary().setValue("year", "integer", 10);
+			g.getDictionary().setValue("month", "integer", 10);
+			g.getDictionary().setValue("week", "integer", 10);
+			g.getDictionary().setValue("day", "integer", 10);
+			g.getDictionary().setValue("hour", "integer", 10);
+			g.getDictionary().setValue("minute", "integer", 10);
+			g.getDictionary().setValue("second", "integer", 10);
+			g.getDictionary().setValue("millisec", "integer", 10);
+		} catch (ComponentNotReadyException e) {
+			throw new RuntimeException(e);
+		}
+		
+		doCompile(loadSourceCode("test_dictionary_keywords_CLO6866"), ident, g, new DataRecord[0], new DataRecord[0]);
 	}
 	
 	public void test_utillib_sleep() {
