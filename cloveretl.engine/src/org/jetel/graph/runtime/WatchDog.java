@@ -924,7 +924,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			} else {
 				sb.append(EnabledEnum.DISABLED.getLabel() + ": ");
 			}
-			sb.append("blocked by ");
+			sb.append("disabled by ");
 			boolean needsDelim = false;
 			Map<Node,Set<Node>> blockingInfo = graph.getBlockingComponentsInfo();
 			for (Entry<Node, Set<Node>> blockerInfo : blockingInfo.entrySet()) {
