@@ -33,7 +33,7 @@ import org.jetel.util.string.StringUtils;
  */
 public enum HyperlinkType {
 
-	NONE("None"),
+	NONE("No hyperlink"),
 	DOCUMENT("Document"),
 	EMAIL("E-mail"),
 	FILE("File"),
