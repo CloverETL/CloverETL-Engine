@@ -9,6 +9,9 @@
        <Class name="~org\.jetel\.interpreter\.Token[^.]*" />
      </Match>
 
+	 <Match>
+       <Class name="org.jetel.ctl.TransformLangParserTokenManager" />
+     </Match>
      <Match>
        <Class name="org.jetel.interpreter.JavaCharStream" />
      </Match>
