@@ -1301,13 +1301,12 @@ public class XmlSaxParser {
                             throw ex;
                         }
                     }
-			} else if (field.getType() == DataFieldMetadata.STRING_FIELD
-			// and value wasn't already stored (from characters)
-			&& (field.getValue() == null || field.getValue().equals(field.getMetadata().getDefaultValueStr()))) {
+			} else if (field.getMetadata().getDataType() == DataFieldType.STRING) {
 				if (field.getMetadata().getContainerType() == DataFieldContainerType.LIST) {
-					field.setValue(Collections.emptyList());
-				} else {
-					field.setValue("");
+					DataField newField = ((ListDataField) field).addField();
+					setFieldValue(newField, "");
+				} else if (field.getValue() == null || field.getValue().equals(field.getMetadata().getDefaultValueStr())) { // and value wasn't already stored (from characters)
+					setFieldValue(field, "");
 				}
 			}
 		}
