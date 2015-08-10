@@ -425,10 +425,6 @@ public class SortWithinGroups extends Node {
 
     @Override
     public synchronized void free() {
-        if (!isInitialized()) {
-            throw new NotInitializedException(this);
-        }
-
         super.free();
 
         if (dataRecordSorter != null) {
