@@ -49,6 +49,7 @@ public class MSAccessPureJavaSpecific extends AbstractJdbcSpecific {
 	private static final String CONVERT_STRING = "Convert the field to another type or use another matching field type.";
 	
 	private static final String SHOW_SCHEMA_PROPERTY = "showschema";
+	private static final String SINGLE_CONNECTION_SCHEMA_PROPERTY = "singleconnection";
 
 	protected MSAccessPureJavaSpecific() {
 		super();
@@ -60,19 +61,29 @@ public class MSAccessPureJavaSpecific extends AbstractJdbcSpecific {
 	
 	@Override
 	public Connection connect(Driver driver, String url, Properties info) throws SQLException {
-		boolean schemaPropertyPresent = url.toLowerCase().replaceAll("\\s", "").contains(SHOW_SCHEMA_PROPERTY + "=");
+		String noWhiteSpaceURL = url.toLowerCase().replaceAll("\\s", "");
+		boolean schemaPropertyPresent = noWhiteSpaceURL.contains(SHOW_SCHEMA_PROPERTY + "=");
+		boolean singleConnectionPropertyPresent = noWhiteSpaceURL.contains(SINGLE_CONNECTION_SCHEMA_PROPERTY + "=");
 		
-		if (!schemaPropertyPresent) {
-			// search the custom properties
-			for (Object key : info.keySet()) {
-				if (key.toString().toLowerCase().equals(SHOW_SCHEMA_PROPERTY)) {
-					schemaPropertyPresent = true;
-					break;
-				}
+		// search the custom properties
+		for (Object key : info.keySet()) {
+			String propertyNameLowerCase = key.toString().toLowerCase();
+			if (!schemaPropertyPresent && propertyNameLowerCase.equals(SHOW_SCHEMA_PROPERTY)) {
+				schemaPropertyPresent = true;
+			}
+			if (!singleConnectionPropertyPresent && propertyNameLowerCase.equals(SINGLE_CONNECTION_SCHEMA_PROPERTY)) {
+				singleConnectionPropertyPresent = true;
 			}
 		}
+		
+		// add our defaults
 		if (!schemaPropertyPresent) {
 			info.put(SHOW_SCHEMA_PROPERTY, "true"); // needed for browsing, metadata extraction
+		}
+		if (!singleConnectionPropertyPresent) {
+			// true is recommended for etl jobs - it turns off system resource locking
+			// with default value (false) the DB files are locked forever which is not nice when clover is running on server
+			info.put(SINGLE_CONNECTION_SCHEMA_PROPERTY, "true");
 		}
 		
 		// creating connections must be in synchronized block, see {@link MSAccessPureJavaConnection.UCANACCESS_LOCK}
