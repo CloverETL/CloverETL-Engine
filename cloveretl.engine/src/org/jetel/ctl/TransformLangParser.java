@@ -42,7 +42,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                         this.sourceCode = ((SourceCodeProvider) input).getSourceCode();
                 }
                 this.graph = graph;
-                this.propertyRefResolver = (graph != null) ? new PropertyRefResolver(graph.getGraphProperties()) : null;
+                this.propertyRefResolver = (graph != null) ? new PropertyRefResolver(graph.getGraphParameters()) : null;
                 this.parserHelper = new ParserHelper();
                 this.hasEvalNode = false;
                 this.parsedImports = new HashSet<String>();
