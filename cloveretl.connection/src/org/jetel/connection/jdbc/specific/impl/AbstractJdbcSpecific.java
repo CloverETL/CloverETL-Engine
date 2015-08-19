@@ -61,7 +61,6 @@ import org.jetel.graph.Node;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.classloader.FilterClassLoader;
 import org.jetel.util.string.StringUtils;
 
 
@@ -642,5 +641,10 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	@Override
 	public ClassLoader getDriverClassLoaderParent() {
 		return ClassLoader.getSystemClassLoader();
+	}
+	
+	@Override
+	public boolean supportsTerminatingSemicolons() {
+		return true;
 	}
 }

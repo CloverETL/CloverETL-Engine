@@ -14,6 +14,8 @@ assert workspace
 def jenkinsBuildUrl = env['BUILD_URL']
 assert jenkinsBuildUrl
 
+def javaVersion = System.getProperty("java.specification.version", "")
+
 def testName
 jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-after-commit-windows-java-1.7-Sun|tests-after-commit-windows-java-1.7-IBM|tests-after-commit-windows-java-1.7-IBM|tests-after-commit-proxy-java-1.7-Sun|tests-after-commit-java-8-Sun|tests-after-commit-java-1.7-IBM|tests-night-java-1.6-IBM|tests-night-java-1.6-JRockit|tests-night-functional-java-1.7-Sun|tests-after-commit|tests-reset|tests-performance-java-1.7-Sun|detail)-)?(.+)$/
 assert jobNameM.matches() 
@@ -49,6 +51,7 @@ if( runTests ){
 } 
 println "versionSuffix = " + versionSuffix 
 println "buildNumber   = " + buildNumber 
+println "javaVersion   = " + javaVersion 
 println "====================================================="
 
 //println "Environment variables:"
@@ -60,7 +63,7 @@ testEnvironmentD = new File( baseD, "cloveretl.test.environment" )
 
 jobIdent = testName ? testName : jobGoal
 jobIdent += "-${versionSuffix}"
-jobIdent = jobIdent.replaceAll('-', '_').toLowerCase()
+jobIdent = jobIdent.replaceAll('-', '_').toLowerCase().replaceAll("after_commit", "a_c")
 new File(baseD, "cloveretl.test.scenarios/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 new File(baseD, "cloveretl.examples/ExtExamples/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 
@@ -74,6 +77,7 @@ if( !runTests ){
 		"-Dcteguiloglink=${jenkinsBuildUrl}/artifact/cte-logs/",
 		"-Dcte.hudson.link=job/${jobName}/${buildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
+		"-Djavaversion=${javaVersion}",
 	]
 	if( jobGoal == "after-commit" ) {
 		antTarget = "reports-hudson"
@@ -96,8 +100,8 @@ if( !runTests ){
 		antTarget = "runtests-tests-reset"
 		antArgs += "-Druntests-plugins-dontrun=true"	
 		antArgs += "-Dtest.include=org/jetel/graph/ResetTest.java"
-		antCustomEnv["ANT_OPTS"] = antCustomEnv["ANT_OPTS"] + " -XX:MaxPermSize=128m"
-		// antArgs += "-Druntests-target=runtests-tests-reset"
+		antArgs += "-Druntests.engine.Xmx=-Xmx3072m"
+		antArgs += "-Dadditional.jvmargs=-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=33333 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=172.22.2.28"
 	} else {
 		println "ERROR: Unknown goal '${jobGoal}'"
 		exit 1
@@ -132,6 +136,7 @@ if( !runTests ){
 		"-Dhudson.engine.link=job/${engineJobName}/${engineBuildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
 		"-Dtestenv.etlenvironment=engine",
+		"-Djavaversion=${javaVersion}"
 	]
 
 	antTarget = "run-scenarios-with-engine-build-with-testdb"

@@ -22,16 +22,21 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
 
 import org.jetel.component.transform.XSLTFormatter;
 import org.jetel.component.transform.XSLTMappingTransition;
 import org.jetel.component.transform.XSLTransformer;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
+import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -49,6 +54,7 @@ import org.jetel.util.ExceptionUtils;
 import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.TargetFile;
+import org.jetel.util.XmlUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
@@ -129,6 +135,7 @@ public class XSLDataTransformer extends Node {
 	private TargetFile currentTarget;
 	private XSLTransformer transformer;
 	private InputStream xsltIs; //a stream used in xsltMappingTransition and transformer
+	private Source source;
 
 	/**
 	 * Constructor for the XSLTransformer object. 
@@ -180,32 +187,37 @@ public class XSLDataTransformer extends Node {
 			outRecord = DataRecordFactory.newRecord(outputPort.getMetadata());
 		}
 
+		source = null;
 		xsltIs = null;
 		if (xsltFile != null) {
 			try {
-				xsltIs = FileUtils.getInputStream(getGraph().getRuntimeContext().getContextURL(), xsltFile);
+				URL contextURL = getContextURL();
+				xsltIs = FileUtils.getInputStream(contextURL, xsltFile);
+				source = new StreamSource(xsltIs);
+				XmlUtils.setSystemId(source, contextURL, xsltFile);
 			} catch (RuntimeException e) {
-				if (xslt == null || xslt.equals("")) throw e;
+				if (StringUtils.isEmpty(xslt)) throw e;
 			} catch (IOException e) {
 				throw new ComponentNotReadyException(e);
 			}
 		} else {
 			try {
 				xsltIs = new ByteArrayInputStream(xslt.getBytes(charset));
+				source = new StreamSource(xsltIs);
 			} catch (UnsupportedEncodingException e) {
 				throw new ComponentNotReadyException(e);
 			}
 		}
 
 		if (mapping != null) {
-			xsltMappingTransition = new XSLTMappingTransition(outRecord, mapping, xsltIs);
+			xsltMappingTransition = new XSLTMappingTransition(outRecord, mapping, source);
 			xsltMappingTransition.setInMatadata(inputPort.getMetadata());
 			xsltMappingTransition.setCharset(charset);
 			xsltMappingTransition.init();
 		} else {
 			initChannelIterator();
 			initTarget();
-			initTransformer(xsltIs);
+			initTransformer(source);
 		}
 	}
 
@@ -226,18 +238,31 @@ public class XSLDataTransformer extends Node {
 	
 	public Result executeFiles() throws Exception {
 		try {
-			ReadableByteChannel readableByteChannel;
+			Object input;
+			InputStream is = null;
 			XSLTFormatter formatter;
 			WritableByteChannel writableByteChannel;
 			boolean next = false;
-			
-			while (channelIterator.hasNext() && (readableByteChannel = channelIterator.nextChannel()) != null) {
+			URL contextUrl = getContextURL();
+
+			while (channelIterator.hasNext() && (input = channelIterator.next()) != null) {
+				String uri = null;
+				if (input instanceof URI) {
+					uri = input.toString();
+					is = FileUtils.getInputStream(contextUrl, uri);
+				} else if (input instanceof InputStream) {
+					is = (InputStream) input;
+				} else {
+					is = Channels.newInputStream((ReadableByteChannel) input);
+				}
 				if (next) currentTarget.setNextOutput(); else next = true;
 				formatter = (XSLTFormatter)currentTarget.getFormatter();
 				writableByteChannel = formatter.getWritableByteChannel();
 				
-				transformer.transform(Channels.newInputStream(readableByteChannel), Channels.newOutputStream(writableByteChannel));
-				readableByteChannel.close();
+				StreamSource source = new StreamSource(is);
+				XmlUtils.setSystemId(source, contextUrl, uri);
+				transformer.transform(source, Channels.newOutputStream(writableByteChannel));
+				is.close();
 			}
 		} catch (JetelException e) {
 			throw e;
@@ -303,6 +328,7 @@ public class XSLDataTransformer extends Node {
     	channelIterator.setCharset(charset);
     	channelIterator.setDictionary(graph != null ? graph.getDictionary() : null);
     	channelIterator.init();
+    	channelIterator.setPreferredDataSourceType(DataSourceType.URI);
     }
 
     /**
@@ -336,7 +362,7 @@ public class XSLDataTransformer extends Node {
 	 * 
 	 * @throws ComponentNotReadyException
 	 */
-	public void initTransformer(InputStream xsltIs) throws ComponentNotReadyException {
+	public void initTransformer(Source xsltIs) throws ComponentNotReadyException {
 		transformer = new XSLTransformer();
 		transformer.setCharset(charset);
 		try {
@@ -402,8 +428,8 @@ public class XSLDataTransformer extends Node {
 					xattribs.getString(XML_XSLT_ATTRIBUTE, null));
 		} else {
 			xslTransformer = new XSLDataTransformer(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_XML_INPUT_FILE_ATTRIBUTE, RefResFlag.URL),
-					xattribs.getStringEx(XML_XML_OUTPUT_FILE_ATTRIBUTE, RefResFlag.URL),
+					xattribs.getStringEx(XML_XML_INPUT_FILE_ATTRIBUTE, null, RefResFlag.URL),
+					xattribs.getStringEx(XML_XML_OUTPUT_FILE_ATTRIBUTE, null, RefResFlag.URL),
 					xattribs.getStringEx(XML_XSLT_FILE_ATTRIBUTE, null, RefResFlag.URL),
 					xattribs.getString(XML_XSLT_ATTRIBUTE, null));
 		}

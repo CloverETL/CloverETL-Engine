@@ -49,6 +49,8 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -659,6 +661,11 @@ public class SystemExecute extends Node{
             		"Charset "+charset+" not supported!", 
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
+        
+        if (command == null) {
+			status.add("Command must be defined.", Severity.ERROR, this, Priority.NORMAL, XML_COMMAND_ATTRIBUTE);
+			return status;
+		}
         	try {
 				if (interpreter != null) {
 					if (interpreter.contains("${}")) {
@@ -688,7 +695,7 @@ public class SystemExecute extends Node{
 		SystemExecute sysExec;
 		sysExec = new SystemExecute(xattribs.getString(XML_ID_ATTRIBUTE),
 				xattribs.getString(XML_INTERPRETER_ATTRIBUTE,"${}"),
-				xattribs.getStringEx(XML_COMMAND_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF),
+				xattribs.getStringEx(XML_COMMAND_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
 				xattribs.getInteger(XML_ERROR_LINES_ATTRIBUTE,2));
 		sysExec.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false));
 		if (xattribs.exists(XML_OUTPUT_FILE_ATTRIBUTE)){

@@ -47,8 +47,8 @@ public class ResetTest extends CloverTestCase {
 			"../cloveretl.examples/BasicExamples/",
 			"../cloveretl.test.scenarios/",
 			"../cloveretl.examples.commercial/CommercialExamples/",
-			"../cloveretl.examples.commercial/DataQualityExamples/",
-			"../cloveretl.examples/CompanyTransactionsTutorial/"
+			"../cloveretl.examples.commercial/DataQualityExamples/"
+			//"../cloveretl.examples/CompanyTransactionsTutorial/"  // runs too long
 		};
 	
 	private final static String[] NEEDS_SCENARIOS_CONNECTION = {
@@ -100,6 +100,8 @@ public class ResetTest extends CloverTestCase {
 				public boolean accept(File file) {
 					return file.getName().endsWith(".grf") 
 							&& !file.getName().startsWith("TPCH")// ok, performance tests - last very long
+							&& !file.getName().startsWith("Subgraph") // need server
+							&& !file.getName().startsWith("clusterDictionary") // cluster tests
 							&& !file.getName().contains("Performance")// ok, performance tests - last very long
 							&& !file.getName().equals("graphJoinData.grf") // ok, uses class file that is not created
 							&& !file.getName().equals("graphJoinHash.grf") // ok, uses class file that is not created
@@ -152,6 +154,10 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().startsWith("AddressDoctor") //wrong path to db file, try to fix when AD installed on jenkins machines 
 							&& !file.getName().equals("EmailReader_Local.grf") // remove after CL-2167 solved
 							&& !file.getName().equals("EmailReader_Server.grf") // remove after CLD-3437 solved (or mail.javlin.eu has valid certificate)
+							&& !file.getName().equals("EmailValidation.grf") // runs too long
+							&& !file.getName().equals("EmailFilterGreylistingExample.grf") // runs too long
+							&& !file.getName().equals("EmailFilterSimpleExample.grf") // runs too long
+							&& !file.getName().equals("graphEmailFilterTestSmtp.grf") // runs too long
 							&& !file.getName().contains("firebird") // remove after CL-2170 solved
 							&& !file.getName().startsWith("ListOfRecords_Functions_02_") // remove after CL-2173 solved
 							&& !file.getName().equals("UDR_FileURL_OneZipMultipleFilesUnspecified.grf") // remove after CL-2174 solved
@@ -163,6 +169,14 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("SimpleZipWrite.grf") // used by ArchiveFlushTest.java, doesn't make sense to run it separately
 							&& !file.getName().equals("XMLExtract_TKLK_003_Back.grf") // needs output from XMLWriter_LKTW_003.grf
 							&& !file.getName().equals("XMLWriter-CL-2404-CNO_OTF_ITSS.grf") // runs too long
+							&& !file.getName().equals("WebAccessLog.grf") // runs too long
+							&& !file.getName().equals("graphXLSReadWrite.grf") // runs too long
+							&& !file.getName().equals("JoiningAggregating.grf") // runs too long
+							&& !file.getName().equals("UDW_sortedInput_manyFiles.grf") // runs too long
+							&& !file.getName().equals("dataWriting.grf") // runs too long
+							&& !file.getName().equals("FSClosingTest-longRunning.grf") // runs too long
+							&& !file.getName().equals("CDW_sortedInput_manyFiles_CLO-5060.grf") // runs too long
+							&& !file.getName().equals("CreditCards.grf") // runs too long
 							&& !file.getName().equals("SQLDataParser_precision_CL2187.grf") // ok, is to fail
 							&& !file.getName().equals("incrementalReadingDB_explicitMapping.grf") // remove after CL-2239 solved
 							&& !file.getName().equals("HTTPConnector_get_bodyparams.grf") // ok, is to fail
@@ -175,6 +189,8 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("HTTPConnector_post_error_unknownprotocol.grf") // ok, is to fail
 							&& !file.getName().equals("HTTPConnector_inputmapping_null_values.grf") // ok, is to fail
 							&& !file.getName().equals("HttpConnector_errHandlingNoRedir.grf") // ok, is to fail
+							&& !file.getName().equals("HTTPConnector_retry_CLO-1251.grf") // runs too long
+							&& !file.getName().equals("HTTPConnector_timeout_CLO-1251.grf") // runs too long
 							&& !file.getName().equals("XMLExtract_fileURL_not_xml.grf") // ok, is to fail
 							&& !file.getName().equals("XMLExtract_charset_invalid.grf") // ok, is to fail
 							&& !file.getName().equals("XMLExtract_mappingURL_missing.grf") // ok, is to fail
@@ -225,15 +241,102 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("ExtSort_missing_sort_key_CLO-4741.grf") // ok, is to fail
 							&& !file.getName().equals("Transformations_invalid_language.grf") // ok, is to fail
 							&& !file.getName().equals("graphCloverData.grf") // remove after CLO-4360 fixed
-							&& !file.getName().equals("MetadataWriting.grf"); // server test
-					
+							&& !file.getName().equals("MetadataWriting.grf") // server test
+							&& !file.getName().equals("EclipseClasspathParsing_CLO-6013.grf") // server test
+							&& !file.getName().equals("CDR_corruptFile_CLO-5329.grf") // negative test
+							&& !file.getName().equals("CDR_metadataPropagation_CLO-2850.grf") // negative test
+							&& !file.getName().equals("CDW_append_CLO-5217.grf") // negative test
+							&& !file.getName().equals("CTL_getComponentProperty_dynamicParam_fail_CLO-3838.grf") // negative test
+							&& !file.getName().equals("CTL_isSubgraphInputPortConnected_1_negative.grf") // negative test
+							&& !file.getName().equals("CTL_isSubgraphInputPortConnected_2_negative.grf") // negative test
+							&& !file.getName().equals("CTL_isSubgraphOutputPortConnected_1_negative.grf") // negative test
+							&& !file.getName().equals("CTL_isSubgraphOutputPortConnected_2_negative.grf") // negative test
+							&& !file.getName().equals("CTL_raiseError_CLO-4084.grf") // negative test
+							&& !file.getName().equals("CoDR_missingFields_CLO-2838.grf") // negative test
+							&& !file.getName().equals("CoDR_parsingError_CLO-5703.grf") // negative test
+							&& !file.getName().equals("CoDR_prematureFinish_CLO-5610.grf") // negative test
+							&& !file.getName().equals("CoDR_tooManyFields_CLO-2838.grf") // negative test
+							&& !file.getName().equals("CopyFiles_emptyUrl_CLO-5114.grf") // negative test
+							&& !file.getName().equals("CopyFiles_maskPassword_CLO-6064.grf") // negative test
+							&& !file.getName().equals("CopyFiles_unsupported_protocols_checkConfig_CLO-4491.grf") // negative test
+							&& !file.getName().equals("CreateFiles_createDir_fail.grf") // negative test
+							&& !file.getName().equals("CreateFiles_emptyUrl_CLO-5114.grf") // negative test
+							&& !file.getName().equals("CreateFiles_unsupported_protocols_checkConfig_CLO-4491.grf") // negative test
+							&& !file.getName().equals("DBExecute_external_sql_resolve_CLO-3641.grf") // negative test
+							&& !file.getName().equals("DBJoin_checkConfig_CLO-4826.grf") // negative test
+							&& !file.getName().equals("DeleteFiles_emptyUrl_CLO-5114.grf") // negative test
+							&& !file.getName().equals("DeleteFiles_unsupported_protocols_checkConfig_CLO-4491.grf") // negative test
+							&& !file.getName().startsWith("Denormalizer_incompleteGroupAllowed_fail") // negative test
+							&& !file.getName().equals("Divider_fail.grf") // negative test
+							&& !file.getName().startsWith("EOF_as_delimiter_onRecord_fail_") // negative test
+							&& !file.getName().equals("KeyValuesToRecord_WrongSortOrder.grf") // negative test
+							&& !file.getName().equals("ListFiles_emptyUrl_CLO-5114.grf") // negative test
+							&& !file.getName().equals("ListFiles_unsupported_protocols_checkConfig_CLO-4491.grf") // negative test
+							&& !file.getName().equals("LoopInGraph3.grf") // negative test
+							&& !file.getName().startsWith("LoopWithSubgraph_") // negative and server tests
+							&& !file.getName().equals("MoveFiles_emptyUrl_CLO-5114.grf") // negative test
+							&& !file.getName().equals("MoveFiles_unsupported_protocols_checkConfig_CLO-4491.grf") // negative test
+							&& !file.getName().equals("NonExistingSandbox.grf") // negative test
+							&& !file.getName().equals("NotNullableFieldWithDefaultValueInNullValues_CLO-4569.grf") // negative test
+							&& !file.getName().equals("ParameterDynamicValue_circular_reference_fail.grf") // negative test
+							&& !file.getName().equals("Pivot_CLO-4726_nameMissing.grf") // negative test
+							&& !file.getName().equals("Pivot_CLO-4726_valueMissing.grf") // negative test
+							&& !file.getName().equals("Pivot_NPE_CLO-4739.grf") // negative test
+							&& !file.getName().equals("ProfilerProbe_metadata_mismatch_active.grf") // negative test
+							&& !file.getName().equals("ProfilerProbe_no_output_port_no_persist.grf") // negative test
+							&& !file.getName().startsWith("RedundantPort_CLO-6774") // negative test
+							&& !file.getName().equals("RunGraph_recursion_detection_CLO-4586.grf") // negative test
+							&& !file.getName().equals("SFTP_missingPrivateKey_CLO-5770.grf") // negative test
+							&& !file.getName().equals("Tableau-TerminateIfTableExists.grf") // negative test
+							&& !file.getName().startsWith("Tableau-Unsupported") // negative test
+							&& !file.getName().equals("UDR_fixedLengthMetadata_errorReporting_CLO-3955.grf") // negative test
+							&& !file.getName().equals("UDR_invalidDataPolicy.grf") // negative test
+							&& !file.getName().equals("UDR_unmappable_characters_CharByteDataParser_fail.grf") // negative test
+							&& !file.getName().equals("UDR_unmappable_characters_CharByteDataParser_skip_fail.grf") // negative test
+							&& !file.getName().equals("UDR_unmappable_characters_DataParser_fail.grf") // negative test
+							&& !file.getName().equals("UDR_unmappable_characters_DataParser_skip_fail.grf") // negative test
+							&& !file.getName().equals("UDR_unmappable_characters_SimpleDataParser_fail.grf") // negative test
+							&& !file.getName().equals("WildcardsInDirPath.grf") // negative test
+							&& !file.getName().equals("dataGenerator.grf") // negative test
+							&& !file.getName().equals("BuiltInGraphParameters_parent.grf") // server test
+							&& !file.getName().startsWith("CTL_getSubgraphInputPortsCount_") // server test
+							&& !file.getName().startsWith("CTL_getSubgraphOutputPortsCount_0.grf") // server test
+							&& !file.getName().equals("CTL_isSubgraphInputPortConnected_1.grf") // server test
+							&& !file.getName().equals("CTL_isSubgraphInputPortConnected_2.grf") // server test
+							&& !file.getName().equals("CTL_isSubgraphOutputPortConnected_1.grf") // server test
+							&& !file.getName().equals("CTL_isSubgraphOutputPortConnected_2.grf") // server test
+							&& !file.getName().startsWith("ConditionalExecution_0") // server test
+							&& !file.getName().equals("Denormalizer_groupBySize_earlyRecordRelease.grf") // server test
+							&& !file.getName().equals("DisableAsTrash_metadata_propagation_CLO-6749.grf") // server test
+							&& !file.getName().equals("ExecuteProfilerJob_executionLabel.grf") // server test
+							&& !file.getName().equals("MetadataPropagation_CLO-6057.grf") // server test
+							&& !file.getName().equals("MoreFilesMatchPattern.grf") // server test
+							&& !file.getName().equals("NoFileMatchesPattern.grf") // server test
+							&& !file.getName().equals("OneFileMatchesPattern.grf") // server test
+							&& !file.getName().startsWith("OptionalPorts_0") // server test
+							&& !file.getName().equals("ParameterDynamicValue_dictionary_use.grf") // server test
+							&& !file.getName().equals("ParameterDynamicValue_disable_component.grf") // server test
+							&& !file.getName().equals("ParameterDynamicValue_override_dynamic_value_from_parent.grf") // server test
+							&& !file.getName().equals("ParameterDynamicValue_subgraph_simple_usage.grf") // server test
+							&& !file.getName().equals("ParameterEmptyValue_secure_CLO-4615.grf") // server test
+							&& !file.getName().equals("ProfilerProbe_no_output_port.grf") // server test
+							&& !file.getName().equals("ProfilerProbe_persisting_results.grf") // server test
+							&& !file.getName().equals("SimpleSequence_concurrent.grf") // server test
+							&& !file.getName().equals("UDW_escapeSequences_CLO-5660.grf"); // server test
 				}
 			};
 			
 			IOFileFilter dirFilter = new AbstractFileFilter() {
 				@Override
 				public boolean accept(File file) {
-					return file.isDirectory() && file.getName().equals("hadoop");
+					return file.isDirectory() 
+							&& !file.getName().equals("bigRecords") // runs too long
+							&& !file.getName().equals("cluster") // cluster tests
+							&& !file.getName().equals("S3") 
+							&& !file.getName().equals("email") 
+							&& !file.getName().equals("dataPolicy") // negative tests 
+							&& !file.getName().equals("metadataPropagation") // mostly server tests
+							&& !file.getName().equals("windows"); // wokna only tests
 				}
 			};
 			
@@ -357,7 +460,7 @@ public class ResetTest extends CloverTestCase {
 			}
 
 		} catch (Throwable e) {
-			throw new IllegalStateException("Error executing grap " + graphFile, e);
+			throw new IllegalStateException("Error executing graph " + graphFile, e);
 		} finally {
 			if (cleanUp) {
 				cleanupData();

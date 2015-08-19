@@ -16,29 +16,51 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.connection.jdbc.specific.impl;
+package org.jetel.util.spreadsheet;
+
+import org.jetel.util.string.StringUtils;
 
 /**
+ * CLO-6995:
+ * We want to share this enum in spreadsheet engine and gui
+ * but the plugin hierarchy is messed up so the enum has to be here
+ * instead of in cloveretl.spreadsheet.commercial plugin.
+ * 
  * @author salamonp (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 19. 5. 2015
+ * @created 3. 8. 2015
  */
-public class H2Specific extends AbstractJdbcSpecific {
+public enum HyperlinkType {
+
+	NONE("No hyperlink"),
+	DOCUMENT("Document"),
+	EMAIL("E-mail"),
+	FILE("File"),
+	URL("URL");
 	
-	private static final H2Specific INSTANCE = new H2Specific();
+	private String label;
 	
-	public static H2Specific getInstance() {
-		return INSTANCE;
-	}
-	
-	protected H2Specific() {
-		super();
+	private HyperlinkType(String label) {
+		this.label = label;
 	}
 	
 	@Override
-	public boolean canCloseResultSetBeforeCreatingNewOne() {
-		return false; // CLO-6418
+	public String toString() {
+		return label;
 	}
 
+	public static HyperlinkType getDefault() {
+		return NONE;
+	}
+	
+	public static HyperlinkType valueOfIgnoreCase(String string) {
+		for (HyperlinkType type : values()) {
+			if (type.toString().equalsIgnoreCase(string)) {
+				return type;
+			}
+		}
+
+		throw new IllegalArgumentException(StringUtils.quote(string) + " is not a valid Hyperlink type");
+	}
 }

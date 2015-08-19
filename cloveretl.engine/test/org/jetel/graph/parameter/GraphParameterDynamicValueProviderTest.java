@@ -61,6 +61,19 @@ public class GraphParameterDynamicValueProviderTest extends CloverTestCase {
 			assertEquals("\"title\"", actual);
 			assertEquals(7, actual.length());
 		}
+
+		{
+			// CLO-6809
+			String ctl = "//#CTL2\n" +
+						 "integer counter = 0;" +
+						 "function integer getValue() {\n" +
+						 "	 return ++counter;\n" +
+						 "}";
+			TransformationGraph graph = new TransformationGraph();
+			GraphParameterDynamicValueProvider provider = GraphParameterDynamicValueProvider.create(graph, "A", ctl);
+			assertEquals("1", provider.getValue());
+			assertEquals("1", provider.getValue()); // repeated access
+		}
 	}
 
 }

@@ -131,7 +131,7 @@ public class FileUtils {
 	public static final ProxyHandler proxyHandler = new ProxyHandler();
 
 	// file protocol name
-	private static final String FILE_PROTOCOL = "file";
+	public static final String FILE_PROTOCOL = "file";
 	private static final String FILE_PROTOCOL_ABSOLUTE_MARK = "file:./";
 	
 	// archive protocol names
@@ -2112,7 +2112,8 @@ public class FileUtils {
 			}
 		} else if (protocol.equals(SandboxUrlUtils.SANDBOX_PROTOCOL)) {
 			try {
-				CloverURI cloverUri = CloverURI.createURI(url.toURI());
+				URI uri = SandboxUrlUtils.toURI(url);
+				CloverURI cloverUri = CloverURI.createURI(uri);
 				File file = FileManager.getInstance().getFile(cloverUri); 
 				if (file != null) {
 					return file;

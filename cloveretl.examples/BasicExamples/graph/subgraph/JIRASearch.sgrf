@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="User" category="readers" created="Thu May 22 11:17:18 CEST 2014" guiVersion="4.1.0.M1" id="1400758283747" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Apr 21 16:17:58 CEST 2015" modifiedBy="User" name="JIRA Search" nature="subgraph" revision="1.186" showComponentDetails="true">
+<Graph author="User" category="readers" created="Thu May 22 11:17:18 CEST 2014" guiVersion="0.0.0.devel" id="1400758283747" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Aug 05 14:02:28 CEST 2015" modifiedBy="User" name="JIRA Search" nature="subgraph" revision="1.194" showComponentDetails="true">
 <Global>
 <inputPorts>
 <singlePort connected="true" keepEdge="true" name="0" required="false"/>
@@ -78,9 +78,12 @@
 </Metadata>
 </MetadataGroup>
 <GraphParameters>
-<GraphParameter label="User" name="USER" public="true" required="false"/>
-<GraphParameter label="Password" name="PASSWORD" public="true" required="false" secure="true"/>
-<GraphParameter label="JIRA Query" name="QUERY" public="true" required="false"/>
+<GraphParameter defaultHint="e.g. https://bug.javlin.eu" label="JIRA URL" name="JIRA_URL" public="true">
+<attr name="description"><![CDATA[Root URL for your JIRA installation (e.g. http://bug.javlin.eu)]]></attr>
+</GraphParameter>
+<GraphParameter label="JIRA Query" name="JIRA_QUERY" public="true" required="false"/>
+<GraphParameter label="JIRA User" name="JIRA_USER" public="true" required="false"/>
+<GraphParameter label="JIRA Password" name="JIRA_PASSWORD" public="true" required="false" secure="true"/>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="191" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Description" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="300" x="-354" y="-249">
@@ -128,7 +131,7 @@ function integer generate() {
 
 // Transforms input record into output record.
 function integer transform() {
-	$out.0.query = getParamValue("QUERY");
+	$out.0.query = getParamValue("JIRA_QUERY");
 
 	return ALL;
 }
@@ -152,7 +155,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node __PASSWORD="${PASSWORD}" __USER="${USER}" enabled="enabled" guiName="Login" guiX="-184" guiY="-34" id="LOGIN" jobURL="${SUBGRAPH_DIR}/impl/JIRALogin.sgrf" type="SUBGRAPH"/>
+<Node __JIRA_PASSWORD="${JIRA_PASSWORD}" __JIRA_URL="${JIRA_URL}" __JIRA_USER="${JIRA_USER}" enabled="enabled" guiName="Login" guiX="-184" guiY="-34" id="LOGIN" jobURL="${SUBGRAPH_DIR}/impl/JIRALogin.sgrf" type="SUBGRAPH"/>
 <Node guiName="SimpleCopy" guiX="17" guiY="-34" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
 <Node guiName="SimpleGather" guiX="-371" guiY="145" id="SIMPLE_GATHER" type="SIMPLE_GATHER"/>
 <Node enabled="enabled" guiName="SubgraphInput" guiX="-483" guiY="-244" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT">
@@ -294,7 +297,7 @@ function integer transform(integer idx) {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Get paging info" guiX="205" guiY="145" id="GET_PAGING_INFO" jobURL="${SUBGRAPH_DIR}/impl/JIRASearchREST.sgrf" type="SUBGRAPH"/>
+<Node __JIRA_URL="${JIRA_URL}" enabled="enabled" guiName="Get paging info" guiX="205" guiY="145" id="GET_PAGING_INFO" jobURL="${SUBGRAPH_DIR}/impl/JIRASearchREST.sgrf" type="SUBGRAPH"/>
 <Node enabled="enabled" guiName="Only last search result" guiX="1050" guiY="250" id="ONLY_LAST_SEARCH_RESULT" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
@@ -328,7 +331,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Run search REST" guiX="840" guiY="145" id="RUN_SEARCH_REST" jobURL="${SUBGRAPH_DIR}/impl/JIRASearchREST.sgrf" type="SUBGRAPH"/>
+<Node __JIRA_URL="${JIRA_URL}" enabled="enabled" guiName="Run search REST" guiX="840" guiY="145" id="RUN_SEARCH_REST" jobURL="${SUBGRAPH_DIR}/impl/JIRASearchREST.sgrf" type="SUBGRAPH"/>
 <Node guiName="Start at 0" guiX="17" guiY="145" id="START_AT_0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 

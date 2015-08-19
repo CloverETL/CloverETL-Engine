@@ -145,7 +145,7 @@ public class SimpleCopy extends Node {
 				|| !checkOutputPorts(status, 1, Integer.MAX_VALUE, false)) {
 			return status;
 		}
-        checkMetadata(status, getInMetadata(), getOutMetadata(), false);
+        checkMetadata(status, getInPorts(), getOutPorts(), false);
 
         return status;
     }

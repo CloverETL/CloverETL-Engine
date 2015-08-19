@@ -22,6 +22,7 @@ import java.nio.ByteBuffer;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.jetel.component.TransformUtils;
 import org.jetel.ctl.CTLAbstractTransformAdapter;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
@@ -102,7 +103,7 @@ public final class CTLRecordPartitionAdapter extends CTLAbstractTransformAdapter
 			throw new TransformException("Partitioning failed!", exception);
 		}
 
-		onErrorArguments[0] = ExceptionUtils.getMessage(null, exception);
+		onErrorArguments[0] = TransformUtils.getMessage(exception);
 		onErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 
 		return getOutputPortImpl(getOuputPortOnErrorFunction, record, onErrorArguments);

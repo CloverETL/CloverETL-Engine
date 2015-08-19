@@ -53,7 +53,6 @@ import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.DenormalizerComponentTokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
-import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.key.KeyFieldTokens;
 import org.jetel.util.key.KeyTokenizer;
@@ -173,8 +172,8 @@ public class Denormalizer extends Node {
 	protected String charset = null;
 	protected RecordKeyTokens recordKeyTokens;
 	protected RecordComapratorAnyOrderType recordComparator;
-	private int size = 0;
-	private boolean incompleteGroupAllowed = false;
+	protected int size = 0;
+	protected boolean incompleteGroupAllowed = false;
 		
 	private String errorActionsString;
 	private Map<Integer, ErrorAction> errorActions = new HashMap<Integer, ErrorAction>();
@@ -184,6 +183,11 @@ public class Denormalizer extends Node {
     /** the flag specifying whether the null values are considered equal or not */
     private boolean equalNULL = true;
 
+    /**
+     * Record which is used to be written to only output port.
+     */
+    private DataRecord outRecord;
+    
 	public Denormalizer(String id, RecordDenormalize denorm, RecordKeyTokens recordKeyTokens) {
 		super(id);
 		this.denorm = denorm;
@@ -232,7 +236,7 @@ public class Denormalizer extends Node {
 	 * @param order
 	 * @return
 	 */
-	protected RecordKeyTokens legacyKeyOrderToRecordKeyToken(String[] key, Order order) {
+	private RecordKeyTokens legacyKeyOrderToRecordKeyToken(String[] key, Order order) {
 		List<KeyFieldTokens> list = new ArrayList<KeyFieldTokens>(key.length);
 		for (String keyPart : key) {
 			list.add(new KeyFieldTokens(keyPart, order.getOrderType()));
@@ -254,16 +258,6 @@ public class Denormalizer extends Node {
 		return XML_TRANSFORM_ATTRIBUTE;
 	}
 
-	/**
-	 * Creates normalization instance using given Java source.
-	 * @param denormCode
-	 * @return
-	 * @throws ComponentNotReadyException
-	 */
-	protected RecordDenormalize createDenormalizerDynamic(String denormCode) throws ComponentNotReadyException {
-        return DynamicJavaClass.instantiate(denormCode, RecordDenormalize.class, this);
-    }
-		
 	@Override
 	public void init() throws ComponentNotReadyException {
 		if (isInitialized()) return;
@@ -311,43 +305,31 @@ public class Denormalizer extends Node {
 	 * @throws TransformException 
 	 * @throws JetelException Indicates that input is not sorted as expected.
 	 */
-	protected boolean endRun(DataRecord prevRecord, DataRecord currentRecord, int counter) throws TransformException {
+	private boolean isEndRunByKey(DataRecord prevRecord, DataRecord currentRecord) throws TransformException {
 		
 		if (prevRecord == null) {
 			return false;
 		}
 		if (currentRecord == null) {
-			if (size > 0 && counter % size != 0) {
-				if (!incompleteGroupAllowed) {
-					throw new TransformException("Incomplete group - required group size: " + size
-							+ ", current record in group: " + (counter % size), counter, -1);
-				}
-			}
 			return true;
 		}
 
-		int cmpResult = size > 0 ? (counter % size == 0 ? -1 : 0) //group defined by size 
-				: recordComparator.compare(prevRecord, currentRecord); //group defined by key
+		int cmpResult = recordComparator.compare(prevRecord, currentRecord);
 
 		if (cmpResult == 0) {
 			return false;
-		}
-		else if (cmpResult < 0) {
+		} else if (cmpResult < 0) {
 			return true;
-		}
-		else { // cmpResult > 0
+		} else { // cmpResult > 0
 			throw new TransformException("Input is not sorted as specified by component attributes");
 		}
 	}
 
-	/**
-	 * Processes all input records.
-	 * @throws IOException
-	 * @throws InterruptedException
-	 * @throws TransformException
-	 */
-	protected void processInput() throws IOException, InterruptedException, TransformException {
-		DataRecord outRecord = DataRecordFactory.newRecord(outMetadata);
+	private boolean isEndRunBySize(int counter) throws TransformException {
+		return (counter % size == 0 ? true : false);
+	}
+
+	protected void processInputByKey() throws IOException, InterruptedException, TransformException {
 		DataRecord srcRecord[] = new DataRecord[] {DataRecordFactory.newRecord(inMetadata),DataRecordFactory.newRecord(inMetadata)} ;
 		int src=0;
 		int counter = 0;
@@ -356,22 +338,8 @@ public class Denormalizer extends Node {
 		int transformResult;
 		while (runIt) {
 			currentRecord = inPort.readRecord(srcRecord[src]);
-			if (endRun(prevRecord, currentRecord, counter)) {
-				outRecord.reset();
-				transformResult = -1;
-
-				try {
-					transformResult = denorm.transform(outRecord);
-				} catch (Exception exception) {
-					transformResult = denorm.transformOnError(exception, outRecord);
-				}
-
-				if (transformResult >= 0) {
-					outPort.writeRecord(outRecord);
-				}else{
-					handleException("transform", transformResult, counter);
-				}
-				denorm.clean();
+			if (isEndRunByKey(prevRecord, currentRecord)) {
+				finishGroup(prevRecord, counter);
 			}
 			if (currentRecord == null) { // no more input data
 				return;
@@ -382,16 +350,84 @@ public class Denormalizer extends Node {
 			transformResult = -1;
 
 			try {
-				transformResult = denorm.append(prevRecord);
+				transformResult = denorm.append(prevRecord, outRecord); //output record is passed to append() method, user can populate the output already in append()
 			} catch (Exception exception) {
-				transformResult = denorm.appendOnError(exception, prevRecord);
+				transformResult = denorm.appendOnError(exception, prevRecord, outRecord);
 			}
 
 			if (transformResult < 0) {
 				handleException("append", transformResult, counter);
 			}
+			
 			SynchronizeUtils.cloverYield();
 		} // while
+	}
+
+	protected void processInputByGroupSize() throws IOException, InterruptedException, TransformException {
+		DataRecord srcRecord[] = new DataRecord[] {DataRecordFactory.newRecord(inMetadata),DataRecordFactory.newRecord(inMetadata)} ;
+		int src=0;
+		int counter = 0;
+		DataRecord prevRecord = null;
+		DataRecord currentRecord = null;
+		int transformResult;
+		while (runIt) {
+			currentRecord = inPort.readRecord(srcRecord[src]);
+			if (currentRecord == null) { // no more input data
+				if (counter % size != 0) {
+					if (!incompleteGroupAllowed) {
+						throw new TransformException("Incomplete group - required group size: " + size
+								+ ", current record in group: " + (counter % size), counter, -1);
+					} else {
+						//finish the last incomplete group
+						finishGroup(prevRecord, counter);
+					}
+				}
+				return;
+			}
+			counter++;
+			prevRecord = currentRecord;
+			src^=1;
+			transformResult = -1;
+
+			try {
+				transformResult = denorm.append(prevRecord, outRecord); //output record is passed to append() method, user can populate the output already in append()
+			} catch (Exception exception) {
+				transformResult = denorm.appendOnError(exception, prevRecord, outRecord);
+			}
+
+			if (transformResult < 0) {
+				handleException("append", transformResult, counter);
+			}
+			
+			if (isEndRunBySize(counter)) {
+				finishGroup(prevRecord, counter);
+			}
+			SynchronizeUtils.cloverYield();
+		} // while
+	}
+
+	/**
+	 * @throws TransformException 
+	 * @throws InterruptedException 
+	 * @throws IOException 
+	 * 
+	 */
+	private void finishGroup(DataRecord prevRecord, int counter) throws TransformException, IOException, InterruptedException {
+		int transformResult = -1;
+
+		try {
+			transformResult = denorm.transform(prevRecord, outRecord); //the last input record is passed to transformation
+		} catch (Exception exception) {
+			transformResult = denorm.transformOnError(exception, prevRecord, outRecord);
+		}
+
+		if (transformResult >= 0) {
+			outPort.writeRecord(outRecord);
+		}else{
+			handleException("transform", transformResult, counter);
+		}
+		denorm.clean();
+		outRecord.reset();
 	}
 
 	protected void handleException(String functionName, int transformResult, int recNo) throws TransformException, IOException{
@@ -437,6 +473,8 @@ public class Denormalizer extends Node {
     	super.preExecute();
 		denorm.preExecute();
 		
+		outRecord = DataRecordFactory.newRecord(outMetadata);
+
     	if (firstRun()) {//a phase-dependent part of initialization
     		//all necessary elements have been initialized in init()
     	}
@@ -456,7 +494,11 @@ public class Denormalizer extends Node {
 	@Override
 	public Result execute() throws Exception {
 		try {
-            processInput();
+			if (size > 0) {
+				processInputByGroupSize();
+			} else {
+				processInputByKey();
+			}
         } catch (Exception e) {
             throw e;
         } finally {

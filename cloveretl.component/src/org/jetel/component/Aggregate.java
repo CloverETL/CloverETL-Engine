@@ -304,17 +304,12 @@ public class Aggregate extends Node {
         	oldMapping = xattribs.getString(XML_OLD_MAPPING_ATTRIBUTE);
         }
         
-        if (newMapping == null && oldMapping == null) {
-        	throw new XMLConfigurationException("Aggregation mapping must be provided in the " +
-        			XML_MAPPING_ATTRIBUTE + " or " + XML_OLD_MAPPING_ATTRIBUTE + " attribute");
-        }
-        
         //read sorted attribute
         if(xattribs.exists(XML_SORTED_ATTRIBUTE)) {
             sorted = xattribs.getBoolean(XML_SORTED_ATTRIBUTE);                
         }
         //make an instance of the component
-	    Aggregate aggregate = new Aggregate(xattribs.getString("id"), 
+	    Aggregate aggregate = new Aggregate(xattribs.getString(XML_ID_ATTRIBUTE), 
 	    		aggregateKey,
 				newMapping,
                 sorted,
@@ -343,7 +338,7 @@ public class Aggregate extends Node {
         	return status;
         }
         
-        checkMetadata(status, getOutMetadata());
+        checkMetadata(status, null, getOutPorts());
         
         if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(

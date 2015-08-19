@@ -944,11 +944,22 @@ public class WcardPattern {
 	 * @return
 	 */
 	public static Pattern compileSimplifiedPattern(String pattern) {
+		return compileSimplifiedPattern(pattern, WCARD_CHAR, REGEX_SUBST);
+	}
+
+	/**
+	 * Creates compiled Pattern from String pattern. Replaces characters from wildcardCharacters with strings from regexSubstitutions.
+	 * @param pattern
+	 * @param wildcardCharacters eg. {'*', '?'}
+	 * @param regexSubstitutions eg. {".*", "."}
+	 * @return
+	 */
+	public static Pattern compileSimplifiedPattern(String pattern, char[] wildcardCharacters, String[] regexSubstitutions) {
 		StringBuilder regex = new StringBuilder(pattern);
 		regex.insert(0, REGEX_START_ANCHOR + REGEX_START_QUOTE);
-		for (int wcardIdx = 0; wcardIdx < WCARD_CHAR.length; wcardIdx++) {
-			regex.replace(0, regex.length(), regex.toString().replace("" + WCARD_CHAR[wcardIdx],
-					REGEX_END_QUOTE + REGEX_SUBST[wcardIdx] + REGEX_START_QUOTE));
+		for (int wcardIdx = 0; wcardIdx < wildcardCharacters.length; wcardIdx++) {
+			regex.replace(0, regex.length(), regex.toString().replace("" + wildcardCharacters[wcardIdx],
+					REGEX_END_QUOTE + regexSubstitutions[wcardIdx] + REGEX_START_QUOTE));
 		}
 		regex.append(REGEX_END_QUOTE + REGEX_END_ANCHOR);
 

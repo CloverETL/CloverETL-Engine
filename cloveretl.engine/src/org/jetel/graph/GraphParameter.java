@@ -183,6 +183,13 @@ public class GraphParameter {
 			ret.add(attrNode);
 		}
 
+		if (value != null && StringUtils.isMultiline(value)) {
+			GraphParameterAttributeNode attrNode = new GraphParameterAttributeNode();
+			attrNode.setName("value");
+			attrNode.setValue(value);
+			ret.add(attrNode);
+		}
+
 		return ret.toArray(new GraphParameterAttributeNode[ret.size()]);
 	}
 
@@ -194,6 +201,9 @@ public class GraphParameter {
 			}
 			if ("description".equals(a.getName())) {
 				setDescription(a.getValue());
+			}
+			if ("value".equals(a.getName())) {
+				setValue(a.getValue());
 			}
 		}
 	}

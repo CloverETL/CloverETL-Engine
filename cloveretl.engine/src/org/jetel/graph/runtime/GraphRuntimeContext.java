@@ -133,6 +133,22 @@ public class GraphRuntimeContext {
 	 */
 	private boolean strictGraphFactorization;
 	
+	/**
+	 * Flag which indicates, whether new classloaders should be created for each transformation
+	 * component or should be shared with the others.
+	 * @see IAuthorityProxy#createClassLoader(URL[], ClassLoader, boolean)
+	 * @see IAuthorityProxy#getClassLoader(URL[], ClassLoader, boolean)
+	 */
+	private boolean classLoaderCaching;
+	
+	/**
+	 * For all edges is also calculated which metadata would be propagated
+	 * to this edge from neighbours, if the edge does not have any metadata directly assigned.
+	 * It is useful only for designer purpose (calculation is turned off by default).
+	 * Designer shows to user, which metadata would be on the edge, for "no metadata" option on the edge. 
+	 */
+	private boolean calculateNoMetadata;
+	
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
 		useJMX = DEFAULT_USE_JMX;
@@ -159,6 +175,8 @@ public class GraphRuntimeContext {
 		parentGraphInputPortsConnected = null; 
 		parentGraphOutputPortsConnected = null; 
 		strictGraphFactorization = true;
+		classLoaderCaching = false;
+		calculateNoMetadata = false;
 	}
 	
 	/* (non-Javadoc)
@@ -203,6 +221,8 @@ public class GraphRuntimeContext {
 		ret.parentGraphInputPortsConnected = parentGraphInputPortsConnected != null ? new ArrayList<>(parentGraphInputPortsConnected) : null;
 		ret.parentGraphOutputPortsConnected = parentGraphOutputPortsConnected != null ? new ArrayList<>(parentGraphOutputPortsConnected) : null;
 		ret.strictGraphFactorization = isStrictGraphFactorization();
+		ret.classLoaderCaching = isClassLoaderCaching();
+		ret.calculateNoMetadata = isCalculateNoMetadata();
 
 		return ret;
 	}
@@ -238,9 +258,12 @@ public class GraphRuntimeContext {
 		prop.setProperty("executionType", String.valueOf(getExecutionType()));
 		prop.setProperty("validateRequiredParameters", Boolean.toString(isValidateRequiredParameters()));
 		prop.setProperty("fastPropagateExecution", Boolean.toString(isFastPropagateExecution()));
-		prop.setProperty("connectedParentGraphInputPorts", String.valueOf(getParentGraphInputPortsConnected()));
-		prop.setProperty("connectedParentGraphOutputPorts", String.valueOf(getParentGraphOutputPortsConnected()));
-		
+		prop.setProperty("parentGraphInputPortsConnected", String.valueOf(getParentGraphInputPortsConnected()));
+		prop.setProperty("parentGraphOutputPortsConnected", String.valueOf(getParentGraphOutputPortsConnected()));
+		prop.setProperty("strictGraphFactorization", Boolean.toString(isStrictGraphFactorization()));
+		prop.setProperty("classLoaderCaching", Boolean.toString(isClassLoaderCaching()));
+		prop.setProperty("calculateNoMetadata", Boolean.toString(isCalculateNoMetadata()));
+
 		return prop;
 	}
 
@@ -937,6 +960,37 @@ public class GraphRuntimeContext {
 	 */
 	public void setStrictGraphFactorization(boolean strictGraphFactorization) {
 		this.strictGraphFactorization = strictGraphFactorization;
+	}
+
+	/**
+	 * @return true if classloaders for java transformations should be shared; false otherwise
+	 */
+	public boolean isClassLoaderCaching() {
+		return classLoaderCaching;
+	}
+
+	public void setClassLoaderCaching(boolean classLoaderCaching) {
+		this.classLoaderCaching = classLoaderCaching;
+	}
+
+	/**
+	 * For all edges is also calculated which metadata would be propagated
+	 * to this edge from neighbours, if the edge does not have any metadata directly assigned.
+	 * It is useful only for designer purpose (calculation is turned off by default).
+	 * Designer shows to user, which metadata would be on the edge, for "no metadata" option on the edge. 
+	 */
+	public boolean isCalculateNoMetadata() {
+		return calculateNoMetadata;
+	}
+
+	/**
+	 * For all edges is also calculated which metadata would be propagated
+	 * to this edge from neighbours, if the edge does not have any metadata directly assigned.
+	 * It is useful only for designer purpose (calculation is turned off by default).
+	 * Designer shows to user, which metadata would be on the edge, for "no metadata" option on the edge. 
+	 */
+	public void setCalculateNoMetadata(boolean calculateNoMetadata) {
+		this.calculateNoMetadata = calculateNoMetadata;
 	}
 
 	/**

@@ -202,6 +202,12 @@ public class ExceptionUtils {
 				(StringUtils.isEmpty(t.getMessage()) || t.getMessage().equalsIgnoreCase("null"))) {
 			//the NPE can be wrapped also in SerializableException
 			message = "Unexpected null value.";
+		} else if (t instanceof ClassNotFoundException) {
+			//message of ClassNotFoundException exception is insufficient, message should be more explanatory
+			message = "Class with the specified name cannot be found" + (!StringUtils.isEmpty(t.getMessage()) ? ": " + t.getMessage() : ".");
+		} else if (t instanceof NoClassDefFoundError) {
+			//message of NoClassDefFoundError exception is insufficient, message should be more explanatory
+			message = "No definition for the class with the specified name can be found" + (!StringUtils.isEmpty(t.getMessage()) ? ": " + t.getMessage() : ".");
 		} else if (!StringUtils.isEmpty(t.getMessage())) {
 			//only non-empty messages are considered
 			message = t.getMessage();
@@ -535,5 +541,23 @@ public class ExceptionUtils {
 		} else {
 			return new IOException(t);
 		}
+	}
+	
+	/**
+	 * Tries to return the message from the cause
+	 * {@link ClassNotFoundException}, if available.
+	 * Otherwise, returns the original message.
+	 * 
+	 * @param error {@link NoClassDefFoundError}
+	 * @return
+	 */
+	public static String getClassName(NoClassDefFoundError error) {
+		Throwable cause = error.getCause();
+		if (cause instanceof ClassNotFoundException) {
+			if (!StringUtils.isEmpty(cause.getMessage())) {
+				return cause.getMessage();
+			}
+		}
+		return error.getMessage();
 	}
 }

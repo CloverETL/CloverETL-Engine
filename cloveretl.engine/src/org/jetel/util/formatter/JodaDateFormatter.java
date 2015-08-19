@@ -35,12 +35,10 @@ import org.joda.time.format.DateTimeFormatter;
  * @version 17th August 2009
  * @since 10th August 2009
  */
-class JodaDateFormatter implements DateFormatter {
+class JodaDateFormatter extends AbstractDateFormatter {
 
 	/** Joda-Time date time formatter */
 	private final DateTimeFormatter dateTimeFormatter;
-	private String pattern;
-	private Locale locale;
 
 	public JodaDateFormatter() {
 		this(null);
@@ -90,23 +88,13 @@ class JodaDateFormatter implements DateFormatter {
 	public long parseMillis(String value) {
 		return dateTimeFormatter.parseMillis(value);
 	}
-
-	@Override
-	public String getPattern() {
-		return pattern;
-	}
-
-	@Override
-	public Locale getLocale() {
-		return locale;
-	}
 	
 	@Override
 	public boolean tryParse(String value) {
-		if (value != null){
-			try{
+		if (value != null) {
+			try {
 				dateTimeFormatter.parseMillis(value);
-			}catch(IllegalArgumentException ex){
+			} catch (IllegalArgumentException ex) {
 				return false;
 			}
 			return true;

@@ -54,7 +54,7 @@ import org.w3c.dom.Element;
  * @author Martin Zatopek, Javlin Consulting (www.javlinconsulting.cz)
  *
  */
-public class PrimitiveSequence extends AbstractSequence implements Sequence {
+public class PrimitiveSequence extends AbstractSequence {
 
     public final static String SEQUENCE_TYPE = "PRIMITIVE_SEQUENCE";
     

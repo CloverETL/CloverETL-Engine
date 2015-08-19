@@ -27,8 +27,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
 
-import junit.framework.AssertionFailedError;
-
 import org.jetel.component.CTLRecordTransform;
 import org.jetel.component.RecordTransform;
 import org.jetel.data.DataField;
@@ -38,6 +36,7 @@ import org.jetel.data.SetVal;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.primitive.Decimal;
+import org.jetel.data.primitive.IntegerDecimal;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.exception.ComponentNotReadyException;
@@ -54,17 +53,22 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.PackedDecimal;
 import org.jetel.util.crypto.Base64;
 import org.jetel.util.crypto.Digest;
 import org.jetel.util.crypto.Digest.DigestType;
+import org.jetel.util.formatter.TimeZoneProvider;
 import org.jetel.util.primitive.TypedProperties;
+import org.jetel.util.string.CloverString;
 import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Years;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
+
+import junit.framework.AssertionFailedError;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class CompilerTestCase extends CloverTestCase {
@@ -152,6 +156,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		  assertEquals(varName, expectedResult, (double) getVariable(varName), delta);
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected void checkEqualValue(String varName, Object expectedResult) {
 		  assertTrue(varName, ((Comparable)expectedResult).compareTo(getVariable(varName))==0);
 	}
@@ -183,8 +188,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	@Override
 	protected void setUp() {
-		// set default locale to English to prevent various parsing errors
-		Locale.setDefault(Locale.ENGLISH);
+		// set default locale to en.US to prevent various parsing errors
+		Locale.setDefault(new Locale("en", "US"));
 		initEngine();
 	}
 
@@ -1339,7 +1344,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		expected.put("nullable", "true");
 		expected.put("nullValue", "");
 		expected.put("trim", "false");
-		for (String key: new String[] {"length", "scale", "containerType", "default", "description", "format", "locale", "size", "timeZone"}) {
+		expected.put("locale", "en.US");
+		expected.put("timeZone", "'java:Europe/Prague';'joda:Europe/Prague'");
+		for (String key: new String[] {"length", "scale", "containerType", "default", "description", "format", "size"}) {
 			expected.put(key, null);
 		}
 		check("ret1", expected);
@@ -1352,7 +1359,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		expected.put("nullable", "true");
 		expected.put("nullValue", "");
 		expected.put("trim", "true");
-		for (String key: new String[] {"length", "scale", "containerType", "default", "description", "format", "locale", "size", "timeZone"}) {
+		expected.put("locale", "en.US");
+		expected.put("timeZone", "'java:Europe/Prague';'joda:Europe/Prague'");
+		for (String key: new String[] {"length", "scale", "containerType", "default", "description", "format", "size"}) {
 			expected.put(key, null);
 		}
 		check("ret2", expected);
@@ -1367,7 +1376,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		expected.put("nullable", "true");
 		expected.put("nullValue", "");
 		expected.put("trim", "true");
-		for (String key: new String[] {"containerType", "default", "description", "format", "locale", "size", "timeZone"}) {
+		expected.put("locale", "en.US");
+		expected.put("timeZone", "'java:Europe/Prague';'joda:Europe/Prague'");
+		for (String key: new String[] {"containerType", "default", "description", "format", "size"}) {
 			expected.put(key, null);
 		}
 		check("lastField", expected);
@@ -1376,13 +1387,33 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_dynamiclib_getFieldProperties_CLO_6293() {
 		TransformationGraph graph = createDefaultGraph(); 
+		TypedProperties recordProperties = graph.getDataRecordMetadata(INPUT_1).getRecordProperties();
+		recordProperties.setProperty("previewAttachment", "previewAttachment");
+		recordProperties.setProperty("previewAttachmentCharset", "previewAttachmentCharset");
+		recordProperties.setProperty("previewAttachmentMetadataRow", "previewAttachmentMetadataRow");
+		recordProperties.setProperty("previewAttachmentSampleDataRow", "previewAttachmentSampleDataRow");
 		graph.getDataRecordMetadata(INPUT_1).getField("Born").setFormatStr("joda:yyyy-MM-dd HH:mm:ss;yyyy-MM-dd HH:mm:ss");
 		
 		DataRecord[] inRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(INPUT_3)), createDefaultMultivalueRecord(graph.getDataRecordMetadata(INPUT_4)) };
 		DataRecord[] outRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_3)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_4)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_5)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_6)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_7)) };
 		
-		doCompile("string format; function integer transform(){format = getFieldProperties($in.0, 'Born')['format']; return 0;}", "test_dynamiclib_getFieldProperties", graph, inRecords, outRecords);
+		doCompile("string format; map[string, string] recordProperties; map[string, string] fieldProperties; function integer transform(){format = getFieldProperties($in.0, 'Born')['format']; recordProperties = getRecordProperties($in.0); fieldProperties = getFieldProperties($in.0, 'Born'); return 0;}", "test_dynamiclib_getFieldProperties", graph, inRecords, outRecords);
 		check("format", "joda:yyyy-MM-dd HH:mm:ss;yyyy-MM-dd HH:mm:ss");
+		Map<?, ?> recordPropertiesValue = (Map<?, ?>) getVariable("recordProperties");
+		assertFalse(recordPropertiesValue.containsKey("previewAttachment"));
+		assertFalse(recordPropertiesValue.containsKey("previewAttachmentCharset"));
+		assertFalse(recordPropertiesValue.containsKey("previewAttachmentMetadataRow"));
+		assertFalse(recordPropertiesValue.containsKey("previewAttachmentSampleDataRow"));
+		
+		String expectedTimeZone = new TimeZoneProvider().toString();
+		assertFalse(StringUtils.isEmpty(expectedTimeZone));
+		
+		assertEquals("en.US", recordPropertiesValue.get("locale"));
+		assertEquals(expectedTimeZone, recordPropertiesValue.get("timeZone"));
+		
+		Map<?, ?> fieldPropertiesValue = (Map<?, ?>) getVariable("fieldProperties");
+		assertEquals("en.US", fieldPropertiesValue.get("locale"));
+		assertEquals(expectedTimeZone, fieldPropertiesValue.get("timeZone"));
 	}
 	
 	public void test_dynamiclib_getFieldProperties_expect_error(){
@@ -1454,7 +1485,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		expected.put("quotedStrings", "false");
 		expected.put("eofAsDelimiter", "false");
 		expected.put("nullValue", "");
-		for (String key: new String[] {"recordDelimiter", "fieldDelimiter", "quoteChar", "description", "locale", "timeZone"}) {
+		expected.put("locale", "en.US");
+		expected.put("timeZone", "'java:Europe/Prague';'joda:Europe/Prague'");
+		for (String key: new String[] {"recordDelimiter", "fieldDelimiter", "quoteChar", "description"}) {
 			expected.put(key, null);
 		}
 		check("ret1", expected);
@@ -1466,7 +1499,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		expected.put("quotedStrings", "false");
 		expected.put("eofAsDelimiter", "false");
 		expected.put("nullValue", "");
-		for (String key: new String[] {"recordDelimiter", "fieldDelimiter", "quoteChar", "description", "locale", "timeZone"}) {
+		expected.put("locale", "en.US");
+		expected.put("timeZone", "'java:Europe/Prague';'joda:Europe/Prague'");
+		for (String key: new String[] {"recordDelimiter", "fieldDelimiter", "quoteChar", "description"}) {
 			expected.put(key, null);
 		}
 		check("ret2", expected);
@@ -4440,6 +4475,21 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("eq5", true);
 	}
 	
+	public void test_regex_CLO6907() {
+		try {
+			doCompile("function integer transform(){"
+					+ "string regex = null;"
+					+ "boolean b = 'a' ~= regex;"
+					+ "return 0;}","test_regex_CLO6907");
+			fail();
+		} catch (Exception e) {
+			Throwable cause = ExceptionUtils.getRootCause(e);
+			assertTrue(cause instanceof NullPointerException);
+			NullPointerException npe = (NullPointerException) cause;
+			assertEquals("Regular expression is null", npe.getMessage());
+		}
+	}
+		
 	public void test_if() {
 		doCompile("test_if");
 
@@ -4867,7 +4917,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			doCompile("function integer transform(){\n" + "getMappedSourceFields(\"$name=$name;$name=$firstName;$countryName=$countryName;#$phone=$field1;\", \"name\", 2);" + "\nreturn 0;}", "test_mappinglib_field_parsing");
 			fail();
 		} catch (RuntimeException e) {
-			if (!isCausedBy(e, ArrayIndexOutOfBoundsException.class)) {
+			if (!isCausedBy(e, IndexOutOfBoundsException.class)) {
 				throw e;
 			}
 		}
@@ -4913,14 +4963,42 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		doCompile("test_mappinglib_field_parsing");
 
+		check("sourceFields_nullTarget", Collections.EMPTY_LIST);
 		check("sourceFields1", Arrays.asList("name", "firstName"));
 		check("sourceFields2", Arrays.asList());
 		check("sourceFields3", Arrays.asList("a", "b", "c"));
 		check("sourceFields4", Arrays.asList("name", "firstName"));
+		check("sourceFields5", Arrays.asList("name", "firstName", "countryName"));
+		check("sourceFields6", Arrays.asList("name", "firstName", "countryName"));
+		check("targetFields_nullSource", Collections.EMPTY_LIST);
 		check("targetFields", Arrays.asList("name", "countryName"));
-		check("isSourceMapped1", new Boolean(true));
-		check("isSourceMapped2", new Boolean(false));
-		check("isTargetMapped", new Boolean(true));
+		check("targetFields1", Arrays.asList("name"));
+		check("targetFields2", Arrays.asList("field1", "field2"));
+		check("targetFields3", Arrays.asList("field1", "field2", "field3"));
+		check("isSourceMapped1", true);
+		check("isSourceMapped2", false);
+		check("isSourceMapped3", true);
+		check("isTargetMapped", true);
+		
+		check("sourceMapped_nullTarget", false);
+		check("targetMapped_nullSource", false);
+		
+		// examples from the User Guide
+		check("example_getMappedSourceFields1", Arrays.asList("srcB4"));
+		check("example_getMappedSourceFields2", Arrays.asList("source1", "source3"));
+		check("example_getMappedSourceFields3", Arrays.asList("source1", "source3", "source4"));
+		
+		check("example_getMappedTargetFields1", Arrays.asList("target2"));
+		check("example_getMappedTargetFields2", Arrays.asList("target1", "target3", "target2"));
+		check("example_getMappedTargetFields3", Arrays.asList("target1", "target3"));
+		
+		check("example_isSourceFieldMapped1", true);
+		check("example_isSourceFieldMapped2", false);
+		check("example_isSourceFieldMapped3", true);
+		check("example_isSourceFieldMapped4", false);
+		
+		check("example_isTargetFieldMapped1", true);
+		check("example_isTargetFieldMapped2", false);
 	}
 
 	public void test_copyByName() {
@@ -5343,13 +5421,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		List<String> myList = new ArrayList<String>();
 		check("copyEmptyList", myList);
 		check("returnedEmptyList", myList);
-		assertTrue(((List<String>)(getVariable("copyEmptyList"))).isEmpty());
-		assertTrue(((List<String>)(getVariable("returnedEmptyList"))).isEmpty());
+		assertTrue(((List<?>)(getVariable("copyEmptyList"))).isEmpty());
+		assertTrue(((List<?>)(getVariable("returnedEmptyList"))).isEmpty());
 		Map<String, String> emptyMap = new HashMap<String, String>();
 		check("copyEmptyMap", emptyMap);
 		check("returnedEmptyMap", emptyMap);
-		assertTrue(((HashMap<String,String>)(getVariable("copyEmptyMap"))).isEmpty());
-		assertTrue(((HashMap<String,String>)(getVariable("returnedEmptyMap"))).isEmpty());
+		assertTrue(((HashMap<?,?>)(getVariable("copyEmptyMap"))).isEmpty());
+		assertTrue(((HashMap<?,?>)(getVariable("returnedEmptyMap"))).isEmpty());
 	}
 
 	public void test_containerlib_copy_expect_error(){
@@ -7112,6 +7190,19 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isDate25", false);
 		check("isDate26", true);
 		check("isDate27", true);
+		
+		// CLO-6601
+		check("isDate28", false);
+		check("isDate29", false);
+		check("isDate30", false);
+		check("isDate31", false);
+		check("isDate32", false);
+		check("isDate33", false);
+		check("isDate34", false);
+		check("isDate35", true);
+		check("isDate36", true);
+		check("isDate37", true);
+		check("isDate38", true);
 
 		check("isDecimal", false);
 		check("isDecimal1", false);
@@ -10854,6 +10945,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		cal.set(2015, 04, 04, 11, 04, 13);
 		check("CLO_6306_2", cal.getTime());
 		check("CLO_6306_4", cal.getTime());
+		
+		// CLO-5961:
+		cal.clear();
+		cal.setTimeZone(TimeZone.getDefault());
+		cal.set(2015, 4, 25, 0, 0, 0);
+		check("CLO_5961_1", cal.getTime());
+		check("CLO_5961_2", cal.getTime());
+		cal.set(2015, 10, 25);
+		check("CLO_5961_3", cal.getTime());
+		check("CLO_5961_4", cal.getTime());
 	}
 
 	public void test_convertlib_str2date_expect_error(){
@@ -10876,17 +10977,60 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){date d = str2date('17.11.1987', 'yyyy-MM-dd', null); return 0;}","test_convertlib_str2date_expect_error");
+			doCompile("function integer transform(){date d = str2date('17.11.1987', 'yyyy-MM-dd', null, false); return 0;}","test_convertlib_str2date_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){date d = str2date('17.11.1987', 'yyyy-MM-dd', 'cs.CZ', null); return 0;}","test_convertlib_str2date_expect_error");
+			doCompile("function integer transform(){date d = str2date('17.11.1987', 'yyyy-MM-dd', 'cs.CZ', null, false); return 0;}","test_convertlib_str2date_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
+		try {
+			doCompile("function integer transform(){date d = str2date('1924011', 'yyyyMMdd', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-001-012', 'yyyy-MM-dd', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-1-12', 'yyyy-MM-dd', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-November-12', 'yyyy-MMM-dd', 'en.US', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-Nov-12', 'yyyy-MMMM-dd', 'en.US', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-Nov-12', 'yyyy-MM-dd', 'en.US', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-November-12', 'yyyy-MM-dd', 'en.US', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		
 	}
 	
 	public void test_convertlib_str2decimal() {
@@ -11140,6 +11284,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	public void test_convertlib_toString() {
 		doCompile("test_convertlib_toString");
+		check("booleanString", "true");
 		check("integerString", "10");
 		check("longString", "110654321874");
 		check("doubleString", "1.547874E-14");
@@ -11297,6 +11442,64 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertDeepEquals(byteList, Arrays.asList(new byte[] {0x12}, new byte[] {0x34, 0x56}, null, new byte[] {0x78}));
 	}
 	
+	public void test_dictionary_read_CLO6850() {
+		String testIdentifier = "test_dictionary_read_CLO6850";
+		TransformationGraph graph = createDefaultGraph(); 
+		
+		DataRecord[] inRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(INPUT_3)), createDefaultMultivalueRecord(graph.getDataRecordMetadata(INPUT_4)) };
+		DataRecord[] outRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_3)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_4)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_5)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_6)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_7)) };
+		
+		Dictionary dictionary = graph.getDictionary();
+		
+		CloverString cs = new CloverString("hello");
+		Decimal d = new IntegerDecimal(10, 2);
+		d.setValue(123);
+		
+		try {
+			dictionary.setValue("stringEntry", "string", cs);
+			dictionary.setValue("stringListEntry", "list", new ArrayList<>(Arrays.asList(cs)));
+			dictionary.setContentType("stringListEntry", "string");
+			Map<String, Object> map = new HashMap<>();
+			map.put("key", cs);
+			dictionary.setValue("stringMapEntry", "map", map);
+			dictionary.setContentType("stringMapEntry", "string");
+			
+			dictionary.setValue("decimalEntry", "decimal", d);
+			dictionary.setValue("decimalListEntry", "list", new ArrayList<>(Arrays.asList(d)));
+			dictionary.setContentType("decimalListEntry", "decimal");
+			map = new HashMap<>();
+			map.put("key", d);
+			dictionary.setValue("decimalMapEntry", "map", map);
+			dictionary.setContentType("decimalMapEntry", "decimal");
+
+			dictionary.setValue("stringListEntry2", "list", new ArrayList<>(Arrays.asList(cs)));
+			dictionary.setContentType("stringListEntry2", "string");
+			dictionary.setValue("stringListEntry3", "list", new ArrayList<>(Arrays.asList(cs)));
+			dictionary.setContentType("stringListEntry3", "string");
+			map = new HashMap<>();
+			map.put("key", cs);
+			dictionary.setValue("stringMapEntry2", "map", map);
+			dictionary.setContentType("stringMapEntry2", "string");
+			map = new HashMap<>();
+			map.put("key", cs);
+			dictionary.setValue("stringMapEntry3", "map", map);
+			dictionary.setContentType("stringMapEntry3", "string");
+		} catch (ComponentNotReadyException e) {
+			throw new RuntimeException("Error init default dictionary", e);
+		}
+
+		String sourceCode = loadSourceCode(testIdentifier);
+		doCompile(sourceCode, testIdentifier, graph, inRecords, outRecords);
+
+		Boolean[] expected = new Boolean[14];
+		Arrays.fill(expected, true);
+		check("results", Arrays.asList(expected));
+		
+		// implementation detail, may change in the future
+		assertTrue(((List<?>) dictionary.getValue("stringListEntry3")).get(0) == cs);
+		assertTrue(((Map<?, ?>) dictionary.getValue("stringMapEntry3")).get("key") == cs);
+	}
+	
 	public void test_dictionary_expect_error() throws Exception {
 		// CLO-2283
 		TransformationGraph graph = createEmptyGraph();
@@ -11365,6 +11568,26 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_dictionary_string_to_int(){
         doCompileExpectErrors("test_dictionary_string_to_int", Arrays.asList("Type mismatch: cannot convert from 'string' to 'integer'","Type mismatch: cannot convert from 'string' to 'integer'"));
+	}
+	
+	public void test_dictionary_keywords_CLO6866() {
+		String ident = "test_dictionary_keywords_CLO6866";
+		
+		TransformationGraph g = createEmptyGraph();
+		try {
+			g.getDictionary().setValue("year", "integer", 10);
+			g.getDictionary().setValue("month", "integer", 10);
+			g.getDictionary().setValue("week", "integer", 10);
+			g.getDictionary().setValue("day", "integer", 10);
+			g.getDictionary().setValue("hour", "integer", 10);
+			g.getDictionary().setValue("minute", "integer", 10);
+			g.getDictionary().setValue("second", "integer", 10);
+			g.getDictionary().setValue("millisec", "integer", 10);
+		} catch (ComponentNotReadyException e) {
+			throw new RuntimeException(e);
+		}
+		
+		doCompile(loadSourceCode("test_dictionary_keywords_CLO6866"), ident, g, new DataRecord[0], new DataRecord[0]);
 	}
 	
 	public void test_utillib_sleep() {
@@ -12001,4 +12224,28 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 	}
+
+	/**
+	 * @see PropertiesUtilsTest#testDeserialize()
+	 */
+	@SuppressWarnings("serial")
+	public void test_stringlib_parseProperties() {
+		doCompile("test_stringlib_parseProperties");
+		Map<String, String> expected = new HashMap<String, String>();
+		expected.put("xxx", "1");
+		expected.put("kkk", "2");
+		expected.put("aaa", "3");
+		expected.put("bbb", "4");
+		Map<?, ?> actual = (Map<?, ?>) getVariable("ret1");
+		List<?> keys = new ArrayList<>(actual.keySet());
+		assertEquals(Arrays.asList("xxx", "kkk", "aaa", "bbb"), keys); // check order
+		check("ret1", expected);
+		
+		expected = new HashMap<String, String>();
+		check("ret2", expected); // empty string
+		check("ret3", expected); // blank string
+		check("ret4", expected); // null string
+		check("ret5", new HashMap<String, String>() {{ put("include", "aaa"); }}); // include not ignored
+	}
+
 }

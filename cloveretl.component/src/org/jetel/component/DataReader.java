@@ -455,7 +455,7 @@ public class DataReader extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
 		aDataReader = new DataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-				xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.URL),
+				xattribs.getStringEx(XML_FILE_ATTRIBUTE, null, RefResFlag.URL),
 				xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
 				xattribs.getBoolean(XML_VERBOSE_ATTRIBUTE, false));
 		aDataReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
@@ -564,6 +564,11 @@ public class DataReader extends Node {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+        }
+        
+        if (StringUtils.isEmpty(fileURL)) {
+            status.add("Missing file URL attribute.", Severity.ERROR, this, Priority.NORMAL, XML_FILE_ATTRIBUTE);
+            return status;
         }
         
         try {

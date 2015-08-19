@@ -73,8 +73,10 @@ import org.apache.http.auth.AuthenticationException;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CookieStore;
+import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -108,7 +110,6 @@ import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.TargetAuthenticationStrategy;
 import org.apache.http.impl.cookie.BasicClientCookie;
@@ -478,6 +479,10 @@ public class HttpConnector extends Node {
 	public final static String XML_STREAMING_ATTRIBUTE = "streaming";
 	
 	private static final String XML_DISABLE_SSL_CERT_VALIDATION = "disableSSLCertValidation";
+
+	private static final String XML_TIMEOUT_ATTRIBUTE = "timeout";
+	
+	private static final String XML_RETRY_COUNT_ATTRIBUTE = "retryCount";
 
 	/**
 	 * Default value of the 'append output' flag
@@ -1210,6 +1215,16 @@ public class HttpConnector extends Node {
 	 * Toggle for disabling verification of certificates.
 	 */
 	private boolean disableSSLCertValidation;
+	
+	private long timeout = -1;
+	private long timeoutToUse = -1;
+	private static final int IP_TIMEOUT_INDEX = 24;
+	private static final String IP_TIMEOUT_NAME = "timeout";
+	
+	private int retryCount = 0;
+	private int retryCountToUse = 0;
+	private static final int IP_RETRY_COUNT_INDEX = 25;
+	private static final String IP_RETRY_COUNT_NAME = "retryCount";
 
 	/* === Tools used === */
 
@@ -1232,7 +1247,7 @@ public class HttpConnector extends Node {
 
 	private HttpContext httpContext;
 	
-	private DefaultHttpRequestRetryHandler retryHandler;
+//	private DefaultHttpRequestRetryHandler retryHandler;
 	
 
 	/**
@@ -1491,6 +1506,24 @@ public class HttpConnector extends Node {
 
 		return null;
 	}
+	
+	private int getIntInputParameterValue(int index, int defaultValue) {
+		Object value = inputParamsRecord.getField(index).getValue();
+		if (value != null) {
+			return Integer.parseInt(value.toString());
+		}
+
+		return defaultValue;
+	}
+
+	private long getLongInputParameterValue(int index, long defaultValue) {
+		Object value = inputParamsRecord.getField(index).getValue();
+		if (value != null) {
+			return Long.parseLong(value.toString());
+		}
+
+		return defaultValue;
+	}
 
 	/**
 	 * Returns a byte[] value of the given field in input record.
@@ -1568,7 +1601,10 @@ public class HttpConnector extends Node {
 					}
 				}
 			}
-		}		
+		}
+		
+		timeoutToUse = getLongInputParameterValue(IP_TIMEOUT_INDEX, timeout);
+		retryCountToUse = getIntInputParameterValue(IP_RETRY_COUNT_INDEX, retryCount);
 		//
 		// if(this.multipartRequestPropertiesRecord != null) {
 		// if(multipartRequestMappingToUse==null) {
@@ -1973,6 +2009,12 @@ public class HttpConnector extends Node {
 			initExecutionParametersFromComponentAttributes();
 		}
 
+		standardOutputMappingTransformation.addAutoMapping(INPUT_RECORD_NAME, STANDARD_OUTPUT_RECORD_NAME);
+		standardOutputMappingTransformation.addAutoMapping(RESULT_RECORD_NAME, STANDARD_OUTPUT_RECORD_NAME);
+
+		errorOutputMappingTransformation.addAutoMapping(INPUT_RECORD_NAME, ERROR_OUTPUT_RECORD_NAME);
+		errorOutputMappingTransformation.addAutoMapping(ERROR_RECORD_NAME, ERROR_OUTPUT_RECORD_NAME);
+		
 		inputMappingTransformation.init(status, XML_INPUT_MAPPING_ATTRIBUTE);
 		standardOutputMappingTransformation.init(status, XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE);
 		errorOutputMappingTransformation.init(status, XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE);
@@ -2006,6 +2048,9 @@ public class HttpConnector extends Node {
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_OATUH_TOKEN_NAME, oAuthAccessToken);
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_OATUH_TOKEN_SECRET_NAME, oAuthAccessTokenSecret);
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_REQUEST_PARAMETERS_NAME, requestParameters != null ? new LinkedHashMap<Object, Object>(requestParameters) : new LinkedHashMap<String, Object>());
+		
+		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_TIMEOUT_NAME, timeout);
+		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_RETRY_COUNT_NAME, retryCount);
 		
 		if (!StringUtils.isEmpty(rawHttpHeaders)) {
 			inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_RAW_HTTP_HEADERS_NAME, parseRawHttpHeadersItems());
@@ -2087,7 +2132,8 @@ public class HttpConnector extends Node {
 		initHTTPClient(configuration);
 
 		HttpRequestBase method = prepareMethod(configuration);
-
+		
+		
 		// sign the request before sending it
 		if (oauthConsumer != null) {
 			oauthConsumer.sign(method);
@@ -2353,20 +2399,9 @@ public class HttpConnector extends Node {
 				outField.setNull(true);
 			}
 
-			if (standardOutputMapping != null) {
-				standardOutputMappingTransformation.execute();
+			standardOutputMappingTransformation.execute();
 
-				mapOverridingOutput();
-			} else {
-				// //output transformation is not specified - default star mapping is performed
-				// // POSSIBLE PROBLEM FOR BACKWARD COMPATIBILITY
-				// mapByName(standardOutputMappingInRecords, standardOutputRecord);
-				//
-				// // as the output transformation is not specified, we must assume, that this is a
-				// // usage of HTTPConnector, that is not aware of output mapping. Thus map the fields
-				// // in an old way to preserve compatibility.
-				mapLegacyOutput();
-			}
+			mapOverridingOutput();
 
 			try {
 				standardOutputPort.writeRecord(standardOutputRecord);
@@ -2388,26 +2423,6 @@ public class HttpConnector extends Node {
 		// not set by a mapping
 		if (outputFieldName != null && outField != null && outField.isNull()) {
 			outField.setValue(resultRecord.getField(RP_CONTENT_INDEX));
-		}
-	}
-
-	/**
-	 * Maps fields based on the configuration to preserve compatibility.
-	 * 
-	 * @throws Exception
-	 */
-	private void mapLegacyOutput() {
-		// output field connected - set the value there.
-		// NOTE: no output mapping is defined.
-		if (outField != null) {
-			if (outputFileUrlToUse != null || storeResponseToTempFileToUse) {
-				// if we are storing the response to file, set the file URL into output field
-				outField.setValue(resultRecord.getField(RP_OUTPUTFILE_INDEX));
-
-			} else {
-				// otherwise store the content
-				outField.setValue(resultRecord.getField(RP_CONTENT_INDEX));
-			}
 		}
 	}
 
@@ -2485,6 +2500,8 @@ public class HttpConnector extends Node {
 		httpConnector.setStreaming(xattribs.getBoolean(XML_STREAMING_ATTRIBUTE, true));
 		httpConnector.setRequestParametersStr(xattribs.getString(XML_REQUEST_PARAMETERS_ATTRIBUTE, null));
 		httpConnector.setDisableSSLCertValidation(xattribs.getBoolean(XML_DISABLE_SSL_CERT_VALIDATION, false));
+		httpConnector.setTimeout(xattribs.getTimeInterval(XML_TIMEOUT_ATTRIBUTE, -1));
+		httpConnector.setRetryCount(xattribs.getInteger(XML_RETRY_COUNT_ATTRIBUTE, 0));
 
 		/** job flow related properties */
 		httpConnector.setInputMapping(xattribs.getStringEx(XML_INPUT_MAPPING_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
@@ -2740,10 +2757,6 @@ public class HttpConnector extends Node {
 			}
 		}
 
-		if (redirectErrorOutput && standardOutputMapping == null) {
-			status.add(new ConfigurationProblem("Fields of error records redirected to standard output port will be empty unless Standard output mapping is defined", Severity.WARNING, this, Priority.NORMAL, XML_REDIRECT_ERROR_OUTPUT));
-		}
-
 		if (!StringUtils.isEmpty(rawHttpHeaders)) {
 			for (CharSequence rawHeader : parseRawHttpHeadersItems()) {
 				try {
@@ -2948,6 +2961,7 @@ public class HttpConnector extends Node {
 			requestMethodToUse = requestMethodToUse.toUpperCase(Locale.ENGLISH);
 		}
 
+		
 		// configure the request method
 		if (PLAIN_REQUEST_METHODS.contains(requestMethodToUse)) {
 			method = preparePlainMethod(requestMethodToUse, configuration);
@@ -2967,6 +2981,12 @@ public class HttpConnector extends Node {
 
 		addRequestCookies(method);
 
+		if(this.timeoutToUse>0) {
+			RequestConfig reqConfig = RequestConfig.custom().setConnectTimeout((int)this.timeoutToUse).
+					setConnectionRequestTimeout((int)this.timeoutToUse).setSocketTimeout((int)this.timeoutToUse).build();
+			method.setConfig(reqConfig);
+		}
+		
 		try {
 			if (!StringUtils.isEmpty(this.usernameToUse) && !StringUtils.isEmpty(this.passwordToUse) && (("BASIC".equals(this.authenticationMethodToUse) || "ANY".equals(this.authenticationMethodToUse)))) {
 				Header[] headers = method.getHeaders("Authorization");
@@ -2981,7 +3001,13 @@ public class HttpConnector extends Node {
 		} catch (AuthenticationException e) {
 			logger.warn("Preemptive authentication. Authorization header generation failed.", e);
 		}
-
+		
+		//CLO-6504 - put Accept header to request, because some servers interprets missing accept header wrongly
+		Header[] headers = method.getHeaders("Accept");
+		if((headers==null) || headers.length == 0) {
+			method.addHeader("Accept", "*/*");
+		}
+				
 		return method;
 	}
 
@@ -3166,12 +3192,19 @@ public class HttpConnector extends Node {
 		HttpClientBuilder builder = HttpClientBuilder.create();
 
 		builder = builder.useSystemProperties();
-		if (this.retryHandler == null) {
-			this.retryHandler = new DefaultHttpRequestRetryHandler(0, false);
-		}
+		HttpRequestRetryHandler retryHandler;
+		retryHandler = new HttpRequestRetryHandler() {
+			@Override
+			public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
+				if(executionCount <= HttpConnector.this.retryCountToUse) {
+					return true;
+				}
+				return false;
+			}
+		};
+		builder.setRetryHandler(retryHandler);
 
-		builder.setRetryHandler(this.retryHandler);
-
+		
 		cookieStore = new RequestResponseCookieStore();
 
 		builder.addInterceptorLast(requestLoggingInterceptor);
@@ -3367,7 +3400,7 @@ public class HttpConnector extends Node {
 			String rawHeaderStr = rawHeader.toString().trim();
 			if (!rawHeaderStr.isEmpty()) {
 				rawHeaderStr = refResolver.resolveRef(rawHeaderStr);
-				int separatorIndex = rawHeaderStr.indexOf(":");
+				int separatorIndex = rawHeaderStr.indexOf(':');
 				if (separatorIndex > 0) {
 					String name = rawHeaderStr.substring(0, separatorIndex).trim();
 					String value = rawHeaderStr.substring(separatorIndex + 1).trim();
@@ -3575,7 +3608,7 @@ public class HttpConnector extends Node {
 		boolean possibleToMapVariables = true;
 		try {
 			String tempUrl = "";
-			if (urlTemplate.indexOf("*") > 0) {
+			if (urlTemplate.indexOf('*') > 0) {
 				StringTokenizer st = new StringTokenizer(urlTemplate, "*");
 				while (st.hasMoreTokens()) {
 					tempUrl += st.nextToken();
@@ -3585,9 +3618,9 @@ public class HttpConnector extends Node {
 			}
 
 			Set<String> variablesAtUrl = new HashSet<String>();
-			while (tempUrl.indexOf("{") > 0 && tempUrl.length() > 0) {
-				String propertyName = tempUrl.substring(tempUrl.indexOf("{") + 1, tempUrl.indexOf("}"));
-				tempUrl = tempUrl.substring(tempUrl.indexOf("}") + 1, tempUrl.length());
+			while (tempUrl.indexOf('{') > 0 && tempUrl.length() > 0) {
+				String propertyName = tempUrl.substring(tempUrl.indexOf('{') + 1, tempUrl.indexOf('}'));
+				tempUrl = tempUrl.substring(tempUrl.indexOf('}') + 1, tempUrl.length());
 				variablesAtUrl.add(propertyName);
 			}
 
@@ -3690,6 +3723,8 @@ public class HttpConnector extends Node {
 		inputParamsRecord.getField(IP_OATUH_TOKEN_SECRET_INDEX).setValue(oAuthAccessTokenSecretToUse);
 		inputParamsRecord.getField(IP_RAW_HTTP_HEADERS_INDEX).setValue(rawHttpHeadersToUse);
 		inputParamsRecord.getField(IP_REQUEST_PARAMETERS_INDEX).setValue(requestParametersToUse);
+		inputParamsRecord.getField(IP_TIMEOUT_INDEX).setValue(timeoutToUse);
+		inputParamsRecord.getField(IP_RETRY_COUNT_INDEX).setValue(retryCountToUse);
 	}
 
 	/**
@@ -3767,6 +3802,8 @@ public class HttpConnector extends Node {
 		metadata.addField(IP_MULTIPART_ENTITIES_INDEX, new DataFieldMetadata(IP_MULTIPART_ENTITIES_NAME, DataFieldType.STRING, null));
 		metadata.addField(IP_RAW_HTTP_HEADERS_INDEX, new DataFieldMetadata(IP_RAW_HTTP_HEADERS_NAME, DataFieldType.STRING, null, DataFieldContainerType.LIST));
 		metadata.addField(IP_REQUEST_PARAMETERS_INDEX, new DataFieldMetadata(IP_REQUEST_PARAMETERS_NAME, DataFieldType.STRING, null, DataFieldContainerType.MAP));
+		metadata.addField(IP_TIMEOUT_INDEX, new DataFieldMetadata(IP_TIMEOUT_NAME, DataFieldType.LONG, null));
+		metadata.addField(IP_RETRY_COUNT_INDEX, new DataFieldMetadata(IP_RETRY_COUNT_NAME, DataFieldType.INTEGER, null));
 
 		return metadata;
 	}
@@ -4152,6 +4189,36 @@ public class HttpConnector extends Node {
 
 	public void setDisableSSLCertValidation(boolean disableSSLCertValidation) {
 		this.disableSSLCertValidation = disableSSLCertValidation;
+	}
+	
+	
+
+	/**
+	 * @return the timeout
+	 */
+	public long getTimeout() {
+		return timeout;
+	}
+
+	/**
+	 * @param timeout the timeout to set
+	 */
+	public void setTimeout(long timeout) {
+		this.timeout = timeout;
+	}
+
+	/**
+	 * @return the retryCount
+	 */
+	public int getRetryCount() {
+		return retryCount;
+	}
+
+	/**
+	 * @param retryCount the retryCount to set
+	 */
+	public void setRetryCount(int retryCount) {
+		this.retryCount = retryCount;
 	}
 
 	@Override

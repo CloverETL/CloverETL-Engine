@@ -18,12 +18,16 @@
  */
 package org.jetel.ctl.extensions;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.jetel.ctl.Stack;
@@ -33,7 +37,9 @@ import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.Pair;
+import org.jetel.util.formatter.TimeZoneProvider;
 import org.jetel.util.primitive.TypedProperties;
 
 /**
@@ -45,6 +51,14 @@ import org.jetel.util.primitive.TypedProperties;
 public class DynamicLibExt extends TLFunctionLibraryExt {
 
 	private static final String LIBRARY_NAME = "DynamicLib";
+	
+	private static final Set<String> EXCLUDED_RECORD_PROPERTIES;
+	
+	static {
+		List<String> initializer = Arrays.asList("previewAttachment", "previewAttachmentCharset", "previewAttachmentMetadataRow", "previewAttachmentSampleDataRow");
+		EXCLUDED_RECORD_PROPERTIES = new HashSet<String>(initializer.size());
+		EXCLUDED_RECORD_PROPERTIES.addAll(initializer);
+	}
 
 	public DynamicLibExt() {
 		super(LIBRARY_NAME);
@@ -237,8 +251,8 @@ public class DynamicLibExt extends TLFunctionLibraryExt {
 			properties.put(DataRecordMetadataXMLReaderWriter.QUOTED_STRINGS, Boolean.toString(metadata.isQuotedStrings()));
 			properties.put(DataRecordMetadataXMLReaderWriter.QUOTE_CHAR, DynamicLibExt.toString(metadata.getQuoteChar()));
 			
-			properties.put(DataRecordMetadataXMLReaderWriter.LOCALE_ATTR, metadata.getLocaleStr());
-			properties.put(DataRecordMetadataXMLReaderWriter.TIMEZONE_ATTR, metadata.getTimeZoneStr());
+			properties.put(DataRecordMetadataXMLReaderWriter.LOCALE_ATTR, MiscUtils.localeToString(MiscUtils.createLocale(metadata.getLocaleStr()))); // CLO-6293
+			properties.put(DataRecordMetadataXMLReaderWriter.TIMEZONE_ATTR, new TimeZoneProvider(metadata.getTimeZoneStr()).toString()); // CLO-6293
 			properties.put(DataRecordMetadataXMLReaderWriter.NULL_VALUE_ATTR, metadata.getNullValue());
 			
 			properties.put(DataRecordMetadataXMLReaderWriter.EOF_AS_DELIMITER_ATTR, Boolean.toString(metadata.isEofAsDelimiter()));
@@ -246,7 +260,9 @@ public class DynamicLibExt extends TLFunctionLibraryExt {
 			// add custom properties
 			TypedProperties p = metadata.getRecordProperties();
 			for (String s: p.stringPropertyNames()) {
-				properties.put(s, p.getStringProperty(s));
+				if (!EXCLUDED_RECORD_PROPERTIES.contains(s)) { // CLO-6293
+					properties.put(s, p.getStringProperty(s));
+				}
 			}
 
 			properties = Collections.unmodifiableMap(new LinkedHashMap< String, String >(properties));
@@ -361,8 +377,8 @@ public class DynamicLibExt extends TLFunctionLibraryExt {
 			properties.put(DataRecordMetadataXMLReaderWriter.TRIM_ATTR, Boolean.toString(field.isTrim()));
 			properties.put(DataRecordMetadataXMLReaderWriter.NULL_VALUE_ATTR, field.getNullValue());
 			properties.put(DataRecordMetadataXMLReaderWriter.FORMAT_ATTR, field.getFormatStr());
-			properties.put(DataRecordMetadataXMLReaderWriter.LOCALE_ATTR, field.getLocaleStr());
-			properties.put(DataRecordMetadataXMLReaderWriter.TIMEZONE_ATTR, field.getTimeZoneStr());
+			properties.put(DataRecordMetadataXMLReaderWriter.LOCALE_ATTR, MiscUtils.localeToString(MiscUtils.createLocale(field.getLocaleStr()))); // CLO-6293
+			properties.put(DataRecordMetadataXMLReaderWriter.TIMEZONE_ATTR, new TimeZoneProvider(field.getTimeZoneStr()).toString()); // CLO-6293
 			properties.put(DataRecordMetadataXMLReaderWriter.DESCRIPTION_ATTR, field.getDescription());
 			
 			// add custom properties, this includes length and scale for decimal type

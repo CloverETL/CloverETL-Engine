@@ -56,6 +56,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
@@ -988,7 +989,9 @@ public class DBConnectionImpl extends AbstractDBConnection {
 				return getJdbcSpecific().createSQLConnection(this, createConnection(), operationType);
 			} catch (JetelException e) {
 				throw new JetelException("Cannot establish DB connection (" + getId() + ").", e);
-			}
+			} catch (NoClassDefFoundError err) { // CLO-6337
+	        	throw new JetelException("Could not find required class definition: " + ExceptionUtils.getClassName((NoClassDefFoundError) err), err);
+	        }
     	}
     }
 }

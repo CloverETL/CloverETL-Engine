@@ -266,6 +266,11 @@ public class DBFDataWriter extends Node {
 			return status;
 		}
 		
+		if (fileURL == null) {
+			status.add("File URL not defined.", Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE);
+			return status;
+		}
+		
 		try {
 			URL url = FileUtils.getFileURL(fileURL);
 			if (!url.getProtocol().equals("file")) {
@@ -419,8 +424,8 @@ public class DBFDataWriter extends Node {
 		DBFDataWriter aDataWriter = null;
 		
 		aDataWriter = new DBFDataWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-								xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, RefResFlag.URL),
-								xattribs.getString(XML_CHARSET_ATTRIBUTE,null),
+								xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.URL),
+								xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
 								xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false),
 								TYPES[xattribs.getInteger(XML_DBF_TYPE, 1)]);
 		if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)){

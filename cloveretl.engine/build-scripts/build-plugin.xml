@@ -550,6 +550,11 @@
 			<keep name="com.opensys.cloveretl.validator.rules.*"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.validator.utils.*"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.validator.component.*"><field access="public"/><method access="public"/></keep>
+			<!-- CLO-5961: getStrict() and setStrict() must not be obfuscated, only one of them can be annotated with @XmlAttribute -->
+			<keepclassmembernames name="com.opensys.cloveretl.validator.rules.IsDateValidationRule">
+				<method name="getStrict"/>
+				<method name="setStrict"/>
+			</keepclassmembernames>
 			<keepclassmembernames name="com.opensys.cloveretl.validator.**">
 				<field annotation="javax.xml.bind.annotation.*"/>
 				<method annotation="javax.xml.bind.annotation.*"/>

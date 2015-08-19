@@ -1,3 +1,4 @@
+string booleanString;
 string integerString;
 string longString;
 string doubleString;
@@ -13,7 +14,9 @@ string test_null_l;
 string test_null_i;
 string test_null_dec;
 string test_null_d;
+
 function integer transform() {
+	boolean booleanToString = true;
 	integer integerToString = 10; 
 	long longToString = 110654321874L; 
 	double doubleToString = 0.00000000000001547874; 
@@ -37,6 +40,7 @@ function integer transform() {
 	byte[] byteList = [str2byte("firstElement", "utf-8"), str2byte("secondElement", "utf-8")];
 	$out.firstMultivalueOutput.byteListField = byteList;
 	
+	booleanString = toString(booleanToString);
 	integerString = toString(integerToString);
 	longString = toString(longToString);
 	doubleString = toString(doubleToString);

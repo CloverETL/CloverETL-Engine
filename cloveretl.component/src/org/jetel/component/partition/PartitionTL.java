@@ -23,6 +23,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.jetel.component.AbstractTransformTL;
+import org.jetel.component.TransformUtils;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
@@ -108,7 +109,7 @@ public class PartitionTL extends AbstractTransformTL implements PartitionFunctio
 			throw new TransformException("Partitioning failed!", exception);
 		}
 
-		onErrorArguments[0].setValue(ExceptionUtils.getMessage(null, exception));
+		onErrorArguments[0].setValue(TransformUtils.getMessage(exception));
 		onErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 
 		return getOutputPortImpl(getOutputPortOnErrorFunction, GET_OUTPUT_PORT_ON_ERROR_FUNCTION_NAME,

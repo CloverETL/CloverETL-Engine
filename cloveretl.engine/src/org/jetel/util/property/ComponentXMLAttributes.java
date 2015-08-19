@@ -655,8 +655,10 @@ public class ComponentXMLAttributes {
 	    for (int i=0; i<attributes.getLength();i++){
 	        name=attributes.item(i).getNodeName();
 	        if (!exception.contains(name)){
-	            properties.setProperty(name,
-	                    refResolver.resolveRef(attributes.item(i).getNodeValue(), resolveSpecChars));
+	        	String value = refResolver.resolveRef(attributes.item(i).getNodeValue(), resolveSpecChars);
+	        	if (!StringUtils.isEmpty(value)) {
+	        		properties.setProperty(name, value);
+	        	}
 	        }
 	    }
 	    return properties;
@@ -686,7 +688,10 @@ public class ComponentXMLAttributes {
 	    for (int i = 0; i < attributes.getLength(); i++) {
 	        name = attributes.item(i).getNodeName();
 	        if (!exceptions.contains(name)) {
-	            properties.setProperty(name, refResolver.resolveRef(attributes.item(i).getNodeValue(), flag));
+	        	String value = refResolver.resolveRef(attributes.item(i).getNodeValue(), flag);
+	        	if (!StringUtils.isEmpty(value)) {
+	        		properties.setProperty(name, value);
+	        	}
 	        }
 	    }
 	    

@@ -248,7 +248,7 @@ public class FileManager {
 				URL url = runtimeContext.getContextURL();
 				if (url != null) {
 					try {
-						return url.toURI();
+						return URIUtils.toURI(url); // CLO-7000
 					} catch (URISyntaxException ex) {
 						throw new IllegalStateException(FileOperationMessages.getString("FileManager.context_URI_not_available"), ex); //$NON-NLS-1$
 					}
@@ -991,7 +991,7 @@ public class FileManager {
 		
 		List<SingleCloverURI> result = new ArrayList<SingleCloverURI>(bases.size());
 		for (Info info: bases) {
-			result.add(CloverURI.createSingleURI(info.getURI()));
+			result.add(new SingleCloverURIInfo(info)); // CLO-6675
 		}
 		return result;
 	}
@@ -1064,6 +1064,13 @@ public class FileManager {
 			ResolveResult resolved = resolve(glob);
 			if (resolved.success()) {
 				for (SingleCloverURI target: resolved) {
+					if (target instanceof Info) { // CLO-6675 see defaultResolve()
+						Info info = (Info) target;
+						if (info.isFile()) {
+							result.add(target, Arrays.asList(info));
+							continue;
+						}
+					}
 					try {
 						List<Info> infos = handler.list(target, params); 
 						if (infos != null) {

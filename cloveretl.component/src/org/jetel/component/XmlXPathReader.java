@@ -49,6 +49,7 @@ import org.jetel.util.XmlUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -295,6 +296,7 @@ public class XmlXPathReader extends Node {
         parser.setNumRecords(numRecords);
         parser.setGraph(getGraph());
         parser.setXmlFeatures(xmlFeatures);
+        parser.setCharset(charset); // CLO-6708
         reader.setInputPort(getInputPort(INPUT_PORT)); //for port protocol: ReadableChannelIterator reads data
         reader.setCharset(charset);
         reader.setPropertyRefResolver(getPropertyRefResolver());
@@ -329,19 +331,21 @@ public class XmlXPathReader extends Node {
 		if (mappingURL != null) {
 			aXmlXPathReader = new XmlXPathReader(
 					xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.URL),
+					xattribs.getStringEx(XML_FILE_ATTRIBUTE, null, RefResFlag.URL),
 					mappingURL);
 		} else {
 			Document mappingDocument = null;
 			try {
-				mappingDocument = XmlUtils.createDocumentFromString(xattribs.getString(XML_MAPPING_ATTRIBUTE));
+				if (xattribs.exists(XML_MAPPING_ATTRIBUTE)){
+					mappingDocument = XmlUtils.createDocumentFromString(xattribs.getString(XML_MAPPING_ATTRIBUTE));
+		        }
 			} catch (JetelException e) {
 				throw new XMLConfigurationException("Mapping parameter parse error occurs.", e);
 			}
 			
 			aXmlXPathReader = new XmlXPathReader(
 					xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.URL),
+					xattribs.getStringEx(XML_FILE_ATTRIBUTE, null, RefResFlag.URL),
 					mappingDocument);
 		}
 		
@@ -378,6 +382,14 @@ public class XmlXPathReader extends Node {
         if(!checkInputPorts(status, 0, 1)
         		|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
         	return status;
+        }
+        
+        if (fileURL == null) {
+            status.add("Missing file URL attribute.", Severity.ERROR, this, Priority.NORMAL, XML_FILE_ATTRIBUTE);
+        }
+        
+        if (mappingURL == null && parser.getXPath() == null) {
+        	status.add("Mapping must be defined.", Severity.ERROR, this, Priority.NORMAL);
         }
         
 		if (!PolicyType.isPolicyType(policyTypeStr)) {

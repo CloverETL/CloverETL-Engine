@@ -19,12 +19,16 @@
 </FunctionalTest>
 
 
-<FunctionalTest ident="AggregateUnsorted" graphFile="graph/graphAggregateUnsorted.grf">
-	 <FlatFile outputFile="data-out/orders.aggregated" supposedFile="supposed-out/order.aggregated.AggregateUnsorted"/>	                                                                    
-	 
-	     <DeleteFile file="data-out/orders.aggregated"/>
-	 
+<FunctionalTest ident="AggregateUnsorted" graphFile="graph/graphAggregateUnsorted.grf" excludedJavaVersions="1.8">
+	 <FlatFile outputFile="data-out/orders.aggregated" supposedFile="supposed-out/order.aggregated.AggregateUnsorted"/>
+	 <DeleteFile file="data-out/orders.aggregated"/>
 </FunctionalTest>
+
+<FunctionalTest ident="AggregateUnsorted_java8" graphFile="graph/graphAggregateUnsorted.grf" excludedJavaVersions="1.7">
+	 <FlatFile outputFile="data-out/orders.aggregated" supposedFile="supposed-out/order.aggregated.AggregateUnsorted_java8"/>
+	 <DeleteFile file="data-out/orders.aggregated"/>
+</FunctionalTest>
+
 
 	<FunctionalTest ident="ApproximativeJoin" graphFile="graph/graphApproximativeJoin.grf">
 	 	  <FlatFile outputFile="data-out/conformingSubstring.txt" supposedFile="supposed-out/conformingSubstring.AproximativeJoin.txt"/>	                                                                 
@@ -66,23 +70,34 @@
 		<RegEx expression="org.jetel.exception.BadDataFormatException: Field account_num\(long\) cannot be set to value &quot;8747577056D&quot;; doesn't match the specified format &quot;&quot; with reason &quot;Extraneous characters &quot;D&quot;&quot;; in record 3, field 2" occurences="1"/>
 </FunctionalTest>
 
-<FunctionalTest ident="DBFJoin" graphFile="graph/graphDBFJoin.grf">
+<FunctionalTest ident="DBFJoin" graphFile="graph/graphDBFJoin.grf" excludedJavaVersions="1.8">
 	<FlatFile outputFile="data-out/joinedDBForders.out" supposedFile="supposed-out/joinedDBForders.DBFJoin.out"/>
 	<FlatFile outputFile="data-out/joinedDBFordersNA.out" supposedFile="supposed-out/joinedDBFordersNA.DBFJoin.out"/>
 </FunctionalTest>
 
-<FunctionalTest ident="DBFJoinTL" graphFile="graph/graphDBFJoinTL.grf">
+<FunctionalTest ident="DBFJoin_java8" graphFile="graph/graphDBFJoin.grf" excludedJavaVersions="1.7">
+	<FlatFile outputFile="data-out/joinedDBForders.out" supposedFile="supposed-out/joinedDBForders.DBFJoin.java8.out"/>
+	<FlatFile outputFile="data-out/joinedDBFordersNA.out" supposedFile="supposed-out/joinedDBFordersNA.DBFJoin.java8.out"/>
+</FunctionalTest>
+
+<FunctionalTest ident="DBFJoinTL" graphFile="graph/graphDBFJoinTL.grf" excludedJavaVersions="1.8">
 	 <FlatFile outputFile="data-out/joinedDBForders.out" supposedFile="supposed-out/joinedDBForders.DBFJoin.out"/>
 	 <FlatFile outputFile="data-out/joinedDBFordersNA.out" supposedFile="supposed-out/joinedDBFordersNA.DBFJoin.out"/>
 </FunctionalTest>
 
-<FunctionalTest ident="DBFJoinTLNew" graphFile="graph/graphDBFJoinTLNew.grf">
+<FunctionalTest ident="DBFJoinTL_java8" graphFile="graph/graphDBFJoinTL.grf" excludedJavaVersions="1.7">
+	 <FlatFile outputFile="data-out/joinedDBForders.out" supposedFile="supposed-out/joinedDBForders.DBFJoin.java8.out"/>
+	 <FlatFile outputFile="data-out/joinedDBFordersNA.out" supposedFile="supposed-out/joinedDBFordersNA.DBFJoin.java8.out"/>
+</FunctionalTest>
+
+<FunctionalTest ident="DBFJoinTLNew" graphFile="graph/graphDBFJoinTLNew.grf" excludedJavaVersions="1.8">
 	 <FlatFile outputFile="data-out/joinedDBForders.out" supposedFile="supposed-out/joinedDBForders.DBFJoin.New.out"/>
 	 <FlatFile outputFile="data-out/joinedDBFordersNA.out" supposedFile="supposed-out/joinedDBFordersNA.DBFJoin.New.out"/>
-     
-<DeleteFile file="data-out/joinedDBForders.out"/>
-<DeleteFile file="data-out/joinedDBFordersNA.out"/>
+</FunctionalTest>
 
+<FunctionalTest ident="DBFJoinTLNew_java8" graphFile="graph/graphDBFJoinTLNew.grf" excludedJavaVersions="1.7">
+	 <FlatFile outputFile="data-out/joinedDBForders.out" supposedFile="supposed-out/joinedDBForders.DBFJoin.New.java8.out"/>
+	 <FlatFile outputFile="data-out/joinedDBFordersNA.out" supposedFile="supposed-out/joinedDBFordersNA.DBFJoin.New.java8.out"/>
 </FunctionalTest>
 
 <FunctionalTest ident="DBFLoad" graphFile="graph/graphDBFLoad.grf">

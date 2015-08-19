@@ -539,7 +539,7 @@ public class AproxMergeJoin extends Node implements MetadataProvider {
 				if (conformityFieldsForSuspicious.length>0){
 					for (int i=0;i<conformityFieldsForSuspicious.length;i++){
 						if (conformityFieldsForSuspicious[i]>-1){
-							outSuspicious.getField(conformityFieldsForSuspicious[i]).setValue(new Double(conformity[i]));
+							outSuspicious.getField(conformityFieldsForSuspicious[i]).setValue(Double.valueOf(conformity[i]));
 						}
 					}
 				}
@@ -649,6 +649,8 @@ public class AproxMergeJoin extends Node implements MetadataProvider {
 					slaveRecords[TEMPORARY] = tmpRec;
 					isDriverDifferent = false;
 					break;
+				default:
+					throw new IllegalStateException();
 				}
 			}
 			flushCombinations(driverRecords[CURRENT], slaveRecords[TEMPORARY],
@@ -1044,12 +1046,10 @@ public class AproxMergeJoin extends Node implements MetadataProvider {
         }
         
 		if (getOutputPort(NOT_MATCH_DRIVER_OUT) != null) {
-			checkMetadata(status, getInputPort(DRIVER_ON_PORT).getMetadata(),
-					getOutputPort(NOT_MATCH_DRIVER_OUT).getMetadata());
+			checkMetadata(status, getInputPort(DRIVER_ON_PORT), getOutputPort(NOT_MATCH_DRIVER_OUT));
 		}		
 		if (getOutputPort(NOT_MATCH_SLAVE_OUT) != null) {
-			checkMetadata(status, getInputPort(SLAVE_ON_PORT).getMetadata(),
-					getOutputPort(NOT_MATCH_SLAVE_OUT).getMetadata());
+			checkMetadata(status, getInputPort(SLAVE_ON_PORT), getOutputPort(NOT_MATCH_SLAVE_OUT));
 		}		
 		try {
         	
