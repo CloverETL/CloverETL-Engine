@@ -152,10 +152,13 @@ public class CircularBufferQueue {
     			writingDataBuffer.position(0);
     			return true;
     		} else if (writingPosition == readingPosition) {
-    			//expand internal buffer, since queue is empty, but the incoming record does not fit into internal buffer
-    			writingDataBuffer.expand(expectedRemaining); // readingDataBuffer is automatically updated as well
-    			clear();
-    			return true;
+	    		if (writingDataBuffer.capacity() < expectedRemaining) {
+					writingDataBuffer.clear();
+					//expand internal buffer, since queue is empty, but the incoming record does not fit into internal buffer
+					writingDataBuffer.expand(expectedRemaining); // readingDataBuffer is automatically updated as well
+	    		}
+				clear();
+				return true;
     		} else {
     			return false;
     		}
@@ -375,6 +378,18 @@ public class CircularBufferQueue {
     	} else {
     		return false;
     	}
+	}
+
+	/**
+	 */
+	public synchronized void expandCapacity(int newCapacity) {
+		writingDataBuffer.expand(newCapacity); // readingDataBuffer is automatically updated as well
+		clear();
+	}
+
+	@Override
+	public String toString() {
+		return "CircularBufferQueue[cap=" + getCapacity() + " readPos=" + readingPosition + " writePos=" + writingPosition + "]"; 
 	}
 	
 }
