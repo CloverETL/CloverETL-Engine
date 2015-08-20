@@ -270,6 +270,10 @@ public class BufferedFastPropagateEdge extends EdgeBase {
 			//this is necessary to unblock the reading queue, since the reading thread can be now already stuck on empty queue
 			readingQueue.setBlocking(false);
 			writingQueue = theOtherQueue(writingQueue);
+			//synchronise capacity of both writingQueue and readingQueue (CLO-7103)
+			if (writingQueue.getCapacity() < readingQueue.getCapacity()) {
+				writingQueue.expandCapacity(readingQueue.getCapacity());
+			}
 		} else {
 			if (verbose) {
 				//in case verbose mode is on, time of data writing is added to writer waiting time
