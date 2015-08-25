@@ -246,7 +246,9 @@ public class DirectEdge extends EdgeBase {
                 while(readerWait) {
                     wait();
                 }
-                readerWaitingTime += System.nanoTime() - startTime;
+                if (inputRecordCounter > 0) {
+                	readerWaitingTime += System.nanoTime() - startTime;
+                }
             } else {
 	            while(readerWait) {
 	                wait();

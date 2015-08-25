@@ -19,6 +19,12 @@
 	</extension>
 
 	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="REDSHIFT"/>
+		<parameter id="name" value="Amazon Redshift"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.RedshiftSpecific"/>
+	</extension>
+
+	<extension point-id="jdbcSpecific">
 		<parameter id="database" value="DB2"/>
 		<parameter id="name" value="DB2"/>
 		<!--parameter id="majorVersion" value="x"/-->
