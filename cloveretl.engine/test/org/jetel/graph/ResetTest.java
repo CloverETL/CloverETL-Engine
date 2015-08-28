@@ -336,6 +336,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("email") 
 							&& !file.getName().equals("dataPolicy") // negative tests 
 							&& !file.getName().equals("metadataPropagation") // mostly server tests
+							&& !file.getName().equals("ExecuteGraph") // jobflows
 							&& !file.getName().equals("windows"); // wokna only tests
 				}
 			};
