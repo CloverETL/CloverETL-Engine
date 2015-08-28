@@ -18,9 +18,11 @@
  */
 package org.jetel.graph.modelview.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jetel.component.StaticMetadataProvider;
 import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVGraphElement;
 import org.jetel.graph.modelview.MVMetadata;
@@ -29,20 +31,24 @@ import org.jetel.metadata.DataRecordMetadata;
 /**
  * General model wrapper for engine metadata ({@link DataRecordMetadata}).
  * 
+ * This class has to be serializable, see {@link StaticMetadataProvider}.
+ * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 19. 9. 2013
  */
-public class MVEngineMetadata implements MVMetadata {
+public class MVEngineMetadata implements MVMetadata, Serializable {
+
+	private static final long serialVersionUID = 1180088952413191562L;
 
 	private DataRecordMetadata metadata;
 	
 	private int priority;
 	
-	private List<MVGraphElement> originPath;
+	private transient List<MVGraphElement> originPath;
 	
-	private MVGraph parentMVGraph;
+	private transient MVGraph parentMVGraph;
 	
 	MVEngineMetadata(DataRecordMetadata metadata, MVGraph parentMVGraph) {
 		this(metadata, null, DEFAULT_PRIORITY);
