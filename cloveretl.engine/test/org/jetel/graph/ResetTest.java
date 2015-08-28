@@ -246,6 +246,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("CDR_corruptFile_CLO-5329.grf") // negative test
 							&& !file.getName().equals("CDR_metadataPropagation_CLO-2850.grf") // negative test
 							&& !file.getName().equals("CDW_append_CLO-5217.grf") // negative test
+							&& !file.getName().equals("CDW_autofilling_CLO-6311.grf") // server test
 							&& !file.getName().equals("CTL_getComponentProperty_dynamicParam_fail_CLO-3838.grf") // negative test
 							&& !file.getName().equals("CTL_isSubgraphInputPortConnected_1_negative.grf") // negative test
 							&& !file.getName().equals("CTL_isSubgraphInputPortConnected_2_negative.grf") // negative test
@@ -301,7 +302,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("dataGenerator.grf") // negative test
 							&& !file.getName().equals("BuiltInGraphParameters_parent.grf") // server test
 							&& !file.getName().startsWith("CTL_getSubgraphInputPortsCount_") // server test
-							&& !file.getName().startsWith("CTL_getSubgraphOutputPortsCount_0.grf") // server test
+							&& !file.getName().startsWith("CTL_getSubgraphOutputPortsCount_") // server test
 							&& !file.getName().equals("CTL_isSubgraphInputPortConnected_1.grf") // server test
 							&& !file.getName().equals("CTL_isSubgraphInputPortConnected_2.grf") // server test
 							&& !file.getName().equals("CTL_isSubgraphOutputPortConnected_1.grf") // server test
@@ -324,6 +325,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("ProfilerProbe_persisting_results.grf") // server test
 							&& !file.getName().equals("SimpleSequence_concurrent.grf") // server test
 							&& !file.getName().equals("UDW_escapeSequences_CLO-5660.grf") // server test
+							&& !file.getName().equals("SetJobOutput_dictionary_CLO-3007.grf") // server test
 							&& !file.getName().equals("ValidationTransformLifeCycle.grf"); // have to be run only once
 				}
 			};
