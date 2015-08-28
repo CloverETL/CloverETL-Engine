@@ -259,6 +259,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("CopyFiles_emptyUrl_CLO-5114.grf") // negative test
 							&& !file.getName().equals("CopyFiles_maskPassword_CLO-6064.grf") // negative test
 							&& !file.getName().equals("CopyFiles_unsupported_protocols_checkConfig_CLO-4491.grf") // negative test
+							&& !file.getName().equals("CopyFiles_nativePath_Windows.grf") // windows test
 							&& !file.getName().equals("CreateFiles_createDir_fail.grf") // negative test
 							&& !file.getName().equals("CreateFiles_emptyUrl_CLO-5114.grf") // negative test
 							&& !file.getName().equals("CreateFiles_unsupported_protocols_checkConfig_CLO-4491.grf") // negative test
@@ -322,7 +323,8 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("ProfilerProbe_no_output_port.grf") // server test
 							&& !file.getName().equals("ProfilerProbe_persisting_results.grf") // server test
 							&& !file.getName().equals("SimpleSequence_concurrent.grf") // server test
-							&& !file.getName().equals("UDW_escapeSequences_CLO-5660.grf"); // server test
+							&& !file.getName().equals("UDW_escapeSequences_CLO-5660.grf") // server test
+							&& !file.getName().equals("ValidationTransformLifeCycle.grf"); // have to be run only once
 				}
 			};
 			
