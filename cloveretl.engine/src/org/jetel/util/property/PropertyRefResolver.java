@@ -264,31 +264,38 @@ public class PropertyRefResolver {
 	 * @return <code>true</code> if resolving is enabled and at least one CTL expression or property reference was found
 	 * and evaluated/resolved, <code>false</code> otherwise
 	 */
-	private boolean resolveRef(StringBuilder value, RefResFlag flag) {
+	private void resolveRef(StringBuilder value, RefResFlag flag) {
 		// clear error messages before doing anything else
 		errorMessages.clear();
 		// let's start the recursion depth measuring
 		recursionDepth = 0;
 		
 		if (value == null || !resolve) {
-			return false;
+			return;
 		}
 
 		if (flag == null) {
 			flag = RefResFlag.REGULAR;
 		}
 		
-		//
-		// evaluate CTL expressions and resolve remaining property references
-		//
-
-		boolean valueModified = false;
-
-		if (flag.resolveCTLStatements()) {
-			valueModified |= evaluateExpressions(value, flag);
+		String formerValue = value.toString();
+		try {
+			//evaluate CTL expressions
+			if (flag.resolveCTLStatements()) {
+				evaluateExpressions(value, flag);
+			}
+	
+			//resolve remaining property references
+			resolveReferences(value, flag);
+		} catch (RecursionOverflowedException e) {
+			if (ContextProvider.getRuntimeContext() == null || ContextProvider.getRuntimeContext().isStrictGraphFactorization()) {
+				throw e;
+			} else {
+				logger.warn(e);
+				value.setLength(0);
+				value.append(formerValue);
+			}
 		}
-
-		valueModified |= resolveReferences(value, flag);
 
 		//
 		// resolve special characters if desired
@@ -300,8 +307,6 @@ public class PropertyRefResolver {
 			value.setLength(0);
 			value.append(resolvedValue);
 		}
-
-		return valueModified;
 	}
 
 	/**
@@ -312,18 +317,16 @@ public class PropertyRefResolver {
 	 *
 	 * @return <code>true</code> if at least one CTL expression was found and evaluated, <code>false</code> otherwise
 	 */
-	private boolean evaluateExpressions(StringBuilder value, RefResFlag flag) {
+	private void evaluateExpressions(StringBuilder value, RefResFlag flag) {
 		if (!Defaults.GraphProperties.EXPRESSION_EVALUATION_ENABLED) {
-			return false;
+			return;
 		}
 
-		boolean anyExpressionEvaluated = false;
 		Matcher expressionMatcher = expressionPattern.matcher(value);
-
 		while (expressionMatcher.find()) {
 			//aren't we too deep in recursion?
 			if (isRecursionOverflowed()) {
-				throw new JetelRuntimeException(PropertyMessages.getString("PropertyRefResolver_infinite_recursion_warning")); //$NON-NLS-1$
+				throw new RecursionOverflowedException(PropertyMessages.getString("PropertyRefResolver_infinite_recursion_warning")); //$NON-NLS-1$
 			}
 
 			String expression = expressionMatcher.group(1);
@@ -348,15 +351,12 @@ public class PropertyRefResolver {
 					value.replace(expressionMatcher.start(), expressionMatcher.end(), evaluatedExpression);
 					expressionMatcher.region(expressionMatcher.start() + evaluatedExpression.length(), value.length());
 
-					anyExpressionEvaluated = true;
 				} catch (ParseException exception) {
 					errorMessages.add(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_invalid_ctl_warning"), resolvedExpression)); //$NON-NLS-1$
 					logger.warn(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_evaluation_failed_warning"), resolvedExpression), exception); //$NON-NLS-1$
 				}
 			}
 		}
-
-		return anyExpressionEvaluated;
 	}
 
 	/**
@@ -368,22 +368,24 @@ public class PropertyRefResolver {
 	 *
 	 * @return <code>true</code> if at least one property reference was found and resolved, <code>false</code> otherwise
 	 */
-	private boolean resolveReferences(StringBuilder value, RefResFlag flag) {
-		boolean anyReferenceResolved = false;
+	private void resolveReferences(StringBuilder value, RefResFlag flag) {
 		Matcher propertyMatcher = propertyPattern.matcher(value);
-
-		while (propertyMatcher.find()) {
+		int nextStart = 0;
+		
+		while (propertyMatcher.find(nextStart)) {
 			//aren't we too deep in recursion?
 			if (isRecursionOverflowed()) {
-				throw new JetelRuntimeException(PropertyMessages.getString("PropertyRefResolver_infinite_recursion_warning")); //$NON-NLS-1$
+				throw new RecursionOverflowedException(PropertyMessages.getString("PropertyRefResolver_infinite_recursion_warning")); //$NON-NLS-1$
 			}
 
 			// resolve the property reference
 			String reference = propertyMatcher.group(1);
 			String resolvedReference = null;
+			boolean canBeParamaterResolved = true;
 			
 			if (parameters.hasGraphParameter(reference)) {
 				GraphParameter param = parameters.getGraphParameter(reference);
+				canBeParamaterResolved = param.canBeResolved();
 				if (param.isSecure()) {
 					try {
 						resolvedReference = getAuthorityProxy().getSecureParamater(param.getName(), param.getValue());
@@ -396,7 +398,7 @@ public class PropertyRefResolver {
 						}
 					}
 				} else {
-					resolvedReference = parameters.getGraphParameter(reference).getValue();
+					resolvedReference = param.getValue();
 				}
 			} else {
 				if (resolvedReference == null) {
@@ -424,11 +426,14 @@ public class PropertyRefResolver {
 					evaluateExpressions(evaluatedReference, flag);
 				}
 				value.replace(propertyMatcher.start(), propertyMatcher.end(), evaluatedReference.toString());
-				propertyMatcher.reset(value);
-				if (flag.resolveCTLStatements()) {
-					anyReferenceResolved = true;
+				if (canBeParamaterResolved) {
+					nextStart = propertyMatcher.start();
+				} else {
+					nextStart = propertyMatcher.start() + evaluatedReference.length();
 				}
 			} else {
+				nextStart = propertyMatcher.end();
+				
 				errorMessages.add(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_property_not_defined_warning"), reference)); //$NON-NLS-1$
 				//this warn is turned off since this warning can disturb console log even in case everything is correct
 				//see TypedProperties.resolvePropertyReferences() method where a local PropertyRefResolver is used
@@ -439,8 +444,6 @@ public class PropertyRefResolver {
 				//logger.warn("Cannot resolve reference to property: " + reference);
 			}
 		}
-
-		return anyReferenceResolved;
 	}
 
 	/**
@@ -499,12 +502,11 @@ public class PropertyRefResolver {
 	 */
 	public String getResolvedPropertyValue(String propertyName, RefResFlag refResFlag) {
 		if (!StringUtils.isEmpty(propertyName)) {
-			StringBuilder propertyReference = new StringBuilder();
-			propertyReference.append("${").append(propertyName).append('}');
-			String propertyReferenceStr = propertyReference.toString();
-			String result = resolveRef(propertyReferenceStr, refResFlag);
-			if (!result.equals(propertyReferenceStr)) {
-				return result;
+			if (parameters.hasGraphParameter(propertyName)) {
+				StringBuilder propertyReference = new StringBuilder();
+				propertyReference.append("${").append(propertyName).append('}');
+				String propertyReferenceStr = propertyReference.toString();
+				return resolveRef(propertyReferenceStr, refResFlag);
 			} else {
 				return null;
 			}
@@ -592,5 +594,17 @@ public class PropertyRefResolver {
 		}
 	}
 
+	/**
+	 * This exception is thrown by {@link PropertyRefResolver} whenever unlimited recursion
+	 * in resolution process is detected. 
+	 */
+	public static class RecursionOverflowedException extends RuntimeException {
+		private static final long serialVersionUID = 1L;
+		
+		public RecursionOverflowedException(String message) {
+			super(message);
+		}
+	}
+	
 }
 
