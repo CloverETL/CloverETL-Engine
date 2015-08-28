@@ -85,6 +85,13 @@ public class GraphParameter {
 
 	private SingleType singleType;
 
+	/**
+	 * This flag indicates the value of this graph parameter should never be resolved (see {@link PropertyRefResolver})
+	 * Public graph parameters of a subgraph passed from parent graph should not be resolved. The resolution
+	 * should be performed in the parent graph (see CLO-7110).
+	 */
+	private boolean canBeResolved = true;
+	
 	private ComponentReference componentReference;
 	
 	@XmlTransient
@@ -421,6 +428,14 @@ public class GraphParameter {
 
 	public void setComponentReference(String referencedComponentId, String referencedAttributeName) {
 		this.componentReference = new ComponentReference(referencedComponentId, referencedAttributeName);
+	}
+
+	public boolean canBeResolved() {
+		return canBeResolved;
+	}
+
+	public void setCanBeResolved(boolean canBeResolved) {
+		this.canBeResolved = canBeResolved;
 	}
 
 	@XmlType

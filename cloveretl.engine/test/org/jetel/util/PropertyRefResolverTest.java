@@ -18,12 +18,12 @@
  */
 package org.jetel.util;
 
-import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.GraphParameter;
 import org.jetel.graph.GraphParameters;
 import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.property.PropertyRefResolver.RecursionOverflowedException;
 import org.jetel.util.property.RefResFlag;
 
 public class PropertyRefResolverTest extends CloverTestCase {
@@ -46,10 +46,26 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		graphParameters.addGraphParameter("recursion", "a${recursion}");
 		graphParameters.addGraphParameter("specChars", "a\\nb");
 		
-		GraphParameter gp = new GraphParameter("secureParameter", "abc");
-		gp.setSecure(true);
-		graphParameters.addGraphParameter(gp);
-		
+		GraphParameter gp1 = new GraphParameter("secureParameter", "abc");
+		gp1.setSecure(true);
+		graphParameters.addGraphParameter(gp1);
+
+		GraphParameter gp2 = new GraphParameter("nonResolvable1", "${pwd}");
+		gp2.setCanBeResolved(false);
+		graphParameters.addGraphParameter(gp2);
+
+		GraphParameter gp3 = new GraphParameter("nonResolvable2", "abc${user}def${pwd}ghi");
+		gp3.setCanBeResolved(false);
+		graphParameters.addGraphParameter(gp3);
+
+		GraphParameter gp4 = new GraphParameter("nonResolvable3", "");
+		gp4.setCanBeResolved(false);
+		graphParameters.addGraphParameter(gp4);
+
+		GraphParameter gp5 = new GraphParameter("nonResolvable4", "${nonResolvable4}");
+		gp5.setCanBeResolved(false);
+		graphParameters.addGraphParameter(gp5);
+
 		
 		System.setProperty("NAME_WITH_EXT_UNDERLINES", "filename.txt");
 		System.setProperty("NAMEWITHEXT", "filename.txt");
@@ -94,6 +110,15 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		
 		// Property containing dots should be preferred for backwards compatibility
 		assertEquals("filename_dots.txt", resolver.resolveRef("${NAME_WITH_EXT_SYMBOL}"));
+		
+		assertEquals("${pwd}", resolver.resolveRef("${nonResolvable1}"));
+		assertEquals("abc${user}def${pwd}ghi", resolver.resolveRef("${nonResolvable2}"));
+		assertEquals("ab", resolver.resolveRef("a${nonResolvable3}b"));
+		assertEquals("a sda ${pwd} sdabc${user}def${pwd}ghidsd", resolver.resolveRef("a sda ${nonResolvable1} sd${nonResolvable2}dsd"));
+		assertEquals("${pwd}abc${user}def${pwd}ghi", resolver.resolveRef("${nonResolvable1}${nonResolvable2}"));
+		assertEquals("${pwd}myself", resolver.resolveRef("${nonResolvable1}${user}"));
+		assertEquals("myself${pwd}", resolver.resolveRef("${user}${nonResolvable1}"));
+		assertEquals("${nonResolvable4}", resolver.resolveRef("${nonResolvable4}"));
 	}
 
 	public void testEvaluate() {
@@ -119,7 +144,7 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		try {
 			resolver.resolveRef("${recursion}");
 			assertTrue(false);
-		} catch (JetelRuntimeException e) {
+		} catch (RecursionOverflowedException e) {
 			//correct
 		}
 	}
@@ -197,6 +222,9 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		assertEquals("a\nb", resolver.getResolvedPropertyValue("specChars", RefResFlag.REGULAR));
 		assertEquals("a\\nb", resolver.getResolvedPropertyValue("specChars", RefResFlag.SPEC_CHARACTERS_OFF));
 		assertEquals(null, resolver.getResolvedPropertyValue("nonexisting_parameter", RefResFlag.SPEC_CHARACTERS_OFF));
+		assertEquals("${nonResolvable4}", resolver.getResolvedPropertyValue("nonResolvable4", RefResFlag.SPEC_CHARACTERS_OFF));
+		assertEquals("abc${user}def${pwd}ghi", resolver.getResolvedPropertyValue("nonResolvable2", RefResFlag.SPEC_CHARACTERS_OFF));
+		
 		
 		try {
 			resolver.getResolvedPropertyValue("", RefResFlag.REGULAR);

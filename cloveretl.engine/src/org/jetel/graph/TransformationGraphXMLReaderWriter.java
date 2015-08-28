@@ -494,7 +494,7 @@ public class TransformationGraphXMLReaderWriter {
 			//moreover, additional parameters are used in regular loading of build-in parameters (see #instantiateGraphParameter)
 			//to ensure correct value of parameters is used when path parameter file is parametrised by
 			//parameter overridden by additional parameters.
-			graph.getGraphParameters().addPropertiesOverride(runtimeContext.getAdditionalProperties());
+			graph.getGraphParameters().addPropertiesOverride(runtimeContext.getAdditionalProperties(), !runtimeContext.getJobType().isSubJob());
 
 			// handle dictionary
 			NodeList dictionaryElements = document.getElementsByTagName(DICTIONARY_ELEMENT);
@@ -1033,6 +1033,7 @@ public class TransformationGraphXMLReaderWriter {
 		Properties additionalProperties = runtimeContext.getAdditionalProperties();
 		if (additionalProperties.containsKey(gp.getName())) {
 			gp.setValue(additionalProperties.getProperty(gp.getName()));
+			gp.setCanBeResolved(!runtimeContext.getJobType().isSubJob());
 		}
 		else {
 			// gp.setValue(gp.getValue());
