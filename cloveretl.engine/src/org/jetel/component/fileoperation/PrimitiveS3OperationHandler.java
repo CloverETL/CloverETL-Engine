@@ -272,7 +272,10 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		}
 	}
 
-	private void deleteObjects(S3Service service, String bucketName, S3Object[] objects) throws S3ServiceException {
+	private void deleteObjects(S3Service service, String bucketName, S3Object[] objects) throws S3ServiceException, IOException {
+		if (Thread.currentThread().isInterrupted()) {
+			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
+		}
 		if (objects.length > 0) {
 			ObjectKeyAndVersion[] keys = new ObjectKeyAndVersion[objects.length];
 			for (int i = 0; i < objects.length; i++) {
