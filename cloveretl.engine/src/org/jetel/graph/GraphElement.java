@@ -159,6 +159,10 @@ public abstract class GraphElement implements IGraphElement {
     @Override
 	public void postExecute() throws ComponentNotReadyException {
     	firstRun = false;
+
+    	if (getGraph() != null && getGraph().getRuntimeContext().isBatchMode()) {
+    		freeClassLoaders();
+    	}
     }
     
     /* (non-Javadoc)
@@ -359,6 +363,7 @@ public abstract class GraphElement implements IGraphElement {
 					logger.warn("URLClassLoader allocated for " + this + " cannot be closed.", e);
 				}
 			}
+			classLoaders.clear();
 		}
 	}
 	

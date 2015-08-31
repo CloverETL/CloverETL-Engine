@@ -121,6 +121,13 @@ public class ContextProvider {
 		return IAuthorityProxy.getAuthorityProxy(getGraph());
 	}
 	
+	/**
+	 * @return true if a context is registered for current thread
+	 */
+	public static boolean hasContext() {
+		return getContext() != null;
+	}
+	
 	private static Context getContext() {
 		Stack<Context> threadCache = contextCache.get(Thread.currentThread());
 		if (threadCache != null) {
