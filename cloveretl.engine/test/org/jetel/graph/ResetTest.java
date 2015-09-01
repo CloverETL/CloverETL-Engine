@@ -326,7 +326,9 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("SimpleSequence_concurrent.grf") // server test
 							&& !file.getName().equals("UDW_escapeSequences_CLO-5660.grf") // server test
 							&& !file.getName().equals("SetJobOutput_dictionary_CLO-3007.grf") // server test
-							&& !file.getName().equals("ValidationTransformLifeCycle.grf"); // have to be run only once
+							&& !file.getName().equals("ValidationDefaultLanguageSettings.grf") // server test
+							&& !file.getName().equals("ValidationTransformLifeCycle.grf") // have to be run only once
+							&& !file.getName().equals("Tableau-ThreadSafe.grf"); // disabled test
 				}
 			};
 			
@@ -338,6 +340,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("cluster") // cluster tests
 							&& !file.getName().equals("S3") 
 							&& !file.getName().equals("email") 
+							&& !file.getName().equals("performance") 
 							&& !file.getName().equals("dataPolicy") // negative tests 
 							&& !file.getName().equals("metadataPropagation") // mostly server tests
 							&& !file.getName().equals("ExecuteGraph") // jobflows
