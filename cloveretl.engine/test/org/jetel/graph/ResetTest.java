@@ -327,6 +327,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("UDW_escapeSequences_CLO-5660.grf") // server test
 							&& !file.getName().equals("SetJobOutput_dictionary_CLO-3007.grf") // server test
 							&& !file.getName().equals("ValidationDefaultLanguageSettings.grf") // server test
+							&& !file.getName().equals("DB_rollback_CLO-4878.grf") // server test
 							&& !file.getName().equals("ValidationTransformLifeCycle.grf") // have to be run only once
 							&& !file.getName().equals("Tableau-ThreadSafe.grf") // disabled test
 							&& !file.getName().startsWith("MultiFileWriter_emptyFile"); // excluded until CLO-7184 resolved
