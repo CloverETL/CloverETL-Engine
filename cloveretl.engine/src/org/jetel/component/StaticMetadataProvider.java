@@ -30,7 +30,9 @@ import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
  *
  * @created 25. 2. 2014
  */
-public class StaticMetadataProvider implements MetadataProvider {
+public class StaticMetadataProvider implements SerializableMetadataProvider {
+	
+	private static final long serialVersionUID = -7111240454722386558L;
 	
 	private MVMetadata[] inputMetadata;
 	private MVMetadata[] outputMetadata;

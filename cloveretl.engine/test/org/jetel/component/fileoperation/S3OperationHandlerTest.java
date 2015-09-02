@@ -58,6 +58,8 @@ public class S3OperationHandlerTest extends OperationHandlerTestTemplate {
 		super.setUp();
 		DefaultOperationHandler defaultHandler = new DefaultOperationHandler();
 		manager.registerHandler(VERBOSE ? new ObservableHandler(defaultHandler) : defaultHandler);
+		S3CopyOperationHandler copyHandler = new S3CopyOperationHandler();
+		manager.registerHandler(VERBOSE ? new ObservableHandler(copyHandler) : copyHandler);
 	}
 
 	@Override

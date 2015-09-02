@@ -150,6 +150,9 @@ public class S3OperationHandler extends AbstractOperationHandler {
 	 */
 	@Override
 	protected boolean delete(URI target, DeleteParameters params) throws IOException {
+		if (Thread.currentThread().isInterrupted()) {
+			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
+		}
 		Info info = simpleHandler.info(target);
 		if (info == null) {
 			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), target.toString())); //$NON-NLS-1$
