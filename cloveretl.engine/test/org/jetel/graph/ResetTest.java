@@ -346,6 +346,8 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("dataPolicy") // negative tests 
 							&& !file.getName().equals("metadataPropagation") // mostly server tests
 							&& !file.getName().equals("ExecuteGraph") // jobflows
+							&& !file.getName().equals("RecordToKeyValues") // CLO-7086: temporarily removed tests
+							&& !file.getName().equals("KeyValuesToRecord") // CLO-7086: temporarily removed tests
 							&& !file.getName().equals("windows"); // wokna only tests
 				}
 			};
