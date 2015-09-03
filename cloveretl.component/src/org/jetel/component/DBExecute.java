@@ -43,10 +43,10 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -383,6 +383,12 @@ public class DBExecute extends Node {
 				errorLog = new FileWriter(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), errorLogURL));
 			} catch (IOException e) {
 				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e);
+			}
+		}
+
+		if (!firstRun()) {
+			if (channelIterator != null) {
+				channelIterator.reset();
 			}
 		}
 	}
