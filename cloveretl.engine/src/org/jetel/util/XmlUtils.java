@@ -18,7 +18,10 @@
  */
 package org.jetel.util;
 
+import java.io.File;
 import java.io.StringReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Map;
@@ -27,11 +30,14 @@ import java.util.Properties;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Source;
 
 import org.apache.xmlbeans.impl.common.XMLChar;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.SandboxUrlUtils;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -171,4 +177,57 @@ public class XmlUtils {
 		}
 	}
 	
+	/**
+	 * Returns a string that can be used as a system ID for {@link InputSource}
+	 * or <code>null</code> if no such string can be created from the input. 
+	 * <p>
+	 * It is guaranteed that the string can be converted to {@link URL} using a built-in handler.
+	 * (This is what XML parsers do with systemId in order to resolve relative URIs.)
+	 * </p>
+	 * 
+	 * @param contextUrl
+	 * @param input
+	 * @return
+	 */
+	public static String getSystemId(URL contextUrl, String input) {
+		if (!StringUtils.isEmpty(input)) {
+			try {
+				URL url = FileUtils.getFileURL(contextUrl, input);
+				if (SandboxUrlUtils.isSandboxUrl(url) || url.getProtocol().equals(FileUtils.FILE_PROTOCOL)) {
+					try {
+						File file = FileUtils.convertUrlToFile(url);
+						return file.toURI().toString();
+					} catch (Exception ex) {
+					}
+				} else {
+					try {
+						String result = url.toString();
+						new URL(result); // check that the URL has a standard registered handler
+						return result;
+					} catch (MalformedURLException e) {
+					}
+				}
+			} catch (Exception ex) {}
+		}
+		
+		return null;
+	}
+	
+	public static void setSystemId(InputSource inputSource, URL contextUrl, String input) {
+		if (inputSource.getSystemId() == null) {
+			String systemId = XmlUtils.getSystemId(contextUrl, input);
+			if (systemId != null) {
+				inputSource.setSystemId(systemId);
+			}
+		}
+	}
+	
+	public static void setSystemId(Source source, URL contextUrl, String input) {
+		if (source.getSystemId() == null) {
+			String systemId = XmlUtils.getSystemId(contextUrl, input);
+			if (systemId != null) {
+				source.setSystemId(systemId);
+			}
+		}
+	}
 }

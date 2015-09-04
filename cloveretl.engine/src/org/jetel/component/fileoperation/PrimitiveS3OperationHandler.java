@@ -272,7 +272,10 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		}
 	}
 
-	private void deleteObjects(S3Service service, String bucketName, S3Object[] objects) throws S3ServiceException {
+	private void deleteObjects(S3Service service, String bucketName, S3Object[] objects) throws S3ServiceException, IOException {
+		if (Thread.currentThread().isInterrupted()) {
+			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
+		}
 		if (objects.length > 0) {
 			ObjectKeyAndVersion[] keys = new ObjectKeyAndVersion[objects.length];
 			for (int i = 0; i < objects.length; i++) {
@@ -481,6 +484,32 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 				return null;
 			} else if ("NoSuchBucket".equals(e.getErrorCode())) {
 				return null;
+			} else if ((e.getResponseCode() == HttpStatus.SC_BAD_REQUEST) && (e.getErrorCode() == null)) {
+				// workaround for weird "Bad Request" exceptions occurring in Frankfurt
+				log.warn("getObjectDetails(): HEAD request failed, trying LIST as a workaround: " + e.toString());
+				String prefix = key.endsWith(FORWARD_SLASH) ? key.substring(0, key.length() - 1) : key;
+				try {
+					StorageObjectsChunk chunk = service.listObjectsChunked(bucketName, prefix, FORWARD_SLASH, 0, null);
+					for (String dir: chunk.getCommonPrefixes()) {
+						if (dir.equals(key)) {
+							S3Object object = new S3Object(key);
+							object.setBucketName(bucketName); // important!
+							return new S3ObjectInfo(object, connection.getBaseUri());
+						}
+					}
+					for (StorageObject object: chunk.getObjects()) {
+						if (object.getKey().equals(key)) {
+							return new S3ObjectInfo(object, connection.getBaseUri());
+						}
+					}
+					return null;
+				} catch (ServiceException listingException) {
+					if (listingException.getResponseCode() == HttpStatus.SC_NOT_FOUND) { // listObjectsChunked() may also return 404
+						return null;
+					}
+					e.addSuppressed(listingException);
+					throw new IOException(e);
+				}
 			} else {
 				throw new IOException(e);
 			}

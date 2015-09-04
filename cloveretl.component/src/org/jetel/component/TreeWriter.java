@@ -105,7 +105,7 @@ public abstract class TreeWriter extends Node {
 
 	public static Node readCommonAttributes(TreeWriter writer, ComponentXMLAttributes xattribs)
 			throws XMLConfigurationException, AttributeNotFoundException {
-		writer.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.URL));
+		writer.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, null, RefResFlag.URL));
 		writer.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 		String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null, RefResFlag.URL);
 		String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);

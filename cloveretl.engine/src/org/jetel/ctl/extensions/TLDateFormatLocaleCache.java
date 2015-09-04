@@ -66,7 +66,8 @@ public class TLDateFormatLocaleCache extends TLFormatterCache {
 		}
 		
 		// CLO-6306: instanceof check removed
-		if (context.getLiteralsSize() <= localePos) {
+		// CLO-6601: different instanceof check added again for overloading
+		if (context.getLiteralsSize() <= localePos || (context.getParamValue(localePos) instanceof Boolean)) {
 			String pattern = (String) paramPattern;
 			if (context.isLiteral(patternPos)) {
 				cachedFormatter = DateFormatterFactory.getFormatter(pattern, context.getDefaultLocale(), context.getDefaultTimeZone());
@@ -74,7 +75,7 @@ public class TLDateFormatLocaleCache extends TLFormatterCache {
 			return;
 		}
 		
-		if (context.getLiteralsSize() > timeZonePos) {
+		if (context.getLiteralsSize() > timeZonePos && !(context.getParamValue(timeZonePos) instanceof Boolean)) {
 			if (context.isLiteral(patternPos) && context.isLiteral(localePos) && context.isLiteral(timeZonePos)) {
 				String pattern = (String) paramPattern;
 				String paramLocale = (String) context.getParamValue(localePos);
@@ -173,13 +174,13 @@ public class TLDateFormatLocaleCache extends TLFormatterCache {
 		
 		// context.getLiteralsSize() actually returns the number of parameters, not just the number of literals
 		
-		if (context.getLiteralsSize() > Math.max(Math.max(patternPos, localePos), timeZonePos)) {
+		if (context.getLiteralsSize() > timeZonePos  && !(context.getParamValue(timeZonePos) instanceof Boolean)) {
 			// if we use the variant with format, locale and time zone specified
 			return getCachedFormatter3(context, format, locale, timeZone, patternPos, localePos, timeZonePos);
-		} else if (context.getLiteralsSize() > Math.max(patternPos, localePos) && context.getLiteralsSize() <= timeZonePos) {
+		} else if (context.getLiteralsSize() > localePos && !(context.getParamValue(localePos) instanceof Boolean)) {
 			// if we use the variant with format and locale specified
 			return getCachedFormatter2(context, format, locale, patternPos, localePos);
-		} else if (context.getLiteralsSize() > patternPos && context.getLiteralsSize() <= localePos) {
+		} else if (context.getLiteralsSize() > patternPos) {
 			// if we use the variant with only format specified
 			return getCachedFormatter1(context, format, patternPos);
 		}

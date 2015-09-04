@@ -211,7 +211,7 @@ public class SpeedLimiter extends Node {
 		if (getOutputPort(0) != null) {
 			checkInputPorts(status, 1, 1);
 			checkOutputPorts(status, 1, Integer.MAX_VALUE);
-			checkMetadata(status, getInMetadata(), getOutMetadata());
+			checkMetadata(status, getInPorts(), getOutPorts());
 		}
 		else if (getInputPort(0) != null) {
 			checkInputPorts(status, 1, 1);

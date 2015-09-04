@@ -44,6 +44,7 @@ import org.dom4j.io.SAXContentHandler;
 import org.jetel.component.RecordTransform;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.ListDataField;
 import org.jetel.data.StringDataField;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.data.xml.mapping.XMLMappingConstants;
@@ -63,6 +64,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.util.AutoFilling;
@@ -466,7 +468,9 @@ public class XmlSaxParser {
 			// store value of parent of currently starting element (if appropriate)
 			if (m_activeMapping != null && m_hasCharacters && m_level == m_activeMapping.getLevel() + 1) {
 				if (m_activeMapping.getDescendantReferences().containsKey(XMLMappingConstants.ELEMENT_VALUE_REFERENCE)) {
-					m_activeMapping.getDescendantReferences().put(XMLMappingConstants.ELEMENT_VALUE_REFERENCE, getCurrentValue());
+					List<String> value = new ArrayList<String>();
+					value.add(getCurrentValue());
+					m_activeMapping.getDescendantReferences().put(XMLMappingConstants.ELEMENT_VALUE_REFERENCE, value);
 				}
 				if (!m_activeMapping.isCharactersProcessed()) {
 					processCharacters(null, null, true);
@@ -507,7 +511,7 @@ public class XmlSaxParser {
 				m_activeMapping.setCharactersProcessed(false);
 				// clear cached values of xml fields referenced by descendants (there may be values from previously read
 				// element of this m_activemapping)
-				for (Entry<String, String> e : m_activeMapping.getDescendantReferences().entrySet()) {
+				for (Entry<String, List<String>> e : m_activeMapping.getDescendantReferences().entrySet()) {
 					e.setValue(null);
 				}
 
@@ -618,7 +622,23 @@ public class XmlSaxParser {
 						if (m_activeMapping.hasFieldsFromAncestor()) {
 							for (AncestorFieldMapping afm : m_activeMapping.getFieldsFromAncestor()) {
 								if (m_activeMapping.getOutputRecord().hasField(afm.getCurrentField()) && afm.getAncestor() != null) {
-									m_activeMapping.getOutputRecord().getField(afm.getCurrentField()).fromString(afm.getAncestor().getDescendantReferences().get(afm.getAncestorField()));
+									
+									Map<String, List<String>> descRef = afm.getAncestor().getDescendantReferences();
+									
+									if (m_activeMapping.getOutputRecord().getField(afm.getCurrentField()).getMetadata().getContainerType() == DataFieldContainerType.LIST) {
+										
+										ListDataField field = (ListDataField) m_activeMapping.getOutputRecord().getField(afm.getCurrentField());
+										List<String> valueList = descRef.get(afm.getAncestorField());
+										
+										if (valueList != null) { 
+											for (int i = 0; i < valueList.size(); i++) {
+												DataField myField = ((ListDataField) field).addField();
+												setFieldValue(myField, valueList.get(i));
+											} 
+										}
+									} else {
+										setFieldValue(m_activeMapping.getOutputRecord().getField(afm.getCurrentField()), descRef.get(afm.getAncestorField()) == null ? null : descRef.get(afm.getAncestorField()).get(0));	
+									}
 								}
 							}
 						}
@@ -674,7 +694,9 @@ public class XmlSaxParser {
 
 					if (m_activeMapping.getDescendantReferences().containsKey(attrName)) {
 						String val = attributes.getValue(i);
-						m_activeMapping.getDescendantReferences().put(attrName, trim ? val.trim() : val);
+						List<String> listValue = new ArrayList<String>();
+						listValue.add(trim ? val.trim() : val);
+						m_activeMapping.getDescendantReferences().put(attrName, listValue);
 					}
 
 					// use fields mapping
@@ -843,7 +865,16 @@ public class XmlSaxParser {
 
 				// cache characters value if the xml field is referenced by descendant
 				if (m_level - 1 <= m_activeMapping.getLevel() && m_activeMapping.getDescendantReferences().containsKey(fullName)) {
-					m_activeMapping.getDescendantReferences().put(fullName, getCurrentValue());
+					List<String> value;
+					
+					if (m_activeMapping.getDescendantReferences().get(fullName) != null) { 
+						value = m_activeMapping.getDescendantReferences().get(fullName);
+					} else {
+						value = new ArrayList<String>();
+					}
+					
+					value.add(getCurrentValue());
+					m_activeMapping.getDescendantReferences().put(fullName, value);
 				}
 				if (m_element_as_text && m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT) && m_level == m_activeMapping.getLevel()) {
 					this.m_elementContentStartIndexStack.add(new CharacterBufferMarker(CharacterBufferMarkerType.SUBTREE_END, m_characters.length(), m_level));
@@ -861,7 +892,12 @@ public class XmlSaxParser {
 					if (m_activeMapping.hasFieldsFromAncestor()) {
 						for (AncestorFieldMapping afm : m_activeMapping.getFieldsFromAncestor()) {
 							if (afm.getAncestor() == m_activeMapping.getParent() && m_activeMapping.getOutputRecord() != null && m_activeMapping.getOutputRecord().hasField(afm.getCurrentField()) && afm.getAncestor() != null && afm.getAncestorField().equals(fullName)) {
-								m_activeMapping.getOutputRecord().getField(afm.getCurrentField()).fromString(getCurrentValue());
+								DataField field = m_activeMapping.getOutputRecord().getField(afm.getCurrentField());
+								if (m_activeMapping.getOutputRecord().getField(afm.getCurrentField()).getMetadata().getContainerType() == DataFieldContainerType.LIST) {
+									setFieldValue(((ListDataField) field).addField(), getCurrentValue());
+								} else {
+									setFieldValue(field, getCurrentValue());
+								}
 							}
 						}
 					}
@@ -1234,17 +1270,16 @@ public class XmlSaxParser {
 
 			// If field is nullable and there's no character data set it to null
 			if (m_hasCharacters) {
-				
-				// write the value - if the field value is not already set or if it is set because of implicit mapping (I am not really sure about the second condition, but it was already there...)
-				if (field.getValue() == null || !cloverAttributes.contains(fieldName)) {
                     try {
                     	String currentValue = getCurrentValue(startIndex, endIndex, excludeCDataTag);
-                    	// CLO-5793: XMLExtract - mapping of element content breaks functionality of empty string as value of empty element
-                    	if (field.getMetadata().getDataType() == DataFieldType.STRING) {
-                    		field.setValue(currentValue);
-                    	} else {
-                    		field.fromString(currentValue);
-                    	}
+                    	
+                    	// write the value - if the field value is not already set or if it is set because of implicit mapping (I am not really sure about the second condition, but it was already there...)
+                    	if ((field.getValue() == null || !cloverAttributes.contains(fieldName)) && field.getMetadata().getContainerType() == DataFieldContainerType.SINGLE) {
+    						setFieldValue(field, currentValue);
+    					} else if (field.getMetadata().getContainerType() == DataFieldContainerType.LIST) {
+    						DataField myField = ((ListDataField) field).addField();
+    						setFieldValue(myField, currentValue);
+    					} 
                     } catch (BadDataFormatException ex) {
                         // This is a bit hacky here SOOO let me explain...
                         if (field.getType() == DataFieldMetadata.DATE_FIELD) {
@@ -1266,15 +1301,25 @@ public class XmlSaxParser {
                             throw ex;
                         }
                     }
+			} else if (field.getMetadata().getDataType() == DataFieldType.STRING) {
+				if (field.getMetadata().getContainerType() == DataFieldContainerType.LIST) {
+					DataField newField = ((ListDataField) field).addField();
+					setFieldValue(newField, "");
+				} else if (field.getValue() == null || field.getValue().equals(field.getMetadata().getDefaultValueStr())) { // and value wasn't already stored (from characters)
+					setFieldValue(field, "");
 				}
-			} else if (field.getType() == DataFieldMetadata.STRING_FIELD
-			// and value wasn't already stored (from characters)
-			&& (field.getValue() == null || field.getValue().equals(field.getMetadata().getDefaultValueStr()))) {
-				field.setValue(""); 
 			}
 		}
 	}
 	
+	private void setFieldValue(DataField field, String currentValue) {
+		// CLO-5793: XMLExtract - mapping of element content breaks functionality of empty string as value of empty element
+		if (field.getMetadata().getDataType() == DataFieldType.STRING) {
+    		field.setValue(currentValue);
+    	} else {
+    		field.fromString(currentValue);
+    	}
+	}
 
 	/**
 	 * Augments the namespaceURIs with curly brackets to allow easy creation of qualified names E.g.

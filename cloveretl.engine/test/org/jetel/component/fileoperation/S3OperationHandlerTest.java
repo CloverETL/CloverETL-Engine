@@ -33,6 +33,7 @@ import org.jetel.component.fileoperation.result.CreateResult;
 import org.jetel.component.fileoperation.result.DeleteResult;
 import org.jetel.component.fileoperation.result.ListResult;
 import org.jetel.util.ExceptionUtils;
+import org.jetel.util.file.FileUtils;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -57,6 +58,8 @@ public class S3OperationHandlerTest extends OperationHandlerTestTemplate {
 		super.setUp();
 		DefaultOperationHandler defaultHandler = new DefaultOperationHandler();
 		manager.registerHandler(VERBOSE ? new ObservableHandler(defaultHandler) : defaultHandler);
+		S3CopyOperationHandler copyHandler = new S3CopyOperationHandler();
+		manager.registerHandler(VERBOSE ? new ObservableHandler(copyHandler) : copyHandler);
 	}
 
 	@Override
@@ -167,6 +170,19 @@ public class S3OperationHandlerTest extends OperationHandlerTestTemplate {
 		
 		authority = new S3Authority(baseUri);
 		assertEquals("JazDFBhDlMaJwKO5c6pDSzuKFW0LMTV/fVeszyEo", PooledS3Connection.getSecretKey(authority));
+	}
+	
+	/**
+	 * CLO-6688:
+	 * 
+	 * @throws IOException
+	 */
+	public void testLeak() throws IOException {
+		for (int i = 0; i < 5; i++) {
+			System.out.println("Opening connection #" + (i+1));
+			FileUtils.getInputStream(null, rootUri + "/cloveretl.engine.test/employees.dat");
+			System.gc();
+		}
 	}
 	
 }

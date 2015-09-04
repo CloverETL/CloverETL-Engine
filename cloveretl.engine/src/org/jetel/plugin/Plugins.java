@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -60,7 +61,7 @@ public class Plugins {
     /**
      * Collection of PluginDescriptor(s).
      */
-    private static Map<String, PluginDescriptor> pluginDescriptors;
+    private static LinkedHashMap<String, PluginDescriptor> pluginDescriptors;
 
     private static Map<String, PluginDescriptor> activePlugins;
     
@@ -151,7 +152,7 @@ public class Plugins {
      */
     public static synchronized void init(PluginLocation[] pluginLocations) {
         //remove all previous settings
-        pluginDescriptors = new HashMap<String, PluginDescriptor>();
+        pluginDescriptors = new LinkedHashMap<String, PluginDescriptor>();
         activePlugins = new HashMap<String, PluginDescriptor>();
         deactivePlugins = new HashMap<String, PluginDescriptor>();
 
@@ -242,6 +243,10 @@ public class Plugins {
         		logger.warn("Plugin at '" + pluginManifestUrl + "' cannot be loaded. Another plugin is already registered with identical id attribute.");
     		}
         }
+        
+        //sort plugin descriptors with respect to prerequisities
+        //each plugin should be behind all its prerequisities
+        PluginDescriptorSorter.sort(pluginDescriptors);
         
         //log plugin descriptors
         if (logger.isDebugEnabled()) {

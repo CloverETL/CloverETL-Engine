@@ -571,13 +571,12 @@ public class PostgreSqlDataWriter extends BulkLoader {
 
 		PostgreSqlDataWriter postgreSQLDataWriter = new PostgreSqlDataWriter(
 				xattribs.getString(XML_ID_ATTRIBUTE), 
-				xattribs.getStringEx(XML_PSQL_PATH_ATTRIBUTE, RefResFlag.URL), 
-				xattribs.getString(XML_DATABASE_ATTRIBUTE));
+				xattribs.getStringEx(XML_PSQL_PATH_ATTRIBUTE, null, RefResFlag.URL), 
+				xattribs.getString(XML_DATABASE_ATTRIBUTE, null));
 
 		if (xattribs.exists(XML_FAIL_ON_ERROR_ATTRIBUTE)) {
 			postgreSQLDataWriter.setFailOnError(xattribs.getBoolean(XML_FAIL_ON_ERROR_ATTRIBUTE));
 		}
-
 		if (xattribs.exists(XML_COMMAND_URL_ATTRIBUTE)) {
 			postgreSQLDataWriter.setCommandURL((xattribs.getStringEx(XML_COMMAND_URL_ATTRIBUTE, RefResFlag.URL)));
 		}
@@ -587,7 +586,6 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		if (xattribs.exists(XML_USER_ATTRIBUTE)) {
 			postgreSQLDataWriter.setUser(xattribs.getString(XML_USER_ATTRIBUTE));
 		}
-		
 		if (xattribs.exists(XML_TABLE_ATTRIBUTE)) {
 			postgreSQLDataWriter.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
 		}
@@ -597,7 +595,6 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		if (xattribs.exists(XML_COLUMN_DELIMITER_ATTRIBUTE)) {
 			postgreSQLDataWriter.setColumnDelimiter(xattribs.getString(XML_COLUMN_DELIMITER_ATTRIBUTE));
 		}
-		
 		if (xattribs.exists(XML_PARAMETERS_ATTRIBUTE)) {
 			postgreSQLDataWriter.setParameters(xattribs.getString(XML_PARAMETERS_ATTRIBUTE));
 		}

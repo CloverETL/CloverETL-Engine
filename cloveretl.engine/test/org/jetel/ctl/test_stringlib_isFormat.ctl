@@ -59,6 +59,17 @@ boolean isDate24;
 boolean isDate25;
 boolean isDate26;
 boolean isDate27;
+boolean isDate28;
+boolean isDate29;
+boolean isDate30;
+boolean isDate31;
+boolean isDate32;
+boolean isDate33;
+boolean isDate34;
+boolean isDate35;
+boolean isDate36;
+boolean isDate37;
+boolean isDate38;
 
 boolean isDecimal;
 boolean isDecimal1;
@@ -147,8 +158,23 @@ function integer transform() {
 	// test for using default pattern from Defaults - assumed pattern yyyy-MM-dd - if different change the input string
 	isDate24=isDate('2013-12-12',null); // expected result - true
 	isDate25=isDate('17/11/1990', null); // expected result - false
-	isDate26 = isDate('2013-12-12', null, null);
-	isDate27 = isDate('2013-12-12', null, null, null);	
+	isDate26 = isDate('2013-12-12', null, null, false);
+	isDate27 = isDate('2013-12-12', null, null, null, false);
+	
+	// test for strict parsing: CLO-6601 - expected false
+	isDate28 = isDate('1924011', 'yyyyMMdd', true);
+	isDate29 = isDate('2015-001-012', null, true);
+	isDate30 = isDate('2015-1-12', null, true);
+	isDate31 = isDate('2015-November-12', 'yyyy-MMM-dd', 'en.US', true);
+	isDate32 = isDate('2015-Nov-12', 'yyyy-MMMM-dd', 'en.US', true);
+	isDate33 = isDate('2015-Nov-12', 'yyyy-MM-dd', 'en.US', true);
+	isDate34 = isDate('2015-November-12', 'yyyy-MM-dd', 'en.US', true);
+	
+	// test for strict parsing: CLO-6601 - expected true
+	isDate35 = isDate("2015-May-25", "yyyy-MMM-dd", 'en.US', true);
+	isDate36 = isDate("2015-May-25", "yyyy-MMMM-dd", 'en.US', true);
+	isDate37 = isDate("2015-Nov-25", "yyyy-MMM-dd", 'en.US', true);
+	isDate38 = isDate("2015-November-25", "yyyy-MMMM-dd", 'en.US', true);
 
 	isDecimal=isDecimal('t1');
 	isDecimal1=isDecimal('1g');

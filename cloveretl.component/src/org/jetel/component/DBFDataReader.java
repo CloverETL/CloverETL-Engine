@@ -21,7 +21,7 @@ package org.jetel.component;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
-import java.util.Collection;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -325,11 +325,11 @@ public class DBFDataReader extends Node {
 		
 		if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 			dbfDataReader = new DBFDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, RefResFlag.URL),
+					xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.URL),
 					xattribs.getString(XML_CHARSET_ATTRIBUTE));
 		} else {
 			dbfDataReader = new DBFDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, RefResFlag.URL));
+					xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.URL));
 		}
 		if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
 			dbfDataReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE));
@@ -379,7 +379,12 @@ public class DBFDataReader extends Node {
 					ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
         
-        checkMetadata(status, getOutMetadata());
+        checkMetadata(status);
+        
+        if (fileURL == null) {
+        	status.add("File URL not defined.", Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE);
+        	return status;
+        }
 
         try { 
             // check inputs
@@ -408,10 +413,9 @@ public class DBFDataReader extends Node {
         return status;
     }
     
-    @Override
-    protected ConfigurationStatus checkMetadata(ConfigurationStatus status, Collection<DataRecordMetadata> metadata) {
-    	
-    	ConfigurationStatus newStatus = super.checkMetadata(status, metadata);
+    private ConfigurationStatus checkMetadata(ConfigurationStatus status) {
+    	ConfigurationStatus newStatus = checkMetadata(status, null, getOutPorts());
+    	List<DataRecordMetadata> metadata = getOutMetadata();
     	if (metadata != null && !metadata.isEmpty()) {
     		DataFieldMetadata[] fields = metadata.iterator().next().getFields();
 			if (fields != null && fields.length > 0) {

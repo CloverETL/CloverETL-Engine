@@ -28,6 +28,9 @@ import java.net.Proxy.Type;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -221,8 +224,14 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 				}
 				addIdentity(jsch, matchingKey);
 			} else {
-				for (Map.Entry<String, URI> entry: keys.entrySet()) {
-					addIdentity(jsch, entry.getValue());
+				List<String> names = new ArrayList<>(keys.keySet());
+				Collections.sort(names); // CLO-4868: add the keys in alphabetical order
+				for (String name: names) {
+					try {
+						addIdentity(jsch, keys.get(name));
+					} catch (IOException e) {
+						log.warn(e.getMessage(), e);
+					}
 				}
 			}
 		} else if (log.isDebugEnabled()) {
@@ -244,7 +253,7 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 		}
 	}
 
-	private void addIdentity(JSch jsch, URI key) {
+	private void addIdentity(JSch jsch, URI key) throws IOException {
 		try {
 			String keyName = key.toString();
 			log.debug("Adding new identity from " + keyName);
@@ -253,7 +262,7 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 				jsch.addIdentity(keyName, prvKey, null, null);
 			}
 		} catch (Exception e) {
-			log.warn("Failed to read private key", e);
+			throw new IOException("Failed to read private key", e);
 		}
 	}
 	

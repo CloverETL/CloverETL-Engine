@@ -339,6 +339,11 @@ public class StructureWriter extends Node {
             		"Charset "+charset+" not supported!", 
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
+		
+		if (fileURL == null) {
+			status.add("File URL attribute is missing.", Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE);
+			return status;
+		}
 
         try {
         	FileUtils.canWrite(getContextURL(), fileURL, mkDir);
@@ -472,10 +477,10 @@ public class StructureWriter extends Node {
 		StructureWriter aDataWriter = null;
 		
 		aDataWriter = new StructureWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-								xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, RefResFlag.URL),
-								xattribs.getString(XML_CHARSET_ATTRIBUTE,null),
+								xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.URL),
+								xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
 								xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false),
-								xattribs.getString(XML_HEADER_ATTRIBUTE,null),
+								xattribs.getString(XML_HEADER_ATTRIBUTE, null),
 								xattribs.getString(XML_MASK_ATTRIBUTE, null),
 								xattribs.getString(XML_FOOTER_ATTRIBUTE, null));
 		if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)){

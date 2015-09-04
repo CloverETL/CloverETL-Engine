@@ -19,10 +19,12 @@
 package org.jetel.component;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
@@ -36,6 +38,7 @@ import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CTLMapping;
 import org.jetel.util.CTLMapping.MissingRecordFieldMessage;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
@@ -287,6 +290,8 @@ public abstract class AbstractJobflowComponent extends Node {
 		outputMapping.addInputRecord(INPUT_RECORD_ID, inputRecord);
 		outputMapping.addInputRecord(RESULT_RECORD_ID, resultRecord);
 		outputMapping.addOutputRecord(OUTPUT_RECORD_ID, outputRecord);
+		outputMapping.addAutoMapping(INPUT_RECORD_ID, OUTPUT_RECORD_ID);
+		outputMapping.addAutoMapping(RESULT_RECORD_ID, OUTPUT_RECORD_ID);
 
 		//create error mapping
 		errorMapping = new CTLMapping("Error mapping", this); //$NON-NLS-1$
@@ -295,6 +300,8 @@ public abstract class AbstractJobflowComponent extends Node {
 		errorMapping.addInputRecord(ERROR_RESULT_RECORD_ID, errorResultRecord);
 		errorMapping.addOutputRecord(OUTPUT_RECORD_ID, null);
 		errorMapping.addOutputRecord(ERROR_RECORD_ID, errorRecord);
+		errorMapping.addAutoMapping(INPUT_RECORD_ID, ERROR_RECORD_ID);
+		errorMapping.addAutoMapping(ERROR_RESULT_RECORD_ID, ERROR_RECORD_ID);
 		
 		setDefaults();
 
@@ -326,18 +333,6 @@ public abstract class AbstractJobflowComponent extends Node {
 		return checkInputPorts(status, 0, 1) && checkOutputPorts(status, 0, 2, false);
 	}
 	
-	protected void checkMappings(ConfigurationStatus status) {
-		if (hasInputPort && StringUtils.isEmpty(inputMappingCode)) {
-			status.add("Mapping is not defined, but there is an edge connected", Severity.WARNING, this, Priority.LOW, XML_INPUT_MAPPING_ATTRIBUTE);
-		}
-		if (hasOutputPort && StringUtils.isEmpty(outputMappingCode)) {
-			status.add("Mapping is not defined, but there is an edge connected", Severity.WARNING, this, Priority.LOW, XML_OUTPUT_MAPPING_ATTRIBUTE);
-		}
-		if (hasErrorPort && StringUtils.isEmpty(errorMappingCode)) {
-			status.add("Mapping is not defined, but there is an edge connected", Severity.WARNING, this, Priority.LOW, XML_ERROR_MAPPING_ATTRIBUTE);
-		}
-	}
-
 	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         status = super.checkConfig(status);
@@ -349,11 +344,18 @@ public abstract class AbstractJobflowComponent extends Node {
 		try {
         	tryToInit(status);
         } catch (Exception e) {
-        	status.add("Initialization failed", e, Severity.ERROR, this, Priority.NORMAL);
+        	ConfigurationProblem problem = new ConfigurationProblem("Initialization failed", e, Severity.ERROR, this, Priority.NORMAL, null);
+        	
+        	List<ComponentNotReadyException> list = ExceptionUtils.getAllExceptions(e, ComponentNotReadyException.class);
+        	if (!list.isEmpty()) {
+        		String attrName = list.get(0).getAttributeName();
+        		if (!StringUtils.isEmpty(attrName)) {
+        			problem.setAttributeName(attrName);
+        		}
+        	}
+        	status.add(problem);
         }
         
-        checkMappings(status);
-
 		if (redirectErrorOutput && !hasOutputPort) {
 			status.add("The error port is redirected to the standard output port, but there is no edge connected", Severity.WARNING, this, Priority.LOW, XML_REDIRECT_ERROR_OUTPUT_ATTRIBUTE);
 		}

@@ -51,21 +51,20 @@ public class RandomLib extends TLFunctionLibrary {
 
 	@Override
 	public TLFunctionPrototype getExecutable(String functionName) {
-		TLFunctionPrototype ret = 
-			"random".equals(functionName) ? new RandomFunction() :
-			"randomGaussian".equals(functionName) ? new RandomGaussianFunction() :
-		    "randomBoolean".equals(functionName) ? new RandomBooleanFunction() : 
-		    "randomInteger".equals(functionName) ? new RandomIntegerFunction() :
-		    "randomLong".equals(functionName) ? new RandomLongFunction() :
-			"randomString".equals(functionName) ? new RandomStringFunction() :
-			"randomDate".equals(functionName) ? new RandomDateFunction() :
-			"setRandomSeed".equals(functionName) ? new SetRandomSeedFunction() : null;
-			
-		if (ret == null) {
-			throw new IllegalArgumentException("Unknown function '" + functionName + "'");
+		if (functionName != null) {
+			switch (functionName) {
+				case "random": return new RandomFunction();
+				case "randomGaussian": return new RandomGaussianFunction();
+				case "randomBoolean": return new RandomBooleanFunction();
+				case "randomInteger": return new RandomIntegerFunction();
+				case "randomLong": return new RandomLongFunction();
+				case "randomString": return new RandomStringFunction();
+				case "randomDate": return new RandomDateFunction();
+				case "setRandomSeed": return new SetRandomSeedFunction();
+			}
 		}
-
-		return ret;
+			
+		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
 	}
 	
 	private static String LIBRARY_NAME = "Random";

@@ -24,7 +24,7 @@
 		<FlatFile outputFile="data-out/orders_late.txt" supposedFile="supposed-out/orders_late.txt"/>
 	</FunctionalTest>
 	
-	<FunctionalTest ident="JoiningAggregating" graphFile="graph/JoiningAggregating.grf">
+	<FunctionalTest ident="JoiningAggregating" graphFile="graph/JoiningAggregating.grf" limit="225">
 		<FlatFile outputFile="data-out/customers_without_order_region1.csv" supposedFile="supposed-out/customers_without_order_region1.csv"/>
 		<FlatFile outputFile="data-out/customers_without_order_region2.csv" supposedFile="supposed-out/customers_without_order_region2.csv"/>
 	</FunctionalTest>
@@ -39,6 +39,8 @@
 	<FunctionalTest ident="SpreadsheetReadWrite" graphFile="graph/SpreadsheetReadWrite.grf">
 		<FlatFile outputFile="data-out/orders_delimited.txt" supposedFile="supposed-out/orders_delimited.txt"/>
 		<FlatFile outputFile="data-out/tax_form_data.txt" supposedFile="supposed-out/tax_form_data.txt"/>
+		<DeleteFile file="data-out/orders.xlsx"/>
+		<DeleteFile file="data-out/sortedByTotalTax.xlsx"/>
 	</FunctionalTest>
 	
 	<FunctionalTest ident="WebServicesHTTP" graphFile="graph/WebServicesHTTP.grf">
@@ -87,9 +89,19 @@
 		<FlatFile outputFile="data-out/orders_late.txt" supposedFile="supposed-out/orders_late.txt"/>
 	</FunctionalTest>
 			
-	<FunctionalTest ident="MetadataWriting" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine">
+	<FunctionalTest ident="MetadataWriting" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine" excludedContainers="tomcat6,tomcat7,tomcat8,jetty9,glassfish3,websphere85,jboss6,jboss7,jboss7-eap-6-4">
 		<FlatFile outputFile="data-out/employees_txt.fmt" supposedFile="supposed-out/employees_txt.fmt"/>
 		<FlatFile outputFile="data-out/departments_txt.fmt" supposedFile="supposed-out/departments_txt.fmt"/>
+	</FunctionalTest>
+	
+	<FunctionalTest ident="MetadataWriting_version2" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine" excludedContainers="weblogic10,weblogic12,weblogic-12-1-3,jboss6,jboss7,jboss7-eap-6-4">
+		<FlatFile outputFile="data-out/employees_txt.fmt" supposedFile="supposed-out/employees_txt_version2.fmt"/>
+		<FlatFile outputFile="data-out/departments_txt.fmt" supposedFile="supposed-out/departments_txt_version2.fmt"/>
+	</FunctionalTest>
+	
+	<FunctionalTest ident="MetadataWriting_version3" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine" excludedContainers="tomcat6,tomcat7,tomcat8,jetty9,weblogic10,weblogic12,weblogic-12-1-3,glassfish3,websphere85">
+		<FlatFile outputFile="data-out/employees_txt.fmt" supposedFile="supposed-out/employees_txt_version3.fmt"/>
+		<FlatFile outputFile="data-out/departments_txt.fmt" supposedFile="supposed-out/departments_txt_version3.fmt"/>
 	</FunctionalTest>
 	
 	<FunctionalTest ident="IssuesReport" graphFile="graph/IssuesReport.grf" excludedEtlEnvironment="engine" />
@@ -97,6 +109,6 @@
 	<FunctionalTest ident="IssuesSearch" graphFile="graph/IssuesSearch.grf" excludedEtlEnvironment="engine" />
 	
 	<!-- fails on weblogic12 (CLO-5071) -->
-	<FunctionalTest ident="Twitter" graphFile="graph/Twitter.grf" excludedEtlEnvironment="engine" excludedContainers="weblogic12" />
+	<FunctionalTest ident="Twitter" graphFile="graph/Twitter.grf" excludedEtlEnvironment="engine" excludedContainers="weblogic12,weblogic-12-1-3" />
 
 </TestScenario>
