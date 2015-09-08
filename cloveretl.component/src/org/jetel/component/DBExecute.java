@@ -504,7 +504,7 @@ public class DBExecute extends Node {
 		this.printStatements=printStatements;
 	}
 
-	private void handleException(SQLException e, DataRecord inRecord, int queryIndex) 
+	private void handleException(SQLException e, DataRecord inRecord, int queryIndex, String query) 
 	throws IOException, InterruptedException, SQLException{
 		ErrorAction action = errorActions.get(e.getErrorCode());
 		if (action == null) {
@@ -545,6 +545,7 @@ public class DBExecute extends Node {
 			} catch (SQLException e1) {
 				logger.warn("Can't rollback!!", e);
 			}
+			logger.error("Error when executing statement: " + query);
 			throw e;
 		}
 	}
@@ -554,7 +555,7 @@ public class DBExecute extends Node {
     		try {
     			connection.commit();
     		} catch (SQLException e) {
-    			handleException(e, inRecord, -1);
+    			handleException(e, inRecord, -1, "COMMIT");
     		}
 		}
 	}
@@ -585,7 +586,7 @@ public class DBExecute extends Node {
     							sqlStatement.executeUpdate(statement);
     						}
     					} catch (SQLException e) {
-    						handleException(e, null, index);
+    						handleException(e, null, index, statement);
     					}
     					index++;
     					if (transaction == InTransaction.ONE){
@@ -613,7 +614,12 @@ public class DBExecute extends Node {
     							sqlStatement.executeUpdate(dbSQL[i]);
     						}
     					} catch (SQLException e) {
-    						handleException(e, inRecord, i);
+    						if (procedureCall) {
+    							handleException(e, inRecord, i, callableStatement[i].getQuery());
+    						} else {
+    							handleException(e, inRecord, i, dbSQL[i]);
+    						}
+    						
     					}
     					if (transaction == InTransaction.ONE){
     						dbCommit();

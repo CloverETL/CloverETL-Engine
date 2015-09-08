@@ -300,14 +300,16 @@ public class DBInputTable extends Node {
 
 	@Override
 	public Result execute() throws Exception {
+		String currentQuery = null;
 		try {
 			SQLDataParser parser = null;
 			if (sqlQuery != null) {
 				// we have only single query
+				currentQuery = sqlQuery;
 				if (printStatements) {
 					logger.info("Executing statement: " + sqlQuery);
 				}
-				parser = processSqlQuery(sqlQuery);
+				parser = processSqlQuery(currentQuery);
 			} else {
 				// process queries from file or input port
 				PropertyRefResolver propertyResolver = getPropertyRefResolver();
@@ -319,16 +321,19 @@ public class DBInputTable extends Node {
 					statementRecord.init();
     				//read statements from byte channel
     				while ((statementRecord = inputParser.getNext(statementRecord)) != null) {
-    					String sqlStatement = propertyResolver.resolveRef(statementRecord.getField(0).toString());
+    					currentQuery = propertyResolver.resolveRef(statementRecord.getField(0).toString());
        					if (printStatements) {
-    						logger.info("Executing statement: " + sqlStatement);
+    						logger.info("Executing statement: " + currentQuery);
     					}
-       					parser = processSqlQuery(sqlStatement);
+       					parser = processSqlQuery(currentQuery);
     				}
 				}
 			}
 			// save values of incremental key into file
 			storeValues(parser);
+		} catch (Exception e) {
+			logger.error("Error when executing statement: " + currentQuery);
+			throw e;
 		} finally {
     		broadcastEOF();
 		}
