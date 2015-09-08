@@ -18,7 +18,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/annotations.jar"/>
 	<classpathentry kind="lib" path="lib/icu4j-52_1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-compress-1.7.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.8.1.jar" />
+	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.1.jar" sourcepath="lib.src/joda-time-2.1-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/xmlbeans-2.5.0-modified-for-WSC.jar" sourcepath="lib.src/xmlbeans-2.5.0-modified-for-WSC-source.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/dom4j-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-net-3.3.jar"/>
@@ -51,9 +51,5 @@
 	<classpathentry kind="lib" path="lib/commons-configuration-1.10.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.2.1.jar"/>
-	<classpathentry kind="lib" path="lib/aws-java-sdk-1.10.14.jar" />
-	<classpathentry kind="lib" path="lib/jackson-databind-2.5.3.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-core-2.5.3.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-annotations-2.5.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
