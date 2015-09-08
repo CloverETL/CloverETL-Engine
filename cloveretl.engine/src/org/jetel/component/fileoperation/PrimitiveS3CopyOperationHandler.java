@@ -32,7 +32,8 @@ import org.jetel.component.fileoperation.result.DeleteResult;
 import org.jetel.component.fileoperation.result.InfoResult;
 import org.jetel.component.fileoperation.result.ListResult;
 import org.jetel.util.stream.StreamUtils;
-import org.jets3t.service.S3Service;
+
+import com.amazonaws.services.s3.AmazonS3;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -62,7 +63,7 @@ public class PrimitiveS3CopyOperationHandler extends PrimitiveS3OperationHandler
 				}
 			}
 
-			S3Service service = connection.getService();
+			AmazonS3 service = connection.getService();
 
 			CloverURI sourceUri = CloverURI.createSingleURI(source);
 			File file = null;
@@ -103,7 +104,7 @@ public class PrimitiveS3CopyOperationHandler extends PrimitiveS3OperationHandler
 		}
 	}
 	
-	private URI copyLocalFile(File source, URI target, S3Service service) throws IOException {
+	private URI copyLocalFile(File source, URI target, AmazonS3 service) throws IOException {
 		String[] targetPath = getPath(target);
 		if (targetPath.length == 1) {
 			throw new IOException("Cannot write to " + target);

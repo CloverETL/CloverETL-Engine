@@ -45,8 +45,13 @@ public class S3OperationHandlerTest extends OperationHandlerTestTemplate {
 
 	private S3OperationHandler handler;
 	
-	private static final String rootUri = "s3://AKIAIN22BDZO35DANLGQ:JazDFBhDlMaJwKO5c6pDSzuKFW0LMTV%2FfVeszyEo@s3.amazonaws.com";
-	private static final String testingUri = rootUri + "/cloveretl.engine.test/test-fo/";
+	private static final String ACCESS_KEY = "AKIAIN22BDZO35DANLGQ";
+	private static final String SECRET_KEY = "JazDFBhDlMaJwKO5c6pDSzuKFW0LMTV%2FfVeszyEo";
+	private static final String DEFAULT_ENDPOINT = "s3.amazonaws.com";
+	private static final String FRANKFURT_ENDPOINT = "s3.eu-central-1.amazonaws.com";
+	private static final String S3_PREFIX = "s3://" + ACCESS_KEY + ":" + SECRET_KEY + "@";
+	private static final String rootUri = S3_PREFIX + FRANKFURT_ENDPOINT;
+	private static final String testingUri = rootUri + "/cloveretl.krivanekm.test/test-fo/";
 	
 	@Override
 	protected IOperationHandler createOperationHandler() {
@@ -149,9 +154,10 @@ public class S3OperationHandlerTest extends OperationHandlerTestTemplate {
 		super.testList();
 		
 		// test listing a newly created bucket - used to throw IllegalArgumentException: Illegal Capacity: -1
-		CloverURI emptyBucket = CloverURI.createSingleURI(URI.create(rootUri), "cloveretl.test.empty.bucket");
+		CloverURI emptyBucket = CloverURI.createSingleURI(URI.create(S3_PREFIX + DEFAULT_ENDPOINT), "cloveretl.test.empty.bucket");
 		try {
-			assumeTrue(manager.create(emptyBucket, new CreateParameters().setDirectory(true)).success());
+			CreateResult createResult = manager.create(emptyBucket, new CreateParameters().setDirectory(true));
+			assumeTrue(createResult.getFirstErrorMessage(), createResult.success());
 			ListResult listResult = manager.list(emptyBucket);
 			assertTrue(ExceptionUtils.stackTraceToString(listResult.getFirstError()), listResult.success());
 		} finally {
@@ -180,7 +186,7 @@ public class S3OperationHandlerTest extends OperationHandlerTestTemplate {
 	public void testLeak() throws IOException {
 		for (int i = 0; i < 5; i++) {
 			System.out.println("Opening connection #" + (i+1));
-			FileUtils.getInputStream(null, rootUri + "/cloveretl.engine.test/employees.dat");
+			FileUtils.getInputStream(null, S3_PREFIX + DEFAULT_ENDPOINT + "/cloveretl.engine.test/employees.dat");
 			System.gc();
 		}
 	}
