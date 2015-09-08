@@ -326,7 +326,11 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("SimpleSequence_concurrent.grf") // server test
 							&& !file.getName().equals("UDW_escapeSequences_CLO-5660.grf") // server test
 							&& !file.getName().equals("SetJobOutput_dictionary_CLO-3007.grf") // server test
-							&& !file.getName().equals("ValidationTransformLifeCycle.grf"); // have to be run only once
+							&& !file.getName().equals("ValidationDefaultLanguageSettings.grf") // server test
+							&& !file.getName().equals("DB_rollback_CLO-4878.grf") // server test
+							&& !file.getName().equals("ValidationTransformLifeCycle.grf") // have to be run only once
+							&& !file.getName().equals("Tableau-ThreadSafe.grf") // disabled test
+							&& !file.getName().startsWith("MultiFileWriter_emptyFile"); // excluded until CLO-7184 resolved
 				}
 			};
 			
@@ -338,9 +342,12 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("cluster") // cluster tests
 							&& !file.getName().equals("S3") 
 							&& !file.getName().equals("email") 
+							&& !file.getName().equals("performance") 
 							&& !file.getName().equals("dataPolicy") // negative tests 
 							&& !file.getName().equals("metadataPropagation") // mostly server tests
 							&& !file.getName().equals("ExecuteGraph") // jobflows
+							&& !file.getName().equals("RecordToKeyValues") // CLO-7086: temporarily removed tests
+							&& !file.getName().equals("KeyValuesToRecord") // CLO-7086: temporarily removed tests
 							&& !file.getName().equals("windows"); // wokna only tests
 				}
 			};
@@ -405,6 +412,7 @@ public class ResetTest extends CloverTestCase {
 		runtimeContext.setUseJMX(false);
 	
 		runtimeContext.setContextURL(FileUtils.getFileURL(FileUtils.appendSlash(baseAbsolutePath))); // context URL should be absolute
+		runtimeContext.setJobUrl(FileUtils.getFileURL(runtimeContext.getContextURL(), graphFile.getPath()).toString());
 		// absolute path in PROJECT parameter is required for graphs using Derby database
 		runtimeContext.addAdditionalProperty("PROJECT", baseAbsolutePath);
 		if (StringUtils.findString(graphFile.getName(), NEEDS_SCENARIOS_CONNECTION) != -1) {
