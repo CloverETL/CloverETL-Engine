@@ -229,6 +229,7 @@ public class DBInputTable extends Node {
 	 * @exception  ComponentNotReadyException  Description of Exception
 	 * @since                                  September 27, 2002
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
@@ -276,12 +277,6 @@ public class DBInputTable extends Node {
 		List<DataRecordMetadata> lDataRecordMetadata;
     	if ((lDataRecordMetadata = getOutMetadata()).size() > 0) 
     		autoFilling.addAutoFillingFields(lDataRecordMetadata.get(0));
-	}
-
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-		
 	}
 	
 	@Override
@@ -403,7 +398,8 @@ public class DBInputTable extends Node {
 	 * @throws AttributeNotFoundException 
 	 * @since           September 27, 2002
 	 */
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws Exception {
+    @SuppressWarnings("deprecation")
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws Exception {
             ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
             ComponentXMLAttributes xattribsChild;
             DBInputTable aDBInputTable = null;
@@ -567,7 +563,7 @@ public class DBInputTable extends Node {
     	this.policyTypeStr = (policyType != null) ? policyType.toString() : null;
     }
 
-	public void setIncrementalFile(String incrementalFile) throws MalformedURLException {
+	public void setIncrementalFile(String incrementalFile) {
 		this.incrementalFile = incrementalFile;
 	}
 
