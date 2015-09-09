@@ -571,7 +571,7 @@ public class SMBOperationHandler implements IOperationHandler {
 		return CloverURI.createSingleURI(toURI(file));
 	}
 
-	static URI toURI(SmbFile file) {
+	public static URI toURI(SmbFile file) {
 		URL url = file.getURL(); // may contain spaces in path
 		try {
 			// %-encode path, query and fragment...
