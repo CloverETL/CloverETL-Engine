@@ -713,7 +713,7 @@ public class DBOutputTable extends Node {
 				} catch(SQLException ex) {
 					countError++;
 					exception = ex;
-					errmes = "Exeption thrown by: " + statement[i].getQuery() + ". Message: " + ExceptionUtils.getMessage(ex);
+					errmes = "Exception thrown by: " + statement[i].getQuery() + ". Message: " + ExceptionUtils.getMessage(ex);
 					SQLException chain = ex.getNextException();
 					while (chain != null) {
 						errmes += "\n  Caused by: " + ExceptionUtils.getMessage(chain);
@@ -840,7 +840,7 @@ public class DBOutputTable extends Node {
 				}catch(SQLException ex){
 	               countError++;
 	               exception = ex;
-	               errmes = "Exeption thrown by: " + statement[statementCount].getQuery() + ". Message: " + ExceptionUtils.getMessage(ex);
+	               errmes = "Exception thrown by: " + statement[statementCount].getQuery() + ". Message: " + ExceptionUtils.getMessage(ex);
 	               //for this record statement won't be executed 
 	               SQLException chain = ex.getNextException();
 	               while(chain!=null) {
@@ -946,7 +946,7 @@ public class DBOutputTable extends Node {
 				statement[statementCount].clearBatch();
 				exceptions[statementCount] = ex;
 				exception = ex;
-				errmes += "Exeption thrown by: " + statement[statementCount].getQuery() + ". Message: " + ExceptionUtils.getMessage(ex) + "\n";
+				errmes += "Exception thrown by: " + statement[statementCount].getQuery() + ". Message: " + ExceptionUtils.getMessage(ex) + "\n";
 				if (ex.getNextException() != null) {
 					// With PostgreSQL, 1. exception is good for nothing, append next one
 					errmes += "  Caused by: " + ExceptionUtils.getMessage(ex.getNextException());
@@ -1026,7 +1026,7 @@ public class DBOutputTable extends Node {
 						if (records != null && records[i][count] != null) {
 							if (exception != null) {
 								if (errMessFieldNum != -1) {
-									records[i][count].getField(errMessFieldNum).setValue("Exeption thrown by: " + 
+									records[i][count].getField(errMessFieldNum).setValue("Exception thrown by: " + 
 											statement[i].getQuery() + ". Message: " + ExceptionUtils.getMessage(exception));
 								}
 								if (errorCodeFieldNum != -1){
@@ -1034,7 +1034,7 @@ public class DBOutputTable extends Node {
 								}
 							}
 							if (exception != null && countError <= MAX_WARNINGS) {
-								logger.warn("Exeption thrown by: " + statement[i].getQuery() + 
+								logger.warn("Exception thrown by: " + statement[i].getQuery() + 
 										". Message: " + ExceptionUtils.getMessage(exception));
 							} else if (exception == null && countError <= MAX_WARNINGS) {
 								logger.warn("Record not inserted to database");
