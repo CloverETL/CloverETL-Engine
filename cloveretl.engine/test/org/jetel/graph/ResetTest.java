@@ -329,8 +329,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("ValidationDefaultLanguageSettings.grf") // server test
 							&& !file.getName().equals("DB_rollback_CLO-4878.grf") // server test
 							&& !file.getName().equals("ValidationTransformLifeCycle.grf") // have to be run only once
-							&& !file.getName().equals("Tableau-ThreadSafe.grf") // disabled test
-							&& !file.getName().startsWith("MultiFileWriter_emptyFile"); // excluded until CLO-7184 resolved
+							&& !file.getName().equals("Tableau-ThreadSafe.grf"); // disabled test
 				}
 			};
 			
