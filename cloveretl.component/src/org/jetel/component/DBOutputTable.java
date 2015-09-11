@@ -1185,7 +1185,7 @@ public class DBOutputTable extends Node {
          super.checkConfig(status);
          
          if(!checkInputPorts(status, 1, 1)
-        		 || !checkOutputPorts(status, 0, 2)) {
+        		 || !checkOutputPorts(status, 0, 2, false)) {
         	 return status;
          }
 
