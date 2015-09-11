@@ -1244,7 +1244,7 @@ public class XmlSaxParser {
 						}											
 					} 
 					
-					if (fieldName == null && m_activeMapping.isImplicit()) {
+					if (fieldName == null && m_activeMapping.isImplicit() && !key.equals(XMLMappingConstants.ELEMENT_AS_TEXT) && !key.equals(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT)) {
 						/*
 						 * As we could not find match using qualified name try mapping the xml element/attribute without
 						 * the namespace prefix
