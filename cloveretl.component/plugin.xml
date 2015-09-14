@@ -110,7 +110,9 @@
 	      <singlePort name="0" required="true" />
 	    </inputPorts>
 	    <outputPorts>
-	      <singlePort name="0" required="false" />
+	      <singlePort name="0" required="false">
+	        <MetadataProvider id="fileWriterOutputMetadataProvider"/>
+              </singlePort>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" primaryAttribute="true">
@@ -1951,7 +1953,9 @@
 	      <singlePort name="0" required="true" />
 	    </inputPorts>
 	    <outputPorts>
-	      <singlePort name="0" required="false" />
+	      <singlePort name="0" required="false">
+	        <MetadataProvider id="fileWriterOutputMetadataProvider"/>
+              </singlePort>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" primaryAttribute="true">
@@ -2071,7 +2075,9 @@
 				<singlePort name="2" label="Footer port" />
 	    </inputPorts>
 	    <outputPorts>
-	      <singlePort name="0" required="false" />
+	      <singlePort name="0" required="false">
+		<MetadataProvider id="fileWriterOutputMetadataProvider"/>
+	      </singlePort>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" primaryAttribute="true">
@@ -2915,7 +2921,9 @@ Sends all resulting records to all connected output ports.</description>
 	      <multiplePort required="false"/>
 	    </inputPorts>
 	    <outputPorts>
-	      <singlePort name="0" required="false" />
+	      <singlePort name="0" required="false">
+	      	<MetadataProvider id="fileWriterOutputMetadataProvider"/>
+	      </singlePort>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
