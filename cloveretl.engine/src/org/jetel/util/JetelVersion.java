@@ -30,6 +30,11 @@ package org.jetel.util;
  *
  */
 public final class JetelVersion {
+
+	/**
+	 * ANT does NOT change this value.
+	 */
+    public static final String DEVEL_VERSION = "0.0.0.devel";
     
     /**
      * <code>MAJOR_VERSION</code> - determines Major version of current library
@@ -103,5 +108,9 @@ public final class JetelVersion {
      */
     public static final String getJavaRequiredVersion(){
         return JAVA_REQUIRED_VERSION;
+    }
+
+    public static String getVersion() {
+    	return MAJOR_VERSION+"."+MINOR_VERSION+"."+REVISION_VERSION+"."+VERSION_SUFFIX;
     }
 }

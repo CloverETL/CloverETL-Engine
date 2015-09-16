@@ -50,15 +50,17 @@ abstract class StreamedPortDataBase extends PortData {
 		return false;
 	}
 	
-	class SimpleDataIterator implements DataIterator {
+	static class SimpleDataIterator implements DataIterator {
 
-		protected DataRecord current;
-		protected DataRecord next;
-		protected boolean hasNext;
-		protected boolean allRead;
+		private DataRecord current;
+		private DataRecord next;
+		private boolean hasNext;
+		private boolean allRead;
+		protected InputPort inputPort;
 		
-		public SimpleDataIterator() {
-			this.next = DataRecordFactory.newRecord(inPort.getMetadata());
+		public SimpleDataIterator(InputPort inputPort) {
+			this.inputPort = inputPort;
+			this.next = DataRecordFactory.newRecord(inputPort.getMetadata());
 			this.next.init();
 		}
 		
@@ -96,7 +98,7 @@ abstract class StreamedPortDataBase extends PortData {
 			if (hasNext || allRead) {
 				return;
 			}
-			if (!fetchNext(next)) {
+			if (fetchNext(next) == null) {
 				/* end of data reached, clear all */
 				hasNext = false;
 				allRead = true;
@@ -107,10 +109,9 @@ abstract class StreamedPortDataBase extends PortData {
 			}
 		}
 		
-		protected boolean fetchNext(DataRecord target) throws IOException {
+		protected DataRecord fetchNext(DataRecord target) throws IOException {
 			try {
-				 target = inPort.readRecord(target);
-				 return target != null;
+				return inputPort.readRecord(target);
 			} catch (InterruptedException e) {
 				throw new IOException(e);
 			}

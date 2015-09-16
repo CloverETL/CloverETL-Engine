@@ -21,10 +21,12 @@ package org.jetel.graph;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -42,6 +44,7 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.exception.RecursiveSubgraphException;
 import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
@@ -54,12 +57,12 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SubgraphUtils;
-import org.jetel.util.bytes.MemoryTracker;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.TrueZipVFSEntries;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -84,6 +87,14 @@ public final class TransformationGraph extends GraphElement {
 	private Map <String, LookupTable> lookupTables;
 	
 	private Map <String, Object> dataRecordMetadata;
+
+	/**
+	 * Set of all persisted implicit metadata, which are used
+	 * for validation purpose. All edges with implicit metadata
+	 * has reference to one of these metadata. The calculated implicit
+	 * metadata is compared with the persisted one, must be identical.
+	 */
+	private Map <String, DataRecordMetadata> persistedImplicitMetadata;
 	
 	final static String DEFAULT_CONNECTION_ID = "Connection0";
 	final static String DEFAULT_SEQUENCE_ID = "Sequence0";
@@ -111,11 +122,6 @@ public final class TransformationGraph extends GraphElement {
 
 	private GraphParameters graphParameters;
 
-	/**
-	 * Memory tracker associated with this graph.
-	 */
-	private MemoryTracker memoryTracker;
-	
 	private TrueZipVFSEntries vfsEntries;
 	
 	/**
@@ -153,6 +159,39 @@ public final class TransformationGraph extends GraphElement {
 	 */
 	private boolean isAnalysed = false;
 	
+	/**
+	 * Execution label is human-readable text which can describe execution of this graph.
+	 * This text is specified directly in grf file, but can be parametrised by public graph parameters.
+	 * This is default for runtime equivalent {@link GraphRuntimeContext#getExecutionLabel()}.
+	 */
+	private String executionLabel;
+
+	/**
+	 * Component category - readers, writers, joiners, ...
+	 * This information is not used in runtime, but is necessary
+	 * for SubgraphComponentDynamization in designer, where TranformationGraph is
+	 * used as model for various Subgraph component modifications.
+	 */
+	private String category;
+
+	/**
+	 * Path to icons, which are used only by subgraphs. It is of course useless
+	 * for runtime, but it is necessary for SubgraphComponentDynamization
+	 * in designer, where TranformationGraph is used as model for various
+	 * Subgraph component modifications.
+	 */
+	private String smallIconPath;
+	private String mediumIconPath;
+	private String largeIconPath;
+
+	/**
+	 * This checkConfig status is populated in graph factorisation.
+	 * Once the real {@link #checkConfig(ConfigurationStatus)} method is
+	 * executed this preliminary issues are copied to the final result.
+	 * @see TransformationGraphAnalyzer
+	 */
+	private ConfigurationStatus preCheckConfigStatus = new ConfigurationStatus();
+	
 	public TransformationGraph() {
 		this(DEFAULT_GRAPH_ID);
 	}
@@ -174,9 +213,9 @@ public final class TransformationGraph extends GraphElement {
 		sequences = new LinkedHashMap<String,Sequence> ();
 		lookupTables = new LinkedHashMap<String,LookupTable> ();
 		dataRecordMetadata = new LinkedHashMap<String,Object> ();
-		graphParameters = new GraphParameters();
+		persistedImplicitMetadata = new LinkedHashMap<>();
+		graphParameters = new GraphParameters(this);
 		dictionary = new Dictionary(this);
-		memoryTracker = new MemoryTracker();
 		initialRuntimeContext = new GraphRuntimeContext();
 		vfsEntries = new TrueZipVFSEntries();
 	}
@@ -235,15 +274,41 @@ public final class TransformationGraph extends GraphElement {
     }
     
     /**
-     * Sets 'jobflow' type for this transformation graph.
-     * The graph can be driven in slightly different way in case jobflow run.  
+     * Sets static JobType for this transformation graph.
+     * Static JobType is a JobType derived from type of file from which
+     * the graph has been created. This static JobType can be different from
+     * runtime JobType in {@link GraphRuntimeContext#getJobType()}.
+     * For example subgraph (*.sgrf) executed from a jobflow has static JobType
+     * {@link JobType#SUBGRAPH} but runtime JobType is {@link JobType#SUBJOBFLOW}.
      */
-    public void setJobType(JobType jobType) {
+    public void setStaticJobType(JobType jobType) {
     	this.jobType = jobType;
     }
     
+    /**
+     * Returns runtime job type. Can be different from static JobType ({@link #getStaticJobType()}).
+     * For example *.sgrf file executed as root job, has static job type {@link JobType#SUBGRAPH},
+     * but runtime jobtype is {@link JobType#ETL_GRAPH}.
+     */
     @Override
-    public JobType getJobType() {
+    public JobType getRuntimeJobType() {
+    	GraphRuntimeContext runtimeContext = getRuntimeContext();
+    	if (runtimeContext != null) {
+    		return runtimeContext.getJobType();
+    	} else {
+    		return jobType;
+    	}
+    }
+
+    /**
+     * Gets static JobType for this transformation graph.
+     * Static JobType is a JobType derived from type of file from which
+     * the graph has been created. This static JobType can be different from
+     * runtime JobType in {@link GraphRuntimeContext#getJobType()}.
+     * For example subgraph (*.sgrf) executed from a jobflow has static JobType
+     * {@link JobType#SUBGRAPH} but runtime JobType is {@link JobType#SUBJOBFLOW}.
+     */
+    public JobType getStaticJobType() {
     	return jobType;
     }
     
@@ -379,6 +444,38 @@ public final class TransformationGraph extends GraphElement {
 	}
 	
 	/**
+	 * Persited metadata are used
+	 * for validation purpose. All edges with implicit metadata
+	 * has reference to one of these metadata. The calculated implicit
+	 * metadata is compared with the persisted one, must be identical.
+	 * @param id
+	 * @return persisted implicit metadata with the given id
+	 */
+	public DataRecordMetadata getPersistedImplicitMetadata(String id) {
+		return persistedImplicitMetadata.get(id);
+	}
+	
+	/**
+	 * Persited metadata are used
+	 * for validation purpose. All edges with implicit metadata
+	 * has reference to one of these metadata. The calculated implicit
+	 * metadata is compared with the persisted one, must be identical.
+	 * @param metadata
+	 */
+	public void addPersistedImplicitMetadata(DataRecordMetadata metadata) {
+		String id = metadata.getId();
+		if (!StringUtils.isEmpty(id)) {
+			if (!persistedImplicitMetadata.containsKey(id)) {
+				persistedImplicitMetadata.put(id, metadata);
+			} else {
+				throw new JetelRuntimeException("duplicate persisted implicit metadata id " + id);
+			}
+		} else {
+			throw new JetelRuntimeException("empty persisted implicit metadata id");
+		}
+	}
+	
+	/**
      * Return array of Phases defined within graph sorted (ascentially)
      * according phase numbers.
      * 
@@ -494,18 +591,12 @@ public final class TransformationGraph extends GraphElement {
 	public synchronized void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 
+		//check all required graph parameters whether the values have been passed from executor
+		validateRequiredGraphParameters();
+		
 		//print out types of all edges
-		for (Edge edge : getEdges().values()) {
-			logger.debug("EdgeType [" + edge.getId() + "] : " + (edge.isSharedEdgeBase() ? "shared " + EdgeTypeEnum.valueOf(edge.getEdgeBase()) : edge.getEdgeType()));
-		}
-
-		//check whether the job type (etlGraph vs jobflow) of the graph matches the job type in GraphRuntimeContext 
-    	if (!getJobType().isSubTypeOf(getRuntimeContext().getJobType())) {
-    		throw new JetelRuntimeException("Inconsistent runtime setup. " +
-					"Internal graph nature (" + getJobType() + ") differs from runtime graph nature (" + getRuntimeContext().getJobType() + "). " +
-							"Probably internal graph nature does not correspond to graph file suffix.");
-    	}
-
+		printEdgesInfo();
+		
 		//pre-execute initialization of dictionary
 		dictionary.preExecute();
 		
@@ -1102,93 +1193,109 @@ public final class TransformationGraph extends GraphElement {
     
     @Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-		super.checkConfig(status);
+    	super.checkConfig(status);
+    	
+    	// CLO-4930: catch and report RecusiveSubgraphException
+    	try {
+    		//analyse the graph if necessary - usually the graph is analysed already in TransformationGraphXMLReaderWriter
+    		if (!isAnalysed()) {
+    			TransformationGraphAnalyzer.analyseGraph(this, getRuntimeContext(), true);
+    		}
+    		
+    		//register current thread in ContextProvider - it is necessary to static approach to transformation graph
+    		Context c = ContextProvider.registerGraph(this);
+    		try {
+    	    	if(status == null) {
+    	            status = new ConfigurationStatus();
+    	        }
 
-		//analyse the graph if necessary - usually the graph is analysed already in TransformationGraphXMLReaderWriter
-		if (!isAnalysed()) {
-			TransformationGraphAnalyzer.analyseGraph(this, getRuntimeContext(), true);
-		}
-
-		//register current thread in ContextProvider - it is necessary to static approach to transformation graph
-		Context c = ContextProvider.registerGraph(this);
-		try {
-	    	if(status == null) {
+    	    	status.addAll(preCheckConfigStatus);
+    			
+    	    	graphParameters.checkConfig(status);
+    	        
+    	        //check dictionary
+    	        dictionary.checkConfig(status);
+    	        
+    	        //check connections configuration
+    	        for(IConnection connection : connections.values()) {
+    	        	try {
+    	        		connection.checkConfig(status);
+    	        	} catch (Exception e) {
+    	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, connection, Priority.HIGH);
+    	        		problem.setCauseException(e);
+    	        		status.add(problem);
+    	        	}
+    	        }
+    	
+    	        //check lookup tables configuration
+    	        for(LookupTable lookupTable : lookupTables.values()) {
+    	        	try {
+    	        		lookupTable.checkConfig(status);
+    	        	} catch (Exception e) {
+    	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, lookupTable, Priority.HIGH);
+    	        		problem.setCauseException(e);
+    	        		status.add(problem);
+    	        	}
+    	        }
+    	
+    	        //check sequences configuration
+    	        for(Sequence sequence : sequences.values()) {
+    	        	try {
+    	        		sequence.checkConfig(status);
+    	        	} catch (Exception e) {
+    	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, sequence, Priority.HIGH);
+    	        		problem.setCauseException(e);
+    	        		status.add(problem);
+    	        	}
+    	        }
+    	
+    	        //check metadatas configuration
+    	        for(Object oDataRecordMetadata : dataRecordMetadata.values()) {
+    	            if (oDataRecordMetadata instanceof DataRecordMetadata) ((DataRecordMetadata)oDataRecordMetadata).checkConfig(status);
+    	        }
+    	
+    	        //check phases configuration
+    	        for(Phase phase : getPhases()) {
+    	            phase.checkConfig(status);
+    	        }
+    	        
+    	        //only single instance of SubgraphInput and SubgraphOutput component is allowed in transformation graph
+    	        List<Node> subgraphInputComponents = new ArrayList<>();
+    	        List<Node> subgraphOutputComponents = new ArrayList<>();
+    	        for (Node component : getNodes().values()) {
+    	        	if (SubgraphUtils.isSubJobInputComponent(component.getType())) {
+    	        		subgraphInputComponents.add(component);
+    	        	}
+    	        	if (SubgraphUtils.isSubJobOutputComponent(component.getType())) {
+    	        		subgraphOutputComponents.add(component);
+    	        	}
+    	        }
+    	        if (subgraphInputComponents.size() > 1) {
+    	    		for (Node subgraphInputComponent : subgraphInputComponents) {
+    	    			status.add("Multiple SubgraphInput component detected in the graph.", Severity.ERROR, subgraphInputComponent, Priority.NORMAL);
+    	    		}
+    	        }
+    	        if (subgraphOutputComponents.size() > 1) {
+    	    		for (Node subgraphOutputComponent : subgraphOutputComponents) {
+    	    			status.add("Multiple SubgraphOutput component detected in the graph.", Severity.ERROR, subgraphOutputComponent, Priority.NORMAL);
+    	    		}
+    	        }
+    	        
+    	        return status;
+    		} finally {
+    			//unregister current thread from ContextProvider
+    			ContextProvider.unregister(c);
+    		}
+    	} catch (RecursiveSubgraphException ex) {
+    		// CLO-4930:
+	    	if (status == null) {
 	            status = new ConfigurationStatus();
 	        }
-	    	
-	    	graphParameters.checkConfig(status);
-	        
-	        //check dictionary
-	        dictionary.checkConfig(status);
-	        
-	        //check connections configuration
-	        for(IConnection connection : connections.values()) {
-	        	try {
-	        		connection.checkConfig(status);
-	        	} catch (Exception e) {
-	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, connection, Priority.HIGH);
-	        		problem.setCauseException(e);
-	        		status.add(problem);
-	        	}
-	        }
-	
-	        //check lookup tables configuration
-	        for(LookupTable lookupTable : lookupTables.values()) {
-	        	try {
-	        		lookupTable.checkConfig(status);
-	        	} catch (Exception e) {
-	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, lookupTable, Priority.HIGH);
-	        		problem.setCauseException(e);
-	        		status.add(problem);
-	        	}
-	        }
-	
-	        //check sequences configuration
-	        for(Sequence sequence : sequences.values()) {
-	        	try {
-	        		sequence.checkConfig(status);
-	        	} catch (Exception e) {
-	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, sequence, Priority.HIGH);
-	        		problem.setCauseException(e);
-	        		status.add(problem);
-	        	}
-	        }
-	
-	        //check metadatas configuration
-	        for(Object oDataRecordMetadata : dataRecordMetadata.values()) {
-	            if (oDataRecordMetadata instanceof DataRecordMetadata) ((DataRecordMetadata)oDataRecordMetadata).checkConfig(status);
-	        }
-	
-	        //check phases configuration
-	        for(Phase phase : getPhases()) {
-	            phase.checkConfig(status);
-	        }
-	        
-	        //SubgraphInput and SubgraphOutput components can be present only one instance in the graph
-	        boolean hasSubgraphInput = false;
-	        boolean hasSubgraphOutput = false;
-	        for (Node component : getNodes().values()) {
-	        	if (SubgraphUtils.isSubJobInputComponent(component.getType())) {
-	        		if (hasSubgraphInput) {
-	        			status.add("Multiple SubgraphInput component detected in the graph.", Severity.ERROR, component, Priority.NORMAL);
-	        		} else {
-	        			hasSubgraphInput = true;
-	        		}
-	        	}
-	        	if (SubgraphUtils.isSubJobOutputComponent(component.getType())) {
-	        		if (hasSubgraphOutput) {
-	        			status.add("Multiple SubgraphOutput component detected in the graph.", Severity.ERROR, component, Priority.NORMAL);
-	        		} else {
-	        			hasSubgraphOutput = true;
-	        		}
-	        	}
-	        }
-	        
-	        return status;
-		} finally {
-			//unregister current thread from ContextProvider
-			ContextProvider.unregister(c);
-		}
+    		ConfigurationProblem problem = new ConfigurationProblem(ex, Severity.ERROR, ex.getNode(), Priority.HIGH, SubgraphUtils.XML_JOB_URL_ATTRIBUTE);
+    		status.add(problem);
+    		return status;
+    	}
+
     }
     
     public CloverPost getPost(){
@@ -1242,6 +1349,11 @@ public final class TransformationGraph extends GraphElement {
     	this.initialRuntimeContext = initialRuntimeContext;
     }
     
+	/**
+	 * @return logger for this transformation graph
+	 * @deprecated use {@link #getLog()} instead
+	 */
+    @Deprecated
 	public Log getLogger() {
 		return TransformationGraph.logger;
 	}
@@ -1257,17 +1369,6 @@ public final class TransformationGraph extends GraphElement {
 		return dictionary;
 	}
 	
-    public IAuthorityProxy getAuthorityProxy() {
-    	return getRuntimeContext().getAuthorityProxy();
-    }
-
-    /**
-     * @return memory tracker associated with this graph
-     */
-    public MemoryTracker getMemoryTracker() {
-    	return memoryTracker;
-    }
-    
 	public TrueZipVFSEntries getVfsEntries() {
 		return vfsEntries;
 	}
@@ -1315,6 +1416,40 @@ public final class TransformationGraph extends GraphElement {
         return null;
     }
 
+	private void printEdgesInfo() {
+		if (logger.isDebugEnabled()) {
+			for (Edge edge : getEdges().values()) {
+				StringBuilder edgeLabel = new StringBuilder();
+				if (edge instanceof JobflowEdge) {
+					edgeLabel.append("JobflowEdge");
+				} else {
+					edgeLabel.append("GraphEdge");
+				}
+				edgeLabel.append(" [" + edge.getId() + "] : ");
+				if (edge.isSharedEdgeBase()) {
+					edgeLabel.append("shared " + EdgeTypeEnum.valueOf(edge.getEdgeBase()) + " [" + edge.getEdgeBase().getProxy().getId() + "]");
+				} else {
+					edgeLabel.append(edge.getEdgeType());
+				}
+				logger.debug(edgeLabel);
+			}
+		}
+	}
+
+	/**
+	 * Checks whether values for all required graph parameters have been passed from executor of this graph. 
+	 */
+	private void validateRequiredGraphParameters() {
+		if (getRuntimeContext().isValidateRequiredParameters()) {
+			for (GraphParameter graphParameter : getGraphParameters().getAllGraphParameters()) {
+				if (graphParameter.isPublic() && graphParameter.isRequired()
+						&& !getRuntimeContext().getAdditionalProperties().containsKey(graphParameter.getName())) {
+					throw new JetelRuntimeException("Required graph parameter '" + graphParameter.getName() + "' is not specified.");
+				}
+			}
+		}
+	}
+	
 	public String getAuthor() {
 		return author;
 	}
@@ -1408,9 +1543,66 @@ public final class TransformationGraph extends GraphElement {
 		this.isAnalysed = isAnalysed;
 	}
 
+	/**
+	 * Execution label is human-readable text which describes this graph execution.
+	 * Can be parametrised by graph parameters.
+	 * @return resolved execution label for this graph instance
+	 */
+	public String getExecutionLabel() {
+		return getPropertyRefResolver().resolveRef(executionLabel, RefResFlag.SPEC_CHARACTERS_OFF);
+	}
+
+	/**
+	 * Sets human-readable description of execution of this graph.
+	 * @param executionLabel
+	 */
+	public void setExecutionLabel(String executionLabel) {
+		this.executionLabel = executionLabel;
+	}
+
+	public String getCategory() {
+		return getPropertyRefResolver().resolveRef(category, RefResFlag.SPEC_CHARACTERS_OFF);
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
+	}
+
+	public String getSmallIconPath() {
+		return getPropertyRefResolver().resolveRef(smallIconPath, RefResFlag.SPEC_CHARACTERS_OFF);
+	}
+
+	public void setSmallIconPath(String smallIconPath) {
+		this.smallIconPath = smallIconPath;
+	}
+
+	public String getMediumIconPath() {
+		return getPropertyRefResolver().resolveRef(mediumIconPath, RefResFlag.SPEC_CHARACTERS_OFF);
+	}
+
+	public void setMediumIconPath(String mediumIconPath) {
+		this.mediumIconPath = mediumIconPath;
+	}
+
+	public String getLargeIconPath() {
+		return getPropertyRefResolver().resolveRef(largeIconPath, RefResFlag.SPEC_CHARACTERS_OFF);
+	}
+
+	public void setLargeIconPath(String largeIconPath) {
+		this.largeIconPath = largeIconPath;
+	}
+
+	/**
+	 * @return configuration status which can be populated by graph factorisation and
+	 * later will be part of {@link #checkConfig(ConfigurationStatus)} result
+	 */
+	public ConfigurationStatus getPreCheckConfigStatus() {
+		return preCheckConfigStatus;
+	}
+
 	@Override
 	public String toString() {
 		return getId() + ":" + getRuntimeContext().getRunId();
 	}
-	
+
 }

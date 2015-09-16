@@ -223,6 +223,7 @@ public class DataWriter extends Node {
 			formatterProvider.setQuotedStrings(quotedStrings);
 			formatterProvider.setQuoteChar(quoteChar);
 		}
+		formatterProvider.setAppend(appendData);
 		
 		initLookupTable();
 
@@ -241,6 +242,7 @@ public class DataWriter extends Node {
         writer.setAppendData(appendData);
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
+        writer.setCharset(charset);
         if (attrPartitionKey != null) {
             writer.setLookupTable(lookupTable);
             writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
@@ -338,7 +340,7 @@ public class DataWriter extends Node {
 		DataWriter aDataWriter = null;
 		
 		aDataWriter = new DataWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-								xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, RefResFlag.URL),
+								xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.URL),
 								xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
 								xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false));
         if (xattribs.exists(XML_OUTPUT_FIELD_NAMES)){
@@ -403,6 +405,11 @@ public class DataWriter extends Node {
         	return status;
         }
 
+        if (StringUtils.isEmpty(fileURL)) {
+            status.add("Missing file URL attribute.", Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE);
+            return status;
+        }
+        
         try {
         	FileUtils.canWrite(getContextURL(), fileURL, mkDir);
         } catch (ComponentNotReadyException e) {

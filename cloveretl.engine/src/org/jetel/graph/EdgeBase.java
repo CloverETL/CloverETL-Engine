@@ -38,6 +38,11 @@ public abstract class EdgeBase {
 	/** Is the graph running in verbose mode? Cache of GraphRuntimeContext.isVerboseMode() variable. */
 	protected boolean verbose;
 
+	/**
+	 * This flag indicates eof mark has been already sent to this edge,
+	 * eof() method has been already invoked.
+	 */
+	protected volatile boolean eofSent;
 
 	/**
 	 *  Constructor for the Edge object
@@ -49,6 +54,13 @@ public abstract class EdgeBase {
 		this.proxy = proxy;
 	}
 
+	/**
+	 * @return graph edge, where this edge base is used
+	 */
+	public Edge getProxy() {
+		return proxy;
+	}
+	
 	/**
 	 *  Description of the Method
 	 *
@@ -64,6 +76,8 @@ public abstract class EdgeBase {
 		if (proxy != null) {
 			verbose = proxy.getGraph().getRuntimeContext().isVerboseMode();
 		}
+		
+		eofSent = false;
     }
     
 	/**
@@ -196,10 +210,16 @@ public abstract class EdgeBase {
 	public abstract boolean hasData();
 	
     /**
-     * Current thread is block until EOF on the edge is reached - last
-     * record is read.
+     * Current thread is block until EOF on the edge is reached.
      */
 	public abstract void waitForEOF() throws InterruptedException;
+
+	/**
+	 * @return true if eof mark has been already sent to this edge, eof() method has been already invoked
+	 */
+	public boolean isEofSent() {
+		return eofSent;
+	}
 	
 }
 /*

@@ -45,6 +45,14 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 	private final String fieldName;
 	private final String charset;
 	
+	/**
+	 * Indicates either that:
+	 * <ol> 
+	 * 	<li>the buffer is empty</li>
+	 *  <br>AND
+	 *  <li>there are no further records, or a record with <code>null</code> value has been read</li>
+	 * <ol>
+	 */
 	private boolean eof = false;
 	private boolean opened;
 	
@@ -89,6 +97,10 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 	@Override
 	public synchronized void close() throws IOException {
 		opened = false;
+		// CLO-4588: discard remaining unread records until EOF
+		while (!eof) {
+			readRecord();
+		}
 	}
 	
 	@Override
@@ -97,7 +109,7 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 			throw new ClosedChannelException();
 		}
 		
-		readRecord();
+		fillBuffer();
 		
 		//do we have something to return?
 		if (eof) {
@@ -140,40 +152,56 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 			return true;
 		} else {
 			//look ahead if the data are available
-			readRecord();
+			fillBuffer();
 			return eof;
 		}
 	}
 	
 	/**
-	 * Read data record from input port to internal buffer
+	 * Reads a record and returns the value of the source field.
+	 * Also sets the {@link #eof} flag as a side effect.
+	 * 
+	 * @return value of the source field of the next record
+	 * @throws IOException
+	 */
+	private Object readRecord() throws IOException {
+		try {
+			record = inputPort.readRecord(record);
+		} catch (InterruptedException e) {
+			throw new IOException("Failed to read record from input port.", e); //$NON-NLS-1$
+		}
+		
+		Object value = null;
+		if (record != null) {
+			//record was read
+			DataField field = record.getField(fieldName);
+			value = field.getValue();
+		}
+		
+		if (value == null) {
+			eof = true;
+		}
+		
+		return value;
+	}
+	
+	/**
+	 * Read data record from input port to internal buffer.
+	 * Calls {@link #readRecord()}, which may update the {@link #eof}
+	 * flag as a side effect.
 	 * 
 	 * @throws IOException
 	 */
-	private void readRecord() throws IOException {
+	private void fillBuffer() throws IOException {
 		if (!eof && buffer.remaining() == 0) {
 			buffer.clear();
 			
-			try {
-				record = inputPort.readRecord(record);
-			} catch (InterruptedException e) {
-				throw new IOException("Failed to read record from input port.", e); //$NON-NLS-1$
+			Object value = readRecord();
+			if (value != null) {
+				//some value read
+				buffer.put(value instanceof byte[] ? (byte[]) value : value.toString().getBytes(charset));
 			}
-			
-			if (record != null) {
-				//record was read
-				DataField field = record.getField(fieldName);
-				Object value = field.getValue();
-				if (value != null) {
-					//some value read
-					buffer.put(value instanceof byte[] ? (byte[]) value : value.toString().getBytes(charset));
-				} else {
-					eof = true;
-				}
-			} else {
-				//eof reached
-				eof = true;
-			}
+
 	    	buffer.flip();
 		}
 	}

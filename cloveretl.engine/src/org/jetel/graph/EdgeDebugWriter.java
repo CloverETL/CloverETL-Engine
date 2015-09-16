@@ -54,7 +54,7 @@ import org.jetel.util.file.FileUtils;
  */
 public class EdgeDebugWriter {
 
-	private static final int MINIMUM_DELAY_BETWEEN_FLUSHES = 5000;
+	private static final long MINIMUM_DELAY_BETWEEN_FLUSHES = 5000 * 1000 * 1000L; // 5 seconds in ns
 	
 	private static Log logger = LogFactory.getLog(EdgeDebugWriter.class);
 
@@ -84,7 +84,7 @@ public class EdgeDebugWriter {
     /** the number of debugged (stored) records */
     private int debuggedRecords = 0;
     
-    private long lastFlushTime = 0L;
+    private long lastFlushTime = 0;
 
     public EdgeDebugWriter(OutputStream outputStream, DataRecordMetadata metadata) {
     	outputChannel = Channels.newChannel(outputStream);
@@ -143,6 +143,14 @@ public class EdgeDebugWriter {
     		return ContextProvider.getContextURL();
     	}
     }
+
+    /**
+     * To set the correct record counter before calling writeRecord(DataRecord record)
+     * @param recordsCounter
+     */
+	public void setRecordsCounter(int recordsCounter) {
+		this.recordsCounter = recordsCounter;
+	}
     
     public void writeRecord(DataRecord record) throws IOException, InterruptedException {
         recordsCounter++;
@@ -162,14 +170,14 @@ public class EdgeDebugWriter {
     }
     
     private void flushIfNeeded() throws IOException, InterruptedException {
-    	if (formatter != null && (isJobflow() || (System.currentTimeMillis() - lastFlushTime) > MINIMUM_DELAY_BETWEEN_FLUSHES)) {
+    	if (formatter != null && (isJobflow() || lastFlushTime == 0 || (System.nanoTime() - lastFlushTime) > MINIMUM_DELAY_BETWEEN_FLUSHES)) {
     		flush();
     	}
     }
 
-    private void flush() throws IOException, InterruptedException {
+    public void flush() throws IOException, InterruptedException {
 		formatter.flush();
-		lastFlushTime = System.currentTimeMillis();
+		lastFlushTime = System.nanoTime();
     }
     
     private boolean checkRecordToWrite(DataRecord record) {
@@ -260,7 +268,7 @@ public class EdgeDebugWriter {
     
     private boolean isJobflow() {
     	if (getGraph() != null) {
-    		return getGraph().getJobType() == JobType.JOBFLOW;
+    		return getGraph().getRuntimeJobType().isJobflow();
     	} else {
     		return false;
     	}
@@ -327,6 +335,7 @@ public class EdgeDebugWriter {
 	public boolean isSampleData() {
 		return sampleData;
 	}
+	
 
 	/**
 	 * @param sampleData the sampleData to set

@@ -24,8 +24,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
-import org.jetel.graph.ContextProvider;
-import org.jetel.graph.runtime.IAuthorityProxy;
+import org.jetel.util.file.SandboxUrlUtils;
 
 public class SandboxConnection extends URLConnection {
 	
@@ -45,10 +44,11 @@ public class SandboxConnection extends URLConnection {
 	 */
 	@Override
 	public InputStream getInputStream() throws IOException {
-		String storageCode = url.getHost();
-		String path = url.getPath();
-		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
-		return authorityProxy.getSandboxResourceInput(ContextProvider.getComponentId(), storageCode, path);
+		try {
+			return SandboxUrlUtils.getSandboxInputStream(url);
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
 	}
 
 	/*
@@ -57,10 +57,11 @@ public class SandboxConnection extends URLConnection {
 	 */
 	@Override
 	public OutputStream getOutputStream() throws IOException {
-		String storageCode = url.getHost();
-		String path = url.getPath();
-		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
-		return authorityProxy.getSandboxResourceOutput(ContextProvider.getComponentId(), storageCode, path, false);
+		try {
+			return SandboxUrlUtils.getSandboxOutputStream(url, false);
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
 	}
 
 	/*

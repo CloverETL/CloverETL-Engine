@@ -24,6 +24,7 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.graph.InputPort;
 import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -100,7 +101,7 @@ public class SimpleGather extends Node {
 	/**
 	 * how many empty loops till thread wait() is called
 	 */
-	private final static int NUM_EMPTY_LOOPS_TRESHOLD = 5;
+	private final static int NUM_EMPTY_LOOPS_TRESHOLD = 29;
 
 	/**
 	 * how many millis to wait if we reached the specified number of empty loops (when no data has been read).
@@ -113,6 +114,91 @@ public class SimpleGather extends Node {
 
 	@Override
 	public Result execute() throws Exception {
+		//check all input edges - if one of them is fast propagate
+		//sub-optimal gathering algorithm will be used
+		//typically jobflow has all of the edges fast-propagate or
+		//all edges in loop are automatically fast-propagate
+		boolean hasFastPropagateInput = false;
+		for (InputPort inputPort : getInPorts()) {
+			if (inputPort.getEdge().getEdgeType().isFastPropagate()) {
+				hasFastPropagateInput = true;
+				break;
+			}
+		}
+		
+		if (hasFastPropagateInput) {
+			//at least one input edge is fast propagate - so algorithm can not block on an input edge
+			//non blocking sub-optimal algorithm will be used
+			return gatherFastPropagate();
+		} else {
+			return gatherPerformanceOptimal();
+		}
+	}
+	
+	/**
+	 * This implementation is fastest gathering algorithm, but
+	 * it is not suitable for jobflow or loops, where fast-propagate edges
+	 * have to be used.
+	 */
+	private Result gatherPerformanceOptimal() throws Exception {
+		InputPortDirect inPort;
+		/*
+		 * we need to keep track of all input ports - it they contain data or signalized that they are empty.
+		 */
+		int numActive;
+		int emptyLoopCounter = 0;
+		/*
+		 * we need to keep track of all input ports - it they contain data or signalized that they are empty.
+		 */
+		int readFromPort;
+		boolean[] isEOF = new boolean[getInPorts().size()];
+		for (int i = 0; i < isEOF.length; i++) {
+			isEOF[i] = false;
+		}
+		InputPortDirect inputPorts[] = (InputPortDirect[]) getInPorts().toArray(new InputPortDirect[0]);
+		numActive = inputPorts.length;// counter of still active ports - those without EOF status
+		// the metadata is taken from output port definition
+		CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
+		readFromPort = 0;
+		inPort = inputPorts[readFromPort];
+		int lastReadPort = -1;
+		boolean forceReading = false;
+		while (runIt && numActive > 0) {
+			if (!isEOF[readFromPort] && (inPort.hasData() || forceReading || numActive == 1)) {
+				forceReading = false;
+				emptyLoopCounter = 0;
+				if (inPort.readRecordDirect(recordBuffer)) {
+					writeRecordToOutputPorts(recordBuffer);
+					lastReadPort = readFromPort;
+				} else {
+					isEOF[readFromPort] = true;
+					numActive--;
+				}
+				SynchronizeUtils.cloverYield();
+			} else {
+				readFromPort = (++readFromPort) % (inputPorts.length);
+				inPort = inputPorts[readFromPort];
+
+				if (lastReadPort == readFromPort) {
+					forceReading = true;
+				}
+				// have we reached the maximum empty loops count ?
+				if (emptyLoopCounter > NUM_EMPTY_LOOPS_TRESHOLD) {
+					Thread.sleep(getSleepTime());
+				} else {
+					emptyLoopCounter++;
+				}
+			}
+		}
+
+		return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+	
+	/**
+	 * This implemenation is performance sub-optimal, but never block on empty input ports.
+	 * So it is suitable for fast-propagate graphs - jobflows and loops.
+	 */
+	private Result gatherFastPropagate() throws Exception {
 		InputPortDirect inPort;
 		/*
 		 * we need to keep track of all input ports - it they contain data or signalized that they are empty.

@@ -236,7 +236,12 @@ public class CharByteDataParser extends AbstractTextParser {
 				return parsingErrorFound(e.getSimpleMessage(), record, consumerIdx, null);
 			} catch (BadDataFormatException e) {
 				if (recordSkipper != null) {
-					recordSkipper.skipInput(consumerIdx);
+					try {
+						recordSkipper.skipInput(consumerIdx);
+					} catch (OperationNotSupportedException ex2) { // CLO-5703
+						logger.warn("Record skipping failed", ex2);
+						e.addSuppressed(ex2);
+					}
 				}
 				if (cfg.isVerbose()) {
 					lastRawRecord = getLastRawRecord(); 
@@ -517,10 +522,13 @@ public class CharByteDataParser extends AbstractTextParser {
 				idx++;
 			}
 		} // loop
-		if (needByteInput) {
-			recordSkipper = new ByteRecordSkipper(inputReader, getCharDelimSearcher(), isDelimited);
-		} else {
-			recordSkipper = new CharRecordSkipper(inputReader, getCharDelimSearcher(), isDelimited);
+		// CLO-5703: disable record skipping if last non-autofilled field has no delimiter
+		if (metadata.isSpecifiedRecordDelimiter() || isDelimited[lastNonAutoFilledField]) {
+			if (needByteInput) {
+				recordSkipper = new ByteRecordSkipper(inputReader, getCharDelimSearcher(), isDelimited);
+			} else {
+				recordSkipper = new CharRecordSkipper(inputReader, getCharDelimSearcher(), isDelimited);
+			}
 		}
 		if (metadata.isSpecifiedRecordDelimiter() && !metadata.getField(lastNonAutoFilledField).isDelimited()) {
 			// last field without autofilling doesn't have delimiter - special consumer needed for record delimiter
@@ -734,7 +742,7 @@ public class CharByteDataParser extends AbstractTextParser {
 						for (int idx = 0; idx < fieldCount; idx++) {
 							if (!isAutoFilling[idx] && i >= fieldStart[idx] && i < fieldEnd[idx]) {
 								if (!record.getMetadata().getField(startFieldIdx + idx).isEofAsDelimiter()) {
-									throw new BadDataFormatException("End of input encountered instead of the closing quote");
+									throw new BadDataFormatException("End of input encountered while reading fixed-length field");
 								}
 							}
 						}
@@ -1371,6 +1379,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			inputReader.mark();
 			int ichr;
 			char chr;
+			boolean delimiterFound = false;
 			while (true) {
 				ichr = inputReader.readChar();
 				if (ichr == CharByteInputReader.BLOCKED_BY_MARK) {
@@ -1380,15 +1389,21 @@ public class CharByteDataParser extends AbstractTextParser {
 					throw new BadDataFormatException("Decoding of input into char data failed while looking for obligatory delimiter");
 				}
 				if (ichr == CharByteInputReader.END_OF_INPUT) {
-					if (acceptEofAsDelim && delimPatterns.getMatchLength() == 0) {
-						return false; // indicates end of input before one single character was read
+					if (delimiterFound) {
+						inputReader.revert();
+						return true;
 					} else {
-						throw new BadDataFormatException("End of input encountered instead of the field delimiter");
+						if (acceptEofAsDelim && delimPatterns.getMatchLength() == 0) {
+							return false; // indicates end of input before one single character was read
+						} else {
+							throw new BadDataFormatException("End of input encountered instead of the field delimiter");
+						}
 					}
 				}
 				chr = (char) ichr;
 				boolean withoutFail = delimPatterns.update(chr);
 				if (delimPatterns.isPattern(delimId)) {
+					delimiterFound = true;
 					// we are trying to match longest possible delimiter
 					if (matchLongerDelimiter && withoutFail) {
 						inputReader.mark();
@@ -1396,6 +1411,9 @@ public class CharByteDataParser extends AbstractTextParser {
 					} else {
 						return true;
 					}
+				} else if (delimiterFound) {
+					inputReader.revert();
+					return true;
 				} else if (delimPatterns.isPattern(DEFAULT_FIELD_DELIMITER_IDENTIFIER)) {
 					throw new BadDataFormatException("Unexpected field delimiter found - record probably contains too many fields");
 				} else if (delimPatterns.isPattern(RECORD_DELIMITER_IDENTIFIER)) {

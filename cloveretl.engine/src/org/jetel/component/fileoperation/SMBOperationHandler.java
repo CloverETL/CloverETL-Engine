@@ -445,11 +445,11 @@ public class SMBOperationHandler implements IOperationHandler {
 	}
 
 	private static List<String> getParts(String uri) {
-		return FileManager.getParts(uri);
+		return FileManager.getUriParts(uri);
 	}
 	
 	private static boolean hasWildcards(String path) {
-		return FileManager.hasWildcards(path);
+		return FileManager.uriHasWildcards(path);
 	}
 	
 	@Override
@@ -571,7 +571,7 @@ public class SMBOperationHandler implements IOperationHandler {
 		return CloverURI.createSingleURI(toURI(file));
 	}
 
-	static URI toURI(SmbFile file) {
+	public static URI toURI(SmbFile file) {
 		URL url = file.getURL(); // may contain spaces in path
 		try {
 			// %-encode path, query and fragment...

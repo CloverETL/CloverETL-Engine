@@ -26,6 +26,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.SQLDataParser;
+import org.jetel.connection.jdbc.SQLIncremental;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
@@ -39,6 +40,8 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
@@ -161,6 +164,7 @@ public class DBInputTable extends Node {
 	public static final String XML_INCREMENTAL_KEY_ATTRIBUTE = "incrementalKey";
 	public static final String XML_PRINTSTATEMENTS_ATTRIBUTE = "printStatements";
 	
+	private String policyTypeStr;
 	private PolicyType policyType;
 	private TextParser inputParser;
 
@@ -225,11 +229,14 @@ public class DBInputTable extends Node {
 	 * @exception  ComponentNotReadyException  Description of Exception
 	 * @since                                  September 27, 2002
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
 		
+		policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+
         IConnection conn = getGraph().getConnection(dbConnectionName);
         if (conn==null){
             throw new ComponentNotReadyException("Can't obtain DBConnection object: \""+dbConnectionName+"\"");
@@ -271,12 +278,6 @@ public class DBInputTable extends Node {
     	if ((lDataRecordMetadata = getOutMetadata()).size() > 0) 
     		autoFilling.addAutoFillingFields(lDataRecordMetadata.get(0));
 	}
-
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-		
-	}
 	
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
@@ -294,11 +295,16 @@ public class DBInputTable extends Node {
 
 	@Override
 	public Result execute() throws Exception {
+		String currentQuery = null;
 		try {
 			SQLDataParser parser = null;
 			if (sqlQuery != null) {
 				// we have only single query
-				parser = processSqlQuery(sqlQuery);
+				currentQuery = sqlQuery;
+				if (printStatements) {
+					logger.info("Executing statement: " + sqlQuery);
+				}
+				parser = processSqlQuery(currentQuery);
 			} else {
 				// process queries from file or input port
 				PropertyRefResolver propertyResolver = getPropertyRefResolver();
@@ -310,16 +316,19 @@ public class DBInputTable extends Node {
 					statementRecord.init();
     				//read statements from byte channel
     				while ((statementRecord = inputParser.getNext(statementRecord)) != null) {
-    					String sqlStatement = propertyResolver.resolveRef(statementRecord.getField(0).toString());
+    					currentQuery = propertyResolver.resolveRef(statementRecord.getField(0).toString());
        					if (printStatements) {
-    						logger.info("Executing statement: " + sqlStatement);
+    						logger.info("Executing statement: " + currentQuery);
     					}
-       					parser = processSqlQuery(sqlStatement);
+       					parser = processSqlQuery(currentQuery);
     				}
 				}
 			}
 			// save values of incremental key into file
 			storeValues(parser);
+		} catch (Exception e) {
+			logger.error("Error when executing statement: " + currentQuery);
+			throw e;
 		} finally {
     		broadcastEOF();
 		}
@@ -389,7 +398,8 @@ public class DBInputTable extends Node {
 	 * @throws AttributeNotFoundException 
 	 * @since           September 27, 2002
 	 */
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws Exception {
+    @SuppressWarnings("deprecation")
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws Exception {
             ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
             ComponentXMLAttributes xattribsChild;
             DBInputTable aDBInputTable = null;
@@ -479,6 +489,12 @@ public class DBInputTable extends Node {
         	return status;
         }
         
+		if (!PolicyType.isPolicyType(policyTypeStr)) {
+			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+		} else {
+			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+		}
+
         checkMetadata(status, getOutMetadata());
         
         try {
@@ -517,6 +533,12 @@ public class DBInputTable extends Node {
 		            }
 		            status.add(problem);
 				}
+				
+				if (sqlQuery != null && incrementalKeyDef != null && !sqlQuery.contains(SQLIncremental.INCREMENTAL_KEY_INDICATOR)) {
+					status.add(new ConfigurationProblem("Incremental file and key is specified but sql query doesn't contain incremental key indicator ("
+							+SQLIncremental.INCREMENTAL_KEY_INDICATOR+"). The component will erase incremental key from the incremental file.",
+							Severity.WARNING, this, Priority.NORMAL, XML_SQLQUERY_ATTRIBUTE));
+				}
 			}
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
@@ -533,21 +555,15 @@ public class DBInputTable extends Node {
 	    this.fetchSize=fetchSize;
 	}
 
-    public void setPolicyType(String strPolicyType) {
-        setPolicyType(PolicyType.valueOfIgnoreCase(strPolicyType));
+    public void setPolicyType(String policyTypeStr) {
+        this.policyTypeStr = policyTypeStr;
     }
     
-	/**
-	 * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
-	 *
-	 * @param  handler
-	 */
-	public void setPolicyType(PolicyType policyType) {
-        this.policyType = policyType;
-	}
+    public void setPolicyType(PolicyType policyType) {
+    	this.policyTypeStr = (policyType != null) ? policyType.toString() : null;
+    }
 
-
-	public void setIncrementalFile(String incrementalFile) throws MalformedURLException {
+	public void setIncrementalFile(String incrementalFile) {
 		this.incrementalFile = incrementalFile;
 	}
 

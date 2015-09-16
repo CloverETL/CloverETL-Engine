@@ -19,6 +19,7 @@
 package org.jetel.component.fileoperation;
 
 
+
 public class PooledSFTPOperationHandlerTest extends SFTPOperationHandlerTest {
 
 	private PooledSFTPOperationHandler handler = null;

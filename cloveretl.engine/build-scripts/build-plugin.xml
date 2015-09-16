@@ -382,7 +382,7 @@
 			<keep extends="org.jetel.graph.GraphElement">
 				<field access="protected public"/><method access="protected public"/>
 			</keep>
-			<keep implements="org.jetel.connection.jdbc.specific.JdbcSpecific">
+			<keep implements="org.jetel.database.sql.JdbcSpecific">
 				<field access="protected public"/><method access="protected public"/>
 			</keep>
 
@@ -402,6 +402,11 @@
 			<keep name="org.jetel.component.partition.*"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.component.rollup.*"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.data.parser.*"><field access="public"/><method access="public"/></keep> <!-- the XPathParser is used in a transformation of a test (graphJmsSingleXmlField.grf), so has to be de-obfuscated -->
+			
+			<!-- keep delegate methods in compiled CTL transformations -->
+			<keep extends="org.jetel.ctl.CTLAbstractTransform">
+				<method annotation="org.jetel.ctl.CTLEntryPoint" />
+			</keep>
 			
 			<keep name="org.jetel.connection.jdbc.CopySQLData"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.connection.jdbc.DBConnection"><field access="protected public"/><method access="protected public"/></keep>
@@ -544,6 +549,29 @@
 				<method name="set*JAXB"/>
 			</keepclassmembernames>
 
+			<keep name="com.initiatesystems.etl.connection.InitiateUtils"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.connection.Attribute"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.connection.segment.MemHead"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.connection.segment.Segment"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.connection.segment.EntXtsk"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.connection.segment.IdtXtsk"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.connection.segment.MemXtsk"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.connection.segment.EntLink"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.connection.segment.NonAttributeSegmentRegistry"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.mapping.provider.MappingElementProvider"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.mapping.element.common.ControlMappingElement"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.mapping.element.common.SequenceMappingElement"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.mapping.element.initiate.InitiateMappingElement"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.mapping.filter.SourceInitiateMappingFilter"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.mapping.filter.TargetInitiateMappingFilter"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.mapping.filter.SourceSequenceMappingFilter"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.mapping.filter.SourceControlMappingFilter"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.mapping.expressions.FilterExpressionTargetMappingElement"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.mapping.expressions.FilterExpressionSourceMappingElement"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.dictionary.QueryMemberDictionaryType"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.formatter.MemPutJoiner"><field access="public"/><method access="public"/></keep>
+			
+
 			<!-- template to copy&paste
 			<keep name="xxxxxx"><field access="protected public"/><method access="protected public"/></keep>
 			-->
@@ -660,6 +688,10 @@
 				forkmode="once"
 				dir="${basedir}"
 				>
+			<assertions>
+			  <enable package="org.jetel"/>
+			  <enable package="com.opensys.cloveretl"/>
+			</assertions>
     		<sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser}" />
     		<sysproperty key="file.encoding" value="UTF-8" />
 			<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
@@ -748,7 +780,7 @@
 	
 	
 	<target name="check-sources">
-		<if><matches pattern=".*\.commercial" string="${plugin.dir.name}"/>
+		<if><matches pattern=".*\.commercial|.*\.initiatesystems\..*" string="${plugin.dir.name}"/>
 			<then>
 				<property name="plugin.java.src.header.file" value="${dir.build-scripts}/engine.commercial.license.txt"/>
 			</then>

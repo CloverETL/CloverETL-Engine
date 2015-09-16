@@ -35,6 +35,8 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelRuntimeException;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
@@ -177,7 +179,11 @@ public class TextTableFormatter extends AbstractFormatter {
      */
     @Override
 	public void setDataTarget(Object out) {
-        close();
+        try {
+			close();
+		} catch (IOException e) {
+			throw new JetelRuntimeException(e);
+		}
         writerChannel = (WritableByteChannel) out;
     }
     
@@ -185,15 +191,14 @@ public class TextTableFormatter extends AbstractFormatter {
 	 * @see org.jetel.data.formatter.Formatter#close()
 	 */
 	@Override
-	public void close() {
+	public void close() throws IOException {
         if (writerChannel == null || !writerChannel.isOpen()) {
             return;
         }
 		try{
 			flush();
+		} finally {
 			writerChannel.close();
-		}catch(IOException ex){
-			ex.printStackTrace();
 		}
 	}
 
@@ -261,7 +266,12 @@ public class TextTableFormatter extends AbstractFormatter {
 				//change field value to bytes
 				fieldBuffer.clear();
 				dataField = record.getField(maskAnalize[i].index);
-				dataField.toByteBuffer(fieldBuffer, encoder);
+				if (dataField.getMetadata().getContainerType() != DataFieldContainerType.SINGLE) {
+					writeContainerDataField(dataField, fieldBuffer, encoder); //fix CLO-6421
+				} else {
+					dataField.toByteBuffer(fieldBuffer, encoder);
+				}
+				
 				fieldBuffer.flip();
 	            
 				blank.clear();
@@ -288,6 +298,11 @@ public class TextTableFormatter extends AbstractFormatter {
             throw new RuntimeException("Exception when converting the field value: " + record.getField(i).getValue() + " (field name: '" + record.getMetadata().getField(i).getName() + "') to " + encoder.charset() + ".\nRecord: " +record.toString(), e);
 		}
         return sentBytes;
+	}
+	
+	private static void writeContainerDataField(DataField field, CloverBuffer buffer, CharsetEncoder encoder) throws CharacterCodingException {
+		String s = field.toString();
+		buffer.put(encoder.encode(CharBuffer.wrap(s)));
 	}
 
 	@Override

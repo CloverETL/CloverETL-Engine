@@ -19,14 +19,13 @@
 package org.jetel.hadoop.provider.filesystem;
 
 import java.io.DataInputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.SeekableByteChannel;
 
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.jetel.hadoop.service.filesystem.HadoopDataInput;
-import org.jetel.util.bytes.SeekableByteChannel;
 
 public class HadoopDataInputStream implements HadoopDataInput, SeekableByteChannel {
 

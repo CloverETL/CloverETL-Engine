@@ -49,6 +49,26 @@ public class NumericFormatterFactory {
 		}
 	}
 	
+	/**
+	 * A more optimized variant of {@link #getFormatter(String, Locale)}.
+	 * Does not call {@link MiscUtils#getDefaultLocale()}
+	 * but uses the given default locale instead.
+	 * 
+	 * @param formatString
+	 * @param userLocale
+	 * @param defaultLocale
+	 * @return
+	 */
+	public static NumericFormatter getFormatter(String formatString, Locale userLocale, Locale defaultLocale) {
+		NumberFormat numberFormat = createNumberFormatter(formatString, userLocale, defaultLocale);
+		
+		if (numberFormat != null) {
+			return new JavaNumericFormatter(formatString, numberFormat);
+		} else {
+			return getPlainFormatterInstance();
+		}
+	}
+	
 	public static NumericFormatter getDecimalFormatter(String formatString, String localeString, int length, int scale) {
 		return getDecimalFormatter(formatString, createLocale(localeString), length, scale);
 	}
@@ -71,6 +91,29 @@ public class NumericFormatterFactory {
 
 	public static NumericFormatter getDecimalFormatter(String formatString, Locale locale) {
 		NumberFormat numberFormat = createNumberFormatter(formatString, locale);
+		
+		if (numberFormat != null) {
+			if( numberFormat instanceof DecimalFormat){
+				((DecimalFormat) numberFormat).setParseBigDecimal(true);
+			}
+			return new JavaNumericFormatter(formatString, numberFormat);
+		} else {
+			return getPlainFormatterInstance();
+		}
+	}
+
+	/**
+	 * A more optimized variant of {@link #getDecimalFormatter(String, Locale)}.
+	 * Does not call {@link MiscUtils#getDefaultLocale()}
+	 * but uses the given default locale instead.
+	 * 
+	 * @param formatString
+	 * @param userLocale
+	 * @param defaultLocale
+	 * @return
+	 */
+	public static NumericFormatter getDecimalFormatter(String formatString, Locale locale, Locale defaultLocale) {
+		NumberFormat numberFormat = createNumberFormatter(formatString, locale, defaultLocale);
 		
 		if (numberFormat != null) {
 			if( numberFormat instanceof DecimalFormat){
@@ -114,6 +157,25 @@ public class NumericFormatterFactory {
 			}
 		} else if (locale != null) {
 			numberFormat = DecimalFormat.getInstance(locale);
+		}
+
+		return numberFormat;
+	}
+
+	private static NumberFormat createNumberFormatter(String formatString, Locale userLocale, Locale defaultLocale) {
+
+		// handle formatString
+		NumberFormat numberFormat = null;
+		if (!StringUtils.isEmpty(formatString)) {
+			if (userLocale != null) {
+				numberFormat = new DecimalFormat(formatString,
+						new DecimalFormatSymbols(userLocale));
+			} else {
+				numberFormat = new DecimalFormat(formatString,
+						new DecimalFormatSymbols(defaultLocale));
+			}
+		} else if (userLocale != null) {
+			numberFormat = DecimalFormat.getInstance(userLocale);
 		}
 
 		return numberFormat;

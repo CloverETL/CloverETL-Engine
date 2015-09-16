@@ -23,9 +23,11 @@ import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.util.Arrays;
+import java.util.List;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
@@ -48,9 +50,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  *@see        org.jetel.metadata.DataFieldMetadata
  */
 @SuppressWarnings("EI")
-public class ByteDataField extends DataField implements Comparable<Object> {
-
-	private static final long serialVersionUID = 3823545028385612760L;
+public class ByteDataField extends DataFieldImpl implements Comparable<Object> {
 
 	/**
 	 *  Description of the Field
@@ -115,10 +115,12 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
      * @deprecated use setValue(DataField) instead
 	 */
+	@java.lang.SuppressWarnings("deprecation")
+	@Deprecated
 	@Override
 	public void copyFrom(DataField fromField){
 	    if (fromField instanceof ByteDataField && !(fromField instanceof CompressedByteDataField) && !(this instanceof CompressedByteDataField)){
-	        if (!fromField.isNull){
+	        if (!fromField.isNull()) {
 	            int length = ((ByteDataField) fromField).value.length;
 	            if (this.value == null || this.value.length != length){
 	                this.value = new byte[length];
@@ -126,7 +128,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
                 System.arraycopy(((ByteDataField) fromField).value,
                         0, this.value, 0, length);
 	        }
-	        setNull(fromField.isNull);
+	        setNull(fromField.isNull());
 	    } else {
 	        super.copyFrom(fromField);
         }
@@ -173,7 +175,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	@Override
 	public void setValue(DataField fromField) {
         if (fromField instanceof ByteDataField && !(fromField instanceof CompressedByteDataField) && !(this instanceof CompressedByteDataField)){
-            if (!fromField.isNull){
+            if (!fromField.isNull()) {
                 int length = ((ByteDataField) fromField).value.length;
                 if (this.value == null || this.value.length != length){
                     this.value = new byte[length];
@@ -181,7 +183,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
                 System.arraycopy(((ByteDataField) fromField).value,
                         0, this.value, 0, length);
             }
-            setNull(fromField.isNull);
+            setNull(fromField.isNull());
         } else {
             super.setValue(fromField);
         }
@@ -375,7 +377,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	 * @since            11.12.2006
      */
 	public void fromString(CharSequence seq, String charset) {
-		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
+		if (seq == null || Compare.equals(seq, metadata.getNullValues())) {
 			setNull(true);
 			return;
 		}
@@ -394,7 +396,19 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	public void fromByteBuffer(CloverBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
 		prepareBuf(dataBuffer);
 		dataBuffer.get(value);
-		setNull(Arrays.equals(value, metadata.getNullValue().getBytes(decoder.charset())));
+		setNull(isNullValue(value, metadata.getNullValues(), decoder.charset()));
+	}
+
+	/**
+	 * @return true if the given value is one of the passed nullValues
+	 */
+	protected static boolean isNullValue(byte[] value, List<String> nullValues, Charset charset) {
+		for (String nullValue : nullValues) {
+			if (Arrays.equals(value, nullValue.getBytes(charset))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -434,6 +448,11 @@ public class ByteDataField extends DataField implements Comparable<Object> {
     	}
 	}
 
+	@Override
+	public void serialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		serializer.serialize(buffer, this);
+	}
+	
 
 	/**
 	 *  Performs deserialization of data
@@ -457,6 +476,12 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 			setNull(false);
 		}
 	}
+	
+	@Override
+	public void deserialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		serializer.deserialize(buffer, this);
+	}
+	
 
 	@Override
 	public boolean equals(Object obj) {

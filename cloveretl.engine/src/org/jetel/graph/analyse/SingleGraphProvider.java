@@ -52,7 +52,7 @@ public class SingleGraphProvider extends AbstractGraphProvider {
 		if (componentsIterator.hasNext()) {
 			Node nextComponent = componentsIterator.next();
 			if (isAllowedComponent(nextComponent)) {
-				return new BasicInspectedComponent(nextComponent, null);
+				return new BasicInspectedComponent(this, nextComponent, null);
 			} else {
 				return getNextComponent();
 			}

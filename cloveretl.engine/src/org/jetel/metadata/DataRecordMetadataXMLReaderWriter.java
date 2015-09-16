@@ -22,7 +22,7 @@ import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
-import java.text.ParseException;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -38,6 +38,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecordNature;
+import org.jetel.data.Defaults;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.GraphParameters;
 import org.jetel.graph.TransformationGraph;
@@ -337,7 +338,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
             metadataElement.setAttribute(RECORD_DELIMITER_ATTR, StringUtils.specCharToString(record.getRecordDelimiter()));
         }
 
-        if (record.getRecordSize() != 0) {
+        if (record.getRecordSize() > 0) {
             metadataElement.setAttribute(RECORD_SIZE_ATTR, String.valueOf(record.getRecordSize()));
         }
         
@@ -360,7 +361,15 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
         if (record.getKeyFieldNames() != null && !record.getKeyFieldNames().isEmpty()) {
         	metadataElement.setAttribute(KEY_FIELD_NAMES_ATTR, KeyFieldNamesUtils.getFieldNamesAsString(record.getKeyFieldNames()));
         }
-        
+
+        if (record.getNullValues() != DataRecordMetadata.DEFAULT_NULL_VALUES) {
+        	metadataElement.setAttribute(NULL_VALUE_ATTR, StringUtils.join(record.getNullValues(), Defaults.DataFormatter.DELIMITER_DELIMITERS));
+        }
+
+        if (record.getEofAsDelimiter() != null) {
+        	metadataElement.setAttribute(EOF_AS_DELIMITER_ATTR, String.valueOf(record.getEofAsDelimiter()));
+        }
+
 
 		Properties prop = record.getRecordProperties();
 		if (prop != null) {
@@ -393,17 +402,21 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				if (!StringUtils.isEmpty(label)) {
 				    fieldElement.setAttribute(LABEL_ATTR, StringUtils.specCharToString(label));
 				}
-			    fieldElement.setAttribute(TYPE_ATTR, DataFieldMetadata.type2Str(field.getType()));
+			    fieldElement.setAttribute(TYPE_ATTR, field.getDataType().getName());
 			    if (field.getContainerType() != null && field.getContainerType() != DataFieldContainerType.SINGLE) {
 			    	fieldElement.setAttribute(CONTAINER_TYPE_ATTR, field.getContainerType().toString());
 			    }
 
-				fieldElement.setAttribute(SHIFT_ATTR, String.valueOf(field.getShift()));
+			    if (field.getShift() != 0) {
+			    	fieldElement.setAttribute(SHIFT_ATTR, String.valueOf(field.getShift()));
+			    }
 				if (record.getParsingType() == DataRecordParsingType.DELIMITED 
 						&& !StringUtils.isEmpty(delimiterStr)) {
 					fieldElement.setAttribute(DELIMITER_ATTR, delimiterStr);
 				} else {
-					fieldElement.setAttribute(SIZE_ATTR, String.valueOf(field.getSize()));
+					if (field.getSize() != 0) {
+						fieldElement.setAttribute(SIZE_ATTR, String.valueOf(field.getSize()));
+					}
 				}
 				if (field.getFormatStr() != null) {
 					fieldElement.setAttribute(FORMAT_ATTR, field.getFormatStr());
@@ -423,13 +436,14 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				if (field.getDescription() != null) {
 					fieldElement.setAttribute(DESCRIPTION_ATTR, field.getDescription());
 				}
-				fieldElement.setAttribute(EOF_AS_DELIMITER_ATTR,
-						String.valueOf(field.isEofAsDelimiter()));
-				fieldElement.setAttribute(NULLABLE_ATTR,
-				        String.valueOf(field.isNullable()));
-
-				if (!StringUtils.isEmpty(field.getNullValue())) {
-					fieldElement.setAttribute(NULL_VALUE_ATTR, field.getNullValue());
+				if (field.isEofAsDelimiter()) {
+					fieldElement.setAttribute(EOF_AS_DELIMITER_ATTR, String.valueOf(field.isEofAsDelimiter()));
+				}
+				if (!field.isNullable()) {
+					fieldElement.setAttribute(NULLABLE_ATTR, String.valueOf(field.isNullable()));
+				}
+				if (field.getNullValuesOnField() != null) {
+					fieldElement.setAttribute(NULL_VALUE_ATTR, StringUtils.join(field.getNullValuesOnField(), Defaults.DataFormatter.DELIMITER_DELIMITERS));
 				}
 
 				// output field properties - if anything defined
@@ -531,6 +545,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		String quoteChar = null;
 		String collatorSensitivity = null;
 		String nature = null;
+		String eofAsDelimiter = null;
 		String keyFieldNamesStr = null;
 		Properties recordProperties = null;
 
@@ -570,6 +585,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				skipSourceRows = itemValue;
 			} else if (itemName.equalsIgnoreCase(COLLATOR_SENSITIVITY_ATTR)) {
 				collatorSensitivity = itemValue;
+			} else if (itemName.equalsIgnoreCase(EOF_AS_DELIMITER_ATTR)) {
+				eofAsDelimiter = itemValue;
 			} else if (itemName.equalsIgnoreCase(NATURE_ATTR)) {
 				nature = itemValue;
 			} else {
@@ -585,12 +602,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					"Attribute \"name\" or \"type\" not defined within Record !");
 		}
 
-		DataRecordParsingType rt;
-		if (recordType.equalsIgnoreCase("delimited")) rt = DataRecordParsingType.DELIMITED;
-		else if (recordType.equalsIgnoreCase("fixed")) rt = DataRecordParsingType.FIXEDLEN;
-		else if (recordType.equalsIgnoreCase("mixed")) rt = DataRecordParsingType.MIXED;
-		else throw new DOMException(DOMException.NOT_SUPPORTED_ERR,
-				"Unknown record type '" + recordType + "'. One of these options is supported delimited|fixed|mixed.");
+		DataRecordParsingType rt = DataRecordParsingType.fromString(recordType);
 
 		recordMetadata = new DataRecordMetadata(recordName, rt);
 		if (!StringUtils.isEmpty(recordLabel)) {
@@ -603,7 +615,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			recordMetadata.setTimeZoneStr(recTimeZoneStr);
 		}
 		if (recNullValue != null) {
-			recordMetadata.setNullValue(recNullValue);
+			recordMetadata.setNullValues(Arrays.asList(recNullValue.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX, -1)));
 		}
 		recordMetadata.setRecordProperties(recordProperties);
 		if(!StringUtils.isEmpty(recordDelimiter)) {
@@ -648,6 +660,10 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			recordMetadata.setNature(DataRecordNature.fromString(nature));
 		}
 
+		if (!StringUtils.isEmpty(eofAsDelimiter)) {
+			recordMetadata.setEofAsDelimiter(Boolean.valueOf(eofAsDelimiter));
+		}
+
 		/*
 		 * parse metadata of FIELDs
 		 */
@@ -666,7 +682,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			String size = null;
 			String shift = null;
 			String delimiter = null;
-			String eofAsDelimiter = null;
+			/*String*/ eofAsDelimiter = null;
 			String nullable = null;
 			String nullValue = null;
 			String localeStr = null;
@@ -807,7 +823,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			}
 
 			if (nullValue != null) {
-				field.setNullValue(nullValue);
+				field.setNullValues(Arrays.asList(nullValue.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX, -1)));
 			}
 
 			// set localeStr if defined

@@ -25,7 +25,6 @@ import java.util.Stack;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Edge;
-import org.jetel.graph.JobType;
 import org.jetel.graph.TransformationGraph;
 
 /**
@@ -46,8 +45,6 @@ import org.jetel.graph.TransformationGraph;
  */
 public class GraphCycleInspector {
 
-	public static final String LOOP_COMPONENT_TYPE = "LOOP"; //TODO what is better place?
-	
 	private GraphProvider graphProvider;
 
 	private List<InspectedComponent> visitedComponents = new ArrayList<InspectedComponent>();
@@ -117,7 +114,7 @@ public class GraphCycleInspector {
 	/**
 	 * Cycle in the graph found - first regularly oriented edge is marked as BUFFERED. 
 	 */
-	private void cycleFound(Stack<InspectedComponent> visitedComponents) {
+	protected void cycleFound(Stack<InspectedComponent> visitedComponents) {
 		List<InspectedComponent> theCycle = new ArrayList<InspectedComponent>();
 		InspectedComponent endOfCycle = visitedComponents.pop();
 		InspectedComponent component = endOfCycle;
@@ -153,13 +150,13 @@ public class GraphCycleInspector {
 		}
 	}
 
-	private void orientedCycleFound(List<InspectedComponent> theCycle) {
-		//if whole cycle is in a jobflow and contains a WhileCycle component, then it is ok, otherwise exception is thrown
+	protected void orientedCycleFound(List<InspectedComponent> theCycle) {
+		//if whole cycle is in a jobflow and contains a Loop component, then it is ok, otherwise exception is thrown
 		TransformationGraph g = null;
-		boolean hasWhileCycle = false;
+		boolean hasLoopComponent = false;
 		for (InspectedComponent c : theCycle) {
-			if (c.getComponent().getType().equals(LOOP_COMPONENT_TYPE)) {
-				hasWhileCycle = true;
+			if (c.getComponent().getType().equals(LoopsInspector.LOOP_COMPONENT_TYPE)) {
+				hasLoopComponent = true;
 			}
 			if (g == null) {
 				g = c.getComponent().getGraph();
@@ -167,10 +164,7 @@ public class GraphCycleInspector {
 				throw new JetelRuntimeException("Oriented cycle found in the graph. " + theCycle);
 			}
 		}
-		if (!g.getJobType().isJobflow()) {
-			throw new JetelRuntimeException("Oriented cycle found in the graph. Cycles are available only in jobflows. " + theCycle);
-		}
-		if (!hasWhileCycle) {
+		if (!hasLoopComponent) {
 			throw new JetelRuntimeException("Oriented cycle without Loop component found in the graph. " + theCycle);
 		}
 	}
@@ -179,12 +173,12 @@ public class GraphCycleInspector {
 	 * @return
 	 */
 	private void setEdgeAsBuffered(Edge edge) {
-		if (edge.getGraph().getJobType().isGraph()) {
+		if (edge.getGraph().getRuntimeJobType().isGraph()) {
 			edge.setEdgeType(EdgeTypeEnum.BUFFERED);
-		} else if (edge.getGraph().getJobType().isJobflow()) {
+		} else if (edge.getGraph().getRuntimeJobType().isJobflow()) {
 			edge.setEdgeType(EdgeTypeEnum.BUFFERED_FAST_PROPAGATE);
 		} else {
-			throw new JetelRuntimeException("unexpected job type " + edge.getGraph().getJobType());
+			throw new JetelRuntimeException("unexpected job type " + edge.getGraph().getRuntimeJobType());
 		}
 	}
 

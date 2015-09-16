@@ -38,14 +38,14 @@ public class BasicInspectedComponent extends AbstractInspectedComponent {
 	/**
 	 * @param component
 	 */
-	public BasicInspectedComponent(Node component, Edge excludedEdge) {
-		super(component, excludedEdge);
+	public BasicInspectedComponent(GraphProvider graphProvider, Node component, Edge excludedEdge) {
+		super(graphProvider, component, excludedEdge);
 	}
 
 	@Override
 	protected InspectedComponent getNextComponent(OutputPort outputPort) {
 		if (isOutputEdgeAllowed(outputPort.getEdge())) {
-			return new BasicInspectedComponent(outputPort.getReader(), outputPort.getEdge());
+			return createInspectedComponent(outputPort.getReader(), outputPort.getEdge());
 		} else {
 			return null;
 		}
@@ -54,10 +54,15 @@ public class BasicInspectedComponent extends AbstractInspectedComponent {
 	@Override
 	protected InspectedComponent getNextComponent(InputPort inputPort) {
 		if (isInputEdgeAllowed(inputPort.getEdge())) {
-			return new BasicInspectedComponent(inputPort.getWriter(), inputPort.getEdge());
+			return createInspectedComponent(inputPort.getWriter(), inputPort.getEdge());
 		} else {
 			return null;
 		}
 	}
 
+	@Override
+	protected InspectedComponent createInspectedComponent(Node component, Edge entryEdge) {
+		return new BasicInspectedComponent(graphProvider, component, entryEdge);
+	}
+	
 }

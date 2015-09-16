@@ -81,7 +81,7 @@ public class GeneralObjectDescription extends PluginableItemDescriptionImpl {
                 //find class of general object
                 generalObjectClass = Class.forName(className, true, pluginDescriptor.getClassLoader());
             } catch (ClassNotFoundException ex) {
-                logger.error("Genral object class " + className + " does not exist in plugin " + pluginDescriptor.getId() + ".");
+                logger.error("General object class " + className + " does not exist in plugin " + pluginDescriptor.getId() + ".");
                 throw new RuntimeException("General object class " + className + " does not exist in plugin " + pluginDescriptor.getId() + ".", ex);
             }
             

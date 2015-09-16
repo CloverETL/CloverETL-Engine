@@ -32,6 +32,7 @@ import org.jetel.data.IntegerDataField;
 import org.jetel.data.LongDataField;
 import org.jetel.data.NumericDataField;
 import org.jetel.exception.BadDataFormatException;
+import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.NumericFormatter;
 import org.jetel.util.formatter.NumericFormatterFactory;
@@ -484,7 +485,7 @@ public final class HugeDecimal implements Decimal {
 				return;
 			}
 	        byte[] bytes = value.unscaledValue().toByteArray();
-			byteBuffer.put((byte) bytes.length);
+	        ByteBufferUtils.encodeLength(byteBuffer, bytes.length);
 			byteBuffer.put(bytes);
 			byteBuffer.putInt(value.scale());
     	} catch (BufferOverflowException e) {
@@ -494,8 +495,8 @@ public final class HugeDecimal implements Decimal {
 
 	@Override
 	public void deserialize(CloverBuffer byteBuffer) {
-		byte size = byteBuffer.get();
-		if(size == 0) {
+		int size = ByteBufferUtils.decodeLength(byteBuffer);
+		if (size == 0) {
 			setNaN(true);
 			return;
 		}

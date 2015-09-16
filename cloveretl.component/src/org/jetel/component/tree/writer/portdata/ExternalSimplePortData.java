@@ -62,7 +62,7 @@ class ExternalSimplePortData extends ExternalPortData {
 	
 	private byte[] serializeValue(DataRecord record) throws IOException {
 		try {
-            record.serialize(recordBuffer);
+            record.serializeUnitary(recordBuffer);
         } catch (BufferOverflowException ex) {
             throw new IOException("Internal buffer is not big enough to accomodate data record ! (See RECORD_LIMIT_SIZE parameter)");
         }
@@ -76,7 +76,7 @@ class ExternalSimplePortData extends ExternalPortData {
 	
 	private byte[] serializeKey(DataRecord record) {
 		if (!nullKey) {
-			record.serialize(recordBuffer, primaryKey[0]);
+			record.serializeUnitary(recordBuffer, primaryKey[0]);
 		}
 		recordBuffer.put(toByteArray(keyCounter++));
 		byte[] serializedKey = new byte[recordBuffer.position()];
@@ -99,7 +99,7 @@ class ExternalSimplePortData extends ExternalPortData {
 	private void readData(Tuple<byte[], byte[]> tuple, DataRecord record) throws IOException {
 		recordBuffer.put(tuple.getValue());
 		recordBuffer.flip();
-		record.deserialize(recordBuffer);
+		record.deserializeUnitary(recordBuffer);
 		recordBuffer.clear();
 	}
 	

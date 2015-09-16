@@ -31,19 +31,30 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.enums.EnabledEnum;
+import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.exception.RecursiveSubgraphException;
+import org.jetel.graph.analyse.FastPropagateSubgraphInspector;
 import org.jetel.graph.analyse.GraphCycleInspector;
+import org.jetel.graph.analyse.LoopsInspector;
 import org.jetel.graph.analyse.SingleGraphProvider;
+import org.jetel.graph.modelview.MVComponent;
+import org.jetel.graph.modelview.MVEdge;
+import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MVEngineGraph;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.SingleThreadWatchDog;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.MetadataUtils;
 import org.jetel.util.GraphUtils;
 import org.jetel.util.SubgraphUtils;
 
@@ -72,18 +83,21 @@ public class TransformationGraphAnalyzer {
 	 * - automatic metadata propagation is performed
 	 * - correct edge types are detected
 	 */
-	public static void analyseGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext, boolean propagateMetadata){
+	public static void analyseGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext, boolean propagateMetadata) {
         //remove disabled components and their edges
 		try {
 			TransformationGraphAnalyzer.disableNodesInPhases(graph);
 		} catch (GraphConfigurationException e) {
-			throw new JetelRuntimeException("Removing disable nodes failed.", e);
+			throw new JetelRuntimeException("Removing disabled nodes failed.", e);
 		}
 
-		//remove component before SubgraphInput and after SubgraphOutput if necessary
-		if (runtimeContext.isSubJob()) {
+		boolean subJobRuntime = runtimeContext.getJobType().isSubJob();
+		boolean subJobFile = runtimeContext.getJobType().isSubJob() || graph.getStaticJobType().isSubJob();
+		if (subJobRuntime || subJobFile) {
 			try {
-				TransformationGraphAnalyzer.analyseSubgraph(graph);
+				boolean removeDebugNodes = subJobRuntime;
+				boolean layoutChecking = subJobFile;
+				TransformationGraphAnalyzer.analyseSubgraph(graph, removeDebugNodes, layoutChecking);
 			} catch (Exception e) {
 				throw new JetelRuntimeException("Subgraph analysis failed.", e);
 			}
@@ -91,69 +105,376 @@ public class TransformationGraphAnalyzer {
 		
 		//perform automatic metadata propagation
 		if (propagateMetadata) {
+			//create model view for the graph
+			MVGraph mvGraph = new MVEngineGraph(graph, null);
+			//first analyse subgraphs calling hierarchy - cannot be recursive
+			TransformationGraphAnalyzer.analyseSubgraphCallingHierarchy(mvGraph);
 			try {
-				TransformationGraphAnalyzer.analyseMetadataPropagation(graph);
+				TransformationGraphAnalyzer.analyseMetadataPropagation(mvGraph);
 			} catch (Exception e) {
 				throw new JetelRuntimeException("Metadata propagation analysis failed.", e);
 			}
+			//compare implicit metadata with persisted implicit metadata
+			//this validation is now temporary turned off - will be enabled in future releases (maybe) - see CLO-4144
+			//validateImplicitMetadata(mvGraph);
 		}
 
         //analyze type of edges - specially buffered and phase edges
         try {
-        	TransformationGraphAnalyzer.analyseEdgeTypes(graph);
+        	TransformationGraphAnalyzer.analyseEdgeTypes(graph, runtimeContext);
 		} catch (Exception e) {
 			throw new JetelRuntimeException("Edge type analysis failed.", e);
 		}
+        
+        graph.setAnalysed(true);
 	}
 	
 	/**
+	 * Check whether subgraph calling hierarchy of the given graph is not recursive.
+	 * @param graph
+	 */
+	private static void analyseSubgraphCallingHierarchy(MVGraph graph) {
+		analyseSubgraphCallingHierarchy(graph, null, new ArrayList<String>());
+	}
+	
+	private static void analyseSubgraphCallingHierarchy(MVGraph graph, MVComponent causedComponent, List<String> urlStack) {
+		boolean topLevel = urlStack.isEmpty();
+		String url = graph.getModel().getRuntimeContext().getJobUrl();
+		if (urlStack.contains(url)) {
+			// CLO-4930:
+			throw new RecursiveSubgraphException("Recursive subgraph hierarchy detected in " + url, causedComponent.getModel());
+		} else {
+			urlStack.add(url);
+		}
+		for (Entry<MVComponent, MVGraph> subgraph : graph.getMVSubgraphs().entrySet()) {
+			if (topLevel) {
+				causedComponent = subgraph.getKey();
+			}
+			analyseSubgraphCallingHierarchy(subgraph.getValue(), causedComponent, urlStack);
+		}
+		urlStack.remove(url);
+	}
+
+	/**
 	 * Performs automatic metadata propagation on the given graph.
 	 */
-	public static void analyseMetadataPropagation(TransformationGraph graph) {
+	private static void analyseMetadataPropagation(MVGraph mvGraph) {
 		//craete metatadata propagation resolver
-		MetadataPropagationResolver metadataPropagationResolver = new MetadataPropagationResolver(graph);
+		MetadataPropagationResolver metadataPropagationResolver = new MetadataPropagationResolver(mvGraph);
 		//analyse the graph
 		metadataPropagationResolver.analyseGraph();
 		//copy propagated metadata into transformation graph
-		for (Edge edge : graph.getEdges().values()) {
-			MVMetadata metadata = metadataPropagationResolver.getOrCreateMVEdge(edge).getMetadata();
+		for (Edge edge : mvGraph.getModel().getEdges().values()) {
+			MVMetadata metadata = metadataPropagationResolver.getMVEdge(edge).getMetadata();
 			if (metadata != null) {
 				edge.setMetadata(metadata.getModel());
 			}
 		}
 		//store complete resolver into graph for further usage (mainly in designer)
-		graph.setMetadataPropagationResolver(metadataPropagationResolver);
+		mvGraph.getModel().setMetadataPropagationResolver(metadataPropagationResolver);
 	}
 
 	/**
-	 * Removes all components before SubgraphInput and after SubgraphOutput.
+	 * Compares calculated implicit metadata with persisted implicit metadata,
+	 * should be identical.
+	 * @param mvGraph
 	 */
-	public static void analyseSubgraph(TransformationGraph graph) {
-		for (Node component : graph.getNodes().values()) {
-			if (SubgraphUtils.isSubJobInputComponent(component.getType())) {
-				List<Node> precedentNodes = TransformationGraphAnalyzer.findPrecedentNodesRecursive(component, null);
-				List<Node> followingNodes = TransformationGraphAnalyzer.findFollowingNodesRecursive(component, null);
-				if (!CollectionUtils.intersection(precedentNodes, followingNodes).isEmpty()) {
-					throw new JetelRuntimeException("Invalid subgraph layout. A component preceding the SubgraphInput component is probably connected with a component following SubgraphInput.");
-				}
-				for (Node precedentNode : precedentNodes) {
-					precedentNode.setEnabled(EnabledEnum.DISABLED);
-				}
-			}
-			if (SubgraphUtils.isSubJobOutputComponent(component.getType())) {
-				List<Node> followingNodes = TransformationGraphAnalyzer.findFollowingNodesRecursive(component, null);
-				List<Node> precedentNodes = TransformationGraphAnalyzer.findPrecedentNodesRecursive(component, null);
-				if (!CollectionUtils.intersection(precedentNodes, followingNodes).isEmpty()) {
-					throw new JetelRuntimeException("Invalid subgraph layout. A component following the SubgraphOutput component is probably connected with a component preceding SubgraphOutput.");
-				}
-				for (Node followingNode : followingNodes) {
-					followingNode.setEnabled(EnabledEnum.DISABLED);
+	private static void validateImplicitMetadata(MVGraph mvGraph) {
+		for (MVEdge mvEdge : mvGraph.getMVEdges().values()) {
+			if (mvEdge.hasImplicitMetadata()) {
+				MVMetadata mvImplicitMetadata = mvEdge.getMetadata();
+				if (mvImplicitMetadata != null) {
+					DataRecordMetadata implicitMetadata = mvImplicitMetadata.getModel();
+					DataRecordMetadata persistedImplicitMetadata = mvEdge.getModel().getPersistedImplicitMetadata();
+					if (implicitMetadata != null && persistedImplicitMetadata != null
+							&& !MetadataUtils.equals(implicitMetadata, persistedImplicitMetadata)) {
+						//TODO improve exception message
+						throw new JetelRuntimeException("Metadata conflict detected");
+					}
 				}
 			}
 		}
 		
-        //remove disabled components and their edges
-        try {
+	}
+	
+	private static final class SubgraphAnalyzer {
+		private final TransformationGraph subgraph;
+
+		public SubgraphAnalyzer(TransformationGraph subgraph) {
+			this.subgraph = subgraph;
+		}
+		
+		public SubgraphAnalysisResult analyzeForRuntime() {
+			return analyze(false);
+		}
+		
+		public SubgraphAnalysisResult analyzeForValidation() {
+			return analyze(true);
+		}
+		
+		private SubgraphAnalysisResult analyze(boolean layoutChecking) {
+			SubgraphAnalysisResult result = new SubgraphAnalysisResult();
+			
+			result.setSubgraph(subgraph);
+			Collection<Node> nodes = subgraph.getNodes().values();
+			for (Node component : nodes) {
+				if (SubgraphUtils.isSubJobInputComponent(component.getType())) {
+					result.setSubgraphInput(component);
+					result.setSubgraphInputPrecedentNodes(TransformationGraphAnalyzer.findPrecedentNodesRecursive(component, null));
+					if (layoutChecking) {
+						result.setSubgraphInputFollowingNodes(TransformationGraphAnalyzer.findFollowingNodesRecursive(component, null));
+					}
+				}
+				if (SubgraphUtils.isSubJobOutputComponent(component.getType())) {
+					result.setSubgraphOutput(component);
+					result.setSubgraphOutputFollowingNodes(TransformationGraphAnalyzer.findFollowingNodesRecursive(component, null));
+					if (layoutChecking) {
+						result.setSubgraphOutputPrecedentNodes(TransformationGraphAnalyzer.findPrecedentNodesRecursive(component, null));
+					}
+				}
+			}
+			
+			detectInputOutputComponents(result, nodes);
+			
+			return result;
+		}
+
+		private void detectInputOutputComponents(SubgraphAnalysisResult result, Collection<Node> nodes) {
+			Set<Node> debugInputNodes = new HashSet<>();
+			Set<Node> debugOutputNodes = new HashSet<>();
+			Set<Node> activeNodes = new HashSet<>();
+			
+			for (Node component : nodes) {
+				if (component.isPartOfDebugInput()) {
+					debugInputNodes.add(component);
+				} else if (component.isPartOfDebugOutput()) {
+					debugOutputNodes.add(component);
+				} else {
+					activeNodes.add(component);
+				}
+			}
+			
+			result.setDebugInputNodes(debugInputNodes);
+			result.setDebugOutputNodes(debugOutputNodes);
+			result.setActiveNodes(activeNodes);
+		}
+	}
+	
+	private static class SubgraphAnalysisValidationException extends Exception {
+		private static final long serialVersionUID = -8502212649423859074L;
+
+		public SubgraphAnalysisValidationException(String message) {
+			super(message);
+		}
+	}
+	
+	private static class SubgraphAnalysisResult {
+		private TransformationGraph subgraph;
+		private Node subgraphInput;
+		private Node subgraphOutput;
+		
+		private List<Node> subgraphInputPrecedentNodes;
+		private List<Node> subgraphInputFollowingNodes;
+		
+		private List<Node> subgraphOutputPrecedentNodes;
+		private List<Node> subgraphOutputFollowingNodes;
+		private Set<Node> debugInputNodes;
+		private Set<Node> debugOutputNodes;
+		private Set<Node> activeNodes;
+		
+		public TransformationGraph getSubgraph() {
+			return subgraph;
+		}
+		public void setSubgraph(TransformationGraph subgraph) {
+			this.subgraph = subgraph;
+		}
+		public Node getSubgraphInput() {
+			return subgraphInput;
+		}
+		public Set<Node> getActiveNodes() {
+			return activeNodes;
+		}
+		public void setActiveNodes(Set<Node> activeNodes) {
+			this.activeNodes = activeNodes;
+		}
+		public Set<Node> getDebugInputNodes() {
+			return debugInputNodes;
+		}
+		public void setDebugInputNodes(Set<Node> debugInputNodes) {
+			this.debugInputNodes = debugInputNodes;
+		}
+		public Set<Node> getDebugOutputNodes() {
+			return debugOutputNodes;
+		}
+		public void setDebugOutputNodes(Set<Node> debugOutputNodes) {
+			this.debugOutputNodes = debugOutputNodes;
+		}
+		public void setSubgraphInput(Node subgraphInput) {
+			this.subgraphInput = subgraphInput;
+		}
+		public Node getSubgraphOutput() {
+			return subgraphOutput;
+		}
+		public void setSubgraphOutput(Node subgraphOutput) {
+			this.subgraphOutput = subgraphOutput;
+		}
+		public List<Node> getSubgraphInputPrecedentNodes() {
+			return subgraphInputPrecedentNodes;
+		}
+		public void setSubgraphInputPrecedentNodes(List<Node> subgraphInputPrecedentNodes) {
+			this.subgraphInputPrecedentNodes = subgraphInputPrecedentNodes;
+		}
+		public List<Node> getSubgraphInputFollowingNodes() {
+			return subgraphInputFollowingNodes;
+		}
+		public void setSubgraphInputFollowingNodes(List<Node> subgraphInputFollowingNodes) {
+			this.subgraphInputFollowingNodes = subgraphInputFollowingNodes;
+		}
+		public List<Node> getSubgraphOutputPrecedentNodes() {
+			return subgraphOutputPrecedentNodes;
+		}
+		public void setSubgraphOutputPrecedentNodes(List<Node> subgraphOutputPrecedentNodes) {
+			this.subgraphOutputPrecedentNodes = subgraphOutputPrecedentNodes;
+		}
+		public List<Node> getSubgraphOutputFollowingNodes() {
+			return subgraphOutputFollowingNodes;
+		}
+		public void setSubgraphOutputFollowingNodes(List<Node> subgraphOutputFollowingNodes) {
+			this.subgraphOutputFollowingNodes = subgraphOutputFollowingNodes;
+		}
+		public void validate() throws SubgraphAnalysisValidationException {
+			ConfigurationStatus subgraphStatus = subgraph.getPreCheckConfigStatus();
+
+			if (getSubgraphInput() == null) {
+				subgraphStatus.add("Missing SubgraphInput component.", Severity.ERROR, getSubgraph(), Priority.NORMAL);
+				return;
+			}
+
+			if (getSubgraphOutput() == null) {
+				subgraphStatus.add("Missing SubgraphOutput component.", Severity.ERROR, getSubgraph(), Priority.NORMAL);
+				return;
+			}
+
+			//phase order check
+			if (getSubgraphInput().getPhaseNum() > getSubgraphOutput().getPhaseNum() &&  !GraphUtils.hasEdge(getSubgraphInput(), getSubgraphOutput())) {
+				subgraphStatus.add("Invalid phase order. Phase number of SubgraphInput is greater than SubgraphOutput's phase number.", Severity.ERROR, getSubgraphInput(), Priority.NORMAL);
+				subgraphStatus.add("Invalid phase order. Phase number of SubgraphInput is greater than SubgraphOutput's phase number.", Severity.ERROR, getSubgraphOutput(), Priority.NORMAL);
+			}
+			for (Node component : getSubgraph().getNodes().values()) {
+				if (component.isPartOfDebugInput()) {
+					if (component.getPhaseNum() > getSubgraphInput().getPhaseNum() && !GraphUtils.hasEdge(component, getSubgraphOutput())) {
+						subgraphStatus.add("Invalid phase order. Phase number of component " + component + " is greater than SubgraphInput's phase number.", Severity.ERROR, component, Priority.NORMAL);
+					}
+				} else if (component.isPartOfDebugOutput()) {
+					if (component.getPhaseNum() < getSubgraphOutput().getPhaseNum() && !GraphUtils.hasEdge(getSubgraphOutput(), component)) {
+						subgraphStatus.add("Invalid phase order. Phase number of component " + component + " is less than SubgraphOutput's phase number.", Severity.ERROR, component, Priority.NORMAL);
+					}
+				} else {
+					if (component.getPhaseNum() < getSubgraphInput().getPhaseNum() && !GraphUtils.hasEdge(getSubgraphInput(), component)) {
+						subgraphStatus.add("Invalid phase order. Phase number of component " + component + " is less than SubgraphInput's phase number.", Severity.ERROR, component, Priority.NORMAL);
+					}
+					if (component.getPhaseNum() > getSubgraphOutput().getPhaseNum() && !GraphUtils.hasEdge(component, getSubgraphOutput())) {
+						subgraphStatus.add("Invalid phase order. Phase number of component " + component + " is greater than SubgraphOutput's phase number.", Severity.ERROR, component, Priority.NORMAL);
+					}
+				}
+			}
+			
+			//graph layout - edges routing
+			for (Edge edge : getSubgraph().getEdges().values()) {
+				Node reader = edge.getReader();
+				Node writer = edge.getWriter();
+				
+				if (reader != null && writer != null) {
+					validateEdge(subgraphStatus, writer, reader);
+				}
+			}
+		}
+		
+		/**
+		 * Checks all invalid combination of the edge routing.
+		 */
+		private void validateEdge(ConfigurationStatus subgraphStatus, Node from, Node to) {
+			if (from == getSubgraphInput()) {
+				if (to == getSubgraphInput()) {
+					reportError(subgraphStatus, from, to);
+				} else if (to != getSubgraphOutput()) {
+					if (to.isPartOfDebugInput()) {
+						reportError(subgraphStatus, from, to);
+					} else if (to.isPartOfDebugOutput()) {
+						reportError(subgraphStatus, from, to);
+					}
+				}
+			} else if (from == getSubgraphOutput()) {
+				if (to == getSubgraphOutput()) {
+					reportError(subgraphStatus, from, to);
+				} else if (to == getSubgraphInput()) {
+					reportError(subgraphStatus, from, to);
+				} else if (to.isPartOfDebugInput()) {
+					reportError(subgraphStatus, from, to);
+				} else if (!to.isPartOfDebugOutput()) {
+					reportError(subgraphStatus, from, to);
+				}
+			} else if (to == getSubgraphInput()) {
+				if (from.isPartOfDebugOutput()) {
+					reportError(subgraphStatus, from, to);
+				} else if (!from.isPartOfDebugInput()) {
+					reportError(subgraphStatus, from, to);
+				}
+			} else if (to == getSubgraphOutput()) {
+				if (from.isPartOfDebugInput()) {
+					reportError(subgraphStatus, from, to);
+				} else if (from.isPartOfDebugOutput()) {
+					reportError(subgraphStatus, from, to);
+				}
+			} else if (from.isPartOfDebugInput()) {
+				if (!to.isPartOfDebugInput()) {
+					reportError(subgraphStatus, from, to);
+				}
+			} else if (from.isPartOfDebugOutput()) {
+				if (!to.isPartOfDebugOutput()) {
+					reportError(subgraphStatus, from, to);
+				}
+			} else if (!from.isPartOfDebugInput() && !from.isPartOfDebugOutput()) {
+				if (to.isPartOfDebugInput() || to.isPartOfDebugOutput()) {
+					reportError(subgraphStatus, from, to);
+				}
+			}
+		}
+		
+		private void reportError(ConfigurationStatus subgraphStatus, Node from, Node to) {
+			subgraphStatus.add("Invalid subgraph layout. Edge from " + from + " to " + to + " is not allowed.", Severity.ERROR, from, Priority.NORMAL);
+			subgraphStatus.add("Invalid subgraph layout. Edge from " + from + " to " + to + " is not allowed.", Severity.ERROR, to, Priority.NORMAL);
+		}
+	}
+
+	/**
+	 * Checks subgraph layout and removes all components before SubgraphInput and after SubgraphOutput.
+	 */
+	public static void analyseSubgraph(TransformationGraph graph, boolean removeDebugNodes, boolean layoutChecking) {
+		SubgraphAnalyzer analyzer = new SubgraphAnalyzer(graph);
+		SubgraphAnalysisResult analysisResult = layoutChecking ? analyzer.analyzeForValidation() : analyzer.analyzeForRuntime();
+		if (layoutChecking) {
+			try {
+				analysisResult.validate();
+			} catch (SubgraphAnalysisValidationException e) {
+				throw new JetelRuntimeException("Invalid subgraph layout.", e);
+			}
+		}
+		
+		if (removeDebugNodes) {
+			removeDebugNodes(graph, analysisResult);
+		}
+	}
+
+	private static void removeDebugNodes(TransformationGraph graph, SubgraphAnalysisResult analysisResult) {
+		for (Node node : analysisResult.getDebugInputNodes()) {
+			node.setEnabled(EnabledEnum.DISABLED);
+		}
+		for (Node node : analysisResult.getDebugOutputNodes()) {
+			node.setEnabled(EnabledEnum.DISABLED);
+		}
+
+		try {
 			TransformationGraphAnalyzer.disableNodesInPhases(graph);
 		} catch (GraphConfigurationException e) {
 			throw new JetelRuntimeException("Failed to remove disabled/pass-through nodes from subgraph.", e);
@@ -164,12 +485,11 @@ public class TransformationGraphAnalyzer {
 	 * Detects suitable type of edges for the given graph. Edge types are preset
 	 * directly to the graph instance.
 	 */
-	public static void analyseEdgeTypes(TransformationGraph graph) {
-		//detect empty graphs
-		if (graph.getNodes().isEmpty()) {
-			throw new JetelRuntimeException("Job without components cannot be executed.");
+	public static void analyseEdgeTypes(TransformationGraph graph, GraphRuntimeContext runtimeContext) {
+		if (runtimeContext == null) {
+			runtimeContext = graph.getRuntimeContext();
 		}
-
+		
 		//first of all find the phase edges
 		analysePhaseEdges(graph);
 
@@ -177,33 +497,44 @@ public class TransformationGraphAnalyzer {
 		GraphCycleInspector graphCycleInspector = new GraphCycleInspector(new SingleGraphProvider(graph));
 		graphCycleInspector.inspectGraph();
 		
+		//make all edges around loop component fast propagate
+		LoopsInspector.inspectEdgesInLoops(graph);
+		
+		//if the subgraph is executed in fast-propagate mode
+		//all edges between SGI and SGO components have to fast-propagated
+		//let's find all these edges and change edge type to a fast-propagate variant
+		if (runtimeContext.isFastPropagateExecution()) {
+			FastPropagateSubgraphInspector.inspectEdges(graph);
+		}
+		
 		//update edge types around Subgraph components
 		//real edge is combination of parent graph edge type and subgraph edge type
-		for (Node component : graph.getNodes().values()) {
-			if (component instanceof SubgraphComponent) {
-				SubgraphComponent subgraphComponent = (SubgraphComponent) component;
-				for (Entry<Integer, InputPort> inputPort : component.getInputPorts().entrySet()) {
-					Edge subgraphEdge = subgraphComponent.getSubgraphInputEdge(inputPort.getKey());
-					Edge parentGraphEdge = inputPort.getValue().getEdge();
-					//will be edge base shared between these two edges?
-					if (SubgraphUtils.isSubgraphInputEdgeShared(subgraphEdge, parentGraphEdge)) {
-						//so we need to combine both edge types to satisfy needs of both parent and subgraph
-						EdgeTypeEnum combinedEdgeType = GraphUtils.combineEdges(parentGraphEdge.getEdgeType(), subgraphEdge.getEdgeType());
-						inputPort.getValue().getEdge().setEdgeType(combinedEdgeType);
-					}
-				}
-				for (Entry<Integer, OutputPort> outputPort : component.getOutputPorts().entrySet()) {
-					Edge subgraphEdge = subgraphComponent.getSubgraphOutputEdge(outputPort.getKey());
-					Edge parentGraphEdge = outputPort.getValue().getEdge();
-					//will be edge base shared between these two edges?
-					if (SubgraphUtils.isSubgraphOutputEdgeShared(subgraphEdge, parentGraphEdge)) {
-						//so we need to combine both edge types to satisfy needs of both parent and subgraph
-						EdgeTypeEnum combinedEdgeType = GraphUtils.combineEdges(parentGraphEdge.getEdgeType(), subgraphEdge.getEdgeType());
-						outputPort.getValue().getEdge().setEdgeType(combinedEdgeType);
-					}
-				}
-			}
-		}
+		//this is turned off - parent graph is not changed according child graph, at least for now
+//		for (Node component : graph.getNodes().values()) {
+//			if (component instanceof SubgraphComponent) {
+//				SubgraphComponent subgraphComponent = (SubgraphComponent) component;
+//				for (Entry<Integer, InputPort> inputPort : component.getInputPorts().entrySet()) {
+//					Edge subgraphEdge = subgraphComponent.getSubgraphInputEdge(inputPort.getKey());
+//					Edge parentGraphEdge = inputPort.getValue().getEdge();
+//					//will be edge base shared between these two edges?
+//					if (SubgraphUtils.isSubgraphInputEdgeShared(subgraphEdge, parentGraphEdge)) {
+//						//so we need to combine both edge types to satisfy needs of both parent and subgraph
+//						EdgeTypeEnum combinedEdgeType = GraphUtils.combineEdges(parentGraphEdge.getEdgeType(), subgraphEdge.getEdgeType());
+//						parentGraphEdge.setEdgeType(combinedEdgeType);
+//					}
+//				}
+//				for (Entry<Integer, OutputPort> outputPort : component.getOutputPorts().entrySet()) {
+//					Edge subgraphEdge = subgraphComponent.getSubgraphOutputEdge(outputPort.getKey());
+//					Edge parentGraphEdge = outputPort.getValue().getEdge();
+//					//will be edge base shared between these two edges?
+//					if (SubgraphUtils.isSubgraphOutputEdgeShared(subgraphEdge, parentGraphEdge)) {
+//						//so we need to combine both edge types to satisfy needs of both parent and subgraph
+//						EdgeTypeEnum combinedEdgeType = GraphUtils.combineEdges(parentGraphEdge.getEdgeType(), subgraphEdge.getEdgeType());
+//						parentGraphEdge.setEdgeType(combinedEdgeType);
+//					}
+//				}
+//			}
+//		}
 	}
 
 	private static void analysePhaseEdges(TransformationGraph graph) {
@@ -217,7 +548,7 @@ public class TransformationGraphAnalyzer {
 			Node writer = edge.getWriter(); //can be null for remote edges
 			readerPhase = reader != null ? reader.getPhase() : null;
 			writerPhase = writer != null ? writer.getPhase() : null;
-			if (readerPhase != writerPhase) {
+			if (readerPhase.getPhaseNum() > writerPhase.getPhaseNum()) {
 				// edge connecting two nodes belonging to different phases
 				// has to be buffered
 				edge.setEdgeType(EdgeTypeEnum.PHASE_CONNECTION);
@@ -397,7 +728,7 @@ public class TransformationGraphAnalyzer {
 			if (findPrecedentNodes(givenNode, givenNodes).isEmpty()) {
 				roots.add(givenNode);
 			} else {
-				if (givenNode.getType().equals(GraphCycleInspector.LOOP_COMPONENT_TYPE)) {
+				if (givenNode.getType().equals(LoopsInspector.LOOP_COMPONENT_TYPE)) {
 					loopComponents.add(givenNode);
 				}
 			}
@@ -444,7 +775,7 @@ public class TransformationGraphAnalyzer {
 				List<OutputPort> outputPorts = new ArrayList<OutputPort>(root.getOutPorts());
 				//let's reverse the output ports to get more logical output
 				//Loop component is only exception where reversing is not desired
-				if (!root.getType().equals(GraphCycleInspector.LOOP_COMPONENT_TYPE)) {
+				if (!root.getType().equals(LoopsInspector.LOOP_COMPONENT_TYPE)) {
 					Collections.reverse(outputPorts);
 				}
 				

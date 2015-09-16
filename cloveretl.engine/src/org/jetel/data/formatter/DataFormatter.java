@@ -126,7 +126,7 @@ public class DataFormatter extends AbstractFormatter {
 						&& metadata.getField(i).getDataType() != DataFieldType.BYTE
 						&& metadata.getField(i).getDataType() != DataFieldType.CBYTE;
                 try {
-                	String[] fDelimiters = metadata.getField(i).getDelimiters();
+                	String[] fDelimiters = metadata.getField(i).getDelimiters(false); // CLO-5293
                 	if (fDelimiters != null) { //for eof delimiter
     					delimiters[i] = fDelimiters[0].getBytes(charSet);
                 	}
@@ -155,7 +155,8 @@ public class DataFormatter extends AbstractFormatter {
 		if (lastIncludedFieldIndex < lastFieldIndex) {
 			delimiters[lastIncludedFieldIndex] = delimiters[lastFieldIndex];
 			delimiterLength[lastIncludedFieldIndex] = delimiterLength[lastFieldIndex];
-			fieldLengths[lastIncludedFieldIndex] = fieldLengths[lastFieldIndex];
+			// CLO-5083: removed possibly incorrect code
+//			fieldLengths[lastIncludedFieldIndex] = fieldLengths[lastFieldIndex];
 		}
 	}
 
@@ -200,9 +201,12 @@ public class DataFormatter extends AbstractFormatter {
 		if (writer == null || !writer.isOpen()) {
 			return;
 		}
-		flush();
-		writer.close();
-		writer = null;
+		try {
+			flush();
+		} finally {
+			writer.close();
+			writer = null;
+		}
 	}
 
 	@Override
@@ -359,6 +363,9 @@ public class DataFormatter extends AbstractFormatter {
 
 	@Override
 	public int writeHeader() throws IOException {
+		if (append && appendTargetNotEmpty) {
+			return 0;
+		}
 		if (header == null && sHeader != null) {
 	    	try {
 				header = CloverBuffer.wrap(sHeader.getBytes(encoder.charset().name()));

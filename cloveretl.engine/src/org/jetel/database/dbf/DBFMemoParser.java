@@ -25,14 +25,13 @@ import java.net.URL;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.Charset;
 
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.StringDataField;
-import org.jetel.util.bytes.FileSeekableByteChannel;
-import org.jetel.util.bytes.SeekableByteChannel;
 import org.jetel.util.file.FileUtils;
 
 /**
@@ -79,7 +78,7 @@ public class DBFMemoParser {
 		if (stream instanceof SeekableByteChannel) {
 			file = (SeekableByteChannel) stream;
 		} else if (stream instanceof FileInputStream) {
-			file = new FileSeekableByteChannel(((FileInputStream) stream).getChannel());
+			file = ((FileInputStream) stream).getChannel();
 		} else {
 			throw new IOException("Input file " + fileURL + " is not a regular file or a seekable stream !");
 		}

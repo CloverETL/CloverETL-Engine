@@ -41,6 +41,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -335,7 +336,7 @@ public class StructureWriter extends Node {
 		if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
 
         try {
@@ -386,6 +387,7 @@ public class StructureWriter extends Node {
         writer.setNumRecords(numRecords);
         writer.setDictionary(graph != null ? graph.getDictionary() : null);
         writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
+        writer.setCharset(charset);
         if (attrPartitionKey != null) {
             writer.setLookupTable(lookupTable);
             writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
@@ -696,7 +698,11 @@ public class StructureWriter extends Node {
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}finally{
-				formatter.close();
+				try {
+					formatter.close();
+				} catch (IOException e) {
+					throw new JetelRuntimeException(e);
+				}
 			}
 		}
 		

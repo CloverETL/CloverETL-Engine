@@ -106,7 +106,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 		if (input instanceof SourceCodeProvider) {
 			this.sourceCode = ((SourceCodeProvider) input).getSourceCode();
 		}		this.graph = graph;
-		this.propertyRefResolver = (graph != null) ? new PropertyRefResolver(graph.getGraphProperties()) : null;
+		this.propertyRefResolver = (graph != null) ? new PropertyRefResolver(graph.getGraphParameters()) : null;
 		this.parserHelper = new ParserHelper();
 		this.hasEvalNode = false;
 		this.parsedImports = new HashSet<String>();
@@ -619,7 +619,6 @@ TOKEN :
 | < LOOKUP_NEXT: "lookup_next" > // obsolete
 | < LOOKUP_FOUND: "lookup_found" > // obsolete
 | < LOOKUP_ADMIN: "lookup_admin" > // obsolete
-| < DICTIONARY: "dictionary" >
 | < SEQUENCE: "sequence" >
 | < LOGLEVEL_DEBUG: "debug" >
 | < LOGLEVEL_INFO: "info" >
@@ -628,6 +627,29 @@ TOKEN :
 | < LOGLEVEL_FATAL: "fatal" >
 | < LOGLEVEL_TRACE: "trace" >
 }
+
+/* Reserved words - dictionary */
+TOKEN :
+{
+  < DICTIONARY: "dictionary" > : DictionaryEntrySeparator // CLO-6866
+}
+
+// CLO-6866: special lexer state that only allows a dot followed by a dictionary entry identifier
+<DictionaryEntrySeparator>
+TOKEN :
+{
+  // tokens must be renamed to prevent ambiguity
+  < DICT_SEPARATOR : <DOT> > : DictionaryEntryIdentifier
+}
+
+// CLO-6866: special lexer state that only dictionary entry identifier
+<DictionaryEntryIdentifier>
+TOKEN :
+{
+  // tokens must be renamed to prevent ambiguity
+  < DICT_IDENTIFIER: <IDENTIFIER> > : DEFAULT
+}
+
 
 /* Date parts */
 TOKEN : 
@@ -939,7 +961,9 @@ void ImportSource() :{/*@bgen(jjtree) ImportSource */
           jjtc000 = false;
         }
 /*@egen*/
-	{		// tag end of import
+	{
+	    if (graph != null && graph.getPropertyRefResolver() != null) {
+	      filenameURL = graph.getPropertyRefResolver().resolveRef(filenameURL, RefResFlag.URL);	    }		// tag end of import
 		jjtn000.end(t.endLine,t.endColumn);
 
 		// to prevent parsing of an existing import
@@ -2312,15 +2336,9 @@ void PrimarySuffix(Node prefix)      :
 }	
 
 {
-	(
-		t = "."
-		(
-		// built-in functions can't be called like .print_err() 
-		// so we can't use GeneralFunctionCall() derivation here
-		 LOOKAHEAD(2)
-		 FunctionCall(prefix) 
-		|
-		 ( <IDENTIFIER>/*@bgen(jjtree) MemberAccessExpression */
+	( // CLO-6866: special lexical tokens just for the dictionary
+		t = <DICT_SEPARATOR>
+		 ( <DICT_IDENTIFIER>/*@bgen(jjtree) MemberAccessExpression */
                    {
                      CLVFMemberAccessExpression jjtn001 = new CLVFMemberAccessExpression(this, JJTMEMBERACCESSEXPRESSION);
                      boolean jjtc001 = true;
@@ -2354,9 +2372,17 @@ void PrimarySuffix(Node prefix)      :
 		   	 prefix.jjtSetParent(memAcc);
 		   } 
 		 )
+	)
+	|
+	(
+		t = "."
+		(
+		// built-in functions can't be called like .print_err() 
+		// so we can't use GeneralFunctionCall() derivation here
+		 LOOKAHEAD(2)
+		 FunctionCall(prefix) 
 		|
-		 (
-		   "*"/*@bgen(jjtree) MemberAccessExpression */
+		 ( <IDENTIFIER>/*@bgen(jjtree) MemberAccessExpression */
                    {
                      CLVFMemberAccessExpression jjtn002 = new CLVFMemberAccessExpression(this, JJTMEMBERACCESSEXPRESSION);
                      boolean jjtc002 = true;
@@ -2368,16 +2394,52 @@ void PrimarySuffix(Node prefix)      :
                      jjtree.closeNodeScope(jjtn002, true);
                      jjtc002 = false;
                    }
-/*@egen*/
+/*@egen*/ 
 		   { 
 		   	 jjtn002.begin(t.beginLine,t.beginColumn);
 		   	 jjtn002.end(token.endLine,token.endColumn);
 		   	 jjtn002.setName(token.image);
-		   	 jjtn002.setWildcard(true);
+		   	 jjtn002.setWildcard(false);
 		   }/*@bgen(jjtree)*/
                    } finally {
                      if (jjtc002) {
                        jjtree.closeNodeScope(jjtn002, true);
+                     }
+                   }
+/*@egen*/
+		   	                        
+		   {
+		   	 // push the prefix as LHS of the member access selector
+		   	 memAcc = jjtree.peekNode();
+		   	 memAcc.jjtAddChild(prefix,0);
+		   	 memAcc.jjtSetParent(prefix.jjtGetParent());
+		   	 prefix.jjtSetParent(memAcc);
+		   } 
+		 )
+		|
+		 (
+		   "*"/*@bgen(jjtree) MemberAccessExpression */
+                   {
+                     CLVFMemberAccessExpression jjtn003 = new CLVFMemberAccessExpression(this, JJTMEMBERACCESSEXPRESSION);
+                     boolean jjtc003 = true;
+                     jjtree.openNodeScope(jjtn003);
+                   }
+                   try {
+/*@egen*//*@bgen(jjtree)*/
+                   {
+                     jjtree.closeNodeScope(jjtn003, true);
+                     jjtc003 = false;
+                   }
+/*@egen*/
+		   { 
+		   	 jjtn003.begin(t.beginLine,t.beginColumn);
+		   	 jjtn003.end(token.endLine,token.endColumn);
+		   	 jjtn003.setName(token.image);
+		   	 jjtn003.setWildcard(true);
+		   }/*@bgen(jjtree)*/
+                   } finally {
+                     if (jjtc003) {
+                       jjtree.closeNodeScope(jjtn003, true);
                      }
                    }
 /*@egen*/
@@ -2400,25 +2462,25 @@ void PrimarySuffix(Node prefix)      :
 		 
 		 	t = "["  ConditionalFailExpression() "]"/*@bgen(jjtree) #ArrayAccessExpression( 2) */
                         {
-                          CLVFArrayAccessExpression jjtn003 = new CLVFArrayAccessExpression(this, JJTARRAYACCESSEXPRESSION);
-                          boolean jjtc003 = true;
-                          jjtree.openNodeScope(jjtn003);
+                          CLVFArrayAccessExpression jjtn004 = new CLVFArrayAccessExpression(this, JJTARRAYACCESSEXPRESSION);
+                          boolean jjtc004 = true;
+                          jjtree.openNodeScope(jjtn004);
                         }
                         try {
 /*@egen*//*@bgen(jjtree)*/
                         {
-                          jjtree.closeNodeScope(jjtn003,  2);
-                          jjtc003 = false;
+                          jjtree.closeNodeScope(jjtn004,  2);
+                          jjtc004 = false;
                         }
 /*@egen*/
 		
 		 	{
-				jjtn003.begin(t.beginLine,t.beginColumn);
-				jjtn003.end(token.beginLine,token.beginColumn);
+				jjtn004.begin(t.beginLine,t.beginColumn);
+				jjtn004.end(token.beginLine,token.beginColumn);
 		 	}/*@bgen(jjtree)*/
                         } finally {
-                          if (jjtc003) {
-                            jjtree.closeNodeScope(jjtn003,  2);
+                          if (jjtc004) {
+                            jjtree.closeNodeScope(jjtn004,  2);
                           }
                         }
 /*@egen*/

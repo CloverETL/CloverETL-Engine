@@ -269,7 +269,7 @@ public class StringUtils {
             	lineSpacesForNextRow = 0;
             }
             byte[] charBytes = null;
-            while(j<lineLength) {
+            while(j<lineLength && (stringPosition<string.length())) {
             	String currentCharacter = String.valueOf(string.charAt(stringPosition++));
             	stringBuilder.append(!Character.isWhitespace(currentCharacter.charAt(0)) ? currentCharacter : ' ');
             	try {
@@ -1640,7 +1640,28 @@ public class StringUtils {
 		if (str == null){
 			return null;
 		}
-		return str.replaceAll("[\\p{C}]+", ""); // CLO-1814 - previously "[^\\p{Print}]+"
+		
+		// CLO-1814, see comments on the issue
+		StringBuilder sb = new StringBuilder(str.length());
+		for (int i = 0; i < str.length(); i++) {
+			int codePoint = str.codePointAt(i);
+			switch (Character.getType(codePoint))
+		    {
+		        case Character.CONTROL:     // \p{Cc}
+		        case Character.FORMAT:      // \p{Cf}
+		        case Character.PRIVATE_USE: // \p{Co}
+		        case Character.SURROGATE:   // \p{Cs}
+		        case Character.UNASSIGNED:  // \p{Cn}
+		            break; // skip
+		        default:
+		            sb.appendCodePoint(codePoint);
+		            break;
+		    }
+		}
+		
+		return sb.toString();
+		// also removes low-surrogates
+//		return str.replaceAll("[\\p{C}]", ""); // CLO-1814 - previously "[^\\p{Print}]+"
 	}
 	
 	/**
@@ -1952,11 +1973,14 @@ public class StringUtils {
 	 * @return
 	 */
 	public static boolean isNumber(CharSequence str) {
-		if (str == null || str.length() == 0) {
+		if (isEmpty(str)) {
 			return false;
 		}
 		int start = 0;
 		if (str.charAt(0) == '-') {
+			if (str.length() == 1) { // CLO-3856
+				return false;
+			}
 			start = 1;
 		}
 		boolean decimalPiontIndex = false;
@@ -2744,6 +2768,27 @@ public class StringUtils {
 		}
 	}
 	
+	private static final <E> String toStringInternalList(List<E> list,String format) {
+        Iterator<E> i = list.iterator();
+		if (! i.hasNext())
+		    return "[]";
+
+		StringBuilder sb = new StringBuilder();
+		sb.append('[');
+		for (;;) {
+		    E e = i.next();
+		    if (e instanceof byte[]) {
+		    	sb.append(toStringInternalBytes((byte[]) e));
+		    } else {
+		    	sb.append(e == list ? "(this Collection)" : String.format(format, e));
+		    }
+		    if (! i.hasNext()) {
+		    	return sb.append(']').toString();
+		    }
+		    sb.append(", ");
+		}
+	}
+	
 	private static final <K, V> String toStringInternalMap(Map<K, V> map) {
 		Iterator<Entry<K,V>> i = map.entrySet().iterator();
 		if (! i.hasNext())
@@ -2765,6 +2810,34 @@ public class StringUtils {
 		    	sb.append(toStringInternalBytes((byte[]) value));
 		    } else {
 			    sb.append(value == map ? "(this Map)" : value);
+		    }
+		    if (! i.hasNext())
+			return sb.append('}').toString();
+		    sb.append(", ");
+		}
+	}
+	
+	private static final <K, V> String toStringInternalMap(Map<K, V> map, String format) {
+		Iterator<Entry<K,V>> i = map.entrySet().iterator();
+		if (! i.hasNext())
+		    return "{}";
+
+		StringBuilder sb = new StringBuilder();
+		sb.append('{');
+		for (;;) {
+		    Entry<K,V> e = i.next();
+		    K key = e.getKey();
+		    V value = e.getValue();
+		    if (key instanceof byte[]) {
+		    	sb.append(toStringInternalBytes((byte[]) key));
+		    } else {
+			    sb.append(key   == map ? "(this Map)" : key);
+		    }
+		    sb.append('=');
+		    if (value instanceof byte[]) {
+		    	sb.append(toStringInternalBytes((byte[]) value));
+		    } else {
+			    sb.append(value == map ? "(this Map)" : String.format(format, value));
 		    }
 		    if (! i.hasNext())
 			return sb.append('}').toString();
@@ -2797,6 +2870,22 @@ public class StringUtils {
 			return toStringInternalMap((Map<?, ?>) o);
 		}
 		return o.toString();
+	}
+	
+	public static String toOutputStringCTL(Object o, String formatStr) {
+		if (o == null) {
+			return "null";
+		}
+		if (o instanceof byte[]) {
+			return toStringInternalBytes((byte[]) o);
+		}
+		if (o instanceof List) {
+			return toStringInternalList((List<?>) o,formatStr);
+		}
+		if (o instanceof Map) {
+			return toStringInternalMap((Map<?, ?>) o, formatStr);
+		}
+		return String.format(formatStr, o);
 	}
 	
 	/**

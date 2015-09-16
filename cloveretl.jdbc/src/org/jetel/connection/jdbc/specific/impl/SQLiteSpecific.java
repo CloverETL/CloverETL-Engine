@@ -89,6 +89,11 @@ public class SQLiteSpecific extends AbstractJdbcSpecific {
     }
 	
 	@Override
+	public boolean canCloseResultSetBeforeCreatingNewOne() {
+		return false; // CLO-4481
+	}
+	
+	@Override
 	public String getValidateQuery(String query, QueryType queryType, boolean optimizeSelectQuery) throws SQLException {
 		if(queryType==QueryType.SELECT) {
 			query = SQLUtil.removeUnnamedFields(query, this);

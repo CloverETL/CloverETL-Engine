@@ -342,7 +342,7 @@ public class DBJoin extends Node {
         if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!",  //$NON-NLS-1$ //$NON-NLS-2$
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
 
         dbMetadata = getGraph().getDataRecordMetadata(metadataName, false);
@@ -351,10 +351,10 @@ public class DBJoin extends Node {
         	
     		IConnection conn = getGraph().getConnection(connectionName);
             if(conn == null) {
-                throw new ComponentNotReadyException("Can't find DBConnection ID: " + connectionName); //$NON-NLS-1$
+                throw new ComponentNotReadyException("Can't find DBConnection ID: " + connectionName, XML_DBCONNECTION_ATTRIBUTE); //$NON-NLS-1$
             }
             if(!(conn instanceof DBConnection)) {
-                throw new ComponentNotReadyException("Connection with ID: " + connectionName + " isn't instance of the DBConnection class."); //$NON-NLS-1$ //$NON-NLS-2$
+                throw new ComponentNotReadyException("Connection with ID: " + connectionName + " isn't instance of the DBConnection class.", XML_DBCONNECTION_ATTRIBUTE); //$NON-NLS-1$ //$NON-NLS-2$
             }
 
             if (dbMetadata == null) {
@@ -367,7 +367,9 @@ public class DBJoin extends Node {
     			recordKey = new RecordKey(joinKey, getInputPort(READ_FROM_PORT).getMetadata());
     			recordKey.init();
     		} catch (Exception e) {
-    			throw new ComponentNotReadyException(this, e);
+    			ComponentNotReadyException outer = new ComponentNotReadyException(this, e);
+    			outer.setAttributeName(XML_JOIN_KEY_ATTRIBUTE);
+    			throw outer;
     		}
 
     		if (errorActionsString != null) {
@@ -396,6 +398,9 @@ public class DBJoin extends Node {
 	        	TransformFactory<RecordTransform> transformFactory = getTransformFactory(inMetadata, outMetadata);
 	        	if (transformFactory.isTransformSpecified()) {
 	        		transformFactory.checkConfig(status);
+	        	} else {
+	        		//no transformation is specified - output metadata should be equal with database metadata
+	            	checkMetadata(status, dbMetadata, getOutputPort(WRITE_TO_PORT).getMetadata());
 	        	}
 	        }
         }

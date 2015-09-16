@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361366651526" licenseType="Commercial" modified="Mon Jan 13 18:38:13 CET 2014" modifiedBy="User" name="WriteCountOutput" revision="1.33" showComponentDetails="true">
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="4.0.0.M1" id="1361366651526" licenseType="Commercial" modified="Tue Mar 25 15:54:29 CET 2014" modifiedBy="User" name="WriteCountOutput" revision="1.34" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/meta_count_output.fmt" id="Metadata0"/>
 <GraphParameters>
@@ -60,7 +60,7 @@ Writes final output report in Excel]]></attr>
 <Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/Monthly_Unique_Visitors.xlsx" guiName="Create Excel Report" guiX="782" guiY="241" id="CREATE_EXCEL_REPORT" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_STREAM"/>
 <Node enabled="enabled" guiName="Order by Unique Visitors" guiX="412" guiY="241" id="ORDER_BY_UNIQUE_VISITORS" sortKey="ip_count(d)" type="FAST_SORT"/>
 <Node enabled="enabled" fileURL="${DATATMP_DIR}/unique_visitors.txt" guiName="Read Unique Visitors Count" guiX="45" guiY="241" id="READ_UNIQUE_VISITORS_COUNT" type="DATA_READER"/>
-<Edge fromNode="ORDER_BY_UNIQUE_VISITORS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (input)" metadata="Metadata0" outPort="Port 0 (out)" toNode="CREATE_EXCEL_REPORT:0"/>
+<Edge fromNode="ORDER_BY_UNIQUE_VISITORS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (input)" outPort="Port 0 (out)" toNode="CREATE_EXCEL_REPORT:0"/>
 <Edge debugMode="true" fromNode="READ_UNIQUE_VISITORS_COUNT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="ORDER_BY_UNIQUE_VISITORS:0"/>
 </Phase>
 </Graph>

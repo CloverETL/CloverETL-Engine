@@ -45,7 +45,7 @@ public class TLRegexpCache extends TLCache {
 		if (context.getLiteralsSize() > position && context.isLiteral(position)) {
 			String regexp = (String) context.getParamValue(position);
 			try {
-				cachedPattern = Pattern.compile(regexp);
+				cachedPattern = compilePattern(regexp);
 				cachedMatcher = cachedPattern.matcher("");
 			} catch (PatternSyntaxException ex) {
 				String message = String.format("Invalid regular expression: \"%s\" (%s)", regexp, ex.getMessage());
@@ -60,7 +60,7 @@ public class TLRegexpCache extends TLCache {
 		if (context.isLiteral(1) || (cachedPattern != null && pattern.equals(previousPatternString))) {
 			return cachedPattern; 
 		} else {
-			cachedPattern = Pattern.compile(pattern);
+			cachedPattern = compilePattern(pattern);
 			cachedMatcher = cachedPattern.matcher("");
 			previousPatternString = pattern;
 			return cachedPattern;
@@ -71,11 +71,24 @@ public class TLRegexpCache extends TLCache {
 		if (context.isLiteral(1) || (cachedPattern != null && pattern.equals(previousPatternString))) {
 			return cachedMatcher; 
 		} else {
-			cachedPattern = Pattern.compile(pattern);
+			cachedPattern = compilePattern(pattern);
 			cachedMatcher = cachedPattern.matcher("");
 			previousPatternString = pattern;
 			return cachedMatcher;
 		}
+	}
+	
+	/**
+	 * CLO-6907: report a meaningful error message if the pattern is null.
+	 * 
+	 * @param pattern
+	 * @return
+	 */
+	private static Pattern compilePattern(String pattern) {
+		if (pattern == null) {
+			throw new NullPointerException("Regular expression is null");
+		}
+		return Pattern.compile(pattern);
 	}
 	
 }

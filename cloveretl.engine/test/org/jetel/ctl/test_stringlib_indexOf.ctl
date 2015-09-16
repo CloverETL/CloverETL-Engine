@@ -17,6 +17,11 @@ integer index_empty2;
 integer index_empty3;
 integer index_empty4;
 
+integer nullInput1;
+integer nullInput2;
+integer nullInputVariable1;
+integer nullInputVariable2;
+
 function integer transform() {
 	input='hello world';
 	printErr(input); 
@@ -64,6 +69,12 @@ function integer transform() {
 	
 	index_empty4 = indexOf('','a',3);
 	printErr('index_empty4: [' +index_empty4+']' );
+	
+	nullInput1 = indexOf(null, 'a');
+	nullInput2 = indexOf(null, 'a', 4);
+	string nullInput = null;
+	nullInputVariable1 = indexOf(nullInput, 'a');
+	nullInputVariable2 = indexOf(nullInput, 'a', 4);
 	
 	return 0;
 }

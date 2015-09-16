@@ -104,5 +104,57 @@ public class MetadataUtils {
     	result.flip();
     	outputChannel.write(result.buf());
     }
+    
+    /**
+     * Returns a duplicate of the given metadata
+     * with auto-filled fields removed.
+     * 
+     * @param metadata
+     * @return metadata containing only fields without auto-filling
+     */
+    public static DataRecordMetadata getNonAutofilledFieldsMetadata(DataRecordMetadata metadata) {
+    	return getSelectedFieldsMetadata(metadata, metadata.getNonAutofilledFields());
+    }
+    
+    /**
+     * Returns a duplicate of the given metadata
+     * containing only fields with the selected indexes.
+     * 
+     * @param metadata
+     * @return metadata containing only selected fields
+     */
+    public static DataRecordMetadata getSelectedFieldsMetadata(DataRecordMetadata metadata, int[] selectedFields) {
+    	DataRecordMetadata result = metadata.duplicate();
+    	result.delAllFields();
+    	for (int i: selectedFields) {
+    		result.addField(metadata.getField(i).duplicate());
+    	}
+    	return result;
+    }
 
+    /**
+     * This comparison is very slow - conversion to XML is used for metadata comparison.
+     * @param metadata1
+     * @param metadata2
+     * @return true if and only if the given metadata are identical
+     */
+    public static boolean equals(DataRecordMetadata metadata1, DataRecordMetadata metadata2) {
+		if (metadata1 == null || metadata2 == null) {
+			throw new NullPointerException("null metadata");
+		}
+		String strMetadata1 = serializeMetadata(metadata1);
+		String strMetadata2 = serializeMetadata(metadata2);
+		return strMetadata1.equals(strMetadata2);
+    }
+    
+    private static String serializeMetadata(DataRecordMetadata metadata) {
+		try {
+	    	ByteArrayOutputStream os = new ByteArrayOutputStream();
+	    	DataRecordMetadataXMLReaderWriter.write(metadata, os);
+			return os.toString("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new JetelRuntimeException("Metadata " + metadata.getId() + " serialization failed.", e);
+		}
+    }
+    
 }

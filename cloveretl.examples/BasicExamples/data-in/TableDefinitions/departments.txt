@@ -1,0 +1,5 @@
+Name;Type;Label;Delimiter
+departmantName;string;Department name;|
+building;string;Building;|
+floor;integer;Floor;|
+code;string;Code;|

@@ -50,7 +50,7 @@ public class RefResFlagTest extends CloverTestCase {
 		assertTrue(RefResFlag.REGULAR.forceSecureParameters() == true);
 
 		assertTrue(RefResFlag.SECURE_PARAMATERS.resolveSpecCharacters() == false);
-		assertTrue(RefResFlag.SECURE_PARAMATERS.resolveCTLStatements() == false);
+		assertTrue(RefResFlag.SECURE_PARAMATERS.resolveCTLStatements() == true);
 		assertTrue(RefResFlag.SECURE_PARAMATERS.resolveSecureParameters() == true);
 		assertTrue(RefResFlag.SECURE_PARAMATERS.forceSecureParameters() == true);
 

@@ -30,9 +30,6 @@ public class UserInfo {
 	private final String user;
 	private final String password;
 	
-	
-	
-	
 	public UserInfo(String userInfo) {
 		this.userInfo = userInfo;
 		String tmpUser = null;
@@ -76,6 +73,10 @@ public class UserInfo {
 	}
 	public String getPassword() {
 		return password;
+	}
+	
+	public boolean isEmpty() {
+		return (user == null) && (password == null);
 	}
 
 	@Override

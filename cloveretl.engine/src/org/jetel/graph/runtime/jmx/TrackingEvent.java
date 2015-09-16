@@ -34,10 +34,11 @@ import org.jetel.util.string.StringUtils;
  * @created 2 Mar 2012
  */
 public enum TrackingEvent {
+	
 	// currently only 2 possible values
-	GRAPH_FINISHED("graphFinished", "GRAPH_FINISHED", "GRAPH_ABORTED", "GRAPH_ERROR", "GRAPH_TIMEOUT"),
-	JOBFLOW_FINISHED("jobflowFinished", "JOBFLOW_FINISHED", "JOBFLOW_ABORTED", "JOBFLOW_ERROR", "JOBFLOW_TIMEOUT"),
-	PROFILER_JOB_FINISHED("profilerJobFinished", "PROFILER_JOB_FINISHED", "PROFILER_JOB_ABORTED", "PROFILER_JOB_ERROR", "PROFILER_JOB_TIMEOUT");
+	GRAPH_FINISHED("graphFinished", "GRAPH_FINISHED", "GRAPH_ABORTED", "GRAPH_ERROR", "GRAPH_TIMEOUT", "GRAPH_STATUS_UNKNOWN"),
+	JOBFLOW_FINISHED("jobflowFinished", "JOBFLOW_FINISHED", "JOBFLOW_ABORTED", "JOBFLOW_ERROR", "JOBFLOW_TIMEOUT", "JOBFLOW_STATUS_UNKNOWN"),
+	PROFILER_JOB_FINISHED("profilerJobFinished", "PROFILER_JOB_FINISHED", "PROFILER_JOB_ABORTED", "PROFILER_JOB_ERROR", "PROFILER_JOB_TIMEOUT", "PROFILER_JOB_STATUS_UNKNOWN");
 	
 	private String id;
 	
@@ -113,5 +114,20 @@ public enum TrackingEvent {
 		return result;
 	}
 	
+    /**
+     * Static definition of default tracking event list for graph monitoring - list of "JMX" events
+     * of executed graph which are listened. For now this list is statically defined since only "graphFinish"
+     * is supported by clover server. It is possible to extend this functionality in the future.
+     * Other possible tracking events could be "phaseFinished", "nodeFinished" or "trackingUpdate".
+     * @see MonitorGraph
+     */
+    public static final List<TrackingEvent> DEFAULT_TRACKING_EVENT_LIST;
+	static {
+		DEFAULT_TRACKING_EVENT_LIST = new ArrayList<TrackingEvent>();
+		DEFAULT_TRACKING_EVENT_LIST.add(TrackingEvent.GRAPH_FINISHED);
+		DEFAULT_TRACKING_EVENT_LIST.add(TrackingEvent.JOBFLOW_FINISHED);
+		DEFAULT_TRACKING_EVENT_LIST.add(TrackingEvent.PROFILER_JOB_FINISHED);
+	}
+
 }
 	

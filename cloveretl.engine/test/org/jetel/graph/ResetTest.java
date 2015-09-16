@@ -4,8 +4,13 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 
 import junit.framework.Test;
@@ -37,10 +42,9 @@ public class ResetTest extends CloverTestCase {
 			"../cloveretl.examples/DataProfiling/",
 			"../cloveretl.examples/DataSampling/",
 			"../cloveretl.examples/ExtExamples/",
-			"../cloveretl.examples/RealWorldExamples/",
 			"../cloveretl.examples.community/RealWorldExamples/",
-			"../cloveretl.examples/WebSiteExamples/",
 			"../cloveretl.examples.community/WebSiteExamples/",
+			"../cloveretl.examples/BasicExamples/",
 			"../cloveretl.test.scenarios/",
 			"../cloveretl.examples.commercial/CommercialExamples/",
 			"../cloveretl.examples.commercial/DataQualityExamples/",
@@ -63,6 +67,11 @@ public class ResetTest extends CloverTestCase {
 		"graphDBExecuteSybase.grf",
 		"graphLdapReaderWriter.grf"
 	};
+	
+	private final static Map<String, List<String>> CLASSPATHS = new HashMap<String, List<String>>();
+	static {
+		CLASSPATHS.put("rpc-literal-service-test.grf", Collections.singletonList("lib/rpc-literal-test.jar"));
+	}
 		
 	private final static String GRAPHS_DIR = "graph";
 	private final static String TRANS_DIR = "trans";
@@ -153,6 +162,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("packedDecimal.grf") // remove after CL-1811 solved
 							&& !file.getName().equals("SimpleZipWrite.grf") // used by ArchiveFlushTest.java, doesn't make sense to run it separately
 							&& !file.getName().equals("XMLExtract_TKLK_003_Back.grf") // needs output from XMLWriter_LKTW_003.grf
+							&& !file.getName().equals("XMLWriter-CL-2404-CNO_OTF_ITSS.grf") // runs too long
 							&& !file.getName().equals("SQLDataParser_precision_CL2187.grf") // ok, is to fail
 							&& !file.getName().equals("incrementalReadingDB_explicitMapping.grf") // remove after CL-2239 solved
 							&& !file.getName().equals("HTTPConnector_get_bodyparams.grf") // ok, is to fail
@@ -181,10 +191,12 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("DebuggingGraph.grf") // ok, is to fail
 							&& !file.getName().equals("graphDebuggingGraph.grf") // ok, is to fail
 							&& !file.getName().equals("CLO-404-recordCountsInErrorMessage.grf") // ok, is to fail
+							&& !file.getName().equals("TreeReader_CLO-4699.grf") // ok, is to fail
 							&& !file.getName().matches("Locale_.*_default.grf") // server only
 							&& !file.getName().equals("CompanyChecks.grf") // an example that needs embedded derby
 							&& !file.getName().equals("DatabaseAccess.grf") // an example that needs embedded derby
 							&& !file.getName().equals("graphDatabaseAccess.grf") // an example that needs embedded derby
+							&& !file.getName().equals("Twitter.grf") // an example that needs credentials
 							&& !file.getName().equals("XMLReader_no_output_port.grf") // ok, is to fail
 							&& !file.getName().startsWith("Proxy_") // allowed to run only on virt-cyan as proxy tests
 							&& !file.getName().equals("SandboxOperationHandlerTest.grf") // runs only on server
@@ -196,13 +208,24 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("GraphParameters_secureOverriden_subgraph.grf") // subgraph of server test
 							&& !file.getName().equals("SSR_CloseOnError.grf") // subgraph of server test
 							&& !file.getName().equals("TypedProperties_CLO-1997.grf") // server test
+							&& !file.getName().equals("EmptySubGraph.grf") // server test
 							&& !file.getName().equals("ParallelReader_HDFS.grf") // cluster test
+							&& !file.getName().equals("SubgraphsReuse.grf") // contains subgraphs
+							&& !file.getName().startsWith("Issues") // contains subgraphs
+							&& !file.getName().equals("SubgraphsSimplifyingGraph.grf") // contains subgraphs
+							&& !file.getName().equals("GEOCoding.grf") // contains subgraphs
+							&& !file.getName().equals("RandomDataGenerator.grf") // contains subgraphs
 							&& !file.getName().equals("graphHTTPConnector.grf") // external service is unstable
 							&& !file.getName().equals("CLO-2214_pre_post_execute_race_condition.grf") // ok, is to fail
 							&& !file.getName().equals("EmptyGraph.grf") // ok, is to fail
-							&& !file.getName().equals("rpc-literal-service-test.grf") // remove after CLO-2396 solved
 							&& !file.getName().equals("informix.grf") // remove after CLO-2793 solved
-							&& !file.getName().equals("EmailReader_BadDataFormatException.grf"); // ok, is to fail
+							&& !file.getName().equals("EmailReader_BadDataFormatException.grf") // ok, is to fail
+							&& !file.getName().equals("PhaseOrderCheck.grf") // ok, is to fail
+							&& !file.getName().equals("graphCloverData.grf") // remove after CLO-4360 fixed
+							&& !file.getName().equals("MetadataWriting.grf") // server test
+							&& !file.getName().equals("WSC_ThrowException.grf") // negative test
+							&& !file.getName().startsWith("DBInputTable_query_error_logging_") // negative tests
+							&& !file.getName().startsWith("DBExecute_query_error_logging_"); // negative tests
 					
 				}
 			};
@@ -214,7 +237,6 @@ public class ResetTest extends CloverTestCase {
 				}
 			};
 			
-			@SuppressWarnings("unchecked")
 			Collection<File> filesCollection = org.apache.commons.io.FileUtils.listFiles(graphsDir, fileFilter, dirFilter);
 			File[] graphFiles = filesCollection.toArray(new File[0]);			
 			Arrays.sort(graphFiles);
@@ -290,7 +312,14 @@ public class ResetTest extends CloverTestCase {
 		
 		// for scenarios graphs, add the TRANS dir to the classpath
 		if (basePath.contains("cloveretl.test.scenarios")) {
-			runtimeContext.setRuntimeClassPath(new URL[] {FileUtils.getFileURL(FileUtils.appendSlash(baseAbsolutePath) + TRANS_DIR + "/")});
+			List<URL> classpath = new ArrayList<URL>();
+			classpath.add(FileUtils.getFileURL(FileUtils.appendSlash(baseAbsolutePath) + TRANS_DIR + "/"));
+			if (CLASSPATHS.containsKey(graphFile.getName())) {
+				for (String path : CLASSPATHS.get(graphFile.getName())) {
+					classpath.add(FileUtils.getFileURL(runtimeContext.getContextURL(), path));
+				}
+			}
+			runtimeContext.setRuntimeClassPath(classpath.toArray(new URL[classpath.size()]));
 			runtimeContext.setCompileClassPath(runtimeContext.getRuntimeClassPath());
 		}
 
@@ -359,6 +388,5 @@ public class ResetTest extends CloverTestCase {
 			}
 		}
 	}
-	
 }
 

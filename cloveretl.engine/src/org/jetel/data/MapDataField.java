@@ -53,9 +53,7 @@ import org.jetel.util.bytes.CloverBuffer;
  *
  * @created 31 Jan 2012
  */
-public class MapDataField extends DataField {
-
-	private static final long serialVersionUID = 7934647976668962456L;
+public class MapDataField extends DataFieldImpl implements Iterable<DataField> {
 
 	//representation of nested fields
 	private Map<String, DataField> fields;
@@ -172,6 +170,13 @@ public class MapDataField extends DataField {
 	 */
 	public DataField getField(String fieldKey) {
 		return fields.get(fieldKey);
+	}
+	
+	/**
+	 * @return Map of data fields stored internally 
+	 */
+	public Set<Map.Entry<String, DataField>> getFields(){
+		return fields.entrySet();
 	}
 	
 	/**
@@ -385,6 +390,11 @@ public class MapDataField extends DataField {
     		throw new RuntimeException("The size of data buffer is only " + buffer.maximumCapacity() + ". Set appropriate parameter in defaultProperties file.", e);
     	}
 	}
+	
+	@Override
+	public void serialize(CloverBuffer buffer, DataRecordSerializer serializer) {
+		serializer.serialize(buffer, this);
+	}
 
 	@Override
 	public void deserialize(CloverBuffer buffer) {
@@ -402,6 +412,11 @@ public class MapDataField extends DataField {
 			}
 			setNull(false);
 		}
+	}
+	
+	@Override
+	public void deserialize(CloverBuffer buffer, DataRecordSerializer serializer) {
+		serializer.deserialize(buffer, this);
 	}
 
 	@Override
@@ -698,6 +713,11 @@ public class MapDataField extends DataField {
 				MapDataFieldView.this.clear();
 			}
 	    }
+	}
+
+	@Override
+	public Iterator<DataField> iterator() {
+		return fields.values().iterator();
 	}
 
 }

@@ -181,7 +181,7 @@ public class EdgeDebuger {
     }
     
     private void flushIfNeeded() throws IOException, InterruptedException {
-    	if (dataTape != null && (getGraph().getJobType().isJobflow() || (System.currentTimeMillis() - lastFlushTime) > MINIMUM_DELAY_BETWEEN_FLUSHES)) {
+    	if (dataTape != null && (getGraph().getRuntimeJobType().isJobflow() || (System.currentTimeMillis() - lastFlushTime) > MINIMUM_DELAY_BETWEEN_FLUSHES)) {
     		flush();
     	}
     }

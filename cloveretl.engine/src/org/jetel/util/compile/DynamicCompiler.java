@@ -49,6 +49,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.ctl.TLCompilerDescription;
 import org.jetel.ctl.extensions.TLFunctionLibraryDescription;
+import org.jetel.data.Defaults;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.plugin.PluginDescriptor;
 import org.jetel.plugin.Plugins;
 
@@ -103,6 +105,10 @@ public final class DynamicCompiler {
 			throw new NullPointerException("className is null!");
 		}
 
+		if (!Defaults.USE_DYNAMIC_COMPILER) {
+			throw new JetelRuntimeException("Dynamic java compilation is not allowed (USE_DYNAMIC_COMPILER variable in DefaultProperties is false)");
+		}
+		
 		final Set<URL> extraLibraries = getExtraLibraries();
 		extraLibraries.addAll(Arrays.asList(compileClassPath));
 

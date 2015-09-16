@@ -309,6 +309,38 @@ public class BitArray implements Serializable{
 		bytes.put(index, (byte) (bytes.get(index) & (~((1 << (bit % 8))))));
 	}
 
+    /*
+     * Extracts encoded value/number in array of bits using mask
+     * which defines which bits to use when extracting value.
+     * Max length of array is 8 bytes.
+     */
+    public final static int extractNumber(byte[]bytes, long mask){
+    	if(bytes.length>8) return -1;
+    	long value=0;
+    	for(int i=0;i<bytes.length;i++){
+    		value|= bytes[i]<< (8*i);
+    	}
+    	value&=mask;
+    	while((mask&0x1)==0){
+    		value>>=1;
+    		mask>>=1;
+    	}
+    	return (int)value;
+    }
+    
+    public static void encodeNumber(byte[] bytes, long mask, int value){
+    	long rvalue=value;
+    	long imask=mask;
+    	while((imask&0x1)==0){
+    		rvalue<<=1;
+    		imask>>=1;
+    	}
+    	for(int i=0;i<bytes.length;i++){
+    		bytes[i] = (byte) (bytes[i] | ((byte) ( (rvalue & mask) >> (8*i)))); 
+    	}
+    	
+    }
+    
     /**
      * How many bytes are used to store the number
      * of bits this BitArray can represent
@@ -319,6 +351,69 @@ public class BitArray implements Serializable{
     public int getLengthBytes() {
         return lengthBytes;
     }   
+    
+    
+    /**
+     * Calculates bit AND of two byte array arguments.
+     * If one is shorter than the other, then only the
+     * common length of bits are processed.
+     * 
+     * @param first
+     * @param second
+     * @return
+     */
+    public static byte[] bitAnd(byte[] first,byte[] second){
+    	final int len=Math.min(first.length, second.length);
+    	byte[] result=new byte[len];
+    	for(int i=0;i<len;i++){
+    		result[i]=(byte)(first[i]&second[i]);
+    	}
+    	return result;
+    }
+    
+    /**
+     * Calculates bit OR of two byte array arguments.
+     * If one is shorter than the other, then only the
+     * common length of bits are processed.
+     * 
+     * @param first
+     * @param second
+     * @return
+     */
+    public static byte[] bitOr(byte[] first,byte[] second){
+    	final int len=Math.min(first.length, second.length);
+    	byte[] result=new byte[len];
+    	for(int i=0;i<len;i++){
+    		result[i]=(byte)(first[i]|second[i]);
+    	}
+    	return result;
+    }
+    
+    /**
+     * Calculates bit XOR of two byte array arguments.
+     * If one is shorter than the other, then only the
+     * common length of bits are processed.
+     * 
+     * @param first
+     * @param second
+     * @return
+     */
+    public static byte[] bitXor(byte[] first,byte[] second){
+    	final int len=Math.min(first.length, second.length);
+    	byte[] result=new byte[len];
+    	for(int i=0;i<len;i++){
+    		result[i]=(byte)(first[i] ^ second[i]);
+    	}
+    	return result;
+    }
+    
+    public static byte[] bitNegate(byte[] first){
+    	byte[] result=new byte[first.length];
+    	for(int i=0;i<result.length;i++){
+    		result[i]=(byte) ~first[i];
+    	}
+    	return result;
+    }
 }
 /*
  *  End class BitArray

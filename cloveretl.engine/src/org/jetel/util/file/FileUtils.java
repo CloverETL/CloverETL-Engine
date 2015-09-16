@@ -30,10 +30,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
-import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -45,6 +43,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -83,6 +82,7 @@ import org.jetel.util.Pair;
 import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.protocols.ProxyAuthenticable;
+import org.jetel.util.protocols.ProxyConfiguration;
 import org.jetel.util.protocols.UserInfo;
 import org.jetel.util.protocols.amazon.S3InputStream;
 import org.jetel.util.protocols.amazon.S3OutputStream;
@@ -260,8 +260,8 @@ public class FileUtils {
     private static Pattern DRIVE_LETTER_PATTERN = Pattern.compile("\\A\\p{Alpha}:[/\\\\]");
     private static Pattern PROTOCOL_PATTERN = Pattern.compile("\\A(\\p{Alnum}+):");
     
-    private static final String PORT_PROTOCOL = "port";
-    private static final String DICTIONARY_PROTOCOL = "dict";
+    public static final String PORT_PROTOCOL = "port";
+    public static final String DICTIONARY_PROTOCOL = "dict";
     
     public static String getProtocol(String fileURL) {
     	if (fileURL == null) {
@@ -311,9 +311,7 @@ public class FileUtils {
     	
     	// standard url
         try {
-        	if( fileURL.startsWith("/") ){
-                return new URL(fileURL);
-        	} else {
+        	if( !fileURL.startsWith("/") ){
         		return getStandardUrlWeblogicHack(contextURL, fileURL);
         	}
         } catch(MalformedURLException ex) {}
@@ -585,11 +583,7 @@ public class FileUtils {
         	if (archiveType == null && url.getProtocol().equals(FILE_PROTOCOL)) {
             	return new FileInputStream(url.getRef() != null ? getUrlFile(url) + "#" + url.getRef() : getUrlFile(url));
         	} else if (archiveType == null && SandboxUrlUtils.isSandboxUrl(url)) {
-        		TransformationGraph graph = ContextProvider.getGraph();
-        		if (graph == null) {
-					throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
-        		}
-        		return graph.getAuthorityProxy().getSandboxResourceInput(ContextProvider.getComponentId(), url.getHost(), getUrlFile(url));
+        		return SandboxUrlUtils.getSandboxInputStream(url);
         	}
         	
         	try {
@@ -1102,29 +1096,11 @@ public class FileUtils {
     /**
      * Creates an proxy from the file url string.
      * @param fileURL
+     * @see ProxyConfiguration#getProxy(String)
      * @return
      */
     public static Proxy getProxy(String fileURL) {
-    	// create an url
-    	URL url;
-    	try {
-			url = getFileURL(fileURL);
-		} catch (MalformedURLException e) {
-			return null;
-		}
-		// get proxy type
-		ProxyProtocolEnum proxyProtocolEnum;
-    	if ((proxyProtocolEnum = ProxyProtocolEnum.fromString(url.getProtocol())) == null) {
-    		return null;
-    	}
-		// no proxy
-    	if (proxyProtocolEnum == ProxyProtocolEnum.NO_PROXY) {
-    		return Proxy.NO_PROXY;
-    	}
-    	// create a proxy
-    	SocketAddress addr = new InetSocketAddress(url.getHost(), url.getPort() < 0 ? 8080 : url.getPort());
-    	Proxy proxy = new Proxy(Proxy.Type.valueOf(proxyProtocolEnum.getProxyString()), addr);
-		return proxy;
+    	return ProxyConfiguration.getProxy(fileURL);
 	}
 
 	/**
@@ -1170,6 +1146,10 @@ public class FileUtils {
 	
 	private static boolean isSandbox(String input) {
 		return SandboxUrlUtils.isSandboxUrl(input);
+	}
+	
+	private static boolean isSandbox(URL url) {
+		return SandboxUrlUtils.isSandboxUrl(url);
 	}
 	
 	private static boolean isDictionary(String input) {
@@ -1298,6 +1278,27 @@ public class FileUtils {
 			assert(path.length() == 0);			
 			path.append(input);
 			return true;
+		}
+		else if ((isSandbox(input) || isSandbox(contextURL)) && nestLevel > 0) { // CLO-4278
+			assert(path.length() == 0);			
+			URL url = getFileURL(contextURL, input);
+			if (isSandbox(url)) {
+				try {
+					CloverURI cloverUri = CloverURI.createURI(url.toURI());
+					FileManager fileManager = FileManager.getInstance();
+					File file = fileManager.getFile(cloverUri); 
+					if (file != null) {
+						URL sandboxRootUrl = SandboxUrlUtils.getSandboxUrl(SandboxUrlUtils.getSandboxName(url));
+						File sandboxRoot = fileManager.getFile(CloverURI.createURI(sandboxRootUrl.toURI()));
+						if (sandboxRoot != null) {
+							path.append(sandboxRoot.getAbsolutePath()); // replace sandbox name with absolute path to sandbox root
+							path.append(SandboxUrlUtils.getSandboxPath(url)); // CLO-702: preserve escaped character sequences in the path
+							return true;
+						}
+					}
+				} catch (Exception ex) {}
+			}
+			return false; // conversion failed, will fall back to remote ZIP streams
 		}
 		else {
 			return false;
@@ -1476,21 +1477,13 @@ public class FileUtils {
     		} else if (isHttp(input)) {
     			return new WebdavOutputStream(input);
     		} else if (isSandbox(input)) {
-    			TransformationGraph graph = ContextProvider.getGraph();
-        		if (graph == null) {
-					throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
-        		}
     			URL url = FileUtils.getFileURL(contextURL, input);
-            	return graph.getAuthorityProxy().getSandboxResourceOutput(ContextProvider.getComponentId(), url.getHost(), SandboxUrlUtils.getRelativeUrl(url.toString()), appendData);
+    			return SandboxUrlUtils.getSandboxOutputStream(url, appendData);
     		} else {
     			// file path or relative URL
     			URL url = FileUtils.getFileURL(contextURL, input);
     			if (isSandbox(url.toString())) {
-        			TransformationGraph graph = ContextProvider.getGraph();
-            		if (graph == null) {
-    					throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
-            		}
-                	return graph.getAuthorityProxy().getSandboxResourceOutput(ContextProvider.getComponentId(), url.getHost(), getUrlFile(url), appendData);
+    				return SandboxUrlUtils.getSandboxOutputStream(url, appendData);
     			}
     			// file input stream 
     			String filePath = url.getRef() != null ? getUrlFile(url) + "#" + url.getRef() : getUrlFile(url);
@@ -1584,7 +1577,7 @@ public class FileUtils {
 			throw new ComponentNotReadyException(e + ": " + fileURL, e);
 		}
 		//check if can write to this file
-		tmp = file.exists() ? file.canWrite() : createFile(file, mkDirs);
+		tmp = file.exists() ? Files.isWritable(file.toPath()) : createFile(file, mkDirs);
 		
 		if (!tmp) {
 			throw new ComponentNotReadyException("Can't write to: " + fileURL);
@@ -1654,7 +1647,8 @@ public class FileUtils {
 			}
 
 			try {
-				graph.getAuthorityProxy().makeDirectories(url.getHost(), url.getPath());
+				// CLO-5641: decode escaped character sequences
+				graph.getAuthorityProxy().makeDirectories(url.getHost(), URIUtils.urlDecode(url.getPath()));
 			} catch (IOException exception) {
 				throw new ComponentNotReadyException("Making of sandbox directories failed!", exception);
 			}
@@ -1689,7 +1683,7 @@ public class FileUtils {
          *
          * @see #handleSpecialCharacters(java.net.URL)
          */
-        private static String getUrlFile(URL url) {
+        static String getUrlFile(URL url) {
             try {
                 final String fixedFileUrl = handleSpecialCharacters(url);
                 return URLDecoder.decode(fixedFileUrl, UTF8);
@@ -1791,7 +1785,7 @@ public class FileUtils {
 	 * @return true if can write, false otherwise
 	 */
 	public static boolean canWrite(File dest){
-		if (dest.exists()) return dest.canWrite();
+		if (dest.exists()) return Files.isWritable(dest.toPath());
 		
 		List<File> dirs = getDirs(dest);
 		
@@ -1865,7 +1859,7 @@ public class FileUtils {
 		URL url = getFileURL(contextURL, input);
 		if (SandboxUrlUtils.isSandboxUrl(url)) { // CLS-754
 			try {
-				CloverURI cloverUri = CloverURI.createURI(url.toURI());
+				CloverURI cloverUri = CloverURI.createURI(url.toString());
 				File file = FileManager.getInstance().getFile(cloverUri); 
 				if (file != null) {
 					return file.toString();
@@ -1915,6 +1909,19 @@ public class FileUtils {
 			return path.substring(0, path.length() - 1);
 		}
 		return path;
+	}
+	
+	/**
+	 * Removes "./" sequence from the beginning of a path
+	 * @param path
+	 * @return
+	 */
+	public static String removeInitialDotDir(String path) {
+		if (path != null && path.startsWith("./")) {
+			return path.substring(2);
+		} else {
+			return path;
+		}
 	}
 	
 	/**
@@ -2220,6 +2227,7 @@ public class FileUtils {
 	/**
 	 * Closes all objects passed as the argument.
 	 * If any of them throws an exception, the first exception is thrown.
+	 * The remaining exceptions are added as suppressed to the first one.
 	 * 
 	 * @param closeables
 	 * @throws IOException
@@ -2238,6 +2246,8 @@ public class FileUtils {
 					} catch (IOException ex) {
 						if (firstException == null) {
 							firstException = ex;
+						} else {
+							firstException.addSuppressed(ex);
 						}
 					}
 				}
@@ -2326,6 +2336,56 @@ public class FileUtils {
 		return fileURL != null && (fileURL.contains(";") || fileURL.contains("*") || fileURL.contains("?"));
 	}
 	
+	/**
+	 * Converts fileURL to absolute URL.
+	 * Preserves wildcards and escape sequences.
+	 * Handles multiple URLs separated with a semicolon.
+	 * Handles nested URLs. 
+	 * 
+	 * Examples:
+	 * 	"sandbox://sandboxname/" + "data-in/file.txt"					= "sandbox://sandboxname/data-in/file.txt"
+	 *  null + "data-in/file.txt"										= "file:/C:/Current/Working/Directory/data-in/file.txt"
+	 *  "sandbox://sandboxname/" + "zip:(data-in/archive.zip)#file.txt" = "zip:(sandbox://sandboxname/data-in/archive.zip)#file.txt"
+	 *  "C:/some/dir" + "data-in/*.txt"									= "file:/C:/some/dir/data-in/*.txt"
+	 *  
+	 * @param contextURL
+	 * @param fileURL
+	 * @return
+	 * @throws IOException
+	 */
+	public static String getAbsoluteURL(URL contextURL, String fileURL) throws MalformedURLException {
+		// fix context URL to be absolute
+		if (contextURL == null) {
+			contextURL = new File(".").toURI().toURL();
+		}
+		if (contextURL.getProtocol().equals(FILE_PROTOCOL)) {
+			File workingDirectory = convertUrlToFile(contextURL);
+			if (!workingDirectory.isAbsolute()) {
+				URI uri = workingDirectory.toURI();
+				// we assume the context URL is a directory
+				String path = FileUtils.appendSlash(uri.toString());
+				uri = URI.create(path);
+				contextURL = uri.toURL();
+			}
+		}
+
+		// recursion for semicolon-separated URLs
+		String[] parts = fileURL.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+		if (parts.length > 1) {
+			String[] results = new String[parts.length];
+			for (int i = 0; i < parts.length; i++) {
+				results[i] = getAbsoluteURL(contextURL, parts[i]);
+			}
+			return StringUtils.join(Arrays.asList(results), ";");
+		}
+		
+		if (STD_CONSOLE.equals(fileURL)) {
+			return fileURL;
+		}
+		
+		URL url = FileUtils.getFileURL(contextURL, fileURL);
+		return url.toString();
+	}
 }
 
 /*

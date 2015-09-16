@@ -20,8 +20,9 @@ package org.jetel.connection.jdbc.driver;
 
 import java.sql.Driver;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.Enumeration;
+
+import org.jetel.database.sql.JdbcDriver;
 
 /**
  * This class is used to deregister drivers from 
@@ -37,7 +38,7 @@ import java.util.Enumeration;
  * @created 29.9.2011
  */
 public class DriverUnregisterer {
-
+	
 	public void unregisterDrivers(ClassLoader classLoader) {
 		
 		// unload each driver loaded by the given classLoader
@@ -46,12 +47,10 @@ public class DriverUnregisterer {
 			if (driver.getClass().getClassLoader() == classLoader) {
 				try {
 					DriverManager.deregisterDriver(driver);
-				} catch (SQLException e1) {
-					e1.printStackTrace();
+				} catch (Exception ex) {
+					ex.printStackTrace();
 				}
 			}
 		}
-		
 	}
-	
 }

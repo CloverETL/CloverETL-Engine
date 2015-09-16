@@ -51,9 +51,7 @@ import org.jetel.util.primitive.IdentityArrayList;
  *
  * @created 17 Jan 2012
  */
-public class ListDataField extends DataField implements Iterable<DataField> {
-
-	private static final long serialVersionUID = -3584218178444143371L;
+public class ListDataField extends DataFieldImpl implements Iterable<DataField> {
 
 	//representation of nested fields
 	private List<DataField> fields;
@@ -427,6 +425,11 @@ public class ListDataField extends DataField implements Iterable<DataField> {
     		throw new RuntimeException("The size of data buffer is only " + buffer.maximumCapacity() + ". Set appropriate parameter in defaultProperties file.", e);
     	}
 	}
+	
+	@Override
+	public void serialize(CloverBuffer buffer, DataRecordSerializer serializer) {
+		serializer.serialize(buffer, this);
+	}
 
 	@Override
 	public void deserialize(CloverBuffer buffer) {
@@ -444,6 +447,11 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 			}
 			setNull(false);
 		}
+	}
+	
+	@Override
+	public void deserialize(CloverBuffer buffer, DataRecordSerializer serializer) {
+		serializer.deserialize(buffer,this);
 	}
 
 	@Override

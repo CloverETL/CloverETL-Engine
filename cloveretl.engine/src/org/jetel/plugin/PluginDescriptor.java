@@ -51,7 +51,9 @@ import org.xml.sax.SAXException;
  */
 public class PluginDescriptor {
 
-	private static final Pattern ABSOLUTE_PLUGIN_URL_PATTERN = Pattern.compile("clover:/plugin/([^/]*)/(.*)");
+	public static final String PLUGIN_URL_PREFIX = "clover:/plugin/";
+	
+	private static final Pattern PLUGIN_URL_PATTERN = Pattern.compile(PLUGIN_URL_PREFIX + "([^/]*)/(.*)");
 
     static Log logger = LogFactory.getLog(Plugins.class);
 
@@ -82,7 +84,13 @@ public class PluginDescriptor {
      * (current classloader is preferred for class name resolution).
      */
     private boolean greedyClassLoader = false;
-    
+
+    /**
+     * Engine plugins are lazy activated by default. This behaviour can be changed
+     * using this attribute.
+     */
+    private boolean lazyActivated = true;
+
     /**
 	 * List of package prefixes which are excluded from greedy/regular class loading. i.e. "java." "javax." "sun.misc." etc.
 	 * Prevents GreedyClassLoader from loading standard java interfaces and classes from third-party libs.
@@ -105,7 +113,7 @@ public class PluginDescriptor {
     private List<String> nativeLibraries;
 
     /**
-     * List of all imlemented extensions points by this plugin.
+     * List of all implemented extensions points by this plugin.
      */
     private List<Extension> extensions;
 
@@ -207,7 +215,15 @@ public class PluginDescriptor {
     public void setGreedyClassLoader(boolean greedyClassLoader) {
     	this.greedyClassLoader = greedyClassLoader;
     }
-    
+
+    public boolean isLazyActivated() {
+    	return lazyActivated;
+    }
+
+    public void setLazyActivated(boolean lazyActivated) {
+    	this.lazyActivated = lazyActivated;
+    }
+
     public String[] getExcludedPackages() {
     	return excludedPackages;
     }
@@ -303,20 +319,24 @@ public class PluginDescriptor {
      * @return
      * @throws MalformedURLException
      */
-    public URL getURL(String path) throws MalformedURLException {
-        Matcher matcher = ABSOLUTE_PLUGIN_URL_PATTERN.matcher(path);
+    public URL getURL(String url) throws MalformedURLException {
+	    Matcher matcher = PLUGIN_URL_PATTERN.matcher(url);
         if (matcher.matches()) {
         	String pluginId = matcher.group(1);
         	String relativePath = matcher.group(2);
-        	PluginDescriptor descriptor = Plugins.getPluginDescriptor(pluginId);
-        	if (descriptor != null) {
-        		return descriptor.getURL(relativePath);
+        	if (!StringUtils.isEmpty(pluginId)) {
+	        	PluginDescriptor descriptor = Plugins.getPluginDescriptor(pluginId);
+	        	if (descriptor != null) {
+		        	return FileUtils.getFileURL(descriptor.getManifest(), relativePath);
+	        	} else {
+	        		throw new MalformedURLException("Invalid URL '" + url + "', plugin '" + pluginId + "' does not exist.");
+	        	}
         	} else {
-        		throw new MalformedURLException("Invalid url '" + path + "'.");
+	        	return FileUtils.getFileURL(manifest, relativePath);
         	}
-        } else {
-        	return FileUtils.getFileURL(manifest, path);
-        }
+    	} else {
+        	return FileUtils.getFileURL(manifest, url);
+    	}
     }
     
     /**
@@ -372,49 +392,57 @@ public class PluginDescriptor {
     /**
      * Activate this plugin. Method registers this plugin description in Plugins class as active plugin.
      */
-    public synchronized void activatePlugin() {
-    	if (!isActive()) {
-    		Plugins.activatePlugin(getId());
+    public void activatePlugin() {
+    	synchronized (Plugins.pluginActivationMonitor) {
+	    	if (!isActive()) {
+	    		Plugins.activatePlugin(getId());
+	    	}
     	}
     }
     
     /**
      * Deactivate this plugin. Method registers this plugin description in Plugins class as deactive plugin.
      */
-    public synchronized void deactivatePlugin() {
-        Plugins.deactivatePlugin(getId());
+    public void deactivatePlugin() {
+    	synchronized (Plugins.pluginActivationMonitor) {
+    		Plugins.deactivatePlugin(getId());
+    	}
     }
     
     /**
      * This method is called only from Plugins.activatePlugin() method.
      */
-    protected synchronized void activate() {
-        isActive = true;
-        
-        //first, we activate all prerequisites plugins
-        for(Iterator it = getPrerequisites().iterator(); it.hasNext();) {
-            PluginPrerequisite prerequisite = (PluginPrerequisite) it.next();
-            if(!Plugins.isActive(prerequisite.getPluginId())) {
-                Plugins.activatePlugin(prerequisite.pluginId);
-            }
-        }
-        //invoke plugin activator
-        pluginActivator = instantiatePlugin();
-        if(pluginActivator != null) {
-            pluginActivator.activate();
-        }
-        //update java.library.path according native libraries
-        applyNativeLibraries();
+    protected void activate() {
+    	synchronized (Plugins.pluginActivationMonitor) {
+	        isActive = true;
+	        
+	        //first, we activate all prerequisites plugins
+	        for(Iterator it = getPrerequisites().iterator(); it.hasNext();) {
+	            PluginPrerequisite prerequisite = (PluginPrerequisite) it.next();
+	            if(!Plugins.isActive(prerequisite.getPluginId())) {
+	                Plugins.activatePlugin(prerequisite.pluginId);
+	            }
+	        }
+	        //invoke plugin activator
+	        pluginActivator = instantiatePlugin();
+	        if(pluginActivator != null) {
+	            pluginActivator.activate();
+	        }
+	        //update java.library.path according native libraries
+	        applyNativeLibraries();
+    	}
     }
 
     /**
      * This method is called only from Plugins.deactivatePlugin() method.
      */
-    protected synchronized void deactivate() {
-        isActive = false;
-        if(pluginActivator != null) {
-            pluginActivator.deactivate();
-        }
+    protected void deactivate() {
+    	synchronized (Plugins.pluginActivationMonitor) {
+	        isActive = false;
+	        if(pluginActivator != null) {
+	            pluginActivator.deactivate();
+	        }
+    	}
     }
 
     public boolean isActive() {
@@ -496,6 +524,33 @@ public class PluginDescriptor {
 				logger.warn("Probably non-standard jvm is used. The native libraries in '" + getId() + "' plugin are ignored.");
 			}
     	}
+    }
+    
+    /**
+     * @return true for url with following pattern 'clover:/plugin/<pluginId>/<path>'
+     */
+    public static boolean isPluginURL(String url) {
+    	if (url != null) { 
+	        Matcher matcher = PLUGIN_URL_PATTERN.matcher(url);
+	        return matcher.matches();
+    	} else {
+    		return false;
+    	}
+    }
+    
+    /**
+     * @param pluginId
+     * @param path
+     * @return plugin URL with following shape "clover:/plugin/<pluginId>/<path>"
+     */
+    public static String createPluginURL(String pluginId, String path) {
+    	if (pluginId == null) {
+    		pluginId = "";
+    	}
+    	if (!path.startsWith("/")) {
+    		path = "/" + path;
+    	}
+    	return PLUGIN_URL_PREFIX + pluginId + path; 
     }
     
 }

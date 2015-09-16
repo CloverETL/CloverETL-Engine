@@ -55,16 +55,18 @@ public class ByteBufferFormatter extends AbstractFormatter {
 	}
 
 	@Override
-	public void close() {
+	public void close() throws IOException {
 		if (writer != null && writer.isOpen()) {
 			try {
 				flush();
-				writer.close();
-				if (backendOutputStream != null) {
-					backendOutputStream.close();
+			} finally {
+				try {
+					writer.close();
+				} finally {
+					if (backendOutputStream != null) {
+						backendOutputStream.close();
+					}
 				}
-			} catch (IOException e) {
-				e.printStackTrace();
 			}
 		}
 		buffer.clear();
@@ -94,7 +96,11 @@ public class ByteBufferFormatter extends AbstractFormatter {
 	
 	@Override
 	public void reset() {
-		close();
+		try {
+			close();
+		} catch (IOException e) {
+			throw new JetelRuntimeException(e);
+		}
 	}
 
 	@Override

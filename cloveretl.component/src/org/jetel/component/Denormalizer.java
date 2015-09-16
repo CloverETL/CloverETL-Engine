@@ -275,7 +275,7 @@ public class Denormalizer extends Node {
 			denorm = createRecordDenormalizeFactory().createTransform();
 		}
 		if (!denorm.init(transformationParameters, inMetadata, outMetadata)) {
-			throw new ComponentNotReadyException("Normalizer initialization failed: " + denorm.getMessage());
+			throw new ComponentNotReadyException("Denormalizer initialization failed: " + denorm.getMessage());
 		}
 		if (recordKeyTokens != null) {
 			recordComparator = RecordComapratorAnyOrderType.createRecordComparator(recordKeyTokens, inMetadata);
@@ -504,7 +504,7 @@ public class Denormalizer extends Node {
         if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
         
         if (errorActionsString != null){

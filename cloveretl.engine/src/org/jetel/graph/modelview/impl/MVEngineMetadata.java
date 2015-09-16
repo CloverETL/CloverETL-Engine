@@ -21,7 +21,8 @@ package org.jetel.graph.modelview.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jetel.graph.IGraphElement;
+import org.jetel.graph.modelview.MVGraph;
+import org.jetel.graph.modelview.MVGraphElement;
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -39,16 +40,22 @@ public class MVEngineMetadata implements MVMetadata {
 	
 	private int priority;
 	
-	private List<IGraphElement> originPath;
+	private List<MVGraphElement> originPath;
 	
-	MVEngineMetadata(DataRecordMetadata metadata) {
-		this(metadata, LOW_PRIORITY);
+	private MVGraph parentMVGraph;
+	
+	MVEngineMetadata(DataRecordMetadata metadata, MVGraph parentMVGraph) {
+		this(metadata, null, DEFAULT_PRIORITY);
 	}
 	
-	MVEngineMetadata(DataRecordMetadata metadata, int priority) {
+	MVEngineMetadata(DataRecordMetadata metadata, MVGraph parentMVGraph, int priority) {
+		if (metadata == null) {
+			throw new IllegalArgumentException("MVEngineMetadata init failed");
+		}
 		this.metadata = metadata;
+		this.parentMVGraph = parentMVGraph;
 		this.priority = priority;
-		originPath = new ArrayList<IGraphElement>();
+		originPath = new ArrayList<MVGraphElement>();
 	}
 
 	@Override
@@ -57,37 +64,61 @@ public class MVEngineMetadata implements MVMetadata {
 	}
 	
 	@Override
+	public void reset() {
+		//DO NOTHING
+	}
+	
+	@Override
+	public MVMetadata duplicate() {
+		MVEngineMetadata result = new MVEngineMetadata(metadata, parentMVGraph, priority);
+		if (originPath != null) {
+			result.originPath = new ArrayList<MVGraphElement>(originPath);
+		}
+		return result;
+	}
+	
+	@Override
 	public int getPriority() {
 		return priority;
 	}
 	
 	@Override
-	public void setId(String id) {
-		metadata.setId(id);
+	public void setPriority(int priority) {
+		this.priority = priority;
 	}
-
+	
 	@Override
-	public void addToOriginPath(IGraphElement graphElement) {
+	public String getId() {
+		return metadata.getId();
+	}
+	
+	@Override
+	public void addToOriginPath(MVGraphElement graphElement) {
 		if (graphElement != null) { 
 			originPath.add(0, graphElement);
 		}
 	}
 
 	@Override
-	public void addToOriginPath(List<IGraphElement> originPath) {
+	public void addToOriginPath(List<MVGraphElement> originPath) {
 		if (originPath != null) {
 			this.originPath.addAll(0, originPath);
 		}
 	}
 
 	@Override
-	public List<IGraphElement> getOriginPath() {
+	public List<MVGraphElement> getOriginPath() {
 		return originPath;
 	}
 	
 	@Override
 	public String toString() {
 		return metadata.toString();
+	}
+	
+	@Override
+	public MVGraph getParentMVGraph() {
+		return parentMVGraph;
 	}
 	
 }

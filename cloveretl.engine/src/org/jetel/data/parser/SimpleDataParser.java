@@ -277,6 +277,7 @@ public class SimpleDataParser extends AbstractTextParser {
 			if (fieldCharacters != null) {
 				populateField(record, fieldIndex, fieldCharacters);
 				if (isEOF) {
+					resetMissingFields(fieldIndex + 1, record);
 					return record;
 				}
 			} else {
@@ -284,12 +285,19 @@ public class SimpleDataParser extends AbstractTextParser {
 					return null;
 				} else {
 					// parsing error
+					resetMissingFields(fieldIndex + 1, record);
 					return record;
 				}
 			}
 		}
 
 		return record;
+	}
+
+	private void resetMissingFields(int fieldIndex, DataRecord record) {
+		for (int i = fieldIndex; i < numFields; i++) {
+			record.getField(i).reset();
+		}
 	}
 
 	/**

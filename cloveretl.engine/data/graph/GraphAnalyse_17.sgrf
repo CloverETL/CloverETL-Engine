@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Kokon" created="Wed Oct 30 10:12:44 CET 2013" guiVersion="0.0.0.devel" id="1383124855822" licenseType="Commercial" modified="Wed Oct 30 14:57:35 CET 2013" modifiedBy="Kokon" name="GraphAnalyse_12" nature="subgraph" revision="1.18" showComponentDetails="true">
+<Graph author="Kokon" created="Wed Oct 30 10:12:44 CET 2013" guiVersion="0.0.0.devel" id="1383124855822" licenseType="Commercial" modified="Wed Jun 11 14:35:30 CEST 2014" modifiedBy="Kokon" name="GraphAnalyse_12" nature="subgraph" revision="1.19" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="recordName1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -12,7 +12,7 @@
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiName="DataGenerator" guiX="49" guiY="124" id="DATA_GENERATOR" recordsNumber="1" type="DATA_GENERATOR">
+<Node debugInput="true" enabled="enabled" guiName="DataGenerator" guiX="45" guiY="-10" id="DATA_GENERATOR" recordsNumber="1" type="DATA_GENERATOR">
 <attr name="generate"><![CDATA[//#CTL2
 
 // Generates output record.
@@ -41,7 +41,7 @@ function integer generate() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="DataGenerator" guiX="55" guiY="242" id="DATA_GENERATOR1" recordsNumber="1" type="DATA_GENERATOR">
+<Node debugInput="true" enabled="enabled" guiName="DataGenerator" guiX="51" guiY="108" id="DATA_GENERATOR1" recordsNumber="1" type="DATA_GENERATOR">
 <attr name="generate"><![CDATA[//#CTL2
 
 // Generates output record.
@@ -70,10 +70,17 @@ function integer generate() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="SimpleCopy" guiX="485" guiY="141" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
-<Node enabled="enabled" guiName="SimpleCopy" guiX="475" guiY="242" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
-<Node enabled="enabled" guiName="SubgraphInput" guiX="315" guiY="115" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT"/>
-<Node enabled="enabled" guiName="Trash" guiX="707" guiY="171" id="TRASH" type="TRASH"/>
+<Node enabled="enabled" guiName="SimpleCopy" guiX="442" guiY="-10" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiName="SimpleCopy" guiX="432" guiY="91" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiName="SubgraphInput" guiX="315" guiY="-64" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT">
+<Port guiY="0" name="0"/>
+<Port guiY="64" name="1"/>
+<Port guiY="128" name="2"/>
+</Node>
+<Node enabled="enabled" guiName="SubgraphOutput" guiX="845" guiY="-64" id="SUBGRAPH_OUTPUT0" type="SUBGRAPH_OUTPUT">
+<Port guiY="0" name="0"/>
+</Node>
+<Node enabled="enabled" guiName="Trash" guiX="664" guiY="20" id="TRASH" type="TRASH"/>
 <Edge fromNode="DATA_GENERATOR:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="SUBGRAPH_INPUT:0"/>
 <Edge fromNode="DATA_GENERATOR1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SUBGRAPH_INPUT:1"/>
 <Edge debugMode="false" fromNode="SIMPLE_COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="TRASH:0"/>

@@ -48,6 +48,8 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ExceptionUtils;
@@ -187,7 +189,7 @@ import org.w3c.dom.Element;
  *	@created October 10, 2006
  *
  */
-public class AproxMergeJoin extends Node {
+public class AproxMergeJoin extends Node implements MetadataProvider {
 
 	public static final String XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE = "slaveOverrideKey";
 	private static final String XML_JOIN_KEY_ATTRIBUTE = "joinKey";
@@ -871,18 +873,13 @@ public class AproxMergeJoin extends Node {
 		boolean[] ordering = new boolean[joiners.length]; 
 		Arrays.fill(ordering, true);//TODO change the key dialog
 
-		int[] fields = new int[joiners.length];
-		for (int i = 0; i < fields.length; i++) {
-			fields[i] = metaData.getFieldPosition(joiners[i]);
-		}
-		
 		if (locale != null) {
 			RuleBasedCollator col = (RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(locale));
 			col.setStrength(caseSensitive ? Collator.TERTIARY : Collator.SECONDARY);
 			col.setDecomposition(Collator.CANONICAL_DECOMPOSITION);
-			return new RecordOrderedKey(fields, ordering, metaData, col);
+			return new RecordOrderedKey(joiners, ordering, metaData, col);
 		} else {
-			return new RecordOrderedKey(fields, ordering, metaData);
+			return new RecordOrderedKey(joiners, ordering, metaData);
 		}
 	}
 	
@@ -1044,7 +1041,7 @@ public class AproxMergeJoin extends Node {
         if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
         
 		if (getOutputPort(NOT_MATCH_DRIVER_OUT) != null) {
@@ -1181,5 +1178,24 @@ public class AproxMergeJoin extends Node {
 	public void setErrorActions(String string) {
 		this.errorActionsString = string;		
 	}
-		
+	
+	@Override
+	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		return null;
+	}
+
+	@Override
+	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		if (portIndex == 2) {
+			if (getInputPort(0) != null) {
+				return metadataPropagationResolver.findMetadata(getInputPort(0).getEdge());
+			}
+		}
+		if (portIndex == 3) {
+			if (getInputPort(1) != null) {
+				return metadataPropagationResolver.findMetadata(getInputPort(1).getEdge());
+			}
+		}
+		return null;
+	}
 }

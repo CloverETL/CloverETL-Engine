@@ -54,7 +54,7 @@ goto nextJavaArgs
 REM find CLOVER_HOME if it does not exist due to either an invalid value passed
 REM by the user or the %0 problem on Windows 9x
 if exist "%DERIVED_CLOVER_HOME%\lib\cloveretl.engine.jar" goto end
-echo Clover installation directory does not found at %DERIVED_CLOVER_HOME% 
+echo Clover installation directory was not found at %DERIVED_CLOVER_HOME% 
 
 REM check for clover in Program Files
 if not exist "%ProgramFiles%\cloverETL" goto checkSystemDrive

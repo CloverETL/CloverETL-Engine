@@ -19,6 +19,9 @@
 package org.jetel.graph;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,11 +29,13 @@ import java.util.Properties;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.util.CompareUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
 
@@ -50,13 +55,32 @@ public class GraphParameters {
 	 * SynchronizedMap wouldn't be sufficient, since it doesn't synchronize iteration.  */
 	private final Map<String, GraphParameter> parameters = new LinkedHashMap<String, GraphParameter>();
 	
+	@XmlTransient
+	private TransformationGraph parentGraph;
+	
 	public GraphParameters() {
 	}
 
+	public GraphParameters(TransformationGraph parentGraph) {
+		this.parentGraph = parentGraph;
+	}
+	
 	public GraphParameters(Properties properties) {
 		addProperties(properties);
 	}
 
+	public void setParentGraph(TransformationGraph parentGraph) {
+		this.parentGraph = parentGraph;
+	}
+	
+	/**
+	 * @return parent transformation graph or null
+	 */
+	@XmlTransient
+	public TransformationGraph getParentGraph() {
+		return parentGraph;
+	}
+	
 	/**
 	 * @param name name of searched parameter
 	 * @return true if parameter with given name is in this parameters container
@@ -79,7 +103,7 @@ public class GraphParameters {
 			if (result != null) {
 				return result;
 			} else {
-				return new GraphParameter(name, null);
+				return new GraphParameter(name, null, this);
 			}
 		}
 	}
@@ -119,6 +143,7 @@ public class GraphParameters {
 		}
 		synchronized (parameters) {
 			if (!parameters.containsKey(graphParameter.getName())) {
+				graphParameter.setParentGraphParameters(this);
 				parameters.put(graphParameter.getName(), graphParameter);
 				return true;
 			} else {
@@ -197,20 +222,25 @@ public class GraphParameters {
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
-		boolean firstParam = true;
 		synchronized (parameters) {
-			for (GraphParameter parameter : parameters.values()) {
-				if (firstParam) {
-					firstParam = false;
-				} else {
-					result.append(", ");
+			List<GraphParameter> orderedParams = new ArrayList<>(parameters.values());
+			Collections.sort(orderedParams, new Comparator<GraphParameter>() {
+				@Override
+				public int compare(GraphParameter p1, GraphParameter p2) {
+					return CompareUtils.compare(p1.getName(), p2.getName());
 				}
+			});
+			for (Iterator<GraphParameter> it = orderedParams.iterator(); it.hasNext();) {
+				GraphParameter parameter = it.next();
 				result.append(parameter.getName());
 				result.append('=');
-				if (!parameter.isSecure()) {
-					result.append(parameter.getValue());
-				} else {
+				if (parameter.isSecure()) {
 					result.append(GraphParameter.HIDDEN_SECURE_PARAMETER);
+				} else {
+					result.append(parameter.getValue());
+				}
+				if (it.hasNext()) {
+					result.append('\n');
 				}
 			}
 		}
@@ -222,7 +252,12 @@ public class GraphParameters {
 	 */
 	public void clear() {
 		synchronized (parameters) {
+			List<GraphParameter> oldGraphParameters = getAllGraphParameters();
 			parameters.clear();
+			//clear references to parent GraphParameters
+			for (GraphParameter oldGraphParameter : oldGraphParameters) {
+				oldGraphParameter.setParentGraphParameters(null);
+			}
 		}
 	}
 	

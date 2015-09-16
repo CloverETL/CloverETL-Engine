@@ -22,7 +22,10 @@ import org.jetel.graph.Edge;
 import org.jetel.graph.Node;
 import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
+import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.util.ReferenceUtils;
+import org.jetel.util.string.StringUtils;
 
 /**
  * General model wrapper for engine edge ({@link Edge}).
@@ -36,17 +39,20 @@ public class MVEngineEdge implements MVEdge {
 
 	private Edge engineEdge;
 	
-	private MVMetadata propagatedMetadata;
+	private MVMetadata implicitMetadata;
 	
 	private MVMetadata noMetadata;
 	
-	private boolean hasPropagatedMetadata = false;
+	private boolean hasImplicitMetadata = false;
 
-	private MetadataPropagationResolver metadataPropagationResolver;
+	private MVGraph parentMVGraph;
 	
-	MVEngineEdge(Edge engineEdge, MetadataPropagationResolver metadataPropagationResolver) {
+	MVEngineEdge(Edge engineEdge, MVGraph parentMVGraph) {
+		if (engineEdge == null || parentMVGraph == null) {
+			throw new IllegalArgumentException("MVEngineEdge init failed");
+		}
 		this.engineEdge = engineEdge;
-		this.metadataPropagationResolver = metadataPropagationResolver;
+		this.parentMVGraph = parentMVGraph;
 	}
 	
 	@Override
@@ -55,38 +61,58 @@ public class MVEngineEdge implements MVEdge {
 	}
 	
 	@Override
+	public String getId() {
+		return engineEdge.getId();
+	}
+	
+	@Override
+	public void reset() {
+		implicitMetadata = null;
+		hasImplicitMetadata = false;
+	}
+	
+	@Override
 	public MVComponent getReader() {
 		Node reader = engineEdge.getReader();
-		return (reader != null) ? metadataPropagationResolver.getOrCreateMVComponent(reader) : null;
+		return (reader != null) ? parentMVGraph.getMVComponent(reader.getId()) : null;
 	}
 
 	@Override
 	public MVComponent getWriter() {
 		Node writer = engineEdge.getWriter();
-		return (writer != null) ? metadataPropagationResolver.getOrCreateMVComponent(writer) : null;
+		return (writer != null) ? parentMVGraph.getMVComponent(writer.getId()) : null;
 	}
 
 	@Override
 	public boolean hasMetadata() {
-		return hasPropagatedMetadata || engineEdge.getMetadata() != null;
+		return hasImplicitMetadata || engineEdge.getMetadata() != null;
 	}
 
 	@Override
-	public boolean hasMetadataDirect() {
+	public boolean hasExplicitMetadata() {
 		return engineEdge.getMetadata() != null;
 	}
-	
+
+	@Override
+	public boolean hasImplicitMetadata() {
+		return hasImplicitMetadata;
+	}
+
 	@Override
 	public MVMetadata getMetadata() {
 		if (hasMetadata()) {
-			if (hasPropagatedMetadata) {
-				return propagatedMetadata;
+			if (hasImplicitMetadata) {
+				if (implicitMetadata != null) {
+					//duplicate is returned since propagated metadata can be changed
+					//by propagation process - for example Reformat propagates metadata
+					//from input to output ports, but priority of this metadata is decreased to ZERO level
+					return implicitMetadata.duplicate();
+				} else {
+					return null;
+				}
 			} else {
-				MVMetadata metadata = metadataPropagationResolver.getOrCreateMVMetadata(engineEdge.getMetadata(), MVMetadata.HIGH_PRIORITY);
-//				List<IGraphElement> originPath = engineEdge.getMetadataOriginPath();
-//				if (originPath != null) {
-//					metadata.addToOriginPath(originPath.subList(1, originPath.size())); //the last element in path is this edge, which will be appended later again
-//				}
+				MVMetadata metadata = parentMVGraph.createMVMetadata(engineEdge.getMetadata(), MVMetadata.HIGH_PRIORITY);
+				metadata.addToOriginPath(this);
 				return metadata;
 			}
 		} else {
@@ -95,15 +121,20 @@ public class MVEngineEdge implements MVEdge {
 	}
 
 	@Override
-	public void setPropagatedMetadata(MVMetadata propagatedMetadata) {
-		hasPropagatedMetadata = true;
-		this.propagatedMetadata = propagatedMetadata;
+	public void setImplicitMetadata(MVMetadata implicitMetadata) {
+		hasImplicitMetadata = true;
+		this.implicitMetadata = implicitMetadata;
 	}
 	
 	@Override
-	public void unsetPropagatedMetadata() {
-		hasPropagatedMetadata = false;
-		this.propagatedMetadata = null;
+	public MVMetadata getImplicitMetadata() {
+		return implicitMetadata;
+	}
+	
+	@Override
+	public void unsetImplicitMetadata() {
+		hasImplicitMetadata = false;
+		this.implicitMetadata = null;
 	}
 	
 	@Override
@@ -126,6 +157,28 @@ public class MVEngineEdge implements MVEdge {
 		return engineEdge.getInputPortNumber();
 	}
 
+	@Override
+	public MVGraph getParentMVGraph() {
+		return parentMVGraph;
+	}
+	
+	@Override
+	public MVEdge getMetadataRef() {
+		String metadataRef = engineEdge.getMetadataRef();
+		if (!StringUtils.isEmpty(metadataRef)) {
+			String edgeId = ReferenceUtils.getElementID(metadataRef);
+			try {
+				MVEdge edge = getParentMVGraph().getMVEdge(edgeId);
+				return edge;
+			} catch (Exception e) {
+				//edge reference is somehow corrupted, let's ignore it
+				return null;
+			}
+		} else {
+			return null;
+		}
+	}
+	
 	@Override
 	public int hashCode() {
 		return engineEdge.hashCodeIdentity();

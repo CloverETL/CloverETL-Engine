@@ -113,7 +113,7 @@ public class CTLAbstractTransformAdapter implements Transform {
 	 */
     @Override
     public void setNode(Node node) {
-		// do nothing
+		executor.setNode(node);
     }
 
 	/**

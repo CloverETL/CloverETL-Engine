@@ -45,6 +45,8 @@ public class PluginDescriptionBuilder {
 
     private static final String GREEDY_CLASS_LOADER = "greedyClassLoader";
 
+    private static final String LAZY_ACTIVATED = "lazyActivated";
+
     private static final String EXCLUDED_PACKAGES = "excludedPackages";
 
     private static final String RUNTIME_ELEMENT = "runtime";
@@ -113,7 +115,12 @@ public class PluginDescriptionBuilder {
         if (pluginElement.hasAttribute(GREEDY_CLASS_LOADER)) {
         	plugin.setGreedyClassLoader(Boolean.parseBoolean(pluginElement.getAttribute(GREEDY_CLASS_LOADER)));
         }
-        
+
+        //lazy activated
+        if (pluginElement.hasAttribute(LAZY_ACTIVATED)) {
+        	plugin.setLazyActivated(Boolean.parseBoolean(pluginElement.getAttribute(LAZY_ACTIVATED)));
+        }
+
         //excluded packages
         if (pluginElement.hasAttribute(EXCLUDED_PACKAGES)) {
         	plugin.setExcludedPackages(StringUtils.split(pluginElement.getAttribute(EXCLUDED_PACKAGES)));

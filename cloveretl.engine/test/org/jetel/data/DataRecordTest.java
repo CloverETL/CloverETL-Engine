@@ -42,9 +42,6 @@ public class DataRecordTest extends CloverTestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 
-		// make sure that the optimized serialization of null values is turned on
-		Defaults.Record.USE_FIELDS_NULL_INDICATORS = true;
-
 		DataRecordMetadata metadata = new DataRecordMetadata("record");
 
 		for (int i = 0; i < NUMBER_OF_FIELDS; i++) {

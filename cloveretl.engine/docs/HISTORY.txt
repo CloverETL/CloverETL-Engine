@@ -2,6 +2,182 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-0-7
+---------
+
+- Make UCanAccess default MS Access JDBC driver
+- FIXES:
+	- Add data type conversion for dictionary lists and maps
+
+REL-4-0-6
+---------
+
+* FIXES:
+	- SQL queries ending with semicolon cause graphs failures
+
+REL-4-0-5
+---------
+
+* FIXES:
+	- CloverDataWriter may report invalid checksum on append
+	- Different behavior of DBInputTable with declared variable in TSQL between versions
+	- DBOutputTable does not commit with Commit=MAX_INT
+	- HTTPConnector returns WARN message even when successful status code is received
+	- DBOutputTable does not use not most current version of query specified via Query URL
+
+REL-4-0-4
+---------
+
+* FIXES:
+	- Readers fail with "max number of records" when reading from input port
+	- Proper reporting of graph configuration errors (avoiding duplicates)
+	- XMLExtract - " character is escaped to &quot (missing semicolon)
+	- Exported custom component attribute reports nonexistent warning
+* COMPATIBILITY:
+	- Propagation of metadata defined by SQL does not work
+	- UniversalDataWriter: 'Create directories' cannot handle encoded URL
+
+REL-4-0-3
+---------
+
+* FIXES:
+	- Invalid CloverData format
+	- "Create directories" does not work in UniversalDataWriter when using 
+	Dictionary as file URL
+
+REL-4-0-2
+---------
+
+* Changed priority of edge-based explicit metadata propagation
+* FIXES:
+    -  Tracking on edges with no record   
+
+REL-4-0-1
+---------
+
+* FIXES:
+	- HTTPConnector behaves differently in Clover 4 - authentication fails
+
+REL-4-0-0
+---------
+
+* TableauWriter component
+* explicit metadata propagation
+* improved CloverDataReader and CloverDataWriter
+	- compression
+	- consistency with other readers and writers (e.g. partitioning)
+* CTL function to get sandbox-prefixed path
+* New CTL2 container functions - toMap() and getValues()
+* Added and improved bit operation functions
+* CTL function to access custom component properties
+* FIXES:
+	- SortWithinGroup is losing records
+	- CTL2 performance issues in locale and timezone manipulation
+	- EOF as delimiter does not work for fixed length
+	- RunGraph component does not work with sameJVM=false
+	- CloverDataReader: autofilling does not work
+	- DB Lookup does not accept key longer than 10 digits
+	- Space Preceding a * in Wildcard Mapping does not report error in Design or Runtime
+	- Improve FTP connection error reporting
+* COMPATIBILITY:
+	- Removed direct zip support in CloverDataReader and CloverDataWriter
+	- Move component description from designer to engine
+	- Do not perform database commit if graph execution fails
+
+REL-4-0-0-M2
+------------
+
+* Subgraphs
+	- configurable as components
+	- configurable categories and icons
+* Updated model of graph parameters
+	- public parameters
+	- types of parameters and some additional attributes
+	- CTL2 in parameter value
+* Improvements of CloverDataReader
+* Sleep component worksalso without ports
+- FIXES:
+	- Asterisk in Samba URL caused unexpected behavior
+- COMPATIBILITY:
+	- XMLExtract: explicit mapping to have priority over implicit automap by name
+	
+
+
+REL-4-0-0-M1
+------------
+
+* Subgraphs
+* Automatic metadata propagation
+- FIXES:
+	- UniversalDataReader logging improved
+- COMPATIBILITY:
+	- Dropped support of Java 1.6
+	- Updated internal libraries to newer versions
+	- split() returns empty list if input is null
+	- indexOf() accepts null value
+	 
+
+
+REL-3-5-5
+---------
+
+* FIXES:
+    - MultiFileReader: checkConfig warning for port protocol
+* COMPATIBILITY:
+	- Writers do not decode escape sequences in sandbox URLs
+
+
+REL-3-5-4
+---------
+
+* Improved support for multipart entities in HttpConnector
+* FIXES:
+    - multipart entities mapping does not work
+    - simultaneous run of Success and SetJoboutput components fixed
+    - DBOutputTable fails on syntax error when using multiple quotes 
+
+
+REL-3-5-3
+---------
+
+* FIXES:
+	- SortWithinGroup keeps losing records
+	- In SQL query everything after 'returning' string is cut off
+	- UniversalDataWriter produces wrong delimiters if used with autofilled fields
+	- Fixed-length metadata trim string fields
+	- XMLWriter fails with "Unexpected null value"
+	- UDR/UDW issues with fixed-length metadata
+	- "Create directories" does not work in UniversalDataWriter when using Dictionary as file URL
+	- UniversalDataWriter: fixed-length fields exclusion issue
+	
+
+REL-3-5-2
+---------
+
+* DBOutputTable output using 'RETURNING' on PosgtreSQL
+- FIXES:
+	- "where" in sql comment is used in Dynamic metadata query
+	- SystemExecute closes error file descriptor during execution
+	- DBLookupTable has incorrectly synchronized activeLookups variable
+	- Dash passes through isNumber function
+
+
+REL-3-5-1
+---------
+
+* Print loaded engine plugins to log
+- FIXES:
+	- SimpleGather performance regression
+	- XMLDataWriter behaves inconsistently with long strings
+	- Debug files are always created when running graph via RunGraph
+	- Pivot produces wrong data for string key
+	- Vertica meta-function execution fails
+	- DBExecute does not report on error port
+- COMPATIBILITY:
+	- When parsing deprecated format of parameters, ignore those with invalid names
+	- CTL2: function removeNonPrintable() incorrectly removes also all non-ASCII characters (unicode)
+	- CTL code in parameter value does not work when used as a DB password
+
 
 REL-3-5-0
 ---------

@@ -34,6 +34,8 @@ import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.extensions.TLFunctionCallContext;
 import org.jetel.ctl.extensions.TLFunctionPluginRepository;
 import org.jetel.data.Defaults;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ExceptionUtils;
@@ -136,7 +138,9 @@ public class TLCompiler implements ITLCompiler {
 		parser.setTabSize(tabSize);
 		parser.enable_tracing();
 		CLVFStartExpression parseTree = null;
+		Context ctx = null;
 		try {
+			ctx = ContextProvider.registerGraph(graph);
 			ast = parseTree = parser.StartExpression();
 			if (problemReporter.errorCount() > 0) {
 				return getDiagnosticMessages();
@@ -144,6 +148,8 @@ public class TLCompiler implements ITLCompiler {
 		} catch (ParseException e) {
 			problemReporter.error(1, 1, 1, 2, e.getMessage(), null);
 			return getDiagnosticMessages();
+		} finally {
+			ContextProvider.unregister(ctx);
 		}
 		
 		ASTBuilder astBuilder = new ASTBuilder(graph,inMetadata,outMetadata,parser.getFunctions(),problemReporter);
@@ -222,7 +228,9 @@ public class TLCompiler implements ITLCompiler {
 		
 		parser.setTabSize(tabSize);
 		CLVFStart parseTree = null;
+		Context ctx = null;
 		try {
+			ctx = ContextProvider.registerGraph(graph);  // fixes CLO-4809
 			ast = parseTree = parser.Start();  
 			if (problemReporter.errorCount() > 0) {
 				return getDiagnosticMessages();
@@ -230,6 +238,8 @@ public class TLCompiler implements ITLCompiler {
 		} catch (ParseException e) {
 			problemReporter.error(1, 1, 1, 2, e.getMessage(),null);
 			return getDiagnosticMessages();
+		} finally {
+			ContextProvider.unregister(ctx);
 		}
 		
 		ASTBuilder astBuilder = new ASTBuilder(graph,inMetadata,outMetadata,parser.getFunctions(),problemReporter);
@@ -343,7 +353,8 @@ public class TLCompiler implements ITLCompiler {
 		// compute return type
 		final TLType type = TLType.fromJavaType(returnType);
 		return "function " + type.name() +  " " + syntheticFunctionName + "() { " +
-				"return " + expression + ";" +
+				// CLO-4872: terminate trailing single-line comment in expression with \n
+				"return " + expression + "\n;" +
 				" }";
 	}
 
@@ -456,6 +467,10 @@ public class TLCompiler implements ITLCompiler {
 	
 	public DataRecordMetadata[] getOutputMetadata() {
 		return outMetadata;
+	}
+	
+	public TransformationGraph getGraph() {
+		return graph;
 	}
 
 }

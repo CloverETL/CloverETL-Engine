@@ -30,6 +30,7 @@ import org.jetel.ctl.data.TLTypeEnum;
 import org.jetel.data.DataRecord;
 import org.jetel.graph.GraphParameter;
 import org.jetel.graph.GraphParameters;
+import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.HashCodeUtil;
 import org.jetel.util.property.PropertyRefResolver;
@@ -49,7 +50,11 @@ public class UtilLib extends TLFunctionLibrary {
            	"getRawParamValues".equals(functionName) ? new GetRawParamValuesFunction() :
         	"getJavaProperties".equals(functionName) ? new GetJavaPropertiesFunction() :
     		"getEnvironmentVariables".equals(functionName) ? new GetEnvironmentVariablesFunction() : 
-    		"hashCode".equals(functionName)	? new HashCodeFunction() :	null; 
+        	"getComponentProperty".equals(functionName) ? new GetComponentPropertyFunction() : 
+    		"hashCode".equals(functionName)	? new HashCodeFunction() :	
+    		"byteAt".equals(functionName) ? new ByteAtFunction() : 
+//    		"byteSet".equals(functionName) ? new ByteSetFunction() :
+    		null; 
     		
 		if (ret == null) {
     		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
@@ -273,6 +278,32 @@ public class UtilLib extends TLFunctionLibrary {
     	}
     }
     
+    // GET COMPONENT PROPERTY
+    @TLFunctionAnnotation("Returns the value of a component property.")
+    public static String getComponentProperty(TLFunctionCallContext context, String name) {
+    	Node node = context.getTransformationContext().getNode();
+    	if (node == null || node.getAttributes() == null) {
+    		throw new IllegalStateException("Component properties are not available");
+    	}
+    	if (name == null) {
+    		return null;
+    	}
+		return node.getAttributes().getProperty(name);
+    }
+    
+    class GetComponentPropertyFunction implements TLFunctionPrototype {
+    	
+    	@Override
+    	public void init(TLFunctionCallContext context) {
+    	}
+    	
+    	@Override
+    	public void execute(Stack stack, TLFunctionCallContext context) {
+    		String name = stack.popString();
+    		stack.push(getComponentProperty(context, name));
+    	}
+    }
+    
     // HASH CODE
     @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
  	public static final int hashCode(TLFunctionCallContext context, int i) {
@@ -394,5 +425,49 @@ public class UtilLib extends TLFunctionLibrary {
 		}
 
     }
+    
+    // BYTE AT
+ 	@TLFunctionAnnotation("Returns byte at the specified position of input bytearray")
+ 	public static final Integer byteAt(TLFunctionCallContext context, byte[] input, Integer position) {
+ 		return Integer.valueOf(0xff & input[position]);
+ 	}
+
+ 	class  ByteAtFunction implements TLFunctionPrototype {
+
+ 		@Override
+ 		public void init(TLFunctionCallContext context) {
+ 		}
+
+ 		@Override
+ 		public void execute(Stack stack, TLFunctionCallContext context) {
+ 			final Integer pos = stack.popInt();
+ 			final byte[] input = stack.popByteArray();
+ 			stack.push(byteAt(context, input, pos));
+ 		}
+ 	}
+ 	
+ 	/*
+ 	// BYTE SET
+  	@TLFunctionAnnotation("Sets the byte at the specified position of input bytearray")
+  	public static final void byteSet(TLFunctionCallContext context, byte[] input, int position, int value) {
+  		input[position]= (byte)( value & 0xff);
+  	}
+
+  	class ByteSetFunction implements TLFunctionPrototype {
+
+  		@Override
+  		public void init(TLFunctionCallContext context) {
+  		}
+
+  		@Override
+  		public void execute(Stack stack, TLFunctionCallContext context) {
+  			final int value = stack.popInt();
+  			final int pos = stack.popInt();
+  			final byte[] input = stack.popByteArray();
+  			byteSet(context, input, pos, value);
+  		}
+  	}
+  	*/
+
     
 }

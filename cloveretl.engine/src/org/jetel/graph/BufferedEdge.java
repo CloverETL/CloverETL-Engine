@@ -127,7 +127,8 @@ public class BufferedEdge extends EdgeBase {
 	public void postExecute() {
 		super.postExecute();
 
-		recordBuffer.reset();
+		//temp file is removed, see MULE-98
+		recordBuffer.reset(true);
 	}
 	
 	@Override
@@ -168,6 +169,7 @@ public class BufferedEdge extends EdgeBase {
 	public void eof() throws InterruptedException {
         try {
 			recordBuffer.setEOF();
+			eofSent = true;
 		} catch (IOException ex) {
 			throw new RuntimeException("Error when closing BufferedEdge", ex);
 		}

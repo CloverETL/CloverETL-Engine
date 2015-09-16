@@ -230,8 +230,8 @@ public class JsonExtract extends Node {
 	// xml attributes
 	public static final String XML_SOURCEURI_ATTRIBUTE = "sourceUri";
 	public static final String XML_USENESTEDNODES_ATTRIBUTE = "useNestedNodes";
-	private static final String XML_MAPPING_ATTRIBUTE = "mapping";
-	private final static String XML_MAPPING_URL_ATTRIBUTE = "mappingURL";
+	public static final String XML_MAPPING_ATTRIBUTE = "mapping";
+	public static final String XML_MAPPING_URL_ATTRIBUTE = "mappingURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
 	private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
@@ -443,7 +443,7 @@ public class JsonExtract extends Node {
 		}
 
 		if (charset != null && !Charset.isSupported(charset)) {
-			status.add(new ConfigurationProblem("Charset " + charset + " not supported!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+			status.add(new ConfigurationProblem("Charset " + charset + " not supported!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
 		}
 
 		TransformationGraph graph = getGraph();

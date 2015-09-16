@@ -27,6 +27,7 @@ import java.net.Authenticator;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -43,16 +44,15 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.graph.JobType;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.dictionary.DictionaryValuesContainer;
 import org.jetel.graph.dictionary.SerializedDictionaryValue;
 import org.jetel.graph.dictionary.UnsupportedDictionaryOperation;
-import org.jetel.graph.runtime.AuthorityProxyFactory;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.graph.runtime.GraphRuntimeContext;
-import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.graph.runtime.IThreadManager;
 import org.jetel.graph.runtime.SimpleThreadManager;
 import org.jetel.graph.runtime.WatchDog;
@@ -203,7 +203,7 @@ public class runGraph {
                 i++;
                 log4jPropertiesFile = args[i];
                 File test = new File(log4jPropertiesFile);
-                if (!test.canRead()){
+                if (!Files.isReadable(test.toPath())){
                     System.err.println("Cannot read file: \"" + log4jPropertiesFile + "\"");
                     System.exit(-1);
                 }
@@ -352,6 +352,8 @@ public class runGraph {
         runtimeContext.setDebugDirectory(debugDirectory);
         runtimeContext.setContextURL(contextURL);
         runtimeContext.setLogLevel(logLevel);
+        runtimeContext.setJobType(JobType.baseTypeFromFileName(graphFileName));
+        runtimeContext.setValidateRequiredParameters(false);
         try {
 			runtimeContext.setJobUrl(FileUtils.getFileURL(contextURL, graphFileName).toString());
 		} catch (MalformedURLException e1) {
@@ -490,8 +492,6 @@ public class runGraph {
 			graph.getDictionary().setValue(key, dictContainer.getValue(key));
 		}
 		
-		IAuthorityProxy authorityProxy = AuthorityProxyFactory.createDefaultAuthorityProxy();
-		runtimeContext.setAuthorityProxy(authorityProxy);
         IThreadManager threadManager = new SimpleThreadManager();
         WatchDog watchDog = new WatchDog(graph, runtimeContext);
         threadManager.initWatchDog(watchDog);
@@ -500,7 +500,7 @@ public class runGraph {
     
 	public static String getInfo(){
 		final StringBuilder ret = new StringBuilder();
-		ret.append("CloverETL library version ");
+		ret.append("CloverETL version ");
 		ret.append(JetelVersion.MAJOR_VERSION );
 		ret.append(".");
 		ret.append(JetelVersion.MINOR_VERSION);
@@ -539,7 +539,6 @@ public class runGraph {
         System.out.println("-pass\t\t\tpassword for decrypting of hidden connections passwords");
         System.out.println("-stdin\t\t\tload graph definition from STDIN");
         System.out.println("-loghost\t\tdefine host and port number for socket appender of log4j (log4j library is required); i.e. localhost:4445");
-        System.out.println("-checkconfig\t\tonly check graph configuration");
         System.out.println("-skipcheckconfig\t\tskip checking of graph configuration");
         System.out.println("-noJMX\t\t\tturns off sending graph tracking information");
         System.out.println("-config <filename>\t\tload default engine properties from specified file");
@@ -552,8 +551,7 @@ public class runGraph {
 	}
 
 	public static void printRuntimeHeader() {
-        logger.info("***  CloverETL framework/transformation graph"
-                + ", (c) 2002-" + JetelVersion.LIBRARY_BUILD_YEAR + " Javlin a.s.  ***");
+        logger.info("***  CloverETL, (c) 2002-" + JetelVersion.LIBRARY_BUILD_YEAR + " Javlin a.s.  ***");
         logger.info("Running with " + getInfo());
 
         logger.info("Running on " + Runtime.getRuntime().availableProcessors() + " CPU(s), " +

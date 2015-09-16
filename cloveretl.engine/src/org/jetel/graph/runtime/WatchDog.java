@@ -143,7 +143,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		}
 
 		//create token tracker if graph is jobflow type
-		if (graph.getJobType().isJobflow()) {
+		if (graph.getRuntimeJobType().isJobflow()) {
 			tokenTracker = new TokenTracker(graph);
 		}
 		
@@ -202,8 +202,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
 						logger.trace("rename thread " + originalThreadName + " to " + newThreadName);
 			  	t.setName(newThreadName);
 	    		
+			  	logger.debug("Job execution type: " + getGraphRuntimeContext().getJobType());
+			  	
 	    		//print graph properties
-	    		logger.info("Job parameters: " + graph.getGraphParameters());
+	    		logger.info("Job parameters: \n" + graph.getGraphParameters());
 	    		
 	    		//print out runtime context
 	    		logger.debug("Graph runtime context: " + graph.getRuntimeContext().getAllProperties());
@@ -239,47 +241,53 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	           	if (watchDogStatus == Result.RUNNING) {
 		           	Phase[] phases = graph.getPhases();
 		           	Result phaseResult = Result.N_A;
-		           	for (int currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
-		           		//if the graph runs in synchronized mode we need to wait for synchronization event to process next phase
-		           		if (runtimeContext.isSynchronizedRun()) {
-		           			logger.info("Waiting for phase " + phases[currentPhaseNum] + " approval...");
-	           				watchDogStatus = Result.WAITING;
-	           				CURRENT_PHASE_LOCK.unlock();
-		           			synchronized (cloverJMX) {
-			           			while (cloverJMX.getApprovedPhaseNumber() < phases[currentPhaseNum].getPhaseNum() 
-			           					&& watchDogStatus == Result.WAITING) { //graph was maybe aborted
-			           				try {
-			           					cloverJMX.wait();
-			           				} catch (InterruptedException e) {
-			           					throw new RuntimeException("WatchDog was interrupted while was waiting for phase synchronization event.");
-			           				}
+		           	if (phases.length > 0) { //non-empty graph
+			           	for (int currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
+			           		//if the graph runs in synchronized mode we need to wait for synchronization event to process next phase
+			           		if (runtimeContext.isSynchronizedRun()) {
+			           			logger.info("Waiting for phase " + phases[currentPhaseNum] + " approval...");
+		           				watchDogStatus = Result.WAITING;
+		           				CURRENT_PHASE_LOCK.unlock();
+			           			synchronized (cloverJMX) {
+				           			while (cloverJMX.getApprovedPhaseNumber() < phases[currentPhaseNum].getPhaseNum() 
+				           					&& watchDogStatus == Result.WAITING) { //graph was maybe aborted
+				           				try {
+				           					cloverJMX.wait();
+				           				} catch (InterruptedException e) {
+				           					throw new RuntimeException("WatchDog was interrupted while was waiting for phase synchronization event.");
+				           				}
+				           			}
 			           			}
-		           			}
-	           				CURRENT_PHASE_LOCK.lock();
-	           				//watchdog was aborted while was waiting for next phase approval
-	           				if (watchDogStatus == Result.ABORTED) {
-	    	                    logger.warn("!!! Graph execution aborted !!!");
-	    	                    break;
-	           				} else {
-	           					watchDogStatus = Result.RUNNING;
-	           				}
-		           		}
-		           		cloverJMX.phaseStarted(phases[currentPhaseNum]);
-		           		//execute phase
-		                phaseResult = executePhase(phases[currentPhaseNum]);
-		                phases[currentPhaseNum].setResult(phaseResult);
-		                
-		                if(phaseResult == Result.ABORTED)      {
-		                	cloverJMX.phaseAborted();
-		                    logger.warn("!!! Phase execution aborted !!!");
-		                    break;
-		                } else if(phaseResult == Result.ERROR) {
-		                	cloverJMX.phaseError(getErrorMessage());
-		                    logger.error("!!! Phase finished with error - stopping graph run !!!");
-		                    break;
-		                }
-		           		cloverJMX.phaseFinished();
-		            }
+		           				CURRENT_PHASE_LOCK.lock();
+		           				//watchdog was aborted while was waiting for next phase approval
+		           				if (watchDogStatus == Result.ABORTED) {
+		    	                    logger.warn("!!! Graph execution aborted !!!");
+		    	                    break;
+		           				} else {
+		           					watchDogStatus = Result.RUNNING;
+		           				}
+			           		}
+			           		cloverJMX.phaseStarted(phases[currentPhaseNum]);
+			           		//execute phase
+			                phaseResult = executePhase(phases[currentPhaseNum]);
+			                phases[currentPhaseNum].setResult(phaseResult);
+			                
+			                if(phaseResult == Result.ABORTED)      {
+			                	cloverJMX.phaseAborted();
+			                    logger.warn("!!! Phase execution aborted !!!");
+			                    break;
+			                } else if(phaseResult == Result.ERROR) {
+			                	cloverJMX.phaseError(getErrorMessage());
+			                    logger.error("!!! Phase finished with error - stopping graph run !!!");
+			                    break;
+			                }
+			           		cloverJMX.phaseFinished();
+			            }
+		           	} else {
+		           		//empty graph execution is successful 
+		           		logger.info("Transformation with no components has been executed.");
+		           		watchDogStatus = Result.FINISHED_OK;
+		           	}
 		           	//post-execution of graph
 		           	try {
 		           		graph.postExecute();
@@ -509,7 +517,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 			// gather graph tracking
 			//etl graphs are tracked only in regular intervals, jobflows are tracked more precise, whenever something happens
-			if (message == null || ContextProvider.getJobType().isJobflow()) {
+			if (message == null || ContextProvider.getRuntimeJobType().isJobflow()) {
 				cloverJMX.gatherTrackingDetails();
 			}
 		}

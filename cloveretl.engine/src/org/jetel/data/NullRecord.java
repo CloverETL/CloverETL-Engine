@@ -36,9 +36,7 @@ import org.jetel.util.bytes.CloverBuffer;
  *  
  *@since April 21, 2008
  */
-public class NullRecord extends DataRecord {
-	
-	private static final long serialVersionUID = 1L;
+public class NullRecord extends DataRecordImpl {
 
 	/**
 	 * Constant used for representation of record will all fields with null value.
@@ -55,8 +53,8 @@ public class NullRecord extends DataRecord {
 	}
 	
 	@Override
-	public DataRecord duplicate() {
-		return NULL_RECORD;
+	public NullRecord duplicate() {
+		return (NullRecord) NULL_RECORD;
 	}
 	
 	@Override
@@ -71,6 +69,11 @@ public class NullRecord extends DataRecord {
 	@Override
 	public void deserialize(CloverBuffer buffer, int[] whichFields) {
 		throw new UnsupportedOperationException("Can't deserialize NullRecord");
+	}
+	
+	@Override
+	public void deserialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		throw new UnsupportedOperationException("Can't serialize NullRecord");
 	}
 	
 	@Override
@@ -93,6 +96,16 @@ public class NullRecord extends DataRecord {
 		throw new UnsupportedOperationException("Can't serialize NullRecord");
 	}
 	
+	@Override
+	public void serialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		throw new UnsupportedOperationException("Can't serialize NullRecord");
+	}
+	
+	@Override
+	public void serialize(CloverBuffer buffer, DataRecordSerializer serializer, int[] whichFields) {
+		throw new UnsupportedOperationException("Can't serialize NullRecord");
+	}
+
 	@Override
 	public void setMetadata(DataRecordMetadata metadata) {
 	}
@@ -190,9 +203,7 @@ final class NullMetadata extends DataRecordMetadata{
  * Fields of NullRecord
  *
  */
-final class NullField extends DataField{
-	
-	private static final long serialVersionUID = 1L;
+final class NullField extends DataFieldImpl {
 
 	final static DataFieldMetadata NULL_FIELD_METADATA = new DataFieldMetadata("null_field",(short)0);
 	static{
@@ -215,6 +226,11 @@ final class NullField extends DataField{
 	@Override
 	public void deserialize(CloverBuffer buffer) {
 		throw new UnsupportedOperationException("Can't deserialize NullField");
+	}
+	
+	@Override
+	public void deserialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		throw new UnsupportedOperationException("Can't serialize NullRecord");
 	}
 
 	@Override
@@ -273,6 +289,11 @@ final class NullField extends DataField{
 	@Override
 	public void serialize(CloverBuffer buffer) {
 		throw new UnsupportedOperationException("Can't serialize NullField");
+	}
+	
+	@Override
+	public void serialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		throw new UnsupportedOperationException("Can't serialize NullRecord");
 	}
 
 	@Override

@@ -42,7 +42,7 @@ import org.apache.commons.logging.LogFactory;
  * <li>Keeps multi-line comments
  * <li>Supports optimization hint comments /*! MySQL code here {@literal *}{@literal /}
  *     or /*+ Oracle code here {@literal *}{@literal /}
- * <li>Does not recognize MySQL double-quote (") strings
+ * <li>Recognizes MySQL double-quote (") strings
  * <li>Supports MySQL quote escaping (\')
  * <li>Strips away whitespace at the beginning of the statement.
  * <li>Throws {@link IOException} when input ends unexpectedly or when the underline data source throws IOException.
@@ -64,8 +64,15 @@ public class SQLScriptParser implements Iterable<String> {
 	private String delimiter = DEFAULT_SQL_DELIMITER;
 	private boolean requireLastDelimiter = true;
 	private boolean backslashQuoteEscaping = false; // MySQL feature
+	private boolean replaceStrings = false; // replaces strings by spaces
+	
+	/** getNextStatement() returns all the queries at once when this is false.
+	 * This can be used to basically ignore delimiter.
+	 */
+	private boolean splitQueries = true;
 	
 	private final static char QUOTE_CHAR = '\'';
+	private final static char MYSQL_QUOTE_CHAR = '"';
 	private static final String DOUBLE_QUOTE = "''";
 	private static final String BACKSLASH_ESCAPED_QUOTE = "\\'";
 	private final static String MULTILINE_COMMENT_START = "/*";
@@ -114,6 +121,18 @@ public class SQLScriptParser implements Iterable<String> {
 	}
 	
 	/**
+	 * When enabled, replaces all strings by space char: ' '. Keeps the same length.
+	 * @param replaceStrings
+	 */
+	public void setReplaceStrings(boolean replaceStrings) {
+		this.replaceStrings = replaceStrings; 
+	}
+	
+	public boolean istReplaceStrings() {
+		return replaceStrings;
+	}
+	
+	/**
 	 * When enabled will not fail when last statement is not terminated with semicolon.
 	 */
 	public void setRequireLastDelimiter(boolean requireLastDelimiter) {
@@ -133,6 +152,10 @@ public class SQLScriptParser implements Iterable<String> {
 	
 	public boolean isBackslashQuoteEscaping() {
 		return backslashQuoteEscaping;
+	}
+	
+	public void setSplitQueries(boolean splitQueries) {
+		this.splitQueries = splitQueries;
 	}
 	
 	public void setReader(Reader reader) {
@@ -182,7 +205,7 @@ public class SQLScriptParser implements Iterable<String> {
 			else if (matchString(sb)) {
 				continue;
 			}
-			else if (match(delimiter)) {
+			else if (splitQueries && match(delimiter)) {
 				break;
 			}
 			else {
@@ -240,9 +263,13 @@ public class SQLScriptParser implements Iterable<String> {
 			while (!matchEndOfLine()) {
 				if (reader.read() == -1) {
 					logger.warn("End of input after single-line SQL comment");
+					//keep newline char
+					sb.append('\n');
 					return true;
 				}
 			}
+			//keep newline char
+			sb.append('\n');
 			return true;
 		}
 		else {
@@ -264,8 +291,21 @@ public class SQLScriptParser implements Iterable<String> {
 	}
 	
 	private boolean matchString(StringBuilder sb) throws IOException {
-		if (matchQuote()) {
-			sb.append(QUOTE_CHAR);
+		boolean regularQuoteMatched = matchQuote(false);
+		boolean mySQLQuoteMatched = false;
+		if (!regularQuoteMatched) {
+			mySQLQuoteMatched = matchQuote(true);
+		}
+		
+		if (regularQuoteMatched || mySQLQuoteMatched) {
+			char quoteChar;
+			if (regularQuoteMatched) {
+				quoteChar = QUOTE_CHAR;
+			} else {
+				quoteChar = MYSQL_QUOTE_CHAR;
+			}
+			
+			sb.append(quoteChar);
 			for (;;) {
 				if (backslashQuoteEscaping && match(BACKSLASH_ESCAPED_QUOTE)) {
 					sb.append(BACKSLASH_ESCAPED_QUOTE);
@@ -279,9 +319,13 @@ public class SQLScriptParser implements Iterable<String> {
 						throw new IOException("Unexpected end of input while in string");
 					}
 					else {
-						sb.append((char) read);
-						if (read == QUOTE_CHAR) {
+						if (read == quoteChar) {
+							sb.append(quoteChar);
 							break;
+						} else if (replaceStrings) {
+							sb.append(' ');
+						} else {
+							sb.append((char) read);
 						}
 					}
 				}
@@ -299,10 +343,12 @@ public class SQLScriptParser implements Iterable<String> {
 		return match("\r\n") || match("\n\r") || match("\n") || match("\r");
 	}
 	
-	private boolean matchQuote() throws IOException {
+	private boolean matchQuote(boolean mySQLQuote) throws IOException {
 		reader.mark(1);
 		int read = reader.read();
-		if (read == QUOTE_CHAR) {
+		if (!mySQLQuote && read == QUOTE_CHAR) {
+			return true;
+		} else if (mySQLQuote && read == MYSQL_QUOTE_CHAR) {
 			return true;
 		}
 		else {

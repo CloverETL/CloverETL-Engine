@@ -1,20 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="krivanekm" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361360543511" licenseType="Commercial" modified="Mon Jan 13 18:39:15 CET 2014" modifiedBy="User" name="ProcessLog_CloverETL" nature="jobflow" revision="1.50" showComponentDetails="true">
+<Graph author="krivanekm" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="4.0.0.M1" id="1361360543511" licenseType="Commercial" modified="Tue Mar 25 15:58:34 CET 2014" modifiedBy="User" name="ProcessLog_CloverETL" nature="jobflow" revision="1.52" showComponentDetails="true">
 <Global>
-<Metadata id="ExecuteGraph_RunStatus">
-<Record fieldDelimiter="|" name="ExecuteGraph_RunStatus" recordDelimiter="\n" type="delimited">
-<Field name="runId" type="long"/>
-<Field name="originalJobURL" type="string"/>
-<Field format="yyyy-MM-dd HH:mm:ss" name="startTime" type="date"/>
-<Field format="yyyy-MM-dd HH:mm:ss" name="endTime" type="date"/>
-<Field name="duration" type="long"/>
-<Field name="status" type="string"/>
-<Field name="errException" type="string"/>
-<Field name="errMessage" type="string"/>
-<Field name="errComponent" type="string"/>
-<Field name="errComponentType" type="string"/>
-</Record>
-</Metadata>
 <Connection config="${CONN_DIR}/MongoDB.cfg" id="MONGODB0" type="MONGODB"/>
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
@@ -93,7 +79,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Edge fromNode="COUNT_UNIQUE_VISITORS_USING_MONGO_DB_QUERY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 0 (out)" toNode="GENERATE_REPORT:0"/>
-<Edge debugMode="true" fromNode="WRITE_INPUTS_TO_MONGO_DB:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 0 (out)" toNode="COUNT_UNIQUE_VISITORS_USING_MONGO_DB_QUERY:0"/>
+<Edge fromNode="COUNT_UNIQUE_VISITORS_USING_MONGO_DB_QUERY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="GENERATE_REPORT:0"/>
+<Edge debugMode="true" fromNode="WRITE_INPUTS_TO_MONGO_DB:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="COUNT_UNIQUE_VISITORS_USING_MONGO_DB_QUERY:0"/>
 </Phase>
 </Graph>

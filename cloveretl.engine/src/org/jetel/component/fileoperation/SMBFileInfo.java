@@ -33,6 +33,8 @@ import org.jetel.exception.JetelRuntimeException;
 public class SMBFileInfo implements Info {
 	
 	private final SmbFile file;
+	private String name;
+	private URI uri;
 	
 	public SMBFileInfo(SmbFile file) {
 		SmbFile tmp = file;
@@ -46,7 +48,10 @@ public class SMBFileInfo implements Info {
 
 	@Override
 	public String getName() {
-		return getName(file);
+		if (name == null) {
+			name = getName(file);
+		}
+		return name;
 	}
 	
 	/**
@@ -62,7 +67,10 @@ public class SMBFileInfo implements Info {
 
 	@Override
 	public URI getURI() {
-		return SMBOperationHandler.toURI(file);
+		if (uri == null) {
+			uri = SMBOperationHandler.toURI(file);
+		}
+		return uri;
 	}
 
 	@Override

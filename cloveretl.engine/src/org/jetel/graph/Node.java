@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Properties;
 import java.util.TreeMap;
 import java.util.concurrent.CyclicBarrier;
 
@@ -123,6 +124,14 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      */
     protected ComponentTokenTracker tokenTracker;    
     
+    private Properties attributes;
+    
+    /** Subgraph only. Is this component part of debug input phase of the subgraph. */
+    private boolean partOfDebugInput = false;
+    
+    /** Subgraph only. Is this component part of debug output phase of the subgraph. */
+    private boolean partOfDebugOutput = false;
+    
 	/**
 	 *  Various PORT kinds identifiers
 	 *
@@ -139,6 +148,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	public final static String XML_TYPE_ATTRIBUTE="type";
     public final static String XML_ENABLED_ATTRIBUTE="enabled";
     public final static String XML_ALLOCATION_ATTRIBUTE = "allocation";
+    public final static String XML_PART_OF_DEBUG_INPUT_ATTRIBUTE = "debugInput";
+    public final static String XML_PART_OF_DEBUG_OUTPUT_ATTRIBUTE = "debugOutput";
 
     /**
      *  Standard constructor.
@@ -163,7 +174,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         phase = null;
         setResultCode(Result.N_A); // result is not known yet
         childThreads = new ArrayList<Thread>();
-        allocation = EngineComponentAllocation.createBasedOnNeighbours();
+        allocation = EngineComponentAllocation.createNeighboursAllocation();
 	}
 
 	/**
@@ -441,7 +452,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 
         //initialise component token tracker if necessary
         if (getGraph() != null
-        		&& getGraph().getJobType().isJobflow()
+        		&& getGraph().getRuntimeJobType().isJobflow()
         		&& getGraph().getRuntimeContext().isTokenTracking()) {
         	tokenTracker = createComponentTokenTracker();
         } else {
@@ -464,7 +475,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         	}
 			//non empty allocation is not allowed in non-cluster environment
 			EngineComponentAllocation allocation = getAllocation();
-			if (allocation != null && !allocation.isInferedFromNeighbours()) {
+			if (allocation != null && !allocation.isNeighboursAllocation()) {
 				throw new JetelRuntimeException("Component allocation cannot be specified in non-cluster environment.");
 			}
         }
@@ -529,7 +540,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
             	} else if (checkEofOnInputPorts()) { // true by default
 	            	//check whether all input ports are already closed
 	            	for (InputPort inputPort : getInPorts()) {
-	            		if (!inputPort.isEOF()) {
+	            		//if the edge base of the input port is not shared due this component and some data records are still in input port, report an error
+	            		if (!inputPort.getEdge().isSharedEdgeBaseFromReader() && !inputPort.isEOF()) {
 	            			setResultCode(Result.ERROR);
 	            			Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
 	            					new ErrorMsgBody(Result.ERROR.code(), Result.ERROR.message(), createNodeException(new JetelRuntimeException("Component has finished and input port " + inputPort.getInputPortNumber() + " still contains some unread records."))));
@@ -1113,6 +1125,20 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         outPortsSize = outPortsArray.length;
     }
     
+    @Override
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+    	status = super.checkConfig(status);
+    	
+    	//component allocation is limited for jobflows
+    	if (!getGraph().getRuntimeJobType().isGraph()) {
+    		if (!getAllocation().isNeighboursAllocation()) {
+        		status.add("Invalid component allocation. Only regular ETL graphs can be distributed.", Severity.ERROR, this, Priority.NORMAL);
+    		}
+    	}
+    	
+    	return status;
+    }
+    
     /**
      * Checks number of input ports, whether is in the given interval.
      * @param status
@@ -1463,17 +1489,49 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     	return componentDescription;
     }
 
-    /**
+	public Properties getAttributes() {
+		return attributes;
+	}
+
+	public void setAttributes(Properties attributes) {
+		this.attributes = attributes;
+	}
+
+	/**
      * This method blocks current thread until all input and output edges are
      * complete - last record is read, EOF indicator is reached.
      */
     protected void waitForEdgesEOF() throws InterruptedException {
     	for (InputPort inputPort : getInPorts()) {
-    		inputPort.getEdge().waitForEOF();;
+    		inputPort.getEdge().waitForEOF();
     	}
     	for (OutputPort outputPort : getOutPorts()) {
     		outputPort.getEdge().waitForEOF();
     	}
     }
-    
+
+	public void setPartOfDebugInput(boolean partOfDebugInput) {
+		this.partOfDebugInput = partOfDebugInput;
+	}
+
+	/**
+	 * Subgraph only feature.
+	 * @return true if this component is part of debug input phase of this subgraph
+	 */
+	public boolean isPartOfDebugInput() {
+		return partOfDebugInput;
+	}
+	
+	public void setPartOfDebugOutput(boolean partOfDebugOutput) {
+		this.partOfDebugOutput = partOfDebugOutput;
+	}
+
+	/**
+	 * Subgraph only feature.
+	 * @return true if this component is part of debug output phase of this subgraph
+	 */
+	public boolean isPartOfDebugOutput() {
+		return partOfDebugOutput;
+	}
+
 }

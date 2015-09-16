@@ -29,8 +29,35 @@ import org.jetel.metadata.DataFieldType;
  * @author     dpavlis
  * @since    May 2, 2002
  */
-public class DataFieldFactory {
+public abstract class DataFieldFactory {
 
+	/**
+	 * This field factory creates {@link DataFieldWithInvalidState} instead of regular {@link DataFieldImpl}.
+	 */
+	public static final DataFieldFactory DATA_FIELD_WITH_INVALID_STATE = new DataFieldFactory() {
+		@Override
+		public DataField create(DataFieldType fieldType, DataFieldMetadata fieldMetadata, boolean plain) {
+			DataField dataField = createDataField(fieldType, fieldMetadata, plain);
+			return new DataFieldWithInvalidState(dataField);
+		}
+	};
+	
+	/**
+	 * This field factory creates {@link DataFieldWithLazyLoading} instead of regular {@link DataFieldImpl}.
+	 */
+	public static final DataFieldFactory DATA_FIELD_WITH_LAZY_LOADING = new DataFieldFactory() {
+		@Override
+		public DataField create(DataFieldType fieldType, DataFieldMetadata fieldMetadata, boolean plain) {
+			DataField dataField = createDataField(fieldType, fieldMetadata, plain);
+			return new DataFieldWithLazyLoading(dataField);
+		}
+	};
+
+	/**
+	 * Creates an {@link DataField} instance.
+	 */
+	public abstract DataField create(DataFieldType fieldType, DataFieldMetadata fieldMetadata,boolean plain);
+	
 	/**
 	 * @param fieldType
 	 * @param fieldMetadata

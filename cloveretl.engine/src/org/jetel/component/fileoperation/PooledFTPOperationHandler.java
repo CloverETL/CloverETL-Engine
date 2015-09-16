@@ -38,9 +38,13 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPCmd;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
+import org.apache.commons.net.ftp.parser.MLSxEntryParser;
 import org.jetel.component.fileoperation.SimpleParameters.CopyParameters;
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
@@ -58,6 +62,7 @@ import org.jetel.component.fileoperation.pool.DefaultAuthority;
 import org.jetel.component.fileoperation.pool.PooledFTPConnection;
 import org.jetel.component.fileoperation.pool.PooledFTPConnection.WriteMode;
 import org.jetel.util.string.StringUtils;
+import org.jetel.util.string.UnicodeBlanks;
 
 public class PooledFTPOperationHandler implements IOperationHandler {
 	
@@ -66,6 +71,8 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 	private FileManager manager = FileManager.getInstance();
 	
 	private ConnectionPool pool = ConnectionPool.getInstance();
+	
+	private static final Log log = LogFactory.getLog(PooledFTPOperationHandler.class);
 	
 	@Override
 	public int getPriority(Operation operation) {
@@ -109,7 +116,11 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 			if (m.matches()) {
 				name = m.group(1); // some FTPs return full file paths as names, we want only the filename 
 			}
+			if (name.equals("/")) {
+				name = ""; // root directory has no name
+			}
 			this.name = name;
+			// name is modified just for the URI
 			if (file.isDirectory() && !name.endsWith(URIUtils.PATH_SEPARATOR)) {
 				name = name + URIUtils.PATH_SEPARATOR;
 			}
@@ -270,11 +281,102 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 		return StringUtils.isEmpty(result) ? URIUtils.PATH_SEPARATOR : result;
 	}
 	
+	/**
+	 * CLO-4118:
+	 * Performs the MLST command.
+	 * Copied from {@link FTPClient#mlistFile(String)}.
+	 * 
+	 * GlobalScape EFT does not return the leading space,
+	 * as required by <a href="http://tools.ietf.org/html/rfc3659#section-7.2">RFC 3659</a>.
+	 * This causes the entry to be stripped of the first character 
+	 * - the "Type" fact is turned to "ype". 
+	 * 
+	 * @param ftp		FTP client
+	 * @param pathname	remote path
+	 * @return FTPFile or <code>null</code>	
+	 * @throws IOException
+	 * 
+	 * @see {@link FTPClient#mlistFile(String)}
+	 * @see <a href="http://tools.ietf.org/html/rfc3659#section-7.2">RFC 3659 - Extensions to FTP</a>
+	 */
+	private FTPFile mlistFile(FTPClient ftp, String pathname) throws IOException {
+        boolean success = FTPReply.isPositiveCompletion(ftp.sendCommand(FTPCmd.MLST, pathname));
+        if (success) {
+            String entry = ftp.getReplyStrings()[1];
+            char firstChar = entry.charAt(0);
+            if (UnicodeBlanks.isBlank(firstChar)) {
+            	// skip leading space for parser
+            	entry = entry.substring(1);
+            }
+            return MLSxEntryParser.parseEntry(entry);
+        } else {
+            return null;
+        }
+//		return ftp.mlistFile(pathname);
+	}
+	
+	/**
+	 * Implementation using the MLST command, if available. 
+	 * 
+	 * @param targetUri
+	 * @param ftp
+	 * @return
+	 */
 	private Info info(URI targetUri, FTPClient ftp) {
+		try {
+			if (ftp.hasFeature(FTPCmd.MLST.getCommand())) {
+				// Pure-FTPd does not understand .. and . in the path, hence we use URI.normalize()
+				String path = getPath(targetUri.normalize());
+				if (path.equals(URIUtils.PATH_SEPARATOR)) {
+					// CLO-4118: root directory, GlobalScape EFT disallows MLST
+					FTPFile root = new FTPFile();
+					root.setType(FTPFile.DIRECTORY_TYPE);
+					root.setName("");
+					return info(root, null, targetUri);
+				}
+				FTPFile file = mlistFile(ftp, path);
+				if (file != null) {
+					return new FTPInfo(file, null, targetUri);
+				} else {
+					return null;
+				}
+			}
+		} catch (IOException ioe) {
+			log.debug(MessageFormat.format("File metadata reading failed: {0}", targetUri), ioe);
+		}
+		
+		return infoFallback(targetUri, ftp);
+	}
+	
+	/**
+	 * If available, lists directory contents using the MLSD command.
+	 * Otherwise uses LIST command.
+	 * 
+	 * @param path
+	 * @param ftp
+	 * @return
+	 * @throws IOException
+	 */
+	private FTPFile[] listFiles(String path, FTPClient ftp) throws IOException {
+		if (ftp.hasFeature(FTPCmd.MLSD.getCommand())) {
+			return ftp.mlistDir(path);
+		} else {
+			return ftp.listFiles(path);
+		}
+	}
+	
+	/**
+	 * Legacy fallback implementation using the LIST command.
+	 * 
+	 * @param targetUri
+	 * @param ftp
+	 * @return
+	 */
+	private Info infoFallback(URI targetUri, FTPClient ftp) {
 		if (getPath(targetUri.normalize()).equals(URIUtils.PATH_SEPARATOR)) {
 			FTPFile root = new FTPFile();
 			root.setType(FTPFile.DIRECTORY_TYPE);
-			root.setName(URIUtils.CURRENT_DIR_NAME);
+			root.setName("");
 			return info(root, null, targetUri);
 		} else {
 			String path = getPath(targetUri);
@@ -304,7 +406,7 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 					}
 				}
 			} catch (IOException ioe) {
-				ioe.printStackTrace();
+				log.warn(MessageFormat.format("File metadata reading failed: {0}", targetUri), ioe);
 			}
 			
 		}
@@ -315,8 +417,8 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 		if (connection != null) {
 			try {
 				pool.returnObject(connection.getAuthority(), connection);
-			} catch(Exception ex) {
-				ex.printStackTrace();
+			} catch (Exception ex) {
+				log.debug("Failed to return FTP connection to the pool", ex);
 			}
 		}
 	}
@@ -337,14 +439,13 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 	}
 	
 	private boolean createFile(FTPClient ftp, String path) throws IOException {
-		System.out.println("Creating " + path);
+		log.debug(MessageFormat.format("Creating {0}", path));
 		ftp.storeFile(path, new ByteArrayInputStream(new byte[0]));
 		int replyCode = ftp.getReplyCode();
 		boolean result = FTPReply.isPositiveCompletion(replyCode) || FTPReply.isPositiveIntermediate(replyCode) || FTPReply.isPositivePreliminary(replyCode);
 		if (!result) {
 			result = FTPReply.isPositiveCompletion(replyCode);
-
-			System.err.println("Failed to create " + path + ": " + ftp.getReplyString());
+			log.debug(MessageFormat.format("Failed to create {0}: {1}", path, ftp.getReplyString()));
 		}
 		return result;
 	}
@@ -559,7 +660,7 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 		if (!rootInfo.isDirectory()) {
 			return Arrays.asList(rootInfo);
 		} else {
-			FTPFile[] files = ftp.listFiles(getPath(parentUri));
+			FTPFile[] files = listFiles(getPath(parentUri), ftp);
 			List<Info> result = new ArrayList<Info>(files.length);
 			for (FTPFile file: files) {
 				if ((file != null) && !file.getName().equals(URIUtils.CURRENT_DIR_NAME) && !file.getName().equals(URIUtils.PARENT_DIR_NAME)) {

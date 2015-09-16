@@ -28,6 +28,8 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.file.FileUtils;
@@ -79,6 +81,12 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
+        try {
+            loadExternalSequence();
+		} catch (ComponentNotReadyException e) {
+			status.add(e, Severity.ERROR, this, Priority.NORMAL, e.getAttributeName());
+		}
+        
         return status;
     }
 
@@ -92,30 +100,39 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
 		alreadyIncremented = false;
 		
 		//load external definition of this sequence
+		loadExternalSequence();
+    }
+
+	/**
+	 * Loads settings from config file.
+	 * 
+	 * @throws ComponentNotReadyException
+	 */
+	private void loadExternalSequence() throws ComponentNotReadyException {
 		if (!StringUtils.isEmpty(configFileName)) {
 			try {
-	        	URL projectURL = getContextURL();
-	        	InputStream stream = null;
-	        	try {
-		            stream = FileUtils.getFileURL(projectURL, configFileName).openStream();
-		
-		            Properties tempProperties = new Properties();
-		            tempProperties.load(stream);
-		    		TypedProperties typedProperties = new TypedProperties(tempProperties, getGraph());
-		
-		    		setName(typedProperties.getStringProperty(XML_NAME_ATTRIBUTE));
-		    		setStart(typedProperties.getLongProperty(XML_START_ATTRIBUTE, 0));
-		    		setStep(typedProperties.getLongProperty(XML_STEP_ATTRIBUTE, 0));
-	        	} finally {
-	        		if (stream != null) {
-	        			stream.close();
-	        		}
-	        	}
+				URL projectURL = getContextURL();
+				InputStream stream = null;
+				try {
+					stream = FileUtils.getFileURL(projectURL, configFileName).openStream();
+
+					Properties tempProperties = new Properties();
+					tempProperties.load(stream);
+					TypedProperties typedProperties = new TypedProperties(tempProperties, getGraph());
+
+					setName(typedProperties.getStringProperty(XML_NAME_ATTRIBUTE));
+					setStart(typedProperties.getLongProperty(XML_START_ATTRIBUTE, 0));
+					setStep(typedProperties.getLongProperty(XML_STEP_ATTRIBUTE, 0));
+				} finally {
+					if (stream != null) {
+						stream.close();
+					}
+				}
 			} catch (IOException e) {
 				throw new ComponentNotReadyException("Loading of external definition of PrimitiveSequence failed.", e);
 			}
 		}
-    }
+	}
 
     @Override
 	public void preExecute() throws ComponentNotReadyException {

@@ -31,10 +31,14 @@ import org.jetel.data.DataRecord;
  */
 public class StatementBuilder {
 	
-	private final Pattern fieldPattern;
-
-	public StatementBuilder(Pattern fieldPattern) {
-		this.fieldPattern = fieldPattern;
+	private final ReplacementHelper replacementHelper;
+	
+	public StatementBuilder(Pattern pattern) {
+		this(new DefaultReplacementHelper(pattern));
+	}
+	
+	public StatementBuilder(ReplacementHelper replacementHelper) {
+		this.replacementHelper = replacementHelper;
 	}
 	
 	public String buildStatement(String template, DataRecord values) {
@@ -42,16 +46,11 @@ public class StatementBuilder {
 			return template;
 		}
 		
-		Matcher matcher = fieldPattern.matcher(template);
+		Matcher matcher = replacementHelper.getMatcher(template);
 		
 	    StringBuffer sb = new StringBuffer(template.length());
 	    while (matcher.find()) {
-			String fieldName = matcher.group(1);
-			Object value = values.getField(fieldName).getValue();
-			if (value == null) {
-				throw new NullPointerException("Unexpected null value: " + fieldName);
-			}
-			matcher.appendReplacement(sb, Matcher.quoteReplacement(value.toString()));
+	    	replacementHelper.appendReplacement(sb, matcher, values);
 	    }
 	    matcher.appendTail(sb);
 	    

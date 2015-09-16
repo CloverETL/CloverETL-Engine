@@ -24,7 +24,6 @@ import java.util.Date;
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.data.DateFieldEnum;
-import org.jetel.ctl.data.TLTypePrimitive;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.joda.time.Hours;
@@ -111,7 +110,7 @@ public class DateLib extends TLFunctionLibrary {
 	
 	@TLFunctionInitAnnotation
     public static final void dateAddInit(TLFunctionCallContext context) {
-    	context.setCache(new TLCalendarCache());
+    	context.setCache(new TLCalendarCache(context));
     }
     
     @TLFunctionAnnotation("Adds to a component of a date (e.g. month)")
@@ -145,7 +144,7 @@ public class DateLib extends TLFunctionLibrary {
     
     @TLFunctionInitAnnotation
     public static final void dateDiffInit(TLFunctionCallContext context) {
-    	context.setCache(new TLCalendarCache());
+    	context.setCache(new TLCalendarCache(context));
     }
     
     @TLFunctionAnnotation("Returns the difference between dates")
@@ -223,7 +222,7 @@ public class DateLib extends TLFunctionLibrary {
 
     @TLFunctionInitAnnotation
     public static final void extractDateInit(TLFunctionCallContext context) {
-    	context.setCache(new TLCalendarCache());
+    	context.setCache(new TLCalendarCache(context));
     }
     
     @TLFunctionAnnotation("Extracts only date portion from date-time value, setting all time fields to zero.")
@@ -259,7 +258,7 @@ public class DateLib extends TLFunctionLibrary {
 
     @TLFunctionInitAnnotation
 	public static void extractTimeInit(TLFunctionCallContext context) {
-    	context.setCache(new TLCalendarCache());
+    	context.setCache(new TLCalendarCache(context));
 	}
 
     @TLFunctionAnnotation("Extracts only time portion from date-time value, clearing all date fields.")
@@ -296,7 +295,7 @@ public class DateLib extends TLFunctionLibrary {
     
     @TLFunctionInitAnnotation
     public static final void truncInit(TLFunctionCallContext context) {
-    	context.setCache(new TLCalendarCache());
+    	context.setCache(new TLCalendarCache(context));
     }
 
     @Deprecated
@@ -329,7 +328,7 @@ public class DateLib extends TLFunctionLibrary {
     
     @TLFunctionInitAnnotation
     public static final void truncDateInit(TLFunctionCallContext context) {
-    	context.setCache(new TLCalendarCache());
+    	context.setCache(new TLCalendarCache(context));
     }
 
     @Deprecated
@@ -663,7 +662,7 @@ public class DateLib extends TLFunctionLibrary {
     	TLCache cache = null;
     	switch (context.getLiteralsSize()) {
     	case 3:	case 6:
-    		cache = new TLCalendarCache();
+    		cache = new TLCalendarCache(context);
     		break;
     	case 4:
     		cache = TLCalendarCache.withTimeZone(context, 3);

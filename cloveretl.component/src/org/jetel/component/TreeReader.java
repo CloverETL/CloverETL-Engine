@@ -74,6 +74,8 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.PolicyType;
@@ -176,6 +178,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	protected String charset;
 	private SourceIterator sourceIterator;
 
+	private String policyTypeStr;
 	private PolicyType policyType;
 
 	private String mappingString;
@@ -224,8 +227,14 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			return status;
 		}
 
+		if (!PolicyType.isPolicyType(policyTypeStr)) {
+			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+		} else {
+			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+		}
+
 		if (StringUtils.isEmpty(this.getFileUrl())) {
-			status.add(new ConfigurationProblem("Missing required attribute 'File URL'", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+			status.add(new ConfigurationProblem("Missing required attribute 'File URL'", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_FILE_URL_ATTRIBUTE));
 		}
 
 		if (StringUtils.isEmpty(mappingURL) && StringUtils.isEmpty(mappingString)) {
@@ -233,7 +242,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		}
 
 		if (charset != null && !Charset.isSupported(charset)) {
-			status.add(new ConfigurationProblem("Charset " + charset + " not supported!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+			status.add(new ConfigurationProblem("Charset " + charset + " not supported!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
 		}
 
 		/*
@@ -251,6 +260,8 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		}
 		super.init();
 		
+		policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+
 		this.parserProvider = getTreeReaderParserProvider();
 
 		recordProviderReceiverInit();
@@ -494,8 +505,8 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		this.charset = charset;
 	}
 
-	public void setPolicyType(String strPolicyType) {
-		policyType = PolicyType.valueOfIgnoreCase(strPolicyType);
+	public void setPolicyType(String policyTypeStr) {
+		this.policyTypeStr = policyTypeStr;
 	}
 
 	public void setMappingString(String mappingString) {
@@ -635,7 +646,14 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				String id = getId() + "_DefaultSequence";
 				Sequence defaultSequence = SequenceFactory.createSequence(getGraph(), PrimitiveSequence.SEQUENCE_TYPE,
 						new Object[] {id, getGraph(), id}, new Class[] {String.class, TransformationGraph.class, String.class});
-				((PrimitiveSequence)defaultSequence).setStart(1);
+				try {
+					PrimitiveSequence ps = (PrimitiveSequence)defaultSequence;
+					ps.setGraph(getGraph());
+					ps.init();
+					ps.setStart(1);
+				} catch (ComponentNotReadyException e) {
+					throw new JetelRuntimeException(e);
+				}
 				getGraph().addSequence(defaultSequence);
 				defaultSequenceId = id;
 			}

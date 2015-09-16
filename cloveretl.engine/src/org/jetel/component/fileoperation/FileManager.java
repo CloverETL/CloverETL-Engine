@@ -38,6 +38,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jetel.component.fileoperation.SimpleParameters.CopyParameters;
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
@@ -61,6 +63,7 @@ import org.jetel.graph.ContextProvider;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
+import org.jetel.util.string.StringUtils;
 
 /**
  * The FileManager and related classes
@@ -264,11 +267,11 @@ public class FileManager {
 	}
 	
 	public CopyResult copy(String source, String target, CopyParameters params) {
-		if (source == null) {
-			return new CopyResult(new NullPointerException(FileOperationMessages.getString("FileManager.copy_source_is_null"))); //$NON-NLS-1$
+		if (StringUtils.isEmpty(source)) {
+			return new CopyResult(new IllegalArgumentException(FileOperationMessages.getString("FileManager.copy_source_is_empty"))); //$NON-NLS-1$
 		}
-		if (target == null) {
-			return new CopyResult(new NullPointerException(FileOperationMessages.getString("FileManager.copy_target_is_null"))); //$NON-NLS-1$
+		if (StringUtils.isEmpty(target)) {
+			return new CopyResult(new IllegalArgumentException(FileOperationMessages.getString("FileManager.copy_target_is_empty"))); //$NON-NLS-1$
 		}
 		CloverURI sourceCloverUri = CloverURI.createURI(source);
 		CloverURI targetCloverUri = CloverURI.createURI(target);
@@ -358,11 +361,11 @@ public class FileManager {
 	}
 	
 	public MoveResult move(String source, String target, MoveParameters params) {
-		if (source == null) {
-			return new MoveResult(new NullPointerException(FileOperationMessages.getString("FileManager.move_source_is_null"))); //$NON-NLS-1$
+		if (StringUtils.isEmpty(source)) {
+			return new MoveResult(new IllegalArgumentException(FileOperationMessages.getString("FileManager.move_source_is_empty"))); //$NON-NLS-1$
 		}
-		if (target == null) {
-			return new MoveResult(new NullPointerException(FileOperationMessages.getString("FileManager.move_target_is_null"))); //$NON-NLS-1$
+		if (StringUtils.isEmpty(target)) {
+			return new MoveResult(new IllegalArgumentException(FileOperationMessages.getString("FileManager.move_target_is_empty"))); //$NON-NLS-1$
 		}
 		CloverURI sourceCloverUri = CloverURI.createURI(source);
 		CloverURI targetCloverUri = CloverURI.createURI(target);
@@ -694,8 +697,8 @@ public class FileManager {
 	}
 
 	public DeleteResult delete(String target, DeleteParameters params) {
-		if (target == null) {
-			return new DeleteResult(new NullPointerException(FileOperationMessages.getString("FileManager.delete_target_is_null"))); //$NON-NLS-1$
+		if (StringUtils.isEmpty(target)) {
+			return new DeleteResult(new IllegalArgumentException(FileOperationMessages.getString("FileManager.delete_target_is_empty"))); //$NON-NLS-1$
 		}
 		CloverURI targetCloverUri = CloverURI.createURI(target);
 		return delete(targetCloverUri, params);
@@ -775,10 +778,90 @@ public class FileManager {
 	private static final String QUESTION_MARK = "?"; //$NON-NLS-1$
 	private static final char PATH_SEPARATOR = '/';
 
+	/**
+	 * For server-based hierarchical URIs,
+	 * use {@link #uriHasWildcards(String)} instead.
+	 * 
+	 * @param uri
+	 * @return
+	 */
 	static boolean hasWildcards(String path) {
 		return path.contains(QUESTION_MARK) || path.contains(ASTERISK);
 	}
+	
+	private static final Pattern URL_PREFIX_PATTERN = Pattern.compile("^(([^/]+):/+[^/]+/?)(.*)");
+	
+	/**
+	 * CLO-4062:
+	 * 
+	 * This method should be used for standard
+	 * server-based hierarchical URIs,
+	 * because it ignores wildcards in the authority,
+	 * e.g. in the password.
+	 * 
+	 * @param uri
+	 * @return
+	 */
+	static boolean uriHasWildcards(String uri) {
+		Matcher m = URL_PREFIX_PATTERN.matcher(uri);
+		if (m.matches()) {
+			String scheme = m.group(2);
+			if (!scheme.equals(LocalOperationHandler.FILE_SCHEME)) {
+				return hasWildcards(m.group(3));
+			}
+		}
+			
+		return hasWildcards(uri);
+	}
+	
+	/**
+	 * CLO-4062:
+	 * 
+	 * This method should be used for standard
+	 * server-based hierarchical URIs,
+	 * because it ignores wildcards in the authority,
+	 * e.g. in the password.
+	 * 
+	 * @param uri
+	 * @return
+	 */
+	static List<String> getUriParts(String uri) {
+		Matcher m = URL_PREFIX_PATTERN.matcher(uri);
+		if (m.matches()) {
+			String scheme = m.group(2);
+			if (!scheme.equals(LocalOperationHandler.FILE_SCHEME)) {
+				return getParts(m.group(1), m.group(3));
+			}
+		}
+			
+		return getParts(uri);
+	}
+	
+	private static List<String> getParts(String prefix, String suffix) {
+		List<String> result = getParts(suffix);
+		if (!StringUtils.isEmpty(prefix)) {
+			if (result.isEmpty()) {
+				return Arrays.asList(prefix);
+			} else {
+				// CLO-5680:
+				String firstResult = result.get(0);
+				if (hasWildcards(firstResult)) {
+					result.add(0, prefix);
+				} else {
+					result.set(0, prefix + result.get(0));
+				}
+			}
+		}
+		return result;
+	}
 
+	/**
+	 * For server-based hierarchical URIs,
+	 * use {@link #getUriParts(String)} instead.
+	 * 
+	 * @param uri
+	 * @return
+	 */
 	static List<String> getParts(String uri) {
 		List<String> result = new ArrayList<String>();
 		String remaining = uri;
@@ -800,11 +883,9 @@ public class FileManager {
 						break;
 					}
 				}
-				if (prevPathSepIdx >= 0) {
-					if (prevPathSepIdx > 0) {
-						result.add(remaining.substring(0, prevPathSepIdx + 1));
-						remaining = remaining.substring(prevPathSepIdx + 1);
-					}
+				if (prevPathSepIdx > 0) {
+					result.add(remaining.substring(0, prevPathSepIdx + 1));
+					remaining = remaining.substring(prevPathSepIdx + 1);
 				}
 				int nextPathSepIdx = -1;
 				for (int i = 1; i < remaining.length(); i++) {
@@ -879,11 +960,11 @@ public class FileManager {
 
 	public List<SingleCloverURI> defaultResolve(SingleCloverURI wildcards) throws IOException {
 		String uriString = wildcards.toString();
-		if (wildcards.isRelative() || !hasWildcards(uriString)) {
+		if (wildcards.isRelative() || !uriHasWildcards(uriString)) {
 			return Arrays.asList(wildcards);
 		}
 		
-		List<String> parts = getParts(uriString);
+		List<String> parts = getUriParts(uriString);
 		InfoResult infoResult = info((SingleCloverURI) CloverURI.createURI(parts.get(0)));
 		if (!infoResult.success()) {
 			throw new IOException(FileOperationMessages.getString("FileManager.info_failed"), infoResult.getFirstError()); //$NON-NLS-1$
@@ -953,8 +1034,8 @@ public class FileManager {
 	}
 	
 	public ListResult list(String target, ListParameters params) {
-		if (target == null) {
-			return new ListResult(new NullPointerException(FileOperationMessages.getString("FileManager.list_target_is_null"))); //$NON-NLS-1$
+		if (StringUtils.isEmpty(target)) {
+			return new ListResult(new IllegalArgumentException(FileOperationMessages.getString("FileManager.list_target_is_empty"))); //$NON-NLS-1$
 		}
 		CloverURI targetCloverUri = CloverURI.createURI(target);
 		return list(targetCloverUri, params);
@@ -1011,8 +1092,8 @@ public class FileManager {
 	}
 
 	public CreateResult create(String target, CreateParameters params) {
-		if (target == null) {
-			return new CreateResult(new NullPointerException(FileOperationMessages.getString("FileManager.create_target_is_null"))); //$NON-NLS-1$
+		if (StringUtils.isEmpty(target)) {
+			return new CreateResult(new IllegalArgumentException(FileOperationMessages.getString("FileManager.create_target_is_empty"))); //$NON-NLS-1$
 		}
 		CloverURI targetCloverUri = CloverURI.createURI(target);
 		return create(targetCloverUri, params);

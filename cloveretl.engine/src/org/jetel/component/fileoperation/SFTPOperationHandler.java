@@ -348,6 +348,9 @@ public class SFTPOperationHandler implements IOperationHandler {
 		public SFTPInfo(LsEntry file, String name, URI parent, URI self) throws UnsupportedEncodingException {
 			this.file = file;
 			this.parent = parent;
+			if (name.equals(URIUtils.CURRENT_DIR_NAME)) {
+				name = ""; // CLO-4118
+			}
 			this.name = name;
 			if (file.getAttrs().isDir() && !name.endsWith(URIUtils.PATH_SEPARATOR)) {
 				name = name + URIUtils.PATH_SEPARATOR;

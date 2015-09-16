@@ -21,10 +21,9 @@ package org.jetel.util;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -69,7 +68,6 @@ public class TargetFile {
 	private static final String PORT_DELIMITER = "\\.";
 	private static final String PORT_PROTOCOL = "port:";
 	private static final String DICT_PROTOCOL = "dict:";
-	private static final String DEFAULT_CHARSET = "UTF-8";
 
 	private DecimalFormat format;					// it is used if the file tag is a number
 
@@ -111,6 +109,7 @@ public class TargetFile {
 	private ByteArrayOutputStream bbOutputStream;
 
 	private int compressLevel = -1;
+	private boolean mkDir;
 
 	private boolean storeRawData = true;
 	private boolean objectDictionaryInitialized = false;
@@ -152,7 +151,7 @@ public class TargetFile {
      */
     public void init() throws IOException, ComponentNotReadyException {
     	if (charset == null) {
-    		charset = DEFAULT_CHARSET;
+    		charset = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
     	}
 
     	if (fileURL != null && fileURL.startsWith(PORT_PROTOCOL)) {
@@ -171,6 +170,9 @@ public class TargetFile {
     }
 
     private void processRegularFileURL() throws ComponentNotReadyException, IOException {
+        if (mkDir) {
+        	FileUtils.createParentDirs(contextURL, fileURL);
+        }
     	initUrl();
     	if (fileURL != null && (after.indexOf(MultiOutFile.NUM_CHAR) != -1 && before.startsWith("zip:"))) {
     		throw new ComponentNotReadyException("File url must not contain wildcard in inzip filename");
@@ -369,6 +371,13 @@ public class TargetFile {
         setOutput();
 
         bytes = records = 0;
+        
+        if (appendData && byteChannel instanceof java.nio.channels.SeekableByteChannel) {
+        	SeekableByteChannel seekableByteChannel = (SeekableByteChannel) byteChannel;
+        	if (seekableByteChannel.isOpen() && seekableByteChannel.size() > 0) {
+        		formatter.setAppendTargetNotEmpty(true);
+        	}
+        }
 
         formatter.writeHeader();
     }
@@ -596,36 +605,54 @@ public class TargetFile {
             if (fileName != null) {
             	fName = addUnassignedName(fName);
             }
+            if (mkDir) {
+            	try {
+					FileUtils.createParentDirs(contextURL, fName);
+				} catch (ComponentNotReadyException e) {
+					throw new IOException(e);
+				}
+            }
             
-			boolean exceptionThrown = false;
-			try {
-				if (getPreferredDataTargetType() == DataTargetType.FILE) {
-					setDataTarget(FileUtils.getJavaFile(contextURL, fName));
-				}
-				else if (getPreferredDataTargetType() == DataTargetType.URI) {
-					try {
-						URI uri = CloverURI.createSingleURI(contextURL != null ? contextURL.toURI() : null, fName).getAbsoluteURI().toURI();
-						setDataTarget(uri);
-					} catch (IOException ex) {
-						throw ex;
-					} catch (URISyntaxException ex) {
-						throw new IOException(ex);
+            DataTargetType preferredTargetType = getPreferredDataTargetType();
+			Exception caughtException = null;
+			if (preferredTargetType == DataTargetType.FILE || preferredTargetType == DataTargetType.URI) {
+				Object dataTarget = null;
+				try {
+					if (getPreferredDataTargetType() == DataTargetType.FILE) {
+						dataTarget = FileUtils.getJavaFile(contextURL, fName);
+					} else if (getPreferredDataTargetType() == DataTargetType.URI) {
+						dataTarget = CloverURI.createSingleURI(contextURL != null ? contextURL.toURI() : null, fName).getAbsoluteURI().toURI();
 					}
+				} catch (Exception ex) {
+					// obtaining the file or URI failed
+					caughtException = ex;
 				}
-			} catch (Exception e) {
-				logger.warn("Failed to set data target", e);
-				exceptionThrown = true;
+				if (dataTarget != null) {
+					setDataTarget(dataTarget); // do not catch exceptions thrown here
+				}
+			}
+			// true if getting the File or URI failed
+			boolean exceptionThrown = (caughtException != null);
+			if (exceptionThrown) {
+				logger.warn("Failed to set data target", caughtException);
 			}
 
 			// If steps for FILE and URI failed, try to open a stream based on the fName
-			if (getPreferredDataTargetType() == DataTargetType.CHANNEL || exceptionThrown) {
-				OutputStream os = FileUtils.getOutputStream(contextURL, fName, appendData, compressLevel);
-				byteChannel = Channels.newChannel(os);
+			if (preferredTargetType == DataTargetType.CHANNEL || exceptionThrown) {
+				try {
+					OutputStream os = FileUtils.getOutputStream(contextURL, fName, appendData, compressLevel);
+					byteChannel = Channels.newChannel(os);
 
-				if (useChannel) {
-					setDataTarget(byteChannel);
-				} else {
-					setDataTarget(new Object[] { contextURL, fName, os });
+					if (useChannel) {
+						setDataTarget(byteChannel);
+					} else {
+						setDataTarget(new Object[] { contextURL, fName, os });
+					}
+				} catch (Throwable t) {
+					if (exceptionThrown) {
+						t.addSuppressed(caughtException);
+					}
+					throw t;
 				}
 			}
             	
@@ -724,6 +751,10 @@ public class TargetFile {
 
 	public void setStoreRawData(boolean storeRawData) {
 		this.storeRawData  = storeRawData;
+	}
+	
+	public void setMkDir(boolean mkDir) {
+		this.mkDir = mkDir;
 	}
 
 }

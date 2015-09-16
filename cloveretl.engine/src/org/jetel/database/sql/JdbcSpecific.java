@@ -20,6 +20,7 @@ package org.jetel.database.sql;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -366,4 +367,16 @@ public interface JdbcSpecific {
 	 */
 	public String getCreateTableSuffix(DataRecordMetadata metadata);
 	
+	/**
+	 * Answers class loader that will be used as parent of the class loader responsible
+	 * for loading of {@link Driver} implementation.
+	 * @return
+	 */
+	public ClassLoader getDriverClassLoaderParent();
+
+	/**
+	 * Some JDBC connections do not accept queries terminated by semicolons.
+	 * @return true iff queries can be terminated by semicolon(s)
+	 */
+	public boolean supportsTerminatingSemicolons();
 }

@@ -1,20 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361360543511" licenseType="Commercial" modified="Mon Jan 13 18:39:10 CET 2014" modifiedBy="User" name="ProcessLog_CloverETL" nature="jobflow" revision="1.101" showComponentDetails="true">
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="4.0.0.M1" id="1361360543511" licenseType="Commercial" modified="Tue Mar 25 15:58:05 CET 2014" modifiedBy="User" name="ProcessLog_CloverETL" nature="jobflow" revision="1.107" showComponentDetails="true">
 <Global>
-<Metadata id="ExecuteGraph_RunStatus2">
-<Record fieldDelimiter="|" name="ExecuteGraph_RunStatus" recordDelimiter="\n" type="delimited">
-<Field name="runId" type="long"/>
-<Field name="originalJobURL" type="string"/>
-<Field format="yyyy-MM-dd HH:mm:ss" name="startTime" type="date"/>
-<Field format="yyyy-MM-dd HH:mm:ss" name="endTime" type="date"/>
-<Field name="duration" type="long"/>
-<Field name="status" type="string"/>
-<Field name="errException" type="string"/>
-<Field name="errMessage" type="string"/>
-<Field name="errComponent" type="string"/>
-<Field name="errComponentType" type="string"/>
-</Record>
-</Metadata>
 <Connection config="${CONN_DIR}/Hadoop-CDH-3u5.cfg" id="CDH3" type="HADOOP"/>
 <GraphParameters>
 <GraphParameterFile fileURL="hadoop.prm"/>
@@ -168,10 +154,10 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Edge fromNode="CHECK_REQUIRED_PARAMETERS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus2" outPort="Port 0 (out)" toNode="UPLOAD_INPUTS_TO_HDFS:0"/>
-<Edge fromNode="CHECK_REQUIRED_PARAMETERS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus2" outPort="Port 1 (error)" toNode="REQUIRED_PARAMETERS_MISSING:0"/>
-<Edge debugMode="true" fromNode="COUNT_UNIQUE_VISITORS_USING_MAP_REDUCE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus2" outPort="Port 0 (out)" toNode="DOWNLOAD_RESULTS_FROM_HDFS:0"/>
-<Edge debugMode="true" fromNode="DOWNLOAD_RESULTS_FROM_HDFS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus2" outPort="Port 0 (out)" toNode="GENERATE_REPORT:0"/>
-<Edge debugMode="true" fromNode="UPLOAD_INPUTS_TO_HDFS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus2" outPort="Port 0 (out)" toNode="COUNT_UNIQUE_VISITORS_USING_MAP_REDUCE:0"/>
+<Edge fromNode="CHECK_REQUIRED_PARAMETERS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="UPLOAD_INPUTS_TO_HDFS:0"/>
+<Edge fromNode="CHECK_REQUIRED_PARAMETERS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 1 (error)" toNode="REQUIRED_PARAMETERS_MISSING:0"/>
+<Edge debugMode="true" fromNode="COUNT_UNIQUE_VISITORS_USING_MAP_REDUCE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="DOWNLOAD_RESULTS_FROM_HDFS:0"/>
+<Edge debugMode="true" fromNode="DOWNLOAD_RESULTS_FROM_HDFS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="GENERATE_REPORT:0"/>
+<Edge debugMode="true" fromNode="UPLOAD_INPUTS_TO_HDFS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="COUNT_UNIQUE_VISITORS_USING_MAP_REDUCE:0"/>
 </Phase>
 </Graph>

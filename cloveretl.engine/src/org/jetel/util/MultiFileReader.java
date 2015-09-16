@@ -21,19 +21,25 @@ package org.jetel.util;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.PropertyRefResolver;
@@ -60,6 +66,8 @@ public class MultiFileReader {
     private static final String STD_IN = "-";
     private Log logger = defaultLogger;
 
+    
+    private List<MultiFileListener> listeners;
 	private Parser parser;
     private URL contextURL;
     private String fileURL;
@@ -186,6 +194,7 @@ public class MultiFileReader {
 					dataSource = FileUtils.getReadableChannel(contextURL, fName);
 				}
 				parser.setDataSource(dataSource);
+				notifyFileChangeListeners(dataSource);
 				
 				parser.setReleaseDataSource(closeLastStream = true);
 			} catch (Exception e) {
@@ -246,6 +255,18 @@ public class MultiFileReader {
         this.logger = logger;
     }
     
+    
+    /**
+     * Attempts to set next source to underlying data parser.
+     * Should be called only if standard MultiFileReader.getNext() can't be used forever reason
+     * 
+     * @return  true if next data source was successfully set
+     * @throws JetelException
+     */
+    public boolean setNextSource() throws JetelException{
+    	return nextSource();
+    }
+    
     private Object currentSource = null;
     
 	/**
@@ -295,6 +316,7 @@ public class MultiFileReader {
 				
 				iSource++;
 				parser.setDataSource(source);
+				notifyFileChangeListeners(source);
 				if (!channelIterator.isGraphDependentSource()) {
 					parser.setReleaseDataSource(!autoFilling.getFilename().equals(STD_IN));
 				}
@@ -386,8 +408,9 @@ public class MultiFileReader {
 	 * Checks skip/numRecords. Returns true if the source could return a record.
 	 * @return
 	 * @throws JetelException
+	 * @throws InterruptedException 
 	 */
-	private final boolean checkRowAndPrepareSource() throws JetelException {
+	private final boolean checkRowAndPrepareSource() throws JetelException, InterruptedException {
         //in case that fileURL doesn't contain valid file url
         initializeDataDependentSource();
         if(noInputFile) {
@@ -396,6 +419,8 @@ public class MultiFileReader {
         
         //check for index of last returned record
         if(numRecords > 0 && numRecords <= autoFilling.getGlobalCounter()) {
+        	//read remaining input records if any (it is necessary to avoid CLO-5716)
+        	readRestInputRecords();
             return false;
         }
 
@@ -416,12 +441,32 @@ public class MultiFileReader {
 	}
 	
 	/**
+	 * Blank reading of all input records. This is used in case no more records should be read
+	 * by the reader component but some other input records can be still available.
+	 * And components should read all records till the EOF flag.
+	 * @throws InterruptedException 
+	 * 
+	 */
+	private void readRestInputRecords() throws InterruptedException {
+    	if (inputPort != null) {
+    		DataRecord record = DataRecordFactory.newRecord(inputPort.getMetadata());
+    		record.init();
+    		try {
+				while (inputPort.readRecord(record) != null);
+			} catch (IOException e) {
+				throw new JetelRuntimeException(e);
+			}
+    	}
+	}
+
+	/**
 	 * Tries to obtain one record
 	 * @param record Instance to be filled with obtained data
 	 * @return null on error, the record otherwise
 	 * @throws JetelException
+	 * @throws InterruptedException 
 	 */
-	public DataRecord getNext(DataRecord record) throws JetelException {
+	public DataRecord getNext(DataRecord record) throws JetelException, InterruptedException {
 		// checks skip/numRecords
 		if (!checkRowAndPrepareSource()) {
 			return null;
@@ -430,12 +475,21 @@ public class MultiFileReader {
         //use parser to get next record
         DataRecord rec;
         try {
-        	while ((rec = parser.getNext(record)) == null && (nextL3Source() || nextSource()));
-        } catch(JetelException e) {
-            autoFilling.incGlobalCounter();
-            autoFilling.incSourceCounter();
-            autoFilling.incL3Counter();
-            throw e;
+            try {
+                while ((rec = parser.getNext(record)) == null && (nextL3Source() || nextSource()));
+            } catch(JetelException e) {
+                autoFilling.incGlobalCounter();
+                autoFilling.incSourceCounter();
+                autoFilling.incL3Counter();
+                throw e;
+            } 
+        } catch (RuntimeException ex) {
+        	try {
+				throw ex.getClass().getConstructor(RuntimeException.class).newInstance("Error when parsing source: " + channelIterator.getCurrentFileName(), ex);
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+					| InvocationTargetException | NoSuchMethodException | SecurityException e) {
+				throw ex;
+			}
         }
         autoFilling.setLastUsedAutoFillingFields(rec);
         
@@ -443,6 +497,43 @@ public class MultiFileReader {
         
         return rec;
 	}
+	
+	 public int getNextDirect(CloverBuffer targetBuffer) throws JetelException, InterruptedException {
+		 	int success;
+		 	// checks skip/numRecords
+			if (!checkRowAndPrepareSource()) {
+				return 0;
+			}
+			
+	        //use parser to get next record
+	        try {
+	            try {
+	            	do{
+	            		success=parser.getNextDirect(targetBuffer);
+	            		if (success==-1) break;
+	            	}while ((success==0) && (nextL3Source() || nextSource()));
+	            } catch(JetelException e) {
+	                autoFilling.incGlobalCounter();
+	                autoFilling.incSourceCounter();
+	                autoFilling.incL3Counter();
+	                throw e;
+	            } 
+	        } catch (RuntimeException ex) {
+	        	try {
+					throw ex.getClass().getConstructor(RuntimeException.class).newInstance("Error when parsing source: " + channelIterator.getCurrentFileName(), ex);
+				} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+						| InvocationTargetException | NoSuchMethodException | SecurityException e) {
+					throw ex;
+				}
+	        }
+	        // no autofilling with direct buffer
+	        // autoFilling.setLastUsedAutoFillingFields(rec);
+	        autoFilling.incCounters();
+	        
+	        if (success==0) channelIterator.blankRead();
+	        
+	        return success;
+	 }
 	
 	public String getSourceName() {
 		return channelIterator.getCurrentFileName();
@@ -453,8 +544,9 @@ public class MultiFileReader {
 	 * @param record Instance to be filled with obtained data
 	 * @return null on error, the record otherwise
 	 * @throws JetelException
+	 * @throws InterruptedException 
 	 */
-	public DataRecord getNext() throws JetelException {
+	public DataRecord getNext() throws JetelException, InterruptedException {
 		// checks skip/numRecords
 		if (!checkRowAndPrepareSource()) {
 			return null;
@@ -463,10 +555,19 @@ public class MultiFileReader {
         //use parser to get next record
         DataRecord rec;
         try {
-            while((rec = parser.getNext()) == null && nextSource());
-        } catch(JetelException e) {
-            autoFilling.incGlobalCounter();
-            throw e;
+            try {
+                while((rec = parser.getNext()) == null && nextSource());
+            } catch(JetelException e) {
+                autoFilling.incGlobalCounter();
+                throw e;
+            }
+        } catch (RuntimeException ex) {
+        	try {
+				throw ex.getClass().getConstructor(RuntimeException.class).newInstance("Error when parsing source: " + channelIterator.getCurrentFileName(), ex);
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+					| InvocationTargetException | NoSuchMethodException | SecurityException e) {
+				throw ex;
+			}
         }
         autoFilling.setAutoFillingFields(rec);
         
@@ -475,6 +576,16 @@ public class MultiFileReader {
         return rec;
 	}		
 
+	
+	/**
+	 * Checks whether wrapped parser supports direct reading to CloverBuffer
+	 * 
+	 * @return true if direct reading supported
+	 */
+	public boolean isDirectReadingSupported() {
+		return parser.isDirectReadingSupported();
+	}
+	
 	private final void initializeDataDependentSource() throws JetelException {
         if (initializeDataDependentSource) {
         	noInputFile = !nextSource();
@@ -531,7 +642,7 @@ public class MultiFileReader {
 		autoFilling.reset();
 		iSource = -1;
 
-		channelIterator.reset();
+		// channelIterator.reset(); // CLO-5399
 		skipped = 0;
         try {
     		incrementalReading.reset();
@@ -585,4 +696,26 @@ public class MultiFileReader {
     public void setPropertyRefResolver(PropertyRefResolver propertyRefResolve) {
     	this.propertyRefResolve = propertyRefResolve;
     }
+    
+    /**
+     * Adds reference to listener for change in DataSource - invoked
+     * after calling Parser.setDataSource();
+     * 
+     * @param toAdd	class implementing MultiFileListener
+     */
+    public void addFileChangeListener(MultiFileListener toAdd) {
+        if (listeners==null){
+        	listeners=new ArrayList<MultiFileListener>();
+        }
+    	listeners.add(toAdd);
+    }
+    
+    private void notifyFileChangeListeners(Object newFile) {
+    	if (listeners!=null){
+    		for(MultiFileListener listener: listeners){
+    			listener.fileChanged(newFile);
+    		}
+    	}
+    }
+    
 }

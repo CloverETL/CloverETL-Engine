@@ -108,16 +108,17 @@ import org.jetel.ctl.extensions.IntegralLib;
 import org.jetel.ctl.extensions.TLFunctionPrototype;
 import org.jetel.ctl.extensions.TLTransformationContext;
 import org.jetel.data.DataField;
+import org.jetel.data.DataFieldInvalidStateException;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
-import org.jetel.data.DecimalDataField;
 import org.jetel.data.Defaults;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
-import org.jetel.data.StringDataField;
 import org.jetel.data.lookup.Lookup;
+import org.jetel.data.primitive.Decimal;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.MissingFieldException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
@@ -313,6 +314,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 	public void setGraph(TransformationGraph graph) {
 		this.graph = graph;
+	}
+
+	public void setNode(org.jetel.graph.Node node) {
+		context.setNode(node);
 	}
 
 	public Log getRuntimeLogger() {
@@ -2212,7 +2217,15 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		}
 		
 		final DataField field = record.getField(node.getFieldId());
-		stack.push(fieldValue(field));
+		try {
+			stack.push(fieldValue(field));
+		} catch (DataFieldInvalidStateException e) {
+			//field value can have 'invalid' value, see DataFieldWithInvalidState
+			//access to this invalid field throws this exception
+			//let's report it as missing field
+			//see CLO-1872
+			throw new MissingFieldException(e.getMessage(), node.isOutput(), node.getRecordId(), node.getFieldName());
+		}
 		
 		return data;
 	}
@@ -2283,10 +2296,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		case DECIMAL:
 			// we want the decimal within the field to undergo satisfyPrecision() check 
 			// so that out-of-precision errors are discovered early
-			return ((DecimalDataField)field).getDecimal().getBigDecimalOutput();
+			return ((Decimal) field.getValue()).getBigDecimalOutput();
 		case STRING:
 			// StringBuilder -> String
-			return ((StringDataField)field).getValue().toString();
+			return field.getValue().toString();
 
 		case BOOLEAN:
 		case INTEGER:
@@ -2312,7 +2325,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		firstChild.jjtAccept(this, data);
 
 		if( firstChild.getId() == TransformLangParserTreeConstants.JJTDICTIONARYNODE){
-			final Object value = getGraph().getDictionary().getValue(node.getName());
+			final Object value = dictionaryValue(node);
 			stack.push(value);
 			return data;
 		} else {
@@ -2329,6 +2342,20 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			stack.push(fieldValue(record.getField(node.getFieldId())));
 			return data;
 		}
+	}
+	
+	private Object dictionaryValue(CLVFMemberAccessExpression node) {
+		Object value = getGraph().getDictionary().getValue(node.getName());
+		if (value == null) {
+			return null;
+		}
+		
+		TLType type = node.getType();
+		if (type.isList() || type.isMap()) {
+			value = wrapMultivalueField(value, Object.class);
+		}
+
+		return value;
 	}
 
 	@Override
@@ -2605,30 +2632,32 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		final CLVFParameters formal = (CLVFParameters)callTarget.jjtGetChild(1);
 		final CLVFArguments actual = (CLVFArguments)node.jjtGetChild(0);
 		
-		// activate function scope
-		stack.enteredBlock(callTarget.getScope());
-		
-		// set function parameters - they are already computed on stack
-		for (int i=actual.jjtGetNumChildren()-1; i>=0; i--) {
-			setVariable((SimpleNode)formal.jjtGetChild(i), stack.pop());
+		try {
+			// activate function scope
+			stack.enteredBlock(callTarget.getScope());
+			
+			// set function parameters - they are already computed on stack
+			for (int i=actual.jjtGetNumChildren()-1; i>=0; i--) {
+				setVariable((SimpleNode)formal.jjtGetChild(i), stack.pop());
+			}
+			
+			// execute function body
+			callTarget.jjtGetChild(2).jjtAccept(this, null);
+			
+			// set the saved return value back onto stack
+			if (!node.getType().isVoid()) {
+				stack.push(this.lastReturnValue);
+				this.lastReturnValue = null;
+			}
+		} finally {
+			// clear all break flags
+			if (breakFlag) {
+				breakFlag = false;
+			}
+			
+			// clear function scope
+			stack.exitedBlock();
 		}
-		
-		// execute function body
-		callTarget.jjtGetChild(2).jjtAccept(this, null);
-		
-		// set the saved return value back onto stack
-		if (!node.getType().isVoid()) {
-			stack.push(this.lastReturnValue);
-			this.lastReturnValue = null;
-		}
-		
-		// clear all break flags
-		if (breakFlag) {
-			breakFlag = false;
-		}
-		
-		// clear function scope
-		stack.exitedBlock();
 	}
 	
 
@@ -2755,9 +2784,16 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			final DataFieldMetadata field = new DataFieldMetadata("_field" + i, TLTypePrimitive.toCloverType(argType),"|"); 
 			keyRecordMetadata.addField(field);
 			keyFields[i] = i;
-			if (argType.isDecimal() && decimalIter != null) {
-				field.setProperty(DataFieldMetadata.LENGTH_ATTR, String.valueOf(decimalIter.next()));
-				field.setProperty(DataFieldMetadata.SCALE_ATTR, String.valueOf(decimalIter.next()));
+			if (argType.isDecimal()) {
+				if (decimalIter != null) {
+					field.setProperty(DataFieldMetadata.LENGTH_ATTR, String.valueOf(decimalIter.next()));
+					field.setProperty(DataFieldMetadata.SCALE_ATTR, String.valueOf(decimalIter.next()));
+				} else {
+					//we have no idea what is correct precision and scale for unknown decimal value
+					//so we set precision and scale to max value (64, 32)
+					field.setProperty(DataFieldMetadata.LENGTH_ATTR, String.valueOf(DECIMAL_MAX_PRECISION * 2));
+					field.setProperty(DataFieldMetadata.SCALE_ATTR, String.valueOf(DECIMAL_MAX_PRECISION));
+				}
 			}
 		}
 		

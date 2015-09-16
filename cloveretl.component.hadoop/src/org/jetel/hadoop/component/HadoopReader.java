@@ -32,7 +32,8 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.IParserExceptionHandler;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
@@ -80,7 +81,8 @@ public class HadoopReader extends Node {
 	private final static int INPUT_PORT = 0;
 	private final static int OUTPUT_PORT = 0;
 	private MultiFileReader reader;
-	private PolicyType policyType; // default value set in fromXML()
+	private String policyTypeStr;
+	private PolicyType policyType = PolicyType.STRICT;
 	private String connectionId;
 	private String fileURL;
 	private int skipRows = -1; // do not skip rows by default
@@ -95,8 +97,6 @@ public class HadoopReader extends Node {
 
 	private HadoopConnection connection;
 	private IHadoopSequenceFileParser parser;
-
-	IParserExceptionHandler exceptionHandler = null;
 
 	/**
 	 * Constructor for the DBFDataReader object
@@ -208,6 +208,9 @@ public class HadoopReader extends Node {
 			return;
 		}
 		super.init();
+
+		policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+
 		prepareMultiFileReader();
 	}
 
@@ -270,7 +273,7 @@ public class HadoopReader extends Node {
 		}
 
 		parser.setGraph(graph);
-		parser.setExceptionHandler(exceptionHandler);
+		parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
 
 		// initialize multifile reader based on prepared parser
 		reader = new MultiFileReader(parser, getContextURL(), fileURL);
@@ -313,9 +316,6 @@ public class HadoopReader extends Node {
 			}
 		if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
 			hadoopReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE));
-		} else {
-			// default policy type
-			hadoopReader.setPolicyType(PolicyType.STRICT);
 		}
 		if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)) {
 			hadoopReader.setSkipRows(xattribs.getInteger(XML_RECORD_SKIP_ATTRIBUTE));
@@ -339,15 +339,6 @@ public class HadoopReader extends Node {
 		return hadoopReader;
 	}
 
-	/**
-	 * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
-	 * 
-	 * @param handler
-	 */
-	private void setExceptionHandler(IParserExceptionHandler handler) {
-		exceptionHandler = handler;
-	}
-
 	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
@@ -357,6 +348,12 @@ public class HadoopReader extends Node {
 		}
 
 		checkMetadata(status, getOutMetadata());
+
+		if (!PolicyType.isPolicyType(policyTypeStr)) {
+			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+		} else {
+			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+		}
 
 		try {
 			// check inputs
@@ -424,12 +421,7 @@ public class HadoopReader extends Node {
 	}
 
 	public void setPolicyType(String strPolicyType) {
-		setPolicyType(PolicyType.valueOfIgnoreCase(strPolicyType));
-	}
-
-	public void setPolicyType(PolicyType policyType) {
-		this.policyType = policyType;
-		setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
+		this.policyTypeStr = strPolicyType;
 	}
 
 	public void setIncrementalFile(String incrementalFile) {

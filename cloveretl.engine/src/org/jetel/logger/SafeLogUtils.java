@@ -21,9 +21,6 @@ package org.jetel.logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jetel.graph.ContextProvider;
-import org.jetel.graph.runtime.EngineInitializer;
-
 
 
 /** Utility class providing methods for logging safe messages (password obfuscation in URL, ...)
@@ -36,7 +33,7 @@ import org.jetel.graph.runtime.EngineInitializer;
  */
 public class SafeLogUtils {
 	/** Pattern for identifying URL with password in a given text */
-	private static final Pattern URL_PASSWORD_PATTERN = Pattern.compile(".+://([^/]*?):([^\\*]*?)@.+");
+	private static final Pattern URL_PASSWORD_PATTERN = Pattern.compile(".+://([^/]*?):([^\\*]*?)@.+", Pattern.DOTALL);
 	
 	/*
 	 * a://b:c@d
@@ -58,12 +55,6 @@ public class SafeLogUtils {
 	public static String obfuscateSensitiveInformation(String text) {
 		if (text == null) {
 			return null;
-		}
-		
-		//firstly, obfuscate secure parameters using authority proxy
-		// do not use default authority proxy, mostly because we might be in the middle of loading it
-		if (EngineInitializer.isInitialized() && ContextProvider.getGraph() != null) {
-			text = ContextProvider.getAuthorityProxy().obfuscateSecureParameters(text);
 		}
 		
 		//secondly, try to detect passwords in possible URLs 

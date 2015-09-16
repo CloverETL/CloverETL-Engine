@@ -165,11 +165,6 @@ public class GraphTrackingDetail implements GraphTracking {
 		}
 	}
 
-	@Override
-	public long getUsedMemory() {
-		return graph.getMemoryTracker().getUsedMemory();
-	}
-	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getResult()
 	 */
@@ -261,7 +256,12 @@ public class GraphTrackingDetail implements GraphTracking {
 	}
 
 	void graphFinished() {
-		result = lastPhaseResult;
+		if (lastPhaseResult != null) {
+			result = lastPhaseResult;
+		} else {
+			//for empty graphs
+			result = graph.getWatchDog().getStatus();
+		}
 		
 		endTime = System.currentTimeMillis();
 	}

@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Edge;
 import org.jetel.graph.InputPort;
@@ -219,6 +220,39 @@ public class InputPortReadableChannelTest extends CloverTestCase {
 		assertTrue(channel.isOpen());
 		assertTrue(channel.isEOF());
 		channel.close();
+	}
+	
+	/**
+	 * See <a href="https://bug.javlin.eu/browse/CLO-4588">CLO-4588</a>.
+	 */
+	public void testClose() throws Exception {
+		String[] data = {
+				"a123456789", "b123456789", "c123456789", // first file
+				null, // EOF
+				"d123456789", // will be removed by the test
+				"e123456789", ("f123456789"), "g123456789" // second file ("f" is stolen by the test)
+		};
+		
+		InputPort port = new InputPortMock(FIELD_NAME, data);
+		channel = new InputPortReadableChannel(port, FIELD_NAME, "UTF-8");
+		ByteBuffer buffer = ByteBuffer.allocate(5);
+		assertTrue(channel.read(buffer) == 5); // starts reading from "a"
+		channel.close(); // should skip "b", "c" and "null" records
+		
+		DataRecord record = DataRecordFactory.newRecord(port.getMetadata());
+		record.init();
+		record = port.readRecord(record); // steals "d", the following "file" will start at "e"
+		assertEquals("d123456789", record.getField(0).getValue().toString());
+		
+		channel = new InputPortReadableChannel(port, FIELD_NAME, "UTF-8"); // second channel created from the same port
+		buffer.clear();
+		assertTrue(channel.read(buffer) == 5); // starts reading from "e"
+		record = DataRecordFactory.newRecord(port.getMetadata());
+		record.init();
+		record = port.readRecord(record); // steals "f"
+		assertEquals("f123456789", record.getField(0).getValue().toString());
+		channel.close(); // should skip "g" record
+		assertNull(port.readRecord(record));
 	}
 	
 	private String[] getSampleData(SampleDataType type) throws UnsupportedEncodingException {

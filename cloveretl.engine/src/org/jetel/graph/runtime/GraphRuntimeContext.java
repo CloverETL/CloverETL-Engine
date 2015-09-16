@@ -25,11 +25,12 @@ import java.util.Properties;
 import org.apache.log4j.Level;
 import org.jetel.component.MetadataProvider;
 import org.jetel.data.Defaults;
-import org.jetel.graph.ContextProvider;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.dictionary.DictionaryValuesContainer;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -51,9 +52,13 @@ public class GraphRuntimeContext {
 	public static final boolean DEFAULT_TRANSACTION_MODE = false;
 	public static final boolean DEFAULT_BATCH_MODE = true;
 	public static final boolean DEFAULT_TOKEN_TRACKING = true;
+	public static final boolean DEFAULT_VALIDATE_REQUIRED_PARAMETERS = true;
+	private static final boolean DEFAULT_EMBEDDED_RUN = true;
 	
 	private long runId;
+	private Long parentRunId;
 	private String executionGroup;
+	private String executionLabel;
 	private boolean daemon;
 	private String logLocation;
 	private Level logLevel;
@@ -88,6 +93,7 @@ public class GraphRuntimeContext {
 	private boolean synchronizedRun;
 	private boolean transactionMode;
 	private boolean batchMode;
+	private boolean embeddedRun;
 	private URL contextURL;
 	private DictionaryValuesContainer dictionaryContent;
 	/** Hint for the server environment where to execute the graph */
@@ -95,12 +101,22 @@ public class GraphRuntimeContext {
 	private ClassLoader classLoader;
 	private JobType jobType;
 	private String jobUrl;
-	/** Is true if and only if the graph should be executed as sub-job, see Subgraph and Subjobflow components. */
-	private boolean isSubJob;
 	/** Only for subgraphs - component id, where this subgraph has been executed. */
 	private String parentSubgraphComponentId;
 	private IAuthorityProxy authorityProxy;
 	private MetadataProvider metadataProvider;
+	/** Should executor check required graph parameters? */
+	private boolean validateRequiredParameters;
+	/** Only subgraphs can be executed in fast-propagated mode. This flag indicates,
+	 * the Subgraph is in a loop, so all edges between SGI and SGO components has to be
+	 * fast-propagated. */
+	private boolean fastPropagateExecution;
+	
+	/**
+	 * This flag can be used to decide, whether some flaws in graph xml file should be reported or somehow ignored.
+	 * See, {@link TransformationGraphXMLReaderWriter#setStrictParsing(boolean)}. 
+	 */
+	private boolean strictGraphFactorization;
 	
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
@@ -114,15 +130,18 @@ public class GraphRuntimeContext {
 		transactionMode = DEFAULT_TRANSACTION_MODE;
 		batchMode = DEFAULT_BATCH_MODE;
 		tokenTracking = DEFAULT_TOKEN_TRACKING;
+		embeddedRun = DEFAULT_EMBEDDED_RUN;
 		runtimeClassPath = new URL[0];
 		compileClassPath = new URL[0];
 		dictionaryContent = new DictionaryValuesContainer();
 		clusterNodeId = null;
 		jobType = JobType.DEFAULT;
-		isSubJob = false;
-		authorityProxy = AuthorityProxyFactory.createDefaultAuthorityProxy();
+		setAuthorityProxy(AuthorityProxyFactory.createDefaultAuthorityProxy());
 		locale = null;
 		timeZone = null;
+		validateRequiredParameters = DEFAULT_VALIDATE_REQUIRED_PARAMETERS;
+		fastPropagateExecution = false;
+		setStrictGraphFactorization(true);
 	}
 	
 	/* (non-Javadoc)
@@ -131,6 +150,8 @@ public class GraphRuntimeContext {
 	public GraphRuntimeContext createCopy() {
 		GraphRuntimeContext ret = new GraphRuntimeContext();
 		
+		ret.runId = runId;
+		ret.parentRunId = parentRunId;
 		ret.additionalProperties = new Properties();
 		ret.additionalProperties.putAll(getAdditionalProperties());
 		ret.logLevel = getLogLevel();
@@ -149,17 +170,20 @@ public class GraphRuntimeContext {
 		ret.batchMode = isBatchMode();
 		ret.contextURL = getContextURL();
 		ret.dictionaryContent = DictionaryValuesContainer.duplicate(getDictionaryContent());
-		ret.executionGroup = executionGroup;
+		ret.executionGroup = getExecutionGroup();
+		ret.executionLabel = getExecutionLabel();
 		ret.daemon = daemon;
 		ret.clusterNodeId = clusterNodeId;
 		ret.classLoader = getClassLoader();
 		ret.jobType = getJobType();
 		ret.jobUrl = getJobUrl();
-		ret.isSubJob = isSubJob();
 		ret.parentSubgraphComponentId = getParentSubgraphComponentId();
 		ret.authorityProxy = getAuthorityProxy();
 		ret.executionType = getExecutionType();
 		ret.metadataProvider = getMetadataProvider();
+		ret.validateRequiredParameters = isValidateRequiredParameters();
+		ret.fastPropagateExecution = isFastPropagateExecution();
+		ret.strictGraphFactorization = isStrictGraphFactorization();
 		
 		return ret;
 	}
@@ -167,6 +191,8 @@ public class GraphRuntimeContext {
 	public Properties getAllProperties() {
 		Properties prop = new Properties();
 		
+		prop.setProperty("runId", Long.toString(getRunId()));
+		prop.setProperty("parentRunId", String.valueOf(getParentRunId()));
 		prop.setProperty("additionProperties", String.valueOf(getAdditionalProperties()));
 		prop.setProperty("logLevel", String.valueOf(getLogLevel()));
 		prop.setProperty("trackingInterval", Integer.toString(getTrackingInterval()));
@@ -185,15 +211,24 @@ public class GraphRuntimeContext {
 		prop.setProperty("contextURL", String.valueOf(getContextURL()));
 		prop.setProperty("dictionaryContent", String.valueOf(getDictionaryContent()));
 		prop.setProperty("executionGroup", String.valueOf(getExecutionGroup()));
+		prop.setProperty("executionLabel", String.valueOf(getExecutionLabel()));
 		prop.setProperty("deamon", Boolean.toString(isDaemon()));
 		prop.setProperty("clusterNodeId", String.valueOf(getClusterNodeId()));
 		prop.setProperty("jobType", String.valueOf(getJobType()));
 		prop.setProperty("jobUrl", String.valueOf(getJobUrl()));
 		prop.setProperty("executionType", String.valueOf(getExecutionType()));
+		prop.setProperty("validateRequiredParameters", Boolean.toString(isValidateRequiredParameters()));
+		prop.setProperty("fastPropagateExecution", Boolean.toString(isFastPropagateExecution()));
+		prop.setProperty("strictGraphFactorization", Boolean.toString(isStrictGraphFactorization()));
 		
 		return prop;
 	}
 
+	@Override
+	public String toString() {
+		return "runtimeContext["+getAuthorityProxy()+" "+getAllProperties()+"]";
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IGraphRuntimeContext#getTrackingInterval()
 	 */
@@ -379,6 +414,20 @@ public class GraphRuntimeContext {
 	}
 
 	/**
+	 * @return runId of parent graph or null if the graph is on top level of execution tree
+	 */
+	public Long getParentRunId() {
+		return parentRunId;
+	}
+
+	/**
+	 * @param runId runId of parent graph or null if the graph is on top level of execution tree
+	 */
+	public void setParentRunId(Long parentRunId) {
+		this.parentRunId = parentRunId;
+	}
+
+	/**
 	 * @return logLocation
 	 */
 	public String getLogLocation() {
@@ -556,6 +605,20 @@ public class GraphRuntimeContext {
 	}
 
 	/**
+	 * @return human-readable identification of this graph execution
+	 */
+	public String getExecutionLabel() {
+		return executionLabel;
+	}
+
+	/**
+	 * @param executionLabel human-readable identification of this graph execution
+	 */
+	public void setExecutionLabel(String executionLabel) {
+		this.executionLabel = executionLabel;
+	}
+
+	/**
 	 * @return the daemon
 	 */
 	public boolean isDaemon() {
@@ -627,20 +690,6 @@ public class GraphRuntimeContext {
 	}
 
 	/**
-	 * @return true if and only if the graph is executed as an sub-job, see Subgraph and Subjobflow components.
-	 */
-	public boolean isSubJob() {
-		return isSubJob;
-	}
-
-	/**
-	 * Sets the graph execution to sub-job mode.
-	 */
-	public void setSubJob(boolean isSubJob) {
-		this.isSubJob = isSubJob;
-	}
-
-	/**
 	 * @return component id of Subgraph component, where this subgraph has been executed; null for non-subgraph executions
 	 */
 	//TODO shouldn't be part of runtime context, it is not necessary to have this information here
@@ -671,10 +720,12 @@ public class GraphRuntimeContext {
 		this.locale = locale;
 	}
 
+	/**
+	 * @deprecated use {@link MiscUtils#getDefaultLocaleId()} instead 
+	 */
+	@Deprecated
 	public static String getDefaultLocale() {
-		GraphRuntimeContext context = ContextProvider.getRuntimeContext();
-		String locale = context != null ? context.getLocale() : null;
-		return !StringUtils.isEmpty(locale) ? locale : Defaults.DEFAULT_LOCALE;
+		return MiscUtils.getDefaultLocaleId();
 	}
 
 	/**
@@ -691,10 +742,12 @@ public class GraphRuntimeContext {
 		this.timeZone = timeZone;
 	}
 
+	/**
+	 * @deprecated use {@link MiscUtils#getDefaultTimeZone()} instead
+	 */
+	@Deprecated
 	public static String getDefaultTimeZone() {
-		GraphRuntimeContext context = ContextProvider.getRuntimeContext();
-		String timeZone = context != null ? context.getTimeZone() : null;
-		return !StringUtils.isEmpty(timeZone) ? timeZone : Defaults.DEFAULT_TIME_ZONE;
+		return MiscUtils.getDefaultTimeZone();
 	}
 
 	/**
@@ -744,6 +797,64 @@ public class GraphRuntimeContext {
 	 */
 	public void setMetadataProvider(MetadataProvider metadataProvider) {
 		this.metadataProvider = metadataProvider;
+	}
+
+	/**
+	 * @return true if executor should check required graph parameters
+	 */
+	public boolean isValidateRequiredParameters() {
+		return validateRequiredParameters;
+	}
+
+	/**
+	 * Sets whether executor should check required graph parameters.
+	 */
+	public void setValidateRequiredParameters(boolean validateRequiredParameters) {
+		this.validateRequiredParameters = validateRequiredParameters;
+	}
+	
+	/**
+	 * @return returns true if the runtime server is embedded
+	 */
+	public boolean isEmbeddedRun() {
+		return embeddedRun;
+	}
+
+	/**
+	 * @param sets whether the runtime server is embedded
+	 */
+	public void setEmbeddedRun(boolean embeddedRun) {
+		this.embeddedRun = embeddedRun;
+	}
+
+	/**
+	 * @return the flag which indicates the subgraph is executed in fast-propagated mode,
+	 * which is used only for subgraphs in loops, where is necessary to have all edges fast-propagating.
+	 */
+	public boolean isFastPropagateExecution() {
+		return fastPropagateExecution;
+	}
+	
+	/** Sets the flag which indicates the subgraph is executed in fast-propagate mode,
+	 * which is used only for subgraphs in loops, where is necessary to have all edges fast-propagating.
+	 * @param fastPropagateExecution
+	 */
+	public void setFastPropagateExecution(boolean fastPropagateExecution) {
+		this.fastPropagateExecution = fastPropagateExecution;
+	}
+	
+	/**
+	 * @return the strictGraphFactorization
+	 */
+	public boolean isStrictGraphFactorization() {
+		return strictGraphFactorization;
+	}
+
+	/**
+	 * @param strictGraphFactorization the strictGraphFactorization to set
+	 */
+	public void setStrictGraphFactorization(boolean strictGraphFactorization) {
+		this.strictGraphFactorization = strictGraphFactorization;
 	}
 
 	/**
@@ -801,6 +912,19 @@ public class GraphRuntimeContext {
 			@Override
 			public Object parseValue(String s) {
 				return s;
+			}
+		},
+		VALIDATE_REQUIRED_PARAMETERS("validateRequiredParameters", Boolean.class) {
+			@Override
+			public Object parseValue(String s) {
+				return parseBoolean(s);
+			}
+		},
+		VERBOSE_MODE("verboseMode", Boolean.class) {
+			
+			@Override
+			public Object parseValue(String s) {
+				return Boolean.parseBoolean(s);
 			}
 		};
 		

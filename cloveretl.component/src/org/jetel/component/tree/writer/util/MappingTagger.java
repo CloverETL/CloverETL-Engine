@@ -287,7 +287,7 @@ public class MappingTagger extends AbstractVisitor {
 						String[] parentKeyFields = parentSortHint.getKeyFields();
 						boolean[] parentSortOrder = parentSortHint.getAscending();
 						boolean[] sortOrder = sortHint.getAscending();
-						for (int i = 0; i < parentKeyFields.length; i++) {
+						for (int i = 0; i < Math.min(parentKeyFields.length, parentKey.size()); i++) {
 							if (!parentKeyFields[i].equals(parentKey.get(i))) {
 								reason = REASON_UNMATCHED_SORT + i + ". field is '" + parentKeyFields[i] + "' but '" + parentKey.get(i) + "' is required.";
 								break;

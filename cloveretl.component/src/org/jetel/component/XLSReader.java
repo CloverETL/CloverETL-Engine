@@ -252,6 +252,7 @@ public class XLSReader extends Node {
 
     private XLSParser parser;
     private MultiFileReader reader;
+    private String policyTypeStr;
     private PolicyType policyType = PolicyType.STRICT;
     
     private String sheetName = null;
@@ -280,12 +281,12 @@ public class XLSReader extends Node {
         this.parserType = parserType;
     }
 
-    public void setPolicyType(String strPolicyType) {
-        setPolicyType(PolicyType.valueOfIgnoreCase(strPolicyType));
+    public void setPolicyType(String policyTypeStr) {
+        this.policyTypeStr = policyTypeStr;
     }
 
     public void setPolicyType(PolicyType policyType) {
-        this.policyType = policyType;
+    	this.policyTypeStr = (policyType != null) ? policyType.toString() : null;
     }
 
     /**
@@ -389,11 +390,17 @@ public class XLSReader extends Node {
         if (!checkInputPorts(status, 0, 1) || !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
             return status;
         }
-        
+
+		if (!PolicyType.isPolicyType(policyTypeStr)) {
+			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+		} else {
+			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+		}
+
         if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
 
         checkMetadata(status, getOutMetadata());
@@ -403,7 +410,7 @@ public class XLSReader extends Node {
                 Iterator<Integer> number = new NumberIterator(sheetNumber, 0, Integer.MAX_VALUE);
                 if (!number.hasNext()) {
                     status.add(new ConfigurationProblem("There is no sheet with requested number.",
-                            ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+                            ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_SHEETNUMBER_ATTRIBUTE));
                 }
             } else if (sheetName == null) {
                 sheetNumber = "0";
@@ -416,8 +423,8 @@ public class XLSReader extends Node {
             try {
                 parser.setMetadataRow(metadataRow - 1);
             } catch (ComponentNotReadyException e) {
-                status.add(new ConfigurationProblem("Invalid metadaRow parameter.",
-                        ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+                status.add(new ConfigurationProblem("Invalid metadataRow parameter.",
+                        ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_METADATAROW_ATTRIBUTE));
             }
 
             if (sheetName != null) {
@@ -430,7 +437,7 @@ public class XLSReader extends Node {
             try {
 				reader.close();
 			} catch (IOException e) {
-				status.add(new ConfigurationProblem("Data source issue - cannot be closed.", Severity.ERROR, this, Priority.NORMAL));
+				status.add(new ConfigurationProblem("Data source issue - cannot be closed.", Severity.ERROR, this, Priority.NORMAL, XML_FILE_ATTRIBUTE));
 			}
         } catch (IllegalArgumentException e) {
             ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR,
@@ -449,6 +456,8 @@ public class XLSReader extends Node {
         }
 
         super.init();
+
+        policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
 
         instantiateParser();
 

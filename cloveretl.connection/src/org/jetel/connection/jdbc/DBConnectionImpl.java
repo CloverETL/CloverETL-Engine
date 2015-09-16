@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.jetel.connection.jdbc;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.sql.Connection;
@@ -60,6 +61,7 @@ import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -404,9 +406,65 @@ public class DBConnectionImpl extends AbstractDBConnection {
     }
 
     /**
-     * Commits and closes all allocated connections.
+     * Called if graph execution succeeds.
+     * 
+     * Commits all allocated connections.
+     */
+    @Override
+	public void commit() {
+    	performAction(ConnectionAction.COMMIT);
+	}
+
+    /**
+     * Called if graph execution fails.
+     * 
+     * Rolls back all allocated connections.
+     */
+	@Override
+	public void rollback() {
+    	performAction(ConnectionAction.ROLLBACK);
+	}
+	
+	/**
+	 * Performs the selected action on the given connection.
+	 * 
+	 * @param connection - SQL connection
+	 * @param action	 - COMMIT or ROLLBACK action
+	 */
+	private void performAction(SqlConnection connection, ConnectionAction action) {
+        try {
+        	if (!connection.isClosed() && !connection.getAutoCommit()) {
+                action.perform(connection);
+        	}
+        } catch (SQLException e) {
+            logger.warn("DBConnection '" + getId() + "' " + action + " operation failed.");
+        }
+	}
+	
+	/**
+	 * Performs the selected action on all allocated connections.
+	 * 
+	 * @param action - COMMIT or ROLLBACK action
+	 */
+	private void performAction(ConnectionAction action) {
+        if (threadSafeConnections) {
+            for (SqlConnection connection: connectionsCache.values()) {
+            	performAction(connection, action);
+            }
+        }
+
+        if (sharedConnection != null) {
+        	performAction(sharedConnection, action);
+		}
+	}
+
+	/**
+     * Closes all allocated connections.
+     * CLO-4878: committing moved to {@link #commit()}.
      * 
      * @see org.jetel.graph.GraphElement#free()
+     * @see #commit()
+     * @see #rollback()
      */
     @Override
     public synchronized void free() {
@@ -422,7 +480,8 @@ public class DBConnectionImpl extends AbstractDBConnection {
 		}
 	}
 
-    private void closeConnections() {
+    @Override
+	public void closeConnections() {
         if (threadSafeConnections) {
             for (SqlConnection connection: connectionsCache.values()) {
             	closeConnection(connection);
@@ -439,13 +498,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
     private void closeConnection(SqlConnection connection) {
         try {
         	if (!connection.isClosed()) {
-                if (!connection.getAutoCommit()) {
-                    try {
-						connection.commit();
-					} catch (SQLException e) {
-			            logger.warn("DBConnection '" + getId() + "' commit operation failed.");
-					}
-                }
+        		// CLO-4878: committing moved to commit()
                 connection.close();
         	}
         } catch (SQLException e) {
@@ -575,6 +628,16 @@ public class DBConnectionImpl extends AbstractDBConnection {
         if(StringUtils.isEmpty(sqlQuery)) {
             throw new IllegalArgumentException("JDBC stub for clover metadata can't find sqlQuery parameter.");
         }
+        try {
+        	// CLO-4238:
+        	SQLScriptParser sqlParser = new SQLScriptParser();
+        	sqlParser.setBackslashQuoteEscaping(getJdbcSpecific().isBackslashEscaping());
+        	sqlParser.setRequireLastDelimiter(false);
+        	sqlParser.setStringInput(sqlQuery);
+			sqlQuery = sqlParser.getNextStatement();
+		} catch (IOException e1) {
+			logger.warn("Failed to parse SQL query", e1);
+		}
 
         int index = sqlQuery.toUpperCase().indexOf("WHERE");
 
@@ -872,7 +935,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
 		}
 		Driver driver = jdbcDriver.getDriver();
 		Connection connection;
-		Properties connectionProperties = new Properties(jdbcDriver.getProperties());
+		Properties connectionProperties = PropertiesUtils.duplicate(jdbcDriver.getProperties());
 		connectionProperties.putAll(createConnectionProperties());
 		
         try {

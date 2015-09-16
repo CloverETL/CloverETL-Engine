@@ -26,6 +26,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -258,10 +259,22 @@ public abstract class GraphElement implements IGraphElement {
     }
     
     @Override
-	public JobType getJobType() {
-        return getGraph() != null ? getGraph().getJobType() : JobType.DEFAULT;
+	public JobType getRuntimeJobType() {
+        return getGraph() != null ? getGraph().getRuntimeJobType() : JobType.DEFAULT;
     }
 
+    /**
+     * @return authority proxy for parent graph or a default authority proxy
+     */
+    public IAuthorityProxy getAuthorityProxy() {
+    	TransformationGraph graph = getGraph();
+    	if (graph != null) {
+        	return graph.getRuntimeContext().getAuthorityProxy();
+    	} else {
+    		return ContextProvider.getAuthorityProxy();
+    	}
+    }
+    
     @Override
     public PropertyRefResolver getPropertyRefResolver() {
     	TransformationGraph graph = getGraph();

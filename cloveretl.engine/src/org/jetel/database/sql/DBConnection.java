@@ -96,6 +96,12 @@ public interface DBConnection extends IConnection {
     public void closeConnection(String elementId, OperationType operationType);
 
     /**
+     * Closes all of cached connections or shared connection in case this is not a
+     * thread-safe connection.
+     */
+    public void closeConnections();
+    
+    /**
      * Saves to the given output stream all DBConnection properties.
      * @param outStream
      * @throws IOException

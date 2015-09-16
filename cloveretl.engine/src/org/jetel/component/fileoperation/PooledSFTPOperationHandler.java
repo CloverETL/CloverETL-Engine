@@ -85,6 +85,8 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 			Info sourceInfo = info(source, channel);
 			if (sourceInfo == null) {
 				throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), source.toString())); //$NON-NLS-1$
+			} else if (!sourceInfo.isDirectory() && target.getPath().endsWith(URIUtils.PATH_SEPARATOR)) {
+				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), source)); //$NON-NLS-1$
 			}
 			Info targetInfo = info(target, channel);
 			boolean targetChanged = false;
@@ -96,6 +98,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 			if (params.isUpdate() || params.isNoOverwrite()) {
 				if (targetChanged) { // obtain new targetInfo if the target has changed
 					targetInfo = info(target, channel);
+					targetChanged = false;
 				}
 				if (targetInfo != null) {
 					if (params.isNoOverwrite()) {
@@ -195,9 +198,12 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 	}
 
 	private void delete(ChannelSftp channel, URI uri, DeleteParameters params) throws IOException, SftpException {
-		Info info = info(uri, channel);
+		Info info = simpleInfo(uri, channel); // CLO-3949
 		if (info == null) {
 			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), uri.toString())); //$NON-NLS-1$
+		}
+		if (!info.isDirectory() && uri.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
+			throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), uri)); //$NON-NLS-1$
 		}
 		delete(channel, info, params);
 	}
@@ -223,12 +229,13 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 		return manager.defaultResolve(wildcards);
 	}
 
-	private class SFTPInfo implements Info {
+	private static class SFTPInfo implements Info {
 		
 		private final String name;
 		private final LsEntry file;
 		private final URI uri;
 		private final URI parent;
+		private final SftpATTRS attrs;
 		
 		private static final int S_IREAD = 00400; // read by owner
 		private static final int S_IWRITE= 00200; // write by owner
@@ -238,6 +245,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 			this.file = file;
 			this.parent = parent;
 			this.name = name;
+			this.attrs = file.getAttrs();
 			if (file.getAttrs().isDir() && !name.endsWith(URIUtils.PATH_SEPARATOR)) {
 				name = name + URIUtils.PATH_SEPARATOR;
 			}
@@ -246,6 +254,23 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 			} else {
 				this.uri = URIUtils.getChildURI(parent, name);
 			}
+		}
+		
+		/**
+		 * CLO-3949:
+		 * Simplified constructor, file deletion speed optimization.
+		 * Does not contain filename,
+		 * some methods may throw exceptions upon invocation.
+		 * 
+		 * @param attrs
+		 * @param uri
+		 */
+		private SFTPInfo(SftpATTRS attrs, URI uri) {
+			this.file = null;
+			this.parent = null;
+			this.name = URIUtils.urlDecode(URIUtils.getFileName(uri));
+			this.uri = uri;
+			this.attrs = attrs;
 		}
 		
 		@Override
@@ -265,7 +290,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 
 		@Override
 		public boolean isDirectory() {
-			return file.getAttrs().isDir();
+			return attrs.isDir();
 		}
 
 		@Override
@@ -275,7 +300,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 		
 		@Override
 		public Boolean isLink() {
-			return file.getAttrs().isLink();
+			return attrs.isLink();
 		}
 
 		@Override
@@ -291,7 +316,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 
 		@Override
 		public Date getLastModified() {
-			return new Date(file.getAttrs().getMTime() * 1000L);
+			return new Date(attrs.getMTime() * 1000L);
 		}
 
 		@Override
@@ -301,12 +326,12 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 
 		@Override
 		public Date getLastAccessed() {
-			return new Date(file.getAttrs().getATime() * 1000L);
+			return new Date(attrs.getATime() * 1000L);
 		}
 
 		@Override
 		public Long getSize() {
-			return file.getAttrs().getSize();
+			return attrs.getSize();
 		}
 
 		@Override
@@ -321,17 +346,17 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 
 		@Override
 		public Boolean canRead() {
-			return (file.getAttrs().getPermissions() & S_IREAD) != 0;
+			return (attrs.getPermissions() & S_IREAD) != 0;
 		}
 
 		@Override
 		public Boolean canWrite() {
-			return (file.getAttrs().getPermissions() & S_IWRITE) != 0;
+			return (attrs.getPermissions() & S_IWRITE) != 0;
 		}
 
 		@Override
 		public Boolean canExecute() {
-			return (file.getAttrs().getPermissions() & S_IEXEC) != 0;
+			return (attrs.getPermissions() & S_IEXEC) != 0;
 		}
 		
 	}
@@ -369,35 +394,40 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 		return sb.toString();
 	}
 	
-	private Info info(URI targetUri, ChannelSftp channel) throws IOException {
+	/**
+	 * CLO-3949:
+	 * Speed optimization, only performs STAT for regular files.
+	 * 
+	 * @param targetUri
+	 * @param channel
+	 * @return
+	 * @throws IOException
+	 */
+	private Info simpleInfo(URI targetUri, ChannelSftp channel) throws IOException {
+		return info(targetUri, channel, true);
+	}
+	
+	/**
+	 * 
+	 * @param targetUri
+	 * @param channel
+	 * @param simple - only performs STAT for regular files
+	 * @return
+	 * @throws IOException
+	 * @see <a href="https://bug.javlin.eu/browse/CLO-3949">CLO-3949</a>
+	 */
+	private Info info(URI targetUri, ChannelSftp channel, boolean simple) throws IOException {
 		try {
 			String path = getPath(targetUri);
 			SftpATTRS attrs = channel.stat(path);
-			if (!attrs.isDir()) {
-				@SuppressWarnings("unchecked")
-				Vector<LsEntry> files = channel.ls(path);
-				if ((files != null) && !files.isEmpty()) {
-					return info(files.get(0), null, null, targetUri);
-				}
-			} else {
-				@SuppressWarnings("unchecked")
-				Vector<LsEntry> files = channel.ls(path);
-				if ((files != null) && !files.isEmpty() && (files.get(0) != null)) {
-					for (LsEntry file: files) {
-						if ((file != null) && file.getAttrs().isDir() && file.getFilename().equals(URIUtils.CURRENT_DIR_NAME)) {
-							URI parentUri = URIUtils.getParentURI(targetUri);
-							if (parentUri != null) {
-								String fileName = parentUri.relativize(targetUri).toString();
-								fileName = URIUtils.urlDecode(fileName);
-								return info(file, fileName, null, targetUri);
-							}
-							return info(file, null, null, targetUri);
-						}
-						
-					}
-					return info(files.get(0), null, null, targetUri);
+			if (!simple && !attrs.isDir()) { // perform LS for regular files
+				Vector<?> fileList = channel.ls(path);
+				if (fileList.size() == 1) {
+					LsEntry file = (LsEntry) fileList.get(0);
+					return info(file, null, null, targetUri);
 				}
 			}
+			return new SFTPInfo(attrs, targetUri);
 		} catch (SftpException sftpe) {
 			if (sftpe.id != ChannelSftp.SSH_FX_NO_SUCH_FILE) { // other than No such file
 				throw new IOException("Failed to get SFTP file info", sftpe);
@@ -406,6 +436,10 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 			throw new IOException("Failed to get SFTP file info", e);
 		}
 		return null;
+	}
+
+	private Info info(URI targetUri, ChannelSftp channel) throws IOException {
+		return info(targetUri, channel, false);
 	}
 	
 	private PooledSFTPConnection connect(URI uri) throws IOException {
@@ -496,9 +530,18 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 		ftp.put(new ByteArrayInputStream(new byte[0]), path);
 	}
 
-	private void setLastModified(ChannelSftp channel, String path, long millis) throws SftpException {
-		long secs = millis / 1000;
-		channel.setMtime(path, (int) secs);
+	private void setLastModified(ChannelSftp channel, String path, long millis, boolean directory) throws SftpException {
+		int secs = (int) (millis / 1000);
+		if (!directory) {
+			channel.setMtime(path, secs); // strict, setting modification date on files must work
+		} else {
+			try {
+				// lenient, best-effort implementation
+				channel.setMtime(path, secs);
+			} catch (SftpException sftpe) {
+				log.warn("Failed to set directory last modification time: " + path);
+			}
+		}
 	}
 
 	private void create(ChannelSftp channel, URI uri, CreateParameters params) throws IOException, SftpException {
@@ -507,13 +550,17 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 		}
 		boolean createDirectory = Boolean.TRUE.equals(params.isDirectory());
 		boolean createParents = Boolean.TRUE.equals(params.isMakeParents());
-		Info fileInfo = info(uri, channel);
+		Info fileInfo = simpleInfo(uri, channel);
 		String path = getPath(uri);
 		Date lastModified = params.getLastModified();
 		if (fileInfo == null) { // does not exist
+			URI parentUri = URIUtils.getParentURI(uri);
 			if (createParents) {
-				URI parentUri = URIUtils.getParentURI(uri);
 				create(channel, parentUri, params.clone().setDirectory(true));
+			} else if (parentUri != null) {
+				if (simpleInfo(parentUri, channel) == null) {
+					throw new FileNotFoundException("No such directory: " + parentUri);
+				}
 			}
 			if (createDirectory) {
 				channel.mkdir(path);
@@ -521,13 +568,13 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 				createFile(channel, path);
 			}
 			if (lastModified != null) {
-				setLastModified(channel, path, lastModified.getTime());
+				setLastModified(channel, path, lastModified.getTime(), createDirectory);
 			}
 		} else {
 			if (createDirectory != fileInfo.isDirectory()) {
 				throw new IOException(MessageFormat.format(createDirectory ? FileOperationMessages.getString("IOperationHandler.exists_not_directory") : FileOperationMessages.getString("IOperationHandler.exists_not_file"), uri)); //$NON-NLS-1$ //$NON-NLS-2$
 			}
-			setLastModified(channel, path, lastModified != null ? lastModified.getTime() : System.currentTimeMillis());
+			setLastModified(channel, path, (lastModified != null) ? lastModified.getTime() : System.currentTimeMillis(), fileInfo.isDirectory());
 		}
 	}
 

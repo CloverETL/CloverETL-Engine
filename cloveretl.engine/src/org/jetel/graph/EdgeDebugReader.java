@@ -23,8 +23,6 @@ import java.io.InputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.BinaryDataParser;
 import org.jetel.data.parser.BinaryDataParser.NoDataAvailableException;
@@ -46,8 +44,6 @@ import org.jetel.util.file.FileUtils;
  * @created 18. 11. 2013
  */
 public class EdgeDebugReader {
-
-	private static Log logger = LogFactory.getLog(EdgeDebugReader.class);
 
     /** Name of input file */
     private final String debugFile;
@@ -168,5 +164,4 @@ public class EdgeDebugReader {
 	public DataRecordMetadata getMetadata() {
 		return metadata;
 	}
-	
 }

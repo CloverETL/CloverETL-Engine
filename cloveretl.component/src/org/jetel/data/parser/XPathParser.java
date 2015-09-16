@@ -416,7 +416,7 @@ public class XPathParser extends AbstractParser {
 	            }
 	        }
 		} catch (TransformerException e) {
-			throw new JetelException("", e);
+			throw new JetelException("XPath parsing failed.", e);
 		}
 		return recordResult;
 	}
@@ -687,5 +687,12 @@ public class XPathParser extends AbstractParser {
 	public boolean nextL3Source() {
 		return false;
 	}
+
+	@Override
+	public DataSourceType getPreferredDataSourceType() {
+		return DataSourceType.STREAM;
+	}
+	
+	
 	
 }

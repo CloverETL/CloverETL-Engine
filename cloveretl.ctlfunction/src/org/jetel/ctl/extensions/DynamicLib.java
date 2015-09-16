@@ -169,6 +169,8 @@ public class DynamicLib extends TLFunctionLibrary {
        		"compare".equals(functionName) ? new CompareFunction() :
        		"getFieldIndex".equals(functionName) ? new GetFieldIndexFunction() :
            	"getFieldLabel".equals(functionName) ? new GetFieldLabelFunction() :
+		    "getFieldName".equals(functionName) ? new GetFieldNameFunction() : 
+		    "getFieldType".equals(functionName) ? new GetFieldTypeFunction() : 
    			null; 
 		
 		if (ret == null) {
@@ -702,6 +704,52 @@ public class DynamicLib extends TLFunctionLibrary {
 				DataRecord record = stack.popRecord();
 				stack.push(getFieldLabel(context, record, name));
 			}
+		}
+	}
+
+	@TLFunctionAnnotation("Returns name of i-th field of passed-in record.")
+	public static final String getFieldName(TLFunctionCallContext context, DataRecord record, Integer position) {
+		if (position < 0 || position >= record.getNumFields()) {
+			throw new JetelRuntimeException("field with index " + position + " does not exist in metadata '" + record.getMetadata().getName() + "'");
+		}
+		return record.getField(position).getMetadata().getName();
+	}
+	
+	//GETFIELDNAME
+	class GetFieldNameFunction implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			Integer position = stack.popInt();
+			DataRecord record = stack.popRecord();
+			stack.push(getFieldName(context, record, position));
+		}
+	}
+	
+	@TLFunctionAnnotation("Returns data type of i-th field of passed-in record")
+	public static final String getFieldType(TLFunctionCallContext context, DataRecord record, Integer position) {
+		if (position < 0 || position >= record.getNumFields()) {
+			throw new JetelRuntimeException("field with index " + position + " does not exist in metadata '" + record.getMetadata().getName() + "'");
+		}
+		return record.getField(position).getMetadata().getDataType().getName();
+	}
+
+	//GETFIELDTYPE
+	class GetFieldTypeFunction implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			Integer position = stack.popInt();
+			DataRecord record = stack.popRecord();
+			stack.push(getFieldType(context, record, position));
 		}
 	}
 }

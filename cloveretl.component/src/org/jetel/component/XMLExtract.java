@@ -248,8 +248,8 @@ public class XMLExtract extends Node {
 	// xml attributes
 	public static final String XML_SOURCEURI_ATTRIBUTE = "sourceUri";
 	public static final String XML_USENESTEDNODES_ATTRIBUTE = "useNestedNodes";
-	private static final String XML_MAPPING_ATTRIBUTE = "mapping";
-	private final static String XML_MAPPING_URL_ATTRIBUTE = "mappingURL";
+	public static final String XML_MAPPING_ATTRIBUTE = "mapping"; 
+	public static final String XML_MAPPING_URL_ATTRIBUTE = "mappingURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
 	private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
@@ -488,14 +488,14 @@ public class XMLExtract extends Node {
 			int read = pushbackInputStream.read(bom);
 			int unread = 0;
 
-			int[] unsigned = new int[read];
-			for (int i = 0; i < read; i++) {
-				unsigned[i] = bom[i] & 0xFF;
-			}
-
 			String warnEncoding = null;
 
 			if (read == 4) {
+				int[] unsigned = new int[read];
+				for (int i = 0; i < read; i++) {
+					unsigned[i] = bom[i] & 0xFF;
+				}
+				
 				if (unsigned[0] == 0xFF && unsigned[1] == 0xFE && unsigned[2] == 0x00 && unsigned[3] == 0x00) {
 					// unsigned.UTF_32_LE;
 					if (!"UTF-32LE".equals(this.charset)) {
@@ -562,7 +562,7 @@ public class XMLExtract extends Node {
 		}
 
 		if (charset != null && !Charset.isSupported(charset)) {
-			status.add(new ConfigurationProblem("Charset " + charset + " not supported!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+			status.add(new ConfigurationProblem("Charset " + charset + " not supported!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
 		}
 
 		TransformationGraph graph = getGraph();

@@ -109,6 +109,7 @@ public class TreeWriterMapping {
 		WildcardNode aggregateElement = null;
 		Attribute attributeElement = null;
 		ContainerNode currentElement = mapping.getRootElement();
+		int lastEventType = 0;
 
 		XMLInputFactory factory = XMLInputFactory.newInstance();
 		factory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.FALSE);
@@ -171,8 +172,19 @@ public class TreeWriterMapping {
 			}
 			case XMLStreamConstants.CHARACTERS:
 				if (!parser.isWhiteSpace()) {
-					Value value = new Value(currentElement);
-					value.setProperty(MappingProperty.VALUE, parser.getText());
+					if (lastEventType != XMLStreamConstants.CHARACTERS) {
+                        Value value = new Value(currentElement);
+                        value.setProperty(MappingProperty.VALUE, parser.getText());
+					} else {
+						// FIX: MULE-97 - element values are split into chunks
+						if (currentElement.getChildren().size() > 0) {
+							AbstractNode childNode = currentElement.getChildren().get(currentElement.getChildren().size()-1);
+							if (childNode instanceof Value) {
+                                Value lastValue = (Value) childNode;
+                                lastValue.setProperty(MappingProperty.VALUE, lastValue.getProperty(MappingProperty.VALUE) + parser.getText());
+							}
+						}
+					}
 				}
 				break;
 			case XMLStreamConstants.END_ELEMENT:
@@ -198,6 +210,7 @@ public class TreeWriterMapping {
 				comment.setProperty(MappingProperty.VALUE, commentText);
 				break;
 			}
+			lastEventType = parser.getEventType();
 		}
 
 		return mapping;

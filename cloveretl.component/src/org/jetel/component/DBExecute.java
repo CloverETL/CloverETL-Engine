@@ -221,7 +221,7 @@ public class DBExecute extends Node {
 	private String charset;
 
 	private String errorActionsString;
-	private Map<Integer, ErrorAction> errorActions = new HashMap<Integer, ErrorAction>();
+	private Map<Integer, ErrorAction> errorActions = new HashMap<>();
 	private String errorLogURL;
 	private FileWriter errorLog;
 	private int errorCodeFieldNum;
@@ -281,6 +281,7 @@ public class DBExecute extends Node {
 	 * @exception  ComponentNotReadyException  Description of Exception
 	 * @since                                  September 27, 2002
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
@@ -308,7 +309,7 @@ public class DBExecute extends Node {
             sqlScriptParser.setRequireLastDelimiter(false);
             if (sqlQuery != null) {
             	sqlScriptParser.setStringInput(sqlQuery);
-            	List<String> dbSQLList = new ArrayList<String>();
+            	List<String> dbSQLList = new ArrayList<>();
             	String sqlQuery;
             	try {
 					while ((sqlQuery = sqlScriptParser.getNextStatement()) != null) {
@@ -337,7 +338,7 @@ public class DBExecute extends Node {
 			errorCodeFieldNum = errRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_CODE);
 			errMessFieldNum = errRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_MESSAGE);
 		}
-		errorActions = new HashMap<Integer, ErrorAction>();
+		errorActions = new HashMap<>();
 		if (errorActionsString != null){
         	String[] actions = StringUtils.split(errorActionsString);
         	if (actions.length == 1 && !actions[0].contains("=")){
@@ -355,15 +356,7 @@ public class DBExecute extends Node {
 					}
 				}
         	}
-        }else{
-        	errorActions.put(Integer.MIN_VALUE, ErrorAction.DEFAULT_ERROR_ACTION);
         }
-	}
-
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-				
 	}
 
 	@Override
@@ -417,7 +410,10 @@ public class DBExecute extends Node {
 		} catch (SQLException e) {
 			logger.warn("SQLException when closing statement", e);
 		}
-		dbConnection.closeConnection(getId(), procedureCall ? OperationType.CALL : OperationType.WRITE);
+		// CLO-6100: do not close the connection, as we expect the graph to perform commit
+		if (transaction != InTransaction.NEVER_COMMIT) {
+			dbConnection.closeConnection(getId(), procedureCall ? OperationType.CALL : OperationType.WRITE);
+		}
 	}
 
 	private void acquireConnection() throws ComponentNotReadyException {
@@ -503,7 +499,8 @@ public class DBExecute extends Node {
 		this.printStatements=printStatements;
 	}
 
-	private void handleException(SQLException e, DataRecord inRecord, int queryIndex) 
+	@SuppressWarnings("deprecation")
+	private void handleException(SQLException e, DataRecord inRecord, int queryIndex, String query) 
 	throws IOException, InterruptedException, SQLException{
 		ErrorAction action = errorActions.get(e.getErrorCode());
 		if (action == null) {
@@ -512,7 +509,7 @@ public class DBExecute extends Node {
 				action = ErrorAction.DEFAULT_ERROR_ACTION;
 			}
 		}
-		if (action == ErrorAction.CONTINUE) {
+		if (action == ErrorAction.CONTINUE || (errorActions.isEmpty() && errRecord != null)) {
 			if (errRecord != null) {
 				if (inRecord != null) {
 					errRecord.copyFieldsByName(inRecord);
@@ -544,6 +541,7 @@ public class DBExecute extends Node {
 			} catch (SQLException e1) {
 				logger.warn("Can't rollback!!", e);
 			}
+			logger.error("Error when executing statement: " + query);
 			throw e;
 		}
 	}
@@ -553,7 +551,7 @@ public class DBExecute extends Node {
     		try {
     			connection.commit();
     		} catch (SQLException e) {
-    			handleException(e, inRecord, -1);
+    			handleException(e, inRecord, -1, "COMMIT");
     		}
 		}
 	}
@@ -584,7 +582,7 @@ public class DBExecute extends Node {
     							sqlStatement.executeUpdate(statement);
     						}
     					} catch (SQLException e) {
-    						handleException(e, null, index);
+    						handleException(e, null, index, statement);
     					}
     					index++;
     					if (transaction == InTransaction.ONE){
@@ -612,7 +610,12 @@ public class DBExecute extends Node {
     							sqlStatement.executeUpdate(dbSQL[i]);
     						}
     					} catch (SQLException e) {
-    						handleException(e, inRecord, i);
+    						if (procedureCall) {
+    							handleException(e, inRecord, i, callableStatement[i].getQuery());
+    						} else {
+    							handleException(e, inRecord, i, dbSQL[i]);
+    						}
+    						
     					}
     					if (transaction == InTransaction.ONE){
     						dbCommit();
@@ -689,9 +692,9 @@ public class DBExecute extends Node {
 	 * @throws AttributeNotFoundException 
 	 * @since           September 27, 2002
 	 */
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
-        ComponentXMLAttributes xattribs = new ComponentXMLAttributes(
-                xmlElement, graph);
+    @SuppressWarnings("deprecation")
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
+        ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
         org.w3c.dom.Node childNode;
         ComponentXMLAttributes xattribsChild;
         DBExecute executeSQL;
@@ -705,20 +708,15 @@ public class DBExecute extends Node {
             query = xattribs.getString(XML_DBSQL_ATTRIBUTE);
         } else if (xattribs.exists(XML_SQLCODE_ELEMENT)) {
             query = xattribs.getString(XML_SQLCODE_ELEMENT);
-        } else {// we try to get it from child text node - slightly obsolete
-                // now
-            childNode = xattribs.getChildNode(xmlElement,
-                    XML_SQLCODE_ELEMENT);
+        } else {// we try to get it from child text node - slightly obsolete now
+            childNode = xattribs.getChildNode(xmlElement, XML_SQLCODE_ELEMENT);
             if (childNode == null) {
                 throw new RuntimeException("Can't find <SQLCode> node !");
             }
             xattribsChild = new ComponentXMLAttributes((Element)childNode, graph);
             query = xattribsChild.getText(childNode);
         }
-        executeSQL = new DBExecute(xattribs
-                .getString(XML_ID_ATTRIBUTE), xattribs
-                .getString(XML_DBCONNECTION_ATTRIBUTE), 
-                query);
+        executeSQL = new DBExecute(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(XML_DBCONNECTION_ATTRIBUTE), query);
         if (fileURL != null) {
         	executeSQL.setFileURL(fileURL);
         	if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
@@ -726,13 +724,11 @@ public class DBExecute extends Node {
         	}
         }
         if (xattribs.exists(XML_INTRANSACTION_ATTRIBUTE)) {
-            executeSQL.setTransaction(xattribs
-                    .getString(XML_INTRANSACTION_ATTRIBUTE));
+            executeSQL.setTransaction(xattribs.getString(XML_INTRANSACTION_ATTRIBUTE));
         }
 
         if (xattribs.exists(XML_PRINTSTATEMENTS_ATTRIBUTE)) {
-            executeSQL.setPrintStatements(xattribs
-                    .getBoolean(XML_PRINTSTATEMENTS_ATTRIBUTE));
+            executeSQL.setPrintStatements(xattribs.getBoolean(XML_PRINTSTATEMENTS_ATTRIBUTE));
         }
 
         if (xattribs.exists(XML_PROCEDURE_CALL_ATTRIBUTE)){
@@ -764,11 +760,9 @@ public class DBExecute extends Node {
 		this.charset = charset;
 	}
 
-
 	public void setFileURL(String fileURL) {
 		this.fileUrl = fileURL;
 	}
-
 
 	public void setErrorLog(String errorLog) {
 		this.errorLogURL = errorLog;
@@ -778,6 +772,7 @@ public class DBExecute extends Node {
 		this.errorActionsString = string;		
 	}
 
+	@SuppressWarnings("unchecked")
 	public void setInParameters(String string) {
 		String[] inParameters = string.split(PARAMETERS_SET_DELIMITER);
 		inParams = new HashMap[inParameters.length];
@@ -786,6 +781,7 @@ public class DBExecute extends Node {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public void setOutParameters(String string) {
 		String[] outParameters = string.split(PARAMETERS_SET_DELIMITER);
 		outParams = new HashMap[outParameters.length];
@@ -797,7 +793,7 @@ public class DBExecute extends Node {
 	public static Map<Integer, String> convertMappingToMap(String mapping){
 		if (StringUtils.isEmpty(mapping)) return null;
 		String[] mappings = mapping.split(Defaults.Component.KEY_FIELDS_DELIMITER);
-		HashMap<Integer, String> result = new HashMap<Integer, String>();
+		HashMap<Integer, String> result = new HashMap<>();
 		int assignIndex;
 		boolean isFieldInicator = mapping.indexOf(Defaults.CLOVER_FIELD_INDICATOR) > -1;
 		int assignSignLength = Defaults.ASSIGN_SIGN.length();
@@ -823,12 +819,14 @@ public class DBExecute extends Node {
 		}
 		return result.size() > 0 ? result : null;
 	}
+	
 	/**
 	 *  Description of the Method
 	 *
 	 * @return    Description of the Return Value
 	 */
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
@@ -840,17 +838,17 @@ public class DBExecute extends Node {
         if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
 
 		try {
 		    if (dbConnection == null){
 		        IConnection conn = getGraph().getConnection(dbConnectionName);
 	            if(conn == null) {
-	                throw new ComponentNotReadyException("Can't find DBConnection ID: " + dbConnectionName);
+	                throw new ComponentNotReadyException("Can't find DBConnection ID: " + dbConnectionName, XML_DBCONNECTION_ATTRIBUTE);
 	            }
 	            if(!(conn instanceof DBConnection)) {
-	                throw new ComponentNotReadyException("Connection with ID: " + dbConnectionName + " isn't instance of the DBConnection class.");
+	                throw new ComponentNotReadyException("Connection with ID: " + dbConnectionName + " isn't instance of the DBConnection class.", XML_DBCONNECTION_ATTRIBUTE);
 	            }
 		    }
             if (errorActionsString != null){
@@ -879,11 +877,9 @@ public class DBExecute extends Node {
         return procedureCall;
     }
 
-
     public void setProcedureCall(boolean procedureCall) {
         this.procedureCall = procedureCall;
     }
-
 
     /**
      * @return the sqlStatementDelimiter
@@ -892,14 +888,12 @@ public class DBExecute extends Node {
         return sqlStatementDelimiter;
     }
 
-
     /**
      * @param sqlStatementDelimiter the sqlStatementDelimiter to set
      */
     public void setSqlStatementDelimiter(String sqlStatementDelimiter) {
         this.sqlStatementDelimiter = sqlStatementDelimiter;
     }
-
 
 	public void setOutputFields(String[] outputFields) {
 		this.outputFields = outputFields;

@@ -22,22 +22,20 @@ import org.jetel.graph.Edge;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 
 /**
- * This is general view to a edge. Two implementations are expected
- * - wrapper for engine and gui edge.
- * 
- * This model view is used by {@link MetadataPropagationResolver} and allows 
- * unified implementation for both engine and gui model.
+ * This is general model view to an edge.
+ * This model view is used by {@link MetadataPropagationResolver}.
  * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 27. 8. 2013
  */
-public interface MVEdge {
+public interface MVEdge extends MVGraphElement {
 
 	/**
 	 * @return engine edge
 	 */
+	@Override
 	public Edge getModel();
 	
 	/**
@@ -58,10 +56,15 @@ public interface MVEdge {
 	/**
 	 * @return true if the edge has metadata directly assigned by user
 	 */
-	public boolean hasMetadataDirect();
-	
+	public boolean hasExplicitMetadata();
+
 	/**
-	 * @return specific metadat assigned to this edge
+	 * @return true if the edge is going to use some implicit metadata (propagated metadata) 
+	 */
+	public boolean hasImplicitMetadata();
+
+	/**
+	 * @return specific metadata assigned to this edge
 	 */
 	public MVMetadata getMetadata();
 	
@@ -77,14 +80,19 @@ public interface MVEdge {
 
 	/**
 	 * Sets metadata to this edge which has been automatically propagated from neighbours.
-	 * @param propagatedMetadata propagated metadata
+	 * @param implicitMetadata propagated metadata
 	 */
-	public void setPropagatedMetadata(MVMetadata propagatedMetadata);
+	public void setImplicitMetadata(MVMetadata implicitMetadata);
 
+	/**
+	 * @return implicit metadata if any (propagated metadata)
+	 */
+	public MVMetadata getImplicitMetadata();
+	
 	/**
 	 * Clears propagated metadata for this edge.
 	 */
-	public void unsetPropagatedMetadata();
+	public void unsetImplicitMetadata();
 
 	/**
 	 * Sets 'no metadata' for this edge. The 'no metadata' are metadata which
@@ -97,5 +105,15 @@ public interface MVEdge {
 	 * @return 'no metadata' for this edge - metadata which would be used if no direct metadata is set on this edge
 	 */
 	public MVMetadata getNoMetadata();
+
+	/**
+	 * @return parent graph
+	 */
+	public MVGraph getParentMVGraph();
+	
+	/**
+	 * @return referenced edge, from where metadata should be derived
+	 */
+	public MVEdge getMetadataRef();
 
 }

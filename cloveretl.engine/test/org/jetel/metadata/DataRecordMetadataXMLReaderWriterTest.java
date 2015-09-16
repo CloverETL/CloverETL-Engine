@@ -1,5 +1,7 @@
 package org.jetel.metadata;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -7,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 
 import org.jetel.test.CloverTestCase;
 
@@ -160,4 +163,83 @@ public class DataRecordMetadataXMLReaderWriterTest extends CloverTestCase {
 		}
 
 	}
+	
+	public void testNullValues_01() throws UnsupportedEncodingException {
+		String metadataStr = "<Record fieldDelimiter=\";\" name=\"record\" previewAttachmentCharset=\"ISO-8859-1\" recordDelimiter=\"\\n\" recordSize=\"-1\" type=\"delimited\">"
+							+ "<Field eofAsDelimiter=\"false\" name=\"field1\" nullable=\"true\" shift=\"0\" size=\"11\" type=\"integer\"/>"
+							+ "<Field eofAsDelimiter=\"false\" name=\"field2\" nullValue=\"abc\" nullable=\"true\" shift=\"0\" size=\"80\" type=\"string\"/>"
+							+  "<Field eofAsDelimiter=\"false\" name=\"field3\" nullValue=\"xxx\\\\|yyy\" nullable=\"true\" shift=\"0\" size=\"80\" type=\"date\"/>"
+							+ "</Record>";
+		ByteArrayInputStream is = new ByteArrayInputStream(metadataStr.getBytes("US-ASCII"));
+		DataRecordMetadata metadata = DataRecordMetadataXMLReaderWriter.readMetadata(is);
+		
+		testNullValues_01_inner(metadata);
+		
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		DataRecordMetadataXMLReaderWriter.write(metadata, os);
+		System.out.println(new String(os.toByteArray(), "US-ASCII"));
+		is = new ByteArrayInputStream(os.toByteArray());
+		metadata = DataRecordMetadataXMLReaderWriter.readMetadata(is);
+
+		testNullValues_01_inner(metadata);
+	}
+
+	private void testNullValues_01_inner(DataRecordMetadata metadata) {
+		assertTrue(metadata.getField(0).getNullValues().size() == 1);
+		assertTrue(metadata.getField(0).getNullValues().get(0).equals(""));
+		assertTrue(metadata.getField(0).getNullValue().equals(""));
+		
+		assertTrue(metadata.getField(1).getNullValues().size() == 1);
+		assertTrue(metadata.getField(1).getNullValues().get(0).equals("abc"));
+		assertTrue(metadata.getField(1).getNullValue().equals("abc"));
+		
+		assertTrue(metadata.getField(2).getNullValues().size() == 2);
+		assertTrue(metadata.getField(2).getNullValues().get(0).equals("xxx"));
+		assertTrue(metadata.getField(2).getNullValues().get(1).equals("yyy"));
+		assertTrue(metadata.getField(2).getNullValue().equals("xxx"));
+	}
+	
+	public void testNullValues_02() throws UnsupportedEncodingException {
+		String metadataStr = "<Record nullValue=\"ups\\\\|\\\\|ops\" fieldDelimiter=\";\" name=\"record\" previewAttachmentCharset=\"ISO-8859-1\" recordDelimiter=\"\\n\" recordSize=\"-1\" type=\"delimited\">"
+							+ "<Field eofAsDelimiter=\"false\" name=\"field1\" nullable=\"true\" shift=\"0\" size=\"11\" type=\"integer\"/>"
+							+ "<Field eofAsDelimiter=\"false\" name=\"field2\" nullValue=\"abc\" nullable=\"true\" shift=\"0\" size=\"80\" type=\"string\"/>"
+							+  "<Field eofAsDelimiter=\"false\" name=\"field3\" nullValue=\"xxx\\\\|yyy\" nullable=\"true\" shift=\"0\" size=\"80\" type=\"date\"/>"
+							+ "</Record>";
+		ByteArrayInputStream is = new ByteArrayInputStream(metadataStr.getBytes("US-ASCII"));
+		DataRecordMetadata metadata = DataRecordMetadataXMLReaderWriter.readMetadata(is);
+		
+		testNullValues_02_inner(metadata);
+		
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		DataRecordMetadataXMLReaderWriter.write(metadata, os);
+		System.out.println(new String(os.toByteArray(), "US-ASCII"));
+		is = new ByteArrayInputStream(os.toByteArray());
+		metadata = DataRecordMetadataXMLReaderWriter.readMetadata(is);
+
+		testNullValues_02_inner(metadata);
+	}
+
+	private void testNullValues_02_inner(DataRecordMetadata metadata) {
+		assertTrue(metadata.getNullValues().size() == 3);
+		assertTrue(metadata.getNullValues().get(0).equals("ups"));
+		assertTrue(metadata.getNullValues().get(1).equals(""));
+		assertTrue(metadata.getNullValues().get(2).equals("ops"));
+		assertTrue(metadata.getNullValue().equals("ups"));
+
+		assertTrue(metadata.getField(0).getNullValues().size() == 3);
+		assertTrue(metadata.getField(0).getNullValues().get(0).equals("ups"));
+		assertTrue(metadata.getField(0).getNullValues().get(1).equals(""));
+		assertTrue(metadata.getField(0).getNullValues().get(2).equals("ops"));
+		assertTrue(metadata.getField(0).getNullValue().equals("ups"));
+		
+		assertTrue(metadata.getField(1).getNullValues().size() == 1);
+		assertTrue(metadata.getField(1).getNullValues().get(0).equals("abc"));
+		assertTrue(metadata.getField(1).getNullValue().equals("abc"));
+		
+		assertTrue(metadata.getField(2).getNullValues().size() == 2);
+		assertTrue(metadata.getField(2).getNullValues().get(0).equals("xxx"));
+		assertTrue(metadata.getField(2).getNullValues().get(1).equals("yyy"));
+		assertTrue(metadata.getField(2).getNullValue().equals("xxx"));
+	}
+
 }

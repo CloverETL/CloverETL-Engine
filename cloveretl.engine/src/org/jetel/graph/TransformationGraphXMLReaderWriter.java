@@ -33,12 +33,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.events.XMLEvent;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -65,6 +69,8 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.metadata.MetadataFactory;
+import org.jetel.util.JAXBContextProvider;
+import org.jetel.util.ReferenceState;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -176,6 +182,9 @@ public class TransformationGraphXMLReaderWriter {
 	public final static String NODE_ELEMENT = "Node";
 	private final static String EDGE_ELEMENT = "Edge";
 	private final static String METADATA_ELEMENT = "Metadata";
+	public final static String METADATA_GROUP_ELEMENT = "MetadataGroup";
+	public final static String METADATA_GROUP_TYPE_ATTRIBUTE = "type";
+	public final static String METADATA_GROUP_TYPE_IMPLICIT = "implicit";
 	private final static String PHASE_ELEMENT = "Phase";
 	public final static String CONNECTION_ELEMENT = "Connection";
 	public final static String SEQUENCE_ELEMENT = "Sequence";
@@ -196,6 +205,8 @@ public class TransformationGraphXMLReaderWriter {
 	private final static String DICTIONARY_ENTRY_REQUIRED = "required";
 	private final static String DICTIONARY_ENTRY_CONTENT_TYPE = "contentType";
 	
+	public final static String ID_ATTRIBUTE = "id";
+	public final static String NAME_ATTRIBUTE = "name";
 	public final static String AUTHOR_ATTRIBUTE = "author";
 	public final static String REVISION_ATTRIBUTE = "revision";
 	public final static String CREATED_ATTRIBUTE = "created";
@@ -204,9 +215,14 @@ public class TransformationGraphXMLReaderWriter {
 	public final static String LICENSE_TYPE_ATTRIBUTE = "licenseType";
 	public final static String LICENSE_CODE_ATTRIBUTE = "licenseCode";
 	public final static String GUI_VERSION_ATTRIBUTE = "guiVersion";
+	public final static String EXECUTION_LABEL_ATTRIBUTE = "executionLabel";
+	public final static String CATEGORY_ATTRIBUTE = "category";
+	public final static String SMALL_ICON_PATH_ATTRIBUTE = "smallIconPath";
+	public final static String MEDIUM_ICON_PATH_ATTRIBUTE = "mediumIconPath";
+	public final static String LARGE_ICON_PATH_ATTRIBUTE = "largeIconPath";
 	public final static String JOB_TYPE_ATTRIBUTE = "nature";
 	public final static String SHOW_COMPONENT_DETAILS_ATTRIBUTE = "showComponentDetails";
-	
+	public final static String PERSISTED_IMPLICIT_METADATA_ATTRIBUTE = "persistedImplicitMetadata";
 	
 	private final static int ALLOCATE_MAP_SIZE=64;
 	/**
@@ -240,6 +256,9 @@ public class TransformationGraphXMLReaderWriter {
      */
     private boolean onlyParamsAndDict = false;
     
+    private final Marshaller graphParameterMarshaller;
+    private final Unmarshaller graphParameterUnmarshaller;
+    
     /**
      * Instantiates transformation graph from a given input stream and presets a given properties.
      * @param graphStream graph in XML form stored in character stream
@@ -261,6 +280,16 @@ public class TransformationGraphXMLReaderWriter {
 	 */
 	public TransformationGraphXMLReaderWriter(GraphRuntimeContext runtimeContext) {
 		this.runtimeContext = runtimeContext;
+		
+		try {
+			graphParameterMarshaller = JAXBContextProvider.getInstance().getContext(GraphParameters.class).createMarshaller();
+			graphParameterMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+			
+			graphParameterUnmarshaller = JAXBContextProvider.getInstance().getContext(GraphParameter.class).createUnmarshaller();
+		}
+		catch (JAXBException e) {
+			throw new JetelRuntimeException(e);
+		}
 	}
 
 	private static Document prepareDocument(InputStream in) throws XMLConfigurationException {
@@ -305,16 +334,50 @@ public class TransformationGraphXMLReaderWriter {
 	 * @throws XMLConfigurationException
 	 */
 	public String readId(InputStream in) throws XMLConfigurationException {
-		Document document = prepareDocument(in);
-
-		NodeList graphElement = document.getElementsByTagName(GRAPH_ELEMENT);
-		String id = ((Element)graphElement.item(0)).getAttribute("id");
-		
-		if(StringUtils.isEmpty(id)) {
-			id = ((Element)graphElement.item(0)).getAttribute("name");
+//		Document document = prepareDocument(in);
+//
+//		NodeList graphElement = document.getElementsByTagName(GRAPH_ELEMENT);
+//		String id = ((Element)graphElement.item(0)).getAttribute("id");
+//		
+//		if(StringUtils.isEmpty(id)) {
+//			id = ((Element)graphElement.item(0)).getAttribute("name");
+//		}
+//		
+//		return id;
+		try {
+			return readIdStax(in);
+		} catch (XMLStreamException e) {
+			throw new XMLConfigurationException(e);
 		}
+	}
+	
+	private String readIdStax(InputStream in) throws XMLStreamException {
 		
-		return id;
+		XMLStreamReader reader = XMLInputFactory.newFactory().createXMLStreamReader(in);
+		try {
+			while (reader.hasNext()) {
+				int event = reader.next();
+				if (event == XMLEvent.START_ELEMENT && GRAPH_ELEMENT.equals(reader.getLocalName())) {
+					final int count = reader.getAttributeCount();
+					for (int i = 0; i < count; ++i) {
+						if (ID_ATTRIBUTE.equals(reader.getAttributeLocalName(i))) {
+							String id = reader.getAttributeValue(i);
+							if (!StringUtils.isEmpty(id)) {
+								return id;
+							}
+						}
+					}
+					for (int i = 0; i < count; ++i) {
+						if (NAME_ATTRIBUTE.equals(reader.getAttributeLocalName(i))) {
+							return reader.getAttributeValue(i);
+						}
+					}
+				}
+			}
+			return null;
+		} finally {
+			reader.close();
+		}
 	}
 	
 	public TransformationGraph read(InputStream in) throws XMLConfigurationException, GraphConfigurationException {
@@ -358,7 +421,11 @@ public class TransformationGraphXMLReaderWriter {
 			//it is necessary for correct edge factorisation in EdgeFactory (maybe will be useful even somewhere else)
 			c = ContextProvider.registerGraph(graph);
 			
+			//set information about strict parsing into runtime context - this can
+			//be used whenever is necessary inside the graph factorization using ContextProvider.getRuntimeContext() 
+			runtimeContext.setStrictGraphFactorization(strictParsing);
 			graph.setInitialRuntimeContext(runtimeContext);
+			
 			// get graph name
 			ComponentXMLAttributes grfAttributes=new ComponentXMLAttributes((Element)graphElement.item(0), graph);
 			try {
@@ -381,7 +448,12 @@ public class TransformationGraphXMLReaderWriter {
 	        graph.setLicenseType(grfAttributes.getString(LICENSE_TYPE_ATTRIBUTE, null));
 	        graph.setLicenseCode(grfAttributes.getString(LICENSE_CODE_ATTRIBUTE, null));
 	        graph.setGuiVersion(grfAttributes.getString(GUI_VERSION_ATTRIBUTE, null));
-	        graph.setJobType(JobType.fromString(grfAttributes.getString(JOB_TYPE_ATTRIBUTE, null)));
+	        graph.setExecutionLabel(grfAttributes.getString(EXECUTION_LABEL_ATTRIBUTE, null));
+	        graph.setCategory(grfAttributes.getString(CATEGORY_ATTRIBUTE, null));
+	        graph.setSmallIconPath(grfAttributes.getString(SMALL_ICON_PATH_ATTRIBUTE, null));
+	        graph.setMediumIconPath(grfAttributes.getString(MEDIUM_ICON_PATH_ATTRIBUTE, null));
+	        graph.setLargeIconPath(grfAttributes.getString(LARGE_ICON_PATH_ATTRIBUTE, null));
+	        graph.setStaticJobType(JobType.fromString(grfAttributes.getString(JOB_TYPE_ATTRIBUTE, null)));
 	
 			// handle all defined graph parameters - old-fashion
 			NodeList PropertyElements = document.getElementsByTagName(PROPERTY_ELEMENT);
@@ -411,8 +483,8 @@ public class TransformationGraphXMLReaderWriter {
 				instantiateSequences(sequenceElements);
 				
 				//create metadata
-				NodeList metadataElements = document.getElementsByTagName(METADATA_ELEMENT);
-				instantiateMetadata(metadataElements, metadata);
+				//NodeList metadataElements = document.getElementsByTagName(METADATA_ELEMENT);
+				instantiateMetadata(getGlobalElement(document), metadata);
 		
 				// register all metadata (DataRecordMetadata) within transformation graph
 				graph.addDataRecordMetadata(metadata);
@@ -457,23 +529,39 @@ public class TransformationGraphXMLReaderWriter {
 		}
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  metadataElements  Description of Parameter
-	 * @param  metadata          Description of Parameter
-	 * @exception  IOException   Description of Exception
-	 * @since                    May 24, 2002
-	 */
-	private void instantiateMetadata(NodeList metadataElements, Map<String, Object> metadata) throws XMLConfigurationException {
+	private void instantiateMetadata(Element metadataRoot, Map<String, Object> metadata) throws XMLConfigurationException {
+		List<Element> metadataElements = getChildElements(metadataRoot, METADATA_ELEMENT);
+		instantiateMetadata(metadataElements, metadata);
+		
+		List<Element> metadataGroupElements = getChildElements(metadataRoot, METADATA_GROUP_ELEMENT);
+		for (Element metadataGroupElement : metadataGroupElements) {
+			if (metadataGroupElement.hasAttribute(METADATA_GROUP_TYPE_ATTRIBUTE)
+					&& METADATA_GROUP_TYPE_IMPLICIT.equals(metadataGroupElement.getAttribute(METADATA_GROUP_TYPE_ATTRIBUTE))) {
+				//load persisted implicit metadata
+				Map<String, Object> persistedImplicitMetadata = new HashMap<>();
+				instantiateMetadata(metadataGroupElement, persistedImplicitMetadata);
+				for (Object piMetadata : persistedImplicitMetadata.values()) {
+					if (piMetadata instanceof DataRecordMetadata) {
+						graph.addPersistedImplicitMetadata((DataRecordMetadata) piMetadata);
+					} else {
+						throwXMLConfigurationException("Persisted implicit metadata cannot be defined as DB stub.");
+					}
+				}
+			} else {
+				instantiateMetadata(metadataGroupElement, metadata);
+			}
+		}
+	}
+
+	private void instantiateMetadata(List<Element> metadataElements, Map<String, Object> metadata) throws XMLConfigurationException {
 		String metadataID = null;
 		String fileURL=null;
 		Object recordMetadata = null;
 		//PropertyRefResolver refResolver=new PropertyRefResolver();
 
 		// loop through all Metadata elements & create appropriate Metadata objects
-		for (int i = 0; i < metadataElements.getLength(); i++) {
-			ComponentXMLAttributes attributes = new ComponentXMLAttributes((Element)metadataElements.item(i), graph);
+		for (int i = 0; i < metadataElements.size(); i++) {
+			ComponentXMLAttributes attributes = new ComponentXMLAttributes(metadataElements.get(i), graph);
 			try {
 				// process metadata element attributes "id" & "fileURL"
 				metadataID = attributes.getString("id");
@@ -497,12 +585,12 @@ public class TransformationGraphXMLReaderWriter {
 					}
 				} // probably metadata inserted directly into graph
 				else {
-					recordMetadata=MetadataFactory.fromXML(graph, attributes.getChildNode(metadataElements.item(i),METADATA_RECORD_ELEMENT));
+					recordMetadata=MetadataFactory.fromXML(graph, attributes.getChildNode(metadataElements.get(i),METADATA_RECORD_ELEMENT));
 				}
 			} catch (AttributeNotFoundException ex) {
-				throwXMLConfigurationException("Metadata - Attributes missing", ex);
+				throwXMLConfigurationException("Metadata - Attributes missing (id='" + metadataID + "').", ex);
 			} catch (Exception e) {
-				throwXMLConfigurationException("Metadata cannot be instantiated.", e);
+				throwXMLConfigurationException("Metadata cannot be instantiated (id='" + metadataID + "').", e);
 			}
 			//set metadataId
 			if (recordMetadata != null) {
@@ -583,7 +671,7 @@ public class TransformationGraphXMLReaderWriter {
                         && !nodeEnabled.equalsIgnoreCase(EnabledEnum.PASS_THROUGH.toString())) {
 					graphNode = ComponentFactory.createComponent(graph, nodeType, nodeElements.item(i), isStrictParsing());
                 } else {
-                    graphNode = ComponentFactory.createDummyComponent(graph, nodeType, nodeElements.item(i));
+                    graphNode = ComponentFactory.createDummyComponent(graph, nodeType, null, nodeElements.item(i));
                 }
 				if (graphNode != null) {
                     phase.addNode(graphNode);
@@ -627,6 +715,9 @@ public class TransformationGraphXMLReaderWriter {
 		String[] specNodePort;
 		int fromPort;
 		int toPort;
+		String metadataRef;
+		ReferenceState metadataRefState;
+		String persistedImplicitMetadataId;
 		org.jetel.graph.Edge graphEdge;
 		org.jetel.graph.Node writerNode;
 		org.jetel.graph.Node readerNode;
@@ -656,8 +747,11 @@ public class TransformationGraphXMLReaderWriter {
             debugLastRecords = attributes.getBoolean("debugLastRecords", true);
             debugFilterExpression = attributes.getString("debugFilterExpression", null);
             debugSampleData = attributes.getBoolean("debugSampleData", false);
-            
             fastPropagate = attributes.getBoolean("fastPropagate", false);
+            metadataRef = attributes.getString("metadataRef", null);
+            metadataRefState = ReferenceState.fromString(attributes.getString("metadataRefState", ReferenceState.VALID_REFERENCE.toString()));
+            persistedImplicitMetadataId = attributes.getString(PERSISTED_IMPLICIT_METADATA_ATTRIBUTE, null);
+            
 			Object metadataObj = edgeMetadataID != null ? metadata.get(edgeMetadataID) : null;
 			if (metadataObj == null && edgeMetadataID != null) {
 				throwXMLConfigurationException("Can't find metadata ID '" + edgeMetadataID + "'.");
@@ -668,13 +762,30 @@ public class TransformationGraphXMLReaderWriter {
 				graphEdge = EdgeFactory.newEdge(edgeID, (DataRecordMetadata) metadataObj);
 			}else{ 
 				// stub
-				graphEdge = EdgeFactory.newEdge(edgeID, (DataRecordMetadataStub) metadataObj);
+				try {
+					graphEdge = EdgeFactory.newEdge(edgeID, (DataRecordMetadataStub) metadataObj);
+				} catch (Exception e) {
+					throwXMLConfigurationException("Edge '" + edgeID + "' cannot be created.", e);
+					graphEdge = EdgeFactory.newEdge(edgeID, (DataRecordMetadata) null);
+				}
 			}
 			graphEdge.setDebugMode(debugMode);
 			graphEdge.setDebugMaxRecords(debugMaxRecords);
 			graphEdge.setDebugLastRecords(debugLastRecords);
 			graphEdge.setFilterExpression(debugFilterExpression);
 			graphEdge.setDebugSampleData(debugSampleData);
+			graphEdge.setMetadataRef(metadataRef);
+			graphEdge.setMetadataReferenceState(metadataRefState);
+			//persisted implicit metadata
+			if (!StringUtils.isEmpty(persistedImplicitMetadataId)) {
+				DataRecordMetadata persistedImplicitMetadata = graph.getPersistedImplicitMetadata(persistedImplicitMetadataId);
+				if (persistedImplicitMetadata != null) {
+					graphEdge.setPersistedImplicitMetadata(persistedImplicitMetadata);
+				} else {
+					//ignore this error - missing persisted implicit metadata are ignored - validation will be introduced in the future
+					//throwXMLConfigurationException("Can't find persisted implicit metadata ID '" + persistedImplicitMetadataId + "'.");
+				}
+			}
 			// set edge type
 			if (runtimeContext.getExecutionType() == ExecutionType.SINGLE_THREAD_EXECUTION) {
 				//in single thread execution all edges are buffered
@@ -841,30 +952,22 @@ public class TransformationGraphXMLReaderWriter {
 	 * @throws XMLConfigurationException 
 	 */
 	private void instantiateGraphParameter(GraphParameters graphParameters, Element graphParameter) throws XMLConfigurationException {
-		String name = graphParameter.getAttribute("name");
-		String value = graphParameter.getAttribute("value");
-		//value may be actually overridden by additional graph parameters defined in graph runtime context
-		value = getGraphParameterValue(name, value);
-    	GraphParameter gp = graphParameters.addGraphParameter(name, value);
-    	if (graphParameter.hasAttribute("secure")) {
-			ComponentXMLAttributes attributes = new ComponentXMLAttributes(graphParameter);
-			try {
-				gp.setSecure(attributes.getBoolean("secure", false));
-			} catch (Exception e) {
-				throwXMLConfigurationException("Secure attribute of a graph parameter is not valid boolean value.", e);
-			}
-    	}
+		try {
+			GraphParameter gp = (GraphParameter) graphParameterUnmarshaller.unmarshal(graphParameter);
+			overrideParameterValue(gp);
+		    graphParameters.addGraphParameter(gp);
+		} catch (Exception e) {
+			throw new JetelRuntimeException("Deserialisation of graph parameters failed.", e);
+		}
 	}
 
-	/**
-	 * Returns either value from additional graph parameters from runtime context or suggested value.
-	 */
-	private String getGraphParameterValue(String name, String suggestedValue) {
+	private void overrideParameterValue(GraphParameter gp) {
 		Properties additionalProperties = runtimeContext.getAdditionalProperties();
-		if (additionalProperties.containsKey(name)) {
-			return additionalProperties.getProperty(name);
-		} else {
-			return suggestedValue;
+		if (additionalProperties.containsKey(gp.getName())) {
+			gp.setValue(additionalProperties.getProperty(gp.getName()));
+		}
+		else {
+			// gp.setValue(gp.getValue());
 		}
 	}
 	
@@ -891,9 +994,9 @@ public class TransformationGraphXMLReaderWriter {
 	 * Load parameter file.
 	 */
 	public void instantiateGraphParametersFile(GraphParameters graphParameters, String resolvedFileURL) throws XMLConfigurationException {
-		InputStream is = null;
-        try {
-        	is = FileUtils.getInputStream(runtimeContext.getContextURL(), resolvedFileURL);
+		try (
+				InputStream is = FileUtils.getInputStream(runtimeContext.getContextURL(), resolvedFileURL)
+		) {
         	Document document = prepareDocument(is);
         	instantiateGraphParameters(graphParameters, Arrays.asList(document.getDocumentElement()));
         } catch (Exception e) {
@@ -901,14 +1004,6 @@ public class TransformationGraphXMLReaderWriter {
         		graphParameters.addProperties(loadGraphProperties(resolvedFileURL));
         	} catch(IOException ex) {
         		throwXMLConfigurationException("Can't load property definition from " + resolvedFileURL, ex);
-        	}
-        } finally {
-        	if (is != null) {
-        		try {
-        			is.close();
-        		} catch (IOException e) {
-        			//DO NOTHING
-        		}
         	}
         }
 	}
@@ -943,11 +1038,14 @@ public class TransformationGraphXMLReaderWriter {
 		boolean progress = true;
 		while (!unresolvedGraphParametersFiles.isEmpty() && progress) {
 			progress = false;
+			List<Element> resolvedGraphParametersFiles = new ArrayList<Element>();
 			for (Element graphParameterFile : unresolvedGraphParametersFiles) {
 				if (instantiateGraphParametersFile(graphParameters, graphParameterFile)) {
 					progress = true;
+					resolvedGraphParametersFiles.add(graphParameterFile);
 				}
 			}
+			unresolvedGraphParametersFiles.removeAll(resolvedGraphParametersFiles);
 			if (!progress) {
 		    	throwXMLConfigurationException("Failed to resolve following parameter file URL: " + unresolvedGraphParametersFiles.get(0).getAttribute("fileURL"));
 			}
@@ -971,7 +1069,10 @@ public class TransformationGraphXMLReaderWriter {
         		}
         		instantiateGraphParametersFile(graph.getGraphParameters(), fileURL);
 	        } else if (propertyElement.hasAttribute("name")) {
-	        	graph.getGraphParameters().addGraphParameter(propertyElement.getAttribute("name"), propertyElement.getAttribute("value"));
+	        	String name = propertyElement.getAttribute("name");
+	        	if (isValidGraphParameterName(name)) { //obsolete parameters with invalid names are ignored
+	        		graph.getGraphParameters().addGraphParameter(name, propertyElement.getAttribute("value"));
+	        	}
 	        } else {
 	        	throwXMLConfigurationException("Invalid property definition :" + propertyElement);
 	        }
@@ -1008,7 +1109,13 @@ public class TransformationGraphXMLReaderWriter {
         try {
         	inStream = FileUtils.getInputStream(runtimeContext.getContextURL(), fileURL);
             graphProperties.load(inStream);
-            return graphProperties;
+            TypedProperties result = new TypedProperties();
+            for (String name : graphProperties.stringPropertyNames()) {
+            	if (isValidGraphParameterName(name)) { //obsolete parameters with invalid names are ignored
+            		result.setProperty(name, graphProperties.getProperty(name));
+            	}
+            }
+            return result;
         } catch(MalformedURLException e) {
         	throwXMLConfigurationException("Wrong URL/filename of file specified: " + fileURL, e);
         } finally {
@@ -1023,6 +1130,13 @@ public class TransformationGraphXMLReaderWriter {
     	return null;
     }
 
+	/**
+	 * Validation of obsolete graph parameters. Obsolete graph parameters
+	 * should be validated by this method and invalid ones shouldn't be used at all.
+	 */
+	public static boolean isValidGraphParameterName(String name) {
+		return !StringUtils.isEmpty(name) && StringUtils.isValidObjectName(name);
+	}
 
 	private void instantiateDictionary(NodeList dictionaryElements) throws  XMLConfigurationException {
 		final Dictionary dictionary = graph.getDictionary();
@@ -1129,6 +1243,9 @@ public class TransformationGraphXMLReaderWriter {
 	private void throwXMLConfigurationException(String message, Throwable cause) throws XMLConfigurationException {
 		if (isStrictParsing()) {
 			throw new XMLConfigurationException(message, cause);
+		} else {
+			//strict mode is off, so exception is logged only on debug level
+			logger.debug("Graph factorization failed (strictMode = false): " + message, cause);
 		}
 	}
 	
@@ -1224,11 +1341,7 @@ public class TransformationGraphXMLReaderWriter {
 	
 	public void writeGraphParameters(GraphParameters graphParameters, OutputStream os) {
 		try {
-		    JAXBContext context = JAXBContext.newInstance(GraphParameters.class);
-		    Marshaller m = context.createMarshaller();
-		    m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-		    
-		    m.marshal(graphParameters, os);
+			graphParameterMarshaller.marshal(graphParameters, os);
 		} catch (JAXBException e) {
 			throw new JetelRuntimeException("Serialisation of graph parameters failed.", e);
 		}

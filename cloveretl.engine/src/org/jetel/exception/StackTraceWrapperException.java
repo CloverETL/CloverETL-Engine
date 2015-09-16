@@ -23,7 +23,7 @@ import org.jetel.util.ExceptionUtils;
 
 /**
  * This exception allows to wrap an existing error message and stacktrace in string form.
- * This exception is usefull whereever you need to throw an exception but the cause exception
+ * This exception is useful wherever you need to throw an exception but the cause exception
  * is available only in string form. For example RunRecord of a failing graph provides
  * only two strings - errMessage and errException.
  * The <code>causeStackTrace</code> passed into constructor is now taken into consideration only in

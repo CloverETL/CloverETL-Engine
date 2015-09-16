@@ -349,7 +349,7 @@ public class JmsReader extends Node {
         if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
 
         //check transformation
@@ -375,9 +375,6 @@ public class JmsReader extends Node {
 			super(Thread.currentThread().getName() + ".Interruptor");			
 		}
 		
-		/**
-		 * @see java.lan.Thread#run()
-		 */
 		@Override
 		public void run() {
 			while (JmsReader.this.runIt && Interruptor.this.runIt) {

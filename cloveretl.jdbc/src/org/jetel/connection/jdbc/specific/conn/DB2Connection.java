@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.apache.log4j.Logger;
 import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.JdbcSpecific.OperationType;
 import org.jetel.exception.JetelException;
@@ -34,6 +35,8 @@ import org.jetel.exception.JetelException;
  */
 public class DB2Connection extends BasicSqlConnection {
 
+	private static final Logger log = Logger.getLogger(DB2Connection.class);
+	
 	public DB2Connection(DBConnection dbConnection, Connection connection, OperationType operationType) throws JetelException {
 		super(dbConnection, connection, operationType);
 	}
@@ -43,4 +46,22 @@ public class DB2Connection extends BasicSqlConnection {
 		return getTablesAsSchema(schema);
 	}
 	
+	@Override
+	public void close() throws SQLException {
+		/*
+		 * DB2 does not allow to close connection if there is an ongoing transaction -
+		 * so if not in auto commit mode, the user is expected to take care for the transaction demarcation.
+		 * In order to prevent leaking open connections, rollback is attempted here.
+		 * 
+		 * See CLO-4963
+		 */
+		if (!connection.getAutoCommit()) {
+			try {
+				connection.rollback();
+			} catch (SQLException e) {
+				log.warn("Error while rolling back transaction before connection close.", e);
+			}
+		}
+		connection.close();
+	}
 }

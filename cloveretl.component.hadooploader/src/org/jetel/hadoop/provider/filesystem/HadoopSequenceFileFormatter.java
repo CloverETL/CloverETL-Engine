@@ -27,13 +27,14 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
+import org.jetel.data.formatter.AbstractFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.hadoop.component.IHadoopSequenceFileFormatter;
 import org.jetel.hadoop.provider.filesystem.HadoopCloverConvert.Clover2Hadoop;
 import org.jetel.metadata.DataRecordMetadata;
 
-public class HadoopSequenceFileFormatter implements IHadoopSequenceFileFormatter {
+public class HadoopSequenceFileFormatter extends AbstractFormatter implements IHadoopSequenceFileFormatter {
 
 	private FileSystem fs;
 	private String user;

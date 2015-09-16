@@ -26,13 +26,18 @@ import org.jetel.component.RemoteEdgeComponent;
 import org.jetel.data.DataRecord;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.MetadataFactory;
 import org.jetel.util.EdgeDebugUtils;
+import org.jetel.util.ReferenceState;
+import org.jetel.util.ReferenceUtils;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -58,8 +63,16 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     protected int writerPort;
 
 	protected DataRecordMetadata metadata;
-	protected DataRecordMetadataStub metadataStub;
-
+	/** Reference to a graph element, from where the metadata should be derived. */
+	protected String metadataRef;
+	/** State of the reference to a graph element*/
+	protected ReferenceState metadataRefState;
+	
+	/** Implicit metadata which has been persisted. This metadata is used
+	 * for validation purpose. Calculated implicit metadata must be identical
+	 * with this persisted copy. */
+	protected DataRecordMetadata persistedImplicitMetadata;
+	
     protected boolean debugMode;
     protected EdgeDebugWriter edgeDebugWriter;
     protected long debugMaxRecords;
@@ -74,15 +87,28 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	protected EdgeBase edge;
 
 	/**
-	 * True if and only if the edge base ({@link #edge}) is not under complete control
-	 * of this edge. The edge base is only shared with other edge (from parent graph).
+	 * True if the edge base ({@link #edge}) is not under complete control
+	 * of this edge. The edge base is shared with other edge (from parent graph).
 	 * Some operations like {@link #preExecute()}, {@link #postExecute()} and {@link #free()}
 	 * are performed only by the real owner of the edge base.
 	 * This functionality is used for edges between parent graph and subgraph.
 	 * These edge couples can share edge base, which allows direct data passing
 	 * from parent graph to subgraph and backward without special copy threads.
+	 * This is true if sharing is caused by writer component.
 	 */
-	private boolean sharedEdgeBase = false;
+	private boolean sharedEdgeBaseFromWriter = false;
+	
+	/**
+	 * True if the edge base ({@link #edge}) is not under complete control
+	 * of this edge. The edge base is shared with other edge (from parent graph).
+	 * Some operations like {@link #preExecute()}, {@link #postExecute()} and {@link #free()}
+	 * are performed only by the real owner of the edge base.
+	 * This functionality is used for edges between parent graph and subgraph.
+	 * These edge couples can share edge base, which allows direct data passing
+	 * from parent graph to subgraph and backward without special copy threads.
+	 * This is true if sharing is caused by reader component.
+	 */
+	private boolean sharedEdgeBaseFromReader = false;
 	
 	/**
 	 *  Constructor for the EdgeStub object
@@ -105,24 +131,25 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     }
     
 	public Edge(String id, DataRecordMetadataStub metadataStub) {
-		this(id, null, false);
-		this.metadataStub=metadataStub;
+		this(id, createMetadataFromStub(metadataStub), false);
 	}
 
-	public Edge(String id, DataRecordMetadataStub metadataStub, DataRecordMetadata metadata, boolean debugMode) {
-		this(id,metadata, debugMode);
-		this.metadataStub=metadataStub;
+	private static DataRecordMetadata createMetadataFromStub(DataRecordMetadataStub metadataStub) {
+		if (metadataStub != null) {
+			return MetadataFactory.fromStub(metadataStub);
+		} else {
+			return null;
+		}
 	}
-	
+
 	/**
 	 * Copies settings from the given edge to this edge.
 	 * The otherEdge has to be from same graph as this edge. For example referenced metadata are not copied
 	 * from otherGraph to thisGraph. 
 	 * @param otherEdge
 	 */
-	public void copySettingsFrom(Edge otherEdge) {
+	void copySettingsFrom(Edge otherEdge) {
 		this.metadata = otherEdge.metadata;
-		this.metadataStub = otherEdge.metadataStub;
 		this.debugMode = otherEdge.debugMode;
 		this.debugMaxRecords = otherEdge.debugMaxRecords;
 		this.debugLastRecords = otherEdge.debugLastRecords;
@@ -186,6 +213,33 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 
 	public void setMetadata(DataRecordMetadata metadata) {
 		this.metadata = metadata;
+	}
+	
+	/**
+	 * @return reference to a graph element, from where metadata for this edge should be derived
+	 */
+	public String getMetadataRef() {
+		return metadataRef;
+	}
+	
+	public void setMetadataRef(String metadataRef) {
+		this.metadataRef = metadataRef;
+	}
+	
+	public ReferenceState getMetadataReferenceState() {
+		return metadataRefState;
+	}
+	
+	public void setMetadataReferenceState(ReferenceState refState) {
+		this.metadataRefState = refState;
+	}
+	
+	public DataRecordMetadata getPersistedImplicitMetadata() {
+		return persistedImplicitMetadata;
+	}
+	
+	public void setPersistedImplicitMetadata(DataRecordMetadata persistedImplicitMetadata) {
+		this.persistedImplicitMetadata = persistedImplicitMetadata;
 	}
 	
 	/* (non-Javadoc)
@@ -327,6 +381,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @since     June 6, 2002
      * @deprecated use hasData() method instead
 	 */
+	@Deprecated
 	@Override
 	public boolean isOpen() {
 		return !isEOF();
@@ -338,8 +393,14 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     }
 
     /**
-     * Current thread is block until EOF on the edge is reached - last
-     * record is read.
+     * @return true if eof() method has been already invoked on this edge
+     */
+    public boolean isEofSent() {
+    	return edge.isEofSent();
+    }
+    
+    /**
+     * Current thread is block until EOF on the edge is reached.
      */
     public void waitForEOF() throws InterruptedException {
     	edge.waitForEOF();
@@ -357,18 +418,8 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
         if(isInitialized()) return;
 		super.init();
 		
-		/* if metadata is null and we have metadata stub, try to
-		 * load metadata from JDBC
-		 */
-		if (metadata==null){
-			if (metadataStub==null){
-				throw new RuntimeException("No metadata and no metadata stub defined for edge: "+getId());
-			}
-			try{
-				metadata=MetadataFactory.fromStub(metadataStub);
-			}catch(Exception ex){
-				throw new ComponentNotReadyException("Creating metadata from db connection failed: ", ex);
-			}
+		if (metadata == null) {
+			throw new RuntimeException(createMissingMetadataMessage());
 		}
 		
 		if (edge != null) {
@@ -379,7 +430,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	        }
 		}
 	}
-
+	
 	private void initEdgeBase() {
 		if (edge == null) {
 			edge = getEdgeType().createEdgeBase(this);
@@ -587,6 +638,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 *
 	 * @deprecated 
 	 */
+	@Deprecated
 	@Override
 	public void open() {
         //DO NOTHING
@@ -597,6 +649,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
      * @throws IOException 
 	 * @deprecated use direct eof() method
 	 */
+	@Deprecated
 	@Override
 	public void close() throws InterruptedException, IOException {
         eof();
@@ -639,7 +692,13 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
-        //TODO
+        
+        //check phase order
+        if (reader.getPhaseNum() < writer.getPhaseNum()) {
+        	status.add(new ConfigurationProblem("Invalid phase order. Phase number of component " + reader + " is less than " + writer + "'s phase number.", Severity.ERROR, reader, Priority.NORMAL));
+        	status.add(new ConfigurationProblem("Invalid phase order. Phase number of component " + writer + " is greater than " + reader + "'s phase number.", Severity.ERROR, writer, Priority.NORMAL));
+        }
+        
         return status;
     }
 
@@ -680,11 +739,12 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	/**
 	 * Sets specific {@link EdgeBase} instance which is used as real edge algorithm.
 	 * By default, the {@link EdgeBase} instance is created in initialisation time
-	 * based on {@link EdgeTypeEnum}.
+	 * based on {@link EdgeTypeEnum}. Edge type is automatically updated as well.
 	 * @param edge
 	 */
 	public void setEdge(EdgeBase edge) {
 		this.edge = edge;
+		this.edgeType = EdgeTypeEnum.valueOf(edge);
 	}
 
 	/**
@@ -706,13 +766,23 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	/**
 	 * The edge has got {@link EdgeBase} via {@link #setEdge(EdgeBase)} and
 	 * this edge is not owner of the given edge base, so some operations above EdgeBase
-	 * are not performed in this edge.
+	 * are not performed in this edge. This sharing is caused by writer component
 	 * @param sharedEdgeBase
 	 */
-	public void setSharedEdgeBase(boolean sharedEdgeBase) {
-		this.sharedEdgeBase = sharedEdgeBase;
+	public void setSharedEdgeBaseFromWriter(boolean sharedEdgeBaseFromWriter) {
+		this.sharedEdgeBaseFromWriter = sharedEdgeBaseFromWriter;
 	}
-	
+
+	/**
+	 * The edge has got {@link EdgeBase} via {@link #setEdge(EdgeBase)} and
+	 * this edge is not owner of the given edge base, so some operations above EdgeBase
+	 * are not performed in this edge. This sharing is caused by reader component.
+	 * @param sharedEdgeBase
+	 */
+	public void setSharedEdgeBaseFromReader(boolean sharedEdgeBaseFromReader) {
+		this.sharedEdgeBaseFromReader = sharedEdgeBaseFromReader;
+	}
+
 	/**
 	 * Input and output edges of SubgraphInput/Output components can share EdgeBase with parent graph.
 	 * This is important to known, that the EdgeBase is shared. So EdgeBase
@@ -720,14 +790,48 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * in this edge.
 	 */
 	public boolean isSharedEdgeBase() {
-		return sharedEdgeBase;
+		return sharedEdgeBaseFromWriter || sharedEdgeBaseFromReader;
 	}
-	
+
+	/**
+	 * @return true if this edge is shared and this sharing is caused by writer component
+	 */
+	public boolean isSharedEdgeBaseFromWriter() {
+		return sharedEdgeBaseFromWriter;
+	}
+
+	/**
+	 * @return true if this edge is shared and this sharing is caused by reader component
+	 */
+	public boolean isSharedEdgeBaseFromReader() {
+		return sharedEdgeBaseFromReader;
+	}
+
 	@Override
 	public String toString() {
 		return getId();
 	}
 
+	private String createMissingMetadataMessage() {
+		
+		String defaultComponentLabel = "Unknown component";
+		StringBuilder message = new StringBuilder();
+		message.append("No metadata defined for edge ");
+		message.append(getId());
+		message.append(" (");
+		message.append(getWriter() == null ? defaultComponentLabel : getWriter().getId());
+		message.append(" -> ");
+		message.append(getReader() == null ? defaultComponentLabel : getReader().getId());
+		message.append(")");
+		if (metadataRef != null) {
+			message.append(". The edge references");
+			message.append(metadataRefState == ReferenceState.INVALID_REFERENCE ? " missing " : " disabled ");
+			message.append("edge ");
+			message.append(ReferenceUtils.getElementID(metadataRef));
+			message.append(".");
+		}
+		return message.toString();
+	}
 }
 /*
  *  end class EdgeStub

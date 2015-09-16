@@ -38,6 +38,18 @@ import org.jetel.util.GraphUtils;
 public interface SubgraphComponent {
 
 	/**
+	 * @return URL of executed subgraph
+	 */
+	public String getSubgraphURL();
+	
+	/**
+	 * @param strict should be an exception thrown or just null return in case of some error
+	 * @return subgraph instance without metadata propagation
+	 * (this instance is dedicated for further automatic metadata propagation) 
+	 */
+	public TransformationGraph getSubgraphNoMetadataPropagation(boolean strict);
+	
+	/**
 	 * @param portIndex
 	 * @return input edge of executed subgraph
 	 */
@@ -48,5 +60,13 @@ public interface SubgraphComponent {
 	 * @return output edge of executed subgraph
 	 */
 	public Edge getSubgraphOutputEdge(int portIndex);
+
+	/**
+	 * Sets flag which indicates the subgraph should be executed in fast-propagate mode.
+	 * Fast-propagate subgraph execution is used if the subgraph is part of a loop (see Loop component).
+	 * All edges between SubgraphInput and SubgraphOutput components have to be fast-propagated.
+	 * @param fastPropagateExection
+	 */
+	public void setFastPropagateExecution(boolean fastPropagateExection);
 	
 }

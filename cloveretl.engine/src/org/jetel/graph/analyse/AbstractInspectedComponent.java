@@ -55,7 +55,13 @@ public abstract class AbstractInspectedComponent implements InspectedComponent {
 	 */
 	private boolean nextComponentReturned = false;
 	
-	public AbstractInspectedComponent(Node component, Edge entryEdge) {
+	/**
+	 * Parent graph representation.
+	 */
+	protected GraphProvider graphProvider;
+	
+	public AbstractInspectedComponent(GraphProvider graphProvider, Node component, Edge entryEdge) {
+		this.graphProvider = graphProvider;
 		this.component = component;
 		this.entryEdge = entryEdge;
 		inputPorts = component.getInPorts().iterator();
@@ -71,7 +77,8 @@ public abstract class AbstractInspectedComponent implements InspectedComponent {
 	public InspectedComponent getNextComponent() {
 		InspectedComponent result;
 		
-		if (!SubgraphUtils.isSubJobInputOutputComponent(getComponent().getType())) {
+		if (graphProvider.isSubgraphInputOutputAsSingleComponent()
+				|| !SubgraphUtils.isSubJobInputOutputComponent(getComponent().getType())) {
 			//handling of regular components
 			while (outputPorts.hasNext()) {
 				OutputPort outputPort = outputPorts.next();
@@ -107,6 +114,24 @@ public abstract class AbstractInspectedComponent implements InspectedComponent {
 		return null;
 	}
 	
+	@Override
+	public InspectedComponent getOutputPortComponent(int portNumber) {
+		OutputPort outputPort = component.getOutputPort(portNumber);
+		if (outputPort != null) {
+			if (isOutputEdgeAllowed(outputPort.getEdge())) {
+				return createInspectedComponent(outputPort.getEdge().getReader(), outputPort.getEdge());
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * @param component
+	 * @param entryEdge
+	 * @return creates concrete implementation of {@link InspectedComponent}
+	 */
+	protected abstract InspectedComponent createInspectedComponent(Node component, Edge entryEdge);
+
 	/**
 	 * @return linked component for the given input port 
 	 */
@@ -118,15 +143,27 @@ public abstract class AbstractInspectedComponent implements InspectedComponent {
 	protected abstract InspectedComponent getNextComponent(OutputPort outputPort);
 
 	protected boolean isInputEdgeAllowed(Edge edge) {
-		return (entryEdge != edge);
+		//use EdgeFunction if is available
+		if (graphProvider.getEdgeFunction() != null) {
+			return graphProvider.getEdgeFunction().isInputEdgeAllowed(edge, entryEdge);
+		} else {
+			//default implementation
+			return (entryEdge != edge);
+		}
 	}
 
 	protected boolean isOutputEdgeAllowed(Edge edge) {
-		//never return back to already visited path and do not use buffered edges - phase, buffered and buffered_fast_propagate
-		if (entryEdge != edge && !edge.getEdgeType().isBuffered()) {
-			return true;
+		//use EdgeFunction if is available
+		if (graphProvider.getEdgeFunction() != null) {
+			return graphProvider.getEdgeFunction().isOutputEdgeAllowed(edge, entryEdge);
 		} else {
-			return false;
+			//default implementation
+			//never return back to already visited path and do not use buffered edges - phase, buffered and buffered_fast_propagate
+			if (entryEdge != edge && !edge.getEdgeType().isBuffered()) {
+				return true;
+			} else {
+				return false;
+			}
 		}
 	}
 
@@ -173,7 +210,8 @@ public abstract class AbstractInspectedComponent implements InspectedComponent {
 		}
 		AbstractInspectedComponent otherInspectedComponent = (AbstractInspectedComponent) otherObj;
 		if (component == otherInspectedComponent.getComponent()) {
-			if (SubgraphUtils.isSubJobInputOutputComponent(component.getType())) {
+			if (!graphProvider.isSubgraphInputOutputAsSingleComponent()
+					&& SubgraphUtils.isSubJobInputOutputComponent(component.getType())) {
 				//port index of entryEdge has to same for SubJobInput/Output components as well
 				return getEntryEdgeIndex() == otherInspectedComponent.getEntryEdgeIndex();
 			} else {
@@ -187,7 +225,8 @@ public abstract class AbstractInspectedComponent implements InspectedComponent {
 	@Override
 	public int hashCode() {
 		int hash = component.hashCodeIdentity();
-		if (SubgraphUtils.isSubJobInputOutputComponent(component.getType())) {
+		if (!graphProvider.isSubgraphInputOutputAsSingleComponent()
+				&& SubgraphUtils.isSubJobInputOutputComponent(component.getType())) {
 			hash = HashCodeUtil.hash(hash, getEntryEdgeIndex());
 		}
 		return hash;

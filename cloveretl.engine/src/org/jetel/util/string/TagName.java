@@ -40,9 +40,10 @@ public class TagName {
 	 * output: "_x0040Funny_x002aTag-Name_x0028_x0029"
 	 * </pre>
 	 * @param s
+	 * @param encodeSeqChar if SEQ_CHAR ('_') should be encoded
 	 * @return
 	 */
-	public static String encode(final String s) {
+	public static String encode(final String s, boolean encodeSeqChar) {
 		
 		if (s == null) {
 			return null;
@@ -51,7 +52,7 @@ public class TagName {
 		final StringBuilder sb = new StringBuilder(s.length());
 		for (int i = 0; i < s.length(); ++i) {
 			char c = s.charAt(i);
-			if (isInvalidCharacter(i, c)) {
+			if (isInvalidCharacter(i, c, encodeSeqChar)) {
 				sb.append(ENC_SEQ_START);
 				String scode = Integer.toHexString(c);
 				for (int j = 0; j < 4 - scode.length(); ++j) {
@@ -66,13 +67,32 @@ public class TagName {
 	}
 
 	/**
+	 * Encodes given input string using unicodes.
+	 * <pre>
+	 * Example:
+	 * input: "@Funny*Tag-Name()"
+	 * output: "_x0040Funny_x002aTag-Name_x0028_x0029"
+	 * </pre>
+	 * @param s
+	 * @return
+	 */
+	public static String encode(final String s) {
+		return encode(s, true);
+	}
+
+	/**
 	 * @param i index of the character
 	 * @param c the character
+	 * @param encodeSeqChar treat SEQ_CHAR as invalid character
 	 * @return true iff the character would be escaped by the {@link #encode(String)} method 
 	 */
-	private static boolean isInvalidCharacter(int i, char c) {
-		return !('0' <= c && c <= '9' || 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z' || c == '-' || c == '.') ||
-				c == ENC_SEQ_CHAR || (i == 0 && ('0' <= c && c <= '9' || c == '-' || c == '.'));
+	private static boolean isInvalidCharacter(int i, char c, boolean encodeSeqChar) {
+		if (c == ENC_SEQ_CHAR) {
+			return encodeSeqChar;
+		} else {
+            return !('0' <= c && c <= '9' || 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z' || c == '-' || c == '.') ||
+				(i == 0 && ('0' <= c && c <= '9' || c == '-' || c == '.'));
+		}
 	}
 	
 	/**
@@ -80,9 +100,17 @@ public class TagName {
 	 * @return true iff at least one character of the string <code>s</code> would be escaped by the {@link #encode(String)} method
 	 */
 	public static boolean hasInvalidCharacters(String s) {
+		return hasInvalidCharacters(s, true);
+	}
+
+	/**
+	 * @param s
+	 * @return true iff at least one character of the string <code>s</code> would be escaped by the {@link #encode(String)} method
+	 */
+	public static boolean hasInvalidCharacters(String s, boolean encodeSeqChar) {
 		for (int i = 0; i < s.length(); ++i) {
 			char c = s.charAt(i);
-			if (isInvalidCharacter(i, c)) {
+			if (isInvalidCharacter(i, c, encodeSeqChar)) {
 				return true;
 			}
 		}

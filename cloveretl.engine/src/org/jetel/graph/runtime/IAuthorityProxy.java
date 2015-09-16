@@ -23,10 +23,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -52,7 +54,6 @@ import org.jetel.graph.runtime.jmx.GraphTracking;
 import org.jetel.graph.runtime.jmx.TrackingEvent;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.FileConstrains;
-import org.jetel.util.bytes.SeekableByteChannel;
 import org.jetel.util.file.WcardPattern;
 import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.string.StringUtils;
@@ -126,6 +127,7 @@ public abstract class IAuthorityProxy {
 		public GraphTracking tracking;
 		public JobType jobType;
 		public String executionGroup;
+		public String executionLabel;
 		
 		@Override
 		public String toString() {
@@ -162,13 +164,21 @@ public abstract class IAuthorityProxy {
 		
 		public RuntimeException getException() {
 			if (status.code() < 0 || status == Result.N_A) {
-				return new JetelRuntimeException("Job " + jobUrl + (runId > 0 ? ("(#" + runId + ")") : "") + " finished with final status " + status + ".",
+				return new JetelRuntimeException(getJobLabel() + " " + jobUrl + (runId > 0 ? ("(#" + runId + ")") : "") + " finished with final status " + status + ".",
 						new StackTraceWrapperException(errMessage, errException));
 			} else {
 				return null;
 			}
 		}
 
+		private String getJobLabel() {
+			if (jobType != null) {
+				return jobType.getLabel();
+			} else {
+				return "Job";
+			}
+		}
+		
 		/**
 		 * Sets {@link #errMessage} and {@link #errException} based on given {@link Exception}.
 		 */
@@ -219,6 +229,10 @@ public abstract class IAuthorityProxy {
 		public long getDataTargetRunId() {
 			return dataTargetRunId;
 		}
+		@Override
+		public String toString() {
+			return "RemoteEdgeDataTarget; target="+dataTargetRunId;
+		}
 	}
 
 	/**
@@ -244,6 +258,10 @@ public abstract class IAuthorityProxy {
 		 */
 		public long getDataSourceRunId() {
 			return dataSourceRunId;
+		}
+		@Override
+		public String toString() {
+			return "RemoteEdgeDataSource; source="+dataSourceRunId;
 		}
 	}
 
@@ -545,6 +563,31 @@ public abstract class IAuthorityProxy {
 	}
 	
 	/**
+	 * Takes given label and adds information about current runId and componentId.
+	 * This can be used by newTemp*() methods to create better temporary file name.
+	 * The result has following pattern:
+	 * <label>_runId_<runId>_componentId_<componentId>
+	 */
+	protected String decorateTempFileLabel(String label) {
+		StringBuilder result = new StringBuilder(label);
+		
+		//attach runId to file name
+		GraphRuntimeContext runtimeContext = ContextProvider.getRuntimeContext();
+		if (runtimeContext != null) {
+			result.append("_runId_");
+			result.append(runtimeContext.getRunId());
+		}
+		//attach componentId to file name
+		String componentId = ContextProvider.getComponentId();
+		if (!StringUtils.isEmpty(componentId)) {
+			result.append("_componentId_");
+			result.append(componentId);
+		}
+		
+		return result.toString();
+	}
+
+	/**
 	 * Returns new temporary file without custom label being part of its name. If more locations are present, random is
 	 * chosen. For more details see {@link #newTempFile(String, int)}.
 	 * 
@@ -560,6 +603,12 @@ public abstract class IAuthorityProxy {
 	public abstract ClassLoader getClassLoader(URL[] urls, ClassLoader parent, boolean greedy);
 
 	public abstract ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy);
+
+	/**
+	 * Creates new classloader with multiple parent classloaders.
+	 * @return multi-parent classloader based on the given parent classloaders
+	 */
+	public abstract ClassLoader createMultiParentClassLoader(ClassLoader... parents);
 	
 	public abstract boolean isClusterEnabled();
 	
@@ -574,16 +623,17 @@ public abstract class IAuthorityProxy {
 	}
 
 	/**
-	 * Backward operation for secure parameter resolution. All occurrences
-	 * of sensitive values in the given text should be substituted
-	 * by secure parameter reference - ${SECURE_PARAMETER_NAME}.
-	 * The authority proxy should cache all already resolved secure parameters
-	 * and only these secure parameters should be considered in this obfuscation.
-	 * @param text text which should be obfuscated
-	 * @return obfuscated text
+	 * @return meta information about runtime authority
 	 */
-	public String obfuscateSecureParameters(String text) {
-		return text;
-	}
-
+	public abstract Map<String, String> getAuthorityConfiguration();
+	
+	/**
+	 * Token ID sequence is shared among complete jobflow hierarchy.
+	 * For example token created in subgraph/subjobflow must share token ID
+	 * sequence to keep token flow monitoring understandable.
+	 * 
+	 * @return next token ID from parent jobflow
+	 */
+	public abstract long getNextTokenIdFromParentJob();
+	
 }

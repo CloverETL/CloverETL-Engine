@@ -51,9 +51,7 @@ import org.jetel.util.string.StringUtils;
  * @created     January 26, 2003
  * @see         org.jetel.metadata.DataFieldMetadata
  */
-public class IntegerDataField extends DataField implements Numeric, Comparable<Object> {
-
-	private static final long serialVersionUID = 3959941332738498948L;
+public class IntegerDataField extends DataFieldImpl implements Numeric, Comparable<Object> {
 	
 	private int value;
 	private final NumericFormatter numericFormatter;
@@ -154,18 +152,20 @@ public class IntegerDataField extends DataField implements Numeric, Comparable<O
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
      * @deprecated use setValue(DataField) instead
 	 */
+	@SuppressWarnings("deprecation")
+	@Deprecated
 	@Override
 	public void copyFrom(DataField fromField){
 	    if (fromField instanceof IntegerDataField){
-	        if (!fromField.isNull){
+	        if (!fromField.isNull()) {
 	            this.value = ((IntegerDataField) fromField).value;
 	        }
-	        setNull(fromField.isNull);
+	        setNull(fromField.isNull());
 	    } else if(fromField instanceof Numeric) {
-            if (!fromField.isNull){
+            if (!fromField.isNull()) {
                 this.value = ((Numeric) fromField).getInt();
             }
-            setNull(fromField.isNull);
+            setNull(fromField.isNull());
         } else {
             super.copyFrom(fromField);
         }
@@ -198,15 +198,15 @@ public class IntegerDataField extends DataField implements Numeric, Comparable<O
     @Override
     public void setValue(DataField fromField) {
         if (fromField instanceof IntegerDataField){
-            if (!fromField.isNull){
+            if (!fromField.isNull()) {
                 this.value = ((IntegerDataField) fromField).value;
             }
-            setNull(fromField.isNull);
+            setNull(fromField.isNull());
         } else if(fromField instanceof Numeric) {
-            if (!fromField.isNull){
+            if (!fromField.isNull()) {
                 this.value = ((Numeric) fromField).getInt();
             }
-            setNull(fromField.isNull);
+            setNull(fromField.isNull());
         } else {
             super.setValue(fromField);
         }
@@ -446,7 +446,7 @@ public class IntegerDataField extends DataField implements Numeric, Comparable<O
 
 	@Override
 	public void fromString(CharSequence seq) {
-		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
+		if (seq == null || Compare.equals(seq, metadata.getNullValues())) {
 			setNull(true);
 			return;
 		}
@@ -517,6 +517,10 @@ public class IntegerDataField extends DataField implements Numeric, Comparable<O
     	}
 	}
 
+	@Override
+	public void serialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		serializer.serialize(buffer, this);
+	}
 
 	/**
 	 *  Performs deserialization of data
@@ -530,6 +534,10 @@ public class IntegerDataField extends DataField implements Numeric, Comparable<O
         setNull(value == Integer.MIN_VALUE);
 	}
 
+	@Override
+	public void deserialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		serializer.deserialize(buffer, this);
+	}
 
 	/**
 	 *  Description of the Method

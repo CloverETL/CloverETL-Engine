@@ -18,8 +18,11 @@
  */
 package org.jetel.ctl.extensions;
 
+import java.util.Locale;
+
 import org.jetel.ctl.data.TLType;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.formatter.TimeZoneProvider;
 
 /**
  * @author jakub (info@cloveretl.com)
@@ -195,6 +198,14 @@ public class TLFunctionCallContext {
 	
 	public void setTransformationContext(TLTransformationContext transformationContext) {
 		this.transformationContext = transformationContext;
+	}
+	
+	public TimeZoneProvider getDefaultTimeZone() {
+		return transformationContext.getDefaultTimeZone();
+	}
+	
+	public Locale getDefaultLocale() {
+		return transformationContext.getDefaultLocale();
 	}
 
 }

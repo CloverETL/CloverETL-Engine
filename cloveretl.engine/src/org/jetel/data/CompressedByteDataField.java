@@ -36,7 +36,6 @@ import org.jetel.util.string.Compare;
  * @since 12/01/06  
  */
 public class CompressedByteDataField extends ByteDataField {
-	private static final long serialVersionUID = 1L;
 	
 	/** lenght of data represented by the field. */ 
 	private int dataLen;
@@ -166,7 +165,7 @@ public class CompressedByteDataField extends ByteDataField {
 
 	@Override
 	public void fromString(CharSequence seq, String charset) {
-		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
+		if (seq == null || Compare.equals(seq, metadata.getNullValues())) {
 			setNull(true);
 			return;
 		}
@@ -189,7 +188,7 @@ public class CompressedByteDataField extends ByteDataField {
 		byte[] buf = new byte[dataLen];
 		dataBuffer.get(buf);
 
-		if (!Arrays.equals(buf, metadata.getNullValue().getBytes(decoder.charset()))) {
+		if (!isNullValue(buf, metadata.getNullValues(), decoder.charset())) {
 			setValue(buf);
 			setNull(false);
 		} else {

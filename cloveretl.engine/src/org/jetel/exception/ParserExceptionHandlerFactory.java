@@ -26,10 +26,6 @@ package org.jetel.exception;
  */
 public class ParserExceptionHandlerFactory {
 
-    public static IParserExceptionHandler getHandler(String strPolicyType) {
-        return getHandler(PolicyType.valueOfIgnoreCase(strPolicyType));
-    }
-    
     public static IParserExceptionHandler getHandler(PolicyType policyType) {
         switch(policyType) {
             case STRICT:

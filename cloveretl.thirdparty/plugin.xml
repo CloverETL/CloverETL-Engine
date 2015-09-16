@@ -137,6 +137,9 @@
 	          <item displayValue="\t" value="\t" />
 	        </enumType>
 	      </property>
+	      <property category="advanced" displayName="Fields to ignore" modifiable="true" name="ignoreFields" nullable="true">
+        	<singleType name="key" inputPortName="0" rightLabel="Fields to ignore:" />
+      	  </property>
 	    </properties>
 	  </ETLComponent>
 	</extension>

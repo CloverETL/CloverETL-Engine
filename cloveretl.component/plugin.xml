@@ -5,9 +5,6 @@
 
 	<runtime>
 		<library path="bin/"/>
-		<library path="lib/httpclient-4.3.2.jar"/>
-		<library path="lib/httpcore-4.3.1.jar"/>
-		<library path="lib/httpmime-4.3.2.jar"/>
 		<library path="lib/jdbm-2.4.jar" />
 		<library path="lib/saxon9.jar"/>
 		<library path="lib/saxon9-dom.jar"/>
@@ -23,7 +20,7 @@
 
 	<extension point-id="component">
 	  <ETLComponent category="readers" iconPath="icons/readers/UniversalDataReader" name="UniversalDataReader"  type="DATA_READER" className="org.jetel.component.DataReader">
-	    <shortDescription>Reads data from flat files.</shortDescription>
+	    <shortDescription>Reads data from flat files (CSV, fixed-length).</shortDescription>
 	    <description>Reads data from delimited or fixed length files and sends data records to first connected output port. If any error occurs, the report is sent to the second port if &quot;Data policy&quot; is set to &quot;Controlled&quot;.</description>
 	    <inputPorts>
 	      <singlePort name="0" required="false" label="input"/>
@@ -31,7 +28,7 @@
 	    <outputPorts>
 	      <singlePort name="0" required="true" label="output"/>
 	      <singlePort name="1" label="logs">
-	        <Metadata id="UDR_ErrorPort"/>
+	        <Metadata id="UniversalDataReader_Error"/>
 	      </singlePort>
 	    </outputPorts>
 	    <properties>
@@ -107,7 +104,7 @@
 
 	<extension point-id="component">
 	  <ETLComponent category="writers" iconPath="icons/writers/UniversalDataWriter" name="UniversalDataWriter" type="DATA_WRITER" className="org.jetel.component.DataWriter">
-	    <shortDescription>Writes data to flat files.</shortDescription>
+	    <shortDescription>Writes data to flat files (CSV, fixed-length).</shortDescription>
 	    <description>Receives data through connected input port and writes data records to delimited or fixed length files based on input metadata.</description>
 	    <inputPorts>
 	      <singlePort name="0" required="true" />
@@ -333,7 +330,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="transformers" iconPath="icons/transformers/Reformat" name="Reformat" type="REFORMAT" className="org.jetel.component.Reformat" passThrough="true">
+	  <ETLComponent category="transformers" iconPath="icons/transformers/Reformat" name="Reformat" type="REFORMAT" className="org.jetel.component.Reformat">
 	    <shortDescription>Changes format, structure or content of records.</shortDescription>
 	    <description>Receives data through connected input port, transforms them in a user specified way, and sends such new outgoing data records to all connected output ports. Implements org.jetel.component.RecordTransform interface.</description>
 	    <inputPorts>
@@ -746,7 +743,7 @@
 	      <property category="basic" displayName="Join key" modifiable="true" name="joinKey" nullable="true" required="true">
 	        <singleType name="mergeJoinKey" order="true"/>
 	      </property>
-	      <property category="basic" displayName="Join type" modifiable="true" name="joinType" nullable="true" defaultHint="inner (if not set leftOuterJoin nor fullOuterJoin parameter)">
+	      <property category="basic" displayName="Join type" modifiable="true" name="joinType" nullable="true" defaultHint="Inner join">
 	        <enumType>
 	          <item displayValue="Inner join" value="inner"/>
 	          <item displayValue="Left outer join" value="leftOuter"/>
@@ -959,7 +956,7 @@
 	      <property category="basic" displayName="Join key" modifiable="true" name="joinKey" nullable="true" required="true">
 	        <singleType name="hashJoinKey"/>
 	      </property>
-	      <property category="basic" displayName="Join type" modifiable="true" name="joinType" nullable="true" defaultHint="inner (if not set leftOuterJoin nor fullOuterJoin parameter)">
+	      <property category="basic" displayName="Join type" modifiable="true" name="joinType" nullable="true" defaultHint="Inner join">
 	        <enumType>
 	          <item displayValue="Inner join" value="inner"/>
 	          <item displayValue="Left outer join" value="leftOuter"/>
@@ -1398,7 +1395,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="others" iconPath="icons/others/RunGraph" name="RunGraph" type="RUN_GRAPH" passThrough="true" defaultVisibility="etlGraph" className="org.jetel.component.RunGraph">
+	  <ETLComponent category="others" iconPath="icons/others/RunGraph" name="RunGraph" type="RUN_GRAPH" defaultVisibility="etlGraph" className="org.jetel.component.RunGraph">
 	    <shortDescription>Runs graphs in selected instance of Clover.</shortDescription>
 	    <description>Runs specified graph(s) in selected instance of Clover. Name(s) of at least one graph can be received through connected input port or name of one graph only can be set as attribute of this component. If graph name(s) is(are) received through connected input port, information about execution of the graph(s) is sent to the connected first output port (second output port is not connected). If graph name is set as attribute of the component, input port is not connected and information about execution of the graph is sent to connected output ports. It is sent to the first output port if it is successful or to the second if not.</description>
 	    <inputPorts>
@@ -1455,12 +1452,12 @@
 	    <description>Receives an HTTP request through the connected input port, reads it from input file or directly from the graph and sends it to the HTTP server. Takes the response from the server and sends it out through the connected output port or writes it to the output file. Optionally also the output file URLs can be sent out through the connected output port.</description>
 	    <inputPorts>
 	      <singlePort name="0" required="false">
-	        <Metadata id="HTTPConnector_Attributes" />
+	        <Metadata id="HTTPConnector_Request" />
 	      </singlePort>
 	    </inputPorts>
 	    <outputPorts>
 	      <singlePort name="0" required="false">
-	        <Metadata id="HTTPConnector_Result" />
+	        <Metadata id="HTTPConnector_Response" />
 	      </singlePort>
 	      <singlePort name="1" required="false">
 	        <Metadata id="HTTPConnector_Error" />
@@ -1485,7 +1482,7 @@
 	      <property category="basic" displayName="Add input fields as parameters" modifiable="true" name="addInputFieldsAsParameters" nullable="true" required="false" defaultHint="false">
 	        <singleType name="bool" />
 	      </property>
-	      <property category="basic" displayName="Add input fields as parameters to" modifiable="true" name="addInputFieldsAsParametersTo" nullable="true" required="false" defaultHint="QUERY">
+	      <property category="basic" displayName="Send parameters in" modifiable="true" name="addInputFieldsAsParametersTo" nullable="true" required="false" defaultHint="QUERY">
 	        <enumType>
 	          <item displayValue="Body" value="BODY" />
 	          <item displayValue="Query" value="QUERY" />
@@ -1570,6 +1567,9 @@
 	      <property category="advanced" displayName="Stream input file" modifiable="true" name="streaming" nullable="true" required="false" defaultHint="true">
 	        <singleType name="bool" />
 	      </property>
+	      <property category="advanced" displayName="Request parameters" modifiable="true" name="requestParameters" nullable="true">
+	        <singleType name="properties" />
+	      </property>	      
 	      <property category="deprecated" displayName="URL from input field" modifiable="true" name="urlInputField" nullable="true">
 	        <singleType name="field" inputPortName="0" />
 	      </property>
@@ -1724,8 +1724,8 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/XLSDataReader" name="XLSDataReader" type="XLS_READER" className="org.jetel.component.XLSReader" defaultVisibility="false">
-	    <shortDescription>Reads data from Excel files.</shortDescription>
+	  <ETLComponent category="deprecated" iconPath="icons/readers/XLSDataReader" name="XLSDataReader" type="XLS_READER" className="org.jetel.component.XLSReader" defaultVisibility="false">
+	    <shortDescription>Reads data from Excel files (.xls, .xlsx).</shortDescription>
 	    <description>Reads specified sheets of Excel files, converts their contents to data records and sends them to all connected output ports. Mapping of sheet columns to output metadata must be defined.</description>
 	    <inputPorts>
 	      <singlePort name="0" required="false" label="input" />
@@ -1804,8 +1804,8 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/XLSDataWriter" name="XLSDataWriter"  type="XLS_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.component.XLSWriter" defaultVisibility="false">
-	    <shortDescription>Writes data to Excel files.</shortDescription>
+	  <ETLComponent category="deprecated" iconPath="icons/writers/XLSDataWriter" name="XLSDataWriter"  type="XLS_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.component.XLSWriter" defaultVisibility="false">
+	    <shortDescription>Writes data to Excel files (.xls, .xlsx).</shortDescription>
 	    <description>Receives data through connected input port and writes data records to specified sheets of Excel files.</description>
 	    <inputPorts>
 	      <singlePort name="0" required="true"/>
@@ -1898,28 +1898,67 @@
 	    <inputPorts>
 	      <singlePort name="0" required="true" />
 	    </inputPorts>
-	    <outputPorts />
+	    <outputPorts>
+	      <singlePort name="0" required="false" />
+	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
-	        <singleType name="file" mandatory_existing_file="false" selectionMode="file_only" />
+	        <singleType name="file" fields="output" dictionary="output" mandatory_existing_file="false" selectionMode="file_only" />
 	      </property>
 	      <property category="basic" displayName="Append" modifiable="true" name="append" nullable="true" defaultHint="false">
-	        <singleType name="bool" />
-	      </property>
-	      <property category="basic" displayName="Save metadata" modifiable="true" name="saveMetadata" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
 	      </property>
 	      <property category="advanced" displayName="Create directories" modifiable="true" name="makeDirs" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
 	      </property>
-	      <property category="advanced" displayName="Compress level" modifiable="true" name="compressLevel" nullable="true">
-	        <singleType name="int" min="0" max="9" />
+	      <property category="advanced" displayName="Compress level" modifiable="true" name="compressLevel" nullable="true" defaultHint="1 - Fastest">
+	        <enumType>
+	          <item displayValue="0 - No compression" value="0" />
+	          <item displayValue="1 - Fastest" value="1" />
+	          <item displayValue="9 - Maximum" value="9" />
+	        </enumType>
 	      </property>
 	      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="recordSkip" nullable="true">
 	        <singleType name="int" />
 	      </property>
 	      <property category="advanced" displayName="Max number of records" modifiable="true" name="recordCount" nullable="true">
 	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Records per file" modifiable="true" name="recordsPerFile" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <!--
+	      Does not work well because of the compression
+	      <property category="advanced" displayName="Bytes per file" modifiable="true" name="bytesPerFile" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      -->
+	      <property category="advanced" displayName="Exclude fields" modifiable="true" name="excludeFields" nullable="true">
+	        <singleType name="key" rightLabel="Exclude fields:" />
+	      </property>
+	      <property category="advanced" displayName="Partition key" modifiable="true" name="partitionKey" nullable="true" required="partition">
+	        <singleType name="key" inputPortName="0" rightLabel="Partition key:" />
+	      </property>
+	      <property category="advanced" displayName="Partition lookup table" modifiable="true" name="partition" nullable="true" required="partitionOutFields">
+	        <singleType name="lookupTableID" />
+	      </property>
+	      <property category="advanced" displayName="Partition file tag" modifiable="true" name="partitionFileTag" nullable="true" defaultHint="Number file tag">
+	        <enumType>
+	          <item displayValue="Number file tag" value="numberFileTag" />
+	          <item displayValue="Key file tag" value="keyNameFileTag" />
+	        </enumType>
+	      </property>
+	      <property category="advanced" displayName="Partition output fields" modifiable="true" name="partitionOutFields" nullable="true" required="partition">
+	        <singleType name="key" lookupMatadataProp="partition" rightLabel="Partition output fields:" />
+	      </property>
+	      <property category="advanced" displayName="Partition unassigned file name" modifiable="true" name="partitionUnassignedFileName" nullable="true" redundant="!partition">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Sorted input" modifiable="true" name="sortedInput" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="deprecated" displayName="Save metadata" modifiable="true" name="saveMetadata" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
 	      </property>
 	      <property category="deprecated" displayName="Save index" modifiable="true" name="saveIndex" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
@@ -1932,13 +1971,15 @@
 	  <ETLComponent category="readers" iconPath="icons/readers/CloverDataReader" name="CloverDataReader" type="CLOVER_READER" className="org.jetel.component.CloverDataReader">
 	    <shortDescription>Reads data from Clover files.</shortDescription>
 	    <description>Reads data from files written in internal binary Clover data format and sends data records to all connected output ports.</description>
-	    <inputPorts />
+	    <inputPorts>
+			<singlePort name="0" label="input"/>
+	    </inputPorts>
 	    <outputPorts>
 	      <multiplePort required="true" />
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
-	        <singleType name="file" selectionMode="file_only" />
+	        <singleType name="file" selectionMode="file_only" fields="input" dictionary="input" />
 	      </property>
 	      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="skipRows" nullable="true" redundant="startRecord|finalRecord">
 	        <singleType name="int" />
@@ -2082,7 +2123,7 @@ Sends all resulting records to all connected output ports.</description>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="Key" modifiable="true" name="key" nullable="true" redundant="groupSize">
-	        <singleType name="key" inputPortName="0" rightLabel="Key:"/>
+	        <singleType name="key" inputPortName="0" keyType="orderVerification" rightLabel="Key:" />
 	      </property>
 	      <property category="basic" displayName="Group size" modifiable="true" name="groupSize" nullable="true" redundant="key">
 	        <singleType name="int"/>
@@ -2096,7 +2137,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Denormalize class" modifiable="true" name="denormalizeClass" nullable="true" required="!denormalize,!denormalizeURL">
 	        <singleType name="class" />
 	      </property>
-	      <property category="basic" displayName="Sort order" modifiable="true" name="order" nullable="true" defaultHint="Auto">
+	      <property category="deprecated" displayName="Sort order" modifiable="true" name="order" nullable="true" defaultHint="Auto">
 	        <enumType>
 	          <item displayValue="Ascending" value="Asc" />
 	          <item displayValue="Descending" value="Desc" />
@@ -2312,19 +2353,19 @@ Sends all resulting records to all connected output ports.</description>
 	      <multiplePort required="true" />
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="Generator" modifiable="true" name="generate" nullable="true" redundant="generateClass|generateURL">
+	      <property category="basic" displayName="Generator" modifiable="true" name="generate" nullable="true">
 	        <singleType name="transformGenerator" input="key" />
 	      </property>
-	      <property category="basic" displayName="Generator URL" modifiable="true" name="generateURL" nullable="true" redundant="generate|generateClass">
+	      <property category="basic" displayName="Generator URL" modifiable="true" name="generateURL" nullable="true">
 	        <singleType name="file" />
 	      </property>
-	      <property category="basic" displayName="Generator class" modifiable="true" name="generateClass" nullable="true" redundant="generateURL|generate">
+	      <property category="basic" displayName="Generator class" modifiable="true" name="generateClass" nullable="true">
 	        <singleType name="class" />
 	      </property>
 	      <property category="basic" displayName="Generator source charset" modifiable="true" name="charset" nullable="true" redundant="generateClass" defaultHintProvider="charsetSource">
 	        <singleType name="charset" />
 	      </property>
-	      <property category="basic" displayName="Number of records to generate" modifiable="true" name="recordsNumber" nullable="true" required="true">
+	      <property category="basic" displayName="Number of records to generate" modifiable="true" name="recordsNumber" nullable="true" defaultHint="1">
 	        <singleType name="dataGeneratorRecordNumber" />
 	      </property>
 	      <property category="deprecated" displayName="Record pattern" modifiable="true" name="pattern" nullable="true" redundant="generate|generateClass|generateURL">
@@ -2382,14 +2423,16 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/XMLXPathReader" name="XMLXPathReader" type="XML_XPATH_READER" className="org.jetel.component.XmlXPathReader" metadataProvider="org.jetel.component.tree.reader.TreeReaderErrMetadataProvider">
+	  <ETLComponent category="readers" iconPath="icons/readers/XMLXPathReader" name="XMLXPathReader" type="XML_XPATH_READER" className="org.jetel.component.XmlXPathReader">
 	    <shortDescription>Reads data from XML files.</shortDescription>
 	    <description>Reads data from XML files, converts elements matched by XPath defined in mapping along with their direct children to data records and sends them into different connected output ports as defined by mapping.</description>
 	    <inputPorts>
 	      <singlePort name="0" required="false" />
 	    </inputPorts>
 	    <outputPorts>
-	      <multiplePort required="true"/>
+	      <multiplePort required="true">
+	      	<MetadataProvider id="treeReaderErrMetadataProvider"/>
+	      </multiplePort>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
@@ -2518,14 +2561,16 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/XMLXPathReader" name="XMLReader" type="XML_READER" defaultVisibility="etlGraph" className="org.jetel.component.XmlReader" metadataProvider="org.jetel.component.tree.reader.TreeReaderErrMetadataProvider">
+	  <ETLComponent category="readers" iconPath="icons/readers/XMLXPathReader" name="XMLReader" type="XML_READER" defaultVisibility="etlGraph" className="org.jetel.component.XmlReader">
 	    <shortDescription>Reads data from XML.</shortDescription>
 	    <description>Reads data from XML, converts properties matched by XPath defined in mapping along with their direct children to data records and sends them into different connected output ports as defined by mapping.</description>
 	    <inputPorts>
 	      <singlePort name="0" required="false" />
 	    </inputPorts>
 	    <outputPorts>
-	      <multiplePort required="true"/>
+	      <multiplePort required="true">
+	      	<MetadataProvider id="treeReaderErrMetadataProvider"/>
+	      </multiplePort>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
@@ -2583,10 +2628,10 @@ Sends all resulting records to all connected output ports.</description>
 	    <shortDescription>Delays incoming records.</shortDescription>
 	    <description>Receives data through connected input port, delays each incoming data record by defined value of milliseconds and copies all data records to all connected output ports.</description>
 	    <inputPorts>
-	      <singlePort name="0" required="true" />
+	      <singlePort name="0" required="false" />
 	    </inputPorts>
 	    <outputPorts>
-	      <multiplePort required="true" />
+	      <multiplePort required="false" />
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="Delay (ms)" modifiable="true" name="delay" nullable="true" required="!inputMapping">
@@ -2804,8 +2849,8 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 	
 	<extension point-id="metadata">
-		<Metadata id="UDR_ErrorPort">
-	      <Record fieldDelimiter="|" name="ErrorPort" recordDelimiter="\n" type="delimited">
+		<Metadata id="UniversalDataReader_Error">
+	      <Record fieldDelimiter="|" name="Error" recordDelimiter="\n" type="delimited">
 	        <Field name="recordNo" type="long"/>
 	        <Field name="fieldNo" type="integer"/>
 	        <Field name="originalData" type="string"/>
@@ -2816,8 +2861,8 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 	
 	<extension point-id="metadata">
-		<Metadata id="HTTPConnector_Attributes">
-			<Record fieldDelimiter="|" name="Attributes" recordDelimiter="\n" type="delimited">
+		<Metadata id="HTTPConnector_Request">
+			<Record fieldDelimiter="|" name="Request" recordDelimiter="\n" type="delimited">
 				<Field name="URL" type="string" />
 				<Field name="requestMethod" type="string" />
 				<Field name="addInputFieldsAsParameters" type="boolean" />
@@ -2844,8 +2889,8 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 	
 	<extension point-id="metadata">
-		<Metadata id="HTTPConnector_Result">
-			<Record fieldDelimiter="|" name="Result" recordDelimiter="\n" type="delimited">
+		<Metadata id="HTTPConnector_Response">
+			<Record fieldDelimiter="|" name="Response" recordDelimiter="\n" type="delimited">
 				<Field name="content" type="string" />
 				<Field name="contentByte" type="byte" />
 				<Field name="outputFilePath" type="string" />

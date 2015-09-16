@@ -92,7 +92,7 @@ public class VerticaConnection extends BasicSqlConnection {
 		switch (operationType) {
 		case READ:
 			connection.setAutoCommit(false);
-			connection.setReadOnly(true);
+//			connection.setReadOnly(true); // CLO-3287
 			connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 			connection.setHoldability(ResultSet.CLOSE_CURSORS_AT_COMMIT);
 			break;
