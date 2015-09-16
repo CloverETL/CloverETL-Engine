@@ -215,15 +215,20 @@ public class GraphParameters {
 	 * Adds new graph parameters based on give properties. Values of existing
 	 * parameters are overridden.
 	 * @param properties
+	 * @param canBeResolved flag indicates the graph parameter values should be resolved or not
+	 * (public graph parameters of subgraph passed from parent graph should not be resolved, see CLO-7110) 
 	 */
-	public void addPropertiesOverride(Properties properties) {
+	public void addPropertiesOverride(Properties properties, boolean canBeResolved) {
 		if (properties != null) {
 			for (String propertyName : properties.stringPropertyNames()) {
+				GraphParameter gp;
 				if (hasGraphParameter(propertyName)) {
-					getGraphParameter(propertyName).setValue(properties.getProperty(propertyName));
+					gp = getGraphParameter(propertyName);
+					gp.setValue(properties.getProperty(propertyName));
 				} else {
-					addGraphParameter(propertyName, properties.getProperty(propertyName));
+					gp = addGraphParameter(propertyName, properties.getProperty(propertyName));
 				}
+				gp.setCanBeResolved(canBeResolved);
 			}
 		}
 	}
