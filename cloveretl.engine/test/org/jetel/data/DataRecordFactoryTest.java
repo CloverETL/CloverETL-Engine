@@ -53,8 +53,6 @@ public class DataRecordFactoryTest extends CloverTestCase {
 		}
 		
 		DataRecord record = DataRecordFactory.newRecord(metadata);
-		record.init();
-		record.reset();
 		assertNotNull(record);
 		//test the record is initialized and reset
 		assertNull(record.getField("field1").getValue());
@@ -71,8 +69,6 @@ public class DataRecordFactoryTest extends CloverTestCase {
 
 		DataRecordWithLazyLoading record = DataRecordFactory.newRecordWithLazyLoading(metadata);
 		assertNotNull(record);
-		record.init();
-		record.reset();
 		//test the record is initialized and reset
 		assertNull(record.getField("field1").getValue());
 		assertEquals(123, record.getField("field2").getValue());

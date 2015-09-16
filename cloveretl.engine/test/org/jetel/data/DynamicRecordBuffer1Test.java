@@ -44,7 +44,6 @@ public class DynamicRecordBuffer1Test extends CloverTestCase {
 		dynamicBuffer.init();
 		
 		DataRecord record = DataRecordFactory.newRecord(getMetadata());
-		record.init();
 		
 		for (int i = 0; i < 1000; i++) {
 			populateDataRecord(record, i, false);
@@ -69,7 +68,6 @@ public class DynamicRecordBuffer1Test extends CloverTestCase {
 		dynamicBuffer.init();
 		
 		DataRecord record = DataRecordFactory.newRecord(getMetadata());
-		record.init();
 		
 		CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE);
 		
@@ -99,7 +97,6 @@ public class DynamicRecordBuffer1Test extends CloverTestCase {
 		dynamicBuffer.init();
 		
 		DataRecord record = DataRecordFactory.newRecord(getMetadata());
-		record.init();
 		
 		for (int iteration = 0; iteration < 3; iteration++) {
 			
@@ -147,7 +144,6 @@ public class DynamicRecordBuffer1Test extends CloverTestCase {
 			@Override
 			public Void call() throws Exception {
 				DataRecord record = DataRecordFactory.newRecord(getMetadata());
-				record.init();
 				for (int i = 0; i < 1000; i++) {
 					populateDataRecord(record, i, (i % 2) == 0);
 					dynamicBuffer.writeRecord(record);
@@ -161,7 +157,6 @@ public class DynamicRecordBuffer1Test extends CloverTestCase {
 			@Override
 			public Void call() throws Exception {
 				DataRecord record = DataRecordFactory.newRecord(getMetadata());
-				record.init();
 				
 				for (int i = 0; i < 1000; i++) {
 					dynamicBuffer.readRecord(record);

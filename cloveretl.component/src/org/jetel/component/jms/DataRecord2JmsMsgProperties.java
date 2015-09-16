@@ -25,16 +25,13 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.BasicAttribute;
 
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.MapDataField;
-import org.jetel.data.StringDataField;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.string.CloverString;
 
 /**
@@ -48,6 +45,7 @@ import org.jetel.util.string.CloverString;
  * @since 11/28/06  
  * @see javax.jms.TextMessage
  */
+@CloverPublicAPI
 public class DataRecord2JmsMsgProperties extends DataRecord2JmsMsgBase {
 	private static final String DEFAULT_BODYFIELD_VALUE = "bodyField";
 	private final String PROPNAME_BODYFIELD = "bodyField";

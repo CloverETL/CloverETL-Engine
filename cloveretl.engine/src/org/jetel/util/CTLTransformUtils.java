@@ -172,7 +172,7 @@ public class CTLTransformUtils {
     			messagesStringBuilder.append(msg.getErrorMessage());
     			messagesStringBuilder.append("\n");
     		}
-    		throw new JetelRuntimeException("Failed to find assigned fields:\n" + messagesStringBuilder.toString());
+    		throw new JetelRuntimeException("CTL validation failed.", new JetelRuntimeException(messagesStringBuilder.toString()));
     	}
 
     	

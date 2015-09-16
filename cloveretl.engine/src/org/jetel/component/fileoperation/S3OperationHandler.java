@@ -18,106 +18,169 @@
  */
 package org.jetel.component.fileoperation;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
+import java.net.URI;
+import java.text.MessageFormat;
+import java.util.List;
 
-import org.jetel.component.fileoperation.SimpleParameters.ReadParameters;
-import org.jetel.component.fileoperation.SimpleParameters.WriteParameters;
-import org.jetel.util.protocols.amazon.S3InputStream;
-import org.jetel.util.protocols.amazon.S3OutputStream;
+import org.jetel.component.fileoperation.SimpleParameters.CopyParameters;
+import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
+import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
+import org.jetel.component.fileoperation.SimpleParameters.MoveParameters;
+import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 
 /**
  * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created Jun 19, 2012
+ * @created 18. 3. 2015
  */
-public class S3OperationHandler extends BaseOperationHandler {
+public class S3OperationHandler extends AbstractOperationHandler {
+	
+	public static final String S3_SCHEME = "s3";
+	
+	private final PrimitiveS3OperationHandler s3handler;
 
-	static final String HTTP_SCHEME = "http"; //$NON-NLS-1$
-	static final String HTTPS_SCHEME = "https"; //$NON-NLS-1$
-	
-// 	FIXME
-//	public static final int PRIORITY = WebdavOperationHandler.PRIORITY + 1;
-	public static final int PRIORITY = 1;
-	
 	private FileManager manager = FileManager.getInstance();
-	
-	private static class S3Content implements Content {
-		
-		private final URL url;
-		
-		public S3Content(URL url) {
-			this.url = url;
-		}
 
-		@Override
-		public ReadableByteChannel read() throws IOException {
-			return Channels.newChannel(new S3InputStream(url));
-		}
-		
-		@Override
-		public WritableByteChannel write() throws IOException {
-			return Channels.newChannel(new S3OutputStream(url));
-		}
-
-		@Override
-		public WritableByteChannel append() throws IOException {
-			throw new UnsupportedOperationException();
-		}
-
+	public S3OperationHandler() {
+		super(new PrimitiveS3OperationHandler());
+		this.s3handler = (PrimitiveS3OperationHandler) simpleHandler;
 	}
 
-	@Override
-	public ReadableContent getInput(SingleCloverURI source, ReadParameters params) throws IOException {
-		if (S3InputStream.isS3File(source.getPath())) {
-			return new S3Content(source.toURI().toURL());
-		} else {
-			IOperationHandler nextHandler = manager.findNextHandler(Operation.read(source.getScheme()), this);
-			if (nextHandler != null) {
-				return nextHandler.getInput(source, params);
-			} else {
-				throw new UnsupportedOperationException();
-			}
-		}
-	}
-
-	@Override
-	public WritableContent getOutput(SingleCloverURI target, WriteParameters params) throws IOException {
-		if (S3InputStream.isS3File(target.getPath())) {
-			return new S3Content(target.toURI().toURL());
-		} else {
-			IOperationHandler nextHandler = manager.findNextHandler(Operation.write(target.getScheme()), this);
-			if (nextHandler != null) {
-				return nextHandler.getOutput(target, params);
-			} else {
-				throw new UnsupportedOperationException();
-			}
-		}
+	protected S3OperationHandler(PrimitiveS3OperationHandler handler) {
+		super(handler);
+		this.s3handler = (PrimitiveS3OperationHandler) simpleHandler;
 	}
 
 	@Override
 	public int getPriority(Operation operation) {
-		return PRIORITY;
+		return TOP_PRIORITY;
 	}
 
 	@Override
 	public boolean canPerform(Operation operation) {
 		switch (operation.kind) {
-			case READ:
-			case WRITE:
-				return operation.scheme().equalsIgnoreCase(HTTP_SCHEME) || operation.scheme().equalsIgnoreCase(HTTPS_SCHEME);
-			default: 
-				return false;
+		case READ:
+		case WRITE:
+		case LIST:
+		case INFO:
+		case RESOLVE:
+		case DELETE:
+		case CREATE:
+			return operation.scheme().equalsIgnoreCase(S3_SCHEME);
+		case COPY:
+		case MOVE:
+			return operation.scheme(0).equalsIgnoreCase(S3_SCHEME)
+					&& operation.scheme(1).equalsIgnoreCase(S3_SCHEME);
+		default:
+			return false;
 		}
 	}
 
 	@Override
+	protected boolean create(URI uri, CreateParameters params) throws IOException {
+		String uriString = uri.toString();
+		if (uriString.endsWith("/")) {
+			uriString = uriString.substring(0, uriString.length() - 1);
+			uri = URI.create(uriString);
+			params.setDirectory(true);
+		}
+		return super.create(uri, params);
+	}
+
+	@Override
+	public List<SingleCloverURI> resolve(SingleCloverURI uri, ResolveParameters params) throws IOException {
+		return manager.defaultResolve(uri);
+	}
+
+	/*
+	 * Overridden to delegate moving between different connections
+	 * to DefaultOperationHandler.
+	 */
+	@Override
+	public SingleCloverURI copy(SingleCloverURI source, SingleCloverURI target, CopyParameters params)
+			throws IOException {
+		URI sourceUri = source.toURI();
+		URI targetUri = target.toURI();
+		if (sourceUri.getAuthority().equals(targetUri.getAuthority())) {
+			return super.copy(sourceUri, targetUri, params);
+		}
+
+		IOperationHandler nextHandler = manager.findNextHandler(Operation.move(source.getScheme(), target.getScheme()), this);
+		if (nextHandler != null) {
+			return nextHandler.copy(source, target, params);
+		} else {
+			throw new UnsupportedOperationException();
+		}
+	}
+
+	/*
+	 * Overridden to delegate moving between different connections
+	 * to DefaultOperationHandler.
+	 */
+	@Override
+	public SingleCloverURI move(SingleCloverURI source, SingleCloverURI target, MoveParameters params)
+			throws IOException {
+		URI sourceUri = source.toURI();
+		URI targetUri = target.toURI();
+		if (sourceUri.getAuthority().equals(targetUri.getAuthority())) {
+			return super.move(sourceUri, targetUri, params);
+		}
+
+		IOperationHandler nextHandler = manager.findNextHandler(Operation.move(source.getScheme(), target.getScheme()), this);
+		if (nextHandler != null) {
+			return nextHandler.move(source, target, params);
+		} else {
+			throw new UnsupportedOperationException();
+		}
+	}
+
+	/**
+	 * Overridden to speed up directory listing in File URL dialog.
+	 */
+	@Override
+	protected List<Info> listDirectory(URI uri) throws IOException {
+		return s3handler.listFiles(uri);
+	}
+
+	/*
+	 * Overridden for better performance when deleting recursively
+	 */
+	@Override
+	protected boolean delete(URI target, DeleteParameters params) throws IOException {
+		if (Thread.currentThread().isInterrupted()) {
+			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
+		}
+		Info info = simpleHandler.info(target);
+		if (info == null) {
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), target.toString())); //$NON-NLS-1$
+		}
+		if (!info.isDirectory() && target.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
+			throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), target)); //$NON-NLS-1$
+		}
+		if (info.isDirectory()) {
+			if (params.isRecursive()) {
+				return s3handler.removeDirRecursively(target);
+			} else {
+				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.cannot_remove_directory"), target)); //$NON-NLS-1$
+			}
+		}
+		return info.isDirectory() ? simpleHandler.removeDir(target) : simpleHandler.deleteFile(target);
+	}
+
+	@Override
+	public SingleCloverURI create(SingleCloverURI target, CreateParameters params) throws IOException {
+		if (params.getLastModified() != null) {
+			throw new UnsupportedOperationException("Setting last modification date is not supported by S3");
+		}
+		return super.create(target, params);
+	}
+
+	@Override
 	public String toString() {
-		return "S3OperationHandler"; //$NON-NLS-1$
+		return "S3OperationHandler";
 	}
 
 }

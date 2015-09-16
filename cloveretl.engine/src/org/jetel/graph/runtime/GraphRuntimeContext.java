@@ -19,7 +19,10 @@
 package org.jetel.graph.runtime;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Level;
@@ -111,12 +114,40 @@ public class GraphRuntimeContext {
 	 * the Subgraph is in a loop, so all edges between SGI and SGO components has to be
 	 * fast-propagated. */
 	private boolean fastPropagateExecution;
+	/**
+	 * This list contains indexes of all input ports of Subgraph component from parent graph
+	 * which have an edge connected. It has sense only for subgraphs. This information about
+	 * attached edges in parent graph is used to remove optional edges.
+	 */
+	private List<Integer> parentGraphInputPortsConnected; 
+	/**
+	 * This list contains indexes of all output ports of Subgraph component from parent graph
+	 * which have an edge connected. It has sense only for subgraphs. This information about
+	 * attached edges in parent graph is used to remove optional edges.
+	 */
+	private List<Integer> parentGraphOutputPortsConnected; 
 	
 	/**
 	 * This flag can be used to decide, whether some flaws in graph xml file should be reported or somehow ignored.
 	 * See, {@link TransformationGraphXMLReaderWriter#setStrictParsing(boolean)}. 
 	 */
 	private boolean strictGraphFactorization;
+	
+	/**
+	 * Flag which indicates, whether new classloaders should be created for each transformation
+	 * component or should be shared with the others.
+	 * @see IAuthorityProxy#createClassLoader(URL[], ClassLoader, boolean)
+	 * @see IAuthorityProxy#getClassLoader(URL[], ClassLoader, boolean)
+	 */
+	private boolean classLoaderCaching;
+	
+	/**
+	 * For all edges is also calculated which metadata would be propagated
+	 * to this edge from neighbours, if the edge does not have any metadata directly assigned.
+	 * It is useful only for designer purpose (calculation is turned off by default).
+	 * Designer shows to user, which metadata would be on the edge, for "no metadata" option on the edge. 
+	 */
+	private boolean calculateNoMetadata;
 	
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
@@ -141,7 +172,11 @@ public class GraphRuntimeContext {
 		timeZone = null;
 		validateRequiredParameters = DEFAULT_VALIDATE_REQUIRED_PARAMETERS;
 		fastPropagateExecution = false;
-		setStrictGraphFactorization(true);
+		parentGraphInputPortsConnected = null; 
+		parentGraphOutputPortsConnected = null; 
+		strictGraphFactorization = true;
+		classLoaderCaching = false;
+		calculateNoMetadata = false;
 	}
 	
 	/* (non-Javadoc)
@@ -183,8 +218,12 @@ public class GraphRuntimeContext {
 		ret.metadataProvider = getMetadataProvider();
 		ret.validateRequiredParameters = isValidateRequiredParameters();
 		ret.fastPropagateExecution = isFastPropagateExecution();
+		ret.parentGraphInputPortsConnected = parentGraphInputPortsConnected != null ? new ArrayList<>(parentGraphInputPortsConnected) : null;
+		ret.parentGraphOutputPortsConnected = parentGraphOutputPortsConnected != null ? new ArrayList<>(parentGraphOutputPortsConnected) : null;
 		ret.strictGraphFactorization = isStrictGraphFactorization();
-		
+		ret.classLoaderCaching = isClassLoaderCaching();
+		ret.calculateNoMetadata = isCalculateNoMetadata();
+
 		return ret;
 	}
 
@@ -219,8 +258,12 @@ public class GraphRuntimeContext {
 		prop.setProperty("executionType", String.valueOf(getExecutionType()));
 		prop.setProperty("validateRequiredParameters", Boolean.toString(isValidateRequiredParameters()));
 		prop.setProperty("fastPropagateExecution", Boolean.toString(isFastPropagateExecution()));
+		prop.setProperty("parentGraphInputPortsConnected", String.valueOf(getParentGraphInputPortsConnected()));
+		prop.setProperty("parentGraphOutputPortsConnected", String.valueOf(getParentGraphOutputPortsConnected()));
 		prop.setProperty("strictGraphFactorization", Boolean.toString(isStrictGraphFactorization()));
-		
+		prop.setProperty("classLoaderCaching", Boolean.toString(isClassLoaderCaching()));
+		prop.setProperty("calculateNoMetadata", Boolean.toString(isCalculateNoMetadata()));
+
 		return prop;
 	}
 
@@ -844,6 +887,68 @@ public class GraphRuntimeContext {
 	}
 	
 	/**
+	 * @return true if optional subgraph input port is connected by parent graph
+	 */
+	public boolean isParentGraphInputPortConnected(int portIndex) {
+		if (parentGraphInputPortsConnected != null) {
+			return parentGraphInputPortsConnected.contains(portIndex);
+		} else {
+			return true;
+		}
+	}
+
+	/**
+	 * @return list of subgraph input port indexes, which are connected by parent graph or null,
+	 * which indicates all ports are connected
+	 */
+	public List<Integer> getParentGraphInputPortsConnected() {
+		return parentGraphInputPortsConnected;
+	}
+
+	/**
+	 * @param connectedParentGraphInputPorts list of all subgraph input port indexes connected by parent graph or null
+	 * which indicates all ports are connected
+	 */
+	public void setParentGraphInputPortsConnected(List<Integer> parentGraphInputPortsConnected) {
+		if (parentGraphInputPortsConnected != null) {
+			this.parentGraphInputPortsConnected = Collections.unmodifiableList(parentGraphInputPortsConnected);
+		} else {
+			this.parentGraphInputPortsConnected = null;
+		}
+	}
+
+	/**
+	 * @return true if optional subgraph output port is connected by parent graph
+	 */
+	public boolean isParentGraphOutputPortConnected(int portIndex) {
+		if (parentGraphOutputPortsConnected != null) {
+			return parentGraphOutputPortsConnected.contains(portIndex);
+		} else {
+			return true;
+		}
+	}
+
+	/**
+	 * @return list of subgraph output port indexes, which are connected by parent graph or null,
+	 * which indicates all ports are connected
+	 */
+	public List<Integer> getParentGraphOutputPortsConnected() {
+		return parentGraphOutputPortsConnected;
+	}
+	
+	/**
+	 * @param connectedParentGraphOutputPorts list of all subgraph output port indexes connected by parent graph or null
+	 * which indicates all ports are connected
+	 */
+	public void setParentGraphOutputPortsConnected(List<Integer> parentGraphOutputPortsConnected) {
+		if (parentGraphOutputPortsConnected != null) {
+			this.parentGraphOutputPortsConnected = Collections.unmodifiableList(parentGraphOutputPortsConnected);
+		} else {
+			this.parentGraphOutputPortsConnected = null;
+		}
+	}
+	
+	/**
 	 * @return the strictGraphFactorization
 	 */
 	public boolean isStrictGraphFactorization() {
@@ -855,6 +960,37 @@ public class GraphRuntimeContext {
 	 */
 	public void setStrictGraphFactorization(boolean strictGraphFactorization) {
 		this.strictGraphFactorization = strictGraphFactorization;
+	}
+
+	/**
+	 * @return true if classloaders for java transformations should be shared; false otherwise
+	 */
+	public boolean isClassLoaderCaching() {
+		return classLoaderCaching;
+	}
+
+	public void setClassLoaderCaching(boolean classLoaderCaching) {
+		this.classLoaderCaching = classLoaderCaching;
+	}
+
+	/**
+	 * For all edges is also calculated which metadata would be propagated
+	 * to this edge from neighbours, if the edge does not have any metadata directly assigned.
+	 * It is useful only for designer purpose (calculation is turned off by default).
+	 * Designer shows to user, which metadata would be on the edge, for "no metadata" option on the edge. 
+	 */
+	public boolean isCalculateNoMetadata() {
+		return calculateNoMetadata;
+	}
+
+	/**
+	 * For all edges is also calculated which metadata would be propagated
+	 * to this edge from neighbours, if the edge does not have any metadata directly assigned.
+	 * It is useful only for designer purpose (calculation is turned off by default).
+	 * Designer shows to user, which metadata would be on the edge, for "no metadata" option on the edge. 
+	 */
+	public void setCalculateNoMetadata(boolean calculateNoMetadata) {
+		this.calculateNoMetadata = calculateNoMetadata;
 	}
 
 	/**

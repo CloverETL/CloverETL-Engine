@@ -458,7 +458,6 @@ public class DataIntersection extends Node implements MetadataProvider {
 		
 		// initialize output record
 		DataRecord outRecord = DataRecordFactory.newRecord(outPortAB.getMetadata());
-		outRecord.init();
 		driverReader.loadNextRun();
 		slaveReader.loadNextRun();
 		driverReaderOrdering = driverReader.getOrdering();
@@ -727,8 +726,8 @@ public class DataIntersection extends Node implements MetadataProvider {
         DataRecordMetadata driverMetadata = getInputPort(DRIVER_ON_PORT).getMetadata();
         DataRecordMetadata slaveMetadata = getInputPort(SLAVE_ON_PORT).getMetadata();
         //compliance of input and output metadata checking
-		checkMetadata(status, driverMetadata, getOutputPort(WRITE_TO_PORT_A).getMetadata());
-		checkMetadata(status, slaveMetadata, getOutputPort(WRITE_TO_PORT_B).getMetadata());
+		checkMetadata(status, getInputPort(DRIVER_ON_PORT), getOutputPort(WRITE_TO_PORT_A));
+		checkMetadata(status, getInputPort(SLAVE_ON_PORT), getOutputPort(WRITE_TO_PORT_B));
 
 		//join key checking
 		if (joinKeys == null) {
@@ -743,6 +742,7 @@ public class DataIntersection extends Node implements MetadataProvider {
 				}
 			} catch (ComponentNotReadyException e) {
 				status.add(e, Severity.WARNING, this, Priority.NORMAL, XML_JOINKEY_ATTRIBUTE);
+				return status;
 			}
 		}
 		recordKeys = new RecordKey[2];

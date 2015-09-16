@@ -19,11 +19,14 @@
 package org.jetel.graph;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.TreeMap;
@@ -53,6 +56,7 @@ import org.jetel.graph.runtime.tracker.ComplexComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.PrimitiveComponentTokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.ClusterUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -68,6 +72,7 @@ import org.w3c.dom.Element;
  *@since       April 2, 2002
  *@see         org.jetel.component
  */
+@CloverPublicAPI
 public abstract class Node extends GraphElement implements Runnable, CloverWorkerListener {
 
     private static final Log logger = LogFactory.getLog(Node.class);
@@ -83,7 +88,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      * It is component's responsibility to register all inner threads via addChildThread() method.
      */
     protected List<Thread> childThreads; // is guarded by nodeThreadMonitor
-    protected EnabledEnum enabled;
+    private EnabledEnum enabled = EnabledEnum.DEFAULT_VALUE;
     protected int passThroughInputPort;
     protected int passThroughOutputPort;
     
@@ -173,7 +178,6 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		inPorts = new TreeMap<Integer, InputPort>();
         phase = null;
         setResultCode(Result.N_A); // result is not known yet
-        childThreads = new ArrayList<Thread>();
         allocation = EngineComponentAllocation.createNeighboursAllocation();
 	}
 
@@ -273,8 +277,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *@return    Collection of OutPorts
 	 *@since     April 18, 2002
 	 */
-	public Collection<OutputPort> getOutPorts() {
-		return outPorts.values();
+	public List<OutputPort> getOutPorts() {
+		return new ArrayList<>(outPorts.values());
 	}
 
 	/**
@@ -290,8 +294,30 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *@return    Collection of InPorts
 	 *@since     April 18, 2002
 	 */
-	public Collection<InputPort> getInPorts() {
-		return inPorts.values();
+	public List<InputPort> getInPorts() {
+		return new ArrayList<>(inPorts.values());
+	}
+
+	/**
+	 * @return index of last connected input port
+	 */
+	public int getInputPortsMaxIndex() {
+		if (!inPorts.isEmpty()) {
+			return inPorts.lastKey();
+		} else {
+			return -1;
+		}
+	}
+
+	/**
+	 * @return index of last connected output port
+	 */
+	public int getOutputPortsMaxIndex() {
+		if (!outPorts.isEmpty()) {
+			return outPorts.lastKey();
+		} else {
+			return -1;
+		}
 	}
 
 	/**
@@ -320,7 +346,13 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 * @return array of output ports metadata
 	 */
 	public DataRecordMetadata[] getOutMetadataArray() {
-		return getOutMetadata().toArray(new DataRecordMetadata[0]);
+		DataRecordMetadata[] result = new DataRecordMetadata[getOutputPortsMaxIndex() + 1];
+		for (Entry<Integer, OutputPort> entry : getOutputPorts().entrySet()) {
+			if (entry.getValue() != null) {
+				result[entry.getKey()] = entry.getValue().getMetadata();
+			}
+		}
+	    return result;
 	}
 
 	/**
@@ -342,7 +374,13 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 * @return array of input ports metadata
 	 */
 	public DataRecordMetadata[] getInMetadataArray() {
-		return getInMetadata().toArray(new DataRecordMetadata[0]);
+		DataRecordMetadata[] result = new DataRecordMetadata[getInputPortsMaxIndex() + 1];
+		for (Entry<Integer, InputPort> entry : getInputPorts().entrySet()) {
+			if (entry.getValue() != null) {
+				result[entry.getKey()] = entry.getValue().getMetadata();
+			}
+		}
+	    return result;
 	}
 	
 	/**
@@ -467,6 +505,9 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();
     	
+    	//list of child threads is wiped out for each graph execution
+        childThreads = new ArrayList<Thread>();
+
         //cluster related settings can be used only in cluster environment
         if (!getGraph().getAuthorityProxy().isClusterEnabled()) {
         	//cluster components cannot be used in non-cluster environment
@@ -493,6 +534,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         setResultCode(Result.RUNNING); // set running result, so we know run() method was started
         
 		Context c = ContextProvider.registerNode(this);
+		Message<ErrorMsgBody> msg = null;
         try {
     		//store the current thread like a node executor
             setNodeThread(Thread.currentThread());
@@ -528,10 +570,10 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         	setResultCode(result);
 
     		if (result == Result.ERROR) {
-                Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
+                msg = Message.createErrorMessage(this,
                         new ErrorMsgBody(Result.ERROR.code(), 
                                 resultMessage != null ? resultMessage : Result.ERROR.message(), null));
-                sendMessage(msg);
+                return;
             }
             
             if (result == Result.FINISHED_OK) {
@@ -543,9 +585,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	            		//if the edge base of the input port is not shared due this component and some data records are still in input port, report an error
 	            		if (!inputPort.getEdge().isSharedEdgeBaseFromReader() && !inputPort.isEOF()) {
 	            			setResultCode(Result.ERROR);
-	            			Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
+	            			msg = Message.createErrorMessage(this,
 	            					new ErrorMsgBody(Result.ERROR.code(), Result.ERROR.message(), createNodeException(new JetelRuntimeException("Component has finished and input port " + inputPort.getInputPortNumber() + " still contains some unread records."))));
-	            			sendMessage(msg);
 	            			return;
 	            		}
 	            	}
@@ -556,17 +597,25 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         } catch (Exception ex) {
             setResultCode(Result.ERROR);
             resultException = createNodeException(ex);
-            Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
+            msg = Message.createErrorMessage(this,
                     new ErrorMsgBody(Result.ERROR.code(), Result.ERROR.message(), resultException));
-            sendMessage(msg);
         } catch (Throwable ex) {
         	logger.fatal(ex); 
             setResultCode(Result.ERROR);
             resultException = createNodeException(ex);
-            Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
+            msg = Message.createErrorMessage(this,
                     new ErrorMsgBody(Result.ERROR.code(), Result.ERROR.message(), resultException));
-            sendMessage(msg);
         } finally {
+        	try {
+        		//abort all still running child threads - CLO-5841
+        		abortChildThreads();
+        		//send message if any
+        		if (msg != null) {
+        			sendMessage(msg);
+        		}
+        	} catch (Exception e) {
+        		logger.error(e);
+        	}
 			ContextProvider.unregister(c);
         	setNodeThread(null);
         	sendFinishMessage();
@@ -647,11 +696,15 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 
 	private void abortChildThreads() {
 		synchronized(nodeThreadMonitor) {
-			for (Thread childThread : childThreads) {
-				if (logger.isDebugEnabled()) {
-					logger.debug("trying to interrupt child thread " + childThread);
+			if (childThreads != null) { //the child threads list can be null for already finished component
+				for (Thread childThread : childThreads) {
+					if (logger.isDebugEnabled()) {
+						logger.debug("trying to interrupt child thread " + childThread);
+					}
+					childThread.interrupt();
 				}
-				childThread.interrupt();
+				//no more threads can be registered as child threads
+				childThreads = null;
 			}
 		}
 	}
@@ -1049,7 +1102,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	}
 
     /**
-     * @return <b>true</b> if node is enabled; <b>false</b> else
+     * @return enabled value for this component (cannot be null)
      */
     public EnabledEnum getEnabled() {
         return enabled;
@@ -1059,14 +1112,14 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      * @param enabled whether node is enabled
      */
     public void setEnabled(String enabledStr) {
-        enabled = EnabledEnum.fromString(enabledStr, EnabledEnum.ENABLED);
+        enabled = EnabledEnum.fromString(enabledStr, EnabledEnum.DEFAULT_VALUE);
     }
 
     /**
      * @param enabled whether node is enabled
      */
     public void setEnabled(EnabledEnum enabled) {
-        this.enabled = (enabled != null ? enabled : EnabledEnum.ENABLED);
+        this.enabled = (enabled != null ? enabled : EnabledEnum.DEFAULT_VALUE);
     }
     
     /**
@@ -1136,6 +1189,12 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     		}
     	}
     	
+    	//check enabled attribute
+    	String errorMessage = getEnabled().validate();
+    	if (!StringUtils.isEmpty(errorMessage)) {
+    		status.add(errorMessage, Severity.ERROR, this, Priority.NORMAL, Node.XML_ENABLED_ATTRIBUTE);
+    	}
+    	
     	return status;
     }
     
@@ -1150,14 +1209,21 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     protected boolean checkInputPorts(ConfigurationStatus status, int min, int max, boolean checkNonAssignedPorts) {
     	boolean retValue = true;
     	Collection<InputPort> inPorts = getInPorts();
-        if(inPorts.size() < min) {
-            status.add(new ConfigurationProblem("At least " + min + " input port must be defined!", Severity.ERROR, this, Priority.NORMAL));
-            retValue = false;
-        }
-        if(inPorts.size() > max) {
-            status.add(new ConfigurationProblem("At most " + max + " input ports can be defined!", Severity.ERROR, this, Priority.NORMAL));
-            retValue = false;
-        }
+    	if (min == max) {
+    		if (inPorts.size() != min) {
+                status.add(new ConfigurationProblem(MessageFormat.format("{0,choice,0#No input port may|1#1 input port must|1<{0} input ports must} be defined!", min), Severity.ERROR, this, Priority.NORMAL));
+                retValue = false;
+    		}
+    	} else {
+            if(inPorts.size() < min) {
+                status.add(new ConfigurationProblem(MessageFormat.format("At least {0} input {0,choice,1#port|1<ports} must be defined!", min), Severity.ERROR, this, Priority.NORMAL));
+                retValue = false;
+            }
+            if(inPorts.size() > max) {
+                status.add(new ConfigurationProblem(MessageFormat.format("At most {0} input {0,choice,1#port|1<ports} can be defined!", max), Severity.ERROR, this, Priority.NORMAL));
+                retValue = false;
+            }
+    	}
 
         int index = 0;
         for (InputPort inputPort : inPorts) {
@@ -1190,14 +1256,21 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      */
     protected boolean checkOutputPorts(ConfigurationStatus status, int min, int max, boolean checkNonAssignedPorts) {
     	Collection<OutputPort> outPorts = getOutPorts();
-        if(outPorts.size() < min) {
-            status.add(new ConfigurationProblem("At least " + min + " output port must be defined!", Severity.ERROR, this, Priority.NORMAL));
-            return false;
-        }
-        if(outPorts.size() > max) {
-            status.add(new ConfigurationProblem("At most " + max + " output ports can be defined!", Severity.ERROR, this, Priority.NORMAL));
-            return false;
-        }
+    	if (min == max) {
+    		if (outPorts.size() != min) {
+                status.add(new ConfigurationProblem(MessageFormat.format("{0,choice,0#No output port may|1#1 output port must|1<{0} output ports must} be defined!", min), Severity.ERROR, this, Priority.NORMAL));
+                return false;
+    		}
+    	} else {
+            if(outPorts.size() < min) {
+                status.add(new ConfigurationProblem(MessageFormat.format("At least {0} output {0,choice,1#port|1<ports} must be defined!", min), Severity.ERROR, this, Priority.NORMAL));
+                return false;
+            }
+            if(outPorts.size() > max) {
+                status.add(new ConfigurationProblem(MessageFormat.format("At most {0} output {0,choice,1#port|1<ports} can be defined!", max), Severity.ERROR, this, Priority.NORMAL));
+                return false;
+            }
+    	}
         int index = 0;
         for (OutputPort outputPort : outPorts) {
 			if (outputPort.getMetadata() == null){
@@ -1330,6 +1403,96 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	}
 
     /**
+     * Ensures that metadata on all passed ports are equal.
+     */
+    protected ConfigurationStatus checkMetadata(ConfigurationStatus status, InputPort inputPort, OutputPort outputPort) {
+    	return checkMetadata(status, Collections.singletonList(inputPort), Collections.singletonList(outputPort));
+    }
+
+    /**
+     * Ensures that metadata on all passed ports are equal.
+     */
+    protected ConfigurationStatus checkMetadata(ConfigurationStatus status, List<InputPort> inputPorts, List<OutputPort> outputPorts) {
+    	return checkMetadata(status, inputPorts, outputPorts, true);
+    }
+
+    /**
+     * Ensures that metadata on all passed ports are equal.
+     */
+    protected ConfigurationStatus checkMetadata(ConfigurationStatus status, List<InputPort> inputPorts, List<OutputPort> outputPorts, boolean checkFixDelType) {
+    	//all ports must have metadata
+    	boolean noMetadataFound = false;
+    	if (inputPorts != null) {
+	    	for (InputPort inputPort : inputPorts) {
+	    		if (inputPort.getMetadata() == null) {
+	    			noMetadataFound = true;
+	    			status.add(new ConfigurationProblem("Input port #" + inputPort.getInputPortNumber() + " does not have assigned metadata.", Severity.WARNING, this, Priority.NORMAL));
+	    		}
+	    	}
+    	}
+    	if (outputPorts != null) {
+	    	for (OutputPort outputPort : outputPorts) {
+	    		if (outputPort.getMetadata() == null) {
+	    			noMetadataFound = true;
+	    			status.add(new ConfigurationProblem("Output port #" + outputPort.getOutputPortNumber() + " does not have assigned metadata.", Severity.WARNING, this, Priority.NORMAL));
+	    		}
+	    	}
+    	}
+    	if (noMetadataFound) {
+    		return status;
+    	}
+    	
+    	//find an etalon - port, which will be compared with the other ports
+    	Port etalon = null;
+    	int etalonIndex = -1;
+    	boolean isEtalonInputPort = false;
+    	if (inputPorts != null && inputPorts.size() > 0) {
+    		etalon = inputPorts.get(0);
+    		etalonIndex = ((InputPort) etalon).getInputPortNumber();
+    		isEtalonInputPort = true;
+    	} else if (outputPorts != null && outputPorts.size() > 0) {
+    		etalon = outputPorts.get(0);
+    		etalonIndex = ((OutputPort) etalon).getOutputPortNumber();
+    		isEtalonInputPort = false;
+    	}
+    	if (etalon == null) {
+    		return status;
+    	}
+    	DataRecordMetadata etalonMetadata = etalon.getMetadata();
+    	
+    	//compare the etalon with input ports
+    	if (inputPorts != null) {
+	    	for (InputPort inputPort : inputPorts) {
+	    		if (!etalonMetadata.equals(inputPort.getMetadata(), checkFixDelType)) {
+	    			status.add(new ConfigurationProblem("Metadata " + 
+	    					StringUtils.quote(inputPort.getMetadata().getName()) +
+	    					" on input port #" + inputPort.getInputPortNumber() +
+	    					" does not equal to metadata " + 
+	    					StringUtils.quote(etalonMetadata.getName()) + " on " +
+	    					(isEtalonInputPort ? "input" : "output") + " port #" + etalonIndex + ".", 
+						Severity.ERROR, this, Priority.NORMAL));
+	    		}
+	    	}
+    	}
+    	//compare the etalon with output ports
+    	if (outputPorts != null) {
+	    	for (OutputPort outputPort : outputPorts) {
+	    		if (!etalonMetadata.equals(outputPort.getMetadata(), checkFixDelType)) {
+	    			status.add(new ConfigurationProblem("Metadata " + 
+	    					StringUtils.quote(outputPort.getMetadata().getName()) +
+	    					" on output port #" + outputPort.getOutputPortNumber() +
+	    					" does not equal to metadata " + 
+	    					StringUtils.quote(etalonMetadata.getName()) + " on " +
+	    					(isEtalonInputPort ? "input" : "output") + " port #" + etalonIndex + ".", 
+						Severity.ERROR, this, Priority.NORMAL));
+	    		}
+	    	}
+    	}
+    	
+    	return status;
+    }
+    
+    /**
      * The given thread is registered as a child thread of this component.
      * The child threads are exploited for gathering of tracking information - CPU usage of this component
      * is sum of all threads.
@@ -1337,7 +1500,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      */
     public void registerChildThread(Thread childThread) {
     	synchronized(nodeThreadMonitor) {
-	    	if (runIt) {
+	    	if (runIt && childThreads != null) {
 	    		//new child thread can be registered only for running components
 	    		childThreads.add(childThread);
 	    	} else {
@@ -1353,7 +1516,9 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      */
     public void unregisterChildThread(Thread childThread) {
     	synchronized(nodeThreadMonitor) {
-    		childThreads.remove(childThread);
+    		if (childThreads != null) {
+    			childThreads.remove(childThread);
+    		}
     	}
     }
     
@@ -1365,7 +1530,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      */
     protected void registerChildThreads(List<Thread> childThreads) {
     	synchronized(nodeThreadMonitor) {
-	    	if (runIt) {
+	    	if (runIt && this.childThreads != null) {
 	    		//new child thread can be registered only for running components
 	    		this.childThreads.addAll(childThreads);
 	    	} else {
@@ -1379,7 +1544,11 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      */
     public List<Thread> getChildThreads() {
     	synchronized(nodeThreadMonitor) {
-    		return new ArrayList<Thread>(childThreads); //duplicate is returned to ensure thread safety
+    		if (childThreads != null) {
+    			return new ArrayList<Thread>(childThreads); //duplicate is returned to ensure thread safety
+    		} else {
+    			return new ArrayList<>();
+    		}
     	}
     }
 

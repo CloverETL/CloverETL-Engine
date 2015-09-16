@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetEncoder;
 
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.NumericFormatter;
 
@@ -34,6 +35,7 @@ import org.jetel.util.formatter.NumericFormatter;
  *@since      November 30, 2005
  *@see        org.jetel.data.DecimalDataField
  */
+@CloverPublicAPI
 public interface Decimal extends Numeric, Serializable {
 	
 	public int getPrecision();

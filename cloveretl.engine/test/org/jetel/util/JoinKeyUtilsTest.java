@@ -1,6 +1,7 @@
 package org.jetel.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.jetel.exception.ComponentNotReadyException;
@@ -8,6 +9,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.joinKey.JoinKeyUtils;
+import org.jetel.util.joinKey.OrderedKey;
 
 public class JoinKeyUtilsTest extends CloverTestCase {
 
@@ -19,6 +21,7 @@ public class JoinKeyUtilsTest extends CloverTestCase {
 	DataRecordMetadata meta2;
 	DataRecordMetadata meta3;
 	DataRecordMetadata meta4;
+	DataRecordMetadata[] myMeta;
 	
 	public JoinKeyUtilsTest() {
 		initEngine();
@@ -26,6 +29,11 @@ public class JoinKeyUtilsTest extends CloverTestCase {
 		meta2 = new DataRecordMetadata("slave1");
 		meta3 = new DataRecordMetadata("slave2");
 		meta4 = new DataRecordMetadata("slave3");
+		
+		myMeta = new DataRecordMetadata[3];
+		myMeta[0] = new DataRecordMetadata("mymaster");
+		myMeta[1] = new DataRecordMetadata("myfields");
+		myMeta[2] = new DataRecordMetadata("mybanana");
 	}
 
 	@Override
@@ -51,6 +59,14 @@ public class JoinKeyUtilsTest extends CloverTestCase {
 		metadata.add(meta2);
 		metadata.add(meta3);
 		metadata.add(meta4);
+		
+		String[][] fieldNames = {{"master1", "master2", "master3"}, {"fieldA", "fieldB", "fieldC"}, {"apple", "banana", "carrot"}};
+		for (int i = 0; i < fieldNames.length; i++) {
+			for (String fieldName : fieldNames[i]) {
+				myMeta[i].addField(new DataFieldMetadata(fieldName, ";"));
+			}
+		}
+		
 	}
 
 	public void testParseHashJoiners() throws ComponentNotReadyException{
@@ -229,6 +245,63 @@ public class JoinKeyUtilsTest extends CloverTestCase {
 		}catch(ComponentNotReadyException ex){
 			System.out.println(ex.getMessage());
 		}
+	}
+	
+	public void testParseOrderedKey1() throws ComponentNotReadyException {
+		String joinKey = "$master1(a)=$fieldA;$master2(d)=$fieldB;$master3(a)=$fieldC;#$master1(a)=$apple;$master2(d)=$banana;$master3(a)=$carrot;";
+		OrderedKey[][] parsedKey = JoinKeyUtils.parseMergeJoinOrderedKey(joinKey, Arrays.asList(myMeta));
+		OrderedKey[] masterKey = parsedKey[0];
+		OrderedKey[] slave1Key = parsedKey[1];
+		OrderedKey[] slave2Key = parsedKey[2];
+
+		assertEquals("master1", masterKey[0].getKeyName());
+		assertEquals("master2", masterKey[1].getKeyName());
+		assertEquals("master3", masterKey[2].getKeyName());
+		assertEquals("a", masterKey[0].getOrdering().getShortCut());
+		assertEquals("d", masterKey[1].getOrdering().getShortCut());
+		assertEquals("a", masterKey[2].getOrdering().getShortCut());
+		
+		assertEquals("fieldA", slave1Key[0].getKeyName());
+		assertEquals("fieldB", slave1Key[1].getKeyName());
+		assertEquals("fieldC", slave1Key[2].getKeyName());
+		assertNull(slave1Key[0].getOrdering());
+		assertNull(slave1Key[1].getOrdering());
+		assertNull(slave1Key[2].getOrdering());
+
+		assertEquals("apple", slave2Key[0].getKeyName());
+		assertEquals("banana", slave2Key[1].getKeyName());
+		assertEquals("carrot", slave2Key[2].getKeyName());
+		assertNull(slave2Key[0].getOrdering());
+		assertNull(slave2Key[1].getOrdering());
+		assertNull(slave2Key[2].getOrdering());
+	}
+	public void testParseOrderedKey2() throws ComponentNotReadyException {
+		String joinKey = "$master1(a);$master2(d);$master3(a)#$fieldA(a);$fieldB(d);$fieldC(a);#$apple(a);$banana(d);$carrot(a);";
+		OrderedKey[][] parsedKey = JoinKeyUtils.parseMergeJoinOrderedKey(joinKey, Arrays.asList(myMeta));
+		OrderedKey[] masterKey = parsedKey[0];
+		OrderedKey[] slave1Key = parsedKey[1];
+		OrderedKey[] slave2Key = parsedKey[2];
+
+		assertEquals("master1", masterKey[0].getKeyName());
+		assertEquals("master2", masterKey[1].getKeyName());
+		assertEquals("master3", masterKey[2].getKeyName());
+		assertEquals("a", masterKey[0].getOrdering().getShortCut());
+		assertEquals("d", masterKey[1].getOrdering().getShortCut());
+		assertEquals("a", masterKey[2].getOrdering().getShortCut());
+		
+		assertEquals("fieldA", slave1Key[0].getKeyName());
+		assertEquals("fieldB", slave1Key[1].getKeyName());
+		assertEquals("fieldC", slave1Key[2].getKeyName());
+		assertEquals("a", slave1Key[0].getOrdering().getShortCut());
+		assertEquals("d", slave1Key[1].getOrdering().getShortCut());
+		assertEquals("a", slave1Key[2].getOrdering().getShortCut());
+
+		assertEquals("apple", slave2Key[0].getKeyName());
+		assertEquals("banana", slave2Key[1].getKeyName());
+		assertEquals("carrot", slave2Key[2].getKeyName());
+		assertEquals("a", slave2Key[0].getOrdering().getShortCut());
+		assertEquals("d", slave2Key[1].getOrdering().getShortCut());
+		assertEquals("a", slave2Key[2].getOrdering().getShortCut());
 	}
 
 }

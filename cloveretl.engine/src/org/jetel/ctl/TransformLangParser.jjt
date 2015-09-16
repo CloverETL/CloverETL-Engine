@@ -573,6 +573,15 @@ TOKEN:
 | < COLON: ":" > 
 }
 
+/* Assigment operators */
+TOKEN:
+{
+  < ASSIGN_PLUS: "+=" >
+| < ASSIGN_MINUS: "-=" >
+| < ASSIGN_MULTIPLY: "*=" >
+| < ASSIGN_DIVIDE: "/=" >
+| < ASSIGN_MODULO: "%=" >}
+
 /* Types */
 TOKEN : 
 { 	
@@ -790,7 +799,9 @@ CLVFStart Start() :         // Start -> Exp
 		error(e.beginLine,e.beginColumn,e.endLine,e.endColumn,"Unterminated string literal encountered");
   	} catch (ParseException e) {
   		error(e.currentToken, "Syntax error");
-	} catch (Exception e) {
+	} catch (EscapeCharacterException e){
+		error(e.getLine(), e.getColumn()-1, e.getLine(), e.getColumn(), e.getMessage());
+    } catch (Exception e) {
 		error(1,1,1,2,"Parser error: " + e.getMessage());
 		e.printStackTrace();
 	} catch (TokenMgrError e) {
@@ -823,7 +834,9 @@ CLVFStartExpression StartExpression() : {}{
 		// Parsing deliberately terminated in unknownToken() due to EOF token
   	} catch (ParseException e) {
   		error(1,1,1,2, "Syntax error");
-	} catch (Exception e) {
+	} catch (EscapeCharacterException e){
+		error(e.getLine(), e.getColumn()-1, e.getLine(), e.getColumn(), e.getMessage());
+    } catch (Exception e) {
 		error(1,1,1,2,"Parser error: " + e.getMessage());
 		e.printStackTrace();
 	} catch (TokenMgrError e) {
@@ -1270,10 +1283,10 @@ void Expression() #void :
 	AssignmentExpression()
 }
 
- // Cascades of assignment allowed: x=y=z=3. Achieved by recursion inside  [...]void AssignmentExpression() #Assignment(>1) : 
-{}{  	ConditionalFailExpression()
-  	
-	[  	 ( 
+void AssignmentOp(CLVFAssignment assignment) #void :
+{}
+{
+  	 ( 
   	  <ASSIGN>
   	  |
   	  (
@@ -1281,9 +1294,20 @@ void Expression() #void :
   	    {
   	    	warn(token,"Operator ':=' is obsolete","Use '=' operator instead");
   	    }
-  	  ) 
+  	  )
+  	  |
+  	  <ASSIGN_PLUS> | <ASSIGN_MINUS> | <ASSIGN_MULTIPLY> | <ASSIGN_DIVIDE> | <ASSIGN_MODULO> 
   	) 
-  	{
+  {
+    assignment.setOperator(token.kind);
+  }
+}
+
+ // Cascades of assignment allowed: x=y=z=3. Achieved by recursion inside  [...]void AssignmentExpression() #Assignment(>1) : 
+{}{  	ConditionalFailExpression()
+  	
+	[
+	AssignmentOp(jjtThis)  	{
   		// We check if the LHS is a variable reference
   		// The check can't be done immediately after ConditionalFailExpression()
   		// because of the recursive call to AssignmentExpression() below
@@ -1900,7 +1924,7 @@ void EmptyStatement() #void :
   
 }void CaseStatement(CLVFSwitchStatement switchStatement) :{}{  ( 
     "case" { jjtThis.begin(token.beginLine,token.beginColumn); }
-    Literal() ":" 
+	  UnaryExpression() ":"  // CLO-5038
     { jjtThis.end(token.endLine,token.endColumn); }
   )
   |

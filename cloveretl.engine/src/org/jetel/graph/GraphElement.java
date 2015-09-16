@@ -18,15 +18,19 @@
  */
 package org.jetel.graph;
 
+import java.io.IOException;
 import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.jetel.data.GraphElementDescription;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.InvalidGraphObjectNameException;
-import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.graph.runtime.IAuthorityProxy;
+import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -69,6 +73,12 @@ public abstract class GraphElement implements IGraphElement {
      * information about SimpleCopy component type in general.
      */
     private GraphElementDescription descriptor;
+    
+    /**
+     * List of classloaders allocated by this graph element.
+     * All these {@link URLClassLoader}s are closed in {@link #free()} method. 
+     */
+    private List<URLClassLoader> classLoaders = new ArrayList<>();
     
     /**
      * Constructor.
@@ -149,6 +159,10 @@ public abstract class GraphElement implements IGraphElement {
     @Override
 	public void postExecute() throws ComponentNotReadyException {
     	firstRun = false;
+
+    	if (getGraph() != null && getGraph().getRuntimeContext().isBatchMode()) {
+    		freeClassLoaders();
+    	}
     }
     
     /* (non-Javadoc)
@@ -187,6 +201,8 @@ public abstract class GraphElement implements IGraphElement {
     @Override
 	synchronized public void free() {
         initialized = false;
+
+        freeClassLoaders();
     }
     
     /* (non-Javadoc)
@@ -321,4 +337,34 @@ public abstract class GraphElement implements IGraphElement {
         throw new UnsupportedOperationException("not implemented in org.jetel.graph.GraphElement"); 
 	}
 
+	/**
+	 * Registers newly created classloader, which has been created
+	 * by {@link IAuthorityProxy#createClassLoader(URL[], ClassLoader, boolean)} method. 
+	 * @param classLoader
+	 * @see #freeClassLoaders()
+	 */
+	public void addClassLoader(URLClassLoader classLoader) {
+		if (classLoader != null) {
+			synchronized (classLoaders) {
+				classLoaders.add(classLoader);
+			}
+		}
+	}
+	
+	/**
+	 * Closes all classloaders associated with this graph element. 
+	 */
+	private void freeClassLoaders() {
+		synchronized (classLoaders) {
+			for (URLClassLoader classLoader : classLoaders) {
+				try {
+					classLoader.close();
+				} catch (IOException e) {
+					logger.warn("URLClassLoader allocated for " + this + " cannot be closed.", e);
+				}
+			}
+			classLoaders.clear();
+		}
+	}
+	
 }

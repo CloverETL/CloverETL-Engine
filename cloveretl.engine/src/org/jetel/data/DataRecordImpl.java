@@ -28,7 +28,6 @@ import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.HashCodeUtil;
 import org.jetel.util.bytes.CloverBuffer;
-import org.jetel.util.primitive.BitArray;
 
 /**
  *  A class that represents one data record with structure based on provided
@@ -78,6 +77,11 @@ public class DataRecordImpl extends DataRecord {
      * @see <a href="https://bug.javlin.eu/browse/CLO-4591">CLO-4591</a>
      */
     private boolean deserializeAutofilledFields = true;
+    
+    /**
+     * Indicates the record has been already initialized (see {@link #init()} method).
+     */
+    private boolean isInitialized = false;
     
 	/**
 	 * Create new instance of DataRecord based on specified metadata (
@@ -236,6 +240,7 @@ public class DataRecordImpl extends DataRecord {
 	 * @param  _fieldNum  Description of Parameter
 	 * @since
 	 */
+	@Deprecated
 	@Override
 	public void delField(int _fieldNum) {
             DataField tmp_fields[]=new DataField[fields.length-1];
@@ -498,15 +503,19 @@ public class DataRecordImpl extends DataRecord {
 	 */
 	@Override
 	public void init() {
-		DataFieldMetadata fieldMetadata;
-		// create appropriate data fields based on metadata supplied
-		try {
-			for (int i = 0; i < metadata.getNumFields(); i++) {
-				fieldMetadata = metadata.getField(i);
-				fields[i] = createField(fieldMetadata.getDataType(), fieldMetadata, plain);
+		if (!isInitialized) {
+			DataFieldMetadata fieldMetadata;
+			// create appropriate data fields based on metadata supplied
+			try {
+				for (int i = 0; i < metadata.getNumFields(); i++) {
+					fieldMetadata = metadata.getField(i);
+					fields[i] = createField(fieldMetadata.getDataType(), fieldMetadata, plain);
+				}
+			} catch (Exception e) {
+				throw new JetelRuntimeException(String.format("Data record '%s' cannot be initialized.", metadata.getName()), e);
 			}
-		} catch (Exception e) {
-			throw new JetelRuntimeException(String.format("Data record '%s' cannot be initialized.", metadata.getName()), e);
+			
+			isInitialized = true;
 		}
 	}
 

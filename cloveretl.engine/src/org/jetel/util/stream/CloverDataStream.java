@@ -38,7 +38,8 @@ import java.util.zip.Inflater;
 import net.jpountz.lz4.LZ4Compressor;
 import net.jpountz.lz4.LZ4Factory;
 import net.jpountz.lz4.LZ4FastDecompressor;
-import net.jpountz.util.Utils;
+import net.jpountz.util.SafeUtils;
+import net.jpountz.xxhash.StreamingXXHash32;
 import net.jpountz.xxhash.XXHashFactory;
 
 import org.jetel.util.LZ4Provider;
@@ -265,12 +266,15 @@ public class CloverDataStream {
 		private final CloverBuffer compressedBuffer;
 		private long[] blocksIndex;
 
-		private final boolean syncFlush;
+		private boolean syncFlush;
 		private boolean finished;
 		private boolean compress;
 		private long position;
 		private int firstRecordPosition;
 		private int testRound;
+		
+		private SeekableOutputStream seekableOut;
+		
 
 		/**
 		 * Create a new {@link OutputStream} with configurable block size. Large blocks require more memory at
@@ -307,6 +311,10 @@ public class CloverDataStream {
 			this.blocksIndex = blockIndexSize > DEFAULT_BLOCK_INDEX_SIZE ? new long[((blockIndexSize >> 1) << 1)] : new long[DEFAULT_BLOCK_INDEX_SIZE];
 			this.compress = false; // no compression by default
 			this.testRound=0;
+			
+			if (out instanceof SeekableOutputStream) {
+				this.seekableOut = (SeekableOutputStream) out;
+			}
 		}
 
 		/**
@@ -352,6 +360,10 @@ public class CloverDataStream {
 
 		public void setCompress(boolean compress) {
 			this.compress = compress;
+		}
+
+		public void setSyncFlush(boolean syncFlush) {
+			this.syncFlush = syncFlush;
 		}
 
 		private final void ensureNotFinished() {
@@ -429,13 +441,7 @@ public class CloverDataStream {
 			}
 		}
 
-		private void flushBufferedData() throws IOException {
-			if (buffer.position() == 0)
-				return;
-			// store index of new block which will be added (but only if it contains beginning of record
-			if (firstRecordPosition >= 0)
-				storeBlockIndex();
-
+		private int flushCommon(boolean checkCompressRatio) throws IOException {
 			buffer.flip();
 
 			final int rawlength = buffer.remaining();
@@ -445,26 +451,23 @@ public class CloverDataStream {
 				if (compressedLength==-1){
 					throw new IOException("Error when compressing datablock.");
 				}
-				
-				double ratio=((double)compressedLength)/rawlength;
-				//DEBUG
-				//System.err.println("compress ratio= "+ratio);
-				if (ratio > MIN_COMPRESS_RATIO){
-					if ((testRound++)>NO_TEST_ROUNDS){
-						compress=false; // we are forcing switch off of compression
+
+				if (checkCompressRatio) {
+					double ratio=((double)compressedLength)/rawlength;
+					//DEBUG
+					//System.err.println("compress ratio= "+ratio);
+					if (ratio > MIN_COMPRESS_RATIO){
+						if ((testRound++)>NO_TEST_ROUNDS){
+							compress=false; // we are forcing switch off of compression
+						}
 					}
-					
 				}
 				
 				if (compressedLength < rawlength) {
 					fillBlockHeader(compressedBuffer,DataBlockType.COMPRESSED,compressedLength,rawlength,0,firstRecordPosition);
 					// write header+data
 					out.write(compressedBuffer.array(), 0, CLOVER_BLOCK_HEADER_LENGTH + compressedLength);
-					position += CLOVER_BLOCK_HEADER_LENGTH + compressedLength;
-					buffer.clear();
-					firstRecordPosition = -1; // reset
-					return;
-
+					return CLOVER_BLOCK_HEADER_LENGTH + compressedLength;
 				}
 			}
 			fillBlockHeader(compressedBuffer,DataBlockType.RAW_DATA,rawlength,rawlength,0,firstRecordPosition);
@@ -472,10 +475,40 @@ public class CloverDataStream {
 			out.write(compressedBuffer.array(), 0, CLOVER_BLOCK_HEADER_LENGTH);
 			// write data
 			out.write(buffer.array(), 0, rawlength);
-			position += CLOVER_BLOCK_HEADER_LENGTH + rawlength;
+			return CLOVER_BLOCK_HEADER_LENGTH + rawlength;
+		}
+
+		private void flushBufferedData() throws IOException {
+			if (buffer.position() == 0)
+				return;
+			// store index of new block which will be added (but only if it contains beginning of record
+			if (firstRecordPosition >= 0)
+				storeBlockIndex();
+
+			if (seekableOut != null) {
+				seekableOut.truncate(position);
+			}
+
+			position += flushCommon(true);
 
 			buffer.clear();
 			firstRecordPosition = -1; // reset
+		}
+
+
+		private void softFlush() throws IOException {
+			if (buffer.position() == 0) {
+				return;
+			}
+			seekableOut.truncate(position);
+
+			int bufferLimit = buffer.limit();
+			int bufferPosition = buffer.position();
+
+			flushCommon(false);
+			
+			buffer.position(bufferPosition);
+			buffer.limit(bufferLimit);
 		}
 
 		private final void fillBlockHeader(CloverBuffer buffer,DataBlockType type,int rawLength,int compressedLength,int checksum,int firstRecPos){
@@ -498,7 +531,11 @@ public class CloverDataStream {
 		@Override
 		public void flush() throws IOException {
 			if (syncFlush) {
-				flushBufferedData();
+				if (seekableOut != null) {
+					softFlush();
+				} else {
+					flushBufferedData();
+				}
 			}
 			out.flush();
 		}
@@ -725,7 +762,7 @@ public class CloverDataStream {
 
 		@Override
 		public int read(byte[] b, int off, int len) throws IOException {
-			Utils.checkRange(b, off, len);
+			SafeUtils.checkRange(b, off, len);
 			int count = 0;
 			while (buffer.remaining() < len) {
 				final int l = buffer.remaining();

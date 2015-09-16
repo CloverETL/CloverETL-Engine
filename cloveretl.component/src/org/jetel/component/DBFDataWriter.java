@@ -23,7 +23,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -131,6 +134,7 @@ public class DBFDataWriter extends Node {
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 	private static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
 	private static final String XML_SORTED_INPUT_ATTRIBUTE = "sortedInput";
+	private static final String XML_CREATE_EMPTY_FILES_ATTRIBUTE = "createEmptyFiles";
 	
 	private static final byte[] TYPES = new byte[] {0x02, 0x03, 0x30, 0x31, 0x32, 0x43, (byte) 0xFB};
 
@@ -153,6 +157,7 @@ public class DBFDataWriter extends Node {
 	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBER_FILE_TAG;
 	private String partitionUnassignedFileName;
 	private boolean sortedInput = false;
+	private boolean createEmptyFiles = true;
 
 	private DBFDataFormatterProvider formatterProvider;
 	private MultiFileWriter writer;
@@ -208,7 +213,6 @@ public class DBFDataWriter extends Node {
 	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = DataRecordFactory.newRecord(inPort.getMetadata());
-		record.init();
 		while (record != null && runIt) {
 			record = inPort.readRecord(record);
 			if (record != null) {
@@ -262,6 +266,11 @@ public class DBFDataWriter extends Node {
 			return status;
 		}
 		
+		if (fileURL == null) {
+			status.add("File URL not defined.", Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE);
+			return status;
+		}
+		
 		try {
 			URL url = FileUtils.getFileURL(fileURL);
 			if (!url.getProtocol().equals("file")) {
@@ -272,12 +281,6 @@ public class DBFDataWriter extends Node {
 			//nothing to do here - error for invalid URL is reported by another check 
 		}
 
-		CharsetEncoder encoder = Charset.forName(charsetName).newEncoder();
-		if (encoder.maxBytesPerChar() != 1) {
-			status.add(new ConfigurationProblem("Invalid charset used. 8bit fixed-width encoding needs to be used.", 
-					Severity.ERROR, this, Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
-		}
-		
         try {
         	FileUtils.canWrite(getContextURL(), fileURL, mkDir);
         } catch (ComponentNotReadyException e) {
@@ -316,6 +319,27 @@ public class DBFDataWriter extends Node {
                         Priority.NORMAL, XML_EXCLUDE_FIELDS_ATTRIBUTE));
             }
         }
+        
+        if (charsetName != null && !Charset.isSupported(charsetName)) {
+        	status.add(new ConfigurationProblem(
+					MessageFormat.format("Charset {0} not supported!", charsetName), 
+					ConfigurationStatus.Severity.ERROR, this, 
+					ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+        }
+        Charset charset = Charset.forName(charsetName).newEncoder().charset();
+		Set<String> excludedFields = new HashSet<>(Arrays.asList(StringUtils.isEmpty(excludeFields) ? new String[0] : 
+			excludeFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX)));
+		for (DataFieldMetadata field : getInputPort(READ_FROM_PORT).getMetadata()) {
+			String fieldName = field.getName();
+			int encodedLength = charset.encode(fieldName).limit();
+			if (!excludedFields.contains(fieldName) && encodedLength != fieldName.length()) {
+				status.add(new ConfigurationProblem(
+						MessageFormat.format("Cannot write DBF header. Column name {0} is invalid - metadata field {1} encoded with {2} is too long (encoded lenght is {3} B but {4} B is expected). Change used charset or metadata field name.", fieldName, fieldName, charsetName, encodedLength, fieldName.length()), 
+						ConfigurationStatus.Severity.ERROR, this, 
+						ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+			}
+			
+		}
         
         return status;
     }
@@ -366,6 +390,7 @@ public class DBFDataWriter extends Node {
         
         writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
         writer.setMkDir(mkDir);
+		writer.setCreateEmptyFiles(createEmptyFiles);
 	}
 
 	/**
@@ -399,8 +424,8 @@ public class DBFDataWriter extends Node {
 		DBFDataWriter aDataWriter = null;
 		
 		aDataWriter = new DBFDataWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-								xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, RefResFlag.URL),
-								xattribs.getString(XML_CHARSET_ATTRIBUTE,null),
+								xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.URL),
+								xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
 								xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false),
 								TYPES[xattribs.getInteger(XML_DBF_TYPE, 1)]);
 		if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)){
@@ -435,6 +460,9 @@ public class DBFDataWriter extends Node {
         }
 		if(xattribs.exists(XML_SORTED_INPUT_ATTRIBUTE)) {
 			aDataWriter.setSortedInput(xattribs.getBoolean(XML_SORTED_INPUT_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_CREATE_EMPTY_FILES_ATTRIBUTE)) {
+        	aDataWriter.setCreateEmptyFiles(xattribs.getBoolean(XML_CREATE_EMPTY_FILES_ATTRIBUTE));
         }
 		
 		return aDataWriter;
@@ -578,6 +606,10 @@ public class DBFDataWriter extends Node {
 	 */
 	public void setSortedInput(boolean sortedInput) {
 		this.sortedInput = sortedInput;
+	}
+
+	private void setCreateEmptyFiles(boolean createEmptyFiles) {
+		this.createEmptyFiles = createEmptyFiles;
 	}
     
 }

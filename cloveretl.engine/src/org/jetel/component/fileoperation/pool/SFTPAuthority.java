@@ -21,12 +21,20 @@ package org.jetel.component.fileoperation.pool;
 import java.io.File;
 import java.io.FileFilter;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URI;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
+import org.jetel.component.fileoperation.CloverURI;
+import org.jetel.component.fileoperation.FileManager;
+import org.jetel.component.fileoperation.Info;
+import org.jetel.component.fileoperation.result.InfoResult;
+import org.jetel.component.fileoperation.result.ListResult;
 import org.jetel.graph.ContextProvider;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.protocols.UserInfo;
@@ -35,16 +43,26 @@ import org.jetel.util.string.StringUtils;
 
 public class SFTPAuthority extends AbstractAuthority implements Authority {
 	
+	private static final FileManager manager = FileManager.getInstance();
+	
 	/**
 	 * The name of the directory where to look for private keys. 
 	 */
 	private static final String SSH_KEYS_DIR = "ssh-keys";
+	
+	private static boolean accept(String filename) {
+		return filename.toLowerCase().endsWith(".key");
+	}
+	
+	private static String getKeyName(String filename) {
+		return filename.substring(0, filename.length() - 4);
+	}
 
 	private static final FileFilter KEY_FILE_FILTER = new FileFilter() {
 
 		@Override
-		public boolean accept(File pathname) {
-			return pathname.getName().toLowerCase().endsWith(".key");
+		public boolean accept(File file) {
+			return SFTPAuthority.accept(file.getName());
 		}
 		
 	};
@@ -52,7 +70,7 @@ public class SFTPAuthority extends AbstractAuthority implements Authority {
 	private final Proxy proxy;
 	private UserInfo proxyCredentials;
 	private String proxyString = null;
-	private Set<String> privateKeys = null;
+	private Map<String, URI> privateKeys = null;
 	
 	public SFTPAuthority(URL url, Proxy proxy) {
 		super(url);
@@ -79,21 +97,53 @@ public class SFTPAuthority extends AbstractAuthority implements Authority {
 	private void loadPrivateKeys() {
 		// CLO-5529: do not load private keys if password is specified
 		if (!StringUtils.isEmpty(userInfo) && (userInfo.indexOf(':') >= 0)) {
-			String password = userInfo.split(":")[1];
+			String[] parts = userInfo.split(":");
+			String password = (parts.length > 1) ? parts[1] : "";
 			if (!StringUtils.isEmpty(password)) {
 				return;
 			}
 		}
-		File file = FileUtils.getJavaFile(ContextProvider.getContextURL(), SSH_KEYS_DIR);
-		if ((file != null) && file.isDirectory()) {
-			File[] keys = file.listFiles(KEY_FILE_FILTER);
-			if ((keys != null) && (keys.length > 0)) {
-				this.privateKeys = new HashSet<String>(keys.length);
-				for (File key: keys) {
-					this.privateKeys.add(key.getAbsolutePath());
+		
+		try {
+			URL url = FileUtils.getFileURL(ContextProvider.getContextURL(), SSH_KEYS_DIR);
+			File file = null;
+			try {
+				// optimization, conversion to File usually works at runtime
+				file = FileUtils.convertUrlToFile(url);
+			} catch (MalformedURLException e) {}
+			
+			if (file != null) {
+				if (file.isDirectory()) {
+					File[] keys = file.listFiles(KEY_FILE_FILTER);
+					if ((keys != null) && (keys.length > 0)) {
+						this.privateKeys = new HashMap<String, URI>(keys.length);
+						for (File key: keys) {
+							this.privateKeys.put(getKeyName(key.getName()), key.toURI());
+						}
+					}
+				}
+			} else { // CLO-6175: conversion to File failed, try listing the directory using FileManager
+				CloverURI uri = CloverURI.createSingleURI(url.toURI());
+				InfoResult dirInfo = manager.info(uri);
+				if (dirInfo.isDirectory()) {
+					ListResult listResult = manager.list(uri);
+					if (listResult.success()) {
+						List<Info> files = listResult.getResult();
+						Map<String, URI> keys = new HashMap<>(files.size());
+						for (Info info: files) {
+							String name = info.getName();
+							if (accept(name)) {
+								keys.put(getKeyName(name), info.getURI());
+							}
+						}
+						if (!keys.isEmpty()) {
+							this.privateKeys = keys;
+						}
+					}
 				}
 			}
-		}
+			
+		} catch (Exception ex) {}
 	}
 
 	public void setProxyCredentials(UserInfo proxyCredentials) {
@@ -136,7 +186,7 @@ public class SFTPAuthority extends AbstractAuthority implements Authority {
 	/**
 	 * @return the privateKeys
 	 */
-	public Set<String> getPrivateKeys() {
+	public Map<String, URI> getPrivateKeys() {
 		return privateKeys;
 	}
 
@@ -147,7 +197,7 @@ public class SFTPAuthority extends AbstractAuthority implements Authority {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + ((privateKeys == null) ? 0 : privateKeys.hashCode());
+		result = prime * result + Objects.hashCode(privateKeys);
 		return result;
 	}
 

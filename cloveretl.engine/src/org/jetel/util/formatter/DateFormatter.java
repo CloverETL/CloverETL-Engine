@@ -21,6 +21,8 @@ package org.jetel.util.formatter;
 import java.util.Date;
 import java.util.Locale;
 
+import org.jetel.util.CloverPublicAPI;
+
 /**
  * Unified interface of internally used date formatters.
  *
@@ -30,6 +32,7 @@ import java.util.Locale;
  * @version 16th April 2010
  * @created 10th August 2009
  */
+@CloverPublicAPI
 public interface DateFormatter {
 
 	/**
@@ -63,6 +66,22 @@ public interface DateFormatter {
 	 * or if there's invalid extra text after the parsed value
 	 */
 	public Date parseDateStrict(String value);
+	
+	/**
+	 * Parses the date from string using {@link #parseDateStrict()} and does additional validation.
+	 * 
+	 * This parsing method first parses the string and then formats the Date to another string. Formatted string is
+	 * compared to the input string and when they are not equal an exception is thrown. This is the most strict version of
+	 * parsing currently possible.
+	 *
+	 * @param value a string representation of a date value
+	 *
+	 * @return the date value
+	 *
+	 * @throws IllegalArgumentException if the string value has invalid format
+	 * or if there's invalid extra text after the parsed value or if the parsed string does not match pattern exactly
+	 */
+	public Date parseDateExactMatch(String value);
 	
 
 	/**

@@ -21,12 +21,8 @@ package org.jetel.sequence;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.RandomAccessFile;
 import java.net.URL;
 import java.nio.BufferUnderflowException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -70,34 +66,19 @@ import org.w3c.dom.Element;
  *              cached CDATA #IMPLIED&gt;
  *                                 
  */
-public class SimpleSequence extends GraphElement implements Sequence {
+public class SimpleSequence extends AbstractSequence {
 
     public final static String SEQUENCE_TYPE = "SIMPLE_SEQUENCE";
-
-    public static final int DATA_SIZE = 8; //how many bytes occupy serialized value in file
-    public static final String ACCESS_MODE="rwd";
-    
     public static final Log logger = LogFactory.getLog(SimpleSequence.class);
     
-    String filename;
-    long sequenceValue;
-    int step;
-    long start;
-    int numCachedValues;
-    boolean alreadyIncremented = false;
-    
-    int counter;
-    FileChannel io;
-    FileLock lock;
-    ByteBuffer buffer;
+    // file for persisting
+    private String filename;
+    private long numCachedValues;
+    long counter;
+    private SimpleSequenceSynchronizer synchronizer; 
 
-	private String configFileName;
-    private static final String XML_NAME_ATTRIBUTE = "name";
 	private static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
-	private static final String XML_START_ATTRIBUTE = "start";
-	private static final String XML_STEP_ATTRIBUTE = "step";
 	private static final String XML_CACHED_ATTRIBUTE = "cached";
-	private static final String XML_SEQCONFIG_ATTRIBUTE = "seqConfig";
     
     /**
      * Creates SimpleSequence object.
@@ -111,7 +92,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
      * @param numCachedValues	how many values should be cached (reduces IO but consumes some of the 
      * available values between object reusals)
      */
-    public SimpleSequence(String id, TransformationGraph graph, String sequenceName, String filename, long start, int step, int numCachedValues) {
+    public SimpleSequence(String id, TransformationGraph graph, String sequenceName, String filename, long start, long step, long numCachedValues) {
         super(id, graph, sequenceName);
         this.filename=filename;
         this.start=start;
@@ -129,9 +110,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
     public SimpleSequence(String id, TransformationGraph graph, String configFilename) {
         super(id, graph);
         this.configFileName = configFilename;
-        
 		this.counter = 0;
-
     }
     
     @Override
@@ -139,7 +118,6 @@ public class SimpleSequence extends GraphElement implements Sequence {
         if(!isInitialized()) {
             throw new RuntimeException("Can't get currentValue for non-initialized sequence "+getId());
         }
-
         return alreadyIncremented ? sequenceValue - step : sequenceValue;
     }
     
@@ -148,37 +126,20 @@ public class SimpleSequence extends GraphElement implements Sequence {
         if(!isInitialized()) {
             throw new RuntimeException("Can't call nextValue for non-initialized sequence "+getId());
         }
-
         if (counter<=0){
-            flushValue(sequenceValue+step*numCachedValues);
+        	try {
+        		//read current value from file, since other running graphs could have changed it
+        		sequenceValue = synchronizer.getAndSet(step, numCachedValues);
+        	} catch (IOException ex){
+                throw new RuntimeException("I/O error when accessing sequence "+getName()+" id: "+getId(), ex);
+            }
             counter=numCachedValues;
         }
         long tmpVal=sequenceValue;
         sequenceValue+=step;
         counter--;
         alreadyIncremented = true;
-        
         return tmpVal;
-    }
-    
-    @Override
-	public int currentValueInt(){
-        return (int) currentValueLong();
-    }
-    
-    @Override
-	public int nextValueInt(){
-        return (int) nextValueLong();
-    }
-    
-    @Override
-	public String currentValueString(){
-        return Long.toString(currentValueLong());
-    }
-    
-    @Override
-	public String nextValueString(){
-        return Long.toString(nextValueLong());
     }
     
     /* (non-Javadoc)
@@ -191,7 +152,11 @@ public class SimpleSequence extends GraphElement implements Sequence {
         }
         sequenceValue=start;
         alreadyIncremented = false;
-        flushValue(sequenceValue);
+        try {
+			synchronizer.flushValue(sequenceValue);
+		} catch (IOException e) {
+			throw new RuntimeException("I/O error when accessing sequence "+getName()+" id: "+getId(), e);
+		}
     }
 
     @Override
@@ -210,32 +175,15 @@ public class SimpleSequence extends GraphElement implements Sequence {
 		
 		loadExternalSequence();
 		
-        buffer = ByteBuffer.allocateDirect(DATA_SIZE);
-        try{
-        	File file = FileUtils.getJavaFile(getContextURL(), filename);
-            if (!file.exists()) {
-            	logger.info("Sequence file " + filename + " doesn't exist. Creating new file.");
-                file.createNewFile();
-                io = new RandomAccessFile(file,ACCESS_MODE).getChannel();
-                lock = io.lock();
-                io.force(true);
-                flushValue(sequenceValue);
-            } else {
-                io = new RandomAccessFile(file,ACCESS_MODE).getChannel();
-                lock = io.tryLock();
-                if (lock == null) {
-                    // report non-locked sequence
-                    logger.warn("Can't obtain file lock for sequence: " + getName()+" id: "+getId());
-                }
-                io.force(true);
-                io.read(buffer);
-                buffer.flip();
-                sequenceValue = buffer.getLong();
-                alreadyIncremented = false;
-            }
+        try {
+        	// register this sequence, set it's value
+        	synchronizer = SimpleSequenceSynchronizer.registerAndGetSynchronizer(this);
+    		alreadyIncremented = false;
         } catch(IOException ex) {
             free();
-            ComponentNotReadyException cnre = new ComponentNotReadyException(this, "Can't read value from sequence file.", ex);
+            ComponentNotReadyException cnre = new ComponentNotReadyException(this, "Can't read value from sequence file. If you "
+            		+ "are using CloverETL Cluster, please make sure you are accessing persisted sequence "
+            		+StringUtils.quote(getName())+" on the same cluster node.", ex);
             cnre.setAttributeName(XML_FILE_URL_ATTRIBUTE);
             throw cnre;
 		}catch (BufferUnderflowException e) {
@@ -278,18 +226,6 @@ public class SimpleSequence extends GraphElement implements Sequence {
     	super.reset();
     }
     
-    private final void flushValue(long value) {
-        try{
-            buffer.rewind();
-            buffer.putLong(value);
-            buffer.flip();
-            io.position(0);
-            io.write(buffer);
-        }catch(IOException ex){
-            throw new RuntimeException("I/O error when accessing sequence "+getName()+" id: "+getId(), ex);
-        }
-    }
-    
     /**
      * Closes the sequence (current instance). All internal resources should be freed in
      * this method.
@@ -297,20 +233,10 @@ public class SimpleSequence extends GraphElement implements Sequence {
     @Override
 	synchronized public void free() {
         if(!isInitialized()) return;
-        super.free();
-
-        try {
-            if (lock != null) {
-                lock.release();
-                lock=null;
-            }
-            if (io != null && io.isOpen()) {
-                io.close();
-                io=null;
-            }
-        } catch (IOException ex) {
-            logger.warn("I/O error when freeing sequence " + getName(), ex);
+        if (synchronizer != null) {
+        	synchronizer.unregisterSequence(this);
         }
+        super.free();
     }
     
     public synchronized void delete() {
@@ -325,16 +251,8 @@ public class SimpleSequence extends GraphElement implements Sequence {
         }
     }
     
-	public int getNumCachedValues() {
+	public long getNumCachedValues() {
 		return numCachedValues;
-	}
-
-	public long getStart() {
-		return start;
-	}
-	
-	public int getStep() {
-		return step;
 	}
 	
 	public String getFilename() {
@@ -345,6 +263,14 @@ public class SimpleSequence extends GraphElement implements Sequence {
 		this.filename = filename;
 	}
 	
+	public SimpleSequenceSynchronizer getSynchronizer() {
+		return synchronizer;
+	}
+	
+	public void setSynchronizer(SimpleSequenceSynchronizer synchronizer) {
+		this.synchronizer = synchronizer;
+	}
+
 	static public SimpleSequence fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
@@ -383,6 +309,13 @@ public class SimpleSequence extends GraphElement implements Sequence {
 	@Override
 	public boolean isShared() {
 		return true;
+	}
+
+	/**
+	 * @return the last number this sequence has currently reserved
+	 */
+	public long getEndOfCurrentRange() {
+		return currentValueLong() + counter * step;
 	}
 
 }

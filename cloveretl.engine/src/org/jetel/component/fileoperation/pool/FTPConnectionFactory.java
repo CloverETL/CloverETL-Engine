@@ -37,7 +37,7 @@ public class FTPConnectionFactory implements ConnectionFactory {
 
 	@Override
 	public boolean validateObject(Authority key, PoolableConnection obj) {
-		return ((PooledFTPConnection) obj).isOpen();
+		return obj.isOpen();
 	}
 
 	@Override

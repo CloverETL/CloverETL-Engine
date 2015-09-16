@@ -56,6 +56,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
@@ -292,7 +293,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
         try {
             if (StringUtils.isEmpty(getJndiName())) {
             	if (!getJdbcDriver().getDriver().acceptsURL(getDbUrl())) {
-            		throw new ComponentNotReadyException("Unacceptable connection url: '" + getDbUrl() + "'");
+            		throw new ComponentNotReadyException("Unacceptable connection URL: '" + getDbUrl() + "'");
             	}
             }
         } catch (SQLException e) {
@@ -638,14 +639,33 @@ public class DBConnectionImpl extends AbstractDBConnection {
 		} catch (IOException e1) {
 			logger.warn("Failed to parse SQL query", e1);
 		}
-
-        int index = sqlQuery.toUpperCase().indexOf("WHERE");
-
-		if (index >= 0) {
-			sqlQuery = sqlQuery.substring(0, index).concat("WHERE 0=1");
-		} else {
-			sqlQuery = sqlQuery.concat(" WHERE 0=1");
-		}
+        
+        String optimizeProperty = parameters.getProperty(OPTIMIZE_QUERY_PROPERTY);
+        SqlQueryOptimizeOption optimize;
+        if (optimizeProperty == null) {
+        	optimize = SqlQueryOptimizeOption.FALSE;
+        } else {
+        	try {
+        		optimize = SqlQueryOptimizeOption.valueOf(optimizeProperty.toUpperCase());
+        	} catch (Exception e) {
+        		optimize = SqlQueryOptimizeOption.FALSE;
+        	}
+        }
+        switch (optimize) {
+        case TRUE:
+        case NAIVE:
+        	logger.debug("Optimizing sql query for dynamic metadata. Original query: " + sqlQuery);
+        	if (optimize == SqlQueryOptimizeOption.TRUE) {
+        		sqlQuery = SQLUtil.encloseInQptimizingQuery(sqlQuery);
+        	} else {
+        		//NAIVE
+        		sqlQuery = SQLUtil.appendOptimizingWhereClause(sqlQuery);
+        	}
+        	logger.debug("Optimizing sql query for dynamic metadata. Optimized query: " + sqlQuery);
+        	break;
+        default:
+        	//empty
+        }
 
         Connection connection;
 		try {
@@ -969,7 +989,9 @@ public class DBConnectionImpl extends AbstractDBConnection {
 				return getJdbcSpecific().createSQLConnection(this, createConnection(), operationType);
 			} catch (JetelException e) {
 				throw new JetelException("Cannot establish DB connection (" + getId() + ").", e);
-			}
+			} catch (NoClassDefFoundError err) { // CLO-6337
+	        	throw new JetelException("Could not find required class definition: " + ExceptionUtils.getClassName((NoClassDefFoundError) err), err);
+	        }
     	}
     }
 }

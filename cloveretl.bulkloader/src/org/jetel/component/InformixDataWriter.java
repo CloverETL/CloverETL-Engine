@@ -484,7 +484,7 @@ public class InformixDataWriter extends BulkLoader {
      */
     private void createCommandFile() throws ComponentNotReadyException {
     	File commandFile = new File(commandFileName);
-        FileWriter commandWriter;
+        FileWriter commandWriter = null;
         try {
         	commandFile.createNewFile();
         	commandWriter = new FileWriter(commandFile);
@@ -507,9 +507,16 @@ public class InformixDataWriter extends BulkLoader {
         	}
 
             commandWriter.write(content);
-            commandWriter.close();
-        } catch(IOException ex) {
+        } catch (IOException ex) {
             throw new ComponentNotReadyException(this, "Can't create temp control file for dbload utility.", ex);
+        } finally {
+        	try {
+        		if (commandWriter != null) {
+        			commandWriter.close();
+        		}
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(e);
+			}
         }
     }
 
@@ -582,8 +589,8 @@ public class InformixDataWriter extends BulkLoader {
 
     	InformixDataWriter informixDataWriter = new InformixDataWriter(
     			xattribs.getString(XML_ID_ATTRIBUTE),
-                xattribs.getStringEx(XML_DB_LOADER_PATH_ATTRIBUTE, RefResFlag.URL),
-                xattribs.getString(XML_DATABASE_ATTRIBUTE));
+                xattribs.getStringEx(XML_DB_LOADER_PATH_ATTRIBUTE, null, RefResFlag.URL),
+                xattribs.getString(XML_DATABASE_ATTRIBUTE, null));
     	if (xattribs.exists(XML_TABLE_ATTRIBUTE)) {
     		informixDataWriter.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
     	}
@@ -681,7 +688,7 @@ public class InformixDataWriter extends BulkLoader {
 		}
 		if (StringUtils.isEmpty(command) && StringUtils.isEmpty(table)) {
 			status.add(new ConfigurationProblem(StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute has to be specified or " +
-					StringUtils.quote(XML_COMMAND_ATTRIBUTE) + " attribute has to be specified.", Severity.ERROR, this, Priority.NORMAL));
+					StringUtils.quote(XML_COMMAND_ATTRIBUTE) + " attribute has to be specified.", Severity.ERROR, this, Priority.NORMAL, XML_TABLE_ATTRIBUTE));
 		}
 		
 		if (!isDataReadFromPort) {
@@ -846,10 +853,7 @@ public class InformixDataWriter extends BulkLoader {
     		dbParser = new DelimitedDataParser(dbOutMetadata,CHARSET_NAME);
 
     		dbRecord = DataRecordFactory.newRecord(dbOutMetadata);
-    		dbRecord.init();
-    		
 			errRecord = DataRecordFactory.newRecord(errMetadata);
-			errRecord.init();
     		
 			Pattern badRowPattern = Pattern.compile(strBadRowPattern);
 			badRowMatcher = badRowPattern.matcher("");

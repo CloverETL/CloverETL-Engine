@@ -24,13 +24,14 @@ import java.util.Date;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.HashCodeUtil;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.DateFormatter;
 import org.jetel.util.formatter.DateFormatterFactory;
 import org.jetel.util.string.Compare;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Represents a date data field.
@@ -45,7 +46,8 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @see DateFormatterFactory
  *
  */
-@SuppressWarnings("EI")
+@SuppressFBWarnings("EI")
+@CloverPublicAPI
 public class DateDataField extends DataFieldImpl implements Comparable<Object> {
 	
 	/** the actual date value */

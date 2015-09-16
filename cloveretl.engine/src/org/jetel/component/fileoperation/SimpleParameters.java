@@ -27,7 +27,8 @@ import java.util.Set;
 
 public class SimpleParameters implements Parameters, Cloneable {
 	
-	private Map<String, Object> map = new HashMap<String, Object>();
+	// so far, no subclass supports more than 3 parameters, use initial size of 5
+	private Map<String, Object> map = new HashMap<String, Object>(5);
 	
 	@Override
 	public Object get(String key) {

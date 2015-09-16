@@ -148,6 +148,56 @@ public class SerializableExceptionTest extends CloverTestCase {
 		assertTrue(ExceptionUtils.instanceOf(se, CompoundException.class));
 	}
 
+	public void test12() {
+		Throwable e = new Exception("aaa");
+		e.addSuppressed(new Exception("bbb"));
+
+		SerializableException se = new SerializableException(e);
+		
+		compare(e, se);
+	}
+
+	public void test13() {
+		Throwable e = new Exception("aaa", new JetelRuntimeException("xxx"));
+		Exception suppressedEx = new IOException("yyy");
+		suppressedEx.addSuppressed(new JetelException("zzz"));
+		e.addSuppressed(new Exception("bbb", suppressedEx));
+		e.addSuppressed(new Exception("ccc"));
+
+		SerializableException se = new SerializableException(e);
+		
+		compare(e, se);
+
+		assertFalse(ExceptionUtils.instanceOf(se, NullPointerException.class));
+		assertFalse(ExceptionUtils.instanceOf(se, SerializableException.class));
+		assertTrue(ExceptionUtils.instanceOf(se, JetelRuntimeException.class));
+		assertTrue(ExceptionUtils.instanceOf(se, IOException.class));
+		assertFalse(ExceptionUtils.instanceOf(se, CompoundException.class));
+		assertTrue(ExceptionUtils.instanceOf(se, JetelException.class));
+	}
+
+	public void test14() {
+		Throwable e = new Exception("aaa", new JetelRuntimeException("xxx"));
+		Exception suppressedEx = new IOException("yyy");
+		suppressedEx.addSuppressed(new JetelException("zzz"));
+		suppressedEx.addSuppressed(new CompoundException("www", new NullPointerException("qqq"), new IllegalArgumentException()));
+		e.addSuppressed(new Exception("bbb", suppressedEx));
+		e.addSuppressed(new Exception("ccc"));
+
+		SerializableException se = new SerializableException(e);
+		
+		compare(e, se);
+
+		assertTrue(ExceptionUtils.instanceOf(se, NullPointerException.class));
+		assertFalse(ExceptionUtils.instanceOf(se, SerializableException.class));
+		assertTrue(ExceptionUtils.instanceOf(se, JetelRuntimeException.class));
+		assertTrue(ExceptionUtils.instanceOf(se, IOException.class));
+		assertTrue(ExceptionUtils.instanceOf(se, CompoundException.class));
+		assertTrue(ExceptionUtils.instanceOf(se, JetelException.class));
+		assertTrue(ExceptionUtils.instanceOf(se, CompoundException.class));
+		assertTrue(ExceptionUtils.instanceOf(se, IllegalArgumentException.class));
+	}
+
 	private void compare(Throwable e, SerializableException se) {
 		assertEquals(e.getLocalizedMessage(), se.getLocalizedMessage());
 		assertEquals(e.getMessage(), se.getMessage());
@@ -156,6 +206,13 @@ public class SerializableExceptionTest extends CloverTestCase {
 		assertEquals(ExceptionUtils.getMessage(e), ExceptionUtils.getMessage(se));
 		assertEquals(ExceptionUtils.stackTraceToString(e), ExceptionUtils.stackTraceToString(se));
 
+		Throwable[] suppressedException = e.getSuppressed();
+		Throwable[] serializableSuppressedException = se.getSuppressed();
+		assertTrue(suppressedException.length == serializableSuppressedException.length);
+		for (int i = 0; i < suppressedException.length; i++) {
+			compare(suppressedException[i], (SerializableException) serializableSuppressedException[i]);
+		}
+		
 		assertTrue((e.getCause() != null && se.getCause() != null) || (e.getCause() == null && se.getCause() == null));
 		
 		if (e.getCause() != null) {

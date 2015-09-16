@@ -23,8 +23,10 @@ import java.util.Properties;
 import org.jetel.component.AbstractDataTransform;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 
 /**
  * Base class for various denormalization implementations.
@@ -32,6 +34,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @since 11/21/06  
  * @see org.jetel.component.Denormalizer
  */
+@CloverPublicAPI
 public abstract class DataRecordDenormalize extends AbstractDataTransform implements RecordDenormalize {
 
 	protected Properties parameters;
@@ -45,9 +48,30 @@ public abstract class DataRecordDenormalize extends AbstractDataTransform implem
 		this.sourceMetadata = sourceMetadata;
 		this.targetMetadata = targetMetadata;
 
+		return init();
+	}
+	
+	/**
+	 * Override this method to provide user-desired initialization.
+	 * 
+	 * @throws ComponentNotReadyException if the initialization fails for any reason
+	 */
+	protected boolean init() throws ComponentNotReadyException {
 		return true;
 	}
 
+	@Deprecated
+	@Override
+	public int append(DataRecord inRecord) throws TransformException {
+		throw new JetelRuntimeException("Abstract method 'append' is not implemented.");
+	}
+
+	@Override
+	public int append(DataRecord inRecord, DataRecord outRecord) throws TransformException {
+		return append(inRecord);
+	}
+	
+	@Deprecated
 	@Override
 	public int appendOnError(Exception exception, DataRecord inRecord) throws TransformException {
 		// by default just throw the exception that caused the error
@@ -55,11 +79,32 @@ public abstract class DataRecordDenormalize extends AbstractDataTransform implem
 	}
 
 	@Override
+	public int appendOnError(Exception exception, DataRecord inRecord, DataRecord outRecord) throws TransformException {
+		return appendOnError(exception, inRecord);
+	}
+
+	@Deprecated
+	@Override
+	public int transform(DataRecord outRecord) throws TransformException {
+		throw new JetelRuntimeException("Abstract method 'transform' is not implemented.");
+	}
+
+	@Override
+	public int transform(DataRecord inRecord, DataRecord outRecord) throws TransformException {
+		return transform(outRecord);
+	}
+	
+	@Override
 	public int transformOnError(Exception exception, DataRecord outRecord) throws TransformException {
 		// by default just throw the exception that caused the error
 		throw new TransformException("Denormalization failed!", exception);
 	}
 
+	@Override
+	public int transformOnError(Exception exception, DataRecord inRecord, DataRecord outRecord) throws TransformException {
+		return transformOnError(exception, outRecord);
+	}
+	
 	@Override
 	public void clean(){
 		// do nothing by default

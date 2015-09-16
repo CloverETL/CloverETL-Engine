@@ -81,7 +81,7 @@ public class PropertyRefResolver {
 	private final GraphParameters parameters;
 
 	/** the regex pattern used to find CTL expressions */
-	private final Pattern expressionPattern = Pattern.compile(Defaults.GraphProperties.EXPRESSION_PLACEHOLDER_REGEX);
+	private static final Pattern expressionPattern = Pattern.compile(Defaults.GraphProperties.EXPRESSION_PLACEHOLDER_REGEX);
 	/** the regex pattern used to find property references */
 	private static final Pattern propertyPattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX);
 
@@ -533,6 +533,44 @@ public class PropertyRefResolver {
 	public static boolean isPropertyReference(String value){
 		if (!StringUtils.isEmpty(value)) {
 			return propertyPattern.matcher(value).matches();
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * This method extract name of parameter from the given value,
+	 * which has to be 'property reference', see {@link #isPropertyReference(String)}.
+	 * Null value is returned if the value is not simple property reference.
+	 * 
+	 * For example:
+	 * ${param} -> param
+	 * abc${param} -> null
+	 * ${param1}${param2} -> null
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static String getReferencedProperty(String value) {
+		if (!StringUtils.isEmpty(value)) {
+			Matcher matcher = propertyPattern.matcher(value);
+			if (matcher.matches()) {
+				return matcher.group(1);
+			} else {
+				return null;
+			}
+		} else {
+			return null;
+		}
+	}
+	
+	/**
+	 * @param value tested string
+	 * @return true if the given string represents CTL expression, for example "`today()`; false otherwise 
+	 */
+	public static boolean isCTLExpression(String value){
+		if (!StringUtils.isEmpty(value)) {
+			return expressionPattern.matcher(value).matches();
 		} else {
 			return false;
 		}

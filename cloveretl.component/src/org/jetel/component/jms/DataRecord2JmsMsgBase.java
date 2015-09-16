@@ -28,6 +28,7 @@ import org.jetel.component.AbstractDataTransform;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 
 /**
  * Simple partial implementation of DataRecord2JmsMsg interface. Supposed to be extended by full implementations.
@@ -35,6 +36,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
  * @since 11/28/06
  */
+@CloverPublicAPI
 public abstract class DataRecord2JmsMsgBase extends AbstractDataTransform implements DataRecord2JmsMsg {
 
 	protected String errMsg;

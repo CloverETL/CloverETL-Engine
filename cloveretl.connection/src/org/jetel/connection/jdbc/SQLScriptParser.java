@@ -215,7 +215,7 @@ public class SQLScriptParser implements Iterable<String> {
 						throw new IOException("Unexpected end of input");
 					}
 					else {
-						logger.warn("Missing terminating semicolon in SQL statement");
+						logger.trace("Missing terminating semicolon in SQL statement");
 						break;
 					}
 				}

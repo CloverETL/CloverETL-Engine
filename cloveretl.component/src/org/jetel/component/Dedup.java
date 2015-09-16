@@ -259,9 +259,7 @@ public class Dedup extends Node {
 	public Result execute() throws Exception {
 		records = new DataRecord[2];
         records[0] = DataRecordFactory.newRecord(inPort.getMetadata());
-        records[0].init();
         records[1] = DataRecordFactory.newRecord(inPort.getMetadata());
-        records[1].init();
         isFirst = true; // special treatment for 1st record
         current = 1;
         previous = 0;
@@ -600,9 +598,7 @@ public class Dedup extends Node {
         	 return status;
          }
          
-         if (getInputPort(READ_FROM_PORT) != null) {
-        	 checkMetadata(status, getInputPort(READ_FROM_PORT).getMetadata(), getOutMetadata());
-         }
+         checkMetadata(status, getInPorts(), getOutPorts());
 
          try {
              init();

@@ -28,7 +28,10 @@ import java.net.Proxy.Type;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.text.MessageFormat;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -38,11 +41,13 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.protocols.sftp.URLUserInfo;
 import org.jetel.util.protocols.sftp.URLUserInfoIteractive;
+import org.jetel.util.stream.CloseOnceOutputStream;
 import org.jetel.util.string.StringUtils;
 
 import com.jcraft.jsch.ChannelSftp;
@@ -119,6 +124,8 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 						proxySocks5.setUserPasswd(proxyCredentials.getUser(), proxyCredentials.getPassword());
 					}
 					return new Proxy[] {proxySocks5, proxySocks4};
+				case DIRECT:
+					return new Proxy[1];
 				}
 			}
 		}
@@ -132,6 +139,9 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 	 * @return
 	 */
 	private String decodeString(String s) {
+		if (s == null) {
+			return null;
+		}
 		try {
 			return URLDecoder.decode(s, ENCODING);
 		} catch (UnsupportedEncodingException e) {
@@ -139,13 +149,30 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 		}
 	}
 
-	private String[] getUserInfo() {
+	/**
+	 * Returns raw (URL-encoded) user info.
+	 * 
+	 * Always returns an array with two elements.
+	 * The first element is the user name and it is never null.
+	 * The second element is the password and it is null if the userInfo does not contain a colon.
+	 * 
+	 * @return [username, password]
+	 */
+	private String[] getRawUserInfo() {
 		String userInfo = authority.getUserInfo();
-		if (userInfo == null) return new String[] {""};
-		return decodeString(userInfo).split(":");
+		if (userInfo == null) {
+			return new String[] {"", null};
+		}
+		
+		if (userInfo.indexOf(':') >= 0) {
+			return userInfo.split(":", 2);
+		} else {
+			return new String[] {userInfo, null};
+		}
+		
 	}
 	
-	private Set<String> getPrivateKeys() {
+	private Map<String, URI> getPrivateKeys() {
 		return ((SFTPAuthority) authority).getPrivateKeys();
 	}
 
@@ -169,23 +196,41 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 	
 	private Session getSession() throws IOException {
 		JSch jsch = new JSch();
-		Set<String> keys = getPrivateKeys();
-		String[] user = getUserInfo();
-		String username = user[0];
-		String password = user.length == 2 ? user[1] : null;
+		Map<String, URI> keys = getPrivateKeys();
+		String[] userInfo = getRawUserInfo();
+		String rawUsername = userInfo[0];
+		String username = decodeString(rawUsername);
+		String password = decodeString(userInfo[1]);
 		
 		if (password == null) {
+			if (keys == null || keys.isEmpty()) { // CLO-5770
+				throw new IOException("No password or private key specified for user " + username);
+			}
 			// CLO-4562: use private key authentication only if password is not set
 			if (log.isDebugEnabled()) {
-				log.debug("SFTP connecting to " + authority.getHost() + " using the following private keys: " + keys);
+				log.debug("SFTP connecting to " + authority.getHost() + " using the following private keys: " + keys.values());
 			}
-			if (keys != null) {
-				for (String key: keys) {
+
+			// CLO-4868: try matching keys first
+			URI matchingKey;
+			if ((matchingKey = keys.get(rawUsername + "@" + authority.getHost())) != null) {
+				if (log.isDebugEnabled() && (keys.size() > 1)) {
+					log.debug("SFTP selected " + matchingKey + " as the best matching key, ignoring remaining keys");
+				}
+				addIdentity(jsch, matchingKey);
+			} else if ((matchingKey = keys.get(authority.getHost())) != null) {
+				if (log.isDebugEnabled() && (keys.size() > 1)) {
+					log.debug("SFTP selected " + matchingKey + " as the best matching key, ignoring remaining keys");
+				}
+				addIdentity(jsch, matchingKey);
+			} else {
+				List<String> names = new ArrayList<>(keys.keySet());
+				Collections.sort(names); // CLO-4868: add the keys in alphabetical order
+				for (String name: names) {
 					try {
-						log.debug("Adding new identity from " + key);
-						jsch.addIdentity(key);
-					} catch (Exception e) {
-						log.warn("Failed to read private key", e);
+						addIdentity(jsch, keys.get(name));
+					} catch (IOException e) {
+						log.warn(e.getMessage(), e);
 					}
 				}
 			}
@@ -193,11 +238,6 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 			log.debug("SFTP connecting to " + authority.getHost() + " using password");
 		}
 		
-		if (log.isWarnEnabled()) {
-			if (!StringUtils.isEmpty(username) && StringUtils.isEmpty(password) && (keys == null || keys.isEmpty())) {
-				log.warn("No password or private key specified for user " + username);
-			}
-		}
 
 		Proxy[] proxies = getProxies();
 		try {
@@ -210,6 +250,19 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 				log.debug("Connecting to " + authority.getHost() + " with keyboard-interactive authentication");
 			}
 			return getSession(jsch, username, new URLUserInfoIteractive(password), proxies);
+		}
+	}
+
+	private void addIdentity(JSch jsch, URI key) throws IOException {
+		try {
+			String keyName = key.toString();
+			log.debug("Adding new identity from " + keyName);
+			try (InputStream is = FileUtils.getInputStream(null, keyName)) {
+				byte[] prvKey = IOUtils.toByteArray(is);
+				jsch.addIdentity(keyName, prvKey, null, null);
+			}
+		} catch (Exception e) {
+			throw new IOException("Failed to read private key", e);
 		}
 	}
 	
@@ -372,7 +425,7 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 	public OutputStream getOutputStream(String file, int mode) throws IOException {
 		try {
 			channel = getChannelSftp();
-			OutputStream os = new BufferedOutputStream(channel.put(file, mode)) {
+			OutputStream os = new CloseOnceOutputStream(new BufferedOutputStream(channel.put(file, mode)) {
 				@Override
 				public void close() throws IOException {
 					try {
@@ -381,7 +434,7 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 						returnToPool();
 					}
 				}
-			};
+			}, null) ;
 			return os;
 		} catch (Exception e) {
 			returnToPool();

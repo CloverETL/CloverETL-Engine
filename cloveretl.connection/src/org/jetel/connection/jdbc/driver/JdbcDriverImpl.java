@@ -18,20 +18,16 @@
  */
 package org.jetel.connection.jdbc.driver;
 
-import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.sql.Driver;
 import java.util.Properties;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.database.sql.JdbcDriver;
 import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.ContextProvider;
-import org.jetel.util.classloader.ClassDefinitionFactory;
 import org.jetel.util.classloader.MultiParentClassLoader;
 import org.jetel.util.string.StringUtils;
 
@@ -245,22 +241,11 @@ public class JdbcDriverImpl implements JdbcDriver {
 			 * Therefore we need to obtain code that deregisters driver from the library class loader.
 			 */
 			ClassLoader loader = getClassLoader();
-			if (driver.getClass().getClassLoader() == loader && loader instanceof ClassDefinitionFactory) {
-				ClassDefinitionFactory factory = (ClassDefinitionFactory)loader;
-				// get DriverUnregisterer's code, load it using driver's class loader and perform deregistration
-				final ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
+			if (driver.getClass().getClassLoader() == loader) {
 				try {
-					Thread.currentThread().setContextClassLoader(DriverUnregisterer.class.getClassLoader()); // prevents CLO-4787
-					InputStream classData = DriverUnregisterer.class.getResourceAsStream(DriverUnregisterer.class.getSimpleName().concat(".class"));
-					byte classBytes[] = IOUtils.toByteArray(classData);
-					IOUtils.closeQuietly(classData);
-					Class<?> unregisterer = factory.defineClass(DriverUnregisterer.class.getName(), classBytes);
-					Method unregister = unregisterer.getMethod("unregisterDrivers", ClassLoader.class);
-					unregister.invoke(unregisterer.newInstance(), loader);
+					DriverUnregisterer.run(loader);
 				} catch (Throwable t) {
 					logger.warn("Error occurred during JDBC driver deregistration.", t);
-				} finally {
-					Thread.currentThread().setContextClassLoader(originalLoader);
 				}
 			}
 			if (jdbcSpecific != null) {

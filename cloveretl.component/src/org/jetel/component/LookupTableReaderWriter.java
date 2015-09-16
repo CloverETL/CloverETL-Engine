@@ -29,6 +29,8 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -149,7 +151,6 @@ public class LookupTableReaderWriter extends Node {
 		if (writeToTable) {//putting records to lookup table
 			InputPort inPort = getInputPort(READ_FROM_PORT);
 			DataRecord inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-			inRecord.init();
 			while ((inRecord = inPort.readRecord(inRecord)) != null && runIt) {
 				lookupTable.put(inRecord);
 				SynchronizeUtils.cloverYield();
@@ -179,7 +180,7 @@ public class LookupTableReaderWriter extends Node {
     public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		return new LookupTableReaderWriter(xattribs.getString(XML_ID_ATTRIBUTE), 
-				xattribs.getString(XML_LOOKUP_TABLE_ATTRIBUTE), 
+				xattribs.getString(XML_LOOKUP_TABLE_ATTRIBUTE, null), 
 				xattribs.getBoolean(XML_FREE_LOOKUP_TABLE_ATTRIBUTE, false));
  	}
     
@@ -189,6 +190,11 @@ public class LookupTableReaderWriter extends Node {
  
 		if(!checkInputPorts(status, 0, 1)
 				|| !checkOutputPorts(status, 0, Integer.MAX_VALUE)) {
+			return status;
+		}
+		
+		if (lookupTableName == null) {
+			status.add("Lookup table not selected", Severity.ERROR, this, Priority.NORMAL, XML_LOOKUP_TABLE_ATTRIBUTE);
 			return status;
 		}
 

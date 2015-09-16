@@ -45,7 +45,6 @@ import org.jetel.exception.PolicyType;
 import org.jetel.graph.GraphElement;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -166,7 +165,6 @@ public class SQLDataParser extends AbstractParser {
 	@Override
 	public DataRecord getNext() throws JetelException {
 		DataRecord localOutRecord=DataRecordFactory.newRecord(metadata);
-		localOutRecord.init();
 
 		return getNext(localOutRecord);
 	}
@@ -488,14 +486,8 @@ public class SQLDataParser extends AbstractParser {
 		if (incrementalKey == null || incrementalFile == null) {
 			return;
 		}
-		FileOutputStream fos = null;
-		try {
-			 fos = new FileOutputStream(incrementalFile);
+		try (FileOutputStream fos = new FileOutputStream(incrementalFile)) {
 			((Properties) position).store(fos, null);
-		} finally {
-			if (fos != null) {
-				fos.close();
-			}
 		}
 	}
 

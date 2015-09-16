@@ -18,6 +18,8 @@
  */
 package org.jetel.util.string;
 
+import java.util.List;
+
 /**
  * Utility to generate valid XML tag name from arbitrary string. Even that XML allows non-ASCII characters
  * as a tag name, this utility encodes them as well as any special ASCII characters. These characters are encoded as
@@ -116,6 +118,30 @@ public class TagName {
 		}
 		return false;
 	}
+	
+	//CLO-4853, CLO-4857 - if the element name has exactly one ":" and other characters are valid 
+	//and the substring from the beginning to the ":" is a namespace name, it is considered valid
+	public static boolean isValidName(String name, List<String> namespaceNames) {
+		boolean isValid = false;
+		
+		if (name.contains(":")) {
+		
+			String elementNamespaceName = name.substring(0, name.indexOf(":"));
+			String elementName = name.substring(name.indexOf(":") + 1);
+			if (!TagName.hasInvalidCharacters(elementNamespaceName) && !TagName.hasInvalidCharacters(elementName)) {
+
+				if (namespaceNames.contains(elementNamespaceName)) {
+					isValid = true;
+				}
+				
+			} 
+		} else {
+			isValid = !TagName.hasInvalidCharacters(name);
+		}
+		
+		return isValid;
+	}
+	
 	
 	/**
 	 * Decodes given input string previously encoded by this class.

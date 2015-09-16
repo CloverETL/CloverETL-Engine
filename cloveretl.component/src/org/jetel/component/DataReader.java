@@ -254,14 +254,12 @@ public class DataReader extends Node {
 		// we need to create data record - take the metadata from first output
 		// port
 		DataRecord record = DataRecordFactory.newRecord(getOutputPort(OUTPUT_PORT).getMetadata());
-		record.init();
 		// if we have second output port we can logging - create data record for
 		// log port
 		DataRecord logRecord = null;
 		boolean hasFileNameField = false;
 		if (logging) {
 			logRecord = DataRecordFactory.newRecord(getOutputPort(LOG_PORT).getMetadata());
-			logRecord.init();
 			hasFileNameField = logRecord.getNumFields() == 5;
 		}
 		int errorCount = 0;
@@ -278,11 +276,13 @@ public class DataReader extends Node {
 						throw bdfe;
 					} else {
 						if (logging) {
-							// TODO implement log port framework
-							((Numeric) logRecord.getField(0))
-									.setValue(bdfe.getRecordNumber());
-							((IntegerDataField) logRecord.getField(1))
-									.setValue(bdfe.getFieldNumber() + 1);
+							logRecord.reset();
+							if (bdfe.getRecordNumber() > -1) {
+								((Numeric) logRecord.getField(0)).setValue(bdfe.getRecordNumber());
+							}
+							if (bdfe.getFieldNumber() > -1) {
+								((IntegerDataField) logRecord.getField(1)).setValue(bdfe.getFieldNumber() + 1);
+							}
 							setCharSequenceToField(bdfe.getRawRecord(), logRecord.getField(2));
 							setCharSequenceToField(ExceptionUtils.getMessage(bdfe), logRecord.getField(3));
 							if (hasFileNameField) {
@@ -388,6 +388,7 @@ public class DataReader extends Node {
         parserCfg.setSkipTrailingBlanks(skipTrailingBlanks);
         parserCfg.setTryToMatchLongerDelimiter(DataRecordUtils.containsPrefixDelimiters(parserCfg.getMetadata()));
         parserCfg.setTrim(trim);
+        parserCfg.setPolicyType(policyType);
         if( incrementalFile != null || incrementalKey != null || skipFirstLine || skipRows > 0 || skipSourceRows > 0 ) {
         	parserCfg.setSkipRows(true);
         }
@@ -454,7 +455,7 @@ public class DataReader extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
 		aDataReader = new DataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-				xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.URL),
+				xattribs.getStringEx(XML_FILE_ATTRIBUTE, null, RefResFlag.URL),
 				xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
 				xattribs.getBoolean(XML_VERBOSE_ATTRIBUTE, false));
 		aDataReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
@@ -563,6 +564,11 @@ public class DataReader extends Node {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+        }
+        
+        if (StringUtils.isEmpty(fileURL)) {
+            status.add("Missing file URL attribute.", Severity.ERROR, this, Priority.NORMAL, XML_FILE_ATTRIBUTE);
+            return status;
         }
         
         try {

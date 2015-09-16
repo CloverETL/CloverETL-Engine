@@ -41,7 +41,12 @@ public class NullRecord extends DataRecordImpl {
 	/**
 	 * Constant used for representation of record will all fields with null value.
 	 */
-	public final static DataRecord NULL_RECORD = new NullRecord();
+	public final static DataRecord NULL_RECORD;
+	
+	static {
+		NULL_RECORD = new NullRecord();
+		NULL_RECORD.init();
+	}
 	
 	/**
 	 * Creates NullRecord object based on NullMetadata

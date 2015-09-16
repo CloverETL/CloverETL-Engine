@@ -84,7 +84,6 @@ public class PortDataProducer implements DataProducer {
 			throw new RuntimeException("Unable to close previous data target.", e);
 		}
         record = DataRecordFactory.newRecord(metadata);
-        record.init();
 	}
 	
 	/**

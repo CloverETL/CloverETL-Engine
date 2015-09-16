@@ -34,6 +34,8 @@ import org.jetel.connection.jdbc.SQLUtil;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
+import org.jetel.data.parser.TextParser;
+import org.jetel.data.parser.TextParserFactory;
 import org.jetel.database.IConnection;
 import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.JdbcSpecific.OperationType;
@@ -53,10 +55,15 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.ExceptionUtils;
+import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
@@ -218,7 +225,9 @@ import org.w3c.dom.Element;
  * @created     22. July 2003
  * @see         org.jetel.database.AnalyzeDB
  */
-public class DBOutputTable extends Node {
+public class DBOutputTable extends Node implements MetadataProvider {
+	
+	private final static String OUT_METADATA_ID_SUFFIX = "_outMetadata";
 	
 	public static final String XML_MAXERRORS_ATRIBUTE = "maxErrors";
 	public static final String XML_BATCHMODE_ATTRIBUTE = "batchMode";
@@ -256,6 +265,7 @@ public class DBOutputTable extends Node {
 	private boolean[] returnResult;
 	private ConnectionAction errorAction = ConnectionAction.COMMIT;
 	private boolean atomicSQL;
+	ReadableChannelIterator channelReadingIterator; // for reading the query from dictionary
 	
 	private InputPort inPort;
 	private OutputPort rejectedPort, keysPort;
@@ -392,9 +402,13 @@ public class DBOutputTable extends Node {
 	public void setSqlQuery(String sqlQuery) {
 		this.sqlQuery = StringUtils.isEmpty(sqlQuery) ? null : new String[] { sqlQuery };
 	}
-	
+
 	private void setCharset(String charset) {
 		this.charset = charset;
+	}
+
+	public String getCharset() {
+		return charset;
 	}
 
 	private void setQueryURL(String queryURL) {
@@ -428,7 +442,6 @@ public class DBOutputTable extends Node {
 		rejectedPort = getOutputPort(WRITE_REJECTED_TO_PORT);
 		rejectedRecord = rejectedPort != null ? DataRecordFactory.newRecord(rejectedPort.getMetadata()) : null;
 		if (rejectedRecord != null) {
-			rejectedRecord.init();
 			errorCodeFieldNum = rejectedRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_CODE);
 			errMessFieldNum = rejectedRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_MESSAGE);
 			if (errMessFieldNum == -1) {
@@ -478,7 +491,6 @@ public class DBOutputTable extends Node {
 		super.preExecute();
 		
 		inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-		inRecord.init();
 		
 		// create connection instance, which represents connection to a database
 		try {
@@ -488,21 +500,41 @@ public class DBOutputTable extends Node {
 		}
 
 		if (firstRun()) {// a phase-dependent part of initialization
-			
+
 			// get query from query url
 			if (sqlQuery == null && queryURL != null) {
-				String rawContents = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), queryURL, charset);
-				setSqlQuery(SQLUtil.split(getGraph().getPropertyRefResolver().resolveRef(rawContents, null)));
+				if (queryURL.startsWith("dict:")) {
+					channelReadingIterator = new ReadableChannelIterator(null, getGraph().getRuntimeContext().getContextURL(), queryURL);
+					channelReadingIterator.setCharset(charset);
+					channelReadingIterator.setDictionary(getGraph().getDictionary());
+					channelReadingIterator.init();
+					try {
+						Object next = channelReadingIterator.next();
+						DataRecordMetadata queryMetadata = new DataRecordMetadata("_query_metadata_", DataRecordParsingType.DELIMITED);
+						DataFieldMetadata queryField = new DataFieldMetadata("_query_field_", DataFieldType.STRING, null);
+						queryField.setEofAsDelimiter(true);
+						queryField.setTrim(true);
+						queryMetadata.addField(queryField);
+						TextParser dictParser = TextParserFactory.getParser(queryMetadata, charset);
+						dictParser.init();
+						dictParser.setDataSource(next);
+						DataRecord queryRecord = DataRecordFactory.newRecord(queryMetadata);
+						if ((queryRecord = dictParser.getNext(queryRecord)) != null) {
+							sqlQuery = new String[] { getPropertyRefResolver().resolveRef(queryRecord.getField(0).toString()) };
+						}
+					} catch (JetelException | IOException e) {
+						throw new ComponentNotReadyException(e);
+					}
+				} else {
+					String rawContents = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), queryURL, charset);
+					setSqlQuery(SQLUtil.split(getGraph().getPropertyRefResolver().resolveRef(rawContents, null)));
+				}
 			}
 			
 			keysPort = getOutputPort(WRITE_AUTO_KEY_TO_PORT);
 			returnResult = new boolean[sqlQuery.length];
 			Arrays.fill(returnResult, false);
 			keysRecord = keysPort != null ? DataRecordFactory.newRecord(keysPort.getMetadata()) : null;
-			if (keysRecord != null) {
-				keysRecord.init();
-				keysRecord.reset();
-			}
 
 			// prepare set of statements
 			statement = new SQLCloverStatement[sqlQuery.length];
@@ -811,7 +843,6 @@ public class DBOutputTable extends Node {
 	        for (int i = 0; i < statement.length; i++) {
 				for (int j = 0; j < batchSize; j++) {
 					dataRecordHolder[i][j] = DataRecordFactory.newRecord(rejectedMetadata);
-					dataRecordHolder[i][j].init();
 				}
 			}
 	    }else{
@@ -1046,7 +1077,6 @@ public class DBOutputTable extends Node {
 							}
 						}else if (records != null){//records[i][count] == null - it wasn't added to batch, prepare for next batch
 							records[i][count] = DataRecordFactory.newRecord(rejectedPort.getMetadata());
-							records[i][count].init();
 						}
 					}
 					count++;
@@ -1079,7 +1109,6 @@ public class DBOutputTable extends Node {
 						rejectedPort.writeRecord(records[i][count]);
 					}else if (records != null){
 						records[i][count] = DataRecordFactory.newRecord(rejectedPort.getMetadata());
-						records[i][count].init();
 					}
 					count++;
 		        }
@@ -1107,28 +1136,24 @@ public class DBOutputTable extends Node {
 
 		// allows specifying parameterized SQL (with ? - question marks)
 		if (xattribs.exists(XML_URL_ATTRIBUTE)){
-			outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(XML_DBCONNECTION_ATTRIBUTE));
+			outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(XML_DBCONNECTION_ATTRIBUTE, null));
 			outputTable.setQueryURL(xattribs.getStringEx(XML_URL_ATTRIBUTE, RefResFlag.URL));
-			outputTable.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
 		}else if (xattribs.exists(XML_SQLQUERY_ATRIBUTE)) {
 				outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
-				xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
+				xattribs.getString(XML_DBCONNECTION_ATTRIBUTE, null),
 				SQLUtil.split(xattribs.getString(XML_SQLQUERY_ATRIBUTE)));
 		}else if(xattribs.exists(XML_DBTABLE_ATTRIBUTE)){
 			outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
+					xattribs.getString(XML_DBCONNECTION_ATTRIBUTE, null),
 					xattribs.getString(XML_DBTABLE_ATTRIBUTE));
-		}else{
-		    childNode = xattribs.getChildNode(xmlElement, XML_SQLCODE_ELEMENT);
-            if (childNode == null) {
-                throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ": Can't find <SQLCode> node !");
-            }
+		}else if ((childNode = xattribs.getChildNode(xmlElement, XML_SQLCODE_ELEMENT)) != null) {
             xattribsChild = new ComponentXMLAttributes((Element)childNode, graph);
             outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
+					xattribs.getString(XML_DBCONNECTION_ATTRIBUTE, null),
 					SQLUtil.split(xattribsChild.getText(childNode)));
+		} else {
+			outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(XML_DBCONNECTION_ATTRIBUTE, null));
 		}
-		
 		
 		if (xattribs.exists(XML_DBTABLE_ATTRIBUTE)) {
 			outputTable.setDBTableName(xattribs.getString(XML_DBTABLE_ATTRIBUTE));
@@ -1176,16 +1201,30 @@ public class DBOutputTable extends Node {
 		if (xattribs.exists(XML_ATOMIC_RECORD_STATEMENT_ATTRIBUTE)){
 			outputTable.setAtomicSQL(xattribs.getBoolean(XML_ATOMIC_RECORD_STATEMENT_ATTRIBUTE));
 		}
+		if (xattribs.exists(XML_CHARSET_ATTRIBUTE)){
+			outputTable.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
+		}
 		
 		return outputTable;
 	}
 
-     @Override
+	@Override
      public ConfigurationStatus checkConfig(ConfigurationStatus status) {
          super.checkConfig(status);
          
          if(!checkInputPorts(status, 1, 1)
         		 || !checkOutputPorts(status, 0, 2, false)) {
+        	 return status;
+         }
+         
+         if (sqlQuery == null && queryURL == null && dbTableName == null) {
+         	status.add("One of " + XML_SQLQUERY_ATRIBUTE + ", " + XML_URL_ATTRIBUTE + " or " + XML_DBTABLE_ATTRIBUTE + " must be specified.",
+         			Severity.ERROR, this, Priority.NORMAL);
+         }
+         if (dbConnectionName == null) {
+         	status.add("DB connection not defined.", Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+         }
+         if ((sqlQuery == null && queryURL == null && dbTableName == null ) || dbConnectionName == null) {
         	 return status;
          }
 
@@ -1258,7 +1297,6 @@ public class DBOutputTable extends Node {
 			}
 			if (inPort.getMetadata() != null) {
 				inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-				inRecord.init();
 				int start = 0, end;
 				for (int i = 0; i < sqlQuery.length; i++) {
 					String[] tmpCloverFields = null;
@@ -1388,6 +1426,30 @@ public class DBOutputTable extends Node {
 			super(element, ex);
 		}
 		
+	}
+
+	@Override
+	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		return null;
+	}
+
+	@Override
+	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		if(portIndex == 0){
+			InputPort inputPort = getInputPort(0);
+			if(inputPort != null){
+				MVMetadata inputMetadata = metadataPropagationResolver.findMetadata(inputPort.getEdge());
+				if (inputMetadata != null) {
+					DataRecordMetadata recordMetadata = inputMetadata.getModel().duplicate();
+					recordMetadata.addField(new DataFieldMetadata("ErrCode", inputMetadata.getModel().getFieldDelimiter()));
+					recordMetadata.addField(new DataFieldMetadata("ErrText", inputMetadata.getModel().getRecordDelimiter()));
+					recordMetadata.getRecordProperties().remove(new String("previewAttachment"));
+					MVMetadata metadata = metadataPropagationResolver.createMVMetadata(recordMetadata, this, OUT_METADATA_ID_SUFFIX);
+					return metadata;
+				}
+			}
+		}
+		return null;
 	}
 	
 	

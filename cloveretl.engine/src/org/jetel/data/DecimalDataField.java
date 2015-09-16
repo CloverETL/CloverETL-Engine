@@ -35,6 +35,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.BinaryFormat;
 import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.HashCodeUtil;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -51,6 +52,7 @@ import org.jetel.util.string.Compare;
  *@since      November 30, 2005
  *@see        org.jetel.metadata.DataFieldMetadata
  */
+@CloverPublicAPI
 public class DecimalDataField extends DataFieldImpl implements Numeric, Comparable<Object> {
 	
 	private Decimal value;

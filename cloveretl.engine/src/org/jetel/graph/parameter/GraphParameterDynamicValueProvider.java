@@ -19,8 +19,11 @@
 package org.jetel.graph.parameter;
 
 import java.text.MessageFormat;
+import java.util.Date;
 
 import org.jetel.component.TransformFactory;
+import org.jetel.ctl.ITLCompilerFactory;
+import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelRuntimeException;
@@ -29,6 +32,8 @@ import org.jetel.graph.GraphParameter;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.formatter.DateFormatter;
+import org.jetel.util.formatter.DateFormatterFactory;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
@@ -40,6 +45,8 @@ import org.jetel.util.string.StringUtils;
  * @created 29. 4. 2014
  */
 public class GraphParameterDynamicValueProvider {
+	
+	private static ITLCompilerFactory COMPILER_FACTORY;
 	
 	private static interface TransformationGraphProvider {
 		TransformationGraph getGraph();
@@ -53,13 +60,29 @@ public class GraphParameterDynamicValueProvider {
 	private boolean initialized;
 	private GraphParameterValueFunction transform;
 	private boolean recursionFlag;
+	
+	private String value = null;
 
+	/**
+	 * CLO-5564:
+	 * Used for conversion of Date to String.
+	 */
+	private DateFormatter dateFormatter;
+	
 	private GraphParameterDynamicValueProvider(TransformationGraphProvider graphProvider, String parameterName, String transformCode, TransformFactory<GraphParameterValueFunction> factory) {
 		super();
 		this.graphProvider = graphProvider;
 		this.parameterName = parameterName;
 		this.transformCode = transformCode;
 		this.factory = factory;
+	}
+	
+	private static TransformFactory<GraphParameterValueFunction> createTransformFactory() {
+		TransformFactory<GraphParameterValueFunction> factory = TransformFactory.createTransformFactory(GraphParameterValueFunctionDescriptor.newInstance());
+		if (COMPILER_FACTORY != null) {
+			factory.setCompilerFactory(COMPILER_FACTORY);
+		}
+		return factory;
 	}
 	
 	public static GraphParameterDynamicValueProvider create(final GraphParameter graphParameter, String transformCode) {
@@ -70,7 +93,7 @@ public class GraphParameterDynamicValueProvider {
 			}
 		};
 		
-		TransformFactory<GraphParameterValueFunction> factory = TransformFactory.createTransformFactory(GraphParameterValueFunctionDescriptor.newInstance());
+		TransformFactory<GraphParameterValueFunction> factory = createTransformFactory();
 
 		return new GraphParameterDynamicValueProvider(transformationGraphProvider, graphParameter.getName(), transformCode, factory);
 	}
@@ -82,7 +105,7 @@ public class GraphParameterDynamicValueProvider {
 				return graph;
 			}
 		};
-		TransformFactory<GraphParameterValueFunction> factory = TransformFactory.createTransformFactory(GraphParameterValueFunctionDescriptor.newInstance());
+		TransformFactory<GraphParameterValueFunction> factory = createTransformFactory();
 
 		return new GraphParameterDynamicValueProvider(transformationGraphProvider, parameterName, transformCode, factory);
 	}
@@ -119,6 +142,20 @@ public class GraphParameterDynamicValueProvider {
 		return factory.checkConfig(status);
 	}
 	
+	private DateFormatter getDateFormatter() {
+		if (dateFormatter == null) {
+			dateFormatter = DateFormatterFactory.getFormatter(Defaults.DEFAULT_DATETIME_FORMAT);
+		}
+		return dateFormatter;
+	}
+	
+	private String toString(Object value) {
+		if (value instanceof Date) {
+			return getDateFormatter().format((Date) value);
+		}
+		return String.valueOf(value);
+	}
+	
 	public synchronized String getValue() {
 		try {
 			init();
@@ -126,26 +163,33 @@ public class GraphParameterDynamicValueProvider {
 			throw new JetelRuntimeException("Cannot initialize dynamic parameter", e1);
 		}
 		
-		try {
-			if (recursionFlag) {
-				throw new JetelRuntimeException(MessageFormat.format(
-						"Infinite recursion detected when resolving dynamic value for graph parameter ''{0}''",
-						parameterName));
+		// CLO-6809: cache the value
+		if (value == null) {
+			try {
+				if (recursionFlag) {
+					throw new JetelRuntimeException(MessageFormat.format(
+							"Infinite recursion detected when resolving dynamic value for graph parameter ''{0}''",
+							parameterName));
+				}
+				
+				recursionFlag = true;
+				value = toString(transform.getValue());
+			} catch (TransformException e) {
+				throw new JetelRuntimeException("Cannot get parameter value", e);
+			} finally {
+				recursionFlag = false;
 			}
-			
-			recursionFlag = true;
-			String parameterValue = transform.getValue();
-			
-			return parameterValue;
-		} catch (TransformException e) {
-			throw new JetelRuntimeException("Cannot get parameter value", e);
-		} finally {
-			recursionFlag = false;
 		}
+		
+		return value;
 	}
 	
 	public String getTransformCode() {
 		return transformCode;
+	}
+
+	public static void setCompilerFactory(ITLCompilerFactory compilerFactory) {
+		GraphParameterDynamicValueProvider.COMPILER_FACTORY = compilerFactory;
 	}
 	
 }

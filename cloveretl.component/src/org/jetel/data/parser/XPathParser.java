@@ -20,6 +20,8 @@ package org.jetel.data.parser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.HashMap;
@@ -56,6 +58,8 @@ import org.jetel.exception.PolicyType;
 import org.jetel.exception.StrictParserExceptionHandler;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.XmlUtils;
+import org.jetel.util.file.FileUtils;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -123,7 +127,11 @@ public class XPathParser extends AbstractParser {
 	private SupportedDataModels dataModel = SupportedDataModels.CLOVER_ETL;
 	
 	private InputStream input;
-
+	
+	private String charset;
+	
+	private URL contextUrl = null;
+	
 	public XPathParser() {
 	}
 	
@@ -445,8 +453,8 @@ public class XPathParser extends AbstractParser {
 		    if (exceptionHandler instanceof StrictParserExceptionHandler) {
 				ErrorListener errorListener = new ErrorListener() {
 					@Override
-					public void warning(TransformerException exception)
-							throws TransformerException {
+					public void warning(TransformerException exception) throws TransformerException {
+							logger.warn(exception); // CLO-6698: Saxon StandardErrorHandler.warning() swallows the exception
 							throw exception;
 					}
 					@Override
@@ -462,6 +470,10 @@ public class XPathParser extends AbstractParser {
 				};
 				
 				xPathEvaluator.getConfiguration().setErrorListener(errorListener);
+		    }
+		    
+		    if (graph != null) {
+		    	this.contextUrl = graph.getRuntimeContext().getContextURL();
 		    }
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(e);
@@ -517,13 +529,26 @@ public class XPathParser extends AbstractParser {
 		if (releaseDataSource) {
 			releaseDataSource();
 		}
-		if (inputDataSource instanceof InputStream) {
+		String uri = null;
+		if (inputDataSource instanceof URI) {
+			uri = inputDataSource.toString();
+			try {
+				input = FileUtils.getInputStream(contextUrl, uri);
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(e);
+			}
+		} else if (inputDataSource instanceof InputStream) {
 			input = (InputStream)inputDataSource;
 		} else {
 			input = Channels.newInputStream((ReadableByteChannel)inputDataSource);
 		}
 		try {
-			xpathContext.init(new SAXSource(reader, new InputSource(input)));
+			InputSource source = new InputSource(input);
+			if (charset != null) { // CLO-6708
+				source.setEncoding(charset);
+			}
+			XmlUtils.setSystemId(source, contextUrl, uri);
+			xpathContext.init(new SAXSource(reader, source));
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(e);
 		}
@@ -646,6 +671,10 @@ public class XPathParser extends AbstractParser {
 		this.xmlFeatures = xmlFeatures;
 	}
 
+	public void setCharset(String charset) {
+		this.charset = charset;
+	}
+
 	/**
 	 * @return the dataModel
 	 */
@@ -690,7 +719,7 @@ public class XPathParser extends AbstractParser {
 
 	@Override
 	public DataSourceType getPreferredDataSourceType() {
-		return DataSourceType.STREAM;
+		return DataSourceType.URI;
 	}
 	
 	

@@ -19,6 +19,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -58,14 +59,18 @@ import org.jetel.util.bytes.PackedDecimal;
 import org.jetel.util.crypto.Base64;
 import org.jetel.util.crypto.Digest;
 import org.jetel.util.crypto.Digest.DigestType;
+import org.jetel.util.formatter.TimeZoneProvider;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.CloverString;
 import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Years;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 
 import junit.framework.AssertionFailedError;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class CompilerTestCase extends CloverTestCase {
 
 	// ---------- RECORD NAMES -----------
@@ -147,6 +152,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		  assertEquals(varName, expectedResult, getVariable(varName));
 	}
 	
+	protected void check(String varName, double expectedResult, double delta) {
+		  assertEquals(varName, expectedResult, (double) getVariable(varName), delta);
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected void checkEqualValue(String varName, Object expectedResult) {
 		  assertTrue(varName, ((Comparable)expectedResult).compareTo(getVariable(varName))==0);
 	}
@@ -178,8 +188,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	@Override
 	protected void setUp() {
-		// set default locale to English to prevent various parsing errors
-		Locale.setDefault(Locale.ENGLISH);
+		// set default locale to en.US to prevent various parsing errors
+		Locale.setDefault(new Locale("en", "US"));
 		initEngine();
 	}
 
@@ -247,10 +257,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			g.getDictionary().setValue("yFib", "byte", new byte[]{1,2,3,5,8,13,21,34,55,89} );
 			g.getDictionary().setValue("stringList", "list", Arrays.asList("aa", "bb", null, "cc"));
 			g.getDictionary().setContentType("stringList", "string");
+			g.getDictionary().setValue("integerList", "list", Arrays.asList(1, 2, null, 4));
+			g.getDictionary().setContentType("integerList", "integer");
 			g.getDictionary().setValue("dateList", "list", Arrays.asList(new Date(12000), new Date(34000), null, new Date(56000)));
 			g.getDictionary().setContentType("dateList", "date");
 			g.getDictionary().setValue("byteList", "list", Arrays.asList(new byte[] {0x12}, new byte[] {0x34, 0x56}, null, new byte[] {0x78}));
 			g.getDictionary().setContentType("byteList", "byte");
+			g.getDictionary().setValue("stringMap", "map", new LinkedHashMap<String,String>());
+			g.getDictionary().setContentType("stringMap", "string");
+			g.getDictionary().setValue("integerMap", "map", new LinkedHashMap<String,Integer>());
+			g.getDictionary().setContentType("integerMap", "integer");
 		} catch (ComponentNotReadyException e) {
 			throw new RuntimeException("Error init default dictionary", e);
 		}
@@ -457,7 +473,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	 */
 	protected DataRecord createDefaultMultivalueRecord(DataRecordMetadata dataRecordMetadata) {
 		final DataRecord ret = DataRecordFactory.newRecord(dataRecordMetadata);
-		ret.init();
 
 		for (int i = 0; i < ret.getNumFields(); i++) {
 			DataField field = ret.getField(i);
@@ -555,7 +570,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	 */
 	protected DataRecord createDefaultRecord(DataRecordMetadata dataRecordMetadata) {
 		final DataRecord ret = DataRecordFactory.newRecord(dataRecordMetadata);
-		ret.init();
 
 		SetVal.setString(ret, "Name", NAME_VALUE);
 		SetVal.setDouble(ret, "Age", AGE_VALUE);
@@ -579,7 +593,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	 */
 	protected DataRecord createEmptyRecord(DataRecordMetadata metadata) {
 		DataRecord ret = DataRecordFactory.newRecord(metadata);
-		ret.init();
 
 		for (int i = 0; i < ret.getNumFields(); i++) {
 			SetVal.setNull(ret, i);
@@ -621,6 +634,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		// prepend the compilation mode prefix
 		if (compileToJava) {
 			expStr = "//#CTL2:COMPILE\n" + expStr;
+		} else {
+			expStr = "//#CTL2:INTERPRET\n" + expStr;
 		}
 
 		print_code(expStr);
@@ -634,7 +649,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			outMetadata[i] = outRecords[i].getMetadata();
 		}
 
-		ITLCompiler compiler = TLCompilerFactory.createCompiler(graph, inMetadata, outMetadata, "UTF-8");
+		ITLCompiler compiler = createCompiler(graph, inMetadata, outMetadata);
 		// *** NOTE: please don't remove this commented code. It is used for debugging
 		// ***       Uncomment the code to get the compiled Java code during test execution.
 		// ***       Please don't commit this code uncommented.
@@ -661,6 +676,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		executeCode(compiler);
 	}
+
+	protected ITLCompiler createCompiler(TransformationGraph graph, DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata) {
+		return TLCompilerFactory.createCompiler(graph, inMetadata, outMetadata, "UTF-8");
+	}
 	
 	protected void doCompileExpectError(TransformationGraph graph, String expStr, String testIdentifier, List<String> errCodes) {
 		this.graph = graph;
@@ -671,11 +690,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		// prepend the compilation mode prefix
 		if (compileToJava) {
 			expStr = "//#CTL2:COMPILE\n" + expStr;
+		} else {
+			expStr = "//#CTL2:INTERPRET\n" + expStr;
 		}
 
 		print_code(expStr);
 
-		ITLCompiler compiler = TLCompilerFactory.createCompiler(graph, inMetadata, outMetadata, "UTF-8");
+		ITLCompiler compiler = createCompiler(graph, inMetadata, outMetadata);
 		List<ErrorMessage> messages = compiler.compile(expStr, CTLRecordTransform.class, testIdentifier);
 		printMessages(messages);
 
@@ -718,12 +739,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		final StringBuilder sourceCode = new StringBuilder();
 		String line = null;
-		try {
-			BufferedReader rd = new BufferedReader(new InputStreamReader(importLoc.openStream()));
+		try (BufferedReader rd = new BufferedReader(new InputStreamReader(importLoc.openStream()))) {
 			while ((line = rd.readLine()) != null) {
 				sourceCode.append(line).append("\n");
 			}
-			rd.close();
 		} catch (IOException e) {
 			throw new RuntimeException("I/O error occured when reading source file", e);
 		}
@@ -746,12 +765,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		final StringBuilder sourceCode = new StringBuilder();
 		String line = null;
-		try {
-			BufferedReader rd = new BufferedReader(new InputStreamReader(importLoc.openStream()));
+		try (BufferedReader rd = new BufferedReader(new InputStreamReader(importLoc.openStream()))) {
 			while ((line = rd.readLine()) != null) {
 				sourceCode.append(line).append("\n");
 			}
-			rd.close();
 		} catch (IOException e) {
 			throw new RuntimeException("I/O error occured when reading source file", e);
 		}
@@ -1282,6 +1299,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_dynamiclib_getFieldType");
 		check("ret1", "string");
 		check("ret2", "number");
+		check("ret3", "number");
 	}
 	
 	public void test_dynamiclib_getFieldType_expect_error(){
@@ -1303,8 +1321,215 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+		try {
+			doCompile("function integer transform(){firstInput fi = null; string str = fi.getFieldType(\"XYZABC\"); return 0;}","test_dynamiclib_getFieldType_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		
+		doCompileExpectError("function integer transform(){firstInput fi; fi.getFieldType(null); return 0;}","test_dynamiclib_getFieldType_expect_error",Arrays.asList("Function 'getFieldType' is ambiguous"));
 	}
 	
+	public void test_dynamiclib_getFieldProperties(){
+		doCompile("test_dynamiclib_getFieldProperties");
+		
+		Map<String, String> expected = new LinkedHashMap<>();
+		
+		expected.clear();
+		expected.put("name", "Name");
+		expected.put("label", "Name");
+		expected.put("type", "string");
+		expected.put("delimiter", "|");
+		expected.put("nullable", "true");
+		expected.put("nullValue", "");
+		expected.put("trim", "false");
+		expected.put("locale", "en.US");
+		expected.put("timeZone", "'java:Europe/Prague';'joda:Europe/Prague'");
+		for (String key: new String[] {"length", "scale", "containerType", "default", "description", "format", "size"}) {
+			expected.put(key, null);
+		}
+		check("ret1", expected);
+
+		expected.clear();
+		expected.put("name", "Age");
+		expected.put("label", "Age");
+		expected.put("type", "number");
+		expected.put("delimiter", "|");
+		expected.put("nullable", "true");
+		expected.put("nullValue", "");
+		expected.put("trim", "true");
+		expected.put("locale", "en.US");
+		expected.put("timeZone", "'java:Europe/Prague';'joda:Europe/Prague'");
+		for (String key: new String[] {"length", "scale", "containerType", "default", "description", "format", "size"}) {
+			expected.put(key, null);
+		}
+		check("ret2", expected);
+
+		expected.clear();
+		expected.put("name", "Currency");
+		expected.put("label", "Currency");
+		expected.put("type", "decimal");
+		expected.put("delimiter", "\n");
+		expected.put("length", "7");
+		expected.put("scale", "3");
+		expected.put("nullable", "true");
+		expected.put("nullValue", "");
+		expected.put("trim", "true");
+		expected.put("locale", "en.US");
+		expected.put("timeZone", "'java:Europe/Prague';'joda:Europe/Prague'");
+		for (String key: new String[] {"containerType", "default", "description", "format", "size"}) {
+			expected.put(key, null);
+		}
+		check("lastField", expected);
+		
+	}
+	
+	public void test_dynamiclib_getFieldProperties_CLO_6293() {
+		TransformationGraph graph = createDefaultGraph(); 
+		TypedProperties recordProperties = graph.getDataRecordMetadata(INPUT_1).getRecordProperties();
+		recordProperties.setProperty("previewAttachment", "previewAttachment");
+		recordProperties.setProperty("previewAttachmentCharset", "previewAttachmentCharset");
+		recordProperties.setProperty("previewAttachmentMetadataRow", "previewAttachmentMetadataRow");
+		recordProperties.setProperty("previewAttachmentSampleDataRow", "previewAttachmentSampleDataRow");
+		graph.getDataRecordMetadata(INPUT_1).getField("Born").setFormatStr("joda:yyyy-MM-dd HH:mm:ss;yyyy-MM-dd HH:mm:ss");
+		
+		DataRecord[] inRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(INPUT_3)), createDefaultMultivalueRecord(graph.getDataRecordMetadata(INPUT_4)) };
+		DataRecord[] outRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_3)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_4)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_5)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_6)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_7)) };
+		
+		doCompile("string format; map[string, string] recordProperties; map[string, string] fieldProperties; function integer transform(){format = getFieldProperties($in.0, 'Born')['format']; recordProperties = getRecordProperties($in.0); fieldProperties = getFieldProperties($in.0, 'Born'); return 0;}", "test_dynamiclib_getFieldProperties", graph, inRecords, outRecords);
+		check("format", "joda:yyyy-MM-dd HH:mm:ss;yyyy-MM-dd HH:mm:ss");
+		Map<?, ?> recordPropertiesValue = (Map<?, ?>) getVariable("recordProperties");
+		assertFalse(recordPropertiesValue.containsKey("previewAttachment"));
+		assertFalse(recordPropertiesValue.containsKey("previewAttachmentCharset"));
+		assertFalse(recordPropertiesValue.containsKey("previewAttachmentMetadataRow"));
+		assertFalse(recordPropertiesValue.containsKey("previewAttachmentSampleDataRow"));
+		
+		String expectedTimeZone = new TimeZoneProvider().toString();
+		assertFalse(StringUtils.isEmpty(expectedTimeZone));
+		
+		assertEquals("en.US", recordPropertiesValue.get("locale"));
+		assertEquals(expectedTimeZone, recordPropertiesValue.get("timeZone"));
+		
+		Map<?, ?> fieldPropertiesValue = (Map<?, ?>) getVariable("fieldProperties");
+		assertEquals("en.US", fieldPropertiesValue.get("locale"));
+		assertEquals(expectedTimeZone, fieldPropertiesValue.get("timeZone"));
+	}
+	
+	public void test_dynamiclib_getFieldProperties_expect_error(){
+		// ambiguity
+		doCompileExpectError("function integer transform(){getFieldProperties($in.0, null); return 0;}","test_dynamiclib_getFieldProperties_expect_error", Arrays.asList("Function 'getFieldProperties' is ambiguous"));
+		
+		// null record
+		try {
+			doCompile("function integer transform(){firstInput r = null; getFieldProperties(r, 0); return 0;}","test_dynamiclib_getFieldProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+		try {
+			doCompile("function integer transform(){firstInput r = null; getFieldProperties(r, 'Name'); return 0;}","test_dynamiclib_getFieldProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+
+		// null string
+		try {
+			doCompile("function integer transform(){string s = null; getFieldProperties($in.0, s); return 0;}","test_dynamiclib_getFieldProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+
+		// null integer
+		try {
+			doCompile("function integer transform(){integer i = null; getFieldProperties($in.0, i); return 0;}","test_dynamiclib_getFieldProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+		
+		// invalid string
+		try {
+			doCompile("function integer transform(){string s = null; getFieldProperties($in.0, 'NoSuchField'); return 0;}","test_dynamiclib_getFieldProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, IllegalArgumentException.class));
+		}
+
+		// index out of bounds
+		try {
+			doCompile("function integer transform(){string s = null; getFieldProperties($in.0, -1); return 0;}","test_dynamiclib_getFieldProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, IndexOutOfBoundsException.class));
+		}
+		try {
+			doCompile("function integer transform(){string s = null; getFieldProperties($in.0, 100); return 0;}","test_dynamiclib_getFieldProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, IndexOutOfBoundsException.class));
+		}
+	}
+
+	public void test_dynamiclib_getRecordProperties(){
+		doCompile("test_dynamiclib_getRecordProperties");
+		
+		Map<String, String> expected = new LinkedHashMap<>();
+		
+		expected.clear();
+		expected.put("name", "firstInput");
+		expected.put("label", "firstInput");
+		expected.put("type", "mixed");
+		expected.put("quotedStrings", "false");
+		expected.put("eofAsDelimiter", "false");
+		expected.put("nullValue", "");
+		expected.put("locale", "en.US");
+		expected.put("timeZone", "'java:Europe/Prague';'joda:Europe/Prague'");
+		for (String key: new String[] {"recordDelimiter", "fieldDelimiter", "quoteChar", "description"}) {
+			expected.put(key, null);
+		}
+		check("ret1", expected);
+
+		expected.clear();
+		expected.put("name", "secondInput");
+		expected.put("label", "secondInput");
+		expected.put("type", "mixed");
+		expected.put("quotedStrings", "false");
+		expected.put("eofAsDelimiter", "false");
+		expected.put("nullValue", "");
+		expected.put("locale", "en.US");
+		expected.put("timeZone", "'java:Europe/Prague';'joda:Europe/Prague'");
+		for (String key: new String[] {"recordDelimiter", "fieldDelimiter", "quoteChar", "description"}) {
+			expected.put(key, null);
+		}
+		check("ret2", expected);
+
+	}
+	
+	public void test_dynamiclib_getRecordProperties_expect_error(){
+		// null record
+		try {
+			doCompile("function integer transform(){getRecordProperties(null); return 0;}","test_dynamiclib_getRecordProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+		try {
+			doCompile("function integer transform(){firstInput r = null; getRecordProperties(r); return 0;}","test_dynamiclib_getRecordProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+		try {
+			doCompile("function integer transform(){firstInput r = null; getRecordProperties(r); return 0;}","test_dynamiclib_getRecordProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+	}
+
 	public void test_dynamiclib_getIntValue(){
 		doCompile("test_dynamiclib_getIntValue");
 		check("ret1", CompilerTestCase.VALUE_VALUE);
@@ -2104,6 +2329,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		checkNull("varWithNullInitializer");
 		
 		doCompileExpectError("string promenna = \"^\\..*\"; function integer transform() { return 0;}", "test_type_string", Arrays.asList("Invalid escape sequence: \\."));
+		doCompileExpectError("string promenna = \"\\uaxax\"; function integer transform() { return 0;}", "test_type_string", Arrays.asList("Invalid escape character at line 2 column 21."));
+		doCompileExpectError("string \ffff = \"\\uaaaa\"; function integer transform() { return 0;}", "test_type_string", Arrays.asList("Syntax error on token ''"));
+
 	}
 	
 	public void test_type_string_long() {
@@ -2274,11 +2502,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		if ((o1 == null) && (o2 == null)) {
 			return;
 		}
-		assertTrue((o1 == null) == (o2 == null));
+		assertTrue("Expected " + o1 + " but was " + o2, (o1 == null) == (o2 == null));
 		if (o1 instanceof DataRecord) {
 			DataRecord r1 = (DataRecord) o1;
 			DataRecord r2 = (DataRecord) o2;
-			assertEquals(r1.getNumFields(), r2.getNumFields());
+			assertEquals(r1.getMetadata(), r2.getMetadata());
 			for (int i = 0; i < r1.getNumFields(); i++) {
 				assertDeepEquals(r1.getField(i).getValue(), r2.getField(i).getValue());
 			}
@@ -2728,7 +2956,1003 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			assertFalse(testReturnValue13.isEmpty());
 			assertTrue(((List<?>) recordMap1.get(2).getField("stringListField").getValue()).isEmpty());
 			
+			check("incrementTest", "newValue");
+			check("incrementTestList", Arrays.asList("newValue"));
+			check("incrementCounter", 1);
+		}
+	}
+	
+	/**
+	 * Tests examples from the User Guide.
+	 */
+	public void test_assignment_compound() {
+		doCompile("test_assignment_compound");
+		check("i", 9);
+		check("ni", 5);
+		check("s", "hello world 123");
+		check("ns", "hello");
+		check("ns2", "nullhello");
+		check("list1", Arrays.asList(1, 2, 3, 4, 5));
+		{
+			Map<String, Integer> expected = new HashMap<>();
+			expected.put("1", 1);
+			expected.put("2", 22);
+			expected.put("3", 3);
+			check("map1", expected);
+		}
+		check("l", 6L);
+		check("d", new BigDecimal("24.68"));
+		check("n", 4.1, 0.0000001);
+		check("r", 7L);
+	}
+	
+	public void test_assignment_compound_plus() {
+		doCompile("test_assignment_compound_plus");
+		
+		check("int1", 3);
+		check("intList1", Arrays.asList(3));
+		check("intList2", Arrays.asList(1, 4));
+		check("cnt1", 1);
+		
+		check("str1", "str1_append");
+		check("str2", "str22");
+		check("str3", "str3true");
+		check("str4", "str4[1, 2]");
+		check("str5", "str5" + inputRecords[0]);
+		check("strList1", Arrays.asList("strList1_append"));
+		check("strList2", Arrays.asList("strList2", "strList3_1", "strList3_2"));
+		check("strList4", Arrays.asList("strList4_strList4append"));
+		check("cnt2", 1);
+		check("strList5", Arrays.asList("strList5", "l1", "l2"));
+		
+		{
+			Map<String, String> expected = new LinkedHashMap<String, String>();
+			expected.put("strMap1_key1", "strMap1_value1_strMap1_append");
+			expected.put("strMap1_key2", "strMap1_value2_overwritten");
+			expected.put("strMap2_key1", "strMap2_value1");
+			expected.put("strMap2_key2", "strMap2_value2");
+			check("strMap1", expected);
+		}
+		
+		check("long1", 3L);
+		check("long2", 5L);
+		
+		check("decimal1", new BigDecimal(3));
+		check("decimal2", new BigDecimal(4));
+		check("decimal3", new BigDecimal(5));
+		check("decimal4", new BigDecimal("6.5"));
+		
+		check("num1", 3.0);
+		check("num2", 4.0);
+		check("num3", 5.0);
+		
+		Dictionary dictionary = graph.getDictionary();
+		assertEquals("Verdon_sVerdonAppend", dictionary.getValue("sVerdon"));
+		assertEquals(213, dictionary.getValue("i211"));
+		assertEquals(454L, dictionary.getValue("l452"));
+		assertEquals(new BigDecimal("623.5"), dictionary.getValue("d621"));
+		assertEquals(936.2, dictionary.getValue("n9342"));
+		assertEquals(Arrays.asList("aa_1", "bb_2", "_3", "cc", "dictionary.stringList_1", "dictionary.stringList_2"), dictionary.getValue("stringList"));
+		check("cnt3", 1);
+		{
+			Map<String, String> expected = new LinkedHashMap<>();
+			expected.put("key1", "value1");
+			expected.put("key2", "value2_dictionaryMap_append");
+			expected.put("nonExistingKey", "newValue");
+			assertEquals(expected, dictionary.getValue("stringMap"));
+		}
+		check("cnt4", 1);
+		
+		{
+			DataRecord r = outputRecords[0];
+			assertEquals(NAME_VALUE + "_out0Name_append", r.getField("Name").getValue().toString());
+			assertEquals(AGE_VALUE + 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE + 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE + 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.add(new BigDecimal(2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+		}
+
+		{
+			DataRecord r = (DataRecord) getVariable("myRecord1");
+			assertEquals(NAME_VALUE + "_myRecord1_append", r.getField("Name").getValue().toString());
+			assertEquals(AGE_VALUE + 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE + 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE + 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.add(new BigDecimal(2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+		}
+
+		{
+			DataRecord r = (DataRecord) ((List<?>) getVariable("recordList1")).get(0);
+			assertEquals(NAME_VALUE + "_recordList1_append", r.getField("Name").getValue().toString());
+			assertEquals(AGE_VALUE + 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE + 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE + 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.add(new BigDecimal(2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+			check("cnt5", 1);
+		}
+		
+		{
+			DataRecord r = (DataRecord) ((Map<?, ?>) getVariable("recordMap1")).get("key");
+			assertEquals(NAME_VALUE + "_recordMap1_append", r.getField("Name").getValue().toString());
+			assertEquals(AGE_VALUE + 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE + 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE + 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.add(new BigDecimal(2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+			check("cnt6", 1);
+		}
+		
+		{
+			// check that tmpRecord is unmodified
+			DataRecord r = (DataRecord) getVariable("tmpRecord");
+			assertNull(r.getField("Name").getValue());
+			assertNull(r.getField("Age").getValue());
+			assertNull(r.getField("BornMillisec").getValue());
+			assertNull(r.getField("Value").getValue());
+			assertNull(r.getField("Currency").getValue());
+		}
+		
+		{
+			Map<String, String> expected = new LinkedHashMap<>();
+			expected.put("key", "val555");
+			check("singleEvaluationTest", expected);
+			check("cnt7", 2);
+		}
+
+		{
+			Map<?, ?> singleEvaluationMap = (Map<?, ?>) getVariable("singleEvaluationMap");
+			DataRecord record = (DataRecord) singleEvaluationMap.get("key");
+			assertEquals("singleEvaluationMap123", record.getField("Name").getValue().toString());
+			check("cnt8", 2);
+		}
+		
+		check("nullAppend", "nullAppend_null");
+		
+		check("mergeTest", Arrays.asList("mergeTest_mergeTestAppend"));
+		
+		{
+			List<?> stringListField = (List<?>) outputRecords[4].getField("stringListField").getValue();
+			assertEquals(stringListField.get(0).toString(), "stringListField_stringListFieldAppend");
+			check("cnt9", 2);
+		}
+		
+		check("stringInit", "stringInit");
+		check("integerInit", 5);
+		check("longInit", 77L);
+		check("numberInit", 5.4);
+		check("decimalInit", new BigDecimal("7.8"));
+		check("listInit1", Arrays.asList(null, null, "listInit1"));
+		check("listInit2", Arrays.asList(null, "listInit2tmp"));
+		{
+			Map<String, String> expected = new HashMap<>(1);
+			expected.put("key", "mapInit1");
+			check("mapInit1", expected);
+		}
+		{
+			Map<String, String> expected = new HashMap<>(1);
+			expected.put("key", "mapInit2tmp");
+			check("mapInit2", expected);
+		}
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(INPUT_1));
+			expected.getField("Name").setValue("recordInit1");
+			assertDeepEquals(expected, getVariable("recordInit1"));
+		}
+		
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
+			expected.getField("stringListField").setValue(Arrays.asList(null, null, "recordInit3"));
+			Map<String, String> map = new HashMap<>(1);
+			map.put("key", "recordInit3");
+			expected.getField("stringMapField").setValue(map);
+			assertDeepEquals(expected, getVariable("recordInit3"));
+		}
+		
+		{
+			DataRecord r = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
+			r.getField("stringListField").setValue(Arrays.asList(null, null, "recordListInit"));
+			assertDeepEquals(Arrays.asList(null, null, r), getVariable("recordListInit"));
+		}
+
+		assertEquals("dictStringInit", dictionary.getValue("s"));
+		assertEquals(5, dictionary.getValue("i"));
+		assertEquals(77L, dictionary.getValue("l"));
+		assertEquals(new BigDecimal("7.8"), dictionary.getValue("d"));
+		assertEquals(5.4, dictionary.getValue("n"));
+		
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(OUTPUT_2));
 			
+			expected.getField("Name").setValue("_out1Name_append");
+			expected.getField("Age").setValue(2);
+			expected.getField("BornMillisec").setValue(2L);
+			expected.getField("Value").setValue(2.0);
+			expected.getField("Currency").setValue(new BigDecimal("2.0"));
+			assertDeepEquals(expected, outputRecords[1]);
+			
+			expected.getField("Name").setValue("_out2Name_append");
+			assertDeepEquals(expected, outputRecords[2]);
+		}
+		
+	}
+	
+	public void test_assignment_compound_minus() {
+		doCompile("test_assignment_compound_minus");
+		
+		check("int1", -1);
+		check("intList1", Arrays.asList(-1));
+		check("intList2", Arrays.asList(1, -2));
+		check("cnt1", 1);
+		
+		check("intList3", Arrays.asList(-1, 2));
+		check("cnt2", 1);
+		
+		{
+			Map<String, Integer> expected = new LinkedHashMap<String, Integer>();
+			expected.put("intMap1_key1", 3);
+			expected.put("intMap1_key2", 8);
+			check("intMap1", expected);
+		}
+		
+		check("long1", -1L);
+		check("long2", -1L);
+		
+		check("decimal1", new BigDecimal(-1));
+		check("decimal2", new BigDecimal(0));
+		check("decimal3", new BigDecimal(1));
+		check("decimal4", new BigDecimal("1.5"));
+		
+		check("num1", -1.0);
+		check("num2", 0.0);
+		check("num3", 1.0);
+		
+		Dictionary dictionary = graph.getDictionary();
+		assertEquals(209, dictionary.getValue("i211"));
+		assertEquals(450L, dictionary.getValue("l452"));
+		assertEquals(new BigDecimal("618.5"), dictionary.getValue("d621"));
+		assertEquals(932.2, dictionary.getValue("n9342"));
+		assertEquals(Arrays.asList(-2, -3, -8, 4), dictionary.getValue("integerList"));
+		check("cnt3", 1);
+		{
+			Map<String, Integer> expected = new LinkedHashMap<>();
+			expected.put("key2", -9);
+			expected.put("nonExistingKey", -7);
+			assertEquals(expected, dictionary.getValue("integerMap"));
+		}
+		check("cnt4", 1);
+		
+		{
+			DataRecord r = outputRecords[0];
+			assertEquals(AGE_VALUE - 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE - 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE - 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.add(new BigDecimal(-2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+		}
+
+		{
+			DataRecord r = (DataRecord) getVariable("myRecord1");
+			assertEquals(AGE_VALUE - 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE - 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE - 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.add(new BigDecimal(-2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+		}
+
+		{
+			DataRecord r = (DataRecord) ((List<?>) getVariable("recordList1")).get(0);
+			assertEquals(AGE_VALUE - 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE - 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE - 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.add(new BigDecimal(-2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+			check("cnt5", 1);
+		}
+		
+		{
+			DataRecord r = (DataRecord) ((Map<?, ?>) getVariable("recordMap1")).get("key");
+			assertEquals(AGE_VALUE - 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE - 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE - 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.add(new BigDecimal(-2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+			check("cnt6", 1);
+		}
+		
+		{
+			// check that tmpRecord is unmodified
+			DataRecord r = (DataRecord) getVariable("tmpRecord");
+			assertNull(r.getField("Age").getValue());
+			assertNull(r.getField("BornMillisec").getValue());
+			assertNull(r.getField("Value").getValue());
+			assertNull(r.getField("Currency").getValue());
+		}
+		
+		{
+			Map<String, Integer> expected = new LinkedHashMap<>();
+			expected.put("key", -333);
+			check("singleEvaluationTest", expected);
+			check("cnt7", 2);
+		}
+
+		{
+			Map<?, ?> singleEvaluationMap = (Map<?, ?>) getVariable("singleEvaluationMap");
+			DataRecord record = (DataRecord) singleEvaluationMap.get("key");
+			assertEquals(531, record.getField("Value").getValue());
+			check("cnt8", 2);
+		}
+		
+		{
+			List<?> integerListField = (List<?>) outputRecords[4].getField("integerListField").getValue();
+			assertEquals(integerListField.get(0), 543);
+			check("cnt9", 2);
+		}
+		
+		check("integerInit", -5);
+		check("longInit", -77L);
+		check("numberInit", -5.4);
+		check("decimalInit", new BigDecimal("-7.8"));
+		check("listInit1", Arrays.asList(null, null, -12L));
+		{
+			Map<String, BigDecimal> expected = new HashMap<>(1);
+			expected.put("key", new BigDecimal(-987));
+			check("mapInit1", expected);
+		}
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(INPUT_1));
+			expected.getField("Age").setValue(-12.34);
+			assertDeepEquals(expected, getVariable("recordInit1"));
+		}
+		
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
+			expected.getField("integerListField").setValue(Arrays.asList(null, null, -42));
+			Map<String, BigDecimal> map = new HashMap<>(1);
+			map.put("key", new BigDecimal("-88.8"));
+			expected.getField("decimalMapField").setValue(map);
+			assertDeepEquals(expected, getVariable("recordInit3"));
+		}
+		
+		{
+			DataRecord r = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
+			r.getField("integerListField").setValue(Arrays.asList(null, null, -24));
+			assertDeepEquals(Arrays.asList(null, null, r), getVariable("recordListInit"));
+		}
+
+		assertEquals(-5, dictionary.getValue("i"));
+		assertEquals(-77L, dictionary.getValue("l"));
+		assertEquals(new BigDecimal("-7.8"), dictionary.getValue("d"));
+		assertEquals(-5.4, dictionary.getValue("n"));
+		
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(OUTPUT_2));
+			
+			expected.getField("Age").setValue(-2);
+			expected.getField("BornMillisec").setValue(-2L);
+			expected.getField("Value").setValue(-2.0);
+			expected.getField("Currency").setValue(new BigDecimal("-2.0"));
+
+			assertDeepEquals(expected, outputRecords[1]);
+			assertDeepEquals(expected, outputRecords[2]);
+		}
+		
+	}
+
+	public void test_assignment_compound_multiply() {
+		doCompile("test_assignment_compound_multiply");
+		
+		check("int1", 2);
+		check("intList1", Arrays.asList(2));
+		check("intList2", Arrays.asList(1, 8));
+		check("cnt1", 1);
+		
+		check("intList3", Arrays.asList(2, 2));
+		check("cnt2", 1);
+		
+		{
+			Map<String, Integer> expected = new LinkedHashMap<String, Integer>();
+			expected.put("intMap1_key1", 10);
+			expected.put("intMap1_key2", 8);
+			check("intMap1", expected);
+		}
+		
+		check("long1", 2L);
+		check("long2", 6L);
+		
+		check("decimal1", new BigDecimal(2));
+		check("decimal2", new BigDecimal(4));
+		check("decimal3", new BigDecimal(6));
+		check("decimal4", new BigDecimal("10.0"));
+		
+		check("num1", 2.0);
+		check("num2", 4.0);
+		check("num3", 6.0);
+		
+		Dictionary dictionary = graph.getDictionary();
+		assertEquals(422, dictionary.getValue("i211"));
+		assertEquals(904L, dictionary.getValue("l452"));
+		assertEquals(new BigDecimal("1552.5"), dictionary.getValue("d621"));
+		assertEquals(1868.4, dictionary.getValue("n9342"));
+		assertEquals(Arrays.asList(3, 10, 0, 4), dictionary.getValue("integerList"));
+		check("cnt3", 1);
+		{
+			Map<String, Integer> expected = new LinkedHashMap<>();
+			expected.put("key2", 0);
+			expected.put("nonExistingKey", 0);
+			assertEquals(expected, dictionary.getValue("integerMap"));
+		}
+		check("cnt4", 1);
+		
+		{
+			DataRecord r = outputRecords[0];
+			assertEquals(AGE_VALUE * 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE * 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE * 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.multiply(new BigDecimal(2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+		}
+
+		{
+			DataRecord r = (DataRecord) getVariable("myRecord1");
+			assertEquals(AGE_VALUE * 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE * 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE * 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.multiply(new BigDecimal(2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+		}
+
+		{
+			DataRecord r = (DataRecord) ((List<?>) getVariable("recordList1")).get(0);
+			assertEquals(AGE_VALUE * 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE * 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE * 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.multiply(new BigDecimal(2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+			check("cnt5", 1);
+		}
+		
+		{
+			DataRecord r = (DataRecord) ((Map<?, ?>) getVariable("recordMap1")).get("key");
+			assertEquals(AGE_VALUE * 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE * 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE * 2, r.getField("Value").getValue());
+			assertEquals(CURRENCY_VALUE.multiply(new BigDecimal(2)), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+			check("cnt6", 1);
+		}
+		
+		{
+			// check that tmpRecord is unmodified
+			DataRecord r = (DataRecord) getVariable("tmpRecord");
+			assertNull(r.getField("Age").getValue());
+			assertNull(r.getField("BornMillisec").getValue());
+			assertNull(r.getField("Value").getValue());
+			assertNull(r.getField("Currency").getValue());
+		}
+		
+		{
+			Map<String, Integer> expected = new LinkedHashMap<>();
+			expected.put("key", 123210);
+			check("singleEvaluationTest", expected);
+			check("cnt7", 2);
+		}
+
+		{
+			Map<?, ?> singleEvaluationMap = (Map<?, ?>) getVariable("singleEvaluationMap");
+			DataRecord record = (DataRecord) singleEvaluationMap.get("key");
+			assertEquals(80442, record.getField("Value").getValue());
+			check("cnt8", 2);
+		}
+		
+		{
+			List<?> integerListField = (List<?>) outputRecords[4].getField("integerListField").getValue();
+			assertEquals(integerListField.get(0), 72594);
+			check("cnt9", 2);
+		}
+		
+		check("integerInit", 0);
+		check("longInit", 0L);
+		check("numberInit", 0.0);
+		check("decimalInit", new BigDecimal("0.0"));
+		check("listInit1", Arrays.asList(null, null, 0L));
+		{
+			Map<String, BigDecimal> expected = new HashMap<>(1);
+			expected.put("key", new BigDecimal("0"));
+			check("mapInit1", expected);
+		}
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(INPUT_1));
+			expected.getField("Age").setValue(0.0);
+			assertDeepEquals(expected, getVariable("recordInit1"));
+		}
+		
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
+			expected.getField("integerListField").setValue(Arrays.asList(null, null, 0));
+			Map<String, BigDecimal> map = new HashMap<>(1);
+			map.put("key", new BigDecimal("0"));
+			expected.getField("decimalMapField").setValue(map);
+			assertDeepEquals(expected, getVariable("recordInit3"));
+		}
+		
+		{
+			DataRecord r = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
+			r.getField("integerListField").setValue(Arrays.asList(null, null, 0));
+			assertDeepEquals(Arrays.asList(null, null, r), getVariable("recordListInit"));
+		}
+
+		assertEquals(0, dictionary.getValue("i"));
+		assertEquals(0L, dictionary.getValue("l"));
+		assertEquals(new BigDecimal("0.0"), dictionary.getValue("d"));
+		assertEquals(0.0, dictionary.getValue("n"));
+		
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(OUTPUT_2));
+			
+			expected.getField("Age").setValue(0.0);
+			expected.getField("BornMillisec").setValue(0L);
+			expected.getField("Value").setValue(0);
+			expected.getField("Currency").setValue(new BigDecimal("0.0"));
+
+			assertDeepEquals(expected, outputRecords[1]);
+			assertDeepEquals(expected, outputRecords[2]);
+		}
+		
+	}
+
+	public void test_assignment_compound_divide() {
+		doCompile("test_assignment_compound_divide");
+		
+		check("int1", 5);
+		check("intList1", Arrays.asList(5));
+		check("intList2", Arrays.asList(11, 3));
+		check("cnt1", 1);
+		
+		check("intList3", Arrays.asList(5, 12));
+		check("cnt2", 1);
+		
+		{
+			Map<String, Integer> expected = new LinkedHashMap<String, Integer>();
+			expected.put("intMap1_key1", 2);
+			expected.put("intMap1_key2", 8);
+			check("intMap1", expected);
+		}
+		
+		check("long1", 2L);
+		check("long2", 3L);
+		
+		check("decimal1", new BigDecimal("0.5"));
+		check("decimal2", new BigDecimal(1));
+		check("decimal3", new BigDecimal("1.5"));
+		check("decimal4", new BigDecimal("1.6"));
+		
+		check("num1", 0.5);
+		check("num2", 1.0);
+		check("num3", 1.5);
+		
+		Dictionary dictionary = graph.getDictionary();
+		assertEquals(105, dictionary.getValue("i211"));
+		assertEquals(226L, dictionary.getValue("l452"));
+		assertEquals(new BigDecimal("248.4"), dictionary.getValue("d621"));
+		assertEquals(467.1, dictionary.getValue("n9342"));
+		assertEquals(Arrays.asList(0, 0, 0, 4), dictionary.getValue("integerList"));
+		check("cnt3", 1);
+		{
+			Map<String, Integer> expected = new LinkedHashMap<>();
+			expected.put("key2", 0);
+			expected.put("nonExistingKey", 0);
+			assertEquals(expected, dictionary.getValue("integerMap"));
+		}
+		check("cnt4", 1);
+		
+		{
+			DataRecord r = outputRecords[0];
+			assertEquals(AGE_VALUE / 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE / 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE / 2, r.getField("Value").getValue());
+			compareDecimals(CURRENCY_VALUE.divide(new BigDecimal("2.0"), 3, RoundingMode.DOWN), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+		}
+
+		{
+			DataRecord r = (DataRecord) getVariable("myRecord1");
+			assertEquals(AGE_VALUE / 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE / 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE / 2, r.getField("Value").getValue());
+			compareDecimals(CURRENCY_VALUE.divide(new BigDecimal("2.0"), 3, RoundingMode.DOWN), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+		}
+
+		{
+			DataRecord r = (DataRecord) ((List<?>) getVariable("recordList1")).get(0);
+			assertEquals(AGE_VALUE / 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE / 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE / 2, r.getField("Value").getValue());
+			compareDecimals(CURRENCY_VALUE.divide(new BigDecimal("2.0"), 3, RoundingMode.DOWN), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+			check("cnt5", 1);
+		}
+		
+		{
+			DataRecord r = (DataRecord) ((Map<?, ?>) getVariable("recordMap1")).get("key");
+			assertEquals(AGE_VALUE / 2, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE / 2, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE / 2, r.getField("Value").getValue());
+			compareDecimals(CURRENCY_VALUE.divide(new BigDecimal("2.0"), 3, RoundingMode.DOWN), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+			check("cnt6", 1);
+		}
+		
+		{
+			// check that tmpRecord is unmodified
+			DataRecord r = (DataRecord) getVariable("tmpRecord");
+			assertNull(r.getField("Age").getValue());
+			assertNull(r.getField("BornMillisec").getValue());
+			assertNull(r.getField("Value").getValue());
+			assertNull(r.getField("Currency").getValue());
+		}
+		
+		{
+			Map<String, Integer> expected = new LinkedHashMap<>();
+			expected.put("key", 4);
+			check("singleEvaluationTest", expected);
+			check("cnt7", 2);
+		}
+
+		{
+			Map<?, ?> singleEvaluationMap = (Map<?, ?>) getVariable("singleEvaluationMap");
+			DataRecord record = (DataRecord) singleEvaluationMap.get("key");
+			assertEquals(10, record.getField("Value").getValue());
+			check("cnt8", 2);
+		}
+		
+		{
+			List<?> integerListField = (List<?>) outputRecords[4].getField("integerListField").getValue();
+			assertEquals(integerListField.get(0), 5);
+			check("cnt9", 2);
+		}
+		
+		check("integerInit", 0);
+		check("longInit", 0L);
+		check("numberInit", 0.0);
+		checkEqualValue("decimalInit", BigDecimal.ZERO);
+		check("listInit1", Arrays.asList(null, null, 0L));
+		{
+			Map<String, BigDecimal> expected = new HashMap<>(1);
+			expected.put("key", new BigDecimal("0"));
+			check("mapInit1", expected);
+		}
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(INPUT_1));
+			expected.getField("Age").setValue(0.0);
+			assertDeepEquals(expected, getVariable("recordInit1"));
+		}
+		
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
+			expected.getField("integerListField").setValue(Arrays.asList(null, null, 0));
+			Map<String, BigDecimal> map = new HashMap<>(1);
+			map.put("key", BigDecimal.ZERO);
+			expected.getField("decimalMapField").setValue(map);
+			assertDeepEquals(expected, getVariable("recordInit3"));
+		}
+		
+		{
+			DataRecord r = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
+			r.getField("integerListField").setValue(Arrays.asList(null, null, 0));
+			assertDeepEquals(Arrays.asList(null, null, r), getVariable("recordListInit"));
+		}
+
+		assertEquals(0, dictionary.getValue("i"));
+		assertEquals(0L, dictionary.getValue("l"));
+		compareDecimals(BigDecimal.ZERO, (BigDecimal) dictionary.getValue("d"));
+		assertEquals(0.0, dictionary.getValue("n"));
+		
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(OUTPUT_2));
+			
+			expected.getField("Age").setValue(0.0);
+			expected.getField("BornMillisec").setValue(0L);
+			expected.getField("Value").setValue(0);
+			expected.getField("Currency").setValue(BigDecimal.ZERO);
+
+			assertDeepEquals(expected, outputRecords[1]);
+			assertDeepEquals(expected, outputRecords[2]);
+		}
+		
+	}
+
+	public void test_assignment_compound_modulo() {
+		doCompile("test_assignment_compound_modulo");
+		
+		check("int1", 1);
+		check("intList1", Arrays.asList(2));
+		check("intList2", Arrays.asList(12, 3));
+		check("cnt1", 1);
+		
+		check("intList3", Arrays.asList(2, 12));
+		check("cnt2", 1);
+		
+		{
+			Map<String, Integer> expected = new LinkedHashMap<String, Integer>();
+			expected.put("intMap1_key1", 2);
+			expected.put("intMap1_key2", 8);
+			check("intMap1", expected);
+		}
+		
+		check("long1", 2L);
+		check("long2", 1L);
+		
+		check("decimal1", BigDecimal.ONE);
+		check("decimal2", new BigDecimal(2));
+		check("decimal3", BigDecimal.ZERO);
+		check("decimal4", new BigDecimal("0.5"));
+		
+		check("num1", 1.0);
+		check("num2", 2.0);
+		check("num3", 0.0);
+		
+		Dictionary dictionary = graph.getDictionary();
+		assertEquals(3, dictionary.getValue("i211"));
+		assertEquals(4L, dictionary.getValue("l452"));
+		assertEquals(new BigDecimal("0.5"), dictionary.getValue("d621"));
+		assertEquals(6.2, (Double) dictionary.getValue("n9342"), 0.0001);
+		assertEquals(Arrays.asList(1, 2, 0, 4), dictionary.getValue("integerList"));
+		check("cnt3", 1);
+		{
+			Map<String, Integer> expected = new LinkedHashMap<>();
+			expected.put("key2", 0);
+			expected.put("nonExistingKey", 0);
+			assertEquals(expected, dictionary.getValue("integerMap"));
+		}
+		check("cnt4", 1);
+		
+		{
+			DataRecord r = outputRecords[0];
+			assertEquals(AGE_VALUE % 3, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE % 3, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE % 3, r.getField("Value").getValue());
+			compareDecimals(CURRENCY_VALUE.remainder(new BigDecimal("3.0")), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+		}
+
+		{
+			DataRecord r = (DataRecord) getVariable("myRecord1");
+			assertEquals(AGE_VALUE % 3, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE % 3, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE % 3, r.getField("Value").getValue());
+			compareDecimals(CURRENCY_VALUE.remainder(new BigDecimal("3.0")), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+		}
+
+		{
+			DataRecord r = (DataRecord) ((List<?>) getVariable("recordList1")).get(0);
+			assertEquals(AGE_VALUE % 3, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE % 3, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE % 3, r.getField("Value").getValue());
+			compareDecimals(CURRENCY_VALUE.remainder(new BigDecimal("3.0")), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+			check("cnt5", 1);
+		}
+		
+		{
+			DataRecord r = (DataRecord) ((Map<?, ?>) getVariable("recordMap1")).get("key");
+			assertEquals(AGE_VALUE % 3, r.getField("Age").getValue());
+			assertEquals(BORN_MILLISEC_VALUE % 3, r.getField("BornMillisec").getValue());
+			assertEquals(VALUE_VALUE % 3, r.getField("Value").getValue());
+			compareDecimals(CURRENCY_VALUE.remainder(new BigDecimal("3.0")), ((Decimal) r.getField("Currency").getValue()).getBigDecimal());
+			check("cnt6", 1);
+		}
+		
+		{
+			// check that tmpRecord is unmodified
+			DataRecord r = (DataRecord) getVariable("tmpRecord");
+			assertNull(r.getField("Age").getValue());
+			assertNull(r.getField("BornMillisec").getValue());
+			assertNull(r.getField("Value").getValue());
+			assertNull(r.getField("Currency").getValue());
+		}
+		
+		{
+			Map<String, Integer> expected = new LinkedHashMap<>();
+			expected.put("key", 22);
+			check("singleEvaluationTest", expected);
+			check("cnt7", 2);
+		}
+
+		{
+			Map<?, ?> singleEvaluationMap = (Map<?, ?>) getVariable("singleEvaluationMap");
+			DataRecord record = (DataRecord) singleEvaluationMap.get("key");
+			assertEquals(54, record.getField("Value").getValue());
+			check("cnt8", 2);
+		}
+		
+		{
+			List<?> integerListField = (List<?>) outputRecords[4].getField("integerListField").getValue();
+			assertEquals(integerListField.get(0), 99);
+			check("cnt9", 2);
+		}
+		
+		check("integerInit", 0);
+		check("longInit", 0L);
+		check("numberInit", 0.0);
+		checkEqualValue("decimalInit", BigDecimal.ZERO);
+		check("listInit1", Arrays.asList(null, null, 0L));
+		{
+			Map<String, BigDecimal> expected = new HashMap<>(1);
+			expected.put("key", new BigDecimal("0"));
+			check("mapInit1", expected);
+		}
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(INPUT_1));
+			expected.getField("Age").setValue(0.0);
+			assertDeepEquals(expected, getVariable("recordInit1"));
+		}
+		
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
+			expected.getField("integerListField").setValue(Arrays.asList(null, null, 0));
+			Map<String, BigDecimal> map = new HashMap<>(1);
+			map.put("key", BigDecimal.ZERO);
+			expected.getField("decimalMapField").setValue(map);
+			assertDeepEquals(expected, getVariable("recordInit3"));
+		}
+		
+		{
+			DataRecord r = DataRecordFactory.newRecord(graph.getDataRecordMetadata("multivalueInput"));
+			r.getField("integerListField").setValue(Arrays.asList(null, null, 0));
+			assertDeepEquals(Arrays.asList(null, null, r), getVariable("recordListInit"));
+		}
+
+		assertEquals(0, dictionary.getValue("i"));
+		assertEquals(0L, dictionary.getValue("l"));
+		compareDecimals(BigDecimal.ZERO, (BigDecimal) dictionary.getValue("d"));
+		assertEquals(0.0, dictionary.getValue("n"));
+		
+		{
+			DataRecord expected = DataRecordFactory.newRecord(graph.getDataRecordMetadata(OUTPUT_2));
+			
+			expected.getField("Age").setValue(0.0);
+			expected.getField("BornMillisec").setValue(0L);
+			expected.getField("Value").setValue(0);
+			expected.getField("Currency").setValue(BigDecimal.ZERO);
+
+			assertDeepEquals(expected, outputRecords[1]);
+			assertDeepEquals(expected, outputRecords[2]);
+		}
+		
+	}
+
+	public void test_assignment_compound_expect_error() {
+		doCompileExpectError("function integer transform(){"
+				+ "integer i;"
+				+ "i += null;"
+				+ "return 0;}","test_assignment_compound_expect_error",
+				Arrays.asList("Operator '+' is not defined for types: 'integer' and 'null'"));
+
+		doCompileExpectError("function integer transform(){"
+				+ "integer i;"
+				+ "i -= 'aaa';"
+				+ "return 0;}","test_assignment_compound_expect_error",
+				Arrays.asList("Operator '-' is not defined for types: 'integer' and 'string'"));
+
+		doCompileExpectError("function integer transform(){"
+				+ "integer i;"
+				+ "i -= 0L;"
+				+ "return 0;}","test_assignment_compound_expect_error",
+				Arrays.asList("Type mismatch: cannot convert from 'long' to 'integer'"));
+
+		try {
+			doCompile("function integer transform(){"
+					+ "integer i;"
+					+ "i /= 0;"
+					+ "return 0;}","test_assignment_compound_expect_error");
+			fail();
+		} catch (RuntimeException ex) {
+			if (!isCausedBy(ex, ArithmeticException.class)) {
+				throw ex;
+			}
+		}
+
+		try {
+			doCompile("function integer transform(){"
+					+ "long l;"
+					+ "l /= 0;"
+					+ "return 0;}","test_assignment_compound_expect_error");
+			fail();
+		} catch (RuntimeException ex) {
+			if (!isCausedBy(ex, ArithmeticException.class)) {
+				throw ex;
+			}
+		}
+	}
+
+	public void test_assignment_list_initialization() {
+		doCompile("test_assignment_list_initialization");
+		
+		check("stringList", Arrays.asList(null, null, null, "test"));
+		check("integerList", Arrays.asList(null, null, null, 8));
+		check("longList", Arrays.asList(null, null, null, 77L));
+		check("numberList", Arrays.asList(null, null, null, 5.4));
+		check("booleanList", Arrays.asList(null, null, null, true));
+		check("decimalList", Arrays.asList(null, null, null, new BigDecimal("8.7")));
+		{
+			List<byte[]> expected = Arrays.asList(null, null, null, new byte[] {(byte) 0xFF});
+			assertDeepEquals(expected, getVariable("byteList"));
+		}
+		check("recordList1", Arrays.asList(null, null, null, inputRecords[0]));
+		{
+			DataRecord r = DataRecordFactory.newRecord(inputRecords[0].getMetadata());
+			r.getField(0).setValue("test");
+			List<DataRecord> expected = Arrays.asList(null, null, null, r);
+			assertDeepEquals(expected, getVariable("recordList2"));
+		}
+		
+	}
+	
+	// CLO-5789
+	public void test_assignment_increment() {
+		doCompile("test_assignment_increment");
+		
+		check("incrementCounter", 1);
+		check("incrementTest", "newValue");
+		check("incrementTestList", Arrays.asList("newValue"));
+	}
+
+	// CLO-403
+	public void test_container_assignment_initialization() {
+		doCompile("test_container_assignment_initialization");
+		
+		//list
+		Object val = ((List<?>) outputRecords[5].getField("stringListField").getValue()).get(1);
+		assertEquals(val.toString(), "value");
+		
+		val = ((List<?>) outputRecords[4].getField("stringListField").getValue()).get(0);
+		assertEquals(val.toString(), "value");
+		
+		List<?> dictList = (List<?>) graph.getDictionary().getEntry("stringList").getValue();
+		assertDeepEquals(dictList, Arrays.asList(null, "value"));
+		
+		check("listNull", true);
+		check("arrayString", Arrays.asList("value"));
+		
+		
+		//map
+		val = ((Map<?,?>) outputRecords[5].getField("stringMapField").getValue()).get("key");
+		assertEquals(val.toString(), "value");
+		
+		val = ((Map<?,?>) outputRecords[4].getField("stringMapField").getValue()).get("key");
+		assertEquals(val.toString(), "value");
+		
+		Map<?,?> dictMap = (Map<?,?>) graph.getDictionary().getEntry("stringMap").getValue();
+		LinkedHashMap<String,String> expectedmap = new LinkedHashMap<>();
+		expectedmap.put("key", "value");
+		assertDeepEquals(dictMap, expectedmap);
+		
+		check("mapNull", true);
+		check("mapString", expectedmap);
+	}
+	
+	/**
+	 * Answers <code>true</code> if given throwable is or is caused by given cause type.
+	 * @param throwable
+	 * @param causeType
+	 * @return
+	 */
+	public static boolean isCausedBy(Throwable throwable, Class<? extends Throwable> causeType) {
+		
+		while (throwable != null) {
+			if (causeType.isAssignableFrom(throwable.getClass())) {
+				return true;
+			}
+			throwable = throwable.getCause();
+		}
+		return false;
+	}
+
+	public void test_container_assignment_initialization_expect_error() {
+		try {
+			doCompile("function string[] getStringList() {return $out.firstMultivalueOutput.stringListField;} function integer transform(){getStringList()[0] = 'test'; return 0;}", "test_container_assignment_initialization_expect_error");
+			fail();
+		} catch (NullPointerException npe) {
+		} catch (TransformLangExecutorRuntimeException ex) {
+			if (!isCausedBy(ex, NullPointerException.class)) {
+				throw ex;
+			}
+		}
+
+		try {
+			doCompile("function map[string, string] getStringMap() {return $out.firstMultivalueOutput.stringMapField;} function integer transform(){getStringMap()['key'] = 'value'; return 0;}", "test_container_assignment_initialization_expect_error");
+			fail();
+		} catch (NullPointerException npe) {
+		} catch (TransformLangExecutorRuntimeException ex) {
+			if (!isCausedBy(ex, NullPointerException.class)) {
+				throw ex;
+			}
 		}
 	}
 
@@ -3666,6 +4890,116 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_mapping_whitespace() {
 		doCompileExpectError("test_mapping_whitespace", "Invalid member access expression");
 	}
+	
+	public void test_mappinglib_field_parsing(){
+		try {
+			// mapping code can not be null
+			doCompile("function integer transform(){\n" + "getMappedSourceFields(null, \"name\", 0);" + "\nreturn 0;}", "test_mappinglib_field_parsing");
+			fail();
+		} catch (RuntimeException e) {
+			if (!isCausedBy(e, NullPointerException.class)) {
+				throw e;
+			}
+		}
+
+		try {
+			// index can not be null
+			doCompile("function integer transform(){\n" + "getMappedSourceFields(\"$name=$name;$name=$firstName;$countryName=$countryName;#$phone=$field1;\", \"name\", null);" + "\nreturn 0;}", "test_mappinglib_field_parsing");
+			fail();
+		} catch (RuntimeException e) {
+			if (!isCausedBy(e, NullPointerException.class)) {
+				throw e;
+			}
+		}
+
+		try {
+			// index out of bound
+			doCompile("function integer transform(){\n" + "getMappedSourceFields(\"$name=$name;$name=$firstName;$countryName=$countryName;#$phone=$field1;\", \"name\", 2);" + "\nreturn 0;}", "test_mappinglib_field_parsing");
+			fail();
+		} catch (RuntimeException e) {
+			if (!isCausedBy(e, IndexOutOfBoundsException.class)) {
+				throw e;
+			}
+		}
+
+		try {
+			// invalid fieldname ""
+			doCompile("function integer transform(){\n" + "getMappedSourceFields(\"$name=$name;$name=;$countryName=$countryName;#$phone=$field1;\", \"name\", 0);" + "\nreturn 0;}", "test_mappinglib_field_parsing");
+			fail();
+		} catch (RuntimeException e) {
+			if (!isCausedBy(e, IllegalArgumentException.class)) {
+				throw e;
+			}
+			if (e instanceof IllegalArgumentException) {
+				assertEquals(e.getMessage(), "field name \"\" is not valid.");
+			}
+		}
+
+		try {
+			// invalid fieldname "$01myName"
+			doCompile("function integer transform(){\n" + "getMappedSourceFields(\"$name=$name;$name=$01myName;$countryName=$countryName;#$phone=$field1;\", \"name\", 0);" + "\nreturn 0;}", "test_mappinglib_field_parsing");
+			fail();
+		} catch (RuntimeException e) {
+			if (!isCausedBy(e, IllegalArgumentException.class)) {
+				throw e;
+			}
+			if (e instanceof IllegalArgumentException) {
+				assertEquals(e.getMessage(), "field name \"$01myName\" is not valid.");
+			}
+		}
+
+		try {
+			// invalid fieldname "$name(i)" - ordering allowed only on target fields
+			doCompile("function integer transform(){\n" + "getMappedSourceFields(\"$name=$name(i);#$phone=$field1;\", \"name\", 0);" + "\nreturn 0;}", "test_mappinglib_field_parsing");
+			fail();
+		} catch (RuntimeException e) {
+			if (!isCausedBy(e, IllegalArgumentException.class)) {
+				throw e;
+			}
+			if (e instanceof IllegalArgumentException) {
+				assertEquals(e.getMessage(), "field name \"$name(i)\" is not valid.");
+			}
+		}
+
+		doCompile("test_mappinglib_field_parsing");
+
+		check("sourceFields_nullTarget", Collections.EMPTY_LIST);
+		check("sourceFields1", Arrays.asList("name", "firstName"));
+		check("sourceFields2", Arrays.asList());
+		check("sourceFields3", Arrays.asList("a", "b", "c"));
+		check("sourceFields4", Arrays.asList("name", "firstName"));
+		check("sourceFields5", Arrays.asList("name", "firstName", "countryName"));
+		check("sourceFields6", Arrays.asList("name", "firstName", "countryName"));
+		check("targetFields_nullSource", Collections.EMPTY_LIST);
+		check("targetFields", Arrays.asList("name", "countryName"));
+		check("targetFields1", Arrays.asList("name"));
+		check("targetFields2", Arrays.asList("field1", "field2"));
+		check("targetFields3", Arrays.asList("field1", "field2", "field3"));
+		check("isSourceMapped1", true);
+		check("isSourceMapped2", false);
+		check("isSourceMapped3", true);
+		check("isTargetMapped", true);
+		
+		check("sourceMapped_nullTarget", false);
+		check("targetMapped_nullSource", false);
+		
+		// examples from the User Guide
+		check("example_getMappedSourceFields1", Arrays.asList("srcB4"));
+		check("example_getMappedSourceFields2", Arrays.asList("source1", "source3"));
+		check("example_getMappedSourceFields3", Arrays.asList("source1", "source3", "source4"));
+		
+		check("example_getMappedTargetFields1", Arrays.asList("target2"));
+		check("example_getMappedTargetFields2", Arrays.asList("target1", "target3", "target2"));
+		check("example_getMappedTargetFields3", Arrays.asList("target1", "target3"));
+		
+		check("example_isSourceFieldMapped1", true);
+		check("example_isSourceFieldMapped2", false);
+		check("example_isSourceFieldMapped3", true);
+		check("example_isSourceFieldMapped4", false);
+		
+		check("example_isTargetFieldMapped1", true);
+		check("example_isTargetFieldMapped2", false);
+	}
 
 	public void test_copyByName() {
 		doCompile("test_copyByName");
@@ -3739,16 +5073,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		DataRecord input2 = DataRecordFactory.newRecord(m2);
 		DataRecord output1 = DataRecordFactory.newRecord(m2);
 		DataRecord output2 = DataRecordFactory.newRecord(m1);
-		
-		input1.init();
-		input2.init();
-		output1.init();
-		output2.init();
-		
-		input1.reset();
-		input2.reset();
-		output1.reset();
-		output2.reset();
 		
 		input1.getField("field1").setValue("abc");
 		input1.getField("field2").setValue("def");
@@ -4097,13 +5421,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		List<String> myList = new ArrayList<String>();
 		check("copyEmptyList", myList);
 		check("returnedEmptyList", myList);
-		assertTrue(((List<String>)(getVariable("copyEmptyList"))).isEmpty());
-		assertTrue(((List<String>)(getVariable("returnedEmptyList"))).isEmpty());
+		assertTrue(((List<?>)(getVariable("copyEmptyList"))).isEmpty());
+		assertTrue(((List<?>)(getVariable("returnedEmptyList"))).isEmpty());
 		Map<String, String> emptyMap = new HashMap<String, String>();
 		check("copyEmptyMap", emptyMap);
 		check("returnedEmptyMap", emptyMap);
-		assertTrue(((HashMap<String,String>)(getVariable("copyEmptyMap"))).isEmpty());
-		assertTrue(((HashMap<String,String>)(getVariable("returnedEmptyMap"))).isEmpty());
+		assertTrue(((HashMap<?,?>)(getVariable("copyEmptyMap"))).isEmpty());
+		assertTrue(((HashMap<?,?>)(getVariable("returnedEmptyMap"))).isEmpty());
 	}
 
 	public void test_containerlib_copy_expect_error(){
@@ -4211,6 +5535,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("emptyList1", true);
 		check("fullList", false);
 		check("fullList1", false);
+		check("emptyString",true);
+		check("fullString",false);
 	}
 
 	public void test_containerlib_isEmpty_expect_error(){
@@ -4476,12 +5802,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
-		try {
-			doCompile("function integer transform(){reverse(null); return 0;}","test_containerlib_reverse_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
+		doCompileExpectError(
+				"function integer transform(){reverse(null); return 0;}",
+				"test_containerlib_reverse_expect_error",
+				Arrays.asList("Function 'reverse' is ambiguous"));
 		try {
 			doCompile("function integer transform(){long[] longList = null; long[] reversed = longList.reverse(); return 0;}","test_containerlib_reverse_expect_error");
 			fail();
@@ -4731,6 +6055,64 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 		
 		doCompileExpectError("function integer transform(){boolean b = containsValue(null, 18L); return 0;}","test_convertlib_containsValue_expect_error", Arrays.asList("Function 'containsValue' is ambiguous"));
+	}
+
+	public void test_containerlib_binarySearch() {
+		doCompile("test_containerlib_binarySearch");
+
+		check("listResults", Arrays.asList(2, -4, -4, 0, -1, -1, 1, -4));
+		check("listEmptyTest2", -1);
+		check("listEmptyTest3", -1);
+		check("listTest2", 1);
+		check("listTest3", 0);
+		check("listTest8", 1);
+		check("listTest9", 0);
+		check("listTest10", -3);
+		check("listTest11", 1);
+		check("listTest12", 0);
+		check("listTest13", -5);
+		check("listTest14", 0);
+		check("listTest15", 2);
+		check("listTest16", -4);
+		check("integerToLongTest", 1);
+		check("listTest17", 1);
+		check("listTest18", 0);
+		check("listTest19", -5);
+		check("listTest20", 0);
+		check("listTest21", 1);
+		check("listTest22", -5);
+		check("listTest23", 1);
+		check("listTest24", 0);
+		check("listTest25", -5);
+
+		check("listEmptyTest4", -1);
+	}
+
+	public void test_containerlib_binarySearch_expect_error(){
+		try {
+			doCompile("function integer transform(){long[] nullList = null; integer i = nullList.binarySearch(18L); return 0;}","test_containerlib_binarySearch_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+		try {
+			doCompile("function integer transform(){long nullValue = null; [5L, 15L].binarySearch(nullValue); return 0;}","test_containerlib_binarySearch_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+		try {
+			doCompile("function integer transform(){long[] emptyList; long nullValue = null; emptyList.binarySearch(nullValue); return 0;}","test_containerlib_binarySearch_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, NullPointerException.class));
+		}
+		try {
+			doCompile("function integer transform(){byte[] byteList = [hex2byte('00')]; byteList.binarySearch(hex2byte('FF')); return 0;}","test_containerlib_binarySearch_expect_error");
+			fail();
+		} catch (Exception e) {
+			assertTrue(isCausedBy(e, IllegalArgumentException.class));
+		}
 	}
 
 	public void test_containerlib_getKeys() {
@@ -5713,6 +7095,25 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("trim_null", null);
 	}
 	
+	public void test_stringlib_reverse() {
+		doCompile("test_stringlib_reverse");
+		check("reversed1", "hgfedcba");
+		check("reversed2", "a");
+		check("reversed3", null);
+		
+		check("czechString", "\u017Elu\u0165ou\u010Dk\u00FD k\u016F\u0148 \u00FAp\u011Bl \u010F\u00E1belsk\u00E9 \u00F3dy");
+		
+		// contains 3 non-BMP code points (those which consist of 2 chars)
+		String nonBMP = "\u4DB5\u4E26\u4E27\u4E21\u3402\uD840\uDC0B\u5345\u4E94\u4E92\u4E30\u4E0D\u29EC\u29ED\u29F0\u29EF\uD83D\uDE04\uD835\uDC9E";
+		check("nonBMP", nonBMP);
+		check("compositeCharacters1", "\u00E9\u00E1o"); // reverse called on composed characters
+		check("compositeCharacters2", "e\u0301a\u0301o"); // reverse called on decomposed characters
+		check("compositeCharacters3", "ea\u0301o\u0301"); // reverse called on canonical composition, then decomposed again
+		
+		check("emptyStr", "");
+		check("singleChar", "c");
+	}
+	
 	public void test_stringlib_upperCase() {
 		doCompile("test_stringlib_upperCase");
 		check("upper", "THE QUICK !!$  BROWN FOX JUMPS OVER THE LAZY DOG BAGR	");
@@ -5789,6 +7190,19 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isDate25", false);
 		check("isDate26", true);
 		check("isDate27", true);
+		
+		// CLO-6601
+		check("isDate28", false);
+		check("isDate29", false);
+		check("isDate30", false);
+		check("isDate31", false);
+		check("isDate32", false);
+		check("isDate33", false);
+		check("isDate34", false);
+		check("isDate35", true);
+		check("isDate36", true);
+		check("isDate37", true);
+		check("isDate38", true);
 
 		check("isDecimal", false);
 		check("isDecimal1", false);
@@ -9518,6 +10932,29 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("nullRet4", null);
 		check("nullRet5", null);
 		check("nullRet6", null);
+		
+		// CLO-6306:
+		cal.clear();
+		cal.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+		cal.set(2015, 04, 04, 11, 04, 13);
+		check("CLO_6306_1", cal.getTime());
+		check("CLO_6306_3", cal.getTime());
+
+		cal.clear();
+		cal.setTimeZone(TimeZone.getTimeZone("GMT+5"));
+		cal.set(2015, 04, 04, 11, 04, 13);
+		check("CLO_6306_2", cal.getTime());
+		check("CLO_6306_4", cal.getTime());
+		
+		// CLO-5961:
+		cal.clear();
+		cal.setTimeZone(TimeZone.getDefault());
+		cal.set(2015, 4, 25, 0, 0, 0);
+		check("CLO_5961_1", cal.getTime());
+		check("CLO_5961_2", cal.getTime());
+		cal.set(2015, 10, 25);
+		check("CLO_5961_3", cal.getTime());
+		check("CLO_5961_4", cal.getTime());
 	}
 
 	public void test_convertlib_str2date_expect_error(){
@@ -9540,17 +10977,60 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){date d = str2date('17.11.1987', 'yyyy-MM-dd', null); return 0;}","test_convertlib_str2date_expect_error");
+			doCompile("function integer transform(){date d = str2date('17.11.1987', 'yyyy-MM-dd', null, false); return 0;}","test_convertlib_str2date_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){date d = str2date('17.11.1987', 'yyyy-MM-dd', 'cs.CZ', null); return 0;}","test_convertlib_str2date_expect_error");
+			doCompile("function integer transform(){date d = str2date('17.11.1987', 'yyyy-MM-dd', 'cs.CZ', null, false); return 0;}","test_convertlib_str2date_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
+		try {
+			doCompile("function integer transform(){date d = str2date('1924011', 'yyyyMMdd', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-001-012', 'yyyy-MM-dd', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-1-12', 'yyyy-MM-dd', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-November-12', 'yyyy-MMM-dd', 'en.US', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-Nov-12', 'yyyy-MMMM-dd', 'en.US', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-Nov-12', 'yyyy-MM-dd', 'en.US', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('2015-November-12', 'yyyy-MM-dd', 'en.US', true); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		
 	}
 	
 	public void test_convertlib_str2decimal() {
@@ -9804,6 +11284,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	public void test_convertlib_toString() {
 		doCompile("test_convertlib_toString");
+		check("booleanString", "true");
 		check("integerString", "10");
 		check("longString", "110654321874");
 		check("doubleString", "1.547874E-14");
@@ -9976,7 +11457,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		try {
 			dictionary.setValue("stringEntry", "string", cs);
-			dictionary.setValue("stringListEntry", "list", Arrays.asList(cs));
+			dictionary.setValue("stringListEntry", "list", new ArrayList<>(Arrays.asList(cs)));
 			dictionary.setContentType("stringListEntry", "string");
 			Map<String, Object> map = new HashMap<>();
 			map.put("key", cs);
@@ -9984,12 +11465,25 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			dictionary.setContentType("stringMapEntry", "string");
 			
 			dictionary.setValue("decimalEntry", "decimal", d);
-			dictionary.setValue("decimalListEntry", "list", Arrays.asList(d));
+			dictionary.setValue("decimalListEntry", "list", new ArrayList<>(Arrays.asList(d)));
 			dictionary.setContentType("decimalListEntry", "decimal");
 			map = new HashMap<>();
 			map.put("key", d);
 			dictionary.setValue("decimalMapEntry", "map", map);
 			dictionary.setContentType("decimalMapEntry", "decimal");
+
+			dictionary.setValue("stringListEntry2", "list", new ArrayList<>(Arrays.asList(cs)));
+			dictionary.setContentType("stringListEntry2", "string");
+			dictionary.setValue("stringListEntry3", "list", new ArrayList<>(Arrays.asList(cs)));
+			dictionary.setContentType("stringListEntry3", "string");
+			map = new HashMap<>();
+			map.put("key", cs);
+			dictionary.setValue("stringMapEntry2", "map", map);
+			dictionary.setContentType("stringMapEntry2", "string");
+			map = new HashMap<>();
+			map.put("key", cs);
+			dictionary.setValue("stringMapEntry3", "map", map);
+			dictionary.setContentType("stringMapEntry3", "string");
 		} catch (ComponentNotReadyException e) {
 			throw new RuntimeException("Error init default dictionary", e);
 		}
@@ -9997,9 +11491,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		String sourceCode = loadSourceCode(testIdentifier);
 		doCompile(sourceCode, testIdentifier, graph, inRecords, outRecords);
 
-		Boolean[] expected = new Boolean[10];
+		Boolean[] expected = new Boolean[14];
 		Arrays.fill(expected, true);
 		check("results", Arrays.asList(expected));
+		
+		// implementation detail, may change in the future
+		assertTrue(((List<?>) dictionary.getValue("stringListEntry3")).get(0) == cs);
+		assertTrue(((Map<?, ?>) dictionary.getValue("stringMapEntry3")).get("key") == cs);
 	}
 	
 	public void test_dictionary_expect_error() throws Exception {
@@ -10371,29 +11869,38 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_stringlib_getUrlParts() {
 		doCompile("test_stringlib_getUrlParts");
 		
-		List<Boolean> isUrl = Arrays.asList(true, true, true, true, false);
+		List<Boolean> isUrl = Arrays.asList(true, true, true, true, true, true, true, false);
 		List<String> path = Arrays.asList(
 				"/users/a6/15e83578ad5cba95c442273ea20bfa/msf-183/out5.txt",
 				"/data-in/fileOperation/input.txt",
 				"/data/file.txt",
 				"/data/file.txt",
+				"/share/dir/file.txt",
+				"/dir/file.txt",
+				"/bucketname/dir/file.txt",
 				null);
-		List<String> protocol = Arrays.asList("sftp", "sandbox", "ftp", "https", null);
+		List<String> protocol = Arrays.asList("sftp", "sandbox", "ftp", "https", "smb", "hdfs", "s3", null);
 		List<String> host = Arrays.asList(
 				"ava-fileManipulator1-devel.getgooddata.com",
 				"cloveretl.test.scenarios",
 				"ftp.test.com",
 				"www.test.com",
+				"hostname",
+				"HADOOP0",
+				"s3.amazonaws.com",
 				null);
-		List<Integer> port = Arrays.asList(-1, -1, 21, 80, -2);
+		List<Integer> port = Arrays.asList(-1, -1, 21, 80, 445, -1, -1, -2);
 		List<String> userInfo = Arrays.asList(
 				"user%40gooddata.com:password",
 				"",
 				"test:test",
 				"test:test",
+				"user:password",
+				"",
+				"ACCESSKEY:secretkey",
 				null);
-		List<String> ref = Arrays.asList("", "", "", "", null);
-		List<String> query = Arrays.asList("", "", "", "", null);
+		List<String> ref = Arrays.asList("", "", "", "", "", "", "", null);
+		List<String> query = Arrays.asList("", "", "", "", "", "", "", null);
 
 		check("isUrl", isUrl);
 		check("path", path);
@@ -10423,6 +11930,146 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("query_empty", null);
 	}
 
+	public void test_stringlib_getPathParts() {
+		doCompile("test_stringlib_getPathParts");
+		
+		{
+			List<String> expected = Arrays.asList(
+					null,
+					"",
+					"txt",
+					"xlsx",
+					"dat",
+					"cdf",
+					"xml",
+					"jpg",
+					"",
+					"",
+					"dbf",
+					"",
+					"gz",
+					"Z",
+					"",
+					"",
+					"txt"
+			);
+			List<?> extensions = (List<?>) getVariable("extensions");
+			assertEquals(expected.size(), extensions.size());
+			for (int i = 0; i < expected.size(); i++) {
+				assertEquals(String.valueOf(i), expected.get(i), extensions.get(i));
+			}
+		}
+		
+		{
+			List<String> expected = Arrays.asList(
+					null,
+					"",
+					"out5.txt",
+					"input.xlsx",
+					"file.dat",
+					"c.cdf",
+					"c.xml",
+					"c.ab.jpg",
+					"",
+					"",
+					"c.dbf",
+					"b",
+					"c.gz",
+					"c.Z",
+					"b",
+					"",
+					"file_with_query?and#hash.txt"
+			);
+			List<?> filenames = (List<?>) getVariable("filenames");
+			assertEquals(expected.size(), filenames.size());
+			for (int i = 0; i < expected.size(); i++) {
+				assertEquals(String.valueOf(i), expected.get(i), filenames.get(i));
+			}
+		}
+
+		{
+			List<String> expected = Arrays.asList(
+					null,
+					"",
+					"out5",
+					"input",
+					"file",
+					"c",
+					"c",
+					"c.ab",
+					"",
+					"",
+					"c",
+					"b",
+					"c",
+					"c",
+					"b",
+					"",
+					"file_with_query?and#hash"
+			);
+			List<?> filenamesWithoutExtension = (List<?>) getVariable("filenamesWithoutExtension");
+			assertEquals(expected.size(), filenamesWithoutExtension.size());
+			for (int i = 0; i < expected.size(); i++) {
+				assertEquals(String.valueOf(i), expected.get(i), filenamesWithoutExtension.get(i));
+			}
+		}
+
+		{
+			List<String> expected = Arrays.asList(
+					null,
+					"",
+					"/foo/../bar/../baz/",
+					"/cloveretl.test.scenarios/./data-in/fileOperation/",
+					"/data/",
+					"C:/a/b/",
+					"C:/a/b/",
+					"a/b/",
+					"file:/C:/Users/krivanekm/workspace/Experiments/",
+					"sandbox://cloveretl.test.scenarios/",
+					"sandbox://cloveretl.test.scenarios/a/b/",
+					"ftp://user:password@hostname.com/a/",
+					"ftp://user:password@hostname.com/a/../b/",
+					"s3://user:password@hostname.com/a/b/",
+					"sftp://user:password@hostname.com/../a/",
+					"sandbox://cloveretl.test.scenarios",
+					"sandbox://cloveretl.test.scenarios/"
+			);
+			List<?> filepaths = (List<?>) getVariable("filepaths");
+			assertEquals(expected.size(), filepaths.size());
+			for (int i = 0; i < expected.size(); i++) {
+				assertEquals(String.valueOf(i), expected.get(i), filepaths.get(i));
+			}
+		}
+
+		{
+			List<String> expected = Arrays.asList(
+					null,
+					"",
+					"/baz/out5.txt",
+					"/cloveretl.test.scenarios/data-in/fileOperation/input.xlsx",
+					"/data/file.dat",
+					"C:/a/b/c.cdf",
+					"C:/a/b/c.xml",
+					"a/b/c.ab.jpg",
+					"file:/C:/Users/krivanekm/workspace/Experiments/",
+					"sandbox://cloveretl.test.scenarios/",
+					"sandbox://cloveretl.test.scenarios/a/b/c.dbf",
+					"ftp://user:password@hostname.com/a/b",
+					"ftp://user:password@hostname.com/b/c.gz",
+					"s3://user:password@hostname.com/a/b/c.Z",
+					null,
+					"sandbox://cloveretl.test.scenarios",
+					"sandbox://cloveretl.test.scenarios/file_with_query?and#hash.txt"
+			);
+			List<?> normalized = (List<?>) getVariable("normalized");
+			assertEquals(expected.size(), normalized.size());
+			for (int i = 0; i < expected.size(); i++) {
+				assertEquals(String.valueOf(i), expected.get(i), normalized.get(i));
+			}
+		}
+	}
+
+	
 	public void test_utillib_iif() throws UnsupportedEncodingException{
 		doCompile("test_utillib_iif");
 		check("ret1", "Renektor");
@@ -10577,4 +12224,28 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 	}
+
+	/**
+	 * @see PropertiesUtilsTest#testDeserialize()
+	 */
+	@SuppressWarnings("serial")
+	public void test_stringlib_parseProperties() {
+		doCompile("test_stringlib_parseProperties");
+		Map<String, String> expected = new HashMap<String, String>();
+		expected.put("xxx", "1");
+		expected.put("kkk", "2");
+		expected.put("aaa", "3");
+		expected.put("bbb", "4");
+		Map<?, ?> actual = (Map<?, ?>) getVariable("ret1");
+		List<?> keys = new ArrayList<>(actual.keySet());
+		assertEquals(Arrays.asList("xxx", "kkk", "aaa", "bbb"), keys); // check order
+		check("ret1", expected);
+		
+		expected = new HashMap<String, String>();
+		check("ret2", expected); // empty string
+		check("ret3", expected); // blank string
+		check("ret4", expected); // null string
+		check("ret5", new HashMap<String, String>() {{ put("include", "aaa"); }}); // include not ignored
+	}
+
 }

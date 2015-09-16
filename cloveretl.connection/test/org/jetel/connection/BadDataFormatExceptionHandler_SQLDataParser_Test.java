@@ -55,7 +55,6 @@ public class BadDataFormatExceptionHandler_SQLDataParser_Test extends CloverTest
 		aParser2.setDataSource(aDBConnection.getConnection(aDBConnection.getId()));
 
 		record = DataRecordFactory.newRecord(metadata);
-		record.init();
 	}
 
 	@Override

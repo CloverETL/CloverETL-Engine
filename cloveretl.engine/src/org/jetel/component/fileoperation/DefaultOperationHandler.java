@@ -37,7 +37,7 @@ import org.jetel.component.fileoperation.result.CopyResult;
 import org.jetel.component.fileoperation.result.DeleteResult;
 import org.jetel.component.fileoperation.result.InfoResult;
 import org.jetel.component.fileoperation.result.ListResult;
-import org.jetel.util.file.FileUtils;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.stream.StreamUtils;
 
 public class DefaultOperationHandler extends BaseOperationHandler {
@@ -68,16 +68,18 @@ public class DefaultOperationHandler extends BaseOperationHandler {
 		}
 	}
 	
-	private boolean copyFile(SingleCloverURI source, SingleCloverURI target, long sourceSize) throws IOException {
-		ReadableByteChannel inputChannel = null;
-		WritableByteChannel outputChannel = null;
-		try {
-			inputChannel = manager.getInput(source).channel();
-			outputChannel = manager.getOutput(target).channel();
-			StreamUtils.copy(inputChannel, outputChannel, sourceSize);
+	private boolean copyFile(SingleCloverURI source, SingleCloverURI target, Long sourceSize) throws IOException {
+		try (
+			ReadableByteChannel inputChannel = manager.getInput(source).channel();
+			WritableByteChannel outputChannel = manager.getOutput(target).channel();
+		) {
+			if (sourceSize != null) {
+				StreamUtils.copy(inputChannel, outputChannel, sourceSize);
+			} else {
+				// fallback to handle cases when source size is unknown
+				StreamUtils.copy(inputChannel, outputChannel);
+			}
 			return true;
-		} finally {
-			FileUtils.closeAll(outputChannel, inputChannel);
 		}
 	}
 	
@@ -88,7 +90,13 @@ public class DefaultOperationHandler extends BaseOperationHandler {
 			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
 		}
 		InfoResult sourceInfo = manager.info(source);
+		if (!sourceInfo.success()) {
+			throw ExceptionUtils.getIOException(sourceInfo.getFirstError());
+		}
 		InfoResult targetInfo = manager.info(target);
+		if (!targetInfo.success()) {
+			throw ExceptionUtils.getIOException(targetInfo.getFirstError());
+		}
 		if (targetInfo.exists()) {
 			URI sourceUri = sourceInfo.getURI();
 			URI targetUri = targetInfo.getURI();

@@ -35,14 +35,17 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.ExceptionUtils;
+import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.exec.ProcBox;
+import org.jetel.util.exec.StringDataConsumer;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
@@ -158,6 +161,12 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	public void setFailOnError(boolean failOnError) {
 		this.failOnError = failOnError;
 	}
+	
+	@Override
+	protected void createConsumers() throws ComponentNotReadyException {
+		consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
+		errConsumer = new StringDataConsumer(0);
+	}
 
 	/**
 	 * Main processing method for the PsqlDataWriter object
@@ -170,27 +179,38 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		ProcBox box;
 		int processExitValue = 0;
 
-		if (isDataReadFromPort) {
-			if (!StringUtils.isEmpty(dataURL)) {
-				// dataFile is used for exchange data
-				readFromPortAndWriteByFormatter();
-				box = createProcBox();
+		try {
+			if (isDataReadFromPort) {
+				if (!StringUtils.isEmpty(dataURL)) {
+					// dataFile is used for exchange data
+					readFromPortAndWriteByFormatter();
+					box = createProcBox();
+				} else {
+					Process process = Runtime.getRuntime().exec(commandLine);
+					box = createProcBox(process);
+
+					// stdin is used for exchange data - set data target to stdin of process
+					OutputStream processIn = new BufferedOutputStream(process.getOutputStream());
+					readFromPortAndWriteByFormatter(processIn);
+				}
+
+				processExitValue = box.join();
 			} else {
-				Process process = Runtime.getRuntime().exec(commandLine);
-				box = createProcBox(process);
-
-				// stdin is used for exchange data - set data target to stdin of process
-				OutputStream processIn = new BufferedOutputStream(process.getOutputStream());
-				readFromPortAndWriteByFormatter(processIn);
+				processExitValue = readDataDirectlyFromFile();
 			}
-
-			processExitValue = box.join();
-		} else {
-			processExitValue = readDataDirectlyFromFile();
+		} catch (Exception e) {
+			throw new JetelRuntimeException(getErrorOutput(), e); // CLO-6396: log all errors together
 		}
 
 		if (processExitValue != 0) {
 			throw new JetelException(getErrorMsg(processExitValue));
+		}
+		
+		// Independent logging of error output was disabled in CLO-6396, so this needs to be here for the case when "Fail on error"
+		// is false. Otherwise the error output of the OS process would be missing from the graph log.
+		String errorOutput = getErrorOutput();
+		if (!StringUtils.isEmpty(errorOutput)) {
+			logger.error(errorOutput);
 		}
 
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -217,7 +237,22 @@ public class PostgreSqlDataWriter extends BulkLoader {
 			errorMsg = "unknown error";
 		}
 		
-		return "psql utility has failed - " + errorMsg + ".";
+		String errorOutput = getErrorOutput();
+		if (!StringUtils.isEmpty(errorOutput)) {
+			errorOutput =  " Error output of the process:" + "\n" + errorOutput;
+		}
+		return "psql utility has failed - " + errorMsg + "." + errorOutput;
+	}
+	
+	/**
+	 * 
+	 * @return the whole error output of the external process
+	 */
+	private String getErrorOutput() {
+		if (errConsumer instanceof StringDataConsumer) {
+			return ((StringDataConsumer) errConsumer).getMsg();
+		}
+		return "";
 	}
 	
 	@Override
@@ -282,11 +317,10 @@ public class PostgreSqlDataWriter extends BulkLoader {
 	 * @throws IOException when error occured
 	 */
 	private void saveCommandToFile(File commandFile, String command) throws IOException {
-		FileWriter commandWriter = new FileWriter(commandFile);
-		printCommandToLog(command);
-		
-		commandWriter.write(command);
-		commandWriter.close();
+		try (FileWriter commandWriter = new FileWriter(commandFile)) {
+			printCommandToLog(command);
+			commandWriter.write(command);
+		}
 	}
 	
 	/**
@@ -537,13 +571,12 @@ public class PostgreSqlDataWriter extends BulkLoader {
 
 		PostgreSqlDataWriter postgreSQLDataWriter = new PostgreSqlDataWriter(
 				xattribs.getString(XML_ID_ATTRIBUTE), 
-				xattribs.getStringEx(XML_PSQL_PATH_ATTRIBUTE, RefResFlag.URL), 
-				xattribs.getString(XML_DATABASE_ATTRIBUTE));
+				xattribs.getStringEx(XML_PSQL_PATH_ATTRIBUTE, null, RefResFlag.URL), 
+				xattribs.getString(XML_DATABASE_ATTRIBUTE, null));
 
 		if (xattribs.exists(XML_FAIL_ON_ERROR_ATTRIBUTE)) {
 			postgreSQLDataWriter.setFailOnError(xattribs.getBoolean(XML_FAIL_ON_ERROR_ATTRIBUTE));
 		}
-
 		if (xattribs.exists(XML_COMMAND_URL_ATTRIBUTE)) {
 			postgreSQLDataWriter.setCommandURL((xattribs.getStringEx(XML_COMMAND_URL_ATTRIBUTE, RefResFlag.URL)));
 		}
@@ -553,7 +586,6 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		if (xattribs.exists(XML_USER_ATTRIBUTE)) {
 			postgreSQLDataWriter.setUser(xattribs.getString(XML_USER_ATTRIBUTE));
 		}
-		
 		if (xattribs.exists(XML_TABLE_ATTRIBUTE)) {
 			postgreSQLDataWriter.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
 		}
@@ -563,7 +595,6 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		if (xattribs.exists(XML_COLUMN_DELIMITER_ATTRIBUTE)) {
 			postgreSQLDataWriter.setColumnDelimiter(xattribs.getString(XML_COLUMN_DELIMITER_ATTRIBUTE));
 		}
-		
 		if (xattribs.exists(XML_PARAMETERS_ATTRIBUTE)) {
 			postgreSQLDataWriter.setParameters(xattribs.getString(XML_PARAMETERS_ATTRIBUTE));
 		}

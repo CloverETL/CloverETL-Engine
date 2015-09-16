@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="us-ascii"?>
-<project name="cloveretl.engine" default="build" basedir=".">
+<project name="cloveretl.engine" default="build" basedir="." xmlns:jacoco="antlib:org.jacoco.ant">
 
 	<property environment="env"/>
+	<property name="script.name" value="cloveretl.engine\build.xml"/>
 
 	<property name="dir.tools" value="${basedir}/tools"/>
-	<property name="dir.findbugs" value="/opt/findbugs"/>
+	<property name="dir.findbugs" value="/opt/findbugs-new"/>
 
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
 		<classpath>
@@ -25,6 +26,10 @@
 				<include name="*.zip"/>
 			</fileset>
 		</classpath>
+	</taskdef>
+	
+	<taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
+		<classpath path="${dir.tools}/jacocoant.jar"/>
 	</taskdef>
 
 	<!-- ProGuard task definition -->
@@ -57,19 +62,19 @@
 	<property name="dir.obfuscate" value="${dir.build}/obfuscate"/>
 	<property name="dir.obfuscate.classes" value="${dir.obfuscate}/classes"/>
 	<property name="dir.obfuscate.manifest" value="${dir.obfuscate}/manifest"/>
-	<property name="dir.cobertura" value="${dir.tools}/cobertura" />
-	<property name="dir.coverage.bin" value="${dir.build}/classes-coverage" />
-	<property name="dir.coverage.plugins" value="${dir.build}/plugins-coverage" />
-	<property name="dir.coverage.xml" value="${dir.build}/coveragereport/xml" />
-	<property name="dir.coverage.html" value="${dir.build}/coveragereport/html" />
-	<property name="cobertura.ser" value="${dir.build}/cobertura.ser"/>
 	<property name="dir.src.javadoc" value="${dir.build}/src-javadoc" />
 	<property name="dir.lib.javadoc" value="${dir.build}/lib-javadoc" />
 	<property name="dir.pmd" value="/opt/pmd" />
 	<property name="dir.pmd.lib" value="${dir.pmd}/lib" />
 	<property name="dir.pmdreport" value="${dir.build}/pmdreport" />
-	<property name="pmd.ruleset.file" value="${dir.build-scripts}/pmd-ruleset.xml" />
 	<property name="dir.licenses" value="${basedir}/licenses" />
+	
+	<!-- =========================== TASKS PROPERTIES =========================== -->
+	<property name="pmd.ruleset.file" value="${dir.build-scripts}/pmd-ruleset.xml" />
+	<property name="run.coverage" value="false"/>
+	<property name="jacoco.dest.file" location="${basedir}/jacoco.exec"/>
+	<property name="additional.jvmargs" value=""/>
+	<property name="runtests.engine.Xmx" value="-Xmx2048m"/>
 	
 	<!--load external properties-->
 	<property file="build-local.properties"/>
@@ -137,15 +142,6 @@
 		<include name="**/*.jar"/>
 	</fileset>
 
-	<path id="cp.cobertura">
-		<fileset dir="${dir.cobertura}">
-			<include name="*.jar" />
-		</fileset>
-	</path>
-
-	<taskdef classpathref="cp.cobertura" resource="tasks.properties" />
-	
-	
 	
 	<!-- =========================== PUBLIC TARGETS ============================== -->
 	<target name="build" depends="build-engine,build-plugins" description="Compiles sources and creates a JAR file">
@@ -629,10 +625,16 @@ This software is licensed under the terms you may find in the file named "LICENS
 		<!-- Create directory for dist. -->
 		<mkdir dir="${dir.package}/lib"/>
 
+		<echo message="*** Creating jar ${dir.package}/lib/cloveretl.engine.jar from dir.package.classes." />
 		<jar destfile="${dir.package}/lib/cloveretl.engine.jar" basedir="${dir.package.classes}">
 			<include name="**/*"/>
 			<exclude name="test/**/*"/>
 		</jar>
+		
+		<echo message="*** Creating zip ${dir.package}/lib/cloveretl.engine.src.zip from dir.src.improved" />
+		<zip destfile="${dir.package}/lib/cloveretl.engine.src.zip" basedir="${dir.src.improved}">
+			<exclude name="log4j.properties"/>
+		</zip>
 
 		<!-- copy all libraries from lib directory -->
 		<copy todir="${dir.package}/lib">
@@ -669,7 +671,8 @@ This software is licensed under the terms you may find in the file named "LICENS
 
 	<!-- make a temp copy of source - necessary to substitute release number constants in the source code -->
 	<target name="improve-java-sources">
-		<echo message="Copying source code.." />
+		<echo message="*** ${script.name}, target: improve-java-sources" />
+		<echo message="Copying source code - from dir.src-${dir.src} to dir.src.improved-${dir.src.improved}." />
 		<copy todir="${dir.src.improved}" encoding="UTF-8">
 			<fileset dir="${dir.src}" />
 		</copy>
@@ -682,12 +685,13 @@ This software is licensed under the terms you may find in the file named "LICENS
 			<replacefilter token="LIBRARY_BUILD_DATETIME = &quot;&quot;" value="LIBRARY_BUILD_DATETIME = &quot;${build.time}&quot;"/>
 			<replacefilter token="LIBRARY_BUILD_YEAR = &quot;&quot;" value="LIBRARY_BUILD_YEAR = &quot;${build.year}&quot;"/>
 		</replace>
+		
 		<if>
 			<not>
 				<equals arg1="${java.src.header.file}" arg2="" trim="true"/>
 			</not>
 			<then>
-				<echo>Changing license of all files - license file ${java.src.header.file}</echo>
+				<echo>Changing license of all files - license file java.src.header.file:${java.src.header.file} for all in dir.src.improved:${dir.src.improved}</echo>
 				<fileheading heading="${java.src.header.file}">
 					<fileset dir="${dir.src.improved}" includes="**/*.java"/>
 				</fileheading>
@@ -902,13 +906,13 @@ This software is licensed under the terms you may find in the file named "LICENS
 		<mkdir dir="${dir.build}"/>
 	</target>
 	
-	<target name="reports" depends="check-sources,reporttests,findbugs-html,coverage-html">
+	<target name="reports" depends="check-sources,reporttests,findbugs-html">
 	</target>
 	
 	<target name="reports-hudson" depends="dist,check-sources,runtests-with-testdb,javadoc">
 	</target>
 	
-	<target name="reports-hudson-detail" depends="pmd,dist,runtests-with-testdb-coverage,coverage-html,coverage-xml,findbugs-xml,findbugs-xml-plugins,javadoc">
+	<target name="reports-hudson-detail" depends="pmd,dist,runtests-detail,findbugs-xml,findbugs-xml-plugins">
 	</target>
 	
 	<target name="reports-hudson-optimalized"  depends="dist,runtests-with-testdb">
@@ -934,7 +938,8 @@ This software is licensed under the terms you may find in the file named "LICENS
 				<pathelement path="${tools}"/>
 				<fileset refid="engine-libs"/>
 				<pathelement path="${dir.bin}"/>
-				<pathelement path="${dir.tools}/junit-4.4.jar"/>
+				<pathelement path="${dir.tools}/junit-4.11.jar"/>
+				<pathelement path="${dir.tools}/hamcrest-core-1.3.jar"/>
 			</classpath>
 			<src path="${dir.src.test}"/>
 		</javac>
@@ -945,47 +950,6 @@ This software is licensed under the terms you may find in the file named "LICENS
 		</copy>
 	</target>
 	
-	<target name="coverage-instrument" depends="coverage-instrument-engine,coverage-instrument-plugins">
-	</target>
-	
-	<target name="coverage-instrument-engine" depends="compile">
-		<echo message="Cobertura auxClasspath - tools: ${tools}" />
-		<echo message="Cobertura auxClasspath - engine-libs: ${toString:engine-libs}" />
-		<echo message="Cobertura auxClasspath - engine-tools: ${toString:engine-tools}" />
-		<cobertura-instrument todir="${dir.coverage.bin}" datafile="${cobertura.ser}">
-			<auxClasspath>
-				<pathelement path="${tools}"/>
-				<fileset refid="engine-libs"/>
-				<fileset refid="engine-tools"/>
-			</auxClasspath>
-			<fileset dir="${dir.bin}">
-				<include name="**/*.class" />
-			</fileset>
-		</cobertura-instrument>
-		<copy todir="${dir.coverage.plugins}/plugins/org.jetel.engine">
-			<fileset dir="${dir.package}/plugins/org.jetel.engine"/>
-		</copy>
-	</target>
-	
-	<target name="coverage-instrument-plugins" depends="init">
-		<mkdir dir="${dir.coverage.plugins}"/>
-		<foreach list="${plugin.list}" inheritall="true" target="plugin-coverage-instrument" param="plugin.dir"/>
-	</target>
-	
-	<target name="plugin-coverage-instrument">
-		<echo message="Coverage instrument plugin - ${plugin.dir}"/>
-		<ant target="coverage-instrument" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
-			<property name="dir.dist" value="${dir.package}"/>
-			<property name="dir.coverage.dist" value="${dir.coverage.plugins}"/>
-			<property name="cobertura.ser" value="${cobertura.ser}"/>
-			<property name="version.full" value="${version.full}"/>
-			<property name="java.src.header.file" value="${java.src.header.file}"/>
-			<property name="java.src.target" value="${java.src.target}"/>
-			<property name="java.src.exclude" value="${java.src.exclude}"/>
-			<property name="plugin.xml.xslt" value="${plugin.xml.xslt}"/>
-		</ant>
-	</target>
-	
 	<target name="runtests" depends="" description="Runs engine and plugins JUnit tests" unless="runtests-dontrun">
 		<property name="test.cloveretl.plugins" value="${dir.package}/plugins"/>
 		<property name="dir.test.additional.classpath" value=""/>
@@ -993,54 +957,49 @@ This software is licensed under the terms you may find in the file named "LICENS
 		<antcall target="runtests-plugins" inheritall="true" inheritrefs="true"/>
 	</target>
 	
-	<target name="runtests-coverage" depends="coverage-instrument" description="Runs engine and plugins JUnit tests with test coverage report">
-		<property name="test.cloveretl.plugins" value="${dir.coverage.plugins}/plugins"/>
-		<property name="dir.test.additional.classpath" value="${dir.coverage.bin}"/>
-		<antcall target="runtests-engine" inheritall="true" inheritrefs="true" />
-		<antcall target="runtests-plugins-coverage" inheritall="true" inheritrefs="true"/>
-	</target>
-	
 	<target name="runtests-engine" depends="init,compile,compile-tests" description="Runs Clover engine JUnit tests">
 		<mkdir dir="${dir.testsresult}"/>
 		<echo message="Running all tests from ${dir.src.test} includes ${test.include} excludes ${test.exclude}"/>
-		<junit 
-					showoutput="true"
-					haltonerror="false" 
-					haltonfailure="false" 
-					printsummary="true"
-					fork="true"
-					forkmode="once" 
-					>
-			<sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser}" />
-			<sysproperty key="file.encoding" value="UTF-8" />
-			<jvmarg value="-Xmx2048m"/>
-			<jvmarg value="-XX:MaxPermSize=512m"/>
-			<jvmarg value="-Dderby.system.home=${dir.examples}/ExtExamples"/>
-			<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
-			<classpath>
-				<pathelement path="${dir.classestest}"/>
-				<pathelement path="${dir.test.additional.classpath}"/>
-				<pathelement path="${dir.package.classes}"/>
-				<fileset dir="${dir.lib}">
-					<include name="*.jar"/>
-				</fileset>
-				<pathelement path="${dir.examples}/ExtExamples/lib/derby/lib/derby.jar"/>
-				<pathelement path="${dir.tools}/junit-4.4.jar"/>
-				<pathelement path="${dir.tools}/junit.xml.formatter.jar"/>
-				<path refid="cp.cobertura"/>
-			</classpath>
-			<batchtest todir="${dir.testsresult}">
-				<fileset dir="${dir.src.test}" excludes="${test.exclude}">
-					<include name="${test.include}"/>
-				</fileset>
-			</batchtest>
-			<formatter type="plain"/>
-			<formatter classname="eu.javlin.ant.junit.ExtXMLJUnitResultFormatter" extension=".xml"/>
-		</junit>
+		<echo message="Running coverage (JaCoCo): ${run.coverage}, destination file is set to: ${jacoco.dest.file}"/>
+		<jacoco:coverage enabled="${run.coverage}" destfile="${jacoco.dest.file}"> <!-- run JaCoCo if run.coverage=true -->
+			<junit 
+						showoutput="true"
+						haltonerror="false" 
+						haltonfailure="false" 
+						printsummary="true"
+						fork="true"
+						forkmode="once" 
+						>
+				<sysproperty key="file.encoding" value="UTF-8" />
+				<jvmarg value="${runtests.engine.Xmx}"/>
+				<jvmarg value="-XX:MaxPermSize=512m"/>
+				<jvmarg value="-Dderby.system.home=${dir.examples}/ExtExamples"/>
+				<jvmarg line="${additional.jvmargs}"/>
+				<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
+				<classpath>
+					<pathelement path="${dir.classestest}"/>
+					<pathelement path="${dir.test.additional.classpath}"/>
+					<pathelement path="${dir.package.classes}"/>
+					<fileset dir="${dir.lib}">
+						<include name="*.jar"/>
+					</fileset>
+					<pathelement path="${dir.examples}/ExtExamples/lib/derby/lib/derby.jar"/>
+					<pathelement path="${dir.tools}/junit-4.11.jar"/>
+					<pathelement path="${dir.tools}/hamcrest-core-1.3.jar"/>
+					<pathelement path="${dir.tools}/junit.xml.formatter.jar"/>
+				</classpath>
+				<batchtest todir="${dir.testsresult}">
+					<fileset dir="${dir.src.test}" excludes="${test.exclude}">
+						<include name="${test.include}"/>
+					</fileset>
+				</batchtest>
+				<formatter type="plain"/>
+				<formatter classname="eu.javlin.ant.junit.ExtXMLJUnitResultFormatter" extension=".xml"/>
+			</junit>
+		</jacoco:coverage>
 	</target>
 	
 	<target name="runtests-plugins" depends="compile-tests,build-plugins" unless="runtests-plugins-dontrun">
-		<mkdir dir="${dir.coverage.plugins}"/>
 		<foreach list="${plugin.list}" inheritall="true" target="runtests-plugin" param="plugin.dir"/>
 	</target>
 	
@@ -1049,27 +1008,6 @@ This software is licensed under the terms you may find in the file named "LICENS
 		<ant target="runtests" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
 			<property name="dir.dist" value="${dir.package}"/>
 			<property name="dir.engine.classestest" value="${dir.classestest}"/>
-			<property name="version.full" value="${version.full}"/>
-			<property name="test.cloveretl.plugins" value="${test.cloveretl.plugins}"/>
-			<property name="java.src.header.file" value="${java.src.header.file}"/>
-			<property name="java.src.target" value="${java.src.target}"/>
-			<property name="java.src.exclude" value="${java.src.exclude}"/>
-			<property name="plugin.xml.xslt" value="${plugin.xml.xslt}"/>
-		</ant>
-	</target>
-	
-	<target name="runtests-plugins-coverage" depends="compile-tests">
-		<mkdir dir="${dir.coverage.plugins}"/>
-		<foreach list="${plugin.list}" inheritall="true" target="runtests-plugin-coverage" param="plugin.dir"/>
-	</target>
-	
-	<target name="runtests-plugin-coverage">
-		<echo message="Runtests plugin - ${plugin.dir}"/>
-		<ant target="runtests" dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
-			<property name="dir.dist" value="${dir.package}"/>
-			<property name="dir.coverage.dist" value="${dir.coverage.plugins}"/>
-			<property name="dir.engine.classestest" value="${dir.classestest}"/>
-			<property name="cobertura.ser" value="${cobertura.ser}"/>
 			<property name="version.full" value="${version.full}"/>
 			<property name="test.cloveretl.plugins" value="${test.cloveretl.plugins}"/>
 			<property name="java.src.header.file" value="${java.src.header.file}"/>
@@ -1109,19 +1047,18 @@ This software is licensed under the terms you may find in the file named "LICENS
 		</ant>
 	</target>
 
-	<target name="runtests-scenario-coverage" depends="build,coverage-instrument">
-		<echo message="Executing Clover Test Environment environment - coverage"/>
-		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
+	<target name="runtests-scenario-jacoco" if="cte.environment.config">
+		<echo message="Executing Clover Test Environment environment with JaCoCo coverage"/>
+		<ant target="run-scenarios-with-engine-build" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
 			<property name="environment.config" value="${cte.environment.config}"/>
 			<property name="scenarios" value="detail.ts" />
-			<property name="dir.engine.classes" value="${dir.coverage.bin}:${dir.package.classes}"/>
-			<property name="dir.plugins" value="${dir.coverage.plugins}/plugins"/>
-			<property name="cobertura.ser" value="${cobertura.ser}"/>
+			<property name="dir.engine.classes" value="${dir.package.classes}"/>
+			<property name="dir.engine.build" value="${dir.package}/lib"/>
+			<property name="dir.plugins" value="${dir.package}/plugins"/>
 			<property name="version.full" value="${version.full}"/>
 			<property name="hudson.link" value="${cte.hudson.link}"/>
 			<property name="logpath" value="${cte.logpath}"/>
 			<property name="testenv.etlenvironment" value="engine"/>
-			<property name="simple.class.loading" value="true"/>
 		</ant>
 	</target>
 	
@@ -1170,19 +1107,11 @@ This software is licensed under the terms you may find in the file named "LICENS
 		</parallel>
 	</target>
 	
-	<target name="runtests-with-testdb-coverage">
-		<parallel>
-			<daemons>
-				<antcall target="start-testdb" />
-			</daemons>
-			<sequential>
-				<sleep seconds="5" />
-				<antcall target="generate-eval-license" />
-				<antcall target="runtests-scenario-coverage" />
-				<!-- <antcall target="runtests-coverage" /> temporarily disabled -->
-				<antcall target="clean-eval-license" />
-			</sequential>
-		</parallel>
+	<target name="runtests-detail">
+		<antcall target="generate-eval-license" />
+		<antcall target="runtests-scenario-jacoco" />
+		<antcall target="runtests" />
+		<antcall target="clean-eval-license" />
 	</target>
 	
 	<target name="start-testdb">
@@ -1213,9 +1142,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 					reportlevel="low"
 					jvmargs="-Xmx500m">
 			<class location="${dir.bin}"/>
-			<class location="${dir.classestest}"/>
 			<sourcePath path="${dir.src}" />
-			<sourcePath path="${dir.src.test}" />
 			<auxclasspath path="${tools}"/>
 			<auxClasspath>
 				<fileset refid="engine-libs"/>
@@ -1235,9 +1162,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 					reportlevel="low"
 					jvmargs="-Xmx600m">
 			<class location="${dir.bin}"/>
-			<class location="${dir.classestest}"/>
 			<sourcePath path="${dir.src}" />
-			<sourcePath path="${dir.src.test}" />
 			<auxclasspath path="${tools}"/>
 			<auxClasspath>
 				<fileset refid="engine-libs"/>
@@ -1254,30 +1179,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 		<ant dir="../${plugin.dir}" target="findbugs-xml" inheritAll="false" inheritrefs="false">
 			<property name="dir.findbugs" value="${dir.findbugs}"/>
 			<property name="dir.dist" value="${dir.package}"/>
-			<property name="dir.engine.classestest" value="${dir.classestest}"/>
 		</ant>
-	</target>
-	
-	<target name="coverage-html" depends="runtests,collect-javadoc-src">
-		<cobertura-report 
-				datafile="${cobertura.ser}" 
-				format="html" 
-				destdir="${dir.coverage.html}" >
-			<fileset dir="${dir.src.javadoc}">
-				<include name="**/*.java"/>
-			</fileset>
-		</cobertura-report>
-	</target>
-	
-	<target name="coverage-xml" depends="runtests,collect-javadoc-src">
-		<cobertura-report 
-				datafile="${cobertura.ser}"
-				format="xml"
-				destdir="${dir.coverage.xml}">
-			<fileset dir="${dir.src.javadoc}">
-				<include name="**/*.java"/>
-			</fileset>
-		</cobertura-report>
 	</target>
 	
 	<target name="pmd-init">
@@ -1289,15 +1191,19 @@ This software is licensed under the terms you may find in the file named "LICENS
 	
 	<target name="pmd" depends="pmd-init" description="Analyze the source code with PMD">
 		<mkdir dir="${dir.pmdreport}"/>
-		<pmd targetjdk="1.6" rulesetfiles="${pmd.ruleset.file}">
+		<pmd shortFilenames="true" rulesetfiles="${pmd.ruleset.file}">
+			<sourceLanguage name="java" version="1.7"/>
 			<formatter type="xml" toFile="${dir.pmdreport}/pmdreport.xml"/>
 			<fileset dir="../" includes="**/*.java"/>
 		</pmd>
 	</target>
 	
-	<target name="check-sources" depends="check-sources-engine,check-sources-plugins"/>
+	<target name="check-sources" depends="check-sources-engine,check-sources-plugins">
+		<echo message="*** ${script.name}, target: check-sources" />	
+	</target>
 	
 	<target name="check-sources-engine">
+		<echo message="*** ${script.name}, target: check-sources-engine, java.src.header.file.opensource - ${java.src.header.file.opensource}" />	
 		<fileheading heading="${java.src.header.file.opensource}" dryrun="true" propertyifrewritten="java.src.header.invalid">
 			<fileset dir="${dir.src}">
 				<include name="**/*.java"/>
@@ -1315,9 +1221,13 @@ This software is licensed under the terms you may find in the file named "LICENS
 	</target>
 	
 	<target name="check-sources-plugins">
+		<echo message="*** ${script.name}, target: check-sources-plugins"/>
+		<echo message="*** Running target check-sources-plugin for each from plugin.list: ${plugin.list} with param plugin.dir - ${plugin.dir} " />
 		<foreach list="${plugin.list}" inheritall="true" target="check-sources-plugin" param="plugin.dir"/>
 	</target>
+	
 	<target name="check-sources-plugin">
+		<echo message="*** ${script.name}, target: check-sources-engine, java.src.header.file.opensource - ${java.src.header.file.opensource}" />
 		<echo message="Check file heading plugin - ${plugin.dir}"/>
 		<ant dir="../${plugin.dir}" target="check-sources" inheritAll="false" inheritrefs="false">
 		</ant>

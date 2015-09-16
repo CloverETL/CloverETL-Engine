@@ -22,6 +22,7 @@ import java.nio.BufferOverflowException;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.HashCodeUtil;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.BooleanFormatter;
@@ -41,6 +42,7 @@ import org.jetel.util.string.Compare;
  * @created Nov 20, 2007
  * @since Nov 20, 2007
  */
+@CloverPublicAPI
 public class BooleanDataField extends DataFieldImpl implements Comparable<Object> {
 	
 	private boolean value;
@@ -179,7 +181,7 @@ public class BooleanDataField extends DataFieldImpl implements Comparable<Object
             }else if (metadata.isDefaultValueSet()){
                 setToDefaultValue();
             }else{
-            	throw new IllegalStateException(getMetadata().getName() + " Field cannot be null and default value is not defined");
+            	setValue(false);
             }
     }
 

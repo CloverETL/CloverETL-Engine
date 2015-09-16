@@ -34,6 +34,8 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -270,10 +272,8 @@ public class LdapReader extends Node {
 		// we need to create data record - take the metadata from first output port
 		StringBuilder filename=new StringBuilder();
 		DataRecord record = DataRecordFactory.newRecord(this.getOutputPort(OUTPUT_PORT).getMetadata());
-		record.init();
 		DataRecord outRecord;
 		DataRecord inRecord = (this.getInPorts().size() > 0) ? DataRecordFactory.newRecord(getInputPort(INPUT_PORT).getMetadata()) : null;
-		if (inRecord != null) inRecord.init();
 		boolean loop = true;
 
 		try {
@@ -334,6 +334,19 @@ public class LdapReader extends Node {
         
         checkInputPorts(status, 0, 1);
         checkOutputPorts(status, 1, Integer.MAX_VALUE);
+        
+        if (ldapUrl == null) {
+        	status.add("LDAP URL not defined", Severity.ERROR, this, Priority.NORMAL, XML_LDAPURL_ATTRIBUTE);
+        }
+        if (base == null) {
+        	status.add("Base DN not defined", Severity.ERROR, this, Priority.NORMAL, XML_BASE_ATTRIBUTE);
+        }
+        if (filter == null) {
+        	status.add("Filter not defined", Severity.ERROR, this, Priority.NORMAL, XML_FILTER_ATTRIBUTE);
+        }
+        if (ldapUrl == null || base == null || filter == null) {
+        	return status;
+        }
 
         try {
             init();
@@ -383,18 +396,18 @@ public class LdapReader extends Node {
 		if(xattribs.exists(XML_USER_ATTRIBUTE) && xattribs.exists(XML_PASSWORD_ATTRIBUTE) ) {
 			aLdapReader = new LdapReader(
 					xattribs.getString(Node.XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_LDAPURL_ATTRIBUTE, RefResFlag.URL),
-					xattribs.getString(XML_BASE_ATTRIBUTE),
-					xattribs.getString(XML_FILTER_ATTRIBUTE),
+					xattribs.getStringEx(XML_LDAPURL_ATTRIBUTE, null, RefResFlag.URL),
+					xattribs.getString(XML_BASE_ATTRIBUTE, null),
+					xattribs.getString(XML_FILTER_ATTRIBUTE, null),
 					i_scope,
 					xattribs.getString(XML_USER_ATTRIBUTE),
 					xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, RefResFlag.SECURE_PARAMATERS));
 		} else {
 			aLdapReader = new LdapReader(
 					xattribs.getString(Node.XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_LDAPURL_ATTRIBUTE, RefResFlag.URL),
-					xattribs.getString(XML_BASE_ATTRIBUTE),
-					xattribs.getString(XML_FILTER_ATTRIBUTE),
+					xattribs.getStringEx(XML_LDAPURL_ATTRIBUTE, null, RefResFlag.URL),
+					xattribs.getString(XML_BASE_ATTRIBUTE, null),
+					xattribs.getString(XML_FILTER_ATTRIBUTE, null),
 					i_scope);
 		}
 		if (xattribs.exists(XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE)) {

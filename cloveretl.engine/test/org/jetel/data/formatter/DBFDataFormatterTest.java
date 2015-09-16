@@ -44,7 +44,6 @@ public class DBFDataFormatterTest extends CloverTestCase {
 		metadata.getField(4).setProperty(DataFieldMetadata.SCALE_ATTR, "3");
 		
 		record = DataRecordFactory.newRecord(metadata);
-		record.init();
 		formatter = new DBFDataFormatter("US-ASCII", (byte) 0x03);
 		formatter.init(metadata);
 		

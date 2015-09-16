@@ -24,10 +24,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.graph.ContextProvider;
-import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.IAuthorityProxy;
 
 /**
  * Utility class for working with sandbox URLs.
@@ -97,7 +99,8 @@ public final class SandboxUrlUtils {
 			slashIndex = sandboxUrl.length();
 		}
 
-		return sandboxUrl.substring(SANDBOX_PROTOCOL_URL_PREFIX.length(), slashIndex);
+		// CLO-6374: decode escape sequences
+		return URIUtils.urlDecode(sandboxUrl.substring(SANDBOX_PROTOCOL_URL_PREFIX.length(), slashIndex));
 	}
 
 	/**
@@ -111,7 +114,8 @@ public final class SandboxUrlUtils {
 			throw new IllegalArgumentException("sandboxUrl");
 		}
 		
-		return url.getHost();
+		// CLO-6374: decode escape sequences
+		return URIUtils.urlDecode(url.getHost());
 	}
 
 	/**
@@ -211,15 +215,16 @@ public final class SandboxUrlUtils {
      * @throws IOException
      */
     public static OutputStream getSandboxOutputStream(URL url, boolean appendData) throws IOException {
-		TransformationGraph graph = ContextProvider.getGraph();
-		if (graph == null) {
-			throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
-		}
 		String filePath = FileUtils.getUrlFile(url);
 		if (filePath.startsWith("/")) {
 			filePath = filePath.substring(1);
 		}
-    	return graph.getAuthorityProxy().getSandboxResourceOutput(ContextProvider.getComponentId(), url.getHost(), filePath, appendData);
+		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
+		try {
+			return authorityProxy.getSandboxResourceOutput(ContextProvider.getComponentId(), getSandboxName(url), filePath, appendData);
+		} catch (UnsupportedOperationException uoe) {
+			throw new IOException("Failed to open sandbox output stream", uoe);
+		}
     }
     
     /**
@@ -230,15 +235,16 @@ public final class SandboxUrlUtils {
      * @throws IOException
      */
     public static InputStream getSandboxInputStream(URL url) throws IOException {
-		TransformationGraph graph = ContextProvider.getGraph();
-		if (graph == null) {
-			throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
-		}
 		String filePath = FileUtils.getUrlFile(url);
 		if (filePath.startsWith("/")) {
 			filePath = filePath.substring(1);
 		}
-		return graph.getAuthorityProxy().getSandboxResourceInput(ContextProvider.getComponentId(), url.getHost(), filePath);
+		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
+		try {
+			return authorityProxy.getSandboxResourceInput(ContextProvider.getComponentId(), getSandboxName(url), filePath);
+		} catch (UnsupportedOperationException uoe) {
+			throw new IOException("Failed to open sandbox input stream", uoe);
+		}
     }
 
 	private SandboxUrlUtils() {
@@ -260,6 +266,30 @@ public final class SandboxUrlUtils {
 		}
 		String sandboxName = getSandboxName(contextSandboxUrl);
 		return getSandboxPath(sandboxName, sandboxUrl);
+	}
+	
+	/**
+	 * CLO-6374: encode spaces in sandbox name to prevent URISyntaxException.
+	 * TODO encode all spaces?
+	 * 
+	 * @param url
+	 * @return
+	 * @throws URISyntaxException
+	 */
+	public static URI toURI(URL url) throws URISyntaxException {
+		// CLO-6374: encode spaces in sandbox name to prevent URISyntaxException
+		String urlString = url.toString();
+		String sandboxName = SandboxUrlUtils.getSandboxName(url);
+		sandboxName = sandboxName.replace(" ", "%20");
+		String relativePath = SandboxUrlUtils.getRelativeUrl(url.toString());
+		try {
+			urlString = SandboxUrlUtils.getSandboxUrl(sandboxName, relativePath).toString();
+		} catch (MalformedURLException e) {
+			URISyntaxException ex = new URISyntaxException(urlString, e.getMessage());
+			ex.initCause(e);
+			throw ex;
+		}
+		return new URI(urlString);
 	}
 	
 }

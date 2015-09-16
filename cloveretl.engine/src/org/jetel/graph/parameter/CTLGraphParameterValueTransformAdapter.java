@@ -21,9 +21,7 @@ package org.jetel.graph.parameter;
 import org.apache.log4j.Logger;
 import org.jetel.ctl.CTLAbstractTransformAdapter;
 import org.jetel.ctl.TransformLangExecutor;
-import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
-import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.exception.ComponentNotReadyException;
 
 /**
@@ -50,22 +48,14 @@ public class CTLGraphParameterValueTransformAdapter extends CTLAbstractTransform
 		if (getParameterValueFunction == null) {
 			throw new ComponentNotReadyException(GET_PARAMETER_VALUE_FUNCTION_NAME + " is not defined");
 		}
-		if (!(getParameterValueFunction.getType().equals(TLTypePrimitive.STRING))) {
-			throw new ComponentNotReadyException(GET_PARAMETER_VALUE_FUNCTION_NAME + " must have 'string' return type");
+		if (!(getParameterValueFunction.getType().isPrimitive())) {
+			throw new ComponentNotReadyException(GET_PARAMETER_VALUE_FUNCTION_NAME + " must return a primitive data type");
 		}
 	}
 
 	@Override
-	public String getValue() {
-		Object parameterValue = executor.executeFunction(getParameterValueFunction, NO_ARGUMENTS, NO_DATA_RECORDS, NO_DATA_RECORDS);
-		
-		if (parameterValue != null && !(parameterValue instanceof String)) {
-			throw new TransformLangExecutorRuntimeException(getParameterValueFunction.getName() + "() function must return 'string'");
-		}
-		
-		String stringParameterValue = parameterValue != null ? parameterValue.toString() : "null";
-		
-		return stringParameterValue;
+	public Object getValue() {
+		return executor.executeFunction(getParameterValueFunction, NO_ARGUMENTS, NO_DATA_RECORDS, NO_DATA_RECORDS);
 	}
 
 }

@@ -18,6 +18,9 @@
  */
 package org.jetel.graph.modelview.impl;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jetel.graph.Edge;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.TransformationGraph;
@@ -55,7 +58,9 @@ public class MetadataPropagationResolver {
 	public void analyseGraph() {
 		//find "no metadata" for all edges with direct metadata
 		//"no metadata" is metadata, which would be used if the edge does not have the direct metadata associated
-		findAllNoMetadata();
+		if (mvGraph.getModel().getRuntimeContext().isCalculateNoMetadata()) {
+			findAllNoMetadata();
+		}
 
 		//go through all edges and search metadata if necessary
 		for (Edge edge : mvGraph.getModel().getEdges().values()) {
@@ -131,12 +136,16 @@ public class MetadataPropagationResolver {
 		MVMetadata result = null;
 		
 		MVEdge referencedEdge = edge.getMetadataRef();
-		if (referencedEdge != null && edge.getModel().getMetadataReferenceState() == ReferenceState.VALID_REFERENCE) {
+		if (referencedEdge != null && ReferenceState.isValidState(edge.getModel().getMetadataReferenceState())) {
 			//metadata are dedicated by an edge reference
 			result = findMetadata(referencedEdge);
 			if (result != null) {
 				result.setPriority(MVMetadata.HIGH_PRIORITY);
-				result.addToOriginPath(referencedEdge);
+			} else if (isSelfReferenced(edge)) {
+				//this is used for cyclic edge references, for example edge A refers to edge B and edge B refers back to edge A
+				//in this case if we do not find metadata in the referenced edge, we try neighbour components
+				//it is necessary to allow to make two way references, for example CustomJavaComponent which propagates metadata like SimpleCopy
+				result = findMetadataFromNeighbours(edge);
 			}
 		} else if (!ReferenceState.isInvalidState(edge.getModel().getMetadataReferenceState())) {
 			//otherwise try to ask your neighbours
@@ -245,5 +254,23 @@ public class MetadataPropagationResolver {
 	public MVGraph getRootMVGraph() {
 		return mvGraph;
 	}
-	
+
+	/**
+	 * @return true if the given edge refers an other edge which recursively refers back to the given edge, false otherwise
+	 */
+	private boolean isSelfReferenced(MVEdge edge) {
+		MVEdge startEdge = edge;
+		Set<MVEdge> visitedEdges = new HashSet<>();
+		while (!visitedEdges.contains(edge)
+				&& edge.getMetadataRef() != null
+				&& ReferenceState.isValidState(edge.getModel().getMetadataReferenceState())) {
+			visitedEdges.add(edge);
+			edge = edge.getMetadataRef();
+			if (edge == startEdge) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

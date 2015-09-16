@@ -32,6 +32,8 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -67,6 +69,7 @@ public class HadoopWriter extends Node {
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 	private static final String XML_KEY_FIELD_NAME_ATTRIBUTE = "keyField";
 	private static final String XML_VALUE_FIELD_NAME_ATTRIBUTE = "valueField";
+	private static final String XML_CREATE_EMPTY_FILES_ATTRIBUTE = "createEmptyFiles";
 
 	private boolean mkDir;
 	private String connectionId;
@@ -87,6 +90,8 @@ public class HadoopWriter extends Node {
 	private LookupTable lookupTable;
 	private String attrPartitionOutFields;
 	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBER_FILE_TAG;
+
+	private boolean createEmptyFiles = true;
 
 	public final static String COMPONENT_TYPE = "HADOOP_WRITER";
 	private final static int READ_FROM_PORT = 0;
@@ -127,7 +132,6 @@ public class HadoopWriter extends Node {
 	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = DataRecordFactory.newRecord(inPort.getMetadata());
-		record.init();
 		while (record != null && runIt) {
 			record = inPort.readRecord(record);
 			if (record != null) {
@@ -178,6 +182,16 @@ public class HadoopWriter extends Node {
 		}
 
 		/* can't easily check writability - would need also Hadoop connection */
+		
+		if (fileURL == null) {
+			status.add("File URL not defined.", Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE);
+		}
+		if (keyField == null) {
+			status.add("Key field not defined.", Severity.ERROR, this, Priority.NORMAL, XML_KEY_FIELD_NAME_ATTRIBUTE);
+		}
+		if (valueField == null) {
+			status.add("Value field not defined.", Severity.ERROR, this, Priority.NORMAL, XML_VALUE_FIELD_NAME_ATTRIBUTE);
+		}
 
 		try {
 			// well, at least try to initialize connection
@@ -245,6 +259,7 @@ public class HadoopWriter extends Node {
 		// target file writes
 		// data
 		writer.setMkDir(mkDir);
+		writer.setCreateEmptyFiles(createEmptyFiles);
 	}
 
 	/**
@@ -271,9 +286,9 @@ public class HadoopWriter extends Node {
 		HadoopWriter writer = null;
 
 		writer = new HadoopWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-				xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, RefResFlag.URL),
-				xattribs.getString(XML_KEY_FIELD_NAME_ATTRIBUTE),
-				xattribs.getString(XML_VALUE_FIELD_NAME_ATTRIBUTE),
+				xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.URL),
+				xattribs.getString(XML_KEY_FIELD_NAME_ATTRIBUTE, null),
+				xattribs.getString(XML_VALUE_FIELD_NAME_ATTRIBUTE, null),
 				xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false));
 		if (xattribs.exists(XML_CONNECTION_ID_ATTRIBUTE)) {
 			writer.setConnectionId(xattribs.getString(XML_CONNECTION_ID_ATTRIBUTE));
@@ -305,6 +320,9 @@ public class HadoopWriter extends Node {
 		if (xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
 			writer.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
 		}
+        if (xattribs.exists(XML_CREATE_EMPTY_FILES_ATTRIBUTE)) {
+        	writer.setCreateEmptyFiles(xattribs.getBoolean(XML_CREATE_EMPTY_FILES_ATTRIBUTE));
+        }
 
 		return writer;
 	}
@@ -426,6 +444,10 @@ public class HadoopWriter extends Node {
 		this.mkDir = mkDir;
 	}
 
+	private void setCreateEmptyFiles(boolean createEmptyFiles) {
+		this.createEmptyFiles = createEmptyFiles;
+	}
+    
 	public void setConnectionId(String connectionId) {
 		this.connectionId = connectionId;
 	}

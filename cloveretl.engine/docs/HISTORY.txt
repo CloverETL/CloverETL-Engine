@@ -2,6 +2,77 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-1-0
+---------
+
+* Java 8 support
+* Disable component as Trash
+* Component improvements:
+	- CustomJavaComponent improvements
+	- XMLExtract, JSONExtract to support list types
+	- XMLExtract - extraction of element content (children elements) with namespace
+	- HTTP connector: add timeout and retry count property
+	- Improved logging when connecting to a PostgreSQL DB with PostgreSQLWriter
+	- Provide output record in RecordDenormalizer.append() method
+	- CrossJoin - support SKIP in transformation
+	- Automatic mapping and parameter propagation
+* CTL:
+	- CTL functions for parsing field mapping
+	- Add strict option to the CTL date parsing functions
+* Ability to specify particular key for key-based sftp authentication
+* FIXES:
+	- Dynamic graph parameters were recomputed on every access
+	- XMLXPathReader: charset attribute is ignored
+	- Denormalizer with group size should send data ASAP
+	- HttpConnector GET fails, but CopyFiles works
+	- Error messages reported via raiseError() should be preserved
+	- XMLExtract: charset autodetection does not work
+	- printErr() function should print to graph log
+	- JDBC drivers: optimize classloader not to load drivers repeatedly
+* COMPATIBILITY:
+	- Remove RecordToKeyValues and KeyValuesToRecord components
+	- Dynamic graph parameters were recomputed on every access
+	- Automatic mapping and parameter propagation
+	- Add strict option to the CTL date parsing functions
+	- Error messages reported via raiseError() should be preserved
+	- printErr() function should print to graph log
+	- XMLXPathReader: charset attribute is ignored
+	- XMLExtract, JSONExtract to support list types
+	- XMLExtract: charset autodetection does not work
+	- XMLExtract - extraction of element content (children elements) with namespace
+
+
+REL-4-1-0-M1
+------------
+
+* Optional ports in subgraphs
+* New compponents:
+	- CrossJoin
+	- GenericComponent
+	- RecordToKeyValues
+	- KeyValuesToRecord
+* Deprecated components:
+	- Pivot
+	- MetaPivot
+	- ApproximativeJoin
+* Amazon S3 support in file operations
+* Vertica JDBC driver added
+* JSONReader/XMLReader input->output mapping
+* Metadata extraction from Clover data file
+- FIXES:
+	- Incorrect handling of "where" in (nested) sql when used in Dynamic metadata query
+	- FastSort may lose records for extremely small run size
+	- LDAP authentication - optional LDAP groups
+	- XMLWriter: 'Write null element' does not work for elements with attributes
+	- CTL2: switch does not allow negative number in cases
+	- UniversalDataReader: "Character decoding error" results in graph failure in lenient and controlled mode
+	- minor bugfixes
+- COMPATIBILITY:
+	- DB components do not resolve parameters in external SQL scripts - fixed
+    - UniversalDataReader: "Character decoding error" results in graph failure in lenient and controlled mode
+    - CTL2: Inconsistent list assignment semantics
+    - DBExecute uses wrong default charset for queries in url
+
 REL-4-0-7
 ---------
 

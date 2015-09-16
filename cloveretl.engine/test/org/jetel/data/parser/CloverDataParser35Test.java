@@ -37,7 +37,6 @@ import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.util.bytes.CloverBuffer;
-import org.jetel.util.primitive.BitArray;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -105,7 +104,6 @@ public class CloverDataParser35Test extends AbstractParserTestCase {
 				buffer.flip();
 				os.write(buffer.array(), 0, buffer.limit());
 				DataRecord record = DataRecordFactory.newRecord(metadata);
-				record.init();
 				record.getField(0).setValue("test1");
 				writeRecord(os, serializeRecord(record, buffer));
 				record.getField(0).setValue("test2");
@@ -162,7 +160,6 @@ public class CloverDataParser35Test extends AbstractParserTestCase {
 		setDataSource(parser, is);
 		DataRecordMetadata metadata = getMetadata();
 		DataRecord record = DataRecordFactory.newRecord(metadata);
-		record.init();
 		
 		testParse(parser, parser.isDirectReadingSupported());
 	}
@@ -181,7 +178,6 @@ public class CloverDataParser35Test extends AbstractParserTestCase {
 	protected void testParse(ICloverDataParser parser, boolean raw) throws Exception {
 		DataRecordMetadata metadata = getMetadata();
 		DataRecord record = DataRecordFactory.newRecord(metadata);
-		record.init();
 		
 		if (raw) { // try direct reading
 			CloverBuffer buffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);

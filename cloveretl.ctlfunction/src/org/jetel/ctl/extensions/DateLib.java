@@ -37,30 +37,28 @@ public class DateLib extends TLFunctionLibrary {
 
     @Override
     public TLFunctionPrototype getExecutable(String functionName) {
-    	final TLFunctionPrototype ret = 
-    		"dateDiff".equals(functionName) ? new DateDiffFunction() : 
-    		"dateAdd".equals(functionName) ? new DateAddFunction() :
-    		"today".equals(functionName) ? new TodayFunction() :
-    		"zeroDate".equals(functionName) ? new ZeroDateFunction() :
-    		"extractDate".equals(functionName) ? new ExtractDateFunction() :
-    		"extractTime".equals(functionName) ? new ExtractTimeFunction() :
-    		"trunc".equals(functionName) ? new TruncFunction() :
-    	    "truncDate".equals(functionName)? new TruncDateFunction() : 
-        	"getDay".equals(functionName)? new GetDayFunction() : 
-       	    "getMonth".equals(functionName)? new GetMonthFunction() : 
-            "getYear".equals(functionName)? new GetYearFunction() : 
-            "getHour".equals(functionName)? new GetHourFunction() : 
-            "getMinute".equals(functionName)? new GetMinuteFunction() : 
-            "getSecond".equals(functionName)? new GetSecondFunction() : 
-            "getMillisecond".equals(functionName)? new GetMillisecondFunction() : 
-            "createDate".equals(functionName)? new CreateDateFunction() : 
-    	    null;
+		if (functionName != null) {
+			switch (functionName) {
+				case "dateDiff": return new DateDiffFunction();
+				case "dateAdd": return new DateAddFunction();
+				case "today": return new TodayFunction();
+				case "zeroDate": return new ZeroDateFunction();
+				case "extractDate": return new ExtractDateFunction();
+				case "extractTime": return new ExtractTimeFunction();
+				case "trunc": return new TruncFunction();
+				case "truncDate": return new TruncDateFunction();
+				case "getDay": return new GetDayFunction();
+				case "getMonth": return new GetMonthFunction();
+				case "getYear": return new GetYearFunction();
+				case "getHour": return new GetHourFunction();
+				case "getMinute": return new GetMinuteFunction();
+				case "getSecond": return new GetSecondFunction();
+				case "getMillisecond": return new GetMillisecondFunction();
+				case "createDate": return new CreateDateFunction();
+			}
+		}
     		
-		if (ret == null) {
-    		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
-    	}
-    
-		return ret;
+		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
     }
     
 	private static String LIBRARY_NAME = "Date";
@@ -77,7 +75,7 @@ public class DateLib extends TLFunctionLibrary {
     }
 
     // TODAY
-    class TodayFunction implements TLFunctionPrototype {
+    static class TodayFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -91,7 +89,7 @@ public class DateLib extends TLFunctionLibrary {
     }
         
     // DATEADD
-	class DateAddFunction implements TLFunctionPrototype {
+    static class DateAddFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -124,7 +122,7 @@ public class DateLib extends TLFunctionLibrary {
 
 	
 	// DATEDIFF
-    class DateDiffFunction implements TLFunctionPrototype {
+    static class DateDiffFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -192,7 +190,7 @@ public class DateLib extends TLFunctionLibrary {
     	return new Date(0L);
     }
     
-    class ZeroDateFunction implements TLFunctionPrototype {
+    static class ZeroDateFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -207,7 +205,7 @@ public class DateLib extends TLFunctionLibrary {
 
     
     // extractDate
-    class ExtractDateFunction implements TLFunctionPrototype {
+    static class ExtractDateFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -243,7 +241,7 @@ public class DateLib extends TLFunctionLibrary {
     }
     
     // extractTime
-    class ExtractTimeFunction implements TLFunctionPrototype {
+    static class ExtractTimeFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -280,7 +278,7 @@ public class DateLib extends TLFunctionLibrary {
     }
 
     //Trunc
-    class TruncFunction implements TLFunctionPrototype {
+    static class TruncFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -313,7 +311,7 @@ public class DateLib extends TLFunctionLibrary {
     }
     
     //Trunc date
-    class TruncDateFunction implements TLFunctionPrototype {
+    static class TruncDateFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -347,7 +345,7 @@ public class DateLib extends TLFunctionLibrary {
     }
 
     //getDay
-    class GetDayFunction implements TLFunctionPrototype {
+    static class GetDayFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -385,7 +383,7 @@ public class DateLib extends TLFunctionLibrary {
     }
     
     //getMonth
-    class GetMonthFunction implements TLFunctionPrototype {
+    static class GetMonthFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -423,7 +421,7 @@ public class DateLib extends TLFunctionLibrary {
     }
 
     //getYear
-    class GetYearFunction implements TLFunctionPrototype {
+    static class GetYearFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -461,7 +459,7 @@ public class DateLib extends TLFunctionLibrary {
     }
 
     //getHour
-    class GetHourFunction implements TLFunctionPrototype {
+    static class GetHourFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -499,7 +497,7 @@ public class DateLib extends TLFunctionLibrary {
     }
 
     //getMinute
-    class GetMinuteFunction implements TLFunctionPrototype {
+    static class GetMinuteFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -537,7 +535,7 @@ public class DateLib extends TLFunctionLibrary {
     }
 
     //getSecond
-    class GetSecondFunction implements TLFunctionPrototype {
+    static class GetSecondFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -575,7 +573,7 @@ public class DateLib extends TLFunctionLibrary {
     }
 
     //getMillisecond
-    class GetMillisecondFunction implements TLFunctionPrototype {
+    static class GetMillisecondFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -613,7 +611,7 @@ public class DateLib extends TLFunctionLibrary {
     }
 
     //createDate
-    class CreateDateFunction implements TLFunctionPrototype {
+    static class CreateDateFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {

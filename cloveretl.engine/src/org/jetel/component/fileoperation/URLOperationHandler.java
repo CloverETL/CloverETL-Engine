@@ -20,6 +20,7 @@ package org.jetel.component.fileoperation;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -32,8 +33,10 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 
+import org.apache.log4j.Logger;
 import org.jetel.component.fileoperation.Info.Type;
 import org.jetel.component.fileoperation.SimpleParameters.InfoParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ListParameters;
@@ -52,6 +55,7 @@ import org.jetel.util.file.FileUtils;
 public class URLOperationHandler extends BaseOperationHandler {
 	
 	public static final int TIMEOUT = 1000;
+	private static final ConcurrentHashMap<String, Boolean> protocolSupportMemory = new ConcurrentHashMap<>();
 	
 	private URLConnection getConnection(URI uri) throws IOException {
 		try {
@@ -187,7 +191,29 @@ public class URLOperationHandler extends BaseOperationHandler {
 			case RESOLVE:
 			case INFO:
 			case LIST:
-				return true;
+				String protocol = operation.scheme();
+				Boolean supported = protocolSupportMemory.get(protocol);
+				if (supported == null) {
+					try {
+						// We create a dummy URL, which causes JVM to find a URLStreamHandler for the protocol of our operation.
+						// When no URLStreamHandler is found, a MalformedURLException is thrown and we know that the protocol is not supported.
+						Logger.getLogger(URLOperationHandler.class).debug("Instantiating URL for scheme " + operation.scheme());
+						new URL(operation.scheme(), null, -1, "", null);
+					} catch (Exception e) {
+						if (e.getMessage().toLowerCase().contains("unknown protocol: " + operation.scheme().toLowerCase())) {
+							// The protocol of the operation is not supported.
+							Logger.getLogger(URLOperationHandler.class).debug("Protocol not supported: " + operation.scheme());
+							protocolSupportMemory.put(protocol, false);
+							return false;
+						}
+					}
+					Logger.getLogger(URLOperationHandler.class).debug("Protocol is supported: " + operation.scheme());
+					protocolSupportMemory.put(protocol, true);
+					return true;
+				} else {
+					Logger.getLogger(URLOperationHandler.class).debug("Protocol support found in memory: " + supported + " for " + protocol);
+					return supported;
+				}
 			default: 
 				return false;
 		}

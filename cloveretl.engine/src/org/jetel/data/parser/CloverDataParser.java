@@ -18,6 +18,7 @@
  */
 package org.jetel.data.parser;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,6 +46,7 @@ import org.jetel.exception.PolicyType;
 import org.jetel.graph.ContextProvider;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
+import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.metadata.MetadataUtils;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -88,7 +90,7 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 	
 	private final static Log logger = LogFactory.getLog(CloverDataParser.class);
 
-	private DataRecordMetadata metadata;
+	protected DataRecordMetadata metadata;
 	private CloverDataStream.Input input;
 	private CloverBuffer recordBuffer;
 	private InputStream inStream;
@@ -101,10 +103,6 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
        
 	/** Clover version which has been used to create the input data file. */
 	private FileConfig version;
-
-    /** In case the input file has been created by clover 3.4 and current job type is jobflow
-     * special de-serialisation needs to be used, see CLO-1382 */
-	private boolean useParsingFromJobflow_3_4 = false;
 
 	/**
 	 * True, if the current transformation is jobflow.
@@ -134,7 +132,6 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 	@Override
 	public DataRecord getNext() throws JetelException {
 		DataRecord record = DataRecordFactory.newRecord(metadata);
-		record.init();
 		return getNext(record);
 	}
 
@@ -155,7 +152,6 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 			}
 		} else {
 			DataRecord record = DataRecordFactory.newRecord(metadata);
-			record.init();
 			for (int skipped = 0; skipped < nRec; skipped++) {
 				if (getNext(record) == null) {
 					return skipped;
@@ -244,13 +240,6 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
         isJobflow = ContextProvider.getRuntimeContext() != null
         		&& ContextProvider.getRuntimeContext().getJobType().isJobflow();
         
-        //in case the input file has been created by clover 3.4 or 3.3 and current job type is jobflow
-        //special de-serialisation needs to be used, see CLO-1382
-        if (version.majorVersion == 3 
-        		&& (version.minorVersion == 3 || version.minorVersion == 4)
-        		&& isJobflow) {
-        	useParsingFromJobflow_3_4 = true;
-        }
         switch(compress){
         case NONE:
         	this.input= new CloverDataStream.Input(inStream);
@@ -269,6 +258,35 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 
     public static FileConfig checkCompatibilityHeader(ReadableByteChannel recordFile, DataRecordMetadata metadata) throws ComponentNotReadyException {
     	return checkCompatibilityHeader(Channels.newInputStream(recordFile),metadata);
+    }
+    
+    /**
+     * Reads file header from the provided stream, including metadata. 
+     * It is assumed the stream will be closed afterwards.
+     * 
+     * @param recordFile
+     * @return file header with metadata
+     * @throws IOException
+     */
+    public static FileConfig readHeader(InputStream recordFile) throws IOException {
+    	try {
+    		BufferedInputStream bis = new BufferedInputStream(recordFile);
+			FileConfig header = checkCompatibilityHeader(bis, null);
+			if (header.formatVersion == CloverDataFormatter.DataFormatVersion.VERSION_35) {
+				DataRecordMetadata metadata = DataRecordMetadata.deserialize(bis);
+				metadata.setParsingType(DataRecordParsingType.DELIMITED);
+				metadata.setRecordDelimiter("\r\n");
+				metadata.setFieldDelimiter("|");
+				header.metadata = metadata;
+			}
+			return header;
+		} catch (ComponentNotReadyException e) {
+			if (e.getCause() instanceof IOException) {
+				throw (IOException) e.getCause();
+			} else {
+				throw new IOException(e.getMessage(), e.getCause());
+			}
+		}
     }
     
     public static FileConfig checkCompatibilityHeader(InputStream recordFile, DataRecordMetadata metadata) throws ComponentNotReadyException {
@@ -335,6 +353,10 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
         	int metasize;
         	try {
     			metasize=ByteBufferUtils.decodeLength(recordFile);
+    			if (metasize < 0) {
+    				// CLO-5868: error reporting improved
+    				throw new IOException("Unexpected end of data stream");
+    			}
     			byte[] metadef=new byte[metasize];
     			if (StreamUtils.readBlocking(recordFile, metadef) != metasize){ 
     				throw new IOException("Not enough data in file.");
@@ -344,13 +366,13 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
     			throw new ComponentNotReadyException("Unable to read metadata definition from CloverData file", e);
     		}
         	
-        	if (metadata != null) {
-            	// CLO-4591:
-            	DataRecordMetadata nonAutofilledFieldsMetadata = MetadataUtils.getNonAutofilledFieldsMetadata(metadata);
-    	    	if (!nonAutofilledFieldsMetadata.equals(version.metadata, false)) {
-    				logger.error("Data structure of input file is not compatible with used metadata. File data structure: " + version.metadata.toStringDataTypes());
-    				throw new ComponentNotReadyException("Data structure of input file is not compatible with used metadata. More details available in log.");
-    	    	}
+        	if (metadata != null) { // CLO-5416: can also be used to read metadata from Clover debug file
+        		// CLO-4591:
+        		DataRecordMetadata nonAutofilledFieldsMetadata = MetadataUtils.getNonAutofilledFieldsMetadata(metadata);
+        		if (!nonAutofilledFieldsMetadata.equals(version.metadata, false)) {
+        			logger.error("Data structure of input file is not compatible with used metadata. File data structure: " + version.metadata.toStringDataTypes());
+        			throw new ComponentNotReadyException("Data structure of input file is not compatible with used metadata. More details available in log.");
+        		}
         	}
         	
     		break;
@@ -392,13 +414,7 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 			throw new JetelException(ex);
 		}
 		
-		// fix for switching from non-direct file to a direct one
-		// see CDR_multiFileReader_CLO-4333.grf
-		if (!useParsingFromJobflow_3_4) {
-			record.deserializeUnitary(recordBuffer, serializer);
-		} else {
-			record.deserialize(recordBuffer, serializer);
-		}
+		record.deserializeUnitary(recordBuffer, serializer);
 		
 		return record;
 	}

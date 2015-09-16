@@ -35,6 +35,7 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.BooleanFormatter;
@@ -59,6 +60,7 @@ import org.jetel.util.string.StringUtils;
  * @see org.jetel.metadata.DataRecordMetadata
  *
  */
+@CloverPublicAPI
 public class DataFieldMetadata implements Serializable {
 
 	private static final long serialVersionUID = -880873886732472663L;
@@ -552,6 +554,39 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
+	 * This method returns all possible delimiters for this field.
+	 * The returned delimiters are either delimiters defined on this field
+	 * or default delimiters from parent record metadata. The record delimiter is
+	 * ignored by this method. 
+	 * @param excludeAutofillingFields
+	 * @return
+	 * @see #getDelimiters(boolean)
+	 */
+	public String[] getDelimitersWithoutRecordDelimiter(boolean excludeAutofillingFields) {
+		if (isDelimited()) {
+			String[] delimiters = null;
+
+			if (delimiter != null) {
+				delimiters = delimiter.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX);
+			} else {
+				if (!isLastField(excludeAutofillingFields)) { // if the field is not last
+					delimiters = getDataRecordMetadata().getFieldDelimiters();
+				} else {
+					if (getDataRecordMetadata().getRecordDelimiters() == null) {
+						delimiters = getDataRecordMetadata().getFieldDelimiters();
+					} else {
+						delimiters = null;
+					}
+				}
+			}
+
+			return delimiters;
+		}
+
+		return null;
+	}
+	
+	/**
 	 * @return <code>true</code> if any field delimiter contains a carriage return, <code>false</code> otherwise
 	 */
 	public boolean containsCarriageReturnInDelimiters() {
@@ -833,6 +868,14 @@ public class DataFieldMetadata implements Serializable {
 			return trim;
 		}
 	}
+	
+	/**
+	 * Allows to find out if trim is set explicitly (returns null if it isn't)
+	 * CLO-5975
+	 */
+	public Boolean getTrim() {
+		return trim;
+	}
 
 	/**
 	 * @return true if leading blank characters should be skipped
@@ -1113,6 +1156,14 @@ public class DataFieldMetadata implements Serializable {
 
 		return null;
 	}
+	
+	/**
+	 * doesn't search in parent in case locale is not specified
+	 * @return
+	 */
+	public String getLocaleStrFieldOnly() {
+		return localeStr;
+	}
 
 	/**
 	 * @param timeZoneStr the timeZoneStr to set
@@ -1134,6 +1185,14 @@ public class DataFieldMetadata implements Serializable {
 		}
 
 		return null;
+	}
+	
+	/**
+	 * doesn't search in parent in case the time zone is not specified
+	 * @return
+	 */
+	public String getTimeZoneStrFieldOnly() {
+		return timeZoneStr;
 	}
 
 	/**
@@ -1165,6 +1224,10 @@ public class DataFieldMetadata implements Serializable {
 		} else {
 			return dataRecordMetadata.getCollatorSensitivity();
 		}
+	}
+	
+	public String getCollatorSensitivityFieldOnly() {
+		return collatorSensitivity;
 	}
 
 	/**
@@ -1249,6 +1312,12 @@ public class DataFieldMetadata implements Serializable {
 		dataFieldMetadata.setLocaleStr(localeStr);
 		dataFieldMetadata.setTimeZoneStr(timeZoneStr);
 		dataFieldMetadata.setCollatorSensitivity(collatorSensitivity);
+		
+		if (nullValues != null) {
+			List<String> nullValsCopy = new ArrayList<>(nullValues.size());
+			nullValsCopy.addAll(nullValues);
+			dataFieldMetadata.setNullValues(nullValsCopy);
+		}
 
 		return dataFieldMetadata;
 	}
@@ -1309,6 +1378,13 @@ public class DataFieldMetadata implements Serializable {
 		//check data type
 		if (type == null) {
 			status.add(new ConfigurationProblem("Data type is not specified.", Severity.ERROR, null, Priority.NORMAL));
+		}
+		
+		//not nullable field cannot have a default value in set of null values - CLO-4569
+		if (!isNullable() && getNullValues().contains(getDefaultValueStr())) {
+			status.add(new ConfigurationProblem("Invalid metadata for field '" + name + "'. Default value of not nullable field can not be one of the null values.",
+					Severity.ERROR, null, Priority.NORMAL));
+			return;
 		}
 		
 		// verify default value - approved by kokon

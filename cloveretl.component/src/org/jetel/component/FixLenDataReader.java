@@ -200,7 +200,6 @@ public class FixLenDataReader extends Node {
 	public Result execute() throws Exception {
 		// we need to create data record - take the metadata from first output port
 		DataRecord record = DataRecordFactory.newRecord(getOutputPort(OUTPUT_PORT).getMetadata());
-		record.init();
 
 		try {
 			while (record != null && runIt) {
@@ -416,7 +415,7 @@ public class FixLenDataReader extends Node {
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
         
-        checkMetadata(status, getOutMetadata());
+        checkMetadata(status, null, getOutPorts());
 
         try {
         	prepareReader();

@@ -58,7 +58,6 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends Clover
 
 		aFixLenDataParser = new FixLenCharDataParser(metadata);
 		record = DataRecordFactory.newRecord(metadata);
-		record.init();
 	}
 	
 	@Override

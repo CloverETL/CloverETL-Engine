@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
@@ -33,6 +34,7 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.ComponentFactory;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ConfigurationStatus;
@@ -56,6 +58,7 @@ import org.jetel.graph.runtime.SingleThreadWatchDog;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.MetadataUtils;
 import org.jetel.util.GraphUtils;
+import org.jetel.util.Pair;
 import org.jetel.util.SubgraphUtils;
 
 /*
@@ -84,6 +87,9 @@ public class TransformationGraphAnalyzer {
 	 * - correct edge types are detected
 	 */
 	public static void analyseGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext, boolean propagateMetadata) {
+		// analyze blockers and blocked components before we edit the graph - this needs to be done first so we can display stuff correctly in GUI
+		TransformationGraphAnalyzer.computeBlockedComponents(graph, runtimeContext);
+		
         //remove disabled components and their edges
 		try {
 			TransformationGraphAnalyzer.disableNodesInPhases(graph);
@@ -91,6 +97,13 @@ public class TransformationGraphAnalyzer {
 			throw new JetelRuntimeException("Removing disabled nodes failed.", e);
 		}
 
+		//consolidate subgraph ports - create missing subgraph ports
+		consolidateSubgraphPorts(graph);
+
+		//remove optional input and output edges in subgraphs
+		removeOptionalEdges(graph);
+		
+		//analyse subgraph - check layout and removes debug components if necessary
 		boolean subJobRuntime = runtimeContext.getJobType().isSubJob();
 		boolean subJobFile = runtimeContext.getJobType().isSubJob() || graph.getStaticJobType().isSubJob();
 		if (subJobRuntime || subJobFile) {
@@ -118,6 +131,12 @@ public class TransformationGraphAnalyzer {
 			//this validation is now temporary turned off - will be enabled in future releases (maybe) - see CLO-4144
 			//validateImplicitMetadata(mvGraph);
 		}
+		
+		try {
+			TransformationGraphAnalyzer.removeBlockedNodes(graph);
+		} catch (GraphConfigurationException e) {
+			throw new JetelRuntimeException("Removing blocked nodes failed.", e);
+		}
 
         //analyze type of edges - specially buffered and phase edges
         try {
@@ -129,6 +148,60 @@ public class TransformationGraphAnalyzer {
         graph.setAnalysed(true);
 	}
 	
+	/**
+	 * Creates missing subgraph input and output ports based on edges attached to SubgraphInput/Output components.
+	 * This is necessary for backward compatibility with subgraphs created in previous version (rel-4-0), where
+	 * subgraph ports do not have model in TransformationGraph.
+	 * @param graph
+	 */
+	private static void consolidateSubgraphPorts(TransformationGraph graph) {
+		if (graph.getStaticJobType().isSubJob()) {
+			for (int i = graph.getSubgraphInputPorts().getPorts().size(); i <= graph.getSubgraphInputComponent().getOutputPortsMaxIndex(); i++) {
+				graph.getSubgraphInputPorts().getPorts().add(
+						new SubgraphInputPort(graph.getSubgraphInputPorts(), i, true, true, true));
+			}
+			for (int i = graph.getSubgraphOutputPorts().getPorts().size(); i <= graph.getSubgraphOutputComponent().getInputPortsMaxIndex(); i++) {
+				graph.getSubgraphOutputPorts().getPorts().add(
+						new SubgraphOutputPort(graph.getSubgraphOutputPorts(), i, true, true, true));
+			}
+		}
+	}
+
+	/**
+	 * This method removes all edges which are connected to subgraph's ports,
+	 * which are optional, where the related edge should be removed (SubgraphPort.isKeptEdge() == false).
+	 */
+	private static void removeOptionalEdges(TransformationGraph graph) {
+		try {
+			for (SubgraphPort subgraphPort : graph.getSubgraphInputPorts().getPorts()) {
+				if (!subgraphPort.isRequired() && !subgraphPort.isKeptEdge() && !subgraphPort.isConnected()) {
+					//remove the edge
+					OutputPort outputPort = graph.getSubgraphInputComponent().getOutputPort(subgraphPort.getIndex());
+					if (outputPort != null) {
+						Edge edge = outputPort.getEdge();
+						graph.deleteEdge(edge);
+						edge.getReader().removeInputPort(edge);
+						edge.getWriter().removeOutputPort(edge);
+					}
+				}
+			}
+	
+			for (SubgraphPort subgraphPort : graph.getSubgraphOutputPorts().getPorts()) {
+				if (!subgraphPort.isRequired() && !subgraphPort.isKeptEdge() && !subgraphPort.isConnected()) {
+					InputPort inputPort = graph.getSubgraphOutputComponent().getInputPort(subgraphPort.getIndex());
+					if (inputPort != null) {
+						Edge edge = inputPort.getEdge();
+						graph.deleteEdge(edge);
+						edge.getReader().removeInputPort(edge);
+						edge.getWriter().removeOutputPort(edge);
+					}
+				}
+			}
+		} catch (Exception e) {
+			throw new JetelRuntimeException("Subgraph port optional edges cannot be removed.", e);
+		}
+	}
+
 	/**
 	 * Check whether subgraph calling hierarchy of the given graph is not recursive.
 	 * @param graph
@@ -562,16 +635,16 @@ public class TransformationGraphAnalyzer {
 	 * @throws GraphConfigurationException
 	 */
 	public static void disableNodesInPhases(TransformationGraph graph) throws GraphConfigurationException {
-		Set<Node> nodesToRemove = new HashSet<Node>();
+		Set<Node> nodesToRemove = new HashSet<>();
 		Phase[] phases = graph.getPhases();
 
 		for (int i = 0; i < phases.length; i++) {
 			nodesToRemove.clear();
 			for (Node node : phases[i].getNodes().values()) {
-				if (node.getEnabled() == EnabledEnum.DISABLED) {
+				if (node.getEnabled() == EnabledEnum.DISCARD) { // component and all related edges are removed
 					nodesToRemove.add(node);
 					disconnectAllEdges(node);
-				} else if (node.getEnabled() == EnabledEnum.PASS_THROUGH) {
+				} else if (!node.getEnabled().isEnabled()) { // component and related edges is substituted by 'passThrough' edge
 					nodesToRemove.add(node);
 					final InputPort inputPort = node.getInputPort(node.getPassThroughInputPort());
 					final OutputPort outputPort = node.getOutputPort(node.getPassThroughOutputPort());
@@ -606,26 +679,217 @@ public class TransformationGraphAnalyzer {
 	}
 
 	/**
+	 * Removes blocked components from the graph.
+	 * Puts together a set of blocked components that still need to be kept in the graph as additional trashifiers.
+	 * 
+	 * @param graph
+	 * @throws GraphConfigurationException
+	 */
+	public static void removeBlockedNodes(TransformationGraph graph) throws GraphConfigurationException {
+		graph.getKeptBlockedComponents().clear();
+		List<Node> nodesToRemove = new LinkedList<>();
+		List<Node> nodesToAdd = new LinkedList<>();
+		Set<String> blockedIds = graph.getBlockedIDs();
+		Phase[] phases = graph.getPhases();
+		
+		// Which ports of subgraphinput and subgraphoutput are "blocked" - i.e. which have blocker/blocked preceding them.
+		// Finding blocked ports allows us to properly decide whether to keep or remove blocked components behind SubgraphInput/Output
+		// Motivation: CLO-6756
+		Set<Integer> subgraphInputBlockedPorts = new HashSet<>();
+		Set<Integer> subgraphOutputBlockedPorts = new HashSet<>();
+		
+		if (graph.getStaticJobType().isSubJob()) {
+			// find blocked ports of subgraphinput and subgraphoutput
+			Node subInput = graph.getSubgraphInputComponent();
+			Node subOutput = graph.getSubgraphOutputComponent();
+
+			for (Entry<Integer, InputPort> entry : subInput.getInputPorts().entrySet()) {
+				Node precedingComponent = entry.getValue().getEdge().getWriter();
+				if (precedingComponent.getEnabled() == EnabledEnum.TRASH || blockedIds.contains(precedingComponent.getId())) {
+					subgraphInputBlockedPorts.add(entry.getKey());
+				}
+			}
+
+			for (Entry<Integer, InputPort> entry : subOutput.getInputPorts().entrySet()) {
+				Node precedingComponent = entry.getValue().getEdge().getWriter();
+				if (precedingComponent.getEnabled() == EnabledEnum.TRASH || blockedIds.contains(precedingComponent.getId())) {
+					subgraphOutputBlockedPorts.add(entry.getKey());
+				}
+			}
+		}
+
+		for (int i = 0; i < phases.length; i++) {
+			nodesToRemove.clear();
+			nodesToAdd.clear();
+			for (Node node : phases[i].getNodes().values()) {
+				if (node.getEnabled() == EnabledEnum.TRASH) {
+					nodesToRemove.add(node);
+					Node trashifier = replaceByTrashifier(node);
+					nodesToAdd.add(trashifier);
+				} else if (blockedIds.contains(node.getId())) {
+					nodesToRemove.add(node);
+					boolean keep = false; // some blocked components need to be kept (when there's enabled non-blocked component writing to them)
+					for (InputPort inPort : node.getInPorts()) {
+						Node predecessor = inPort.getWriter();
+						if ((SubgraphUtils.isSubJobInputComponent(predecessor.getType()) &&
+								subgraphInputBlockedPorts.contains(Integer.valueOf(inPort.getEdge().getOutputPortNumber())))
+								||
+							(SubgraphUtils.isSubJobOutputComponent(predecessor.getType()) &&
+								subgraphOutputBlockedPorts.contains(Integer.valueOf(inPort.getEdge().getOutputPortNumber())))) {
+							// blocked port of subgraphinput/subgraphoutput does not count as non-blocked component -> skip it
+							continue;
+						}
+						
+						if (!predecessor.getEnabled().isBlocker() && !blockedIds.contains(predecessor.getId())) {
+							graph.getKeptBlockedComponents().add(node);
+							keep = true;
+							Node trashifier = replaceByTrashifier(node);
+							nodesToAdd.add(trashifier);
+							break;
+						}
+					}
+					if (!keep) {
+						disconnectInputEdges(node);
+						disconnectOutputEdges(node, true);
+					}
+				}
+			}
+			for (Node node : nodesToRemove) {
+				phases[i].deleteNode(node);
+			}
+			for (Node node : nodesToAdd) {
+				phases[i].addNode(node);
+			}
+		}
+	}
+	
+	/**
+	 * Replaces given node by trashifier in its graph.
+	 * The edges are reconnected but the returned trashifier is not added to the graph and original node is not removed by this method.
+	 * @param node
+	 * @throws GraphConfigurationException 
+	 */
+	private static Node replaceByTrashifier(Node node) throws GraphConfigurationException {
+		Node trashifier = ComponentFactory.createComponent(node.getGraph(), "TRASHIFIER", node.getId(), node.getAttributes());
+		trashifier.setEnabled(node.getEnabled());
+		
+		// reconnect input edges
+		for (Entry<Integer, InputPort> entry : node.getInputPorts().entrySet()) {
+			trashifier.addInputPort(entry.getKey(), entry.getValue());
+		}
+		
+		disconnectOutputEdges(node, true);
+		return trashifier;
+	}
+	
+	private static void disconnectInputEdges(Node node) throws GraphConfigurationException {
+		for (Iterator<InputPort> it1 = node.getInPorts().iterator(); it1.hasNext();) {
+			final Edge edge = it1.next().getEdge();
+			final Node writer = edge.getWriter();
+			if (writer != null) {
+				writer.removeOutputPort(edge);
+			}
+			node.getGraph().deleteEdge(edge);
+			it1.remove();
+		}
+	}
+	
+	/**
+	 * 
+	 * @param node the node whose output edges should be disconnected
+	 * @param disconnectBehindSubJobInputOutput - if some output edge leads to SubJobInputOutput component this allows disconnecting also
+	 * one more edge behind the SubJobInputOutput
+	 * @throws GraphConfigurationException
+	 */
+	private static void disconnectOutputEdges(Node node, boolean disconnectBehindSubJobInputOutput) throws GraphConfigurationException {
+		for (Iterator<OutputPort> it1 = node.getOutPorts().iterator(); it1.hasNext();) {
+			final Edge edge = it1.next().getEdge();
+			final Node reader = edge.getReader();
+			if (reader != null) {
+				reader.removeInputPort(edge);
+				
+				if (disconnectBehindSubJobInputOutput && SubgraphUtils.isSubJobInputOutputComponent(reader.getType())) {
+					OutputPort outPort = reader.getOutputPort(edge.getInputPortNumber());
+					if (outPort != null) {
+						final Edge nextEdge = outPort.getEdge();
+						reader.removeOutputPort(nextEdge);
+						nextEdge.getReader().removeInputPort(nextEdge);
+						
+						node.getGraph().deleteEdge(nextEdge);
+					}
+					
+				}
+			}
+			node.getGraph().deleteEdge(edge);
+			it1.remove();
+		}
+	}
+
+	/**
 	 * Disconnect all edges connected to the given node.
 	 * 
 	 * @param node
 	 * @throws GraphConfigurationException
 	 */
 	private static void disconnectAllEdges(Node node) throws GraphConfigurationException {
-		for (Iterator<InputPort> it1 = node.getInPorts().iterator(); it1.hasNext();) {
-			final Edge edge = it1.next().getEdge();
-			Node writer = edge.getWriter();
-			if (writer != null)
-				writer.removeOutputPort(edge);
-			node.getGraph().deleteEdge(edge);
+		disconnectInputEdges(node);
+		disconnectOutputEdges(node, false);
+	}
+	
+	/**
+	 * Goes through the graph and saves information about blockers and blocked components to the graph.
+	 */
+	public static void computeBlockedComponents(TransformationGraph graph, GraphRuntimeContext runtimeContext) {
+		Set<Node> ignoreComponents = new HashSet<>();
+		if (runtimeContext.getJobType().isSubJob()) {
+			Node subgraphInput = SubgraphUtils.getSubgraphInput(graph);
+			Node subgraphOutput = SubgraphUtils.getSubgraphOutput(graph);
+			if (subgraphInput != null && subgraphOutput != null) {
+				// ignore debuginput/output components of subgraph if ran from parent job
+				ignoreComponents.addAll(TransformationGraphAnalyzer.findPrecedentNodesRecursive(subgraphInput, null));
+				ignoreComponents.addAll(TransformationGraphAnalyzer.findFollowingNodesRecursive(subgraphOutput, null));
+			}
 		}
-
-		for (Iterator<OutputPort> it1 = node.getOutPorts().iterator(); it1.hasNext();) {
-			final Edge edge = it1.next().getEdge();
-			final Node reader = edge.getReader();
-			if (reader != null)
-				reader.removeInputPort(edge);
-			node.getGraph().deleteEdge(edge);
+		
+		Map<Node, Set<Node>> blockingComponentsInfo = graph.getBlockingComponentsInfo();
+		blockingComponentsInfo.clear();
+		
+		// stack of: Pair<source blocker component, blocked component>
+		Stack<Pair<Node, Node>> stack = new Stack<>();
+		
+		// add blockers
+		for (Node node : graph.getNodes().values()) {
+			if (!ignoreComponents.contains(node) && node.getEnabled().isBlocker()) {
+				blockingComponentsInfo.put(node, new HashSet<Node>());
+				stack.push(new Pair<>(node, node));
+			}
+		}
+		
+		// add downstream nodes
+		while (!stack.isEmpty()) {
+			Pair<Node, Node> blockerInfo = stack.pop();
+			for (OutputPort outPort : blockerInfo.getSecond().getOutPorts()) {
+				Node next = outPort.getEdge().getReader();
+				if (SubgraphUtils.isSubJobInputOutputComponent(next.getType())) {
+					if (runtimeContext.getJobType().isSubJob()) {
+						// ran from parent job, skip cascading through subgraphinput/output
+						continue;
+					}
+					
+					// move to subsequent component after subgraph input/output
+					outPort = next.getOutputPort(outPort.getEdge().getInputPortNumber());
+					if (outPort == null) {
+						continue; // no connected component on this port pair
+					}
+					next = outPort.getEdge().getReader();
+				}
+				
+				if (!next.getEnabled().isBlocker() // "disabled as trash" components can't be blocked
+						&& !blockingComponentsInfo.get(blockerInfo.getFirst()).contains(next)) { // component is blocked only once per each blocker
+					stack.push(new Pair<>(blockerInfo.getFirst(), next));
+					blockingComponentsInfo.get(blockerInfo.getFirst()).add(next);
+				}
+			}
 		}
 	}
 

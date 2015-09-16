@@ -157,6 +157,7 @@ public class StructureWriter extends Node {
 	private static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
 	private static final String XML_SORTED_INPUT_ATTRIBUTE = "sortedInput";
 	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
+	private static final String XML_CREATE_EMPTY_FILES_ATTRIBUTE = "createEmptyFiles";
 
 	private String fileURL;
 	private boolean appendData;
@@ -179,6 +180,7 @@ public class StructureWriter extends Node {
 	private String headerMask;
 	private String footerMask;
 	private boolean sortedInput = false;
+	private boolean createEmptyFiles = true;
 	
 	private static Log logger = LogFactory.getLog(StructureWriter.class);
 
@@ -281,7 +283,6 @@ public class StructureWriter extends Node {
 		//main loop: processing "body" records
 		InputPort bodyPort = getInputPort(BODY_PORT);
 		DataRecord record = DataRecordFactory.newRecord(bodyPort.getMetadata());
-		record.init();
 
 		//this initialization has to be here not in pre-execute method,
 		//since the header and the footer were prepared in execute() method
@@ -338,6 +339,11 @@ public class StructureWriter extends Node {
             		"Charset "+charset+" not supported!", 
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
+		
+		if (fileURL == null) {
+			status.add("File URL attribute is missing.", Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE);
+			return status;
+		}
 
         try {
         	FileUtils.canWrite(getContextURL(), fileURL, mkDir);
@@ -400,6 +406,7 @@ public class StructureWriter extends Node {
         	}
         }
         writer.setMkDir(mkDir);
+		writer.setCreateEmptyFiles(createEmptyFiles);
 		if (headerMask != null) {
 			if (getInputPort(HEADER_PORT) != null) {
 				headerFormatter = new StructureFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
@@ -470,10 +477,10 @@ public class StructureWriter extends Node {
 		StructureWriter aDataWriter = null;
 		
 		aDataWriter = new StructureWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-								xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, RefResFlag.URL),
-								xattribs.getString(XML_CHARSET_ATTRIBUTE,null),
+								xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.URL),
+								xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
 								xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false),
-								xattribs.getString(XML_HEADER_ATTRIBUTE,null),
+								xattribs.getString(XML_HEADER_ATTRIBUTE, null),
 								xattribs.getString(XML_MASK_ATTRIBUTE, null),
 								xattribs.getString(XML_FOOTER_ATTRIBUTE, null));
 		if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)){
@@ -508,6 +515,9 @@ public class StructureWriter extends Node {
         }
 		if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
 			aDataWriter.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_CREATE_EMPTY_FILES_ATTRIBUTE)) {
+        	aDataWriter.setCreateEmptyFiles(xattribs.getBoolean(XML_CREATE_EMPTY_FILES_ATTRIBUTE));
         }
 		
 		return aDataWriter;
@@ -659,6 +669,10 @@ public class StructureWriter extends Node {
 		this.mkDir = mkDir;
 	}
 
+	private void setCreateEmptyFiles(boolean createEmptyFiles) {
+		this.createEmptyFiles = createEmptyFiles;
+	}
+    
 	/**
 	 * This is class for format header/footer from input records
 	 * 
@@ -686,7 +700,6 @@ public class StructureWriter extends Node {
 		@Override
 		public void run() {
 			DataRecord record = DataRecordFactory.newRecord(inputPort.getMetadata());
-			record.init();
 			try {
 				while (record != null && runIt) {
 					record = inputPort.readRecord(record);

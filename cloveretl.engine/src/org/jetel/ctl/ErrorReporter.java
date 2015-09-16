@@ -215,6 +215,8 @@ public class ErrorReporter {
 			return process((CLVFArrayAccessExpression) node);
 		} else if (node instanceof CLVFMemberAccessExpression){
 			return process((CLVFMemberAccessExpression)node);
+		} else if (node instanceof CLVFLookupNode){
+			return process((CLVFLookupNode)node);
 		}
 		
 		return process((SimpleNode) node);
@@ -256,7 +258,7 @@ public class ErrorReporter {
 	}
 	
 	String process(CLVFLiteral node) {
-//		err.format("literal -> \"%s\"%n",node.getValue()); // CLO-2658
+		err.format("literal -> \"%s\"%n",node.getValue()); // potential CLO-2658
 		return null;
 	}
 	
@@ -315,6 +317,23 @@ public class ErrorReporter {
 		}else{
 			process(firstChild);
 		}
+		return null;
+	}
+	
+	String process(CLVFLookupNode node) {
+		try {
+			//we assume the cause is returned NULL record
+			if (this.runtimeException.getCause().getCause() instanceof NullPointerException) {
+				err.format("lookup: \"%s\" returned NULL record for passed arguments%n", node.getLookupName());
+				for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+					process(node.jjtGetChild(i));
+				}
+			} else {
+				process((SimpleNode) node);
+			}
+		} catch (Exception ex) {
+		}
+
 		return null;
 	}
 	

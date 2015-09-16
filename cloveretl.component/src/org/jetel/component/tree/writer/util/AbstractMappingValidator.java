@@ -18,6 +18,7 @@
  */
 package org.jetel.component.tree.writer.util;
 
+import java.text.MessageFormat;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -151,7 +152,7 @@ public abstract class AbstractMappingValidator extends AbstractVisitor {
 			for (Integer inPortIndex : availablePorts) {
 				if (inPorts.get(inPortIndex).getName().matches(key)) {
 					if (toReturn != null) {
-						addProblem(element, keyword, new MappingError("Ambiguous port '" + key + "'", Severity.WARNING));
+						addProblem(element, keyword, new MappingError(MessageFormat.format(ValidatorMessages.getString("AbstractMappingValidator.ambiguousPortWarning"), key), Severity.WARNING)); //$NON-NLS-1$
 					} else {
 						toReturn = inPortIndex;
 					}
@@ -163,11 +164,11 @@ public abstract class AbstractMappingValidator extends AbstractVisitor {
 
 	protected void checkAvailableData(AbstractNode element, MappingProperty property, DataRecordMetadata metadata, String[] fieldNames) {
 		if (metadata == null) {
-			addProblem(element, property, new MappingError("Port metadata not available", Severity.ERROR));
+			addProblem(element, property, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.portMetadataNotAvailableError"), Severity.ERROR)); //$NON-NLS-1$
 		} else {
 			for (String fieldName : fieldNames) {
 				if (metadata.getField(fieldName) == null) {
-					addProblem(element, property, new MappingError("Record '" + metadata.getName() + "' does not contain field '" + fieldName + "'", Severity.ERROR));
+					addProblem(element, property, new MappingError(MessageFormat.format(ValidatorMessages.getString("AbstractMappingValidator.recordNoFieldError"), metadata.getName(), fieldName), Severity.ERROR)); //$NON-NLS-1$
 				}
 			}
 		}
@@ -257,12 +258,12 @@ public abstract class AbstractMappingValidator extends AbstractVisitor {
 		String inPortString = element.getProperty(MappingProperty.INPUT_PORT);
 		Integer inPortIndex = null;
 		if (inPortString == null) {
-			addProblem(element, MappingProperty.INPUT_PORT, new MappingError("Input port not specified!", Severity.ERROR));
+			addProblem(element, MappingProperty.INPUT_PORT, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.inputPortNotSpecifiedError"), Severity.ERROR)); //$NON-NLS-1$
 			return;
 		} else {
 			inPortIndex = getAvailableInputPort(inPortString, element, MappingProperty.INPUT_PORT);
 			if (inPortIndex == null) {
-				addProblem(element, MappingProperty.INPUT_PORT, new MappingError("Input port '" + inPortString + "' is not connected!", Severity.ERROR));
+				addProblem(element, MappingProperty.INPUT_PORT, new MappingError(MessageFormat.format(ValidatorMessages.getString("AbstractMappingValidator.inputPortNotConnectedError"), inPortString), Severity.ERROR)); //$NON-NLS-1$
 				return;
 			}
 		}
@@ -271,10 +272,10 @@ public abstract class AbstractMappingValidator extends AbstractVisitor {
 		String parentKeyString = element.getProperty(MappingProperty.PARENT_KEY);
 
 		if (parentKeyString != null && keyString == null) {
-			addProblem(element, MappingProperty.KEY, new MappingError(MappingProperty.KEY.getName() + " attribute not specified!", Severity.ERROR));
+			addProblem(element, MappingProperty.KEY, new MappingError(MessageFormat.format(ValidatorMessages.getString("AbstractMappingValidator.attributeNotSpecifiedError"), MappingProperty.KEY.getName()), Severity.ERROR)); //$NON-NLS-1$
 		}
 		if (parentKeyString == null && keyString != null) {
-			addProblem(element, MappingProperty.PARENT_KEY, new MappingError(MappingProperty.PARENT_KEY.getName() + " attribute not specified!", Severity.ERROR));
+			addProblem(element, MappingProperty.PARENT_KEY, new MappingError(MessageFormat.format(ValidatorMessages.getString("AbstractMappingValidator.attributeNotSpecifiedError"), MappingProperty.PARENT_KEY.getName()), Severity.ERROR)); //$NON-NLS-1$
 		}
 
 		if (keyString != null) {
@@ -283,31 +284,38 @@ public abstract class AbstractMappingValidator extends AbstractVisitor {
 
 			if (parentKeyString != null) {
 				if (parentKeyString.split(TreeWriterMapping.DELIMITER).length != keyList.length) {
-					addProblem(element, MappingProperty.KEY, new MappingError("Count of fields must match parent key field count", Severity.ERROR));
-					addProblem(element, MappingProperty.PARENT_KEY, new MappingError("Count of fields must match key field count", Severity.ERROR));
+					addProblem(element, MappingProperty.KEY, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.countOfFieldsMustMatchParentError"), Severity.ERROR)); //$NON-NLS-1$
+					addProblem(element, MappingProperty.PARENT_KEY, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.countOfFieldsMustMatchParentKeyError"), Severity.ERROR)); //$NON-NLS-1$
 				}
 			}
-
 		}
+		checkRelationPortAndParentKeyBinding(element, parentKeyString);
+	}
+
+	protected void checkRelationPortAndParentKeyBinding(Relation element, String parentKeyString) {
+		checkRelationPortAndParentKeyBinding(element, parentKeyString, Severity.ERROR);
+	}
+
+	protected void checkRelationPortAndParentKeyBinding(Relation element, String parentKeyString, Severity severity) {
 		if (parentKeyString != null) {
-			inPortString = null;
+			String inPortString = null;
 			ContainerNode parent = getRecurringParent(element.getParent());
 			if (parent != null) {
 				inPortString = parent.getRelation().getProperty(MappingProperty.INPUT_PORT);
 			}
 			if (inPortString == null) {
-				addProblem(element, MappingProperty.PARENT_KEY, new MappingError("No data for parent key fields!", Severity.ERROR));
+				addProblem(element, MappingProperty.PARENT_KEY, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.noDataForParentError"), severity)); //$NON-NLS-1$
 			} else {
-				inPortIndex = getAvailableInputPort(inPortString, element, MappingProperty.PARENT_KEY);
+				Integer inPortIndex = getAvailableInputPort(inPortString, element, MappingProperty.PARENT_KEY);
 				if (inPortIndex == null) {
-					addProblem(element, MappingProperty.PARENT_KEY, new MappingError("No data for parent key fields!", Severity.ERROR));
+					addProblem(element, MappingProperty.PARENT_KEY, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.noDataForParentError"), severity)); //$NON-NLS-1$
 				} else {
 					checkAvailableData(element, MappingProperty.PARENT_KEY, inPorts.get(inPortIndex), parentKeyString.split(TreeWriterMapping.DELIMITER));
 				}
 			}
 		}
 	}
-	
+
 	protected abstract void validateRelation(Relation element);
 	
 	@Override
@@ -324,12 +332,12 @@ public abstract class AbstractMappingValidator extends AbstractVisitor {
 			checkCloverNamespaceAvailable(element);
 			String templateName = element.getProperty(MappingProperty.NAME);
 			if (templateName == null) {
-				addProblem(element, MappingProperty.NAME, new MappingError("Unspecified template name", Severity.ERROR));
+				addProblem(element, MappingProperty.NAME, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.unspecifiedTemplateNameError"), Severity.ERROR)); //$NON-NLS-1$
 			}
 			return;
 		}
 		
-		checkCorrectBooleanValue(element, MappingProperty.WRITE_NULL_ELEMENT);
+		checkCorrectEnumValue(element, MappingProperty.WRITE_NULL_ELEMENT, WriteNullElement.getValues());
 		
 		List<Integer> addedPorts = null;
 		Relation recurringInfo = element.getRelation();
@@ -338,7 +346,7 @@ public abstract class AbstractMappingValidator extends AbstractVisitor {
 			if (inPortString != null) {
 				addedPorts = getPortIndexes(inPortString, inPorts);
 				if (addedPorts.size() > 1) {
-					addProblem(recurringInfo, MappingProperty.INPUT_PORT, new MappingError("Ambiguous ports!", Severity.WARNING));
+					addProblem(recurringInfo, MappingProperty.INPUT_PORT, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.ambiguousPortsWarning"), Severity.WARNING)); //$NON-NLS-1$
 				}
 				for (Integer inputPortIndex : addedPorts) {
 					availablePorts.push(inputPortIndex);
@@ -391,7 +399,7 @@ public abstract class AbstractMappingValidator extends AbstractVisitor {
 	protected void checkTemplateExistence(TemplateEntry objectTemplateEntry) {
 		String templateName = objectTemplateEntry.getProperty(MappingProperty.NAME);
 		if (templateName == null || !mapping.getTemplates().containsKey(templateName)) {
-			addProblem(objectTemplateEntry, MappingProperty.NAME, new MappingError("Unknown template", Severity.ERROR));
+			addProblem(objectTemplateEntry, MappingProperty.NAME, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.unknownTemplateError"), Severity.ERROR)); //$NON-NLS-1$
 			return;
 		}
 	}
@@ -410,20 +418,23 @@ public abstract class AbstractMappingValidator extends AbstractVisitor {
 	protected void validateValue(AbstractNode element) {
 		String value = element.getProperty(MappingProperty.VALUE);
 		if (value == null) {
-			addProblem(element, MappingProperty.VALUE, new MappingError("Empty value", Severity.WARNING));
+			addProblem(element, MappingProperty.VALUE, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.emptyValueWarning"), Severity.WARNING)); //$NON-NLS-1$
 			return;
 		}
-		
+		validateFieldValue(element, value, MappingProperty.VALUE);
+	}
+	
+	protected void validateFieldValue(AbstractNode element, String value, MappingProperty valueProperty) {
 		List<ParsedFieldExpression> fields = parseValueExpression(value);
 		for (ParsedFieldExpression parsedFieldExpression : fields) {
 			Integer inPortIndex = getAvailableInputPort(parsedFieldExpression.getPort(), element, MappingProperty.VALUE);
 			if (inPortIndex == null) {
-				addProblem(element, MappingProperty.INPUT_PORT, new MappingError("Input port '" + parsedFieldExpression.getPort() + "' is not available here!", Severity.ERROR));
+				addProblem(element, valueProperty, new MappingError(MessageFormat.format(ValidatorMessages.getString("AbstractMappingValidator.inputPortNotAvailableHereError"), parsedFieldExpression.getPort()), Severity.ERROR)); //$NON-NLS-1$
 			} else if (inPorts.get(inPortIndex) == null) {
-				addProblem(element, MappingProperty.INPUT_PORT, new MappingError("Metadata of port '" + parsedFieldExpression.getPort() + "' not available", Severity.ERROR));
+				addProblem(element, valueProperty, new MappingError(MessageFormat.format(ValidatorMessages.getString("AbstractMappingValidator.metadataOfPortNotAvailableError"), parsedFieldExpression.getPort()), Severity.ERROR)); //$NON-NLS-1$
 			} else if (inPorts.get(inPortIndex).getField(parsedFieldExpression.getFields()) == null) {
-				addProblem(element, MappingProperty.VALUE,
-						new MappingError("Field '" + parsedFieldExpression.getFields() + "' is not available.", Severity.ERROR));
+				addProblem(element, valueProperty,
+						new MappingError(MessageFormat.format(ValidatorMessages.getString("AbstractMappingValidator.fieldNotAvailableError"), parsedFieldExpression.getFields()), Severity.ERROR)); //$NON-NLS-1$
 			}
 		}
 	}
@@ -459,18 +470,36 @@ public abstract class AbstractMappingValidator extends AbstractVisitor {
 	 * @param property MappingProperty
 	 */
 	protected void checkCorrectBooleanValue(AbstractNode element, MappingProperty property) {
+		checkCorrectBooleanValue(element, property, Severity.ERROR);
+	}
+	
+	protected void checkCorrectBooleanValue(AbstractNode element, MappingProperty property, Severity severity) {
 		String value = element.getProperty(property);
 		if (StringUtils.isEmpty(value)) {
 			return;
 		}
 		if (!Boolean.TRUE.toString().equalsIgnoreCase(value) && !Boolean.FALSE.toString().equalsIgnoreCase(value)) {
-			addProblem(element, property, new MappingError("Attribute accepts only boolean type values (true/false)", Severity.ERROR));
+			addProblem(element, property, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.acceptsOnlyBooleanError"), severity)); //$NON-NLS-1$
+		}
+	}
+
+	protected void checkCorrectEnumValue(ObjectNode element, MappingProperty property, List<String> allowedValues) {
+		checkCorrectEnumValue(element, property, allowedValues, Severity.ERROR);
+	}
+
+	protected void checkCorrectEnumValue(ObjectNode element, MappingProperty property, List<String> allowedValues, Severity severity) {
+		String value = element.getProperty(property);
+		if (StringUtils.isEmpty(value)) {
+			return; // empty value is ok
+		}
+		if (!allowedValues.contains(value)) {
+			addProblem(element, property, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.acceptsOnlyPredefinedError"), severity)); //$NON-NLS-1$
 		}
 	}
 	
 	protected void checkCloverNamespaceAvailable(ContainerNode element) {
 		if (!isCloverNamespaceAvailable(element)) {
-			addProblem(element, MappingProperty.UNKNOWN, new MappingError("Clover namespace is not available!", Severity.ERROR));
+			addProblem(element, MappingProperty.UNKNOWN, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.cloverNamespaceNotAvailableError"), Severity.ERROR)); //$NON-NLS-1$
 		}
 	}
 	

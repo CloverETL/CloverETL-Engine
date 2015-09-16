@@ -119,6 +119,8 @@ public class DataWriter extends Node {
 	private static final String XML_QUOTEDSTRINGS_ATTRIBUTE = "quotedStrings";
 	private static final String XML_QUOTECHAR_ATTRIBUTE = "quoteCharacter";
 	private static final String XML_SORTED_INPUT_ATTRIBUTE = "sortedInput";
+	private static final String XML_CREATE_EMPTY_FILES_ATTRIBUTE = "createEmptyFiles";
+	private static final String XML_SKIP_LAST_RECORD_DELIMITER_ATTRIBUTE = "skipLastRecordDelimiter";
 	
 	private String fileURL;
 	private boolean appendData;
@@ -143,7 +145,9 @@ public class DataWriter extends Node {
 	private boolean mkDir;
 	private boolean quotedStringsHasDefaultValue = true;
 	private boolean sortedInput = false;
-
+	private boolean createEmptyFiles = true;
+	private boolean skipLastRecordDelimiter = false;
+	
     private String excludeFields;
 
     static Log logger = LogFactory.getLog(DataWriter.class);
@@ -177,7 +181,6 @@ public class DataWriter extends Node {
 	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = DataRecordFactory.newRecord(inPort.getMetadata());
-		record.init();
 		while (record != null && runIt) {
 			record = inPort.readRecord(record);
 			if (record != null) {
@@ -224,6 +227,7 @@ public class DataWriter extends Node {
 			formatterProvider.setQuoteChar(quoteChar);
 		}
 		formatterProvider.setAppend(appendData);
+		formatterProvider.setSkipLastRecordDelimiter(skipLastRecordDelimiter);
 		
 		initLookupTable();
 
@@ -275,6 +279,7 @@ public class DataWriter extends Node {
         writer.setDictionary(graph.getDictionary());
         writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
         writer.setMkDir(mkDir);
+		writer.setCreateEmptyFiles(createEmptyFiles);
 	}
 
 	/* (non-Javadoc)
@@ -389,7 +394,13 @@ public class DataWriter extends Node {
         if (xattribs.exists(XML_SORTED_INPUT_ATTRIBUTE)) {
         	aDataWriter.setSortedInput(xattribs.getBoolean(XML_SORTED_INPUT_ATTRIBUTE));
         }
-		
+        if (xattribs.exists(XML_CREATE_EMPTY_FILES_ATTRIBUTE)) {
+        	aDataWriter.setCreateEmptyFiles(xattribs.getBoolean(XML_CREATE_EMPTY_FILES_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_SKIP_LAST_RECORD_DELIMITER_ATTRIBUTE)) {
+        	aDataWriter.setSkipLastRecordDelimiter(xattribs.getBoolean(XML_SKIP_LAST_RECORD_DELIMITER_ATTRIBUTE));
+        }
+
 		return aDataWriter;
 	}
 
@@ -618,6 +629,14 @@ public class DataWriter extends Node {
     	return sortedInput;
     }
     
+	private void setCreateEmptyFiles(boolean createEmptyFiles) {
+		this.createEmptyFiles = createEmptyFiles;
+	}
+
+	private void setSkipLastRecordDelimiter(boolean skipLastRecordDelimiter) {
+		this.skipLastRecordDelimiter = skipLastRecordDelimiter;
+	}
+
 	@Override
 	public synchronized void free() {
 		super.free();

@@ -56,7 +56,7 @@ public class SerializedDictionaryValue {
 	 * 
 	 * @param serializedValue
 	 * @return parsed value.
-	 * @throws IllegalArgumentException the the string is in invalid format.
+	 * @throws IllegalArgumentException the string is in invalid format.
 	 */
 	public static final SerializedDictionaryValue fromString(String serializedValue) throws IllegalArgumentException {
 			String[] parts = serializedValue.split(":", 3);

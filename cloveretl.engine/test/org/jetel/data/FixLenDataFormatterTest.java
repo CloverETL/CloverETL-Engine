@@ -96,7 +96,6 @@ public class FixLenDataFormatterTest extends CloverTestCase {
 		testParser = new FixLenCharDataParser(metadata);
 
 		record = DataRecordFactory.newRecord(metadata);
-		record.init();
 
 		aParser2.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT));
 		aParser2.init();
@@ -173,7 +172,6 @@ public class FixLenDataFormatterTest extends CloverTestCase {
 			testParser.init();
 			testParser.setDataSource(fis);
 			record = DataRecordFactory.newRecord(metadata);
-			record.init();
 
 			while ((record = testParser.getNext(record)) != null) {
 				if (recCount == 0) {
@@ -222,7 +220,6 @@ public class FixLenDataFormatterTest extends CloverTestCase {
 			testParser.init();
 			testParser.setDataSource(fis);
 			record = DataRecordFactory.newRecord(metadata);
-			record.init();
 
 			while ((record = testParser.getNext(record)) != null) {
 				if (recCount == 0) {
@@ -277,7 +274,6 @@ public class FixLenDataFormatterTest extends CloverTestCase {
 			testParser.init();
 			testParser.setDataSource(fis);
 			record = DataRecordFactory.newRecord(metadata);
-			record.init();
 
 			while ((record = testParser.getNext(record)) != null) {
 				if (recCount == 0) {

@@ -45,6 +45,6 @@ public interface GraphParameterValueFunction extends Transform {
 	 * @return
 	 * @throws TransformException 
 	 */
-	public String getValue() throws TransformException;
+	public Object getValue() throws TransformException;
 
 }

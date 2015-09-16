@@ -110,8 +110,8 @@ public class Normalizer extends Node {
 	private static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions";
     private static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
 	
-	private static final int IN_PORT = 0;
-	private static final int OUT_PORT = 0;
+	protected static final int IN_PORT = 0;
+	protected static final int OUT_PORT = 0;
 
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "NORMALIZER";
@@ -136,6 +136,9 @@ public class Normalizer extends Node {
 	private Map<Integer, ErrorAction> errorActions = new HashMap<Integer, ErrorAction>();
 	private String errorLogURL;
 	private FileWriter errorLog;
+	
+	protected DataRecord inRecord;
+	protected DataRecord outRecord;
 
 	/**
 	 * Sole ctor.
@@ -192,6 +195,9 @@ public class Normalizer extends Node {
 			throw new ComponentNotReadyException("Normalizer initialization failed: " + norm.getMessage());
 		}
         errorActions = ErrorAction.createMap(errorActionsString);
+        
+        inRecord = DataRecordFactory.newRecord(inMetadata);
+		outRecord = DataRecordFactory.newRecord(outMetadata);
 	}
 
 	private TransformFactory<RecordNormalize> getTransformFactory() {
@@ -213,11 +219,7 @@ public class Normalizer extends Node {
 	 * @throws TransformException
 	 */
 	private void processInput() throws IOException, InterruptedException, TransformException {
-		DataRecord inRecord = DataRecordFactory.newRecord(inMetadata);
-		inRecord.init();
-		DataRecord outRecord = DataRecordFactory.newRecord(outMetadata);
-		outRecord.init();
-		outRecord.reset();
+		
 		int src = 0;
 		int transformResult;
 		while (runIt) {

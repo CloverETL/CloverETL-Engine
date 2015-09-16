@@ -262,7 +262,7 @@ public interface JdbcSpecific {
 	 * Typically somehow adds some always failing where clause so that the query is never executed
 	 * @param query Original query to be validated
 	 * @param queryType Type of query
-	 * @param optimizeQueryString True if the select query shall be optimized by appending WHERE 1=0, false otherwise.
+	 * @param optimizeQueryString True if the select query shall be optimized by wrapping into SELECT query and appending WHERE 1=0, false otherwise.
 	 * @return A query that can be executed to validate original `query`
 	 * @throws SQLException In can query cannot be generated or is otherwise invalid
 	 */

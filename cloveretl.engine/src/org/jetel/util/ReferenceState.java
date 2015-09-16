@@ -70,6 +70,14 @@ public enum ReferenceState {
 	}
 	
 	/**
+	 * @param state
+	 * @return true if the given state is valid, false otherwise
+	 */
+	public static boolean isValidState(ReferenceState state) {
+		 return state != null && state  == ReferenceState.VALID_REFERENCE;
+	}
+
+	/**
 	 * @param value
 	 * 
 	 * @return {@link ReferenceState} for given string representation.

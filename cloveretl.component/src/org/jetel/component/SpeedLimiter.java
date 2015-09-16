@@ -120,6 +120,11 @@ public class SpeedLimiter extends Node {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
+		
+		tryToInit(null);
+	}
+	
+	private void tryToInit(ConfigurationStatus status) throws ComponentNotReadyException {
 		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 
 		//create input mapping
@@ -206,7 +211,7 @@ public class SpeedLimiter extends Node {
 		if (getOutputPort(0) != null) {
 			checkInputPorts(status, 1, 1);
 			checkOutputPorts(status, 1, Integer.MAX_VALUE);
-			checkMetadata(status, getInMetadata(), getOutMetadata());
+			checkMetadata(status, getInPorts(), getOutPorts());
 		}
 		else if (getInputPort(0) != null) {
 			checkInputPorts(status, 1, 1);
@@ -217,7 +222,7 @@ public class SpeedLimiter extends Node {
 		}
 		
 		try {
-			init();
+			tryToInit(null);
 		} catch (ComponentNotReadyException e) {
 			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
 			if(!StringUtils.isEmpty(e.getAttributeName())) {

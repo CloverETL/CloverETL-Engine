@@ -27,6 +27,7 @@ import java.util.TreeMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
+import org.jetel.data.xml.mapping.HttpHeaderMappingDefinition;
 import org.jetel.data.xml.mapping.InputFieldMappingDefinition;
 import org.jetel.data.xml.mapping.TypeOverrideDefinition;
 import org.jetel.data.xml.mapping.XMLElementMappingDefinition;
@@ -52,6 +53,12 @@ public class XMLMappingDefinitionParser {
 	private static final String XML_INPUTFIELDMAPPING = "FieldMapping";
 	private static final String XML_INPUTFIELDMAPPING_INPUTFIELD = "inputField";
 	private static final String XML_INPUTFIELDMAPPING_OUTPUTFIELD = "outputField";
+	
+	private static final String XML_HTTPHEADERMAPPING = "HttpHeaderMapping";
+	private static final String XML_HTTPHEADERMAPPING_RESPONSEHEADER = "responseHeader";
+	private static final String XML_HTTPHEADERMAPPING_OUTPUTFIELD = "outputField";
+	
+	
 
 	private static final String XML_TYPE_OVERRIDE = "TypeOverride";
 	private static final String XML_TYPE_OVERRIDE_ELEMENT_PATH = "elementPath";
@@ -186,6 +193,32 @@ public class XMLMappingDefinitionParser {
         mapping.setInputField(inputField);
         
         String outputField = attributes.getString(XML_INPUTFIELDMAPPING_OUTPUTFIELD, null);
+        mapping.setOutputField(outputField);
+       
+        result.setMapping(mapping);
+        
+		return result;
+	}
+	
+	/** Parses the given XML node, assuming the node represents an {@link HttpHeaderMappingDefinition}.
+	 * 
+	 * @param nodeXML
+	 * @return parsed mapping
+	 */
+	public XMLMappingParseResult<HttpHeaderMappingDefinition> parseHttpHeaderMapping(org.w3c.dom.Node nodeXML, XMLMappingDefinition parent) throws XMLMappingDefinitionParseException {
+		XMLMappingParseResult<HttpHeaderMappingDefinition> result = new XMLMappingParseResult<HttpHeaderMappingDefinition>();
+
+		HttpHeaderMappingDefinition mapping = new HttpHeaderMappingDefinition();
+	
+		ComponentXMLAttributes attributes = createComponentAttributes(nodeXML); 
+		if (!checkAttributesPresent(attributes, result.getErrors(), XML_HTTPHEADERMAPPING_RESPONSEHEADER, XML_HTTPHEADERMAPPING_OUTPUTFIELD)) {
+			return result;
+		}
+		
+        String httpHeader = attributes.getString(XML_HTTPHEADERMAPPING_RESPONSEHEADER, null);
+        mapping.setHttpHeader(httpHeader);
+        
+        String outputField = attributes.getString(XML_HTTPHEADERMAPPING_OUTPUTFIELD, null);
         mapping.setOutputField(outputField);
        
         result.setMapping(mapping);
@@ -474,6 +507,9 @@ public class XMLMappingDefinitionParser {
 			
 		} else if (XML_INPUTFIELDMAPPING.equals(nodeXML.getNodeName())) {
 			result = parseInputFieldMapping(nodeXML, mapping);
+		
+		} else if (XML_HTTPHEADERMAPPING.equals(nodeXML.getNodeName())) {
+			result = parseHttpHeaderMapping(nodeXML, mapping);
 
 		} else if (XML_MAPPING.equals(nodeXML.getNodeName())) {
 			result = parseElementMapping(nodeXML, mapping);

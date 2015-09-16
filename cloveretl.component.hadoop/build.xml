@@ -21,10 +21,6 @@
 		<ant target="clean" dir="." antfile="${dir.engine}/build-scripts/build-plugin.xml" />
 	</target>
 
-	<target name="coverage-instrument">
-		<ant target="coverage-instrument" dir="." antfile="${dir.engine}/build-scripts/build-plugin.xml" />
-	</target>
-	
 	<target name="runtests">
 		<ant target="runtests" dir="." antfile="${dir.engine}/build-scripts/build-plugin.xml" />
 	</target>

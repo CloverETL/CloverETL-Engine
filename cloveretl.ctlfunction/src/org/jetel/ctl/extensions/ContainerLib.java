@@ -38,31 +38,30 @@ public class ContainerLib extends TLFunctionLibrary {
     @Override
     public TLFunctionPrototype getExecutable(String functionName) 
     throws IllegalArgumentException {
-    	TLFunctionPrototype ret = 
-    		"clear".equals(functionName) ? new ClearFunction() :
-    		"pop".equals(functionName) ? new PopFunction() :
-    		"poll".equals(functionName) ? new PollFunction() :
-    		"push".equals(functionName) ? new PushFunction() :
-    		"append".equals(functionName) ? new AppendFunction() :
-    		"insert".equals(functionName) ? new InsertFunction() :
-    		"remove".equals(functionName) ? new RemoveFunction() :
-    		"sort".equals(functionName) ? new SortFunction() : 
-    		"reverse".equals(functionName) ? new ReverseFunction() : 
-    		"isEmpty".equals(functionName) ? new IsEmptyFunction() : 
-    		"copy".equals(functionName) ? new CopyFunction() : 
-    		"containsAll".equals(functionName) ? new ContainsAllFunction() :
-    		"containsKey".equals(functionName) ? new ContainsKeyFunction() :
-    		"containsValue".equals(functionName) ? new ContainsValueFunction() : 
-//        	"binarySearch".equals(functionName) ? new BinarySearchFunction() : 
-    		"getKeys".equals(functionName) ? new GetKeysFunction() :
-    		"getValues".equals(functionName) ? new GetValuesFunction() :
-    		"toMap".equals(functionName) ? new ToMapFunction() : null;
+		if (functionName != null) {
+			switch (functionName) {
+				case "clear": return new ClearFunction();
+				case "pop": return new PopFunction();
+				case "poll": return new PollFunction();
+				case "push": return new PushFunction();
+				case "append": return new AppendFunction();
+				case "insert": return new InsertFunction();
+				case "remove": return new RemoveFunction();
+				case "sort": return new SortFunction();
+				case "reverse": return new ReverseFunction();
+				case "isEmpty": return new IsEmptyFunction();
+				case "copy": return new CopyFunction();
+				case "containsAll": return new ContainsAllFunction();
+				case "containsKey": return new ContainsKeyFunction();
+				case "containsValue": return new ContainsValueFunction();
+				case "binarySearch": return new BinarySearchFunction();
+				case "getKeys": return new GetKeysFunction();
+				case "getValues": return new GetValuesFunction();
+				case "toMap": return new ToMapFunction();
+			}
+		}
 
-    	if (ret == null) {
-    		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
-    	}
-    	
-    	return ret;
+    	throw new IllegalArgumentException("Unknown function '" + functionName + "'");
     }
     
 	private static String LIBRARY_NAME = "Container";
@@ -84,7 +83,7 @@ public class ContainerLib extends TLFunctionLibrary {
     	map.clear();
     }
     
-    class ClearFunction implements TLFunctionPrototype {
+    static class ClearFunction implements TLFunctionPrototype {
     	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -106,7 +105,7 @@ public class ContainerLib extends TLFunctionLibrary {
     public static final <E> E pop(TLFunctionCallContext context, List<E> list) {
     	return list.size() > 0 ? list.remove(list.size()-1) : null;
     }
-	class PopFunction implements TLFunctionPrototype{
+    static class PopFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -124,7 +123,7 @@ public class ContainerLib extends TLFunctionLibrary {
 	public static final <E> E poll(TLFunctionCallContext context, List<E> list) {
 		return list.size() > 0 ? list.remove(0) : null;
 	}
-	class PollFunction implements TLFunctionPrototype{
+	static class PollFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -145,7 +144,7 @@ public class ContainerLib extends TLFunctionLibrary {
 		return list;
 	}
 	
-	class AppendFunction implements TLFunctionPrototype {
+	static class AppendFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -166,7 +165,7 @@ public class ContainerLib extends TLFunctionLibrary {
 		return list;
 	}
 	
-	class PushFunction implements TLFunctionPrototype{
+	static class PushFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -198,7 +197,7 @@ public class ContainerLib extends TLFunctionLibrary {
 		return list;
 	}
 	
-	class InsertFunction implements TLFunctionPrototype {
+	static class InsertFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -229,7 +228,7 @@ public class ContainerLib extends TLFunctionLibrary {
 	public static final <E> E remove(TLFunctionCallContext context, List<E> list, int position) {
 		return list.remove(position);
 	}
-	class RemoveFunction implements TLFunctionPrototype{
+	static class RemoveFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -269,7 +268,7 @@ public class ContainerLib extends TLFunctionLibrary {
 		Collections.sort(list, new MyComparator<E>());
 		return list;
 	}
-	class SortFunction implements TLFunctionPrototype{
+	static class SortFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -317,7 +316,7 @@ public class ContainerLib extends TLFunctionLibrary {
 	}
 		
 	// REVERSE
-	class ReverseFunction implements TLFunctionPrototype{
+	static class ReverseFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -369,7 +368,7 @@ public class ContainerLib extends TLFunctionLibrary {
 		return map.isEmpty();
 	}
 	
-	class IsEmptyFunction implements TLFunctionPrototype{
+	static class IsEmptyFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -397,7 +396,7 @@ public class ContainerLib extends TLFunctionLibrary {
 		to.putAll(from);
 		return to;
 	}
-	class CopyFunction implements TLFunctionPrototype{
+	static class CopyFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -423,7 +422,7 @@ public class ContainerLib extends TLFunctionLibrary {
 	public static final <E> boolean containsAll(TLFunctionCallContext context, List<E> collection, List<E> subList) {
 		return collection.containsAll(subList);
 	}
-	class ContainsAllFunction implements TLFunctionPrototype{
+	static class ContainsAllFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -443,7 +442,7 @@ public class ContainerLib extends TLFunctionLibrary {
 	public static final <K, V> boolean containsKey(TLFunctionCallContext context, Map<K, V> map, K key) {
 		return map.containsKey(key);
 	}
-	class ContainsKeyFunction implements TLFunctionPrototype{
+	static class ContainsKeyFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -469,7 +468,7 @@ public class ContainerLib extends TLFunctionLibrary {
 		return list.contains(value);
 	}
 	
-	class ContainsValueFunction implements TLFunctionPrototype{
+	static class ContainsValueFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -490,31 +489,36 @@ public class ContainerLib extends TLFunctionLibrary {
 		}
 	}
 	
-//	@SuppressWarnings("unchecked")
-//	@TLFunctionAnnotation("Searches a list for the specified value. The list must be sorted in ascending order.")
-//	public static final <V> Integer binarySearch(TLFunctionCallContext context, List<V> list, V value) {
-//		return Collections.binarySearch(((List<? extends Comparable<? super V>>) list), value);
-//	}
-//	
-//	class BinarySearchFunction implements TLFunctionPrototype{
-//		
-//		@Override
-//		public void init(TLFunctionCallContext context) {
-//		}
-//
-//		@Override
-//		public void execute(Stack stack, TLFunctionCallContext context) {
-//			Object value = stack.pop();
-//			List<Object> list = stack.popList();
-//			stack.push(binarySearch(context, list, value));
-//		}
-//	}
+	@SuppressWarnings("unchecked")
+	@TLFunctionAnnotation("Searches a list for the specified value. The list must be sorted in ascending order.")
+	public static final <V> Integer binarySearch(TLFunctionCallContext context, List<V> list, V value) {
+		if (value == null) {
+			throw new NullPointerException("value is null");
+		} else if (!(value instanceof Comparable)) {
+			throw new IllegalArgumentException("value is not comparable");
+		}
+		return Collections.binarySearch(((List<? extends Comparable<? super V>>) list), value);
+	}
+	
+	static class BinarySearchFunction implements TLFunctionPrototype{
+		
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			Object value = stack.pop();
+			List<Object> list = stack.popList();
+			stack.push(binarySearch(context, list, value));
+		}
+	}
 	
 	@TLFunctionAnnotation("Returns the keys of the map.")
 	public static final <K, V> List<K> getKeys(TLFunctionCallContext context, Map<K, V> map) {
 		return new ArrayList<K>(map.keySet());
 	}
-	class GetKeysFunction implements TLFunctionPrototype{
+	static class GetKeysFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -533,7 +537,7 @@ public class ContainerLib extends TLFunctionLibrary {
 	public static final <K, V> List<V> getValues(TLFunctionCallContext context, Map<K, V> map) {
 		return new ArrayList<V>(map.values());
 	}
-	class GetValuesFunction implements TLFunctionPrototype{
+	static class GetValuesFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -572,7 +576,7 @@ public class ContainerLib extends TLFunctionLibrary {
 		
 	}
 	
-	class ToMapFunction implements TLFunctionPrototype{
+	static class ToMapFunction implements TLFunctionPrototype{
 		
 		@Override
 		public void init(TLFunctionCallContext context) {

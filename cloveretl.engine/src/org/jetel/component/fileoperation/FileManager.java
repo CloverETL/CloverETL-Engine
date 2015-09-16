@@ -225,11 +225,13 @@ public class FileManager {
 			manager.registerHandler(new URLOperationHandler());
 			manager.registerHandler(new DefaultOperationHandler());
 			manager.registerHandler(new WebdavOperationHandler());
-			manager.registerHandler(new S3OperationHandler());
+			manager.registerHandler(new HttpS3OperationHandler());
 //			manager.registerHandler(new SFTPOperationHandler());
 			manager.registerHandler(new PooledSFTPOperationHandler());
 			manager.registerHandler(new PooledFTPOperationHandler());
 			manager.registerHandler(new SMBOperationHandler());
+			manager.registerHandler(new S3OperationHandler());
+			manager.registerHandler(new S3CopyOperationHandler());
 		}
 	}
 	
@@ -246,7 +248,7 @@ public class FileManager {
 				URL url = runtimeContext.getContextURL();
 				if (url != null) {
 					try {
-						return url.toURI();
+						return URIUtils.toURI(url); // CLO-7000
 					} catch (URISyntaxException ex) {
 						throw new IllegalStateException(FileOperationMessages.getString("FileManager.context_URI_not_available"), ex); //$NON-NLS-1$
 					}
@@ -965,7 +967,7 @@ public class FileManager {
 		}
 		
 		List<String> parts = getUriParts(uriString);
-		InfoResult infoResult = info((SingleCloverURI) CloverURI.createURI(parts.get(0)));
+		InfoResult infoResult = info(CloverURI.createURI(parts.get(0)));
 		if (!infoResult.success()) {
 			throw new IOException(FileOperationMessages.getString("FileManager.info_failed"), infoResult.getFirstError()); //$NON-NLS-1$
 		}
@@ -989,7 +991,7 @@ public class FileManager {
 		
 		List<SingleCloverURI> result = new ArrayList<SingleCloverURI>(bases.size());
 		for (Info info: bases) {
-			result.add(CloverURI.createSingleURI(info.getURI()));
+			result.add(new SingleCloverURIInfo(info)); // CLO-6675
 		}
 		return result;
 	}
@@ -1062,6 +1064,13 @@ public class FileManager {
 			ResolveResult resolved = resolve(glob);
 			if (resolved.success()) {
 				for (SingleCloverURI target: resolved) {
+					if (target instanceof Info) { // CLO-6675 see defaultResolve()
+						Info info = (Info) target;
+						if (info.isFile()) {
+							result.add(target, Arrays.asList(info));
+							continue;
+						}
+					}
 					try {
 						List<Info> infos = handler.list(target, params); 
 						if (infos != null) {
@@ -1174,6 +1183,84 @@ public class FileManager {
 		return String.format("File Manager: %s", handlers); //$NON-NLS-1$
 	}
 	
+	/**
+	 * Throws UnsupportedOperationException if protocol is not supported on the file operation.
+	 */
+	private void checkProtocols(OperationKind kind, SingleCloverURI... arguments) throws UnsupportedOperationException {
+		Operation operation = getOperation(kind, arguments);
+		if (!canPerform(operation)) {
+			if (arguments.length == 1) {
+				throw new UnsupportedOperationException(format(FileOperationMessages.getString("FileManager.operation_unsupported_single_protocol"), kind, operation.scheme()));
+			} else if (arguments.length == 2) {
+				throw new UnsupportedOperationException(format(FileOperationMessages.getString("FileManager.operation_unsupported_multiple_protocols"), kind, operation.scheme(0), operation.scheme(1)));
+			} else {
+				throw new IllegalArgumentException(format(FileOperationMessages.getString("FileManager.invalid_number_of_arguments"), kind));
+			}
+		}
+	}
 	
+	/**
+	 * Checks compatibility of OperationKind and protocol of single url. Throws UnsupportedOperationException when they are incompatible.
+	 */
+	public void checkCompatibility(OperationKind kind, String url) throws UnsupportedOperationException, IllegalArgumentException {
+		CloverURI targetCloverUri = CloverURI.createURI(url).getAbsoluteURI();
+		
+		switch (kind) {
+		case CREATE:
+		case DELETE:
+		case LIST:
+		case READ:
+		case RESOLVE:
+		case WRITE:
+			List<SingleCloverURI> parts = targetCloverUri.split();
+			for (SingleCloverURI part : parts) {
+				if (kind != OperationKind.RESOLVE || !part.isQuoted()) {
+					checkProtocols(kind, part);
+				}
+			}
+			break;
+		case FILE:
+		case INFO:
+			SingleCloverURI singleTarget = targetCloverUri.getSingleURI();
+			checkProtocols(kind, singleTarget);
+			break;
+		case COPY:
+		case MOVE:
+		default:
+			throw new IllegalArgumentException(format(FileOperationMessages.getString("FileManager.operation_unavailable_for_one_argument"), kind, url));
+		}
+	}
+	
+	/**
+	 * Checks compatibility of OperationKind and protocols of source+target urls. Throws UnsupportedOperationException when they are incompatible.
+	 */
+	public void checkCompatibility(OperationKind kind, String sourceURL, String targetURL) throws UnsupportedOperationException, IllegalArgumentException {
+		CloverURI sourceCloverUri = CloverURI.createURI(sourceURL).getAbsoluteURI();
+		CloverURI targetCloverUri = CloverURI.createURI(targetURL).getAbsoluteURI();
+
+		switch (kind) {
+		case COPY:
+		case MOVE:
+			List<SingleCloverURI> list = targetCloverUri.split();
+			if (list.size() > 1) {
+				throw new IllegalArgumentException(format(FileOperationMessages.getString("FileManager.single_target_URI_permitted"), targetURL));
+			} else if (list.size() == 0) {
+				if (kind == OperationKind.COPY) {
+					throw new IllegalArgumentException(FileOperationMessages.getString("FileManager.copy_target_is_empty"));
+				} else if (kind == OperationKind.MOVE) {
+					throw new IllegalArgumentException(FileOperationMessages.getString("FileManager.move_target_is_empty"));
+				}
+			}
+			SingleCloverURI target = list.get(0);
+			
+			List<SingleCloverURI> sourceParts = sourceCloverUri.split();
+			for (SingleCloverURI sourcePart : sourceParts) {
+				checkProtocols(kind, sourcePart, target);
+			}
+			break;
+		default:
+			throw new IllegalArgumentException(format(FileOperationMessages.getString("FileManager.operation_unavailable_for_two_arguments"), kind, sourceURL, targetURL));
+		}
+	}
 
 }

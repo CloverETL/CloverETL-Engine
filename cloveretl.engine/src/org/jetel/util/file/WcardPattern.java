@@ -39,13 +39,11 @@ import java.util.List;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.http.HttpStatus;
-import org.jetel.data.Defaults;
 import org.jetel.enums.ArchiveType;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
@@ -477,7 +475,7 @@ public class WcardPattern {
     private void processTGZArchive(FileStreamName fileStreamName, String originalFileName, String anchor, int iPreName, int iPostName, List<String> newFileStreamNames) throws IOException {
 		// wrap the input stream in GZIPInputStream and call processTarArchive()
     	if (fileStreamName.getInputStream() != null) {
-    		fileStreamName = new FileStreamName(fileStreamName.getFileName(), new GZIPInputStream(fileStreamName.getInputStream(), Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE));
+    		fileStreamName = new FileStreamName(fileStreamName.getFileName(), ArchiveUtils.getGzipInputStream(fileStreamName.getInputStream()));
     	}
     	
     	processTarArchive(fileStreamName, originalFileName, anchor, iPreName, iPostName, newFileStreamNames);
@@ -946,11 +944,22 @@ public class WcardPattern {
 	 * @return
 	 */
 	public static Pattern compileSimplifiedPattern(String pattern) {
+		return compileSimplifiedPattern(pattern, WCARD_CHAR, REGEX_SUBST);
+	}
+
+	/**
+	 * Creates compiled Pattern from String pattern. Replaces characters from wildcardCharacters with strings from regexSubstitutions.
+	 * @param pattern
+	 * @param wildcardCharacters eg. {'*', '?'}
+	 * @param regexSubstitutions eg. {".*", "."}
+	 * @return
+	 */
+	public static Pattern compileSimplifiedPattern(String pattern, char[] wildcardCharacters, String[] regexSubstitutions) {
 		StringBuilder regex = new StringBuilder(pattern);
 		regex.insert(0, REGEX_START_ANCHOR + REGEX_START_QUOTE);
-		for (int wcardIdx = 0; wcardIdx < WCARD_CHAR.length; wcardIdx++) {
-			regex.replace(0, regex.length(), regex.toString().replace("" + WCARD_CHAR[wcardIdx],
-					REGEX_END_QUOTE + REGEX_SUBST[wcardIdx] + REGEX_START_QUOTE));
+		for (int wcardIdx = 0; wcardIdx < wildcardCharacters.length; wcardIdx++) {
+			regex.replace(0, regex.length(), regex.toString().replace("" + wildcardCharacters[wcardIdx],
+					REGEX_END_QUOTE + regexSubstitutions[wcardIdx] + REGEX_START_QUOTE));
 		}
 		regex.append(REGEX_END_QUOTE + REGEX_END_ANCHOR);
 

@@ -19,6 +19,12 @@
 	</extension>
 
 	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="REDSHIFT"/>
+		<parameter id="name" value="Amazon Redshift"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.RedshiftSpecific"/>
+	</extension>
+
+	<extension point-id="jdbcSpecific">
 		<parameter id="database" value="DB2"/>
 		<parameter id="name" value="DB2"/>
 		<!--parameter id="majorVersion" value="x"/-->
@@ -167,7 +173,7 @@
 		<parameter id="database" value="POSTGRE"/>
 		<parameter id="name" value="PostgreSQL"/>
 		<parameter id="dbDriver" value="org.postgresql.Driver"/>
-		<parameter id="driverLibrary" value="lib/postgre/postgresql-9.2-1002.jdbc4.jar"/>
+		<parameter id="driverLibrary" value="lib/postgre/postgresql-9.3-1102.jdbc41.jar"/>
 		<parameter id="urlHint" value="jdbc:postgresql://hostname/database"/>
 		<parameter id="jdbcSpecific" value="POSTGRE"/>
 	</extension>
@@ -253,6 +259,24 @@
 		<parameter id="driverLibrary" value="lib/firebird/jaybird-full-2.2.1.jar"/>
 		<parameter id="urlHint" value="jdbc:firebirdsql:localhost/3050:/firebird/test.gdb"/>
 		<parameter id="jdbcSpecific" value="FIREBIRD"/>
+	</extension>
+
+	<extension point-id="jdbcDriver">
+		<parameter id="database" value="VERTICA70"/>
+		<parameter id="name" value="Vertica 7.0"/>
+		<parameter id="dbDriver" value="com.vertica.jdbc.Driver"/>
+		<parameter id="driverLibrary" value="lib/vertica/vertica-jdbc-7.0.2-1.jar"/>
+		<parameter id="urlHint" value="jdbc:vertica://hostname:5433/database"/>
+		<parameter id="jdbcSpecific" value="VERTICA"/>
+	</extension>
+
+	<extension point-id="jdbcDriver">
+		<parameter id="database" value="VERTICA71"/>
+		<parameter id="name" value="Vertica 7.1"/>
+		<parameter id="dbDriver" value="com.vertica.jdbc.Driver"/>
+		<parameter id="driverLibrary" value="lib/vertica/vertica-jdbc-7.1.1-0.jar"/>
+		<parameter id="urlHint" value="jdbc:vertica://hostname:5433/database"/>
+		<parameter id="jdbcSpecific" value="VERTICA"/>
 	</extension>
 
 <!--

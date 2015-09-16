@@ -169,7 +169,6 @@ public class DelimitedDataReader extends Node {
 	public Result execute() throws Exception {
 		// we need to create data record - take the metadata from first output port
 		DataRecord record = DataRecordFactory.newRecord(getOutputPort(OUTPUT_PORT).getMetadata());
-		record.init();
 		while (record != null && runIt) {
 		    try {
 		        if((record = reader.getNext(record)) != null) {
@@ -363,7 +362,7 @@ public class DelimitedDataReader extends Node {
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
         
-        checkMetadata(status, getOutMetadata());
+        checkMetadata(status, null, getOutPorts());
 
         try {
         	prepareParser();

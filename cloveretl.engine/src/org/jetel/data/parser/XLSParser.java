@@ -126,7 +126,6 @@ public abstract class XLSParser extends AbstractParser {
 	public DataRecord getNext() throws JetelException {
 		// create a new data record
 		DataRecord record = DataRecordFactory.newRecord(metadata);
-		record.init();
 
 		return getNext(record);
 	}
