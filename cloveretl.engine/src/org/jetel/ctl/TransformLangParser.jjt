@@ -2051,7 +2051,7 @@ void ControlConstant() #Literal : {}
 	} 
 	"(" 		t=<IDENTIFIER> 
 		{ 
-			jjtThis.setSequenceName(t.image);
+			jjtThis.setSequenceName(t.image,t.beginLine,t.beginColumn);
 			jjtThis.setType(TLTypePrimitive.INTEGER); 
 		} 	[ ","	  (  
 	  	<INT_VAR> { jjtThis.setType(TLTypePrimitive.INTEGER); }	   |
@@ -2087,7 +2087,7 @@ void LookupNode() :{}{	(	 ( "lookup"
 	   }
 	   "("			<IDENTIFIER> 
 			{ 
-				jjtThis.setLookupName(token.image); 
+				jjtThis.setLookupName(token.image,token.beginLine,token.beginColumn); 
 			}	   ")"
 	   {
 	   		jjtThis.end(token.endLine,token.endColumn);
@@ -2119,7 +2119,7 @@ void LookupNode() :{}{	(	 ( "lookup"
 	   "("
 			<IDENTIFIER> 			{ 
 				jjtThis.setOperation(1); 
-				jjtThis.setLookupName(token.image); 
+				jjtThis.setLookupName(token.image,token.beginLine,token.beginColumn); 
 			}
 	   ")" 	 	{
 	   		jjtThis.end(token.endLine,token.endColumn);
@@ -2132,7 +2132,7 @@ void LookupNode() :{}{	(	 ( "lookup"
 		"("
 			<IDENTIFIER> 			{
 				jjtThis.setOperation(2); 
-				jjtThis.setLookupName(token.image); 
+				jjtThis.setLookupName(token.image,token.beginLine,token.beginColumn); 
 			}
 		")"		{
 	   		jjtThis.end(token.endLine,token.endColumn);
@@ -2144,7 +2144,7 @@ void LookupNode() :{}{	(	 ( "lookup"
 	   	}
 		"("
 			<IDENTIFIER> 			{ 
-				jjtThis.setLookupName(token.image); 
+				jjtThis.setLookupName(token.image,token.beginLine,token.beginColumn); 
 			} 
 			","	<IDENTIFIER> 
 			{ 
