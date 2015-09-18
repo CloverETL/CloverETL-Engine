@@ -18,6 +18,7 @@
  */
 package org.jetel.ctl.ASTnode;
 
+import org.jetel.ctl.SyntacticPosition;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.TransformLangParser;
 import org.jetel.ctl.TransformLangParserVisitor;
@@ -31,6 +32,7 @@ public class CLVFSequenceNode extends SimpleNode {
 
 	public String sequenceName;
 	public int opType = 0; // default
+	private SyntacticPosition nameBegin;
 	
 	private Sequence sequence;
 	
@@ -64,8 +66,9 @@ public class CLVFSequenceNode extends SimpleNode {
 		}
 	}
 
-	public void setSequenceName(String name) {
+	public void setSequenceName(String name, int beginLine, int beginColumn) {
 		this.sequenceName = name;
+		this.nameBegin = new SyntacticPosition(beginLine, beginColumn);
 	}
 
 	public void setOperation(int op) {
@@ -74,6 +77,10 @@ public class CLVFSequenceNode extends SimpleNode {
 
 	public String getSequenceName() {
 		return sequenceName;
+	}
+	
+	public SyntacticPosition getNameBegin() {
+		return nameBegin;
 	}
 	
 	public Sequence getSequence() {
