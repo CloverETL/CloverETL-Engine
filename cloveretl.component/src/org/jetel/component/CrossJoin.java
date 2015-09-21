@@ -91,10 +91,7 @@ public class CrossJoin extends Node implements MetadataProvider {
 	private ShiftingFileBuffer[] slaveRecordsMemory;
 	
 	/** Record buffer for slave records */
-	private CloverBuffer data = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE);
-	
-	/** Helper variable, needed for maintaining reference to "data" buffer */
-	private CloverBuffer recordInMemory;
+	private CloverBuffer slaveRecordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE);
 	
 	// input
 	private InputPort masterPort;
@@ -186,7 +183,7 @@ public class CrossJoin extends Node implements MetadataProvider {
 	}
 	
 	@Override
-	public void free() {
+	public synchronized void free() {
 		super.free();
 		try {
 			if (slaveRecordsMemory != null) {
@@ -274,29 +271,32 @@ public class CrossJoin extends Node implements MetadataProvider {
 		}
 		slaveRecordsMemory[slaveIdx].rewind();
 		
-		data.clear();
-		while (runIt && ((recordInMemory = slaveRecordsMemory[slaveIdx].shift(data)) != null || !slaveFinishedReading[slaveIdx])) {
-			if (recordInMemory == null) {
+		/** Helper variable, needed for maintaining reference to "slaveRecordBuffer" buffer */
+		CloverBuffer tempBuffer;
+		
+		slaveRecordBuffer.clear();
+		while (runIt && ((tempBuffer = slaveRecordsMemory[slaveIdx].shift(slaveRecordBuffer)) != null || !slaveFinishedReading[slaveIdx])) {
+			if (tempBuffer == null) {
 				// no record in memory any more, we need to read more
 				DataRecord slaveRecord = readSlaveRecord(slaveIdx);
 				if (slaveRecord == null) {
 					// all records read from this slave
 					break;
 				} else {
-					slaveRecord.serialize(data);
-					data.flip();
-					slaveRecordsMemory[slaveIdx].push(data);
+					slaveRecord.serialize(slaveRecordBuffer);
+					slaveRecordBuffer.flip();
+					slaveRecordsMemory[slaveIdx].push(slaveRecordBuffer);
 					currentRecords[slaveIdx + 1] = slaveRecord;
 				}
 			} else {
 				// record found in memory
-				// At this point, data and recordInMemory are actually the same buffer instance.
-				data.flip();
-				currentRecords[slaveIdx + 1].deserialize(data);
+				// At this point, slaveRecordBuffer and tempBuffer are the same buffer instance.
+				slaveRecordBuffer.flip();
+				currentRecords[slaveIdx + 1].deserialize(slaveRecordBuffer);
 			}
 			
 			recursiveAppendSlaveRecord(currentRecords, slaveIdx + 1);
-			data.clear();
+			slaveRecordBuffer.clear();
 		}
 	}
 	
