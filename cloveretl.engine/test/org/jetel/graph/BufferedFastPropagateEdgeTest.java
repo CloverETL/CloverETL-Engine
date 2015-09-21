@@ -305,6 +305,151 @@ public class BufferedFastPropagateEdgeTest extends CloverTestCase {
 		edge.free();
 	}
 
+	
+	public void testGrowingBuffers2_CLO_7103() throws IOException, InterruptedException {
+		final BufferedFastPropagateEdge edge = new BufferedFastPropagateEdge(null);
+		edge.init();
+		edge.preExecute();
+		
+		CloverBuffer bufferRecordInitialSize = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE);
+		bufferRecordInitialSize.put(new byte[Defaults.Record.RECORD_INITIAL_SIZE]);
+		bufferRecordInitialSize.flip();
+
+		CloverBuffer bufferSmall = CloverBuffer.allocate(40000);
+		bufferSmall.put(new byte[40000]);
+		bufferSmall.flip();
+
+		CloverBuffer bufferBig = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE * 2);
+		bufferBig.put(new byte[Defaults.Record.RECORD_INITIAL_SIZE * 2]);
+		bufferBig.flip();
+
+		CloverBuffer bufferRead = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE);
+
+
+		//R-1	W-1
+		edge.writeRecordDirect(populateBuffer(bufferSmall));
+		//R-1	W-1
+		edge.writeRecordDirect(populateBuffer(bufferBig));
+		//R-1	W-2
+		edge.readRecordDirect(bufferRead);
+		//R-1	W-2
+		edge.readRecordDirect(bufferRead);
+		//R-2	W-2
+		edge.writeRecordDirect(populateBuffer(bufferSmall));
+		//R-2	W-2
+		edge.writeRecordDirect(populateBuffer(bufferSmall));
+		//R-2	W-2
+		edge.writeRecordDirect(populateBuffer(bufferSmall));
+		//R-2	W-2
+		edge.writeRecordDirect(populateBuffer(bufferSmall));
+		//R-2	W-1
+		edge.readRecordDirect(bufferRead);
+		//R-2	W-1
+		edge.readRecordDirect(bufferRead);
+		//R-2	W-1
+		edge.readRecordDirect(bufferRead);
+		//R-2	W-1
+		edge.readRecordDirect(bufferRead);
+		//R-1	W-1
+		edge.writeRecordDirect(populateBuffer(bufferSmall));
+		//R-1	W-1
+		edge.writeRecordDirect(populateBuffer(bufferSmall));
+		//R-1	W-1
+		edge.writeRecordDirect(populateBuffer(bufferSmall));
+		//R-1	W-2
+		edge.writeRecordDirect(populateBuffer(bufferBig)); //save to disc (the bufferSmall)
+		//R-1	W-2
+		edge.readRecordDirect(bufferRead);
+		//R-1	W-2
+		edge.readRecordDirect(bufferRead);
+		//R-1	W-2
+		edge.readRecordDirect(bufferRead); //load from disc
+		//R-2	W-2
+		edge.readRecordDirect(bufferRead);
+		//R-2	W-2
+		edge.writeRecordDirect(populateBuffer(bufferBig));
+		//R-2	W-1
+		edge.writeRecordDirect(populateBuffer(bufferBig));
+		//R-2	W-1
+		edge.writeRecordDirect(populateBuffer(bufferSmall));
+		//R-2	W-1
+		edge.writeRecordDirect(populateBuffer(bufferRecordInitialSize));
+	}
+
+	public void testGrowingBuffers3_CLO_7103() throws IOException, InterruptedException {
+		final BufferedFastPropagateEdge edge = new BufferedFastPropagateEdge(null);
+		edge.init();
+		edge.preExecute();
+		
+		CloverBuffer bufferRecordInitialSize = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE);
+		bufferRecordInitialSize.put(new byte[Defaults.Record.RECORD_INITIAL_SIZE]);
+		bufferRecordInitialSize.flip();
+
+		CloverBuffer bufferSmall = CloverBuffer.allocate(40000);
+		bufferSmall.put(new byte[40000]);
+		bufferSmall.flip();
+
+		CloverBuffer bufferBig = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE * 2);
+		bufferBig.put(new byte[Defaults.Record.RECORD_INITIAL_SIZE * 2]);
+		bufferBig.flip();
+
+		CloverBuffer bufferRead = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE);
+
+
+		//R-1	W-1
+		edge.writeRecordDirect(populateBuffer(bufferSmall));
+		//R-1	W-1
+		edge.writeRecordDirect(populateBuffer(bufferBig));
+		//R-1	W-2
+		edge.readRecordDirect(bufferRead);
+		//R-1	W-2
+		edge.readRecordDirect(bufferRead);
+		//R-2	W-2
+		edge.writeRecordDirect(populateBuffer(bufferSmall));
+		//R-2	W-2
+		edge.writeRecordDirect(populateBuffer(bufferSmall));
+		//R-2	W-2
+		edge.writeRecordDirect(populateBuffer(bufferSmall));
+		//R-2	W-2
+		edge.writeRecordDirect(populateBuffer(bufferSmall));
+		//R-2	W-1
+		edge.readRecordDirect(bufferRead);
+		//R-2	W-1
+		edge.readRecordDirect(bufferRead);
+		//R-2	W-1
+		edge.readRecordDirect(bufferRead);
+		//R-2	W-1
+		edge.readRecordDirect(bufferRead);
+		//R-1	W-1
+		edge.writeRecordDirect(populateBuffer(bufferSmall));
+		//R-1	W-1
+		edge.writeRecordDirect(populateBuffer(bufferSmall));
+		//R-1	W-2
+		edge.writeRecordDirect(populateBuffer(bufferBig)); //save to disc (the bufferSmall)
+		//R-1	W-2
+		edge.readRecordDirect(bufferRead);
+		//R-1	W-2
+		edge.readRecordDirect(bufferRead); //load from disc
+		//R-1	W-2
+		edge.readRecordDirect(bufferRead);
+		//R-2	W-2
+		edge.writeRecordDirect(populateBuffer(bufferBig));
+		//R-2	W-1
+		edge.writeRecordDirect(populateBuffer(bufferSmall));
+		//R-2	W-1
+		edge.writeRecordDirect(populateBuffer(bufferSmall));
+	}
+
+	/**
+	 * @param bufferSmall
+	 * @return
+	 */
+	private CloverBuffer populateBuffer(CloverBuffer buffer) {
+		buffer.clear();
+		buffer.limit(buffer.capacity());
+		return buffer;
+	}
+
 	private static class Producent implements Callable<Void> {
 		private long seed;
 		private BufferedFastPropagateEdge edge;
