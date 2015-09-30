@@ -410,6 +410,27 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 			return new S3ObjectInfo(object, connection.getBaseUri());
 		} catch (AmazonServiceException e) {
 			if (e.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
+				if (key.endsWith(FORWARD_SLASH)) { // try to find a "virtual" directory
+					try {
+						// directory object may not physically exist, but there may be a matching prefix
+						ListObjectsRequest request = new ListObjectsRequest(bucketName, key.substring(0, key.length() - 1), null, FORWARD_SLASH, Integer.MAX_VALUE);
+						ObjectListing chunk = service.listObjects(request);
+						List<String> directories = chunk.getCommonPrefixes();
+						for (String dir: directories) {
+							if (dir.equals(key)) {
+								S3ObjectSummary object = new S3ObjectSummary();
+								object.setKey(key);
+								object.setBucketName(bucketName);
+								return new S3ObjectInfo(object, connection.getBaseUri());
+							}
+						}
+					} catch (AmazonServiceException listingException) {
+						if (listingException.getStatusCode() == HttpStatus.SC_NOT_FOUND) { // listObjectsChunked() may also return 404
+							return null;
+						}
+						throw new IOException(listingException);
+					}
+				}
 				return null;
 			}
 			throw new IOException(e);
