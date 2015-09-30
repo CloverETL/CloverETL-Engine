@@ -42,23 +42,17 @@ import org.jetel.util.string.StringUtils;
  *
  * @created 27. 8. 2013
  */
-public class MVEngineComponent implements MVComponent {
+public class MVEngineComponent extends MVEngineGraphElement implements MVComponent {
 
-	private Node engineComponent;
-	
+	private static final long serialVersionUID = -7445666999175898101L;
+
 	private Map<Integer, MVEdge> inputEdges;
 
 	private Map<Integer, MVEdge> outputEdges;
 	
-	private MVGraph parentMVGraph;
-	
 	MVEngineComponent(Node engineComponent, MVGraph parentMVGraph) {
-		if (engineComponent == null || parentMVGraph == null) {
-			throw new IllegalArgumentException("MVEngineComponent init failed");
-		}
-		this.engineComponent = engineComponent;
-		this.parentMVGraph = parentMVGraph;
-
+		super(engineComponent, parentMVGraph);
+		
 		inputEdges = new LinkedHashMap<Integer, MVEdge>();
 		for (Entry<Integer, org.jetel.graph.InputPort> entry : engineComponent.getInputPorts().entrySet()) {
 			inputEdges.put(entry.getKey(), parentMVGraph.getMVEdge(entry.getValue().getEdge().getId()));
@@ -72,12 +66,7 @@ public class MVEngineComponent implements MVComponent {
 
 	@Override
 	public Node getModel() {
-		return engineComponent;
-	}
-	
-	@Override
-	public String getId() {
-		return engineComponent.getId();
+		return (Node) super.getModel();
 	}
 	
 	@Override
@@ -97,7 +86,7 @@ public class MVEngineComponent implements MVComponent {
 
 	@Override
 	public boolean isPassThrough() {
-		return engineComponent.getDescriptor().isPassThrough();
+		return getModel().getDescriptor().isPassThrough();
 	}
 
 	/**
@@ -119,7 +108,7 @@ public class MVEngineComponent implements MVComponent {
 	@Override
 	public MVMetadata getDefaultOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		//first let's try to find default metadata dynamically from component instance
-		MetadataProvider metadataProvider = getMetadataProvider(engineComponent);
+		MetadataProvider metadataProvider = getMetadataProvider(getModel());
 		if (metadataProvider != null) {
 			MVMetadata metadata = metadataProvider.getOutputMetadata(portIndex, metadataPropagationResolver);
 			if (metadata != null) {
@@ -128,14 +117,14 @@ public class MVEngineComponent implements MVComponent {
 		}
 
 		//no dynamic metadata found, let's use static metadata from component descriptor 
-		String metadataId = engineComponent.getDescriptor().getDefaultOutputMetadataId(portIndex);
+		String metadataId = getModel().getDescriptor().getDefaultOutputMetadataId(portIndex);
 		return getStaticMetadata(metadataId);
 	}
 
 	@Override
 	public MVMetadata getDefaultInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		//first let's try to find default metadata dynamically from component instance
-		MetadataProvider metadataProvider = getMetadataProvider(engineComponent);
+		MetadataProvider metadataProvider = getMetadataProvider(getModel());
 		if (metadataProvider != null) {
 			MVMetadata metadata = metadataProvider.getInputMetadata(portIndex, metadataPropagationResolver);
 			if (metadata != null) {
@@ -143,7 +132,7 @@ public class MVEngineComponent implements MVComponent {
 			}
 		}
 		//no dynamic metadata found, let's use statical metadata from component descriptor 
-		String metadataId = engineComponent.getDescriptor().getDefaultInputMetadataId(portIndex);
+		String metadataId = getModel().getDescriptor().getDefaultInputMetadataId(portIndex);
 		return getStaticMetadata(metadataId);
 	}
 	
@@ -151,34 +140,26 @@ public class MVEngineComponent implements MVComponent {
 	 * @return metadata from static metadata repository
 	 */
 	private MVMetadata getStaticMetadata(String metadataId) {
-		DataRecordMetadata metadata = MetadataRepository.getMetadata(metadataId, engineComponent);
+		DataRecordMetadata metadata = MetadataRepository.getMetadata(metadataId, getModel());
 		if (metadata != null) {
-			return parentMVGraph.createMVMetadata(metadata);
+			return getParent().createMVMetadata(metadata);
 		} else {
 			return null;
 		}
 	}
 	
 	@Override
-	public MVGraph getParentMVGraph() {
-		return parentMVGraph;
+	public MVGraph getParent() {
+		return (MVGraph) super.getParent();
 	}
 
-	@Override
-	public int hashCode() {
-		return engineComponent.hashCodeIdentity();
-	}
-	
 	@Override
 	public boolean equals(Object obj) {
 		if (!(obj instanceof MVEngineComponent)) { 
 			return false;
 		}
-		return engineComponent == ((MVEngineComponent) obj).engineComponent;
+		
+		return super.equalsGraphElement((MVEngineComponent) obj);
 	}
-	
-	@Override
-	public String toString() {
-		return engineComponent.toString();
-	}
+
 }
