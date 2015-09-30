@@ -873,7 +873,25 @@ public class XmlSaxParser {
 						value = new ArrayList<String>();
 					}
 					
-					value.add(getCurrentValue());
+					int startIndex = -1;
+					int endIndex = -1;
+					
+					// CLO-6983: Limit value to element text only
+					int startIndexPosition = this.lastIndexWithType(CharacterBufferMarkerType.CHARACTERS_START);
+					if (startIndexPosition >= 0) {
+						int endIndexPosition = this.firstIndexWithType(new HashSet<CharacterBufferMarkerType>(Arrays.asList(CharacterBufferMarkerType.SUBTREE_WITH_TAG_START, CharacterBufferMarkerType.SUBTREE_WITH_TAG_END, CharacterBufferMarkerType.SUBTREE_END, CharacterBufferMarkerType.SUBTREE_START)), startIndexPosition);
+						endIndexPosition--; // we need one marker before found
+						if (endIndexPosition < 0) {
+							endIndexPosition = this.lastIndexWithType(CharacterBufferMarkerType.CHARACTERS_END);
+						}
+						
+						if (endIndexPosition > 0) {
+							endIndex = this.m_elementContentStartIndexStack.get(endIndexPosition).index;
+						}
+						startIndex = this.m_elementContentStartIndexStack.get(startIndexPosition).index;
+					}
+
+					value.add(getCurrentValue(startIndex, endIndex, false));
 					m_activeMapping.getDescendantReferences().put(fullName, value);
 				}
 				if (m_element_as_text && m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT) && m_level == m_activeMapping.getLevel()) {
@@ -1226,7 +1244,7 @@ public class XmlSaxParser {
 						}											
 					} 
 					
-					if (fieldName == null && m_activeMapping.isImplicit()) {
+					if (fieldName == null && m_activeMapping.isImplicit() && !key.equals(XMLMappingConstants.ELEMENT_AS_TEXT) && !key.equals(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT)) {
 						/*
 						 * As we could not find match using qualified name try mapping the xml element/attribute without
 						 * the namespace prefix

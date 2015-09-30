@@ -1,22 +1,10 @@
 /*
- * jETeL/CloverETL - Java based ETL application framework.
- * Copyright (c) Javlin, a.s. (info@cloveretl.com)
- *  
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * CloverETL Engine - Java based ETL application framework.
+ * Copyright (c) Javlin, a.s. (info@cloveretl.com).  Use is subject to license terms.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * www.cloveretl.com
  */
-package org.jetel.component.fileoperation;
+package com.opensys.cloveretl.component;
 
 import static org.junit.Assume.assumeTrue;
 
@@ -25,6 +13,16 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
 
+import org.jetel.component.fileoperation.CloverURI;
+import org.jetel.component.fileoperation.DefaultOperationHandler;
+import org.jetel.component.fileoperation.IOperationHandler;
+import org.jetel.component.fileoperation.ObservableHandler;
+import org.jetel.component.fileoperation.Operation;
+import org.jetel.component.fileoperation.OperationHandlerTestTemplate;
+import org.jetel.component.fileoperation.S3CopyOperationHandler;
+import org.jetel.component.fileoperation.S3OperationHandler;
+import org.jetel.component.fileoperation.SimpleParameters;
+import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
 import org.jetel.component.fileoperation.pool.PooledS3Connection;
@@ -36,6 +34,8 @@ import org.jetel.util.ExceptionUtils;
 import org.jetel.util.file.FileUtils;
 
 /**
+ * This test contains S3 credentials, therefore has been moved to commercial repository.
+ * 
  * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
@@ -45,13 +45,8 @@ public class S3OperationHandlerTest extends OperationHandlerTestTemplate {
 
 	private S3OperationHandler handler;
 	
-	private static final String ACCESS_KEY = "AKIAIN22BDZO35DANLGQ";
-	private static final String SECRET_KEY = "JazDFBhDlMaJwKO5c6pDSzuKFW0LMTV%2FfVeszyEo";
-	private static final String DEFAULT_ENDPOINT = "s3.amazonaws.com";
-	private static final String FRANKFURT_ENDPOINT = "s3.eu-central-1.amazonaws.com";
-	private static final String S3_PREFIX = "s3://" + ACCESS_KEY + ":" + SECRET_KEY + "@";
-	private static final String rootUri = S3_PREFIX + FRANKFURT_ENDPOINT;
-	private static final String testingUri = rootUri + "/cloveretl.krivanekm.test/test-fo/";
+	private static final String rootUri = "s3://AKIAJLUEHALGLF23IOYQ:h3GFbUGJa8Put4VCJN4v9nyQAQQk00pUBUU6RXfA@s3.amazonaws.com";
+	private static final String testingUri = rootUri + "/cloveretl.engine.test/test-fo/";
 	
 	@Override
 	protected IOperationHandler createOperationHandler() {
@@ -154,10 +149,9 @@ public class S3OperationHandlerTest extends OperationHandlerTestTemplate {
 		super.testList();
 		
 		// test listing a newly created bucket - used to throw IllegalArgumentException: Illegal Capacity: -1
-		CloverURI emptyBucket = CloverURI.createSingleURI(URI.create(S3_PREFIX + DEFAULT_ENDPOINT), "cloveretl.test.empty.bucket");
+		CloverURI emptyBucket = CloverURI.createSingleURI(URI.create(rootUri), "cloveretl.test.empty.bucket");
 		try {
-			CreateResult createResult = manager.create(emptyBucket, new CreateParameters().setDirectory(true));
-			assumeTrue(createResult.getFirstErrorMessage(), createResult.success());
+			assumeTrue(manager.create(emptyBucket, new CreateParameters().setDirectory(true)).success());
 			ListResult listResult = manager.list(emptyBucket);
 			assertTrue(ExceptionUtils.stackTraceToString(listResult.getFirstError()), listResult.success());
 		} finally {
@@ -174,7 +168,7 @@ public class S3OperationHandlerTest extends OperationHandlerTestTemplate {
 		String secretKey = PooledS3Connection.getSecretKey(authority);
 		assertEquals("5XyJ3MFWZKd+BJ4C3ushhLQYIXBqbNTSK7EDzXLw", secretKey);
 		
-		authority = new S3Authority(baseUri);
+		authority = new S3Authority(URI.create("s3://AKIAIN22BDZO35DANLGQ:JazDFBhDlMaJwKO5c6pDSzuKFW0LMTV%2FfVeszyEo@s3.amazonaws.com"));
 		assertEquals("JazDFBhDlMaJwKO5c6pDSzuKFW0LMTV/fVeszyEo", PooledS3Connection.getSecretKey(authority));
 	}
 	
@@ -186,7 +180,7 @@ public class S3OperationHandlerTest extends OperationHandlerTestTemplate {
 	public void testLeak() throws IOException {
 		for (int i = 0; i < 5; i++) {
 			System.out.println("Opening connection #" + (i+1));
-			FileUtils.getInputStream(null, S3_PREFIX + DEFAULT_ENDPOINT + "/cloveretl.engine.test/employees.dat");
+			FileUtils.getInputStream(null, rootUri + "/cloveretl.engine.test/employees.dat");
 			System.gc();
 		}
 	}

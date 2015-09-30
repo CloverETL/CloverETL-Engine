@@ -174,7 +174,12 @@ public class GraphCycleInspector {
 	 */
 	private void setEdgeAsBuffered(Edge edge) {
 		if (edge.getGraph().getRuntimeJobType().isGraph()) {
-			edge.setEdgeType(EdgeTypeEnum.BUFFERED);
+			if (!edge.getEdgeType().isFastPropagate()) {
+				edge.setEdgeType(EdgeTypeEnum.BUFFERED);
+			} else {
+				//the edge is explicitly 'fast propagate', let's change it to 'buffered fast propagate' (CLO-7211)
+				edge.setEdgeType(EdgeTypeEnum.BUFFERED_FAST_PROPAGATE);
+			}
 		} else if (edge.getGraph().getRuntimeJobType().isJobflow()) {
 			edge.setEdgeType(EdgeTypeEnum.BUFFERED_FAST_PROPAGATE);
 		} else {
