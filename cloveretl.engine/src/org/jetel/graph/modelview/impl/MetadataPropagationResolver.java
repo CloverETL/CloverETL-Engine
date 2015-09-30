@@ -18,7 +18,10 @@
  */
 package org.jetel.graph.modelview.impl;
 
+import java.io.Serializable;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Set;
 
 import org.jetel.graph.Edge;
@@ -40,7 +43,9 @@ import org.jetel.util.ReferenceState;
  *
  * @created 18. 9. 2013
  */
-public class MetadataPropagationResolver {
+public class MetadataPropagationResolver implements Serializable {
+	
+	private static final long serialVersionUID = -722143991270518507L;
 	
 	/** Analysed graph */
 	private MVGraph mvGraph;
@@ -62,11 +67,17 @@ public class MetadataPropagationResolver {
 			findAllNoMetadata();
 		}
 
-		//go through all edges and search metadata if necessary
-		for (Edge edge : mvGraph.getModel().getEdges().values()) {
-			MVEdge mvEdge = mvGraph.getMVEdge(edge.getId());
-			MVMetadata mvMetadata = findMetadata(mvEdge);
-			mvEdge.setImplicitMetadata(mvMetadata);
+		//go through graph hierarchy and search metadata for each edge if necessary
+		Queue<MVGraph> graphsToProcess = new LinkedList<>();
+		graphsToProcess.add(mvGraph);
+		while (!graphsToProcess.isEmpty()) {
+			MVGraph graphToProcess = graphsToProcess.poll();
+			for (Edge edge : graphToProcess.getModel().getEdges().values()) {
+				MVEdge mvEdge = graphToProcess.getMVEdge(edge.getId());
+				MVMetadata mvMetadata = findMetadata(mvEdge);
+				mvEdge.setImplicitMetadata(mvMetadata);
+			}
+			graphsToProcess.addAll(graphToProcess.getMVSubgraphs().values());
 		}
 	}
 

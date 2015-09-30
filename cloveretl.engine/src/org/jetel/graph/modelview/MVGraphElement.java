@@ -18,6 +18,9 @@
  */
 package org.jetel.graph.modelview;
 
+import java.io.Serializable;
+import java.util.List;
+
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 
@@ -30,17 +33,37 @@ import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
  *
  * @created 3. 3. 2014
  */
-public interface MVGraphElement {
+public interface MVGraphElement extends Serializable {
 
+	/**
+	 * @return parent graph element
+	 */
+	public MVGraphElement getParent();
+	
+	/**
+	 * @return parent graph
+	 */
+	public MVGraph getParentMVGraph();
+	
 	/**
 	 * @return graph element model
 	 */
 	public IGraphElement getModel();
 	
 	/**
+	 * @return true if engine model is available (the model is not part of serialization)
+	 */
+	public boolean hasModel();
+	
+	/**
 	 * @return identifier of this graph element
 	 */
 	public String getId();
+	
+	/**
+	 * @return list of identifiers of all graph elements on the path to root graph 
+	 */
+	public List<String> getIdPath();
 	
 	/**
 	 * Resets recursively all graph elements in this model view. 
