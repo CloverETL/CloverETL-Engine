@@ -50,6 +50,7 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.exec.PortDataConsumer;
@@ -977,7 +978,7 @@ public class MsSqlDataWriter extends BulkLoader {
 
 	@Override
 	protected void setLoadUtilityDateFormat(DataFieldMetadata field) {
-		if (!field.hasFormat()) {
+		if (field.getDataType() == DataFieldType.DATE && !field.hasFormat()) {
 			field.setFormatStr("yyyy-MM-dd");
 		} else {
 			setLoadUtilityDateFormat(field, DEFAULT_TIME_FORMAT, DEFAULT_DATE_FORMAT, DEFAULT_DATETIME_FORMAT, null);
