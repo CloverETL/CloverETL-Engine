@@ -34,6 +34,8 @@ import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerConfiguration;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -109,14 +111,29 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 
 	@Override
 	public void close() throws IOException {
+		IOException ioe = null;
 		if (service != null) {
 			try {
 				service.shutdown();
 			} catch (Exception e) {
-				throw PrimitiveS3OperationHandler.getIOException(e);
+				ioe = PrimitiveS3OperationHandler.getIOException(e);
 			} finally {
 				this.service = null;
+				if (transferManager != null) {
+					try {
+						transferManager.shutdownNow(false);
+					} catch (Exception e) {
+						if (ioe != null) {
+							ioe.addSuppressed(e);
+						} else {
+							ioe = PrimitiveS3OperationHandler.getIOException(e);
+						}
+					}
+				}
 			}
+		}
+		if (ioe != null) {
+			throw ioe;
 		}
 	}
 
@@ -188,6 +205,19 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 	 */
 	public AmazonS3 getService() {
 		return service;
+	}
+	
+	private TransferManager transferManager;
+	
+	public TransferManager getTransferManager() {
+		if (transferManager == null) {
+			transferManager = new TransferManager(service);
+			TransferManagerConfiguration config = new TransferManagerConfiguration();
+//			config.setMultipartUploadThreshold(MULTIPART_UPLOAD_THRESHOLD);
+//			config.setMinimumUploadPartSize(MULTIPART_UPLOAD_THRESHOLD);
+			transferManager.setConfiguration(config);
+		}
+		return transferManager;
 	}
 	
 	/**

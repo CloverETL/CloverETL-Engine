@@ -62,6 +62,8 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.Upload;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -289,15 +291,28 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		return null;
 	}
 
-	protected static void putObject(AmazonS3 service, File file, String targetBucket, String targetKey) throws IOException {
-//		S3Object targetObject = createS3Object(file, targetKey);
-		if (Thread.currentThread().isInterrupted()) {
-			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
-		}
+	protected static void putObject(TransferManager tm, File file, String targetBucket, String targetKey) throws IOException {
+		Upload upload = null;
 		try {
-			service.putObject(targetBucket, targetKey, file);
-//			service.putObjectMaybeAsMultipart(targetBucket, targetObject, MultipartUtils.MAX_OBJECT_SIZE);
+			upload = tm.upload(targetBucket, targetKey, file);
+			upload.waitForCompletion();
+//			if (file.length() <= MULTIPART_UPLOAD_THRESHOLD) {
+//				try {
+//					CopyObjectRequest copyRequest = new CopyObjectRequest(targetBucket, targetKey, targetBucket, targetKey);
+//					copyRequest.withNewObjectMetadata(new ObjectMetadata());
+//					// unsafe, we don't check the result
+//					// the connection pool might abort the operation before it completes
+//					tm.copy(copyRequest); // copy object to itself to update ETag
+//				} catch (Exception ex) {
+//					log.warn("Metadata update failed: " + targetBucket + "/" + targetKey, ex);
+//				}
+//			}
 		} catch (AmazonClientException e) {
+			throw getIOException(e);
+		} catch (InterruptedException e) {
+			if (upload != null) {
+				upload.abort(); // this is necessary!
+			}
 			throw getIOException(e);
 		}
 	}
@@ -732,7 +747,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 	public static OutputStream getOutputStream(URI uri, final PooledS3Connection connection) throws IOException {
 		try {
 			uri = uri.normalize();
-			final AmazonS3 service = connection.getService();
+			final TransferManager tm = connection.getTransferManager();
 			String[] path = getPath(uri);
 			final String bucketName = path[0];
 			if (path.length < 2) {
@@ -780,7 +795,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 						if (uploaded.compareAndSet(false, true)) {
 							try {
 								// CLO-4724:
-								putObject(service, tempFile, bucketName, key);
+								putObject(tm, tempFile, bucketName, key);
 							} finally {
 								connection.returnToPool();
 								if (!tempFile.delete()) {
