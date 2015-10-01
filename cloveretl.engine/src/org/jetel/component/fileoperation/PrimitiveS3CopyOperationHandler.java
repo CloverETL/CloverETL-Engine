@@ -31,6 +31,7 @@ import org.jetel.component.fileoperation.pool.PooledS3Connection;
 import org.jetel.component.fileoperation.result.DeleteResult;
 import org.jetel.component.fileoperation.result.InfoResult;
 import org.jetel.component.fileoperation.result.ListResult;
+import org.jetel.util.protocols.amazon.S3Utils;
 import org.jetel.util.stream.StreamUtils;
 
 import com.amazonaws.services.s3.transfer.TransferManager;
@@ -111,7 +112,7 @@ public class PrimitiveS3CopyOperationHandler extends PrimitiveS3OperationHandler
 		}
 		String targetBucket = targetPath[0];
 		String targetKey = targetPath[1];
-		putObject(transferManager, source, targetBucket, targetKey);
+		S3Utils.uploadFile(transferManager, source, targetBucket, targetKey);
 		return target;
 	}
 

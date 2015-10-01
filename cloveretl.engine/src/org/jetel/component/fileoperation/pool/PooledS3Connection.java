@@ -26,6 +26,7 @@ import java.net.URI;
 import org.jetel.component.fileoperation.PrimitiveS3OperationHandler;
 import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.util.protocols.Validable;
+import org.jetel.util.protocols.amazon.S3Utils;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.ClientConfiguration;
@@ -95,10 +96,10 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 		} catch (AmazonClientException e) {
 			if (e.getCause() instanceof IllegalArgumentException) {
 				if ("Empty key".equals(e.getCause().getMessage())) {
-					throw new IOException("S3 URL does not contain valid keys. Please supply access key and secret key in the following format: s3://<AccessKey:SecretKey>@s3.amazonaws.com/<bucket>", PrimitiveS3OperationHandler.getIOException(e));
+					throw new IOException("S3 URL does not contain valid keys. Please supply access key and secret key in the following format: s3://<AccessKey:SecretKey>@s3.amazonaws.com/<bucket>", S3Utils.getIOException(e));
 				}
 			}
-			throw new IOException("Connection validation failed", PrimitiveS3OperationHandler.getIOException(e));
+			throw new IOException("Connection validation failed", S3Utils.getIOException(e));
 		}
 	}
 
@@ -109,7 +110,7 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 			try {
 				service.shutdown();
 			} catch (Exception e) {
-				ioe = PrimitiveS3OperationHandler.getIOException(e);
+				ioe = S3Utils.getIOException(e);
 			} finally {
 				this.service = null;
 				if (transferManager != null) {
@@ -119,7 +120,7 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 						if (ioe != null) {
 							ioe.addSuppressed(e);
 						} else {
-							ioe = PrimitiveS3OperationHandler.getIOException(e);
+							ioe = S3Utils.getIOException(e);
 						}
 					}
 				}

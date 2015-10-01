@@ -28,16 +28,13 @@ import java.net.URL;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
-import org.jetel.util.ExceptionUtils;
 
-import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.internal.Constants;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerConfiguration;
-import com.amazonaws.services.s3.transfer.Upload;
 
 public class S3OutputStream extends OutputStream {
 	
@@ -98,18 +95,7 @@ public class S3OutputStream extends OutputStream {
 			String bucket = S3InputStream.getBucket(url);
 	
 			// CLO-4724:
-			Upload upload = null;
-			try {
-				upload = transferManager.upload(bucket, path, tempFile);
-				upload.waitForCompletion();
-			} catch (AmazonClientException ex) {
-				throw ExceptionUtils.getIOException(ex);
-			} catch (InterruptedException ex) {
-				if (upload != null) {
-					upload.abort();
-				}
-				throw ExceptionUtils.getIOException(ex);
-			}
+			S3Utils.uploadFile(transferManager, tempFile, bucket, path);
 			
 		} finally {
 			tempFile.delete();
