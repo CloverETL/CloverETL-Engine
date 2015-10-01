@@ -45,13 +45,6 @@ import com.amazonaws.services.s3.transfer.TransferManagerConfiguration;
  */
 public class PooledS3Connection extends AbstractPoolableConnection implements Validable {
 
-	/*
-	 * Jets3tProperties configuration keys
-	 */
-	private static final String S3SERVICE_S3_ENDPOINT = "s3service.s3-endpoint";
-	private static final String S3SERVICE_S3_ENDPOINT_HTTP_PORT = "s3service.s3-endpoint-http-port";
-	private static final String S3SERVICE_S3_ENDPOINT_HTTPS_PORT = "s3service.s3-endpoint-https-port";
-
 	/**
 	 * Shared instance, do not modify!
 	 */
