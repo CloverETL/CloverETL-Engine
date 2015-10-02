@@ -34,7 +34,6 @@ import org.jetel.util.file.WcardPattern;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.directory.model.ServiceException;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.internal.Constants;
 import com.amazonaws.services.s3.iterable.S3Objects;
@@ -190,7 +189,7 @@ public class S3InputStream extends InputStream {
 			
 			try {
 				is = getobject.getObjectContent();
-			} catch (ServiceException e) {
+			} catch (Exception e) {
 				throw new IOException(e);
 			}
 		}
