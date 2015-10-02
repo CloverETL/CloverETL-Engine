@@ -168,12 +168,4 @@ public class MVEngineEdge extends MVEngineGraphElement implements MVEdge {
 		}
 	}
 	
-	@Override
-	public boolean equals(Object obj) {
-		if (!(obj instanceof MVEngineEdge)) { 
-			return false;
-		}
-		return super.equalsGraphElement((MVEngineEdge) obj);
-	}
-
 }

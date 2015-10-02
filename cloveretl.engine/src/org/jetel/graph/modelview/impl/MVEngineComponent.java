@@ -153,13 +153,4 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 		return (MVGraph) super.getParent();
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (!(obj instanceof MVEngineComponent)) { 
-			return false;
-		}
-		
-		return super.equalsGraphElement((MVEngineComponent) obj);
-	}
-
 }

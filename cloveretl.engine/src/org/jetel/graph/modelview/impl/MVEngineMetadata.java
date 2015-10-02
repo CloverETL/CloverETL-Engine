@@ -27,8 +27,6 @@ import org.jetel.graph.modelview.MVGraphElement;
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 /**
  * General model wrapper for engine metadata ({@link DataRecordMetadata}).
  * 
@@ -39,7 +37,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  *
  * @created 19. 9. 2013
  */
-@SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
 public class MVEngineMetadata extends MVEngineGraphElement implements MVMetadata {
 
 	private static final long serialVersionUID = 1180088952413191562L;
