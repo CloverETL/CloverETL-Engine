@@ -496,6 +496,12 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 				q = query;
 			}
 			break;
+		case UNKNOWN:
+			// fix CLO-7240: validation query for unknown query type should be the original query
+			q = query;
+			break;
+		default:
+			break;
 		}
 	
         return q;
