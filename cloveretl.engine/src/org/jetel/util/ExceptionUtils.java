@@ -539,7 +539,7 @@ public class ExceptionUtils {
 		if (t instanceof IOException) {
 			return (IOException) t;
 		} else {
-			return new IOException(t);
+			return new IOException(null, t);
 		}
 	}
 	
