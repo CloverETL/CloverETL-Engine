@@ -71,11 +71,7 @@ public class S3Utils {
 	}
 	
 	public static IOException getIOException(Throwable t) {
-//		if (t instanceof AmazonClientException) {
-//			return s3ExceptionToIOException((S3ServiceException) t);
-//		} else if (t instanceof ServiceException) {
-//			return serviceExceptionToIOException((ServiceException) t);
-//		}
+		// special handling of AmazonServiceException is no longer needed
 		return ExceptionUtils.getIOException(t);
 	}
 	
