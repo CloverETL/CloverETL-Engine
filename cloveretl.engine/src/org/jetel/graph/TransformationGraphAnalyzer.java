@@ -53,6 +53,7 @@ import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.graph.modelview.impl.MVEngineGraph;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
+import org.jetel.graph.modelview.impl.MetadataPropagationResult;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.SingleThreadWatchDog;
 import org.jetel.metadata.DataRecordMetadata;
@@ -243,8 +244,8 @@ public class TransformationGraphAnalyzer {
 				edge.setMetadata(metadata.getModel());
 			}
 		}
-		//store complete resolver into graph for further usage (mainly in designer)
-		mvGraph.getModel().setMetadataPropagationResolver(metadataPropagationResolver);
+		//save metadata propagation result into graph for further usage
+		mvGraph.getModel().setMetadataPropagationResult(new MetadataPropagationResult(metadataPropagationResolver));
 	}
 
 	/**

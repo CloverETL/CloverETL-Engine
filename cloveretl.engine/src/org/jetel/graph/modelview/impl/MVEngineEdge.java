@@ -35,34 +35,23 @@ import org.jetel.util.string.StringUtils;
  *
  * @created 19. 9. 2013
  */
-public class MVEngineEdge implements MVEdge {
+public class MVEngineEdge extends MVEngineGraphElement implements MVEdge {
 
-	private Edge engineEdge;
-	
+	private static final long serialVersionUID = -7961493466822405222L;
+
 	private MVMetadata implicitMetadata;
 	
 	private MVMetadata noMetadata;
 	
 	private boolean hasImplicitMetadata = false;
 
-	private MVGraph parentMVGraph;
-	
 	MVEngineEdge(Edge engineEdge, MVGraph parentMVGraph) {
-		if (engineEdge == null || parentMVGraph == null) {
-			throw new IllegalArgumentException("MVEngineEdge init failed");
-		}
-		this.engineEdge = engineEdge;
-		this.parentMVGraph = parentMVGraph;
+		super(engineEdge, parentMVGraph);
 	}
 	
 	@Override
 	public Edge getModel() {
-		return engineEdge;
-	}
-	
-	@Override
-	public String getId() {
-		return engineEdge.getId();
+		return (Edge) super.getModel();
 	}
 	
 	@Override
@@ -73,24 +62,24 @@ public class MVEngineEdge implements MVEdge {
 	
 	@Override
 	public MVComponent getReader() {
-		Node reader = engineEdge.getReader();
-		return (reader != null) ? parentMVGraph.getMVComponent(reader.getId()) : null;
+		Node reader = getModel().getReader();
+		return (reader != null) ? getParentMVGraph().getMVComponent(reader.getId()) : null;
 	}
 
 	@Override
 	public MVComponent getWriter() {
-		Node writer = engineEdge.getWriter();
-		return (writer != null) ? parentMVGraph.getMVComponent(writer.getId()) : null;
+		Node writer = getModel().getWriter();
+		return (writer != null) ? getParentMVGraph().getMVComponent(writer.getId()) : null;
 	}
 
 	@Override
 	public boolean hasMetadata() {
-		return hasImplicitMetadata || engineEdge.getMetadata() != null;
+		return hasImplicitMetadata || getModel().getMetadata() != null;
 	}
 
 	@Override
 	public boolean hasExplicitMetadata() {
-		return engineEdge.getMetadata() != null;
+		return getModel().getMetadata() != null;
 	}
 
 	@Override
@@ -111,7 +100,7 @@ public class MVEngineEdge implements MVEdge {
 					return null;
 				}
 			} else {
-				MVMetadata metadata = parentMVGraph.createMVMetadata(engineEdge.getMetadata(), MVMetadata.HIGH_PRIORITY);
+				MVMetadata metadata = getParentMVGraph().createMVMetadata(getModel().getMetadata(), MVMetadata.HIGH_PRIORITY);
 				metadata.addToOriginPath(this);
 				return metadata;
 			}
@@ -149,22 +138,22 @@ public class MVEngineEdge implements MVEdge {
 	
 	@Override
 	public int getOutputPortIndex() {
-		return engineEdge.getOutputPortNumber();
+		return getModel().getOutputPortNumber();
 	}
 
 	@Override
 	public int getInputPortIndex() {
-		return engineEdge.getInputPortNumber();
+		return getModel().getInputPortNumber();
 	}
 
 	@Override
-	public MVGraph getParentMVGraph() {
-		return parentMVGraph;
+	public MVGraph getParent() {
+		return (MVGraph) super.getParent();
 	}
 	
 	@Override
 	public MVEdge getMetadataRef() {
-		String metadataRef = engineEdge.getMetadataRef();
+		String metadataRef = getModel().getMetadataRef();
 		if (!StringUtils.isEmpty(metadataRef)) {
 			String edgeId = ReferenceUtils.getElementID(metadataRef);
 			try {
@@ -177,24 +166,6 @@ public class MVEngineEdge implements MVEdge {
 		} else {
 			return null;
 		}
-	}
-	
-	@Override
-	public int hashCode() {
-		return engineEdge.hashCodeIdentity();
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (!(obj instanceof MVEngineEdge)) { 
-			return false;
-		}
-		return engineEdge == ((MVEngineEdge) obj).engineEdge;
-	}
-
-	@Override
-	public String toString() {
-		return engineEdge.toString();
 	}
 	
 }
