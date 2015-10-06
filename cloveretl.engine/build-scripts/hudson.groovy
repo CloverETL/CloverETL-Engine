@@ -200,6 +200,11 @@ if( env['ComSpec'] ) {
 		"${env['BASE']}/tools/ant-1.7/bin/ant",
 		antTarget
 	]
+} else if (System.properties['os.name'].toLowerCase().contains('mac')) {
+	// mac
+	antC = ["/jenkins/tools/ant-1.7/bin/ant",
+		antTarget
+	]
 } else {
 	// unix
 	antC = ["${env['HUDSON_HOME']}/tools/ant-1.7/bin/ant",
