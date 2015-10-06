@@ -202,7 +202,7 @@ if( env['ComSpec'] ) {
 	]
 } else if (System.properties['os.name'].toLowerCase().contains('mac')) {
 	// mac
-	antC = ["ant",
+	antC = ["${env['ANT_HOME']}/bin/ant",
 		antTarget
 	]
 } else {
