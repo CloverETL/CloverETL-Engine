@@ -25,6 +25,8 @@ import org.jetel.graph.IGraphElement;
 import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVGraphElement;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -35,6 +37,7 @@ public abstract class MVEngineGraphElement implements MVGraphElement {
 
 	private static final long serialVersionUID = -909520506849532733L;
 
+	@SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
 	private transient IGraphElement engineGraphElement;
 	
 	private MVGraphElement parent;
@@ -108,14 +111,19 @@ public abstract class MVEngineGraphElement implements MVGraphElement {
 		}
 	}
 
-	protected boolean equalsGraphElement(MVGraphElement obj) {
+	@Override
+	public boolean equals(Object obj) {
+		if (obj.getClass() != this.getClass()) {
+			return false;
+		}
+		MVGraphElement graphElement = (MVGraphElement) obj;
 		if (hasModel()) {
-			return getModel() == obj.getModel();
+			return getModel() == graphElement.getModel();
 		} else {
-			return getIdPath().equals(obj.getIdPath());
+			return getIdPath().equals(graphElement.getIdPath());
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		return hasModel() ? getModel().toString() : this.getClass().getName() + ":" + getId();
