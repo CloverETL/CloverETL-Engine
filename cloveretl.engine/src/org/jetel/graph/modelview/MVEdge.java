@@ -107,13 +107,14 @@ public interface MVEdge extends MVGraphElement {
 	public MVMetadata getNoMetadata();
 
 	/**
-	 * @return parent graph
-	 */
-	public MVGraph getParentMVGraph();
-	
-	/**
 	 * @return referenced edge, from where metadata should be derived
 	 */
 	public MVEdge getMetadataRef();
 
+	/**
+	 * Returns parent graph.
+	 */
+	@Override
+	public MVGraph getParent();
+	
 }

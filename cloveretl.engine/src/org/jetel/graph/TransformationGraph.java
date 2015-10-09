@@ -50,7 +50,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.RecursiveSubgraphException;
 import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.dictionary.Dictionary;
-import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
+import org.jetel.graph.modelview.impl.MetadataPropagationResult;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.IAuthorityProxy;
@@ -159,10 +159,9 @@ public final class TransformationGraph extends GraphElement {
 	private JobType jobType = JobType.ETL_GRAPH;
 
 	/**
-	 * This is result of automatic metadata propagation. Now it is cached only for designer purpose.
-	 * For example information about "no metadata" is stored in this resolver.
+	 * This is result of automatic metadata propagation.
 	 */
-	private MetadataPropagationResolver metadataPropagationResolver;
+	private MetadataPropagationResult metadataPropagationResult;
 	
 	/**
 	 * Flag which indicates the graph has been already analysed by {@link TransformationGraphAnalyzer#analyseGraph(TransformationGraph, GraphRuntimeContext, boolean)}
@@ -1578,16 +1577,16 @@ public final class TransformationGraph extends GraphElement {
 	/**
 	 * @return result of automatic metadata propagation
 	 */
-	public MetadataPropagationResolver getMetadataPropagationResolver() {
-		return metadataPropagationResolver;
+	public MetadataPropagationResult getMetadataPropagationResult() {
+		return metadataPropagationResult;
 	}
 
 	/**
 	 * Sets result of automatic metadata propagation.
 	 * @param metadataPropagationResolver result object of automatic metadata propagation
 	 */
-	public void setMetadataPropagationResolver(MetadataPropagationResolver metadataPropagationResolver) {
-		this.metadataPropagationResolver = metadataPropagationResolver;
+	public void setMetadataPropagationResult(MetadataPropagationResult metadataPropagationResult) {
+		this.metadataPropagationResult = metadataPropagationResult;
 	}
 
 	/**
