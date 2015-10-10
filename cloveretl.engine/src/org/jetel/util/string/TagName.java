@@ -32,7 +32,8 @@ import java.util.List;
 public class TagName {
 
 	private static final char ENC_SEQ_CHAR = '_';
-	private static final String ENC_SEQ_START = ENC_SEQ_CHAR + "x";
+	private static final char ENC_SEQ_CHAR_X = 'x';
+	private static final String ENC_SEQ_START = ENC_SEQ_CHAR + "" + ENC_SEQ_CHAR_X;
 	
 	/**
 	 * Encodes given input string using unicodes.
@@ -161,7 +162,7 @@ public class TagName {
 		int pos = 0;
 		while (pos < s.length()) {
 			char c = s.charAt(pos++);
-			if (c == ENC_SEQ_CHAR) {
+			if (c == ENC_SEQ_CHAR && pos<s.length() && s.charAt(pos) == ENC_SEQ_CHAR_X) {
 				try {
 					c = (char)Integer.parseInt(s.substring(pos + 1, pos + 5), 16);
 					pos += 5;
