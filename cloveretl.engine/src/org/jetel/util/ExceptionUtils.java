@@ -21,6 +21,7 @@ package org.jetel.util;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
@@ -208,6 +209,14 @@ public class ExceptionUtils {
 		} else if (t instanceof NoClassDefFoundError) {
 			//message of NoClassDefFoundError exception is insufficient, message should be more explanatory
 			message = "No definition for the class with the specified name can be found" + (!StringUtils.isEmpty(t.getMessage()) ? ": " + t.getMessage() : ".");
+		} else if (t instanceof UnknownHostException) {
+			// the message often contains just the hostname
+			String msg = t.getMessage();
+			if (StringUtils.isEmpty(msg)) {
+				message = "Unknown host";
+			} else {
+				message = msg.toLowerCase().contains("unknown host") ? msg : "Unknown host: " + msg;
+			}
 		} else if (!StringUtils.isEmpty(t.getMessage())) {
 			//only non-empty messages are considered
 			message = t.getMessage();
@@ -539,7 +548,7 @@ public class ExceptionUtils {
 		if (t instanceof IOException) {
 			return (IOException) t;
 		} else {
-			return new IOException(t);
+			return new IOException(null, t);
 		}
 	}
 	

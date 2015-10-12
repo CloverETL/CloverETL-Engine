@@ -30,11 +30,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jetel.util.file.WcardPattern;
-import org.jets3t.service.S3ServiceException;
-import org.jets3t.service.ServiceException;
-import org.jets3t.service.impl.rest.httpclient.RestS3Service;
-import org.jets3t.service.model.S3Object;
-import org.jets3t.service.security.AWSCredentials;
+
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.internal.Constants;
+import com.amazonaws.services.s3.iterable.S3Objects;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 public class S3InputStream extends InputStream {
 	
@@ -55,7 +59,7 @@ public class S3InputStream extends InputStream {
 	
 	public static boolean isS3File(URL url) {
 		String hostname = url.getHost();
-		return hostname.endsWith(org.jets3t.service.Constants.S3_DEFAULT_HOSTNAME);
+		return hostname.endsWith(Constants.S3_HOSTNAME);
 	}
 	
 	public static String getAccessKey(URL url) {
@@ -97,15 +101,15 @@ public class S3InputStream extends InputStream {
 	public static String getBucket(URL url) {
 		String host = url.getHost();
 		
-		if (!host.endsWith(org.jets3t.service.Constants.S3_DEFAULT_HOSTNAME)) {
+		if (!host.endsWith(Constants.S3_HOSTNAME)) {
 			throw new IllegalArgumentException("Not an Amazon S3 host");
 		}
-		else if (host.equals(org.jets3t.service.Constants.S3_DEFAULT_HOSTNAME)) {
+		else if (host.equals(Constants.S3_HOSTNAME)) {
 			throw new IllegalArgumentException("No bucket name specified in the host address.");
 		}
 		else {
 			int hostLen = host.length();
-			int dividingDotPos = hostLen - org.jets3t.service.Constants.S3_DEFAULT_HOSTNAME.length();
+			int dividingDotPos = hostLen - Constants.S3_HOSTNAME.length();
 			
 			return host.substring(0, dividingDotPos - 1);
 		}
@@ -122,14 +126,14 @@ public class S3InputStream extends InputStream {
 		String accessKey = getAccessKey(url);
 		String secretKey = getSecretKey(url);
 		
-		AWSCredentials credentials = new AWSCredentials(accessKey, secretKey);
-		RestS3Service service;
+		AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
+		AmazonS3Client service;
 		try {
-			service = new RestS3Service(credentials);
+			service = new AmazonS3Client(credentials);
 			String bucket = getBucket(url);
-			S3Object[] s3objects = service.listObjects(bucket);
+			S3Objects listing = S3Objects.inBucket(service, bucket);
 			
-			for (S3Object s3object : s3objects) {
+			for (S3ObjectSummary s3object : listing) {
 				String key = s3object.getKey();
 				if (WcardPattern.checkName(filePattern, key)) {
 					String wholeURL = url.getProtocol() + "://"
@@ -142,7 +146,7 @@ public class S3InputStream extends InputStream {
 				}
 			}
 			
-		} catch (S3ServiceException e) {
+		} catch (AmazonClientException e) {
 			throw new IOException(e);
 		}
 		
@@ -166,8 +170,8 @@ public class S3InputStream extends InputStream {
 			is = connection.getInputStream();
 		}
 		else {
-			AWSCredentials credentials = new AWSCredentials(accessKey, secretKey);
-			RestS3Service service = new RestS3Service(credentials);
+			AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
+			AmazonS3Client service = new AmazonS3Client(credentials);
 			
 			String bucket = getBucket(url);
 			String file = url.getFile();
@@ -179,13 +183,13 @@ public class S3InputStream extends InputStream {
 			
 			try {
 				getobject = service.getObject(bucket, file);
-			} catch (S3ServiceException e) {
+			} catch (AmazonClientException e) {
 				throw new IOException(e);
 			}
 			
 			try {
-				is = getobject.getDataInputStream();
-			} catch (ServiceException e) {
+				is = getobject.getObjectContent();
+			} catch (Exception e) {
 				throw new IOException(e);
 			}
 		}
