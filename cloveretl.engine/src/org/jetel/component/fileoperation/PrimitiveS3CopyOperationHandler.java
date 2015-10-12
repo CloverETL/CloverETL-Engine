@@ -31,8 +31,10 @@ import org.jetel.component.fileoperation.pool.PooledS3Connection;
 import org.jetel.component.fileoperation.result.DeleteResult;
 import org.jetel.component.fileoperation.result.InfoResult;
 import org.jetel.component.fileoperation.result.ListResult;
+import org.jetel.util.protocols.amazon.S3Utils;
 import org.jetel.util.stream.StreamUtils;
-import org.jets3t.service.S3Service;
+
+import com.amazonaws.services.s3.transfer.TransferManager;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -62,7 +64,7 @@ public class PrimitiveS3CopyOperationHandler extends PrimitiveS3OperationHandler
 				}
 			}
 
-			S3Service service = connection.getService();
+			TransferManager transferManager = connection.getTransferManager();
 
 			CloverURI sourceUri = CloverURI.createSingleURI(source);
 			File file = null;
@@ -73,7 +75,7 @@ public class PrimitiveS3CopyOperationHandler extends PrimitiveS3OperationHandler
 				ex1 = ex;
 			}
 			if (file != null) {
-				return copyLocalFile(file, target, service);
+				return copyLocalFile(file, target, transferManager);
 			} else {
 				// conversion to File failed (remote sandbox?)
 				// perform regular stream copy instead
@@ -103,14 +105,14 @@ public class PrimitiveS3CopyOperationHandler extends PrimitiveS3OperationHandler
 		}
 	}
 	
-	private URI copyLocalFile(File source, URI target, S3Service service) throws IOException {
+	private URI copyLocalFile(File source, URI target, TransferManager transferManager) throws IOException {
 		String[] targetPath = getPath(target);
 		if (targetPath.length == 1) {
 			throw new IOException("Cannot write to " + target);
 		}
 		String targetBucket = targetPath[0];
 		String targetKey = targetPath[1];
-		putObject(service, source, targetBucket, targetKey);
+		S3Utils.uploadFile(transferManager, source, targetBucket, targetKey);
 		return target;
 	}
 

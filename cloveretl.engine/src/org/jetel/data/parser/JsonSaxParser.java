@@ -28,10 +28,6 @@ import java.util.Deque;
 import javax.xml.parsers.SAXParser;
 
 import org.apache.xmlbeans.impl.common.XMLChar;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonToken;
 import org.jetel.util.string.TagName;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -41,6 +37,11 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.DefaultHandler;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 
 /**
  * @author dpavlis (info@cloveretl.com)
