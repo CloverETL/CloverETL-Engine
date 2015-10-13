@@ -340,6 +340,9 @@ public class JsonSaxParser extends SAXParser {
 				processScalarValue(parser);
 				handler.endElement(NAMESPACE_URI, normalizeElementName(name), normalizeElementName(name));
 			}
+			default:
+				// do nothing
+				break;
 			}
 		}
 	}
