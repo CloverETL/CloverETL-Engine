@@ -203,7 +203,7 @@ if( env['ComSpec'] ) {
 } else if (System.properties['os.name'].toLowerCase().contains('mac')) {
 	antArgs += "-Dscenarios=after-commit.ts"
 	// mac
-	antC = ["${env['ANT_HOME']}/bin/ant",
+	antC = ["/jenkins/data/tools/ant-1.7/bin/ant",
 		antTarget
 	]
 } else {
