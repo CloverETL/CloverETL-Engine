@@ -309,6 +309,9 @@ public class JsonSaxParser extends SAXParser {
 			}
 			break;
 		}
+		default:
+			// do nothing
+			break;
 		}
 		if (token.isScalarValue()) {
 			String valueName = names.getLast();
