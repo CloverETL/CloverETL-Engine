@@ -54,8 +54,8 @@ println "buildNumber   = " + buildNumber
 println "javaVersion   = " + javaVersion 
 println "====================================================="
 
-//println "Environment variables:"
-//System.getenv().each{ println "\t${it}" }
+println "Environment variables:"
+System.getenv().each{ println "\t${it}" }
 
 baseD = new File( new File('').absolutePath )
 engineD = new File( baseD, "cloveretl.engine" ) 
@@ -82,7 +82,7 @@ if( !runTests ){
 	if( jobGoal == "after-commit" ) {
 		antTarget = "reports-hudson"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.7-Sun"
-		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,com/opensys/cloveretl/component/fileoperation/S3OperationHandlerTest.java,org/jetel/component/fileoperation/SFTPOperationHandlerTest.java,org/jetel/component/fileoperation/FTPOperationHandlerTest.java,com/opensys/cloveretl/component/EmailFilterTest.java"
+		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/SFTPOperationHandlerTest.java,org/jetel/component/fileoperation/FTPOperationHandlerTest.java,com/opensys/cloveretl/component/EmailFilterTest.java"
 		antArgs += "-Druntests-target=runtests-scenario-after-commit"
 	} else if( jobGoal == "optimalized"){
 		antTarget = "reports-hudson-optimalized"
@@ -203,7 +203,7 @@ if( env['ComSpec'] ) {
 } else if (System.properties['os.name'].toLowerCase().contains('mac')) {
 	antArgs += "-Dscenarios=after-commit.ts"
 	// mac
-	antC = ["${env['ANT_HOME']}/bin/ant",
+	antC = ["/jenkins/data/tools/ant-1.7/bin/ant",
 		antTarget
 	]
 } else {
