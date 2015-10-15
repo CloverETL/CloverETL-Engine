@@ -43,6 +43,8 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * @author dpavlis (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -173,6 +175,7 @@ public class JsonSaxParser extends SAXParser {
         return name + XML_ELEM_SUFFIX + depth; 
 	}
 	
+	@SuppressFBWarnings("SF_SWITCH_NO_DEFAULT")
 	protected void processToken(final JsonToken token, JsonParser parser, Deque<JsonToken> tokens, Deque<String> names, Deque<Integer> depthCounter) 
 		throws JsonParseException, IOException, SAXException {
 		
@@ -309,9 +312,6 @@ public class JsonSaxParser extends SAXParser {
 			}
 			break;
 		}
-		default:
-			// do nothing
-			break;
 		}
 		if (token.isScalarValue()) {
 			String valueName = names.getLast();
@@ -343,9 +343,6 @@ public class JsonSaxParser extends SAXParser {
 				processScalarValue(parser);
 				handler.endElement(NAMESPACE_URI, normalizeElementName(name), normalizeElementName(name));
 			}
-			default:
-				// do nothing
-				break;
 			}
 		}
 	}
