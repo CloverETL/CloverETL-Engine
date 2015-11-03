@@ -706,7 +706,7 @@ public class TransformationGraphAnalyzer {
 		
 		if (graph.getStaticJobType().isSubJob()) {
 			// find blocked ports of subgraphinput and subgraphoutput
-			Node subInput = SubgraphUtils.getSubgraphInput(graph);
+			Node subInput = SubgraphUtils.getSubgraphInput(graph);  // CLO-7435
 			if (subInput != null) {
 				for (Entry<Integer, InputPort> entry : subInput.getInputPorts().entrySet()) {
 					Node precedingComponent = entry.getValue().getEdge().getWriter();
