@@ -21,6 +21,7 @@ package org.jetel.component.fileoperation;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.regex.Pattern;
@@ -52,6 +53,7 @@ public class URIUtils {
 	public static final String CHARSET = "UTF-8"; //$NON-NLS-1$
 	
 	private static final Pattern PLUS_PATTERN = Pattern.compile("\\+"); //$NON-NLS-1$
+	private static final Pattern SPACE_PATTERN = Pattern.compile(" "); //$NON-NLS-1$
 	
 	private static final String ENCODED_SPACE = "%20"; //$NON-NLS-1$
 
@@ -133,5 +135,18 @@ public class URIUtils {
 		} catch (UnsupportedEncodingException e) {
 			return str;
 		}
+	}
+
+	/**
+	 * CLO-3052: Generic URL.toURI() method that escapes space characters.
+	 * 
+	 * @param url
+	 * @return
+	 * @throws URISyntaxException
+	 */
+	public static URI toURI(URL url) throws URISyntaxException {
+		String uri = url.toString();
+		uri = SPACE_PATTERN.matcher(uri).replaceAll(ENCODED_SPACE);
+		return new URI(uri); // URI can't contain spaces
 	}
 }
