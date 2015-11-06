@@ -156,13 +156,19 @@ public class TransformationGraphAnalyzer {
 	 */
 	private static void consolidateSubgraphPorts(TransformationGraph graph) {
 		if (graph.getStaticJobType().isSubJob()) {
-			for (int i = graph.getSubgraphInputPorts().getPorts().size(); i <= graph.getSubgraphInputComponent().getOutputPortsMaxIndex(); i++) {
-				graph.getSubgraphInputPorts().getPorts().add(
-						new SubgraphInputPort(graph.getSubgraphInputPorts(), i, true, true, true));
+			Node subgraphInput = SubgraphUtils.getSubgraphInput(graph); // CLO-7435
+			if (subgraphInput != null) {
+				for (int i = graph.getSubgraphInputPorts().getPorts().size(); i <= subgraphInput.getOutputPortsMaxIndex(); i++) {
+					graph.getSubgraphInputPorts().getPorts().add(
+							new SubgraphInputPort(graph.getSubgraphInputPorts(), i, true, true, true));
+				}
 			}
-			for (int i = graph.getSubgraphOutputPorts().getPorts().size(); i <= graph.getSubgraphOutputComponent().getInputPortsMaxIndex(); i++) {
-				graph.getSubgraphOutputPorts().getPorts().add(
-						new SubgraphOutputPort(graph.getSubgraphOutputPorts(), i, true, true, true));
+			Node subgraphOutput = SubgraphUtils.getSubgraphOutput(graph);
+			if (subgraphOutput != null) {
+				for (int i = graph.getSubgraphOutputPorts().getPorts().size(); i <= subgraphOutput.getInputPortsMaxIndex(); i++) {
+					graph.getSubgraphOutputPorts().getPorts().add(
+							new SubgraphOutputPort(graph.getSubgraphOutputPorts(), i, true, true, true));
+				}
 			}
 		}
 	}
@@ -700,20 +706,22 @@ public class TransformationGraphAnalyzer {
 		
 		if (graph.getStaticJobType().isSubJob()) {
 			// find blocked ports of subgraphinput and subgraphoutput
-			Node subInput = graph.getSubgraphInputComponent();
-			Node subOutput = graph.getSubgraphOutputComponent();
-
-			for (Entry<Integer, InputPort> entry : subInput.getInputPorts().entrySet()) {
-				Node precedingComponent = entry.getValue().getEdge().getWriter();
-				if (precedingComponent.getEnabled() == EnabledEnum.TRASH || blockedIds.contains(precedingComponent.getId())) {
-					subgraphInputBlockedPorts.add(entry.getKey());
+			Node subInput = SubgraphUtils.getSubgraphInput(graph);  // CLO-7435
+			if (subInput != null) {
+				for (Entry<Integer, InputPort> entry : subInput.getInputPorts().entrySet()) {
+					Node precedingComponent = entry.getValue().getEdge().getWriter();
+					if (precedingComponent.getEnabled() == EnabledEnum.TRASH || blockedIds.contains(precedingComponent.getId())) {
+						subgraphInputBlockedPorts.add(entry.getKey());
+					}
 				}
 			}
-
-			for (Entry<Integer, InputPort> entry : subOutput.getInputPorts().entrySet()) {
-				Node precedingComponent = entry.getValue().getEdge().getWriter();
-				if (precedingComponent.getEnabled() == EnabledEnum.TRASH || blockedIds.contains(precedingComponent.getId())) {
-					subgraphOutputBlockedPorts.add(entry.getKey());
+			Node subOutput = SubgraphUtils.getSubgraphOutput(graph);
+			if (subOutput != null) {
+				for (Entry<Integer, InputPort> entry : subOutput.getInputPorts().entrySet()) {
+					Node precedingComponent = entry.getValue().getEdge().getWriter();
+					if (precedingComponent.getEnabled() == EnabledEnum.TRASH || blockedIds.contains(precedingComponent.getId())) {
+						subgraphOutputBlockedPorts.add(entry.getKey());
+					}
 				}
 			}
 		}

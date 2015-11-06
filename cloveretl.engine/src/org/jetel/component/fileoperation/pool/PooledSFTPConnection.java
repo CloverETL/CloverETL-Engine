@@ -227,7 +227,11 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 				List<String> names = new ArrayList<>(keys.keySet());
 				Collections.sort(names); // CLO-4868: add the keys in alphabetical order
 				for (String name: names) {
-					addIdentity(jsch, keys.get(name));
+					try {
+						addIdentity(jsch, keys.get(name));
+					} catch (IOException e) {
+						log.warn(e.getMessage(), e);
+					}
 				}
 			}
 		} else if (log.isDebugEnabled()) {
@@ -249,7 +253,7 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 		}
 	}
 
-	private void addIdentity(JSch jsch, URI key) {
+	private void addIdentity(JSch jsch, URI key) throws IOException {
 		try {
 			String keyName = key.toString();
 			log.debug("Adding new identity from " + keyName);
@@ -258,7 +262,7 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 				jsch.addIdentity(keyName, prvKey, null, null);
 			}
 		} catch (Exception e) {
-			log.warn("Failed to read private key", e);
+			throw new IOException("Failed to read private key", e);
 		}
 	}
 	

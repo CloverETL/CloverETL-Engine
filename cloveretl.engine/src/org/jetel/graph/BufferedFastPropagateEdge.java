@@ -27,6 +27,8 @@ import org.jetel.data.PersistentBufferQueue;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.bytes.CloverBuffer;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * This edge implementation ensures that written data records are immediately available for reading thread (fast-propagate)
  * and ensures that writing operation never blocks the writing thread - internal unlimited cache is used.
@@ -101,6 +103,7 @@ public class BufferedFastPropagateEdge extends EdgeBase {
 		persistentBufferQueue = new PersistentBufferQueue();
 	}
 
+	@SuppressFBWarnings("IS2_INCONSISTENT_SYNC")
 	@Override
 	public void preExecute() {
 		super.preExecute();
@@ -270,6 +273,10 @@ public class BufferedFastPropagateEdge extends EdgeBase {
 			//this is necessary to unblock the reading queue, since the reading thread can be now already stuck on empty queue
 			readingQueue.setBlocking(false);
 			writingQueue = theOtherQueue(writingQueue);
+			//synchronise capacity of both writingQueue and readingQueue (CLO-7103)
+			if (writingQueue.getCapacity() < readingQueue.getCapacity()) {
+				writingQueue.expandCapacity(readingQueue.getCapacity());
+			}
 		} else {
 			if (verbose) {
 				//in case verbose mode is on, time of data writing is added to writer waiting time
@@ -285,6 +292,7 @@ public class BufferedFastPropagateEdge extends EdgeBase {
 		writingQueue.clear();
  	}
 	
+	@SuppressFBWarnings("IS2_INCONSISTENT_SYNC")
 	@Override
 	public void eof() throws IOException, InterruptedException {
 		//EOF annotation is written to writing queue
