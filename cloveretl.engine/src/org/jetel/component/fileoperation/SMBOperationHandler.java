@@ -102,7 +102,7 @@ public class SMBOperationHandler implements IOperationHandler {
 		}
 	}
 	
-	private static SmbFile toFile(URI fileUri) throws MalformedURLException {
+	public static SmbFile toFile(URI fileUri) throws MalformedURLException {
 		return new SmbFile(decodeURI(fileUri));
 	}
 
