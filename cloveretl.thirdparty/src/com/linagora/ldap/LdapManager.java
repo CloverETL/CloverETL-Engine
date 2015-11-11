@@ -21,7 +21,9 @@ package com.linagora.ldap;
 import java.io.IOException;
 import java.util.Hashtable;
 
+import javax.naming.CompositeName;
 import javax.naming.Context;
+import javax.naming.Name;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -249,7 +251,8 @@ public class LdapManager {
 	 */
 	public boolean exists(String nodeDN) throws NamingException {
 		try {
-			ctx.search(nodeDN, "(objectclass=*)", existanceSearchControl);
+			Name n = new CompositeName().add(nodeDN);
+			ctx.search(n, "(objectclass=*)", existanceSearchControl);
 			return true;
 		} catch (NameNotFoundException e) {//it's *BAD*.
 			return false;
@@ -292,7 +295,8 @@ public class LdapManager {
 
 		constraints.setReturningAttributes(returnAttributes);
 
-		NamingEnumeration results = ctx.search(searchbase, filter, constraints);
+		Name n = new CompositeName().add(searchbase);
+		NamingEnumeration results = ctx.search(n, filter, constraints);
 
 		return results;
 
@@ -324,7 +328,7 @@ public class LdapManager {
 	
 	
 	/**
-	 * Convenient search fonction with default limit and timeout
+	 * Convenient search function with default limit and timeout
 	 * @param searchbase
 	 * @param filter
 	 * @param returnAttributes
@@ -440,7 +444,8 @@ public class LdapManager {
 	 *         objects.
 	 */
 	public synchronized Attributes getAttributes(String dn, String[] returnAttributes) throws NamingException {
-		return ctx.getAttributes(dn, returnAttributes);
+		Name n = new CompositeName().add(dn);
+		return ctx.getAttributes(n, returnAttributes);
 	}
 
 	/**
@@ -473,7 +478,8 @@ public class LdapManager {
 	 */
 	public void modifyAttributes(String dn, int mod_type, Attributes attr)
 			throws NamingException {
-		ctx.modifyAttributes(dn, mod_type, attr);
+		Name n = new CompositeName().add(dn);
+		ctx.modifyAttributes(n, mod_type, attr);
 	}
 
 	/**
@@ -505,7 +511,8 @@ public class LdapManager {
 	 * @param atts attributes for the new object
 	 */
 	public void addEntry(String dn, Attributes atts) throws NamingException {
-		ctx.createSubcontext(dn, atts);
+		Name n = new CompositeName().add(dn);
+		ctx.createSubcontext(n, atts);
 	}
 
 	/**
@@ -515,7 +522,8 @@ public class LdapManager {
 	 * @param dn
 	 */
 	public void deleteEntry(String dn) throws NamingException {
-		ctx.destroySubcontext(dn);
+		Name n = new CompositeName().add(dn);
+		ctx.destroySubcontext(n);
 	}
 
 	public int getPageSize() {
