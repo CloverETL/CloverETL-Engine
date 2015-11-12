@@ -54,13 +54,17 @@ public class EdgeDebugReader {
     /** Data records source */
     private InputStream inputStream;
     
-    public EdgeDebugReader(String debugFile) {
+    private String fieldSelector[];
+    
+    public EdgeDebugReader(String debugFile, String fieldSelector[]) {
         this.debugFile = debugFile;
+        this.fieldSelector = fieldSelector;
     }
     
-    public EdgeDebugReader(InputStream inputStream) {
+    public EdgeDebugReader(InputStream inputStream, String fieldSelector[]) {
     	this.inputStream = inputStream;
     	this.debugFile = null;
+    	this.fieldSelector = fieldSelector;
     }
     
     public void init() throws ComponentNotReadyException, IOException, InterruptedException {
@@ -70,6 +74,7 @@ public class EdgeDebugReader {
     	
     	parser = new CloverDebugParser();
     	parser.setDataSource(inputStream);
+    	parser.setFieldSelector(fieldSelector);
     	parser.init();
     	metadata = parser.getMetadata();
     }
