@@ -39,7 +39,10 @@ public class CloverDebugParser extends CloverDataParser implements DebugParser {
 	private DataRecordMetadata externalMetadata;
 	private DataRecord tmpRecord = null;
 	private DataRecord externalRecord = null;
+	private String fieldSelector[];
 
+	private int fieldIndices[];
+	
 	/**
 	 * @param metadata
 	 */
@@ -81,8 +84,14 @@ public class CloverDebugParser extends CloverDataParser implements DebugParser {
 		if (tmpRecord == null) {
 			return null;
 		}
-		for (int i = 0; i < record.getNumFields(); i++) {
-			record.getField(i).setValue(tmpRecord.getField(i+1));
+		if (fieldIndices != null) {
+			for (int i : fieldIndices) {
+				record.getField(i).setValue(tmpRecord.getField(i + 1));
+			}
+		} else {
+			for (int i = 0; i < record.getNumFields(); i++) {
+				record.getField(i).setValue(tmpRecord.getField(i + 1));
+			}
 		}
 		return record;
 	}
@@ -99,12 +108,35 @@ public class CloverDebugParser extends CloverDataParser implements DebugParser {
 		this.metadata = getVersion().metadata;
 		this.externalMetadata = removeFirstField(metadata);
 	}
+	
+	/**
+	 * Sets field selector - names of the fields to be read into parsed record,
+	 * if not set, all fields are read.
+	 * 
+	 * @param fieldSelector
+	 */
+	public void setFieldSelector(String[] fieldSelector) {
+		this.fieldSelector = fieldSelector;
+	}
 
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
 		tmpRecord = DataRecordFactory.newRecord(metadata);
 		externalRecord = DataRecordFactory.newRecord(externalMetadata);
+		
+		if (fieldSelector != null && fieldSelector.length > 0) {
+			int indices[] = new int[fieldSelector.length];
+			for (int i = 0; i < fieldSelector.length; ++i) {
+				int index = externalMetadata.getFieldPosition(fieldSelector[i]);
+				if (index >= 0) {
+					indices[i] = index;
+				} else {
+					throw new ComponentNotReadyException("no such field: " + fieldSelector[i] + " in " + externalMetadata.getName());
+				}
+			}
+			fieldIndices = indices;
+		}
 	}
 	
 	private static DataRecordMetadata removeFirstField(DataRecordMetadata metadata) {
