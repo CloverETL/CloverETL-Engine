@@ -1944,7 +1944,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/CloverDataWriter" name="CloverDataWriter" type="CLOVER_WRITER" className="org.jetel.component.CloverDataWriter">
+	  <ETLComponent category="writers" iconPath="icons/writers/CloverDataWriter" name="CloverDataWriter" type="CLOVER_WRITER" className="org.jetel.component.CloverDataWriter" viewPlainData="false">
 	    <shortDescription>Writes data to Clover files.</shortDescription>
 	    <description>Receives data through connected input port and writes data records to output files in internal binary Clover data format.</description>
 	    <inputPorts>
@@ -2023,7 +2023,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/CloverDataReader" name="CloverDataReader" type="CLOVER_READER" className="org.jetel.component.CloverDataReader">
+	  <ETLComponent category="readers" iconPath="icons/readers/CloverDataReader" name="CloverDataReader" type="CLOVER_READER" className="org.jetel.component.CloverDataReader" viewPlainData="false">
 	    <shortDescription>Reads data from Clover files.</shortDescription>
 	    <description>Reads data from files written in internal binary Clover data format and sends data records to all connected output ports.</description>
 	    <inputPorts>
