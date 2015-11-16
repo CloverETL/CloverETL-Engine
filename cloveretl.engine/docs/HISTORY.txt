@@ -2,6 +2,18 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-0-8
+---------
+
+* FIXES:
+	- LDAP components can't handle values with forward slashes	
+	- SQL validation doesn't work when SQL code is valid
+	- backported BufferedFastPropagateEdge does not correctly manipulate with big records
+	- DBOutputTable: 'Returning' does not return input fields unless some fields are generated in db
+	- MSSQLDataWriter corrupts date format defined on incoming metadata
+	- Incorrect handling of escape sequences in smb protocol File URL
+	- RETURNING clause does not work with INSERT on PostgreSQL
+
 REL-4-0-7
 ---------
 
