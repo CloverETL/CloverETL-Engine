@@ -148,7 +148,8 @@ public class GraphParameter {
 	 */
 	public String getValueResolved(RefResFlag flag) {
 		if (!hasDynamicValue()) {
-			return getParentGraph().getPropertyRefResolver().getResolvedPropertyValue(name, flag);
+			String val = getParentGraph().getPropertyRefResolver().getResolvedPropertyValue(name, flag);
+			return val != null ? val : "";
 		} else {
 			return dynamicValue.getValue();
 		}

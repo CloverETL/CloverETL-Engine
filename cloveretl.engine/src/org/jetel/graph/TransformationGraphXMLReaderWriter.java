@@ -589,6 +589,7 @@ public class TransformationGraphXMLReaderWriter {
 		// loop through all Metadata elements & create appropriate Metadata objects
 		for (int i = 0; i < metadataElements.size(); i++) {
 			ComponentXMLAttributes attributes = new ComponentXMLAttributes(metadataElements.get(i), graph);
+			recordMetadata = null;
 			try {
 				// process metadata element attributes "id" & "fileURL"
 				metadataID = attributes.getString("id");

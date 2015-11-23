@@ -2,6 +2,14 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-1-1
+---------
+
+* Anonymous 3-day trial available
+* XML/JSON - fixed issues with parsing into lists
+* COMPATIBILITY:
+	- JSONExtract/XMLExtract - auto-mapping by name does not apply for parent elements
+
 REL-4-1-0
 ---------
 
