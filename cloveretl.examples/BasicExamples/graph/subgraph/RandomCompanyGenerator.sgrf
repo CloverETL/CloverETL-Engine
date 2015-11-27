@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="dpavlis" created="Wed Jul 23 09:52:36 CEST 2014" guiVersion="4.1.0" id="1406103185208" licenseCode="CLP1DJAVLI58889773BY" licenseType="Commercial" modified="Fri Jul 24 12:40:09 CEST 2015" modifiedBy="magda" name="RandomPersonGenerator" nature="subgraph" revision="1.14" showComponentDetails="true">
+<Graph author="dpavlis" created="Wed Jul 23 09:52:36 CEST 2014" guiVersion="4.0.0.M2" id="1406103185208" licenseType="Commercial" modified="Fri Jul 25 14:11:53 CEST 2014" modifiedBy="User" name="RandomPersonGenerator" nature="subgraph" revision="1.13" showComponentDetails="true">
 <Global>
-<outputPorts>
-<singlePort connected="true" name="0"/>
-</outputPorts>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="Company" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
 <Field name="company" type="string"/>
@@ -26,9 +23,7 @@
 </Record>
 </Metadata>
 <GraphParameters>
-<GraphParameter label="Number of records to generate" name="RECORDS_NUMBER" public="true" required="false" value="100">
-<ComponentReference referencedComponent="DATA_GENERATOR" referencedProperty="recordsNumber"/>
-</GraphParameter>
+<GraphParameter label="Number of records to generate" name="RECORDS_NUMBER" public="true" required="false" value="100"/>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="100" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Comment" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="14" width="400" x="286" y="48">
@@ -48,6 +43,6 @@ By default, 100 records are generated. This may be changed to whatever number.]]
 </Node>
 <Node debugOutput="true" enabled="enabled" guiName="Trash" guiX="941" guiY="203" id="TRASH" type="TRASH"/>
 <Edge fromNode="DATA_GENERATOR:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="SUBGRAPH_OUTPUT0:0"/>
-<Edge debugMode="true" fromNode="SUBGRAPH_OUTPUT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata1" toNode="TRASH:0"/>
+<Edge debugMode="true" fromNode="SUBGRAPH_OUTPUT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="TRASH:0"/>
 </Phase>
 </Graph>
