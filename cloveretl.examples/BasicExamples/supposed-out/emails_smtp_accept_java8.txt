@@ -1,8 +1,0 @@
-info@javlin.eu
-test@javlin.eu
-info@opensys.com
-info@opensys.com
-sales@opensys.com
-nonexistent@opensys.com
-test@cloveretl.net
-info@javlin.cz
