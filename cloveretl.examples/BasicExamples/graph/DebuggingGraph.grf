@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="4.1.0" id="1280331230946" licenseCode="CLP1DJAVLI58889773BY" licenseType="Commercial" modified="Fri Jul 24 11:53:33 CEST 2015" modifiedBy="magda" name="CreatingFixedMixedCust" revision="1.124" showComponentDetails="true">
+<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="4.0.0.M1" id="1280331230946" licenseType="Commercial" modified="Tue Mar 25 14:38:30 CET 2014" modifiedBy="User" name="CreatingFixedMixedCust" revision="1.123" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/customers_fixed.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata1"/>
 <GraphParameters>
-<GraphParameter name="sample" value="0.1">
-<SingleType name="decimalStr"/>
-</GraphParameter>
+<GraphParameter name="sample" value="0.1"/>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
 <Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" enabled="true" folded="false" height="63" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="12" title="This graph demonstrates raising an error!" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="758" x="18" y="5">
@@ -113,8 +111,8 @@ function integer transform() {
 <Node enabled="enabled" guiName="convert to fixed" guiX="219" guiY="213" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
 <Node enabled="enabled" guiName="the other records" guiX="624" guiY="348" id="TRASH0" type="TRASH"/>
 <Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
-<Edge debugFilterExpression="$0.gender == &quot;M&quot;" debugLastRecords="false" debugMaxRecords="25" debugMode="false" debugSampleData="false" fromNode="REFORMAT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata0" toNode="DATA_WRITER0:0"/>
-<Edge debugFilterExpression="$0.income &lt; 30000 AND $0.gender=='F'" debugLastRecords="true" debugMaxRecords="100" debugMode="true" debugSampleData="true" fromNode="REFORMAT0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 1 (out)" persistedImplicitMetadata="Metadata0" toNode="TRASH0:0"/>
+<Edge debugFilterExpression="$0.gender == &quot;M&quot;" debugLastRecords="false" debugMaxRecords="25" debugMode="false" debugSampleData="false" fromNode="REFORMAT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge debugFilterExpression="$0.income &lt; 30000 AND $0.gender=='F'" debugLastRecords="true" debugMaxRecords="100" debugMode="true" debugSampleData="true" fromNode="REFORMAT0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 1 (out)" toNode="TRASH0:0"/>
 <Edge debugFilterExpression="$0.age&gt; 25 AND $0.age&lt; 35 " debugLastRecords="false" debugMaxRecords="33" debugMode="true" debugSampleData="true" fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
 </Phase>
 <Phase number="1">
