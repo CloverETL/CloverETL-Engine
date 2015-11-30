@@ -56,7 +56,6 @@ public class CloverDebugParser extends CloverDataParser implements DebugParser {
 		if (tmpRecord == null) {
 			throw new NoDataAvailableException();
 		}
-		tmpRecord.getField(0).getValue();
 	}
 
 	@Override

@@ -428,6 +428,10 @@ public class CloverDataFormatter extends AbstractFormatter {
 	public boolean isDirect() {
 		return this.raw;
 	}
+	
+	public void setDirect(boolean direct) {
+		this.raw = direct;
+	}
 
 	/**
 	 * @param compress the compress to set

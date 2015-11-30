@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="dpavlis" created="Wed Jul 23 09:52:36 CEST 2014" guiVersion="4.1.0" id="1406104458027" licenseCode="CLP1DJAVLI58889773BY" licenseType="Commercial" modified="Tue Oct 13 22:37:10 CEST 2015" modifiedBy="dpavlis" name="RandomPersonsUS" revision="1.26" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/orders_amounts.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/orders.fmt" id="Metadata3"/>
+<Metadata fileURL="${META_DIR}/products.fmt" id="Metadata4"/>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="orders" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="orderid" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" format="yyyy-MM-dd" name="orderdate" nullable="true" shift="0" size="0" type="date"/>
+<Field eofAsDelimiter="false" name="customerid" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" length="14" name="netamount" nullable="true" scale="2" shift="0" size="0" type="decimal"/>
+<Field eofAsDelimiter="false" length="14" name="tax" nullable="true" scale="2" shift="0" size="0" type="decimal"/>
+<Field eofAsDelimiter="false" length="14" name="totalamount" nullable="true" scale="2" shift="0" size="0" type="decimal"/>
+</Record>
+</Metadata>
+<Metadata id="Person" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="," name="Person" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="firstname" type="string"/>
+<Field name="lastname" type="string"/>
+<Field name="address" type="string"/>
+<Field name="city" type="string"/>
+<Field name="zip" type="string"/>
+<Field name="email" type="string"/>
+<Field name="phone" type="string"/>
+<Field name="fax" type="string"/>
+<Field name="address1" type="string"/>
+<Field name="address2" type="string"/>
+<Field name="statecode" type="string"/>
+<Field name="birthdate" trim="true" type="date"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata5">
+<Record fieldDelimiter="|" name="recordName1" recordDelimiter="\n" type="delimited">
+<Field name="CustID" type="string"/>
+<Field name="CustNo" type="integer"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="disabled" folded="false" height="183" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="299" x="677" y="-15">
+<attr name="text"><![CDATA[Uses a third party library to generated the data  - located in "trans" directory.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="disabled" folded="false" height="183" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="343" x="47" y="-15">
+<attr name="text"><![CDATA[Generate random test data that are meaningfull. The generated data represent persons and companies.]]></attr>
+</Note>
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="disabled" folded="false" height="60" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Test Data Generator" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="47" y="-74">
+<attr name="text"><![CDATA[Generate random but meaningful test data.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="disabled" folded="false" height="183" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Highlights" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="289" x="389" y="-15">
+<attr name="text"><![CDATA[Number of generated records is configurable on the subgraphs.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node fileURL="${DATATMP_DIR}/orders_preproc.dat" guiName="CloverDataWriter" guiX="994" guiY="384" id="CLOVER_DATA_WRITER" type="CLOVER_WRITER"/>
+<Node enabled="disabled" guiName="Combine" guiX="646" guiY="472" id="COMBINE" type="COMBINE">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.customerid = $in.0.customerid;
+	$out.0.firstname = $in.1.firstname;
+	$out.0.lastname = $in.1.lastname;
+	$out.0.address1 = $in.1.address1;
+	$out.0.address2 = $in.1.address2;
+	$out.0.city = $in.1.city;
+	$out.0.state = $in.1.statecode;
+	$out.0.zip = str2integer($in.1.zip);
+	$out.0.country = "USA";
+	$out.0.region = $in.0.region;
+	$out.0.email = $in.1.email;
+	$out.0.phone = $in.1.phone;
+	$out.0.creditcardtype = $in.0.creditcardtype;
+	$out.0.creditcard = $in.0.creditcard;
+	$out.0.creditcardexpiration = $in.0.creditcardexpiration;
+	$out.0.username = $in.0.username;
+	$out.0.password = $in.0.password;
+	$out.0.age = $in.0.age;
+	$out.0.income = $in.0.income;
+	$out.0.gender = $in.0.gender;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="disabled" fileURL="${DATAIN_DIR}/delimited/customers_region_BAD.csv" guiName="reads customers1" guiX="74" guiY="472" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="disabled" fileURL="${DATAIN_DIR}/delimited/orders.csv" guiName="reads orders" guiX="105" guiY="576" id="DATA_READER2" type="DATA_READER"/>
+<Node dedupKey="CustID(a)" guiName="Dedup" guiX="890" guiY="193" id="DEDUP" keep="first" type="DEDUP"/>
+<Node guiName="FastSort" guiX="807" guiY="390" id="FAST_SORT" sortKey="CustID(a)" type="FAST_SORT"/>
+<Node charset="UTF-8" enabled="disabled" fileURL="${DATAOUT_DIR}/random_companies.txt" guiName="random companies" guiX="389" guiY="334" id="RANDOM_COMPANIES" type="DATA_WRITER"/>
+<Node __RECORDS_NUMBER="150" enabled="disabled" guiName="RandomCompanyGenerator" guiX="47" guiY="334" id="RANDOM_COMPANY_GENERATOR" jobURL="${SUBGRAPH_DIR}/RandomCompanyGenerator.sgrf" type="SUBGRAPH"/>
+<Node charset="ISO-8859-1" enabled="disabled" fileURL="${DATAOUT_DIR}/random_persons.csv" guiName="random persons" guiX="646" guiY="210" id="RANDOM_PERSONS" quotedStrings="true" type="DATA_WRITER"/>
+<Node __RECORDS_NUMBER="10002" enabled="disabled" guiName="RandomPersonGenerator" guiX="47" guiY="210" id="RANDOM_PERSON_GENERATOR" jobURL="${SUBGRAPH_DIR}/RandomPersonGenerator.sgrf" type="SUBGRAPH"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Orders.xlsx" guiName="Read Orders" guiX="566" guiY="334" id="READ_ORDERS1" sheet="*" type="SPREADSHEET_READER">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mapping>
+    <globalAttributes>
+        <orientation>VERTICAL</orientation>
+        <step>1</step>
+        <writeHeader>true</writeHeader>
+    </globalAttributes>
+    <defaultSkip>0</defaultSkip>
+    <headerGroups>
+        <headerGroup skip="0">
+            <autoMappingType>ORDER</autoMappingType>
+            <headerRanges>
+                <headerRange begin="A1"/>
+                <headerRange begin="B1"/>
+                <headerRange begin="C1"/>
+                <headerRange begin="D1"/>
+                <headerRange begin="E1"/>
+                <headerRange begin="F1"/>
+                <headerRange begin="G1"/>
+                <headerRange begin="H1"/>
+                <headerRange begin="I1"/>
+                <headerRange begin="J1"/>
+                <headerRange begin="K1"/>
+                <headerRange begin="L1"/>
+                <headerRange begin="M1"/>
+                <headerRange begin="N1"/>
+                <headerRange begin="O1"/>
+                <headerRange begin="P1"/>
+                <headerRange begin="Q1"/>
+                <headerRange end="inf1" begin="R1"/>
+            </headerRanges>
+        </headerGroup>
+    </headerGroups>
+</mapping>
+]]></attr>
+</Node>
+<Node enabled="disabled" guiName="Reformat" guiX="322" guiY="222" id="REFORMAT" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.firstname = $in.0.firstname;
+	$out.0.lastname = $in.0.lastname;
+	$out.0.city = $in.0.city;
+	$out.0.zip = $in.0.zip;
+	$out.0.phone = $in.0.phone;
+	$out.0.email = $in.0.email;
+	$out.0.address = $in.0.address1+" "+$in.0.address2+nvl2($in.0.address3," "+$in.0.address3,"");
+	$out.0.fax = $in.0.phone;
+	$out.0.address1 = $in.0.address1;
+	$out.0.address2 = $in.0.address2;
+	$out.0.statecode = $in.0.statecode;
+	$out.0.birthdate = $in.0.birthdate;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="disabled" guiName="Reformat" guiX="358" guiY="588" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.orderid = $in.0.orderid;
+	$out.0.orderdate = $in.0.orderdate;
+	$out.0.customerid = $in.0.customerid;
+	$out.0.netamount = $in.0.netamount;
+	$out.0.tax = $in.0.tax;
+	$out.0.totalamount = $in.0.totalamount;
+	$out.0.productid = randomInteger(1,999999 ) % randomInteger(1,10000);
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node guiName="Reformat" guiX="714" guiY="320" id="REFORMAT2" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.CustID = $in.0.CustomerID;
+	$out.0.CustNo = 1;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node guiName="Reformat" guiX="1020" guiY="272" id="REFORMAT3" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+integer counter=0;
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.CustID = $in.0.CustID;
+	$out.0.CustNo = counter++;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="disabled" fileURL="${DATAIN_DIR}/delimited/customers_region_BAD.new.csv" guiName="UniversalDataWriter" guiX="900" guiY="471" id="UNIVERSAL_DATA_WRITER" type="DATA_WRITER"/>
+<Node enabled="disabled" fileURL="${DATAIN_DIR}/delimited/orders.new.csv" guiName="UniversalDataWriter" guiX="558" guiY="542" id="UNIVERSAL_DATA_WRITER1" type="DATA_WRITER"/>
+<Edge fromNode="COMBINE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="UNIVERSAL_DATA_WRITER:0"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="COMBINE:0"/>
+<Edge fromNode="DATA_READER2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="REFORMAT1:0"/>
+<Edge fromNode="DEDUP:0" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" outPort="Port 0 (unique)" persistedImplicitMetadata="Metadata5" toNode="REFORMAT3:0"/>
+<Edge fromNode="FAST_SORT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata5" toNode="DEDUP:0"/>
+<Edge debugMode="true" fromNode="RANDOM_COMPANY_GENERATOR:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="RANDOM_COMPANIES:0"/>
+<Edge debugMode="true" fromNode="RANDOM_PERSON_GENERATOR:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="REFORMAT:0"/>
+<Edge fromNode="READ_ORDERS1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (output)" toNode="REFORMAT2:0"/>
+<Edge debugMode="true" fromNode="REFORMAT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 1 (in)" metadata="Person" outPort="Port 0 (out)" toNode="COMBINE:1"/>
+<Edge fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="UNIVERSAL_DATA_WRITER1:0"/>
+<Edge fromNode="REFORMAT2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="FAST_SORT:0"/>
+<Edge debugMode="true" fromNode="REFORMAT3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata5" toNode="CLOVER_DATA_WRITER:0"/>
+</Phase>
+</Graph>
