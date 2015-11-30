@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="krivanekm" category="writers" created="Mon Nov 10 13:22:19 CET 2014" guiVersion="4.1.0" id="1415630160185" largeIconPath="${SUBGRAPH_DIR}/icons/pie_chart/pie_chart_64.png" licenseCode="CLP1DJAVLI58889773BY" licenseType="Commercial" mediumIconPath="${SUBGRAPH_DIR}/icons/pie_chart/pie_chart_32.png" modified="Fri Jul 24 11:25:48 CEST 2015" modifiedBy="magda" name="GoogleChartsAPI" nature="subgraph" revision="1.85" showComponentDetails="true" smallIconPath="${SUBGRAPH_DIR}/icons/pie_chart/pie_chart_16.png">
+<Graph author="krivanekm" category="writers" created="Mon Nov 10 13:22:19 CET 2014" guiVersion="0.0.0.devel" id="1415630160185" largeIconPath="${SUBGRAPH_DIR}/icons/pie_chart/pie_chart_64.png" licenseCode="Commercial Devel" licenseType="Commercial" mediumIconPath="${SUBGRAPH_DIR}/icons/pie_chart/pie_chart_32.png" modified="Wed Apr 22 15:23:53 CEST 2015" modifiedBy="krivanekm" name="GoogleChartsAPI" nature="subgraph" revision="1.84" showComponentDetails="true" smallIconPath="${SUBGRAPH_DIR}/icons/pie_chart/pie_chart_16.png">
 <Global>
 <inputPorts>
 <singlePort connected="true" name="0"/>
 </inputPorts>
+<outputPorts/>
 <Metadata id="Metadata2">
 <Record fieldDelimiter="|" name="aggregated" recordDelimiter="\r\n" type="delimited">
 <Field name="count" type="long"/>
@@ -33,52 +34,11 @@
 <GraphParameter label="Chart type" name="CHART_TYPE" public="true" required="true" value="ColumnChart">
 <SingleType allowCustomValues="true" name="simpleEnum" values="AreaChart;BarChart;BubbleChart;CandlestickChart;ColumnChart;GeoChart;Histogram;LineChart;PieChart;ScatterChart;SteppedAreaChart"/>
 </GraphParameter>
-<GraphParameter label="Width" name="WIDTH" public="true" value="1600">
-<SingleType name="int"/>
-</GraphParameter>
-<GraphParameter label="Height" name="HEIGHT" public="true" value="600">
-<SingleType name="int"/>
-</GraphParameter>
+<GraphParameter label="Width" name="WIDTH" public="true" value="1600"/>
+<GraphParameter label="Height" name="HEIGHT" public="true" value="600"/>
 <GraphParameter label="Title" name="TITLE" public="true"/>
 <GraphParameter category="advanced" label="Options" name="OPTIONS" public="true" value="'title':'${TITLE}', 'width':${WIDTH}, 'height':${HEIGHT}, titleTextStyle : { color: 'black', fontName: 'Arial', fontSize: 20, bold: true, italic: false }"/>
-<GraphParameter category="advanced" defaultHint=" " label="Transform" name="TRANSFORM" public="true" required="false">
-<attr name="value"><![CDATA[//#CTL2
-
-// Transforms input record into output record.
-function integer transform() {
-	string[] result;
-	for (integer i = 0; i < length($in.0); i++) {
-		switch (getFieldType($in.0, i)) {
-			case "string":
-			case "date":
-				result.append(concat("'", getValueAsString($in.0, i), "'"));
-				break;
-			default:
-				result.append(getValueAsString($in.0, i));
-		}
-	}
-	$out.0.columns = result;
-	return ALL;
-}
-
-// Called during component initialization.
-// function boolean init() {}
-
-// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
-// required by the transform. All resources allocated within this method should be released
-// by the postExecute() method.
-// function void preExecute() {}
-
-// Called only if transform() throws an exception.
-// function integer transformOnError(string errorMessage, string stackTrace) {}
-
-// Called during each graph run after the entire transform was executed. Should be used to free any resources
-// allocated within the preExecute() method.
-// function void postExecute() {}
-
-// Called to return a user-defined error message when an error occurs.
-// function string getMessage() {}
-]]></attr>
+<GraphParameter category="advanced" defaultHint=" " label="Transform" name="TRANSFORM" public="true" required="false" value="//#CTL2&#10;&#10;// Transforms input record into output record.&#10;function integer transform() {&#10;&#9;string[] result;&#10;&#9;for (integer i = 0; i &lt; length($in.0); i++) {&#10;&#9;&#9;switch (getFieldType($in.0, i)) {&#10;&#9;&#9;&#9;case &quot;string&quot;:&#10;&#9;&#9;&#9;case &quot;date&quot;:&#10;&#9;&#9;&#9;&#9;result.append(concat(&quot;'&quot;, getValueAsString($in.0, i), &quot;'&quot;));&#10;&#9;&#9;&#9;&#9;break;&#10;&#9;&#9;&#9;default:&#10;&#9;&#9;&#9;&#9;result.append(getValueAsString($in.0, i));&#10;&#9;&#9;}&#10;&#9;}&#10;&#9;$out.0.columns = result;&#10;&#9;return ALL;&#10;}&#10;&#10;// Called during component initialization.&#10;// function boolean init() {}&#10;&#10;// Called during each graph run before the transform is executed. May be used to allocate and initialize resources&#10;// required by the transform. All resources allocated within this method should be released&#10;// by the postExecute() method.&#10;// function void preExecute() {}&#10;&#10;// Called only if transform() throws an exception.&#10;// function integer transformOnError(string errorMessage, string stackTrace) {}&#10;&#10;// Called during each graph run after the entire transform was executed. Should be used to free any resources&#10;// allocated within the preExecute() method.&#10;// function void postExecute() {}&#10;&#10;// Called to return a user-defined error message when an error occurs.&#10;// function string getMessage() {}&#10;">
 <ComponentReference referencedComponent="REFORMAT" referencedProperty="transform"/>
 </GraphParameter>
 <GraphParameterFile fileURL="workspace.prm"/>
