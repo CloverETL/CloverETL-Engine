@@ -94,8 +94,8 @@ public class DictionaryFactory {
 					valueProperties.setProperty(jaxbProperty.getKey(), jaxbProperty.getValue());
 				}
 				try {
-					result.getType(entry.getName()).parseProperties(valueProperties);
-				} catch (AttributeNotFoundException e) {
+					result.setValueFromProperties(entry.getName(), entry.getType(), valueProperties);
+				} catch (UnsupportedDictionaryOperation e) {
 					throw new ComponentNotReadyException("Invalid dictionary format", e);
 				}
 			}

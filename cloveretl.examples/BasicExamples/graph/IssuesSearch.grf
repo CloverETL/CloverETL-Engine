@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="User" created="Wed May 28 13:40:15 CEST 2014" guiVersion="0.0.0.devel" id="1401282602437" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Aug 05 15:06:47 CEST 2015" modifiedBy="User" name="Issues Search" revision="1.36" showComponentDetails="true">
+<Graph author="User" created="Wed May 28 13:40:15 CEST 2014" guiVersion="4.1.0.M1" id="1401282602437" licenseCode="Commercial Devel" licenseType="Commercial" modified="Mon Apr 27 16:33:21 CEST 2015" modifiedBy="User" name="Issues Search" revision="1.31" showComponentDetails="true">
 <Global>
+<inputPorts/>
+<outputPorts/>
 <MetadataGroup name="Implicit metadata" type="implicit">
 <Metadata id="JIRA_SEARCH_RUN_SEARCH_REST_Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="jira_search_result" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -14,7 +16,7 @@
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="183" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="299" x="662" y="92">
-<attr name="text"><![CDATA[Configure your JIRA URL and credentials in the JIRASearch subgraph parameters.]]></attr>
+<attr name="text"><![CDATA[Configure your JIRA URL in the jira.prm file.]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="183" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="343" x="32" y="92">
 <attr name="text"><![CDATA[We would like to generate release notes document by searching for all JIRA issues that match a certain search query.
@@ -30,7 +32,7 @@ JIRASearch is a subgraph that searches in JIRA via its REST API - it calls the A
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node __JIRA_QUERY="fixVersion = rel-3-5-0 AND labels = release-notes" __JIRA_URL="https://bug.javlin.eu" enabled="enabled" guiName="JIRASearch" guiX="32" guiY="341" id="JIRA_SEARCH" jobURL="${SUBGRAPH_DIR}/JIRASearch.sgrf" type="SUBGRAPH"/>
+<Node __QUERY="fixVersion = rel-3-5-0 AND labels = release-notes" enabled="enabled" guiName="JIRASearch" guiX="32" guiY="341" id="JIRA_SEARCH" jobURL="${SUBGRAPH_DIR}/JIRASearch.sgrf" type="SUBGRAPH"/>
 <Node enabled="enabled" existingSheetsActions="REMOVE_SHEETS" fileURL="${DATAOUT_DIR}/release-notes-rel-3-5-0.xlsx" guiName="Release notes" guiX="239" guiY="341" id="RELEASE_NOTES" sheet="Sheet0" templateFileURL="${DATAIN_DIR}/release-notes-template.xlsx" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
