@@ -19,6 +19,7 @@
 package org.jetel.graph.modelview.impl;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import org.jetel.graph.Edge;
 import org.jetel.graph.modelview.MVEdge;
@@ -64,6 +65,13 @@ public class MetadataPropagationResult implements Serializable {
 	 */
 	public MVEdge getMVEdge(String edgeId) {
 		return getRootMVGraph().getMVEdge(edgeId);
+	}
+
+	/**
+	 * @return map with models for all edges in the root graph
+	 */
+	public Map<String, MVEdge> getMVEdges() {
+		return getRootMVGraph().getMVEdges();
 	}
 
 }
