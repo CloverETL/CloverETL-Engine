@@ -475,6 +475,7 @@ public class CharByteDataParser extends AbstractTextParser {
 				needByteInput = true;
 			} else {
 				needCharInput = true;
+				needByteInput = false;
 			}
 		}
 		// create input reader according to data record requirements
