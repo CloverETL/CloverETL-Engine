@@ -420,6 +420,14 @@ public class DBExecute extends Node {
 			dbConnection.closeConnection(getId(), procedureCall ? OperationType.CALL : OperationType.WRITE);
 		}
 	}
+	
+	@Override
+	public synchronized void free() {
+		if (sqlScriptParser != null) {
+			sqlScriptParser.free();
+		}
+		super.free();
+	}
 
 	private void acquireConnection() throws ComponentNotReadyException {
 		try {
