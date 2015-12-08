@@ -473,8 +473,10 @@ public class CharByteDataParser extends AbstractTextParser {
 			}
 			if (field.isByteBased()) {
 				needByteInput = true;
+				needCharInput = false;
 			} else {
 				needCharInput = true;
+				needByteInput = false;
 			}
 		}
 		// create input reader according to data record requirements
@@ -539,7 +541,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		// CLO-5703: disable record skipping if last non-autofilled field has no delimiter
 		if (metadata.isSpecifiedRecordDelimiter() || isDelimited[lastNonAutoFilledField]) {
 			if (needByteInput) {
-				recordSkipper = new ByteRecordSkipper(inputReader, getCharDelimSearcher(), isDelimited);
+				recordSkipper = new ByteRecordSkipper(inputReader, getByteDelimSearcher(), isDelimited);
 			} else {
 				recordSkipper = new CharRecordSkipper(inputReader, getCharDelimSearcher(), isDelimited);
 			}
