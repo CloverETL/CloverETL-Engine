@@ -56,7 +56,7 @@ public abstract class AbstractDBConnection extends GraphElement implements DBCon
     
     /** CLO-4510 */
     public enum SqlQueryOptimizeOption {
-    	TRUE, FALSE, NAIVE
+    	TRUE, FALSE, NAIVE, BASIC_TRAVERSE
     }
     
 	/**
@@ -134,20 +134,24 @@ public abstract class AbstractDBConnection extends GraphElement implements DBCon
         		optimize = SqlQueryOptimizeOption.FALSE;
         	}
         }
-        switch (optimize) {
-        case TRUE:
-        case NAIVE:
+
+        if (optimize != SqlQueryOptimizeOption.FALSE) {
         	logger.debug("Optimizing sql query for dynamic metadata. Original query: " + sqlQuery);
-        	if (optimize == SqlQueryOptimizeOption.TRUE) {
+	        switch (optimize) {
+	        case TRUE:
         		sqlQuery = SQLUtil.encloseInQptimizingQuery(sqlQuery);
-        	} else {
-        		//NAIVE
+        		break;
+	        case NAIVE:
         		sqlQuery = SQLUtil.appendOptimizingWhereClause(sqlQuery);
-        	}
+	        	break;
+	        case BASIC_TRAVERSE: {
+	    		sqlQuery = SQLUtil.modifyQueryUsingBasicTraversal(sqlQuery);
+	        	break;
+	        }
+	        default:
+	        	//empty
+	        }
         	logger.debug("Optimizing sql query for dynamic metadata. Optimized query: " + sqlQuery);
-        	break;
-        default:
-        	//empty
         }
 
         Connection connection;
