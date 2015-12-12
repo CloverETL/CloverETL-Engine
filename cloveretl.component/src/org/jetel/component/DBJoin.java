@@ -506,7 +506,7 @@ public class DBJoin extends Node {
 		Properties parameters = new Properties();
 		parameters.setProperty(DBConnectionImpl.SQL_QUERY_PROPERTY, sqlQuery);
 		parameters.setProperty(AbstractDBConnection.OPTIMIZE_QUERY_PROPERTY,
-								AbstractDBConnection.SqlQueryOptimizeOption.BASIC_TRAVERSE.toString());
+								AbstractDBConnection.SqlQueryOptimizeOption.NAIVE.toString());
 
 		try {
 			return connection.createMetadata(parameters);
