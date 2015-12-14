@@ -1558,7 +1558,7 @@ public class DB2DataWriter extends Node {
 			batchWriter.write(prepareLoadCommand());
 			batchWriter.write(prepareDisconnectCommand());
 		}
-		return batchURL != null ? batchFile.getCanonicalPath() : batchFile.getName();
+		return batchFile.getCanonicalPath();
 	}
 	
 	/**
