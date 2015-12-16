@@ -1684,8 +1684,7 @@ public class DB2DataWriter extends Node {
 		
 		if (exitValue != 0 && exitValue != 2) {
 			logger.error("Loading to database failed");
-			logger.error("db2 load exited with value: " + exitValue);
-			logger.error("db2 load exited with error: " + consumer.getErrorMessage());
+			logger.error(String.format("db2 load exited with value %d, error '%s'", exitValue, consumer.getErrorMessage()));
 			throw new JetelException("Process exit value is not 0");
 		}
 		//exitValue=2:     DB2 command or SQL statement warning 
