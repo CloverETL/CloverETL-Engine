@@ -492,7 +492,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		boolean[] isDelimited = new boolean[numFields];
 		for (int idx = 0; idx < numFields; idx++) {
 			DataFieldMetadata field = metadata.getField(idx);
-			isDelimited[idx] = !field.isAutoFilled() && field.isDelimited();
+			isDelimited[idx] = !field.isAutoFilled() && field.isDelimited() && !field.isByteBased();
 		}
 
 		numConsumers = 0;
