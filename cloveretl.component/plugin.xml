@@ -369,7 +369,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/DBInputTable" name="DBInputTable" type="DB_INPUT_TABLE" className="org.jetel.component.DBInputTable">
+	  <ETLComponent category="readers" iconPath="icons/readers/DBInputTable" name="DBInputTable" type="DB_INPUT_TABLE" viewPlainData="false" className="org.jetel.component.DBInputTable">
 	    <shortDescription>Reads data from database using JDBC driver.</shortDescription>
 	    <description>Connects to database using JDBC driver, executes specified query on DB, extracts the rows returned by the query and sends them as data records to all connected output ports. Output metadata must precisely describe the structure of extracted rows.</description>
 	    <inputPorts>
