@@ -1558,7 +1558,7 @@ public class DB2DataWriter extends Node {
 			batchWriter.write(prepareLoadCommand());
 			batchWriter.write(prepareDisconnectCommand());
 		}
-		return batchURL != null ? batchFile.getCanonicalPath() : batchFile.getName();
+		return batchFile.getCanonicalPath();
 	}
 	
 	/**
@@ -1684,7 +1684,7 @@ public class DB2DataWriter extends Node {
 		
 		if (exitValue != 0 && exitValue != 2) {
 			logger.error("Loading to database failed");
-			logger.error("db2 load exited with value: " + exitValue);
+			logger.error(String.format("db2 load exited with value %d, error '%s'", exitValue, consumer.getErrorMessage()));
 			throw new JetelException("Process exit value is not 0");
 		}
 		//exitValue=2:     DB2 command or SQL statement warning 
@@ -2163,5 +2163,8 @@ class DB2DataConsumer implements DataConsumer {
 	public long getSkipped() {
 		return skipped;
 	}
-	
+
+	public String getErrorMessage() {
+		return errorMessage;
+	}
 }
