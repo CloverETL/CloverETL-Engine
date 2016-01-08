@@ -36,6 +36,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.connection.jdbc.AbstractDBConnection.SqlQueryOptimizeOption;
 import org.jetel.connection.jdbc.driver.JdbcDriverDescription;
 import org.jetel.connection.jdbc.driver.JdbcDriverFactory;
 import org.jetel.connection.jdbc.driver.JdbcDriverImpl;
@@ -651,20 +652,24 @@ public class DBConnectionImpl extends AbstractDBConnection {
         		optimize = SqlQueryOptimizeOption.FALSE;
         	}
         }
-        switch (optimize) {
-        case TRUE:
-        case NAIVE:
+
+        if (optimize != SqlQueryOptimizeOption.FALSE) {
         	logger.debug("Optimizing sql query for dynamic metadata. Original query: " + sqlQuery);
-        	if (optimize == SqlQueryOptimizeOption.TRUE) {
+	        switch (optimize) {
+	        case TRUE:
         		sqlQuery = SQLUtil.encloseInQptimizingQuery(sqlQuery);
-        	} else {
-        		//NAIVE
+        		break;
+	        case NAIVE:
         		sqlQuery = SQLUtil.appendOptimizingWhereClause(sqlQuery);
-        	}
+	        	break;
+	        case BASIC_TRAVERSE: {
+	    		sqlQuery = SQLUtil.modifyQueryUsingBasicTraversal(sqlQuery);
+	        	break;
+	        }
+	        default:
+	        	//empty
+	        }
         	logger.debug("Optimizing sql query for dynamic metadata. Optimized query: " + sqlQuery);
-        	break;
-        default:
-        	//empty
         }
 
         Connection connection;

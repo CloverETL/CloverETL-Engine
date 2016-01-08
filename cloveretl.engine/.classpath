@@ -18,7 +18,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/annotations.jar"/>
 	<classpathentry kind="lib" path="lib/icu4j-52_1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-compress-1.7.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.1.jar" sourcepath="lib.src/joda-time-2.1-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.8.1.jar" />
 	<classpathentry exported="true" kind="lib" path="lib/xmlbeans-2.5.0-modified-for-WSC.jar" sourcepath="lib.src/xmlbeans-2.5.0-modified-for-WSC-source.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/dom4j-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-net-3.3.jar"/>
@@ -33,8 +33,6 @@
 	<classpathentry kind="lib" path="lib/truezip-path-7.7.5.jar"/>
 	<classpathentry kind="lib" path="lib/truezip-swing-7.7.5.jar"/>
 	<classpathentry kind="lib" path="lib/sardine-5.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/jets3t-0.9.3.jar"/>
-	<classpathentry kind="lib" path="lib/java-xmlbuilder-1.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/httpclient-4.3.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/httpcore-4.3.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/httpmime-4.3.6.jar"/>
@@ -45,11 +43,14 @@
 	<classpathentry kind="lib" path="lib/slf4j-api-1.7.2.jar"/>
 	<classpathentry kind="lib" path="lib/jcifs-1.3.17.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-log4j12-1.7.2.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-core-asl-1.9.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-collections-3.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/lz4-1.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-configuration-1.10.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
-	<classpathentry kind="lib" path="lib/commons-lang3-3.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang3-3.4.jar"/>
+	<classpathentry kind="lib" path="lib/aws-java-sdk-1.10.14.jar" />
+	<classpathentry kind="lib" path="lib/jackson-databind-2.5.3.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-core-2.5.3.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-annotations-2.5.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -2,6 +2,14 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-1-1
+---------
+
+* Anonymous 3-day trial available
+* XML/JSON - fixed issues with parsing into lists
+* COMPATIBILITY:
+	- JSONExtract/XMLExtract - auto-mapping by name does not apply for parent elements
+
 REL-4-1-0
 ---------
 
@@ -72,6 +80,18 @@ REL-4-1-0-M1
     - UniversalDataReader: "Character decoding error" results in graph failure in lenient and controlled mode
     - CTL2: Inconsistent list assignment semantics
     - DBExecute uses wrong default charset for queries in url
+
+REL-4-0-8
+---------
+
+* FIXES:
+	- LDAP components can't handle values with forward slashes	
+	- SQL validation doesn't work when SQL code is valid
+	- backported BufferedFastPropagateEdge does not correctly manipulate with big records
+	- DBOutputTable: 'Returning' does not return input fields unless some fields are generated in db
+	- MSSQLDataWriter corrupts date format defined on incoming metadata
+	- Incorrect handling of escape sequences in smb protocol File URL
+	- RETURNING clause does not work with INSERT on PostgreSQL
 
 REL-4-0-7
 ---------

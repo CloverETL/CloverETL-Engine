@@ -179,6 +179,15 @@ public class PropertyRefResolver {
     	this.parameters.addGraphParameter(propertyName, propertyValue);
     }
 
+    public void setProperty(String propertyName, String propertyValue) {
+    	GraphParameter graphParameter = parameters.getGraphParameter(propertyName);
+    	if (!graphParameter.getValue().isEmpty()) {
+    		graphParameter.setValue(propertyValue);
+    	} else {
+    		addProperty(propertyName, propertyValue);
+    	}
+    }
+    
 	/**
 	 * Sets the flag specifying whether the CTL expressions should be evaluated and the property references resolved.
 	 *

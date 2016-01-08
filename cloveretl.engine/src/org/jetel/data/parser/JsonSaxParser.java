@@ -28,10 +28,6 @@ import java.util.Deque;
 import javax.xml.parsers.SAXParser;
 
 import org.apache.xmlbeans.impl.common.XMLChar;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonToken;
 import org.jetel.util.string.TagName;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -41,6 +37,13 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.DefaultHandler;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * @author dpavlis (info@cloveretl.com)
@@ -172,6 +175,7 @@ public class JsonSaxParser extends SAXParser {
         return name + XML_ELEM_SUFFIX + depth; 
 	}
 	
+	@SuppressFBWarnings("SF_SWITCH_NO_DEFAULT")
 	protected void processToken(final JsonToken token, JsonParser parser, Deque<JsonToken> tokens, Deque<String> names, Deque<Integer> depthCounter) 
 		throws JsonParseException, IOException, SAXException {
 		

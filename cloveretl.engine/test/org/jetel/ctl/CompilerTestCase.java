@@ -4490,6 +4490,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 		
+	public void test_regex_CLO7369() {
+		doCompileExpectError("function integer transform(){"
+				+ "boolean b = 'a' ~= null;"
+				+ "return 0;}",
+				"test_regex_CLO7369",
+				Arrays.asList("Incompatible types 'string' and 'null' for regexp operator"));
+	}
+
 	public void test_if() {
 		doCompile("test_if");
 

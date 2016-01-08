@@ -18,7 +18,6 @@
  */
 package org.jetel.graph.modelview.impl;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,8 +26,6 @@ import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVGraphElement;
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * General model wrapper for engine metadata ({@link DataRecordMetadata}).
@@ -40,8 +37,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  *
  * @created 19. 9. 2013
  */
-@SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
-public class MVEngineMetadata implements MVMetadata, Serializable {
+public class MVEngineMetadata extends MVEngineGraphElement implements MVMetadata {
 
 	private static final long serialVersionUID = 1180088952413191562L;
 
@@ -49,20 +45,15 @@ public class MVEngineMetadata implements MVMetadata, Serializable {
 	
 	private int priority;
 	
-	private transient List<MVGraphElement> originPath;
-	
-	private transient MVGraph parentMVGraph;
+	private List<MVGraphElement> originPath;
 	
 	MVEngineMetadata(DataRecordMetadata metadata, MVGraph parentMVGraph) {
 		this(metadata, null, DEFAULT_PRIORITY);
 	}
 	
 	MVEngineMetadata(DataRecordMetadata metadata, MVGraph parentMVGraph, int priority) {
-		if (metadata == null) {
-			throw new IllegalArgumentException("MVEngineMetadata init failed");
-		}
+		super(metadata, parentMVGraph);
 		this.metadata = metadata;
-		this.parentMVGraph = parentMVGraph;
 		this.priority = priority;
 		originPath = new ArrayList<MVGraphElement>();
 	}
@@ -79,7 +70,7 @@ public class MVEngineMetadata implements MVMetadata, Serializable {
 	
 	@Override
 	public MVMetadata duplicate() {
-		MVEngineMetadata result = new MVEngineMetadata(metadata, parentMVGraph, priority);
+		MVEngineMetadata result = new MVEngineMetadata(metadata, getParent(), priority);
 		if (originPath != null) {
 			result.originPath = new ArrayList<MVGraphElement>(originPath);
 		}
@@ -121,13 +112,8 @@ public class MVEngineMetadata implements MVMetadata, Serializable {
 	}
 	
 	@Override
-	public String toString() {
-		return metadata.toString();
-	}
-	
-	@Override
-	public MVGraph getParentMVGraph() {
-		return parentMVGraph;
+	public MVGraph getParent() {
+		return (MVGraph) super.getParent();
 	}
 	
 }

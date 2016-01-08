@@ -401,6 +401,7 @@ public class Rollup extends Node {
     @SuppressWarnings("deprecation")
     public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();
+    	recordRollup.preExecute();
 
     	if (firstRun()) {//a phase-dependent part of initialization
     		//all necessary elements have been initialized in init()

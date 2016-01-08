@@ -111,8 +111,9 @@ public interface MVMetadata extends MVGraphElement {
 	public List<MVGraphElement> getOriginPath();
 	
 	/**
-	 * @return parent graph for this metadata
+	 * Returns parent graph.
 	 */
-	public MVGraph getParentMVGraph();
-	
+	@Override
+	public MVGraph getParent();
+
 }
