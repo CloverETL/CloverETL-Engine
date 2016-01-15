@@ -2728,7 +2728,7 @@ Sends all resulting records to all connected output ports.</description>
 
 	<!-- GenericComponent - descriptor for Generic Reader -->
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/others/JavaExecute" name="CustomJavaReader" type="GENERIC_READER" className="org.jetel.component.GenericComponent">
+	  <ETLComponent category="readers" iconPath="icons/others/JavaExecute" name="CustomJavaReader" type="GENERIC_READER" className="org.jetel.component.GenericComponent" viewPlainData="false">
 	    <shortDescription>Generic component that allows you to create custom reader.</shortDescription>
 	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports. This is a CustomJavaComponent customized for implementing a Reader.</description>
 	    <inputPorts>
