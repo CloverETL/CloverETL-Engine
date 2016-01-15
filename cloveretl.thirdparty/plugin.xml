@@ -30,7 +30,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/LDAPReader" name="LDAPReader" type="LDAP_READER" className="com.linagora.component.LdapReader" viewGridData="false" viewPlainData="false">
+	  <ETLComponent category="readers" iconPath="icons/readers/LDAPReader" name="LDAPReader" type="LDAP_READER" className="com.linagora.component.LdapReader">
 	    <shortDescription>Reads information from LDAP directory trees.</shortDescription>
 	    <description>Reads information from LDAP directory trees, converts it to data records and sends them to all connected output ports.</description>
         <inputPorts>

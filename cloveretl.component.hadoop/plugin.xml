@@ -51,7 +51,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/HDFSReader" name="HadoopReader" type="HADOOP_READER" viewGridData="false" viewPlainData="false" className="org.jetel.hadoop.component.HadoopReader">
+	  <ETLComponent category="readers" iconPath="icons/readers/HDFSReader" name="HadoopReader" type="HADOOP_READER" viewPlainData="false" className="org.jetel.hadoop.component.HadoopReader">
 	    <shortDescription>Reads Hadoop/HDFS Sequence Files.</shortDescription>
 	    <description>Reads key-value sequences from Hadoop/HDFS Sequence File; copies key &amp; value on to output data fields and sends the record to the first output port.</description>
 	    <inputPorts>
