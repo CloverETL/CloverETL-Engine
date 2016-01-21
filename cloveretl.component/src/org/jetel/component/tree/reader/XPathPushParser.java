@@ -147,7 +147,7 @@ public class XPathPushParser {
 			/*
 			 * pass record data to consumer if no error occured
 			 */
-			if (contextErrorStack.peek() == Boolean.FALSE) {
+			if (Boolean.FALSE.equals(contextErrorStack.peek())) {
 				recordReceiver.receive(newTarget, portIndex);
 			} else {
 				// replace error state with OK state
