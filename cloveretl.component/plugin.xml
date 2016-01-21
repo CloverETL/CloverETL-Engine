@@ -2403,7 +2403,7 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/DataGenerator" name="DataGenerator" type="DATA_GENERATOR" viewPlainData="false" viewGridData="false" className="org.jetel.component.DataGenerator">
+	  <ETLComponent category="readers" iconPath="icons/readers/DataGenerator" name="DataGenerator" type="DATA_GENERATOR" viewPlainData="false" viewGridData="true" className="org.jetel.component.DataGenerator">
 	    <shortDescription>Generates data records.</shortDescription>
 	    <description>Generates data records according to defined pattern and sends them to all connected output ports.</description>
 	    <inputPorts />
