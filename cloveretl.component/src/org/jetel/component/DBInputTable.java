@@ -449,7 +449,7 @@ public class DBInputTable extends Node {
     	if (parser == null) return;
 		try {
 			Object dictValue = getGraph().getDictionary().getValue(Defaults.INCREMENTAL_STORE_KEY);
-			if (dictValue != null && dictValue == Boolean.FALSE) {
+			if (Boolean.FALSE.equals(dictValue)) {
 				return;
 			}
 			parser.storeIncrementalReading(incrementalKeyPosition);

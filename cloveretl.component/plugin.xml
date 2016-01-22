@@ -369,7 +369,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/DBInputTable" name="DBInputTable" type="DB_INPUT_TABLE" className="org.jetel.component.DBInputTable">
+	  <ETLComponent category="readers" iconPath="icons/readers/DBInputTable" name="DBInputTable" type="DB_INPUT_TABLE" viewPlainData="false" className="org.jetel.component.DBInputTable">
 	    <shortDescription>Reads data from database using JDBC driver.</shortDescription>
 	    <description>Connects to database using JDBC driver, executes specified query on DB, extracts the rows returned by the query and sends them as data records to all connected output ports. Output metadata must precisely describe the structure of extracted rows.</description>
 	    <inputPorts>
@@ -2403,7 +2403,7 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/DataGenerator" name="DataGenerator" type="DATA_GENERATOR" viewPlainData="false" viewGridData="false" className="org.jetel.component.DataGenerator">
+	  <ETLComponent category="readers" iconPath="icons/readers/DataGenerator" name="DataGenerator" type="DATA_GENERATOR" viewPlainData="false" viewGridData="true" className="org.jetel.component.DataGenerator">
 	    <shortDescription>Generates data records.</shortDescription>
 	    <description>Generates data records according to defined pattern and sends them to all connected output ports.</description>
 	    <inputPorts />
@@ -2728,7 +2728,7 @@ Sends all resulting records to all connected output ports.</description>
 
 	<!-- GenericComponent - descriptor for Generic Reader -->
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/others/JavaExecute" name="CustomJavaReader" type="GENERIC_READER" className="org.jetel.component.GenericComponent">
+	  <ETLComponent category="readers" iconPath="icons/others/JavaExecute" name="CustomJavaReader" type="GENERIC_READER" className="org.jetel.component.GenericComponent" viewPlainData="false">
 	    <shortDescription>Generic component that allows you to create custom reader.</shortDescription>
 	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports. This is a CustomJavaComponent customized for implementing a Reader.</description>
 	    <inputPorts>
