@@ -350,6 +350,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("ExecuteGraph") // jobflows
 							&& !file.getName().equals("RecordToKeyValues") // CLO-7086: temporarily removed tests
 							&& !file.getName().equals("KeyValuesToRecord") // CLO-7086: temporarily removed tests
+							&& !file.getName().equals("DB2DataWriter") // can only work with db2 client
 							&& !file.getName().equals("windows"); // wokna only tests
 				}
 			};
