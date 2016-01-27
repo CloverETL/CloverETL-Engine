@@ -24,6 +24,9 @@ import java.util.regex.Pattern;
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
+import org.jetel.data.Defaults;
+import org.jetel.data.StringDataField;
 import org.jetel.exception.FieldNotFoundException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -136,5 +139,49 @@ public class DataRecordUtils {
 	public static Object expandFieldName(String value, DataRecord record, Object defaultValue, PropertyRefResolver resolver) {
 		Object ret = DataRecordUtils.expandFieldName(value, record, resolver);
 		return ret == null ? defaultValue : ret;
+	}
+
+	/**
+	 * Truncates all String fields and byte arrays to be no greater than maxSize. If truncated, appends ellipsis at the
+	 * end. Maximum length of a field is maxSize including ellipsis.
+	 * 
+	 * @return
+	 */
+	public static DataRecord truncateRecordValues(DataRecord record, int maxSize, String ellipsis) {
+		boolean truncated = false;
+		if (!record.isNull()) {
+			for (DataField field : record) {
+				if (field instanceof StringDataField) {
+					StringDataField sdf = (StringDataField) field;
+					CharSequence sequence = sdf.getCharSequence();
+					if (sequence != null && sequence.length() > maxSize) {
+						sequence = sequence.subSequence(0, maxSize - ellipsis.length());
+						StringBuilder sb = new StringBuilder(sequence);
+						sb.append(ellipsis);
+						field.setValue(sb.toString());
+						truncated = true;
+					}
+				} else if (field instanceof ByteDataField) {
+					ByteDataField sdf = (ByteDataField) field;
+					byte[] byteArray = sdf.getByteArray();
+					if (byteArray != null && byteArray.length > maxSize) {
+						String asString = sdf.toString();
+						asString = asString.substring(0, maxSize - ellipsis.length());
+						StringBuilder sb = new StringBuilder(asString);
+						sb.append(ellipsis);
+						sdf.fromString(sb, Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+						truncated = true;
+					}
+				}
+			}
+		}
+		if (truncated) {
+			final DataRecord newDataRecord = DataRecordFactory.newRecord(record.getMetadata());
+			newDataRecord.init();
+			newDataRecord.copyFrom(record);
+			return newDataRecord;
+		} else {
+			return record;
+		}
 	}
 }
