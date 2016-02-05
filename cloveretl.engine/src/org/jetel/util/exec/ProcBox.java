@@ -23,6 +23,7 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,6 +54,16 @@ import org.jetel.exception.JetelException;
  * @since 10/17/06 
  */
 public class ProcBox {
+	
+	public static Charset getShellEncoding() {
+		
+		String encoding = System.getProperty("sun.jnu.encoding");
+		if (encoding != null) {
+			return Charset.forName(encoding);
+		}
+		return Charset.defaultCharset();
+	}
+	
 	/**
 	 * process to run
 	 */
