@@ -23,6 +23,8 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,6 +55,34 @@ import org.jetel.exception.JetelException;
  * @since 10/17/06 
  */
 public class ProcBox {
+	
+	/**
+	 * Answers encoding that the shell is using (to properly parse output from processes).
+	 * The value is based on <code>sun.jnu.encoding</code> system property value - if the value is set and
+	 * refers to valid encoding, corresponding {@link Charset} is returned. Otherwise platform
+	 * default charset is returned.
+	 * 
+	 * @return
+	 */
+	public static Charset getShellEncoding() {
+		
+		try {
+			String encoding = System.getProperty("sun.jnu.encoding");
+			if (encoding != null) {
+				try {
+					if (Charset.isSupported(encoding)) {
+						return Charset.forName(encoding);
+					}
+				} catch (IllegalCharsetNameException e) {
+					// ignore
+				}
+			}
+		} catch (SecurityException e) {
+			// ignore
+		}
+		return Charset.defaultCharset();
+	}
+	
 	/**
 	 * process to run
 	 */
