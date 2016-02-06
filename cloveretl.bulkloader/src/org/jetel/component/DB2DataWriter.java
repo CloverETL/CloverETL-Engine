@@ -57,7 +57,9 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.util.CommandBuilder;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.exec.DataConsumer;
@@ -69,6 +71,7 @@ import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
+import org.jetel.util.string.UnicodeBlanks;
 import org.w3c.dom.Element;
 
 /**
@@ -828,7 +831,7 @@ public class DB2DataWriter extends Node {
 				status.add(new ConfigurationProblem("File metadata ID is not valid", Severity.ERROR, this, Priority.NORMAL,
 						XML_FILEMETADATA_ATTRIBUTE));
 			} else {
-				if (fileMetadata.getRecType() == DataRecordMetadata.MIXED_RECORD) {
+				if (fileMetadata.getParsingType() == DataRecordParsingType.MIXED) {
 					status.add(new ConfigurationProblem("Only fixlen or delimited metadata allowed", Severity.ERROR, this, Priority.HIGH,
 							XML_FILEMETADATA_ATTRIBUTE));
 				}
@@ -938,33 +941,33 @@ public class DB2DataWriter extends Node {
 			}
 			inMetadata = getInputPort(READ_FROM_PORT).getMetadata();
 			delimitedData = fileMetadata != null ? 
-					fileMetadata.getRecType() != DataRecordMetadata.FIXEDLEN_RECORD : 
-					inMetadata.getRecType() != DataRecordMetadata.FIXEDLEN_RECORD;
+					fileMetadata.getParsingType() != DataRecordParsingType.FIXEDLEN: 
+					inMetadata.getParsingType() != DataRecordParsingType.FIXEDLEN;
 			if (fileMetadata == null) {
 				//create metadata for formatting from input metadata
-				switch (inMetadata.getRecType()) {
-				case DataRecordMetadata.FIXEDLEN_RECORD:
+				switch (inMetadata.getParsingType()) {
+				case FIXEDLEN:
 					fileMetadata = setDB2DateFormat(inMetadata);
 					break;
-				case DataRecordMetadata.DELIMITED_RECORD:
-				case DataRecordMetadata.MIXED_RECORD:
+				case DELIMITED:
+				case MIXED:
 					fileMetadata = setDB2DateFormat(convertToDB2Delimited(inMetadata));
 					break;
 				default:
 					throw new ComponentNotReadyException(
-							"Unknown record type: " + inMetadata.getRecType());
+							"Unknown record type: " + inMetadata.getParsingType());
 				}
 			}else{//create metadata for formatting from selected metadata
-				switch (fileMetadata.getRecType()) {
-				case DataRecordMetadata.DELIMITED_RECORD:
+				switch (fileMetadata.getParsingType()) {
+				case DELIMITED:
 					fileMetadata = setDB2DateFormat(convertToDB2Delimited(fileMetadata));
 					break;
-				case DataRecordMetadata.FIXEDLEN_RECORD:
+				case FIXEDLEN:
 					fileMetadata = setDB2DateFormat(fileMetadata);
 					break;
 				default:
 					throw new ComponentNotReadyException(this, XML_FILEMETADATA_ATTRIBUTE, 
-							"Only fixlen or delimited metadata allowed");
+							"Only fixed-length or delimited metadata allowed");
 				}
 			}
 			//create and init formatter
@@ -982,12 +985,12 @@ public class DB2DataWriter extends Node {
 
 				if (fileMetadata == null) throw new ComponentNotReadyException(this,
 						XML_FILEMETADATA_ATTRIBUTE, "File metadata has to be defined");
-				switch (fileMetadata.getRecType()) {
-				case DataRecordMetadata.DELIMITED_RECORD:
+				switch (fileMetadata.getParsingType()) {
+				case DELIMITED:
 					delimitedData = true;
 					fileMetadata = setDB2DateFormat(convertToDB2Delimited(fileMetadata));
 					break;
-				case DataRecordMetadata.FIXEDLEN_RECORD:
+				case FIXEDLEN:
 					delimitedData = false;
 					fileMetadata = setDB2DateFormat(fileMetadata);
 					break;
@@ -1088,7 +1091,7 @@ public class DB2DataWriter extends Node {
 		//check all fields
 		for (int i=0; i< out.getNumFields(); i++){
 			field = out.getField(i);
-			if (field.getType() == DataFieldMetadata.DATE_FIELD || field.getType() == DataFieldMetadata.DATETIME_FIELD) {
+			if (field.getDataType() == DataFieldType.DATE || field.getDataType() == DataFieldType.DATETIME) {
 				formatString = field.getFormat();
 				isDate = formatString == null || 
 						 formatString.contains("G") || formatString.contains("y") || 
@@ -1190,7 +1193,7 @@ public class DB2DataWriter extends Node {
 			}
 		}
 //		set proper parameter for fixed length metadata
-		if (out.getRecType() == DataRecordMetadata.FIXEDLEN_RECORD && !out.isSpecifiedRecordDelimiter()) {
+		if (out.getParsingType() == DataRecordParsingType.FIXEDLEN && !out.isSpecifiedRecordDelimiter()) {
 			properties.put(REC_LEN_PARAM, String.valueOf(out.getRecordSize()));
 		}
 		return out;
@@ -1203,7 +1206,7 @@ public class DB2DataWriter extends Node {
 	 * @return new metadata
 	 */
 	private DataRecordMetadata convertToDB2Delimited(DataRecordMetadata metadata){
-		DataRecordMetadata fMetadata = new DataRecordMetadata(metadata.getName() + "_delimited", DataRecordMetadata.DELIMITED_RECORD);
+		DataRecordMetadata fMetadata = new DataRecordMetadata(metadata.getName() + "_delimited", DataRecordParsingType.DELIMITED);
 		// TODO Labels:
 		//fMetadata.setLabel(metadata.getLabel());
 		boolean delimiterFound = columnDelimiter != 0;
@@ -1582,7 +1585,6 @@ public class DB2DataWriter extends Node {
 					fos = new FileOutputStream(dataFile);
 				
 					formatter.setDataTarget(fos);
-					int i = 0;
 					while (runIt && ((inRecord = inPort.readRecord(inRecord)) != null)) {
 						if (skipped >= recordSkip) {
 							formatter.write(inRecord);
@@ -1673,11 +1675,10 @@ public class DB2DataWriter extends Node {
 					proc = Runtime.getRuntime().exec(command);
 					box = new ProcBox(proc, null, consumer, errConsumer);
 					exitValue = box.join();
-				}						
+				}
 			}
-		} catch (Exception e) {
+		} finally {
 			cleanup();
-			throw e;
 		}
 
 		cleanup();
@@ -1685,20 +1686,20 @@ public class DB2DataWriter extends Node {
 		if (exitValue != 0 && exitValue != 2) {
 			logger.error("Loading to database failed");
 			logger.error(String.format("db2 load exited with value %d, error '%s'", exitValue, consumer.getErrorMessage()));
-			throw new JetelException("Process exit value is not 0");
+			throw new JetelException("Load process finished with error code " + exitValue + ". Set log level to DEBUG to see full process output.");
 		}
 		//exitValue=2:     DB2 command or SQL statement warning 
 		if (exitValue == 2 || consumer.getLoaded() != consumer.getRead() || 
-				!getInPorts().isEmpty() && (consumer.getRead() != getInputPort(READ_FROM_PORT).getInputRecordCounter())) {
+				(!getInPorts().isEmpty() && consumer.getRead() != getInputPort(READ_FROM_PORT).getInputRecordCounter())) {
 			if (consumer.getLoaded() != consumer.getRead() || 
-					consumer.getRead() != getInputPort(READ_FROM_PORT).getInputRecordCounter()) {
+				(!getInputPorts().isEmpty() && consumer.getRead() != getInputPort(READ_FROM_PORT).getInputRecordCounter())) {
 				logger.warn("Not all records were loaded to database:");
 				logger.info("Number of rows read = " + consumer.getRead());
 				logger.info("Number of rows loaded = " + consumer.getLoaded());
 				logger.info("Number of rows rejected = " + consumer.getRejected());
 			}
 			if (isFailOnWarnings()) {
-				throw new JetelException("Process raised a warning (exit value 2)");
+				throw new JetelException("Load process raised a warning (exit code 2)");
 			}
 		}
 		
@@ -2094,7 +2095,7 @@ class DB2DataConsumer implements DataConsumer {
 			partRead = true;
 		}else if (partRead) {
 			//if line is not blank it is continuation of error message
-			partRead = !StringUtils.isBlank(line);
+			partRead = !UnicodeBlanks.isBlank(line);
 			if (partRead) {
 				errorMessage = errorMessage.concat(line);
 			}else{//whole error message read
@@ -2149,7 +2150,7 @@ class DB2DataConsumer implements DataConsumer {
 
 	@Override
 	public void setInput(InputStream stream) {
-		reader = new BufferedReader(new InputStreamReader(stream));
+		reader = new BufferedReader(new InputStreamReader(stream, ProcBox.getShellEncoding()));
 	}
 
 	@Override
