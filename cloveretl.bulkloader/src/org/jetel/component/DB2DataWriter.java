@@ -18,7 +18,6 @@
  */
 package org.jetel.component;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -66,6 +65,7 @@ import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.exec.ProcBox;
+import org.jetel.util.exec.ProcBox.LineReader;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -1050,11 +1050,6 @@ public class DB2DataWriter extends Node {
 		// The data file is valid, save it.
 		dataFile = newDataFile;
 	}
-
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-	}
 	
 	@Override
 	public synchronized void free() {
@@ -1716,11 +1711,20 @@ public class DB2DataWriter extends Node {
 		if (proc != null) {
 			proc.destroy();
 		}			
-		if (!getInPorts().isEmpty() && dataURL==null && !dataFile.delete()) {
-			logger.warn("Tmp data file was not deleted.");
+		if (!getInPorts().isEmpty() && dataURL == null && dataFile.exists()) {
+			try {
+				Files.delete(dataFile.toPath());
+			} catch (IOException e) {
+				logger.warn("Temporary data file was not deleted.", e);
+			}
+			
 		}
-		if (batchURL == null && !batchFile.delete()){
-			logger.warn("Tmp batch file was not deleted.");
+		if (batchURL == null && batchFile.exists()) {
+			try {
+				Files.delete(batchFile.toPath());
+			} catch (IOException e) {
+				logger.warn("Temporary batch file was not deleted.", e);
+			}
 		}
 	}
 	
@@ -2038,9 +2042,12 @@ class DB2DataConsumer implements DataConsumer {
 	 */
 	public static final int LVL_ERROR = 2;
 	
+	private static final Pattern SQL_MESSAGE_START = Pattern.compile("^SQL\\d{4,5}\\p{Alpha}\\s");
+	private static final Pattern SQL_ERROR_PATTERN = Pattern.compile("^SQL\\d{4,5}C");
+	
 	private int maxLines;
 	private int linesRead;
-	private BufferedReader reader;
+	private LineReader reader;
 
 	static Log logger = LogFactory.getLog(DB2DataConsumer.class);
 
@@ -2061,7 +2068,7 @@ class DB2DataConsumer implements DataConsumer {
 	
 	@Override
 	public boolean consume() throws JetelException {
-		String line;
+		String line = null;
 		try {
 			line = reader.readLine();
 		} catch (IOException e) {
@@ -2089,16 +2096,16 @@ class DB2DataConsumer implements DataConsumer {
 		if (line.contains("rows committed")) {
 			committed = Long.parseLong(line.substring(line.indexOf('=') + 1).trim());
 		}
-		if (line.matches("^SQL\\d+.*")){
+		if (SQL_MESSAGE_START.matcher(line).find()){
 			// remember first line of error message
 			errorMessage = line;
 			partRead = true;
-		}else if (partRead) {
+		} else if (partRead) {
 			//if line is not blank it is continuation of error message
 			partRead = !UnicodeBlanks.isBlank(line);
 			if (partRead) {
 				errorMessage = errorMessage.concat(line);
-			}else{//whole error message read
+			} else {//whole error message read
 				if (errPort != null && errorMessage.contains("row") && errorMessage.contains("column")) {
 					//find out if error message is about rejected record
 					matcher = rowPattern.matcher(errorMessage);
@@ -2121,10 +2128,14 @@ class DB2DataConsumer implements DataConsumer {
 					}				 
 				}
 				if (maxLines == 0 || linesRead++ < maxLines) {
-					logger.debug(errorMessage);
+					if (SQL_ERROR_PATTERN.matcher(errorMessage).find()) {
+						logger.error(errorMessage);
+					} else {
+						logger.info(errorMessage);
+					}
 				}
 			}
-		}else if (!StringUtils.isEmpty(line)){
+		} else if (!line.isEmpty()){
 			if (maxLines == 0 || linesRead++ < maxLines) {
 				logger.debug(line);
 			}
@@ -2150,7 +2161,7 @@ class DB2DataConsumer implements DataConsumer {
 
 	@Override
 	public void setInput(InputStream stream) {
-		reader = new BufferedReader(new InputStreamReader(stream, ProcBox.getShellEncoding()));
+		reader = new LineReader(new InputStreamReader(stream, ProcBox.getShellEncoding()));
 	}
 
 	@Override

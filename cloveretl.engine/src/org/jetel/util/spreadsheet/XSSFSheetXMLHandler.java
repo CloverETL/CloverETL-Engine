@@ -62,9 +62,6 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 	enum XSSFDataType {
 		BOOLEAN, ERROR, INLINE_STRING, SST_STRING, NUMBER, FORMULA,
 	}
-
-	public static final String CELL_VALUE_TRUE = "TRUE";
-	public static final String CELL_VALUE_FALSE = "FALSE";
 	
 	private SharedStringsTable sharedStringsTable;
 
@@ -237,7 +234,7 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 			switch (nextDataType) {
 			case BOOLEAN:
 				char first = value.charAt(0);
-				thisStr = first == '0' ? CELL_VALUE_FALSE : CELL_VALUE_TRUE;
+				thisStr = Character.toString(first);
 				cellType = Cell.CELL_TYPE_BOOLEAN;
 				break;
 
