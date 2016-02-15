@@ -46,6 +46,7 @@ import org.jetel.data.primitive.Decimal;
 import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordParsingType;
+import org.jetel.metadata.SpreadsheetMetadataFormat;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 
@@ -278,6 +279,12 @@ public class XLSXDataFormatter extends XLSFormatter {
 				//TODO what about to try convert java format to excel format?
 				format = fieldMetadata.getFormat();
 			}
+			
+			if (SpreadsheetMetadataFormat.fromFormatStr(format) == SpreadsheetMetadataFormat.RAW) {
+				// ignore RAW format, it's for reading spreadsheets, not writing
+				format = GENERAL_FORMAT_STRING;
+			}
+			
 		} else {
 			format = GENERAL_FORMAT_STRING;
 		}
