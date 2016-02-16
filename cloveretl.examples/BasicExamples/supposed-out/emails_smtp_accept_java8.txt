@@ -1,8 +1,5 @@
 info@javlin.eu
 test@javlin.eu
-another@google.com
-yetanother@google.com
-gooddomain@google.com
 info@opensys.com
 info@opensys.com
 sales@opensys.com
