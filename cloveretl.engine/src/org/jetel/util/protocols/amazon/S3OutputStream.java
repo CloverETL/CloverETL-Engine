@@ -24,19 +24,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
-import org.jets3t.service.S3ServiceException;
-import org.jets3t.service.impl.rest.httpclient.RestS3Service;
-import org.jets3t.service.model.S3Bucket;
-import org.jets3t.service.model.S3Object;
-import org.jets3t.service.model.StorageObject;
-import org.jets3t.service.security.AWSCredentials;
-import org.jets3t.service.utils.MultipartUtils;
+
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.internal.Constants;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerConfiguration;
 
 public class S3OutputStream extends OutputStream {
 	
@@ -47,10 +45,13 @@ public class S3OutputStream extends OutputStream {
 	// check if not uploaded yet
 	// if not, upload
 	
+	private static final long MULTIPART_UPLOAD_THRESHOLD = 5 * Constants.GB;
+	
 	private boolean uploaded;
 	private File tempFile;
 	private OutputStream os;
 	private URL url;
+	private TransferManager transferManager;
 	
 	public S3OutputStream(URL url) throws FileNotFoundException, IOException {
 		this.uploaded = false;
@@ -83,69 +84,27 @@ public class S3OutputStream extends OutputStream {
 				path = path.substring(1);
 			}
 			
-			AWSCredentials credentials = new AWSCredentials(accessKey, secretKey);
-			RestS3Service service = new RestS3Service(credentials);
+			AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
+			AmazonS3Client service = new AmazonS3Client(credentials);
+			transferManager = new TransferManager(service);
+			TransferManagerConfiguration config = new TransferManagerConfiguration();
+			config.setMultipartUploadThreshold(MULTIPART_UPLOAD_THRESHOLD);
+			config.setMinimumUploadPartSize(MULTIPART_UPLOAD_THRESHOLD);
+			transferManager.setConfiguration(config);
 			
 			String bucket = S3InputStream.getBucket(url);
-			S3Bucket s3bucket = new S3Bucket(bucket); 
 	
-			S3Object uploadObject;
-			try {
-				uploadObject = new S3Object(s3bucket, tempFile);
-			} catch (NoSuchAlgorithmException e) {
-				throw new IOException(e);
-			}
-			uploadObject.setKey(path);
-			
-			if (tempFile.length() <= MultipartUtils.MAX_OBJECT_SIZE) {
-				try {
-					service.putObject(s3bucket, uploadObject);
-				} catch (S3ServiceException e) {
-					throw s3ExceptionToIOException(e);
-				}
-			} else {
-				// CLO-4724:
-				try {
-					MultipartUtils mpUtils = new MultipartUtils(MultipartUtils.MAX_OBJECT_SIZE);
-					mpUtils.uploadObjects(bucket, service, Arrays.asList((StorageObject) uploadObject),
-						    null // eventListener : Provide one to monitor the upload progress
-					);
-				} catch (S3ServiceException e) {
-					throw s3ExceptionToIOException(e);
-				} catch (IOException e) {
-					throw e;
-				} catch (Exception e) {
-					throw new IOException("Multi-part file upload failed", e);
-				}
-			}
+			// CLO-4724:
+			S3Utils.uploadFile(transferManager, tempFile, bucket, path);
 			
 		} finally {
 			tempFile.delete();
-		}
-	}
-	
-	private IOException s3ExceptionToIOException(S3ServiceException e) {
-		StringBuilder msg = new StringBuilder();
-		msg.append("S3 Service Error.");
-		appendInfoIfNotNull("Response code=" + e.getResponseCode(), msg);
-		appendInfoIfNotNull(e.getResponseStatus(), msg);
-		appendInfoIfNotNull(e.getErrorCode(), msg);
-		appendInfoIfNotNull(e.getErrorMessage(), msg);
-		appendInfoIfNotNull(e.getS3ErrorCode(), msg);
-		appendInfoIfNotNull(e.getS3ErrorMessage(), msg);
-		appendInfoIfNotNull(e.toString(), msg);
-		return new IOException(msg.toString(), e);
-	}
-	
-	private void appendInfoIfNotNull(String info, StringBuilder text) {
-		if (info != null && !info.isEmpty()) {
-			if (text.length() > 0) {
-				text.append(" ");
+			if (transferManager != null) {
+				transferManager.shutdownNow();
 			}
-			text.append(info).append(".");
 		}
 	}
-
+	
 	@Override
 	public void write(int b) throws IOException {
 		os.write(b);

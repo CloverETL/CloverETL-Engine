@@ -110,7 +110,9 @@
 	      <singlePort name="0" required="true" />
 	    </inputPorts>
 	    <outputPorts>
-	      <singlePort name="0" required="false" />
+	      <singlePort name="0" required="false">
+	        <MetadataProvider id="fileWriterOutputMetadataProvider"/>
+              </singlePort>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" primaryAttribute="true">
@@ -233,7 +235,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="deprecated" iconPath="icons/writers/DelimitedDataWriter" name="DelimitedDataWriter" type="DELIMITED_DATA_WRITER" defaultVisibility="false" className="org.jetel.component.DelimitedDataWriter">
+	  <ETLComponent category="deprecated" iconPath="icons/writers/DelimitedDataWriter" name="DelimitedDataWriter" type="DELIMITED_DATA_WRITER" defaultVisibility="false" className="org.jetel.component.DelimitedDataWriter" viewGridData="false">
 	    <shortDescription>Writes data to delimited files.</shortDescription>
 	    <description>Receives data through connected input port and writes data records to delimited files based on input metadata.</description>
 	    <inputPorts>
@@ -349,7 +351,7 @@
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL" redundant="transformClass|transformURL" primaryAttribute="true">
 	        <singleType name="transform" />
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform" redundant="transform|transformClass">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform" redundant="transform|transformClass" delegate="transform">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL" redundant="transformURL|transform">
@@ -369,7 +371,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/DBInputTable" name="DBInputTable" type="DB_INPUT_TABLE" className="org.jetel.component.DBInputTable">
+	  <ETLComponent category="readers" iconPath="icons/readers/DBInputTable" name="DBInputTable" type="DB_INPUT_TABLE" viewPlainData="false" className="org.jetel.component.DBInputTable">
 	    <shortDescription>Reads data from database using JDBC driver.</shortDescription>
 	    <description>Connects to database using JDBC driver, executes specified query on DB, extracts the rows returned by the query and sends them as data records to all connected output ports. Output metadata must precisely describe the structure of extracted rows.</description>
 	    <inputPorts>
@@ -385,7 +387,7 @@
 	      <property category="basic" displayName="SQL query" modifiable="true" name="sqlQuery" nullable="true" required="!url" redundant="url" primaryAttribute="true">
 	        <singleType name="sqlQuery" type="select" outputPortName="0" />
 	      </property>
-	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery">
+	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery" delegate="sqlQuery">
 			<singleType name="file" fields="input" dictionary="input" />
 	      </property>
 	      <property category="basic" displayName="Query source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
@@ -462,7 +464,7 @@
 	      <property category="basic" displayName="SQL query" modifiable="true" name="sqlQuery" nullable="true" required="!dbTable,!url" redundant="dbTable|url" primaryAttribute="true">
 			<singleType name="sqlQuery" type="insert" inputPortName="0" outputPortName="1" />
 	      </property>
-	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!dbTable,!sqlQuery" redundant="dbTable|sqlQuery">
+	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!dbTable,!sqlQuery" redundant="dbTable|sqlQuery" delegate="sqlQuery">
 	        <singleType name="file" dictionary="input" />
 	      </property>
 	      <property category="basic" displayName="Query source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
@@ -506,7 +508,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="deprecated" iconPath="icons/writers/FixedLengthDataWriter" name="FixLenDataWriter" type="FIXLEN_DATA_WRITER" defaultVisibility="false" className="org.jetel.component.FixLenDataWriter">
+	  <ETLComponent category="deprecated" iconPath="icons/writers/FixedLengthDataWriter" name="FixLenDataWriter" type="FIXLEN_DATA_WRITER" defaultVisibility="false" className="org.jetel.component.FixLenDataWriter" viewGridData="false">
 	    <shortDescription>Writes data to fixed length files.</shortDescription>
 	    <description>Receives data through connected input port and writes data records to fixed length files based on input metadata.</description>
 	    <inputPorts>
@@ -694,7 +696,7 @@
 		  <property category="advanced" displayName="Transform" modifiable="true" name="transform" nullable="true" redundant="transformClass|transformURL" required="false" defaultHint="Default transformation maps fields by order" primaryAttribute="true">
 	        <singleType name="transform"/>
 	      </property>
-	      <property category="advanced" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" redundant="transformClass|transform" required="false">
+	      <property category="advanced" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" redundant="transformClass|transform" required="false" delegate="transform">
 	        <singleType name="file"/>
 	      </property>
 	      <property category="advanced" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" redundant="transform|transformURL" required="false">
@@ -725,7 +727,7 @@
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL" primaryAttribute="true">
 	        <singleType name="transform"/>
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform" delegate="transform">
 	        <singleType name="file"/>
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
@@ -787,7 +789,7 @@
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL" primaryAttribute="true">
 	        <singleType name="transform"/>
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform" delegate="transform">
 	        <singleType name="file"/>
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
@@ -890,7 +892,7 @@
 	      <property category="basic" displayName="SQL query" modifiable="true" name="sqlQuery" nullable="true" required="!url" redundant="url" primaryAttribute="true">
 	        <singleType name="multiline" />
 	      </property>
-	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery">
+	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery" delegate="sqlQuery">
 			<singleType name="file" fields="input" dictionary="input" />
 	      </property>
 	      <property category="basic" displayName="Query source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
@@ -950,7 +952,7 @@
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL" primaryAttribute="true">
 	        <singleType name="transform" />
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform" delegate="transform">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
@@ -1006,7 +1008,7 @@
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL" primaryAttribute="true">
 	        <singleType name="transform"/>
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform" delegate="transform">
 	        <singleType name="file"/>
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
@@ -1116,7 +1118,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/DBFDataWriter" name="DBFDataWriter" type="DBF_DATA_WRITER" className="org.jetel.component.DBFDataWriter">
+	  <ETLComponent category="writers" iconPath="icons/writers/DBFDataWriter" name="DBFDataWriter" type="DBF_DATA_WRITER" className="org.jetel.component.DBFDataWriter" viewPlainData="false" viewGridData="false">
 	    <shortDescription>Writes data to dBase files.</shortDescription>
 	    <description>Writes data from input port to dBase file(s). Handles Character/Number/Logical/Date dBase data types. Requires fixed-length metadata on input.</description>
 	    <inputPorts>
@@ -1286,7 +1288,7 @@
 	      <property category="basic" displayName="Partition" modifiable="true" name="partitionSource" nullable="true" primaryAttribute="true">
 	        <singleType name="transformPartition" />
 	      </property>
-	      <property category="basic" displayName="Partition URL" modifiable="true" name="partitionURL" nullable="true">
+	      <property category="basic" displayName="Partition URL" modifiable="true" name="partitionURL" nullable="true" delegate="partitionSource">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Partition class" modifiable="true" name="partitionClass" nullable="true">
@@ -1331,7 +1333,7 @@
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL" primaryAttribute="true">
 	        <singleType name="transform" outputPortName="1" shiftPortIndexing="true"/>
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transform,!transformClass">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transform,!transformClass" delegate="transform">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
@@ -1677,7 +1679,7 @@
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL" primaryAttribute="true">
 	        <singleType name="transform" outputPortName="0"/>
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transform,!transformClass">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transform,!transformClass" delegate="transform">
 	        <singleType name="file"/>
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
@@ -1686,7 +1688,7 @@
 	      <property category="basic" displayName="Transform for suspicious" modifiable="true" name="transformForSuspicious" nullable="true" required="!transformClassForSuspicious,!transformURLForSuspicious">
 	        <singleType name="transform" outputPortName="1"/>
 	      </property>
-	      <property category="basic" displayName="Transform URL for suspicious" modifiable="true" name="transformURLForSuspicious" nullable="true" required="!transformForSuspicious,!transformClassForSuspicious">
+	      <property category="basic" displayName="Transform URL for suspicious" modifiable="true" name="transformURLForSuspicious" nullable="true" required="!transformForSuspicious,!transformClassForSuspicious" delegate="transformForSuspicious">
 	        <singleType name="file"/>
 	      </property>
 	      <property category="basic" displayName="Transform class for suspicious" modifiable="true" name="transformClassForSuspicious" nullable="true" required="!transformForSuspicious,!transformURLForSuspicious">
@@ -1744,7 +1746,7 @@
 	      <property category="basic" displayName="DB Metadata" modifiable="true" name="metadata" nullable="true">
 	        <singleType name="metadata" />
 	      </property>
-	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery">
+	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery" delegate="sqlQuery">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="SQL query" modifiable="true" name="sqlQuery" nullable="true" required="!url" redundant="url">
@@ -1753,7 +1755,7 @@
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" primaryAttribute="true">
 	        <singleType name="transform" outputPortName="0" />
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" delegate="transform">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true">
@@ -1944,14 +1946,16 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/CloverDataWriter" name="CloverDataWriter" type="CLOVER_WRITER" className="org.jetel.component.CloverDataWriter">
+	  <ETLComponent category="writers" iconPath="icons/writers/CloverDataWriter" name="CloverDataWriter" type="CLOVER_WRITER" className="org.jetel.component.CloverDataWriter" viewPlainData="false">
 	    <shortDescription>Writes data to Clover files.</shortDescription>
 	    <description>Receives data through connected input port and writes data records to output files in internal binary Clover data format.</description>
 	    <inputPorts>
 	      <singlePort name="0" required="true" />
 	    </inputPorts>
 	    <outputPorts>
-	      <singlePort name="0" required="false" />
+	      <singlePort name="0" required="false">
+	        <MetadataProvider id="fileWriterOutputMetadataProvider"/>
+              </singlePort>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" primaryAttribute="true">
@@ -2023,7 +2027,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/CloverDataReader" name="CloverDataReader" type="CLOVER_READER" className="org.jetel.component.CloverDataReader">
+	  <ETLComponent category="readers" iconPath="icons/readers/CloverDataReader" name="CloverDataReader" type="CLOVER_READER" className="org.jetel.component.CloverDataReader" viewPlainData="false">
 	    <shortDescription>Reads data from Clover files.</shortDescription>
 	    <description>Reads data from files written in internal binary Clover data format and sends data records to all connected output ports.</description>
 	    <inputPorts>
@@ -2062,7 +2066,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/StructuredDataWriter" name="StructuredDataWriter" type="STRUCTURE_WRITER" className="org.jetel.component.StructureWriter">
+	  <ETLComponent category="writers" iconPath="icons/writers/StructuredDataWriter" name="StructuredDataWriter" type="STRUCTURE_WRITER" className="org.jetel.component.StructureWriter" viewGridData="false">
 	    <shortDescription>Writes data to files in structured way.</shortDescription>
 	    <description>Receives data through connected input port(s) and writes data records to output files according to defined structure consisting of header, body and footer. Header and footer are optional.</description>
 	    <inputPorts>
@@ -2071,7 +2075,9 @@
 				<singlePort name="2" label="Footer port" />
 	    </inputPorts>
 	    <outputPorts>
-	      <singlePort name="0" required="false" />
+	      <singlePort name="0" required="false">
+		<MetadataProvider id="fileWriterOutputMetadataProvider"/>
+	      </singlePort>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" primaryAttribute="true">
@@ -2149,7 +2155,7 @@
 	      <property category="basic" displayName="Normalize" modifiable="true" name="normalize" nullable="true" required="!normalizeClass,!normalizeURL" primaryAttribute="true">
 	        <singleType name="transformNormalize" />
 	      </property>
-	      <property category="basic" displayName="Normalize URL" modifiable="true" name="normalizeURL" nullable="true" required="!normalize,!normalizeClass">
+	      <property category="basic" displayName="Normalize URL" modifiable="true" name="normalizeURL" nullable="true" required="!normalize,!normalizeClass" delegate="normalize">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Normalize class" modifiable="true" name="normalizeClass" nullable="true" required="!normalize,!normalizeURL">
@@ -2189,7 +2195,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Denormalize" modifiable="true" name="denormalize" nullable="true" required="!denormalizeClass,!denormalizeURL" primaryAttribute="true">
 	        <singleType name="transformDenormalize" />
 	      </property>
-	      <property category="basic" displayName="Denormalize URL" modifiable="true" name="denormalizeURL" nullable="true" required="!denormalize,!denormalizeClass">
+	      <property category="basic" displayName="Denormalize URL" modifiable="true" name="denormalizeURL" nullable="true" required="!denormalize,!denormalizeClass" delegate="denormalize">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Denormalize class" modifiable="true" name="denormalizeClass" nullable="true" required="!denormalize,!denormalizeURL">
@@ -2242,7 +2248,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformUrl,!transformClassName" primaryAttribute="true">
 	        <singleType name="transformRollup" charsetAttributeName="transformUrlCharset" />
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformUrl" nullable="true" required="!transform,!transformClassName">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformUrl" nullable="true" required="!transform,!transformClassName" delegate="transform">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClassName" nullable="true" required="!transform,!transformUrl">
@@ -2276,7 +2282,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Processor code" modifiable="true" name="processorCode" nullable="true">
 	        <singleType name="multilineEditableJava" />
 	      </property>
-	      <property category="basic" displayName="Processor URL" modifiable="true" name="processorURL" nullable="true">
+	      <property category="basic" displayName="Processor URL" modifiable="true" name="processorURL" nullable="true" delegate="processorCode">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Processor class" modifiable="true" name="processorClass" nullable="true">
@@ -2319,7 +2325,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Processor code" modifiable="true" name="processorCode" nullable="true">
 	        <singleType name="multilineEditableJava" />
 	      </property>
-	      <property category="basic" displayName="Processor URL" modifiable="true" name="processorURL" nullable="true">
+	      <property category="basic" displayName="Processor URL" modifiable="true" name="processorURL" nullable="true" delegate="processorCode">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Processor class" modifiable="true" name="processorClass" nullable="true">
@@ -2359,7 +2365,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL" primaryAttribute="true">
 	        <singleType name="transform" outputPortName="0"/>
 	      </property>
-	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transform,!transformClass">
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transform,!transformClass" delegate="transform">
 	        <singleType name="file"/>
 	      </property>
 	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
@@ -2403,7 +2409,7 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/DataGenerator" name="DataGenerator" type="DATA_GENERATOR" viewPlainData="false" viewGridData="false" className="org.jetel.component.DataGenerator">
+	  <ETLComponent category="readers" iconPath="icons/readers/DataGenerator" name="DataGenerator" type="DATA_GENERATOR" viewPlainData="false" viewGridData="true" className="org.jetel.component.DataGenerator">
 	    <shortDescription>Generates data records.</shortDescription>
 	    <description>Generates data records according to defined pattern and sends them to all connected output ports.</description>
 	    <inputPorts />
@@ -2414,7 +2420,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Generator" modifiable="true" name="generate" nullable="true" primaryAttribute="true">
 	        <singleType name="transformGenerator" input="key" />
 	      </property>
-	      <property category="basic" displayName="Generator URL" modifiable="true" name="generateURL" nullable="true">
+	      <property category="basic" displayName="Generator URL" modifiable="true" name="generateURL" nullable="true" delegate="generate">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Generator class" modifiable="true" name="generateClass" nullable="true">
@@ -2509,7 +2515,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Mapping" modifiable="true" name="mapping" nullable="true" required="!mappingURL" redundant="mappingURL">
 	        <singleType name="multilineEditableXML" />
 	      </property>
-	      <property category="basic" displayName="Mapping URL" modifiable="true" name="mappingURL" nullable="true" required="!mapping" redundant="mapping">
+	      <property category="basic" displayName="Mapping URL" modifiable="true" name="mappingURL" nullable="true" required="!mapping" redundant="mapping" delegate="mapping">
 	        <singleType name="file" />
 	      </property>
 	      <property category="advanced" displayName="Xml features" modifiable="true" name="xmlFeatures" nullable="true">
@@ -2545,7 +2551,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Mapping" modifiable="true" name="mapping" nullable="true" required="!mappingURL" redundant="mappingURL" primaryAttribute="true">
 	        <singleType name="xmlMapping" />
 	      </property>
-	      <property category="basic" displayName="Mapping URL" modifiable="true" name="mappingURL" nullable="true" required="!mapping" redundant="mapping">
+	      <property category="basic" displayName="Mapping URL" modifiable="true" name="mappingURL" nullable="true" required="!mapping" redundant="mapping" delegate="mapping">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Namespace Bindings" modifiable="true" name="namespaceBindings" nullable="true">
@@ -2596,7 +2602,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Mapping" modifiable="true" name="mapping" nullable="true" required="!mappingURL" redundant="mappingURL" primaryAttribute="true">
 	        <singleType name="xmlMapping" />
 	      </property>
-	      <property category="basic" displayName="Mapping URL" modifiable="true" name="mappingURL" nullable="true" required="!mapping" redundant="mapping">
+	      <property category="basic" displayName="Mapping URL" modifiable="true" name="mappingURL" nullable="true" required="!mapping" redundant="mapping" delegate="mapping">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Equivalent XML Schema" modifiable="true" name="schema" nullable="true" required="false" defaultHint="none">
@@ -2647,7 +2653,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Mapping" modifiable="true" name="mapping" nullable="true" required="!mappingURL" redundant="mappingURL" primaryAttribute="true">
 	        <singleType name="xmlReaderMapping" />
 	      </property>
-	      <property category="basic" displayName="Mapping URL" modifiable="true" name="mappingURL" nullable="true" required="!mapping" redundant="mapping">
+	      <property category="basic" displayName="Mapping URL" modifiable="true" name="mappingURL" nullable="true" required="!mapping" redundant="mapping" delegate="mapping">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Implicit mapping" modifiable="true" name="implicitMapping" nullable="true" defaultHint="false">
@@ -2710,7 +2716,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Runnable" modifiable="true" name="runnable" nullable="true" required="!runnableClass,!runnableURL">
 	        <singleType name="multilineEditableJava" />
 	      </property>
-	      <property category="basic" displayName="Runnable URL" modifiable="true" name="runnableURL" nullable="true" required="!runnableClass,!runnable">
+	      <property category="basic" displayName="Runnable URL" modifiable="true" name="runnableURL" nullable="true" required="!runnableClass,!runnable" delegate="runnable">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Runnable class" modifiable="true" name="runnableClass" nullable="true" required="!runnable,!runnableURL">
@@ -2728,7 +2734,7 @@ Sends all resulting records to all connected output ports.</description>
 
 	<!-- GenericComponent - descriptor for Generic Reader -->
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/others/JavaExecute" name="CustomJavaReader" type="GENERIC_READER" className="org.jetel.component.GenericComponent">
+	  <ETLComponent category="readers" iconPath="icons/others/JavaExecute" name="CustomJavaReader" type="GENERIC_READER" className="org.jetel.component.GenericComponent" viewPlainData="false">
 	    <shortDescription>Generic component that allows you to create custom reader.</shortDescription>
 	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports. This is a CustomJavaComponent customized for implementing a Reader.</description>
 	    <inputPorts>
@@ -2741,7 +2747,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Algorithm" modifiable="true" name="genericTransform" nullable="true" required="!genericTransformClass,!genericTransformURL">
 	        <singleType name="genericComponentMultiline" genericType="reader" />
 	      </property>
-	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform">
+	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform" delegate="genericTransform">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Algorithm class" modifiable="true" name="genericTransformClass" nullable="true" required="!genericTransform,!genericTransformURL">
@@ -2756,7 +2762,7 @@ Sends all resulting records to all connected output ports.</description>
 	
 	<!-- GenericComponent - descriptor for Generic Writer -->
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/others/JavaExecute" name="CustomJavaWriter" type="GENERIC_WRITER" className="org.jetel.component.GenericComponent">
+	  <ETLComponent category="writers" iconPath="icons/others/JavaExecute" name="CustomJavaWriter" type="GENERIC_WRITER" className="org.jetel.component.GenericComponent" viewPlainData="false" viewGridData="false">
 	    <shortDescription>Generic component that allows you to create custom writer.</shortDescription>
 	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports. This is a CustomJavaComponent customized for implementing a Writer</description>
 	    <inputPorts>
@@ -2769,7 +2775,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Algorithm" modifiable="true" name="genericTransform" nullable="true" required="!genericTransformClass,!genericTransformURL">
 	        <singleType name="genericComponentMultiline" genericType="writer" />
 	      </property>
-	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform">
+	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform" delegate="genericTransform">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Algorithm class" modifiable="true" name="genericTransformClass" nullable="true" required="!genericTransform,!genericTransformURL">
@@ -2797,7 +2803,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Algorithm" modifiable="true" name="genericTransform" nullable="true" required="!genericTransformClass,!genericTransformURL">
 	        <singleType name="genericComponentMultiline" genericType="transformer" />
 	      </property>
-	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform">
+	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform" delegate="genericTransform">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Algorithm class" modifiable="true" name="genericTransformClass" nullable="true" required="!genericTransform,!genericTransformURL">
@@ -2825,7 +2831,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Algorithm" modifiable="true" name="genericTransform" nullable="true" required="!genericTransformClass,!genericTransformURL">
 	        <singleType name="genericComponentMultiline" genericType="none" />
 	      </property>
-	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform">
+	      <property category="basic" displayName="Algorithm URL" modifiable="true" name="genericTransformURL" nullable="true" required="!genericTransformClass,!genericTransform" delegate="genericTransform">
 	        <singleType name="file" />
 	      </property>
 	      <property category="basic" displayName="Algorithm class" modifiable="true" name="genericTransformClass" nullable="true" required="!genericTransform,!genericTransformURL">
@@ -2839,7 +2845,7 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="deprecated" iconPath="icons/writers/XMLWriter" name="XMLWriter (deprecated)"  type="XML_WRITER" defaultVisibility="false" className="org.jetel.component.XmlWriter">
+	  <ETLComponent category="deprecated" iconPath="icons/writers/XMLWriter" name="XMLWriter (deprecated)"  type="XML_WRITER" defaultVisibility="false" className="org.jetel.component.XmlWriter" viewGridData="false">
 	    <shortDescription>Writes data to XML files.</shortDescription>
 	    <description>Receives data through all connected input ports, converts data records to XML elements based on defined mapping and writes the resulting tree structure of elements to XML files.</description>
 	    <inputPorts>
@@ -2855,7 +2861,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
 	        <singleType name="charset"/>
 	      </property>
-	      <property category="basic" displayName="Mapping URL" modifiable="true" name="mappingURL" nullable="true" required="!mapping" redundant="mapping">
+	      <property category="basic" displayName="Mapping URL" modifiable="true" name="mappingURL" nullable="true" required="!mapping" redundant="mapping" delegate="mapping">
 	        <singleType name="file"/>
 	      </property>
 	      <property category="basic" displayName="Mapping of ports to XML structure" modifiable="true" name="mapping" required="!mappingURL" redundant="mappingURL" primaryAttribute="true">
@@ -2908,14 +2914,16 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
   
     <extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/XMLWriter" name="XMLWriter"  type="EXT_XML_WRITER" className="org.jetel.component.ExtXmlWriter">
+	  <ETLComponent category="writers" iconPath="icons/writers/XMLWriter" name="XMLWriter"  type="EXT_XML_WRITER" className="org.jetel.component.ExtXmlWriter" viewGridData="false">
 	    <shortDescription>Writes data to XML files.</shortDescription>
 	    <description>Receives data through all connected input ports, converts data records to XML elements based on defined mapping and writes the resulting tree structure of elements to XML files.</description>
 	    <inputPorts>
 	      <multiplePort required="false"/>
 	    </inputPorts>
 	    <outputPorts>
-	      <singlePort name="0" required="false" />
+	      <singlePort name="0" required="false">
+	      	<MetadataProvider id="fileWriterOutputMetadataProvider"/>
+	      </singlePort>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
@@ -2927,7 +2935,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="basic" displayName="Mapping" modifiable="true" name="mapping" required="!mappingURL" redundant="mappingURL" primaryAttribute="true">
 	        <singleType name="xmlWriterMapping"/>
 	      </property>
-	      <property category="basic" displayName="Mapping URL" modifiable="true" name="mappingURL" nullable="true" required="!mapping" redundant="mapping">
+	      <property category="basic" displayName="Mapping URL" modifiable="true" name="mappingURL" nullable="true" required="!mapping" redundant="mapping" delegate="mapping">
 	        <singleType name="file"/>
 	      </property>
 	      <property category="basic" displayName="XML Schema" modifiable="true" name="xmlSchemaURL" nullable="true" required="false" defaultHint="none">

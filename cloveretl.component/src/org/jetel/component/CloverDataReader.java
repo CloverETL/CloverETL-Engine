@@ -215,7 +215,7 @@ public class CloverDataReader extends Node implements MultiFileListener, Metadat
     @Override
     public void postExecute() throws ComponentNotReadyException {
     	super.postExecute();
-		parser.postExecute();
+		reader.postExecute();
     }    
 	
 	

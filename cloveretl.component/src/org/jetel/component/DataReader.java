@@ -65,7 +65,7 @@ import org.w3c.dom.Element;
  *  <h3>Universal Data Reader Component</h3>
  *
  * <!-- Parses specified input data file and send the records to the first output port. 
- * Embeded parser covers both fixlen and delimited data format. -->
+ * Embedded parser covers both fixlen and delimited data format. -->
  *
  * <table border="1">
  *  <th>Component:</th>
@@ -75,7 +75,7 @@ import org.w3c.dom.Element;
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
  * <td>Parses specified input data file and send the records to the first output port. 
- * Embeded parser covers both fixlen and delimited data format.</td></tr>
+ * Embedded parser covers both fixlen and delimited data format.</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
@@ -96,11 +96,11 @@ import org.w3c.dom.Element;
  *  <tr><td><b>trim</b><br><i>optional</i></td><td>specifies whether to trim strings before setting them to data fields.
  *  When not set, strings are trimmed depending on "trim" attribute of metadata.</td>
  *  <tr><td><b>skipFirstLine</b></td><td>specifies whether first record/line should be skipped. Default value is FALSE. If record delimiter is specified than skip one record else first line of flat file.</td>
- *  <tr><td><b>skipRows</b></td><td>specifies how many records/rows should be skipped from the source file; good for handling files where first rows is a header not a real data. Dafault is 0.</td>
+ *  <tr><td><b>skipRows</b></td><td>specifies how many records/rows should be skipped from the source file; good for handling files where first rows is a header not a real data. Default is 0.</td>
  *  <tr><td><b>numRecords</b></td><td>max number of parsed records</td>
  *  <tr><td><b>maxErrorCount</b></td><td>count of tolerated error records in input file</td>
  *  <tr><td><b>quotedStrings</b></td><td>string field can be quoted by '' or ""</td>
- *  <tr><td><b>treatMultipleDelimitersAsOne</b></td><td>if this option is true, then multiple delimiters are recognise as one delimiter</td>
+ *  <tr><td><b>treatMultipleDelimitersAsOne</b></td><td>if this option is true, then multiple delimiters are recognize as one delimiter</td>
  *  <tr><td><b>verbose</b></td><td>verbose mode provides more comprehensive error notification; default is true</td>
  *  </tr>
  *  </table>
@@ -228,7 +228,7 @@ public class DataReader extends Node {
 			}
 		}
 		
-        updeteSkipSourceRowsByMetadata();
+        updateSkipSourceRowsByMetadata();
 		prepareParser();
         prepareMultiFileReader();
 	}
@@ -419,7 +419,7 @@ public class DataReader extends Node {
 	}
 
 
-	private void updeteSkipSourceRowsByMetadata() {
+	private void updateSkipSourceRowsByMetadata() {
 		// skip source rows
         if (skipSourceRows == -1) {
         	OutputPort outputPort = getOutputPort(OUTPUT_PORT); //only 1.output port without log port
@@ -572,7 +572,7 @@ public class DataReader extends Node {
         }
         
         try {
-            updeteSkipSourceRowsByMetadata();
+            updateSkipSourceRowsByMetadata();
     		prepareParser();
             prepareMultiFileReader();
             
@@ -663,7 +663,7 @@ public class DataReader extends Node {
 	private void storeValues() {
 		try {
 			Object dictValue = getGraph().getDictionary().getValue(Defaults.INCREMENTAL_STORE_KEY);
-			if (dictValue != null && dictValue == Boolean.FALSE) {
+			if (Boolean.FALSE.equals(dictValue)) {
 				return;
 			}
 			reader.storeIncrementalReading();

@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="dpavlis" created="Wed Jul 09 15:34:33 CEST 2014" guiVersion="4.1.0.M1" id="1404915892380" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Apr 29 18:14:18 CEST 2015" modifiedBy="User" name="CloverTweets" revision="1.104" showComponentDetails="true">
+<Graph author="dpavlis" created="Wed Jul 09 15:34:33 CEST 2014" guiVersion="4.1.0" id="1404915892380" licenseCode="CLP1DJAVLI58889773BY" licenseType="Commercial" modified="Thu Sep 24 15:50:20 CEST 2015" modifiedBy="dpavlis" name="CloverTweets" revision="1.124" showComponentDetails="true">
 <Global>
-<inputPorts/>
-<outputPorts/>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="Texts" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
 <Field eofAsDelimiter="false" name="text" nullable="true" shift="0" size="0" type="string"/>
@@ -36,6 +34,10 @@
 </Metadata>
 </MetadataGroup>
 <GraphParameters>
+<GraphParameter category="basic" defaultHint="pick or enter search query" label="Twitter Query" name="TWITTER_QUERY" public="true" required="true" value="#bigdata">
+<attr name="description"><![CDATA[Twitter search query]]></attr>
+<SingleType allowCustomValues="true" name="simpleEnum" values="#bigdata;#cloveretl;#iot;#dataintegration"/>
+</GraphParameter>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="183" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="299" x="654" y="-59">
@@ -54,6 +56,15 @@ Content of the tweets is analysed for their sentiment (positive, negative and ne
 
 Custom words for classification are provided to the SentimentClassify subgraph via its 2nd input port. The port is optional, so not all users of the subgraph have to use it.]]></attr>
 </Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="119" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="12" title="See results in Navigator:" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="14" width="337" x="24" y="376">
+<attr name="text"><![CDATA[Project: "BasicExamples"
+data-out/tweets-positive.csv
+data-out/tweets-negative.csv
+data-out/tweets-undecided.csv
+data-out/tweets-word-frequencies.csv
+
+]]></attr>
+</Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
@@ -62,7 +73,7 @@ Custom words for classification are provided to the SentimentClassify subgraph v
 <Node fileURL="${DATAIN_DIR}/keyword_classification.txt" guiName="My sentiment keywords" guiX="391" guiY="299" id="MY_SENTIMENT_KEYWORDS" type="DATA_READER"/>
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/tweets-negative.csv" guiName="Negative" guiX="825" guiY="285" id="NEGATIVE1" type="DATA_WRITER"/>
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/tweets-positive.csv" guiName="Positive" guiX="825" guiY="178" id="POSITIVE1" type="DATA_WRITER"/>
-<Node ____TWITTER___QUERY1="#bigdata" enabled="enabled" guiName="ReadTweets" guiX="24" guiY="176" id="READ_TWEETS" jobURL="${SUBGRAPH_DIR}/ReadTweetsCascade.sgrf" type="SUBGRAPH"/>
+<Node ____TWITTER___QUERY1="${TWITTER_QUERY}" enabled="enabled" guiName="ReadTweets" guiX="17" guiY="176" id="READ_TWEETS" jobURL="${SUBGRAPH_DIR}/ReadTweetsCascade.sgrf" type="SUBGRAPH"/>
 <Node enabled="enabled" guiName="Reformat" guiX="226" guiY="176" id="REFORMAT" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 

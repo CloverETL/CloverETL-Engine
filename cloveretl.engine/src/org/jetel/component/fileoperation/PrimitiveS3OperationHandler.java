@@ -18,9 +18,8 @@
  */
 package org.jetel.component.fileoperation;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -47,23 +46,23 @@ import org.jetel.component.fileoperation.pool.PooledS3Connection;
 import org.jetel.component.fileoperation.pool.S3Authority;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
-import org.jetel.util.ExceptionUtils;
+import org.jetel.util.protocols.amazon.S3Utils;
 import org.jetel.util.stream.DelegatingOutputStream;
-import org.jetel.util.stream.InterruptibleInputStream;
 import org.jetel.util.string.StringUtils;
-import org.jets3t.service.S3Service;
-import org.jets3t.service.S3ServiceException;
-import org.jets3t.service.ServiceException;
-import org.jets3t.service.StorageObjectsChunk;
-import org.jets3t.service.model.MultipleDeleteResult;
-import org.jets3t.service.model.MultipleDeleteResult.ErrorResult;
-import org.jets3t.service.model.container.ObjectKeyAndVersion;
-import org.jets3t.service.model.S3Bucket;
-import org.jets3t.service.model.S3Object;
-import org.jets3t.service.model.StorageObject;
-import org.jets3t.service.utils.Mimetypes;
-import org.jets3t.service.utils.MultipartUtils;
-import org.jets3t.service.utils.ServiceUtils;
+
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.Bucket;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.MultiObjectDeleteException;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.transfer.TransferManager;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -117,7 +116,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		PooledS3Connection connection = null;
 		try {
 			connection = connect(target);
-			S3Service service = connection.getService();
+			AmazonS3 service = connection.getService();
 			URI parentUri = URIUtils.getParentURI(target);
 			if (parentUri != null) {
 				Info parentInfo = info(parentUri, connection);
@@ -129,12 +128,11 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 			if (path.length == 1) {
 				throw new IOException("Cannot write to the root directory");
 			}
-			S3Object file = new S3Object(path[1]);
 			try {
-				service.putObject(path[0], file);
+				service.putObject(path[0], path[1], new ByteArrayInputStream(new byte[0]), new ObjectMetadata());
 				return true;
-			} catch (S3ServiceException e) {
-				throw new IOException(e);
+			} catch (AmazonClientException e) {
+				throw S3Utils.getIOException(e);
 			}
 		} finally {
 			disconnect(connection);
@@ -156,7 +154,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		PooledS3Connection connection = null;
 		try {
 			connection = connect(target);
-			S3Service service = connection.getService();
+			AmazonS3 service = connection.getService();
 			URI parentUri = URIUtils.getParentURI(target);
 			if (parentUri != null) {
 				Info parentInfo = info(parentUri, connection);
@@ -171,12 +169,11 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 					service.createBucket(bucketName);
 				} else {
 					String dirName = appendSlash(path[1]);
-					S3Object dir = new S3Object(dirName);
-					service.putObject(bucketName, dir);
+					service.putObject(bucketName, dirName, new ByteArrayInputStream(new byte[0]), new ObjectMetadata());
 				}
 				return true;
-			} catch (S3ServiceException e) {
-				throw new IOException(e);
+			} catch (AmazonClientException e) {
+				throw S3Utils.getIOException(e);
 			}
 		} finally {
 			disconnect(connection);
@@ -192,12 +189,12 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		PooledS3Connection connection = null;
 		try {
 			connection = connect(target);
-			S3Service service = connection.getService();
+			AmazonS3 service = connection.getService();
 			String[] path = getPath(target);
 			try {
 				service.deleteObject(path[0], path[1]);
 				return true;
-			} catch (ServiceException e) {
+			} catch (AmazonClientException e) {
 				throw new IOException(e);
 			}
 		} finally {
@@ -214,7 +211,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		PooledS3Connection connection = null;
 		try {
 			connection = connect(target);
-			S3Service service = connection.getService();
+			AmazonS3 service = connection.getService();
 			String[] path = getPath(target);
 			String bucketName = path[0];
 			try {
@@ -228,8 +225,8 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 					service.deleteObject(bucketName, dirName);
 				}
 				return true;
-			} catch (ServiceException e) {
-				throw new IOException(e);
+			} catch (AmazonClientException e) {
+				throw S3Utils.getIOException(e);
 			}
 		} finally {
 			disconnect(connection);
@@ -247,7 +244,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		PooledS3Connection connection = null;
 		try {
 			connection = connect(target);
-			S3Service service = connection.getService();
+			AmazonS3 service = connection.getService();
 			String[] path = getPath(target);
 			String bucketName = path[0];
 			try {
@@ -255,39 +252,37 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 					if (bucketName.isEmpty()) {
 						throw new IOException("Unable to delete root directory");
 					}
-					S3Object[] objects = service.listObjects(bucketName);
-					deleteObjects(service, bucketName, objects);
+					deleteObjects(service, service.listObjects(bucketName));
 					service.deleteBucket(bucketName);
 				} else {
 					String dirName = appendSlash(path[1]);
-					S3Object[] objects = service.listObjects(bucketName, dirName, null); // no delimiter!
-					deleteObjects(service, bucketName, objects);
+					deleteObjects(service, service.listObjects(bucketName, dirName)); // no delimiter!
 				}
 				return true;
-			} catch (ServiceException e) {
-				throw new IOException(e);
+			} catch (AmazonClientException e) {
+				throw S3Utils.getIOException(e);
 			}
 		} finally {
 			disconnect(connection);
 		}
 	}
 
-	private void deleteObjects(S3Service service, String bucketName, S3Object[] objects) throws S3ServiceException {
-		if (objects.length > 0) {
-			ObjectKeyAndVersion[] keys = new ObjectKeyAndVersion[objects.length];
-			for (int i = 0; i < objects.length; i++) {
-				keys[i] = new ObjectKeyAndVersion(objects[i].getKey());
+	private void deleteObjects(AmazonS3 service, ObjectListing listing) throws MultiObjectDeleteException, IOException {
+		do {
+			if (Thread.currentThread().isInterrupted()) {
+				throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
 			}
-			MultipleDeleteResult result = service.deleteMultipleObjects(bucketName, keys, true); // quiet
-			if (result.hasErrors()) {
-				ErrorResult err = result.getErrorResults().get(0);
-				// TODO add remaining errors as suppressed exceptions
-				S3ServiceException ex = new S3ServiceException("Failed to delete " + err.getKey());
-				ex.setErrorMessage(err.getMessage());
-				ex.setErrorCode(ex.getErrorCode());
-				throw ex;
+			List<S3ObjectSummary> objectSummaries = listing.getObjectSummaries();
+			if (!objectSummaries.isEmpty()) {
+				List<KeyVersion> keys = new ArrayList<KeyVersion>(objectSummaries.size());
+				for (S3ObjectSummary object: objectSummaries) {
+					keys.add(new KeyVersion(object.getKey()));
+				}
+				DeleteObjectsRequest request = new DeleteObjectsRequest(listing.getBucketName()).withKeys(keys).withQuiet(true);
+				service.deleteObjects(request); // quiet
 			}
-		}
+			listing = service.listNextBatchOfObjects(listing);
+		} while (listing.isTruncated());
 	}
 
 	@Override
@@ -295,65 +290,6 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		return null;
 	}
 
-	protected static void putObject(S3Service service, File file, String targetBucket, String targetKey) throws IOException {
-		S3Object targetObject = createS3Object(file, targetKey);
-		if (Thread.currentThread().isInterrupted()) {
-			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
-		}
-		try {
-			service.putObjectMaybeAsMultipart(targetBucket, targetObject, MultipartUtils.MAX_OBJECT_SIZE);
-		} catch (ServiceException e) {
-			throw getIOException(e);
-		}
-	}
-
-	/*
-	 * Wraps all used InputStreams in InterruptibleInputStream
-	 * to make uploads interruptible.
-	 * ------------------------------------------------------------------------
-	 * Based on org.jets3t.service.model.S3Object.S3Object(File):
-	 * 
-	 * JetS3t : Java S3 Toolkit
-	 * Project hosted at http://bitbucket.org/jmurty/jets3t/
-	 *
-	 * Copyright 2006-2010 James Murty
-	 *
-	 * Licensed under the Apache License, Version 2.0 (the "License");
-	 * you may not use this file except in compliance with the License.
-	 * You may obtain a copy of the License at
-	 *
-	 *     http://www.apache.org/licenses/LICENSE-2.0
-	 *
-	 * Unless required by applicable law or agreed to in writing, software
-	 * distributed under the License is distributed on an "AS IS" BASIS,
-	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	 * See the License for the specific language governing permissions and
-	 * limitations under the License.
-	 */
-    private static S3Object createS3Object(File file, String key) throws IOException {
-		try {
-			S3Object o = new S3Object(key) {
-
-				@Override
-				public InputStream getDataInputStream() throws ServiceException {
-					return new InterruptibleInputStream(super.getDataInputStream());
-				}
-				
-			};
-	        o.setContentLength(file.length());
-	        o.setContentType(Mimetypes.getInstance().getMimetype(file));
-	        if (!file.exists()) {
-	            throw new FileNotFoundException("Cannot read from file: " + file.getAbsolutePath());
-	        }
-	        o.setDataInputFile(file);
-	        o.setMd5Hash(ServiceUtils.computeMD5Hash(new InterruptibleInputStream(new FileInputStream(file))));
-	        o.setSHA256Hash(ServiceUtils.hashSHA256(new InterruptibleInputStream(new FileInputStream(file))));
-			return o;
-		} catch (Exception ex) {
-			throw getIOException(ex);
-		}
-	}
-	
 	/**
 	 * Performs server-side copy of a regular file.
 	 */
@@ -373,7 +309,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 				}
 			}
 			
-			S3Service service = connection.getService();
+			AmazonS3 service = connection.getService();
 			String[] sourcePath = getPath(source);
 			if (sourcePath.length == 1) {
 				throw new IOException("Cannot read from " + source);
@@ -386,13 +322,12 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 			String sourceKey = sourcePath[1];
 			String targetBucket = targetPath[0];
 			String targetKey = targetPath[1];
-			S3Object targetObject = new S3Object(targetKey);
 			try {
 				// server-side copy!
-				service.copyObject(sourceBucket, sourceKey, targetBucket, targetObject, false);
+				service.copyObject(sourceBucket, sourceKey, targetBucket, targetKey);
 				return target;
-			} catch (ServiceException e) {
-				throw new IOException(e);
+			} catch (AmazonClientException e) {
+				throw S3Utils.getIOException(e);
 			}
 		} finally {
 			disconnect(connection);
@@ -401,7 +336,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 
 	@Override
 	public URI renameTo(URI source, URI target) throws IOException {
-		// not supported, S3Service.moveObject() just performs copy and delete anyway
+		// not supported, AmazonS3.moveObject() just performs copy and delete anyway
 		// would only work for files, not for directories
 		return null;
 	}
@@ -450,40 +385,48 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 	 * @throws IOException
 	 */
 	private static Info getFileOrDirectory(PooledS3Connection connection, String bucketName, String key) throws IOException {
-		S3Service service = connection.getService();
+		AmazonS3 service = connection.getService();
 		try {
 			// avoid using LIST, it is slower and more expensive
-			// use getObjectDetails() instead of getObject() to avoid downloading the content
-			StorageObject object = service.getObjectDetails(bucketName, key);
+			// use getObjectMetadata() instead of getObject() to avoid downloading the content
+			ObjectMetadata metadata = service.getObjectMetadata(bucketName, key);
+			S3ObjectSummary object = new S3ObjectSummary();
+			object.setBucketName(bucketName);
+			object.setKey(key);
+			object.setLastModified(metadata.getLastModified());
+			object.setSize(metadata.getInstanceLength());
 			return new S3ObjectInfo(object, connection.getBaseUri());
-		} catch (ServiceException e) {
-			if ((e.getResponseCode() == HttpStatus.SC_NOT_FOUND)
-	                || "NoSuchKey".equals(e.getErrorCode())) {
+		} catch (AmazonServiceException e) {
+			if (e.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
 				if (key.endsWith(FORWARD_SLASH)) { // try to find a "virtual" directory
 					try {
 						// directory object may not physically exist, but there may be a matching prefix
-						StorageObjectsChunk chunk = service.listObjectsChunked(bucketName, key.substring(0, key.length() - 1), FORWARD_SLASH, 0, null);
-						String[] directories = chunk.getCommonPrefixes();
-						for (String dir: directories) {
-							if (dir.equals(key)) {
-								S3Object object = new S3Object(key);
-								object.setBucketName(bucketName); // important!
-								return new S3ObjectInfo(object, connection.getBaseUri());
+						ListObjectsRequest request = S3Utils.listObjectRequest(bucketName, key.substring(0, key.length() - 1), FORWARD_SLASH);
+						ObjectListing listing = service.listObjects(request);
+						do {
+							List<String> directories = listing.getCommonPrefixes();
+							for (String dir: directories) {
+								if (dir.equals(key)) {
+									S3ObjectSummary object = new S3ObjectSummary();
+									object.setKey(key);
+									object.setBucketName(bucketName);
+									return new S3ObjectInfo(object, connection.getBaseUri());
+								}
 							}
-						}
-					} catch (ServiceException listingException) {
-						if (listingException.getResponseCode() == HttpStatus.SC_NOT_FOUND) { // listObjectsChunked() may also return 404
+							listing = service.listNextBatchOfObjects(listing);
+						} while (listing.isTruncated());
+					} catch (AmazonServiceException listingException) {
+						if (listingException.getStatusCode() == HttpStatus.SC_NOT_FOUND) { // listObjectsChunked() may also return 404
 							return null;
 						}
 						throw new IOException(listingException);
 					}
 				}
 				return null;
-			} else if ("NoSuchBucket".equals(e.getErrorCode())) {
-				return null;
-			} else {
-				throw new IOException(e);
 			}
+			throw new IOException(e);
+		} catch (Exception ex) {
+			throw S3Utils.getIOException(ex);
 		}
 	}
 
@@ -493,7 +436,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 	}
 
 	private static Info info(String[] path, PooledS3Connection connection) throws IOException {
-		S3Service service = connection.getService();
+		AmazonS3 service = connection.getService();
 		String bucketName = path[0];
 		if (path.length == 1) { // just the bucket
 			if (bucketName.isEmpty()) {
@@ -501,14 +444,13 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 				return new SimpleInfo("", connection.getBaseUri()).setType(Type.DIR); // root
 			}
 			try {
-				S3Bucket bucket = service.getBucket(bucketName);
-				if (bucket != null) {
+				if (service.doesBucketExist(bucketName)) {
 					return getBucketInfo(bucketName, connection.getBaseUri());
 				} else {
 					return null;
 				}
-			} catch (ServiceException e) {
-				throw new IOException(e);
+			} catch (AmazonClientException e) {
+				throw S3Utils.getIOException(e);
 			}
 		} else {
 			String key = path[1];
@@ -538,16 +480,16 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		PooledS3Connection connection = null;
 		try {
 			connection = connect(target);
-			S3Service service = connection.getService();
+			AmazonS3 service = connection.getService();
 			String[] path = getPath(target);
 			String bucketName = path[0];
 			try {
 				URI baseUri = connection.getBaseUri();
 				List<Info> result;
 				if (bucketName.isEmpty()) { // root - list buckets
-					S3Bucket[] buckets = service.listAllBuckets();
-					result = new ArrayList<Info>(buckets.length);
-					for (S3Bucket bucket: buckets) {
+					List<Bucket> buckets = service.listBuckets();
+					result = new ArrayList<Info>(buckets.size());
+					for (Bucket bucket: buckets) {
 						result.add(getBucketInfo(bucket.getName(), baseUri));
 					}
 				} else {
@@ -555,29 +497,37 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 					if (path.length > 1) {
 						prefix = appendSlash(path[1]);
 					}
-					StorageObjectsChunk chunk = service.listObjectsChunked(bucketName, prefix, FORWARD_SLASH, Integer.MAX_VALUE, null, true);
-					String[] directories = chunk.getCommonPrefixes();
-					StorageObject[] files = chunk.getObjects();
-					result = new ArrayList<Info>(directories.length + files.length);
+					ListObjectsRequest request = S3Utils.listObjectRequest(bucketName, prefix, FORWARD_SLASH);
+					ObjectListing listing = service.listObjects(request);
+					ArrayList<Info> files = new ArrayList<Info>();
+					ArrayList<Info> directories = new ArrayList<Info>();
 					int prefixLength = prefix.length();
 					
-					for (String directory: directories) {
-						String name = directory.substring(prefixLength);
-						URI uri = URIUtils.getChildURI(target, name);
-						result.add(getDirectoryInfo(name, uri));
-					}
-					
-					for (StorageObject object: files) {
-						String key = object.getKey();
-						if (key.length() > prefixLength) { // skip the parent directory itself
-							S3ObjectInfo info = new S3ObjectInfo(object, baseUri);
-							result.add(info);
+					do {
+						for (String directory: listing.getCommonPrefixes()) {
+							String name = directory.substring(prefixLength);
+							URI uri = URIUtils.getChildURI(target, name);
+							directories.add(getDirectoryInfo(name, uri));
 						}
-					}
+						
+						for (S3ObjectSummary object: listing.getObjectSummaries()) {
+							String key = object.getKey();
+							if (key.length() > prefixLength) { // skip the parent directory itself
+								S3ObjectInfo info = new S3ObjectInfo(object, baseUri);
+								files.add(info);
+							}
+						}
+						
+						listing = service.listNextBatchOfObjects(listing);
+					} while (listing.isTruncated());
+					
+					directories.ensureCapacity(directories.size() + files.size());
+					result = directories;
+					result.addAll(files);
 				}
 				return result;
-			} catch (ServiceException e) {
-				throw getIOException(e);
+			} catch (AmazonClientException e) {
+				throw S3Utils.getIOException(e);
 			}
 		} finally {
 			disconnect(connection);
@@ -615,13 +565,13 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 	
 	private static class S3ObjectInfo implements Info {
 		
-		private final StorageObject object;
+		private final S3ObjectSummary object;
 		
 		private final URI uri;
 		
 		private final boolean directory;
 		
-		public S3ObjectInfo(StorageObject object, URI baseUri) throws IOException {
+		public S3ObjectInfo(S3ObjectSummary object, URI baseUri) throws IOException {
 			this.object = object;
 			if (baseUri != null) {
 				StringBuilder path = new StringBuilder();
@@ -702,7 +652,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 
 		@Override
 		public Date getLastModified() {
-			return directory ? null : object.getLastModifiedDate();
+			return directory ? null : object.getLastModified();
 		}
 
 		@Override
@@ -717,7 +667,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 
 		@Override
 		public Long getSize() {
-			return directory ? null : object.getContentLength();
+			return directory ? null : object.getSize();
 		}
 
 		@Override
@@ -730,14 +680,14 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 	public static InputStream getInputStream(URI uri, final PooledS3Connection connection) throws IOException {
 		try {
 			uri = uri.normalize();
-			S3Service service = connection.getService();
+			AmazonS3 service = connection.getService();
 			String[] path = getPath(uri);
 			String bucketName = path[0];
 			if (path.length < 2) {
 				throw new IOException(StringUtils.isEmpty(bucketName) ? "Cannot read from the root directory" : "Cannot read from bucket root directory");
 			}
 			S3Object object = service.getObject(bucketName, path[1]);
-			InputStream is = object.getDataInputStream();
+			InputStream is = object.getObjectContent();
 			if (is == null) {
 				throw new IOException("No data available");
 			}
@@ -754,7 +704,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 			return is;
 		} catch (Exception e) {
 			connection.returnToPool();
-			throw getIOException(e);
+			throw S3Utils.getIOException(e);
 		}
 	}
 
@@ -773,7 +723,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 	public static OutputStream getOutputStream(URI uri, final PooledS3Connection connection) throws IOException {
 		try {
 			uri = uri.normalize();
-			final S3Service service = connection.getService();
+			final TransferManager tm = connection.getTransferManager();
 			String[] path = getPath(uri);
 			final String bucketName = path[0];
 			if (path.length < 2) {
@@ -821,7 +771,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 						if (uploaded.compareAndSet(false, true)) {
 							try {
 								// CLO-4724:
-								putObject(service, tempFile, bucketName, key);
+								S3Utils.uploadFile(tm, tempFile, bucketName, key);
 							} finally {
 								connection.returnToPool();
 								if (!tempFile.delete()) {
@@ -837,7 +787,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 			return os;
 		} catch (Exception e) {
 			connection.returnToPool();
-			throw getIOException(e);
+			throw S3Utils.getIOException(e);
 		}
 	}
 
@@ -867,49 +817,4 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		return "PrimitiveS3OperationHandler";
 	}
 	
-	private static IOException s3ExceptionToIOException(S3ServiceException e) {
-		StringBuilder msg = new StringBuilder();
-		msg.append("S3 Service Error.");
-		appendInfoIfNotNull("Response code=" + e.getResponseCode(), msg);
-		appendInfoIfNotNull(e.getResponseStatus(), msg);
-		appendInfoIfNotNull(e.getS3ErrorCode(), msg);
-		appendInfoIfNotNull(e.getS3ErrorMessage(), msg);
-		appendInfoIfNotNull(e.toString(), msg);
-		msg.append('\n');
-		return new IOException(msg.toString(), e);
-	}
-	
-	private static IOException serviceExceptionToIOException(ServiceException e) {
-		StringBuilder msg = new StringBuilder();
-		msg.append("S3 Service Error.");
-		appendInfoIfNotNull("Response code=" + e.getResponseCode(), msg);
-		appendInfoIfNotNull(e.getResponseStatus(), msg);
-		appendInfoIfNotNull(e.getErrorCode(), msg);
-		appendInfoIfNotNull(e.getErrorMessage(), msg);
-		msg.append('\n');
-		appendInfoIfNotNull(e.toString(), msg);
-		return new IOException(msg.toString(), e);
-	}
-	
-	private static void appendInfoIfNotNull(String info, StringBuilder text) {
-		if (info != null && !info.isEmpty()) {
-			if (text.length() > 0) {
-				text.append(" ");
-			}
-			text.append(info);
-			if (!info.endsWith(".")) {
-				text.append(".");
-			}
-		}
-	}
-
-	public static IOException getIOException(Throwable t) {
-		if (t instanceof S3ServiceException) {
-			return s3ExceptionToIOException((S3ServiceException) t);
-		} else if (t instanceof ServiceException) {
-			return serviceExceptionToIOException((ServiceException) t);
-		}
-		return ExceptionUtils.getIOException(t);
-	}
-
 }

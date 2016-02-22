@@ -39,36 +39,26 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  * @created 7. 3. 2014
  */
-public class MVEngineGraph implements MVGraph {
+public class MVEngineGraph extends MVEngineGraphElement implements MVGraph {
 
-	private TransformationGraph engineGraph;
-	
+	private static final long serialVersionUID = 5591555511415409971L;
+
 	private Map<String, MVComponent> mvComponents;
 
 	private Map<String, MVEdge> mvEdges;
 
 	private Map<MVComponent, MVGraph> mvSubgraphs;
 	
-	private MVComponent parentMVSubgraphComponent;
-	
 	public MVEngineGraph(TransformationGraph graph, MVComponent parentMVSubgraphComponent) {
-		if (graph == null) {
-			throw new IllegalArgumentException("MVEngineGraph init failed");
-		}
-		this.engineGraph = graph;
-		this.parentMVSubgraphComponent = parentMVSubgraphComponent;
+		super(graph, parentMVSubgraphComponent);
+		
 		this.mvComponents = new HashMap<>();
 		this.mvEdges = new HashMap<>();
 	}
 	
 	@Override
 	public TransformationGraph getModel() {
-		return engineGraph;
-	}
-	
-	@Override
-	public String getId() {
-		return engineGraph.getId();
+		return (TransformationGraph) super.getModel();
 	}
 	
 	@Override
@@ -81,21 +71,33 @@ public class MVEngineGraph implements MVGraph {
 		for (MVEdge mvEdge : mvEdges.values()) {
 			mvEdge.reset();
 		}
+		//reset all subgraphs
+		for (MVGraph subgraph : getMVSubgraphs().values()) {
+			subgraph.reset();
+		}
 	}
 
 	@Override
 	public MVComponent getMVComponent(String componentId) {
-		Node component = engineGraph.getNodes().get(componentId);
-		if (component != null) {
-			if (!mvComponents.containsKey(componentId)) {
-				MVComponent mvComponent = new MVEngineComponent(component, this);
-				mvComponents.put(componentId, mvComponent);
-				return mvComponent;
+		if (hasModel()) {
+			Node component = getModel().getNodes().get(componentId);
+			if (component != null) {
+				if (!mvComponents.containsKey(componentId)) {
+					MVComponent mvComponent = new MVEngineComponent(component, this);
+					mvComponents.put(componentId, mvComponent);
+					return mvComponent;
+				} else {
+					return mvComponents.get(componentId);
+				}
 			} else {
-				return mvComponents.get(componentId);
+				throw new IllegalArgumentException("unexpected component id, component does not exist in this graph");
 			}
 		} else {
-			throw new IllegalArgumentException("unexpected component id, component does not exist in this graph");
+			if (mvComponents.containsKey(componentId)) {
+				return mvComponents.get(componentId);
+			} else {
+				throw new IllegalArgumentException("unexpected component id, component does not exist in this graph");
+			}
 		}
 	}
 
@@ -103,12 +105,14 @@ public class MVEngineGraph implements MVGraph {
 	public Map<MVComponent, MVGraph> getMVSubgraphs() {
 		if (mvSubgraphs == null) {
 			mvSubgraphs = new HashMap<>();
-			for (Node component : engineGraph.getNodes().values()) {
-				if (component instanceof SubgraphComponent) {
-					TransformationGraph engineSubgraph = ((SubgraphComponent) component).getSubgraphNoMetadataPropagation(false);
-					if (engineSubgraph != null) { //can be null if the subgraph component is not correctly defined - invalid subgraph URL 
-						MVGraph mvSubgraph = new MVEngineGraph(engineSubgraph, getMVComponent(component.getId()));
-						mvSubgraphs.put(getMVComponent(component.getId()), mvSubgraph);
+			if (hasModel()) {
+				for (Node component : getModel().getNodes().values()) {
+					if (component instanceof SubgraphComponent) {
+						TransformationGraph engineSubgraph = ((SubgraphComponent) component).getSubgraphNoMetadataPropagation(false);
+						if (engineSubgraph != null) { //can be null if the subgraph component is not correctly defined - invalid subgraph URL 
+							MVGraph mvSubgraph = new MVEngineGraph(engineSubgraph, getMVComponent(component.getId()));
+							mvSubgraphs.put(getMVComponent(component.getId()), mvSubgraph);
+						}
 					}
 				}
 			}
@@ -118,23 +122,31 @@ public class MVEngineGraph implements MVGraph {
 
 	@Override
 	public MVEdge getMVEdge(String edgeId) {
-		Edge edge = engineGraph.getEdges().get(edgeId);
-		if (edge != null) {
-			if (!mvEdges.containsKey(edgeId)) {
-				MVEdge mvEdge = new MVEngineEdge(edge, this);
-				mvEdges.put(edgeId, mvEdge);
-				return mvEdge;
+		if (hasModel()) {
+			Edge edge = getModel().getEdges().get(edgeId);
+			if (edge != null) {
+				if (!mvEdges.containsKey(edgeId)) {
+					MVEdge mvEdge = new MVEngineEdge(edge, this);
+					mvEdges.put(edgeId, mvEdge);
+					return mvEdge;
+				} else {
+					return mvEdges.get(edgeId);
+				}
 			} else {
-				return mvEdges.get(edgeId);
+				throw new IllegalArgumentException("unexpected edge id, edge does not exist in this graph");
 			}
 		} else {
-			throw new IllegalArgumentException("unexpected edge id, edge does not exist in this graph");
+			if (mvEdges.containsKey(edgeId)) {
+				return mvEdges.get(edgeId);
+			} else {
+				throw new IllegalArgumentException("unexpected edge id, edge does not exist in this graph");
+			}
 		}
 	}
 	
 	@Override
 	public MVEdge getMVEdgeRecursive(Edge engineEdge) {
-		if (engineEdge.getGraph() == engineGraph) {
+		if (engineEdge.getGraph() == getModel()) {
 			return getMVEdge(engineEdge.getId());
 		} else {
 			for (MVGraph mvSubgraph : getMVSubgraphs().values()) {
@@ -149,7 +161,7 @@ public class MVEngineGraph implements MVGraph {
 
 	@Override
 	public MVGraph getMVGraphRecursive(TransformationGraph engineGraph) {
-		if (this.engineGraph == engineGraph) {
+		if (getModel() == engineGraph) {
 			return this;
 		} else {
 			for (MVGraph mvSubgraph : getMVSubgraphs().values()) {
@@ -178,8 +190,8 @@ public class MVEngineGraph implements MVGraph {
 	}
 
 	@Override
-	public MVComponent getParentMVSubgraphComponent() {
-		return parentMVSubgraphComponent;
+	public MVComponent getParent() {
+		return (MVComponent) super.getParent();
 	}
-
+	
 }

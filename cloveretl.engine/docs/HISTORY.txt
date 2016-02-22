@@ -2,6 +2,54 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-1-1
+---------
+
+* Anonymous 3-day trial available
+* XML/JSON - fixed issues with parsing into lists
+* COMPATIBILITY:
+	- JSONExtract/XMLExtract - auto-mapping by name does not apply for parent elements
+
+REL-4-1-0
+---------
+
+* Java 8 support
+* Disable component as Trash
+* Component improvements:
+	- CustomJavaComponent improvements
+	- XMLExtract, JSONExtract to support list types
+	- XMLExtract - extraction of element content (children elements) with namespace
+	- HTTP connector: add timeout and retry count property
+	- Improved logging when connecting to a PostgreSQL DB with PostgreSQLWriter
+	- Provide output record in RecordDenormalizer.append() method
+	- CrossJoin - support SKIP in transformation
+	- Automatic mapping and parameter propagation
+* CTL:
+	- CTL functions for parsing field mapping
+	- Add strict option to the CTL date parsing functions
+* Ability to specify particular key for key-based sftp authentication
+* FIXES:
+	- Dynamic graph parameters were recomputed on every access
+	- XMLXPathReader: charset attribute is ignored
+	- Denormalizer with group size should send data ASAP
+	- HttpConnector GET fails, but CopyFiles works
+	- Error messages reported via raiseError() should be preserved
+	- XMLExtract: charset autodetection does not work
+	- printErr() function should print to graph log
+	- JDBC drivers: optimize classloader not to load drivers repeatedly
+* COMPATIBILITY:
+	- Remove RecordToKeyValues and KeyValuesToRecord components
+	- Dynamic graph parameters were recomputed on every access
+	- Automatic mapping and parameter propagation
+	- Add strict option to the CTL date parsing functions
+	- Error messages reported via raiseError() should be preserved
+	- printErr() function should print to graph log
+	- XMLXPathReader: charset attribute is ignored
+	- XMLExtract, JSONExtract to support list types
+	- XMLExtract: charset autodetection does not work
+	- XMLExtract - extraction of element content (children elements) with namespace
+
+
 REL-4-1-0-M1
 ------------
 
@@ -32,6 +80,18 @@ REL-4-1-0-M1
     - UniversalDataReader: "Character decoding error" results in graph failure in lenient and controlled mode
     - CTL2: Inconsistent list assignment semantics
     - DBExecute uses wrong default charset for queries in url
+
+REL-4-0-8
+---------
+
+* FIXES:
+	- LDAP components can't handle values with forward slashes	
+	- SQL validation doesn't work when SQL code is valid
+	- backported BufferedFastPropagateEdge does not correctly manipulate with big records
+	- DBOutputTable: 'Returning' does not return input fields unless some fields are generated in db
+	- MSSQLDataWriter corrupts date format defined on incoming metadata
+	- Incorrect handling of escape sequences in smb protocol File URL
+	- RETURNING clause does not work with INSERT on PostgreSQL
 
 REL-4-0-7
 ---------

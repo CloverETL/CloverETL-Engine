@@ -87,8 +87,9 @@ public interface MVGraph extends MVGraphElement {
 	public MVMetadata createMVMetadata(DataRecordMetadata metadata, int priority);
 	
 	/**
-	 * @return model for subgraph component from parent graph, which represents this graph or null for top-level graphs
+	 * Returns parent SubGraph component or null for root graph.
 	 */
-	public MVComponent getParentMVSubgraphComponent();
+	@Override
+	public MVComponent getParent();
 	
 }
