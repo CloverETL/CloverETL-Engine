@@ -251,6 +251,7 @@ public class NavigatingVisitor implements TransformLangParserVisitor {
 		return visitNode(node, data);
 	}
 
+	@Override
 	public Object visit(CLVFBreakpointNode node, Object data) {
 
 		return visitNode(node, data);
