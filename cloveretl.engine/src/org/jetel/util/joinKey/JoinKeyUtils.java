@@ -207,6 +207,9 @@ public class JoinKeyUtils {
 	/**
 	 * Parses join string for MergeJoin component
 	 * 
+	 * Magda's notes: before this function was used also in GUI for keys of type "join" (CheckForeignKey, DataIntersection), 
+	 * parses also the "$field1=$aa;$field2=$bb" format, but expects complete mapping
+	 * 
 	 * @param joinBy input string
 	 * @param inMetadata collection of input metadata, master metadata must be first in the collection
 	 * @return arrays of join keys: master keys and then slave keys in order as order of slave metadata in collection

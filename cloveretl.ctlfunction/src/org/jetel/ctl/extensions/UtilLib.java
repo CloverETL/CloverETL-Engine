@@ -28,11 +28,14 @@ import java.util.UUID;
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.data.TLTypeEnum;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.GraphParameter;
 import org.jetel.graph.GraphParameters;
 import org.jetel.graph.Node;
+import org.jetel.graph.SubgraphPort;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.HashCodeUtil;
+import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
@@ -41,26 +44,29 @@ public class UtilLib extends TLFunctionLibrary {
 
     @Override
     public TLFunctionPrototype getExecutable(String functionName) {
-    	final TLFunctionPrototype ret = 
-    		"sleep".equals(functionName) ? new SleepFunction() :
-    		"randomUUID".equals(functionName) ? new RandomUuidFunction() : 
-           	"getParamValue".equals(functionName) ? new GetParamValueFunction() :
-        	"getParamValues".equals(functionName) ? new GetParamValuesFunction() :
-           	"getRawParamValue".equals(functionName) ? new GetRawParamValueFunction() :
-           	"getRawParamValues".equals(functionName) ? new GetRawParamValuesFunction() :
-        	"getJavaProperties".equals(functionName) ? new GetJavaPropertiesFunction() :
-    		"getEnvironmentVariables".equals(functionName) ? new GetEnvironmentVariablesFunction() : 
-        	"getComponentProperty".equals(functionName) ? new GetComponentPropertyFunction() : 
-    		"hashCode".equals(functionName)	? new HashCodeFunction() :	
-    		"byteAt".equals(functionName) ? new ByteAtFunction() : 
-//    		"byteSet".equals(functionName) ? new ByteSetFunction() :
-    		null; 
+		if (functionName != null) {
+			switch (functionName) {
+				case "sleep": return new SleepFunction();
+				case "randomUUID": return new RandomUuidFunction();
+				case "getParamValue": return new GetParamValueFunction();
+				case "getParamValues": return new GetParamValuesFunction();
+				case "getRawParamValue": return new GetRawParamValueFunction();
+				case "getRawParamValues": return new GetRawParamValuesFunction();
+				case "getJavaProperties": return new GetJavaPropertiesFunction();
+				case "getEnvironmentVariables": return new GetEnvironmentVariablesFunction();
+				case "getComponentProperty": return new GetComponentPropertyFunction();
+				case "hashCode": return new HashCodeFunction();
+				case "byteAt": return new ByteAtFunction();
+				case "getSubgraphInputPortsCount": return new GetSubgraphInputPortsCountFunction();
+				case "getSubgraphOutputPortsCount": return new GetSubgraphOutputPortsCountFunction();
+				case "isSubgraphInputPortConnected": return new IsSubgraphInputPortConnectedFunction();
+				case "isSubgraphOutputPortConnected": return new IsSubgraphOutputPortConnectedFunction();
+				case "parseProperties": return new ParsePropertiesFunction(); //$NON-NLS-1$
+//	    		case "byteSet": return new ByteSetFunction();
+			}
+		} 
     		
-		if (ret == null) {
-    		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
-    	}
-    
-		return ret;
+		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
     }
     
 	private static String LIBRARY_NAME = "Util";
@@ -80,7 +86,7 @@ public class UtilLib extends TLFunctionLibrary {
 		}
     }
 
-    class SleepFunction implements TLFunctionPrototype {
+    static class SleepFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -100,7 +106,7 @@ public class UtilLib extends TLFunctionLibrary {
     	return UUID.randomUUID().toString();
     }
     
-    class RandomUuidFunction implements TLFunctionPrototype {
+    static class RandomUuidFunction implements TLFunctionPrototype {
     	
     	@Override
     	public void init(TLFunctionCallContext context) {
@@ -130,7 +136,7 @@ public class UtilLib extends TLFunctionLibrary {
 		context.setCache(new TLPropertyRefResolverCache(refResolver));
     }
 
-    class GetParamValueFunction implements TLFunctionPrototype {
+    static class GetParamValueFunction implements TLFunctionPrototype {
     	
     	@Override
     	public void init(TLFunctionCallContext context) {
@@ -156,7 +162,7 @@ public class UtilLib extends TLFunctionLibrary {
 		return null;
     }
     
-    class GetRawParamValueFunction implements TLFunctionPrototype {
+	static class GetRawParamValueFunction implements TLFunctionPrototype {
     	
     	@Override
     	public void init(TLFunctionCallContext context) {
@@ -183,13 +189,17 @@ public class UtilLib extends TLFunctionLibrary {
     	GraphParameters parameters = refResolver.getGraphParameters();
 		
 		Map<String, String> map = new HashMap<String, String>();
+		//built-in graph parameters are taken first to be potentially overridden by user's graph parameters
+		for (GraphParameter param : parameters.getAllBuiltInParameters()) {
+			map.put(param.getName(), refResolver.getResolvedPropertyValue(param.getName(), RefResFlag.SPEC_CHARACTERS_OFF));
+		}
 		for (GraphParameter param : parameters.getAllGraphParameters()) {
 			map.put(param.getName(), refResolver.getResolvedPropertyValue(param.getName(), RefResFlag.SPEC_CHARACTERS_OFF));
 		}
 		context.setCache(new TLObjectCache<Map<String, String>>(Collections.unmodifiableMap(map)));
     }
 
-    class GetParamValuesFunction implements TLFunctionPrototype {
+    static class GetParamValuesFunction implements TLFunctionPrototype {
     	
     	@Override
     	public void init(TLFunctionCallContext context) {
@@ -222,7 +232,7 @@ public class UtilLib extends TLFunctionLibrary {
 		context.setCache(new TLObjectCache<Map<String, String>>(Collections.unmodifiableMap(map)));
     }
 
-    class GetRawParamValuesFunction implements TLFunctionPrototype {
+    static class GetRawParamValuesFunction implements TLFunctionPrototype {
     	
     	@Override
     	public void init(TLFunctionCallContext context) {
@@ -248,7 +258,7 @@ public class UtilLib extends TLFunctionLibrary {
 		return (Map<String, String>) map;
     }
     
-    class GetJavaPropertiesFunction implements TLFunctionPrototype {
+    static class GetJavaPropertiesFunction implements TLFunctionPrototype {
     	
     	@Override
     	public void init(TLFunctionCallContext context) {
@@ -266,7 +276,7 @@ public class UtilLib extends TLFunctionLibrary {
 		return System.getenv();
     }
     
-    class GetEnvironmentVariablesFunction implements TLFunctionPrototype {
+    static class GetEnvironmentVariablesFunction implements TLFunctionPrototype {
     	
     	@Override
     	public void init(TLFunctionCallContext context) {
@@ -291,7 +301,7 @@ public class UtilLib extends TLFunctionLibrary {
 		return node.getAttributes().getProperty(name);
     }
     
-    class GetComponentPropertyFunction implements TLFunctionPrototype {
+    static class GetComponentPropertyFunction implements TLFunctionPrototype {
     	
     	@Override
     	public void init(TLFunctionCallContext context) {
@@ -363,7 +373,7 @@ public class UtilLib extends TLFunctionLibrary {
  	}
     
       
-    class HashCodeFunction implements TLFunctionPrototype {
+    static class HashCodeFunction implements TLFunctionPrototype {
 
     	private class ParamCache extends TLCache{
     		TLTypeEnum type;
@@ -432,7 +442,7 @@ public class UtilLib extends TLFunctionLibrary {
  		return Integer.valueOf(0xff & input[position]);
  	}
 
- 	class  ByteAtFunction implements TLFunctionPrototype {
+ 	static class ByteAtFunction implements TLFunctionPrototype {
 
  		@Override
  		public void init(TLFunctionCallContext context) {
@@ -469,5 +479,147 @@ public class UtilLib extends TLFunctionLibrary {
   	}
   	*/
 
+    // GET SUBGRAPH INPUT PORTS COUNT
+	@SuppressWarnings("unchecked")
+	@TLFunctionAnnotation("Returns number of input ports for this subgraph")
+    public static Integer getSubgraphInputPortsCount(TLFunctionCallContext context) {
+		return ((TLObjectCache<Integer>) context.getCache()).getObject();
+    }
     
+    @TLFunctionInitAnnotation()
+    public static final void getSubgraphInputPortsCountInit(TLFunctionCallContext context) {
+    	if (context.getGraph().getStaticJobType().isSubJob()) {
+    		context.setCache(new TLObjectCache<Integer>(context.getGraph().getSubgraphInputPorts().getPorts().size()));
+    	} else {
+    		context.setCache(new TLObjectCache<Integer>(null));
+    	}
+    }
+
+    static class GetSubgraphInputPortsCountFunction implements TLFunctionPrototype {
+    	
+    	@Override
+    	public void init(TLFunctionCallContext context) {
+    		getSubgraphInputPortsCountInit(context);
+    	}
+    	
+    	@Override
+    	public void execute(Stack stack, TLFunctionCallContext context) {
+    		stack.push(getSubgraphInputPortsCount(context));
+    	}
+    }
+
+    // GET SUBGRAPH OUTPUT PORTS COUNT
+	@SuppressWarnings("unchecked")
+	@TLFunctionAnnotation("Returns number of output ports for this subgraph")
+    public static Integer getSubgraphOutputPortsCount(TLFunctionCallContext context) {
+		return ((TLObjectCache<Integer>) context.getCache()).getObject();
+    }
+    
+    @TLFunctionInitAnnotation()
+    public static final void getSubgraphOutputPortsCountInit(TLFunctionCallContext context) {
+    	if (context.getGraph().getStaticJobType().isSubJob()) {
+    		context.setCache(new TLObjectCache<Integer>(context.getGraph().getSubgraphOutputPorts().getPorts().size()));
+    	} else {
+    		context.setCache(new TLObjectCache<Integer>(null));
+    	}
+    }
+
+    static class GetSubgraphOutputPortsCountFunction implements TLFunctionPrototype {
+    	
+    	@Override
+    	public void init(TLFunctionCallContext context) {
+    		getSubgraphOutputPortsCountInit(context);
+    	}
+    	
+    	@Override
+    	public void execute(Stack stack, TLFunctionCallContext context) {
+    		stack.push(getSubgraphOutputPortsCount(context));
+    	}
+    }
+
+    // IS SUBGRAPH INPUT PORT CONNECTED
+	@TLFunctionAnnotation("Returns true if specified input port is connected")
+    public static boolean isSubgraphInputPortConnected(TLFunctionCallContext context, int portIndex) {
+    	if (context.getGraph().getStaticJobType().isSubJob()) {
+    		List<SubgraphPort> subgraphInputPorts = context.getGraph().getSubgraphInputPorts().getPorts();
+    		if (portIndex < 0 || portIndex >= subgraphInputPorts.size()) {
+    			throw new IllegalArgumentException("Input port with index " + portIndex + " does not exists.");
+    		}
+    		return subgraphInputPorts.get(portIndex).isConnected();
+    	} else {
+    		throw new IllegalStateException("Function can be invoked only within subgraph.");
+    	}
+    }
+    
+	static class IsSubgraphInputPortConnectedFunction implements TLFunctionPrototype {
+    	
+    	@Override
+    	public void init(TLFunctionCallContext context) {
+    	}
+    	
+    	@Override
+    	public void execute(Stack stack, TLFunctionCallContext context) {
+			Integer portIndex = stack.popInt();
+
+    		stack.push(isSubgraphInputPortConnected(context, portIndex));
+    	}
+    }
+
+    // IS SUBGRAPH OUTPUT PORT CONNECTED
+	@TLFunctionAnnotation("Returns true if specified output port is connected")
+    public static boolean isSubgraphOutputPortConnected(TLFunctionCallContext context, int portIndex) {
+    	if (context.getGraph().getStaticJobType().isSubJob()) {
+    		List<SubgraphPort> subgraphOutputPorts = context.getGraph().getSubgraphOutputPorts().getPorts();
+    		if (portIndex < 0 || portIndex >= subgraphOutputPorts.size()) {
+    			throw new IllegalArgumentException("Output port with index " + portIndex + " does not exists.");
+    		}
+    		return subgraphOutputPorts.get(portIndex).isConnected();
+    	} else {
+    		throw new IllegalStateException("Function can be invoked only within subgraph.");
+    	}
+    }
+    
+	static class IsSubgraphOutputPortConnectedFunction implements TLFunctionPrototype {
+    	
+    	@Override
+    	public void init(TLFunctionCallContext context) {
+    	}
+    	
+    	@Override
+    	public void execute(Stack stack, TLFunctionCallContext context) {
+			Integer portIndex = stack.popInt();
+
+    		stack.push(isSubgraphOutputPortConnected(context, portIndex));
+    	}
+    }
+
+	// PARSE PROPERTIES FUNCTION
+
+	/**
+	 * @see PropertiesFactory#makeObject(String)
+	 * 
+	 * @param context
+	 * @param input
+	 * @return
+	 */
+	@TLFunctionAnnotation("Converts properties from a string to a map")
+	public static final Map<String, String> parseProperties(TLFunctionCallContext context, String input) {
+		try {
+			return PropertiesUtils.deserialize(input);
+		} catch (Exception e) {
+			// should never happen
+			throw new JetelRuntimeException("Parsing failed", e);
+		}
+	}
+	
+	private static class ParsePropertiesFunction extends TLFunctionAdapter {
+		
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(parseProperties(context, stack.popString()));
+		}
+
+	}
+	
+
 }

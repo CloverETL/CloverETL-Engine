@@ -38,6 +38,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.StackTraceWrapperException;
 import org.jetel.exception.TempFileCreationException;
@@ -54,6 +55,7 @@ import org.jetel.graph.runtime.jmx.GraphTracking;
 import org.jetel.graph.runtime.jmx.TrackingEvent;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.FileConstrains;
+import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.file.WcardPattern;
 import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.string.StringUtils;
@@ -164,8 +166,11 @@ public abstract class IAuthorityProxy {
 		
 		public RuntimeException getException() {
 			if (status.code() < 0 || status == Result.N_A) {
-				return new JetelRuntimeException(getJobLabel() + " " + jobUrl + (runId > 0 ? ("(#" + runId + ")") : "") + " finished with final status " + status + ".",
-						new StackTraceWrapperException(errMessage, errException));
+				Exception cause = null;
+				if (!StringUtils.isEmpty(errMessage) || !StringUtils.isEmpty(errException)) {
+					cause = new StackTraceWrapperException(errMessage, errException); 
+				}
+				return new JetelRuntimeException(getJobLabel() + " " + jobUrl + (runId > 0 ? ("(#" + runId + ")") : "") + " finished with final status " + status + ".", cause);
 			} else {
 				return null;
 			}
@@ -229,6 +234,10 @@ public abstract class IAuthorityProxy {
 		public long getDataTargetRunId() {
 			return dataTargetRunId;
 		}
+		@Override
+		public String toString() {
+			return "RemoteEdgeDataTarget; target="+dataTargetRunId;
+		}
 	}
 
 	/**
@@ -254,6 +263,10 @@ public abstract class IAuthorityProxy {
 		 */
 		public long getDataSourceRunId() {
 			return dataSourceRunId;
+		}
+		@Override
+		public String toString() {
+			return "RemoteEdgeDataSource; source="+dataSourceRunId;
 		}
 	}
 
@@ -312,10 +325,13 @@ public abstract class IAuthorityProxy {
 	public abstract RunStatus executeProfilerJobSync(String profilerJobUrl, GraphRuntimeContext runtimeContext, Long timeout);
 	
 	/**
-	 * Checks whether profiler database to store profiler results is available.
+	 * Checks configuration of the given graph, see {@link TransformationGraph#checkConfig(ConfigurationStatus)}.
+	 * @param graphUrl URL to checked graph
+	 * @param runtimeContext associated runtime context
+	 * @return set of configuration problems
 	 */
-	public abstract boolean isProfilerResultsDataSourceSupported();
-
+	public abstract ConfigurationStatus checkConfig(String graphUrl, GraphRuntimeContext runtimeContext);
+	
 	public abstract DataSource getProfilerResultsDataSource();
 	
 	/**
@@ -594,7 +610,19 @@ public abstract class IAuthorityProxy {
 	
 	public abstract ClassLoader getClassLoader(URL[] urls, ClassLoader parent, boolean greedy);
 
-	public abstract ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy);
+	public ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy) {
+		return createClassLoader(urls, parent, greedy, true);
+	}
+
+	/**
+	 * Creates new classloader.
+	 * @param urls classloader classpath
+	 * @param parent parent classloader
+	 * @param greedy true if the classloader should be instance of {@link GreedyURLClassLoader}
+	 * @param closeOnGraphFinish true if the classloader should be closed on graph finish (true is recommended)
+	 * @return
+	 */
+	public abstract ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy, boolean closeOnGraphFinish);
 
 	/**
 	 * Creates new classloader with multiple parent classloaders.

@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.util.ExceptionUtils;
 
 public abstract class AbstractPoolableConnection implements PoolableConnection {
 
@@ -42,11 +43,7 @@ public abstract class AbstractPoolableConnection implements PoolableConnection {
 	}
 	
 	protected static IOException getIOException(Exception e) {
-		if (e instanceof IOException) {
-			return (IOException) e;
-		} else {
-			return new IOException(e);
-		}
+		return ExceptionUtils.getIOException(e);
 	}
 
 	@Override

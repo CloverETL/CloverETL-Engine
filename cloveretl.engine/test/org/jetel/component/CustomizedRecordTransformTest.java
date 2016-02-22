@@ -94,13 +94,9 @@ public class CustomizedRecordTransformTest extends CloverTestCase {
 		outMatedata = new DataRecordMetadata[]{ metaOut, metaOut1};
 		
 		record = DataRecordFactory.newRecord(metadata);
-		record.init();
 		record1 = DataRecordFactory.newRecord(metadata1);
-		record1.init();
 		out = DataRecordFactory.newRecord(metaOut);
-		out.init();
 		out1 = DataRecordFactory.newRecord(metaOut1);
-		out1.init();
 		
 		SetVal.setString(record,0,"  HELLO ");
 		SetVal.setString(record1,0,"  My name ");
@@ -217,7 +213,6 @@ public class CustomizedRecordTransformTest extends CloverTestCase {
 		metadata1.addField(decField.duplicate());
 		
 		record1 = DataRecordFactory.newRecord(metadata1);
-		record1.init();
 		SetVal.setString(record1,0,"  My name ");
 		SetVal.setDouble(record1,1,13.25);
 		SetVal.setString(record1,2,"Prague");
@@ -225,7 +220,6 @@ public class CustomizedRecordTransformTest extends CloverTestCase {
 		record1.getField("Value").setNull(true);
 		SetVal.setDouble(record1, "DecimalValue", 1.1);
 		out = DataRecordFactory.newRecord(metaOut);
-		out.init();
         
 		
 		transform.setUseAlternativeRules(true);

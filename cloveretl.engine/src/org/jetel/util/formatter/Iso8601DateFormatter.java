@@ -33,13 +33,10 @@ import org.joda.time.format.ISODateTimeFormat;
  *
  * @created 1.4.2014
  */
-class Iso8601DateFormatter implements DateFormatter {
+class Iso8601DateFormatter extends AbstractDateFormatter {
 	
 	private DateTimeFormatter parser;
 	private DateTimeFormatter printer;
-	
-	private String pattern;
-	private Locale locale;
 	
 	public Iso8601DateFormatter(String format, Locale locale, DateTimeZone dateTimeZone) {
 		switch (format) {
@@ -84,16 +81,6 @@ class Iso8601DateFormatter implements DateFormatter {
 	@Override
 	public long parseMillis(String value) {
 		return parser.parseMillis(value);
-	}
-
-	@Override
-	public String getPattern() {
-		return pattern;
-	}
-
-	@Override
-	public Locale getLocale() {
-		return locale;
 	}
 
 	@Override

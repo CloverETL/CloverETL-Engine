@@ -571,8 +571,6 @@ public class MergeJoin extends Node {
 		}
 		inRecords = new DataRecord[inputCnt];
 		outRecords = new DataRecord[]{DataRecordFactory.newRecord(getOutputPort(WRITE_TO_PORT).getMetadata())};
-		outRecords[0].init();
-		outRecords[0].reset();
 		outPort = getOutputPort(WRITE_TO_PORT);
 		// init transformation
 		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] {
@@ -621,9 +619,17 @@ public class MergeJoin extends Node {
 			fields[i] = metaData.getFieldPosition(joiners[i].getKeyName());
 			if (joiners[i].getOrdering() == OrderEnum.ASC) {
 				aOrdering[i] = true;
-			} else if (joiners[i].getOrdering() == null) {	// old fashion - field name without ordering
-				joiners[i].setOrdering(ascendingInputs ? OrderEnum.ASC : OrderEnum.DESC);
-				aOrdering[i] = ascendingInputs;
+			} else if (joiners[i].getOrdering() == null) {	
+				boolean isAsc;
+				if (driverKey != null && driverKey.getKeyOrderings().length > i) {
+					// set the same ordering as the master has
+					isAsc = driverKey.getKeyOrderings()[i];
+				} else {
+					// old fashion - field name without ordering - use global setting
+					isAsc = ascendingInputs;
+				}
+				joiners[i].setOrdering(isAsc ? OrderEnum.ASC : OrderEnum.DESC);
+				aOrdering[i] = isAsc;
 			} else if (joiners[i].getOrdering() != OrderEnum.DESC) {
 				throw new ComponentNotReadyException("Wrong order definition in join key: " + joiners[i].getOrdering());
 			}
@@ -733,7 +739,7 @@ public class MergeJoin extends Node {
 		}
 
 		join = new MergeJoin(xattribs.getString(XML_ID_ATTRIBUTE),
-				xattribs.getString(XML_JOINKEY_ATTRIBUTE),
+				xattribs.getString(XML_JOINKEY_ATTRIBUTE, null),
 				xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
 				xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
 				xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.URL),
@@ -804,6 +810,17 @@ public class MergeJoin extends Node {
 					ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
 		}
 		
+		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] {getOutputPort(WRITE_TO_PORT).getMetadata()};
+		
+		//check transformation
+		if (transformation == null) {
+			getTransformFactory(getInMetadataArray(), outMetadata).checkConfig(status);
+		}
+		if (joinKeys == null) {
+			status.add("Join key not defined.", Severity.ERROR, this, Priority.NORMAL, XML_JOINKEY_ATTRIBUTE);
+			return status;
+		}
+		
 		try {
 			inputCnt = inPorts.size();
 			slaveCnt = inputCnt - 1;
@@ -869,13 +886,6 @@ public class MergeJoin extends Node {
 			status.add(problem);
 		}
 		
-		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] {getOutputPort(WRITE_TO_PORT).getMetadata()};
-
-        //check transformation
-		if (transformation == null) {
-			getTransformFactory(getInMetadataArray(), outMetadata).checkConfig(status);
-		}
-
 		return status;
 	}
 	

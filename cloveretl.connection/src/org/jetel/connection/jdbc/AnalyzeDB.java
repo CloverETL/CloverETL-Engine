@@ -46,6 +46,8 @@ import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.plugin.Plugins;
 import org.jetel.util.ExceptionUtils;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  *  Class easing creation of Clover metadata describing data originating in Database.<br>
  *  This "utility" connects to database and based on specified SQL query, generates
@@ -231,58 +233,71 @@ public class AnalyzeDB {
 	 * @throws JetelException 
 	 * @since                    September 25, 2002
 	 */
+	@SuppressFBWarnings(value="OS_OPEN_STREAM", justification="We don't want to close System.out")
 	private static void doAnalyze(Properties config) throws IOException, SQLException, JetelException {
-		PrintStream print;
+		PrintStream print = null;
 		DBConnection connection;
-		boolean utf8Encoding=false;
+		boolean utf8Encoding = false;
 		// initialization of PrintStream
-		if (filename != null) {
-			try{
-				print = new PrintStream(new FileOutputStream(filename),true,DEFAULT_XML_ENCODING);
-				utf8Encoding=true;
-			}catch(UnsupportedEncodingException ex){
-				logger.error(ex);
-				print = new PrintStream(new FileOutputStream(filename));
-			}
-		} else {
-			print = System.out;
-		}
-		// load in Database Driver & try to connect to database
-		connection = new DBConnectionImpl("", config);
 		try {
-            connection.init();
-        } catch (ComponentNotReadyException e) {
-            throw new IOException(e);
-        }
-        
-		// do we want just to display driver properties ?
-		SqlConnection conn = connection.getConnection(connection.getId(), OperationType.READ);
-		if (showDriverInfo){
-			printDriverProperty(config);
-			System.exit(0);
+			if (filename != null) {
+				try {
+					print = new PrintStream(new FileOutputStream(filename), true, DEFAULT_XML_ENCODING);
+					utf8Encoding = true;
+				} catch (Exception ex) {
+					logger.error(ex);
+					if (print == null) {
+						print = new PrintStream(new FileOutputStream(filename));
+					}
+				}
+			} else {
+				// don't close System.out!
+				print = System.out;
+			}
+			// load in Database Driver & try to connect to database
+			connection = new DBConnectionImpl("", config);
+			try {
+				connection.init();
+			} catch (ComponentNotReadyException e) {
+				throw new IOException(e);
+			}
+
+			// do we want just to display driver properties ?
+			SqlConnection conn = connection.getConnection(connection.getId(), OperationType.READ);
+			if (showDriverInfo) {
+				printDriverProperty(config);
+				if (print != System.out) {
+					print.close();
+				}
+				System.exit(0);
+			}
+
+			// Execute Query
+			ResultSet resultSet = conn.createStatement().executeQuery(query);
+			ResultSetMetaData metadata = resultSet.getMetaData();
+
+			// here we print XML description of data
+			print.print("<?xml version=\"1.0\"");
+			if (utf8Encoding)
+				print.println(" encoding=\"" + DEFAULT_XML_ENCODING + "\" ?>");
+			else
+				print.println("?>");
+			print.println("<!-- Automatically generated from database " + connection.getDbUrl() + " -->");
+			print.println("<Record name=\"" + metadata.getTableName(1) + "\" type=\"delimited\">");
+
+			for (int i = 1; i <= metadata.getColumnCount(); i++) {
+				print.println(dbMetadata2jetel(metadata, i, connection.getJdbcSpecific()));
+			}
+
+			print.println("</Record>");
+
+			resultSet.close();
+			connection.free();
+		} finally {
+			if (print != null && print != System.out) {
+				print.close();
+			}
 		}
-		// Execute Query
-		ResultSet resultSet = conn.createStatement().executeQuery(query);
-		ResultSetMetaData metadata = resultSet.getMetaData();
-
-		// here we print XML description of data 
-		print.print("<?xml version=\"1.0\"");
-		if (utf8Encoding) print.println(" encoding=\""+DEFAULT_XML_ENCODING+"\" ?>");
-		else print.println("?>");
-		print.println("<!-- Automatically generated from database " + connection.getDbUrl() + " -->");
-		print.println("<Record name=\"" + metadata.getTableName(1) + "\" type=\"delimited\">");
-
-		for (int i = 1; i <= metadata.getColumnCount(); i++) {
-			print.println(dbMetadata2jetel(metadata, i, connection.getJdbcSpecific()));
-		}
-
-		print.println("</Record>");
-
-		if (print != System.out) {
-			print.close();
-		}
-		resultSet.close();
-		connection.free();
 	}
 
 

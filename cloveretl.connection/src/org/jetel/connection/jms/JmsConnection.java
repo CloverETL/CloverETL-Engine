@@ -236,7 +236,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 					}
 				}
 			} finally {
-				if (libraries != null)
+				if (loader != null)
 					Thread.currentThread().setContextClassLoader(prevCl);
 			}
 		} catch (NoClassDefFoundError e) {
@@ -260,23 +260,34 @@ public class JmsConnection extends GraphElement implements IConnection {
 	synchronized public void free() {
         if(!isInitialized()) return;
         super.free();
-
+        final ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
         try {
+        	if (loader != null) {
+        		Thread.currentThread().setContextClassLoader(loader);
+        	}
         	if (connection != null)
         		connection.close();
         	connection = null;
-		} catch (JMSException e1) {
-			// ignore it, the connection is probably already closed
+		} catch (JMSException e) {
+			logger.warn("Error while closing JMS connection.", e);
+		} finally {
+			Thread.currentThread().setContextClassLoader(ctxLoader);
 		}
 	}
 
 	public void initSession() throws ComponentNotReadyException {
+		final ClassLoader ctxLoder = Thread.currentThread().getContextClassLoader();
 		try {
-		session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+			if (loader != null) {
+				Thread.currentThread().setContextClassLoader(loader);
+			}
+			session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		if (session == null)
 			throw new ComponentNotReadyException("Cannot create JMS session");
 		} catch (JMSException e) {
 			throw new ComponentNotReadyException(e);
+		} finally {
+			Thread.currentThread().setContextClassLoader(ctxLoder);
 		}
 	}
 	
@@ -297,7 +308,11 @@ public class JmsConnection extends GraphElement implements IConnection {
 	@Override
 	public synchronized void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
+		final ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
 		try {
+			if (loader != null) {
+				Thread.currentThread().setContextClassLoader(loader);
+			}
 			if (getGraph().getRuntimeContext().isBatchMode()) {
 				connection.close();
 				connection = null;
@@ -308,6 +323,8 @@ public class JmsConnection extends GraphElement implements IConnection {
 			}
 		} catch (JMSException e) {
 			throw new ComponentNotReadyException(e);
+		} finally {
+			Thread.currentThread().setContextClassLoader(ctxLoader);
 		}
 	}
 
@@ -359,7 +376,6 @@ public class JmsConnection extends GraphElement implements IConnection {
 	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
-        //TODO
 		return status;
 	}
 
@@ -368,15 +384,31 @@ public class JmsConnection extends GraphElement implements IConnection {
 	}
 
 	public MessageProducer createProducer() throws JMSException {
-		if (session == null)
-			throw new IllegalStateException("JMS session is not initialized");
-		return session.createProducer(destination);		
+		final ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
+		try {
+			if (loader != null) {
+				Thread.currentThread().setContextClassLoader(loader);
+			}
+			if (session == null)
+				throw new IllegalStateException("JMS session is not initialized");
+			return session.createProducer(destination);
+		} finally {
+			Thread.currentThread().setContextClassLoader(ctxLoader);
+		}
 	}
 	
 	public MessageConsumer createConsumer(String selector) throws JMSException {
-		if (session == null)
-			throw new IllegalStateException("JMS session is not initialized");
-		return session.createConsumer(destination, selector);		
+		final ClassLoader ctxLoader = Thread.currentThread().getContextClassLoader();
+		try {
+			if (loader != null) {
+				Thread.currentThread().setContextClassLoader(loader);
+			}
+			if (session == null)
+				throw new IllegalStateException("JMS session is not initialized");
+			return session.createConsumer(destination, selector);
+		} finally {
+			Thread.currentThread().setContextClassLoader(ctxLoader);
+		}
 	}
 		
 	/**

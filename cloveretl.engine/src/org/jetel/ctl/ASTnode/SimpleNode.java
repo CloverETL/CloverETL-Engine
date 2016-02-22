@@ -59,6 +59,7 @@ public abstract class SimpleNode implements Node {
 			this.children = new Node[original.children.length];
 			for (int i = 0; i<children.length; i++) {
 				children[i] = ((SimpleNode)original.children[i]).duplicate();
+				children[i].jjtSetParent(this); // the new parent is _this_ - a duplicate of the original parent node
 			}
 		} else {
 			this.children = null;

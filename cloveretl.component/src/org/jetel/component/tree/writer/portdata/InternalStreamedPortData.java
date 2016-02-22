@@ -119,7 +119,6 @@ class InternalStreamedPortData extends StreamedPortDataBase {
 		private DataRecord getKeyRecord() {
 			if (keyData == null) {
 				keyData = DataRecordFactory.newRecord(inPort.getMetadata());
-				keyData.init();
 				for (int i = 0; i < key.length; ++i) {
 					keyData.getField(key[i]).setValue(parentData.getField(parentKey[i]).getValue());
 				}
@@ -157,7 +156,6 @@ class InternalStreamedPortData extends StreamedPortDataBase {
 		
 		BufferedInputPortReader(InputPort inputPort) {
 			this.record = DataRecordFactory.newRecord(inputPort.getMetadata());
-			this.record.init();
 			this.inputPort = inputPort;
 		}
 		

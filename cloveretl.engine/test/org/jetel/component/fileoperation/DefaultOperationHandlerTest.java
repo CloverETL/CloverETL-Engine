@@ -32,6 +32,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.jetel.component.fileoperation.SimpleParameters.CopyParameters;
+import org.jetel.component.fileoperation.result.CopyResult;
+import org.jetel.util.ExceptionUtils;
 
 public class DefaultOperationHandlerTest extends LocalOperationHandlerTest {
 	
@@ -111,10 +113,10 @@ public class DefaultOperationHandlerTest extends LocalOperationHandlerTest {
 		WebdavOperationHandler webdavHandler = new WebdavOperationHandler();
 		manager.registerHandler(VERBOSE ? new ObservableHandler(webdavHandler) : webdavHandler);
 	
-		S3OperationHandler s3handler = new S3OperationHandler();
+		HttpS3OperationHandler s3handler = new HttpS3OperationHandler();
 		manager.registerHandler(VERBOSE ? new ObservableHandler(s3handler) : s3handler);
 
-		SFTPOperationHandler sftpHandler = new SFTPOperationHandler() {
+		PooledSFTPOperationHandler sftpHandler = new PooledSFTPOperationHandler() {
 
 			@Override
 			public boolean canPerform(Operation operation) {
@@ -128,6 +130,21 @@ public class DefaultOperationHandlerTest extends LocalOperationHandlerTest {
 			
 		};
 		manager.registerHandler(VERBOSE ? new ObservableHandler(sftpHandler) : sftpHandler);
+
+		S3OperationHandler s3Handler = new S3OperationHandler() {
+
+			@Override
+			public boolean canPerform(Operation operation) {
+				switch (operation.kind) {
+					case RESOLVE:
+						return false;
+					default: 
+						return super.canPerform(operation);
+				}
+			}
+			
+		};
+		manager.registerHandler(VERBOSE ? new ObservableHandler(s3Handler) : s3Handler);
 	}
 
 	@Override
@@ -215,6 +232,12 @@ public class DefaultOperationHandlerTest extends LocalOperationHandlerTest {
 		target = relativeURI("HTTP_" + name);
 		assertTrue(manager.copy(source, target).success());
 		assertEquals(originalContent, read(manager.getInput(target).channel()));
+
+		// CLO-5431
+		source = CloverURI.createURI("sftp://test:test@koule/home/test/data-in/specialCharacters");
+		target = relativeFtpURI("specialCharacters_CLO-5431/");
+		CopyResult result = manager.copy(source, target, new CopyParameters().setMakeParents(true).setRecursive(true));
+		assertTrue(ExceptionUtils.stackTraceToString(result.getFirstError()), result.success());
 
 //		zip(Channels.newInputStream(manager.getInput(relativeURI("HTTP_" + name)).next()), Channels.newOutputStream(manager.getOutput(relativeURI("test.jar")).next()), "HTTP_" + name);
 //		source = relativeJarURI("HTTP_" + name);

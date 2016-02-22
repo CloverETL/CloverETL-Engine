@@ -39,6 +39,7 @@ import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.enums.ProcessingType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.InputPort;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.WcardPattern;
@@ -101,7 +102,6 @@ public class ReadableChannelPortIterator {
 
 		// data record
 		record = DataRecordFactory.newRecord(inputPort.getMetadata());
-		record.init();
 
 		for (int i=0; i<portFileURL.length; i++) {
 			// parse field url
@@ -146,7 +146,12 @@ public class ReadableChannelPortIterator {
 				|| fieldDataWrapper.hasData()) {
 			// if processing stream - do not read whole stream before processing starts but process data as they are coming
 			// if processing sources, previous record resolved into more than one file
-			return fieldDataWrapper.getData(preferredDataSource);
+			Object nextData = fieldDataWrapper.getData(preferredDataSource);
+			if (fieldDataWrapper instanceof StreamFieldDataWrapper) {
+				// CLO-5524 ... when obtaining new stream, we need to save all fields from the first record of the stream
+				record = ((StreamFieldDataWrapper) fieldDataWrapper).getFirstRecord();
+			}
+			return nextData;
 		} else {
 			//read next record
 			record = inputPort.readRecord(record);
@@ -187,6 +192,7 @@ public class ReadableChannelPortIterator {
 			try {
 				while ((record = inputPort.readRecord(record)) != null) {}
 			} catch (Exception e) {
+				throw new JetelRuntimeException("Blank data records reading failed.", e);
 			}
 		}
 	}
@@ -435,11 +441,14 @@ public class ReadableChannelPortIterator {
 	}
 
 	/**
-	 * Source field data wrapper.
+	 * Stream field data wrapper.
 	 */
 	private static class StreamFieldDataWrapper extends FieldDataWrapper {
 		
 		private InputPort inputPort;
+		
+		// first record of the stream
+		private DataRecord firstRecord;
 		
 		public StreamFieldDataWrapper(DataField field, String charset, PortHandler portHandler, InputPort inputPort) {
 			super(field, charset, portHandler);
@@ -452,10 +461,19 @@ public class ReadableChannelPortIterator {
 		public ReadableByteChannel getData(DataSourceType preferredDataSource) throws IOException, JetelException {
 			InputPortReadableChannel channel = new InputPortReadableChannel(inputPort, field.getMetadata().getName(), charset);
 			if (!channel.isEOF()) {
+				firstRecord = channel.getCurrentRecord();
 				return channel;
 			}
 			//all records were read
 			return null;
+		}
+		
+		/**
+		 * See {@link InputPortReadableChannel#getCurrentRecord()}
+		 * @return
+		 */
+		public DataRecord getFirstRecord() {
+			return firstRecord;
 		}
 		
 	}

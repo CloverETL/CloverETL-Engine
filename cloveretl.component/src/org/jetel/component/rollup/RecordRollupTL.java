@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.jetel.component.AbstractTransformTL;
+import org.jetel.component.TransformUtils;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
@@ -144,10 +145,6 @@ public class RecordRollupTL extends AbstractTransformTL implements RecordRollup 
         updateTransformOnErrorFunction = wrapper.prepareOptionalFunctionExecution(UPDATE_TRANSFORM_ON_ERROR_FUNCTION_NAME);
         transformFunction = wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
         transformOnErrorFunction = wrapper.prepareOptionalFunctionExecution(TRANSFORM_ON_ERROR_FUNCTION_NAME);
-
-		// initialize an empty data record to be used instead of a null group accumulator
-        emptyRecord.init();
-        emptyRecord.reset();
     }
 
     @Override
@@ -221,7 +218,7 @@ public class RecordRollupTL extends AbstractTransformTL implements RecordRollup 
     private TLValue[] initGroupArguments(Exception exception, DataRecord groupAccumulator) {
     	if (exception != null) {
     		// provide exception message and stack trace
-	    	groupOnErrorArguments[0].setValue(ExceptionUtils.getMessage(null, exception));
+	    	groupOnErrorArguments[0].setValue(TransformUtils.getMessage(exception));
 	    	groupOnErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 
 	    	// if group accumulator is empty we use an empty record for better error reporting in scope of CTL
@@ -298,7 +295,7 @@ public class RecordRollupTL extends AbstractTransformTL implements RecordRollup 
     private TLValue[] initTransformArguments(Exception exception, int counter, DataRecord groupAccumulator) {
     	if (exception != null) {
     		// provide exception message, stack trace and call counter
-	    	transformOnErrorArguments[0].setValue(ExceptionUtils.getMessage(null, exception));
+	    	transformOnErrorArguments[0].setValue(TransformUtils.getMessage(exception));
 	    	transformOnErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 	    	transformOnErrorArguments[2].getNumeric().setValue(counter);
 

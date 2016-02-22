@@ -20,6 +20,7 @@ package org.jetel.data.sequence;
 
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.IGraphElement;
+import org.jetel.util.CloverPublicAPI;
 
 
 
@@ -30,6 +31,7 @@ import org.jetel.graph.IGraphElement;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
+@CloverPublicAPI
 public interface Sequence extends IGraphElement {
     
     /**

@@ -34,6 +34,8 @@ import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -71,8 +73,10 @@ import org.apache.http.auth.AuthenticationException;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CookieStore;
+import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -88,6 +92,9 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIUtils;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContextBuilder;
+import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.cookie.CookieSpecProvider;
 import org.apache.http.entity.BufferedHttpEntity;
@@ -96,12 +103,13 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.ContentBody;
+import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.TargetAuthenticationStrategy;
 import org.apache.http.impl.cookie.BasicClientCookie;
@@ -112,6 +120,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.log4j.Level;
+import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
@@ -412,7 +421,7 @@ public class HttpConnector extends Node {
 	/**
 	 * The name of an XML attribute representing multipart entities.
 	 */
-	private final static String XML_MULTIPART_ENTITIES_FIELDS_LIST_ATTRIBUTE = "multipartEntities";
+	public final static String XML_MULTIPART_ENTITIES_FIELDS_LIST_ATTRIBUTE = "multipartEntities";
 
 	/**
 	 * The name of an XML attribute representing field holding a target URL.
@@ -468,6 +477,12 @@ public class HttpConnector extends Node {
 	public final static String XML_RESPONSE_COOKIES_ATTRIBUTE = "responseCookies";
 
 	public final static String XML_STREAMING_ATTRIBUTE = "streaming";
+	
+	private static final String XML_DISABLE_SSL_CERT_VALIDATION = "disableSSLCertValidation";
+
+	private static final String XML_TIMEOUT_ATTRIBUTE = "timeout";
+	
+	private static final String XML_RETRY_COUNT_ATTRIBUTE = "retryCount";
 
 	/**
 	 * Default value of the 'append output' flag
@@ -550,6 +565,13 @@ public class HttpConnector extends Node {
 	 */
 	private static final int EP_MESSAGE_INDEX = 0;
 	private static final String EP_MESSAGE_NAME = RP_MESSAGE_NAME;
+
+	private static String MULTIPART_CONTENT = "EntityContent";
+	private static String MULTIPART_CONTENT_BYTE = "EntityContentByte";
+	private static String MULTIPART_SOURCE_FILE = "EntitySourceFile";
+	private static String MULTIPART_FILENAME = "EntityFileNameAttribute";
+	private static String MULTIPART_CHARSET = "EntityCharsetAttribute";
+	private static String MULTIPART_CONTENTTYPE = "EntityMimeTypeAttribute";
 
 	private interface ResponseWriter {
 		public void writeResponse(HttpResponse response) throws IOException;
@@ -841,6 +863,8 @@ public class HttpConnector extends Node {
 
 	protected DataRecord responseCookiesRecord;
 
+	protected DataRecord multipartRequestPropertiesRecord;
+
 	/**
 	 * Input records for input mapping transformation.
 	 */
@@ -888,6 +912,9 @@ public class HttpConnector extends Node {
 
 	private static final String RESPONSE_COOKIES_SEPARATOR = ";";
 
+	public static final String MULTIPART_ENTITIES_RECORD_NAME = "MultipartEntities";
+
+	public static final String MULTIPART_ENTITIES_SEPARATOR = ";";
 	/**
 	 * URL to which the HTTPConnector should connect.
 	 */
@@ -1183,6 +1210,21 @@ public class HttpConnector extends Node {
 	 * Result of the processing of one record.
 	 */
 	private RequestResult result;
+	
+	/**
+	 * Toggle for disabling verification of certificates.
+	 */
+	private boolean disableSSLCertValidation;
+	
+	private long timeout = -1;
+	private long timeoutToUse = -1;
+	private static final int IP_TIMEOUT_INDEX = 24;
+	private static final String IP_TIMEOUT_NAME = "timeout";
+	
+	private int retryCount = 0;
+	private int retryCountToUse = 0;
+	private static final int IP_RETRY_COUNT_INDEX = 25;
+	private static final String IP_RETRY_COUNT_NAME = "retryCount";
 
 	/* === Tools used === */
 
@@ -1205,7 +1247,7 @@ public class HttpConnector extends Node {
 
 	private HttpContext httpContext;
 	
-	private DefaultHttpRequestRetryHandler retryHandler;
+//	private DefaultHttpRequestRetryHandler retryHandler;
 	
 
 	/**
@@ -1246,9 +1288,9 @@ public class HttpConnector extends Node {
 	 */
 	protected static class PartWithName {
 		public String name;
-		public StringBody value;
+		public ContentBody value;
 
-		public PartWithName(String name, StringBody value) {
+		public PartWithName(String name, ContentBody value) {
 			super();
 			this.name = name;
 			this.value = value;
@@ -1266,7 +1308,7 @@ public class HttpConnector extends Node {
 		private String target;
 		private String proxy;
 		private Map<String, String> parameters = new LinkedHashMap<String, String>();
-		private Map<String, String> multipartEntities = new LinkedHashMap<String, String>();
+		private Map<String, HttpConnectorMutlipartEntity> multipartEntities = new LinkedHashMap<String, HttpConnectorMutlipartEntity>();
 		private Object content;
 
 		private URL targetURL;
@@ -1319,11 +1361,11 @@ public class HttpConnector extends Node {
 			this.parameters.putAll(parameters);
 		}
 
-		public Map<String, String> getMultipartEntities() {
+		public Map<String, HttpConnectorMutlipartEntity> getMultipartEntities() {
 			return multipartEntities;
 		}
 
-		public void setMultipartEntities(Map<String, String> multipartEntities) {
+		public void setMultipartEntities(Map<String, HttpConnectorMutlipartEntity> multipartEntities) {
 			this.multipartEntities.clear();
 			this.multipartEntities.putAll(multipartEntities);
 		}
@@ -1369,7 +1411,7 @@ public class HttpConnector extends Node {
 			configuration.setProxy(proxy);
 			configuration.setContent(content);
 			configuration.setParameters(new LinkedHashMap<String, String>(parameters));
-			configuration.setMultipartEntities(new LinkedHashMap<String, String>(multipartEntities));
+			configuration.setMultipartEntities(new LinkedHashMap<String, HttpConnectorMutlipartEntity>(multipartEntities));
 
 			configuration.setProxyURL(proxyURL);
 			configuration.setTargetURL(targetURL);
@@ -1397,7 +1439,7 @@ public class HttpConnector extends Node {
 			this.charset = Charset.defaultCharset().name();
 		}
 
-		tryToInit(false);
+		tryToInit(null);
 
 		// create response writer based on the configuration XXX is this really needed? Happens in preProcessForRecord()
 		// too
@@ -1463,6 +1505,24 @@ public class HttpConnector extends Node {
 		}
 
 		return null;
+	}
+	
+	private int getIntInputParameterValue(int index, int defaultValue) {
+		Object value = inputParamsRecord.getField(index).getValue();
+		if (value != null) {
+			return Integer.parseInt(value.toString());
+		}
+
+		return defaultValue;
+	}
+
+	private long getLongInputParameterValue(int index, long defaultValue) {
+		Object value = inputParamsRecord.getField(index).getValue();
+		if (value != null) {
+			return Long.parseLong(value.toString());
+		}
+
+		return defaultValue;
 	}
 
 	/**
@@ -1541,7 +1601,27 @@ public class HttpConnector extends Node {
 					}
 				}
 			}
-		}		
+		}
+		
+		timeoutToUse = getLongInputParameterValue(IP_TIMEOUT_INDEX, timeout);
+		retryCountToUse = getIntInputParameterValue(IP_RETRY_COUNT_INDEX, retryCount);
+		//
+		// if(this.multipartRequestPropertiesRecord != null) {
+		// if(multipartRequestMappingToUse==null) {
+		// multipartRequestMappingToUse = new HashMap<String, String>();
+		// }else{
+		// this.multipartRequestMappingToUse.clear();
+		// }
+		// for (DataField field : multipartRequestPropertiesRecord) {
+		// if (inputMappingTransformation.isOutputOverridden(multipartRequestPropertiesRecord, field)) {
+		// String labelOrName = field.getMetadata().getLabelOrName();
+		// if (!field.isNull()) {
+		// multipartRequestMappingToUse.put(labelOrName, field.getValue().toString());
+		// }
+		// }
+		// }
+		// }
+
 	}
 
 	/**
@@ -1760,7 +1840,8 @@ public class HttpConnector extends Node {
 	 * 
 	 * @throws ComponentNotReadyException
 	 */
-	protected void tryToInit(boolean runningFromCheckConfig) throws ComponentNotReadyException {
+	protected void tryToInit(ConfigurationStatus status) throws ComponentNotReadyException {
+		boolean runningFromCheckConfig = (status != null);
 		// find the attached ports (input and output)
 		inputPort = getInputPortDirect(INPUT_PORT_NUMBER);
 		standardOutputPort = getOutputPort(STANDARD_OUTPUT_PORT_NUMBER);
@@ -1789,7 +1870,6 @@ public class HttpConnector extends Node {
 
 		DataRecordMetadata paramsMetadata = createInputParametersMetadata();
 		inputParamsRecord = DataRecordFactory.newRecord(paramsMetadata);
-		inputParamsRecord.init();
 
 		if (requestCookiesStr != null) {
 			requestCookies = new Properties();
@@ -1800,7 +1880,6 @@ public class HttpConnector extends Node {
 			}
 
 			requestCookiesRecord = DataRecordFactory.newRecord(createMetadataFromProperties(requestCookies, REQUEST_COOKIES_RECORD_NAME));
-			requestCookiesRecord.init();
 		}
 
 		// build properties from request headers
@@ -1810,11 +1889,21 @@ public class HttpConnector extends Node {
 				additionalRequestHeaders.load(new StringReader(additionalRequestHeadersStr));
 
 				additionalHeadersRecord = DataRecordFactory.newRecord(createMetadataFromProperties(additionalRequestHeaders, ADDITIONAL_HTTP_HEADERS_RECORD_NAME));
-				additionalHeadersRecord.init();
 			} catch (Exception e) {
 				throw new ComponentNotReadyException(this, "Unexpected exception during request headers reading.", e);
 			}
 		}
+
+		// build record for multipart entities
+		if (!StringUtils.isEmpty(this.multipartEntities)) {
+			try {
+				this.multipartRequestPropertiesRecord = DataRecordFactory.newRecord(createMultipartMetadataFromString(multipartEntities, MULTIPART_ENTITIES_RECORD_NAME, MULTIPART_ENTITIES_SEPARATOR));
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(this, "Unexpected exception during request headers reading.", e);
+			}
+		}
+
+		// create internal result data record
 		// build properties from request headers
 		if (!StringUtils.isEmpty(requestParametersStr)) {
 			requestParameters = new Properties();
@@ -1822,7 +1911,6 @@ public class HttpConnector extends Node {
 				requestParameters.load(new StringReader(requestParametersStr));
 
 				requestParametersRecord = DataRecordFactory.newRecord(createMetadataFromProperties(requestParameters, REQUEST_PARAMETERS_RECORD_NAME));
-				requestParametersRecord.init();
 			} catch (Exception e) {
 				throw new ComponentNotReadyException(this, "Unexpected exception during request headers reading.", e);
 			}
@@ -1832,11 +1920,9 @@ public class HttpConnector extends Node {
 		if (hasStandardOutputPort) {
 			DataRecordMetadata resultMetadata = createResultMetadata();
 			resultRecord = DataRecordFactory.newRecord(resultMetadata);
-			resultRecord.init();
 
 			if (responseCookies != null) {
 				responseCookiesRecord = DataRecordFactory.newRecord(createResponseCookiesMetadata(responseCookies));
-				responseCookiesRecord.init();
 			}
 		}
 
@@ -1844,20 +1930,16 @@ public class HttpConnector extends Node {
 		if (hasErrorOutputPort || redirectErrorOutput) {
 			DataRecordMetadata errorMetadata = createErrorMetadata();
 			errorRecord = DataRecordFactory.newRecord(errorMetadata);
-			errorRecord.init();
 		}
 
 		// create input data record, if necessary
 		if (hasInputPort) {
 			inputRecord = DataRecordFactory.newRecord(inputPort.getMetadata());
-			inputRecord.init();
 		}
 
 		// create output data records, if necessary
 		if (hasStandardOutputPort) {
 			standardOutputRecord = DataRecordFactory.newRecord(standardOutputPort.getMetadata());
-			standardOutputRecord.init();
-			standardOutputRecord.reset();
 			if (outputFieldName != null) {
 				outField = (StringDataField) standardOutputRecord.getField(outputFieldName);
 			} else if (standardOutputMapping == null) {
@@ -1867,8 +1949,6 @@ public class HttpConnector extends Node {
 
 		if (hasErrorOutputPort) {
 			errorOutputRecord = DataRecordFactory.newRecord(errorOutputPort.getMetadata());
-			errorOutputRecord.init();
-			errorOutputRecord.reset();
 		}
 
 		// create input records for input mapping
@@ -1885,12 +1965,15 @@ public class HttpConnector extends Node {
 		inputMappingOutRecordsList.add(additionalHeadersRecord);
 		inputMappingOutRecordsList.add(requestCookiesRecord);
 		inputMappingOutRecordsList.add(requestParametersRecord);
+		inputMappingOutRecordsList.add(multipartRequestPropertiesRecord);
+
 		inputMappingOutRecords = inputMappingOutRecordsList.toArray(new DataRecord[0]);
 
 		inputMappingTransformation.addOutputRecord(ATTRIBUTES_RECORD_NAME, inputParamsRecord);
 		inputMappingTransformation.addOutputRecord(ADDITIONAL_HTTP_HEADERS_RECORD_NAME, additionalHeadersRecord);
 		inputMappingTransformation.addOutputRecord(REQUEST_COOKIES_RECORD_NAME, requestCookiesRecord);
 		inputMappingTransformation.addOutputRecord(REQUEST_PARAMETERS_RECORD_NAME, requestParametersRecord);
+		inputMappingTransformation.addOutputRecord(MULTIPART_ENTITIES_RECORD_NAME, multipartRequestPropertiesRecord);
 
 		// create input records for standard output mapping
 		standardOutputMappingTransformation.addInputRecord(INPUT_RECORD_NAME, inputRecord);
@@ -1926,9 +2009,15 @@ public class HttpConnector extends Node {
 			initExecutionParametersFromComponentAttributes();
 		}
 
-		inputMappingTransformation.init(XML_INPUT_MAPPING_ATTRIBUTE);
-		standardOutputMappingTransformation.init(XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE);
-		errorOutputMappingTransformation.init(XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE);
+		standardOutputMappingTransformation.addAutoMapping(INPUT_RECORD_NAME, STANDARD_OUTPUT_RECORD_NAME);
+		standardOutputMappingTransformation.addAutoMapping(RESULT_RECORD_NAME, STANDARD_OUTPUT_RECORD_NAME);
+
+		errorOutputMappingTransformation.addAutoMapping(INPUT_RECORD_NAME, ERROR_OUTPUT_RECORD_NAME);
+		errorOutputMappingTransformation.addAutoMapping(ERROR_RECORD_NAME, ERROR_OUTPUT_RECORD_NAME);
+		
+		inputMappingTransformation.init(status, XML_INPUT_MAPPING_ATTRIBUTE);
+		standardOutputMappingTransformation.init(status, XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE);
+		errorOutputMappingTransformation.init(status, XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE);
 	}
 
 	private void initExecutionParametersFromComponentAttributes() throws ComponentNotReadyException {
@@ -1959,6 +2048,9 @@ public class HttpConnector extends Node {
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_OATUH_TOKEN_NAME, oAuthAccessToken);
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_OATUH_TOKEN_SECRET_NAME, oAuthAccessTokenSecret);
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_REQUEST_PARAMETERS_NAME, requestParameters != null ? new LinkedHashMap<Object, Object>(requestParameters) : new LinkedHashMap<String, Object>());
+		
+		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_TIMEOUT_NAME, timeout);
+		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_RETRY_COUNT_NAME, retryCount);
 		
 		if (!StringUtils.isEmpty(rawHttpHeaders)) {
 			inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_RAW_HTTP_HEADERS_NAME, parseRawHttpHeadersItems());
@@ -2006,9 +2098,18 @@ public class HttpConnector extends Node {
 
 		HttpResponse response = buildAndSendRequest(configuration);
 
-		// warn if the HTTP response code isn't 200
-		if (response != null && response.getStatusLine().getStatusCode() != 200) {
-			logger.warn("Returned code for http request " + configuration.getTarget() + " is " + response.getStatusLine().getStatusCode());
+		if (response != null) {
+			int statusCode = response.getStatusLine().getStatusCode();
+			if (statusCode != 200) {
+				String message = "Returned code for http request " + configuration.getTarget() + " is " + statusCode;
+				if (statusCode >= 300) { // CLO-6152
+					// warn if the HTTP response code isn't 2xx
+					logger.warn(message);
+				} else {
+					// log 1xx and 2xx status codes as info (except for 200)
+					logger.info(message);
+				}
+			}
 		}
 
 		result.setResponse(response);
@@ -2031,7 +2132,8 @@ public class HttpConnector extends Node {
 		initHTTPClient(configuration);
 
 		HttpRequestBase method = prepareMethod(configuration);
-
+		
+		
 		// sign the request before sending it
 		if (oauthConsumer != null) {
 			oauthConsumer.sign(method);
@@ -2297,20 +2399,9 @@ public class HttpConnector extends Node {
 				outField.setNull(true);
 			}
 
-			if (standardOutputMapping != null) {
-				standardOutputMappingTransformation.execute();
+			standardOutputMappingTransformation.execute();
 
-				mapOverridingOutput();
-			} else {
-				// //output transformation is not specified - default star mapping is performed
-				// // POSSIBLE PROBLEM FOR BACKWARD COMPATIBILITY
-				// mapByName(standardOutputMappingInRecords, standardOutputRecord);
-				//
-				// // as the output transformation is not specified, we must assume, that this is a
-				// // usage of HTTPConnector, that is not aware of output mapping. Thus map the fields
-				// // in an old way to preserve compatibility.
-				mapLegacyOutput();
-			}
+			mapOverridingOutput();
 
 			try {
 				standardOutputPort.writeRecord(standardOutputRecord);
@@ -2332,26 +2423,6 @@ public class HttpConnector extends Node {
 		// not set by a mapping
 		if (outputFieldName != null && outField != null && outField.isNull()) {
 			outField.setValue(resultRecord.getField(RP_CONTENT_INDEX));
-		}
-	}
-
-	/**
-	 * Maps fields based on the configuration to preserve compatibility.
-	 * 
-	 * @throws Exception
-	 */
-	private void mapLegacyOutput() {
-		// output field connected - set the value there.
-		// NOTE: no output mapping is defined.
-		if (outField != null) {
-			if (outputFileUrlToUse != null || storeResponseToTempFileToUse) {
-				// if we are storing the response to file, set the file URL into output field
-				outField.setValue(resultRecord.getField(RP_OUTPUTFILE_INDEX));
-
-			} else {
-				// otherwise store the content
-				outField.setValue(resultRecord.getField(RP_CONTENT_INDEX));
-			}
 		}
 	}
 
@@ -2428,6 +2499,9 @@ public class HttpConnector extends Node {
 		httpConnector.setResponseCookies(xattribs.getString(XML_RESPONSE_COOKIES_ATTRIBUTE, null));
 		httpConnector.setStreaming(xattribs.getBoolean(XML_STREAMING_ATTRIBUTE, true));
 		httpConnector.setRequestParametersStr(xattribs.getString(XML_REQUEST_PARAMETERS_ATTRIBUTE, null));
+		httpConnector.setDisableSSLCertValidation(xattribs.getBoolean(XML_DISABLE_SSL_CERT_VALIDATION, false));
+		httpConnector.setTimeout(xattribs.getTimeInterval(XML_TIMEOUT_ATTRIBUTE, -1));
+		httpConnector.setRetryCount(xattribs.getInteger(XML_RETRY_COUNT_ATTRIBUTE, 0));
 
 		/** job flow related properties */
 		httpConnector.setInputMapping(xattribs.getStringEx(XML_INPUT_MAPPING_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
@@ -2564,22 +2638,22 @@ public class HttpConnector extends Node {
 				}
 			}
 
-			// check whether multipart entities list contains just values from metadata
-			if (!StringUtils.isEmpty(multipartEntities)) {
-				List<String> multipartEntitiesList = new ArrayList<String>();
-				StringTokenizer tokenizer = new StringTokenizer(multipartEntities, ";");
-				while (tokenizer.hasMoreElements()) {
-					multipartEntitiesList.add(tokenizer.nextToken());
-				}
-				String[] metadataNames = inputPort.getMetadata().getFieldNamesArray();
-				for (String metadataName : metadataNames) {
-					multipartEntitiesList.remove(metadataName);
-				}
-
-				if (!multipartEntitiesList.isEmpty()) {
-					status.add(new ConfigurationProblem("Given multipart entities list contains value not defined at metadata: " + multipartEntitiesList.get(0), Severity.ERROR, this, Priority.NORMAL));
-				}
-			}
+//			// check whether multipart entities list contains just values from metadata
+//			if (!StringUtils.isEmpty(multipartEntities)) {
+////				List<String> multipartEntitiesList = new ArrayList<String>();
+////				StringTokenizer tokenizer = new StringTokenizer(multipartEntities, ";");
+////				while (tokenizer.hasMoreElements()) {
+////					multipartEntitiesList.add(tokenizer.nextToken());
+////				}
+////				String[] metadataNames = inputPort.getMetadata().getFieldNamesArray();
+////				for (String metadataName : metadataNames) {
+////					multipartEntitiesList.remove(metadataName);
+////				}
+////
+////				if (!multipartEntitiesList.isEmpty()) {
+////					status.add(new ConfigurationProblem("Given multipart entities list contains value not defined at metadata: " + multipartEntitiesList.get(0), Severity.ERROR, this, Priority.NORMAL));
+////				}
+//			}
 
 			// check whether ignored fields list contains just values from metadata
 			if (!StringUtils.isEmpty(ignoredFields)) {
@@ -2683,10 +2757,6 @@ public class HttpConnector extends Node {
 			}
 		}
 
-		if (redirectErrorOutput && standardOutputMapping == null) {
-			status.add(new ConfigurationProblem("Fields of error records redirected to standard output port will be empty unless Standard output mapping is defined", Severity.WARNING, this, Priority.NORMAL, XML_REDIRECT_ERROR_OUTPUT));
-		}
-
 		if (!StringUtils.isEmpty(rawHttpHeaders)) {
 			for (CharSequence rawHeader : parseRawHttpHeadersItems()) {
 				try {
@@ -2696,9 +2766,13 @@ public class HttpConnector extends Node {
 				}
 			}
 		}
+		
+		if (disableSSLCertValidation) {
+			status.add("Certificate validation is disabled. Connection will not be secure.", Severity.WARNING, this, Priority.NORMAL, XML_DISABLE_SSL_CERT_VALIDATION);
+		}
 
 		try {
-			tryToInit(true);
+			tryToInit(status);
 		} catch (ComponentNotReadyException e) {
 			status.add("Initialization failed. " + ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, e.getAttributeName());
 		}
@@ -2734,11 +2808,10 @@ public class HttpConnector extends Node {
 	 * 
 	 * @param configuration
 	 * @return a POST-like method for given configuration.
-	 * 
-	 * @throws UnsupportedEncodingException
+	 * @throws IOException
 	 */
 	private HttpEntityEnclosingRequestBase prepareEntityEnclosingMethod(String method,
-			HTTPRequestConfiguration configuration) throws UnsupportedEncodingException {
+			HTTPRequestConfiguration configuration) throws IOException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Creating " + method + " request to " + configuration.getTarget());
 		}
@@ -2878,15 +2951,17 @@ public class HttpConnector extends Node {
 	 * @return a HTTP method (based on the given configuration) to be used for a request.
 	 * @throws UnsupportedEncodingException
 	 * @throws ComponentNotReadyException
+	 * @throws IOException
 	 */
-	private HttpRequestBase prepareMethod(HTTPRequestConfiguration configuration) throws UnsupportedEncodingException,
-			ComponentNotReadyException {
+	private HttpRequestBase prepareMethod(HTTPRequestConfiguration configuration) throws ComponentNotReadyException,
+			IOException {
 		HttpRequestBase method = null;
 
 		if (requestMethodToUse != null) {
 			requestMethodToUse = requestMethodToUse.toUpperCase(Locale.ENGLISH);
 		}
 
+		
 		// configure the request method
 		if (PLAIN_REQUEST_METHODS.contains(requestMethodToUse)) {
 			method = preparePlainMethod(requestMethodToUse, configuration);
@@ -2906,6 +2981,12 @@ public class HttpConnector extends Node {
 
 		addRequestCookies(method);
 
+		if(this.timeoutToUse>0) {
+			RequestConfig reqConfig = RequestConfig.custom().setConnectTimeout((int)this.timeoutToUse).
+					setConnectionRequestTimeout((int)this.timeoutToUse).setSocketTimeout((int)this.timeoutToUse).build();
+			method.setConfig(reqConfig);
+		}
+		
 		try {
 			if (!StringUtils.isEmpty(this.usernameToUse) && !StringUtils.isEmpty(this.passwordToUse) && (("BASIC".equals(this.authenticationMethodToUse) || "ANY".equals(this.authenticationMethodToUse)))) {
 				Header[] headers = method.getHeaders("Authorization");
@@ -2920,7 +3001,13 @@ public class HttpConnector extends Node {
 		} catch (AuthenticationException e) {
 			logger.warn("Preemptive authentication. Authorization header generation failed.", e);
 		}
-
+		
+		//CLO-6504 - put Accept header to request, because some servers interprets missing accept header wrongly
+		Header[] headers = method.getHeaders("Accept");
+		if((headers==null) || headers.length == 0) {
+			method.addHeader("Accept", "*/*");
+		}
+				
 		return method;
 	}
 
@@ -2993,18 +3080,96 @@ public class HttpConnector extends Node {
 	 * 
 	 * @param multipartEntities
 	 * @return an array of content parts for given entity map.
-	 * 
-	 * @throws UnsupportedEncodingException
+	 * @throws IOException
 	 */
-	private PartWithName[] buildMultiPart(Map<String, String> multipartEntities) throws UnsupportedEncodingException {
+	protected PartWithName[] buildMultiPart(Map<String, HttpConnectorMutlipartEntity> multipartEntities)
+			throws IOException {
 		if (multipartEntities == null) {
 			return null;
 		}
 
 		int index = 0;
 		PartWithName[] result = new PartWithName[multipartEntities.size()];
-		for (Entry<String, String> parameter : multipartEntities.entrySet()) {
-			result[index] = new PartWithName(parameter.getKey(), new StringBody(parameter.getValue()));
+		for (Entry<String, HttpConnectorMutlipartEntity> parameter : multipartEntities.entrySet()) {
+			if(parameter.getValue().sourceFile!=null) {
+				//input stream
+				InputStream inputStream = FileUtils.getInputStream(this.getContextURL(), parameter.getValue().sourceFile);
+				String fileName = null;
+				File file = FileUtils.getJavaFile(this.getContextURL(), parameter.getValue().sourceFile);
+				if (file != null) {
+					fileName = file.getName();
+				} else {
+					fileName = parameter.getKey();
+				}
+				if(parameter.getValue().fileNameAttribute!=null) {
+					fileName = parameter.getValue().fileNameAttribute;
+				}
+				InputStreamBody body = (parameter.getValue().conentType != null) ? new InputStreamBody(inputStream, parameter.getValue().conentType, fileName) : new InputStreamBody(inputStream, fileName);
+				result[index] = new PartWithName(parameter.getKey(), body);
+
+				if (logger.isDebugEnabled()) {
+					if (parameter.getValue().charset != null) {
+						logger.debug("Charset specified to " + parameter.getValue().charset + ". But charset cannot be specified for file multipart entity. Charset will be ignored.");
+					}
+				}
+			}else if(parameter.getValue().contentByte!=null) {
+				//input stream
+				ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(parameter.getValue().contentByte);
+				String fileName = parameter.getValue().name; 
+				if(parameter.getValue().fileNameAttribute!=null) {
+					fileName = parameter.getValue().fileNameAttribute;
+				}
+				InputStreamBody body = (parameter.getValue().conentType != null) ? new InputStreamBody(byteArrayInputStream, parameter.getValue().conentType, fileName) : new InputStreamBody(byteArrayInputStream, fileName);
+				result[index] = new PartWithName(parameter.getKey(), body);
+				if (logger.isDebugEnabled()) {
+					if (parameter.getValue().charset != null) {
+						logger.debug("Charset specified to " + parameter.getValue().charset + ". But charset cannot be specified for file multipart entity. Charset will be ignored.");
+					}
+				}
+			}else{ 
+				//string content
+				final String fileName = parameter.getValue().fileNameAttribute;
+				
+				String value = parameter.getValue().content != null ? parameter.getValue().content : "";
+				String contentTypeString = parameter.getValue().conentType != null ? parameter.getValue().conentType : ContentType.TEXT_PLAIN.getMimeType();
+				Charset charset = parameter.getValue().charset != null ? Charset.forName(parameter.getValue().charset) : Charset.defaultCharset();
+
+				ContentType contentType = ContentType.create(contentTypeString, charset);
+				
+				StringBody stringBody = new StringBody(value, contentType) {
+					@Override
+					public String getFilename() {
+						return fileName;
+					}
+					
+				};
+						
+				
+				result[index] = new PartWithName(parameter.getKey(), stringBody);
+			}
+			
+//			if (parameter.getValue().fileNameAttribute == null) {
+//				Charset charset = parameter.getValue().charset != null ? Charset.forName(parameter.getValue().charset) : Charset.defaultCharset();
+//				String contentType = parameter.getValue().conentType != null ? parameter.getValue().conentType : ContentType.TEXT_PLAIN.toString();
+//
+//				String value = parameter.getValue().content != null ? parameter.getValue().content : "";
+//				result[index] = new PartWithName(parameter.getKey(), new StringBody(value, contentType, charset));
+//			} else if (parameter.getValue().content != null) {
+//				Charset charset = parameter.getValue().charset != null ? Charset.forName(parameter.getValue().charset) : Charset.defaultCharset();
+//				String contentType = parameter.getValue().conentType != null ? parameter.getValue().conentType : ContentType.TEXT_PLAIN.toString();
+//
+//				final String fileName = parameter.getValue().fileNameAttribute;
+//				String value = parameter.getValue().content != null ? parameter.getValue().content : "";
+//				result[index] = new PartWithName(parameter.getKey(), new StringBody(value, contentType, charset) {
+//					@Override
+//					public String getFilename() {
+//						return fileName;
+//					}
+//				});
+//
+//			} else {
+
+	//		}
 			index++;
 		}
 
@@ -3027,12 +3192,19 @@ public class HttpConnector extends Node {
 		HttpClientBuilder builder = HttpClientBuilder.create();
 
 		builder = builder.useSystemProperties();
-		if (this.retryHandler == null) {
-			this.retryHandler = new DefaultHttpRequestRetryHandler(0, false);
-		}
+		HttpRequestRetryHandler retryHandler;
+		retryHandler = new HttpRequestRetryHandler() {
+			@Override
+			public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
+				if(executionCount <= HttpConnector.this.retryCountToUse) {
+					return true;
+				}
+				return false;
+			}
+		};
+		builder.setRetryHandler(retryHandler);
 
-		builder.setRetryHandler(this.retryHandler);
-
+		
 		cookieStore = new RequestResponseCookieStore();
 
 		builder.addInterceptorLast(requestLoggingInterceptor);
@@ -3103,6 +3275,27 @@ public class HttpConnector extends Node {
 			// }
 			//
 			// });
+		}
+
+		if (disableSSLCertValidation) {
+			// THIS MAKES THE SSL CONNECTION UNSECURE
+			try {
+				SSLContextBuilder contextBuilder = new SSLContextBuilder();
+				contextBuilder.loadTrustMaterial(null, new TrustStrategy() {
+					@Override
+					public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+						// trust ALL certificates
+						return true;
+					}
+				});
+				SSLConnectionSocketFactory sslFactory = new SSLConnectionSocketFactory(
+						contextBuilder.build(),
+						SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+				
+				builder.setSSLSocketFactory(sslFactory);
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(this, "Problem with HTTPS connection.", e);
+			}
 		}
 
 		// configure OAuth authentication
@@ -3207,7 +3400,7 @@ public class HttpConnector extends Node {
 			String rawHeaderStr = rawHeader.toString().trim();
 			if (!rawHeaderStr.isEmpty()) {
 				rawHeaderStr = refResolver.resolveRef(rawHeaderStr);
-				int separatorIndex = rawHeaderStr.indexOf(":");
+				int separatorIndex = rawHeaderStr.indexOf(':');
 				if (separatorIndex > 0) {
 					String name = rawHeaderStr.substring(0, separatorIndex).trim();
 					String value = rawHeaderStr.substring(separatorIndex + 1).trim();
@@ -3290,17 +3483,79 @@ public class HttpConnector extends Node {
 	 * 
 	 * @return a map representing multi-part entities.
 	 */
-	private Map<String, String> prepareMultipartEntities() {
-		Map<String, String> multipartEntitiesMap = new LinkedHashMap<String, String>();
+	protected Map<String, HttpConnectorMutlipartEntity> prepareMultipartEntities() {
+		Map<String, HttpConnectorMutlipartEntity> multipartEntitiesMap = new LinkedHashMap<String, HttpConnectorMutlipartEntity>();
+
+		if (StringUtils.isEmpty(multipartEntitiesToUse) && !StringUtils.isEmpty(this.multipartEntities)) {
+			this.multipartEntitiesToUse = this.multipartEntities;
+		}
 
 		// parse multipart entities
-		if (multipartEntities != null) {
-			StringTokenizer parts = new StringTokenizer(multipartEntities, ";");
+		if (multipartEntitiesToUse != null) {
+			StringTokenizer parts = new StringTokenizer(this.multipartEntitiesToUse, ";");
+			boolean multipartExists = false;
 			while (parts.hasMoreTokens()) {
 				String token = parts.nextToken();
-				String value = inputRecord.getField(token).toString();
+				String value = null;
+				if(inputRecord.hasField(token)) {
+					value = inputRecord.getField(token).toString();
+					multipartExists = true;
+				}
 
-				multipartEntitiesMap.put(token, value);
+				HttpConnectorMutlipartEntity entity = new HttpConnectorMutlipartEntity();
+
+				String contentValue = null;
+				if (multipartRequestPropertiesRecord != null) {
+					DataField field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_CONTENT);
+					if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
+						multipartExists = true;
+						contentValue = field.getValue() != null ? field.getValue().toString() : "";
+					}
+
+					field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_CHARSET);
+					if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
+						entity.charset = field.getValue() != null ? field.getValue().toString() : null;
+						multipartExists = true;
+					}
+
+					field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_CONTENTTYPE);
+					if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
+						entity.conentType = field.getValue() != null ? field.getValue().toString() : null;
+						multipartExists = true;
+					}
+
+					field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_FILENAME);
+					if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
+						entity.fileNameAttribute = field.getValue() != null ? field.getValue().toString() : null;
+						multipartExists = true;
+					}
+
+					field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_SOURCE_FILE);
+					if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
+						entity.sourceFile = field.getValue() != null ? field.getValue().toString() : null;
+						multipartExists = true;
+					}
+
+					field = multipartRequestPropertiesRecord.getField(token + "_" + MULTIPART_CONTENT_BYTE);
+					if (field != null && this.inputMappingTransformation.isOutputOverridden(this.multipartRequestPropertiesRecord, field)) {
+						if(field instanceof ByteDataField) {
+							entity.contentByte = ((ByteDataField)field).getByteArray();
+							multipartExists = true;
+						}else {
+							entity.contentByte = null;
+						}
+					}
+				}
+				entity.name = token;
+
+				if (contentValue != null) {
+					entity.content = contentValue;
+				} else if (entity.fileNameAttribute == null) {
+					entity.content = value; // use not mapped input field value only if file is not mapped to
+				}
+				if(multipartExists) {
+				  multipartEntitiesMap.put(token, entity);
+				}
 			}
 		}
 
@@ -3353,7 +3608,7 @@ public class HttpConnector extends Node {
 		boolean possibleToMapVariables = true;
 		try {
 			String tempUrl = "";
-			if (urlTemplate.indexOf("*") > 0) {
+			if (urlTemplate.indexOf('*') > 0) {
 				StringTokenizer st = new StringTokenizer(urlTemplate, "*");
 				while (st.hasMoreTokens()) {
 					tempUrl += st.nextToken();
@@ -3363,9 +3618,9 @@ public class HttpConnector extends Node {
 			}
 
 			Set<String> variablesAtUrl = new HashSet<String>();
-			while (tempUrl.indexOf("{") > 0 && tempUrl.length() > 0) {
-				String propertyName = tempUrl.substring(tempUrl.indexOf("{") + 1, tempUrl.indexOf("}"));
-				tempUrl = tempUrl.substring(tempUrl.indexOf("}") + 1, tempUrl.length());
+			while (tempUrl.indexOf('{') > 0 && tempUrl.length() > 0) {
+				String propertyName = tempUrl.substring(tempUrl.indexOf('{') + 1, tempUrl.indexOf('}'));
+				tempUrl = tempUrl.substring(tempUrl.indexOf('}') + 1, tempUrl.length());
 				variablesAtUrl.add(propertyName);
 			}
 
@@ -3468,6 +3723,8 @@ public class HttpConnector extends Node {
 		inputParamsRecord.getField(IP_OATUH_TOKEN_SECRET_INDEX).setValue(oAuthAccessTokenSecretToUse);
 		inputParamsRecord.getField(IP_RAW_HTTP_HEADERS_INDEX).setValue(rawHttpHeadersToUse);
 		inputParamsRecord.getField(IP_REQUEST_PARAMETERS_INDEX).setValue(requestParametersToUse);
+		inputParamsRecord.getField(IP_TIMEOUT_INDEX).setValue(timeoutToUse);
+		inputParamsRecord.getField(IP_RETRY_COUNT_INDEX).setValue(retryCountToUse);
 	}
 
 	/**
@@ -3545,7 +3802,73 @@ public class HttpConnector extends Node {
 		metadata.addField(IP_MULTIPART_ENTITIES_INDEX, new DataFieldMetadata(IP_MULTIPART_ENTITIES_NAME, DataFieldType.STRING, null));
 		metadata.addField(IP_RAW_HTTP_HEADERS_INDEX, new DataFieldMetadata(IP_RAW_HTTP_HEADERS_NAME, DataFieldType.STRING, null, DataFieldContainerType.LIST));
 		metadata.addField(IP_REQUEST_PARAMETERS_INDEX, new DataFieldMetadata(IP_REQUEST_PARAMETERS_NAME, DataFieldType.STRING, null, DataFieldContainerType.MAP));
+		metadata.addField(IP_TIMEOUT_INDEX, new DataFieldMetadata(IP_TIMEOUT_NAME, DataFieldType.LONG, null));
+		metadata.addField(IP_RETRY_COUNT_INDEX, new DataFieldMetadata(IP_RETRY_COUNT_NAME, DataFieldType.INTEGER, null));
 
+		return metadata;
+	}
+
+	public static DataRecordMetadata createMetadataFromString(String inputString, String metadataName, String separator) {
+		DataRecordMetadata metadata = new DataRecordMetadata(metadataName);
+
+		String[] splitted = inputString.split(separator);
+
+		for (String part : splitted) {
+			String partTrimmed = part.trim();
+			if (!partTrimmed.isEmpty()) {
+				DataFieldMetadata field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
+				field.setLabel(partTrimmed);
+				metadata.addField(field);
+			}
+		}
+
+		metadata.normalize();
+		return metadata;
+	}
+
+	public static DataRecordMetadata createMultipartMetadataFromString(String multipart, String metadataName,
+			String separator) {
+		if (multipart == null || StringUtils.isEmpty(multipart)) {
+			return null;
+		}
+
+		DataRecordMetadata metadata = new DataRecordMetadata(metadataName);
+
+		String[] splitted = multipart.split(separator);
+
+		for (String part : splitted) {
+			String partTrimmed = part.trim();
+			if (!partTrimmed.isEmpty()) {
+				DataFieldMetadata field;
+
+				field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
+				field.setLabel(partTrimmed + "_" + MULTIPART_CONTENT);
+				metadata.addField(field);
+				
+				field = new DataFieldMetadata("xxx", DataFieldType.BYTE, null);
+				field.setLabel(partTrimmed + "_" + MULTIPART_CONTENT_BYTE);
+				metadata.addField(field);
+
+				field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
+				field.setLabel(partTrimmed + "_" + MULTIPART_SOURCE_FILE);
+				metadata.addField(field);
+
+				field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
+				field.setLabel(partTrimmed + "_" + MULTIPART_FILENAME);
+				metadata.addField(field);
+
+				field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
+				field.setLabel(partTrimmed + "_" + MULTIPART_CHARSET);
+				metadata.addField(field);
+
+				field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
+				field.setLabel(partTrimmed + "_" + MULTIPART_CONTENTTYPE);
+				metadata.addField(field);
+
+			}
+		}
+
+		metadata.normalize();
 		return metadata;
 	}
 
@@ -3563,21 +3886,7 @@ public class HttpConnector extends Node {
 	}
 
 	public static DataRecordMetadata createResponseCookiesMetadata(String responseCookies) {
-		DataRecordMetadata metadata = new DataRecordMetadata(RESPONSE_COOKIES_RECORD_NAME);
-
-		String[] cookies = responseCookies.split(RESPONSE_COOKIES_SEPARATOR);
-
-		for (String c : cookies) {
-			String cookie = c.trim();
-			if (!cookie.isEmpty()) {
-				DataFieldMetadata field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
-				field.setLabel(cookie);
-				metadata.addField(field);
-			}
-		}
-
-		metadata.normalize();
-		return metadata;
+		return createMetadataFromString(responseCookies, RESPONSE_COOKIES_RECORD_NAME, RESPONSE_COOKIES_SEPARATOR);
 	}
 
 	/**
@@ -3873,6 +4182,44 @@ public class HttpConnector extends Node {
 	public void setResponseCookies(String responseCookies) {
 		this.responseCookies = responseCookies;
 	}
+	
+	public boolean isDisableSSLCertValidation() {
+		return disableSSLCertValidation;
+	}
+
+	public void setDisableSSLCertValidation(boolean disableSSLCertValidation) {
+		this.disableSSLCertValidation = disableSSLCertValidation;
+	}
+	
+	
+
+	/**
+	 * @return the timeout
+	 */
+	public long getTimeout() {
+		return timeout;
+	}
+
+	/**
+	 * @param timeout the timeout to set
+	 */
+	public void setTimeout(long timeout) {
+		this.timeout = timeout;
+	}
+
+	/**
+	 * @return the retryCount
+	 */
+	public int getRetryCount() {
+		return retryCount;
+	}
+
+	/**
+	 * @param retryCount the retryCount to set
+	 */
+	public void setRetryCount(int retryCount) {
+		this.retryCount = retryCount;
+	}
 
 	@Override
 	protected ComponentTokenTracker createComponentTokenTracker() {
@@ -3926,4 +4273,14 @@ public class HttpConnector extends Node {
 
 	}
 
+}
+
+class HttpConnectorMutlipartEntity {
+	public String name = null;
+	public String fileNameAttribute = null;
+	public String sourceFile = null;
+	public String content = null;
+	public byte[] contentByte = null;
+	public String conentType = null; // MIME type
+	public String charset = null;
 }

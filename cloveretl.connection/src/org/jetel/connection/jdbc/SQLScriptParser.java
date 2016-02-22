@@ -66,6 +66,11 @@ public class SQLScriptParser implements Iterable<String> {
 	private boolean backslashQuoteEscaping = false; // MySQL feature
 	private boolean replaceStrings = false; // replaces strings by spaces
 	
+	/** getNextStatement() returns all the queries at once when this is false.
+	 * This can be used to basically ignore delimiter.
+	 */
+	private boolean splitQueries = true;
+	
 	private final static char QUOTE_CHAR = '\'';
 	private final static char MYSQL_QUOTE_CHAR = '"';
 	private static final String DOUBLE_QUOTE = "''";
@@ -149,6 +154,10 @@ public class SQLScriptParser implements Iterable<String> {
 		return backslashQuoteEscaping;
 	}
 	
+	public void setSplitQueries(boolean splitQueries) {
+		this.splitQueries = splitQueries;
+	}
+	
 	public void setReader(Reader reader) {
 		this.reader = reader;
 	}
@@ -196,7 +205,7 @@ public class SQLScriptParser implements Iterable<String> {
 			else if (matchString(sb)) {
 				continue;
 			}
-			else if (match(delimiter)) {
+			else if (splitQueries && match(delimiter)) {
 				break;
 			}
 			else {
@@ -206,7 +215,7 @@ public class SQLScriptParser implements Iterable<String> {
 						throw new IOException("Unexpected end of input");
 					}
 					else {
-						logger.warn("Missing terminating semicolon in SQL statement");
+						logger.trace("Missing terminating semicolon in SQL statement");
 						break;
 					}
 				}
@@ -283,7 +292,10 @@ public class SQLScriptParser implements Iterable<String> {
 	
 	private boolean matchString(StringBuilder sb) throws IOException {
 		boolean regularQuoteMatched = matchQuote(false);
-		boolean mySQLQuoteMatched = matchQuote(true);
+		boolean mySQLQuoteMatched = false;
+		if (!regularQuoteMatched) {
+			mySQLQuoteMatched = matchQuote(true);
+		}
 		
 		if (regularQuoteMatched || mySQLQuoteMatched) {
 			char quoteChar;

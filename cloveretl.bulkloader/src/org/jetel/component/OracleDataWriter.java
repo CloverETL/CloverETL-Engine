@@ -524,16 +524,23 @@ public class OracleDataWriter extends BulkLoader {
         }
         
         File controlFile = new File(controlFileName);
-        FileWriter controlWriter;
+        FileWriter controlWriter = null;
         try {
             controlFile.createNewFile();
             controlWriter = new FileWriter(controlFile);
             String content = control == null ? getDefaultControlFileContent(table, append, getInputPort(READ_FROM_PORT).getMetadata(), dbFields) : control;
             logger.debug("Control file content: " + content);
             controlWriter.write(content);
-            controlWriter.close();
         } catch (IOException ex){
             throw new ComponentNotReadyException(this, "Control file for sqlldr utility can't be created.", ex);
+        } finally {
+        	try {
+				if (controlWriter != null) {
+					controlWriter.close();
+				}
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(e);
+			}
         }
     }
 
@@ -549,10 +556,10 @@ public class OracleDataWriter extends BulkLoader {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
         OracleDataWriter oracleDataWriter = new OracleDataWriter(xattribs.getString(XML_ID_ATTRIBUTE),
-                xattribs.getStringEx(XML_SQLLDR_ATTRIBUTE, RefResFlag.URL),
-                xattribs.getString(XML_USER_ATTRIBUTE),
-                xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, RefResFlag.SECURE_PARAMATERS),
-                xattribs.getString(XML_TNSNAME_ATTRIBUTE));
+                xattribs.getStringEx(XML_SQLLDR_ATTRIBUTE, null, RefResFlag.URL),
+                xattribs.getString(XML_USER_ATTRIBUTE, null),
+                xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, null, RefResFlag.SECURE_PARAMATERS),
+                xattribs.getString(XML_TNSNAME_ATTRIBUTE, null));
         if (xattribs.exists(XML_TABLE_ATTRIBUTE)) {
             oracleDataWriter.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
         }
@@ -670,13 +677,25 @@ public class OracleDataWriter extends BulkLoader {
         
         //--CheckParams
         if (StringUtils.isEmpty(loadUtilityPath)) {
-        	status.add(new ConfigurationProblem(StringUtils.quote(XML_SQLLDR_ATTRIBUTE) + " attribute have to be set.",
+        	status.add(new ConfigurationProblem(StringUtils.quote(XML_SQLLDR_ATTRIBUTE) + " attribute has to be set.",
 					Severity.ERROR, this, Priority.HIGH, XML_SQLLDR_ATTRIBUTE));
-		}		
+		}
+        if (StringUtils.isEmpty(user)) {
+        	status.add(new ConfigurationProblem(StringUtils.quote(XML_USER_ATTRIBUTE) + " attribute has to be set.",
+					Severity.ERROR, this, Priority.HIGH, XML_USER_ATTRIBUTE));
+		}
+        if (StringUtils.isEmpty(password)) {
+        	status.add(new ConfigurationProblem(StringUtils.quote(XML_PASSWORD_ATTRIBUTE) + " attribute has to be set.",
+					Severity.ERROR, this, Priority.HIGH, XML_PASSWORD_ATTRIBUTE));
+		}
+        if (StringUtils.isEmpty(tnsname)) {
+        	status.add(new ConfigurationProblem(StringUtils.quote(XML_TNSNAME_ATTRIBUTE) + " attribute has to be set.",
+					Severity.ERROR, this, Priority.HIGH, XML_TNSNAME_ATTRIBUTE));
+		}
 		if (StringUtils.isEmpty(table) && StringUtils.isEmpty(control)) {
 			status.add(new ConfigurationProblem(StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute or " + StringUtils.quote(XML_CONTROL_ATTRIBUTE) + 
 					" attribute have to be defined.", Severity.ERROR, this, Priority.HIGH));
-		}		
+		}
 		if (!isDataReadFromPort && StringUtils.isEmpty(dataURL)) {
 			status.add(new ConfigurationProblem("Input port or " + StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + 
 					" attribute	have to be defined.", Severity.ERROR, this, Priority.HIGH));
@@ -1000,7 +1019,6 @@ public class OracleDataWriter extends BulkLoader {
 	    	parser.setDataSource(new BufferedInputStream(new FileInputStream(sourceFile)));
 	    	
 	    	DataRecord record = DataRecordFactory.newRecord(metadata);
-			record.init();
 	    	
 	    	while ((record = parser.getNext(record)) != null) {
 	    		outPort.writeRecord(record);

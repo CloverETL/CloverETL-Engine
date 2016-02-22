@@ -109,7 +109,7 @@ public class XMLExtractTest extends CloverTestCase {
 				);
 		//printEdgeRecords(xmlExtract, 1);
 		checkOutPortRecords(xmlExtract, 1,
-				rec(),
+				rec("fooVal3"),
 				rec("eAttrFoo1")
 				);
 
@@ -191,29 +191,29 @@ public class XMLExtractTest extends CloverTestCase {
 		XMLExtract xmlExtract = createAndRunXMLExtract("XMLExtractTest.xml", "T1.xml", false, metadata1);
 		//printEdgeRecords(xmlExtract, 0);
 		checkOutPortRecords(xmlExtract, 0,
-				rec("a5", "a2", null, "c1Val"),
-				rec("a8", "a6", "b2Val", null, "a6Val"),
-				rec("a6", "a2", null, "c1Val"),
-				rec("a2", "a1", "b1Val"),
-				rec("a3", "a1"),
-				rec("a7", "a4"),
-				rec("a4", "a1"),
-				rec("a1"),
-				rec("a9")
+				rec("a5", "a2", null,    "c1Val", ""),
+				rec("a8", "a6", "b2Val", null,    "a6Val"),
+				rec("a6", "a2", null,    "c1Val", ""),
+				rec("a2", "a1", "b1Val", null,    ""),
+				rec("a3", "a1", null,    null,    ""),
+				rec("a7", "a4", null,    null,    ""),
+				rec("a4", "a1", null,    null,    ""),
+				rec("a1", null, null,    null,    null),
+				rec("a9", null, null,    null,    null)
 				);
 
 		xmlExtract = createAndRunXMLExtract("XMLExtractTest.xml", "T1.xml", true, metadata1);
 		//printEdgeRecords(xmlExtract, 0);
 		checkOutPortRecords(xmlExtract, 0,
-				rec("a5", "a2", null, "c1Val"),
-				rec("a8", "a6", "b2Val", null, "a6Val"),
-				rec("a6", "a2", null, "c1Val"),
-				rec("a2", "a1", "b1Val"),
-				rec("a3", "a1"),
-				rec("a7", "a4"),
-				rec("a4", "a1"),
-				rec("a1"),
-				rec("a9")
+				rec("a5", "a2", null,    "c1Val", ""),
+				rec("a8", "a6", "b2Val", null,    "a6Val"),
+				rec("a6", "a2", null,    "c1Val", ""),
+				rec("a2", "a1", "b1Val", null,    ""),
+				rec("a3", "a1", null,    null,    ""),
+				rec("a7", "a4", null,    null,    ""),
+				rec("a4", "a1", null,    null,    ""),
+				rec("a1", null, null,    null,    null),
+				rec("a9", null, null,    null,    null)
 				);
 	}
 	
@@ -242,8 +242,6 @@ public class XMLExtractTest extends CloverTestCase {
 		
 		DataRecord actualRecord = DataRecordFactory.newRecord(edge.getMetadata());
 		DataRecord expectedRecord = DataRecordFactory.newRecord(edge.getMetadata());
-		actualRecord.init();
-		expectedRecord.init();
 		expectedRecord.setToNull(); // fields excluded from expectedRecords[i] are considered to be nulls
 
 		int recordNum = 0;
@@ -271,7 +269,7 @@ public class XMLExtractTest extends CloverTestCase {
 				DataField expectedField = expectedRecord.getField(i);
 				if (actualField.isNull() && expectedField.isNull()) continue;
 				assertTrue("Unexpected record #" + recordNum + " in out port " + outPort +
-						"\nUnexpected field " + i +"; expected <" + expectedField.getValue() + "> but was <"+ actualField + ">\n" +
+						"\nUnexpected field " + i +"; expected <" + expectedField.getValue() + "> but was <"+ actualField.getValue() + ">\n" +
 						"\nExpected record:\n" + expectedRecord + "\nActual record:\n" + actualRecord, actualField.equals(expectedField));
 			}
 			
@@ -287,7 +285,6 @@ public class XMLExtractTest extends CloverTestCase {
 
 	private void printEdgeRecords(Edge edge) throws IOException, InterruptedException {
 		DataRecord record = DataRecordFactory.newRecord(edge.getMetadata());
-		record.init();
 		while (edge.readRecord(record) != null) {
 			System.out.println(record);
 		}

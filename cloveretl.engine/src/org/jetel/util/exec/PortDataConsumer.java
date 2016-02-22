@@ -104,7 +104,6 @@ public class PortDataConsumer implements DataConsumer {
 			throw new RuntimeException("Unable to close previous data source.", e);
 		}
 		record = DataRecordFactory.newRecord(metadata);
-		record.init();
 	}
 
 	/**

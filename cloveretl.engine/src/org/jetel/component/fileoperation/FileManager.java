@@ -225,11 +225,13 @@ public class FileManager {
 			manager.registerHandler(new URLOperationHandler());
 			manager.registerHandler(new DefaultOperationHandler());
 			manager.registerHandler(new WebdavOperationHandler());
-			manager.registerHandler(new S3OperationHandler());
+			manager.registerHandler(new HttpS3OperationHandler());
 //			manager.registerHandler(new SFTPOperationHandler());
 			manager.registerHandler(new PooledSFTPOperationHandler());
 			manager.registerHandler(new PooledFTPOperationHandler());
 			manager.registerHandler(new SMBOperationHandler());
+			manager.registerHandler(new S3OperationHandler());
+			manager.registerHandler(new S3CopyOperationHandler());
 		}
 	}
 	
@@ -246,7 +248,7 @@ public class FileManager {
 				URL url = runtimeContext.getContextURL();
 				if (url != null) {
 					try {
-						return url.toURI();
+						return URIUtils.toURI(url); // CLO-7000
 					} catch (URISyntaxException ex) {
 						throw new IllegalStateException(FileOperationMessages.getString("FileManager.context_URI_not_available"), ex); //$NON-NLS-1$
 					}
@@ -843,7 +845,13 @@ public class FileManager {
 			if (result.isEmpty()) {
 				return Arrays.asList(prefix);
 			} else {
-				result.set(0, prefix + result.get(0));
+				// CLO-5680:
+				String firstResult = result.get(0);
+				if (hasWildcards(firstResult)) {
+					result.add(0, prefix);
+				} else {
+					result.set(0, prefix + result.get(0));
+				}
 			}
 		}
 		return result;
@@ -983,7 +991,7 @@ public class FileManager {
 		
 		List<SingleCloverURI> result = new ArrayList<SingleCloverURI>(bases.size());
 		for (Info info: bases) {
-			result.add(CloverURI.createSingleURI(info.getURI()));
+			result.add(new SingleCloverURIInfo(info)); // CLO-6675
 		}
 		return result;
 	}
@@ -1056,6 +1064,13 @@ public class FileManager {
 			ResolveResult resolved = resolve(glob);
 			if (resolved.success()) {
 				for (SingleCloverURI target: resolved) {
+					if (target instanceof Info) { // CLO-6675 see defaultResolve()
+						Info info = (Info) target;
+						if (info.isFile()) {
+							result.add(target, Arrays.asList(info));
+							continue;
+						}
+					}
 					try {
 						List<Info> infos = handler.list(target, params); 
 						if (infos != null) {

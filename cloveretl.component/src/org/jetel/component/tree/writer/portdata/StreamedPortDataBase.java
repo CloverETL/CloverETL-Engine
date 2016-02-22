@@ -61,7 +61,6 @@ abstract class StreamedPortDataBase extends PortData {
 		public SimpleDataIterator(InputPort inputPort) {
 			this.inputPort = inputPort;
 			this.next = DataRecordFactory.newRecord(inputPort.getMetadata());
-			this.next.init();
 		}
 		
 		@Override

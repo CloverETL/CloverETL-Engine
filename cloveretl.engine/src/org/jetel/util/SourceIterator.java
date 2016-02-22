@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.enums.ProcessingType;
@@ -87,6 +88,9 @@ public class SourceIterator {
 	
 	// true if fileURL contains port or dictionary protocol
 	private boolean isGraphDependentSource;
+	
+	// CLO-6632:
+	private DataSourceType preferredDataSourceType = DataSourceType.CHANNEL;
 
 	public SourceIterator(InputPort inputPort, URL contextURL, String fileURL) {
 		this.inputPort = inputPort;
@@ -137,7 +141,7 @@ public class SourceIterator {
 		// read from fields
 		if (currentSourcePosition == firstPortProtocolPosition) {
 			try {
-				Object dataSource = portReadingIterator.getNextData(DataSourceType.CHANNEL);
+				Object dataSource = portReadingIterator.getNextData(preferredDataSourceType);
 				currentSourceName = portReadingIterator.getCurrentFileName();
 				return dataSource;
 			} catch (NullPointerException e) {
@@ -164,7 +168,7 @@ public class SourceIterator {
 				return next();
 			}
 			currentSourceName = unificateFileName(currentSourceName);
-			return createReadableByteChannel(currentSourceName);
+			return createDataSource(currentSourceName);
 		}
 		return null;
 	}
@@ -268,6 +272,22 @@ public class SourceIterator {
 			portReadingIterator.blankRead();
 		}
 	}
+	
+	public DataRecord getCurrenRecord() {
+		if (this.portReadingIterator != null) {
+			return this.portReadingIterator.getCurrentRecord();
+		}
+		return null;
+	}
+	
+	private Object createDataSource(String filename) throws JetelException {
+		Object source = ReadableChannelIterator.getPreferredDataSource(contextURL, filename, preferredDataSourceType);
+		if (source != null) {
+			return source;
+		}
+		
+		return createReadableByteChannel(filename);
+	}
 
 	/**
 	 * Creates readable channel for a file name.
@@ -370,5 +390,9 @@ public class SourceIterator {
 
 	public boolean isGraphDependentSource() {
 		return isGraphDependentSource;
+	}
+
+	public void setPreferredDataSourceType(DataSourceType preferredDataSourceType) {
+		this.preferredDataSourceType = preferredDataSourceType;
 	}
 }

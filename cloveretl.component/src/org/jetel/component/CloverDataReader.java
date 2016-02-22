@@ -19,7 +19,15 @@
 package org.jetel.component;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,14 +43,20 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.PolicyType;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.ExceptionUtils;
@@ -50,6 +64,7 @@ import org.jetel.util.MultiFileListener;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Element;
@@ -102,7 +117,7 @@ import org.w3c.dom.Element;
  */
 
 
-public class CloverDataReader extends Node implements MultiFileListener {
+public class CloverDataReader extends Node implements MultiFileListener, MetadataProvider {
 
 	private final static Log logger = LogFactory.getLog(CloverDataReader.class);
 	
@@ -166,15 +181,10 @@ public class CloverDataReader extends Node implements MultiFileListener {
     	int status;
     	// direct reading may not be supported for all input files, e.g. mixed versions in one directory
     	if (attemptDirectReading && parser.isDirectReadingSupported()) {
-    		if (recordBuffer == null) {
-    			recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
-    		}
+    		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
     	} 
-    	if (record == null) {
-    		record = DataRecordFactory.newRecord(getOutputPort(OUTPUT_PORT).getMetadata());
-    		record.init();
-    		record.setDeserializeAutofilledFields(false); // CLO-4591
-    	}
+		record = DataRecordFactory.newRecord(getOutputPort(OUTPUT_PORT).getMetadata());
+		record.setDeserializeAutofilledFields(false); // CLO-4591
     	while (runIt) {
     		if (readDirect){
     			status = reader.getNextDirect(recordBuffer); 
@@ -237,7 +247,7 @@ public class CloverDataReader extends Node implements MultiFileListener {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
 		aDataReader = new CloverDataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.URL));
+					xattribs.getStringEx(XML_FILE_ATTRIBUTE, null, RefResFlag.URL));
 		if (xattribs.exists(XML_STARTRECORD_ATTRIBUTE)){
 			aDataReader.setStartRecord(xattribs.getInteger(XML_STARTRECORD_ATTRIBUTE));
 		}
@@ -272,7 +282,12 @@ public class CloverDataReader extends Node implements MultiFileListener {
         		|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
         	return status;
         }
-        checkMetadata(status, getOutMetadata());
+        checkMetadata(status, null, getOutPorts());
+        
+        if (fileURL == null) {
+        	status.add("File URL not defined.", Severity.ERROR, this, Priority.NORMAL, XML_FILE_ATTRIBUTE);
+        	return status;
+        }
         
         // check files
     	try {
@@ -327,7 +342,7 @@ public class CloverDataReader extends Node implements MultiFileListener {
 				parser.free();
 			}
 		}catch(Exception ex){
-			//do nothing;
+			getLog().warn(null, ex);
 		}
 	}
 	
@@ -512,5 +527,89 @@ public class CloverDataReader extends Node implements MultiFileListener {
 		}
 		
 		
+	}
+
+	@Override
+	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		return null;
+	}
+
+	private MVMetadata metadata = null;
+	private boolean metadataInitialized = false;
+	
+	@Override
+	public MVMetadata getOutputMetadata(int portIndex, final MetadataPropagationResolver metadataPropagationResolver) {
+		if (!metadataInitialized) {
+			metadataInitialized = true;
+			
+			Callable<MVMetadata> callable = new Callable<MVMetadata>() {
+
+				@Override
+				public MVMetadata call() throws Exception {
+					URL url = FileUtils.getFirstInput(getContextURL(), fileURL);
+					if (url != null) { // CLO-6714
+						try (InputStream stream = url.openStream()) {
+							FileConfig header = CloverDataParser.readHeader(stream);
+							DataRecordMetadata fileMetadata = header.metadata;
+							if (header.formatVersion == CloverDataFormatter.DataFormatVersion.VERSION_35) {
+								String file = url.getFile();
+								int idx = file.lastIndexOf("/");
+								if (idx >= 0) {
+									file = file.substring(idx + 1);
+								}
+								if (!file.isEmpty()) {
+									fileMetadata.setLabel(file);
+									fileMetadata.normalize();
+								}
+							}
+							if (fileMetadata != null) { // 3.5 and newer
+								return metadataPropagationResolver.createMVMetadata(fileMetadata, CloverDataReader.this, null, MVMetadata.DEFAULT_PRIORITY);
+							}
+						}
+					}
+					
+					return null;
+				}
+				
+			};
+			ExecutorService executor = Executors.newSingleThreadExecutor(new ThreadFactory() {
+				
+				@Override
+				public Thread newThread(Runnable r) {
+					Thread t = new Thread(r) {
+
+						@Override
+						public void run() {
+							// register thread with ContextProvider to enable sandbox wildcard resolution
+							Context context = null;
+							try {
+								context = ContextProvider.registerNode(CloverDataReader.this);
+								super.run();
+							} finally {
+								ContextProvider.unregister(context);
+							}
+						}
+						
+					};
+					t.setName(getId() + "_metadataLoader");
+					return t;
+				}
+			});
+			Future<MVMetadata> future = executor.submit(callable);
+			
+			try {
+				this.metadata = future.get(10, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				throw new JetelRuntimeException("Metadata loading interrupted", e);
+			} catch (TimeoutException e) {
+				getLog().warn("Metadata loading timed out", e);
+			} catch (Exception e) {
+				getLog().warn("Metadata loading failed", e);
+			} finally {
+				executor.shutdownNow();
+			}
+		}
+		
+		return metadata;
 	}
 }

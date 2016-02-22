@@ -447,7 +447,7 @@ public final class ByteBufferUtils {
      */
     public static CharBuffer expandCharBuffer(CharBuffer oldBuffer, int requestedCapacity, int maximumCapacity) {
     	if (requestedCapacity > maximumCapacity) {
-    		throw new IllegalArgumentException("requested capacity cannot be bigger than maximum capacity");
+    		throw new IllegalArgumentException("CharBuffer cannot be expanded. Requested capacity (" + requestedCapacity + ") cannot be bigger than maximum capacity (" + maximumCapacity + ").");
     	}
         if (oldBuffer.capacity() < requestedCapacity) {
             // Allocate a new buffer and transfer all settings to it.

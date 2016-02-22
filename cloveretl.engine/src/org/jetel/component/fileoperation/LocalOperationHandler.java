@@ -148,9 +148,6 @@ public class LocalOperationHandler implements IOperationHandler {
 				if (makeParents && (target.getParentFile() != null)) {
 					target.getParentFile().mkdirs();
 				}
-				if (!target.createNewFile()) {
-					throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.create_failed"), target)); //$NON-NLS-1$
-				}
 			}
 			return FileUtils.copyFile(source, target);
 		}

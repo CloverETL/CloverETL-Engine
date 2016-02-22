@@ -19,6 +19,7 @@
 package org.jetel.data;
 
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -29,6 +30,7 @@ import org.jetel.util.bytes.CloverBuffer;
  *
  * @created 27 Apr 2012
  */
+@CloverPublicAPI
 public final class DataRecordFactory {
 
     /**
@@ -40,12 +42,15 @@ public final class DataRecordFactory {
     @SuppressWarnings("deprecation")
 	public static DataRecord newRecord(DataRecordMetadata metadata) {
     	if (metadata.getNature() == DataRecordNature.TOKEN) {
-			return new Token(metadata);
+			return newToken(metadata);
 		} else {
-			return new DataRecordImpl(metadata);
+			DataRecord record = new DataRecordImpl(metadata);
+    		record.init();
+			record.reset();
+			return record;
 		}
     }
-
+    
     /**
      * Creates new instance of Token based on specified metadata.
      */
@@ -87,6 +92,16 @@ public final class DataRecordFactory {
      */
     public static DataRecordWithInvalidState newRecordWithInvalidState(DataRecordMetadata metadata) {
     	DataRecordWithInvalidState result = new DataRecordWithInvalidState(metadata);
+    	result.init();
+    	result.reset();
+    	return result;
+    }
+    
+    /**
+     * @return data record with data fields which are able to use lazy loading
+     */
+    public static DataRecordWithLazyLoading newRecordWithLazyLoading(DataRecordMetadata metadata) {
+    	DataRecordWithLazyLoading result = new DataRecordWithLazyLoading(metadata);
     	result.init();
     	result.reset();
     	return result;

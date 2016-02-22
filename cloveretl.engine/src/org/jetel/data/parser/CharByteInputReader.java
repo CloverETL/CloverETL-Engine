@@ -26,12 +26,14 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CodingErrorAction;
+import java.nio.charset.CoderResult;
 
 import javax.naming.OperationNotSupportedException;
 
 import org.jetel.data.Defaults;
+import org.jetel.data.parser.AbstractTextParser.CharsetDecoderException;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
@@ -153,8 +155,8 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 	 * @param needCharInput
 	 * @return
 	 */
-	public static CharByteInputReader createInputReader(DataRecordMetadata metadata, Charset charset, boolean needByteInput, boolean needCharInput) {
-		return createInputReader(new DataRecordMetadata[]{metadata}, charset, needByteInput, needCharInput);
+	public static CharByteInputReader createInputReader(DataRecordMetadata metadata, Charset charset, boolean needByteInput, boolean needCharInput, PolicyType policyType) {
+		return createInputReader(new DataRecordMetadata[]{metadata}, charset, needByteInput, needCharInput, policyType);
 	}
 	
 	/**
@@ -165,7 +167,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 	 * @param needCharInput
 	 * @return
 	 */
-	public static CharByteInputReader createInputReader(DataRecordMetadata[] metadataArray, Charset charset, boolean needByteInput, boolean needCharInput) {
+	public static CharByteInputReader createInputReader(DataRecordMetadata[] metadataArray, Charset charset, boolean needByteInput, boolean needCharInput, PolicyType policyType) {
 		int maxBackShift = 0;
 
 		for (DataRecordMetadata metadata : metadataArray) {
@@ -202,11 +204,11 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		if (!needCharInput) {
 			reader = new CharByteInputReader.ByteInputReader(maxBackShift);
 		} else if (!needByteInput) {
-			reader = new CharByteInputReader.CharInputReader(charset, maxBackShift);
+			reader = new CharByteInputReader.CharInputReader(charset, maxBackShift, policyType);
 		} else if (TextParserConfiguration.isSingleByteCharset(charset)) {
-			reader = new CharByteInputReader.SingleByteCharsetInputReader(charset, maxBackShift);
+			reader = new CharByteInputReader.SingleByteCharsetInputReader(charset, maxBackShift, policyType);
 		} else {
-			reader = new CharByteInputReader.RobustInputReader(charset, maxBackShift);
+			reader = new CharByteInputReader.RobustInputReader(charset, maxBackShift, policyType);
 		}
 		
 		return reader;
@@ -308,7 +310,8 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		
 		@Override
 		public boolean isEndOfInput() {
-			return endOfInput;
+			// CLO-5610: return false if there are remaining bytes in the buffer
+			return endOfInput && !byteBuffer.hasRemaining();
 		}
 		
 		@Override
@@ -385,7 +388,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		 * @param charset Input charset
 		 * @param maxBackMark Max span for backward skip.
 		 */
-		public CharInputReader(Charset charset, int maxBackMark) {
+		public CharInputReader(Charset charset, int maxBackMark, PolicyType policyType) {
 			super();
 			byteBuffer = ByteBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE);
 			charBuffer = CharBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE + MIN_BUFFER_OPERATION_SIZE);
@@ -395,8 +398,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 				charset = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
 			}
 			decoder = charset.newDecoder();
-			decoder.onMalformedInput(CodingErrorAction.IGNORE);
-			decoder.onUnmappableCharacter(CodingErrorAction.IGNORE);
+			AbstractTextParser.applyDecoderPolicy(decoder, policyType);
 			currentMark = INVALID_MARK;
 			endOfInput = false;
 			this.maxBackMark = maxBackMark;
@@ -436,7 +438,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			currentMark = numCharsToPreserve - markSpan;
 			do {
 				charBuffer.limit(charBuffer.capacity()).position(numCharsToPreserve); // get ready to receive data
-				decoder.decode(byteBuffer, charBuffer, false);
+				checkDecoderResult(decoder.decode(byteBuffer, charBuffer, false));
 				charBuffer.flip().position(numCharsToPreserve); // get ready to provide data
 				if (!charBuffer.hasRemaining()) { // need to read more data from input
 					byteBuffer.compact(); // get ready to receive data
@@ -448,12 +450,12 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 					case -1: // end of input
 						charBuffer.limit(charBuffer.capacity()).position(numCharsToPreserve); // get ready to receive
 																								// data
-						decoder.decode(byteBuffer, charBuffer, true);
+						checkDecoderResult(decoder.decode(byteBuffer, charBuffer, true));
 						charBuffer.flip().position(numCharsToPreserve); // get ready to provide data
 						if (!charBuffer.hasRemaining()) {
 							charBuffer.limit(charBuffer.capacity()).position(numCharsToPreserve); // get ready to
 																									// receive data
-							decoder.flush(charBuffer);
+							checkDecoderResult(decoder.flush(charBuffer));
 							charBuffer.flip().position(numCharsToPreserve);
 							if (!charBuffer.hasRemaining()) {
 								endOfInput = true;
@@ -470,6 +472,14 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 				} // attempt to decode from byte buffer
 			} while (!charBuffer.hasRemaining());
 			return charBuffer.get();
+		}
+
+		private void checkDecoderResult(CoderResult result) throws CharsetDecoderException {
+			if (result.isError()) {
+				charBuffer.clear().flip();
+				endOfInput = true;
+				throw new CharsetDecoderException("Character decoding error occurred. Set correct charset. Current charset is " + decoder.charset());
+			}
 		}
 
 		@Override
@@ -501,7 +511,8 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 
 		@Override
 		public boolean isEndOfInput() {
-			return endOfInput;
+			// CLO-5610: return false if there are remaining chars in the buffer
+			return endOfInput && !charBuffer.hasRemaining();
 		}
 		
 		@Override
@@ -581,7 +592,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		 * @param charset Input charset
 		 * @param maxBackMark Max span for backward skip.
 		 */
-		public SingleByteCharsetInputReader(Charset charset, int maxBackMark) {
+		public SingleByteCharsetInputReader(Charset charset, int maxBackMark, PolicyType policyType) {
 			super();
 			byteBuffer = ByteBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE + MIN_BUFFER_OPERATION_SIZE);
 			charBuffer = CharBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE + MIN_BUFFER_OPERATION_SIZE);
@@ -591,8 +602,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 				charset = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
 			}
 			decoder = charset.newDecoder();
-			decoder.onMalformedInput(CodingErrorAction.REPORT);
-			decoder.onUnmappableCharacter(CodingErrorAction.REPORT);
+			AbstractTextParser.applyDecoderPolicy(decoder, policyType);
 			currentMark = INVALID_MARK;
 			endOfInput = false;
 			this.maxBackMark = maxBackMark;
@@ -648,11 +658,11 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			case -1: // end of input
 				assert !byteBuffer.hasRemaining() : "Unexpected internal state occured during code execution";
 				/*
-				 * make sure there are no chars remaining inside the decoder - that would would mean our assumptions
+				 * make sure there are no chars remaining inside the decoder - that would mean our assumptions
 				 * about single byte charset decoders are invalid
 				 */
-				decoder.decode(byteBuffer, charBuffer, true);
-				decoder.flush(charBuffer);
+				checkDecoderError(decoder.decode(byteBuffer, charBuffer, true));
+				checkDecoderError(decoder.flush(charBuffer));
 				charBuffer.flip().position(numBytesToPreserve); // get ready to provide data
 				/*
 				 * it is reasonable to assume that the operations above didn't produce any characters as we are dealing
@@ -666,10 +676,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			default:
 				assert byteBuffer.position() == numBytesToPreserve && byteBuffer.limit() > numBytesToPreserve : "Unexpected internal state occured during code execution";
 				byteBuffer.mark();
-				if (decoder.decode(byteBuffer, charBuffer, false).isError()) {
-					// any errors disrupt one-to-one correspondence between byte buffer and char buffer
-					throw new OperationNotSupportedException("Selected charset doesn't conform to limitations imposed by single byte charset input reader. Choose another implementation");
-				}
+				checkDecoderError(decoder.decode(byteBuffer, charBuffer, false));
 				byteBuffer.reset();
 				charBuffer.flip().position(numBytesToPreserve); // get ready to provide data
 				if (byteBuffer.limit() != charBuffer.limit()) {
@@ -680,6 +687,14 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			return DATA_AVAILABLE;
 		}
 
+		private void checkDecoderError(CoderResult result) throws CharsetDecoderException {
+			if (result.isError()) {
+				endOfInput = true;
+				charBuffer.clear().flip();
+	        	throw new CharsetDecoderException("Character decoding error occurred. Set correct charset. Current charset is " + decoder.charset());
+			}
+		}
+		
 		@Override
 		public int readByte() throws IOException, OperationNotSupportedException {
 			int retval = ensureBuffersNotEmpty();
@@ -741,7 +756,8 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		
 		@Override
 		public boolean isEndOfInput() {
-			return endOfInput;
+			// CLO-5610: return false if there are remaining elements in the buffers
+			return endOfInput && !charBuffer.hasRemaining();
 		}
 		
 		@Override
@@ -839,7 +855,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		 * @param charset Input charset
 		 * @param maxBackMark Max span for backward skip.
 		 */
-		public RobustInputReader(Charset charset, int maxBackMark) {
+		public RobustInputReader(Charset charset, int maxBackMark, PolicyType policyType) {
 			super();
 			channel = null;
 			this.charset = charset;
@@ -850,8 +866,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			byteBuffer = CloverBuffer.allocateDirect(maxBytesPerChar * (Defaults.Record.RECORD_INITIAL_SIZE + MIN_BUFFER_OPERATION_SIZE), maxBytesPerChar * Defaults.Record.RECORD_LIMIT_SIZE);
 			charBuffer = CharBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE + MIN_BUFFER_OPERATION_SIZE);
 			decoder = charset.newDecoder();
-			decoder.onMalformedInput(CodingErrorAction.REPORT);
-			decoder.onUnmappableCharacter(CodingErrorAction.REPORT);
+			AbstractTextParser.applyDecoderPolicy(decoder, policyType);
 			currentCharMark = currentByteMark = INVALID_MARK;
 			endOfInput = false;
 			this.maxBackMark = maxBackMark;
@@ -925,8 +940,8 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 					case -1: // end of input
 						// check that the decoder doesn't maintain internal state
 						charBuffer.clear(); // get ready to receive data
-						decoder.decode(byteBuffer.buf(), charBuffer, true); // decode any remaining data
-						decoder.flush(charBuffer);
+						checkDecoderResult(decoder.decode(byteBuffer.buf(), charBuffer, true)); // decode any remaining data
+						checkDecoderResult(decoder.flush(charBuffer));
 						charBuffer.flip();
 						if (charBuffer.hasRemaining()) {
 							throw new OperationNotSupportedException("Charset decoder maintaining internal state is not supported by the selected input reader");
@@ -988,8 +1003,8 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			case -1: // end of input
 				// check that the decoder doesn't maintain internal state
 				charBuffer.clear(); // get ready to receive data
-				decoder.decode(byteBuffer.buf(), charBuffer, true); // decode any remaining data
-				decoder.flush(charBuffer);
+				checkDecoderResult(decoder.decode(byteBuffer.buf(), charBuffer, true)); // decode any remaining data
+				checkDecoderResult(decoder.flush(charBuffer));
 				charBuffer.flip();
 				if (charBuffer.hasRemaining()) {
 					throw new OperationNotSupportedException("Charset decoder maintaining internal state is not supported by the selected input reader");
@@ -1001,6 +1016,15 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			currentCharMark = INVALID_MARK; // reading bytes without decoding them invalidates any buffered chars and the char mark
 			assert !charBuffer.hasRemaining() : "Unexpected internal state occured during code execution";
 			return byteBuffer.get();
+		}
+
+		private void checkDecoderResult(CoderResult result) throws CharsetDecoderException {
+			if (result.isError()) {
+				charBuffer.clear().flip();
+				byteBuffer.clear().flip();
+				endOfInput = true;
+				throw new CharsetDecoderException("Character decoding error occurred. Set correct charset. Current charset is " + decoder.charset());
+			}
 		}
 
 		@Override

@@ -68,7 +68,7 @@ public abstract class EngineComponentAllocation {
 					return engineComponentAllocation;
 				}
 			}
-			throw new JetelRuntimeException("Ivalid component allocation format: " + rawAllocation);
+			throw new JetelRuntimeException("Invalid component allocation format: " + rawAllocation);
 		} else {
 			throw new JetelRuntimeException("Empty component allocation.");
 		}
@@ -218,7 +218,7 @@ public abstract class EngineComponentAllocation {
 						int number = Integer.valueOf(numberStr);
 						return EngineComponentAllocation.createNumberAllocation(number);
 					} catch (NumberFormatException e) {
-						throw new JetelRuntimeException("Ivalid component allocation format: " + rawAllocation + ".");
+						throw new JetelRuntimeException("Invalid component allocation format: " + rawAllocation + ".");
 					}
 				} else {
 					return null;
@@ -277,7 +277,7 @@ public abstract class EngineComponentAllocation {
 				if (rawAllocation.startsWith(SandboxEngineComponentAllocation.PREFIX)) {
 					String sandboxId = rawAllocation.substring(SandboxEngineComponentAllocation.PREFIX.length());
 					if (StringUtils.isEmpty(sandboxId)) {
-						throw new JetelRuntimeException("Ivalid component allocation format: " + rawAllocation + ".");
+						throw new JetelRuntimeException("Invalid component allocation format: " + rawAllocation + ".");
 					}
 					return EngineComponentAllocation.createSandboxAllocation(sandboxId);
 				} else {
@@ -347,7 +347,7 @@ public abstract class EngineComponentAllocation {
 				if (rawAllocation.startsWith(ClusterNodesEngineComponentAllocation.PREFIX)) {
 					String clusterNodeIds = rawAllocation.substring(ClusterNodesEngineComponentAllocation.PREFIX.length());
 					if (StringUtils.isEmpty(clusterNodeIds)) {
-						throw new JetelRuntimeException("Ivalid component allocation format: " + rawAllocation + ".");
+						throw new JetelRuntimeException("Invalid component allocation format: " + rawAllocation + ".");
 					}
 					return EngineComponentAllocation.createClusterNodesAllocation(Arrays.asList(clusterNodeIds.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX)));
 				} else {
@@ -407,7 +407,7 @@ public abstract class EngineComponentAllocation {
 				if (rawAllocation.startsWith(ComponentEngineComponentAllocation.PREFIX)) {
 					String componentId = rawAllocation.substring(ComponentEngineComponentAllocation.PREFIX.length());
 					if (StringUtils.isEmpty(componentId)) {
-						throw new JetelRuntimeException("Ivalid component allocation format: " + rawAllocation + ".");
+						throw new JetelRuntimeException("Invalid component allocation format: " + rawAllocation + ".");
 					}
 					return EngineComponentAllocation.createComponentAllocation(componentId);
 				} else {

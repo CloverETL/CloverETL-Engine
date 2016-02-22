@@ -20,6 +20,7 @@ package org.jetel.ctl.ASTnode;
 
 import org.jetel.ctl.ExpParser;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
+import org.jetel.ctl.TransformLangParserConstants;
 import org.jetel.ctl.TransformLangParserVisitor;
 import org.jetel.ctl.extensions.TLFunctionCallContext;
 
@@ -31,6 +32,8 @@ public class CLVFAssignment extends SimpleNode {
 	//with different metadata - then the records are copied based on field names
 	//integral function copyByName is used for this copying 
 	private TLFunctionCallContext copyByNameCallContext;
+
+	private int operator;
 	
 	public CLVFAssignment(int id) {
 		super(id);
@@ -42,7 +45,8 @@ public class CLVFAssignment extends SimpleNode {
 
 	public CLVFAssignment(CLVFAssignment node) {
 		super(node);
-		copyByNameCallContext = node.getCopyByNameCallContext();
+		this.copyByNameCallContext = node.getCopyByNameCallContext();
+		this.operator = node.operator;
 	}
 
 	@Override
@@ -78,6 +82,18 @@ public class CLVFAssignment extends SimpleNode {
 
 	public TLFunctionCallContext getCopyByNameCallContext() {
 		return copyByNameCallContext;
+	}
+
+	public void setOperator(int operator) {
+		this.operator = operator;
+	}
+	
+	public int getOperator() {
+		return operator;
+	}
+	
+	public static boolean isCompound(int operator) {
+		return (operator != TransformLangParserConstants.ASSIGN) && (operator != TransformLangParserConstants.MAPPING);
 	}
 
 }

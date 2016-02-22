@@ -248,7 +248,6 @@ public class Partition extends Node {
 	private void executeNonDirect(InputPortDirect inPort,
 			OutputPortDirect[] outPorts) throws Exception {
 		DataRecord inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-		inRecord.init();
 		CloverBuffer inRecordDirect = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 
 		while (runIt) {
@@ -431,7 +430,7 @@ public class Partition extends Node {
                		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
          }
 
-        checkMetadata(status, getInMetadata(), getOutMetadata());
+        checkMetadata(status, getInPorts(), getOutPorts());
 
         DataRecordMetadata inMetadata = getInputPort(0).getMetadata();
         try {

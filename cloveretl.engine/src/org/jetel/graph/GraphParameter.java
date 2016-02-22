@@ -19,23 +19,31 @@
 package org.jetel.graph;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import javax.xml.bind.annotation.XmlAnyAttribute;
+import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.namespace.QName;
 
 import org.jetel.component.ComponentDescription.Attribute;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.parameter.GraphParameterAttributeNode;
 import org.jetel.graph.parameter.GraphParameterDynamicValueProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.SubgraphUtils;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 
 /**
  * This class represents single graph parameter - name-value pair, which is
@@ -48,6 +56,7 @@ import org.jetel.util.string.StringUtils;
  */
 @XmlRootElement(name = "GraphParameter")
 @XmlType(propOrder = { "name", "value", "secure", "componentReference", "attrs", "singleType" })
+@CloverPublicAPI
 public class GraphParameter {
 
 	public static final String HIDDEN_SECURE_PARAMETER = "*****";
@@ -174,6 +183,13 @@ public class GraphParameter {
 			ret.add(attrNode);
 		}
 
+		if (value != null && StringUtils.isMultiline(value)) {
+			GraphParameterAttributeNode attrNode = new GraphParameterAttributeNode();
+			attrNode.setName("value");
+			attrNode.setValue(value);
+			ret.add(attrNode);
+		}
+
 		return ret.toArray(new GraphParameterAttributeNode[ret.size()]);
 	}
 
@@ -185,6 +201,9 @@ public class GraphParameter {
 			}
 			if ("description".equals(a.getName())) {
 				setDescription(a.getValue());
+			}
+			if ("value".equals(a.getName())) {
+				setValue(a.getValue());
 			}
 		}
 	}
@@ -408,6 +427,12 @@ public class GraphParameter {
 	public static class SingleType {
 		private String name;
 
+		@XmlAnyAttribute
+		private Map<QName, String> attributes;
+
+		@XmlAnyElement
+		private List<Element> elements;
+
 		public SingleType() {
 		}
 
@@ -422,6 +447,65 @@ public class GraphParameter {
 
 		public void setName(String name) {
 			this.name = name;
+		}
+		
+		public Map<String, String> getParameters() {
+			Map<String, String> params = new HashMap<>();
+			if (attributes != null) {
+                for (Map.Entry<QName, String> attribute : attributes.entrySet()) {
+                    params.put(attribute.getKey().getLocalPart(), attribute.getValue());
+                }
+			}
+			return params;
+		}
+		
+		public SingleTypeConfig getTypeConfig() {
+			SingleTypeConfig config = new SingleTypeConfig();
+			config.setSimpleParameters(getParameters());
+
+			Map<String, List<Map<String, String>>> groups = new HashMap<>();
+			config.setGroupedParameters(groups);
+
+			if (elements != null) {
+				for (Element elem : elements) {
+					if ("Group".equals(elem.getLocalName())) {
+                        String name = elem.getAttribute("name");
+                        List<Map<String, String>> groupList = groups.get(name);
+                        if (groupList == null) {
+                        	groupList = new ArrayList<Map<String, String>>();
+                        	groups.put(name, groupList);
+                        }
+                        
+                        Map<String, String> paramMap = new HashMap<String, String>();
+                        groupList.add(paramMap);
+                        
+                        NamedNodeMap attrs = elem.getAttributes();
+                        for (int i = 0; i < attrs.getLength(); i++) {
+                        	org.w3c.dom.Node attr = attrs.item(i);
+                        	paramMap.put(attr.getNodeName(), attr.getNodeValue());
+                        }
+					}
+				}
+			}
+			
+			return config;
+		}
+	}
+	
+	public static class SingleTypeConfig {
+		private Map<String, String> simpleParameters;
+		private Map<String, List<Map<String, String>>> groupedParameters;
+		public Map<String, String> getSimpleParameters() {
+			return simpleParameters;
+		}
+		public void setSimpleParameters(Map<String, String> simpleParameters) {
+			this.simpleParameters = simpleParameters;
+		}
+		public Map<String, List<Map<String, String>>> getGroupedParameters() {
+			return groupedParameters;
+		}
+		public void setGroupedParameters(Map<String, List<Map<String, String>>> groupedParameters) {
+			this.groupedParameters = groupedParameters;
 		}
 	}
 	

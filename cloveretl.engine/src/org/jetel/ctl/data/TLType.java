@@ -548,7 +548,7 @@ public abstract class TLType {
 		}
 		
 		@Override
-		public Object getSymbol() {
+		public LogLevelEnum getSymbol() {
 			return symbol;
 		}
 		

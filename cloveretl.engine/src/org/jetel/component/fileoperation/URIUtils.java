@@ -21,10 +21,12 @@ package org.jetel.component.fileoperation;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.regex.Pattern;
 
+import org.jetel.util.file.SandboxUrlUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -41,9 +43,18 @@ public class URIUtils {
 	
 	public static final String PARENT_DIR_NAME = ".."; //$NON-NLS-1$
 	
-	public static final String CHARSET = "US-ASCII"; //$NON-NLS-1$
+	/**
+	 * According to <a href="http://tools.ietf.org/html/rfc3986">RFC 3986</a>,
+	 * UTF-8 should be used for URL encoding.
+	 * <p>
+	 * Changed from ASCII to UTF-8 since 4.0.4.
+	 * </p>
+	 * @see <a href="https://bug.javlin.eu/browse/CLO-5641">CLO-5641</a>
+	 */
+	public static final String CHARSET = "UTF-8"; //$NON-NLS-1$
 	
 	private static final Pattern PLUS_PATTERN = Pattern.compile("\\+"); //$NON-NLS-1$
+	private static final Pattern SPACE_PATTERN = Pattern.compile(" "); //$NON-NLS-1$
 	
 	private static final String ENCODED_SPACE = "%20"; //$NON-NLS-1$
 
@@ -124,6 +135,23 @@ public class URIUtils {
 			return URLDecoder.decode(str, CHARSET);
 		} catch (UnsupportedEncodingException e) {
 			return str;
+		}
+	}
+
+	/**
+	 * CLO-6374: Generic URL.toURI() method that handles sandbox URLs in a special way
+	 * 
+	 * @param url
+	 * @return
+	 * @throws URISyntaxException
+	 */
+	public static URI toURI(URL url) throws URISyntaxException {
+		String uri = url.toString();
+		if (SandboxUrlUtils.isSandboxUrl(url)) {
+			return SandboxUrlUtils.toURI(url);
+		} else {
+			uri = SPACE_PATTERN.matcher(uri).replaceAll(ENCODED_SPACE);
+			return new URI(uri); // URI can't contain spaces
 		}
 	}
 }

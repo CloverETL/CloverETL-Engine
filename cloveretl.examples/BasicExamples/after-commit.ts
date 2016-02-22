@@ -7,16 +7,15 @@
 	<FunctionalTest ident="DataSelectionAdvanced" graphFile="graph/DataSelectionAdvanced.grf" excludedContainers="websphere7">
 		<FlatFile outputFile="data-out/NumberOfCustomers.out" supposedFile="supposed-out/NumberOfCustomers.out"/>
 		<FlatFile outputFile="data-tmp/had_duplicate_records.txt" supposedFile="supposed-out/had_duplicate_records.txt"/>
-		<RegEx expression="# 2 *\|Argentina *\|16" occurences="1"/>
-		<RegEx expression="# 4 *\|Spain *\|23" occurences="1"/>
+		<RegEx expression="# 4 *\|Argentina *\|16" occurences="1"/>
+		<RegEx expression="# 3 *\|Spain *\|23" occurences="1"/>
 		<RegEx expression="# 1 *\|Brazil *\|83" occurences="1"/>
-		<RegEx expression="# 3 *\|Venezuela *\|46" occurences="1"/>
+		<RegEx expression="# 2 *\|Venezuela *\|46" occurences="1"/>
 	</FunctionalTest>
 	
-	<!-- excluded on websphere85 because of CLO-3267 -->
-	<FunctionalTest ident="DebuggingGraph" graphFile="graph/DebuggingGraph.grf" assertion="false" excludedContainers="websphere85">
+	<FunctionalTest ident="DebuggingGraph" graphFile="graph/DebuggingGraph.grf" assertion="false">
 		<ExcludeRegEx ident="error"/>
-		<RegEx expression="Exception raised by user: O is not a valid gender\. Go to record No\. 5820 and replace with \'M\' or \'F\'\." occurences="4"/>
+		<RegEx expression="O is not a valid gender\. Go to record No\. 5820 and replace with \'M\' or \'F\'\." occurences="3"/>
 	</FunctionalTest>
 	
 	<FunctionalTest ident="ExecutingExternal" graphFile="graph/ExecutingExternal.grf" />
@@ -25,7 +24,7 @@
 		<FlatFile outputFile="data-out/orders_late.txt" supposedFile="supposed-out/orders_late.txt"/>
 	</FunctionalTest>
 	
-	<FunctionalTest ident="JoiningAggregating" graphFile="graph/JoiningAggregating.grf">
+	<FunctionalTest ident="JoiningAggregating" graphFile="graph/JoiningAggregating.grf" limit="225">
 		<FlatFile outputFile="data-out/customers_without_order_region1.csv" supposedFile="supposed-out/customers_without_order_region1.csv"/>
 		<FlatFile outputFile="data-out/customers_without_order_region2.csv" supposedFile="supposed-out/customers_without_order_region2.csv"/>
 	</FunctionalTest>
@@ -40,6 +39,8 @@
 	<FunctionalTest ident="SpreadsheetReadWrite" graphFile="graph/SpreadsheetReadWrite.grf">
 		<FlatFile outputFile="data-out/orders_delimited.txt" supposedFile="supposed-out/orders_delimited.txt"/>
 		<FlatFile outputFile="data-out/tax_form_data.txt" supposedFile="supposed-out/tax_form_data.txt"/>
+		<DeleteFile file="data-out/orders.xlsx"/>
+		<DeleteFile file="data-out/sortedByTotalTax.xlsx"/>
 	</FunctionalTest>
 	
 	<FunctionalTest ident="WebServicesHTTP" graphFile="graph/WebServicesHTTP.grf">
@@ -63,22 +64,23 @@
 		<FlatFile outputFile="data-out/Actors.json" supposedFile="supposed-out/Actors.json"/>
 	</FunctionalTest>
 	
-	<FunctionalTest ident="Twitter" graphFile="graph/Twitter.grf">
-		<Property name="OAUTH_API_KEY" value="r0h8VjKBinQUaEhAksjEjUw3v" />
-		<Property name="OAUTH_API_KEY_SECRET" value="KrNSU4lT9Po5Lam4X7adf57CXFFpZc8fPljTo0OrhcbattKWOU" />
-		<Property name="OAUTH_ACCESS_TOKEN" value="2492653806-5XIsyYAfv289fUcN3vIsCIbXAgsgKqfM2KnXawU" />
-		<Property name="OAUTH_ACCESS_TOKEN_SECRET" value="Mpnb4Vbwt2BH9XcNL4EogKct7huGTDgvtDRZeheQeDSKB" />
-	</FunctionalTest>
-	
 	<FunctionalTest ident="_Introduction" graphFile="graph/_Introduction.grf" />
 	
 	<FunctionalTest ident="CreditCardFraudDetection" graphFile="graph/CreditCardFraudDetection.grf" />
 	
 	<!-- runs too long on cluster; fails on websphere because of different order in outputs -->
-	<FunctionalTest ident="EmailValidation" graphFile="graph/EmailValidation.grf" excludedEtlEnvironment="cluster" excludedContainers="websphere7">
+	<FunctionalTest ident="EmailValidation" graphFile="graph/EmailValidation.grf" excludedEtlEnvironment="cluster" excludedContainers="websphere7" excludedJavaVersions="1.8">
 		<FlatFile outputFile="data-out/emails_domain_accept.txt" supposedFile="supposed-out/emails_domain_accept.txt"/>
 		<FlatFile outputFile="data-out/emails_domain_reject.txt" supposedFile="supposed-out/emails_domain_reject.txt"/>
 		<FlatFile outputFile="data-out/emails_smtp_accept.txt" supposedFile="supposed-out/emails_smtp_accept.txt"/>
+		<FlatFile outputFile="data-out/emails_syntax_accept.txt" supposedFile="supposed-out/emails_syntax_accept.txt"/>
+		<FlatFile outputFile="data-out/emails_syntax_reject.txt" supposedFile="supposed-out/emails_syntax_reject.txt"/>
+	</FunctionalTest>
+	
+	<FunctionalTest ident="EmailValidation_java8" graphFile="graph/EmailValidation.grf" excludedEtlEnvironment="cluster" excludedContainers="websphere7" excludedJavaVersions="1.7">
+		<FlatFile outputFile="data-out/emails_domain_accept.txt" supposedFile="supposed-out/emails_domain_accept_java8.txt"/>
+		<FlatFile outputFile="data-out/emails_domain_reject.txt" supposedFile="supposed-out/emails_domain_reject_java8.txt"/>
+		<FlatFile outputFile="data-out/emails_smtp_accept.txt" supposedFile="supposed-out/emails_smtp_accept_java8.txt"/>
 		<FlatFile outputFile="data-out/emails_syntax_accept.txt" supposedFile="supposed-out/emails_syntax_accept.txt"/>
 		<FlatFile outputFile="data-out/emails_syntax_reject.txt" supposedFile="supposed-out/emails_syntax_reject.txt"/>
 	</FunctionalTest>
@@ -87,15 +89,26 @@
 		<FlatFile outputFile="data-out/orders_late.txt" supposedFile="supposed-out/orders_late.txt"/>
 	</FunctionalTest>
 			
-	<FunctionalTest ident="MetadataWriting" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine">
+	<FunctionalTest ident="MetadataWriting" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine" excludedContainers="tomcat6,tomcat7,jetty9,glassfish3,websphere85,jboss6,jboss7,jboss7-eap-6-4">
 		<FlatFile outputFile="data-out/employees_txt.fmt" supposedFile="supposed-out/employees_txt.fmt"/>
 		<FlatFile outputFile="data-out/departments_txt.fmt" supposedFile="supposed-out/departments_txt.fmt"/>
+	</FunctionalTest>
+	
+	<FunctionalTest ident="MetadataWriting_version2" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine" excludedContainers="weblogic10,weblogic12,weblogic-12-1-3,jboss6,jboss7,jboss7-eap-6-4">
+		<FlatFile outputFile="data-out/employees_txt.fmt" supposedFile="supposed-out/employees_txt_version2.fmt"/>
+		<FlatFile outputFile="data-out/departments_txt.fmt" supposedFile="supposed-out/departments_txt_version2.fmt"/>
+	</FunctionalTest>
+	
+	<FunctionalTest ident="MetadataWriting_version3" graphFile="graph/MetadataWriting.grf" excludedEtlEnvironment="engine" excludedContainers="tomcat6,tomcat7,jetty9,weblogic10,weblogic12,weblogic-12-1-3,glassfish3,websphere85">
+		<FlatFile outputFile="data-out/employees_txt.fmt" supposedFile="supposed-out/employees_txt_version3.fmt"/>
+		<FlatFile outputFile="data-out/departments_txt.fmt" supposedFile="supposed-out/departments_txt_version3.fmt"/>
 	</FunctionalTest>
 	
 	<FunctionalTest ident="IssuesReport" graphFile="graph/IssuesReport.grf" excludedEtlEnvironment="engine" />
 	
 	<FunctionalTest ident="IssuesSearch" graphFile="graph/IssuesSearch.grf" excludedEtlEnvironment="engine" />
 	
-	<FunctionalTest ident="ReadTweets" graphFile="graph/ReadTweets.grf" excludedEtlEnvironment="engine" />
+	<!-- fails on weblogic12 (CLO-5071) -->
+	<FunctionalTest ident="Twitter" graphFile="graph/Twitter.grf" excludedEtlEnvironment="engine" excludedContainers="weblogic12,weblogic-12-1-3" />
 
 </TestScenario>

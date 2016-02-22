@@ -102,7 +102,7 @@ public class TransformLangParser extends ExpParser {
 		if (input instanceof SourceCodeProvider) {
 			this.sourceCode = ((SourceCodeProvider) input).getSourceCode();
 		}		this.graph = graph;
-		this.propertyRefResolver = (graph != null) ? new PropertyRefResolver(graph.getGraphProperties()) : null;
+		this.propertyRefResolver = (graph != null) ? new PropertyRefResolver(graph.getGraphParameters()) : null;
 		this.parserHelper = new ParserHelper();
 		this.hasEvalNode = false;
 		this.parsedImports = new HashSet<String>();
@@ -573,6 +573,15 @@ TOKEN:
 | < COLON: ":" > 
 }
 
+/* Assigment operators */
+TOKEN:
+{
+  < ASSIGN_PLUS: "+=" >
+| < ASSIGN_MINUS: "-=" >
+| < ASSIGN_MULTIPLY: "*=" >
+| < ASSIGN_DIVIDE: "/=" >
+| < ASSIGN_MODULO: "%=" >}
+
 /* Types */
 TOKEN : 
 { 	
@@ -615,7 +624,6 @@ TOKEN :
 | < LOOKUP_NEXT: "lookup_next" > // obsolete
 | < LOOKUP_FOUND: "lookup_found" > // obsolete
 | < LOOKUP_ADMIN: "lookup_admin" > // obsolete
-| < DICTIONARY: "dictionary" >
 | < SEQUENCE: "sequence" >
 | < LOGLEVEL_DEBUG: "debug" >
 | < LOGLEVEL_INFO: "info" >
@@ -624,6 +632,29 @@ TOKEN :
 | < LOGLEVEL_FATAL: "fatal" >
 | < LOGLEVEL_TRACE: "trace" >
 }
+
+/* Reserved words - dictionary */
+TOKEN :
+{
+  < DICTIONARY: "dictionary" > : DictionaryEntrySeparator // CLO-6866
+}
+
+// CLO-6866: special lexer state that only allows a dot followed by a dictionary entry identifier
+<DictionaryEntrySeparator>
+TOKEN :
+{
+  // tokens must be renamed to prevent ambiguity
+  < DICT_SEPARATOR : <DOT> > : DictionaryEntryIdentifier
+}
+
+// CLO-6866: special lexer state that only dictionary entry identifier
+<DictionaryEntryIdentifier>
+TOKEN :
+{
+  // tokens must be renamed to prevent ambiguity
+  < DICT_IDENTIFIER: <IDENTIFIER> > : DEFAULT
+}
+
 
 /* Date parts */
 TOKEN : 
@@ -768,7 +799,9 @@ CLVFStart Start() :         // Start -> Exp
 		error(e.beginLine,e.beginColumn,e.endLine,e.endColumn,"Unterminated string literal encountered");
   	} catch (ParseException e) {
   		error(e.currentToken, "Syntax error");
-	} catch (Exception e) {
+	} catch (EscapeCharacterException e){
+		error(e.getLine(), e.getColumn()-1, e.getLine(), e.getColumn(), e.getMessage());
+    } catch (Exception e) {
 		error(1,1,1,2,"Parser error: " + e.getMessage());
 		e.printStackTrace();
 	} catch (TokenMgrError e) {
@@ -801,7 +834,9 @@ CLVFStartExpression StartExpression() : {}{
 		// Parsing deliberately terminated in unknownToken() due to EOF token
   	} catch (ParseException e) {
   		error(1,1,1,2, "Syntax error");
-	} catch (Exception e) {
+	} catch (EscapeCharacterException e){
+		error(e.getLine(), e.getColumn()-1, e.getLine(), e.getColumn(), e.getMessage());
+    } catch (Exception e) {
 		error(1,1,1,2,"Parser error: " + e.getMessage());
 		e.printStackTrace();
 	} catch (TokenMgrError e) {
@@ -1248,10 +1283,10 @@ void Expression() #void :
 	AssignmentExpression()
 }
 
- // Cascades of assignment allowed: x=y=z=3. Achieved by recursion inside  [...]void AssignmentExpression() #Assignment(>1) : 
-{}{  	ConditionalFailExpression()
-  	
-	[  	 ( 
+void AssignmentOp(CLVFAssignment assignment) #void :
+{}
+{
+  	 ( 
   	  <ASSIGN>
   	  |
   	  (
@@ -1259,9 +1294,20 @@ void Expression() #void :
   	    {
   	    	warn(token,"Operator ':=' is obsolete","Use '=' operator instead");
   	    }
-  	  ) 
+  	  )
+  	  |
+  	  <ASSIGN_PLUS> | <ASSIGN_MINUS> | <ASSIGN_MULTIPLY> | <ASSIGN_DIVIDE> | <ASSIGN_MODULO> 
   	) 
-  	{
+  {
+    assignment.setOperator(token.kind);
+  }
+}
+
+ // Cascades of assignment allowed: x=y=z=3. Achieved by recursion inside  [...]void AssignmentExpression() #Assignment(>1) : 
+{}{  	ConditionalFailExpression()
+  	
+	[
+	AssignmentOp(jjtThis)  	{
   		// We check if the LHS is a variable reference
   		// The check can't be done immediately after ConditionalFailExpression()
   		// because of the recursive call to AssignmentExpression() below
@@ -1397,6 +1443,26 @@ void PrimarySuffix(Node prefix) #void:
 }	
 
 {
+	( // CLO-6866: special lexical tokens just for the dictionary
+		t = <DICT_SEPARATOR>
+		 ( <DICT_IDENTIFIER> 
+		   { 
+		   	 jjtThis.begin(t.beginLine,t.beginColumn);
+		   	 jjtThis.end(token.endLine,token.endColumn);
+		   	 jjtThis.setName(token.image);
+		   	 jjtThis.setWildcard(false);
+		   }
+		   	 #MemberAccessExpression
+		   {
+		   	 // push the prefix as LHS of the member access selector
+		   	 memAcc = jjtree.peekNode();
+		   	 memAcc.jjtAddChild(prefix,0);
+		   	 memAcc.jjtSetParent(prefix.jjtGetParent());
+		   	 prefix.jjtSetParent(memAcc);
+		   } 
+		 )
+	)
+	|
 	(
 		t = "."
 		(
@@ -1858,7 +1924,7 @@ void EmptyStatement() #void :
   
 }void CaseStatement(CLVFSwitchStatement switchStatement) :{}{  ( 
     "case" { jjtThis.begin(token.beginLine,token.beginColumn); }
-    Literal() ":" 
+	  UnaryExpression() ":"  // CLO-5038
     { jjtThis.end(token.endLine,token.endColumn); }
   )
   |

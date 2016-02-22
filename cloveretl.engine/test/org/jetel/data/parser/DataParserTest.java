@@ -54,7 +54,6 @@ public class DataParserTest extends AbstractParserTestCase {
 		metadata.addField(new DataFieldMetadata("Field1", DataFieldMetadata.STRING_FIELD, null));
 
 		recordUTF8 = DataRecordFactory.newRecord(metadata);
-		recordUTF8.init();
 		TextParserConfiguration parserUTF8Cfg = new TextParserConfiguration();
 		parserUTF8Cfg.setMetadata(metadata);
 		parserUTF8Cfg.setCharset("UTF-8");
@@ -62,7 +61,6 @@ public class DataParserTest extends AbstractParserTestCase {
 		parserUTF8 = new DataParser(parserUTF8Cfg);
 		
 		recordUTF16 = DataRecordFactory.newRecord(metadata);
-		recordUTF16.init();
 		TextParserConfiguration parserUTF16Cfg = new TextParserConfiguration();
 		parserUTF16Cfg.setMetadata(metadata);
 		parserUTF16Cfg.setCharset("UTF-16");
@@ -71,7 +69,6 @@ public class DataParserTest extends AbstractParserTestCase {
 
 		
 		recordCp1250 = DataRecordFactory.newRecord(metadata);
-		recordCp1250.init();
 		TextParserConfiguration parserCp1250Cfg = new TextParserConfiguration();
 		parserCp1250Cfg.setMetadata(metadata);
 		parserCp1250Cfg.setCharset("windows-1250");
@@ -79,7 +76,6 @@ public class DataParserTest extends AbstractParserTestCase {
 		parserCp1250 = new DataParser(parserCp1250Cfg);
 		
 		recordISO88591 = DataRecordFactory.newRecord(metadata);
-		recordISO88591.init();
 		TextParserConfiguration parserISO88591Cfg = new TextParserConfiguration();
 		parserISO88591Cfg.setMetadata(metadata);
 		parserISO88591Cfg.setCharset("ISO-8859-1");
@@ -121,7 +117,6 @@ public class DataParserTest extends AbstractParserTestCase {
 		testMetadata.addField(new DataFieldMetadata("Field1", DataFieldMetadata.STRING_FIELD, null));
 	
 		DataRecord record = DataRecordFactory.newRecord(metadata);
-		record.init();
 		TextParserConfiguration parserConf = new TextParserConfiguration();
 		parserConf.setMetadata(testMetadata);
 		parserConf.setCharset("UTF-8");
@@ -149,7 +144,6 @@ public class DataParserTest extends AbstractParserTestCase {
 		testMetadata.addField(new DataFieldMetadata("Field1", DataFieldMetadata.STRING_FIELD, null));
 	
 		DataRecord record = DataRecordFactory.newRecord(metadata);
-		record.init();
 		TextParserConfiguration parserConf = new TextParserConfiguration();
 		parserConf.setMetadata(testMetadata);
 		parserConf.setCharset("UTF-8");
@@ -178,7 +172,6 @@ public class DataParserTest extends AbstractParserTestCase {
 		testMetadata.addField(new DataFieldMetadata("Field1", DataFieldMetadata.STRING_FIELD, null));
 	
 		DataRecord record = DataRecordFactory.newRecord(testMetadata);
-		record.init();
 		TextParserConfiguration parserConf = new TextParserConfiguration();
 		parserConf.setMetadata(testMetadata);
 		parserConf.setCharset("UTF-8");
@@ -214,7 +207,6 @@ public class DataParserTest extends AbstractParserTestCase {
 		testMetadata.addField(new DataFieldMetadata("Field4", DataFieldMetadata.STRING_FIELD, null));
 		
 		DataRecord record = DataRecordFactory.newRecord(testMetadata);
-		record.init();
 		TextParserConfiguration parserConf = new TextParserConfiguration();
 		parserConf.setMetadata(testMetadata);
 		parserConf.setCharset("UTF-8");

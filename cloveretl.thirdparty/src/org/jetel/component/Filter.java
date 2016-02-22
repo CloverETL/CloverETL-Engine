@@ -115,7 +115,6 @@ public class Filter extends Node {
 		OutputPort rejectedPort=getOutputPort(REJECTED_PORT);
 		DataRecord record = DataRecordFactory.newRecord(inPort.getMetadata());
 
-		record.init();
 		boolean isData=true;
 		
 		while (isData && runIt) {

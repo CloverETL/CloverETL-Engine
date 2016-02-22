@@ -111,6 +111,9 @@ public class MultiFileWriter {
 
 	private boolean storeRawData = true;
 	
+	// CLO-1634
+	private boolean createEmptyFiles = true;
+	
 	/**
 	 * This switch is used to say to partitioning algorithm, that
 	 * the incoming data records are sorted according partition key.
@@ -210,20 +213,28 @@ public class MultiFileWriter {
 				multiTarget = new HashMap<Object, TargetFile>(tableInitialSize);
 				
 			// prepare type of targets: single
-			} else {
-				if (currentFormatter == null) {
-					currentFormatter = formatterGetter.getNewFormatter();	
-				}
-				currentFormatter.init(metadata);
-				if (currentTarget != null)
-					currentTarget.close();
-				currentTarget = createNewTarget(currentFormatter);
-				currentTarget.init();
+			} else if (createEmptyFiles) {
+				prepareSingleTarget();
 			}
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(e);
 		}
     }
+
+	/**
+	 * @throws ComponentNotReadyException
+	 * @throws IOException
+	 */
+	private void prepareSingleTarget() throws ComponentNotReadyException, IOException {
+		if (currentFormatter == null) {
+			currentFormatter = formatterGetter.getNewFormatter();	
+		}
+		currentFormatter.init(metadata);
+		if (currentTarget != null)
+			currentTarget.close();
+		currentTarget = createNewTarget(currentFormatter);
+		currentTarget.init();
+	}
     
     /**
      * Creates new target according to fileURL or channels. 
@@ -334,7 +345,6 @@ public class MultiFileWriter {
     	if (!deserialized) {
     		if (this.record == null) {
         		this.record = DataRecordFactory.newRecord(this.metadata);
-        		this.record.init();
     		}
     		record.deserialize(buffer);
     		buffer.rewind();
@@ -353,6 +363,9 @@ public class MultiFileWriter {
     	
         // write the record according to value partition
         if (partitionKey == null) {
+        	if (currentTarget == null) { // CLO-1634
+        		prepareSingleTarget();
+        	}
             // single formatter/getter
         	writeRecord2CurrentTarget(buffer);
         } else {
@@ -380,6 +393,9 @@ public class MultiFileWriter {
         
         // write the record according to value partition
         if (partitionKey == null) {
+        	if (currentTarget == null) { // CLO-1634
+        		prepareSingleTarget();
+        	}
             // single formatter/getter
         	writeRecord2CurrentTarget(record);
         } else {
@@ -883,6 +899,10 @@ public class MultiFileWriter {
 		this.sortedInput = sortedInput;
 	}
 	
+	public void setCreateEmptyFiles(boolean createEmptyFiles) {
+		this.createEmptyFiles = createEmptyFiles;
+	}
+
 	/**
 	 * @return Count of records written to the current target.
 	 */

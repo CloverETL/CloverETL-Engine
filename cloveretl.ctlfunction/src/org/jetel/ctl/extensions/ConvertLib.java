@@ -31,10 +31,10 @@ import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.data.DateFieldEnum;
+import org.jetel.ctl.data.TLType;
 import org.jetel.data.Defaults;
 import org.jetel.data.primitive.StringFormat;
 import org.jetel.exception.JetelRuntimeException;
-import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.PackedDecimal;
 import org.jetel.util.crypto.Base64;
 import org.jetel.util.crypto.Digest;
@@ -55,50 +55,47 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@Override
 	public TLFunctionPrototype getExecutable(String functionName) {
-		TLFunctionPrototype ret = 
-			"num2str".equals(functionName) ? new Num2StrFunction() :
-			"date2str".equals(functionName) ? new Date2StrFunction() :
-			"str2date".equals(functionName) ? new Str2DateFunction() :
-			"date2num".equals(functionName) ? new Date2NumFunction() : 
-			"str2integer".equals(functionName) ? new Str2IntegerFunction() :
-			"str2long".equals(functionName) ? new Str2LongFunction() :
-			"str2double".equals(functionName) ? new Str2DoubleFunction() :
-			"str2decimal".equals(functionName) ? new Str2DecimalFunction() :
-			"long2integer".equals(functionName) ? new Long2IntegerFunction() :
-			"double2integer".equals(functionName) ? new Double2IntegerFunction() :
-			"decimal2integer".equals(functionName) ? new Decimal2IntegerFunction() :
-			"double2long".equals(functionName) ? new Double2LongFunction() :
-			"decimal2long".equals(functionName) ? new Decimal2LongFunction() :
-			"decimal2double".equals(functionName) ? new Decimal2DoubleFunction() : 
-			"num2bool".equals(functionName) ? new Num2BoolFunction() :
-			"bool2num".equals(functionName) ? new Bool2NumFunction() : 
-			"str2bool".equals(functionName) ? new Str2BoolFunction() :
-			"toString".equals(functionName) ? new ToStringFunction() :
-			"long2date".equals(functionName) ? new Long2DateFunction() :
-			"date2long".equals(functionName) ? new Date2LongFunction() : 
-			"base64byte".equals(functionName) ? new Base64ByteFunction() : 
-		    "byte2base64".equals(functionName) ? new Byte2Base64Function() : 
-		    "bits2str".equals(functionName) ? new Bits2StrFunction() : 
-		    "str2bits".equals(functionName) ? new Str2BitsFunction() : 
-      	    "str2byte".equals(functionName) ? new Str2ByteFunction() : 
-      	    "byte2str".equals(functionName) ? new Byte2StrFunction() : 
-		    "hex2byte".equals(functionName) ? new Hex2ByteFunction() : 
-		    "byte2hex".equals(functionName) ? new Byte2HexFunction() : 
-		    "long2packDecimal".equals(functionName) ? new Long2PackedDecimalFunction() : 
-		    "packDecimal2long".equals(functionName) ? new PackedDecimal2LongFunction() : 
-			"xml2json".equals(functionName) ? new Xml2JsonFunction() : 
-			"json2xml".equals(functionName) ? new Json2XmlFunction() : 
-		    "md5".equals(functionName) ? new MD5Function() : 
-		    "sha".equals(functionName) ? new SHAFunction() : 
-			"sha256".equals(functionName) ? new SHA256Function() : 
-			null;
+		if (functionName != null) {
+			switch (functionName) {
+				case "num2str": return new Num2StrFunction();
+				case "date2str": return new Date2StrFunction();
+				case "str2date": return new Str2DateFunction();
+				case "date2num": return new Date2NumFunction();
+				case "str2integer": return new Str2IntegerFunction();
+				case "str2long": return new Str2LongFunction();
+				case "str2double": return new Str2DoubleFunction();
+				case "str2decimal": return new Str2DecimalFunction();
+				case "long2integer": return new Long2IntegerFunction();
+				case "double2integer": return new Double2IntegerFunction();
+				case "decimal2integer": return new Decimal2IntegerFunction();
+				case "double2long": return new Double2LongFunction();
+				case "decimal2long": return new Decimal2LongFunction();
+				case "decimal2double": return new Decimal2DoubleFunction();
+				case "num2bool": return new Num2BoolFunction();
+				case "bool2num": return new Bool2NumFunction();
+				case "str2bool": return new Str2BoolFunction();
+				case "toString": return new ToStringFunction();
+				case "long2date": return new Long2DateFunction();
+				case "date2long": return new Date2LongFunction();
+				case "base64byte": return new Base64ByteFunction();
+				case "byte2base64": return new Byte2Base64Function();
+				case "bits2str": return new Bits2StrFunction();
+				case "str2bits": return new Str2BitsFunction();
+				case "str2byte": return new Str2ByteFunction();
+				case "byte2str": return new Byte2StrFunction();
+				case "hex2byte": return new Hex2ByteFunction();
+				case "byte2hex": return new Byte2HexFunction();
+				case "long2packDecimal": return new Long2PackedDecimalFunction();
+				case "packDecimal2long": return new PackedDecimal2LongFunction();
+				case "xml2json": return new Xml2JsonFunction();
+				case "json2xml": return new Json2XmlFunction();
+				case "md5": return new MD5Function();
+				case "sha": return new SHAFunction();
+				case "sha256": return new SHA256Function();
+			}
+		}
 		
-		if (ret == null) {
-    		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
-    	}
-		
-		return ret;
-			
+		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
 	}
 	
 	private static String LIBRARY_NAME = "Convert";
@@ -242,7 +239,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 		return NumericFormatterFactory.getPlainFormatterInstance().formatBigDecimal(num);
 	}
-	class Num2StrFunction implements TLFunctionPrototype {
+	static class Num2StrFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -285,7 +282,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 
 	// DATE2STR
-	class Date2StrFunction implements TLFunctionPrototype {
+	static class Date2StrFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -335,7 +332,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	// STR2DATE
-	class Str2DateFunction implements TLFunctionPrototype {
+	static class Str2DateFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -346,19 +343,26 @@ public class ConvertLib extends TLFunctionLibrary {
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			String locale = null;
 			String timeZone = null;
+			Boolean strict = false;
 			
-			if (context.getParams().length > 3) {
+			TLType[] params = context.getParams();
+			boolean strictParamPresent = params[params.length - 1].isBoolean();
+			
+			if (strictParamPresent) {
+				strict = stack.popBoolean();
+			}
+			
+			if (params.length > 4 || (params.length == 4 && !strictParamPresent)) {
 				timeZone = stack.popString();
 			}
-			if (context.getParams().length > 2) {
-				
+			if (params.length > 3 || (params.length == 3 && !strictParamPresent)) {
 				locale = stack.popString();
 			}
 			
 			final String pattern = stack.popString();
 			final String input = stack.popString();
 		
-			stack.push(str2date(context, input, pattern, locale, timeZone));
+			stack.push(str2date(context, input, pattern, locale, timeZone, strict));
 		}
 	}
 
@@ -367,27 +371,46 @@ public class ConvertLib extends TLFunctionLibrary {
 		context.setCache(new TLDateFormatLocaleCache(context, 1, 2, 3));
 	}
 	
-	@TLFunctionAnnotation("Converts string to date using the specified pattern, locale and time zone")
-	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale, String timeZone) {
+	@TLFunctionAnnotation("Converts string to date using the specified pattern, locale, time zone and strict parsing flag")
+	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale, String timeZone, Boolean strict) {
 		if (input == null){
 			return null;
 		}
 		DateFormatter formatter = ((TLDateFormatLocaleCache) context.getCache()).getCachedLocaleFormatter(context, pattern, locale, timeZone, 1, 2, 3);
-		return formatter.parseDate(input);
+		if (strict != null && strict) {
+			return formatter.parseDateExactMatch(input);
+		} else {
+			return formatter.parseDate(input);
+		}
+	}
+	
+	@TLFunctionAnnotation("Converts string to date using the specified pattern, locale and time zone")
+	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale, String timeZone) {
+		return str2date(context, input, pattern, locale, timeZone, null);
 	}
 
+	@TLFunctionAnnotation("Converts string to date using the specified pattern, locale and strict parsing flag")
+	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale, Boolean strict) {
+		return str2date(context, input, pattern, locale, null, strict);
+	}
+	
 	@TLFunctionAnnotation("Converts string to date using the specified pattern and locale")
 	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale) {
-		return str2date(context, input, pattern, locale, null);
+		return str2date(context, input, pattern, locale, null, null);
+	}
+	
+	@TLFunctionAnnotation("Converts string to date using the specified pattern and strict parsing flag")
+	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, Boolean strict) {
+		return str2date(context, input, pattern, null, null, strict);
 	}
 
 	@TLFunctionAnnotation("Converts string to date using the specified pattern")
 	public static final Date str2date(TLFunctionCallContext context, String input, String pattern) {
-		return str2date(context, input, pattern, null);
+		return str2date(context, input, pattern, null, null, null);
 	}
 
 	// DATE2NUM
-	class Date2NumFunction implements TLFunctionPrototype {
+	static class Date2NumFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -500,7 +523,7 @@ public class ConvertLib extends TLFunctionLibrary {
 			throw new TransformLangExecutorRuntimeException("str2integer - can't convert \"" + input + "\"", e);
 		}
 	}
-	class Str2IntegerFunction implements TLFunctionPrototype {
+	static class Str2IntegerFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -574,7 +597,7 @@ public class ConvertLib extends TLFunctionLibrary {
 			throw new TransformLangExecutorRuntimeException("str2long - can't convert \"" + input + "\"", e);
 		}
 	}
-	class Str2LongFunction implements TLFunctionPrototype {
+	static class Str2LongFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -641,7 +664,7 @@ public class ConvertLib extends TLFunctionLibrary {
 			throw new TransformLangExecutorRuntimeException("str2double - can't convert \"" + input + "\"", e);
 		}
 	}
-	class Str2DoubleFunction implements TLFunctionPrototype {
+	static class Str2DoubleFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -703,7 +726,7 @@ public class ConvertLib extends TLFunctionLibrary {
 			throw new JetelRuntimeException("can't convert \"" + input + "\" to decimal", e);
 		}
 	}
-	class Str2DecimalFunction implements TLFunctionPrototype {
+	static class Str2DecimalFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -739,7 +762,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		
 	}
 	
-	class Long2IntegerFunction implements TLFunctionPrototype {
+	static class Long2IntegerFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -761,7 +784,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 		return l.intValue();
 	}
-	class Double2IntegerFunction implements TLFunctionPrototype {
+	static class Double2IntegerFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -786,7 +809,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 		return l.intValue();
 	}
-	class Decimal2IntegerFunction implements TLFunctionPrototype {
+	static class Decimal2IntegerFunction implements TLFunctionPrototype {
 		
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -809,7 +832,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		return d.longValue();
 	}
 	
-	class Double2LongFunction implements TLFunctionPrototype {
+	static class Double2LongFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -835,7 +858,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		return d.longValue();
 	}
 
-	class Decimal2LongFunction implements TLFunctionPrototype {
+	static class Decimal2LongFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -862,7 +885,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		return d.doubleValue();
 	}
 
-	class Decimal2DoubleFunction implements TLFunctionPrototype {
+	static class Decimal2DoubleFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -907,7 +930,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		return BigDecimal.ZERO.compareTo(b) != 0;
 	}
 
-	class Num2BoolFunction implements TLFunctionPrototype {
+	static class Num2BoolFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -938,7 +961,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	// BOOL2NUM
-	class Bool2NumFunction implements TLFunctionPrototype {
+	static class Bool2NumFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -966,7 +989,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	// STR2BOOL
-	class Str2BoolFunction implements TLFunctionPrototype {
+	static class Str2BoolFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -981,6 +1004,11 @@ public class ConvertLib extends TLFunctionLibrary {
 	// this method is not annotated as it should not be directly visible in CTL
 	private static final String toStringInternal(Object o) {
 		return StringUtils.toOutputStringCTL(o);
+	}
+	
+	@TLFunctionAnnotation("Returns string representation of its argument")
+	public static final String toString(TLFunctionCallContext context, Boolean b) {
+		return toStringInternal(b);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of its argument")
@@ -1014,7 +1042,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	// toString
-	class ToStringFunction implements TLFunctionPrototype {
+	static class ToStringFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1037,7 +1065,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	// Long2Date
-	class Long2DateFunction implements TLFunctionPrototype {
+	static class Long2DateFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1060,7 +1088,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	// DATE2LONG
-	class Date2LongFunction implements TLFunctionPrototype {
+	static class Date2LongFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1082,7 +1110,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}	
 	
 	// BASE64BYTE
-	public class Base64ByteFunction implements TLFunctionPrototype {
+	public static class Base64ByteFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1108,7 +1136,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	// BYTE2BASE64
-	public class Byte2Base64Function implements TLFunctionPrototype {
+	public static class Byte2Base64Function implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1137,7 +1165,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 
 	// BITS2STR
-	public class Bits2StrFunction implements TLFunctionPrototype {
+	public static class Bits2StrFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1167,7 +1195,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 
 	// STR2BITS
-	public class Str2BitsFunction implements TLFunctionPrototype {
+	public static class Str2BitsFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1197,7 +1225,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 
 	// STR2BYTE
-	public class Str2ByteFunction implements TLFunctionPrototype {
+	public static class Str2ByteFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1229,7 +1257,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 
 	// BYTE2STR
-	public class Byte2StrFunction implements TLFunctionPrototype {
+	public static class Byte2StrFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1249,7 +1277,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	// BYTE2HEX
-	public class Byte2HexFunction implements TLFunctionPrototype {
+	public static class Byte2HexFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1267,7 +1295,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 
 	// HEX2BYTE
-	public class Hex2ByteFunction implements TLFunctionPrototype {
+	public static class Hex2ByteFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1292,7 +1320,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	// LONG2PACKEDDECIMAL
-	class Long2PackedDecimalFunction implements TLFunctionPrototype {
+	static class Long2PackedDecimalFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1313,7 +1341,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	// PACKEDDECIMAL2LONG
-	class PackedDecimal2LongFunction implements TLFunctionPrototype {
+	static class PackedDecimal2LongFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1335,7 +1363,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	//XML2JSON
-	class Xml2JsonFunction implements TLFunctionPrototype {
+	static class Xml2JsonFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1359,7 +1387,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	//JSON2XML
-	class Json2XmlFunction implements TLFunctionPrototype {
+	static class Json2XmlFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1384,7 +1412,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	// MD5
-	class MD5Function implements TLFunctionPrototype {
+	static class MD5Function implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1411,7 +1439,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	// SHA
-	class SHAFunction implements TLFunctionPrototype {
+	static class SHAFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1438,7 +1466,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	// SHA-256
-	class SHA256Function implements TLFunctionPrototype {
+	static class SHA256Function implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {

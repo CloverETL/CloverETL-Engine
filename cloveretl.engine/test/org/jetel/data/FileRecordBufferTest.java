@@ -44,8 +44,6 @@ public class FileRecordBufferTest extends CloverTestCase {
 		FileRecordBuffer fileBuffer = new FileRecordBuffer(50000);
 		
 		DataRecord record = DataRecordFactory.newRecord(DynamicRecordBuffer1Test.getMetadata());
-		record.init();
-		
 		
 		for (int i = 0; i < 1000; i++) {
 			DynamicRecordBuffer1Test.populateDataRecord(record, i, (i % 2) == 0);
@@ -66,7 +64,6 @@ public class FileRecordBufferTest extends CloverTestCase {
 		FileRecordBuffer fileBuffer = new FileRecordBuffer(50000);
 		
 		DataRecord record = DataRecordFactory.newRecord(DynamicRecordBuffer1Test.getMetadata());
-		record.init();
 		
 		for (int iteration = 0; iteration < 3; iteration++) {
 			

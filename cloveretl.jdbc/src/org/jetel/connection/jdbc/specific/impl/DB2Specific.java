@@ -115,4 +115,9 @@ public class DB2Specific extends AbstractJdbcSpecific {
 		return true;
 	}
 	
+	@Override
+	public boolean supportsTerminatingSemicolons() {
+		return false;
+	}
+	
 }

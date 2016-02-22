@@ -54,8 +54,6 @@ public class SlaveReader extends InputReader {
 		this.keepLast = keepLast;
 		this.rec[CURRENT] = DataRecordFactory.newRecord(inPort.getMetadata());
 		this.rec[NEXT] = DataRecordFactory.newRecord(inPort.getMetadata());
-		this.rec[CURRENT].init();
-		this.rec[NEXT].init();
 		this.firstRun = true;
 		recCounter = 0;
 		this.needsRewind = true;
@@ -65,8 +63,6 @@ public class SlaveReader extends InputReader {
 	public void reset() throws ComponentNotReadyException {
 		this.rec[CURRENT] = DataRecordFactory.newRecord(inPort.getMetadata());
 		this.rec[NEXT] = DataRecordFactory.newRecord(inPort.getMetadata());
-		this.rec[CURRENT].init();
-		this.rec[NEXT].init();
 		this.firstRun = true;
 		recCounter = 0;
 		this.needsRewind = true;

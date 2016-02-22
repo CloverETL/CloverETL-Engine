@@ -34,6 +34,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.fileoperation.CloverURI;
+import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.Parser.DataSourceType;
@@ -121,7 +122,7 @@ public class ReadableChannelIterator {
 	 * Checks this class for the first using.
 	 */
 	public void checkConfig() throws ComponentNotReadyException {
-		common(true);
+		common(false); // CLO-5399
 	}
 
 	/**
@@ -336,8 +337,9 @@ public class ReadableChannelIterator {
 				} catch (Exception e) {
 					// ignore
 				}
-				return new URI(currentFileName);
-			} catch (URISyntaxException ex) {
+				URL url = FileUtils.getFileURL(contextURL, currentFileName);
+				return URIUtils.toURI(url);
+			} catch (URISyntaxException | MalformedURLException ex) {
 				throw new JetelException("Invalid fileURL", ex);
 			} catch (Exception e) {
 				// DO NOTHING - just try to open a stream based on the currentFileName in the next step

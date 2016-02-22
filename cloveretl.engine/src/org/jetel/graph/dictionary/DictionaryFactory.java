@@ -115,6 +115,7 @@ public class DictionaryFactory {
 		try {
 			jaxbContext = JAXBContextProvider.getInstance().getContext(DICTIONARY_PACKAGE_NAME, org.jetel.graph.dictionary.jaxb.Dictionary.class.getClassLoader());
 			Marshaller marshaller = jaxbContext.createMarshaller();
+			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 			marshaller.marshal((new ObjectFactory()).createDictionary(jaxbDictionary), os);
 		} catch (JAXBException e) {
 			throw new ComponentNotReadyException("Dictionary formatting error.", e);

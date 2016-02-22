@@ -30,46 +30,43 @@ public class MathLib extends TLFunctionLibrary {
 	
 	@Override
 	public TLFunctionPrototype getExecutable(String functionName) {
-		TLFunctionPrototype ret = 
-			"sqrt".equals(functionName) ? new SqrtFunction() :
-			"log".equals(functionName) ? new LogFunction() :
-			"log10".equals(functionName) ? new Log10Function() :
-			"exp".equals(functionName) ? new ExpFunction() :
-			"floor".equals(functionName) ? new FloorFunction() :
-			"round".equals(functionName) ? new RoundFunction() :
-			"roundHalfToEven".equals(functionName) ? new RoundHalfToEvenFunction() :
-			"ceil".equals(functionName) ? new CeilFunction() :
-			"pow".equals(functionName) ? new PowFunction() :
-			"pi".equals(functionName) ? new PiFunction() :
-			"e".equals(functionName) ? new EFunction() :
-			"abs".equals(functionName) ? new AbsFunction() :
-			"bitOr".equals(functionName) ? new BitOrFunction() :
-			"bitAnd".equals(functionName) ? new BitAndFunction() :
-			"bitXor".equals(functionName) ? new BitXorFunction() :
-			"bitLShift".equals(functionName) ? new BitLShiftFunction() :
-			"bitRShift".equals(functionName) ? new BitRShiftFunction() :
-			"bitNegate".equals(functionName) ? new BitNegateFunction() :
-			"bitSet".equals(functionName) ? new BitSetFunction() :
-			"bitIsSet".equals(functionName) ? new BitIsSetFunction() :
-			"cos".equals(functionName) ? new CosFunction():
-			"sin".equals(functionName) ? new SinFunction():
-			"tan".equals(functionName) ? new TanFunction():
-			"acos".equals(functionName) ? new ACosFunction():
-			"asin".equals(functionName) ? new ASinFunction():
-			"atan".equals(functionName) ? new ATanFunction():
-			"min".equals(functionName) ? new MinFunction():
-			"max".equals(functionName) ? new MaxFunction():
-			"signum".equals(functionName) ? new SignumFunction():
-			"toDegrees".equals(functionName) ? new ToDegreesFunction():
-			"toRadians".equals(functionName) ? new ToRadiansFunction():
-				
-			null;
+		if (functionName != null) {
+			switch (functionName) {
+				case "sqrt": return new SqrtFunction();
+				case "log": return new LogFunction();
+				case "log10": return new Log10Function();
+				case "exp": return new ExpFunction();
+				case "floor": return new FloorFunction();
+				case "round": return new RoundFunction();
+				case "roundHalfToEven": return new RoundHalfToEvenFunction();
+				case "ceil": return new CeilFunction();
+				case "pow": return new PowFunction();
+				case "pi": return new PiFunction();
+				case "e": return new EFunction();
+				case "abs": return new AbsFunction();
+				case "bitOr": return new BitOrFunction();
+				case "bitAnd": return new BitAndFunction();
+				case "bitXor": return new BitXorFunction();
+				case "bitLShift": return new BitLShiftFunction();
+				case "bitRShift": return new BitRShiftFunction();
+				case "bitNegate": return new BitNegateFunction();
+				case "bitSet": return new BitSetFunction();
+				case "bitIsSet": return new BitIsSetFunction();
+				case "cos": return new CosFunction();
+				case "sin": return new SinFunction();
+				case "tan": return new TanFunction();
+				case "acos": return new ACosFunction();
+				case "asin": return new ASinFunction();
+				case "atan": return new ATanFunction();
+				case "min": return new MinFunction();
+				case "max": return new MaxFunction();
+				case "signum": return new SignumFunction();
+				case "toDegrees": return new ToDegreesFunction();
+				case "toRadians": return new ToRadiansFunction();
+			}
+		}
 			
-		if (ret == null) {
-    		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
-    	}
-
-		return ret;
+		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
 	}
 	
 	private static String LIBRARY_NAME = "Math";
@@ -92,7 +89,7 @@ public class MathLib extends TLFunctionLibrary {
 	}
 	
     // SQRT
-    class SqrtFunction implements TLFunctionPrototype {
+	static class SqrtFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -124,7 +121,7 @@ public class MathLib extends TLFunctionLibrary {
     }
     	
     // LOG
-    class LogFunction implements TLFunctionPrototype {
+    static class LogFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -154,7 +151,7 @@ public class MathLib extends TLFunctionLibrary {
     }
     	
     // LOG
-    class Log10Function implements TLFunctionPrototype {
+    static class Log10Function implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -185,7 +182,7 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     // EXP
-    class ExpFunction implements TLFunctionPrototype {
+    static class ExpFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -214,7 +211,7 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     // FLOOR
-    class FloorFunction implements TLFunctionPrototype { 
+    static class FloorFunction implements TLFunctionPrototype { 
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -305,7 +302,7 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     // ROUND
-	class RoundFunction implements TLFunctionPrototype {
+    static class RoundFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -376,7 +373,7 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     // CEIL
-    class CeilFunction implements TLFunctionPrototype { 
+    static class CeilFunction implements TLFunctionPrototype { 
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -405,7 +402,7 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     // POW
-    class PowFunction implements TLFunctionPrototype {
+    static class PowFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -433,7 +430,7 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     // PI
-    class PiFunction implements TLFunctionPrototype {
+    static class PiFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -452,7 +449,7 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     //  E
-    class EFunction implements TLFunctionPrototype {
+    static class EFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -486,7 +483,7 @@ public class MathLib extends TLFunctionLibrary {
     	return d.abs();
     }
     
-    class AbsFunction implements TLFunctionPrototype {
+    static class AbsFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -539,7 +536,7 @@ public class MathLib extends TLFunctionLibrary {
     	return d.signum();
     }
     
-    class SignumFunction implements TLFunctionPrototype {
+    static class SignumFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -586,7 +583,7 @@ public class MathLib extends TLFunctionLibrary {
     	return BitArray.bitOr(i, j);
     }
     
-    class BitOrFunction implements TLFunctionPrototype {
+    static class BitOrFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -630,7 +627,7 @@ public class MathLib extends TLFunctionLibrary {
     	return BitArray.bitAnd(i, j);
     }
 
-	class BitAndFunction implements TLFunctionPrototype {
+	static class BitAndFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -673,7 +670,7 @@ public class MathLib extends TLFunctionLibrary {
     	return BitArray.bitXor(i, j);
     }
     
-    class BitXorFunction implements TLFunctionPrototype {
+    static class BitXorFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -711,7 +708,7 @@ public class MathLib extends TLFunctionLibrary {
     	return i << j;
     }
     
-    class BitLShiftFunction implements TLFunctionPrototype {
+    static class BitLShiftFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -746,7 +743,7 @@ public class MathLib extends TLFunctionLibrary {
     	return i >> j;
     }
     
-    class BitRShiftFunction implements TLFunctionPrototype {
+    static class BitRShiftFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -787,7 +784,7 @@ public class MathLib extends TLFunctionLibrary {
     	return BitArray.bitNegate(i);
     }
     
-    class BitNegateFunction implements TLFunctionPrototype {
+    static class BitNegateFunction implements TLFunctionPrototype {
     	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -827,7 +824,7 @@ public class MathLib extends TLFunctionLibrary {
 //	}
 
     
-    class BitIsSetFunction implements TLFunctionPrototype {
+    static class BitIsSetFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -885,7 +882,7 @@ public class MathLib extends TLFunctionLibrary {
 
 
     
-    class BitSetFunction implements TLFunctionPrototype {
+    static class BitSetFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -983,7 +980,7 @@ public class MathLib extends TLFunctionLibrary {
 		return (E)candidate;
 	}
     
-    class MinFunction implements TLFunctionPrototype {
+	static class MinFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1093,7 +1090,7 @@ public class MathLib extends TLFunctionLibrary {
 		return (E)candidate;
     }
     
-    class MaxFunction implements TLFunctionPrototype {
+    static class MaxFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1139,7 +1136,7 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     // SIN
-    class SinFunction implements TLFunctionPrototype {
+    static class SinFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1168,7 +1165,7 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     // COS
-    class CosFunction implements TLFunctionPrototype {
+    static class CosFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1197,7 +1194,7 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     // TAN
-    class TanFunction implements TLFunctionPrototype {
+    static class TanFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1226,7 +1223,7 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     // ASIN
-    class ASinFunction implements TLFunctionPrototype {
+    static class ASinFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1255,7 +1252,7 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     // ACOS
-    class ACosFunction implements TLFunctionPrototype {
+    static class ACosFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1284,7 +1281,7 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     // ATAN
-    class ATanFunction implements TLFunctionPrototype {
+    static class ATanFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1313,7 +1310,7 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     // TO DEGREES
-    class ToDegreesFunction implements TLFunctionPrototype {
+    static class ToDegreesFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1342,7 +1339,7 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     // TO RADIANS
-    class ToRadiansFunction implements TLFunctionPrototype {
+    static class ToRadiansFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {

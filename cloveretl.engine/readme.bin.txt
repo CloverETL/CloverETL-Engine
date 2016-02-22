@@ -5,7 +5,7 @@ www.cloveretl.com
 Requirements/dependencies
 -------------------------
 
-CloverETL requires Java version 1.6
+CloverETL requires Java version 1.7
 
 All other required third party libraries can be found in "lib/" directory.
 

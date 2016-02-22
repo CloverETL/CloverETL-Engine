@@ -72,7 +72,6 @@ protected void setUp() throws Exception {
 		aParser.init();
 //		aParser.setDataSource(in3);
 		record = DataRecordFactory.newRecord(metadata);
-		record.init();
 
 		aParser2.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT));
 		aParser2.init();

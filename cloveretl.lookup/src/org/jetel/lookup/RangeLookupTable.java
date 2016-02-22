@@ -296,9 +296,6 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			dataParser = TextParserFactory.getParser(metadata, charset);
 	    }
 	    
-	    DataRecord tmpRecord = DataRecordFactory.newRecord(metadata);
-	    tmpRecord.init();
-
 	    //read records from file
         if (dataParser != null) {
             dataParser.init();
@@ -320,7 +317,6 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		// read records from file
 		if (dataParser != null) {
 			DataRecord tmpRecord = DataRecordFactory.newRecord(metadata);
-			tmpRecord.init();
 			try {
 				if (fileURL != null) {
 					dataParser.setDataSource(FileUtils.getReadableChannel(getContextURL(), fileURL));
@@ -703,7 +699,6 @@ class RangeLookup implements Lookup{
 	RangeLookup(RangeLookupTable lookup, RecordKey key, DataRecord record){
 		this.lookupTable = lookup;
 	    tmpRecord=DataRecordFactory.newRecord(lookupTable.getMetadata());
-	    tmpRecord.init();
 	    startField = lookupTable.getStartFields();
 	    endField = lookupTable.getEndFields();
 	    startInclude = lookupTable.getStartInclude();

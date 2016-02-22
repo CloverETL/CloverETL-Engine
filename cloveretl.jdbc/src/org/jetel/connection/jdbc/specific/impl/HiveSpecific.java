@@ -105,4 +105,9 @@ public class HiveSpecific extends AbstractJdbcSpecific {
 		 */
 		return Thread.currentThread().getContextClassLoader();
 	}
+	
+	@Override
+	public boolean supportsTerminatingSemicolons() {
+		return false;
+	}
 }

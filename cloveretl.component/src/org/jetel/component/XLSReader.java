@@ -403,7 +403,7 @@ public class XLSReader extends Node {
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
 
-        checkMetadata(status, getOutMetadata());
+        checkMetadata(status, null, getOutPorts());
 
         try {
             if (sheetNumber != null) {
@@ -556,7 +556,6 @@ public class XLSReader extends Node {
     @Override
     public Result execute() throws Exception {
         DataRecord record = DataRecordFactory.newRecord(getOutputPort(OUTPUT_PORT).getMetadata());
-        record.init();
 
         int errorCount = 0;
 

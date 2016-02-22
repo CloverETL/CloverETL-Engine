@@ -25,6 +25,7 @@ import java.nio.charset.CharsetDecoder;
 import java.util.Arrays;
 
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.ZipUtils;
@@ -35,8 +36,8 @@ import org.jetel.util.string.Compare;
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
  * @since 12/01/06  
  */
+@CloverPublicAPI
 public class CompressedByteDataField extends ByteDataField {
-	private static final long serialVersionUID = 1L;
 	
 	/** lenght of data represented by the field. */ 
 	private int dataLen;

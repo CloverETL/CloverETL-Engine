@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.connection.jdbc.AbstractDBConnection;
 import org.jetel.connection.jdbc.DBConnectionImpl;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
@@ -42,6 +43,8 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -223,8 +226,6 @@ public class DBJoin extends Node {
 	public Result execute() throws Exception {
 		//initialize in and out records
 		DataRecord[] outRecord = {DataRecordFactory.newRecord(getOutputPort(WRITE_TO_PORT).getMetadata())};
-		outRecord[0].init();
-		outRecord[0].reset();
 		DataRecord[] inRecords = new DataRecord[] {inRecord,null};
 		OutputPort rejectedPort = getOutputPort(REJECTED_PORT);
 
@@ -335,8 +336,7 @@ public class DBJoin extends Node {
         }
         
         if (getOutputPort(REJECTED_PORT) != null) {
-        	checkMetadata(status, getInputPort(READ_FROM_PORT).getMetadata(), 
-        			getOutputPort(REJECTED_PORT).getMetadata());
+        	checkMetadata(status, getInputPort(READ_FROM_PORT), getOutputPort(REJECTED_PORT));
         }
         
         if (charset != null && !Charset.isSupported(charset)) {
@@ -346,6 +346,19 @@ public class DBJoin extends Node {
         }
 
         dbMetadata = getGraph().getDataRecordMetadata(metadataName, false);
+        
+        if (query == null) {
+        	status.add("SQL query not defined.", Severity.ERROR, this, Priority.NORMAL);
+        }
+        if (connectionName == null) {
+        	status.add("DB connection not defined.", Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+        }
+        if (joinKey == null) {
+        	status.add("Join key not defined.", Severity.ERROR, this, Priority.NORMAL, XML_JOIN_KEY_ATTRIBUTE);
+        }
+        if (query == null || connectionName == null || joinKey == null) {
+        	return status;
+        }
 
         try {
         	
@@ -492,6 +505,8 @@ public class DBJoin extends Node {
 			throws ComponentNotReadyException {
 		Properties parameters = new Properties();
 		parameters.setProperty(DBConnectionImpl.SQL_QUERY_PROPERTY, sqlQuery);
+		parameters.setProperty(AbstractDBConnection.OPTIMIZE_QUERY_PROPERTY,
+								AbstractDBConnection.SqlQueryOptimizeOption.NAIVE.toString());
 
 		try {
 			return connection.createMetadata(parameters);
@@ -518,7 +533,6 @@ public class DBJoin extends Node {
 		lookupTable.preExecute();
 		
 		inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-		inRecord.init();
 		lookup = lookupTable.createLookup(recordKey, inRecord);
 		if (errorLogURL != null) {
 			try {
@@ -561,16 +575,20 @@ public class DBJoin extends Node {
 		DBJoin dbjoin;
 		String connectionName;
 		String query;
-		String[] joinKey;
+		String[] joinKey = null;
 		//get necessary parameters
-		connectionName = xattribs.getString(XML_DBCONNECTION_ATTRIBUTE);
+		connectionName = xattribs.getString(XML_DBCONNECTION_ATTRIBUTE, null);
 		if (xattribs.exists(XML_URL_ATTRIBUTE)) {
 			query=xattribs.resolveReferences(FileUtils.getStringFromURL(graph.getRuntimeContext().getContextURL(), 
          		   xattribs.getStringEx(XML_URL_ATTRIBUTE, RefResFlag.URL), xattribs.getString(XML_CHARSET_ATTRIBUTE, null)));
 		} else {
-			query = xattribs.getString(XML_SQL_QUERY_ATTRIBUTE);
+			query = xattribs.getString(XML_SQL_QUERY_ATTRIBUTE, null);
 		}
-		joinKey = xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+		String joinKeyRaw = xattribs.getString(XML_JOIN_KEY_ATTRIBUTE, null);
+		if (joinKeyRaw != null) {
+			joinKey = joinKeyRaw.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+		}
+		
 	
         dbjoin = new DBJoin(
                 xattribs.getString(XML_ID_ATTRIBUTE),

@@ -238,7 +238,7 @@ public class InfobrightDataWriter extends Node {
 		}
 		
 		// get dbConnection from graph
-	    if (dbConnection == null){
+	    if (dbConnection == null && connectionName != null){
 	        IConnection conn = getGraph().getConnection(connectionName);
             if(conn == null) {
                 status.add("Can't find DBConnection ID: " + connectionName, Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
@@ -248,6 +248,9 @@ public class InfobrightDataWriter extends Node {
             }else{
             	dbConnection = (DBConnection) conn;
             }
+	    } else if (connectionName == null) {
+	    	status.add("DB connection not defined.", Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+	    	return status;
 	    }
 	    //check connection
 		if (dbConnection != null && !dbConnection.isInitialized()) {
@@ -275,6 +278,12 @@ public class InfobrightDataWriter extends Node {
 				cloverFieldIndexes[i] = i;
 			}
 		}
+		
+		if (table == null) {
+			status.add("Database table not defined.", Severity.ERROR, this, Priority.NORMAL, XML_TABLE_ATTRIBUTE);
+			return status;
+		}
+		
 		//try to create loader and Brighthouse record
 		log = new CommonsLogger(logger);
 		try {
@@ -374,23 +383,22 @@ public class InfobrightDataWriter extends Node {
 	 * @throws ComponentNotReadyException for wrong number or type of the fields 
 	 */
 	private BrighthouseRecord createBrighthouseRecord(DataRecordMetadata metadata, JdbcSpecific jdbcSpecific, 
-			EtlLogger logger) throws Exception{
-	    Statement stmt = sqlConnection.createStatement();
-	    ResultSet rs = stmt.executeQuery("select * from `" + table + "` limit 0");
-	    ResultSetMetaData md = rs.getMetaData();
-	    if (md.getColumnCount() != cloverFieldIndexes.length) {
-	    	throw new ComponentNotReadyException(this, "Number of db fields (" + md.getColumnCount()+ ") is different then " +
-					"number of clover fields (" + cloverFieldIndexes.length + ")." );
-	    }
-		List<AbstractColumnType> columns = new ArrayList<AbstractColumnType>(md.getColumnCount());
-		AbstractColumnType col;
-		for (int i = 0; i < cloverFieldIndexes.length; i++) {
-			col = jetelType2Brighthouse(metadata.getField(cloverFieldIndexes[i]), md.getPrecision(i + 1), jdbcSpecific, logger);
-			col.setCheckValues(checkValues);
-			columns.add(col);
+			EtlLogger logger) throws Exception {
+		
+	    List<AbstractColumnType> columns;
+		try (Statement stmt = sqlConnection.createStatement(); ResultSet rs = stmt.executeQuery("select * from `" + table + "` limit 0")) {
+			ResultSetMetaData md = rs.getMetaData();
+			if (md.getColumnCount() != cloverFieldIndexes.length) {
+				throw new ComponentNotReadyException(this, "Number of db fields (" + md.getColumnCount() + ") is different then " + "number of clover fields (" + cloverFieldIndexes.length + ").");
+			}
+			columns = new ArrayList<>(md.getColumnCount());
+			AbstractColumnType col;
+			for (int i = 0; i < cloverFieldIndexes.length; i++) {
+				col = jetelType2Brighthouse(metadata.getField(cloverFieldIndexes[i]), md.getPrecision(i + 1), jdbcSpecific, logger);
+				col.setCheckValues(checkValues);
+				columns.add(col);
+			}
 		}
-	    rs.close();
-	    stmt.close();
 		return dataFormat.createRecord(columns, chset, logger);
 	}
 	
@@ -496,7 +504,6 @@ public class InfobrightDataWriter extends Node {
 		Throwable ex = null;
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-		inRecord.init();
 		//thread that writes data to database
 		InfoBrightWriter infobrightWriter = 
 			new InfoBrightWriter(Thread.currentThread(), inPort, inRecord, cloverFieldIndexes, bRecord, converter, loader);
@@ -507,7 +514,6 @@ public class InfobrightDataWriter extends Node {
 		if (dataParser != null) {
 			OutputPort outPort = getOutputPort(WRITE_TO_PORT);
 			DataRecord out_record = DataRecordFactory.newRecord(outPort.getMetadata());
-			out_record.init();
 			portWriter  = new PortWriter(Thread.currentThread(), outPort, out_record, dataParser);
 			portWriter.start();
 			registerChildThread(portWriter);
@@ -585,8 +591,8 @@ public class InfobrightDataWriter extends Node {
         InfobrightDataWriter loader;
 
         loader = new InfobrightDataWriter(xattribs.getString(XML_ID_ATTRIBUTE));
-        loader.setDbConnection(xattribs.getString(XML_DBCONNECTION_ATTRIBUTE));
-        loader.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
+        loader.setDbConnection(xattribs.getString(XML_DBCONNECTION_ATTRIBUTE, null));
+        loader.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE, null));
         if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 			loader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 		}

@@ -43,11 +43,14 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.CloverWorker;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
@@ -380,11 +383,8 @@ public class HashJoin extends Node {
 
 		inRecords = new DataRecord[1 + slaveCnt];
 		inRecords[0] = DataRecordFactory.newRecord(driverPort.getMetadata());
-		inRecords[0].init();
 		outRecords = new DataRecord[1];
 		outRecords[0] = DataRecordFactory.newRecord(outPort.getMetadata());
-		outRecords[0].init();
-		outRecords[0].reset();
 
 		driverKeys = new RecordKey[slaveCnt];
 		slaveKeys = new RecordKey[slaveCnt];
@@ -445,7 +445,6 @@ public class HashJoin extends Node {
 			// all necessary elements have been initialized in init()
 		} else {
 			inRecords[0] = DataRecordFactory.newRecord(driverPort.getMetadata());
-			inRecords[0].init();
 			transformation.reset();
 		}
 		if (errorLogURL != null) {
@@ -483,19 +482,19 @@ public class HashJoin extends Node {
 		// read slave ports in separate threads
 		for (int idx = 0; idx < slaveCnt; idx++) {
 			slaveReader[idx] = new InputReader(idx);
-			slaveReader[idx].start();
+			slaveReader[idx].startWorker();
 		}
 		// wait for slave input threads to finish their job
 		boolean killIt = false;
 		for (int idx = 0; idx < slaveCnt; idx++) {
-			while (slaveReader[idx].getState() != Thread.State.TERMINATED) {
+			while (slaveReader[idx].getThread().getState() != Thread.State.TERMINATED) {
 				if (killIt) {
-					slaveReader[idx].interrupt();
+					slaveReader[idx].getThread().interrupt();
 					break;
 				}
 				killIt = !runIt;
 				try {
-					slaveReader[idx].join(1000);
+					slaveReader[idx].getThread().join(1000);
 				} catch (InterruptedException e) {
 					logger.debug(getId() + " thread interrupted, it will interrupt child threads", e);
 					killIt = true;
@@ -823,7 +822,7 @@ public class HashJoin extends Node {
 		}
 
 		join = new HashJoin(xattribs.getString(XML_ID_ATTRIBUTE), 
-				xattribs.getString(XML_JOINKEY_ATTRIBUTE), 
+				xattribs.getString(XML_JOINKEY_ATTRIBUTE, null), 
 				xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
 				xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null), 
 				xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.URL), 
@@ -875,6 +874,11 @@ public class HashJoin extends Node {
             		"Charset "+charset+" not supported!", 
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
+		
+		
+		if (joinKey == null) {
+			status.add("Join key not defined.", Severity.ERROR, this, Priority.NORMAL, XML_JOINKEY_ATTRIBUTE);
+		}
 
 		int slaveCnt = inPorts.size() - FIRST_SLAVE_PORT;
 
@@ -928,10 +932,8 @@ public class HashJoin extends Node {
 
 			inRecords = new DataRecord[1 + slaveCnt];
 			inRecords[0] = DataRecordFactory.newRecord(driverPort.getMetadata());
-			inRecords[0].init();
 			outRecords = new DataRecord[1];
 			outRecords[0] = DataRecordFactory.newRecord(outPort.getMetadata());
-			outRecords[0].init();
 
 			driverKeys = new RecordKey[slaveCnt];
 			slaveKeys = new RecordKey[slaveCnt];
@@ -986,13 +988,13 @@ public class HashJoin extends Node {
 	 * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
 	 * 
 	 */
-	private class InputReader extends Thread {
+	private class InputReader extends CloverWorker {
 		private InputPort inPort;
 		private DataRecordMap map;
 		DataRecordMetadata metadata;
 
 		public InputReader(int slaveIdx) {
-			super(Thread.currentThread().getName() + ".InputThread#" + slaveIdx);
+			super(HashJoin.this, "InputThread#" + slaveIdx);
 			runIt = true;
 			map = hashMap[slaveIdx];
 			inPort = getInputPort(FIRST_SLAVE_PORT + slaveIdx);
@@ -1000,9 +1002,8 @@ public class HashJoin extends Node {
 		}
 
 		@Override
-		public void run() {
+		public void work() throws Exception, InterruptedException {
 			DataRecord record = DataRecordFactory.newRecord(metadata);
-			record.init();
 
 			while (runIt) {
 				try {

@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
 
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
+import org.jetel.ctl.data.TLType;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.file.FileUtils;
@@ -48,58 +49,64 @@ public class StringLib extends TLFunctionLibrary {
 
 	@Override
 	public TLFunctionPrototype getExecutable(String functionName) {
-		TLFunctionPrototype ret = 
-			"concat".equals(functionName) ? new ConcatFunction() : //$NON-NLS-1$
-			"upperCase".equals(functionName) ? new UpperCaseFunction() : //$NON-NLS-1$
-			"lowerCase".equals(functionName) ? new LowerCaseFunction() : //$NON-NLS-1$
-			"substring".equals(functionName) ? new SubstringFunction() : //$NON-NLS-1$
-			"left".equals(functionName) ? new LeftFunction() : //$NON-NLS-1$
-			"right".equals(functionName) ? new RightFunction() : //$NON-NLS-1$
-			"trim".equals(functionName) ? new TrimFunction() :  //$NON-NLS-1$
-			"length".equals(functionName) ? new LengthFunction() : //$NON-NLS-1$
-			"replace".equals(functionName) ? new ReplaceFunction() : //$NON-NLS-1$
-			"split".equals(functionName) ? new SplitFunction() : //$NON-NLS-1$
-			"charAt".equals(functionName) ? new CharAtFunction() : //$NON-NLS-1$
-			"isBlank".equals(functionName) ? new IsBlankFunction() : //$NON-NLS-1$
-			"isAscii".equals(functionName) ? new IsAsciiFunction() : //$NON-NLS-1$
-			"isNumber".equals(functionName) ? new IsNumberFunction() : //$NON-NLS-1$
-			"isInteger".equals(functionName) ? new IsIntegerFunction() : //$NON-NLS-1$
-			"isLong".equals(functionName) ? new IsLongFunction() : //$NON-NLS-1$
-			"isDate".equals(functionName) ? new IsDateFunction() : //$NON-NLS-1$
-			"isDecimal".equals(functionName) ? new IsDecimalFunction() : //$NON-NLS-1$
-			"removeDiacritic".equals(functionName) ? new RemoveDiacriticFunction() : //$NON-NLS-1$
-			"removeBlankSpace".equals(functionName) ? new RemoveBlankSpaceFunction() : //$NON-NLS-1$
-			"removeNonPrintable".equals(functionName) ? new RemoveNonPrintableFunction() : //$NON-NLS-1$
-			"removeNonAscii".equals(functionName) ? new RemoveNonAsciiFunction() : //$NON-NLS-1$
-			"resolveParams".equals(functionName) ? new ResolveParamsFunction() : //$NON-NLS-1$
-			"getAlphanumericChars".equals(functionName) ? new GetAlphanumericCharsFunction() : //$NON-NLS-1$
-			"translate".equals(functionName) ? new TranslateFunction() : //$NON-NLS-1$
-			"join".equals(functionName) ? new JoinFunction() : //$NON-NLS-1$
-			"indexOf".equals(functionName) ? new IndexOfFunction() : //$NON-NLS-1$
-			"countChar".equals(functionName) ? new CountCharFunction() : //$NON-NLS-1$
-			"find".equals(functionName) ? new FindFunction() : //$NON-NLS-1$
-			"matches".equals(functionName) ? new MatchesFunction() : //$NON-NLS-1$
-			"matchGroups".equals(functionName) ? new MatchGroupsFunction() : //$NON-NLS-1$
-			"chop".equals(functionName) ? new ChopFunction() : //$NON-NLS-1$
-			"cut".equals(functionName) ? new CutFunction() : //$NON-NLS-1$
-			"isUrl".equals(functionName) ? new IsUrlFunction() : //$NON-NLS-1$
-			"getUrlProtocol".equals(functionName) ? new GetUrlProtocolFunction() : //$NON-NLS-1$
-			"getUrlUserInfo".equals(functionName) ? new GetUrlUserInfo() : //$NON-NLS-1$
-			"getUrlHost".equals(functionName) ? new GetUrlHostFunction() : //$NON-NLS-1$
-			"getUrlPort".equals(functionName) ? new GetUrlPortFunction() : //$NON-NLS-1$
-			"getUrlPath".equals(functionName) ? new GetUrlPathFunction() : //$NON-NLS-1$
-			"getUrlQuery".equals(functionName) ? new GetUrlQueryFunction() : //$NON-NLS-1$
-			"getUrlRef".equals(functionName) ? new GetUrlRefFunction() : //$NON-NLS-1$
-			"toAbsolutePath".equals(functionName) ? new ToAbsolutePathFunction() : //$NON-NLS-1$
-			"toProjectUrl".equals(functionName) ? new ToProjectUrlFunction() : //$NON-NLS-1$
-			"escapeUrl".equals(functionName) ? new EscapeUrlFunction() : //$NON-NLS-1$
-			"unescapeUrl".equals(functionName) ? new UnescapeUrlFunction() : null; //$NON-NLS-1$
+		if (functionName != null) {
+			switch (functionName) {
+				case "concat": return new ConcatFunction(); //$NON-NLS-1$
+				case "upperCase": return new UpperCaseFunction(); //$NON-NLS-1$
+				case "lowerCase": return new LowerCaseFunction(); //$NON-NLS-1$
+				case "substring": return new SubstringFunction(); //$NON-NLS-1$
+				case "left": return new LeftFunction(); //$NON-NLS-1$
+				case "right": return new RightFunction(); //$NON-NLS-1$
+				case "trim": return new TrimFunction(); //$NON-NLS-1$
+				case "length": return new LengthFunction(); //$NON-NLS-1$
+				case "replace": return new ReplaceFunction(); //$NON-NLS-1$
+				case "split": return new SplitFunction(); //$NON-NLS-1$
+				case "charAt": return new CharAtFunction(); //$NON-NLS-1$
+				case "isBlank": return new IsBlankFunction(); //$NON-NLS-1$
+				case "isAscii": return new IsAsciiFunction(); //$NON-NLS-1$
+				case "isNumber": return new IsNumberFunction(); //$NON-NLS-1$
+				case "isInteger": return new IsIntegerFunction(); //$NON-NLS-1$
+				case "isLong": return new IsLongFunction(); //$NON-NLS-1$
+				case "isDate": return new IsDateFunction(); //$NON-NLS-1$
+				case "isDecimal": return new IsDecimalFunction(); //$NON-NLS-1$
+				case "removeDiacritic": return new RemoveDiacriticFunction(); //$NON-NLS-1$
+				case "removeBlankSpace": return new RemoveBlankSpaceFunction(); //$NON-NLS-1$
+				case "removeNonPrintable": return new RemoveNonPrintableFunction(); //$NON-NLS-1$
+				case "removeNonAscii": return new RemoveNonAsciiFunction(); //$NON-NLS-1$
+				case "resolveParams": return new ResolveParamsFunction(); //$NON-NLS-1$
+				case "getAlphanumericChars": return new GetAlphanumericCharsFunction(); //$NON-NLS-1$
+				case "translate": return new TranslateFunction(); //$NON-NLS-1$
+				case "join": return new JoinFunction(); //$NON-NLS-1$
+				case "indexOf": return new IndexOfFunction(); //$NON-NLS-1$
+				case "countChar": return new CountCharFunction(); //$NON-NLS-1$
+				case "find": return new FindFunction(); //$NON-NLS-1$
+				case "matches": return new MatchesFunction(); //$NON-NLS-1$
+				case "matchGroups": return new MatchGroupsFunction(); //$NON-NLS-1$
+				case "chop": return new ChopFunction(); //$NON-NLS-1$
+				case "cut": return new CutFunction(); //$NON-NLS-1$
+				case "isUrl": return new IsUrlFunction(); //$NON-NLS-1$
+				case "getUrlProtocol": return new GetUrlProtocolFunction(); //$NON-NLS-1$
+				case "getUrlUserInfo": return new GetUrlUserInfo(); //$NON-NLS-1$
+				case "getUrlHost": return new GetUrlHostFunction(); //$NON-NLS-1$
+				case "getUrlPort": return new GetUrlPortFunction(); //$NON-NLS-1$
+				case "getUrlPath": return new GetUrlPathFunction(); //$NON-NLS-1$
+				case "getUrlQuery": return new GetUrlQueryFunction(); //$NON-NLS-1$
+				case "getUrlRef": return new GetUrlRefFunction(); //$NON-NLS-1$
+				case "toAbsolutePath": return new ToAbsolutePathFunction(); //$NON-NLS-1$
+				case "toProjectUrl": return new ToProjectUrlFunction(); //$NON-NLS-1$
+				case "escapeUrl": return new EscapeUrlFunction(); //$NON-NLS-1$
+				case "unescapeUrl": return new UnescapeUrlFunction(); //$NON-NLS-1$
+				case "getFileExtension": return new GetFileExtensionFunction(); //$NON-NLS-1$
+				case "getFileName": return new GetFileNameFunction(); //$NON-NLS-1$
+				case "getFileNameWithoutExtension": return new GetFileNameWithoutExtensionFunction(); //$NON-NLS-1$
+				case "getFilePath": return new GetFilePathFunction(); //$NON-NLS-1$
+				case "normalizePath": return new NormalizePathFunction(); //$NON-NLS-1$
+				case "reverse": return new ReverseFunction(); //$NON-NLS-1$
+				case "isEmpty": return new IsEmptyFunction(); //$NON-NLS-1$
+			}
+		}
 
-		if (ret == null) {
-    		throw new IllegalArgumentException(CtlExtensionsMessages.getString("StringLib.unknown_function") + functionName + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-    	}
-
-		return ret;
+		throw new IllegalArgumentException(CtlExtensionsMessages.getString("StringLib.unknown_function") + functionName + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 	
 	private static String LIBRARY_NAME = "String"; //$NON-NLS-1$
@@ -122,7 +129,7 @@ public class StringLib extends TLFunctionLibrary {
 		return buf.toString();
 	}
 
-	class ConcatFunction implements TLFunctionPrototype {
+	static class ConcatFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -148,7 +155,7 @@ public class StringLib extends TLFunctionLibrary {
 		return input.toUpperCase();
 	}
 
-	class UpperCaseFunction implements TLFunctionPrototype {
+	static class UpperCaseFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -169,7 +176,7 @@ public class StringLib extends TLFunctionLibrary {
 		return input.toLowerCase();
 	}
 
-	class LowerCaseFunction implements TLFunctionPrototype {
+	static class LowerCaseFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -240,7 +247,7 @@ public class StringLib extends TLFunctionLibrary {
 		return input.substring(beginIndex);
 	}
 	
-	class SubstringFunction implements TLFunctionPrototype {
+	static class SubstringFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -289,7 +296,7 @@ public class StringLib extends TLFunctionLibrary {
 		return input.substring(0, length);
 	}
 	
-	class LeftFunction implements TLFunctionPrototype {
+	static class LeftFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -336,7 +343,7 @@ public class StringLib extends TLFunctionLibrary {
 		return input.substring(input.length() - length, input.length());
 	}
 
-	class RightFunction implements TLFunctionPrototype {
+	static class RightFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -366,7 +373,7 @@ public class StringLib extends TLFunctionLibrary {
 		return StringUtils.trim(buf).toString();
 
 	}
-	class TrimFunction implements TLFunctionPrototype {
+	static class TrimFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -419,7 +426,7 @@ public class StringLib extends TLFunctionLibrary {
 		return input.getNumFields();
 	}
 
-	class LengthFunction implements TLFunctionPrototype {
+	static class LengthFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -474,7 +481,7 @@ public class StringLib extends TLFunctionLibrary {
 		return m.replaceAll(replacement);
 	}
 
-	class ReplaceFunction implements TLFunctionPrototype {
+	static class ReplaceFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -545,7 +552,7 @@ public class StringLib extends TLFunctionLibrary {
 		return result;
 	}
 	
-	class SplitFunction implements TLFunctionPrototype {
+	static class SplitFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -582,7 +589,7 @@ public class StringLib extends TLFunctionLibrary {
 		return String.valueOf(input.charAt(position));
 	}
 
-	class CharAtFunction implements TLFunctionPrototype {
+	static class CharAtFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -603,7 +610,7 @@ public class StringLib extends TLFunctionLibrary {
 				|| StringUtils.isBlank(input);
 	}
 
-	class IsBlankFunction implements TLFunctionPrototype {
+	static class IsBlankFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -615,14 +622,14 @@ public class StringLib extends TLFunctionLibrary {
 		}
 
 	}
-
+	
 	// IS ASCII
 	@TLFunctionAnnotation("Checks if the string contains only characters from the US-ASCII encoding")
 	public static final boolean isAscii(TLFunctionCallContext context, String input) {
 		return StringUtils.isAscii(input);
 	}
 
-	class IsAsciiFunction implements TLFunctionPrototype {
+	static class IsAsciiFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -641,7 +648,7 @@ public class StringLib extends TLFunctionLibrary {
 		return StringUtils.isNumber(input);
 	}
 
-	class IsNumberFunction implements TLFunctionPrototype {
+	static class IsNumberFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -668,7 +675,7 @@ public class StringLib extends TLFunctionLibrary {
 		return StringUtils.isNumber(value);
 	}
 	
-	public class IsDecimalFunction implements TLFunctionPrototype {
+	public static class IsDecimalFunction implements TLFunctionPrototype {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
@@ -687,7 +694,7 @@ public class StringLib extends TLFunctionLibrary {
 		return result == 0 || result == 1;
 	}
 
-	class IsIntegerFunction implements TLFunctionPrototype {
+	static class IsIntegerFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -706,7 +713,7 @@ public class StringLib extends TLFunctionLibrary {
 		return result >= 0 && result < 3;
 	}
 
-	class IsLongFunction implements TLFunctionPrototype {
+	static class IsLongFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -727,21 +734,46 @@ public class StringLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern")
 	public static final boolean isDate(TLFunctionCallContext context, String input, String pattern) {
-		return isDate(context, input, pattern, null);
+		return isDate(context, input, pattern, null, null, null);
+	}
+	
+	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern and strict parsing flag")
+	public static final boolean isDate(TLFunctionCallContext context, String input, String pattern, Boolean strict) {
+		return isDate(context, input, pattern, null, null, strict);
 	}
 
-	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern and locale.")
+	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern and locale")
 	public static final boolean isDate(TLFunctionCallContext context, String input, String pattern, String locale) {
-		return isDate(context, input, pattern, locale, null);
+		return isDate(context, input, pattern, locale, null, null);
+	}
+	
+	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern, locale and strict parsing flag")
+	public static final boolean isDate(TLFunctionCallContext context, String input, String pattern, String locale, Boolean strict) {
+		return isDate(context, input, pattern, locale, null, strict);
 	}
 
-	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern, locale and time zone.")
+	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern, locale and time zone")
 	public static final boolean isDate(TLFunctionCallContext context, String input, String pattern, String locale, String timeZone) {
-		DateFormatter formatter = ((TLDateFormatLocaleCache)context.getCache()).getCachedLocaleFormatter(context, pattern, locale, timeZone, 1, 2, 3);
-		return formatter.tryParse(input);
+		return isDate(context, input, pattern, locale, timeZone, null);
+	}
+	
+	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern, locale, time zone and strict parsing flag")
+	public static final boolean isDate(TLFunctionCallContext context, String input, String pattern, String locale, String timeZone, Boolean strict) {
+		DateFormatter formatter = ((TLDateFormatLocaleCache) context.getCache()).getCachedLocaleFormatter(context, pattern, locale, timeZone, 1, 2, 3);
+		if (strict != null && strict) {
+			try {
+				formatter.parseDateExactMatch(input);
+			} catch (IllegalArgumentException e) {
+				return false;
+			}
+			return true;
+		} else {
+			return formatter.tryParse(input);
+		}
+		
 	}
 
-	class IsDateFunction implements TLFunctionPrototype {
+	static class IsDateFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -750,21 +782,28 @@ public class StringLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-
 			String locale = null;
 			String timeZone = null;
+			Boolean strict = false;
+			
+			TLType[] params = context.getParams();
+			boolean strictParamPresent = params[params.length - 1].isBoolean();
+			
+			if (strictParamPresent) {
+				strict = stack.popBoolean();
+			}
 
-			if (context.getParams().length > 3) {
+			if (params.length > 4 || (params.length == 4 && !strictParamPresent)) {
 				timeZone = stack.popString();
 			}
-			if (context.getParams().length > 2) {
+			if (params.length > 3 || (params.length == 3 && !strictParamPresent)) {
 				locale = stack.popString();
 			}
 
 			final String pattern = stack.popString();
 			final String input = stack.popString();
 
-			stack.push(isDate(context, input, pattern, locale, timeZone));
+			stack.push(isDate(context, input, pattern, locale, timeZone, strict));
 		}
 
 	}
@@ -775,7 +814,7 @@ public class StringLib extends TLFunctionLibrary {
 		return StringUtils.removeDiacritic(input);
 	}
 
-	class RemoveDiacriticFunction implements TLFunctionPrototype {
+	static class RemoveDiacriticFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -793,7 +832,7 @@ public class StringLib extends TLFunctionLibrary {
 		return StringUtils.removeBlankSpace(input);
 	}
 
-	class RemoveBlankSpaceFunction implements TLFunctionPrototype {
+	static class RemoveBlankSpaceFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -811,7 +850,7 @@ public class StringLib extends TLFunctionLibrary {
 		return StringUtils.removeNonPrintable(input);
 	}
 
-	class RemoveNonPrintableFunction implements TLFunctionPrototype {
+	static class RemoveNonPrintableFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -830,7 +869,7 @@ public class StringLib extends TLFunctionLibrary {
 		return StringUtils.removeNonAscii(input);
 	}
 
-	class RemoveNonAsciiFunction implements TLFunctionPrototype {
+	static class RemoveNonAsciiFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -856,7 +895,7 @@ public class StringLib extends TLFunctionLibrary {
 				takeNumeric);
 	}
 
-	class GetAlphanumericCharsFunction implements TLFunctionPrototype {
+	static class GetAlphanumericCharsFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -890,7 +929,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 
-	class TranslateFunction implements TLFunctionPrototype {
+	static class TranslateFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -946,7 +985,7 @@ public class StringLib extends TLFunctionLibrary {
 		return buf.toString();
 	}
 
-	class JoinFunction implements TLFunctionPrototype {
+	static class JoinFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -984,7 +1023,7 @@ public class StringLib extends TLFunctionLibrary {
 		return StringUtils.indexOf(input, pattern, from);
 	}
 
-	class IndexOfFunction implements TLFunctionPrototype {
+	static class IndexOfFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1011,7 +1050,7 @@ public class StringLib extends TLFunctionLibrary {
 		return StringUtils.count(input, character.charAt(0));
 	}
 
-	class CountCharFunction implements TLFunctionPrototype {
+	static class CountCharFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1067,7 +1106,7 @@ public class StringLib extends TLFunctionLibrary {
 
 	
 
-	class FindFunction implements TLFunctionPrototype {
+	static class FindFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1109,7 +1148,7 @@ public class StringLib extends TLFunctionLibrary {
 		return IntegralLib.matches(context, input, pattern);			
 	}
 
-	class MatchesFunction implements TLFunctionPrototype {
+	static class MatchesFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1156,7 +1195,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 
-	class MatchGroupsFunction implements TLFunctionPrototype {
+	static class MatchGroupsFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1193,7 +1232,7 @@ public class StringLib extends TLFunctionLibrary {
 		return m.replaceAll(""); //$NON-NLS-1$
 
 	}
-	class ChopFunction implements TLFunctionPrototype {
+	static class ChopFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1234,7 +1273,7 @@ public class StringLib extends TLFunctionLibrary {
 		return ret;
 	}
 
-	class CutFunction implements TLFunctionPrototype {
+	static class CutFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1266,7 +1305,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	class IsUrlFunction implements TLFunctionPrototype {
+	static class IsUrlFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1288,7 +1327,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	class GetUrlProtocolFunction implements TLFunctionPrototype {
+	static class GetUrlProtocolFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1311,7 +1350,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	class GetUrlUserInfo implements TLFunctionPrototype {
+	static class GetUrlUserInfo implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1333,7 +1372,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	class GetUrlHostFunction implements TLFunctionPrototype {
+	static class GetUrlHostFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1355,7 +1394,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	class GetUrlPortFunction implements TLFunctionPrototype {
+	static class GetUrlPortFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1377,7 +1416,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	class GetUrlPathFunction implements TLFunctionPrototype {
+	static class GetUrlPathFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1400,7 +1439,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	class GetUrlQueryFunction implements TLFunctionPrototype {
+	static class GetUrlQueryFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1423,7 +1462,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	class GetUrlRefFunction implements TLFunctionPrototype {
+	static class GetUrlRefFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1458,7 +1497,7 @@ public class StringLib extends TLFunctionLibrary {
 		return null;
 	}
 	
-	class ToAbsolutePathFunction implements TLFunctionPrototype {
+	static class ToAbsolutePathFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1484,7 +1523,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	class ToProjectUrlFunction implements TLFunctionPrototype {
+	static class ToProjectUrlFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1514,7 +1553,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	class EscapeUrlFunction implements TLFunctionPrototype {
+	static class EscapeUrlFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1559,7 +1598,7 @@ public class StringLib extends TLFunctionLibrary {
 		}
 	}
 	
-	class UnescapeUrlFunction implements TLFunctionPrototype {
+	static class UnescapeUrlFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1599,7 +1638,7 @@ public class StringLib extends TLFunctionLibrary {
 		return refResolver.resolveRef(value, refResFlag);
 	}
 	
-	class ResolveParamsFunction implements TLFunctionPrototype {
+	static class ResolveParamsFunction implements TLFunctionPrototype {
 	
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -1623,6 +1662,150 @@ public class StringLib extends TLFunctionLibrary {
 	public static final void resolveParamsInit(TLFunctionCallContext context) {
 		PropertyRefResolver refResolver = context.getGraph().getPropertyRefResolver();
 		context.setCache(new TLPropertyRefResolverCache(refResolver));
+	}
+	
+	// GET FILE EXTENSION FUNCTION
+
+	@TLFunctionAnnotation("Returns the extension of a filename.")
+	public static final String getFileExtension(TLFunctionCallContext context, String url) {
+		return FileUtils.getFileExtension(url);
+	}
+
+	static class GetFileExtensionFunction implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final String filename = stack.popString();
+			stack.push(getFileExtension(context, filename));
+		}
+	}
+
+	// GET FILE NAME FUNCTION
+
+	@TLFunctionAnnotation("Returns the name minus the path from a full filename.")
+	public static final String getFileName(TLFunctionCallContext context, String url) {
+		return FileUtils.getFileName(url);
+	}
+
+	static class GetFileNameFunction implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final String filename = stack.popString();
+			stack.push(getFileName(context, filename));
+		}
+	}
+
+	// GET FILE NAME WITHOUT EXTENSION FUNCTION
+
+		@TLFunctionAnnotation("Returns the base name, minus the full path and extension, from a full filename.")
+		public static final String getFileNameWithoutExtension(TLFunctionCallContext context, String url) {
+			return FileUtils.getBaseName(url);
+		}
+
+		static class GetFileNameWithoutExtensionFunction implements TLFunctionPrototype {
+
+			@Override
+			public void init(TLFunctionCallContext context) {
+			}
+
+			@Override
+			public void execute(Stack stack, TLFunctionCallContext context) {
+				final String filename = stack.popString();
+				stack.push(getFileNameWithoutExtension(context, filename));
+			}
+		}
+
+		// GET FILE PATH FUNCTION
+
+		@TLFunctionAnnotation("Returns the path, minus the filename, from a full filename.")
+		public static final String getFilePath(TLFunctionCallContext context, String url) {
+			return FileUtils.getFilePath(url);
+		}
+
+		static class GetFilePathFunction implements TLFunctionPrototype {
+
+			@Override
+			public void init(TLFunctionCallContext context) {
+			}
+
+			@Override
+			public void execute(Stack stack, TLFunctionCallContext context) {
+				final String filename = stack.popString();
+				stack.push(getFilePath(context, filename));
+			}
+		}
+
+		// NORMALIZE PATH FUNCTION
+
+		@TLFunctionAnnotation("Normalizes a path, removing double and single dot path segments.")
+		public static final String normalizePath(TLFunctionCallContext context, String url) {
+			return FileUtils.normalize(url);
+		}
+
+		static class NormalizePathFunction implements TLFunctionPrototype {
+
+			@Override
+			public void init(TLFunctionCallContext context) {
+			}
+
+			@Override
+			public void execute(Stack stack, TLFunctionCallContext context) {
+				final String filename = stack.popString();
+				stack.push(normalizePath(context, filename));
+			}
+		}
+
+	// REVERSE CHARS FUNCTION
+
+	@TLFunctionAnnotation("Reverses the order of characters in string.")
+	public static final String reverse(TLFunctionCallContext context, String value) {
+		if (value != null) {
+			if (value.length()<2) return value;
+			StringBuilder newVal = new StringBuilder(value);
+			newVal.reverse(); // handles surrogate pairs
+			return newVal.toString();
+		} else {
+			return null;
+		}
+	}
+
+	static class ReverseFunction implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final String value = stack.popString();
+			stack.push(reverse(context, value));
+		}
+	}
+	
+	@TLFunctionAnnotation("Checks if the string is null or of zero length.")
+	public static final boolean isEmpty(TLFunctionCallContext context, String input) {
+		return StringUtils.isEmpty(input);
+	}
+	
+	static class IsEmptyFunction implements TLFunctionPrototype{
+		
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(isEmpty(context, stack.popString()));
+		}
 	}
 	
 }

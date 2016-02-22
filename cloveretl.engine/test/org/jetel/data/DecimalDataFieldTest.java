@@ -50,7 +50,6 @@ public class DecimalDataFieldTest extends CloverTestCase {
 		DataRecordMetadata recordMetadata = new DataRecordMetadata("recordMetadata");
 		recordMetadata.addField(fieldMetadata);
 		DataRecord record = DataRecordFactory.newRecord(recordMetadata);
-		record.init();
 		String number = "11,28";//NumberFormat.getInstance().format(11.28);
 		record.getField(0).fromString(number);
 		System.out.println(record);

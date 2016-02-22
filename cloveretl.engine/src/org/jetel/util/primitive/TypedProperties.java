@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.GraphParameters;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 
@@ -41,6 +42,7 @@ import org.jetel.util.property.RefResFlag;
  *
  * @created 17.10.2006
  */
+@CloverPublicAPI
 public class TypedProperties extends Properties {
 
 	/**
@@ -233,5 +235,25 @@ public class TypedProperties extends Properties {
 	public void print(Logger logger, String message) {
         logger.debug(message + " " + this);
 	}
+
+	/**
+	 * Values returned by this method are NOT resolved.
+	 * Use {@link #getStringProperty(String)} to obtain values with resolved graph parameters. 
+	 */
+	@Override
+	public String getProperty(String key) {
+		return super.getProperty(key);
+	}
+
+	/**
+	 * Values returned by this method are NOT resolved.
+	 * Use {@link #getStringProperty(String, String)} to obtain values with resolved graph parameters. 
+	 */
+	@Override
+	public String getProperty(String key, String defaultValue) {
+		return super.getProperty(key, defaultValue);
+	}
+	
+	
 
 }

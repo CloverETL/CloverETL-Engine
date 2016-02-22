@@ -2,6 +2,86 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-1-0-M1
+------------
+
+* Optional ports in subgraphs
+* New compponents:
+	- CrossJoin
+	- GenericComponent
+	- RecordToKeyValues
+	- KeyValuesToRecord
+* Deprecated components:
+	- Pivot
+	- MetaPivot
+	- ApproximativeJoin
+* Amazon S3 support in file operations
+* Vertica JDBC driver added
+* JSONReader/XMLReader input->output mapping
+* Metadata extraction from Clover data file
+- FIXES:
+	- Incorrect handling of "where" in (nested) sql when used in Dynamic metadata query
+	- FastSort may lose records for extremely small run size
+	- LDAP authentication - optional LDAP groups
+	- XMLWriter: 'Write null element' does not work for elements with attributes
+	- CTL2: switch does not allow negative number in cases
+	- UniversalDataReader: "Character decoding error" results in graph failure in lenient and controlled mode
+	- minor bugfixes
+- COMPATIBILITY:
+	- DB components do not resolve parameters in external SQL scripts - fixed
+    - UniversalDataReader: "Character decoding error" results in graph failure in lenient and controlled mode
+    - CTL2: Inconsistent list assignment semantics
+    - DBExecute uses wrong default charset for queries in url
+
+REL-4-0-7
+---------
+
+- Make UCanAccess default MS Access JDBC driver
+- FIXES:
+	- Add data type conversion for dictionary lists and maps
+
+REL-4-0-6
+---------
+
+* FIXES:
+	- SQL queries ending with semicolon cause graphs failures
+
+REL-4-0-5
+---------
+
+* FIXES:
+	- CloverDataWriter may report invalid checksum on append
+	- Different behavior of DBInputTable with declared variable in TSQL between versions
+	- DBOutputTable does not commit with Commit=MAX_INT
+	- HTTPConnector returns WARN message even when successful status code is received
+	- DBOutputTable does not use not most current version of query specified via Query URL
+
+REL-4-0-4
+---------
+
+* FIXES:
+	- Readers fail with "max number of records" when reading from input port
+	- Proper reporting of graph configuration errors (avoiding duplicates)
+	- XMLExtract - " character is escaped to &quot (missing semicolon)
+	- Exported custom component attribute reports nonexistent warning
+* COMPATIBILITY:
+	- Propagation of metadata defined by SQL does not work
+	- UniversalDataWriter: 'Create directories' cannot handle encoded URL
+
+REL-4-0-3
+---------
+
+* FIXES:
+	- Invalid CloverData format
+	- "Create directories" does not work in UniversalDataWriter when using 
+	Dictionary as file URL
+
+REL-4-0-2
+---------
+
+* Changed priority of edge-based explicit metadata propagation
+* FIXES:
+    -  Tracking on edges with no record   
 
 REL-4-0-1
 ---------
@@ -68,6 +148,39 @@ REL-4-0-0-M1
 	- indexOf() accepts null value
 	 
 
+
+REL-3-5-5
+---------
+
+* FIXES:
+    - MultiFileReader: checkConfig warning for port protocol
+* COMPATIBILITY:
+	- Writers do not decode escape sequences in sandbox URLs
+
+
+REL-3-5-4
+---------
+
+* Improved support for multipart entities in HttpConnector
+* FIXES:
+    - multipart entities mapping does not work
+    - simultaneous run of Success and SetJoboutput components fixed
+    - DBOutputTable fails on syntax error when using multiple quotes 
+
+
+REL-3-5-3
+---------
+
+* FIXES:
+	- SortWithinGroup keeps losing records
+	- In SQL query everything after 'returning' string is cut off
+	- UniversalDataWriter produces wrong delimiters if used with autofilled fields
+	- Fixed-length metadata trim string fields
+	- XMLWriter fails with "Unexpected null value"
+	- UDR/UDW issues with fixed-length metadata
+	- "Create directories" does not work in UniversalDataWriter when using Dictionary as file URL
+	- UniversalDataWriter: fixed-length fields exclusion issue
+	
 
 REL-3-5-2
 ---------

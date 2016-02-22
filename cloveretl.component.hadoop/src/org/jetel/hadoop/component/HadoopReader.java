@@ -123,7 +123,6 @@ public class HadoopReader extends Node {
 	public Result execute() throws Exception {
 		// we need to create data record - take the metadata from first output port
 		DataRecord record = DataRecordFactory.newRecord(getOutputPort(OUTPUT_PORT).getMetadata());
-		record.init();
 
 		// till it reaches end of data or it is stopped from outside
 		try {
@@ -307,9 +306,9 @@ public class HadoopReader extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
 		hadoopReader = new HadoopReader(xattribs.getString(XML_ID_ATTRIBUTE),
-				xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, RefResFlag.URL),
-				xattribs.getString(XML_KEY_FIELD_NAME_ATTRIBUTE),
-				xattribs.getString(XML_VALUE_FIELD_NAME_ATTRIBUTE));
+				xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.URL),
+				xattribs.getString(XML_KEY_FIELD_NAME_ATTRIBUTE, null),
+				xattribs.getString(XML_VALUE_FIELD_NAME_ATTRIBUTE, null));
 			
 			if (xattribs.exists(XML_CONNECTION_ID_ATTRIBUTE)) {
 				hadoopReader.setConnectionId(xattribs.getString(XML_CONNECTION_ID_ATTRIBUTE));
@@ -347,12 +346,22 @@ public class HadoopReader extends Node {
 			return status;
 		}
 
-		checkMetadata(status, getOutMetadata());
+		checkMetadata(status, null, getOutPorts());
 
 		if (!PolicyType.isPolicyType(policyTypeStr)) {
 			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
 		} else {
 			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+		}
+		
+		if (fileURL == null) {
+			status.add("File URL not defined.", Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE);
+		}
+		if (keyFieldName == null) {
+			status.add("Key field not defined.", Severity.ERROR, this, Priority.NORMAL, XML_KEY_FIELD_NAME_ATTRIBUTE);
+		}
+		if (valueFieldName == null) {
+			status.add("Value field not defined.", Severity.ERROR, this, Priority.NORMAL, XML_VALUE_FIELD_NAME_ATTRIBUTE);
 		}
 
 		try {

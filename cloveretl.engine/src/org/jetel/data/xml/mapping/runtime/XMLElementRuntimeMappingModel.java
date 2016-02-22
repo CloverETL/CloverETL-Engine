@@ -121,6 +121,11 @@ public class XMLElementRuntimeMappingModel extends XMLRuntimeMappingModel {
 	 */ 
 	private Map<String, String> fieldsMap = new HashMap<String, String>();
 
+	/**
+	 * http header -> output field map.
+	 */
+	private Map<String, String> responseHttpHeadersToOutputFields;
+ 
 	/** 
 	 * List of clover fields (among else) which will be filled from ancestor.
 	 */
@@ -129,7 +134,7 @@ public class XMLElementRuntimeMappingModel extends XMLRuntimeMappingModel {
 	/** 
 	 * Map associating an XML element/attribute name with Clover field name; these XML fields are referenced by descendant mappings. 
 	 */
-	private Map<String, String> descendantReferences = new HashMap<String, String>();
+	private Map<String, List<String>> descendantReferences = new HashMap<String, List<String>>();
 
 	/**
 	 * Set of Clover fields which are mapped explicitly (using xmlFields & cloverFields attributes). It is union of
@@ -397,8 +402,6 @@ public class XMLElementRuntimeMappingModel extends XMLRuntimeMappingModel {
 				DataRecordMetadata dataRecordMetadata = outPort.getMetadata();
 				getContext().getAutoFilling().addAutoFillingFields(dataRecordMetadata);
 				outputRecord = DataRecordFactory.newRecord(dataRecordMetadata);
-				outputRecord.init();
-				outputRecord.reset();
 			} // Original code is commented, it is valid to have null port now
 			/*
 			 * else { LOG .warn(getId() + ": Port " + getOutPort() +
@@ -711,11 +714,11 @@ public class XMLElementRuntimeMappingModel extends XMLRuntimeMappingModel {
 		this.fieldsMap = fieldsMap;
 	}
 
-	public Map<String, String> getDescendantReferences() {
+	public Map<String, List<String>> getDescendantReferences() {
 		return descendantReferences;
 	}
 
-	public void setDescendantReferences(Map<String, String> descendantReferences) {
+	public void setDescendantReferences(Map<String, List<String>> descendantReferences) {
 		this.descendantReferences = descendantReferences;
 	}
 
@@ -781,6 +784,14 @@ public class XMLElementRuntimeMappingModel extends XMLRuntimeMappingModel {
 
 	public void setFieldTransformation(RecordTransform fieldTransformation) {
 		this.fieldTransformation = fieldTransformation;
+	}
+	
+	public Map<String, String> getResponseHttpHeadersToOutputFields() {
+		return responseHttpHeadersToOutputFields;
+	}
+	
+	public void setResponseHttpHeadersToOutputFields(Map<String, String> responseHttpHeadersToOutputFields) {
+		this.responseHttpHeadersToOutputFields = responseHttpHeadersToOutputFields;
 	}
 
 	public XMLElementRuntimeMappingModel getProducingParent() {

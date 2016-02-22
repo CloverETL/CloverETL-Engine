@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.LoadClassException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Node;
+import org.jetel.util.string.CommentsProcessor;
 
 /**
  * Utility class for dynamic compiling of Java source code. Offers instantiating of compiled code.
@@ -127,6 +128,8 @@ public final class DynamicJavaClass {
 	}
 
 	private static String extractClassName(String sourceCode) {
+		sourceCode = CommentsProcessor.stripComments(sourceCode);
+		
 		Matcher classMatcher = CLASS_PATTERN.matcher(sourceCode);
 
 		if (!classMatcher.find()) {

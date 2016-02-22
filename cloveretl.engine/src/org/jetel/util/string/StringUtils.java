@@ -2537,6 +2537,29 @@ public class StringUtils {
                 block != Character.UnicodeBlock.SPECIALS;
     }
 	
+	/**
+	 * Returns <code>true</code> if the argument contains a line break.
+	 * Returns <code>false</code> if the argument is <code>null</code> or an empty string.
+	 * 
+	 * @param s
+	 * @return <code>true</code> if the argument contains newline
+	 */
+	public static boolean isMultiline(CharSequence s) {
+		if (isEmpty(s)) {
+			return false;
+		}
+		
+		char c;
+		for (int i = 0; i < s.length(); i++) {
+			c = s.charAt(i);
+			if (c == '\n' || c == '\r') {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	
 	/**
 	 * Abbreviates input char sequence by using first letter of each word composing the sequence.

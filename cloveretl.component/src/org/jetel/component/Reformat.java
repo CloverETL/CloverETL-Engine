@@ -252,12 +252,9 @@ public class Reformat extends Node implements MetadataProvider {
 		int numOutputPorts=getOutPorts().size();
 		DataRecord outRecord[] = new DataRecord[numOutputPorts]; 
 		
-		inRecord[0].init();
 		// initialize output ports
 		for (int i = 0; i < numOutputPorts; i++) {
 			outRecord[i] = DataRecordFactory.newRecord(getOutputPort(i).getMetadata());
-			outRecord[i].init();
-			outRecord[i].reset();
 		}
 
 		int counter = 0;
@@ -283,7 +280,8 @@ public class Reformat extends Node implements MetadataProvider {
 				writeRecord(transformResult, outRecord[transformResult]);
 			} else if (transformResult == RecordTransform.SKIP) {
 				// DO NOTHING - skip the record
-			} else if (transformResult <= RecordTransform.STOP) {
+			} else {
+				// transformResult is <= RecordTransform.STOP
 				ErrorAction action = errorActions.get(transformResult);
 				if (action == null) {
 					action = errorActions.get(Integer.MIN_VALUE);

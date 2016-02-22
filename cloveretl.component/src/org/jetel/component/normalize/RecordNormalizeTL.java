@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.jetel.component.AbstractTransformTL;
+import org.jetel.component.TransformUtils;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
@@ -114,7 +115,7 @@ public class RecordNormalizeTL extends AbstractTransformTL implements RecordNorm
 			throw new TransformException("Normalization failed!", exception);
 		}
 
-		countOnErrorArguments[0].setValue(ExceptionUtils.getMessage(null, exception));
+		countOnErrorArguments[0].setValue(TransformUtils.getMessage(exception));
 		countOnErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 
 		return countImpl(countOnErrorFunction, COUNT_ON_ERROR_FUNCTION_NAME, source, countOnErrorArguments);
@@ -145,7 +146,7 @@ public class RecordNormalizeTL extends AbstractTransformTL implements RecordNorm
 			throw new TransformException("Normalization failed!", exception);
 		}
 
-		transformOnErrorArguments[0].setValue(ExceptionUtils.getMessage(null, exception));
+		transformOnErrorArguments[0].setValue(TransformUtils.getMessage(exception));
 		transformOnErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 		transformOnErrorArguments[2].getNumeric().setValue(idx);
 

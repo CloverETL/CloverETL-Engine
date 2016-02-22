@@ -35,8 +35,6 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class DataRecordWithInvalidState extends DataRecordImpl {
 
-	private static final long serialVersionUID = 4435958666027665079L;
-
 	@SuppressWarnings("deprecation")
 	DataRecordWithInvalidState(DataRecordMetadata _metadata) {
 		super(_metadata);

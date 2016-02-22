@@ -50,11 +50,8 @@ public class SlaveReaderDup extends InputReader {
 		this.inPort = inPort;
 		this.key = key;
 		this.deserializedRec = DataRecordFactory.newRecord(inPort.getMetadata());
-		this.deserializedRec.init();
 		this.rec[CURRENT] = DataRecordFactory.newRecord(inPort.getMetadata());
 		this.rec[NEXT] = DataRecordFactory.newRecord(inPort.getMetadata());
-		this.rec[CURRENT].init();
-		this.rec[NEXT].init();
 		recCounter = 0;
 		this.recBuf = new FileRecordBuffer();
 		this.firstRun = true;
@@ -64,8 +61,6 @@ public class SlaveReaderDup extends InputReader {
 	public void reset() throws ComponentNotReadyException {
 		this.rec[CURRENT] = DataRecordFactory.newRecord(inPort.getMetadata());
 		this.rec[NEXT] = DataRecordFactory.newRecord(inPort.getMetadata());
-		this.rec[CURRENT].init();
-		this.rec[NEXT].init();
 		recCounter = 0;
 		recBuf.clear();
 		this.firstRun = true;

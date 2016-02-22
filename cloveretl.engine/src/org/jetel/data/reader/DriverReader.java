@@ -43,8 +43,6 @@ public class DriverReader extends InputReader {
 		this.key = key;
 		this.rec[CURRENT] = DataRecordFactory.newRecord(inPort.getMetadata());
 		this.rec[NEXT] = DataRecordFactory.newRecord(inPort.getMetadata());
-		this.rec[CURRENT].init();
-		this.rec[NEXT].init();
 		recCounter = 0;
 		blocked = false;
 	}
@@ -53,8 +51,6 @@ public class DriverReader extends InputReader {
 	public void reset() throws ComponentNotReadyException {
 		this.rec[CURRENT] = DataRecordFactory.newRecord(inPort.getMetadata());
 		this.rec[NEXT] = DataRecordFactory.newRecord(inPort.getMetadata());
-		this.rec[CURRENT].init();
-		this.rec[NEXT].init();
 		recCounter = 0;
 		blocked = false;
 	}

@@ -40,14 +40,17 @@ import org.jetel.data.parser.CloverDataParser.FileConfig;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.metadata.MetadataUtils;
 import org.jetel.util.JetelVersion;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.BitArray;
 import org.jetel.util.stream.CloverDataStream;
+import org.jetel.util.stream.SeekableOutputStream;
 
 /**
  * Class for saving data in Clover internal format.
@@ -114,7 +117,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 	
 
 	private WritableByteChannel channel;
-	private CloverDataStream.Output output;
+	protected CloverDataStream.Output output;
 	private OutputStream out;//FileOutputStream or ZipOutputStream
 	private CloverBuffer buffer;
 	private boolean isOpen = false;
@@ -128,10 +131,12 @@ public class CloverDataFormatter extends AbstractFormatter {
 	/**
 	 * True, if the current transformation is jobflow.
 	 */
-	private boolean isJobflow;
+	protected boolean isJobflow;
 
 	private String[] excludedFieldNames;
 	private int[] includedFieldIndices;
+	
+	protected boolean syncFlush = false;
 
 	/**
 	 * Constructor
@@ -182,6 +187,10 @@ public class CloverDataFormatter extends AbstractFormatter {
 	public void setDataTarget(Object outputDataTarget) throws IOException {
     	close(); // close the previous output - flush
     	
+    	// CLO-5556: do not change the value of this.append!
+    	// Otherwise setDataTarget() is invoked twice, first with File and then with Channel
+    	boolean doAppend = append;
+    	
 		buffer.clear();
 		
 		// TargetFile.setOutput() passes {contextURL, fileName, outputStream}
@@ -193,7 +202,11 @@ public class CloverDataFormatter extends AbstractFormatter {
 		}
 		
 		// create output stream
-		if (outputDataTarget instanceof OutputStream){
+		if (outputDataTarget instanceof SeekableOutputStream) {
+			SeekableOutputStream stream = (SeekableOutputStream) outputDataTarget;
+			this.out = stream;
+			this.channel = stream.getChannel(); 
+		} else if (outputDataTarget instanceof OutputStream){
 			this.out = (OutputStream) outputDataTarget;
 			channel = Channels.newChannel(this.out);
 		}else if (outputDataTarget instanceof File){
@@ -226,7 +239,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 				} else {
 					// write header information for compatibility testing while later reading
 					writeHeader = true;
-					append=false; //zero length, thus no appending actually
+					doAppend=false; //zero length, thus no appending actually
 				}
 			} catch (IOException e) {
 				throw new RuntimeException(e);
@@ -263,7 +276,10 @@ public class CloverDataFormatter extends AbstractFormatter {
 			default:
 				throw new RuntimeException("Unsupported compression algorithm: " + compress);
 			}
-			if (append) {
+			if (syncFlush) {
+				this.output.setSyncFlush(syncFlush);
+			}
+			if (doAppend) {
 				this.output.seekToAppend((SeekableByteChannel) channel);
 			} else {
 				this.output.setPosition(size); // need to tell CloverDataStream what is current position of the wrapped
@@ -335,7 +351,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 	@Override
 	public void close() throws IOException {
 		if (!isOpen) return;
-		output.close();
+		FileUtils.close(output); // CLO-5217
 		if (channel.isOpen()) {
 			channel.close();
 		}
@@ -376,8 +392,9 @@ public class CloverDataFormatter extends AbstractFormatter {
 	 */
 	@Override
 	public void flush() throws IOException {
-		//output.flush();
-		//out.flush();
+		if (syncFlush) {
+			output.flush();
+		}
 	}
 	
 	@Override
@@ -391,6 +408,10 @@ public class CloverDataFormatter extends AbstractFormatter {
 	}
 
 	protected byte[] metadataSerialize(DataRecordMetadata metadata) {
+		metadata = metadata.duplicate(); // CLO-6311 - create a duplicate to safely remove autofilling
+		for (DataFieldMetadata field: metadata) {
+			field.setAutoFilling(null);
+		}
 		ByteArrayOutputStream  outStream = new ByteArrayOutputStream();
 		DataRecordMetadataXMLReaderWriter.write(metadata, outStream);
 		return outStream.toByteArray();

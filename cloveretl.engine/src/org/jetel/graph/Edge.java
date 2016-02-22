@@ -35,6 +35,7 @@ import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.MetadataFactory;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.EdgeDebugUtils;
 import org.jetel.util.ReferenceState;
 import org.jetel.util.ReferenceUtils;
@@ -52,6 +53,7 @@ import org.jetel.util.bytes.CloverBuffer;
  * @see        org.jetel.graph.OutputPort
  * @see EdgeFactory
  */
+@CloverPublicAPI
 public class Edge extends GraphElement implements InputPort, OutputPort, InputPortDirect, OutputPortDirect {
 
     private static Log logger = LogFactory.getLog(Edge.class);
@@ -63,7 +65,6 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     protected int writerPort;
 
 	protected DataRecordMetadata metadata;
-	protected DataRecordMetadataStub metadataStub;
 	/** Reference to a graph element, from where the metadata should be derived. */
 	protected String metadataRef;
 	/** State of the reference to a graph element*/
@@ -132,15 +133,17 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     }
     
 	public Edge(String id, DataRecordMetadataStub metadataStub) {
-		this(id, null, false);
-		this.metadataStub=metadataStub;
+		this(id, createMetadataFromStub(metadataStub), false);
 	}
 
-	public Edge(String id, DataRecordMetadataStub metadataStub, DataRecordMetadata metadata, boolean debugMode) {
-		this(id,metadata, debugMode);
-		this.metadataStub=metadataStub;
+	private static DataRecordMetadata createMetadataFromStub(DataRecordMetadataStub metadataStub) {
+		if (metadataStub != null) {
+			return MetadataFactory.fromStub(metadataStub);
+		} else {
+			return null;
+		}
 	}
-	
+
 	/**
 	 * Copies settings from the given edge to this edge.
 	 * The otherEdge has to be from same graph as this edge. For example referenced metadata are not copied
@@ -149,7 +152,6 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 */
 	void copySettingsFrom(Edge otherEdge) {
 		this.metadata = otherEdge.metadata;
-		this.metadataStub = otherEdge.metadataStub;
 		this.debugMode = otherEdge.debugMode;
 		this.debugMaxRecords = otherEdge.debugMaxRecords;
 		this.debugLastRecords = otherEdge.debugLastRecords;
@@ -418,18 +420,8 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
         if(isInitialized()) return;
 		super.init();
 		
-		/* if metadata is null and we have metadata stub, try to
-		 * load metadata from JDBC
-		 */
 		if (metadata == null) {
-			if (metadataStub == null) {
-				throw new RuntimeException(createMissingMetadataMessage());
-			}
-			try{
-				metadata=MetadataFactory.fromStub(metadataStub);
-			}catch(Exception ex){
-				throw new ComponentNotReadyException("Creating metadata from db connection failed: ", ex);
-			}
+			throw new RuntimeException(createMissingMetadataMessage());
 		}
 		
 		if (edge != null) {

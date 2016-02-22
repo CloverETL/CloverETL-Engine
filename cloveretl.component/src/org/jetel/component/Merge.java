@@ -28,6 +28,8 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -200,7 +202,6 @@ public class Merge extends Node {
 		// initialize array of data records (for each input port one)
 		for (int i = 0; i < inPorts.length; i++) {
 			inputRecords[i] = DataRecordFactory.newRecord(inPorts[i].getMetadata());
-			inputRecords[i].init();
 		}
 
 		// initially load in records from all connected inputs
@@ -257,7 +258,11 @@ public class Merge extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
 		Merge merge = new Merge(xattribs.getString(XML_ID_ATTRIBUTE),graph);
-		merge.setMergeKeys(xattribs.getString(XML_MERGEKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+		String mergeKeysRaw = xattribs.getString(XML_MERGEKEY_ATTRIBUTE, null);
+		if (mergeKeysRaw != null) {
+			merge.setMergeKeys(mergeKeysRaw.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+		}
+		
         return merge;
 	}
 
@@ -280,7 +285,12 @@ public class Merge extends Node {
 //	        status.add(new ConfigurationProblem("At least 2 input ports should be defined!", Severity.WARNING, this, Priority.NORMAL));
 //	    }
 	
-	    checkMetadata(status, getInMetadata(), getOutMetadata(), false);
+	    checkMetadata(status, getInPorts(), getOutPorts(), false);
+	    
+	    if (mergeKeys == null) {
+	    	status.add("Merge Key not defined.", Severity.ERROR, this, Priority.NORMAL, XML_MERGEKEY_ATTRIBUTE);
+	    	return status;
+	    }
 	
 	    try {
 	        init();

@@ -114,9 +114,9 @@ public class XsdMetadata extends MXAbstract {
 	 * @throws IOException
 	 */
 	public void write(String filename) throws FileNotFoundException, IOException {
-		OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(filename));
-		write(outputStream);
-		outputStream.close();
+		try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(filename))) {
+			write(outputStream);
+		}
 	}
 
 	public void write(OutputStream output) throws IOException {

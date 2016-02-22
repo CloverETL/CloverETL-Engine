@@ -221,7 +221,6 @@ import org.w3c.dom.Element;
             }
             // get record consisting of key-fields only
             defaultRecord = DataRecordFactory.newRecord(foreignKey.generateKeyRecordMetadata());
-            defaultRecord.init();
             for(int i=0;i<defaultForeignKeys.length;i++){
                 try{
                     defaultRecord.getField(i).fromString(defaultForeignKeys[i]);
@@ -256,7 +255,6 @@ import org.w3c.dom.Element;
     		DataRecord storeRecord;
     
     		primaryRecord=DataRecordFactory.newRecord(inPrimaryPort.getMetadata());
-    		primaryRecord.init();
     		while (primaryRecord!=null && runIt) {
    				if ((primaryRecord=inPrimaryPort.readRecord(primaryRecord)) != null) {
    				    storeRecord=primaryRecord.duplicate();
@@ -266,7 +264,6 @@ import org.w3c.dom.Element;
     		}
 
     		foreignRecord = DataRecordFactory.newRecord(inForeignPort.getMetadata());
-    		foreignRecord.init();
     		HashKey foreignHashKey = new HashKey(foreignKey, foreignRecord);
     		int numFields=defaultRecord.getNumFields();
             int keyFields[]=foreignKey.getKeyFields();
@@ -312,11 +309,17 @@ import org.w3c.dom.Element;
         public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
     		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
             CheckForeignKey checkKey;
+            
+            String defaultForeignKeyRaw = xattribs.getString(XML_DEFAULTFOREIGNKEY_ATTRIBUTE, null);
+            String[] defaultForeignKey = null;
+            if (defaultForeignKeyRaw != null) {
+            	defaultForeignKey = defaultForeignKeyRaw.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+            }
     
             checkKey = new CheckForeignKey(
                     xattribs.getString(XML_ID_ATTRIBUTE),
-                    xattribs.getString(XML_FOREIGNKEY_ATTRIBUTE),
-                    xattribs.getString(XML_DEFAULTFOREIGNKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+                    xattribs.getString(XML_FOREIGNKEY_ATTRIBUTE, null),
+                    defaultForeignKey);
 
             if (xattribs.exists(XML_PRIMARYKEY_ATTRIBUTE)) {
             	checkKey.setPrimeryKey(xattribs.getString(XML_PRIMARYKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
@@ -348,6 +351,18 @@ import org.w3c.dom.Element;
     		DataRecordMetadata foreignMetadata = getInputPort(FOREIGN_ON_PORT).getMetadata();
 
         	checkMetadata(status, foreignMetadata, getOutMetadata());
+        	
+        	if (keyDefinition == null) {
+        		status.add("Foreign key not defined.", Severity.ERROR, this, Priority.NORMAL, XML_FOREIGNKEY_ATTRIBUTE);
+        	}
+        	
+        	if (defaultForeignKeys == null) {
+        		status.add("Default foreign key not defined.", Severity.ERROR, this, Priority.NORMAL, XML_DEFAULTFOREIGNKEY_ATTRIBUTE);
+        	}
+        	
+        	if (keyDefinition == null || defaultForeignKeys == null) {
+        		return status;
+        	}
  
         	if (foreignKeys == null) {
     			try {

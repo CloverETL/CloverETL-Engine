@@ -24,12 +24,15 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -55,9 +58,9 @@ import org.jetel.graph.runtime.WatchDog;
 import org.jetel.graph.runtime.tracker.TokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SubgraphUtils;
-import org.jetel.util.bytes.MemoryTracker;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.TrueZipVFSEntries;
@@ -73,6 +76,7 @@ import org.jetel.util.string.StringUtils;
  * @since       April 2, 2002
  * @see         org.jetel.graph.runtime.WatchDog
  */
+@CloverPublicAPI
 public final class TransformationGraph extends GraphElement {
 
 	public static final String DEFAULT_GRAPH_ID = "DEFAULT_GRAPH_ID";
@@ -89,6 +93,10 @@ public final class TransformationGraph extends GraphElement {
 	
 	private Map <String, Object> dataRecordMetadata;
 
+	private SubgraphPorts subgraphInputPorts = new SubgraphPorts(this);
+	
+	private SubgraphPorts subgraphOutputPorts = new SubgraphPorts(this);
+	
 	/**
 	 * Set of all persisted implicit metadata, which are used
 	 * for validation purpose. All edges with implicit metadata
@@ -123,11 +131,6 @@ public final class TransformationGraph extends GraphElement {
 
 	private GraphParameters graphParameters;
 
-	/**
-	 * Memory tracker associated with this graph.
-	 */
-	private MemoryTracker memoryTracker;
-	
 	private TrueZipVFSEntries vfsEntries;
 	
 	/**
@@ -141,6 +144,7 @@ public final class TransformationGraph extends GraphElement {
 	private String licenseType;
 	private String licenseCode;
 	private String guiVersion;
+	private String description;
 	
 	/**
 	 * This runtime context is necessary to be given in the initialization time.
@@ -198,6 +202,39 @@ public final class TransformationGraph extends GraphElement {
 	 */
 	private ConfigurationStatus preCheckConfigStatus = new ConfigurationStatus();
 	
+	/**
+	 * Reference to SubgraphInput component or null if the graph is not subjob.
+	 * Lazy initialised variable.
+	 */
+	private Node subgraphInputComponent = null;
+
+	/**
+	 * Reference to SubgraphOutput component or null if the graph is not subjob.
+	 * Lazy initialised variable.
+	 */
+	private Node subgraphOutputComponent = null;
+
+	/**
+	 * This map contains all raw values of enabled attributes of all components
+	 * (disabled components are included). This value cannot be persisted in {@link Node}
+	 * class, since disabled components are not available in {@link TransformationGraph}.
+	 * This cache is used for logging purpose, see {@link WatchDog#printComponentsEnabledStatus()}.
+	 * Moreover, this cache is used also for check component configuration, see {@link Node#checkConfig(ConfigurationStatus)}. 
+	 */
+	private Map<Node, String> rawComponentEnabledAttribute = new HashMap<>();
+	
+	/**
+	 * This map contains set of blocked components for each blocker component. This map is used for displaying info about blockers
+	 * in GUI tooltips. Contains nodes of original components - i.e. not the Trashifiers that are used as replacements.
+	 */
+	private Map<Node, Set<Node>> blockingComponents = new HashMap<>();
+	
+	/**
+	 * Set of components that are blocked but are kept in the graph so they can still accept records.
+	 * Contains nodes of original components - i.e. not the Trashifiers that are used as replacements.
+	 */
+	private Set<Node> keptBlocked = new HashSet<Node>();
+	
 	public TransformationGraph() {
 		this(DEFAULT_GRAPH_ID);
 	}
@@ -222,7 +259,6 @@ public final class TransformationGraph extends GraphElement {
 		persistedImplicitMetadata = new LinkedHashMap<>();
 		graphParameters = new GraphParameters(this);
 		dictionary = new Dictionary(this);
-		memoryTracker = new MemoryTracker();
 		initialRuntimeContext = new GraphRuntimeContext();
 		vfsEntries = new TrueZipVFSEntries();
 	}
@@ -400,24 +436,24 @@ public final class TransformationGraph extends GraphElement {
 	/**
 	 * Gets the dataRecordMetadata registered under given name (ID)
 	 * 
-	 * @param name name (the ID) under which dataRecordMetadata has been registered with graph
+	 * @param metadataId The ID under which dataRecordMetadata has been registered with graph
 	 * @return
 	 */
-	public DataRecordMetadata getDataRecordMetadata(String name) {
-		return getDataRecordMetadata(name, true);
+	public DataRecordMetadata getDataRecordMetadata(String metadataId) {
+		return getDataRecordMetadata(metadataId, true);
 	}
 	
-	public DataRecordMetadata getDataRecordMetadata(String name, boolean forceFromStub) {
-		Object metadata = dataRecordMetadata.get(name);
+	public DataRecordMetadata getDataRecordMetadata(String metadataId, boolean forceFromStub) {
+		Object metadata = dataRecordMetadata.get(metadataId);
 		if (metadata != null && metadata instanceof DataRecordMetadataStub) {
 			if (forceFromStub) {
 				try {
 					metadata = ((DataRecordMetadataStub)metadata).createMetadata();
-					dataRecordMetadata.put(name, (DataRecordMetadata) metadata);
+					dataRecordMetadata.put(metadataId, (DataRecordMetadata) metadata);
 				} catch (UnsupportedOperationException e) {
-					throw new JetelRuntimeException("Creating metadata '" + name + "' from stub not defined for this connection: ", e);
+					throw new JetelRuntimeException("Creating metadata '" + metadataId + "' from stub not defined for this connection: ", e);
 				} catch (Exception e) {
-					throw new JetelRuntimeException("Creating metadata '" + name + "' from stub failed: ", e);
+					throw new JetelRuntimeException("Creating metadata '" + metadataId + "' from stub failed: ", e);
 				}
 			} else {
 				metadata = null;
@@ -437,7 +473,7 @@ public final class TransformationGraph extends GraphElement {
 	}
 	
 	/**
-	 * Returns metadata with given name.
+	 * Returns ID of metadata with given name.
 	 * WARNING: DataRecordMetadataStub is ignored
 	 */
 	public String getDataRecordMetadataByName(String name) {
@@ -1096,6 +1132,8 @@ public final class TransformationGraph extends GraphElement {
 		//register current thread in ContextProvider - it is necessary to static approach to transformation graph
 		Context c = ContextProvider.registerGraph(this);
 		try {
+			super.free();
+			
 	        freeResources();
 	    	
 	    	//free dictionary /some readers use dictionary in the free method for the incremental reading
@@ -1198,6 +1236,14 @@ public final class TransformationGraph extends GraphElement {
     	phase.deleteEdge(edge);
     }
     
+    public SubgraphPorts getSubgraphInputPorts() {
+    	return subgraphInputPorts;
+    }
+
+    public SubgraphPorts getSubgraphOutputPorts() {
+    	return subgraphOutputPorts;
+    }
+
     @Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
     	super.checkConfig(status);
@@ -1376,13 +1422,6 @@ public final class TransformationGraph extends GraphElement {
 		return dictionary;
 	}
 	
-    /**
-     * @return memory tracker associated with this graph
-     */
-    public MemoryTracker getMemoryTracker() {
-    	return memoryTracker;
-    }
-    
 	public TrueZipVFSEntries getVfsEntries() {
 		return vfsEntries;
 	}
@@ -1527,6 +1566,14 @@ public final class TransformationGraph extends GraphElement {
 	public void setGuiVersion(String guiVersion) {
 		this.guiVersion = guiVersion;
 	}
+	
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
 
 	/**
 	 * @return result of automatic metadata propagation
@@ -1617,6 +1664,87 @@ public final class TransformationGraph extends GraphElement {
 	@Override
 	public String toString() {
 		return getId() + ":" + getRuntimeContext().getRunId();
+	}
+
+	/**
+	 * @return reference to SubgraphInput component in this graph if any
+	 */
+	public Node getSubgraphInputComponent() {
+		if (subgraphInputComponent == null) {
+			for (Node component : getNodes().values()) {
+				if (SubgraphUtils.isSubJobInputComponent(component.getType())) {
+					subgraphInputComponent = component;
+					break;
+				}
+			}
+			if (subgraphInputComponent == null) {
+				throw new JetelRuntimeException("SubgraphInput component is not available.");
+			}
+		}
+		return subgraphInputComponent;
+	}
+
+	/**
+	 * @return reference to SubgraphOutput component in this graph if any
+	 */
+	public Node getSubgraphOutputComponent() {
+		if (subgraphOutputComponent == null) {
+			for (Node component : getNodes().values()) {
+				if (SubgraphUtils.isSubJobOutputComponent(component.getType())) {
+					subgraphOutputComponent = component;
+					break;
+				}
+			}
+			if (subgraphOutputComponent == null) {
+				throw new JetelRuntimeException("SubgraphOutput component is not available.");
+			}
+		}
+		return subgraphOutputComponent;
+	}
+
+	/**
+	 * @return the rawComponentEnabledAttribute
+	 */
+	public Map<Node, String> getRawComponentEnabledAttribute() {
+		return rawComponentEnabledAttribute;
+	}
+
+	/**
+	 * @param rawComponentEnabledAttribute the rawComponentEnabledAttribute to set
+	 */
+	public void setRawComponentEnabledAttribute(Map<Node, String> rawComponentEnabledAttribute) {
+		this.rawComponentEnabledAttribute = rawComponentEnabledAttribute;
+	}
+	
+	/**
+	 * 
+	 * @return Map with a set of blocked nodes for each blocker component.
+	 */
+	public Map<Node, Set<Node>> getBlockingComponentsInfo() {
+		return blockingComponents;
+	}
+
+	public void setBlockingComponentsInfo(Map<Node, Set<Node>> blockingComponents) {
+		this.blockingComponents = blockingComponents;
+	}
+	
+	/**
+	 * @return Set of IDs of blocked components. The info is gathered during graph analysis in {@link #computeBlockedComponents()}.
+	 */
+	public Set<String> getBlockedIDs() {
+		Set<String> blocked = new HashSet<>();
+		
+		for (Entry<Node, Set<Node>> blockerInfo : blockingComponents.entrySet()) {
+			for (Node blockedComponent : blockerInfo.getValue()) {
+				blocked.add(blockedComponent.getId());
+			}
+		}
+		
+		return blocked;
+	}
+	
+	public Set<Node> getKeptBlockedComponents() {
+		return keptBlocked;
 	}
 
 }

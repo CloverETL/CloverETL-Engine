@@ -18,6 +18,9 @@
  */
 package org.jetel.metadata;
 
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,6 +53,7 @@ import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.TimeZoneProvider;
 import org.jetel.util.primitive.BitArray;
@@ -74,6 +78,7 @@ import org.jetel.util.string.StringUtils;
  * @see org.jetel.data.DataField
  * 
  */
+@CloverPublicAPI
 public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetadata>, IGraphElement {
 
 	private static final long serialVersionUID = 7032218607804024730L;
@@ -1214,6 +1219,18 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		dataRecordMetadata.setTimeZoneStr(timeZoneStr);
 		dataRecordMetadata.setCollatorSensitivity(collatorSensitivity);
 		
+		if (keyFieldNames != null) {
+			List<String> keyFieldNamesCopy = new ArrayList<>(keyFieldNames.size());
+			keyFieldNamesCopy.addAll(keyFieldNames);
+			dataRecordMetadata.setKeyFieldNames(keyFieldNamesCopy);
+		}
+		
+		if (nullValues != null) {
+			List<String> nullValsCopy = new ArrayList<>(nullValues.size());
+			nullValsCopy.addAll(nullValues);
+			dataRecordMetadata.setNullValues(nullValsCopy);
+		}
+		
 		return dataRecordMetadata;
 	}
 
@@ -1855,6 +1872,32 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 			if (dataType == DataFieldType.DECIMAL) {
 				fieldMetadata.setProperty(DataFieldMetadata.LENGTH_ATTR, Integer.toString(buffer.getInt()));
 				fieldMetadata.setProperty(DataFieldMetadata.SCALE_ATTR, Integer.toString(buffer.getInt()));
+			}
+			recordMetadata.addField(fieldMetadata);
+		}
+		
+		return recordMetadata;
+	}
+	
+	/**
+	 * This method deserialises metadata, only data types are deserialized.
+	 * This method is counterpart for {@link #serialize(CloverBuffer)} method.
+	 * @param is
+	 * @return
+	 */
+	public static DataRecordMetadata deserialize(InputStream is) throws IOException {
+		DataRecordMetadata recordMetadata = new DataRecordMetadata("record");
+		DataInputStream dis = new DataInputStream(is);
+		
+		int numFields = dis.readInt();
+		for (int i = 0; i < numFields; i++) {
+			DataFieldType dataType = DataFieldType.fromByteIdentifier(dis.readByte());
+			DataFieldContainerType containerType = DataFieldContainerType.fromByteIdentifier(dis.readByte());
+			
+			DataFieldMetadata fieldMetadata = new DataFieldMetadata("field" + (i+1), dataType, null, containerType);
+			if (dataType == DataFieldType.DECIMAL) {
+				fieldMetadata.setProperty(DataFieldMetadata.LENGTH_ATTR, Integer.toString(dis.readInt()));
+				fieldMetadata.setProperty(DataFieldMetadata.SCALE_ATTR, Integer.toString(dis.readInt()));
 			}
 			recordMetadata.addField(fieldMetadata);
 		}

@@ -263,7 +263,6 @@ public class Trash extends Node {
 	private Result executeWithWriter() throws Exception {
 		InputPort inPort = debugInputPort;
 		DataRecord record = DataRecordFactory.newRecord(inPort.getMetadata());
-		record.init();
 		
 		while ((record = inPort.readRecord(record)) != null && runIt) {
 			writer.write(record);
@@ -444,9 +443,6 @@ public class Trash extends Node {
 		public void work() throws InterruptedException, IOException {
 			DataRecord record = DataRecordFactory.newRecord(inPort.getMetadata());
 			CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
-			if (mode.equals(Mode.VALIDATE_RECORDS)) {
-				record.init();
-			}
 
 			while (inPort.readRecordDirect(recordBuffer) && runIt) {
 				if (mode.equals(Mode.VALIDATE_RECORDS)) {

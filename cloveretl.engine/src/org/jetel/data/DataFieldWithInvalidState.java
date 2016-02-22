@@ -39,8 +39,6 @@ import org.jetel.util.bytes.CloverBuffer;
  */
 public class DataFieldWithInvalidState extends DataField {
 
-	private static final long serialVersionUID = 5871757668871924104L;
-
 	/** Wrapped data field. */
 	private DataField dataField;
 

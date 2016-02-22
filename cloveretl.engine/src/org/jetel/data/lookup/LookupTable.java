@@ -25,6 +25,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.NotInitializedException;
 import org.jetel.graph.IGraphElement;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverPublicAPI;
 
 /**
  * <p>The interface of a lookup table specifying the minimum required functionality.</p>
@@ -45,6 +46,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @see Lookup
  * @since 8th July 2004
  */
+@CloverPublicAPI
 public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
 
     public static final String XML_METADATA_ID = "metadata";

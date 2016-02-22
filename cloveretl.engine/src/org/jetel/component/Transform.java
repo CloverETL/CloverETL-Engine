@@ -21,6 +21,7 @@ package org.jetel.component;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.CloverPublicAPI;
 
 /**
  * Common transform interface which defines methods common to all transforms.
@@ -30,6 +31,7 @@ import org.jetel.graph.TransformationGraph;
  * @version 14th June 2010
  * @created 14th June 2010
  */
+@CloverPublicAPI
 public interface Transform {
 
     /**

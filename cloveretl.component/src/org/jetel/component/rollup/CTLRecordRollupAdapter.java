@@ -22,6 +22,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.jetel.component.Rollup;
+import org.jetel.component.TransformUtils;
 import org.jetel.ctl.CTLAbstractTransformAdapter;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
@@ -123,10 +124,6 @@ public final class CTLRecordRollupAdapter extends CTLAbstractTransformAdapter im
 
 		// check if all required functions are present, otherwise we cannot continue
 		checkRequiredFunctions();
-
-		// initialize an empty data record to be used instead of a null group accumulator
-        emptyRecord.init();
-        emptyRecord.reset();
     }
 
     private void checkRequiredFunctions() throws ComponentNotReadyException {
@@ -228,7 +225,7 @@ public final class CTLRecordRollupAdapter extends CTLAbstractTransformAdapter im
     private Object[] initGroupArguments(Exception exception, DataRecord groupAccumulator) {
     	if (exception != null) {
     		// provide exception message and stack trace
-	    	groupOnErrorArguments[0] = ExceptionUtils.getMessage(null, exception);
+	    	groupOnErrorArguments[0] = TransformUtils.getMessage(exception);
 	    	groupOnErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 
 	    	// if group accumulator is empty we use an empty record for better error reporting in scope of CTL
@@ -298,7 +295,7 @@ public final class CTLRecordRollupAdapter extends CTLAbstractTransformAdapter im
     private Object[] initTransformArguments(Exception exception, int counter, DataRecord groupAccumulator) {
     	if (exception != null) {
     		// provide exception message, stack trace and call counter
-	    	transformOnErrorArguments[0] = ExceptionUtils.getMessage(null, exception);
+	    	transformOnErrorArguments[0] = TransformUtils.getMessage(exception);
 	    	transformOnErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 	    	transformOnErrorArguments[2] = counter;
 

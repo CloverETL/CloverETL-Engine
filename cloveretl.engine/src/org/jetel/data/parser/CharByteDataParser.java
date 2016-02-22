@@ -45,6 +45,7 @@ import org.jetel.exception.PolicyType;
 import org.jetel.exception.UnexpectedEndOfRecordDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.QuotingDecoder;
 import org.jetel.util.string.StringUtils;
@@ -148,8 +149,16 @@ public class CharByteDataParser extends AbstractTextParser {
 		return "<Raw record data is not available, please turn on verbose mode.>";
 	}
 
-	private DataRecord parsingErrorFound(String exceptionMessage, DataRecord record, int fieldNum,
-			String offendingValue) {
+	private void parsingErrorFound(String exceptionMessage) {
+		if (exceptionHandler != null) {
+			exceptionHandler.populateHandler(exceptionMessage, null, -1, -1,
+					null, new BadDataFormatException(exceptionMessage));
+		} else {
+			throw new RuntimeException("Parsing error: " + exceptionMessage);
+		}
+	}
+
+	private DataRecord parsingErrorFound(String exceptionMessage, DataRecord record, int fieldNum, String offendingValue) {
 		if (exceptionHandler != null) {
 			exceptionHandler.populateHandler(exceptionMessage, record, recordCounter, fieldNum,
 					offendingValue, new BadDataFormatException(exceptionMessage));
@@ -166,17 +175,8 @@ public class CharByteDataParser extends AbstractTextParser {
 	@Override
 	public DataRecord getNext() throws JetelException {
 		DataRecord record = DataRecordFactory.newRecord(cfg.getMetadata());
-		record.init();
 
-		record = parseNext(record);
-		if (exceptionHandler != null) { // use handler only if configured
-			while (exceptionHandler.isExceptionThrowed()) {
-				exceptionHandler.setRawRecord(lastRawRecord);
-				exceptionHandler.handleException();
-				record = parseNext(record);
-			}
-		}
-		return record;
+		return getNext(record);
 	}
 
 	/**
@@ -187,7 +187,9 @@ public class CharByteDataParser extends AbstractTextParser {
 		record = parseNext(record);
 		if (exceptionHandler != null) { // use handler only if configured
 			while (exceptionHandler.isExceptionThrowed()) {
-				exceptionHandler.setRawRecord(lastRawRecord);
+				if (exceptionHandler.getRecordNumber() > -1) {
+					exceptionHandler.setRawRecord(lastRawRecord);
+				}
 				exceptionHandler.handleException();
 				record = parseNext(record);
 			}
@@ -232,11 +234,22 @@ public class CharByteDataParser extends AbstractTextParser {
 						recordSkipper.skipInput(consumerIdx);
 					}
 				}
+			} catch (CharsetDecoderException e) {
+				parsingErrorFound(ExceptionUtils.getMessage(e));
+				return null;
 			} catch (UnexpectedEndOfRecordDataFormatException e) {
+				if (cfg.isVerbose()) {
+					lastRawRecord = getLastRawRecord(); 
+				}
 				return parsingErrorFound(e.getSimpleMessage(), record, consumerIdx, null);
 			} catch (BadDataFormatException e) {
 				if (recordSkipper != null) {
-					recordSkipper.skipInput(consumerIdx);
+					try {
+						recordSkipper.skipInput(consumerIdx);
+					} catch (OperationNotSupportedException ex2) { // CLO-5703
+						logger.warn("Record skipping failed", ex2);
+						e.addSuppressed(ex2);
+					}
 				}
 				if (cfg.isVerbose()) {
 					lastRawRecord = getLastRawRecord(); 
@@ -266,13 +279,19 @@ public class CharByteDataParser extends AbstractTextParser {
 		int counter;
 		for (counter = 0; counter < nRec; counter++) {
 			try {
+				// CLO-5654: update outer mark to prevent the buffer from filling up
+				if (verboseInputReader != null) {
+					verboseInputReader.setOuterMark();
+					lastRawRecord = null;
+				}
 				if (!recordSkipper.skipInput(0)) {
 					break;
 				}
-			} catch (OperationNotSupportedException e) {
-				break;
-			} catch (IOException e) {
-				break;
+			} catch (Exception e) {
+				parsingErrorFound(ExceptionUtils.getMessage("An error occured while skipping records.", e));
+				if (exceptionHandler != null) {
+					exceptionHandler.handleException();
+				}
 			}
 		}
 		return counter;
@@ -462,7 +481,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		}
 		// create input reader according to data record requirements
 		if (inputReader == null) {
-			CharByteInputReader singleMarkInputReader = CharByteInputReader.createInputReader(metadata, charset, false, false);
+			CharByteInputReader singleMarkInputReader = CharByteInputReader.createInputReader(metadata, charset, false, false, getPolicyType());
 			if (cfg.isVerbose()) {
 				inputReader = verboseInputReader = new CharByteInputReader.DoubleMarkCharByteInputReader(singleMarkInputReader);
 			} else {
@@ -519,10 +538,13 @@ public class CharByteDataParser extends AbstractTextParser {
 				idx++;
 			}
 		} // loop
-		if (needByteInput) {
-			recordSkipper = new ByteRecordSkipper(inputReader, getCharDelimSearcher(), isDelimited);
-		} else {
-			recordSkipper = new CharRecordSkipper(inputReader, getCharDelimSearcher(), isDelimited);
+		// CLO-5703: disable record skipping if last non-autofilled field has no delimiter
+		if (metadata.isSpecifiedRecordDelimiter() || isDelimited[lastNonAutoFilledField]) {
+			if (needByteInput) {
+				recordSkipper = new ByteRecordSkipper(inputReader, getCharDelimSearcher(), isDelimited);
+			} else {
+				recordSkipper = new CharRecordSkipper(inputReader, getCharDelimSearcher(), isDelimited);
+			}
 		}
 		if (metadata.isSpecifiedRecordDelimiter() && !metadata.getField(lastNonAutoFilledField).isDelimited()) {
 			// last field without autofilling doesn't have delimiter - special consumer needed for record delimiter
@@ -1072,7 +1094,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			} // quoted/unquoted if statement
 
 			// tries to find longer delimiter - typically for a set of delimiters \n, \r, \r\n, after \r is found, this will look for possible match of
-			// \r\n. NOTE: this is different behavior than matching multiple delimiters
+			// \r\n. NOTE: this is different behaviour than matching multiple delimiters
 			if (matchLongestDelimiter) {
 				// consume longest possible delimiter
 				inputReader.mark();

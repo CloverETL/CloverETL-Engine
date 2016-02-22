@@ -149,7 +149,6 @@ public class Sort extends Node {
 	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-		inRecord.init();
 		//InputPortDirect inPort = (InputPortDirect) getInputPort(READ_FROM_PORT);
 		// --- store input records into internal buffer
 		while (inRecord != null && runIt) {
@@ -259,7 +258,7 @@ public class Sort extends Node {
 			return status;
 		}
 
-		checkMetadata(status, getInMetadata(), getOutMetadata());
+		checkMetadata(status, getInPorts(), getOutPorts());
 
 		try {
 			init();

@@ -377,6 +377,8 @@ public final class Defaults {
 	public static boolean USE_DYNAMIC_COMPILER;// = true;
 	
 	/**
+	 * WARN: this property is no more used, see CLO-5653
+	 * 
 	 * Maximal size of direct memory used by clover buffers. By default,
 	 * only half of all direct memory can be used for {@link CloverBuffer} instances.
 	 * WARN: MemoryUtils.getDirectMemorySize() actually returns size of heap, since real 

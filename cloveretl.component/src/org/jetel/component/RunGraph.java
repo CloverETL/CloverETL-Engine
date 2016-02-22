@@ -249,9 +249,7 @@ public class RunGraph extends Node{
 	
 	private DataRecord initInRecord() {
 		if (inPort != null) {
-			DataRecord inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-			inRecord.init();	
-			return inRecord;
+			return DataRecordFactory.newRecord(inPort.getMetadata());
 		}
 		
 		return null;
@@ -259,15 +257,11 @@ public class RunGraph extends Node{
 	
 	private DataRecord initOutRecord() {
 		if (outPort != null) {
-			DataRecord outRec = DataRecordFactory.newRecord(outPort.getMetadata());
-			outRec.init();
-			return outRec;
+			return DataRecordFactory.newRecord(outPort.getMetadata());
 		} 
 	
 		if (outPortErr != null) {
-			DataRecord outRec = DataRecordFactory.newRecord(outPortErr.getMetadata());
-			outRec.init();
-			return outRec;
+			return DataRecordFactory.newRecord(outPortErr.getMetadata());
 		}
 		
 		return null;

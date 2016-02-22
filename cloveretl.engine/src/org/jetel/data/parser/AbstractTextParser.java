@@ -19,6 +19,9 @@
 package org.jetel.data.parser;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
 
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
@@ -165,4 +168,75 @@ public abstract class AbstractTextParser extends AbstractParser implements TextP
 		}
 	}
 	
+	/**
+	 * Creates charset decoder based on charset from parser configuration object.
+	 * Moreover, parser policy is applied even on the charset decoder.
+	 * @return
+	 */
+	protected CharsetDecoder createCharsetDecoder() {
+		CharsetDecoder decoder = Charset.forName(cfg.getCharset()).newDecoder();
+
+		applyDecoderPolicy(decoder, getPolicyType());
+		
+		return decoder;
+	}
+	
+	/**
+	 * Presets the given decoder according given policy. For lenient policy, malformed and
+	 * unmappable characters are replaced. For controlled and strict policy, an exception
+	 * is thrown on malformed and unmappable characters.
+	 * @param decoder
+	 * @param policyType
+	 */
+	public static void applyDecoderPolicy(CharsetDecoder decoder, PolicyType policyType) {
+		if (policyType == null) {
+			policyType = PolicyType.STRICT;
+		}
+		
+		switch (policyType) {
+		case LENIENT:
+			setLenientDecoder(decoder);
+			break;
+		case CONTROLLED:
+			setStrictDecoder(decoder);
+			break;
+		case STRICT:
+			setStrictDecoder(decoder);
+			break;
+		}
+	}
+	
+	/**
+	 * Sets the given decoder to replace all malformed and unmappable characters.
+	 * @param decoder
+	 */
+	protected static void setLenientDecoder(CharsetDecoder decoder) {
+		decoder.onMalformedInput(CodingErrorAction.REPLACE);
+		decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+	}
+
+	/**
+	 * Sets the given decoder to throw an exception on malformed and unmappable characters.
+	 * @param decoder
+	 */
+	protected static void setStrictDecoder(CharsetDecoder decoder) {
+		decoder.onMalformedInput(CodingErrorAction.REPORT);
+		decoder.onUnmappableCharacter(CodingErrorAction.REPORT);
+	}
+
+	/**
+	 * Character decoding error occurred.
+	 */
+	public static class CharsetDecoderException extends IOException {
+		private static final long serialVersionUID = 1L;
+		
+		public CharsetDecoderException(String message) {
+			super(message);
+		}
+
+		public CharsetDecoderException(String message, Throwable cause) {
+			super(message, cause);
+		}
+	}
+
 }

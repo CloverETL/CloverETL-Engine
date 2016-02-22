@@ -45,6 +45,8 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -328,12 +330,10 @@ public class DBExecute extends Node {
         }
 		if ((outPort = getOutputPort(WRITE_TO_PORT)) != null) {
 			outRecord = DataRecordFactory.newRecord(outPort.getMetadata());
-			outRecord.init();
 		}
 		errPort = getOutputPort(ERROR_PORT);
 		if (errPort != null){
 			errRecord = DataRecordFactory.newRecord(errPort.getMetadata());
-			errRecord.init();
 			errorCodeFieldNum = errRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_CODE);
 			errMessFieldNum = errRecord.getMetadata().findAutoFilledField(AutoFilling.ERROR_MESSAGE);
 		}
@@ -376,7 +376,6 @@ public class DBExecute extends Node {
 		}
 		if (getInPorts().size() > 0) {
 			inRecord = DataRecordFactory.newRecord(getInputPort(READ_FROM_PORT).getMetadata());
-			inRecord.init();
 		}
 		initStatements();
 		if (errorLogURL != null) {
@@ -415,7 +414,10 @@ public class DBExecute extends Node {
 		} catch (SQLException e) {
 			logger.warn("SQLException when closing statement", e);
 		}
-		dbConnection.closeConnection(getId(), procedureCall ? OperationType.CALL : OperationType.WRITE);
+		// CLO-6100: do not close the connection, as we expect the graph to perform commit
+		if (transaction != InTransaction.NEVER_COMMIT) {
+			dbConnection.closeConnection(getId(), procedureCall ? OperationType.CALL : OperationType.WRITE);
+		}
 	}
 
 	private void acquireConnection() throws ComponentNotReadyException {
@@ -561,7 +563,10 @@ public class DBExecute extends Node {
 		try {
     		if (channelIterator != null) {
     			Object readableByteChannel;
-    			Charset nioCharset = this.charset != null ? Charset.forName(this.charset) : Charset.defaultCharset();
+    			if (charset == null) {
+    				charset = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
+    			}
+    			Charset nioCharset = Charset.forName(charset);
     			while (channelIterator.hasNext()) {
     				readableByteChannel = channelIterator.next();
     				if (readableByteChannel == null) break;
@@ -569,6 +574,7 @@ public class DBExecute extends Node {
     				String statement;
     				int index = 0;
     				while ((statement = sqlScriptParser.getNextStatement()) != null) {
+    					statement = getPropertyRefResolver().resolveRef(statement, RefResFlag.ALL_OFF);
     					if (printStatements) {
 							logger.info("Executing statement: " + statement);
     					}
@@ -703,19 +709,14 @@ public class DBExecute extends Node {
             query = xattribs.getString(XML_DBSQL_ATTRIBUTE);
         } else if (xattribs.exists(XML_SQLCODE_ELEMENT)) {
             query = xattribs.getString(XML_SQLCODE_ELEMENT);
-        } else {// we try to get it from child text node - slightly obsolete
-                // now
-            childNode = xattribs.getChildNode(xmlElement,
-                    XML_SQLCODE_ELEMENT);
-            if (childNode == null) {
-                throw new RuntimeException("Can't find <SQLCode> node !");
-            }
-            xattribsChild = new ComponentXMLAttributes((Element)childNode, graph);
-            query = xattribsChild.getText(childNode);
+		} else if ((childNode = xattribs.getChildNode(xmlElement, XML_SQLCODE_ELEMENT)) != null) {
+			// we try to get it from child text node - slightly obsolete now
+			xattribsChild = new ComponentXMLAttributes((Element) childNode, graph);
+			query = xattribsChild.getText(childNode);
         }
         executeSQL = new DBExecute(xattribs
                 .getString(XML_ID_ATTRIBUTE), xattribs
-                .getString(XML_DBCONNECTION_ATTRIBUTE), 
+                .getString(XML_DBCONNECTION_ATTRIBUTE, null), 
                 query);
         if (fileURL != null) {
         	executeSQL.setFileURL(fileURL);
@@ -840,9 +841,16 @@ public class DBExecute extends Node {
             		"Charset "+charset+" not supported!", 
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
         }
+        
+        if (sqlQuery == null && fileUrl == null) {
+        	status.add("SQL query not defined.", Severity.ERROR, this, Priority.NORMAL);
+        }
+        if (dbConnectionName == null) {
+        	status.add("DB connection not defined.", Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+        }
 
 		try {
-		    if (dbConnection == null){
+		    if (dbConnection == null && dbConnectionName != null){
 		        IConnection conn = getGraph().getConnection(dbConnectionName);
 	            if(conn == null) {
 	                throw new ComponentNotReadyException("Can't find DBConnection ID: " + dbConnectionName, XML_DBCONNECTION_ATTRIBUTE);
