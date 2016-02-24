@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Jul 28 14:48:33 CEST 2010" guiVersion="0.0.0.devel" id="1224141158838" licenseCode="Commercial Devel" licenseType="Commercial" modified="Mon Feb 22 14:33:13 CET 2016" modifiedBy="jansedlacek" name="CompanyChecks" revision="1.154" showComponentDetails="true">
+<Graph author="avackova" created="Wed Jul 28 14:48:33 CEST 2010" guiVersion="0.0.0.devel" id="1224141158838" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 11:10:06 CET 2016" modifiedBy="jansedlacek" name="CompanyChecks" revision="1.156" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="companyData" previewAttachmentCharset="ISO-8859-1" recordSize="469" type="delimited">
@@ -32,36 +32,36 @@
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<RichTextNote backgroundColor="F9EB81" enabled="true" folded="false" fontSize="medium" height="290" id="Note9" textColor="000000" width="298" x="9" y="10">
+<RichTextNote backgroundColor="F9EB81" enabled="true" folded="false" fontSize="medium" height="232" id="Note9" textColor="000000" width="323" x="619" y="64">
 <attr name="text"><![CDATA[h5. Before running this graph:
 You need to start the embedded Derby database in order to run this graph. Please go to _Run -> External Tools_ and use the provided shortcuts to start/stop the database. (on first start you'll need to go to _External Tools Configuration/Program_).
 
 
 You will find Derby distribution under [lib/derby|navigator://BasicExamples/lib/derby] in this project]]></attr>
 </RichTextNote>
-<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="290" id="Note13" textColor="000000" width="605" x="314" y="10">
+<RichTextNote backgroundColor="DAD8C9" enabled="true" folded="false" fontSize="medium" height="232" id="Note13" textColor="000000" width="605" x="9" y="64">
 <attr name="text"><![CDATA[h3. Company Liquidation Check
 We have a customer database and every week we want to match our customers with a file we receive from a 3rd party that containing a list of all companies that are in liquidation. We validate our customer company IDs; match them and write the output to database tables for the following criteria:
 
 
 * [Invalid customer company IDs|element://DB_OUTPUT_TABLE0]
-* [Customers that are in liquidation|element://DB_OUTPUT_TABLE1]
-* [Customers that are not in liquidation|element://DB_OUTPUT_TABLE2]
-* [Customers where the liquidation status is unclear|element://DB_OUTPUT_TABLE3]
+* [Customers that are in liquidation|element://DB_OUTPUT_TABLE2]
+* [Customers that are not in liquidation|element://DB_OUTPUT_TABLE3]
+* [Customers where the liquidation status is unclear|element://DB_OUTPUT_TABLE1]
 ]]></attr>
 </RichTextNote>
-<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="325" id="Note1" textColor="000000" width="298" x="9" y="306">
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="325" id="Note1" textColor="000000" width="298" x="9" y="306">
 <attr name="text"><![CDATA[h5. Phase 0 
 h6. (see '0' in top left corner of the component) 
 This runs in Phase 0 and deletes tables in Derby DB. Rest of graph runs in Phase 1 after Phase 0 completes]]></attr>
 </RichTextNote>
-<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="278" id="Note0" textColor="000000" width="234" x="492" y="306">
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="278" id="Note0" textColor="000000" width="234" x="492" y="306">
 <attr name="text"><![CDATA[h5. Mapping
 Mapping in the component uses the "star" notation: 
 
 {noformat}$0.* := $0.*;{noformat}]]></attr>
 </RichTextNote>
-<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="270" id="Note10" textColor="000000" width="253" x="491" y="589">
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="270" id="Note10" textColor="000000" width="253" x="491" y="589">
 <attr name="text"><![CDATA[h5. Mapping
 Mapping in the component uses the "star" notation: 
 {noformat}$0.* := $0.*;{noformat}]]></attr>

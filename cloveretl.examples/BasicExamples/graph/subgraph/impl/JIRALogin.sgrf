@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="User" created="Thu May 22 10:10:35 CEST 2014" guiVersion="4.1.0.M1" id="1400746470340" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Apr 21 16:19:17 CEST 2015" modifiedBy="User" name="Default graph name" nature="subgraph" revision="1.51" showComponentDetails="true">
+<Graph author="User" created="Thu May 22 10:10:35 CEST 2014" guiVersion="0.0.0.devel" id="1400746470340" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 11:03:54 CET 2016" modifiedBy="jansedlacek" name="Default graph name" nature="subgraph" revision="1.53" showComponentDetails="true">
 <Global>
-<inputPorts/>
 <outputPorts>
 <singlePort connected="false" name="0"/>
 </outputPorts>
@@ -39,15 +38,15 @@
 <GraphParameterFile fileURL="workspace.prm"/>
 <GraphParameterFile fileURL="jira.prm"/>
 </GraphParameters>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="101" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Description" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="323" x="-110" y="-293">
+<RichTextNote backgroundColor="F9EB81" enabled="true" folded="false" fontSize="medium" height="98" id="Note0" textColor="000000" width="463" x="-101" y="-210">
 <attr name="text"><![CDATA[Performs login to JIRA, returns the session.
 
 Returns empty record if no login was provided...]]></attr>
-</Note>
+</RichTextNote>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiName="Combine" guiX="473" guiY="234" id="COMBINE" incompleteTuples="true" type="COMBINE">
+<Node enabled="enabled" guiName="Combine" guiX="383" guiY="167" id="COMBINE" incompleteTuples="true" type="COMBINE">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -139,7 +138,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="HTTPConnector" guiX="85" guiY="50" id="HTTPCONNECTOR" requestMethod="POST" type="HTTP_CONNECTOR" url="${JIRA_LOGIN_URL}">
+<Node enabled="enabled" guiName="HTTPConnector" guiX="-105" guiY="36" id="HTTPCONNECTOR" requestMethod="POST" type="HTTP_CONNECTOR" url="${JIRA_LOGIN_URL}">
 <attr name="requestContent"><![CDATA[{
     "username": "${USER}",
     "password": "${PASSWORD}"
@@ -176,7 +175,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="JSONExtract" guiX="664" guiY="50" id="JSONEXTRACT" schema="${META_DIR}/session_json.xsd" sourceUri="port:$0.login_rest_response:discrete" type="JSON_EXTRACT">
+<Node enabled="enabled" guiName="JSONExtract" guiX="427" guiY="36" id="JSONEXTRACT" schema="${META_DIR}/session_json.xsd" sourceUri="port:$0.login_rest_response:discrete" type="JSON_EXTRACT">
 <attr name="mapping"><![CDATA[<Mappings>
 	<Mapping element="json_object">
 		<Mapping element="session">
@@ -189,7 +188,7 @@ function integer transform() {
 </Mappings>
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Login failed" guiX="873" guiY="325" id="LOGIN_FAILED" type="FAIL">
+<Node enabled="enabled" guiName="Login failed" guiX="877" guiY="201" id="LOGIN_FAILED" type="FAIL">
 <attr name="mapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -227,21 +226,21 @@ function integer transform() {
 <attr name="filterExpression"><![CDATA[//#CTL2
 !isBlank($in.0.username)]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Login success?" guiX="680" guiY="234" id="LOGIN_SUCCESS" type="EXT_FILTER">
+<Node enabled="enabled" guiName="Login success?" guiX="581" guiY="167" id="LOGIN_SUCCESS" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[//#CTL2
 
 $in.0.session_name != null && $in.0.session_value != null]]></attr>
 </Node>
-<Node enabled="enabled" guiName="REST success?" guiX="479" guiY="50" id="REST_SUCCESS" type="EXT_FILTER">
+<Node enabled="enabled" guiName="REST success?" guiX="269" guiY="36" id="REST_SUCCESS" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[//#CTL2
 $in.0.login_rest_status_code == 200]]></attr>
 </Node>
-<Node enabled="enabled" guiName="SimpleCopy" guiX="280" guiY="48" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiName="SimpleCopy" guiX="75" guiY="36" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
 <Node enabled="enabled" guiName="SimpleGather" guiX="894" guiY="-95" id="SIMPLE_GATHER" type="SIMPLE_GATHER"/>
-<Node enabled="enabled" guiName="SubgraphInput" guiX="-175" guiY="-290" id="SUBGRAPH_INPUT0" type="SUBGRAPH_INPUT">
+<Node enabled="enabled" guiName="SubgraphInput" guiX="-175" guiY="-230" id="SUBGRAPH_INPUT0" type="SUBGRAPH_INPUT">
 <Port guiY="-90" name="0"/>
 </Node>
-<Node enabled="enabled" guiName="SubgraphOutput" guiX="1067" guiY="-290" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT">
+<Node enabled="enabled" guiName="SubgraphOutput" guiX="1067" guiY="-230" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT">
 <Port guiY="-79" name="0"/>
 <Port guiY="-40" name="1"/>
 </Node>
