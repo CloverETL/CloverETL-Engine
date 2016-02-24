@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Petr" created="Thu Jul 15 14:15:28 CEST 2010" guiVersion="0.0.0.devel" id="1279197992165" licenseCode="Commercial Devel" licenseType="Commercial" modified="Mon Feb 22 13:21:14 CET 2016" modifiedBy="jansedlacek" name="graphJoining_Aggregating" revision="1.106" showComponentDetails="true">
+<Graph author="Petr" created="Thu Jul 15 14:15:28 CEST 2010" guiVersion="0.0.0.devel" id="1279197992165" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 11:07:05 CET 2016" modifiedBy="jansedlacek" name="graphJoining_Aggregating" revision="1.109" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/categories.fmt" id="Metadata5"/>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
@@ -51,7 +51,7 @@
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<RichTextNote backgroundColor="DAD8C9" enabled="true" folded="false" fontSize="medium" height="101" id="Note5" textColor="000000" width="899" x="6" y="3">
+<RichTextNote backgroundColor="DAD8C9" enabled="true" folded="false" fontSize="medium" height="101" id="Note5" textColor="000000" width="1204" x="6" y="3">
 <attr name="text"><![CDATA[h3. Welcome to CloverETL
 
 This example shows various operations on multiple data sets which are combined/joined and worked on to produce reports & statistics.]]></attr>
@@ -59,14 +59,13 @@ This example shows various operations on multiple data sets which are combined/j
 <RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="365" id="Note0" textColor="000000" width="180" x="193" y="107">
 <attr name="text"><![CDATA[Merges ordered data from two sources. The output data is ordered by the same key as input data.]]></attr>
 </RichTextNote>
-<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="365" id="Note2" textColor="000000" width="231" x="374" y="107">
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="365" id="Note2" textColor="000000" width="238" x="374" y="107">
 <attr name="text"><![CDATA[We want to find customers that didn’t place an order. Those records are sent to the first output port. The records with the data joined from two input ports are sent to second output port]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="F9EB81" enabled="true" folded="false" fontSize="medium" height="319" id="Note6" textColor="000000" width="593" x="617" y="107">
 <attr name="text"><![CDATA[h5. TASK1: Find registered customers who did not buy a DVD.
 *SOLUTION*: Find such customers records that the customerid is not present in any orders record
-
-*RESULTS*:]]></attr>
+]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="118" id="Note3" textColor="000000" width="598" x="7" y="579">
 <attr name="text"><![CDATA[h6. Nothing remains...
@@ -80,18 +79,16 @@ It is not suprising that no record is sent to the third output port - every orde
 <attr name="text"><![CDATA[h3. TASK3: Report products and sales statistics
 *SOLUTION*: Join the product data with the category data then enhance products by sales statistics.]]></attr>
 </RichTextNote>
-<RichTextNote backgroundColor="DEF4AB" folded="false" fontSize="medium" height="246" id="Note7" textColor="000000" width="361" x="244" y="704">
+<RichTextNote backgroundColor="DEF4AB" folded="false" fontSize="medium" height="196" id="Note7" textColor="000000" width="412" x="193" y="704">
 <attr name="text"><![CDATA[h3. See results in Navigator:
 
 After running a graph, you can see results located in project: [BasicExamples|navigator://BasicExamples]
 
-[data-out/customers_without_order_region1.csv|open://data-out/customers_without_order_region1.csv]
 
-[data-out/customers_without_order_region2.csv| open://data-out/customers_without_order_region2.csv]
-
-[data-out/customers_DVD_report.xlsx|open://data-out/customers_DVD_report.xlsx]
-
-[data-out/products_DVD_report.xlsx|open://data-out/products_DVD_report.xlsx]
+* [data-out/customers_without_order_region1.csv|open://data-out/customers_without_order_region1.csv]
+* [data-out/customers_without_order_region2.csv| open://data-out/customers_without_order_region2.csv]
+* [data-out/customers_DVD_report.xlsx|open://data-out/customers_DVD_report.xlsx]
+* [data-out/products_DVD_report.xlsx|open://data-out/products_DVD_report.xlsx]
 
 ]]></attr>
 </RichTextNote>
