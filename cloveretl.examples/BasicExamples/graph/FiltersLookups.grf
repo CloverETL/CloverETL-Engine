@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="0.0.0.devel" id="1280312940927" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 17 16:01:49 CET 2016" modifiedBy="jansedlacek" name="graphFilters_Lookups" revision="1.44" showComponentDetails="true">
+<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="0.0.0.devel" id="1280312940927" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Feb 23 14:07:20 CET 2016" modifiedBy="jansedlacek" name="graphFilters_Lookups" revision="1.45" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/orders.fmt" id="Metadata1"/>
@@ -33,7 +33,7 @@ Case 1: Before the graph runs
 - selecting file to be the data source
 - typing the values
 
-Case 2:. During the graph run
+Case 2: During the graph run
 - using a Java class
 - using [LookupTableReaderWriter|element://LOOKUP_TABLE_READER_WRITER0] component
 ]]></attr>
@@ -42,7 +42,7 @@ Case 2:. During the graph run
 <attr name="text"><![CDATA[h5. Filtering
 We want only orders where
 
-{{ShipDate > RequiredDate}}]]></attr>
+{noformat}ShipDate > RequiredDate{noformat}]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="266" id="Note5" textColor="000000" width="280" x="431" y="378">
 <attr name="text"><![CDATA[h5. Reading from the lookup table
