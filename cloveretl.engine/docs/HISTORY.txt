@@ -2,6 +2,15 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-1-2
+---------
+
+* SpreadsheetDataReader does not loose precision when reading numbers into strings
+* FIXES:
+  - WebServiceClient does not respect HTTP headers in properties
+  - Populate parent record does not work when an element is mapped to a field with the same name
+
+
 REL-4-1-1
 ---------
 
