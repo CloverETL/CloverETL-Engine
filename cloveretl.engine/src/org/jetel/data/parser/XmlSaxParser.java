@@ -845,8 +845,8 @@ public class XmlSaxParser {
 										startIndex = this.m_elementContentStartIndexStack.get(startIndexPosition).index;
 									}
 								}
-
-								if (fieldName == null && m_activeMapping.isImplicit()) {
+								//CLO-7984 - prevent automapping for fields with explicit mapping
+								if (fieldName == null && m_activeMapping.isImplicit() && !(childMapping.isUsingParentRecord() && childMapping.getExplicitCloverFields().contains(localName))) {
 									fieldName = localName;
 								}
 
@@ -1255,8 +1255,10 @@ public class XmlSaxParser {
 							continue; //don't do implicit mapping for fields mapped to http headers						
 						}											
 					} 
-					
-					if (fieldName == null && m_activeMapping.isImplicit() && !key.equals(XMLMappingConstants.ELEMENT_AS_TEXT) && !key.equals(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT)) {
+					//CLO-7984 - don't implicitly map element content
+					if (fieldName == null && m_activeMapping.isImplicit() &&
+					!((m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT) || m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_AS_TEXT)) &&
+					   m_activeMapping.getElementName().equals(universalName) && m_activeMapping.getLevel() == m_level)) {
 						/*
 						 * As we could not find match using qualified name try mapping the xml element/attribute without
 						 * the namespace prefix
