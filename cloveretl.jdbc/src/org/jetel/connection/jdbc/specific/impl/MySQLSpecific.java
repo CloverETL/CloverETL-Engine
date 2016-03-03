@@ -30,6 +30,7 @@ import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -80,8 +81,7 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 	 */
 	@Override
 	public void optimizeResultSet(ResultSet res,OperationType operType){
-		switch(operType){
-		case READ:
+		if (operType == OperationType.READ) {
 			try {
 				res.setFetchDirection(ResultSet.FETCH_FORWARD);
 			}catch(SQLException ex){
@@ -140,13 +140,13 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 	
 	@Override
 	public int jetelType2sql(DataFieldMetadata field) {
-		switch (field.getType()) {
-		case DataFieldMetadata.BOOLEAN_FIELD:
-        	return Types.BIT;
-		case DataFieldMetadata.NUMERIC_FIELD:
+		switch (field.getDataType()) {
+		case BOOLEAN:
+			return Types.BIT;
+		case NUMBER:
 			return Types.DOUBLE;
-        default: 
-        	return super.jetelType2sql(field);
+		default:
+			return super.jetelType2sql(field);
 		}
 	}
 	
@@ -154,7 +154,7 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 	public char sqlType2jetel(int sqlType) {
 		switch (sqlType) {
 		case Types.BIT:
-			return DataFieldMetadata.BOOLEAN_FIELD;
+			return DataFieldType.BOOLEAN.getShortName();
 		default:
 			return super.sqlType2jetel(sqlType);
 		}
