@@ -82,9 +82,8 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 	public void optimizeResultSet(ResultSet res,OperationType operType){
 		switch(operType){
 		case READ:
-			try{
+			try {
 				res.setFetchDirection(ResultSet.FETCH_FORWARD);
-				res.setFetchSize(Integer.MIN_VALUE);
 			}catch(SQLException ex){
 				//TODO: for now, do nothing
 			}
