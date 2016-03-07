@@ -729,12 +729,14 @@ public class XmlSaxParser {
 					if (m_activeMapping.getOutputRecord() != null && m_activeMapping.getOutputRecord().hasField(fieldName)) {
 						String val = attributes.getValue(i);
 						DataField field = m_activeMapping.getOutputRecord().getField(fieldName);
-                    	// CLO-5793: XMLExtract - mapping of element content breaks functionality of empty string as value of empty element
-                    	if (field.getMetadata().getDataType() == DataFieldType.STRING) {
-                    		field.setValue(trim ? val.trim() : val);
-                    	} else {
-                    		field.fromString(trim ? val.trim() : val);
-                    	}
+						if (field.getValue() == null) {
+							// CLO-5793: XMLExtract - mapping of element content breaks functionality of empty string as value of empty element
+							if (field.getMetadata().getDataType() == DataFieldType.STRING) {
+								field.setValue(trim ? val.trim() : val);
+							} else {
+								field.fromString(trim ? val.trim() : val);
+							}
+						}
 					}
 				}
 			}
@@ -1286,7 +1288,7 @@ public class XmlSaxParser {
 		private boolean isMappingPossible(String fieldName) {
 			return (m_activeMapping.getOutputRecord() != null &&
 					m_activeMapping.getOutputRecord().hasField(fieldName) && 
-					(useNestedNodes || m_level - 1 <= m_activeMapping.getLevel()));
+					((useNestedNodes && m_activeMapping.getOutputRecord().getField(fieldName).getValue() == null) || m_level - 1 <= m_activeMapping.getLevel()));
 		}
 
 		/**
