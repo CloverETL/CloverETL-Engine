@@ -177,13 +177,18 @@ public class MappingCompiler extends AbstractVisitor {
 		String omitNull = element.getProperty(MappingProperty.OMIT_NULL_ELEMENT);
 		String dataType = element.getProperty(MappingProperty.DATA_TYPE);
 		Set<DataFieldMetadataWrapper> writeNullSet = gatherNullSet(writeNull, omitNull, element.getParent());
+		boolean isRawValue = ObjectNode.RAW_VALUE_DEFAULT;
+		String isRawValueString = element.getProperty(MappingProperty.RAW_VALUE);
+		if (isRawValueString != null) {
+			isRawValue = Boolean.parseBoolean(isRawValueString);
+		}
 
 		for (DataFieldMetadataWrapper dataFieldWrapper : availableFields) {
 			WritableValue name = WritableValue.newInstance(new StaticValue(dataFieldWrapper.dataFieldMetadata.getName()));
 			WritableValue namespace = WritableValue.newInstance(new StaticValue(dataFieldWrapper.namespace));
 			WritableValue value = WritableValue.newInstance(new NodeValue[] { new DynamicValue(dataFieldWrapper.port, dataFieldWrapper.fieldIndex, dataFieldWrapper.dataFieldMetadata.getContainerType()) });
 			WriteNullElement writeNullElementValue = WriteNullElement.fromString(String.valueOf(writeNullSet.contains(dataFieldWrapper)));
-			WritableObject subNode = new WritableObject(name, namespace, writeNullElementValue, false, dataType);
+			WritableObject subNode = new WritableObject(name, namespace, writeNullElementValue, false, isRawValue, dataType);
 			subNode.addChild(value);
 			currentParent.addChild(subNode);
 		}
@@ -315,11 +320,16 @@ public class MappingCompiler extends AbstractVisitor {
 		if (isHiddenString != null) {
 			isHidden = Boolean.parseBoolean(isHiddenString);
 		}
+		boolean isRawValue = ObjectNode.RAW_VALUE_DEFAULT;
+		String isRawValueString = element.getProperty(MappingProperty.RAW_VALUE);
+		if (isRawValueString != null) {
+			isRawValue = Boolean.parseBoolean(isRawValueString);
+		}
 		String dataType = element.getProperty(MappingProperty.DATA_TYPE);
 
 		if (tag != null) {
 			PortBinding portBinding = compilePortBinding(element, tag);
-			writableNode = new WritableObject(name, namespace, getWriteNull(element), portBinding, isHidden, element.getParent() == null, dataType);
+			writableNode = new WritableObject(name, namespace, getWriteNull(element), portBinding, isHidden, element.getParent() == null, isRawValue, dataType);
 			if (currentParent != null) {
 				currentParent.addChild(writableNode);
 			}
@@ -328,7 +338,7 @@ public class MappingCompiler extends AbstractVisitor {
 				partitionElement = writableNode;
 			}
 		} else {
-			writableNode = new WritableObject(name, namespace, getWriteNull(element), isHidden, element.getParent() == null, dataType);
+			writableNode = new WritableObject(name, namespace, getWriteNull(element), isHidden, element.getParent() == null, isRawValue, dataType);
 			if (currentParent != null) {
 				currentParent.addChild(writableNode);
 			}

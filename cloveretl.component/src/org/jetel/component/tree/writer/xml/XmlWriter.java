@@ -256,14 +256,14 @@ public class XmlWriter extends TreeWriterBase implements NamespaceWriter, Attrib
 	}
 
 	@Override
-	public void writeLeaf(Object value, WriteNullElement writeNullElement) throws JetelException {
+	public void writeLeaf(Object value, String dataType, WriteNullElement writeNullElement, boolean rawValue) throws JetelException {
 		performDeferredWrite(true, TagContent.VALUE_CHILD);
 		if (value != null) {
-			writeValue(value);
+			writeValue(value, !rawValue);
 		}
 	}
 
-	private void writeValue(Object value) throws JetelException {
+	private void writeValue(Object value, boolean escapeChars) throws JetelException {
 		char[] content = value.toString().toCharArray();
 		if (content.length == 0) {
 			return;
@@ -277,7 +277,7 @@ public class XmlWriter extends TreeWriterBase implements NamespaceWriter, Attrib
 			indent(depth);
 		}
 
-		writeContent(content, true, false);
+		writeContent(content, escapeChars, false);
 	}
 
 	@Override
