@@ -195,7 +195,12 @@ public class RuntimeMappingModelFactory {
 		
 		OutputPort outPort = context.getParentComponent().getOutputPort(parentRuntimeMapping.getOutputPortNumber());
 		InputPort inPort = context.getParentComponent().getInputPort(0);
-		
+		if (inPort == null) {
+			throw new JetelRuntimeException("Defined input field mapping, but no edge is connected to the input port 0.");
+		}
+		if (outPort == null) {
+			throw new JetelRuntimeException("Defined input field mapping, but the output port is not specified in its context.");
+		}
 		RecordTransform result = null;
 		if (!StringUtils.isEmpty(transformationCode)) {
 			try {
