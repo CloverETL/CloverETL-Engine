@@ -32,8 +32,8 @@
 	</FunctionalTest>
 	
 	<FunctionalTest ident="SalesforceWebService" graphFile="jobflow/SalesforceWebService.jbf" excludedEtlEnvironment="engine,cluster">
-		<Property name="FORCE_COM_PASSWORD" value="jRXudA66jtTWLU9" />
-		<Property name="FORCE_COM_SECURITY_TOKEN" value="cY7RqQzQq9ve3TRQip7Z6clk" />
+		<Property name="FORCE_COM_PASSWORD" value="Uh2X29T79u" />
+		<Property name="FORCE_COM_SECURITY_TOKEN" value="oPkaKLlv1HtczNkr63773ThY" />
 		<Property name="FORCE_COM_USER" value="support@javlin.eu" />
 	</FunctionalTest>
 
