@@ -338,6 +338,7 @@ public abstract class AbstractMappingValidator extends AbstractVisitor {
 		}
 		
 		checkCorrectEnumValue(element, MappingProperty.WRITE_NULL_ELEMENT, WriteNullElement.getValues());
+		checkCorrectBooleanValue(element, MappingProperty.RAW_VALUE);
 		
 		List<Integer> addedPorts = null;
 		Relation recurringInfo = element.getRelation();
@@ -446,6 +447,7 @@ public abstract class AbstractMappingValidator extends AbstractVisitor {
 			return;
 		}
 		checkCloverNamespaceAvailable(element.getParent());
+		checkCorrectBooleanValue(element, MappingProperty.RAW_VALUE);
 		validateWildCardNode(element);
 	}
 	
