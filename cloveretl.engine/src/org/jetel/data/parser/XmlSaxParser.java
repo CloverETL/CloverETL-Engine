@@ -1258,7 +1258,7 @@ public class XmlSaxParser {
 						}											
 					} 
 					//CLO-7984 - don't implicitly map element content
-					if (fieldName == null && m_activeMapping.isImplicit() &&
+					if (fieldName == null && m_activeMapping.isImplicit() && !key.equals(XMLMappingConstants.ELEMENT_AS_TEXT) && !key.equals(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT) &&
 					!((m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT) || m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_AS_TEXT)) &&
 					   m_activeMapping.getElementName().equals(universalName) && m_activeMapping.getLevel() == m_level)) {
 						/*
