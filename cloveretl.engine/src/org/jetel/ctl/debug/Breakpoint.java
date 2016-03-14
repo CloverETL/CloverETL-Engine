@@ -18,10 +18,15 @@
  */
 package org.jetel.ctl.debug;
 
+import java.io.Serializable;
+
 import org.jetel.ctl.debug.Breakpoint;
 import org.jetel.util.string.StringUtils;
 
-public class Breakpoint implements Comparable<Breakpoint>{
+public class Breakpoint implements Comparable<Breakpoint>, Serializable {
+
+	private static final long serialVersionUID = 1L;
+	
 		protected int line;
 		protected String source;
 		//protected boolean disabled;

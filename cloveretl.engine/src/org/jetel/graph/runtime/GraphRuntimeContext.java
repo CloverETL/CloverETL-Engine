@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Level;
 import org.jetel.component.MetadataProvider;
+import org.jetel.ctl.debug.Breakpoint;
 import org.jetel.data.Defaults;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
@@ -78,6 +79,8 @@ public class GraphRuntimeContext {
 	private boolean tokenTracking;
 	private String timeZone;
 	private String locale;
+	private boolean ctlDebug;
+	private List<Breakpoint> ctlBreakpoints;
 	/**
 	 * Default multi-thread execution is managed by {@link WatchDog}.
 	 * Single thread execution is managed by {@link SingleThreadWatchDog}. 
@@ -223,6 +226,8 @@ public class GraphRuntimeContext {
 		ret.strictGraphFactorization = isStrictGraphFactorization();
 		ret.classLoaderCaching = isClassLoaderCaching();
 		ret.calculateNoMetadata = isCalculateNoMetadata();
+		ret.ctlDebug = isCtlDebug();
+		ret.ctlBreakpoints = ctlBreakpoints != null ? new ArrayList<>(ctlBreakpoints) : null;
 
 		return ret;
 	}
@@ -991,6 +996,22 @@ public class GraphRuntimeContext {
 	 */
 	public void setCalculateNoMetadata(boolean calculateNoMetadata) {
 		this.calculateNoMetadata = calculateNoMetadata;
+	}
+
+	public boolean isCtlDebug() {
+		return ctlDebug;
+	}
+
+	public void setCtlDebug(boolean ctlDebug) {
+		this.ctlDebug = ctlDebug;
+	}
+
+	public List<Breakpoint> getCtlBreakpoints() {
+		return ctlBreakpoints;
+	}
+
+	public void setCtlBreakpoints(List<Breakpoint> ctlBreakpoints) {
+		this.ctlBreakpoints = ctlBreakpoints;
 	}
 
 	/**
