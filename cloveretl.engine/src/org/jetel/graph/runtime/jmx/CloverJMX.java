@@ -197,7 +197,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	}
 
 	@Override
-	public Thread[] getCtlThreads() {
+	public org.jetel.ctl.Thread[] getCtlThreads() {
 		// TODO Auto-generated method stub
 		return null;
 	}

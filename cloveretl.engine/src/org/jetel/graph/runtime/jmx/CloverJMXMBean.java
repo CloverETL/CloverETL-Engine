@@ -101,7 +101,7 @@ public interface CloverJMXMBean {
      */
     public void closeServer();
     
-    Thread[] getCtlThreads();
+    org.jetel.ctl.Thread[] getCtlThreads();
     
     StackFrame[] getStackFrames(long threadId);
     
