@@ -95,8 +95,8 @@ public class XMLExtractTest extends CloverTestCase {
 				);
 		//printEdgeRecords(xmlExtract, 1);
 		checkOutPortRecords(xmlExtract, 1,
-				rec("e1AttrFoo"),
-				rec("eAttrFoo2")
+				rec("fooVal1"),
+				rec("eAttrFoo1")
 				);
 	}
 	
@@ -168,7 +168,7 @@ public class XMLExtractTest extends CloverTestCase {
 				);
 		checkOutPortRecords(xmlExtract, 2,
 				rec("a5", "a2", "a1", null, null, null, "c1Val"),
-				rec("a8", "a2", "a1", "b2Val", "b1Val", null, "c1Val"),
+				rec("a6", "a2", "a1", "b2Val", "b1Val", null, "c1Val"),
 				rec("a7", "a4", "a1")
 				);
 	}
