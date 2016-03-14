@@ -36,8 +36,13 @@ public class WildcardNode extends AbstractNode {
 	public static final String DESCRIPTION = "A construct used for mapping multiple clover fields to ";
 	public static final String INVALID_AGGREGATE_ELEMENT = "Wildcard element must be a child of standard element!";
 	
-	private static final MappingProperty[] AVAILABLE_PROPERTIES_ELEMENT = {MappingProperty.INCLUDE, 
-		MappingProperty.EXCLUDE, MappingProperty.WRITE_NULL_ELEMENT, MappingProperty.OMIT_NULL_ELEMENT};
+	private static final MappingProperty[] AVAILABLE_PROPERTIES_ELEMENT = {
+		MappingProperty.INCLUDE, 
+		MappingProperty.EXCLUDE, 
+		MappingProperty.WRITE_NULL_ELEMENT, 
+		MappingProperty.OMIT_NULL_ELEMENT, 
+		MappingProperty.RAW_VALUE
+	};
 	
 	public WildcardNode(ContainerNode parent) {
 		super(parent, true);

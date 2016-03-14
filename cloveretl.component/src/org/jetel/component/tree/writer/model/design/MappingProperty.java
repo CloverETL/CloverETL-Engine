@@ -42,6 +42,7 @@ public enum MappingProperty {
 	VALUE("value"),
 	WRITE("write"),
 	INDEX("index"), // position of attribute among all attributes
+	RAW_VALUE("rawValue"), // True|False - if the value should be inserted raw
 	
 	OMIT_NULL_ATTRIBUTE("omitNullAttribute"),
 	WRITE_NULL_ATTRIBUTE("writeNullAttribute"),

@@ -33,6 +33,7 @@ public class ObjectNode extends ContainerNode {
 
 	public static final boolean HIDE_DEFAULT = false;
 	public static final boolean WRITE_NULL_DEFAULT = false;
+	public static final boolean RAW_VALUE_DEFAULT = false;
 	
 	public static final String XML_ELEMENT_WITH_NAME_ATTRIBUTE = "element";
 
@@ -43,7 +44,7 @@ public class ObjectNode extends ContainerNode {
 		MappingProperty.FILTER, MappingProperty.PARTITION,
 		MappingProperty.INCLUDE, MappingProperty.EXCLUDE,
 		MappingProperty.WRITE_NULL_ATTRIBUTE, MappingProperty.OMIT_NULL_ATTRIBUTE,
-		MappingProperty.DATA_TYPE
+		MappingProperty.DATA_TYPE, MappingProperty.RAW_VALUE
 	};
 	private static final MappingProperty[] AVAILABLE_PROPERTIES_SIMPLE = {
 		MappingProperty.NAME, MappingProperty.VALUE,
@@ -52,7 +53,8 @@ public class ObjectNode extends ContainerNode {
 		MappingProperty.HIDE, MappingProperty.FILTER,
 		MappingProperty.PARTITION, MappingProperty.INCLUDE,
 		MappingProperty.EXCLUDE, MappingProperty.WRITE_NULL_ATTRIBUTE,
-		MappingProperty.OMIT_NULL_ATTRIBUTE, MappingProperty.DATA_TYPE
+		MappingProperty.OMIT_NULL_ATTRIBUTE, MappingProperty.DATA_TYPE, 
+		MappingProperty.RAW_VALUE
 	};
 	
 	private boolean template = false;

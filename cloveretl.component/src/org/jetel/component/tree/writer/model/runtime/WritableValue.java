@@ -36,6 +36,7 @@ import org.jetel.metadata.DataFieldContainerType;
 public abstract class WritableValue extends BaseWritable {
 	
 	WriteNullElement writeNull;
+	boolean rawValue;
 	String dataType;
 	
 	public static WritableValue newInstance(NodeValue... value) {
@@ -54,7 +55,7 @@ public abstract class WritableValue extends BaseWritable {
 		
 		MappingWriteState state = formatter.getMapping().getState();
 		if (state == MappingWriteState.ALL || state == MappingWriteState.HEADER) {
-			formatter.getTreeWriter().writeLeaf(getContent(availableData), dataType, writeNull);
+			formatter.getTreeWriter().writeLeaf(getContent(availableData), dataType, writeNull, rawValue);
 		}
 	}
 	
@@ -148,7 +149,7 @@ public abstract class WritableValue extends BaseWritable {
 									attr.write(formatter, availableData);
 								}
 							}
-							formatter.getTreeWriter().writeLeaf(field.getField(i), dataType, WriteNullElement.FALSE);
+							formatter.getTreeWriter().writeLeaf(field.getField(i), dataType, WriteNullElement.FALSE, rawValue);
 							/*
 							 * last element will be closed by parent
 							 */

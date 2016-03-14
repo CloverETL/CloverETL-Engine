@@ -28,9 +28,14 @@ import org.jetel.exception.JetelException;
  * @created 19.2.2013
  */
 public abstract class TreeWriterBase implements TreeWriter {
+	
+	@Override
+	public void writeLeaf(Object value, WriteNullElement writeNullElement) throws JetelException {
+		writeLeaf(value, null, writeNullElement, false);
+	}
 
 	@Override
 	public void writeLeaf(Object value, String dataType, WriteNullElement writeNullElement) throws JetelException {
-		writeLeaf(value, writeNullElement);
+		writeLeaf(value, dataType, writeNullElement, false);
 	}
 }
