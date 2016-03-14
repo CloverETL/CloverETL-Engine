@@ -1307,8 +1307,8 @@ public class XmlSaxParser {
                     try {
                     	String currentValue = getCurrentValue(startIndex, endIndex, excludeCDataTag);
                     	
-                    	// write the value - if the field value is not already set or if it is set because of implicit mapping (I am not really sure about the second condition, but it was already there...)
-                    	if ((field.getValue() == null || !cloverAttributes.contains(fieldName)) && field.getMetadata().getContainerType() == DataFieldContainerType.SINGLE) {
+                    	// write the value - if the field value is not already set
+                    	if (field.getValue() == null && field.getMetadata().getContainerType() == DataFieldContainerType.SINGLE) {
     						setFieldValue(field, currentValue);
     					} else if (field.getMetadata().getContainerType() == DataFieldContainerType.LIST) {
     						DataField myField = ((ListDataField) field).addField();
