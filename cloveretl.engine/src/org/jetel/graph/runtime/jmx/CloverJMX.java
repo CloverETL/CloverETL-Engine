@@ -26,6 +26,7 @@ import java.lang.management.ThreadMXBean;
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 
+import org.jetel.ctl.StackFrame;
 import org.jetel.graph.Phase;
 import org.jetel.graph.runtime.WatchDog;
 
@@ -195,4 +196,27 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 		sendNotification(new Notification(GRAPH_ERROR, this/*getGraphDetail()*/, notificationSequence++, message));
 	}
 
+	@Override
+	public Thread[] getCtlThreads() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public StackFrame[] getStackFrames(long threadId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void resume(long threadId) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void resumeAll() {
+		// TODO Auto-generated method stub
+		
+	}
 }

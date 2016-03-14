@@ -73,7 +73,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 	private ArrayBlockingQueue<DebugStatus> debug_out;
 	private PrintStream debug_print;
 	private DebugClient client;
-	private Thread client_thread;
+	private java.lang.Thread client_thread;
 	private Breakpoint curpoint;
 
 	public DebugTransformLangExecutor(TransformLangParser parser, TransformationGraph graph, Properties globalParameters){
@@ -121,7 +121,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 		// set debugging client
 		if (client==null){
 			client= new DebugClient(this);
-			client_thread = new Thread(client);
+			client_thread = new java.lang.Thread(client);
 			client_thread.setName("Debug_client");
 			client_thread.start();
 		}

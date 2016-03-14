@@ -18,6 +18,8 @@
  */
 package org.jetel.graph.runtime.jmx;
 
+import org.jetel.ctl.StackFrame;
+
 
 
 /**
@@ -74,6 +76,8 @@ public interface CloverJMXMBean {
      * Notification identifier - graph ends with an error.
      */
     public static final String GRAPH_ERROR = "clover.graph.error";
+    
+    public static final String THREAD_SUSPENDED = "clover.thread.suspend";
 
     
     /**
@@ -96,5 +100,12 @@ public interface CloverJMXMBean {
      * Client should call this method immediately after all tracking information have been received.
      */
     public void closeServer();
-
+    
+    Thread[] getCtlThreads();
+    
+    StackFrame[] getStackFrames(long threadId);
+    
+    void resume(long threadId);
+    
+    void resumeAll();
 }
