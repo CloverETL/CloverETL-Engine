@@ -729,12 +729,14 @@ public class XmlSaxParser {
 					if (m_activeMapping.getOutputRecord() != null && m_activeMapping.getOutputRecord().hasField(fieldName)) {
 						String val = attributes.getValue(i);
 						DataField field = m_activeMapping.getOutputRecord().getField(fieldName);
-                    	// CLO-5793: XMLExtract - mapping of element content breaks functionality of empty string as value of empty element
-                    	if (field.getMetadata().getDataType() == DataFieldType.STRING) {
-                    		field.setValue(trim ? val.trim() : val);
-                    	} else {
-                    		field.fromString(trim ? val.trim() : val);
-                    	}
+						if (field.getValue() == null) {
+							// CLO-5793: XMLExtract - mapping of element content breaks functionality of empty string as value of empty element
+							if (field.getMetadata().getDataType() == DataFieldType.STRING) {
+								field.setValue(trim ? val.trim() : val);
+							} else {
+								field.fromString(trim ? val.trim() : val);
+							}
+						}
 					}
 				}
 			}
@@ -1256,7 +1258,7 @@ public class XmlSaxParser {
 						}											
 					} 
 					//CLO-7984 - don't implicitly map element content
-					if (fieldName == null && m_activeMapping.isImplicit() &&
+					if (fieldName == null && m_activeMapping.isImplicit() && !key.equals(XMLMappingConstants.ELEMENT_AS_TEXT) && !key.equals(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT) &&
 					!((m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT) || m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_AS_TEXT)) &&
 					   m_activeMapping.getElementName().equals(universalName) && m_activeMapping.getLevel() == m_level)) {
 						/*
@@ -1286,7 +1288,7 @@ public class XmlSaxParser {
 		private boolean isMappingPossible(String fieldName) {
 			return (m_activeMapping.getOutputRecord() != null &&
 					m_activeMapping.getOutputRecord().hasField(fieldName) && 
-					(useNestedNodes || m_level - 1 <= m_activeMapping.getLevel()));
+					((useNestedNodes && m_activeMapping.getOutputRecord().getField(fieldName).getValue() == null) || m_level - 1 <= m_activeMapping.getLevel()));
 		}
 
 		/**
@@ -1305,8 +1307,8 @@ public class XmlSaxParser {
                     try {
                     	String currentValue = getCurrentValue(startIndex, endIndex, excludeCDataTag);
                     	
-                    	// write the value - if the field value is not already set or if it is set because of implicit mapping (I am not really sure about the second condition, but it was already there...)
-                    	if ((field.getValue() == null || !cloverAttributes.contains(fieldName)) && field.getMetadata().getContainerType() == DataFieldContainerType.SINGLE) {
+                    	// write the value - if the field value is not already set
+                    	if (field.getValue() == null && field.getMetadata().getContainerType() == DataFieldContainerType.SINGLE) {
     						setFieldValue(field, currentValue);
     					} else if (field.getMetadata().getContainerType() == DataFieldContainerType.LIST) {
     						DataField myField = ((ListDataField) field).addField();
