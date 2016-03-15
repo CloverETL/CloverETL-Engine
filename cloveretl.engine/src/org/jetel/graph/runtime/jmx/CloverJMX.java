@@ -26,7 +26,7 @@ import java.lang.management.ThreadMXBean;
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 
-import org.jetel.ctl.StackFrame;
+import org.jetel.ctl.debug.StackFrame;
 import org.jetel.graph.Phase;
 import org.jetel.graph.runtime.WatchDog;
 
@@ -197,7 +197,7 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	}
 
 	@Override
-	public org.jetel.ctl.Thread[] getCtlThreads() {
+	public org.jetel.ctl.debug.Thread[] getCtlThreads() {
 		// TODO Auto-generated method stub
 		return null;
 	}

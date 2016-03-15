@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.ctl;
+package org.jetel.ctl.debug;
 
 import java.io.Serializable;
 
@@ -26,23 +26,37 @@ import java.io.Serializable;
  *
  * @created 14.3.2016
  */
-public class StackFrame implements Serializable {
+public class Thread implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	
+
+	private long id;
 	private String name;
-	private int lineNumber;
+	private boolean stepping;
+	private boolean suspended;
 	
+	public long getId() {
+		return id;
+	}
+	public void setId(long id) {
+		this.id = id;
+	}
 	public String getName() {
 		return name;
 	}
 	public void setName(String name) {
 		this.name = name;
 	}
-	public int getLineNumber() {
-		return lineNumber;
+	public boolean isStepping() {
+		return stepping;
 	}
-	public void setLineNumber(int lineNumber) {
-		this.lineNumber = lineNumber;
+	public void setStepping(boolean stepping) {
+		this.stepping = stepping;
+	}
+	public boolean isSuspended() {
+		return suspended;
+	}
+	public void setSuspended(boolean suspended) {
+		this.suspended = suspended;
 	}
 }

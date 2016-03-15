@@ -18,14 +18,19 @@
  */
 package org.jetel.ctl.debug;
 
+import java.io.Serializable;
+
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.ctl.debug.DebugCommand.CommandType;
 
-public class DebugStatus {
+public class DebugStatus implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
+	
 	protected int line;
 	protected String sourceFilename;
 	protected boolean suspended;
-	protected SimpleNode node;
+	protected transient SimpleNode node;
 	protected String message;
 	protected Object value;
 	protected CommandType forCommand;

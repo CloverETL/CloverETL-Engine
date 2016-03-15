@@ -140,7 +140,7 @@ public class DebugClient implements Runnable{
 						}else{
 							command="";
 							try {
-								Thread.sleep(250);
+								java.lang.Thread.sleep(250);
 							} catch (InterruptedException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();

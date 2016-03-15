@@ -18,7 +18,8 @@
  */
 package org.jetel.graph.runtime.jmx;
 
-import org.jetel.ctl.StackFrame;
+import org.jetel.ctl.debug.Thread;
+import org.jetel.ctl.debug.StackFrame;
 
 
 
@@ -101,7 +102,7 @@ public interface CloverJMXMBean {
      */
     public void closeServer();
     
-    org.jetel.ctl.Thread[] getCtlThreads();
+    Thread[] getCtlThreads();
     
     StackFrame[] getStackFrames(long threadId);
     
