@@ -226,7 +226,7 @@ public class XmlSaxParser {
 				throw new ComponentNotReadyException(ex);
 			}
 		}
-		saxHandler = new SAXHandler(getXmlElementMappingValues());
+		saxHandler = new SAXHandler();
 		try {
 			// this is required to handle events for CDATA sections, processing instructions and entities
 			parser.setProperty("http://xml.org/sax/properties/lexical-handler", saxHandler);
@@ -433,8 +433,6 @@ public class XmlSaxParser {
 		// the active mapping
 		private XMLElementRuntimeMappingModel m_activeMapping = null;
 
-		private Set<String> cloverAttributes;
-
 		/**
 		 * This is needed to know whether to escape entities in output characters or not. Entities in CDATA should not
 		 * be escaped while entities in attribute values or characters should be escaped.
@@ -447,12 +445,8 @@ public class XmlSaxParser {
 		 */
 		private boolean m_element_as_text = false;
 
-		/**
-		 * @param cloverAttributes
-		 */
-		public SAXHandler(Set<String> cloverAttributes) {
+		public SAXHandler() {
 			super();
-			this.cloverAttributes = cloverAttributes;
 		}
 
 		/**
