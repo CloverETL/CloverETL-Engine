@@ -1434,27 +1434,6 @@ public class XmlSaxParser {
 		}
 	}
 
-	private Set<String> getXmlElementMappingValues() {
-		try {
-			SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
-			DefaultHandler handler = new MyHandler();
-			InputStream is = null;
-			if (this.mappingURL != null) {
-				String filePath = FileUtils.getFile(graph.getRuntimeContext().getContextURL(), mappingURL);
-				is = new FileInputStream(new File(filePath));
-			} else if (this.mapping != null) {
-				is = new ByteArrayInputStream(mapping.getBytes("UTF-8"));
-			}
-			if (is != null) {
-				saxParser.parse(is, handler);
-				return ((MyHandler) handler).getCloverAttributes();
-			}
-		} catch (Exception e) {
-			return new HashSet<String>();
-		}
-		return new HashSet<String>();
-	}
-
 	/**
 	 * Sets namespace bindings to allow processing that relate namespace prefix used in Mapping and namespace URI used
 	 * in processed XML document
