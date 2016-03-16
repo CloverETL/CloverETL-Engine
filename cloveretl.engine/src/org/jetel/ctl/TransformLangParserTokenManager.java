@@ -2772,13 +2772,13 @@ static final long[] jjtoToken = {
    0xffffffffffefc001L, 0xffffffffffffffffL, 0x3c9L, 
 };
 static final long[] jjtoSkip = {
-   0x36feL, 0x0L, 0x0L, 
+   0x3efeL, 0x0L, 0x0L, 
 };
 static final long[] jjtoSpecial = {
    0x36c0L, 0x0L, 0x0L, 
 };
 static final long[] jjtoMore = {
-   0x900L, 0x0L, 0x0L, 
+   0x100L, 0x0L, 0x0L, 
 };
 protected JavaCharStream input_stream;
 private final int[] jjrounds = new int[159];

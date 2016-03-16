@@ -400,7 +400,7 @@ SPECIAL_TOKEN : {
 	<"\n"|"\r"|"\r\n"> : DEFAULT
 }
 
-<WithinSingleLineComment> MORE : { <~[]> }
+<WithinSingleLineComment> SKIP : { <~[]> }
 
 <WithinSingleLineComment, WithinComment> SPECIAL_TOKEN : {	< TL_SHEBANG : "#CTL2" > 	|	< TL_COMPILE : "#CTL2:COMPILE" >}
 
