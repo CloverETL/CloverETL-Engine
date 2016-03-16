@@ -26,22 +26,24 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 
-import org.jetel.ctl.debug.Breakpoint;
-import org.jetel.ctl.debug.DebugClient;
-import org.jetel.ctl.debug.DebugCommand;
-import org.jetel.ctl.debug.DebugStatus;
-import org.jetel.ctl.debug.DebugStack;
-import org.jetel.ctl.debug.Variable;
-import org.jetel.ctl.debug.DebugCommand.CommandType;
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
 import org.jetel.ctl.ASTnode.CLVFImportSource;
 import org.jetel.ctl.ASTnode.Node;
 import org.jetel.ctl.ASTnode.SimpleNode;
+import org.jetel.ctl.debug.Breakpoint;
+import org.jetel.ctl.debug.DebugCommand;
+import org.jetel.ctl.debug.DebugCommand.CommandType;
+import org.jetel.ctl.debug.DebugJMX;
+import org.jetel.ctl.debug.DebugStack;
+import org.jetel.ctl.debug.DebugStatus;
+import org.jetel.ctl.debug.Thread;
+import org.jetel.ctl.debug.Variable;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.string.StringUtils;
 
@@ -54,7 +56,7 @@ import org.jetel.util.string.StringUtils;
 public class DebugTransformLangExecutor extends TransformLangExecutor {
 
 	
-	public static final DebugStep INITIAL_DEBUG_STATE = DebugStep.STEP_SUSPEND;
+	public static final DebugStep INITIAL_DEBUG_STATE = DebugStep.STEP_RUN;
 	
 	public enum DebugStep {
 		STEP_SUSPEND,
@@ -68,72 +70,49 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 	private Set<Breakpoint> breakpoints;
 	private volatile DebugStep step = INITIAL_DEBUG_STATE;
 	private String prevSourceFilename = null;
-	private volatile boolean suspended = false;
-	private ArrayBlockingQueue<DebugCommand> debug_in;
-	private ArrayBlockingQueue<DebugStatus> debug_out;
+	private ArrayBlockingQueue<DebugCommand> commandQueue;
+	private ArrayBlockingQueue<DebugStatus> statusQueue;
 	private PrintStream debug_print;
-	private DebugClient client;
-	private java.lang.Thread client_thread;
+	private DebugJMX debugJMX;
 	private Breakpoint curpoint;
+	private Thread ctlThread;
+	private boolean inExecution;
 
-	public DebugTransformLangExecutor(TransformLangParser parser, TransformationGraph graph, Properties globalParameters){
+	public DebugTransformLangExecutor(TransformLangParser parser, TransformationGraph graph, Properties globalParameters) {
 		super(parser,graph,globalParameters);
-		this.breakpoints= new HashSet<Breakpoint>();
-		this.curpoint=new Breakpoint(null, -1);
-		this.stack= new DebugStack();
-	}
-
-	public DebugTransformLangExecutor(TransformLangExecutor executor){
-		super(executor.parser, executor.graph, executor.globalParameters );
-		this.ast=executor.ast;
-		this.breakpoints= new HashSet<Breakpoint>();
-		this.curpoint=new Breakpoint(null, -1);
-		this.stack= new DebugStack();
 	}
 	
-	/**
-	 * This method should be deleted once setting of breakpoints is handled properly from outside
-	 */
+	public DebugTransformLangExecutor(TransformLangParser parser, TransformationGraph graph) {
+		super(parser, graph);
+	}
 	
-	private void setBreakpoints() {
-		if (!this.graph.getGraphParameters().hasGraphParameter("BREAKPOINT")) return;
-		String breakpoint=this.graph.getGraphParameters().getGraphParameter("BREAKPOINT").getValue();
-		System.err.println("Setting breakpoint at: "+breakpoint);
-		if (breakpoint!=null){
-			debug_in = new ArrayBlockingQueue<DebugCommand>(2, false);
-			debug_out = new ArrayBlockingQueue<DebugStatus>(1, false);
-			String[] points=breakpoint.split(",");
-			for(String point: points){
-				int lineNo=-1;
-				try{
-					lineNo=Integer.parseInt(point);
-				}catch(NumberFormatException ex){
-					continue;
-				}
-				this.breakpoints.add(new Breakpoint(ast.getSourceFilename(),lineNo));
+	private void initDebug() {
+		this.breakpoints= new HashSet<Breakpoint>();
+		List<Breakpoint> breakpoints = graph.getRuntimeContext().getCtlBreakpoints();
+		if (breakpoints != null) {
+			// TODO fix paths properly
+			for (Breakpoint breakpoint : breakpoints) {
+				breakpoint.setSource(graph.getPropertyRefResolver().resolveRef(breakpoint.getSource()).replaceFirst("^\\./", ""));
 			}
+			this.breakpoints.addAll(breakpoints);
 		}
-	}
-
-	
-	@Override
-	protected void executeInternal(SimpleNode node) {
-		// set debugging client
-		if (client==null){
-			client= new DebugClient(this);
-			client_thread = new java.lang.Thread(client);
-			client_thread.setName("Debug_client");
-			client_thread.start();
-		}
-		super.executeInternal(node);
+		this.curpoint=new Breakpoint(null, -1);
+		this.stack= new DebugStack();
+		this.debugJMX = graph.getDebugJMX();
+		commandQueue = new ArrayBlockingQueue<DebugCommand>(2, true);
+		statusQueue = new ArrayBlockingQueue<DebugStatus>(1, true);
+		ctlThread = createThread();
 	}
 	
-	@Override
-	protected void initInternal(SimpleNode ast) throws TransformLangExecutorRuntimeException {
-		super.initInternal(ast);
-		setBreakpoints();
+	private Thread createThread() {
+		java.lang.Thread javaThread = java.lang.Thread.currentThread();
+		Thread ctlThread = new Thread();
+		ctlThread.setId(javaThread.getId());
+		ctlThread.setName(javaThread.getName());
+		ctlThread.setStepping(false); // TODO
+		ctlThread.setSuspended(false);
+		return ctlThread;
 	}
-	
 	
 	private Node findBreakableNode(SimpleNode startNode,int onLine){
 		if (startNode.getLine() == onLine && startNode.isBreakable()) return startNode;
@@ -195,12 +174,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 	protected void handleBreakpoint(SimpleNode node, Object data) {
 		DebugStatus status = new DebugStatus(node,CommandType.SUSPEND);
 		status.setSuspended(true);
-		try {
-			this.debug_out.put(status);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		debugJMX.notifySuspend(status);
 	}
 
 	protected void handleCommand(SimpleNode node) {
@@ -209,7 +183,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 
 		while (runloop) {
 			try {
-				command = debug_in.take();
+				command = commandQueue.take();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -378,7 +352,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 					break;
 				}
 				try {
-					this.debug_out.put(status);
+					this.statusQueue.put(status);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -402,50 +376,63 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 		case STEP_OUT:
 		case STEP_OVER:
 			if (this.withinFunction == ((DebugStack) stack).getFunctionCallNode()) {
-				suspended=true;
+				ctlThread.setSuspended(true);
 				handleBreakpoint(node, data);
 				handleCommand(node);
-				suspended=false;
+				ctlThread.setSuspended(false);
 			}
 			break;
 		case STEP_INTO:
-			suspended=true;
+			ctlThread.setSuspended(true);
 			handleBreakpoint(node, data);
 			handleCommand(node);
-			suspended=false;
+			ctlThread.setSuspended(false);
 			break;
 		case STEP_RUN:
 			this.curpoint.setLine(curLine);
+			// TODO use new attribute instead of sourceFilename
 			this.curpoint.setSource(node.getSourceFilename());
 			if (this.breakpoints.contains(this.curpoint)) {
-				suspended=true;
+				ctlThread.setSuspended(true);
 				handleBreakpoint(node, data);
 				handleCommand(node);
 			}
 			break;
 		case STEP_SUSPEND:
-			//the interpreter starts in this mode, thus it can perform
-			//some initialization here
-			// initDebugger();
-			//TODO:
-			suspended=true;
+			ctlThread.setSuspended(true);
 			handleBreakpoint(node, data);
 			handleCommand(node);
-			suspended=false;
+			ctlThread.setSuspended(false);
 			break;
 		default:
 			throw new TransformLangExecutorRuntimeException("Undefined debugging state: " + step);
 		}
 		
 	}
-
-	public ArrayBlockingQueue<DebugCommand> getDebug_in() {
-		return debug_in;
+	
+	@Override
+	public void preExecute() {
+		inExecution = true;
+		
+		if (inDebugMode()) {
+			initDebug();
+			debugJMX.registerCTLThread(ctlThread, commandQueue, statusQueue);
+		}
+		super.preExecute();
 	}
+	
+	@Override
+	public void postExecute() {
+		super.postExecute();
 
-	public ArrayBlockingQueue<DebugStatus> getDebug_out() {
-		return debug_out;
+		if (inDebugMode()) {
+			debugJMX.unregisterCTLDebugThread(ctlThread);
+			commandQueue = null;
+			statusQueue = null;
+		}
+		inExecution = false;
 	}
+	
 
 	public synchronized void suspendExecution() {
 			this.step=DebugStep.STEP_SUSPEND;
@@ -453,7 +440,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 	
 	@Override
 	public final boolean inDebugMode(){
-		return true;
+		return inExecution && graph.getRuntimeContext().isCtlDebug();
 	}
 	
 

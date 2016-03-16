@@ -379,7 +379,12 @@ public class TLCompiler implements ITLCompiler {
 	 */
 	@Override
 	public Object getCompiledCode() {
-		final TransformLangExecutor executor = new TransformLangExecutor(parser,graph);
+		final TransformLangExecutor executor;
+		if (graph.getRuntimeContext().isCtlDebug()) {
+			executor = new DebugTransformLangExecutor(parser,graph);
+		} else {
+			executor = new TransformLangExecutor(parser, graph);
+		}
 		if (this.ast instanceof CLVFStart ) {
 			executor.setAst((CLVFStart)ast);
 		} else {

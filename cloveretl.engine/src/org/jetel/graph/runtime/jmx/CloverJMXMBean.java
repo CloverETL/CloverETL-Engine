@@ -78,7 +78,7 @@ public interface CloverJMXMBean {
      */
     public static final String GRAPH_ERROR = "clover.graph.error";
     
-    public static final String THREAD_SUSPENDED = "clover.thread.suspend";
+//    public static final String THREAD_SUSPENDED = "clover.thread.suspend";
 
     
     /**
@@ -102,11 +102,11 @@ public interface CloverJMXMBean {
      */
     public void closeServer();
     
-    Thread[] getCtlThreads();
-    
-    StackFrame[] getStackFrames(long threadId);
-    
-    void resume(long threadId);
-    
-    void resumeAll();
+//    Thread[] getCtlThreads();
+//    
+//    StackFrame[] getStackFrames(long threadId);
+//    
+//    void resume(long threadId);
+//    
+//    void resumeAll();
 }

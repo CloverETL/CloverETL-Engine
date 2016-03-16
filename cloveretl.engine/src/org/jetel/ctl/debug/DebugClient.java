@@ -50,13 +50,13 @@ public class DebugClient implements Runnable{
 	public static final String DEBUG_OUT_PATH = "/Users/dpavlis/tmp/debug_out";
 	public static BufferedReader debug_in;
 	public static BufferedWriter debug_out;
-	private DebugTransformLangExecutor executor;
 	ArrayBlockingQueue<DebugStatus> status_queue;
 	ArrayBlockingQueue<DebugCommand> command_queue;
 	
 	
-	public DebugClient(DebugTransformLangExecutor executor){
-		this.executor=executor;
+	public DebugClient(ArrayBlockingQueue<DebugCommand> commandQueue, ArrayBlockingQueue<DebugStatus> statusQueue){
+		this.status_queue = statusQueue;
+		this.command_queue = commandQueue;
 	}
 	
 	
@@ -71,8 +71,6 @@ public class DebugClient implements Runnable{
 		}
 		
 		PrintWriter debug_print = new PrintWriter(debug_out);
-		this.command_queue = executor.getDebug_in();
-		this.status_queue = executor.getDebug_out();
 		DebugStatus status;
 		
 

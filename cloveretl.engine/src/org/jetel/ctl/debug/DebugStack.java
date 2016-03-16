@@ -52,7 +52,8 @@ public class DebugStack extends Stack {
 	
 	@Override
 	public Object getVariable(int blockOffset, int variableOffset){
-		return ((Variable)super.getVariable(blockOffset, variableOffset)).getValue();
+		Variable variable = (Variable) super.getVariable(blockOffset, variableOffset);
+		return variable != null ? variable.getValue() : null;
 	}
 	
 	
