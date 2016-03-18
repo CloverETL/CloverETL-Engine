@@ -56,7 +56,7 @@ import org.jetel.util.string.StringUtils;
 public class DebugTransformLangExecutor extends TransformLangExecutor {
 
 	
-	public static final DebugStep INITIAL_DEBUG_STATE = DebugStep.STEP_SUSPEND;
+	public static final DebugStep INITIAL_DEBUG_STATE = DebugStep.STEP_RUN;
 	
 	public enum DebugStep {
 		STEP_SUSPEND,

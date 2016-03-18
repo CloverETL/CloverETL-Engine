@@ -18,9 +18,9 @@
  */
 package org.jetel.ctl.debug;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
@@ -46,14 +46,14 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	private Map<Long, CTLDebugThread> activeThreads;
 	
 	public DebugJMX() {
-		activeThreads = new HashMap<>();
+		activeThreads = new ConcurrentHashMap<Long, CTLDebugThread>();
 	}
 	
-	public synchronized void registerCTLThread(Thread thread, ArrayBlockingQueue<DebugCommand> commandQueue, ArrayBlockingQueue<DebugStatus> statusQueue) {
+	public void registerCTLThread(Thread thread, ArrayBlockingQueue<DebugCommand> commandQueue, ArrayBlockingQueue<DebugStatus> statusQueue) {
 		activeThreads.put(thread.getId(), new CTLDebugThread(thread, commandQueue, statusQueue));
 	}
 	
-	public synchronized void unregisterCTLDebugThread(Thread thread) {
+	public void unregisterCTLDebugThread(Thread thread) {
 		activeThreads.remove(thread.getId());
 	}
 	
@@ -87,7 +87,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	}
 	
 	@Override
-	public synchronized Thread[] listCtlThreads() {
+	public Thread[] listCtlThreads() {
 		Thread[] threads = new Thread[activeThreads.size()];
 		int i = 0;
 		for (CTLDebugThread threadInfo : activeThreads.values()) {
