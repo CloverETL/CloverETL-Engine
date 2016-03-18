@@ -56,7 +56,7 @@ import org.jetel.util.string.StringUtils;
 public class DebugTransformLangExecutor extends TransformLangExecutor {
 
 	
-	public static final DebugStep INITIAL_DEBUG_STATE = DebugStep.STEP_RUN;
+	public static final DebugStep INITIAL_DEBUG_STATE = DebugStep.STEP_SUSPEND;
 	
 	public enum DebugStep {
 		STEP_SUSPEND,
@@ -79,14 +79,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 	private boolean inExecution;
 
 	public DebugTransformLangExecutor(TransformLangParser parser, TransformationGraph graph, Properties globalParameters) {
-		super(parser,graph,globalParameters);
-	}
-	
-	public DebugTransformLangExecutor(TransformLangParser parser, TransformationGraph graph) {
-		super(parser, graph);
-	}
-	
-	private void initDebug() {
+		super(parser, graph, globalParameters);
 		this.breakpoints= new HashSet<Breakpoint>();
 		List<Breakpoint> breakpoints = graph.getRuntimeContext().getCtlBreakpoints();
 		if (breakpoints != null) {
@@ -98,10 +91,18 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 		}
 		this.curpoint=new Breakpoint(null, -1);
 		this.stack= new DebugStack();
-		this.debugJMX = graph.getDebugJMX();
-		commandQueue = new ArrayBlockingQueue<DebugCommand>(2, true);
-		statusQueue = new ArrayBlockingQueue<DebugStatus>(1, true);
-		ctlThread = createThread();
+	}
+	
+	public DebugTransformLangExecutor(TransformLangParser parser, TransformationGraph graph) {
+		this(parser, graph, null);
+	}
+	
+	private void initDebug() {
+		this.commandQueue = new ArrayBlockingQueue<DebugCommand>(2, true);
+		this.statusQueue = new ArrayBlockingQueue<DebugStatus>(1, true);
+		this.ctlThread = createThread();
+		debugJMX = graph.getDebugJMX();
+		debugJMX.registerCTLThread(ctlThread, commandQueue, statusQueue);
 	}
 	
 	private Thread createThread() {
@@ -365,6 +366,10 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 
 	@Override
 	public final void debug(SimpleNode node, Object data) {
+		if (!inExecution) {
+			return;
+		}
+		
 		final int curLine = node.getLine();
 		if (curLine == prevLine && node.sourceFilename==prevSourceFilename){
 			return;
@@ -390,7 +395,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 			break;
 		case STEP_RUN:
 			this.curpoint.setLine(curLine);
-			// TODO use new attribute instead of sourceFilename
+			// TODO use new attribute instead of sourceFilename (?)
 			this.curpoint.setSource(node.getSourceFilename());
 			if (this.breakpoints.contains(this.curpoint)) {
 				ctlThread.setSuspended(true);
@@ -414,22 +419,16 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 	public void preExecute() {
 		inExecution = true;
 		
-		if (inDebugMode()) {
-			initDebug();
-			debugJMX.registerCTLThread(ctlThread, commandQueue, statusQueue);
-		}
+		initDebug();
 		super.preExecute();
 	}
 	
 	@Override
 	public void postExecute() {
 		super.postExecute();
-
-		if (inDebugMode()) {
-			debugJMX.unregisterCTLDebugThread(ctlThread);
-			commandQueue = null;
-			statusQueue = null;
-		}
+		debugJMX.unregisterCTLDebugThread(ctlThread);
+		commandQueue = null;
+		statusQueue = null;
 		inExecution = false;
 	}
 	
@@ -440,7 +439,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 	
 	@Override
 	public final boolean inDebugMode(){
-		return inExecution && graph.getRuntimeContext().isCtlDebug();
+		return graph.getRuntimeContext().isCtlDebug();
 	}
 	
 

@@ -18,7 +18,6 @@
  */
 package org.jetel.ctl.debug;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -26,18 +25,23 @@ import java.util.concurrent.ArrayBlockingQueue;
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
 import org.jetel.ctl.debug.DebugCommand.CommandType;
 
 /**
- * @author Magdalena Malysz (info@cloveretl.com)
- *         (c) Javlin, a.s. (www.cloveretl.com)
+ * A JMX bean for CTL debugger. It manages debugging of CTL threads - passes debug commands to threads and sends suspend
+ * notifications to JMX listeners.
+ * 
+ * @author Magdalena Malysz (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 11. 3. 2016
  */
 public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMXMBean {
 	
 	private int notificationSequence;
+    static Log logger = LogFactory.getLog(DebugJMX.class);
 	
 	private Map<Long, CTLDebugThread> activeThreads;
 	
@@ -65,10 +69,10 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 			thread.putCommand(command);
 			DebugStatus status = thread.takeCommand();
 			return status;
-
+		} else {
+			logger.warn(String.format("CTL debug: Thread with id '%d' is not running.", threadId));
+			return null;
 		}
-		// TODO error
-		return null;
 	}
 	
 	@Override
@@ -96,17 +100,19 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	public synchronized StackFrame[] getStackFrames(long threadId) {
 		DebugCommand dcommand = new DebugCommand(CommandType.GET_CALLSTACK);
 		DebugStatus status = processCommand(threadId, dcommand);
-		CLVFFunctionCall calls[] = (CLVFFunctionCall[])status.getValue();
-		Arrays.sort(calls);
-		StackFrame[] stackFrames = new StackFrame[calls.length];
-		int i = 0;
-		for (CLVFFunctionCall point:calls){
-			StackFrame stackFrame = new StackFrame();
-			stackFrame.setLineNumber(point.getLine());
-			stackFrame.setName(point.getName());
-			stackFrames[i++] = stackFrame;
+		if (status != null) {
+			CLVFFunctionCall[] calls = (CLVFFunctionCall[]) status.getValue();
+			StackFrame[] stackFrames = new StackFrame[calls.length];
+			int i = 0;
+			for (CLVFFunctionCall point : calls) {
+				StackFrame stackFrame = new StackFrame();
+				stackFrame.setLineNumber(point.getLine());
+				stackFrame.setName(point.getName());
+				stackFrames[i++] = stackFrame;
+			}
+			return stackFrames;
 		}
-		return stackFrames;
+		return new StackFrame[0];
 	}
 
 
