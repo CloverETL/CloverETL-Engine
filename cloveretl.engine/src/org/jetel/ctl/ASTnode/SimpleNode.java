@@ -33,6 +33,7 @@ public abstract class SimpleNode implements Node {
 	protected int id;
 	protected ExpParser parser;
 	public String sourceFilename;
+	private String sourceId;
 	private SyntacticPosition begin;
 	private SyntacticPosition end;
 	private TLType type;
@@ -329,6 +330,19 @@ public abstract class SimpleNode implements Node {
 		} else {
 			return null;
 		}
+	}
+	
+	public String getSourceId() {
+		if (this.sourceId != null) {
+			return this.sourceId;
+		} else if (jjtGetParent() != null) {
+			return ((SimpleNode) jjtGetParent()).getSourceId();
+		}
+		return null;
+	}
+	
+	public void setSourceId(String sourceId) {
+		this.sourceId = sourceId;
 	}
 	
 	/**

@@ -630,6 +630,8 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 
                                 parser.addParsedImports(getParsedImports());
                                 parseTree = parser.Start();
+                                String sourceId = FileUtils.getFileURL(projectURL, filenameURL).toString();
+                                jjtn000.setSourceId(sourceId);
                                 jjtn000.setSourceFilename(filenameURL);
                                 jjtn000.jjtAddChild(parseTree,0);
                                 jjtn000.jjtGetChild(0).jjtSetParent(jjtn000);

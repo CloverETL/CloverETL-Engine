@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -49,6 +50,7 @@ import org.jetel.ctl.debug.StackFrame;
 import org.jetel.ctl.debug.Thread;
 import org.jetel.ctl.debug.Variable;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -89,7 +91,17 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 		if (breakpoints != null) {
 			// TODO fix paths properly
 			for (Breakpoint breakpoint : breakpoints) {
-				breakpoint.setSource(graph.getPropertyRefResolver().resolveRef(breakpoint.getSource()).replaceFirst("^\\./", ""));
+				String sourceURL;
+				try {
+					sourceURL = graph.getPropertyRefResolver().resolveRef(breakpoint.getSource());
+					sourceURL = FileUtils.getFileURL(graph.getRuntimeContext().getContextURL(), sourceURL).toString();
+					breakpoint.setSource(sourceURL);
+					System.out.println(sourceURL);
+				} catch (MalformedURLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
 			}
 			this.breakpoints.addAll(breakpoints);
 		}
@@ -179,7 +191,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 	protected void handleBreakpoint(SimpleNode node, Object data) {
 		DebugStatus status = new DebugStatus(node, CommandType.SUSPEND);
 		status.setSuspended(true);
-		status.setSourceFilename(node.getSourceFilename());
+		status.setSourceFilename(node.getSourceId());
 		status.setThreadId(ctlThread.getId());
 		debugJMX.notifySuspend(status);
 	}
@@ -305,23 +317,31 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 					ListIterator<CLVFFunctionCall> iter = ((DebugStack) stack).getFunctionCallsStack();
 					CLVFFunctionCall functionCall = null;
 					int line = node.getLine();
+					String sourceId = node.getSourceId();
 					while (iter.hasPrevious()) {
 						functionCall = iter.previous();
 						StackFrame stackFrame = new StackFrame();
 						stackFrame.setName(functionCall.getName());
 						stackFrame.setLineNumber(line); 
+						stackFrame.setFile(sourceId);
+						System.out.println(functionCall.getName() + ":" + line + ", " + sourceId);
 						callStack.add(stackFrame);
+
 						line = functionCall.getLine();
+						sourceId = functionCall.getSourceId();
 					}
 
 					// add also first stackframe (generate, preExecute, etc.) which is not in stack
 					Node parentNode = functionCall != null ? functionCall.jjtGetParent() : node.jjtGetParent();
 					while (!(parentNode instanceof CLVFStart)) {
 						if (parentNode instanceof CLVFFunctionDeclaration) {
+							CLVFFunctionDeclaration declarationNode = (CLVFFunctionDeclaration) parentNode;
 							StackFrame functionDeclarationFrame = new StackFrame();
-							functionDeclarationFrame.setName(((CLVFFunctionDeclaration) parentNode).getName());
+							functionDeclarationFrame.setName(declarationNode.getName());
 							functionDeclarationFrame.setLineNumber(line);
+							functionDeclarationFrame.setFile(declarationNode.getSourceId());
 							callStack.add(functionDeclarationFrame);
+							System.out.println(declarationNode.getName() + ":" + line + ", " + declarationNode.getSourceId());
 							break;
 						} else {
 							parentNode = parentNode.jjtGetParent();
@@ -431,8 +451,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 			break;
 		case STEP_RUN:
 			this.curpoint.setLine(curLine);
-			// TODO use new attribute instead of sourceFilename (?)
-			this.curpoint.setSource(node.getSourceFilename());
+			this.curpoint.setSource(node.getSourceId());
 			if (this.breakpoints.contains(this.curpoint)) {
 				ctlThread.setSuspended(true);
 				handleBreakpoint(node, data);
