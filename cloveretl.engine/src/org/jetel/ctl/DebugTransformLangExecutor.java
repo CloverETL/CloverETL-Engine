@@ -25,15 +25,17 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
+import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.ctl.ASTnode.CLVFImportSource;
+import org.jetel.ctl.ASTnode.CLVFStart;
 import org.jetel.ctl.ASTnode.Node;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.ctl.debug.Breakpoint;
@@ -42,6 +44,7 @@ import org.jetel.ctl.debug.DebugCommand.CommandType;
 import org.jetel.ctl.debug.DebugJMX;
 import org.jetel.ctl.debug.DebugStack;
 import org.jetel.ctl.debug.DebugStatus;
+import org.jetel.ctl.debug.StackFrame;
 import org.jetel.ctl.debug.Thread;
 import org.jetel.ctl.debug.Variable;
 import org.jetel.graph.TransformationGraph;
@@ -286,13 +289,34 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 					}
 					break;
 				case GET_CALLSTACK:
-					ArrayList<CLVFFunctionCall> callstack = new ArrayList<CLVFFunctionCall>();
-					Iterator<CLVFFunctionCall> iter = ((DebugStack) stack).getFunctionCallsStack();
-					while (iter.hasNext()) {
-						callstack.add(iter.next());
+					ArrayList<StackFrame> callStack = new ArrayList<StackFrame>();
+					ListIterator<CLVFFunctionCall> iter = ((DebugStack) stack).getFunctionCallsStack();
+					CLVFFunctionCall functionCall = null;
+					int line = node.getLine();
+					while (iter.hasPrevious()) {
+						functionCall = iter.previous();
+						StackFrame stackFrame = new StackFrame();
+						stackFrame.setName(functionCall.getName());
+						stackFrame.setLineNumber(line); 
+						callStack.add(stackFrame);
+						line = functionCall.getLine();
+					}
+
+					// add also first stackframe (generate, preExecute, etc.) which is not in stack
+					Node parentNode = functionCall != null ? functionCall.jjtGetParent() : node.jjtGetParent();
+					while (!(parentNode instanceof CLVFStart)) {
+						if (parentNode instanceof CLVFFunctionDeclaration) {
+							StackFrame functionDeclarationFrame = new StackFrame();
+							functionDeclarationFrame.setName(((CLVFFunctionDeclaration) parentNode).getName());
+							functionDeclarationFrame.setLineNumber(line);
+							callStack.add(functionDeclarationFrame);
+							break;
+						} else {
+							parentNode = parentNode.jjtGetParent();
+						}
 					}
 					status = new DebugStatus(node, CommandType.GET_CALLSTACK);
-					status.setValue(callstack.toArray(new CLVFFunctionCall[0]));
+					status.setValue(callStack.toArray(new StackFrame[callStack.size()]));
 					break;
 				case REMOVE_BREAKPOINT:{
 					Breakpoint bpoint = (Breakpoint) command.getValue();

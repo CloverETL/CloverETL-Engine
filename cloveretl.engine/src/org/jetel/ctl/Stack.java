@@ -22,8 +22,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
@@ -217,8 +217,8 @@ public class Stack {
 		return previousFunctionCallNode;
 	}
 	
-	public Iterator<CLVFFunctionCall> getFunctionCallsStack(){
-		return functionCalls.iterator();
+	public ListIterator<CLVFFunctionCall> getFunctionCallsStack(){
+		return functionCalls.listIterator(functionCalls.size());
 	}
 	
 	

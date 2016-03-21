@@ -27,7 +27,6 @@ import javax.management.NotificationBroadcasterSupport;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.ctl.ASTnode.CLVFFunctionCall;
 import org.jetel.ctl.debug.DebugCommand.CommandType;
 
 /**
@@ -101,16 +100,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		DebugCommand dcommand = new DebugCommand(CommandType.GET_CALLSTACK);
 		DebugStatus status = processCommand(threadId, dcommand);
 		if (status != null) {
-			CLVFFunctionCall[] calls = (CLVFFunctionCall[]) status.getValue();
-			StackFrame[] stackFrames = new StackFrame[calls.length];
-			int i = 0;
-			for (CLVFFunctionCall point : calls) {
-				StackFrame stackFrame = new StackFrame();
-				stackFrame.setLineNumber(point.getLine());
-				stackFrame.setName(point.getName());
-				stackFrames[i++] = stackFrame;
-			}
-			return stackFrames;
+			return (StackFrame[]) status.getValue();
 		}
 		return new StackFrame[0];
 	}
