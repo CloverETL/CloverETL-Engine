@@ -30,6 +30,7 @@ import org.jetel.ctl.debug.Thread;
 public interface DebugJMXMBean {
 
     public static final String THREAD_SUSPENDED = "clover.thread.suspend";
+    public static final String THREAD_RESUMED = "clover.thread.resumed";
 
 	public void info(long threadId);
 	
@@ -41,4 +42,5 @@ public interface DebugJMXMBean {
     
     void resumeAll();
 
+    void addBreakpoints(Breakpoint breakpoints[]);
 }

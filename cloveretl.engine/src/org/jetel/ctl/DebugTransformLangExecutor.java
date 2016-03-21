@@ -31,6 +31,7 @@ import java.util.Properties;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
@@ -176,9 +177,18 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 	}
 
 	protected void handleBreakpoint(SimpleNode node, Object data) {
-		DebugStatus status = new DebugStatus(node,CommandType.SUSPEND);
+		DebugStatus status = new DebugStatus(node, CommandType.SUSPEND);
 		status.setSuspended(true);
+		status.setSourceFilename(node.getSourceFilename());
+		status.setThreadId(ctlThread.getId());
 		debugJMX.notifySuspend(status);
+	}
+	
+	protected void handleResume(SimpleNode node, Object data) {
+		DebugStatus status = new DebugStatus(node, CommandType.RESUME);
+		status.setSuspended(false);
+		status.setThreadId(ctlThread.getId());
+		debugJMX.notifyResumed(status);
 	}
 
 	protected void handleCommand(SimpleNode node) {
@@ -258,6 +268,8 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 					status.setSuspended(false);
 					this.step = DebugStep.STEP_RUN;
 					runloop = false;
+					// is this correct place?
+					handleResume(node, status);
 					break;
 				case STEP_IN:
 					status = new DebugStatus(node, CommandType.STEP_IN);
@@ -456,7 +468,14 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 		inExecution = false;
 	}
 	
-
+	public BlockingQueue<DebugCommand> getCommandQueue() {
+		return commandQueue;
+	}
+	
+	public BlockingQueue<DebugStatus> getStatusQueue() {
+		return statusQueue;
+	}
+	
 	public synchronized void suspendExecution() {
 			this.step=DebugStep.STEP_SUSPEND;
 	}
@@ -465,6 +484,4 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 	public final boolean inDebugMode(){
 		return graph.getRuntimeContext().isCtlDebug();
 	}
-	
-
 }

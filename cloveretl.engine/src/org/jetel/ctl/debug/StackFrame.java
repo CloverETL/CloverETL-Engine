@@ -32,6 +32,7 @@ public class StackFrame implements Serializable {
 	
 	private String name;
 	private int lineNumber;
+	private String file;
 	
 	public String getName() {
 		return name;
@@ -44,5 +45,11 @@ public class StackFrame implements Serializable {
 	}
 	public void setLineNumber(int lineNumber) {
 		this.lineNumber = lineNumber;
+	}
+	public String getFile() {
+		return file;
+	}
+	public void setFile(String file) {
+		this.file = file;
 	}
 }

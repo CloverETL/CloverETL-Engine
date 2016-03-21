@@ -19,14 +19,17 @@
 package org.jetel.ctl.debug;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.ctl.DebugTransformLangExecutor;
 import org.jetel.ctl.debug.DebugCommand.CommandType;
 
 /**
@@ -43,9 +46,15 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
     static Log logger = LogFactory.getLog(DebugJMX.class);
 	
 	private Map<Long, CTLDebugThread> activeThreads;
+	private Set<DebugTransformLangExecutor> executors;
 	
 	public DebugJMX() {
 		activeThreads = new ConcurrentHashMap<Long, CTLDebugThread>();
+		executors = new CopyOnWriteArraySet<>();
+	}
+	
+	public void registerTransformLangExecutor(DebugTransformLangExecutor executor) {
+		executors.add(executor);
 	}
 	
 	public void registerCTLThread(Thread thread, ArrayBlockingQueue<DebugCommand> commandQueue, ArrayBlockingQueue<DebugStatus> statusQueue) {
@@ -62,6 +71,12 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		sendNotification(suspendNotification);
 	}
 	
+	public void notifyResumed(DebugStatus status) {
+		Notification notification = new Notification(DebugJMX.THREAD_RESUMED, this, notificationSequence++);
+		notification.setUserData(status);
+		sendNotification(notification);
+	}
+	
 	private DebugStatus processCommand(long threadId, DebugCommand command) {
 		CTLDebugThread thread = activeThreads.get(threadId);
 		if (thread != null) { 
@@ -72,6 +87,12 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 			logger.warn(String.format("CTL debug: Thread with id '%d' is not running.", threadId));
 			return null;
 		}
+	}
+	
+	private DebugStatus processCommand(DebugTransformLangExecutor executor, DebugCommand command) throws InterruptedException {
+		
+		executor.getCommandQueue().put(command);
+		return executor.getStatusQueue().take();
 	}
 	
 	@Override
@@ -114,8 +135,20 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		}
 	}
 	
+	@Override
+	public void addBreakpoints(Breakpoint[] breakpoints) {
+		for (DebugTransformLangExecutor executor : executors) {
+			DebugCommand cmd = new DebugCommand(CommandType.SET_BREAKPOINTS);
+			cmd.setValue(breakpoints);
+			try {
+				processCommand(executor, cmd);
+			} catch (InterruptedException e) {
+				logger.warn("Debug command interrupted", e);
+			}
+		}
+	}
+	
 	public static String createMBeanName(String graphId, long runId) {
         return "org.jetel.ctl:type=DebugJMX_" + graphId + "_" + runId;
 	}
-
 }

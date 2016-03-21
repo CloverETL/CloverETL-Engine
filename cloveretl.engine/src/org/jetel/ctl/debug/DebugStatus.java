@@ -35,6 +35,7 @@ public class DebugStatus implements Serializable {
 	protected Object value;
 	protected CommandType forCommand;
 	protected boolean error;
+	private long threadId;
 
 	public DebugStatus(SimpleNode node, CommandType forCommand) {
 		this.line = node.getLine();
@@ -115,5 +116,12 @@ public class DebugStatus implements Serializable {
 	public String toString(){
 		return this.forCommand.toString();
 	}
-	
+
+	public long getThreadId() {
+		return threadId;
+	}
+
+	public void setThreadId(long threadId) {
+		this.threadId = threadId;
+	}
 }
