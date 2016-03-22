@@ -23,7 +23,6 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -50,7 +49,6 @@ import org.jetel.ctl.debug.StackFrame;
 import org.jetel.ctl.debug.Thread;
 import org.jetel.ctl.debug.Variable;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -89,20 +87,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 		this.breakpoints= new HashSet<Breakpoint>();
 		List<Breakpoint> breakpoints = graph.getRuntimeContext().getCtlBreakpoints();
 		if (breakpoints != null) {
-			// TODO fix paths properly
-			for (Breakpoint breakpoint : breakpoints) {
-				String sourceURL;
-				try {
-					sourceURL = graph.getPropertyRefResolver().resolveRef(breakpoint.getSource());
-					sourceURL = FileUtils.getFileURL(graph.getRuntimeContext().getContextURL(), sourceURL).toString();
-					breakpoint.setSource(sourceURL);
-					System.out.println(sourceURL);
-				} catch (MalformedURLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-			}
 			this.breakpoints.addAll(breakpoints);
 		}
 		this.curpoint=new Breakpoint(null, -1);
@@ -324,7 +308,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 						stackFrame.setName(functionCall.getName());
 						stackFrame.setLineNumber(line); 
 						stackFrame.setFile(sourceId);
-						System.out.println(functionCall.getName() + ":" + line + ", " + sourceId);
+//						System.out.println(functionCall.getName() + ":" + line + ", " + sourceId);
 						callStack.add(stackFrame);
 
 						line = functionCall.getLine();
@@ -341,7 +325,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 							functionDeclarationFrame.setLineNumber(line);
 							functionDeclarationFrame.setFile(declarationNode.getSourceId());
 							callStack.add(functionDeclarationFrame);
-							System.out.println(declarationNode.getName() + ":" + line + ", " + declarationNode.getSourceId());
+//							System.out.println(declarationNode.getName() + ":" + line + ", " + declarationNode.getSourceId());
 							break;
 						} else {
 							parentNode = parentNode.jjtGetParent();

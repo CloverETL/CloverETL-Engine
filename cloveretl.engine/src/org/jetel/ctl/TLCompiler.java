@@ -60,6 +60,7 @@ public class TLCompiler implements ITLCompiler {
 	protected int tabSize = 4; // CLO-2104: changed from 6 to Eclipse default tab width
 	protected Log logger;
 	protected String componentId;
+	private String sourceId;
 	private List<TLFunctionCallContext> functionContexts;
 	protected boolean lenient = false;
 
@@ -152,6 +153,9 @@ public class TLCompiler implements ITLCompiler {
 			ContextProvider.unregister(ctx);
 		}
 		
+		// source id - used in debugging
+		ast.setSourceId(sourceId);
+		
 		ASTBuilder astBuilder = createASTBuilder();
 		astBuilder.setLenient(lenient);
 		astBuilder.resolveAST(parseTree);
@@ -241,6 +245,9 @@ public class TLCompiler implements ITLCompiler {
 		} finally {
 			ContextProvider.unregister(ctx);
 		}
+		
+		// source id - used in debugging
+		ast.setSourceId(sourceId);
 		
 		ASTBuilder astBuilder = createASTBuilder();
 		astBuilder.setLenient(lenient);
@@ -471,6 +478,11 @@ public class TLCompiler implements ITLCompiler {
 	
 	protected void setComponentId(String componentId) {
 		this.componentId = componentId;
+	}
+	
+	@Override
+	public void setSourceId(String sourceId) {
+		this.sourceId = sourceId;
 	}
 	
 	protected List<TLFunctionCallContext> getFunctionContexts() {

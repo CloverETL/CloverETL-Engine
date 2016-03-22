@@ -18,8 +18,11 @@
  */
 package org.jetel.component;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 
+import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
 import org.jetel.component.TransformLanguageDetector.TransformLanguage;
 import org.jetel.ctl.CTLAbstractTransform;
@@ -201,16 +204,24 @@ public class TransformFactory<T> {
         T transformation = null;
     	if (!StringUtils.isEmpty(transform)) {
     		//transform has highest priority
-    		transformation = createTransformFromCode(transform);
+    		transformation = createTransformFromCode(transform, null); // TODO sandbox://kod/graph/mojgraf.grf?componentId=REFORMAT_2&propertyId=trasnform
     	} else if (!StringUtils.isEmpty(transformUrl)) {
     		//load transformation code from an URL
     		if (charset == null) {
         		charset = Defaults.DEFAULT_SOURCE_CODE_CHARSET;
         	}
-        	String transformCode = FileUtils.getStringFromURL(component.getGraph().getRuntimeContext().getContextURL(), transformUrl, charset);
+    		URL contextURL = component.getGraph().getRuntimeContext().getContextURL();
+        	String transformCode = FileUtils.getStringFromURL(contextURL, transformUrl, charset);
         	PropertyRefResolver refResolver = component.getPropertyRefResolver();
         	transformCode = refResolver.resolveRef(transformCode, RefResFlag.SPEC_CHARACTERS_OFF);
-    		transformation = createTransformFromCode(transformCode);
+        	String sourceId;
+			try {
+				sourceId = FileUtils.getFileURL(contextURL, transformUrl).toString();
+			} catch (MalformedURLException e) {
+				LogFactory.getLog(CTLAbstractTransform.class).warn("Incorrect format of debug source ID", e);
+				sourceId = null;
+			}
+    		transformation = createTransformFromCode(transformCode, sourceId);
     	} else if (!StringUtils.isEmpty(transformClass)) {
     		if (cl != null) {
     			transformation = ClassLoaderUtils.loadClassInstance(transformDescriptor.getTransformClass(), transformClass, cl);
@@ -241,7 +252,7 @@ public class TransformFactory<T> {
     /**
      * Creates transform based on the given source code.
      */
-    private T createTransformFromCode(String transformCode) {
+    private T createTransformFromCode(String transformCode, String sourceId) {
     	T transformation = null;
     	
     	TransformLanguage language = TransformLanguageDetector.guessLanguage(transformCode);
@@ -271,6 +282,9 @@ public class TransformFactory<T> {
         	if (!StringUtils.isEmpty(attributeName)) {
         		id += "_" + attributeName;
         	}
+        	
+        	compiler.setSourceId(sourceId);
+
         	List<ErrorMessage> msgs = compiler.compile(transformCode, transformDescriptor.getCompiledCTL2TransformClass(), id);
         	if (compiler.errorCount() > 0) {
         		String report = ErrorMessage.listToString(msgs, null); // message does not need to be logged here, will be thrown up as part of an exception
