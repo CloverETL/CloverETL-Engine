@@ -600,6 +600,13 @@ This software is licensed under the terms you may find in the file named "LICENS
 			<keep name="org.jetel.ctl.data.TLType"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.data.TLTypePrimitive"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.ctl.extensions.*"><field access="protected public"/><method access="protected public"/></keep>
+
+			<keep name="org.jetel.ctl.debug.DebugJMXMBean"></keep>
+			<keep name="org.jetel.ctl.debug.DebugJMX"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.ctl.debug.Breakpoint"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.ctl.debug.DebugStatus"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.ctl.debug.StackFrame"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.ctl.debug.Thread"><field access="public"/><method access="public"/></keep>
 			
 			<keep name="org.jetel.database.IConnection"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.database.dbf.DBFDataParser"><field access="public"/><method access="public"/></keep>
