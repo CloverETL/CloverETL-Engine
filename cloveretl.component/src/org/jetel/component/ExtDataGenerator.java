@@ -239,6 +239,7 @@ public class ExtDataGenerator extends DataGenerator {
     	}
     	transformFactory.setCharset(charset);
     	transformFactory.setComponent(this);
+    	transformFactory.setAttributeName(XML_GENERATE_ATTRIBUTE);
     	transformFactory.setOutMetadata(getOutMetadata());
     	return transformFactory;
 	}

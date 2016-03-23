@@ -204,7 +204,7 @@ public class TransformFactory<T> {
         T transformation = null;
     	if (!StringUtils.isEmpty(transform)) {
     		//transform has highest priority
-    		transformation = createTransformFromCode(transform, null); // TODO sandbox://kod/graph/mojgraf.grf?componentId=REFORMAT_2&propertyId=trasnform
+    		transformation = createTransformFromCode(transform, createPropertyTransformSourceId());
     	} else if (!StringUtils.isEmpty(transformUrl)) {
     		//load transformation code from an URL
     		if (charset == null) {
@@ -238,6 +238,25 @@ public class TransformFactory<T> {
         
     	return transformation;
     }
+    
+    /**
+     * Creates source id based on graph's path, component ID and property name
+     * @return
+     */
+	private String createPropertyTransformSourceId() {
+		if (component.getGraph() != null && component.getGraph().getRuntimeContext() != null) {
+			String jobUrl = component.getGraph().getRuntimeContext().getJobUrl();
+			if (jobUrl != null && attributeName != null) {
+				StringBuilder sourceIdSB = new StringBuilder(jobUrl);
+				sourceIdSB.append("?componentId=");
+				sourceIdSB.append(component.getId());
+				sourceIdSB.append("&propertyName=");
+				sourceIdSB.append(attributeName);
+				return sourceIdSB.toString();
+			}
+		}
+		return null;
+	}
     
     /**
      * Core method of the factory.

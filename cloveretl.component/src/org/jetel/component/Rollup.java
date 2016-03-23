@@ -392,6 +392,7 @@ public class Rollup extends Node {
     	transformFactory.setTransformUrl(transformUrl);
     	transformFactory.setCharset(transformUrlCharset);
     	transformFactory.setComponent(this);
+    	transformFactory.setAttributeName(XML_TRANSFORM_ATTRIBUTE);
     	transformFactory.setInMetadata(getInMetadata());
     	transformFactory.setOutMetadata(getOutMetadata());
     	return transformFactory;
