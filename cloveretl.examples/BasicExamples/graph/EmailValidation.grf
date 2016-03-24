@@ -52,7 +52,7 @@ Thus, SMTP and MAIL level might take excessively long times due to EmailFilter w
 <attr name="text"><![CDATA[Check domain existence and MX record]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="ECF0F0" folded="false" fontSize="medium" height="82" id="Note7" textColor="444444" width="310" x="382" y="673">
-<attr name="text"><![CDATA[Talk to the SMPT server and try to verify the address]]></attr>
+<attr name="text"><![CDATA[Talk to the SMTP server and try to verify the address]]></attr>
 </RichTextNote>
 <Dictionary/>
 </Global>
