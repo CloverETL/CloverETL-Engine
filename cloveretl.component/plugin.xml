@@ -21,7 +21,7 @@
 	<extension point-id="component">
 	  <ETLComponent category="readers" iconPath="icons/readers/UniversalDataReader" name="UniversalDataReader"  type="DATA_READER" className="org.jetel.component.DataReader">
 	    <shortDescription>Reads data from flat files (CSV, fixed-length).</shortDescription>
-	    <description>Reads data from delimited or fixed length files and sends data records to first connected output port. If any error occurs, the report is sent to the second port if &quot;Data policy&quot; is set to &quot;Controlled&quot;.</description>
+	    <description>Reads data from delimited or fixed length files and sends data records to first connected output port. If any error occurs, the report is sent to the second port if &quot;Data policy&quot; is set to &quot;Controlled&quot;. This component is alias for FlatFileReader.</description>
 	    <inputPorts>
 	      <singlePort name="0" required="false" label="input"/>
 	    </inputPorts>
@@ -105,7 +105,168 @@
 	<extension point-id="component">
 	  <ETLComponent category="writers" iconPath="icons/writers/UniversalDataWriter" name="UniversalDataWriter" type="DATA_WRITER" className="org.jetel.component.DataWriter">
 	    <shortDescription>Writes data to flat files (CSV, fixed-length).</shortDescription>
-	    <description>Receives data through connected input port and writes data records to delimited or fixed length files based on input metadata.</description>
+	    <description>Receives data through connected input port and writes data records to delimited or fixed length files based on input metadata. This component is alias for FlatFileWriter.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="false">
+	        <MetadataProvider id="fileWriterOutputMetadataProvider"/>
+              </singlePort>
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" primaryAttribute="true">
+	        <singleType name="file" fields="output" dictionary="output" selectionMode="file_or_directory" mandatory_existing_file="false" />
+	      </property>
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Append" modifiable="true" name="append" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="basic" displayName="Quoted strings" modifiable="true" name="quotedStrings" nullable="true" defaultHintProvider="quotedStringsFromInputPortHint">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="basic" displayName="Quote character" modifiable="true" name="quoteCharacter" nullable="true" defaultHintProvider="quotedCharFromInputPortHint">
+	        <singleType name="writerQuoteChar" />
+	      </property>
+	      <property category="advanced" displayName="Create directories" modifiable="true" name="makeDirs" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Write field names" modifiable="true" name="outputFieldNames" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Records per file" modifiable="true" name="recordsPerFile" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Bytes per file" modifiable="true" name="bytesPerFile" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="recordSkip" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max number of records" modifiable="true" name="recordCount" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Exclude fields" modifiable="true" name="excludeFields" nullable="true">
+	        <singleType name="key" rightLabel="Exclude fields:" />
+	      </property>
+	      <property category="advanced" displayName="Partition key" modifiable="true" name="partitionKey" nullable="true" required="partition">
+	        <singleType name="key" inputPortName="0" rightLabel="Partition key:" />
+	      </property>
+	      <property category="advanced" displayName="Partition lookup table" modifiable="true" name="partition" nullable="true" required="partitionOutFields">
+	        <singleType name="lookupTableID" />
+	      </property>
+	      <property category="advanced" displayName="Partition file tag" modifiable="true" name="partitionFileTag" nullable="true" defaultHint="Number file tag">
+	        <enumType>
+	          <item displayValue="Number file tag" value="numberFileTag" />
+	          <item displayValue="Key file tag" value="keyNameFileTag" />
+	        </enumType>
+	      </property>
+	      <property category="advanced" displayName="Partition output fields" modifiable="true" name="partitionOutFields" nullable="true" required="partition">
+	        <singleType name="key" lookupMatadataProp="partition" rightLabel="Partition output fields:" />
+	      </property>
+	      <property category="advanced" displayName="Partition unassigned file name" modifiable="true" name="partitionUnassignedFileName" nullable="true" redundant="!partition">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Sorted input" modifiable="true" name="sortedInput" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Create empty files" modifiable="true" name="createEmptyFiles" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Skip last record delimiter" modifiable="true" name="skipLastRecordDelimiter" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
+	</extension>
+
+	<extension point-id="component">
+	  <ETLComponent category="readers" iconPath="icons/readers/UniversalDataReader" name="FlatFileReader" type="FLAT_FILE_READER" className="org.jetel.component.DataReader">
+	    <shortDescription>Reads data from flat files (CSV, fixed-length).</shortDescription>
+	    <description>Reads data from delimited or fixed length files and sends data records to first connected output port. If any error occurs, the report is sent to the second port if &quot;Data policy&quot; is set to &quot;Controlled&quot;. This component is alias for UniversalDataReader.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="false" label="input"/>
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true" label="output"/>
+	      <singlePort name="1" label="logs">
+	        <Metadata id="UniversalDataReader_Error"/>
+	      </singlePort>
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" primaryAttribute="true">
+	        <singleType name="file" fields="input" dictionary="input" selectionMode="file_only"/>
+	      </property>
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
+	        <singleType name="charset"/>
+	      </property>
+	      <property category="basic" displayName="Data policy" modifiable="true" name="dataPolicy" nullable="true" defaultHint="Strict">
+	        <enumType>
+	          <item displayValue="Strict" value="strict"/>
+	          <item displayValue="Controlled" value="controlled"/>
+	          <item displayValue="Lenient" value="lenient"/>
+	        </enumType>
+	      </property>
+	      <property category="basic" displayName="Trim strings" modifiable="true" name="trim" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="basic" displayName="Quoted strings" modifiable="true" name="quotedStrings" nullable="true" defaultHintProvider="quotedStringsFromOutputPortHint">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="basic" displayName="Quote character" modifiable="true" name="quoteCharacter" nullable="true" defaultHintProvider="quotedCharFromOutputPortHint">
+	        <singleType name="readerQuoteChar"/>
+	      </property>
+	      <property category="advanced" displayName="Skip leading blanks" modifiable="true" name="skipLeadingBlanks" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Skip trailing blanks" modifiable="true" name="skipTrailingBlanks" nullable="true" defaultHint="false (true for fixlen metadata)">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="skipRows" nullable="true" defaultHint="0">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="advanced" displayName="Max number of records" modifiable="true" name="numRecords" nullable="true">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="advanced" displayName="Number of skipped records per source" modifiable="true" name="skipSourceRows" nullable="true" defaultHintProvider="skipSourceRows">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="advanced" displayName="Max number of records per source" modifiable="true" name="numSourceRecords" nullable="true">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="advanced" displayName="Max error count" modifiable="true" name="maxErrorCount" nullable="true" defaultHint="(unlimited)">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="advanced" displayName="Treat multiple delimiters as one" modifiable="true" name="treatMultipleDelimitersAsOne" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Incremental file" modifiable="true" name="incrementalFile" nullable="true" required="incrementalKey">
+	        <singleType name="file"/>
+	      </property>
+	      <property category="advanced" displayName="Incremental key" modifiable="true" name="incrementalKey" nullable="true" required="incrementalFile">
+	        <singleType name="string"/>
+	      </property>
+	      <property category="advanced" displayName="Verbose" modifiable="true" name="verbose" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Parser" modifiable="true" name="parser" nullable="true" defaultHint="Auto">
+	        <enumType>
+	          <item value="org.jetel.data.parser.SimpleDataParser" displayValue="org.jetel.data.parser.SimpleDataParser"/>
+	          <item value="org.jetel.data.parser.DataParser" displayValue="org.jetel.data.parser.DataParser"/>
+	          <item value="org.jetel.data.parser.CharByteDataParser" displayValue="org.jetel.data.parser.CharByteDataParser"/>
+	          <item value="org.jetel.data.parser.FixLenByteDataParser" displayValue="org.jetel.data.parser.FixLenByteDataParser"/>
+	        </enumType>
+	      </property>
+	    </properties>
+	  </ETLComponent>
+	</extension>
+
+	<extension point-id="component">
+	  <ETLComponent category="writers" iconPath="icons/writers/UniversalDataWriter" name="FlatFileWriter" type="FLAT_FILE_WRITER" className="org.jetel.component.DataWriter">
+	    <shortDescription>Writes data to flat files (CSV, fixed-length).</shortDescription>
+	    <description>Receives data through connected input port and writes data records to delimited or fixed length files based on input metadata. This component is alias for UniversalDataWriter.</description>
 	    <inputPorts>
 	      <singlePort name="0" required="true" />
 	    </inputPorts>
