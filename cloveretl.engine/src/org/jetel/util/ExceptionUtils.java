@@ -104,23 +104,13 @@ public class ExceptionUtils {
     }
 
     /**
-     * Extract message from the given exception chain. All messages from all exceptions are concatenated
-     * to the resulted string.
-     * @param message prefixed message text which will be in the start of resulted string
+     * Extract all messages from the given exception chain. All messages from all exceptions are returned
+     * in the resulted list of strings.
      * @param exception converted exception
-     * @return resulted overall message
+     * @return list of all messages
      */
-    public static String getMessage(String message, Throwable exception) {
-    	List<ErrorMessage> errMessages = getMessages(new RootException(message, exception));
-    	StringBuilder result = new StringBuilder();
-    	for (ErrorMessage errMessage : errMessages) {
-    		if (errMessage.suppressed) {
-    			appendMessage(result, "Suppressed: " + errMessage.message, errMessage.depth);
-    		} else {
-    			appendMessage(result, errMessage.message, errMessage.depth);
-    		}
-    	}
-    	return SafeLogUtils.obfuscateSensitiveInformation(result.toString());
+    public static List<String> getMessages(Throwable exception) {
+    	return getMessages(null, exception);
     }
 
     /**
@@ -130,7 +120,39 @@ public class ExceptionUtils {
      * @param exception converted exception
      * @return resulted overall message
      */
-    private static List<ErrorMessage> getMessages(Throwable rootException) {
+    public static String getMessage(String message, Throwable exception) {
+    	List<ErrorMessage> errMessages = getMessagesInternal(new RootException(message, exception));
+    	StringBuilder result = new StringBuilder();
+    	for (ErrorMessage errMessage : errMessages) {
+    		appendMessage(result, errMessage.getMessage(), errMessage.depth);
+    	}
+    	return SafeLogUtils.obfuscateSensitiveInformation(result.toString());
+    }
+
+    /**
+     * Extract all messages from the given exception chain. All messages from all exceptions are returned
+     * in the resulted list of strings.
+     * @param message text which will be first element of resulted list of error messages
+     * @param exception converted exception
+     * @return list of all messages
+     */
+    public static List<String> getMessages(String message, Throwable exception) {
+    	List<ErrorMessage> errMessages = getMessagesInternal(new RootException(message, exception));
+    	List<String> result = new ArrayList<>();
+    	for (ErrorMessage errMessage : errMessages) {
+    		result.add(SafeLogUtils.obfuscateSensitiveInformation(errMessage.getMessage()));
+    	}
+    	return result;
+    }
+
+    /**
+     * Extract message from the given exception chain. All messages from all exceptions are concatenated
+     * to the resulted string.
+     * @param message prefixed message text which will be in the start of resulted string
+     * @param exception converted exception
+     * @return resulted overall message
+     */
+    private static List<ErrorMessage> getMessagesInternal(Throwable rootException) {
     	List<ErrorMessage> result = new ArrayList<ErrorMessage>();
     	
     	//algorithm recursively go through exception hierarchy - recursion is implemented in this stack
@@ -522,6 +544,14 @@ public class ExceptionUtils {
     		this.message = message;
     		this.suppressed = suppressed;
 		}
+    	
+    	public String getMessage() {
+    		if (suppressed) {
+    			return "Suppressed: " + message;
+    		} else {
+    			return message;
+    		}
+    	}
     }
 
     private static class StackElement {
