@@ -472,7 +472,7 @@ public class MappingCompiler extends AbstractVisitor {
 
 		RecordsFilter recordFilter = null;
 		if (filterExpression != null) {
-			recordFilter = RecordFilterFactory.createFilter(FILTER_PREFIX + filterExpression, metadata, graph, componentId, logger);
+			recordFilter = RecordFilterFactory.createFilter(FILTER_PREFIX + filterExpression, metadata, graph, componentId, null, logger);
 		}
 
 		return new PortBinding(currentLoopParent != null ? currentLoopParent.getPortBinding() : null, portData, keys, parentKeys, recordFilter);

@@ -69,7 +69,7 @@ public abstract class ExtFilterBase extends Node {
 	}
 
 	protected void initFilterExpression() throws ComponentNotReadyException {
-		filter = RecordFilterFactory.createFilter(filterExpression, getInMetadata().get(READ_FROM_PORT), getGraph(), getId(), LogFactory.getLog(ExtFilterBase.class));
+		filter = RecordFilterFactory.createFilter(filterExpression, getInMetadata().get(READ_FROM_PORT), getGraph(), getId(), XML_FILTEREXPRESSION_ATTRIBUTE, LogFactory.getLog(ExtFilterBase.class));
 	}
 
 	@Override
