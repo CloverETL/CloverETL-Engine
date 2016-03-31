@@ -672,7 +672,10 @@ public class SQLCloverStatement {
 		}
 		
 		generatedKeys = statement.getGeneratedKeys();
-		autoKeyGenerator.fillKeyRecord(record, keyRecord, generatedKeys);			
+		autoKeyGenerator.fillKeyRecord(record, keyRecord, generatedKeys);
+		//FIXME generatedKeys ResultSet is not closed
+		// There are potential problems with closing it here because ResultSets should be closed automatically when Statement is closed.
+		// E.g. old oracle driver threw exceptions when ResultSets were closed twice.
 	}
 	
 	/**
