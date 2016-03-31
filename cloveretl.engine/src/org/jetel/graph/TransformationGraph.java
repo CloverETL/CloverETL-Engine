@@ -140,11 +140,7 @@ public final class TransformationGraph extends GraphElement {
 	 * Set of variables describing this graph instance. All information are retrieved from graph xml file.
 	 */
 	private String author;
-	private String revision;
 	private String created;
-	private String modified;
-	private String modifiedBy;
-	private String licenseType;
 	private String licenseCode;
 	private String guiVersion;
 	private String description;
@@ -1521,44 +1517,12 @@ public final class TransformationGraph extends GraphElement {
 		this.author = author;
 	}
 
-	public String getRevision() {
-		return revision;
-	}
-
-	public void setRevision(String revision) {
-		this.revision = revision;
-	}
-
 	public String getCreated() {
 		return created;
 	}
 
 	public void setCreated(String created) {
 		this.created = created;
-	}
-
-	public String getModifiedBy() {
-		return modifiedBy;
-	}
-
-	public void setModifiedBy(String modifiedBy) {
-		this.modifiedBy = modifiedBy;
-	}
-
-	public String getModified() {
-		return modified;
-	}
-
-	public void setModified(String modified) {
-		this.modified = modified;
-	}
-
-	public String getLicenseType() {
-		return licenseType;
-	}
-
-	public void setLicenseType(String licenseType) {
-		this.licenseType = licenseType;
 	}
 
 	public String getLicenseCode() {

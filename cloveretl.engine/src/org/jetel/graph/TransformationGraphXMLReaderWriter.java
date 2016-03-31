@@ -216,11 +216,7 @@ public class TransformationGraphXMLReaderWriter {
 	public final static String ID_ATTRIBUTE = "id";
 	public final static String NAME_ATTRIBUTE = "name";
 	public final static String AUTHOR_ATTRIBUTE = "author";
-	public final static String REVISION_ATTRIBUTE = "revision";
 	public final static String CREATED_ATTRIBUTE = "created";
-	public final static String MODIFIED_ATTRIBUTE = "modified";
-	public final static String MODIFIED_BY_ATTRIBUTE = "modifiedBy";
-	public final static String LICENSE_TYPE_ATTRIBUTE = "licenseType";
 	public final static String LICENSE_CODE_ATTRIBUTE = "licenseCode";
 	public final static String GUI_VERSION_ATTRIBUTE = "guiVersion";
 	public final static String DESCRIPTION_ATTRIBUTE = "description";
@@ -459,11 +455,7 @@ public class TransformationGraphXMLReaderWriter {
 	        graph.setDebugMaxRecords(grfAttributes.getLong("debugMaxRecords", 0));
 	        
 	        graph.setAuthor(grfAttributes.getString(AUTHOR_ATTRIBUTE, null));
-	        graph.setRevision(grfAttributes.getString(REVISION_ATTRIBUTE, null));
 	        graph.setCreated(grfAttributes.getString(CREATED_ATTRIBUTE, null));
-	        graph.setModified(grfAttributes.getString(MODIFIED_ATTRIBUTE, null));
-	        graph.setModifiedBy(grfAttributes.getString(MODIFIED_BY_ATTRIBUTE, null));
-	        graph.setLicenseType(grfAttributes.getString(LICENSE_TYPE_ATTRIBUTE, null));
 	        graph.setLicenseCode(grfAttributes.getString(LICENSE_CODE_ATTRIBUTE, null));
 	        graph.setGuiVersion(grfAttributes.getString(GUI_VERSION_ATTRIBUTE, null));
 	        graph.setDescription(grfAttributes.getString(DESCRIPTION_ATTRIBUTE, null));
