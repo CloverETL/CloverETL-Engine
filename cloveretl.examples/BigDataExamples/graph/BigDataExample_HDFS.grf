@@ -94,7 +94,7 @@ Demonstrates how CloverETL reads and writes key/value pairs in Hadoop HDFS]]></a
 
 
 
-- the Hadoop server version used in this example is Cloudera 4.1.2
+- the Hadoop server version used in this example is Cloudera 5.6.0
 
 The jar files used in this HDFS connection are:
 + avro-1.7.6-cdh5.6.0.jar
