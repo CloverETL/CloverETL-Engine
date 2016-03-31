@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361358390393" licenseType="Commercial" modified="Mon Jan 13 18:38:52 CET 2014" modifiedBy="User" name="PrepareInputData" revision="1.71" showComponentDetails="true">
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361358390393" licenseCode="Commercial Devel" licenseType="Commercial" modified="Mon Jan 13 18:38:52 CET 2014" modifiedBy="User" name="PrepareInputData" revision="1.71" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/weblogs_parse_txt.fmt" id="Metadata0"/>
-<Connection config="${CONN_DIR}/Hadoop-CDH-3u5.cfg" id="CDH3" type="HADOOP"/>
+<Connection config="${CONN_DIR}/Hadoop-CDH-5.6.0.cfg" id="CDH5" type="HADOOP"/>
 <GraphParameters>
 <GraphParameterFile fileURL="hadoop.prm"/>
 <GraphParameterFile fileURL="workspace.prm"/>
@@ -77,7 +77,7 @@ function integer transform() {
 ]]></attr>
 </Node>
 <Node enabled="enabled" fileURL="zip:(${DATAIN_DIR}/weblogs_parse.zip)#weblogs_parse.txt" guiName="Read Web Access Log" guiX="76" guiY="236" id="READ_WEB_ACCESS_LOG" quotedStrings="true" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="hdfs://CDH3/tmp/bigdata_examples/key-value-pairs" guiName="Write to HDFS" guiX="695" guiY="236" id="WRITE_TO_HDFS" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="hdfs://CDH5/tmp/bigdata_examples/key-value-pairs" guiName="Write to HDFS" guiX="695" guiY="236" id="WRITE_TO_HDFS" type="DATA_WRITER"/>
 <Edge debugMode="true" fromNode="EXTRACT_DATE_AND_IP_FIELDS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WRITE_TO_HDFS:0"/>
 <Edge debugMode="true" fromNode="READ_WEB_ACCESS_LOG:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXTRACT_DATE_AND_IP_FIELDS:0"/>
 </Phase>
