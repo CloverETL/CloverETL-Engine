@@ -43,7 +43,7 @@ $(document).ready(function() {
 <h1 class="sub">An example for HDFS, Hive and MapReduce integration in CloverETL</h1>
 
 <p>Starting with CloverETL 3.4M2 we provide integration with technologies from the Apache Hadoop stack: HDFS, Hive and MapReduce.  All these technologies are still under active development with major changes to API, class structure, and library names happening frequently between releases.</p> 
-<p>CloverETL integration with Hadoop is not bound to any particular Hadoop distribution and should work with various versions of Hadoop technologies. CloverETL supports both MapReduce 1.0 (available in CDH3 and CDH4) as well as MapReduce 2.0 with YARN (available in CDH4 and CDH5).</p> 
+<p>CloverETL integration with Hadoop is not bound to any particular Hadoop distribution and should work with various versions of Hadoop technologies. CloverETL supports both MapReduce 1.0 (available in CDH4 and optionally in CDH5) as well as MapReduce 2.0 with YARN (available in CDH4 and CDH5).</p> 
 
 </div>
 
@@ -132,41 +132,21 @@ below as guidelines.</p>
 
 	<h2>Which distribution are you using?</h2>
 	<p>This <a href="https://blogs.apache.org/bigtop/entry/all_you_wanted_to_know">article</a> can help you decide which one to choose.</p>
-	<h3 class="expandtopic" rel="hive-guide-cdh3" title="Click here for configuration guide for CDH 3">Cloudera Hadoop Distribution 3<br/>
-	<small>(hadoop-0.20, mapreduce-1.0)</small></h3>
-	<div id="hive-guide-cdh3" class="hide">
 
-	<ul>
-	<li>Copy HDFS and MapReduce libraries from your Hadoop distribution to the project.<br/>See <em><strong>BigDataExamples/lib/hadoop/cdh3u5/README.txt</strong></em> for details.</li>
-	<li>Copy Hive libraries to the project.<br/>See <em><strong>BigDataExamples/lib/hive/cdh3u5/README.txt</strong></em> for details.</li>
-	<li>Set parameters <strong>HADOOP_HIVE_URL</strong>, <strong>HADOOP_JOBTRACKER_HOST</strong> and <strong>HADOOP_NAMENODE_HOST</strong> in the main jobflow <em>jobflow/UniqueVisits-HadoopHive.jbf</em>.<br/>
-	See Outline&rarr;Parameters&rarr;hadoop.prm</li>
-	<li>You will need to replace the predefined connection with one for CDH3. Follow these steps:
-		<ul>
-			<li>Open all graphs and jobflows listed in Resources (see above)</li>
-			<li>Delete the CDH5 connection from each (Outline&rarr;Connections)</li>
-			<li>For all, link the CDH3 connection (right-click Outline&rarr;Connections, then Connections&rarr;Link Hadoop connection); then, navigate to ${CONN_DIR}/Hadoop-CDH-3u5.cfg</li>
-			<li>For all, replace CDH5 connection with CDH3 in file URL attribute of components.</li>
-		</ul>
-	</li>
-	<li>Run the main jobflow</li>
-	</ul>
-	</div>
-	
 	<h3 class="expandtopic" rel="hive-guide-cdh4" title="Click here for configuration guide for CDH 4">Cloudera Hadoop Distribution 4<br/>
 	<small>(hadoop-0.23, mapreduce-1.0 or 2.0 with YARN)</small></h3>
 	<div id="hive-guide-cdh4" class="hide">
 	<ul>
-	<li>Copy HDFS and MapReduce libraries from your Hadoop distribution to the project.<br/>See <em><strong>BigDataExamples/lib/hadoop/cdh412/README.txt</strong></em> for details.</li>
-	<li>Copy Hive libraries to the project.<br/>See <em><strong>BigDataExamples/lib/hive/cdh3u5/README.txt</strong></em> for details.
-	<br/>(Hive libraries work for both CDH3 and CDH4)</li>
-	<li>Set parameters HADOOP_HIVE_URL, HADOOP_JOBTRACKER_HOST and HADOOP_NAMENODE_HOST in the main jobflow (<em>jobflow/UniqueVisits-HadoopHive.jbf</em>).</li>
-	<li>You will need to replace the predefined connection with one for CDH4. Follow these steps:
+	<li>Copy HDFS, MapReduce and Hive libraries from your Hadoop distribution to the project.<br/>See <em><strong>BigDataExamples/lib/hadoop/cdh412/README.txt</strong></em> for details.</li>
+	<li>Set parameters HADOOP_HIVE_URL (please use <em>jdbc:hive</em> instead of <em>jdbc:hive2</em>), HADOOP_JOBTRACKER_HOST and HADOOP_NAMENODE_HOST in the main jobflow (<em>jobflow/UniqueVisits-HadoopHive.jbf</em>).</li>
+	<li>You will need to replace the predefined connection with one for CDH4 and Hive. Follow these steps:
 		<ul>
 			<li>Open all graphs and jobflows listed in Resources (see above)</li>
 			<li>Delete the CDH5 connection from each (Outline&rarr;Connections)</li>
 			<li>For all, link the CDH4 connection (right-click Outline&rarr;Connections, then Connections&rarr;Link Hadoop connection); then, navigate to ${CONN_DIR}/Hadoop-CDH-4.1.2.cfg</li>
 			<li>For all, replace CDH5 connection with CDH4 in file URL attribute of components.</li>
+			<li>Delete the Hive connection from each (Outline&rarr;Connections)</li>
+            <li>Link new JDBC connection, load it from file and navigate to ${CONN_DIR}/Hive-CDH-4.1.2.cfg</li>
 		</ul>
 	</li>
 	<li>Run the main jobflow</li>
@@ -224,26 +204,6 @@ below as guidelines.</p>
 	
 	<h2>Which distribution are you using?</h2>
 	<p>This <a href="https://blogs.apache.org/bigtop/entry/all_you_wanted_to_know">article</a> can help you decide which one to choose.</p>
-	<h3 class="expandtopic" rel="mapred-guide-cdh3" title="Click here for configuration guide for CDH 3">Cloudera Hadoop Distribution 3<br/>
-	<small>(hadoop-0.20, mapreduce-1.0)</small></h3>
-	<div id="mapred-guide-cdh3" class="hide">
-
-	<ul>
-	<li>Copy HDFS and MapReduce libraries from your Hadoop distribution to the project.<br/>See <em><strong>BigDataExamples/lib/hadoop/cdh3u5/README.txt</strong></em> for details.</li>
-	<li>Set parameters <strong>HADOOP_JOBTRACKER_HOST</strong> and <strong>HADOOP_NAMENODE_HOST</strong> in the main jobflow <em>UniqueVisits-HadoopMapReduce.jbf</em>.<br/>
-	See Outline&rarr;Parameters&rarr;hadoop.prm</li>
-	<li>You will need to replace the predefined CDH5 connection &ndash; see Outline&rarr;Connections&rarr;${CONN_DIR}/Hadoop-CDH-5.6.0.cfg (id:CDH3) &ndash;
-	with the one for CDH3. Follow these steps:
-		<ul>
-			<li>Open all graphs and jobflows listed in Resources (see above)</li>
-			<li>Delete the CDH5 connection from each (Outline&rarr;Connections)</li>
-			<li>For all, link the CDH3 connection (right-click Outline&rarr;Connections, then Connections&rarr;Link Hadoop connection); then, navigate to ${CONN_DIR}/Hadoop-CDH-3u5.cfg</li>
-			<li>For all, replace CDH5 connection with CDH3 in file URL attribute of components</li>
-		</ul>
-	</li>
-	<li>Run the main jobflow</li>
-	</ul>
-	</div>
 	
 	<h3 class="expandtopic" rel="mapred-guide-cdh4" title="Click here for configuration guide for CDH 4">Cloudera Hadoop Distribution 4<br/>
 	<small>(hadoop-0.23, mapreduce-1.0 or 2.0 with YARN)</small></h3>
@@ -251,7 +211,7 @@ below as guidelines.</p>
 	<ul>
 	<li>Copy HDFS and MapReduce libraries from your Hadoop distribution to the project.<br/>See <em><strong>BigDataExamples/lib/hadoop/cdh412/README.txt</strong></em> for details.</li>
 	<li>Set parameters HADOOP_JOBTRACKER_HOST and HADOOP_NAMENODE_HOST in the main jobflow (<em>jobflow/UniqueVisits-HadoopMapReduce.jbf</em>).</li>
-	<li>You will need to replace the predefined CDH5 connection &ndash; see Outline&rarr;Connections&rarr;${CONN_DIR}/Hadoop-CDH-5.6.0.cfg (id:CDH3) &ndash;
+	<li>You will need to replace the predefined CDH5 connection &ndash; see Outline&rarr;Connections&rarr;${CONN_DIR}/Hadoop-CDH-5.6.0.cfg (id:CDH5) &ndash;
 	with the one for CDH4. Follow these steps:
 		<ul>
 			<li>Open all graphs and jobflows listed in Resources (see above)</li>

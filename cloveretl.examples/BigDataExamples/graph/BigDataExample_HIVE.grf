@@ -83,7 +83,7 @@ Please also note that each Hadoop build requires a different set of jar support 
 Check the libraries in
 Outline/Connections/HadoopLocal
 
-For HIVE connection, please configure an ODBC connection and please be sure to download the correct JAR files
+For HIVE connection, please configure an JDBC connection and please be sure to download the correct JAR files
 
 This example is tested with
 Cloudera 5.6.0 distribution]]></attr>
@@ -156,7 +156,7 @@ For performance testing you can download the full version (+500MB) here:
 + slf4j-api-1.7.5.jar
 + slf4j-log4j12-1.7.5.jar
 
-- for HIVE connection, please configure an ODBC connection and please be sure to download the correct jar files]]></attr>
+- for HIVE connection, please configure an JDBC connection and please be sure to download the correct jar files]]></attr>
 </RichTextNote>
 <Dictionary/>
 </Global>
