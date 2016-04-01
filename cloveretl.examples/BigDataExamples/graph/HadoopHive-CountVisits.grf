@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361367492640" licenseCode="Javlin-Internal-License" licenseType="Commercial" modified="Mon Jan 13 18:38:19 CET 2014" modifiedBy="User" name="RunJobInHadoopHIVE" revision="1.44" showComponentDetails="true">
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="4.2.0.M1" id="1361367492640" licenseCode="Javlin-Internal-License" licenseType="Commercial" modified="Mon Jan 13 18:38:19 CET 2014" modifiedBy="User" name="RunJobInHadoopHIVE" revision="1.44" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/meta_count_output.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata0"/>
-<Connection dbConfig="${CONN_DIR}/Hive.cfg" id="JDBC0" type="JDBC"/>
+<Connection dbConfig="${CONN_DIR}/Hive-CDH-5.6.0.cfg" id="JDBC0" type="JDBC"/>
 <GraphParameters>
 <GraphParameterFile fileURL="hadoop.prm"/>
 <GraphParameterFile fileURL="workspace.prm"/>
