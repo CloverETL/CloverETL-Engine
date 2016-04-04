@@ -2,6 +2,17 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-1-3
+---------
+
+* Removed 3-day anonymous trial
+* FIXES:
+  - Event Listener - send an email task doesn't work when Reply-to ends with @
+  - WebServiceClient throws InvocationTargetException on some WSDLs
+  - QuickBaseImportCSV does not work with output edges connected
+  - NPE when disposing unused minigraph
+  
+  
 REL-4-1-2
 ---------
 
