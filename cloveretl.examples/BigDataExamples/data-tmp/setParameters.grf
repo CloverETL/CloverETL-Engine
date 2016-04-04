@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="user" created="Tue Jun 11 11:29:13 CEST 2013" guiVersion="3.5.0" id="1370960327382" licenseType="Commercial" modified="Tue Jan 14 14:40:30 CET 2014" modifiedBy="User" name="setParameters" revision="1.21" showComponentDetails="true">
+<Graph author="user" created="Tue Jun 11 11:29:13 CEST 2013" guiVersion="4.2.0.M1" id="1370960327382" licenseCode="Javlin-Internal-License" licenseType="Commercial" modified="Tue Jan 14 14:40:30 CET 2014" modifiedBy="User" name="setParameters" revision="1.21" showComponentDetails="true">
 <Global>
 <GraphParameters/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="100" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="This is not an example or test." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="257" x="371" y="64">
@@ -24,7 +24,7 @@ public class SetParameters extends BasicJavaRunnable {
 		try {
 			// replace connection dir
 			String fileContents = FileUtils.getStringFromURL(graph.getRuntimeContext().getContextURL(), "hadoop.prm", "UTF-8");
-			String newContents = fileContents.replaceAll("jdbc:hive://hive\\.yourhost\\.com:10000/default", "jdbc:hive2://virt-callisto.javlin.eu:10000/default");
+			String newContents = fileContents.replaceAll("jdbc:hive2://hive\\.yourhost\\.com:10000/default", "jdbc:hive2://virt-callisto.javlin.eu:10000/default");
 			newContents = newContents.replaceAll("jobtracker\\.yourhost\\.com", "virt-callisto.javlin.eu");
 			newContents = newContents.replaceAll("namenode\\.yourhost\\.com", "virt-callisto.javlin.eu");
 		
