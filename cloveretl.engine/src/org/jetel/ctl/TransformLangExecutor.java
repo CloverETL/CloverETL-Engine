@@ -511,8 +511,13 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * @param node
 	 */
 	protected void executeInternal(SimpleNode node) {
-		this.ast = node;
-		node.jjtAccept(this, null);
+		try {
+			beforeExecute();
+			this.ast = node;
+			node.jjtAccept(this, null);
+		} finally {
+			afterExecute();
+		}
 	}
 	
 	/**
@@ -521,8 +526,13 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * @return	value of the expression
 	 */
 	public Object executeExpression(SimpleNode expression) {
-		expression.jjtAccept(this, null);
-		return stack.pop();
+		try {
+			beforeExecute();
+			expression.jjtAccept(this, null);
+			return stack.pop();
+		} finally {
+			afterExecute();
+		}
 	}
 
 	/* *********************************************************** */
@@ -2758,25 +2768,27 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	}
 	
 	public void executeFunction(CLVFFunctionDeclaration node, Object[] data) {
-		final CLVFParameters formal = (CLVFParameters)node.jjtGetChild(1);
-		
-		stack.enteredBlock(node.getScope());
-		
-		for (int i=0; i<data.length; i++) {
-			setVariable((SimpleNode)formal.jjtGetChild(i), data[i]);
+		try {
+			beforeExecute();
+			
+			final CLVFParameters formal = (CLVFParameters)node.jjtGetChild(1);
+			stack.enteredBlock(node.getScope());
+			
+			for (int i=0; i<data.length; i++) {
+				setVariable((SimpleNode)formal.jjtGetChild(i), data[i]);
+			}
+			
+			// function return value will be saved in this.lastReturnValue
+			node.jjtGetChild(2).jjtAccept(this, null);
+			
+			// clear all break flags
+			if (breakFlag) {
+				breakFlag = false;
+			}
+			stack.exitedBlock();
+		} finally {
+			afterExecute();
 		}
-		
-		// function return value will be saved in this.lastReturnValue
-		node.jjtGetChild(2).jjtAccept(this, null);
-		
-
-		
-		// clear all break flags
-		if (breakFlag) {
-			breakFlag = false;
-		}
-		
-		stack.exitedBlock();
 	}
 
 	/**
@@ -3186,5 +3198,15 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		//do nothing, just stub to allow debugging
 	}
 	
-
+	/*
+	 * callback for debug subclass 
+	 */
+	protected void beforeExecute() {
+	}
+	
+	/*
+	 * callback for debug subclass 
+	 */
+	protected void afterExecute() {
+	}
 }

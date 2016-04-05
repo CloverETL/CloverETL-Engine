@@ -97,38 +97,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 		this(parser, graph, null);
 	}
 	
-	private void initDebug() {
-		this.commandQueue = new ArrayBlockingQueue<DebugCommand>(2, true);
-		this.statusQueue = new ArrayBlockingQueue<DebugStatus>(1, true);
-		this.ctlThread = createThread();
-		debugJMX = graph.getDebugJMX();
-		debugJMX.registerCTLThread(ctlThread, commandQueue, statusQueue);
-	}
-	
-	private Thread createThread() {
-		java.lang.Thread javaThread = java.lang.Thread.currentThread();
-		Thread ctlThread = new Thread();
-		ctlThread.setId(javaThread.getId());
-		ctlThread.setName(javaThread.getName());
-		ctlThread.setStepping(false); // TODO
-		ctlThread.setSuspended(false);
-		return ctlThread;
-	}
-	
-	private Node findBreakableNode(SimpleNode startNode,int onLine){
-		if (startNode.getLine() == onLine && startNode.isBreakable()) return startNode;
-		SimpleNode childNode;
-		for(int i=0;i<startNode.jjtGetNumChildren();i++){
-			childNode=(SimpleNode)startNode.jjtGetChild(i);	
-			if (childNode.getLine()>onLine || (childNode instanceof CLVFImportSource)) continue; //speed up optimization
-			if (findBreakableNode(childNode,onLine)!=null){
-				return childNode;
-			}
-		}
-		return null;
-	}
-	
-	
 	/**
 	 * @param node
 	 */
@@ -455,20 +423,16 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 	}
 	
 	@Override
-	public void preExecute() {
-		inExecution = true;
-		
+	public void init() {
+		super.init();
 		initDebug();
-		super.preExecute();
 	}
 	
 	@Override
 	public void postExecute() {
 		super.postExecute();
-		debugJMX.unregisterCTLDebugThread(ctlThread);
 		commandQueue = null;
 		statusQueue = null;
-		inExecution = false;
 	}
 	
 	public BlockingQueue<DebugCommand> getCommandQueue() {
@@ -486,5 +450,59 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 	@Override
 	public final boolean inDebugMode(){
 		return graph.getRuntimeContext().isCtlDebug();
+	}
+	
+	@Override
+	protected void beforeExecute() {
+		registerCurrentThread();
+		inExecution = true;
+	}
+	
+	@Override
+	protected void afterExecute() {
+		unregisterCurrentThread();
+		inExecution = false;
+	}
+	
+	private void initDebug() {
+		this.commandQueue = new ArrayBlockingQueue<DebugCommand>(2, true);
+		this.statusQueue = new ArrayBlockingQueue<DebugStatus>(1, true);
+		debugJMX = graph.getDebugJMX();
+		debugJMX.registerTransformLangExecutor(this);
+	}
+	
+	private void registerCurrentThread() {
+		this.ctlThread = createCurrentCTLThread();
+		debugJMX.registerCTLThread(ctlThread, commandQueue, statusQueue);
+	}
+	
+	private void unregisterCurrentThread() {
+		if (ctlThread != null) {
+			debugJMX.unregisterCTLDebugThread(ctlThread);
+			ctlThread = null;
+		}
+	}
+	
+	private Thread createCurrentCTLThread() {
+		java.lang.Thread javaThread = java.lang.Thread.currentThread();
+		Thread ctlThread = new Thread();
+		ctlThread.setId(javaThread.getId());
+		ctlThread.setName(javaThread.getName());
+		ctlThread.setStepping(false); // TODO
+		ctlThread.setSuspended(false);
+		return ctlThread;
+	}
+	
+	private Node findBreakableNode(SimpleNode startNode,int onLine){
+		if (startNode.getLine() == onLine && startNode.isBreakable()) return startNode;
+		SimpleNode childNode;
+		for(int i=0;i<startNode.jjtGetNumChildren();i++){
+			childNode=(SimpleNode)startNode.jjtGetChild(i);	
+			if (childNode.getLine()>onLine || (childNode instanceof CLVFImportSource)) continue; //speed up optimization
+			if (findBreakableNode(childNode,onLine)!=null){
+				return childNode;
+			}
+		}
+		return null;
 	}
 }

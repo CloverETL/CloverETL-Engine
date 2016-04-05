@@ -561,6 +561,10 @@ public final class TransformationGraph extends GraphElement {
 			if (!isAnalysed()) {
 				TransformationGraphAnalyzer.analyseGraph(this, getRuntimeContext(), true);
 			}
+			// emit init event for debugger
+			if (getDebugJMX() != null) {
+				getDebugJMX().notifyInit();
+			}
 
 			//initialize dictionary
 			dictionary.init();

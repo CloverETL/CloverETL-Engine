@@ -388,9 +388,7 @@ public class TLCompiler implements ITLCompiler {
 	public Object getCompiledCode() {
 		final TransformLangExecutor executor;
 		if (graph.getRuntimeContext().isCtlDebug()) {
-			DebugTransformLangExecutor debugExecutor = new DebugTransformLangExecutor(parser, graph);
-			executor = debugExecutor;
-			//graph.getDebugJMX().registerTransformLangExecutor(debugExecutor);
+			executor = new DebugTransformLangExecutor(parser, graph);
 		} else {
 			executor = new TransformLangExecutor(parser, graph);
 		}

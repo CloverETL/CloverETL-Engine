@@ -77,6 +77,11 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		sendNotification(notification);
 	}
 	
+	public void notifyInit() {
+		Notification notification = new Notification(DebugJMX.JOB_INIT, this, notificationSequence++);
+		sendNotification(notification);
+	}
+	
 	private DebugStatus processCommand(long threadId, DebugCommand command) {
 		CTLDebugThread thread = activeThreads.get(threadId);
 		if (thread != null) { 
