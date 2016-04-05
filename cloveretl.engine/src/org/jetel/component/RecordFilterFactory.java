@@ -108,19 +108,10 @@ public class RecordFilterFactory {
 	}
 	
 	private static String createFilterExpressionSourceId(TransformationGraph graph, String graphElemId, String attributeName) {
-		
-		if (graph != null && graph.getRuntimeContext() != null) {
+		if (graphElemId != null && attributeName != null && graph != null && graph.getRuntimeContext() != null) {
 			String jobUrl = graph.getRuntimeContext().getJobUrl();
-			if (jobUrl != null && graphElemId != null) {
-				StringBuilder sourceIdSB = new StringBuilder(jobUrl);
-				sourceIdSB.append("?componentId=");
-				sourceIdSB.append(graphElemId);
-				if (attributeName != null) {
-					sourceIdSB.append("&propertyName=");
-					sourceIdSB.append(attributeName);
-				}
-				System.out.println(sourceIdSB.toString());
-				return sourceIdSB.toString();
+			if (jobUrl != null) {
+				return TransformUtils.createCTLSourceId(jobUrl, "componentId", graphElemId, "propertyName", attributeName);
 			}
 		}
 		return null;

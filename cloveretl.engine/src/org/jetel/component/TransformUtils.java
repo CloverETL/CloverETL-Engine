@@ -49,4 +49,26 @@ public class TransformUtils {
 		}
 	}
 
+
+	/**
+	 * Builds source id for identification of CTL transformations and expressions. Used in debugging.
+	 * @param jobUrl
+	 * @param params
+	 * @return
+	 */
+	public static String createCTLSourceId(String jobUrl, String... params) {
+		StringBuilder sourceIdSB = new StringBuilder(jobUrl);
+		for (int i = 0; i < params.length - 1; i+=2) {
+			if (i == 0) {
+				sourceIdSB.append("?");
+			} else {
+				sourceIdSB.append("&");
+			}
+			sourceIdSB.append(params[i]);
+			sourceIdSB.append("=");
+			sourceIdSB.append(params[i+1]);
+		}
+		return sourceIdSB.toString();
+	}
+
 }

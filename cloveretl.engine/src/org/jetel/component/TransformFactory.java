@@ -87,6 +87,8 @@ public class TransformFactory<T> {
 	private Node component;
 	/** Optional: Attribute of the component for which the transformation is instantiated */
 	private String attributeName;
+
+	private String transformSourceId;
 	/** Input metadata of transformation, used for CTL compilation */
 	private DataRecordMetadata[] inMetadata;
 	/** Output metadata of transformation, used for CTL compilation */
@@ -204,7 +206,7 @@ public class TransformFactory<T> {
         T transformation = null;
     	if (!StringUtils.isEmpty(transform)) {
     		//transform has highest priority
-    		transformation = createTransformFromCode(transform, createPropertyTransformSourceId());
+    		transformation = createTransformFromCode(transform, transformSourceId != null ? transformSourceId : createPropertyTransformSourceId());
     	} else if (!StringUtils.isEmpty(transformUrl)) {
     		//load transformation code from an URL
     		if (charset == null) {
@@ -244,15 +246,10 @@ public class TransformFactory<T> {
      * @return
      */
 	private String createPropertyTransformSourceId() {
-		if (component.getGraph() != null && component.getGraph().getRuntimeContext() != null) {
+		if (attributeName != null && component.getGraph() != null && component.getGraph().getRuntimeContext() != null) {
 			String jobUrl = component.getGraph().getRuntimeContext().getJobUrl();
-			if (jobUrl != null && attributeName != null) {
-				StringBuilder sourceIdSB = new StringBuilder(jobUrl);
-				sourceIdSB.append("?componentId=");
-				sourceIdSB.append(component.getId());
-				sourceIdSB.append("&propertyName=");
-				sourceIdSB.append(attributeName);
-				return sourceIdSB.toString();
+			if (jobUrl != null) {
+				return TransformUtils.createCTLSourceId(jobUrl, "componentId", component.getId(), "propertyName", attributeName);
 			}
 		}
 		return null;
@@ -393,6 +390,10 @@ public class TransformFactory<T> {
 	 */
 	public void setAttributeName(String attributeName) {
 		this.attributeName = attributeName;
+	}
+	
+	public void setTransformSourceId(String transformSourceId) {
+		this.transformSourceId = transformSourceId;
 	}
 
 	/**
