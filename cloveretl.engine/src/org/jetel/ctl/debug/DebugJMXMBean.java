@@ -29,6 +29,7 @@ import org.jetel.ctl.debug.Thread;
  */
 public interface DebugJMXMBean {
 
+	public static final String JOB_INIT = "clover.job.init";
     public static final String THREAD_SUSPENDED = "clover.thread.suspend";
     public static final String THREAD_RESUMED = "clover.thread.resumed";
 
