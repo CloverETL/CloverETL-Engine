@@ -179,12 +179,16 @@ public class TransformFactory<T> {
 	        	if (transformLanguage == TransformLanguage.CTL1
 	        			|| transformLanguage == TransformLanguage.CTL2) {
 	        		// only CTL is checked
-	        		
+	        		T transform = null;
 	    			try {
-						createTransform();
+						transform = createTransform();
 					} catch (JetelRuntimeException e) {
 						// report CTL error as a warning
 						status.add(new ConfigurationProblem(e, Severity.WARNING, component, Priority.NORMAL, null));
+					} finally {
+						if (transform instanceof Freeable) {
+							((Freeable)transform).free();
+						}
 					}
 	        	} else if (transformLanguage == null) {
 	        		String messagePrefix = attributeName != null ? attributeName + ": can't" : "Can't";

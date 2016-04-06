@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import org.jetel.component.Freeable;
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.ctl.ASTnode.CLVFImportSource;
@@ -57,7 +58,7 @@ import org.jetel.util.string.StringUtils;
  *
  * @created Nov 3, 2014
  */
-public class DebugTransformLangExecutor extends TransformLangExecutor {
+public class DebugTransformLangExecutor extends TransformLangExecutor implements Freeable {
 	
 	public static final DebugStep INITIAL_DEBUG_STATE = DebugStep.STEP_RUN;
 	
@@ -72,6 +73,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 	private Breakpoint curpoint;
 	private Thread ctlThread;
 	private boolean inExecution;
+	private boolean initialized;
 
 	public enum DebugStep {
 		STEP_SUSPEND,
@@ -438,8 +440,18 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 	
 	@Override
 	public void init() {
-		super.init();
-		initDebug();
+		if (!initialized) {
+			initialized = true;
+			super.init();
+			initDebug();
+		}
+	}
+	
+	@Override
+	public void free() {
+		if (debugJMX != null) {
+			debugJMX.unregisterTransformLangExecutor(this);
+		}
 	}
 	
 	@Override

@@ -57,6 +57,10 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		executors.add(executor);
 	}
 	
+	public void unregisterTransformLangExecutor(DebugTransformLangExecutor executor) {
+		executors.remove(executor);
+	}
+	
 	public void registerCTLThread(Thread thread, DebugTransformLangExecutor executor) {
 		activeThreads.put(Long.valueOf(thread.getId()), new CTLDebugThread(thread, executor));
 	}
