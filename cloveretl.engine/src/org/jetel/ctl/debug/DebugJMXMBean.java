@@ -18,8 +18,7 @@
  */
 package org.jetel.ctl.debug;
 
-import org.jetel.ctl.debug.StackFrame;
-import org.jetel.ctl.debug.Thread;
+import org.jetel.ctl.debug.DebugCommand.CommandType;
 
 /**
  * @author Magdalena Malysz (info@cloveretl.com)
@@ -33,7 +32,7 @@ public interface DebugJMXMBean {
     public static final String THREAD_SUSPENDED = "clover.thread.suspend";
     public static final String THREAD_RESUMED = "clover.thread.resumed";
 
-	public void info(long threadId);
+	void info(long threadId);
 	
     Thread[] listCtlThreads();
     
@@ -44,4 +43,6 @@ public interface DebugJMXMBean {
     void resumeAll();
 
     void addBreakpoints(Breakpoint breakpoints[]);
+    
+    void stepThread(long threadId, CommandType stepType);
 }

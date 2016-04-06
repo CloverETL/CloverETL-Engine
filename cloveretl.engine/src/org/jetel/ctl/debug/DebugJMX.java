@@ -18,17 +18,17 @@
  */
 package org.jetel.ctl.debug;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import org.jetel.ctl.DebugTransformLangExecutor;
 import org.jetel.ctl.debug.DebugCommand.CommandType;
 
@@ -43,7 +43,7 @@ import org.jetel.ctl.debug.DebugCommand.CommandType;
 public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMXMBean {
 	
 	private int notificationSequence;
-    static Log logger = LogFactory.getLog(DebugJMX.class);
+    static Logger logger = Logger.getLogger(DebugJMX.class);
 	
 	private Map<Long, CTLDebugThread> activeThreads;
 	private Set<DebugTransformLangExecutor> executors;
@@ -57,12 +57,12 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		executors.add(executor);
 	}
 	
-	public void registerCTLThread(Thread thread, ArrayBlockingQueue<DebugCommand> commandQueue, ArrayBlockingQueue<DebugStatus> statusQueue) {
-		activeThreads.put(thread.getId(), new CTLDebugThread(thread, commandQueue, statusQueue));
+	public void registerCTLThread(Thread thread, DebugTransformLangExecutor executor) {
+		activeThreads.put(Long.valueOf(thread.getId()), new CTLDebugThread(thread, executor));
 	}
 	
 	public void unregisterCTLDebugThread(Thread thread) {
-		activeThreads.remove(thread.getId());
+		activeThreads.remove(Long.valueOf(thread.getId()));
 	}
 	
 	public void notifySuspend(DebugStatus status) {
@@ -82,61 +82,56 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		sendNotification(notification);
 	}
 	
-	private DebugStatus processCommand(long threadId, DebugCommand command) {
-		CTLDebugThread thread = activeThreads.get(threadId);
-		if (thread != null) { 
-			thread.putCommand(command);
-			DebugStatus status = thread.takeCommand();
-			return status;
-		} else {
-			logger.warn(String.format("CTL debug: Thread with id '%d' is not running.", threadId));
-			return null;
+	@Override
+	public void resume(long threadId) {
+		try {
+			processCommand(threadId, new DebugCommand(CommandType.RESUME));
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
 		}
 	}
 	
-	private DebugStatus processCommand(DebugTransformLangExecutor executor, DebugCommand command) throws InterruptedException {
-		
-		executor.getCommandQueue().put(command);
-		return executor.getStatusQueue().take();
-	}
-	
 	@Override
-	public synchronized void resume(long threadId) {
-		DebugCommand dcommand = new DebugCommand(CommandType.RESUME);
-		processCommand(threadId, dcommand);
-	}
-	
-	@Override
-	public synchronized void info(long threadId) {
-		processCommand(threadId, new DebugCommand(CommandType.INFO));
+	public void info(long threadId) {
+		try {
+			processCommand(threadId, new DebugCommand(CommandType.INFO));
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	@Override
 	public Thread[] listCtlThreads() {
-		Thread[] threads = new Thread[activeThreads.size()];
-		int i = 0;
-		for (CTLDebugThread threadInfo : activeThreads.values()) {
-			threads[i++] = threadInfo.getThread();
+		
+		List<CTLDebugThread> threads = new ArrayList<>(activeThreads.values());
+		Thread[] result = new Thread[threads.size()];
+		for (int i = 0; i < result.length; ++i) {
+			result[i] = threads.get(i).getThread();
 		}
-		return threads;
+		return result;
 	}
 
 	@Override
-	public synchronized StackFrame[] getStackFrames(long threadId) {
-		DebugCommand dcommand = new DebugCommand(CommandType.GET_CALLSTACK);
-		DebugStatus status = processCommand(threadId, dcommand);
-		if (status != null) {
-			return (StackFrame[]) status.getValue();
+	public StackFrame[] getStackFrames(long threadId) {
+		try {
+			DebugStatus status = processCommand(threadId, new DebugCommand(CommandType.GET_CALLSTACK));
+			return status != null ? (StackFrame[])status.getValue() : new StackFrame[0];
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
 		}
-		return new StackFrame[0];
 	}
 
 
 	@Override
-	public synchronized void resumeAll() {
-		for (Long threadId : activeThreads.keySet()) {
-			DebugCommand dcommand = new DebugCommand(CommandType.RESUME);
-			processCommand(threadId, dcommand);
+	public void resumeAll() {
+		for (CTLDebugThread thread : activeThreads.values()) {
+			if (thread.getThread().isSuspended()) {
+				try {
+					thread.getExecutor().executeCommand(new DebugCommand(CommandType.RESUME));
+				} catch (InterruptedException e) {
+					logger.warn("Interrupted while resuming thread.", e);
+				}
+			}
 		}
 	}
 	
@@ -146,14 +141,36 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 			DebugCommand cmd = new DebugCommand(CommandType.SET_BREAKPOINTS);
 			cmd.setValue(breakpoints);
 			try {
-				processCommand(executor, cmd);
+				executor.putCommand(cmd);
 			} catch (InterruptedException e) {
-				logger.warn("Debug command interrupted", e);
+				logger.warn("Interrupted while adding breakpoints.", e);
 			}
+		}
+	}
+	
+	@Override
+	public void stepThread(long threadId, CommandType stepType) {
+		try {
+			if (stepType != CommandType.STEP_IN && stepType != CommandType.STEP_OUT && stepType != CommandType.STEP_OVER) {
+				throw new IllegalArgumentException("Invalid step type " + stepType);
+			}
+			processCommand(threadId, new DebugCommand(stepType));
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
 		}
 	}
 	
 	public static String createMBeanName(String graphId, long runId) {
         return "org.jetel.ctl:type=DebugJMX_" + graphId + "_" + runId;
+	}
+	
+	private DebugStatus processCommand(long threadId, DebugCommand command) throws InterruptedException {
+		CTLDebugThread thread = activeThreads.get(threadId);
+		if (thread != null) { 
+			return thread.getExecutor().executeCommand(command);
+		} else {
+			logger.warn(String.format("CTL debug: Thread with id '%d' is not running.", threadId));
+			return null;
+		}
 	}
 }

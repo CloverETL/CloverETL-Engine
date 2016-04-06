@@ -58,10 +58,21 @@ import org.jetel.util.string.StringUtils;
  * @created Nov 3, 2014
  */
 public class DebugTransformLangExecutor extends TransformLangExecutor {
-
 	
 	public static final DebugStep INITIAL_DEBUG_STATE = DebugStep.STEP_RUN;
 	
+	private int prevLine = -1;
+	private Set<Breakpoint> breakpoints;
+	private volatile DebugStep step = INITIAL_DEBUG_STATE;
+	private String prevSourceFilename = null;
+	private BlockingQueue<DebugCommand> commandQueue;
+	private BlockingQueue<DebugStatus> statusQueue;
+	private PrintStream debug_print;
+	private DebugJMX debugJMX;
+	private Breakpoint curpoint;
+	private Thread ctlThread;
+	private boolean inExecution;
+
 	public enum DebugStep {
 		STEP_SUSPEND,
 		STEP_INTO,
@@ -70,18 +81,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 		STEP_RUN;
 	}
 	
-	private int prevLine = -1;
-	private Set<Breakpoint> breakpoints;
-	private volatile DebugStep step = INITIAL_DEBUG_STATE;
-	private String prevSourceFilename = null;
-	private ArrayBlockingQueue<DebugCommand> commandQueue;
-	private ArrayBlockingQueue<DebugStatus> statusQueue;
-	private PrintStream debug_print;
-	private DebugJMX debugJMX;
-	private Breakpoint curpoint;
-	private Thread ctlThread;
-	private boolean inExecution;
-
 	public DebugTransformLangExecutor(TransformLangParser parser, TransformationGraph graph, Properties globalParameters) {
 		super(parser, graph, globalParameters);
 		this.breakpoints= new HashSet<Breakpoint>();
@@ -139,6 +138,22 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 		}while(!StringUtils.equalsWithNulls(foundNode.sourceFilename,bpoint.getSource()));
 		return true;
 	}
+	
+	protected void handleSuspension(SimpleNode node, CommandType cause) {
+		DebugStatus status = new DebugStatus(node, cause);
+		status.setSuspended(true);
+		status.setSourceFilename(node.getSourceId());
+		status.setThreadId(ctlThread.getId());
+		debugJMX.notifySuspend(status);
+	}
+	
+	protected void handleResume(SimpleNode node, CommandType cause) {
+		DebugStatus status = new DebugStatus(node, cause);
+		status.setSuspended(false);
+		status.setSourceFilename(node.getSourceId());
+		status.setThreadId(ctlThread.getId());
+		debugJMX.notifyResumed(status);
+	}
 
 	protected void handleBreakpoint(SimpleNode node, Object data) {
 		DebugStatus status = new DebugStatus(node, CommandType.SUSPEND);
@@ -146,13 +161,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 		status.setSourceFilename(node.getSourceId());
 		status.setThreadId(ctlThread.getId());
 		debugJMX.notifySuspend(status);
-	}
-	
-	protected void handleResume(SimpleNode node, Object data) {
-		DebugStatus status = new DebugStatus(node, CommandType.RESUME);
-		status.setSuspended(false);
-		status.setThreadId(ctlThread.getId());
-		debugJMX.notifyResumed(status);
 	}
 
 	protected void handleCommand(SimpleNode node) {
@@ -163,7 +171,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 			try {
 				command = commandQueue.take();
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				logger.warn("Interrupted while awaiting debug command.", e);
 			}
 
 			DebugStatus status = null;
@@ -232,8 +240,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 					status.setSuspended(false);
 					this.step = DebugStep.STEP_RUN;
 					runloop = false;
-					// is this correct place?
-					handleResume(node, status);
+					handleResume(node, CommandType.RESUME);
 					break;
 				case STEP_IN:
 					status = new DebugStatus(node, CommandType.STEP_IN);
@@ -241,6 +248,8 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 					this.withinFunction = null;
 					this.step = DebugStep.STEP_INTO;
 					runloop = false;
+					ctlThread.setStepping(true);
+					handleResume(node, CommandType.STEP_IN);
 					break;
 				case STEP_OVER:
 					status = new DebugStatus(node, CommandType.STEP_OVER);
@@ -248,6 +257,8 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 					this.step = DebugStep.STEP_OVER;
 					this.withinFunction = ((DebugStack) stack).getFunctionCallNode();
 					runloop = false;
+					ctlThread.setStepping(true);
+					handleResume(node, CommandType.STEP_OVER);
 					break;
 				case STEP_OUT:
 					status = new DebugStatus(node, CommandType.STEP_OUT);
@@ -255,6 +266,8 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 					this.step = DebugStep.STEP_OUT;
 					this.withinFunction = ((DebugStack) stack).getPreviousFunctionCallNode();
 					runloop = false;
+					ctlThread.setStepping(true);
+					handleResume(node, CommandType.STEP_OUT);
 					break;
 				case GET_AST: {
 					StringWriter writer = new StringWriter();
@@ -363,8 +376,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 				try {
 					this.statusQueue.put(status);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					logger.warn("Interrupted while putting command status", e);
 				}
 				command = null;
 			}
@@ -390,14 +402,16 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 		case STEP_OVER:
 			if (this.withinFunction == ((DebugStack) stack).getFunctionCallNode()) {
 				ctlThread.setSuspended(true);
-				handleBreakpoint(node, data);
+				ctlThread.setStepping(false);
+				handleSuspension(node, step == DebugStep.STEP_OUT ? CommandType.STEP_OUT : CommandType.STEP_OVER);
 				handleCommand(node);
 				ctlThread.setSuspended(false);
 			}
 			break;
 		case STEP_INTO:
 			ctlThread.setSuspended(true);
-			handleBreakpoint(node, data);
+			ctlThread.setStepping(false);
+			handleSuspension(node, CommandType.STEP_IN);
 			handleCommand(node);
 			ctlThread.setSuspended(false);
 			break;
@@ -435,16 +449,21 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 		statusQueue = null;
 	}
 	
-	public BlockingQueue<DebugCommand> getCommandQueue() {
-		return commandQueue;
+	public DebugStatus executeCommand(DebugCommand command) throws InterruptedException {
+		commandQueue.put(command);
+		return statusQueue.take();
 	}
 	
-	public BlockingQueue<DebugStatus> getStatusQueue() {
-		return statusQueue;
+	public void putCommand(DebugCommand command) throws InterruptedException {
+		commandQueue.put(command);
+	}
+	
+	public DebugStatus takeStatus() throws InterruptedException {
+		return statusQueue.take();
 	}
 	
 	public synchronized void suspendExecution() {
-			this.step=DebugStep.STEP_SUSPEND;
+		this.step=DebugStep.STEP_SUSPEND;
 	}
 	
 	@Override
@@ -473,7 +492,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 	
 	private void registerCurrentThread() {
 		this.ctlThread = createCurrentCTLThread();
-		debugJMX.registerCTLThread(ctlThread, commandQueue, statusQueue);
+		debugJMX.registerCTLThread(ctlThread, this);
 	}
 	
 	private void unregisterCurrentThread() {
@@ -488,8 +507,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor {
 		Thread ctlThread = new Thread();
 		ctlThread.setId(javaThread.getId());
 		ctlThread.setName(javaThread.getName());
-		ctlThread.setStepping(false); // TODO
-		ctlThread.setSuspended(false);
 		return ctlThread;
 	}
 	

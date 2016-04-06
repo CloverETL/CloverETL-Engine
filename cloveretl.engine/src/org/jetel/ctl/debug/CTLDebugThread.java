@@ -18,44 +18,23 @@
  */
 package org.jetel.ctl.debug;
 
-import java.util.concurrent.ArrayBlockingQueue;
-import org.jetel.ctl.debug.Thread;
+import org.jetel.ctl.DebugTransformLangExecutor;
 
 public class CTLDebugThread {
 
 	private Thread thread;
-	private ArrayBlockingQueue<DebugStatus> statusQueue;
-	private ArrayBlockingQueue<DebugCommand> commandQueue;
+	private DebugTransformLangExecutor executor;
 	
-	/**
-	 * 
-	 */
-	public CTLDebugThread(Thread thread, ArrayBlockingQueue<DebugCommand> commandQueue, ArrayBlockingQueue<DebugStatus> statusQueue) {
+	public CTLDebugThread(Thread thread, DebugTransformLangExecutor executor) {
 		this.thread = thread;
-		this.commandQueue = commandQueue;
-		this.statusQueue = statusQueue;
+		this.executor = executor;
 	}
 	
 	public Thread getThread() {
 		return thread;
 	}
 	
-	public void putCommand(DebugCommand command) {
-		try {
-			commandQueue.put(command);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
-	public DebugStatus takeCommand() {
-		try {
-			return statusQueue.take();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
+	public DebugTransformLangExecutor getExecutor() {
+		return executor;
 	}
 }
