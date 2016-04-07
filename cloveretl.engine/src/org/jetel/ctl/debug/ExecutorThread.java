@@ -20,17 +20,17 @@ package org.jetel.ctl.debug;
 
 import org.jetel.ctl.DebugTransformLangExecutor;
 
-public class CTLDebugThread {
+public class ExecutorThread {
 
 	private Thread thread;
 	private DebugTransformLangExecutor executor;
 	
-	public CTLDebugThread(Thread thread, DebugTransformLangExecutor executor) {
+	public ExecutorThread(Thread thread, DebugTransformLangExecutor executor) {
 		this.thread = thread;
 		this.executor = executor;
 	}
 	
-	public Thread getThread() {
+	public Thread getCTLThread() {
 		return thread;
 	}
 	

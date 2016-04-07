@@ -49,6 +49,7 @@ import org.jetel.ctl.debug.DebugStatus;
 import org.jetel.ctl.debug.StackFrame;
 import org.jetel.ctl.debug.Thread;
 import org.jetel.ctl.debug.Variable;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.string.StringUtils;
 
@@ -173,7 +174,8 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			try {
 				command = commandQueue.take();
 			} catch (InterruptedException e) {
-				logger.warn("Interrupted while awaiting debug command.", e);
+				logger.info("Debug interrupted in " + ctlThread);
+				throw new JetelRuntimeException("Interrupted while awaiting debug command.");
 			}
 
 			DebugStatus status = null;
@@ -378,7 +380,8 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 				try {
 					this.statusQueue.put(status);
 				} catch (InterruptedException e) {
-					logger.warn("Interrupted while putting command status", e);
+					logger.info("Debug interrupted in " + ctlThread);
+					throw new JetelRuntimeException("Interrupted while putting debug command result.");
 				}
 				command = null;
 			}
@@ -402,35 +405,16 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		switch (step) {
 		case STEP_OUT:
 		case STEP_OVER:
-			if (this.withinFunction == ((DebugStack) stack).getFunctionCallNode()) {
-				ctlThread.setSuspended(true);
-				ctlThread.setStepping(false);
-				handleSuspension(node, step == DebugStep.STEP_OUT ? CommandType.STEP_OUT : CommandType.STEP_OVER);
-				handleCommand(node);
-				ctlThread.setSuspended(false);
-			}
+			stepOver(curLine, node, data, step == DebugStep.STEP_OUT);
 			break;
 		case STEP_INTO:
-			ctlThread.setSuspended(true);
-			ctlThread.setStepping(false);
-			handleSuspension(node, CommandType.STEP_IN);
-			handleCommand(node);
-			ctlThread.setSuspended(false);
+			stepInto(curLine, node, data);
 			break;
 		case STEP_RUN:
-			this.curpoint.setLine(curLine);
-			this.curpoint.setSource(node.getSourceId());
-			if (this.breakpoints.contains(this.curpoint)) {
-				ctlThread.setSuspended(true);
-				handleBreakpoint(node, data);
-				handleCommand(node);
-			}
+			stepRun(curLine, node, data);
 			break;
 		case STEP_SUSPEND:
-			ctlThread.setSuspended(true);
-			handleBreakpoint(node, data);
-			handleCommand(node);
-			ctlThread.setSuspended(false);
+			stepSuspend(curLine, node, data);
 			break;
 		default:
 			throw new TransformLangExecutorRuntimeException("Undefined debugging state: " + step);
@@ -475,7 +459,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	}
 	
 	public synchronized void suspendExecution() {
-		this.step=DebugStep.STEP_SUSPEND;
+		this.step = DebugStep.STEP_SUSPEND;
 	}
 	
 	@Override
@@ -492,6 +476,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	@Override
 	protected void afterExecute() {
 		unregisterCurrentThread();
+		step = INITIAL_DEBUG_STATE;
 		inExecution = false;
 	}
 	
@@ -500,6 +485,44 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		this.statusQueue = new ArrayBlockingQueue<DebugStatus>(1, true);
 		debugJMX = graph.getDebugJMX();
 		debugJMX.registerTransformLangExecutor(this);
+	}
+	
+	private void stepRun(final int curLine, SimpleNode node, Object data) {
+		this.curpoint.setLine(curLine);
+		this.curpoint.setSource(node.getSourceId());
+		if (this.breakpoints.contains(this.curpoint)) {
+			ctlThread.setSuspended(true);
+			ctlThread.setStepping(false);
+			handleBreakpoint(node, data);
+			handleCommand(node);
+		}
+	}
+	
+	private void stepOver(final int curLine, SimpleNode node, Object data, boolean out) {
+		if (this.withinFunction == ((DebugStack) stack).getFunctionCallNode()) {
+			ctlThread.setSuspended(true);
+			ctlThread.setStepping(false);
+			handleSuspension(node, out ? CommandType.STEP_OUT : CommandType.STEP_OVER);
+			handleCommand(node);
+			ctlThread.setSuspended(false);
+		} else {
+			stepRun(curLine, node, data);
+		}
+	}
+	
+	private void stepInto(final int curLine, SimpleNode node, Object data) {
+		ctlThread.setSuspended(true);
+		ctlThread.setStepping(false);
+		handleSuspension(node, CommandType.STEP_IN);
+		handleCommand(node);
+		ctlThread.setSuspended(false);
+	}
+	
+	private void stepSuspend(final int curLine, SimpleNode node, Object data) {
+		ctlThread.setSuspended(true);
+		handleBreakpoint(node, data);
+		handleCommand(node);
+		ctlThread.setSuspended(false);
 	}
 	
 	private void registerCurrentThread() {
@@ -515,10 +538,8 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	}
 	
 	private Thread createCurrentCTLThread() {
-		java.lang.Thread javaThread = java.lang.Thread.currentThread();
 		Thread ctlThread = new Thread();
-		ctlThread.setId(javaThread.getId());
-		ctlThread.setName(javaThread.getName());
+		ctlThread.setJavaThread(java.lang.Thread.currentThread());
 		return ctlThread;
 	}
 	

@@ -1141,6 +1141,10 @@ public final class TransformationGraph extends GraphElement {
 	    	//free dictionary /some readers use dictionary in the free method for the incremental reading
 	    	dictionary.free();
 	    	
+	    	if (debugJMX != null) {
+	    		debugJMX.free();
+	    	}
+	    	
 	    	setWatchDog(null);
 		} finally {
 			//unregister current thread from ContextProvider

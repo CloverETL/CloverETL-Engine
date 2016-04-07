@@ -45,11 +45,11 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	private int notificationSequence;
     static Logger logger = Logger.getLogger(DebugJMX.class);
 	
-	private Map<Long, CTLDebugThread> activeThreads;
+	private Map<Long, ExecutorThread> activeThreads;
 	private Set<DebugTransformLangExecutor> executors;
 	
 	public DebugJMX() {
-		activeThreads = new ConcurrentHashMap<Long, CTLDebugThread>();
+		activeThreads = new ConcurrentHashMap<Long, ExecutorThread>();
 		executors = new CopyOnWriteArraySet<>();
 	}
 	
@@ -62,7 +62,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	}
 	
 	public void registerCTLThread(Thread thread, DebugTransformLangExecutor executor) {
-		activeThreads.put(Long.valueOf(thread.getId()), new CTLDebugThread(thread, executor));
+		activeThreads.put(Long.valueOf(thread.getId()), new ExecutorThread(thread, executor));
 	}
 	
 	public void unregisterCTLDebugThread(Thread thread) {
@@ -107,10 +107,10 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	@Override
 	public Thread[] listCtlThreads() {
 		
-		List<CTLDebugThread> threads = new ArrayList<>(activeThreads.values());
+		List<ExecutorThread> threads = new ArrayList<>(activeThreads.values());
 		Thread[] result = new Thread[threads.size()];
 		for (int i = 0; i < result.length; ++i) {
-			result[i] = threads.get(i).getThread();
+			result[i] = threads.get(i).getCTLThread();
 		}
 		return result;
 	}
@@ -128,8 +128,8 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 
 	@Override
 	public void resumeAll() {
-		for (CTLDebugThread thread : activeThreads.values()) {
-			if (thread.getThread().isSuspended()) {
+		for (ExecutorThread thread : activeThreads.values()) {
+			if (thread.getCTLThread().isSuspended()) {
 				try {
 					thread.getExecutor().executeCommand(new DebugCommand(CommandType.RESUME));
 				} catch (InterruptedException e) {
@@ -164,12 +164,27 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		}
 	}
 	
+	public void free() {
+		/*
+		 * When a job is killed while being executed, the threads are interrupted and debug
+		 * executors throw an exception, so their threads are removed from active threads.
+		 * But should the thread executing CTL be not interrupted (this happens with threads in the initialization phase),
+		 * it would hang in executor forever - so let's interrupt those threads while freeing.
+		 */
+		for (ExecutorThread thread : activeThreads.values()) {
+			logger.info("Detected active debugged thread " + thread.getCTLThread() + ", interrupting...");
+			thread.getCTLThread().getJavaThread().interrupt();
+		}
+		activeThreads.clear();
+		executors.clear();
+	}
+	
 	public static String createMBeanName(String graphId, long runId) {
         return "org.jetel.ctl:type=DebugJMX_" + graphId + "_" + runId;
 	}
 	
 	private DebugStatus processCommand(long threadId, DebugCommand command) throws InterruptedException {
-		CTLDebugThread thread = activeThreads.get(threadId);
+		ExecutorThread thread = activeThreads.get(threadId);
 		if (thread != null) { 
 			return thread.getExecutor().executeCommand(command);
 		} else {

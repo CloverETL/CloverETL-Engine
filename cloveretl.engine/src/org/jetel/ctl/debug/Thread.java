@@ -21,6 +21,8 @@ package org.jetel.ctl.debug;
 import java.io.Serializable;
 
 /**
+ * This unit represents a thread in which a CTL code is being executed.
+ * 
  * @author jan.michalica (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
@@ -34,6 +36,17 @@ public class Thread implements Serializable {
 	private String name;
 	private boolean stepping;
 	private boolean suspended;
+	private transient java.lang.Thread javaThread;
+	
+	public java.lang.Thread getJavaThread() {
+		return javaThread;
+	}
+	
+	public void setJavaThread(java.lang.Thread javaThread) {
+		this.javaThread = javaThread;
+		this.id = javaThread.getId();
+		this.name = javaThread.getName();
+	}
 	
 	public long getId() {
 		return id;
@@ -58,5 +71,10 @@ public class Thread implements Serializable {
 	}
 	public void setSuspended(boolean suspended) {
 		this.suspended = suspended;
+	}
+	
+	@Override
+	public String toString() {
+		return "CTLThread[name=" + name + ", javaThread=" + javaThread + (javaThread != null ? (", state=" + javaThread.getState()) : "") + "]";
 	}
 }
