@@ -118,6 +118,7 @@ public class DataReader extends Node {
 
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DATA_READER";
+	public final static String COMPONENT_TYPE_NEW = "FLAT_FILE_READER";
 
 	/** XML attribute names */
 	private static final String XML_TRIM_ATTRIBUTE = "trim";

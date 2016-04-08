@@ -56,8 +56,8 @@ import org.jetel.util.file.FileUtils;
  */
 public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 
-	protected static final String CDH_3U5 = "hdfs://CDH_3U5/tmp/test_fo/";
 	protected static final String CDH412 = "hdfs://CDH412/tmp/test_fo/";
+	protected static final String CDH560 = "hdfs://CDH560/tmp/test_fo/";
 	
 	private static final String HADOOP_TEST_GRAPH = "hadoop-testGraph.grf";
 	
@@ -75,7 +75,7 @@ public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 	}
 	
 	protected URI getTestingURI() {
-		return URI.create(CDH_3U5);
+		return URI.create(CDH560);
 	}
 	
 	/*
