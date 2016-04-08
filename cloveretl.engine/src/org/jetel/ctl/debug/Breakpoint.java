@@ -27,69 +27,67 @@ public class Breakpoint implements Comparable<Breakpoint>, Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
-		protected int line;
-		protected String source;
-		//protected boolean disabled;
-		
-		public Breakpoint(String source, int line){
-			this.source=source;
-			this.line=line;
-		//	this.disabled=false;
-		}
-		
-//		public boolean isDisabled(){
-//			return this.disabled;
-//		}
-//		
-//		public void setDisabled(boolean disabled){
-//			this.disabled=disabled;
-//		}
-
-		public int getLine() {
-			return line;
-		}
-
-		public String getSource() {
-			return source;
-		}
-
-		
-		public void setLine(int line) {
-			this.line = line;
-		}
-
-		public void setSource(String source) {
-			this.source = source;
-		}
-
-		@Override
-		public int hashCode(){
-			return this.line ^ (this.source==null ? 37 : this.source.hashCode());
-		}
-		
-		@Override
-		public boolean equals(Object other){
-			 if (other instanceof Breakpoint){
-				 final Breakpoint o = (Breakpoint)other;
-				 if (this.line == o.line && StringUtils.equalsWithNulls(this.source,o.source)){
-					 return true;
-				 }
-			 }
-			 return false;
-		}
-		
-		@Override
-		public String toString(){
-			return this.source + ":" + this.line;
-		}
-
-		@Override
-		public int compareTo(Breakpoint o) {
-			if (this.source!=null && o.source!=null){
-				return this.source.compareTo(o.source) + ( this.line - o.line); 
-			}else{
-				return (this.line - o.line);
-			}
-		}
-		
+	protected int line;
+	protected String source;
+    protected boolean enabled;
+	
+	public Breakpoint(String source, int line){
+		this.source=source;
+		this.line=line;
+		this.enabled=true;
 	}
+	
+	public boolean isEnabled(){
+		return this.enabled;
+	}
+	
+	public void setEnabled(boolean enabled){
+		this.enabled=enabled;
+	}
+
+	public int getLine() {
+		return line;
+	}
+
+	public String getSource() {
+		return source;
+	}
+	
+	public void setLine(int line) {
+		this.line = line;
+	}
+
+	public void setSource(String source) {
+		this.source = source;
+	}
+
+	@Override
+	public int hashCode(){
+		return this.line ^ (this.source==null ? 37 : this.source.hashCode());
+	}
+	
+	@Override
+	public boolean equals(Object other){
+		 if (other instanceof Breakpoint){
+			 final Breakpoint o = (Breakpoint)other;
+			 if (this.line == o.line && StringUtils.equalsWithNulls(this.source,o.source)){
+				 return true;
+			 }
+		 }
+		 return false;
+	}
+	
+	@Override
+	public String toString(){
+		return this.source + ":" + this.line;
+	}
+
+	@Override
+	public int compareTo(Breakpoint o) {
+		if (this.source!=null && o.source!=null){
+			return this.source.compareTo(o.source) + ( this.line - o.line); 
+		}else{
+			return (this.line - o.line);
+		}
+	}	
+}

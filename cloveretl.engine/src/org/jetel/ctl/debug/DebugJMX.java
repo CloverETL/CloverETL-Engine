@@ -141,8 +141,10 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	
 	@Override
 	public void addBreakpoints(List<Breakpoint> breakpoints) {
+		// Breakpoints are shared across all executors
 		for (DebugTransformLangExecutor executor : executors) {
 			executor.getCtlBreakpoints().addAll(breakpoints);
+			break;
 		}
 	}
 	
@@ -150,9 +152,30 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	public void removeBreakpoints(List<Breakpoint> breakpoints) {
 		for (DebugTransformLangExecutor executor : executors) {
 			executor.getCtlBreakpoints().removeAll(breakpoints);
+			break;
 		}
 	}
 	
+	@Override
+	public void modifyBreakpoint(Breakpoint breakpoint) {
+		for (DebugTransformLangExecutor executor : executors) {
+			for (Breakpoint bp : executor.getCtlBreakpoints()) {
+				if (bp.equals(breakpoint)) {
+					bp.setEnabled(breakpoint.isEnabled());
+				}
+			}
+			break;
+		}
+	}
+
+	@Override
+	public void setBreakingEnabled(boolean enabled) {
+		for (DebugTransformLangExecutor executor : executors) {
+			executor.setBreakingEnabled(enabled);
+			break;
+		}
+	}
+
 	@Override
 	public void stepThread(long threadId, CommandType stepType) {
 		try {

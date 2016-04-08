@@ -482,7 +482,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	private void stepRun(final int curLine, SimpleNode node, Object data) {
 		this.curpoint.setLine(curLine);
 		this.curpoint.setSource(node.getSourceId());
-		if (getCtlBreakpoints().contains(this.curpoint)) {
+		if (isActiveBreakpoint(this.curpoint)) {
 			ctlThread.setSuspended(true);
 			ctlThread.setStepping(false);
 			handleBreakpoint(node, data);
@@ -550,5 +550,27 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 
 	public Set<Breakpoint> getCtlBreakpoints() {
 		return graph.getRuntimeContext().getCtlBreakpoints();
+	}
+	
+	public boolean isBreakingEnabled() {
+		return graph.getRuntimeContext().isCtlBreakingEnabled();
+	}
+	
+	public void setBreakingEnabled(boolean enabled) {
+		graph.getRuntimeContext().setBreakingEnabled(enabled);
+	}
+	
+	public boolean isActiveBreakpoint(Breakpoint breakpoint) {
+		if (!isBreakingEnabled()) {
+			return false;
+		}
+
+		for (Breakpoint bp : getCtlBreakpoints()) {
+			if (bp.equals(breakpoint)) {
+				return bp.isEnabled();
+			}
+		}
+		
+		return false;
 	}
 }

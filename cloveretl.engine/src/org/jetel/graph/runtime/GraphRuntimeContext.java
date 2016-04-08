@@ -83,6 +83,7 @@ public class GraphRuntimeContext {
 	private String timeZone;
 	private String locale;
 	private boolean ctlDebug;
+	private boolean breakingEnabled = true;
 	private final Set<Breakpoint> ctlBreakpoints = new CopyOnWriteArraySet<>();
 	/**
 	 * Default multi-thread execution is managed by {@link WatchDog}.
@@ -1017,7 +1018,15 @@ public class GraphRuntimeContext {
 		this.ctlBreakpoints.clear();
 		this.ctlBreakpoints.addAll(ctlBreakpoints);
 	}
+	
+	public boolean isCtlBreakingEnabled() {
+		return breakingEnabled;
+	}
 
+	public void setBreakingEnabled(boolean enabled) {
+		breakingEnabled = enabled;
+	}
+	
 	/**
 	 * This enum is attempt to provide a more generic way to this runtime configuration.
 	 * Should not be used by third-party applications, can be changed in the future.

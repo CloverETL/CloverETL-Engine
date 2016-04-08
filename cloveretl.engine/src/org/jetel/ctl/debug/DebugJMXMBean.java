@@ -48,5 +48,9 @@ public interface DebugJMXMBean {
     
     void removeBreakpoints(List<Breakpoint> breakpoints);
     
+    void modifyBreakpoint(Breakpoint breakpoint);
+
+    void setBreakingEnabled(boolean enabled);
+    
     void stepThread(long threadId, CommandType stepType);
 }
