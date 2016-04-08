@@ -111,7 +111,8 @@ public class RecordFilterFactory {
 		if (graphElemId != null && attributeName != null && graph != null && graph.getRuntimeContext() != null) {
 			String jobUrl = graph.getRuntimeContext().getJobUrl();
 			if (jobUrl != null) {
-				return TransformUtils.createCTLSourceId(jobUrl, "componentId", graphElemId, "propertyName", attributeName);
+				return TransformUtils.createCTLSourceId(jobUrl, TransformUtils.COMPONENT_ID_PARAM, graphElemId,
+						TransformUtils.PROPERTY_NAME_PARAM, attributeName);
 			}
 		}
 		return null;

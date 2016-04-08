@@ -129,7 +129,7 @@ public class GraphParameterDynamicValueProvider {
 		factory.setComponent(node);
 		String jobUrl = graphProvider.getGraph().getRuntimeContext().getJobUrl();
 		if (jobUrl != null) {
-			factory.setTransformSourceId(TransformUtils.createCTLSourceId(jobUrl, "graphParameterName", parameterName));
+			factory.setTransformSourceId(TransformUtils.createCTLSourceId(jobUrl, TransformUtils.GRAPH_PARAMETER_NAME_PARAM, parameterName));
 		}
 		PropertyRefResolver propertyRefResolver = graphProvider.getGraph().getPropertyRefResolver();
 		String resolvedCode = propertyRefResolver.resolveRef(transformCode, RefResFlag.SPEC_CHARACTERS_OFF);

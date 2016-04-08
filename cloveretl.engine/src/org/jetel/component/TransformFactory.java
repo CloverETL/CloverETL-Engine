@@ -253,7 +253,8 @@ public class TransformFactory<T> {
 		if (attributeName != null && component.getGraph() != null && component.getGraph().getRuntimeContext() != null) {
 			String jobUrl = component.getGraph().getRuntimeContext().getJobUrl();
 			if (jobUrl != null) {
-				return TransformUtils.createCTLSourceId(jobUrl, "componentId", component.getId(), "propertyName", attributeName);
+				return TransformUtils.createCTLSourceId(jobUrl, TransformUtils.COMPONENT_ID_PARAM, component.getId(),
+						TransformUtils.PROPERTY_NAME_PARAM, attributeName);
 			}
 		}
 		return null;
