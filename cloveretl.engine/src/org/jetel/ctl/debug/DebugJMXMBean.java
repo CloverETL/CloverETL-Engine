@@ -18,6 +18,8 @@
  */
 package org.jetel.ctl.debug;
 
+import java.util.List;
+
 import org.jetel.ctl.debug.DebugCommand.CommandType;
 
 /**
@@ -42,7 +44,9 @@ public interface DebugJMXMBean {
     
     void resumeAll();
 
-    void addBreakpoints(Breakpoint breakpoints[]);
+    void addBreakpoints(List<Breakpoint> breakpoints);
+    
+    void removeBreakpoints(List<Breakpoint> breakpoints);
     
     void stepThread(long threadId, CommandType stepType);
 }

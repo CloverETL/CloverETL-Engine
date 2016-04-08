@@ -30,10 +30,16 @@ public class DebugCommand {
 		GET_OUT_RECORDS,
 		INFO, 
 		LIST_BREAKPOINTS, 
-		LIST_VARS, 
+		LIST_VARS,
+		/** @deprecated Breakpoints are now stored as shared set in graph runtime context */
+		@Deprecated
 		REMOVE_BREAKPOINT, 
 		RESUME, 
+		/** @deprecated Breakpoints are now stored as shared set in graph runtime context */
+		@Deprecated
 		SET_BREAKPOINT, 
+		/** @deprecated Breakpoints are now stored as shared set in graph runtime context */
+		@Deprecated
 		SET_BREAKPOINTS, 
 		SET_VAR,
 		STEP_IN, 

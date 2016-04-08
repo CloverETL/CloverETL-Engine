@@ -24,8 +24,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.ListIterator;
 import java.util.Properties;
 import java.util.Scanner;
@@ -64,7 +62,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	public static final DebugStep INITIAL_DEBUG_STATE = DebugStep.STEP_RUN;
 	
 	private int prevLine = -1;
-	private Set<Breakpoint> breakpoints;
 	private volatile DebugStep step = INITIAL_DEBUG_STATE;
 	private String prevSourceFilename = null;
 	private BlockingQueue<DebugCommand> commandQueue;
@@ -86,11 +83,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	
 	public DebugTransformLangExecutor(TransformLangParser parser, TransformationGraph graph, Properties globalParameters) {
 		super(parser, graph, globalParameters);
-		this.breakpoints= new HashSet<Breakpoint>();
-		List<Breakpoint> breakpoints = graph.getRuntimeContext().getCtlBreakpoints();
-		if (breakpoints != null) {
-			this.breakpoints.addAll(breakpoints);
-		}
 		this.curpoint=new Breakpoint(null, -1);
 		this.stack= new DebugStack();
 	}
@@ -322,7 +314,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 				case REMOVE_BREAKPOINT:{
 					Breakpoint bpoint = (Breakpoint) command.getValue();
 					status = new DebugStatus(node, CommandType.REMOVE_BREAKPOINT);
-					if (!this.breakpoints.remove(bpoint)){
+					if (!getCtlBreakpoints().remove(bpoint)){
 						status.setError(true);
 						status.setMessage("can not find breakpoint: "+bpoint);
 						status.setValue(bpoint);
@@ -333,7 +325,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					Breakpoint bpoint = (Breakpoint) command.getValue();
 					status = new DebugStatus(node, CommandType.SET_BREAKPOINT);
 					if (verifyBreakpoint(bpoint)){
-						if (!this.breakpoints.add(bpoint)){
+						if (!getCtlBreakpoints().add(bpoint)){
 							status.setError(true);
 							status.setMessage("breakpoint already set: "+bpoint);
 							status.setValue(bpoint);
@@ -347,7 +339,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					break;
 				case LIST_BREAKPOINTS:
 					status = new DebugStatus(node, CommandType.LIST_BREAKPOINTS);
-					status.setValue(this.breakpoints.toArray(new Breakpoint[0]));
+					status.setValue(getCtlBreakpoints().toArray(new Breakpoint[0]));
 					status.setError(false);
 					break;
 				case SET_BREAKPOINTS:{
@@ -360,7 +352,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 							status.setValue(bpoint);
 							break;
 						}else{
-							this.breakpoints.add(bpoint);
+							getCtlBreakpoints().add(bpoint);
 						}
 					}
 					}
@@ -490,7 +482,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	private void stepRun(final int curLine, SimpleNode node, Object data) {
 		this.curpoint.setLine(curLine);
 		this.curpoint.setSource(node.getSourceId());
-		if (this.breakpoints.contains(this.curpoint)) {
+		if (getCtlBreakpoints().contains(this.curpoint)) {
 			ctlThread.setSuspended(true);
 			ctlThread.setStepping(false);
 			handleBreakpoint(node, data);
@@ -554,5 +546,9 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			}
 		}
 		return null;
+	}
+
+	public Set<Breakpoint> getCtlBreakpoints() {
+		return graph.getRuntimeContext().getCtlBreakpoints();
 	}
 }

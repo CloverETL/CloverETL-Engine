@@ -140,15 +140,16 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	}
 	
 	@Override
-	public void addBreakpoints(Breakpoint[] breakpoints) {
+	public void addBreakpoints(List<Breakpoint> breakpoints) {
 		for (DebugTransformLangExecutor executor : executors) {
-			DebugCommand cmd = new DebugCommand(CommandType.SET_BREAKPOINTS);
-			cmd.setValue(breakpoints);
-			try {
-				executor.putCommand(cmd);
-			} catch (InterruptedException e) {
-				logger.warn("Interrupted while adding breakpoints.", e);
-			}
+			executor.getCtlBreakpoints().addAll(breakpoints);
+		}
+	}
+	
+	@Override
+	public void removeBreakpoints(List<Breakpoint> breakpoints) {
+		for (DebugTransformLangExecutor executor : executors) {
+			executor.getCtlBreakpoints().removeAll(breakpoints);
 		}
 	}
 	

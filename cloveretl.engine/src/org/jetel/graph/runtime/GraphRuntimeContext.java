@@ -21,9 +21,12 @@ package org.jetel.graph.runtime;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.apache.log4j.Level;
 import org.jetel.component.MetadataProvider;
@@ -80,7 +83,7 @@ public class GraphRuntimeContext {
 	private String timeZone;
 	private String locale;
 	private boolean ctlDebug;
-	private List<Breakpoint> ctlBreakpoints;
+	private final Set<Breakpoint> ctlBreakpoints = new CopyOnWriteArraySet<>();
 	/**
 	 * Default multi-thread execution is managed by {@link WatchDog}.
 	 * Single thread execution is managed by {@link SingleThreadWatchDog}. 
@@ -227,7 +230,7 @@ public class GraphRuntimeContext {
 		ret.classLoaderCaching = isClassLoaderCaching();
 		ret.calculateNoMetadata = isCalculateNoMetadata();
 		ret.ctlDebug = isCtlDebug();
-		ret.ctlBreakpoints = ctlBreakpoints != null ? new ArrayList<>(ctlBreakpoints) : null;
+		ret.ctlBreakpoints.addAll(ctlBreakpoints);
 
 		return ret;
 	}
@@ -1006,12 +1009,13 @@ public class GraphRuntimeContext {
 		this.ctlDebug = ctlDebug;
 	}
 
-	public List<Breakpoint> getCtlBreakpoints() {
+	public Set<Breakpoint> getCtlBreakpoints() {
 		return ctlBreakpoints;
 	}
 
-	public void setCtlBreakpoints(List<Breakpoint> ctlBreakpoints) {
-		this.ctlBreakpoints = ctlBreakpoints;
+	public void setCtlBreakpoints(Collection<Breakpoint> ctlBreakpoints) {
+		this.ctlBreakpoints.clear();
+		this.ctlBreakpoints.addAll(ctlBreakpoints);
 	}
 
 	/**
