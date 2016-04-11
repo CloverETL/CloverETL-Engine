@@ -280,10 +280,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		
 		@Override
 		public Object visit(CLVFImportSource node,Object data){
+			Object result = super.visit(node, data);
 			//adding reference to source file from which nodes were imported
 			TransformLangExecutor.this.imports.put(node.sourceFilename, node);
 			addSourceInfo((SimpleNode)node.jjtGetChild(0),node.sourceFilename);
-			return data;
+			return result;
 		}
 		
 		private void addSourceInfo(SimpleNode node, String sourceFilename){
@@ -2683,7 +2684,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		node.jjtGetChild(0).jjtAccept(this, data);
 		if (node.isExternal()) {
 			assert node.getFunctionCallContext().getGraph() != null : "Graph is null";
-			node.getExtecutable().execute(stack, node.getFunctionCallContext());
+			node.getExecutable().execute(stack, node.getFunctionCallContext());
 		} else {
 			executeFunction(node);
 		}
