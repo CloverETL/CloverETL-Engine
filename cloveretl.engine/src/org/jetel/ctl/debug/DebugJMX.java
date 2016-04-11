@@ -188,6 +188,17 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		}
 	}
 	
+	@Override
+	public void runToLine(long threadId, RunToMark mark) {
+		DebugCommand command = new DebugCommand(CommandType.RUN_TO_LINE);
+		command.setValue(mark);
+		try {
+			processCommand(threadId, command);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 	public void free() {
 		/*
 		 * When a job is killed while being executed, the threads are interrupted and debug

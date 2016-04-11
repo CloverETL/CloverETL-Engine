@@ -28,8 +28,8 @@ import java.util.ListIterator;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.SynchronousQueue;
 
 import org.jetel.component.Freeable;
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
@@ -44,6 +44,7 @@ import org.jetel.ctl.debug.DebugCommand.CommandType;
 import org.jetel.ctl.debug.DebugJMX;
 import org.jetel.ctl.debug.DebugStack;
 import org.jetel.ctl.debug.DebugStatus;
+import org.jetel.ctl.debug.RunToMark;
 import org.jetel.ctl.debug.StackFrame;
 import org.jetel.ctl.debug.Thread;
 import org.jetel.ctl.debug.Variable;
@@ -69,7 +70,9 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	private PrintStream debug_print;
 	private DebugJMX debugJMX;
 	private Breakpoint curpoint;
+	private RunToMark runToMark;
 	private Thread ctlThread;
+	private java.lang.Thread lastActiveThread;
 	private boolean inExecution;
 	private boolean initialized;
 
@@ -265,6 +268,15 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					ctlThread.setStepping(true);
 					handleResume(node, CommandType.STEP_OUT);
 					break;
+				case RUN_TO_LINE:
+					runToMark = (RunToMark)command.getValue();
+					status = new DebugStatus(node, CommandType.RUN_TO_LINE);
+					status.setSuspended(false);
+					this.step = DebugStep.STEP_RUN;
+					runloop = false;
+					ctlThread.setStepping(true);
+					handleResume(node, CommandType.RUN_TO_LINE);
+					break;
 				case GET_AST: {
 					StringWriter writer = new StringWriter();
 					PrintWriter print = new PrintWriter(writer);
@@ -425,6 +437,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	
 	@Override
 	public void free() {
+		lastActiveThread = null;
 		if (debugJMX != null) {
 			debugJMX.unregisterTransformLangExecutor(this);
 		}
@@ -461,30 +474,41 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	
 	@Override
 	protected void beforeExecute() {
+		if (lastActiveThread != java.lang.Thread.currentThread()) {
+			runToMark = null;
+			step = INITIAL_DEBUG_STATE;
+		}
 		registerCurrentThread();
 		inExecution = true;
 	}
 	
 	@Override
 	protected void afterExecute() {
+		lastActiveThread = ctlThread.getJavaThread();
 		unregisterCurrentThread();
-		step = INITIAL_DEBUG_STATE;
 		inExecution = false;
 	}
 	
 	private void initDebug() {
-		this.commandQueue = new ArrayBlockingQueue<DebugCommand>(2, true);
-		this.statusQueue = new ArrayBlockingQueue<DebugStatus>(1, true);
+		this.commandQueue = new SynchronousQueue<>(true);
+		this.statusQueue = new SynchronousQueue<>(true);
 		debugJMX = graph.getDebugJMX();
 		debugJMX.registerTransformLangExecutor(this);
 	}
 	
 	private void stepRun(final int curLine, SimpleNode node, Object data) {
-		this.curpoint.setLine(curLine);
-		this.curpoint.setSource(node.getSourceId());
-		if (isActiveBreakpoint(this.curpoint)) {
-			ctlThread.setSuspended(true);
+		curpoint.setLine(curLine);
+		curpoint.setSource(node.getSourceId());
+		if (runToMark != null && runToMark.getTo().equals(curpoint)) {
 			ctlThread.setStepping(false);
+			ctlThread.setSuspended(true);
+			runToMark = null;
+			handleSuspension(node, CommandType.RUN_TO_LINE);
+			handleCommand(node);
+		} else if ((runToMark == null || !runToMark.isSkipBreakpoints()) && isActiveBreakpoint(this.curpoint)) {
+			ctlThread.setStepping(false);
+			ctlThread.setSuspended(true);
+			runToMark = null;
 			handleBreakpoint(node, data);
 			handleCommand(node);
 		}
@@ -492,8 +516,8 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	
 	private void stepOver(final int curLine, SimpleNode node, Object data, boolean out) {
 		if (this.withinFunction == ((DebugStack) stack).getFunctionCallNode()) {
-			ctlThread.setSuspended(true);
 			ctlThread.setStepping(false);
+			ctlThread.setSuspended(true);
 			handleSuspension(node, out ? CommandType.STEP_OUT : CommandType.STEP_OVER);
 			handleCommand(node);
 			ctlThread.setSuspended(false);
@@ -518,7 +542,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	}
 	
 	private void registerCurrentThread() {
-		this.ctlThread = createCurrentCTLThread();
+		ctlThread = createCurrentCTLThread();
 		debugJMX.registerCTLThread(ctlThread, this);
 	}
 	

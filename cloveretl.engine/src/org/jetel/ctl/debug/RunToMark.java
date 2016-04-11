@@ -18,41 +18,43 @@
  */
 package org.jetel.ctl.debug;
 
-import java.util.List;
+import java.io.Serializable;
 
 import org.jetel.ctl.debug.DebugCommand.CommandType;
 
 /**
- * @author Magdalena Malysz (info@cloveretl.com)
+ * This unit represents mark where "Run to Line" operation should
+ * run up to. See {@link CommandType#RUN_TO_LINE}.
+ * 
+ * @author jan.michalica (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 11. 3. 2016
+ * @created 8.4.2016
  */
-public interface DebugJMXMBean {
+public class RunToMark implements Serializable {
 
-	public static final String JOB_INIT = "clover.job.init";
-    public static final String THREAD_SUSPENDED = "clover.thread.suspend";
-    public static final String THREAD_RESUMED = "clover.thread.resumed";
-
-	void info(long threadId);
+	private static final long serialVersionUID = 1L;
 	
-    Thread[] listCtlThreads();
-    
-    StackFrame[] getStackFrames(long threadId);
-    
-    void resume(long threadId);
-    
-    void resumeAll();
-
-    void addBreakpoints(List<Breakpoint> breakpoints);
-    
-    void removeBreakpoints(List<Breakpoint> breakpoints);
-    
-    void modifyBreakpoint(Breakpoint breakpoint);
-
-    void setBreakingEnabled(boolean enabled);
-    
-    void stepThread(long threadId, CommandType stepType);
-    
-    void runToLine(long threadId, RunToMark mark);
+	private boolean skipBreakpoints;
+	private Breakpoint to;
+	
+	public RunToMark(Breakpoint to) {
+		this.to = to;
+	}
+	
+	public RunToMark(String source, int line) {
+		this(new Breakpoint(source, line));
+	}
+	
+	public Breakpoint getTo() {
+		return to;
+	}
+	
+	public boolean isSkipBreakpoints() {
+		return skipBreakpoints;
+	}
+	
+	public void setSkipBreakpoints(boolean skipBreakpoints) {
+		this.skipBreakpoints = skipBreakpoints;
+	}
 }
