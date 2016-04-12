@@ -31,6 +31,7 @@ public class StackFrame implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	private String name;
+	private String paramTypes[];
 	private int lineNumber;
 	private String file;
 	
@@ -51,5 +52,11 @@ public class StackFrame implements Serializable {
 	}
 	public void setFile(String file) {
 		this.file = file;
+	}
+	public String[] getParamTypes() {
+		return paramTypes;
+	}
+	public void setParamTypes(String[] paramTypes) {
+		this.paramTypes = paramTypes;
 	}
 }

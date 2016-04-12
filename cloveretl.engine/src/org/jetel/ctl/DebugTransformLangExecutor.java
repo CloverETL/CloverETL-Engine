@@ -24,6 +24,8 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Properties;
 import java.util.Scanner;
@@ -38,6 +40,7 @@ import org.jetel.ctl.ASTnode.CLVFImportSource;
 import org.jetel.ctl.ASTnode.CLVFStart;
 import org.jetel.ctl.ASTnode.Node;
 import org.jetel.ctl.ASTnode.SimpleNode;
+import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.debug.Breakpoint;
 import org.jetel.ctl.debug.DebugCommand;
 import org.jetel.ctl.debug.DebugCommand.CommandType;
@@ -297,6 +300,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 						stackFrame.setName(functionCall.getName());
 						stackFrame.setLineNumber(line); 
 						stackFrame.setFile(sourceId);
+						stackFrame.setParamTypes(getArgumentTypeNames(functionCall.getLocalFunction()));
 //						System.out.println(functionCall.getName() + ":" + line + ", " + sourceId);
 						callStack.add(stackFrame);
 
@@ -313,6 +317,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 							functionDeclarationFrame.setName(declarationNode.getName());
 							functionDeclarationFrame.setLineNumber(line);
 							functionDeclarationFrame.setFile(declarationNode.getSourceId());
+							functionDeclarationFrame.setParamTypes(getArgumentTypeNames(declarationNode));
 							callStack.add(functionDeclarationFrame);
 //							System.out.println(declarationNode.getName() + ":" + line + ", " + declarationNode.getSourceId());
 							break;
@@ -570,6 +575,21 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			}
 		}
 		return null;
+	}
+	
+	private String[] getArgumentTypeNames(CLVFFunctionDeclaration decl) {
+		if (decl == null) {
+			return null;
+		}
+		TLType paramTypes[] = decl.getFormalParameters();
+		if (paramTypes == null || paramTypes.length == 0) {
+			return new String[0];
+		}
+		String result[] = new String[paramTypes.length];
+		for (int i = 0; i < paramTypes.length; ++i) {
+			result[i] = paramTypes[i].name();
+		}
+		return result;
 	}
 
 	public Set<Breakpoint> getCtlBreakpoints() {
