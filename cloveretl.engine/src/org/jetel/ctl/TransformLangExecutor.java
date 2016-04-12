@@ -281,9 +281,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		@Override
 		public Object visit(CLVFImportSource node,Object data){
 			Object result = super.visit(node, data);
-			//adding reference to source file from which nodes were imported
-			TransformLangExecutor.this.imports.put(node.sourceFilename, node);
-			addSourceInfo((SimpleNode)node.jjtGetChild(0),node.sourceFilename);
+			//adding reference to source file from which nodes were imported, ignore for duplicated imports
+			if (node.sourceFilename != null) {
+				TransformLangExecutor.this.imports.put(node.sourceFilename, node);
+				addSourceInfo((SimpleNode)node.jjtGetChild(0),node.sourceFilename);
+			}
 			return result;
 		}
 		
