@@ -184,7 +184,7 @@
 
 	<extension point-id="component">
 	  <ETLComponent category="readers" iconPath="icons/readers/UniversalDataReader" name="FlatFileReader" type="FLAT_FILE_READER" className="org.jetel.component.DataReader">
-	    <shortDescription>Reads data from flat files (CSV, fixed-length).</shortDescription>
+	    <shortDescription>Reads data from flat files (CSV, fixed-length). Replaces UniversalDataReader (UDR).</shortDescription>
 	    <description>Reads data from delimited or fixed length files and sends data records to first connected output port. If any error occurs, the report is sent to the second port if &quot;Data policy&quot; is set to &quot;Controlled&quot;. This component is alias for UniversalDataReader.</description>
 	    <inputPorts>
 	      <singlePort name="0" required="false" label="input"/>
@@ -265,7 +265,7 @@
 
 	<extension point-id="component">
 	  <ETLComponent category="writers" iconPath="icons/writers/UniversalDataWriter" name="FlatFileWriter" type="FLAT_FILE_WRITER" className="org.jetel.component.DataWriter">
-	    <shortDescription>Writes data to flat files (CSV, fixed-length).</shortDescription>
+	    <shortDescription>Writes data to flat files (CSV, fixed-length). Replaces UniversalDataWriter (UDW).</shortDescription>
 	    <description>Receives data through connected input port and writes data records to delimited or fixed length files based on input metadata. This component is alias for UniversalDataWriter.</description>
 	    <inputPorts>
 	      <singlePort name="0" required="true" />
