@@ -24,8 +24,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.ListIterator;
 import java.util.Properties;
 import java.util.Scanner;
@@ -37,7 +35,7 @@ import org.jetel.component.Freeable;
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.ctl.ASTnode.CLVFImportSource;
-import org.jetel.ctl.ASTnode.CLVFStart;
+import org.jetel.ctl.ASTnode.CLVFParameters;
 import org.jetel.ctl.ASTnode.Node;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.ctl.data.TLType;
@@ -66,6 +64,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	public static final DebugStep INITIAL_DEBUG_STATE = DebugStep.STEP_RUN;
 	
 	private int prevLine = -1;
+	private volatile SimpleNode stepTarget;
 	private volatile DebugStep step = INITIAL_DEBUG_STATE;
 	private String prevSourceFilename = null;
 	private BlockingQueue<DebugCommand> commandQueue;
@@ -89,8 +88,8 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	
 	public DebugTransformLangExecutor(TransformLangParser parser, TransformationGraph graph, Properties globalParameters) {
 		super(parser, graph, globalParameters);
-		this.curpoint=new Breakpoint(null, -1);
-		this.stack= new DebugStack();
+		this.curpoint = new Breakpoint(null, -1);
+		this.stack = new DebugStack();
 	}
 	
 	public DebugTransformLangExecutor(TransformLangParser parser, TransformationGraph graph) {
@@ -140,7 +139,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		return true;
 	}
 	
-	protected void handleSuspension(SimpleNode node, CommandType cause) {
+	private void handleSuspension(SimpleNode node, CommandType cause) {
 		DebugStatus status = new DebugStatus(node, cause);
 		status.setSuspended(true);
 		status.setSourceFilename(node.getSourceId());
@@ -148,7 +147,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		debugJMX.notifySuspend(status);
 	}
 	
-	protected void handleResume(SimpleNode node, CommandType cause) {
+	private void handleResume(SimpleNode node, CommandType cause) {
 		DebugStatus status = new DebugStatus(node, cause);
 		status.setSuspended(false);
 		status.setSourceFilename(node.getSourceId());
@@ -156,19 +155,12 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		debugJMX.notifyResumed(status);
 	}
 
-	protected void handleBreakpoint(SimpleNode node, Object data) {
-		DebugStatus status = new DebugStatus(node, CommandType.SUSPEND);
-		status.setSuspended(true);
-		status.setSourceFilename(node.getSourceId());
-		status.setThreadId(ctlThread.getId());
-		debugJMX.notifySuspend(status);
-	}
-
-	protected void handleCommand(SimpleNode node) {
-		DebugCommand command = null;
-		boolean runloop = true;
-
-		while (runloop) {
+	private void handleCommand(SimpleNode node) {
+		
+		boolean runLoop = true;
+		while(runLoop) {
+			DebugCommand command = null;
+			
 			try {
 				command = commandQueue.take();
 			} catch (InterruptedException e) {
@@ -183,11 +175,11 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					// list all variables
 					ArrayList<Variable> vars = new ArrayList<Variable>();
 					try {
-						final Object[] globalVariables = stack.getGlobalVariables();
+						final Object[] globalVariables = getStack().getGlobalVariables();
 						for (int i = 0; i < globalVariables.length; i++) {
 							vars.add((Variable) globalVariables[i]);
 						}
-						final Object[] localVariables = ((DebugStack) stack).getAllLocalVariables();
+						final Object[] localVariables = getStack().getAllLocalVariables();
 						
 						for (int i = 0; i < localVariables.length; i++) {
 							vars.add((Variable) localVariables[i]);
@@ -200,7 +192,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					break;
 				case GET_VAR:
 					String varname = ((Variable)command.getValue()).getName();
-					Variable var = (Variable) ((DebugStack) stack).getVariable(varname);
+					Variable var = (Variable)getStack().getVariable(varname);
 					status = new DebugStatus(node, CommandType.GET_VAR);
 					if (var!=null){
 						status.setValue(new Variable(var.getName(), var.getType(), false, var.getValue()));
@@ -212,7 +204,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					break;
 				case SET_VAR:
 					Variable var2set = (Variable) command.getValue();
-					Variable variable = (Variable) ((DebugStack) stack).getVariable(var2set.getName());
+					Variable variable = (Variable)getStack().getVariable(var2set.getName());
 					status = new DebugStatus(node, CommandType.SET_VAR);
 					if (variable != null) {
 						if (variable.getType() != var2set.getType()){
@@ -241,44 +233,48 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					status = new DebugStatus(node, CommandType.RESUME);
 					status.setSuspended(false);
 					this.step = DebugStep.STEP_RUN;
-					runloop = false;
 					handleResume(node, CommandType.RESUME);
+					runLoop = false;
+					break;
+				case SUSPEND:
+					status = new DebugStatus(node, CommandType.SUSPEND);
+					status.setSuspended(true);
+					this.step = DebugStep.STEP_SUSPEND;
 					break;
 				case STEP_IN:
 					status = new DebugStatus(node, CommandType.STEP_IN);
 					status.setSuspended(false);
-					this.withinFunction = null;
 					this.step = DebugStep.STEP_INTO;
-					runloop = false;
 					ctlThread.setStepping(true);
 					handleResume(node, CommandType.STEP_IN);
+					runLoop = false;
 					break;
 				case STEP_OVER:
 					status = new DebugStatus(node, CommandType.STEP_OVER);
 					status.setSuspended(false);
 					this.step = DebugStep.STEP_OVER;
-					this.withinFunction = ((DebugStack) stack).getFunctionCallNode();
-					runloop = false;
+					stepTarget = getStack().getFunctionCallNode();
 					ctlThread.setStepping(true);
 					handleResume(node, CommandType.STEP_OVER);
+					runLoop = false;
 					break;
 				case STEP_OUT:
 					status = new DebugStatus(node, CommandType.STEP_OUT);
 					status.setSuspended(false);
 					this.step = DebugStep.STEP_OUT;
-					this.withinFunction = ((DebugStack) stack).getPreviousFunctionCallNode();
-					runloop = false;
+					stepTarget = getStack().getPreviousFunctionCallNode();
 					ctlThread.setStepping(true);
 					handleResume(node, CommandType.STEP_OUT);
+					runLoop = false;
 					break;
 				case RUN_TO_LINE:
 					runToMark = (RunToMark)command.getValue();
 					status = new DebugStatus(node, CommandType.RUN_TO_LINE);
 					status.setSuspended(false);
 					this.step = DebugStep.STEP_RUN;
-					runloop = false;
 					ctlThread.setStepping(true);
 					handleResume(node, CommandType.RUN_TO_LINE);
+					runLoop = false;
 					break;
 				case GET_AST: {
 					StringWriter writer = new StringWriter();
@@ -290,7 +286,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					break;
 				case GET_CALLSTACK:
 					ArrayList<StackFrame> callStack = new ArrayList<StackFrame>();
-					ListIterator<CLVFFunctionCall> iter = ((DebugStack) stack).getFunctionCallsStack();
+					ListIterator<CLVFFunctionCall> iter = getStack().getFunctionCallsStack();
 					CLVFFunctionCall functionCall = null;
 					int line = node.getLine();
 					String sourceId = node.getSourceId();
@@ -301,29 +297,10 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 						stackFrame.setLineNumber(line); 
 						stackFrame.setFile(sourceId);
 						stackFrame.setParamTypes(getArgumentTypeNames(functionCall.getLocalFunction()));
-//						System.out.println(functionCall.getName() + ":" + line + ", " + sourceId);
 						callStack.add(stackFrame);
 
 						line = functionCall.getLine();
 						sourceId = functionCall.getSourceId();
-					}
-
-					// add also first stackframe (generate, preExecute, etc.) which is not in stack
-					Node parentNode = functionCall != null ? functionCall.jjtGetParent() : node.jjtGetParent();
-					while (!(parentNode instanceof CLVFStart)) {
-						if (parentNode instanceof CLVFFunctionDeclaration) {
-							CLVFFunctionDeclaration declarationNode = (CLVFFunctionDeclaration) parentNode;
-							StackFrame functionDeclarationFrame = new StackFrame();
-							functionDeclarationFrame.setName(declarationNode.getName());
-							functionDeclarationFrame.setLineNumber(line);
-							functionDeclarationFrame.setFile(declarationNode.getSourceId());
-							functionDeclarationFrame.setParamTypes(getArgumentTypeNames(declarationNode));
-							callStack.add(functionDeclarationFrame);
-//							System.out.println(declarationNode.getName() + ":" + line + ", " + declarationNode.getSourceId());
-							break;
-						} else {
-							parentNode = parentNode.jjtGetParent();
-						}
 					}
 					status = new DebugStatus(node, CommandType.GET_CALLSTACK);
 					status.setValue(callStack.toArray(new StackFrame[callStack.size()]));
@@ -392,7 +369,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					logger.info("Debug interrupted in " + ctlThread);
 					throw new JetelRuntimeException("Interrupted while putting debug command result.");
 				}
-				command = null;
 			}
 		}
 
@@ -403,13 +379,12 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		if (!inExecution) {
 			return;
 		}
-		
 		final int curLine = node.getLine();
-		if (curLine == prevLine && node.sourceFilename==prevSourceFilename){
+		if (curLine == prevLine && node.sourceFilename == prevSourceFilename) {
 			return;
 		}
 		prevLine = curLine;
-		prevSourceFilename=node.sourceFilename;
+		prevSourceFilename = node.sourceFilename;
 		
 		switch (step) {
 		case STEP_OUT:
@@ -468,17 +443,84 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		return statusQueue.take();
 	}
 	
-	public synchronized void suspendExecution() {
-		this.step = DebugStep.STEP_SUSPEND;
-	}
-	
 	@Override
 	public final boolean inDebugMode(){
 		return graph.getRuntimeContext().isCtlDebug();
 	}
 	
+	public Set<Breakpoint> getCtlBreakpoints() {
+		return graph.getRuntimeContext().getCtlBreakpoints();
+	}
+	
+	public boolean isBreakingEnabled() {
+		return graph.getRuntimeContext().isCtlBreakingEnabled();
+	}
+	
+	public void setBreakingEnabled(boolean enabled) {
+		graph.getRuntimeContext().setBreakingEnabled(enabled);
+	}
+	
 	@Override
-	protected void beforeExecute() {
+	public void executeFunction(CLVFFunctionDeclaration node, Object[] data) {
+		/*
+		 * re-implementing super type method to push synthetic function call onto stack
+		 */
+		try {
+			beforeExecute();
+			final CLVFParameters formal = (CLVFParameters)node.jjtGetChild(1);
+			
+			CLVFFunctionCall synthCall = new CLVFFunctionCall(parser, -1);
+			synthCall.setCallTarget(node);
+			
+			stack.enteredBlock(node.getScope(), synthCall);
+			
+			for (int i=0; i<data.length; i++) {
+				setVariable((SimpleNode)formal.jjtGetChild(i), data[i]);
+			}
+			
+			// function return value will be saved in this.lastReturnValue
+			node.jjtGetChild(2).jjtAccept(this, null);
+			
+			// clear all break flags
+			if (breakFlag) {
+				breakFlag = false;
+			}
+			stack.exitedBlock(synthCall);
+		} finally {
+			afterExecute();
+		}
+	};
+	
+	@Override
+	public Object executeExpression(SimpleNode expression) {
+		try {
+			beforeExecute();
+			return super.executeExpression(expression);
+		} finally {
+			afterExecute();
+		}
+	}
+	
+	@Override
+	protected void executeInternal(SimpleNode node) {
+		try {
+			beforeExecute();
+			super.executeInternal(node);
+		} finally {
+			afterExecute();
+		}
+	}
+	
+	@Override
+	protected void executeFunction(CLVFFunctionCall node) {
+		try {
+			super.executeFunction(node);
+		} finally {
+			stepTarget = getStack().getFunctionCallNode(); // resetting target for step over
+		}
+	}
+	
+	private void beforeExecute() {
 		if (lastActiveThread != java.lang.Thread.currentThread()) {
 			runToMark = null;
 			step = INITIAL_DEBUG_STATE;
@@ -487,10 +529,14 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		inExecution = true;
 	}
 	
-	@Override
-	protected void afterExecute() {
+	private void afterExecute() {
 		lastActiveThread = ctlThread.getJavaThread();
 		unregisterCurrentThread();
+		stepTarget = null;
+		if (step == DebugStep.STEP_OVER || step == DebugStep.STEP_OUT) {
+			/* we have left top level function while stepping - that is like stepping in */
+			step = DebugStep.STEP_INTO;
+		}
 		inExecution = false;
 	}
 	
@@ -514,16 +560,16 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			ctlThread.setStepping(false);
 			ctlThread.setSuspended(true);
 			runToMark = null;
-			handleBreakpoint(node, data);
+			handleSuspension(node, null);
 			handleCommand(node);
 		}
 	}
 	
 	private void stepOver(final int curLine, SimpleNode node, Object data, boolean out) {
-		if (this.withinFunction == ((DebugStack) stack).getFunctionCallNode()) {
+		if (stepTarget == getStack().getFunctionCallNode()) {
 			ctlThread.setStepping(false);
 			ctlThread.setSuspended(true);
-			handleSuspension(node, out ? CommandType.STEP_OUT : CommandType.STEP_OVER);
+			handleSuspension(node, out? CommandType.STEP_OUT : CommandType.STEP_OVER);
 			handleCommand(node);
 			ctlThread.setSuspended(false);
 		} else {
@@ -541,13 +587,14 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	
 	private void stepSuspend(final int curLine, SimpleNode node, Object data) {
 		ctlThread.setSuspended(true);
-		handleBreakpoint(node, data);
+		handleSuspension(node, CommandType.SUSPEND);
 		handleCommand(node);
 		ctlThread.setSuspended(false);
 	}
 	
 	private void registerCurrentThread() {
-		ctlThread = createCurrentCTLThread();
+		ctlThread = new Thread();
+		ctlThread.setJavaThread(java.lang.Thread.currentThread());
 		debugJMX.registerCTLThread(ctlThread, this);
 	}
 	
@@ -558,10 +605,8 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		}
 	}
 	
-	private Thread createCurrentCTLThread() {
-		Thread ctlThread = new Thread();
-		ctlThread.setJavaThread(java.lang.Thread.currentThread());
-		return ctlThread;
+	private DebugStack getStack() {
+		return (DebugStack)stack;
 	}
 	
 	private Node findBreakableNode(SimpleNode startNode,int onLine){
@@ -591,30 +636,16 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		}
 		return result;
 	}
-
-	public Set<Breakpoint> getCtlBreakpoints() {
-		return graph.getRuntimeContext().getCtlBreakpoints();
-	}
 	
-	public boolean isBreakingEnabled() {
-		return graph.getRuntimeContext().isCtlBreakingEnabled();
-	}
-	
-	public void setBreakingEnabled(boolean enabled) {
-		graph.getRuntimeContext().setBreakingEnabled(enabled);
-	}
-	
-	public boolean isActiveBreakpoint(Breakpoint breakpoint) {
+	private boolean isActiveBreakpoint(Breakpoint breakpoint) {
 		if (!isBreakingEnabled()) {
 			return false;
 		}
-
 		for (Breakpoint bp : getCtlBreakpoints()) {
 			if (bp.equals(breakpoint)) {
 				return bp.isEnabled();
 			}
 		}
-		
 		return false;
 	}
 }

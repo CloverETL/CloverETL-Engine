@@ -104,7 +104,6 @@ import org.jetel.ctl.data.TLType.TLTypeList;
 import org.jetel.ctl.data.TLType.TLTypeMap;
 import org.jetel.ctl.data.TLType.TLTypeRecord;
 import org.jetel.ctl.data.TLTypePrimitive;
-import org.jetel.ctl.debug.DebugStack;
 import org.jetel.ctl.extensions.IntegralLib;
 import org.jetel.ctl.extensions.TLFunctionPrototype;
 import org.jetel.ctl.extensions.TLTransformationContext;
@@ -204,8 +203,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	
 	/** control variables for debug mode*/
 	protected Map<String,Node> imports;
-	
-	protected SimpleNode withinFunction=null;
 	
 	/**
 	 * Allocates runtime data structures within the AST tree necessary for execution
@@ -514,13 +511,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * @param node
 	 */
 	protected void executeInternal(SimpleNode node) {
-		try {
-			beforeExecute();
-			this.ast = node;
-			node.jjtAccept(this, null);
-		} finally {
-			afterExecute();
-		}
+		this.ast = node;
+		node.jjtAccept(this, null);
 	}
 	
 	/**
@@ -529,13 +521,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * @return	value of the expression
 	 */
 	public Object executeExpression(SimpleNode expression) {
-		try {
-			beforeExecute();
-			expression.jjtAccept(this, null);
-			return stack.pop();
-		} finally {
-			afterExecute();
-		}
+		expression.jjtAccept(this, null);
+		return stack.pop();
 	}
 
 	/* *********************************************************** */
@@ -2771,27 +2758,21 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	}
 	
 	public void executeFunction(CLVFFunctionDeclaration node, Object[] data) {
-		try {
-			beforeExecute();
-			
-			final CLVFParameters formal = (CLVFParameters)node.jjtGetChild(1);
-			stack.enteredBlock(node.getScope());
-			
-			for (int i=0; i<data.length; i++) {
-				setVariable((SimpleNode)formal.jjtGetChild(i), data[i]);
-			}
-			
-			// function return value will be saved in this.lastReturnValue
-			node.jjtGetChild(2).jjtAccept(this, null);
-			
-			// clear all break flags
-			if (breakFlag) {
-				breakFlag = false;
-			}
-			stack.exitedBlock();
-		} finally {
-			afterExecute();
+		final CLVFParameters formal = (CLVFParameters)node.jjtGetChild(1);
+		stack.enteredBlock(node.getScope());
+		
+		for (int i=0; i<data.length; i++) {
+			setVariable((SimpleNode)formal.jjtGetChild(i), data[i]);
 		}
+		
+		// function return value will be saved in this.lastReturnValue
+		node.jjtGetChild(2).jjtAccept(this, null);
+		
+		// clear all break flags
+		if (breakFlag) {
+			breakFlag = false;
+		}
+		stack.exitedBlock();
 	}
 
 	/**
@@ -2884,7 +2865,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * 
 	 * @param node
 	 */
-	private void executeFunction(CLVFFunctionCall node) {
+	protected void executeFunction(CLVFFunctionCall node) {
 		final CLVFFunctionDeclaration callTarget = node.getLocalFunction();
 		final CLVFParameters formal = (CLVFParameters)callTarget.jjtGetChild(1);
 		final CLVFArguments actual = (CLVFArguments)node.jjtGetChild(0);
@@ -2915,7 +2896,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		
 		// clear function scope
 		stack.exitedBlock(node);
-		if (inDebugMode()) this.withinFunction=((DebugStack)stack).getFunctionCallNode();
 		}
 	}
 	
@@ -2942,7 +2922,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	}
 	
 	
-	private void setVariable(SimpleNode lhs, Object value) {
+	protected void setVariable(SimpleNode lhs, Object value) {
 		if (lhs.getId() == TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION) {
 			SimpleNode firstChild = (SimpleNode) lhs.jjtGetChild(0);
 			if (firstChild.getId() == TransformLangParserTreeConstants.JJTDICTIONARYNODE) {
@@ -3199,17 +3179,5 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	@Override
 	public void debug(SimpleNode node, Object data) {
 		//do nothing, just stub to allow debugging
-	}
-	
-	/*
-	 * callback for debug subclass 
-	 */
-	protected void beforeExecute() {
-	}
-	
-	/*
-	 * callback for debug subclass 
-	 */
-	protected void afterExecute() {
 	}
 }
