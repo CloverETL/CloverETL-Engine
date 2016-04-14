@@ -150,6 +150,9 @@ public class GraphParameters {
 	 */
 	public GraphParameter addGraphParameter(String name, String value) {
 		GraphParameter graphParameter = new GraphParameter(name, value);
+		if (this.parentGraph != null) {
+			this.parentGraph.getAuthorityProxy().modifyGraphParameter(graphParameter);
+		}
 		addGraphParameter(graphParameter);
 		return getGraphParameter(name);
 	}
