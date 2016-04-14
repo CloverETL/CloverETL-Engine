@@ -24,6 +24,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Properties;
 import java.util.Scanner;
@@ -64,7 +65,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	public static final DebugStep INITIAL_DEBUG_STATE = DebugStep.STEP_RUN;
 	
 	private int prevLine = -1;
-	private volatile SimpleNode stepTarget;
+	private SimpleNode stepTarget;
 	private volatile DebugStep step = INITIAL_DEBUG_STATE;
 	private String prevSourceFilename = null;
 	private BlockingQueue<DebugCommand> commandQueue;
@@ -173,7 +174,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 				switch (command.getType()) {
 				case LIST_VARS:
 					// list all variables
-					ArrayList<Variable> vars = new ArrayList<Variable>();
+					List<Variable> vars = new ArrayList<Variable>();
 					try {
 						final Object[] globalVariables = getStack().getGlobalVariables();
 						for (int i = 0; i < globalVariables.length; i++) {
@@ -234,6 +235,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					status.setSuspended(false);
 					this.step = DebugStep.STEP_RUN;
 					handleResume(node, CommandType.RESUME);
+					ctlThread.setSuspended(false);
 					runLoop = false;
 					break;
 				case SUSPEND:

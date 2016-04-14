@@ -39,7 +39,6 @@ public class DebugStack extends Stack {
 	@Override
 	public void setVariable(int blockOffset, int variableOffset,Object value, String name, TLType type){
 		super.setVariable(blockOffset, variableOffset, new Variable(name,type, blockOffset<0, value));
-		
 	}
 	
 	@Override
