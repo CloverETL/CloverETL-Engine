@@ -36,7 +36,9 @@ public class TransformUtils {
 	public static final String COMPONENT_ID_PARAM = "componentId"; //$NON-NLS-1$
 	public static final String PROPERTY_NAME_PARAM = "propertyName"; //$NON-NLS-1$
 	public static final String GRAPH_PARAMETER_NAME_PARAM = "graphParameterName"; //$NON-NLS-1$
-	public static final String COMPLEX_DATA_READER_PROPERTY_VALUE = "cdrCtlSource"; //$NON-NLS-1$
+	public static final String TYPE_PARAM = "type"; //$NON-NLS-1$
+	public static final String VALIDATOR_TYPE = "validator"; //$NON-NLS-1$
+	public static final String VALIDATOR_CUSTOM_RULE_NAME_PARAM = "customRuleName"; //$NON-NLS-1$
 	
 	/**
 	 * Returns the error message passed to "onError" functions.
