@@ -935,6 +935,7 @@
 	    </inputPorts>
 	    <outputPorts>
 	      <singlePort name="0" required="true"/>
+	      <singlePort name="1"/>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="Join key" modifiable="true" name="joinKey" nullable="true" required="true">
@@ -948,7 +949,7 @@
 	        </enumType>
 	      </property>
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL" primaryAttribute="true">
-	        <singleType name="transform"/>
+	        <singleType name="transform" outputPortName="0"/>
 	      </property>
 	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform" delegate="transform">
 	        <singleType name="file"/>
@@ -1154,6 +1155,7 @@
 	    </inputPorts>
 	    <outputPorts>
 	      <singlePort name="0" required="true"/>
+	      <singlePort name="1"/>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="Join key" modifiable="true" name="joinKey" nullable="true" required="true">
@@ -1167,7 +1169,7 @@
 	        </enumType>
 	      </property>
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL" primaryAttribute="true">
-	        <singleType name="transform"/>
+	        <singleType name="transform" outputPortName="0"/>
 	      </property>
 	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform" delegate="transform">
 	        <singleType name="file"/>
