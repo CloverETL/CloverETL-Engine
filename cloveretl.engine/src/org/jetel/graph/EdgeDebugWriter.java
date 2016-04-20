@@ -122,7 +122,7 @@ public class EdgeDebugWriter {
 	        }
 	
 	        if (filterExpression != null) {
-	        	filter = RecordFilterFactory.createFilter(filterExpression, metadata, getGraph(), getEdgeId(), null, logger);
+	        	filter = RecordFilterFactory.createFilter(filterExpression, metadata, getGraph(), getEdgeId(), null, null, logger);
 	        }
 	
 	        if (sampleData) {

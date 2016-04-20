@@ -118,7 +118,7 @@ public class EdgeDebuger {
         }
 
         if (filterExpression != null) {
-        	filter = RecordFilterFactory.createFilter(filterExpression, metadata, getGraph(), getId(), null, logger);
+        	filter = RecordFilterFactory.createFilter(filterExpression, metadata, getGraph(), getId(), null, null, logger);
         }
 
         if (sampleData) {

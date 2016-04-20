@@ -47,18 +47,18 @@ public class RecordFilterFactory {
 	public static RecordFilter createFilter(String className, Node node) throws ComponentNotReadyException {
 		return ClassLoaderUtils.loadClassInstance(RecordFilter.class, className, node);
 	}
-	public static RecordFilter createFilter(String filterExpression, DataRecordMetadata metadata, TransformationGraph graph, String id, String attributeName, Log logger) throws ComponentNotReadyException {
-		return createFilter(filterExpression, new DataRecordMetadata[] { metadata }, graph, id, attributeName, logger);
+	public static RecordFilter createFilter(String filterExpression, DataRecordMetadata metadata, TransformationGraph graph, String id, String attributeName, String sourceId, Log logger) throws ComponentNotReadyException {
+		return createFilter(filterExpression, new DataRecordMetadata[] { metadata }, graph, id, attributeName, sourceId, logger);
 	}
 	
-	public static RecordsFilter createFilter(String filterExpression, DataRecordMetadata[] metadata, TransformationGraph graph, String id, String attributeName, Log logger) throws ComponentNotReadyException {
+	public static RecordsFilter createFilter(String filterExpression, DataRecordMetadata[] metadata, TransformationGraph graph, String id, String attributeName, String sourceId, Log logger) throws ComponentNotReadyException {
 		RecordsFilter filter;
 		
 		if (filterExpression.contains(org.jetel.ctl.TransformLangExecutor.CTL_TRANSFORM_CODE_ID)) {
 			// new CTL initialization
 			ITLCompiler compiler = TLCompilerFactory.createCompiler(graph, metadata, NO_METADATA, "UTF-8");
 			
-			compiler.setSourceId(createFilterExpressionSourceId(graph, id, attributeName));
+			compiler.setSourceId(sourceId != null ? sourceId : createFilterExpressionSourceId(graph, id, attributeName));
 	    	
 			List<ErrorMessage> msgs = compiler.compileExpression(filterExpression, CTLRecordFilter.class, id, CTLRecordFilterAdapter.ISVALID_FUNCTION_NAME, boolean.class);
 	    	if (compiler.errorCount() > 0) {
