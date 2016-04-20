@@ -37,6 +37,7 @@ import org.jetel.ctl.ASTnode.CLVFFunctionCall;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.ctl.ASTnode.CLVFImportSource;
 import org.jetel.ctl.ASTnode.CLVFParameters;
+import org.jetel.ctl.ASTnode.CLVFVariableDeclaration;
 import org.jetel.ctl.ASTnode.Node;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.ctl.data.TLType;
@@ -46,6 +47,7 @@ import org.jetel.ctl.debug.DebugCommand.CommandType;
 import org.jetel.ctl.debug.DebugJMX;
 import org.jetel.ctl.debug.DebugStack;
 import org.jetel.ctl.debug.DebugStatus;
+import org.jetel.ctl.debug.FunctionStackFrame;
 import org.jetel.ctl.debug.RunToMark;
 import org.jetel.ctl.debug.StackFrame;
 import org.jetel.ctl.debug.Thread;
@@ -292,17 +294,27 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					CLVFFunctionCall functionCall = null;
 					int line = node.getLine();
 					String sourceId = node.getSourceId();
-					while (iter.hasPrevious()) {
-						functionCall = iter.previous();
-						StackFrame stackFrame = new StackFrame();
-						stackFrame.setName(functionCall.getName());
-						stackFrame.setLineNumber(line); 
-						stackFrame.setFile(sourceId);
-						stackFrame.setParamTypes(getArgumentTypeNames(functionCall.getLocalFunction()));
-						callStack.add(stackFrame);
-
-						line = functionCall.getLine();
-						sourceId = functionCall.getSourceId();
+					if (iter.hasPrevious()) {
+						while (iter.hasPrevious()) {
+							functionCall = iter.previous();
+							FunctionStackFrame stackFrame = new FunctionStackFrame();
+							stackFrame.setName(functionCall.getName());
+							stackFrame.setLineNumber(line); 
+							stackFrame.setFile(sourceId);
+							stackFrame.setParamTypes(getArgumentTypeNames(functionCall.getLocalFunction()));
+							callStack.add(stackFrame);
+	
+							line = functionCall.getLine();
+							sourceId = functionCall.getSourceId();
+						}
+					} else {
+						if (node instanceof CLVFVariableDeclaration) {
+							// CLO-8342: Add virtual stack frame for variables outside functions
+							StackFrame stackFrame = new StackFrame();
+							stackFrame.setLineNumber(line); 
+							stackFrame.setFile(sourceId);
+							callStack.add(stackFrame);
+						}
 					}
 					status = new DebugStatus(node, CommandType.GET_CALLSTACK);
 					status.setValue(callStack.toArray(new StackFrame[callStack.size()]));

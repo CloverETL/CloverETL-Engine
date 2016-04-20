@@ -21,31 +21,30 @@ package org.jetel.ctl.debug;
 import java.io.Serializable;
 
 /**
- * @author jan.michalica (info@cloveretl.com)
+ * Stack frame for position inside functions.
+ *  
+ * @author Miroslav Hajda (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 14.3.2016
+ * @created 20.3.2016
  */
-public class StackFrame implements Serializable {
+public class FunctionStackFrame extends StackFrame implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
-	private int lineNumber;
-	private String file;
+	private String name;
+	private String paramTypes[];
 	
-	public int getLineNumber() {
-		return lineNumber;
+	public String getName() {
+		return name;
 	}
-
-	public void setLineNumber(int lineNumber) {
-		this.lineNumber = lineNumber;
+	public void setName(String name) {
+		this.name = name;
 	}
-
-	public String getFile() {
-		return file;
+	public String[] getParamTypes() {
+		return paramTypes;
 	}
-
-	public void setFile(String file) {
-		this.file = file;
+	public void setParamTypes(String[] paramTypes) {
+		this.paramTypes = paramTypes;
 	}
 }
