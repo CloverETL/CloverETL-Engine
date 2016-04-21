@@ -22,8 +22,6 @@ import java.util.ArrayList;
 
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
-import org.jetel.ctl.ASTnode.SimpleNode;
-import org.jetel.ctl.data.Scope;
 import org.jetel.ctl.data.TLType;
 
 /**
@@ -97,13 +95,4 @@ public class DebugStack extends Stack {
 			previousFunctionCallNode =  size>1 ?  functionCalls.get(size-2) : null;
 		}
 	}
-	/*
-	public StoredVariable[] getLocalVariablesDebug() {
-		return (StoredVariable[])super.getLocalVariables();
-	}
-	
-	public StoredVariable[] getGlobalVariablesDebug() {
-		return (StoredVariable[])super.getGlobalVariables();
-	}
-	*/
 }
