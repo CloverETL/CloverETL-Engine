@@ -473,7 +473,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			beforeExecute();
 			final CLVFParameters formal = (CLVFParameters)node.jjtGetChild(1);
 			
-			CLVFFunctionCall synthCall = new CLVFFunctionCall(-1);
+			CLVFFunctionCall synthCall = new CLVFFunctionCall(0);
 			synthCall.setCallTarget(node);
 			
 			stack.enteredBlock(node.getScope(), synthCall);
