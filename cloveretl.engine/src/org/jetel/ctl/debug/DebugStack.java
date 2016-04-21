@@ -21,6 +21,8 @@ package org.jetel.ctl.debug;
 import java.util.ArrayList;
 
 import org.jetel.ctl.Stack;
+import org.jetel.ctl.ASTnode.CLVFFunctionCall;
+import org.jetel.ctl.data.Scope;
 import org.jetel.ctl.data.TLType;
 
 /**
@@ -76,6 +78,18 @@ public class DebugStack extends Stack {
 			}
 		}
 		return null;
+	}
+	
+	@Override
+	public void enteredBlock(Scope blockScope, CLVFFunctionCall functionCallNode) {
+		if (functionCallNode != null) {
+			previousFunctionCallNode = currentFunctionCallNode;
+			currentFunctionCallNode = functionCallNode;
+			functionCalls.add(functionCallNode);
+		}
+		if (blockScope != null) { // null for synthetic functions
+			variableStack.add(new Object[blockScope.size()]);
+		}
 	}
 	
 	

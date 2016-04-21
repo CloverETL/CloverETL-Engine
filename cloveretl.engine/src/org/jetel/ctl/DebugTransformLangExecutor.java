@@ -46,7 +46,6 @@ import org.jetel.ctl.debug.DebugCommand.CommandType;
 import org.jetel.ctl.debug.DebugJMX;
 import org.jetel.ctl.debug.DebugStack;
 import org.jetel.ctl.debug.DebugStatus;
-import org.jetel.ctl.debug.FunctionStackFrame;
 import org.jetel.ctl.debug.RunToMark;
 import org.jetel.ctl.debug.StackFrame;
 import org.jetel.ctl.debug.Thread;
@@ -296,22 +295,16 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					if (iter.hasPrevious()) {
 						while (iter.hasPrevious()) {
 							functionCall = iter.previous();
-							FunctionStackFrame stackFrame = new FunctionStackFrame();
+							StackFrame stackFrame = new StackFrame();
 							stackFrame.setName(functionCall.getName());
+							stackFrame.setSynthetic(functionCall.getId() < 0);
 							stackFrame.setLineNumber(line); 
 							stackFrame.setFile(sourceId);
 							stackFrame.setParamTypes(getArgumentTypeNames(functionCall.getLocalFunction()));
 							callStack.add(stackFrame);
-	
 							line = functionCall.getLine();
 							sourceId = functionCall.getSourceId();
 						}
-					} else {
-						// CLO-8342: Add virtual stack frame for variables outside functions
-						StackFrame stackFrame = new StackFrame();
-						stackFrame.setLineNumber(line); 
-						stackFrame.setFile(sourceId);
-						callStack.add(stackFrame);
 					}
 					status = new DebugStatus(node, CommandType.GET_CALLSTACK);
 					status.setValue(callStack.toArray(new StackFrame[callStack.size()]));
@@ -480,7 +473,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			beforeExecute();
 			final CLVFParameters formal = (CLVFParameters)node.jjtGetChild(1);
 			
-			CLVFFunctionCall synthCall = new CLVFFunctionCall(parser, -1);
+			CLVFFunctionCall synthCall = new CLVFFunctionCall(-1);
 			synthCall.setCallTarget(node);
 			
 			stack.enteredBlock(node.getScope(), synthCall);
@@ -506,7 +499,14 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	public Object executeExpression(SimpleNode expression) {
 		try {
 			beforeExecute();
-			return super.executeExpression(expression);
+			CLVFFunctionCall synthCall = new CLVFFunctionCall(-1);
+			CLVFFunctionDeclaration synthFunc = new CLVFFunctionDeclaration(-1);
+			synthFunc.setName("<expression>");
+			synthCall.setCallTarget(synthFunc);
+			stack.enteredBlock(null, synthCall);
+			Object value = super.executeExpression(expression);
+			stack.exitedBlock(synthCall);
+			return value;
 		} finally {
 			afterExecute();
 		}
@@ -516,7 +516,13 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	protected void executeInternal(SimpleNode node) {
 		try {
 			beforeExecute();
+			CLVFFunctionCall synthCall = new CLVFFunctionCall(-1);
+			CLVFFunctionDeclaration synthFunc = new CLVFFunctionDeclaration(-1);
+			synthFunc.setName("<global>");
+			synthCall.setCallTarget(synthFunc);
+			stack.enteredBlock(null, synthCall);
 			super.executeInternal(node);
+			stack.exitedBlock(synthCall);
 		} finally {
 			afterExecute();
 		}
@@ -634,13 +640,10 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	}
 	
 	private String[] getArgumentTypeNames(CLVFFunctionDeclaration decl) {
-		if (decl == null) {
+		if (decl == null || decl.getFormalParameters() == null) {
 			return null;
 		}
 		TLType paramTypes[] = decl.getFormalParameters();
-		if (paramTypes == null || paramTypes.length == 0) {
-			return new String[0];
-		}
 		String result[] = new String[paramTypes.length];
 		for (int i = 0; i < paramTypes.length; ++i) {
 			result[i] = paramTypes[i].name();

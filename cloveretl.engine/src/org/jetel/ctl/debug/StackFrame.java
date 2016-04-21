@@ -32,6 +32,9 @@ public class StackFrame implements Serializable {
 	
 	private int lineNumber;
 	private String file;
+	private String name;
+	private String paramTypes[];
+	private boolean synthetic;
 	
 	public int getLineNumber() {
 		return lineNumber;
@@ -47,5 +50,29 @@ public class StackFrame implements Serializable {
 
 	public void setFile(String file) {
 		this.file = file;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String[] getParamTypes() {
+		return paramTypes;
+	}
+
+	public void setParamTypes(String[] paramTypes) {
+		this.paramTypes = paramTypes;
+	}
+
+	public boolean isSynthetic() {
+		return synthetic;
+	}
+
+	public void setSynthetic(boolean synthetic) {
+		this.synthetic = synthetic;
 	}
 }
