@@ -473,10 +473,10 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			beforeExecute();
 			final CLVFParameters formal = (CLVFParameters)node.jjtGetChild(1);
 			
-			CLVFFunctionCall synthCall = new CLVFFunctionCall(0);
-			synthCall.setCallTarget(node);
+			CLVFFunctionCall implicitCall = new CLVFFunctionCall(0);
+			implicitCall.setCallTarget(node);
 			
-			stack.enteredBlock(node.getScope(), synthCall);
+			stack.enteredBlock(node.getScope(), implicitCall);
 			
 			for (int i=0; i<data.length; i++) {
 				setVariable((SimpleNode)formal.jjtGetChild(i), data[i]);
@@ -489,7 +489,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			if (breakFlag) {
 				breakFlag = false;
 			}
-			stack.exitedBlock(synthCall);
+			stack.exitedBlock(implicitCall);
 		} finally {
 			afterExecute();
 		}
@@ -503,9 +503,9 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			CLVFFunctionDeclaration synthFunc = new CLVFFunctionDeclaration(-1);
 			synthFunc.setName("<expression>");
 			synthCall.setCallTarget(synthFunc);
-			stack.enteredBlock(null, synthCall);
+			getStack().enteredSyntheticBlock(synthCall);
 			Object value = super.executeExpression(expression);
-			stack.exitedBlock(synthCall);
+			getStack().exitedSyntheticBlock(synthCall);
 			return value;
 		} finally {
 			afterExecute();
@@ -520,9 +520,9 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			CLVFFunctionDeclaration synthFunc = new CLVFFunctionDeclaration(-1);
 			synthFunc.setName("<global>");
 			synthCall.setCallTarget(synthFunc);
-			stack.enteredBlock(null, synthCall);
+			getStack().enteredSyntheticBlock(synthCall);
 			super.executeInternal(node);
-			stack.exitedBlock(synthCall);
+			getStack().exitedSyntheticBlock(synthCall);
 		} finally {
 			afterExecute();
 		}

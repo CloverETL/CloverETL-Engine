@@ -22,6 +22,7 @@ import java.util.ArrayList;
 
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
+import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.ctl.data.Scope;
 import org.jetel.ctl.data.TLType;
 
@@ -80,19 +81,22 @@ public class DebugStack extends Stack {
 		return null;
 	}
 	
-	@Override
-	public void enteredBlock(Scope blockScope, CLVFFunctionCall functionCallNode) {
+	public void enteredSyntheticBlock(CLVFFunctionCall functionCallNode) {
 		if (functionCallNode != null) {
 			previousFunctionCallNode = currentFunctionCallNode;
 			currentFunctionCallNode = functionCallNode;
 			functionCalls.add(functionCallNode);
 		}
-		if (blockScope != null) { // null for synthetic functions
-			variableStack.add(new Object[blockScope.size()]);
-		}
 	}
 	
-	
+	public void exitedSyntheticBlock(CLVFFunctionCall functionCallNode) {
+		if (functionCallNode != null) {
+			functionCalls.remove(functionCalls.size()-1);
+			currentFunctionCallNode = previousFunctionCallNode;
+			final int size=functionCalls.size();
+			previousFunctionCallNode =  size>1 ?  functionCalls.get(size-2) : null;
+		}
+	}
 	/*
 	public StoredVariable[] getLocalVariablesDebug() {
 		return (StoredVariable[])super.getLocalVariables();
