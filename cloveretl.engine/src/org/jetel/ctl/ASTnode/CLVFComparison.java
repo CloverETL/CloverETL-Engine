@@ -98,4 +98,9 @@ public class CLVFComparison extends SimpleNode {
 	public void setComparisonContext(TLFunctionCallContext comparisonContext) {
 		this.comparisonContext = comparisonContext;
 	}
+	
+	@Override
+	public boolean isBreakable(){
+		return true;
+	}
 }

@@ -58,4 +58,9 @@ public class CLVFConditionalExpression extends SimpleNode {
 	public SimpleNode duplicate() {
 		return new CLVFConditionalExpression(this);
 	}
+
+	@Override
+	public boolean isBreakable() {
+		return true;
+	}
 }

@@ -58,4 +58,9 @@ public class CLVFConditionalFailExpression extends SimpleNode {
 	public SimpleNode duplicate() {
 		return new CLVFConditionalFailExpression(this);
 	}
+
+	@Override
+	public boolean isBreakable() {
+		return true;
+	}
 }

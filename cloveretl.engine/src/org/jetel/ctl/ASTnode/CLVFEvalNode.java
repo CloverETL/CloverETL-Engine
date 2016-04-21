@@ -62,4 +62,9 @@ public class CLVFEvalNode extends SimpleNode {
 	public SimpleNode duplicate() {
 		return new CLVFEvalNode(this);
 	}
+	
+	@Override
+	public boolean isBreakable() {
+		return true;
+	}
 }

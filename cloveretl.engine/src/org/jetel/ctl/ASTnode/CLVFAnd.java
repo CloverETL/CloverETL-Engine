@@ -54,4 +54,9 @@ public class CLVFAnd extends SimpleNode {
 	public SimpleNode duplicate() {
 		return new CLVFAnd(this);
 	}
+
+	@Override
+	public boolean isBreakable() {
+		return true;
+	}
 }

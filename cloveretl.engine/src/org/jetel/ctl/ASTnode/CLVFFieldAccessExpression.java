@@ -146,6 +146,9 @@ public class CLVFFieldAccessExpression extends SimpleNode {
 	public SimpleNode duplicate() {
 		return new CLVFFieldAccessExpression(this);
 	}
-	
-	
+
+	@Override
+	public boolean isBreakable() {
+		return true;
+	}
 }

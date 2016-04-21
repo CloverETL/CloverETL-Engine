@@ -54,4 +54,9 @@ public class CLVFIsNullNode extends SimpleNode {
 	public SimpleNode duplicate() {
 		return new CLVFIsNullNode(this);
 	}
+
+	@Override
+	public boolean isBreakable() {
+		return true;
+	}
 }

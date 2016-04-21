@@ -59,4 +59,9 @@ public class CLVFArrayAccessExpression extends SimpleNode {
 	public String toString() {
 		return jjtGetChild(0).toString() + "[" + jjtGetChild(1) + "]";
 	}
+
+	@Override
+	public boolean isBreakable() {
+		return true;
+	}
 }
