@@ -40,7 +40,7 @@ public class CLVFOr extends SimpleNode {
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
 		try {
 			//debug
-			// if(visitor.inDebugMode()) visitor.debug(this, data);
+			if(visitor.inDebugMode()) visitor.debug(this, data);
 			return visitor.visit(this, data);
 		} catch (TransformLangExecutorRuntimeException e) {
 			if (e.getNode() == null) {

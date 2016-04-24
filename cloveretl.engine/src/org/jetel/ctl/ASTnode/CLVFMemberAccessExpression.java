@@ -47,6 +47,7 @@ public class CLVFMemberAccessExpression extends SimpleNode {
 	@Override
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
 		try {
+			if(visitor.inDebugMode()) visitor.debug(this, data);
 			return visitor.visit(this, data);
 		} catch (TransformLangExecutorRuntimeException e) {
 			if (e.getNode() == null) {
