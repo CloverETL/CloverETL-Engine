@@ -78,6 +78,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	private java.lang.Thread lastActiveThread;
 	private boolean inExecution;
 	private boolean initialized;
+	private volatile boolean resumed = false;
 
 	public enum DebugStep {
 		STEP_SUSPEND,
@@ -140,6 +141,15 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		return true;
 	}
 	
+	public void suspend() {
+		step = DebugStep.STEP_SUSPEND;
+		resumed = false;
+	}
+
+	public void resume() {
+		resumed = true;
+	}
+
 	private void handleSuspension(SimpleNode node, CommandType cause) {
 		DebugStatus status = new DebugStatus(node, cause);
 		status.setSuspended(true);
@@ -456,14 +466,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		return graph.getRuntimeContext().getCtlBreakpoints();
 	}
 	
-	public boolean isBreakingEnabled() {
-		return graph.getRuntimeContext().isCtlBreakingEnabled();
-	}
-	
-	public void setBreakingEnabled(boolean enabled) {
-		graph.getRuntimeContext().setBreakingEnabled(enabled);
-	}
-	
 	@Override
 	public void executeFunction(CLVFFunctionDeclaration node, Object[] data) {
 		/*
@@ -541,6 +543,13 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		if (lastActiveThread != java.lang.Thread.currentThread()) {
 			runToMark = null;
 			step = INITIAL_DEBUG_STATE;
+			if (!resumed) {
+				if (graph.getRuntimeContext().isSuspendThreads()) {
+					step = DebugStep.STEP_SUSPEND;
+				}
+			}
+		} else {
+			resumed = false;
 		}
 		registerCurrentThread();
 		inExecution = true;
@@ -652,7 +661,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	}
 	
 	private boolean isActiveBreakpoint(Breakpoint breakpoint) {
-		if (!isBreakingEnabled()) {
+		if (!graph.getRuntimeContext().isCtlBreakingEnabled()) {
 			return false;
 		}
 		for (Breakpoint bp : getCtlBreakpoints()) {

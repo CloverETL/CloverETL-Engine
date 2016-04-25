@@ -83,7 +83,8 @@ public class GraphRuntimeContext {
 	private String timeZone;
 	private String locale;
 	private boolean ctlDebug;
-	private boolean breakingEnabled = true;
+	private volatile boolean ctlBreakingEnabled = true;
+	private volatile boolean suspendThreads = false;
 	private final Set<Breakpoint> ctlBreakpoints = new CopyOnWriteArraySet<>();
 	/**
 	 * Default multi-thread execution is managed by {@link WatchDog}.
@@ -1010,6 +1011,14 @@ public class GraphRuntimeContext {
 		this.ctlDebug = ctlDebug;
 	}
 
+	public boolean isSuspendThreads() {
+		return suspendThreads;
+	}
+
+	public void setSuspendThreads(boolean suspendThreads) {
+		this.suspendThreads = suspendThreads;
+	}
+
 	public Set<Breakpoint> getCtlBreakpoints() {
 		return ctlBreakpoints;
 	}
@@ -1020,11 +1029,11 @@ public class GraphRuntimeContext {
 	}
 	
 	public boolean isCtlBreakingEnabled() {
-		return breakingEnabled;
+		return ctlBreakingEnabled;
 	}
 
-	public void setBreakingEnabled(boolean enabled) {
-		breakingEnabled = enabled;
+	public void setCtlBreakingEnabled(boolean enabled) {
+		ctlBreakingEnabled = enabled;
 	}
 	
 	/**

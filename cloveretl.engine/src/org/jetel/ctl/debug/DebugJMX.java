@@ -31,6 +31,7 @@ import javax.management.NotificationBroadcasterSupport;
 import org.apache.log4j.Logger;
 import org.jetel.ctl.DebugTransformLangExecutor;
 import org.jetel.ctl.debug.DebugCommand.CommandType;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 
 /**
  * A JMX bean for CTL debugger. It manages debugging of CTL threads - passes debug commands to threads and sends suspend
@@ -45,10 +46,12 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	private int notificationSequence;
     static Logger logger = Logger.getLogger(DebugJMX.class);
 	
+    private GraphRuntimeContext runtimeContext;
 	private Map<Long, ExecutorThread> activeThreads;
 	private Set<DebugTransformLangExecutor> executors;
 	
-	public DebugJMX() {
+	public DebugJMX(GraphRuntimeContext runtimeContext) {
+		this.runtimeContext = runtimeContext;
 		activeThreads = new ConcurrentHashMap<Long, ExecutorThread>();
 		executors = new CopyOnWriteArraySet<>();
 	}
@@ -88,10 +91,24 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	
 	@Override
 	public void resume(long threadId) {
+		for (ExecutorThread thread : activeThreads.values()) {
+			if (thread.getCTLThread().getId() == threadId) {
+				thread.getExecutor().resume();
+			}
+		}
 		try {
 			processCommand(threadId, new DebugCommand(CommandType.RESUME));
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
+		}
+	}
+	
+	@Override
+	public void suspend(long threadId) {
+		for (ExecutorThread thread : activeThreads.values()) {
+			if (thread.getCTLThread().getId() == threadId && !thread.getCTLThread().isSuspended()) {
+				thread.getExecutor().suspend();
+			}
 		}
 	}
 	
@@ -128,6 +145,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 
 	@Override
 	public void resumeAll() {
+		runtimeContext.setSuspendThreads(false);
 		for (ExecutorThread thread : activeThreads.values()) {
 			if (thread.getCTLThread().isSuspended()) {
 				try {
@@ -140,40 +158,35 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	}
 	
 	@Override
-	public void addBreakpoints(List<Breakpoint> breakpoints) {
-		// Breakpoints are shared across all executors
+	public void suspendAll() {
+		runtimeContext.setSuspendThreads(true);
 		for (DebugTransformLangExecutor executor : executors) {
-			executor.getCtlBreakpoints().addAll(breakpoints);
-			break;
+			executor.suspend();
 		}
+	}
+	
+	@Override
+	public void addBreakpoints(List<Breakpoint> breakpoints) {
+		runtimeContext.getCtlBreakpoints().addAll(breakpoints);
 	}
 	
 	@Override
 	public void removeBreakpoints(List<Breakpoint> breakpoints) {
-		for (DebugTransformLangExecutor executor : executors) {
-			executor.getCtlBreakpoints().removeAll(breakpoints);
-			break;
-		}
+		runtimeContext.getCtlBreakpoints().removeAll(breakpoints);
 	}
 	
 	@Override
 	public void modifyBreakpoint(Breakpoint breakpoint) {
-		for (DebugTransformLangExecutor executor : executors) {
-			for (Breakpoint bp : executor.getCtlBreakpoints()) {
-				if (bp.equals(breakpoint)) {
-					bp.setEnabled(breakpoint.isEnabled());
-				}
+		for (Breakpoint bp : runtimeContext.getCtlBreakpoints()) {
+			if (bp.equals(breakpoint)) {
+				bp.setEnabled(breakpoint.isEnabled());
 			}
-			break;
 		}
 	}
 
 	@Override
-	public void setBreakingEnabled(boolean enabled) {
-		for (DebugTransformLangExecutor executor : executors) {
-			executor.setBreakingEnabled(enabled);
-			break;
-		}
+	public void setCtlBreakingEnabled(boolean enabled) {
+		runtimeContext.setCtlBreakingEnabled(enabled);
 	}
 
 	@Override

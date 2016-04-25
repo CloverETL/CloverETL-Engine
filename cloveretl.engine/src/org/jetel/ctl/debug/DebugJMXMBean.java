@@ -44,13 +44,17 @@ public interface DebugJMXMBean {
     
     void resumeAll();
 
+    void suspend(long threadId);
+
+    void suspendAll();
+
     void addBreakpoints(List<Breakpoint> breakpoints);
     
     void removeBreakpoints(List<Breakpoint> breakpoints);
     
     void modifyBreakpoint(Breakpoint breakpoint);
 
-    void setBreakingEnabled(boolean enabled);
+    void setCtlBreakingEnabled(boolean enabled);
     
     void stepThread(long threadId, CommandType stepType);
     
