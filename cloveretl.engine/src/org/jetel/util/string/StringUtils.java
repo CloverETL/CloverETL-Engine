@@ -1643,6 +1643,19 @@ public class StringUtils {
 		
 		// CLO-1814, see comments on the issue
 		StringBuilder sb = new StringBuilder(str.length());
+		
+		/*
+		 * Here is how a non-BMP character C is handled:
+		 * 
+		 * "C" = ['high', 'low'] where 'high' and 'low' are the corresponding surrogate chars
+		 * 
+		 * "C".codePointAt(0) detects that "C".charAt(0) = 'high' and "C".charAt(1) = 'low';
+		 * the surrogates are combined and a non-BMP code point with Character.charCount('C') == 2 is returned.
+		 * 
+		 * The index is only incremented by 1, which looks like a bug,
+		 * but "C".codePointAt(1) returns a char whose Character.getType() == Character.SURROGATE,
+		 * which is skipped.
+		 */
 		for (int i = 0; i < str.length(); i++) {
 			int codePoint = str.codePointAt(i);
 			switch (Character.getType(codePoint))
