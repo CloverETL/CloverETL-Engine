@@ -535,7 +535,9 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		try {
 			super.executeFunction(node);
 		} finally {
-			stepTarget = getStack().getFunctionCallNode(); // resetting target for step over
+			if (step == DebugStep.STEP_OVER) {
+				stepTarget = getStack().getFunctionCallNode(); // resetting target for step over
+			}
 		}
 	}
 	
