@@ -469,7 +469,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	@Override
 	public void executeFunction(CLVFFunctionDeclaration node, Object[] data) {
 		/*
-		 * re-implementing super type method to push synthetic function call onto stack
+		 * re-implementing super type method to push implicit function call onto stack
 		 */
 		try {
 			beforeExecute();

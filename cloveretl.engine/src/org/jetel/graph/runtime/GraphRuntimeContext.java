@@ -232,6 +232,7 @@ public class GraphRuntimeContext {
 		ret.classLoaderCaching = isClassLoaderCaching();
 		ret.calculateNoMetadata = isCalculateNoMetadata();
 		ret.ctlDebug = isCtlDebug();
+		ret.ctlBreakingEnabled = isCtlBreakingEnabled();
 		ret.ctlBreakpoints.addAll(ctlBreakpoints);
 
 		return ret;

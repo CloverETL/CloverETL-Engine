@@ -44,7 +44,7 @@ public class CLVFVariableDeclaration extends SimpleNode implements TransformLang
 
 	@Override
 	public boolean isBreakable(){
-		return true;
+		return !(jjtGetParent() instanceof CLVFParameters); // CLO-8549
 	}
 	
 	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */
