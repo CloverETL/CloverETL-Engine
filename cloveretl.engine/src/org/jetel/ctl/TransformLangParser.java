@@ -11,6 +11,8 @@ import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.component.RecordTransform;
+import org.jetel.component.fileoperation.URIUtils;
+
 import java.util.Map;
 import java.util.HashSet;
 import java.util.List;
@@ -630,7 +632,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 
                                 parser.addParsedImports(getParsedImports());
                                 parseTree = parser.Start();
-                                String sourceId = FileUtils.getFileURL(projectURL, filenameURL).toString();
+                                String sourceId = URIUtils.urlEncode(FileUtils.getFileURL(projectURL, filenameURL).toString());
                                 jjtn000.setSourceId(sourceId);
                                 jjtn000.setSourceFilename(filenameURL);
                                 jjtn000.jjtAddChild(parseTree,0);

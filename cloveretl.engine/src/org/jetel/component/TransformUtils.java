@@ -18,6 +18,7 @@
  */
 package org.jetel.component;
 
+import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.ctl.RaiseErrorException;
 import org.jetel.util.ExceptionUtils;
 
@@ -62,16 +63,16 @@ public class TransformUtils {
 	 * @return
 	 */
 	public static String createCTLSourceId(String jobUrl, String... params) {
-		StringBuilder sourceIdSB = new StringBuilder(jobUrl);
+		StringBuilder sourceIdSB = new StringBuilder(URIUtils.urlEncode(jobUrl));
 		for (int i = 0; i < params.length - 1; i+=2) {
 			if (i == 0) {
 				sourceIdSB.append("?");
 			} else {
 				sourceIdSB.append("&");
 			}
-			sourceIdSB.append(params[i]);
+			sourceIdSB.append(URIUtils.urlEncode(params[i]));
 			sourceIdSB.append("=");
-			sourceIdSB.append(params[i+1]);
+			sourceIdSB.append(URIUtils.urlEncode(params[i+1]));
 		}
 		return sourceIdSB.toString();
 	}
