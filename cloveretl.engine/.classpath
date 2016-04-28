@@ -48,7 +48,7 @@
 	<classpathentry kind="lib" path="lib/commons-configuration-1.10.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.4.jar"/>
-	<classpathentry kind="lib" path="lib/aws-java-sdk-1.10.14.jar" />
+	<classpathentry kind="lib" path="lib/aws-java-sdk-1.10.14-modified.jar" />
 	<classpathentry kind="lib" path="lib/jackson-databind-2.5.3.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-core-2.5.3.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-annotations-2.5.3.jar"/>

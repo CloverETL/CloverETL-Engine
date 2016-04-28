@@ -472,6 +472,10 @@ public class LookupJoin extends Node implements MetadataProvider {
 
         if (getOutputPort(REJECTED_PORT) != null) {
             checkMetadata(status, getInputPort(READ_FROM_PORT), getOutputPort(REJECTED_PORT));
+            if (leftOuterJoin) {
+        		status.add("Left outer join is selected, no records will be produced on second output port.",
+            			Severity.WARNING, this, Priority.NORMAL, XML_LEFTOUTERJOIN_ATTRIBUTE);
+        	}
         }
 
         if (errorActionsString != null){
