@@ -18,6 +18,7 @@
  */
 package org.jetel.util.protocols.amazon;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +28,7 @@ import java.util.Properties;
 import org.jetel.util.ExceptionUtils;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -82,6 +84,19 @@ public class S3Utils {
 		return sse;
 	}
 
+	/**
+	 * CLO-8589: set content length to 0 to prevent a warning being logged.
+	 * 
+	 * @param service
+	 * @param bucketName
+	 * @param key
+	 */
+	public static void createEmptyObject(AmazonS3 service, String bucketName, String key) {
+		ObjectMetadata metadata = new ObjectMetadata();
+		metadata.setContentLength(0);
+		service.putObject(bucketName, key, new ByteArrayInputStream(new byte[0]), metadata);
+	}
+	
 	public static void uploadFile(TransferManager tm, File file, String targetBucket, String targetKey) throws IOException {
 		Upload upload = null;
 		try {

@@ -18,7 +18,6 @@
  */
 package org.jetel.component.fileoperation;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilterInputStream;
@@ -129,7 +128,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 				throw new IOException("Cannot write to the root directory");
 			}
 			try {
-				service.putObject(path[0], path[1], new ByteArrayInputStream(new byte[0]), new ObjectMetadata());
+				S3Utils.createEmptyObject(service, path[0], path[1]);
 				return true;
 			} catch (AmazonClientException e) {
 				throw S3Utils.getIOException(e);
@@ -169,7 +168,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 					service.createBucket(bucketName);
 				} else {
 					String dirName = appendSlash(path[1]);
-					service.putObject(bucketName, dirName, new ByteArrayInputStream(new byte[0]), new ObjectMetadata());
+					S3Utils.createEmptyObject(service, bucketName, dirName);
 				}
 				return true;
 			} catch (AmazonClientException e) {
