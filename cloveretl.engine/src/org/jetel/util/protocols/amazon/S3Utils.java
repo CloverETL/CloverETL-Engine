@@ -92,7 +92,7 @@ public class S3Utils {
 	 * @param key
 	 */
 	public static void createEmptyObject(AmazonS3 service, String bucketName, String key) {
-		ObjectMetadata metadata = new ObjectMetadata();
+		ObjectMetadata metadata = createPutObjectMetadata();
 		metadata.setContentLength(0);
 		service.putObject(bucketName, key, new ByteArrayInputStream(new byte[0]), metadata);
 	}
@@ -102,8 +102,7 @@ public class S3Utils {
 		try {
 			PutObjectRequest request = new PutObjectRequest(targetBucket, targetKey, file);
 			if (isSSE()) {
-				ObjectMetadata metadata = new ObjectMetadata();
-				metadata.setSSEAlgorithm(ObjectMetadata.AES_256_SERVER_SIDE_ENCRYPTION);
+				ObjectMetadata metadata = createPutObjectMetadata();
 				request.withMetadata(metadata);
 			}
 			upload = tm.upload(request);
@@ -127,6 +126,19 @@ public class S3Utils {
 			}
 			throw ExceptionUtils.getIOException(e);
 		}
+	}
+
+	/**
+	 * CLO-7293:
+	 * 
+	 * Creates new {@link ObjectMetadata}, sets SSE algorithm, if configured.
+	 * 
+	 * @return new {@link ObjectMetadata}
+	 */
+	private static ObjectMetadata createPutObjectMetadata() {
+		ObjectMetadata metadata = new ObjectMetadata();
+		metadata.setSSEAlgorithm(ObjectMetadata.AES_256_SERVER_SIDE_ENCRYPTION);
+		return metadata;
 	}
 
 	public static ListObjectsRequest listObjectRequest(String bucketName, String prefix, String delimiter) {
