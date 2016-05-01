@@ -41,10 +41,10 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.TransformException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.TransformException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -883,6 +883,20 @@ public class HashJoin extends Node implements MetadataProvider {
 		
 		if (getOutputPort(REJECTED_PORT) != null) {
             checkMetadata(status, getInputPort(DRIVER_ON_PORT), getOutputPort(REJECTED_PORT));
+            if (join != Join.INNER) {
+            	String message = "";
+            	switch (join) {
+            		case LEFT_OUTER:
+            			message = "Left outer join";
+            			break;
+            		case FULL_OUTER:
+            			message = "Full outer join";
+            			break;
+            		default:
+            	}
+        		status.add(message + " is selected, no records will be produced on second output port.",
+            			Severity.WARNING, this, Priority.NORMAL, XML_JOINTYPE_ATTRIBUTE);
+        	}
         }
 
 		if (charset != null && !Charset.isSupported(charset)) {
