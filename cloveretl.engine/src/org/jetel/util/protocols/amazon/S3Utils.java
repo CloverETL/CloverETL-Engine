@@ -18,6 +18,7 @@
  */
 package org.jetel.util.protocols.amazon;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +28,7 @@ import java.util.Properties;
 import org.jetel.util.ExceptionUtils;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -82,13 +84,25 @@ public class S3Utils {
 		return sse;
 	}
 
+	/**
+	 * CLO-8589: set content length to 0 to prevent a warning being logged.
+	 * 
+	 * @param service
+	 * @param bucketName
+	 * @param key
+	 */
+	public static void createEmptyObject(AmazonS3 service, String bucketName, String key) {
+		ObjectMetadata metadata = createPutObjectMetadata();
+		metadata.setContentLength(0);
+		service.putObject(bucketName, key, new ByteArrayInputStream(new byte[0]), metadata);
+	}
+	
 	public static void uploadFile(TransferManager tm, File file, String targetBucket, String targetKey) throws IOException {
 		Upload upload = null;
 		try {
 			PutObjectRequest request = new PutObjectRequest(targetBucket, targetKey, file);
 			if (isSSE()) {
-				ObjectMetadata metadata = new ObjectMetadata();
-				metadata.setSSEAlgorithm(ObjectMetadata.AES_256_SERVER_SIDE_ENCRYPTION);
+				ObjectMetadata metadata = createPutObjectMetadata();
 				request.withMetadata(metadata);
 			}
 			upload = tm.upload(request);
@@ -112,6 +126,19 @@ public class S3Utils {
 			}
 			throw ExceptionUtils.getIOException(e);
 		}
+	}
+
+	/**
+	 * CLO-7293:
+	 * 
+	 * Creates new {@link ObjectMetadata}, sets SSE algorithm, if configured.
+	 * 
+	 * @return new {@link ObjectMetadata}
+	 */
+	private static ObjectMetadata createPutObjectMetadata() {
+		ObjectMetadata metadata = new ObjectMetadata();
+		metadata.setSSEAlgorithm(ObjectMetadata.AES_256_SERVER_SIDE_ENCRYPTION);
+		return metadata;
 	}
 
 	public static ListObjectsRequest listObjectRequest(String bucketName, String prefix, String delimiter) {
