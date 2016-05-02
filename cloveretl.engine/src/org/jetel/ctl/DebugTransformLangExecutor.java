@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.jetel.component.Freeable;
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
@@ -64,16 +65,19 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	
 	public static final DebugStep INITIAL_DEBUG_STATE = DebugStep.STEP_RUN;
 	
-	private int prevLine = -1;
-	private SimpleNode stepTarget;
+	private static final int SYNTHETIC_FUNCTION_CALL_ID = -1;
+	private static final int IMPLICIT_FUCTION_CALL_ID = -2;
+	
 	private volatile DebugStep step = INITIAL_DEBUG_STATE;
-	private String prevSourceFilename = null;
+	private int stepTarget = -1;
+	private int prevLine = -1;
+	private String prevSourceId = null;
 	private BlockingQueue<DebugCommand> commandQueue;
 	private BlockingQueue<DebugStatus> statusQueue;
 	private PrintStream debug_print;
 	private DebugJMX debugJMX;
 	private Breakpoint curpoint;
-	private RunToMark runToMark;
+	private volatile RunToMark runToMark;
 	private Thread ctlThread;
 	private java.lang.Thread lastActiveThread;
 	private boolean inExecution;
@@ -125,22 +129,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		scanner.close();
 	}
 	
-	private boolean verifyBreakpoint(Breakpoint bpoint){
-		Node startImport;
-		if (bpoint.getSource()==null)
-			startImport=this.ast;
-		else{
-			startImport=this.imports.get(bpoint.getSource());
-			if (startImport==null) return false;
-		}
-		SimpleNode foundNode;
-		do{
-			foundNode= (SimpleNode) findBreakableNode((SimpleNode)startImport, bpoint.getLine());
-			if (foundNode==null) return false;
-		}while(!StringUtils.equalsWithNulls(foundNode.sourceFilename,bpoint.getSource()));
-		return true;
-	}
-	
 	public void suspend() {
 		step = DebugStep.STEP_SUSPEND;
 		resumed = false;
@@ -150,7 +138,302 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		resumed = true;
 	}
 
+	@Override
+	public final void debug(SimpleNode node, Object data) {
+		if (!inExecution) {
+			return;
+		} 
+		final int curLine = node.getLine();
+		if (curLine == prevLine && ObjectUtils.equals(prevSourceId, node.getSourceId())) { 
+			return;
+		} 
+		prevLine = curLine;
+		prevSourceId = node.getSourceId();
+		step(curLine, node, data);
+	}
+	
+	@Override
+	public void init() {
+		if (!initialized) {
+			initialized = true;
+			super.init();
+			initDebug();
+		}
+	}
+	
+	@Override
+	public void free() {
+		lastActiveThread = null;
+		if (debugJMX != null) {
+			debugJMX.unregisterTransformLangExecutor(this);
+		}
+	}
+	
+	@Override
+	public void postExecute() {
+		super.postExecute();
+		commandQueue = null;
+		statusQueue = null;
+	}
+	
+	public DebugStatus executeCommand(DebugCommand command) throws InterruptedException {
+		commandQueue.put(command);
+		return statusQueue.take();
+	}
+	
+	public void putCommand(DebugCommand command) throws InterruptedException {
+		commandQueue.put(command);
+	}
+	
+	public DebugStatus takeStatus() throws InterruptedException {
+		return statusQueue.take();
+	}
+	
+	@Override
+	public final boolean inDebugMode(){
+		return graph.getRuntimeContext().isCtlDebug();
+	}
+	
+	public Set<Breakpoint> getCtlBreakpoints() {
+		return graph.getRuntimeContext().getCtlBreakpoints();
+	}
+	
+	@Override
+	public void executeFunction(CLVFFunctionDeclaration node, Object[] data) {
+		/*
+		 * re-implementing super type method to push implicit function call onto stack
+		 */
+		try {
+			beforeExecute();
+			final CLVFParameters formal = (CLVFParameters)node.jjtGetChild(1);
+			
+			CLVFFunctionCall implicitCall = new CLVFFunctionCall(IMPLICIT_FUCTION_CALL_ID);
+			implicitCall.setName(node.getName());
+			implicitCall.setCallTarget(node);
+			
+			stack.enteredBlock(node.getScope(), implicitCall);
+			
+			for (int i=0; i<data.length; i++) {
+				setVariable((SimpleNode)formal.jjtGetChild(i), data[i]);
+			}
+			
+			// function return value will be saved in this.lastReturnValue
+			node.jjtGetChild(2).jjtAccept(this, null);
+			
+			// clear all break flags
+			if (breakFlag) {
+				breakFlag = false;
+			}
+			stack.exitedBlock(implicitCall);
+		} finally {
+			afterExecute();
+		}
+	};
+	
+	@Override
+	public Object executeExpression(SimpleNode expression) {
+		try {
+			beforeExecute();
+			CLVFFunctionCall synthCall = new CLVFFunctionCall(SYNTHETIC_FUNCTION_CALL_ID);
+			synthCall.setName("<expression>");
+			CLVFFunctionDeclaration synthFunc = new CLVFFunctionDeclaration(0);
+			synthFunc.setName(synthCall.getName());
+			synthCall.setCallTarget(synthFunc);
+			getStack().enteredSyntheticBlock(synthCall);
+			Object value = super.executeExpression(expression);
+			getStack().exitedSyntheticBlock(synthCall);
+			return value;
+		} finally {
+			afterExecute();
+		}
+	}
+	
+	@Override
+	protected void executeInternal(SimpleNode node) {
+		try {
+			beforeExecute();
+			CLVFFunctionCall synthCall = new CLVFFunctionCall(SYNTHETIC_FUNCTION_CALL_ID);
+			synthCall.setName("<global>");
+			CLVFFunctionDeclaration synthFunc = new CLVFFunctionDeclaration(0);
+			synthFunc.setName(synthCall.getName());
+			synthCall.setCallTarget(synthFunc);
+			getStack().enteredSyntheticBlock(synthCall);
+			super.executeInternal(node);
+			getStack().exitedSyntheticBlock(synthCall);
+		} finally {
+			afterExecute();
+		}
+	}
+	
+	@Override
+	protected void executeFunction(CLVFFunctionCall node) {
+		super.executeFunction(node);
+		if (ctlThread.isStepping()) {
+			prevLine = node.getLine();
+			prevSourceId = node.getSourceId();
+			stepAfter(node.getLine(), node);
+		}
+	}
+	
+	private void beforeExecute() {
+		if (lastActiveThread != java.lang.Thread.currentThread()) {
+			runToMark = null;
+			step = INITIAL_DEBUG_STATE;
+			if (!resumed) {
+				if (graph.getRuntimeContext().isSuspendThreads()) {
+					step = DebugStep.STEP_SUSPEND;
+				}
+			}
+		} else {
+			resumed = false;
+		}
+		registerCurrentThread();
+		inExecution = true;
+	}
+	
+	private void afterExecute() {
+		lastActiveThread = ctlThread.getJavaThread();
+		unregisterCurrentThread();
+		stepTarget = -1;
+		if (step == DebugStep.STEP_OVER || step == DebugStep.STEP_OUT) {
+			/* we have left top level function while stepping - that is like stepping in */
+			step = DebugStep.STEP_INTO;
+		}
+		inExecution = false;
+	}
+	
+	private void initDebug() {
+		this.commandQueue = new SynchronousQueue<>(true);
+		this.statusQueue = new SynchronousQueue<>(true);
+		debugJMX = graph.getDebugJMX();
+		debugJMX.registerTransformLangExecutor(this);
+	}
+	
+	private void stepRun(final int curLine, SimpleNode node, Object data) {
+		curpoint.setLine(curLine);
+		curpoint.setSource(node.getSourceId());
+		if (runToMark != null && runToMark.getTo().equals(curpoint)) {
+			ctlThread.setStepping(false);
+			runToMark = null;
+			handleSuspension(node, CommandType.RUN_TO_LINE);
+			handleCommand(node);
+		} else if ((runToMark == null || !runToMark.isSkipBreakpoints()) && isActiveBreakpoint(this.curpoint)) {
+			ctlThread.setStepping(false);
+			runToMark = null;
+			handleSuspension(node, null);
+			handleCommand(node);
+		}
+	}
+	
+	private void stepOver(final int curLine, SimpleNode node, Object data) {
+		if (stepTarget == getStack().getCurrentFunctionCallIndex()) {
+			stepTarget = -1;
+			ctlThread.setStepping(false);
+			handleSuspension(node, CommandType.STEP_OVER);
+			handleCommand(node);
+			ctlThread.setSuspended(false);
+		} else {
+			stepRun(curLine, node, data);
+		}
+	}
+	
+	private void stepOut(final int curLine, SimpleNode node, Object data) {
+		if (stepTarget == getStack().getCurrentFunctionCallIndex()) {
+			stepTarget = -1;
+			ctlThread.setStepping(false);
+			handleSuspension(node, CommandType.STEP_OUT);
+			handleCommand(node);
+			ctlThread.setSuspended(false);
+		} else {
+			stepRun(curLine, node, data);
+		}
+	}
+	
+	private void stepAfter(int curLine, SimpleNode node) {
+		switch (step) {
+		case STEP_OUT:
+			stepOutAfter(curLine, node);
+			break;
+		case STEP_INTO:
+			stepInto(curLine, node, null);
+			break;
+		case STEP_OVER:
+			stepOverAfter(curLine, node);
+			break;
+		default:
+		}
+	}
+	
+	private void step(int curLine, SimpleNode node, Object data) {
+		switch (step) {
+		case STEP_OVER:
+			stepOver(curLine, node, data);
+			break;
+		case STEP_OUT:
+			stepOut(curLine, node, data);
+			break;
+		case STEP_INTO:
+			stepInto(curLine, node, data);
+			break;
+		case STEP_RUN:
+			stepRun(curLine, node, data);
+			break;
+		case STEP_SUSPEND:
+			stepSuspend(curLine, node, data);
+			break;
+		default:
+			throw new TransformLangExecutorRuntimeException("Undefined debugging state: " + step);
+		}
+	}
+	
+	private void stepOverAfter(int curLine, SimpleNode node) {
+		if (stepTarget == getStack().getCurrentFunctionCallIndex() + 1) {
+			stepTarget = -1;
+			ctlThread.setStepping(false);
+			handleSuspension(node, CommandType.STEP_OVER);
+			handleCommand(node);
+			ctlThread.setSuspended(false);
+		}
+	}
+	
+	private void stepOutAfter(int curLine, SimpleNode node) {
+		if (stepTarget == getStack().getCurrentFunctionCallIndex()) {
+			stepTarget = -1;
+			ctlThread.setStepping(false);
+			handleSuspension(node, CommandType.STEP_OUT);
+			handleCommand(node);
+			ctlThread.setSuspended(false);
+		}
+	}
+	
+	private void stepInto(final int curLine, SimpleNode node, Object data) {
+		ctlThread.setStepping(false);
+		handleSuspension(node, CommandType.STEP_IN);
+		handleCommand(node);
+		ctlThread.setSuspended(false);
+	}
+	
+	private void stepSuspend(final int curLine, SimpleNode node, Object data) {
+		handleSuspension(node, CommandType.SUSPEND);
+		handleCommand(node);
+		ctlThread.setSuspended(false);
+	}
+	
+	private void registerCurrentThread() {
+		ctlThread = new Thread();
+		ctlThread.setJavaThread(java.lang.Thread.currentThread());
+		debugJMX.registerCTLThread(ctlThread, this);
+	}
+	
+	private void unregisterCurrentThread() {
+		if (ctlThread != null) {
+			debugJMX.unregisterCTLDebugThread(ctlThread);
+			ctlThread = null;
+		}
+	}
+	
 	private void handleSuspension(SimpleNode node, CommandType cause) {
+		ctlThread.setSuspended(true);
 		DebugStatus status = new DebugStatus(node, cause);
 		status.setSuspended(true);
 		status.setSourceFilename(node.getSourceId());
@@ -159,6 +442,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	}
 	
 	private void handleResume(SimpleNode node, CommandType cause) {
+		ctlThread.setSuspended(false);
 		DebugStatus status = new DebugStatus(node, cause);
 		status.setSuspended(false);
 		status.setSourceFilename(node.getSourceId());
@@ -245,7 +529,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					status.setSuspended(false);
 					this.step = DebugStep.STEP_RUN;
 					handleResume(node, CommandType.RESUME);
-					ctlThread.setSuspended(false);
 					runLoop = false;
 					break;
 				case SUSPEND:
@@ -265,7 +548,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					status = new DebugStatus(node, CommandType.STEP_OVER);
 					status.setSuspended(false);
 					this.step = DebugStep.STEP_OVER;
-					stepTarget = getStack().getFunctionCallNode();
+					stepTarget = getStack().getCurrentFunctionCallIndex();
 					ctlThread.setStepping(true);
 					handleResume(node, CommandType.STEP_OVER);
 					runLoop = false;
@@ -274,7 +557,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					status = new DebugStatus(node, CommandType.STEP_OUT);
 					status.setSuspended(false);
 					this.step = DebugStep.STEP_OUT;
-					stepTarget = getStack().getPreviousFunctionCallNode();
+					stepTarget = getStack().getPreviousFunctionCallIndex();
 					ctlThread.setStepping(true);
 					handleResume(node, CommandType.STEP_OUT);
 					runLoop = false;
@@ -297,7 +580,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					}
 					break;
 				case GET_CALLSTACK:
-					ArrayList<StackFrame> callStack = new ArrayList<StackFrame>();
+					List<StackFrame> callStack = new ArrayList<StackFrame>();
 					ListIterator<CLVFFunctionCall> iter = getStack().getFunctionCallsStack();
 					CLVFFunctionCall functionCall = null;
 					int line = node.getLine();
@@ -307,7 +590,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 							functionCall = iter.previous();
 							StackFrame stackFrame = new StackFrame();
 							stackFrame.setName(functionCall.getName());
-							stackFrame.setSynthetic(functionCall.getId() < 0);
+							stackFrame.setSynthetic(functionCall.getId() == SYNTHETIC_FUNCTION_CALL_ID);
 							stackFrame.setLineNumber(line); 
 							stackFrame.setFile(sourceId);
 							stackFrame.setParamTypes(getArgumentTypeNames(functionCall.getLocalFunction()));
@@ -385,252 +668,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 				}
 			}
 		}
-
-	}
-
-	@Override
-	public final void debug(SimpleNode node, Object data) {
-		if (!inExecution) {
-			return;
-		}
-		final int curLine = node.getLine();
-		if (curLine == prevLine && node.sourceFilename == prevSourceFilename) {
-			return;
-		}
-		prevLine = curLine;
-		prevSourceFilename = node.sourceFilename;
-		
-		switch (step) {
-		case STEP_OUT:
-		case STEP_OVER:
-			stepOver(curLine, node, data, step == DebugStep.STEP_OUT);
-			break;
-		case STEP_INTO:
-			stepInto(curLine, node, data);
-			break;
-		case STEP_RUN:
-			stepRun(curLine, node, data);
-			break;
-		case STEP_SUSPEND:
-			stepSuspend(curLine, node, data);
-			break;
-		default:
-			throw new TransformLangExecutorRuntimeException("Undefined debugging state: " + step);
-		}
-		
-	}
-	
-	@Override
-	public void init() {
-		if (!initialized) {
-			initialized = true;
-			super.init();
-			initDebug();
-		}
-	}
-	
-	@Override
-	public void free() {
-		lastActiveThread = null;
-		if (debugJMX != null) {
-			debugJMX.unregisterTransformLangExecutor(this);
-		}
-	}
-	
-	@Override
-	public void postExecute() {
-		super.postExecute();
-		commandQueue = null;
-		statusQueue = null;
-	}
-	
-	public DebugStatus executeCommand(DebugCommand command) throws InterruptedException {
-		commandQueue.put(command);
-		return statusQueue.take();
-	}
-	
-	public void putCommand(DebugCommand command) throws InterruptedException {
-		commandQueue.put(command);
-	}
-	
-	public DebugStatus takeStatus() throws InterruptedException {
-		return statusQueue.take();
-	}
-	
-	@Override
-	public final boolean inDebugMode(){
-		return graph.getRuntimeContext().isCtlDebug();
-	}
-	
-	public Set<Breakpoint> getCtlBreakpoints() {
-		return graph.getRuntimeContext().getCtlBreakpoints();
-	}
-	
-	@Override
-	public void executeFunction(CLVFFunctionDeclaration node, Object[] data) {
-		/*
-		 * re-implementing super type method to push implicit function call onto stack
-		 */
-		try {
-			beforeExecute();
-			final CLVFParameters formal = (CLVFParameters)node.jjtGetChild(1);
-			
-			CLVFFunctionCall implicitCall = new CLVFFunctionCall(0);
-			implicitCall.setCallTarget(node);
-			
-			stack.enteredBlock(node.getScope(), implicitCall);
-			
-			for (int i=0; i<data.length; i++) {
-				setVariable((SimpleNode)formal.jjtGetChild(i), data[i]);
-			}
-			
-			// function return value will be saved in this.lastReturnValue
-			node.jjtGetChild(2).jjtAccept(this, null);
-			
-			// clear all break flags
-			if (breakFlag) {
-				breakFlag = false;
-			}
-			stack.exitedBlock(implicitCall);
-		} finally {
-			afterExecute();
-		}
-	};
-	
-	@Override
-	public Object executeExpression(SimpleNode expression) {
-		try {
-			beforeExecute();
-			CLVFFunctionCall synthCall = new CLVFFunctionCall(-1);
-			CLVFFunctionDeclaration synthFunc = new CLVFFunctionDeclaration(-1);
-			synthFunc.setName("<expression>");
-			synthCall.setCallTarget(synthFunc);
-			getStack().enteredSyntheticBlock(synthCall);
-			Object value = super.executeExpression(expression);
-			getStack().exitedSyntheticBlock(synthCall);
-			return value;
-		} finally {
-			afterExecute();
-		}
-	}
-	
-	@Override
-	protected void executeInternal(SimpleNode node) {
-		try {
-			beforeExecute();
-			CLVFFunctionCall synthCall = new CLVFFunctionCall(-1);
-			CLVFFunctionDeclaration synthFunc = new CLVFFunctionDeclaration(-1);
-			synthFunc.setName("<global>");
-			synthCall.setCallTarget(synthFunc);
-			getStack().enteredSyntheticBlock(synthCall);
-			super.executeInternal(node);
-			getStack().exitedSyntheticBlock(synthCall);
-		} finally {
-			afterExecute();
-		}
-	}
-	
-	@Override
-	protected void executeFunction(CLVFFunctionCall node) {
-		try {
-			super.executeFunction(node);
-		} finally {
-			if (step == DebugStep.STEP_OVER) {
-				stepTarget = getStack().getFunctionCallNode(); // resetting target for step over
-			}
-		}
-	}
-	
-	private void beforeExecute() {
-		if (lastActiveThread != java.lang.Thread.currentThread()) {
-			runToMark = null;
-			step = INITIAL_DEBUG_STATE;
-			if (!resumed) {
-				if (graph.getRuntimeContext().isSuspendThreads()) {
-					step = DebugStep.STEP_SUSPEND;
-				}
-			}
-		} else {
-			resumed = false;
-		}
-		registerCurrentThread();
-		inExecution = true;
-	}
-	
-	private void afterExecute() {
-		lastActiveThread = ctlThread.getJavaThread();
-		unregisterCurrentThread();
-		stepTarget = null;
-		if (step == DebugStep.STEP_OVER || step == DebugStep.STEP_OUT) {
-			/* we have left top level function while stepping - that is like stepping in */
-			step = DebugStep.STEP_INTO;
-		}
-		inExecution = false;
-	}
-	
-	private void initDebug() {
-		this.commandQueue = new SynchronousQueue<>(true);
-		this.statusQueue = new SynchronousQueue<>(true);
-		debugJMX = graph.getDebugJMX();
-		debugJMX.registerTransformLangExecutor(this);
-	}
-	
-	private void stepRun(final int curLine, SimpleNode node, Object data) {
-		curpoint.setLine(curLine);
-		curpoint.setSource(node.getSourceId());
-		if (runToMark != null && runToMark.getTo().equals(curpoint)) {
-			ctlThread.setStepping(false);
-			ctlThread.setSuspended(true);
-			runToMark = null;
-			handleSuspension(node, CommandType.RUN_TO_LINE);
-			handleCommand(node);
-		} else if ((runToMark == null || !runToMark.isSkipBreakpoints()) && isActiveBreakpoint(this.curpoint)) {
-			ctlThread.setStepping(false);
-			ctlThread.setSuspended(true);
-			runToMark = null;
-			handleSuspension(node, null);
-			handleCommand(node);
-		}
-	}
-	
-	private void stepOver(final int curLine, SimpleNode node, Object data, boolean out) {
-		if (stepTarget == getStack().getFunctionCallNode()) {
-			ctlThread.setStepping(false);
-			ctlThread.setSuspended(true);
-			handleSuspension(node, out? CommandType.STEP_OUT : CommandType.STEP_OVER);
-			handleCommand(node);
-			ctlThread.setSuspended(false);
-		} else {
-			stepRun(curLine, node, data);
-		}
-	}
-	
-	private void stepInto(final int curLine, SimpleNode node, Object data) {
-		ctlThread.setSuspended(true);
-		ctlThread.setStepping(false);
-		handleSuspension(node, CommandType.STEP_IN);
-		handleCommand(node);
-		ctlThread.setSuspended(false);
-	}
-	
-	private void stepSuspend(final int curLine, SimpleNode node, Object data) {
-		ctlThread.setSuspended(true);
-		handleSuspension(node, CommandType.SUSPEND);
-		handleCommand(node);
-		ctlThread.setSuspended(false);
-	}
-	
-	private void registerCurrentThread() {
-		ctlThread = new Thread();
-		ctlThread.setJavaThread(java.lang.Thread.currentThread());
-		debugJMX.registerCTLThread(ctlThread, this);
-	}
-	
-	private void unregisterCurrentThread() {
-		if (ctlThread != null) {
-			debugJMX.unregisterCTLDebugThread(ctlThread);
-			ctlThread = null;
-		}
 	}
 	
 	private DebugStack getStack() {
@@ -672,5 +709,21 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			}
 		}
 		return false;
+	}
+	
+	private boolean verifyBreakpoint(Breakpoint bpoint){
+		Node startImport;
+		if (bpoint.getSource()==null)
+			startImport=this.ast;
+		else{
+			startImport=this.imports.get(bpoint.getSource());
+			if (startImport==null) return false;
+		}
+		SimpleNode foundNode;
+		do{
+			foundNode= (SimpleNode) findBreakableNode((SimpleNode)startImport, bpoint.getLine());
+			if (foundNode==null) return false;
+		}while(!StringUtils.equalsWithNulls(foundNode.sourceFilename,bpoint.getSource()));
+		return true;
 	}
 }

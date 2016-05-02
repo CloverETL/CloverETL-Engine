@@ -32,9 +32,19 @@ import org.jetel.ctl.data.TLType;
  */
 public class DebugStack extends Stack {
 	
-	public DebugStack(){
+	public DebugStack() {
 		super();
+	}
 	
+	public int getCurrentFunctionCallIndex() {
+		return functionCalls.size() - 1;
+	}
+	
+	public int getPreviousFunctionCallIndex() {
+		if (functionCalls.size() >= 2) {
+			return functionCalls.size() - 2;
+		}
+		return -1;
 	}
 	
 	@Override
@@ -47,7 +57,6 @@ public class DebugStack extends Stack {
 		Variable storedVar= (Variable)super.getVariable(blockOffset,variableOffset);
 		storedVar.setValue(value);
 		super.setVariable(blockOffset, variableOffset,storedVar);
-		
 	}
 	
 	@Override
@@ -55,7 +64,6 @@ public class DebugStack extends Stack {
 		Variable variable = (Variable) super.getVariable(blockOffset, variableOffset);
 		return variable != null ? variable.getValue() : null;
 	}
-	
 	
 	/**
 	 * @return all local variables from all frames

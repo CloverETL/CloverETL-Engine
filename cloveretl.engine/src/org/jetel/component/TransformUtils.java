@@ -21,6 +21,7 @@ package org.jetel.component;
 import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.ctl.RaiseErrorException;
 import org.jetel.util.ExceptionUtils;
+import org.jetel.util.file.SandboxUrlUtils;
 
 /**
  * CLO-4084:
@@ -63,7 +64,7 @@ public class TransformUtils {
 	 * @return
 	 */
 	public static String createCTLSourceId(String jobUrl, String... params) {
-		StringBuilder sourceIdSB = new StringBuilder(URIUtils.urlEncode(jobUrl));
+		StringBuilder sourceIdSB = new StringBuilder(SandboxUrlUtils.escapeUrlPath(jobUrl));
 		for (int i = 0; i < params.length - 1; i+=2) {
 			if (i == 0) {
 				sourceIdSB.append("?");
