@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -105,6 +106,14 @@ public class TLCompiler implements ITLCompiler {
 		this.encoding = encoding;
 		this.problemReporter = new ProblemReporter();
 		this.logger = LogFactory.getLog(TLCompiler.class);
+	}
+	
+	public static String stripCtlCodeId(String expression) {
+		if (expression == null) {
+			return null;
+		}
+		Pattern ctlCodeId = Pattern.compile("^" + TransformLangExecutor.CTL_TRANSFORM_CODE_ID +"\\s*\\n");
+		return ctlCodeId.matcher(expression).replaceAll("");
 	}
 	
 	/**
@@ -368,7 +377,8 @@ public class TLCompiler implements ITLCompiler {
 	protected String wrapExpression(String expression, String syntheticFunctionName, Class<?> returnType) {
 		// compute return type
 		final TLType type = TLType.fromJavaType(returnType);
-		return "function " + type.name() +  " " + syntheticFunctionName + "() { " +
+		expression = stripCtlCodeId(expression); // CLO-8550
+		return "function " + type.name() +  " " + syntheticFunctionName + "() {\n" + // removing CTL code ID moved code one line up, so add it here
 				// CLO-4872: terminate trailing single-line comment in expression with \n
 				"return " + expression + "\n;" +
 				" }";
@@ -440,7 +450,6 @@ public class TLCompiler implements ITLCompiler {
 		return (CLVFStart)ast;
 	}
 
-
 	/**
 	 * @return Number of critical errors from the last validate call.
 	 * 
@@ -457,7 +466,6 @@ public class TLCompiler implements ITLCompiler {
 	public List<ErrorMessage> getDiagnosticMessages() {
 		return problemReporter.getDiagnosticMessages();
 	}
-
 
 	@Override
 	public int warningCount() {
@@ -498,5 +506,4 @@ public class TLCompiler implements ITLCompiler {
 	public TransformationGraph getGraph() {
 		return graph;
 	}
-
 }

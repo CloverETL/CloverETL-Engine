@@ -276,6 +276,8 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	}
 	
 	private void beforeExecute() {
+		prevLine = -1;
+		prevSourceId = null;
 		if (lastActiveThread != java.lang.Thread.currentThread()) {
 			runToMark = null;
 			step = INITIAL_DEBUG_STATE;
@@ -591,6 +593,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 							StackFrame stackFrame = new StackFrame();
 							stackFrame.setName(functionCall.getName());
 							stackFrame.setSynthetic(functionCall.getId() == SYNTHETIC_FUNCTION_CALL_ID);
+							//stackFrame.setGenerated(functionCall.getLocalFunction() != null ? functionCall.getLocalFunction().isGenerated() : false);
 							stackFrame.setLineNumber(line); 
 							stackFrame.setFile(sourceId);
 							stackFrame.setParamTypes(getArgumentTypeNames(functionCall.getLocalFunction()));
