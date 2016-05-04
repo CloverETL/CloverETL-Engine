@@ -62,23 +62,25 @@ PARSER_BEGIN(TransformLangParser)
 
 package org.jetel.ctl;
 
-import org.jetel.graph.TransformationGraph;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.net.URL;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
+import org.jetel.component.RecordTransform;
 import org.jetel.ctl.ASTnode.*;
+import org.jetel.ctl.data.Scope;
 import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLTypePrimitive;
-import org.jetel.ctl.data.Scope;
+import org.jetel.graph.TransformationGraph;
+import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.SandboxUrlUtils;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
-import org.jetel.util.file.FileUtils;
-import org.jetel.component.RecordTransform;
-import java.util.Map;
-import java.util.HashSet;
-import java.util.List;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.IOException;
-import java.net.URL;
 
 
 public class TransformLangParser extends ExpParser {
@@ -938,6 +940,8 @@ void ImportSource() :{	Token t;	String filenameURL;}{	// must parse whole 
 				TransformLangParser parser = new TransformLangParser(this,filenameURL,input);				
 				parser.addParsedImports(getParsedImports());
 			 	parseTree = parser.Start();
+				String sourceId = SandboxUrlUtils.escapeUrlPath(FileUtils.getFileURL(projectURL, filenameURL).toString());
+				jjtThis.setSourceId(sourceId);
 			 	jjtThis.setSourceFilename(filenameURL);				jjtThis.jjtAddChild(parseTree,0);
 				jjtThis.jjtGetChild(0).jjtSetParent(jjtThis);
 				addParsedImports(parser.getParsedImports()); // merge child's imports
