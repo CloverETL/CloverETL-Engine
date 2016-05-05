@@ -18,11 +18,6 @@
  */
 package org.jetel.graph.runtime.jmx;
 
-import org.jetel.ctl.debug.Thread;
-import org.jetel.ctl.debug.StackFrame;
-
-
-
 /**
  * JMX managed bean which is dedicated to provide tracking information about running graph.
  * 
@@ -78,7 +73,10 @@ public interface CloverJMXMBean {
      */
     public static final String GRAPH_ERROR = "clover.graph.error";
     
-//    public static final String THREAD_SUSPENDED = "clover.thread.suspend";
+    /**
+     * Notification identifier - node finished work (both normally and with error or abortion).
+     */
+    public static final String NODE_FINISHED = "clover.node.finished";
 
     
     /**

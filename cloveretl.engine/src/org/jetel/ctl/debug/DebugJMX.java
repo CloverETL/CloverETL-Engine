@@ -18,20 +18,37 @@
  */
 package org.jetel.ctl.debug;
 
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import javax.management.InstanceNotFoundException;
+import javax.management.ListenerNotFoundException;
+import javax.management.MBeanServer;
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
+import javax.management.NotificationFilter;
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
 
 import org.apache.log4j.Logger;
 import org.jetel.ctl.DebugTransformLangExecutor;
 import org.jetel.ctl.debug.DebugCommand.CommandType;
+import org.jetel.exception.JetelRuntimeException;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.Node;
+import org.jetel.graph.Result;
 import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.graph.runtime.jmx.CloverJMXMBean;
 
 /**
  * A JMX bean for CTL debugger. It manages debugging of CTL threads - passes debug commands to threads and sends suspend
@@ -49,10 +66,15 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
     private GraphRuntimeContext runtimeContext;
 	private Map<Long, ExecutorThread> activeThreads;
 	private Set<DebugTransformLangExecutor> executors;
+	private Map<Long, NodeThread> nodeThreads;
+	
+	private ObjectName jmxBeanName;
+	private volatile NotificationListener finishListener;
 	
 	public DebugJMX(GraphRuntimeContext runtimeContext) {
 		this.runtimeContext = runtimeContext;
-		activeThreads = new ConcurrentHashMap<Long, ExecutorThread>();
+		nodeThreads = new ConcurrentHashMap<>();
+		activeThreads = new ConcurrentHashMap<>();
 		executors = new CopyOnWriteArraySet<>();
 	}
 	
@@ -64,28 +86,65 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		executors.remove(executor);
 	}
 	
-	public void registerCTLThread(Thread thread, DebugTransformLangExecutor executor) {
-		activeThreads.put(Long.valueOf(thread.getId()), new ExecutorThread(thread, executor));
+	/**
+	 * Registers new thread with CTL execution.
+	 * @param thread
+	 * @param executor
+	 * @return <code>true</code> if the registered thread should be suspended at once
+	 */
+	public boolean registerCTLThread(Thread thread, DebugTransformLangExecutor executor) {
+		
+		Long threadId = Long.valueOf(thread.getId());
+		NodeThread nodeThread = nodeThreads.get(threadId);
+		boolean suspendIt = false;
+		if (nodeThread == null) {
+			Node node = ContextProvider.getNode();
+			if (node != null && Result.RUNNING.equals(node.getResultCode())) {
+				ensureJmxListenerPresent(node);
+				nodeThread = new NodeThread(node, thread.getJavaThread());
+				nodeThreads.put(threadId, nodeThread);
+				notifyThreadStart(threadId);
+			}
+		} else {
+			if (nodeThread.isSuspend()) {
+				suspendIt = true;
+				nodeThread.setSuspend(false);
+			}
+		}
+		activeThreads.put(threadId, new ExecutorThread(thread, executor));
+		return suspendIt;
 	}
 	
-	public void unregisterCTLDebugThread(Thread thread) {
+	public void unregisterCTLThread(Thread thread) {
 		activeThreads.remove(Long.valueOf(thread.getId()));
 	}
 	
 	public void notifySuspend(DebugStatus status) {
-		Notification suspendNotification = new Notification(DebugJMX.THREAD_SUSPENDED, this, notificationSequence++);
+		Notification suspendNotification = new Notification(THREAD_SUSPENDED, this, ++notificationSequence);
 		suspendNotification.setUserData(status);
 		sendNotification(suspendNotification);
 	}
 	
-	public void notifyResumed(DebugStatus status) {
-		Notification notification = new Notification(DebugJMX.THREAD_RESUMED, this, notificationSequence++);
+	public void notifyResume(DebugStatus status) {
+		Notification notification = new Notification(THREAD_RESUMED, this, ++notificationSequence);
 		notification.setUserData(status);
 		sendNotification(notification);
 	}
 	
 	public void notifyInit() {
-		Notification notification = new Notification(DebugJMX.JOB_INIT, this, notificationSequence++);
+		Notification notification = new Notification(JOB_INIT, this, ++notificationSequence);
+		sendNotification(notification);
+	}
+	
+	public void notifyThreadStart(Long threadId) {
+		Notification notification = new Notification(THREAD_STARTED, this, ++notificationSequence);
+		notification.setUserData(threadId);
+		sendNotification(notification);
+	}
+	
+	public void notifyThreadStop(Long threadId) {
+		Notification notification = new Notification(THREAD_STOPPED, this, ++notificationSequence);
+		notification.setUserData(threadId);
 		sendNotification(notification);
 	}
 	
@@ -94,6 +153,11 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		for (ExecutorThread thread : activeThreads.values()) {
 			if (thread.getCTLThread().getId() == threadId) {
 				thread.getExecutor().resume();
+			}
+		}
+		for (NodeThread thread : nodeThreads.values()) {
+			if (thread.getJavaThread().getId() == threadId) {
+				thread.setSuspend(false);
 			}
 		}
 		try {
@@ -105,10 +169,15 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	
 	@Override
 	public void suspend(long threadId) {
-		for (ExecutorThread thread : activeThreads.values()) {
-			if (thread.getCTLThread().getId() == threadId && !thread.getCTLThread().isSuspended()) {
-				thread.getExecutor().suspend();
-			}
+		
+		ExecutorThread active = activeThreads.get(Long.valueOf(threadId));
+		if (active != null && !active.getCTLThread().isSuspended()) {
+			active.getExecutor().suspend();
+			return;
+		}
+		NodeThread node = nodeThreads.get(Long.valueOf(threadId));
+		if (node != null && !node.isSuspend()) {
+			node.setSuspend(true);
 		}
 	}
 	
@@ -124,11 +193,26 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	@Override
 	public Thread[] listCtlThreads() {
 		
-		List<ExecutorThread> threads = new ArrayList<>(activeThreads.values());
-		Thread[] result = new Thread[threads.size()];
-		for (int i = 0; i < result.length; ++i) {
-			result[i] = threads.get(i).getCTLThread();
+		Map<Long, ExecutorThread> active = new HashMap<>(activeThreads);
+		Map<Long, NodeThread> nodes = new HashMap<>(nodeThreads);
+		
+		List<Thread> threads = new ArrayList<>(nodes.size());
+		
+		for (ExecutorThread thread : active.values()) {
+			threads.add(thread.getCTLThread());
 		}
+		/*
+		 * add threads that do not execute CTL currently
+		 */
+		for (Entry<Long, NodeThread> e : nodes.entrySet()) {
+			if (!active.containsKey(e.getKey())) {
+				Thread ctlThread = new Thread();
+				ctlThread.setJavaThread(e.getValue().getJavaThread());
+				threads.add(ctlThread);
+			}
+		}
+		Thread result[] = threads.toArray(new Thread[threads.size()]);
+		Arrays.sort(result);
 		return result;
 	}
 
@@ -223,7 +307,19 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 			logger.info("Detected active debugged thread " + thread.getCTLThread() + ", interrupting...");
 			thread.getCTLThread().getJavaThread().interrupt();
 		}
+		if (finishListener != null) {
+			try {
+				MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+				if (server.isRegistered(jmxBeanName)) {
+					server.removeNotificationListener(jmxBeanName, finishListener);
+				}
+				finishListener = null;
+			} catch (ListenerNotFoundException | InstanceNotFoundException e) {
+				logger.warn("Could not remove node finish listener.", e);
+			}
+		}
 		activeThreads.clear();
+		nodeThreads.clear();
 		executors.clear();
 	}
 	
@@ -238,6 +334,59 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		} else {
 			logger.warn(String.format("CTL debug: Thread with id '%d' is not running.", threadId));
 			return null;
+		}
+	}
+	
+	private synchronized void ensureJmxListenerPresent(Node node) {
+		if (finishListener == null) {
+			try {
+				finishListener = new FinishNotificationListener();
+				jmxBeanName = node.getGraph().getWatchDog().getCloverJmxName();
+				ManagementFactory.getPlatformMBeanServer().addNotificationListener(
+					jmxBeanName, finishListener, new FinishNotificationFilter(), Long.valueOf(runtimeContext.getRunId()));
+			} catch (InstanceNotFoundException e) {
+				throw new JetelRuntimeException(e);
+			}
+		}
+	}
+	
+	private void handleNodeFinished(String nodeId) {
+		for (Iterator<Entry<Long, NodeThread>> it = nodeThreads.entrySet().iterator(); it.hasNext();) {
+			Entry<Long, NodeThread> entry = it.next();
+			if (entry.getValue().getNode().getId().equals(nodeId)) {
+				it.remove();
+				notifyThreadStop(entry.getKey());
+			}
+		}
+	}
+	
+	protected static class FinishNotificationFilter implements NotificationFilter {
+		
+		private static final long serialVersionUID = 1L;
+		
+		private static final List<String> RELEVANT_EVENTS = Collections.unmodifiableList(Arrays.asList(
+			CloverJMXMBean.NODE_FINISHED, CloverJMXMBean.PHASE_FINISHED));
+		
+		@Override
+		public boolean isNotificationEnabled(Notification notification) {
+			return RELEVANT_EVENTS.contains(notification.getType());
+		}
+	}
+	
+	protected class FinishNotificationListener implements NotificationListener {
+		
+		@Override
+		public void handleNotification(Notification notification, Object handback) {
+			Long runId = null;
+			if (handback instanceof Long) {
+				runId = (Long)handback;
+			}
+			if (runId == null || runId.longValue() != runtimeContext.getRunId()) {
+				return;
+			}
+			if (CloverJMXMBean.NODE_FINISHED.equals(notification.getType())) {
+				handleNodeFinished(notification.getMessage());
+			}
 		}
 	}
 }

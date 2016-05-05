@@ -33,6 +33,8 @@ public interface DebugJMXMBean {
 	public static final String JOB_INIT = "clover.job.init";
     public static final String THREAD_SUSPENDED = "clover.thread.suspend";
     public static final String THREAD_RESUMED = "clover.thread.resumed";
+    public static final String THREAD_STARTED = "clover.thread.started";
+    public static final String THREAD_STOPPED = "clover.thread.stopped";
 
 	void info(long threadId);
 	

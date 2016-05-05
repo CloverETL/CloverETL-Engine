@@ -517,6 +517,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 					break;
 				case NODE_FINISHED:
 					phaseNodes.remove(message.getSender());
+					cloverJMX.nodeFinished(message.getSender().getId());
 					break;
 				default:
 					// do nothing, just wake up
@@ -818,6 +819,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 	public CloverJMX getCloverJmx() {
 		return cloverJMX;
+	}
+	
+	public ObjectName getCloverJmxName() {
+		return jmxObjectName;
 	}
 
 	public boolean isFinishJMX() {

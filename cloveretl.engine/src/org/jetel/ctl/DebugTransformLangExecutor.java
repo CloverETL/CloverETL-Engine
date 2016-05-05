@@ -424,12 +424,15 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	private void registerCurrentThread() {
 		ctlThread = new Thread();
 		ctlThread.setJavaThread(java.lang.Thread.currentThread());
-		debugJMX.registerCTLThread(ctlThread, this);
+		boolean suspendIt = debugJMX.registerCTLThread(ctlThread, this);
+		if (suspendIt) {
+			suspend();
+		}
 	}
 	
 	private void unregisterCurrentThread() {
 		if (ctlThread != null) {
-			debugJMX.unregisterCTLDebugThread(ctlThread);
+			debugJMX.unregisterCTLThread(ctlThread);
 			ctlThread = null;
 		}
 	}
@@ -449,7 +452,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		status.setSuspended(false);
 		status.setSourceFilename(node.getSourceId());
 		status.setThreadId(ctlThread.getId());
-		debugJMX.notifyResumed(status);
+		debugJMX.notifyResume(status);
 	}
 
 	private void handleCommand(SimpleNode node) {
