@@ -35,7 +35,6 @@ import org.jetel.ctl.ASTnode.CLVFArrayAccessExpression;
 import org.jetel.ctl.ASTnode.CLVFAssignment;
 import org.jetel.ctl.ASTnode.CLVFBlock;
 import org.jetel.ctl.ASTnode.CLVFBreakStatement;
-import org.jetel.ctl.ASTnode.CLVFBreakpointNode;
 import org.jetel.ctl.ASTnode.CLVFCaseStatement;
 import org.jetel.ctl.ASTnode.CLVFComparison;
 import org.jetel.ctl.ASTnode.CLVFConditionalExpression;
@@ -380,12 +379,6 @@ public class TypeChecker extends NavigatingVisitor {
 		super.visit(node, data);
 		node.setType(TLType.VOID);
 		checkChildren(node); // this will overwrite VOID with ERROR if children have errors
-		return data;
-	}
-
-	@Override
-	public Object visit(CLVFBreakpointNode node, Object data) {
-		node.setType(TLType.VOID);
 		return data;
 	}
 

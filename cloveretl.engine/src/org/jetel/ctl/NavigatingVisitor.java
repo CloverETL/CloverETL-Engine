@@ -252,12 +252,6 @@ public class NavigatingVisitor implements TransformLangParserVisitor {
 	}
 
 	@Override
-	public Object visit(CLVFBreakpointNode node, Object data) {
-
-		return visitNode(node, data);
-	}
-
-	@Override
 	public Object visit(CLVFRaiseErrorNode node, Object data) {
 
 		return visitNode(node, data);
@@ -375,18 +369,13 @@ public class NavigatingVisitor implements TransformLangParserVisitor {
 	public Object visit(CastNode node, Object data) {
 		return visitNode(node,data);
 	}
-
+	
 	@Override
 	public boolean inDebugMode() {
-		// TODO Auto-generated method stub
 		return false;
 	}
-
+	
 	@Override
 	public void debug(SimpleNode node, Object data) {
-		// TODO Auto-generated method stub
-		
 	}
-
-
 }

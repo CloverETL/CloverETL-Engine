@@ -35,6 +35,7 @@ public class StackFrame implements Serializable {
 	private String name;
 	private String paramTypes[];
 	private boolean synthetic;
+	private boolean generated;
 	
 	public int getLineNumber() {
 		return lineNumber;
@@ -74,5 +75,13 @@ public class StackFrame implements Serializable {
 
 	public void setSynthetic(boolean synthetic) {
 		this.synthetic = synthetic;
+	}
+
+	public boolean isGenerated() {
+		return generated;
+	}
+
+	public void setGenerated(boolean generated) {
+		this.generated = generated;
 	}
 }

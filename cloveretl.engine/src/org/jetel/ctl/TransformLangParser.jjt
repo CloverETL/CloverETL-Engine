@@ -325,7 +325,20 @@ public class TransformLangParser extends ExpParser {
                 // we checked all special tokens and did not find #CTL2:COMPILED -> return false
                 return lastCompiled;
 	}
-    
+
+	private boolean isGenerated(Token token) {
+
+        boolean generated = false;
+        while (token.specialToken != null) {
+            if (token.specialToken.kind == TL_GENERATED) {
+                generated = true;
+                break;
+            } else {
+                token = token.specialToken;
+            }
+        }
+		return generated;
+    }
     
     public void parsingError(ParseException e) {
     	// inspired by ParseException.toString()
@@ -404,7 +417,9 @@ SPECIAL_TOKEN : {
 
 <WithinSingleLineComment> SKIP : { <~[]> }
 
-<WithinSingleLineComment, WithinComment> SPECIAL_TOKEN : {	< TL_SHEBANG : "#CTL2" > 	|	< TL_COMPILE : "#CTL2:COMPILE" >}
+<WithinSingleLineComment, WithinComment> SPECIAL_TOKEN : {	< TL_SHEBANG : "#CTL2" > 	|	< TL_COMPILE : "#CTL2:COMPILE" >
+	|
+	< TL_GENERATED : "#CTL2:GENERATED" >}
 
 
 
@@ -1014,9 +1029,11 @@ void VoidType() #Type :
 void V2FunctionDeclaration() #FunctionDeclaration:
 {}
 {
-	
+	{
+		jjtThis.setGenerated(isGenerated(jj_nt));
+	}
 	"function"
-	{ 
+	{
 		jjtThis.begin(token.beginLine,token.beginColumn);
 	}
 	
