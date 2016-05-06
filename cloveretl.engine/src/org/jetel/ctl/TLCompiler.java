@@ -24,7 +24,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -106,14 +105,6 @@ public class TLCompiler implements ITLCompiler {
 		this.encoding = encoding;
 		this.problemReporter = new ProblemReporter();
 		this.logger = LogFactory.getLog(TLCompiler.class);
-	}
-	
-	public static String stripCtlCodeId(String expression) {
-		if (expression == null) {
-			return null;
-		}
-		Pattern ctlCodeId = Pattern.compile("^" + TransformLangExecutor.CTL_TRANSFORM_CODE_ID +"\\s*\\n");
-		return ctlCodeId.matcher(expression).replaceAll("");
 	}
 	
 	/**
@@ -377,8 +368,7 @@ public class TLCompiler implements ITLCompiler {
 	protected String wrapExpression(String expression, String syntheticFunctionName, Class<?> returnType) {
 		// compute return type
 		final TLType type = TLType.fromJavaType(returnType);
-		expression = stripCtlCodeId(expression); // CLO-8550
-		return "function " + type.name() +  " " + syntheticFunctionName + "() {\n" + // removing CTL code ID moved code one line up, so add it here
+		return "function " + type.name() +  " " + syntheticFunctionName + "() {" +
 				// CLO-4872: terminate trailing single-line comment in expression with \n
 				"return " + expression + "\n;" +
 				" }";
