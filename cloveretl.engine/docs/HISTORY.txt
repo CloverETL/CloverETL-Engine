@@ -2,6 +2,66 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+
+REL-4-2-0-M1
+------------
+
+* Synchronized Server projects:
+	- Placeholders for large files
+	- Conflicts between local and server copy
+	- Ignore files in server project synchronization
+	- Unify various clover project natures
+	- Convert local project to server project
+	- Handling of connection outages
+	- Automatic reconnect of Designer to Server
+	- Automatic sync on Designer start
+	- Integrate version control mechanism for Clover Projects
+	- Explain basic use cases of versioning with sync projects
+	- Do not modify header of graph unnecessarily
+	- Projects from local and partitioned sandboxes should not have java nature
+	- When deleting RSE server project, don't delete files on Server
+* Platform support:
+	- Update supported Hadoop versions - CDH 4.3, 5.4
+	- Designer bundle with Java 8
+	- Add Java sources to the JDK bundled with Designer
+	- Drop support of Eclipse 3.X
+	- Server bundle with Tomcat 8
+* Move metadata propagation to server
+* Engine Improvements:
+	- FlatFileReader and FlatFileWriter aliases for UniversalDataReader and UniversalDataWriter
+	- Improve temp file management in Spreadsheet components
+	- JSONWriter should be able to insert existing JSON from input
+	- Second output port for unmatched data in ExtMergeJoin, ExtHashJoin
+	- XMLWriter - provide output metadata
+* Designer Improvements:
+	- Allow more hyperlinks in graph run log
+	- Syntax highlighting at graph source editor
+	- Improved searching of dependencies of graph elements
+	- Remove useless options from CloverETL preference page
+	- iif() and lookup() functions missing in function list
+	- Drag & drop job into jobflow should name the Execute* component
+	- Allow drawing edge from input port
+* Server Improvements:
+	- Allow user to choose JNDI names from JNDI tree
+	- Suggest starting JNDI context by detected application server
+	- Create heapdump directly from Server Console
+* FIXES:
+	- Shift+space for subgraphs should not use sandbox:// path to subgraph
+	- SimpleGather is blocked in fast propagate mode
+	- Opening file though File menu is throwing a null pointer exception
+	- SpreadSheetWriter: mapping by order does not work with hyperlinks
+	- Transform Editor does not open at all when metadata missing
+* COMPATIBILITY:
+	- Drop support of Eclipse 3.X
+	- CLO-7126	XMLExtract: wrong attribute value is parsed
+	- CLO-6916	Validator email address rule for format x.y@z without domain suffix
+	- CLO-6003	Drop support of Eclipse 3.X
+	- CLO-8477	DBJoin should propagate metadata
+	- CLO-7202	Rollup - preExecute() is never called	
+	- CLO-7104	SpreadSheetWriter: mapping by order does not work with hyperlinks
+	- CLO-5762	Sequences in compiled mode skip values
+
+
 REL-4-1-3
 ---------
 
