@@ -1441,8 +1441,15 @@ public class DBOutputTable extends Node implements MetadataProvider {
 				MVMetadata inputMetadata = metadataPropagationResolver.findMetadata(inputPort.getEdge());
 				if (inputMetadata != null) {
 					DataRecordMetadata recordMetadata = inputMetadata.getModel().duplicate();
-					recordMetadata.addField(new DataFieldMetadata("ErrCode", inputMetadata.getModel().getFieldDelimiter()));
-					recordMetadata.addField(new DataFieldMetadata("ErrText", inputMetadata.getModel().getRecordDelimiter()));
+					
+					DataFieldMetadata errCodeField = new DataFieldMetadata("ErrCode", DataFieldType.INTEGER, inputMetadata.getModel().getFieldDelimiter());
+					DataFieldMetadata errTextField = new DataFieldMetadata("ErrText", inputMetadata.getModel().getRecordDelimiter());
+					errCodeField.setAutoFilling(AutoFilling.ERROR_CODE);
+					errTextField.setAutoFilling(AutoFilling.ERROR_MESSAGE);
+					
+					recordMetadata.addField(errCodeField);
+					recordMetadata.addField(errTextField);
+					
 					recordMetadata.getRecordProperties().remove(new String("previewAttachment"));
 					MVMetadata metadata = metadataPropagationResolver.createMVMetadata(recordMetadata, this, OUT_METADATA_ID_SUFFIX);
 					return metadata;
