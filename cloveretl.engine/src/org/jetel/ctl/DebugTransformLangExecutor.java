@@ -51,6 +51,7 @@ import org.jetel.ctl.debug.RunToMark;
 import org.jetel.ctl.debug.StackFrame;
 import org.jetel.ctl.debug.Thread;
 import org.jetel.ctl.debug.Variable;
+import org.jetel.ctl.debug.VariableID;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.string.StringUtils;
@@ -472,34 +473,49 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			if (command != null) {
 				switch (command.getType()) {
 				case LIST_VARS:
-					// list all variables
-					List<Variable> vars = new ArrayList<Variable>();
-					try {
-						final Object[] globalVariables = getStack().getGlobalVariables();
-						for (int i = 0; i < globalVariables.length; i++) {
-							vars.add((Variable) globalVariables[i]);
-						}
-						final Object[] localVariables = getStack().getAllLocalVariables();
-						
-						for (int i = 0; i < localVariables.length; i++) {
-							vars.add((Variable) localVariables[i]);
-						}
-					} catch (Exception ex) {
-						// ignore for now
+					List<Variable> variables = new ArrayList<>();
+					
+					final Object[] globalVariables = getStack().getGlobalVariables();
+					for (int i = 0; i < globalVariables.length; i++) {
+						variables.add((Variable) globalVariables[i]);
 					}
+						
+					int stackFrameDepth = (int) command.getValue();
+					final Object[] localVariables = getStack().getVariablesForDepth(getStack().blockDepth() - 1 - stackFrameDepth);
+					for (int i = 0; i < localVariables.length; i++) {
+						variables.add((Variable) localVariables[i]);
+					}
+					
 					status = new DebugStatus(node, CommandType.LIST_VARS);
-					status.setValue(vars.toArray(new Variable[0]));
+					status.setValue(variables.toArray(new Variable[0]));
 					break;
 				case GET_VAR:
-					String varname = ((Variable)command.getValue()).getName();
-					Variable var = (Variable)getStack().getVariable(varname);
+					VariableID varID = (VariableID) command.getValue();
+					Variable var = null;
+					
+					final Object[] globalVars = getStack().getGlobalVariables();
+					for (int i = 0; i < globalVars.length; i++) {
+						if (((Variable) globalVars[i]).getName().equals(varID.getName())) {
+							var = (Variable) globalVars[i];
+							break;
+						}
+					}
+					
+					final Object[] vars = getStack().getVariablesForDepth(getStack().blockDepth() - 1 - varID.getStackFrameDepth());
+					for (int i = 0; i < vars.length; i++) {
+						if (((Variable) vars[i]).getName().equals(varID.getName())) {
+							var = (Variable) vars[i];
+							break;
+						}
+					}
+					
 					status = new DebugStatus(node, CommandType.GET_VAR);
-					if (var!=null){
-						status.setValue(new Variable(var.getName(), var.getType(), false, var.getValue()));
-					}else{
+					if (var != null) {
+						status.setValue(new Variable(var.getName(), var.getType(), var.isGlobal(), var.getValue()));
+					} else {
 						status.setError(true);
 						status.setValue(command.getValue());
-						status.setMessage("unknown variable name: "+varname);
+						status.setMessage("unknown variable name: " + varID.getName());
 					}
 					break;
 				case SET_VAR:

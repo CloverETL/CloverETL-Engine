@@ -296,6 +296,36 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		}
 	}
 	
+	@Override
+	public Variable[] listVariables(long threadId, int stackFrameDepth) {
+		DebugCommand command = new DebugCommand(CommandType.LIST_VARS);
+		command.setValue(stackFrameDepth);
+		try {
+			DebugStatus status = processCommand(threadId, command);
+			if (status != null && status.getValue() instanceof Variable[]) {
+				return (Variable[]) status.getValue();
+			}
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+		return new Variable[0];
+	}
+	
+	@Override
+	public Variable getVariableValue(long threadId, int stackFrameDepth, String name) {
+		DebugCommand command = new DebugCommand(CommandType.GET_VAR);
+		command.setValue(new VariableID(stackFrameDepth, name));
+		try {
+			DebugStatus status = processCommand(threadId, command);
+			if (status != null && status.getValue() instanceof Variable) {
+				return (Variable) status.getValue();
+			}
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+		return null;
+	}
+	
 	public void free() {
 		/*
 		 * When a job is killed while being executed, the threads are interrupted and debug
@@ -389,4 +419,5 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 			}
 		}
 	}
+
 }
