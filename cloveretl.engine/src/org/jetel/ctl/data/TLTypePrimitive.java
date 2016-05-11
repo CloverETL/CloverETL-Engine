@@ -21,6 +21,7 @@ package org.jetel.ctl.data;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 
+@SuppressWarnings("serial")
 public abstract class TLTypePrimitive extends TLType {
 
 	public static final TLTypeInteger INTEGER = new TLTypeInteger();
