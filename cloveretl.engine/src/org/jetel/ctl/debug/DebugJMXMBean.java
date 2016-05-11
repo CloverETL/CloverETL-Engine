@@ -62,7 +62,7 @@ public interface DebugJMXMBean {
     
     void runToLine(long threadId, RunToMark mark);
     
-    Variable[] listVariables(long threadId, int stackFrameDepth);
+    VariableRetrievalResult listVariables(long threadId, int stackFrameDepth);
     
     Variable getVariableValue(long threadId, int stackFrameDepth, String name);
 }

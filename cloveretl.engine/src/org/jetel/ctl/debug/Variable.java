@@ -18,9 +18,15 @@
  */
 package org.jetel.ctl.debug;
 
+import java.io.Serializable;
+
+import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.data.TLType;
 
-public class Variable {
+public class Variable implements Cloneable, Serializable {
+	
+	private static final long serialVersionUID = 1L;
+	
 	protected String name;
 	protected Object value;
 	protected boolean global;
@@ -76,5 +82,10 @@ public class Variable {
 	@Override
 	public String toString(){
 		return this.name + ":" + this.type + ":" + value;
+	}
+	
+	@Override
+	public Variable clone() {
+		return new Variable(name, type, global, TransformLangExecutor.getDeepCopy(value));
 	}
 }

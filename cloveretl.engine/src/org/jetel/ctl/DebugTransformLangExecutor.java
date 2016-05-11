@@ -52,6 +52,7 @@ import org.jetel.ctl.debug.StackFrame;
 import org.jetel.ctl.debug.Thread;
 import org.jetel.ctl.debug.Variable;
 import org.jetel.ctl.debug.VariableID;
+import org.jetel.ctl.debug.VariableRetrievalResult;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.string.StringUtils;
@@ -473,21 +474,22 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			if (command != null) {
 				switch (command.getType()) {
 				case LIST_VARS:
-					List<Variable> variables = new ArrayList<>();
+					List<Variable> global = new ArrayList<>();
+					List<Variable> local = new ArrayList<>();
 					
 					final Object[] globalVariables = getStack().getGlobalVariables();
 					for (int i = 0; i < globalVariables.length; i++) {
-						variables.add((Variable) globalVariables[i]);
+						global.add(((Variable) globalVariables[i]).clone());
 					}
 						
 					int stackFrameDepth = (int) command.getValue();
 					final Object[] localVariables = getStack().getVariablesForDepth(getStack().blockDepth() - 1 - stackFrameDepth);
 					for (int i = 0; i < localVariables.length; i++) {
-						variables.add((Variable) localVariables[i]);
+						local.add(((Variable) localVariables[i]).clone());
 					}
 					
 					status = new DebugStatus(node, CommandType.LIST_VARS);
-					status.setValue(variables.toArray(new Variable[0]));
+					status.setValue(new VariableRetrievalResult(global, local));
 					break;
 				case GET_VAR:
 					VariableID varID = (VariableID) command.getValue();
@@ -511,7 +513,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					
 					status = new DebugStatus(node, CommandType.GET_VAR);
 					if (var != null) {
-						status.setValue(new Variable(var.getName(), var.getType(), var.isGlobal(), var.getValue()));
+						status.setValue(var.clone());
 					} else {
 						status.setError(true);
 						status.setValue(command.getValue());
