@@ -78,10 +78,10 @@ public class DebugStack extends Stack {
 		return vars.toArray();
 	}
 	
-	public Object[] getVariablesForDepth(int depth) {
+	public Object[] getLocalVariables(int index) {
 		ArrayList<Object> vars = new ArrayList<Object>();
 		
-		for (Object var : variableStack.get(depth)) {
+		for (Object var : variableStack.get(index + 1)) {
 			if (var != null) {
 				vars.add(var);
 			}

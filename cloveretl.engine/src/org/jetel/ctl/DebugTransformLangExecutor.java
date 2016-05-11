@@ -313,6 +313,30 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		debugJMX.registerTransformLangExecutor(this);
 	}
 	
+	private StackFrame[] getCallStack(SimpleNode node) {
+		List<StackFrame> callStack = new ArrayList<StackFrame>();
+		ListIterator<CLVFFunctionCall> iter = getStack().getFunctionCallsStack();
+		CLVFFunctionCall functionCall = null;
+		int line = node.getLine();
+		String sourceId = node.getSourceId();
+		if (iter.hasPrevious()) {
+			while (iter.hasPrevious()) {
+				functionCall = iter.previous();
+				StackFrame stackFrame = new StackFrame();
+				stackFrame.setName(functionCall.getName());
+				stackFrame.setSynthetic(functionCall.getId() == SYNTHETIC_FUNCTION_CALL_ID);
+				stackFrame.setGenerated(functionCall.getLocalFunction() != null ? functionCall.getLocalFunction().isGenerated() : false);
+				stackFrame.setLineNumber(line); 
+				stackFrame.setFile(sourceId);
+				stackFrame.setParamTypes(getArgumentTypeNames(functionCall.getLocalFunction()));
+				callStack.add(stackFrame);
+				line = functionCall.getLine();
+				sourceId = functionCall.getSourceId();
+			}
+		}
+		return callStack.toArray(new StackFrame[callStack.size()]);
+	}
+	
 	private void stepRun(final int curLine, SimpleNode node, Object data) {
 		curpoint.setLine(curLine);
 		curpoint.setSource(node.getSourceId());
@@ -481,13 +505,11 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					for (int i = 0; i < globalVariables.length; i++) {
 						global.add(((Variable) globalVariables[i]).clone());
 					}
-						
-					int stackFrameDepth = (int) command.getValue();
-					final Object[] localVariables = getStack().getVariablesForDepth(getStack().blockDepth() - 1 - stackFrameDepth);
+					int index = (int) command.getValue();
+					final Object[] localVariables = getStack().getLocalVariables(index);
 					for (int i = 0; i < localVariables.length; i++) {
 						local.add(((Variable) localVariables[i]).clone());
 					}
-					
 					status = new DebugStatus(node, CommandType.LIST_VARS);
 					status.setValue(new VariableRetrievalResult(global, local));
 					break;
@@ -503,7 +525,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 						}
 					}
 					
-					final Object[] vars = getStack().getVariablesForDepth(getStack().blockDepth() - 1 - varID.getStackFrameDepth());
+					final Object[] vars = getStack().getLocalVariables(varID.getStackFrameDepth());
 					for (int i = 0; i < vars.length; i++) {
 						if (((Variable) vars[i]).getName().equals(varID.getName())) {
 							var = (Variable) vars[i];
@@ -603,28 +625,9 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					}
 					break;
 				case GET_CALLSTACK:
-					List<StackFrame> callStack = new ArrayList<StackFrame>();
-					ListIterator<CLVFFunctionCall> iter = getStack().getFunctionCallsStack();
-					CLVFFunctionCall functionCall = null;
-					int line = node.getLine();
-					String sourceId = node.getSourceId();
-					if (iter.hasPrevious()) {
-						while (iter.hasPrevious()) {
-							functionCall = iter.previous();
-							StackFrame stackFrame = new StackFrame();
-							stackFrame.setName(functionCall.getName());
-							stackFrame.setSynthetic(functionCall.getId() == SYNTHETIC_FUNCTION_CALL_ID);
-							stackFrame.setGenerated(functionCall.getLocalFunction() != null ? functionCall.getLocalFunction().isGenerated() : false);
-							stackFrame.setLineNumber(line); 
-							stackFrame.setFile(sourceId);
-							stackFrame.setParamTypes(getArgumentTypeNames(functionCall.getLocalFunction()));
-							callStack.add(stackFrame);
-							line = functionCall.getLine();
-							sourceId = functionCall.getSourceId();
-						}
-					}
+					StackFrame callStack[] = getCallStack(node);
 					status = new DebugStatus(node, CommandType.GET_CALLSTACK);
-					status.setValue(callStack.toArray(new StackFrame[callStack.size()]));
+					status.setValue(callStack);
 					break;
 				case REMOVE_BREAKPOINT:{
 					Breakpoint bpoint = (Breakpoint) command.getValue();

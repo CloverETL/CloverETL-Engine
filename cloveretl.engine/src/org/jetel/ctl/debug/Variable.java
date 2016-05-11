@@ -35,19 +35,17 @@ public class Variable implements Cloneable, Serializable {
 	public Variable(){
 		name=null;
 		value=null;
-		global=false;
 		type=TLType.UNKNOWN;
 	}
 	
 	public Variable(String name){
 		this.name=name;
 		value=null;
-		global=false;
 		type=TLType.UNKNOWN;
 	}
 	
 	
-	public Variable(String name,TLType type,boolean global,Object value){
+	public Variable(String name, TLType type, boolean global, Object value){
 		this.name=name;
 		this.type=type;
 		this.global=global;
@@ -72,12 +70,6 @@ public class Variable implements Cloneable, Serializable {
 	public void setValue(Object value) {
 		this.value = value;
 	}
-	public boolean isGlobal() {
-		return global;
-	}
-	public void setGlobal(boolean global) {
-		this.global = global;
-	}
 	
 	@Override
 	public String toString(){
@@ -86,6 +78,12 @@ public class Variable implements Cloneable, Serializable {
 	
 	@Override
 	public Variable clone() {
-		return new Variable(name, type, global, TransformLangExecutor.getDeepCopy(value));
+		try {
+			Variable copy = (Variable)super.clone();
+			copy.value = TransformLangExecutor.getDeepCopy(value);
+			return copy;
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

@@ -281,27 +281,7 @@ public abstract class TLTypePrimitive extends TLType {
 	public static TLType fromCloverType(DataFieldMetadata field) throws UnknownTypeException {
 		switch (field.getContainerType()) {
 			case SINGLE:
-				switch (field.getDataType()) {
-				case INTEGER:
-					return INTEGER;
-				case LONG:
-					return LONG;
-				case NUMBER:
-					return DOUBLE;
-				case DECIMAL:
-					return DECIMAL;
-				case DATE:
-					return DATETIME;
-				case BYTE:
-				case CBYTE:
-					return BYTEARRAY;
-				case STRING:
-					return STRING;
-				case BOOLEAN:
-					return BOOLEAN;
-				default:
-					throw new UnknownTypeException(field.getDataType().toString());
-				}
+				return fromDataFieldType(field.getDataType());
 			case LIST:
 				switch (field.getDataType()) {
 				case INTEGER:
@@ -347,6 +327,30 @@ public abstract class TLTypePrimitive extends TLType {
 					throw new UnknownTypeException(field.getDataType().toString());
 				}
 			default: throw new UnknownTypeException(field.getContainerType().toString());
+		}
+	}
+	
+	public static TLType fromDataFieldType(DataFieldType fieldType) {
+		switch (fieldType) {
+		case INTEGER:
+			return INTEGER;
+		case LONG:
+			return LONG;
+		case NUMBER:
+			return DOUBLE;
+		case DECIMAL:
+			return DECIMAL;
+		case DATE:
+			return DATETIME;
+		case BYTE:
+		case CBYTE:
+			return BYTEARRAY;
+		case STRING:
+			return STRING;
+		case BOOLEAN:
+			return BOOLEAN;
+		default:
+			throw new UnknownTypeException(fieldType.toString());
 		}
 	}
 	
