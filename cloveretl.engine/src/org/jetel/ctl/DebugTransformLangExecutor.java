@@ -503,12 +503,12 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					
 					final Object[] globalVariables = getStack().getGlobalVariables();
 					for (int i = 0; i < globalVariables.length; i++) {
-						global.add(((Variable) globalVariables[i]).clone());
+						global.add(((Variable) globalVariables[i]).serializableCopy());
 					}
 					int index = (int) command.getValue();
 					final Object[] localVariables = getStack().getLocalVariables(index);
 					for (int i = 0; i < localVariables.length; i++) {
-						local.add(((Variable) localVariables[i]).clone());
+						local.add(((Variable) localVariables[i]).serializableCopy());
 					}
 					status = new DebugStatus(node, CommandType.LIST_VARS);
 					status.setValue(new VariableRetrievalResult(global, local));
@@ -535,7 +535,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					
 					status = new DebugStatus(node, CommandType.GET_VAR);
 					if (var != null) {
-						status.setValue(var.clone());
+						status.setValue(var.serializableCopy());
 					} else {
 						status.setError(true);
 						status.setValue(command.getValue());

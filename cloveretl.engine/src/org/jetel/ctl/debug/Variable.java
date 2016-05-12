@@ -19,9 +19,15 @@
 package org.jetel.ctl.debug;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
-import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.data.TLType;
+import org.jetel.data.DataRecord;
 
 public class Variable implements Cloneable, Serializable {
 	
@@ -76,14 +82,43 @@ public class Variable implements Cloneable, Serializable {
 		return this.name + ":" + this.type + ":" + value;
 	}
 	
-	@Override
-	public Variable clone() {
+	public Variable serializableCopy() {
 		try {
 			Variable copy = (Variable)super.clone();
-			copy.value = TransformLangExecutor.getDeepCopy(value);
+			copy.value = deepCopy(value);
 			return copy;
 		} catch (CloneNotSupportedException e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	private Object deepCopy(Object value) {
+		if (value instanceof Date) {
+			return new Date(((Date)value).getTime());
+		} else if (value instanceof List<?>) {
+			return deepCopy((List<?>)value); 
+		} else if (value instanceof Map<?, ?>) {
+			return deepCopy((Map<?, ?>)value);
+		} else if (value instanceof DataRecord) {
+			return SerializedDataRecord.fromDataRecord((DataRecord)value);
+		} else {
+			return value; // immutable objects
+		}
+	}
+	
+	private List<?> deepCopy(List<?> list) {
+		List<Object> result = new ArrayList<>(list.size());
+		for (Object o : list) {
+			result.add(deepCopy(o));
+		}
+		return result;
+	}
+	
+	private Map<?, ?> deepCopy(Map<?, ?> map) {
+		Map<Object, Object> result = new LinkedHashMap<>(map.size());
+		for (Entry<?, ?> e : map.entrySet()) {
+			result.put(deepCopy(e.getKey()), deepCopy(e.getValue()));
+		}
+		return result;
 	}
 }
