@@ -48,11 +48,13 @@ import org.jetel.ctl.debug.DebugJMX;
 import org.jetel.ctl.debug.DebugStack;
 import org.jetel.ctl.debug.DebugStatus;
 import org.jetel.ctl.debug.RunToMark;
+import org.jetel.ctl.debug.SerializedDataRecord;
 import org.jetel.ctl.debug.StackFrame;
 import org.jetel.ctl.debug.Thread;
 import org.jetel.ctl.debug.Variable;
 import org.jetel.ctl.debug.VariableID;
 import org.jetel.ctl.debug.VariableRetrievalResult;
+import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.string.StringUtils;
@@ -510,8 +512,23 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					for (int i = 0; i < localVariables.length; i++) {
 						local.add(((Variable) localVariables[i]).serializableCopy());
 					}
+					VariableRetrievalResult result = new VariableRetrievalResult(global, local);
+					if (inputRecords != null && inputRecords.length > 0) {
+						List<SerializedDataRecord> records = new ArrayList<>(inputRecords.length);
+						for (DataRecord record : inputRecords) {
+							records.add(SerializedDataRecord.fromDataRecord(record));
+						}
+						result.setInputRecords(records);
+					}
+					if (outputRecords != null && outputRecords.length > 0) {
+						List<SerializedDataRecord> records = new ArrayList<>(outputRecords.length);
+						for (DataRecord record : outputRecords) {
+							records.add(SerializedDataRecord.fromDataRecord(record));
+						}
+						result.setOutputRecords(records);
+					}
 					status = new DebugStatus(node, CommandType.LIST_VARS);
-					status.setValue(new VariableRetrievalResult(global, local));
+					status.setValue(result);
 					break;
 				case GET_VAR:
 					VariableID varID = (VariableID) command.getValue();

@@ -19,6 +19,7 @@
 package org.jetel.ctl.debug;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -33,6 +34,8 @@ public class VariableRetrievalResult implements Serializable {
 	
 	private List<Variable> globalVariables;
 	private List<Variable> localVariables;
+	private List<SerializedDataRecord> inputRecords;
+	private List<SerializedDataRecord> outputRecords;
 	
 	public VariableRetrievalResult(List<Variable> globalVariables, List<Variable> localVariables) {
 		this.globalVariables = globalVariables;
@@ -40,6 +43,9 @@ public class VariableRetrievalResult implements Serializable {
 	}
 
 	public List<Variable> getGlobalVariables() {
+		if (globalVariables == null) {
+			return Collections.emptyList();
+		}
 		return globalVariables;
 	}
 
@@ -48,11 +54,35 @@ public class VariableRetrievalResult implements Serializable {
 	}
 
 	public List<Variable> getLocalVariables() {
+		if (localVariables == null) {
+			return Collections.emptyList();
+		}
 		return localVariables;
 	}
 
 	public void setLocalVariables(List<Variable> localVariables) {
 		this.localVariables = localVariables;
 	}
-	
+
+	public List<SerializedDataRecord> getInputRecords() {
+		if (inputRecords == null) {
+			return Collections.emptyList();
+		}
+		return inputRecords;
+	}
+
+	public void setInputRecords(List<SerializedDataRecord> inputRecords) {
+		this.inputRecords = inputRecords;
+	}
+
+	public List<SerializedDataRecord> getOutputRecords() {
+		if (outputRecords == null) {
+			return Collections.emptyList();
+		}
+		return outputRecords;
+	}
+
+	public void setOutputRecords(List<SerializedDataRecord> outputRecords) {
+		this.outputRecords = outputRecords;
+	}
 }
