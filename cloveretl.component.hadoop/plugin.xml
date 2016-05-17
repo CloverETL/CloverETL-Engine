@@ -22,7 +22,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/HDFSWriter" name="HadoopWriter" type="HADOOP_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.hadoop.component.HadoopWriter">
+	  <ETLComponent category="writers" iconPath="icons/writers/HDFSWriter" name="HadoopWriter" type="HADOOP_WRITER" className="org.jetel.hadoop.component.HadoopWriter">
 	    <shortDescription>Writes Hadoop/HDFS Sequence Files.</shortDescription>
 	    <description>Writes key-value sequences to Hadoop/HDFS Sequence File; copies key &amp; value from fields of input data records writes them to HDFS.</description>
 	    <outputPorts>
@@ -51,7 +51,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/HDFSReader" name="HadoopReader" type="HADOOP_READER" viewPlainData="false" className="org.jetel.hadoop.component.HadoopReader">
+	  <ETLComponent category="readers" iconPath="icons/readers/HDFSReader" name="HadoopReader" type="HADOOP_READER" viewGridData="true" className="org.jetel.hadoop.component.HadoopReader">
 	    <shortDescription>Reads Hadoop/HDFS Sequence Files.</shortDescription>
 	    <description>Reads key-value sequences from Hadoop/HDFS Sequence File; copies key &amp; value on to output data fields and sends the record to the first output port.</description>
 	    <inputPorts>
