@@ -2946,12 +2946,15 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 			if (inDebugMode()){
 				if (lhs instanceof CLVFVariableDeclaration){
-					CLVFVariableDeclaration var=(CLVFVariableDeclaration)lhs;
-					stack.setVariable(blockOffset, varOffset, value, var.getName(),var.getType());
-				}else{
-					stack.setVariable(blockOffset, varOffset, value);
+					CLVFVariableDeclaration var = (CLVFVariableDeclaration)lhs;
+					stack.setVariable(blockOffset, varOffset, value, var.getName(), var.getType());
+				} else if (lhs instanceof CLVFIdentifier) {
+					CLVFIdentifier ident = (CLVFIdentifier)lhs;
+					stack.setVariable(blockOffset, varOffset, value, ident.getName(), ident.getType());
+				} else {
+					throw new TransformLangExecutorRuntimeException("Unknown variable type: " + lhs);
 				}
-			}else{
+			} else {
 				stack.setVariable(blockOffset, varOffset, value);
 			}
 		}
