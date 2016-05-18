@@ -1626,7 +1626,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			return new LinkedHashMap<Object,Object>();
 		}  else if (varType.isRecord()) {
 			return createNewRecord((TLTypeRecord) varType);
-		} 
+		}  else if (varType.isByteArray()) {
+			return new byte[0];
+		}
 		
 		return null;
 	}
