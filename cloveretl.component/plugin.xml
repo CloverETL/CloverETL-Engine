@@ -19,7 +19,7 @@
 	</requires>
 
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/UniversalDataReader" name="UniversalDataReader"  type="DATA_READER" className="org.jetel.component.DataReader" viewPlainData="true" viewGridData="true">
+	  <ETLComponent category="readers" iconPath="icons/readers/UniversalDataReader" name="UniversalDataReader"  type="DATA_READER" className="org.jetel.component.DataReader">
 	    <shortDescription>Reads data from flat files (CSV, fixed-length).</shortDescription>
 	    <description>Reads data from delimited or fixed length files and sends data records to first connected output port. If any error occurs, the report is sent to the second port if &quot;Data policy&quot; is set to &quot;Controlled&quot;.</description>
 	    <inputPorts>
@@ -103,7 +103,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/UniversalDataWriter" name="UniversalDataWriter" type="DATA_WRITER" className="org.jetel.component.DataWriter" viewPlainData="true" viewGridData="true">
+	  <ETLComponent category="writers" iconPath="icons/writers/UniversalDataWriter" name="UniversalDataWriter" type="DATA_WRITER" className="org.jetel.component.DataWriter">
 	    <shortDescription>Writes data to flat files (CSV, fixed-length).</shortDescription>
 	    <description>Receives data through connected input port and writes data records to delimited or fixed length files based on input metadata.</description>
 	    <inputPorts>
@@ -181,7 +181,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="deprecated" iconPath="icons/readers/DelimitedDataReader" name="DelimitedDataReader"  type="DELIMITED_DATA_READER" defaultVisibility="false" className="org.jetel.component.DelimitedDataReader" viewPlainData="true" viewGridData="true">
+	  <ETLComponent category="deprecated" iconPath="icons/readers/DelimitedDataReader" name="DelimitedDataReader"  type="DELIMITED_DATA_READER" defaultVisibility="false" className="org.jetel.component.DelimitedDataReader">
 	    <shortDescription>Reads data from delimited files.</shortDescription>
 	    <description>Reads data from delimited files and sends data records to all connected output ports.</description>
 	    <inputPorts>
@@ -233,7 +233,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="deprecated" iconPath="icons/writers/DelimitedDataWriter" name="DelimitedDataWriter" type="DELIMITED_DATA_WRITER" defaultVisibility="false" className="org.jetel.component.DelimitedDataWriter" viewPlainData="true">
+	  <ETLComponent category="deprecated" iconPath="icons/writers/DelimitedDataWriter" name="DelimitedDataWriter" type="DELIMITED_DATA_WRITER" defaultVisibility="false" className="org.jetel.component.DelimitedDataWriter" viewGridData="false">
 	    <shortDescription>Writes data to delimited files.</shortDescription>
 	    <description>Receives data through connected input port and writes data records to delimited files based on input metadata.</description>
 	    <inputPorts>
@@ -369,7 +369,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/DBInputTable" name="DBInputTable" type="DB_INPUT_TABLE" viewGridData="true" className="org.jetel.component.DBInputTable">
+	  <ETLComponent category="readers" iconPath="icons/readers/DBInputTable" name="DBInputTable" type="DB_INPUT_TABLE" viewPlainData="false" className="org.jetel.component.DBInputTable">
 	    <shortDescription>Reads data from database using JDBC driver.</shortDescription>
 	    <description>Connects to database using JDBC driver, executes specified query on DB, extracts the rows returned by the query and sends them as data records to all connected output ports. Output metadata must precisely describe the structure of extracted rows.</description>
 	    <inputPorts>
@@ -445,7 +445,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/DBOutputTable" name="DBOutputTable" type="DB_OUTPUT_TABLE" className="org.jetel.component.DBOutputTable">
+	  <ETLComponent category="writers" iconPath="icons/writers/DBOutputTable" name="DBOutputTable" type="DB_OUTPUT_TABLE" viewPlainData="false" viewGridData="false" className="org.jetel.component.DBOutputTable">
 	    <shortDescription>Loads data into database using JDBC driver.</shortDescription>
 	    <description>Receives data through connected input port, connects to database using JDBC driver, performs database operation and loads data records into specified DB table. Correspondence between input metadata and DB table columns must be defined.</description>
 	    <inputPorts>
@@ -506,7 +506,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="deprecated" iconPath="icons/writers/FixedLengthDataWriter" name="FixLenDataWriter" type="FIXLEN_DATA_WRITER" defaultVisibility="false" className="org.jetel.component.FixLenDataWriter" viewPlainData="true">
+	  <ETLComponent category="deprecated" iconPath="icons/writers/FixedLengthDataWriter" name="FixLenDataWriter" type="FIXLEN_DATA_WRITER" defaultVisibility="false" className="org.jetel.component.FixLenDataWriter" viewGridData="false">
 	    <shortDescription>Writes data to fixed length files.</shortDescription>
 	    <description>Receives data through connected input port and writes data records to fixed length files based on input metadata.</description>
 	    <inputPorts>
@@ -600,7 +600,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="deprecated" iconPath="icons/readers/FixedLengthDataReader" name="FixLenDataReader" type="FIXLEN_DATA_READER" defaultVisibility="false" className="org.jetel.component.FixLenDataReader" viewPlainData="true" viewGridData="true">
+	  <ETLComponent category="deprecated" iconPath="icons/readers/FixedLengthDataReader" name="FixLenDataReader" type="FIXLEN_DATA_READER" defaultVisibility="false" className="org.jetel.component.FixLenDataReader">
 	    <shortDescription>Reads data from fixed length files.</shortDescription>
 	    <description>Reads data from fixed length files and sends data records to all connected output ports.</description>
 	    <inputPorts>
@@ -830,7 +830,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/Trash" name="Trash"  type="TRASH" className="org.jetel.component.Trash">
+	  <ETLComponent category="writers" iconPath="icons/writers/Trash" name="Trash"  type="TRASH"  viewPlainData="false" viewGridData="false" className="org.jetel.component.Trash">
 	    <shortDescription>Discards all data.</shortDescription>
 	    <description>Receives data through connected input port and discards it all. However, data can be written to specified file for debugging.</description>
 	    <inputPorts>
@@ -1070,7 +1070,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/DBFDataReader" name="DBFDataReader" type="DBF_DATA_READER" className="org.jetel.component.DBFDataReader" viewPlainData="true" viewGridData="true">
+	  <ETLComponent category="readers" iconPath="icons/readers/DBFDataReader" name="DBFDataReader" type="DBF_DATA_READER" className="org.jetel.component.DBFDataReader">
 	    <shortDescription>Reads data from dBase files.</shortDescription>
 	    <description>Reads data from dBase files and sends data records to all connected output ports.</description>
 	    <inputPorts>
@@ -1116,7 +1116,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/DBFDataWriter" name="DBFDataWriter" type="DBF_DATA_WRITER" className="org.jetel.component.DBFDataWriter">
+	  <ETLComponent category="writers" iconPath="icons/writers/DBFDataWriter" name="DBFDataWriter" type="DBF_DATA_WRITER" className="org.jetel.component.DBFDataWriter" viewPlainData="false" viewGridData="false">
 	    <shortDescription>Writes data to dBase files.</shortDescription>
 	    <description>Writes data from input port to dBase file(s). Handles Character/Number/Logical/Date dBase data types. Requires fixed-length metadata on input.</description>
 	    <inputPorts>
@@ -1776,7 +1776,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="deprecated" iconPath="icons/readers/XLSDataReader" name="XLSDataReader" type="XLS_READER" className="org.jetel.component.XLSReader" defaultVisibility="false" viewPlainData="true" viewGridData="true">
+	  <ETLComponent category="deprecated" iconPath="icons/readers/XLSDataReader" name="XLSDataReader" type="XLS_READER" className="org.jetel.component.XLSReader" defaultVisibility="false">
 	    <shortDescription>Reads data from Excel files (.xls, .xlsx).</shortDescription>
 	    <description>Reads specified sheets of Excel files, converts their contents to data records and sends them to all connected output ports. Mapping of sheet columns to output metadata must be defined.</description>
 	    <inputPorts>
@@ -1856,7 +1856,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="deprecated" iconPath="icons/writers/XLSDataWriter" name="XLSDataWriter"  type="XLS_WRITER" className="org.jetel.component.XLSWriter" defaultVisibility="false">
+	  <ETLComponent category="deprecated" iconPath="icons/writers/XLSDataWriter" name="XLSDataWriter"  type="XLS_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.component.XLSWriter" defaultVisibility="false">
 	    <shortDescription>Writes data to Excel files (.xls, .xlsx).</shortDescription>
 	    <description>Receives data through connected input port and writes data records to specified sheets of Excel files.</description>
 	    <inputPorts>
@@ -1944,7 +1944,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/CloverDataWriter" name="CloverDataWriter" type="CLOVER_WRITER" className="org.jetel.component.CloverDataWriter" viewGridData="true">
+	  <ETLComponent category="writers" iconPath="icons/writers/CloverDataWriter" name="CloverDataWriter" type="CLOVER_WRITER" className="org.jetel.component.CloverDataWriter" viewPlainData="false">
 	    <shortDescription>Writes data to Clover files.</shortDescription>
 	    <description>Receives data through connected input port and writes data records to output files in internal binary Clover data format.</description>
 	    <inputPorts>
@@ -2023,7 +2023,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/CloverDataReader" name="CloverDataReader" type="CLOVER_READER" className="org.jetel.component.CloverDataReader" viewGridData="true">
+	  <ETLComponent category="readers" iconPath="icons/readers/CloverDataReader" name="CloverDataReader" type="CLOVER_READER" className="org.jetel.component.CloverDataReader" viewPlainData="false">
 	    <shortDescription>Reads data from Clover files.</shortDescription>
 	    <description>Reads data from files written in internal binary Clover data format and sends data records to all connected output ports.</description>
 	    <inputPorts>
@@ -2062,7 +2062,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/StructuredDataWriter" name="StructuredDataWriter" type="STRUCTURE_WRITER" className="org.jetel.component.StructureWriter" viewPlainData="true">
+	  <ETLComponent category="writers" iconPath="icons/writers/StructuredDataWriter" name="StructuredDataWriter" type="STRUCTURE_WRITER" className="org.jetel.component.StructureWriter" viewGridData="false">
 	    <shortDescription>Writes data to files in structured way.</shortDescription>
 	    <description>Receives data through connected input port(s) and writes data records to output files according to defined structure consisting of header, body and footer. Header and footer are optional.</description>
 	    <inputPorts>
@@ -2262,7 +2262,7 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/JMSReader" name="JMSReader" type="JMS_READER" className="org.jetel.component.JmsReader">
+	  <ETLComponent category="readers" iconPath="icons/readers/JMSReader" name="JMSReader" type="JMS_READER" className="org.jetel.component.JmsReader" viewPlainData="false" viewGridData="false">
 	    <shortDescription>Receives JMS messages.</shortDescription>
 	    <description>Receives JMS messages, converts them to data records and sends them to all connected output ports. Implements JmsMsg2DataRecord interface.</description>
 	    <inputPorts />
@@ -2305,7 +2305,7 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/JMSWriter" name="JMSWriter" type="JMS_WRITER" className="org.jetel.component.JmsWriter">
+	  <ETLComponent category="writers" iconPath="icons/writers/JMSWriter" name="JMSWriter" type="JMS_WRITER" className="org.jetel.component.JmsWriter" viewPlainData="false" viewGridData="false">
 	    <shortDescription>Sends out JMS messages.</shortDescription>
 	    <description>Receives data through connected input port, converts data records to JMS messages and sends them out. Implements DataRecord2JmsMsg interface.</description>
 	    <inputPorts>
@@ -2382,7 +2382,7 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="others" iconPath="icons/others/LookupTableReaderWriter" name="LookupTableReaderWriter" type="LOOKUP_TABLE_READER_WRITER" className="org.jetel.component.LookupTableReaderWriter" viewPlainData="true" viewGridData="true">
+	  <ETLComponent category="others" iconPath="icons/others/LookupTableReaderWriter" name="LookupTableReaderWriter" type="LOOKUP_TABLE_READER_WRITER" className="org.jetel.component.LookupTableReaderWriter">
 	    <shortDescription>Reads data from lookup table or write data to lookup table.</shortDescription>
 	    <description>Receives data records through connected input port and writes them to specified lookup table (output port is not connected) or reads data records from lookup table and sends them out through all connected output ports (input port is not connected). Lookup table can also be updated before data records are read and sent out (both input port and output ports are connected).</description>
 	    <inputPorts>
@@ -2403,7 +2403,7 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/DataGenerator" name="DataGenerator" type="DATA_GENERATOR" viewGridData="true" className="org.jetel.component.DataGenerator">
+	  <ETLComponent category="readers" iconPath="icons/readers/DataGenerator" name="DataGenerator" type="DATA_GENERATOR" viewPlainData="false" viewGridData="true" className="org.jetel.component.DataGenerator">
 	    <shortDescription>Generates data records.</shortDescription>
 	    <description>Generates data records according to defined pattern and sends them to all connected output ports.</description>
 	    <inputPorts />
@@ -2481,7 +2481,7 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/XMLXPathReader" name="XMLXPathReader" type="XML_XPATH_READER" className="org.jetel.component.XmlXPathReader" viewPlainData="true" viewGridData="true">
+	  <ETLComponent category="readers" iconPath="icons/readers/XMLXPathReader" name="XMLXPathReader" type="XML_XPATH_READER" className="org.jetel.component.XmlXPathReader">
 	    <shortDescription>Reads data from XML files.</shortDescription>
 	    <description>Reads data from XML files, converts elements matched by XPath defined in mapping along with their direct children to data records and sends them into different connected output ports as defined by mapping.</description>
 	    <inputPorts>
@@ -2526,7 +2526,7 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/XMLExtract" name="XMLExtract" type="XML_EXTRACT" className="org.jetel.component.XMLExtract" viewPlainData="true" viewGridData="true">
+	  <ETLComponent category="readers" iconPath="icons/readers/XMLExtract" name="XMLExtract" type="XML_EXTRACT" className="org.jetel.component.XMLExtract">
 	    <shortDescription>Reads data from XML files.</shortDescription>
 	    <description>Reads data from XML files, converts elements matched by mapping along with their children to data records and sends them to different connected output ports as defined by mapping.</description>
 	    <inputPorts>
@@ -2577,7 +2577,7 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 	
 	<extension point-id="component">
-      <ETLComponent category="readers" iconPath="icons/readers/JSONExtract" name="JSONExtract" type="JSON_EXTRACT" className="org.jetel.component.JsonExtract" viewPlainData="true" viewGridData="true">
+      <ETLComponent category="readers" iconPath="icons/readers/JSONExtract" name="JSONExtract" type="JSON_EXTRACT" className="org.jetel.component.JsonExtract">
 	    <shortDescription>Reads data from JSON files.</shortDescription>
 	    <description>Reads data from JSON files, converts elements matched by mapping along with their children to data records and sends them to different connected output ports as defined by mapping.</description>
 	    <inputPorts>
@@ -2619,7 +2619,7 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/XMLXPathReader" name="XMLReader" type="XML_READER" defaultVisibility="etlGraph" className="org.jetel.component.XmlReader" viewPlainData="true" viewGridData="true">
+	  <ETLComponent category="readers" iconPath="icons/readers/XMLXPathReader" name="XMLReader" type="XML_READER" defaultVisibility="etlGraph" className="org.jetel.component.XmlReader">
 	    <shortDescription>Reads data from XML.</shortDescription>
 	    <description>Reads data from XML, converts properties matched by XPath defined in mapping along with their direct children to data records and sends them into different connected output ports as defined by mapping.</description>
 	    <inputPorts>
@@ -2728,7 +2728,7 @@ Sends all resulting records to all connected output ports.</description>
 
 	<!-- GenericComponent - descriptor for Generic Reader -->
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/others/JavaExecute" name="CustomJavaReader" type="GENERIC_READER" className="org.jetel.component.GenericComponent" viewGridData="true">
+	  <ETLComponent category="readers" iconPath="icons/others/JavaExecute" name="CustomJavaReader" type="GENERIC_READER" className="org.jetel.component.GenericComponent" viewPlainData="false">
 	    <shortDescription>Generic component that allows you to create custom reader.</shortDescription>
 	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports. This is a CustomJavaComponent customized for implementing a Reader.</description>
 	    <inputPorts>
@@ -2756,7 +2756,7 @@ Sends all resulting records to all connected output ports.</description>
 	
 	<!-- GenericComponent - descriptor for Generic Writer -->
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/others/JavaExecute" name="CustomJavaWriter" type="GENERIC_WRITER" className="org.jetel.component.GenericComponent">
+	  <ETLComponent category="writers" iconPath="icons/others/JavaExecute" name="CustomJavaWriter" type="GENERIC_WRITER" className="org.jetel.component.GenericComponent" viewPlainData="false" viewGridData="false">
 	    <shortDescription>Generic component that allows you to create custom writer.</shortDescription>
 	    <description>Runs the specified custom algorithm implemented in Java. Provides an easy way to read, process and write records from and to any number of ports. This is a CustomJavaComponent customized for implementing a Writer</description>
 	    <inputPorts>
@@ -2839,7 +2839,7 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="deprecated" iconPath="icons/writers/XMLWriter" name="XMLWriter (deprecated)"  type="XML_WRITER" defaultVisibility="false" className="org.jetel.component.XmlWriter" viewPlainData="true">
+	  <ETLComponent category="deprecated" iconPath="icons/writers/XMLWriter" name="XMLWriter (deprecated)"  type="XML_WRITER" defaultVisibility="false" className="org.jetel.component.XmlWriter" viewGridData="false">
 	    <shortDescription>Writes data to XML files.</shortDescription>
 	    <description>Receives data through all connected input ports, converts data records to XML elements based on defined mapping and writes the resulting tree structure of elements to XML files.</description>
 	    <inputPorts>
@@ -2908,7 +2908,7 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
   
     <extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/XMLWriter" name="XMLWriter"  type="EXT_XML_WRITER" className="org.jetel.component.ExtXmlWriter" viewPlainData="true">
+	  <ETLComponent category="writers" iconPath="icons/writers/XMLWriter" name="XMLWriter"  type="EXT_XML_WRITER" className="org.jetel.component.ExtXmlWriter" viewGridData="false">
 	    <shortDescription>Writes data to XML files.</shortDescription>
 	    <description>Receives data through all connected input ports, converts data records to XML elements based on defined mapping and writes the resulting tree structure of elements to XML files.</description>
 	    <inputPorts>

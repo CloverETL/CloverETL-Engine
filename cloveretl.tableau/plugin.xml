@@ -21,7 +21,9 @@
         className="com.cloveretl.tableau.TableauWriter"
         name="TableauWriter"
         type="TABLEAU_WRITER"
-        iconPath="icons/TableauWriter">
+        iconPath="icons/TableauWriter"
+        viewPlainData="false"
+        viewGridData="false">
 
         <shortDescription>A component that writes data in the native Tableau TDE file format.</shortDescription>
         <description>A component that writes data in the native Tableau TDE file format.</description>
