@@ -849,7 +849,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		private int currentCharMark;
 		private boolean endOfInput;
 		private int maxBackMark;
-
+		
 		/**
 		 * Sole constructor
 		 * @param charset Input charset
@@ -902,7 +902,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			}
 			// preserve data between mark and current position
 			charBuffer.position(charBuffer.position() - numCharsToPreserve);
-			charBuffer.compact();
+			ByteBufferUtils.compact(charBuffer);
 			currentCharMark = numCharsToPreserve - charMarkSpan;
 
 			// need to decode more data
@@ -924,6 +924,9 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 						byteMarkSpan = byteBuffer.position() - currentByteMark;
 					}
 					numBytesToPreserve = Math.min(byteBuffer.position(), Math.max(byteMarkSpan, maxBackMark));
+					if (byteBuffer.capacity() - numBytesToPreserve < MIN_BUFFER_OPERATION_SIZE) {
+						byteBuffer.expand(ByteBufferUtils.normalizeCapacity(byteBuffer.position() + MIN_BUFFER_OPERATION_SIZE));
+					}
 					// following condition is implied by char buffer capacity test above
 					assert byteBuffer.capacity() - numBytesToPreserve >= MIN_BUFFER_OPERATION_SIZE : "Unexpected internal state occured during code execution";
 					// preserve data between mark and current position
