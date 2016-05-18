@@ -10,7 +10,7 @@
 	</requires>
 	
 	<extension point-id="component">
-		<ETLComponent category="writers" iconPath="icons/writers/OracleDataWriter" name="OracleDataWriter" type="ORACLE_DATA_WRITER" className="org.jetel.component.OracleDataWriter">
+		<ETLComponent category="writers" iconPath="icons/writers/OracleDataWriter" name="OracleDataWriter" type="ORACLE_DATA_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.component.OracleDataWriter">
 			<shortDescription>Loads data into Oracle database.</shortDescription>
 			<description>Receives data through connected input port or reads it from input file, connects to Oracle database using sqlldr utility and loads data records into specified database table. User can log the process of loading data into Log file, write incorrect and/or rejected records into Bad file and/or Discard file, respectively. It works faster than DBOutputTable.</description>
 			<inputPorts>
@@ -87,7 +87,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/DB2DataWriter" name="DB2DataWriter" type="DB2_DATA_WRITER" className="org.jetel.component.DB2DataWriter">
+	  <ETLComponent category="writers" iconPath="icons/writers/DB2DataWriter" name="DB2DataWriter" type="DB2_DATA_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.component.DB2DataWriter">
 	    <shortDescription>Loads data into DB2 database.</shortDescription>
 	    <description>Receives data through connected input port or reads it from input file, connects to DB2 database using db2 utility and loads data records into specified database table. Correspondence of input metadata and DB columns must be defined. Information about rejected records can be sent out through optional output port if connected. It works faster than DBOutputTable.</description>
 	    <inputPorts>
@@ -170,7 +170,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/InformixDataWriter" name="InformixDataWriter" type="INFORMIX_DATA_WRITER" className="org.jetel.component.InformixDataWriter">
+	  <ETLComponent category="writers" iconPath="icons/writers/InformixDataWriter" name="InformixDataWriter" type="INFORMIX_DATA_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.component.InformixDataWriter">
 	    <shortDescription>Loads data into Informix database.</shortDescription>
 	    <description>Receives data through connected input port or reads it from input file, connects to Informix database using dbload or load2 utilities and loads data records into specified database table. Rejected records along with information about error are sent out through optional output port if connected. It works faster than DBOutputTable.</description>
 	    <inputPorts>
@@ -233,7 +233,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/MSSQLDataWriter" name="MSSQLDataWriter" type="MS_SQL_DATA_WRITER" className="org.jetel.component.MsSqlDataWriter">
+	  <ETLComponent category="writers" iconPath="icons/writers/MSSQLDataWriter" name="MSSQLDataWriter" type="MS_SQL_DATA_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.component.MsSqlDataWriter">
 	    <shortDescription>Loads data into MSSQL database.</shortDescription>
 	    <description>Receives data through connected input port or reads it from input file, connects to MSSQL database using bcp utility and loads data records into specified database table. Rejected records along with information about error are sent out through optional output port if connected. It works faster than DBOutputTable.</description>
 	    <inputPorts>
@@ -281,7 +281,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/MySQLDataWriter" name="MySQLDataWriter" type="MYSQL_DATA_WRITER" className="org.jetel.component.MysqlDataWriter">
+	  <ETLComponent category="writers" iconPath="icons/writers/MySQLDataWriter" name="MySQLDataWriter" type="MYSQL_DATA_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.component.MysqlDataWriter">
 		<shortDescription>Loads data into MySQL database.</shortDescription>
 		<description>Receives data through connected input port or reads it from input file, connects to MySQL database using mysql utility and loads data records into specified database table. Information about rejected records can be sent out through optional output port if connected. It works faster than DBOutputTable.</description>
 		<inputPorts>
@@ -332,7 +332,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/PostgreSQLDataWriter" name="PostgreSQLDataWriter" type="POSTGRESQL_DATA_WRITER" className="org.jetel.component.PostgreSqlDataWriter">
+	  <ETLComponent category="writers" iconPath="icons/writers/PostgreSQLDataWriter" name="PostgreSQLDataWriter" type="POSTGRESQL_DATA_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.component.PostgreSqlDataWriter">
 	    <shortDescription>Loads data into PostgreSQL database.</shortDescription>
 	    <description>Receives data through connected input port or reads it from input file, connects to PostgreSQL database using psql utility and loads data records into specified database table. It works faster than DBOutputTable.</description>
 	    <inputPorts>
@@ -376,7 +376,7 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/InfobrightDataWriter" name="InfobrightDataWriter" type="INFOBRIGHT_DATA_WRITER" className="org.jetel.component.InfobrightDataWriter">
+	  <ETLComponent category="writers" iconPath="icons/writers/InfobrightDataWriter" name="InfobrightDataWriter" type="INFOBRIGHT_DATA_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.component.InfobrightDataWriter">
 	    <shortDescription>Loads data into Infobright database.</shortDescription>
 	    <inputPorts>
 	      <singlePort name="0" />
