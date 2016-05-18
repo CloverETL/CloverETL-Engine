@@ -323,7 +323,7 @@ public class DynamicCloverBuffer extends CloverBuffer {
         int end = pos + expectedRemaining;
         int newCapacity;
         if (autoExpand) {
-            newCapacity = normalizeCapacity(end);
+            newCapacity = ByteBufferUtils.normalizeCapacity(end);
             if (newCapacity > maximumCapacity) {
             	newCapacity = end;
             }
