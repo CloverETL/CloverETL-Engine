@@ -479,55 +479,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		PooledS3Connection connection = null;
 		try {
 			connection = connect(target);
-			AmazonS3 service = connection.getService();
-			String[] path = getPath(target);
-			String bucketName = path[0];
-			try {
-				URI baseUri = connection.getBaseUri();
-				List<Info> result;
-				if (bucketName.isEmpty()) { // root - list buckets
-					List<Bucket> buckets = service.listBuckets();
-					result = new ArrayList<Info>(buckets.size());
-					for (Bucket bucket: buckets) {
-						result.add(getBucketInfo(bucket.getName(), baseUri));
-					}
-				} else {
-					String prefix = "";
-					if (path.length > 1) {
-						prefix = appendSlash(path[1]);
-					}
-					ListObjectsRequest request = S3Utils.listObjectRequest(bucketName, prefix, FORWARD_SLASH);
-					ObjectListing listing = service.listObjects(request);
-					ArrayList<Info> files = new ArrayList<Info>();
-					ArrayList<Info> directories = new ArrayList<Info>();
-					int prefixLength = prefix.length();
-					
-					do {
-						for (String directory: listing.getCommonPrefixes()) {
-							String name = directory.substring(prefixLength);
-							URI uri = URIUtils.getChildURI(target, name);
-							directories.add(getDirectoryInfo(name, uri));
-						}
-						
-						for (S3ObjectSummary object: listing.getObjectSummaries()) {
-							String key = object.getKey();
-							if (key.length() > prefixLength) { // skip the parent directory itself
-								S3ObjectInfo info = new S3ObjectInfo(object, baseUri);
-								files.add(info);
-							}
-						}
-						
-						listing = service.listNextBatchOfObjects(listing);
-					} while (listing.isTruncated());
-					
-					directories.ensureCapacity(directories.size() + files.size());
-					result = directories;
-					result.addAll(files);
-				}
-				return result;
-			} catch (AmazonClientException e) {
-				throw S3Utils.getIOException(e);
-			}
+			return listFiles(target, connection);
 		} finally {
 			disconnect(connection);
 		}
@@ -786,6 +738,58 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 			return os;
 		} catch (Exception e) {
 			connection.returnToPool();
+			throw S3Utils.getIOException(e);
+		}
+	}
+	
+	public static List<Info> listFiles(URI target, PooledS3Connection connection) throws IOException {
+		AmazonS3 service = connection.getService();
+		String[] path = getPath(target);
+		String bucketName = path[0];
+		try {
+			URI baseUri = connection.getBaseUri();
+			List<Info> result;
+			if (bucketName.isEmpty()) { // root - list buckets
+				List<Bucket> buckets = service.listBuckets();
+				result = new ArrayList<Info>(buckets.size());
+				for (Bucket bucket: buckets) {
+					result.add(getBucketInfo(bucket.getName(), baseUri));
+				}
+			} else {
+				String prefix = "";
+				if (path.length > 1) {
+					prefix = appendSlash(path[1]);
+				}
+				ListObjectsRequest request = S3Utils.listObjectRequest(bucketName, prefix, FORWARD_SLASH);
+				ObjectListing listing = service.listObjects(request);
+				ArrayList<Info> files = new ArrayList<Info>();
+				ArrayList<Info> directories = new ArrayList<Info>();
+				int prefixLength = prefix.length();
+				
+				do {
+					for (String directory: listing.getCommonPrefixes()) {
+						String name = directory.substring(prefixLength);
+						URI uri = URIUtils.getChildURI(target, name);
+						directories.add(getDirectoryInfo(name, uri));
+					}
+					
+					for (S3ObjectSummary object: listing.getObjectSummaries()) {
+						String key = object.getKey();
+						if (key.length() > prefixLength) { // skip the parent directory itself
+							S3ObjectInfo info = new S3ObjectInfo(object, baseUri);
+							files.add(info);
+						}
+					}
+					
+					listing = service.listNextBatchOfObjects(listing);
+				} while (listing.isTruncated());
+				
+				directories.ensureCapacity(directories.size() + files.size());
+				result = directories;
+				result.addAll(files);
+			}
+			return result;
+		} catch (AmazonClientException e) {
 			throw S3Utils.getIOException(e);
 		}
 	}
