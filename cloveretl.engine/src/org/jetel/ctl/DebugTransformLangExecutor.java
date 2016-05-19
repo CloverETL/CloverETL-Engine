@@ -46,6 +46,7 @@ import org.jetel.ctl.debug.DebugCommand;
 import org.jetel.ctl.debug.DebugCommand.CommandType;
 import org.jetel.ctl.debug.DebugJMX;
 import org.jetel.ctl.debug.DebugStack;
+import org.jetel.ctl.debug.DebugStack.FunctionCallFrame;
 import org.jetel.ctl.debug.DebugStatus;
 import org.jetel.ctl.debug.RunToMark;
 import org.jetel.ctl.debug.SerializedDataRecord;
@@ -317,13 +318,13 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	
 	private StackFrame[] getCallStack(SimpleNode node) {
 		List<StackFrame> callStack = new ArrayList<StackFrame>();
-		ListIterator<CLVFFunctionCall> iter = getStack().getFunctionCallsStack();
+		ListIterator<FunctionCallFrame> iter = getStack().getFunctionCallStack();
 		CLVFFunctionCall functionCall = null;
 		int line = node.getLine();
 		String sourceId = node.getSourceId();
 		if (iter.hasPrevious()) {
 			while (iter.hasPrevious()) {
-				functionCall = iter.previous();
+				functionCall = iter.previous().functionCall;
 				StackFrame stackFrame = new StackFrame();
 				stackFrame.setName(functionCall.getName());
 				stackFrame.setSynthetic(functionCall.getId() == SYNTHETIC_FUNCTION_CALL_ID);
@@ -505,7 +506,10 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					
 					final Object[] globalVariables = getStack().getGlobalVariables();
 					for (int i = 0; i < globalVariables.length; i++) {
-						global.add(((Variable) globalVariables[i]).serializableCopy());
+						if (globalVariables[i] instanceof Variable) {
+							Variable variable = (Variable)globalVariables[i];
+							global.add(variable.serializableCopy());
+						}
 					}
 					int index = (int) command.getValue();
 					final Object[] localVariables = getStack().getLocalVariables(index);

@@ -19,9 +19,12 @@
 package org.jetel.ctl.debug;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
 
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
+import org.jetel.ctl.data.Scope;
 import org.jetel.ctl.data.TLType;
 
 /**
@@ -32,31 +35,39 @@ import org.jetel.ctl.data.TLType;
  */
 public class DebugStack extends Stack {
 	
+	private List<FunctionCallFrame> callStack;
+	
+	public static class FunctionCallFrame {
+		public CLVFFunctionCall functionCall;
+		public int varStackIndex = -1;
+	}
+	
 	public DebugStack() {
 		super();
+		this.callStack = new ArrayList<>();
 	}
 	
 	public int getCurrentFunctionCallIndex() {
-		return functionCalls.size() - 1;
+		return callStack.size() - 1;
 	}
 	
 	public int getPreviousFunctionCallIndex() {
-		if (functionCalls.size() >= 2) {
-			return functionCalls.size() - 2;
+		if (callStack.size() >= 2) {
+			return callStack.size() - 2;
 		}
 		return -1;
 	}
 	
 	@Override
 	public void setVariable(int blockOffset, int variableOffset,Object value, String name, TLType type){
-		super.setVariable(blockOffset, variableOffset, new Variable(name,type, blockOffset<0, value));
+		super.setVariable(blockOffset, variableOffset, new Variable(name,type, blockOffset < 0, value));
 	}
 	
 	@Override
 	public void setVariable(int blockOffset, int variableOffset,Object value){
-		Variable storedVar= (Variable)super.getVariable(blockOffset,variableOffset);
+		Variable storedVar = (Variable)super.getVariable(blockOffset,variableOffset);
 		storedVar.setValue(value);
-		super.setVariable(blockOffset, variableOffset,storedVar);
+		super.setVariable(blockOffset, variableOffset, storedVar);
 	}
 	
 	@Override
@@ -69,7 +80,7 @@ public class DebugStack extends Stack {
 	 * @return all local variables from all frames
 	 */
 	public Object[] getAllLocalVariables() {
-		ArrayList<Object> vars = new ArrayList<Object>();
+		List<Object> vars = new ArrayList<Object>();
 		for (int i=1;i< variableStack.size();i++){
 			for(Object var:variableStack.get(i)){
 				if (var!=null) vars.add(var);
@@ -78,12 +89,19 @@ public class DebugStack extends Stack {
 		return vars.toArray();
 	}
 	
-	public Object[] getLocalVariables(int index) {
-		ArrayList<Object> vars = new ArrayList<Object>();
+	public Object[] getLocalVariables(int functionCallIndex) {
+		FunctionCallFrame frame = callStack.get(functionCallIndex);
+		FunctionCallFrame nextFrame = functionCallIndex < callStack.size() - 1 ? callStack.get(functionCallIndex + 1) : null;
 		
-		for (Object var : variableStack.get(index + 1)) {
-			if (var != null) {
-				vars.add(var);
+		final int startIndex = frame.varStackIndex < 0 /* global scope */ ? 1 : frame.varStackIndex;
+		final int stopIndex = nextFrame != null ? nextFrame.varStackIndex : variableStack.size();
+		
+		List<Object> vars = new ArrayList<>();
+		for (int i = startIndex; i < stopIndex; ++i) {
+			for (Object var : variableStack.get(i)) {
+				if (var != null) {
+					vars.add(var);
+				}
 			}
 		}
 		return vars.toArray();
@@ -100,18 +118,48 @@ public class DebugStack extends Stack {
 	
 	public void enteredSyntheticBlock(CLVFFunctionCall functionCallNode) {
 		if (functionCallNode != null) {
-			previousFunctionCallNode = currentFunctionCallNode;
-			currentFunctionCallNode = functionCallNode;
-			functionCalls.add(functionCallNode);
+			FunctionCallFrame frame = new FunctionCallFrame();
+			frame.functionCall = functionCallNode;
+			callStack.add(frame);
 		}
 	}
 	
 	public void exitedSyntheticBlock(CLVFFunctionCall functionCallNode) {
 		if (functionCallNode != null) {
-			functionCalls.remove(functionCalls.size()-1);
-			currentFunctionCallNode = previousFunctionCallNode;
-			final int size=functionCalls.size();
-			previousFunctionCallNode =  size>1 ?  functionCalls.get(size-2) : null;
+			callStack.remove(callStack.size() - 1);
 		}
+	}
+	
+	/**
+	 * Adds 'frame' on the variable stack for active block or function
+	 * 
+	 * @param blockScope	scope of active block
+	 * @param functionCallNode	the CTL AST Node of the function (call)
+	 */
+	@Override
+	public void enteredBlock(Scope blockScope, CLVFFunctionCall functionCallNode) {
+		super.enteredBlock(blockScope, functionCallNode);
+		if (functionCallNode != null) {
+			FunctionCallFrame frame = new FunctionCallFrame();
+			frame.functionCall = functionCallNode;
+			frame.varStackIndex = variableStack.size() - 1;
+			callStack.add(frame);
+		}
+	}
+	
+	/**
+	 * Removes 'frame' for active block or function
+	 * @param functionCallNode	the CTL AST Node of the function (call)
+	 */
+	@Override
+	public void exitedBlock(CLVFFunctionCall functionCallNode) {
+		super.exitedBlock(functionCallNode);
+		if (functionCallNode !=null) {
+			callStack.remove(callStack.size() - 1);
+		}
+	}
+	
+	public ListIterator<FunctionCallFrame> getFunctionCallStack() {
+		return callStack.listIterator(callStack.size());
 	}
 }

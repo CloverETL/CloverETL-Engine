@@ -23,11 +23,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
-import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.ctl.data.Scope;
 import org.jetel.ctl.data.TLType;
 import org.jetel.data.DataRecord;
@@ -50,11 +48,6 @@ public class Stack {
     protected ArrayList<Object[]> variableStack;
     protected int top = -1;
     
-
-	protected ArrayList<CLVFFunctionCall> functionCalls;
-	protected SimpleNode previousFunctionCallNode=null;
-	protected SimpleNode currentFunctionCallNode=null;
-    
 	public Stack(){
         this(STACK_DEPTH);
 	}
@@ -62,9 +55,6 @@ public class Stack {
 	public Stack(int depth){
 		stack= new Object[depth];
 		variableStack = new ArrayList<Object[]>();
-		functionCalls = new ArrayList<CLVFFunctionCall>();
-		previousFunctionCallNode = null;
-		currentFunctionCallNode = null;
 	}
 
 	/**
@@ -172,18 +162,13 @@ public class Stack {
 	 * @param blockScope	scope of active block
 	 * @param functionCallNode	the CTL AST Node of the function (call)
 	 */
-	public void enteredBlock(Scope blockScope,CLVFFunctionCall functionCallNode) {
-		if (functionCallNode != null) {
-			previousFunctionCallNode = currentFunctionCallNode;
-			currentFunctionCallNode = functionCallNode;
-			functionCalls.add(functionCallNode);
-		}
+	public void enteredBlock(Scope blockScope, CLVFFunctionCall functionCallNode) {
 		variableStack.add(new Object[blockScope.size()]);
 	}
 
 	
 	public final void enteredBlock(Scope blockScope) {
-		enteredBlock(blockScope,null);
+		enteredBlock(blockScope, null);
 	}
 	
 	
@@ -191,36 +176,13 @@ public class Stack {
 	 * Removes 'frame' for active block or function
 	 * @param functionCallNode	the CTL AST Node of the function (call)
 	 */
-	public void exitedBlock(SimpleNode functionCallNode) {
-		variableStack.remove(variableStack.size()-1);
-		if (functionCallNode !=null) {
-			functionCalls.remove(functionCalls.size()-1);
-			currentFunctionCallNode = previousFunctionCallNode;
-			final int size=functionCalls.size();
-			previousFunctionCallNode =  size>1 ?  functionCalls.get(size-2) : null;
-		}
+	public void exitedBlock(CLVFFunctionCall functionCallNode) {
+		variableStack.remove(variableStack.size() - 1);
 	}
 	
 	public final void exitedBlock() {
 		exitedBlock(null);
 	}
-	
-	/**
-	 * Returns block / variable stack index of the last entered function call block, or -1 if
-	 * there are no functions entered yet 
-	 */
-	public SimpleNode getFunctionCallNode(){
-			return currentFunctionCallNode;
-	}
-	
-	public SimpleNode getPreviousFunctionCallNode(){
-		return previousFunctionCallNode;
-	}
-	
-	public ListIterator<CLVFFunctionCall> getFunctionCallsStack(){
-		return functionCalls.listIterator(functionCalls.size());
-	}
-	
 	
 	/**
 	 *  Returns the depth of variable stack - i.e. how many blocks deep we are 
@@ -287,7 +249,7 @@ public class Stack {
 	}
 
 	public Object[] getLocalVariables() {
-		return variableStack.get(variableStack.size()-1);
+		return variableStack.get(variableStack.size() - 1);
 	}
 	
 	public Object[] getGlobalVariables() {
@@ -305,5 +267,4 @@ public class Stack {
 			variableStack.toString() +
 			")";
 	}
-	
 }
