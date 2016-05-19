@@ -1626,8 +1626,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			return new LinkedHashMap<Object,Object>();
 		}  else if (varType.isRecord()) {
 			return createNewRecord((TLTypeRecord) varType);
-		}  else if (varType.isByteArray()) {
-			return new byte[0];
 		}
 		
 		return null;
@@ -1655,10 +1653,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		}
 		
 		// default initializers
-		Object value = getDefaultValue(node.getType());
-		if (value != null) {
-			setVariable(node, value);
-		}
+		setVariable(node, getDefaultValue(node.getType()));
 		
 		return data;
 	}
