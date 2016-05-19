@@ -608,22 +608,6 @@ public abstract class CloverBuffer {
     public abstract CloverBuffer skip(int size);
 
     /**
-     * Normalizes the specified capacity of the buffer to power of 2, which is
-     * often helpful for optimal memory usage and performance. If it is greater
-     * than or equal to {@link Integer#MAX_VALUE}, it returns
-     * {@link Integer#MAX_VALUE}. If it is zero, it returns zero.
-     */
-    protected static int normalizeCapacity(int requestedCapacity) {
-        if (requestedCapacity < 0) {
-            return Integer.MAX_VALUE;
-        }
-
-        int newCapacity = Integer.highestOneBit(requestedCapacity);
-        newCapacity <<= (newCapacity < requestedCapacity ? 1 : 0);
-        return newCapacity < 0 ? Integer.MAX_VALUE : newCapacity;
-    }
-
-    /**
      * Request to prepare a new byte buffer.
      */
     protected ByteBuffer reallocateByteBuffer(int capacity, boolean direct) {
