@@ -443,11 +443,37 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 				return new SimpleInfo("", connection.getBaseUri()).setType(Type.DIR); // root
 			}
 			try {
-				if (service.doesBucketExist(bucketName)) {
+				// use doesBucketExist() by default; getBucketLocation() throws an exception for non-existing buckets
+	        	if (service.doesBucketExist(bucketName)) {
 					return getBucketInfo(bucketName, connection.getBaseUri());
 				} else {
 					return null;
 				}
+			} catch (AmazonServiceException e) {
+				// CLO-8739
+				if (e.getStatusCode() == HttpStatus.SC_BAD_REQUEST) { // only for HTTP 400
+			        log.warn("Attempting to re-send the request with AWS V4 authentication. "
+			                + "To avoid this warning in the future, please use region-specific endpoint to access "
+			                + "buckets located in regions that require V4 signing.");
+			        try {
+			        	// avoid using listBuckets(), because LIST requests are ten times more expensive
+			        	// getBucketLocation() throws an exception for non-existing buckets
+			        	String bucketLocation = service.getBucketLocation(bucketName);
+			        	if (!StringUtils.isEmpty(bucketLocation)) {
+			        		return getBucketInfo(bucketName, connection.getBaseUri());
+			        	}
+			        } catch (AmazonServiceException ex2) {
+			        	if (ex2.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
+			        		return null; // HTTP 404
+			        	}
+			        	ex2.addSuppressed(e);
+						throw S3Utils.getIOException(ex2);
+			        } catch (AmazonClientException ex2) {
+			        	ex2.addSuppressed(e);
+						throw S3Utils.getIOException(ex2);
+			        }
+				}
+				throw S3Utils.getIOException(e);
 			} catch (AmazonClientException e) {
 				throw S3Utils.getIOException(e);
 			}
