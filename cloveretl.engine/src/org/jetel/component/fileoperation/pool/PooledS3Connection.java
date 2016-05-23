@@ -22,9 +22,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 import org.jetel.component.fileoperation.PrimitiveS3OperationHandler;
 import org.jetel.component.fileoperation.URIUtils;
+import org.jetel.util.protocols.URLValidator;
 import org.jetel.util.protocols.Validable;
 import org.jetel.util.protocols.amazon.S3Utils;
 
@@ -44,7 +47,7 @@ import com.amazonaws.services.s3.transfer.TransferManagerConfiguration;
  *
  * @created 18. 3. 2015
  */
-public class PooledS3Connection extends AbstractPoolableConnection implements Validable {
+public class PooledS3Connection extends AbstractPoolableConnection implements Validable, URLValidator {
 
 	/**
 	 * Shared instance, do not modify!
@@ -100,6 +103,16 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 				}
 			}
 			throw new IOException("Connection validation failed", S3Utils.getIOException(e));
+		}
+	}
+
+	@Override
+	public void validate(URL url) throws IOException {
+		validate();
+		try {
+			PrimitiveS3OperationHandler.listFiles(url.toURI(), this);
+		} catch (URISyntaxException e) {
+			throw new IOException(e);
 		}
 	}
 
