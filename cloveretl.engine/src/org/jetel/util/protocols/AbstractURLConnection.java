@@ -109,7 +109,10 @@ public abstract class AbstractURLConnection extends URLConnection implements Val
 		PoolableConnection pooledConnection = null;
 		try {
 			pooledConnection = connect(authority);
-			if (pooledConnection instanceof Validable) {
+			if (pooledConnection instanceof URLValidator) {
+				URLValidator validator = (URLValidator) pooledConnection;
+				validator.validate(url);
+			} else if (pooledConnection instanceof Validable) {
 				Validable validable = (Validable) pooledConnection;
 				validable.validate();
 			}

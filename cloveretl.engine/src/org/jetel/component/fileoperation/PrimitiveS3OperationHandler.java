@@ -443,11 +443,37 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 				return new SimpleInfo("", connection.getBaseUri()).setType(Type.DIR); // root
 			}
 			try {
-				if (service.doesBucketExist(bucketName)) {
+				// use doesBucketExist() by default; getBucketLocation() throws an exception for non-existing buckets
+	        	if (service.doesBucketExist(bucketName)) {
 					return getBucketInfo(bucketName, connection.getBaseUri());
 				} else {
 					return null;
 				}
+			} catch (AmazonServiceException e) {
+				// CLO-8739
+				if (e.getStatusCode() == HttpStatus.SC_BAD_REQUEST) { // only for HTTP 400
+			        log.warn("Attempting to re-send the request with AWS V4 authentication. "
+			                + "To avoid this warning in the future, please use region-specific endpoint to access "
+			                + "buckets located in regions that require V4 signing.");
+			        try {
+			        	// avoid using listBuckets(), because LIST requests are ten times more expensive
+			        	// getBucketLocation() throws an exception for non-existing buckets
+			        	String bucketLocation = service.getBucketLocation(bucketName);
+			        	if (!StringUtils.isEmpty(bucketLocation)) {
+			        		return getBucketInfo(bucketName, connection.getBaseUri());
+			        	}
+			        } catch (AmazonServiceException ex2) {
+			        	if (ex2.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
+			        		return null; // HTTP 404
+			        	}
+			        	ex2.addSuppressed(e);
+						throw S3Utils.getIOException(ex2);
+			        } catch (AmazonClientException ex2) {
+			        	ex2.addSuppressed(e);
+						throw S3Utils.getIOException(ex2);
+			        }
+				}
+				throw S3Utils.getIOException(e);
 			} catch (AmazonClientException e) {
 				throw S3Utils.getIOException(e);
 			}
@@ -479,55 +505,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		PooledS3Connection connection = null;
 		try {
 			connection = connect(target);
-			AmazonS3 service = connection.getService();
-			String[] path = getPath(target);
-			String bucketName = path[0];
-			try {
-				URI baseUri = connection.getBaseUri();
-				List<Info> result;
-				if (bucketName.isEmpty()) { // root - list buckets
-					List<Bucket> buckets = service.listBuckets();
-					result = new ArrayList<Info>(buckets.size());
-					for (Bucket bucket: buckets) {
-						result.add(getBucketInfo(bucket.getName(), baseUri));
-					}
-				} else {
-					String prefix = "";
-					if (path.length > 1) {
-						prefix = appendSlash(path[1]);
-					}
-					ListObjectsRequest request = S3Utils.listObjectRequest(bucketName, prefix, FORWARD_SLASH);
-					ObjectListing listing = service.listObjects(request);
-					ArrayList<Info> files = new ArrayList<Info>();
-					ArrayList<Info> directories = new ArrayList<Info>();
-					int prefixLength = prefix.length();
-					
-					do {
-						for (String directory: listing.getCommonPrefixes()) {
-							String name = directory.substring(prefixLength);
-							URI uri = URIUtils.getChildURI(target, name);
-							directories.add(getDirectoryInfo(name, uri));
-						}
-						
-						for (S3ObjectSummary object: listing.getObjectSummaries()) {
-							String key = object.getKey();
-							if (key.length() > prefixLength) { // skip the parent directory itself
-								S3ObjectInfo info = new S3ObjectInfo(object, baseUri);
-								files.add(info);
-							}
-						}
-						
-						listing = service.listNextBatchOfObjects(listing);
-					} while (listing.isTruncated());
-					
-					directories.ensureCapacity(directories.size() + files.size());
-					result = directories;
-					result.addAll(files);
-				}
-				return result;
-			} catch (AmazonClientException e) {
-				throw S3Utils.getIOException(e);
-			}
+			return listFiles(target, connection);
 		} finally {
 			disconnect(connection);
 		}
@@ -786,6 +764,58 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 			return os;
 		} catch (Exception e) {
 			connection.returnToPool();
+			throw S3Utils.getIOException(e);
+		}
+	}
+	
+	public static List<Info> listFiles(URI target, PooledS3Connection connection) throws IOException {
+		AmazonS3 service = connection.getService();
+		String[] path = getPath(target);
+		String bucketName = path[0];
+		try {
+			URI baseUri = connection.getBaseUri();
+			List<Info> result;
+			if (bucketName.isEmpty()) { // root - list buckets
+				List<Bucket> buckets = service.listBuckets();
+				result = new ArrayList<Info>(buckets.size());
+				for (Bucket bucket: buckets) {
+					result.add(getBucketInfo(bucket.getName(), baseUri));
+				}
+			} else {
+				String prefix = "";
+				if (path.length > 1) {
+					prefix = appendSlash(path[1]);
+				}
+				ListObjectsRequest request = S3Utils.listObjectRequest(bucketName, prefix, FORWARD_SLASH);
+				ObjectListing listing = service.listObjects(request);
+				ArrayList<Info> files = new ArrayList<Info>();
+				ArrayList<Info> directories = new ArrayList<Info>();
+				int prefixLength = prefix.length();
+				
+				do {
+					for (String directory: listing.getCommonPrefixes()) {
+						String name = directory.substring(prefixLength);
+						URI uri = URIUtils.getChildURI(target, name);
+						directories.add(getDirectoryInfo(name, uri));
+					}
+					
+					for (S3ObjectSummary object: listing.getObjectSummaries()) {
+						String key = object.getKey();
+						if (key.length() > prefixLength) { // skip the parent directory itself
+							S3ObjectInfo info = new S3ObjectInfo(object, baseUri);
+							files.add(info);
+						}
+					}
+					
+					listing = service.listNextBatchOfObjects(listing);
+				} while (listing.isTruncated());
+				
+				directories.ensureCapacity(directories.size() + files.size());
+				result = directories;
+				result.addAll(files);
+			}
+			return result;
+		} catch (AmazonClientException e) {
 			throw S3Utils.getIOException(e);
 		}
 	}
