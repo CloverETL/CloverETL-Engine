@@ -752,6 +752,9 @@
 	      <property category="basic" displayName="Keep" modifiable="true" name="keep" nullable="true" defaultHint="First">
 	        <singleType name="keep" />
 	      </property>
+	      <property category="basic" displayName="Sorted input" modifiable="true" name="sorted" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
 	      <property category="basic" displayName="Equal NULL" modifiable="true" name="equalNULL" nullable="true" defaultHint="true">
 	        <singleType name="bool" />
 	      </property>
