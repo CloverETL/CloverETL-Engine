@@ -64,6 +64,19 @@ REL-4-2-0-M1
 	- CLO-5762	Sequences in compiled mode skip values
 
 
+REL-4-1-4
+---------
+
+* Activation changes - removed online activation from Designer
+* DataInspector fixes and improvements:
+  - Duplication of records
+  - Do not show DataInspector if component does not provide data
+  - DataInspector overlaps Console and/or Execution view
+  - DataInspector does not allow to focus graph editor
+  - other minor fixes
+* Multiple sheets load data issue
+
+
 REL-4-1-3
 ---------
 
