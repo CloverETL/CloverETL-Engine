@@ -122,6 +122,10 @@ public class CodePieceExtractor {
 		public String getCodePiece(int startLine, int startColumn, int endLine, int endColumn) {
 			int startIndex = getIndex(startLine, startColumn);
 			int endIndex = getIndex(endLine, endColumn);
+			if ((startIndex >= input.length()) || ((endIndex + 1) >= input.length())) {
+				// FIXME temporary fix for CLO-8642, it might be removed after resolving CLO-8849
+				return null;
+			}
 			return input.substring(startIndex, endIndex + 1);
 		}
 		
