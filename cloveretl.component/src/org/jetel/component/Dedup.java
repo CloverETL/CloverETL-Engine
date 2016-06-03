@@ -21,7 +21,12 @@ package org.jetel.component;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,6 +35,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
+import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.data.RingRecordBuffer;
 import org.jetel.enums.OrderEnum;
@@ -98,6 +104,7 @@ public class Dedup extends Node {
 	private static final String XML_DEDUPKEY_ATTRIBUTE = "dedupKey";
 	private static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
 	private static final String XML_NO_DUP_RECORD_ATTRIBUTE = "noDupRecord";
+	private static final String XML_SORTED_ATTRIBUTE = "sorted";
 	
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DEDUP";
@@ -106,14 +113,19 @@ public class Dedup extends Node {
 
     private final static int WRITE_TO_PORT = 0;
     private final static int REJECTED_PORT = 1;
-
-	private final static int KEEP_FIRST = 1;
-	private final static int KEEP_LAST = -1;
-	private final static int KEEP_UNIQUE = 0;
-	
+    
+	private final static String UNKNOWN_KEEP_VALUE = "Unkown type of selection of held record within unique group.";
+    
+    /** Trigger for selection of held records within deduplication group.
+     *
+     */
+    private enum Keep { KEEP_FIRST, KEEP_LAST, KEEP_UNIQUE };
+    	
 	private final static int DEFAULT_NO_DUP_RECORD = 1;
+
+	private static final int SINGLE_RECORD = 1;
 	
-	private int keep = KEEP_FIRST;
+	private Keep keep = Keep.KEEP_FIRST;
 	private String[] dedupKeys;
 	private OrderEnum[] dedupOrderings;
 	private DedupComparator[] orderingComparators;
@@ -121,8 +133,9 @@ public class Dedup extends Node {
 	private boolean equalNULLs = true;
 	// number of duplicate record to be written to out port
 	private int noDupRecord = DEFAULT_NO_DUP_RECORD;
-
-    //runtime variables
+	private boolean sorted = true;
+	
+	//runtime variables
     int current;
     int previous;
     boolean isFirst;
@@ -141,11 +154,14 @@ public class Dedup extends Node {
 	private int recordNumber;
 	private int fieldNumber;
 	
+	// basis of hash key used for unsorted input
+	private RecordKey recKey;
+	
 	/**
 	 *Constructor for the Dedup object
 	 *
 	 * @param  id         unique id of the component
-	 * @param  dedupKeys  definitio of key fields used to compare records
+	 * @param  dedupKeys  definition of key fields used to compare records
 	 */
 	public Dedup(String id, String[] dedupKeys) {
 		super(id);
@@ -254,10 +270,9 @@ public class Dedup extends Node {
     	}
     }    
 
-	
-	@Override
-	public Result execute() throws Exception {
-		records = new DataRecord[2];
+
+    private void executeSorted() throws Exception {
+    	records = new DataRecord[2];
         records[0] = DataRecordFactory.newRecord(inPort.getMetadata());
         records[1] = DataRecordFactory.newRecord(inPort.getMetadata());
         isFirst = true; // special treatment for 1st record
@@ -283,12 +298,409 @@ public class Dedup extends Node {
         	e.setFieldNo(getErrorFieldNumber());
         	throw e;
         }
-		
-        broadcastEOF();
-        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+    }
+
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.Node#execute()
+	 */
+	@Override
+	public Result execute() throws Exception {
+		if (sorted) {
+			executeSorted();
+		} else {
+			executeUnsorted();
+		}
+		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
-    /**
+	private void executeUnsorted() throws IOException, InterruptedException {
+		recKey = new RecordKey(dedupKeys, metadata);
+		recKey.setEqualNULLs(equalNULLs);
+		switch (keep) {
+		case KEEP_FIRST:
+			executeUnsortedFirst();
+			break;
+		case KEEP_LAST:
+			executeUnsortedLast();
+			break;
+		case KEEP_UNIQUE:
+			executeUnsortedUnique();
+			break;
+		default:
+			throw new AssertionError(UNKNOWN_KEEP_VALUE);
+		}
+	}
+
+	private void executeUnsortedFirst() throws IOException, InterruptedException {
+		if (noDupRecord == SINGLE_RECORD) {
+			executeUnsortedFirstSingle();
+		} else {
+			executeUnsortedFirstMulti();
+		}
+	}
+	
+	private void executeUnsortedFirstSingle() throws IOException, InterruptedException {
+		final Set<HashKey> hashKeys = new HashSet<>();
+		DataRecord record = inPort.readRecord(DataRecordFactory.newRecord(metadata));
+		while (record != null && runIt) {
+			if (!equalNULLs && hasDataRecordSomeNullKey(record)) {
+					writeOutRecord(record);
+			} else {
+				final HashKey hashKey = new HashKey(recKey, record);
+				if (hashKeys.contains(hashKey)) {
+					writeRejectedRecord(record);
+				} else {
+					hashKeys.add(hashKey);
+					writeOutRecord(record);
+				}
+			}
+			record = inPort.readRecord(record);
+		}
+	}
+	
+	private void executeUnsortedFirstMulti() throws IOException, InterruptedException  {
+		final Map<HashKey, GroupOfFirst> groups = new LinkedHashMap<>();
+		DataRecord currentRecord = inPort.readRecord(DataRecordFactory.newRecord(metadata));
+		GroupOfFirst lastCreatedGroup = null;
+		GroupOfFirst lastWritten = null;
+		while (currentRecord != null && runIt) {
+			if (!handleNullRecord(currentRecord, lastCreatedGroup)) {
+				final HashKey hashKey = new HashKey(recKey, currentRecord);
+				final GroupOfFirst group = groups.get(hashKey);
+				if (group == null) {
+					// first occurrence of key, create new group
+					lastCreatedGroup = new GroupOfFirst(lastCreatedGroup);
+					lastCreatedGroup.add(currentRecord.duplicate());
+					groups.put(hashKey, lastCreatedGroup);
+				} else {
+					// record belongs to some existing group
+					if (group.isFull()) {
+						// group is full, reject any other record
+						writeRejectedRecord(currentRecord);
+					} else {
+						// add to group
+						group.add(currentRecord.duplicate());
+						if (group.isFull() && group.previous == lastWritten) {
+							// all preceding groups are full and already flushed
+							lastWritten = group;
+							do {
+								// flush all consecutive full groups and move cursor to the last one
+								lastWritten.writeOutRecords();
+								lastWritten.writeOutTail();
+								lastWritten = lastWritten.next;
+							} while(lastWritten != null && lastWritten.isFull());
+							
+							if (lastWritten == null) {
+								// all created groups were flushed
+								lastCreatedGroup = null;
+							} else {
+								// there are still some groups waiting to be flushed
+								lastWritten = lastWritten.previous;
+							}
+						}
+					}
+				}
+			}
+			currentRecord = inPort.readRecord(currentRecord);
+		}
+		// flush all already not full groups
+		for (final GroupOfFirst group : groups.values()) {
+			if (!group.writtenToOut) {
+				group.writeOutRecords();
+				group.writeOutTail();
+			}
+		}
+	}
+	
+	private class GroupOfFirst extends AbstractGroup {
+		private final GroupOfFirst previous;
+		private GroupOfFirst next;
+		
+		public GroupOfFirst(final GroupOfFirst previous) {
+			super();
+			this.previous = previous;
+			if (previous != null) {
+				previous.next = this;
+			}
+		}
+		
+		/**
+		 * @param record
+		 */
+		@Override
+		public void add(final DataRecord record) {
+			records.add(record);
+		}
+	}
+	
+	/**
+	 * 
+	 */
+	private void executeUnsortedLast() throws IOException, InterruptedException  {
+		final Map<HashKey, GroupOfLast> groups = new LinkedHashMap<>();
+		DataRecord currentRecord = inPort.readRecord(DataRecordFactory.newRecord(metadata));
+		GroupOfLast lastCreatedGroup = null;
+		while (currentRecord != null && runIt) {
+			if (!handleNullRecord(currentRecord, lastCreatedGroup)) {
+				final HashKey hashKey = new HashKey(recKey, currentRecord); 
+				final GroupOfLast group = groups.get(hashKey);
+				if (group == null) {
+					// first occurrence of key, create new group
+					lastCreatedGroup = new GroupOfLast();
+					lastCreatedGroup.add(currentRecord);
+					groups.put(hashKey, lastCreatedGroup);
+					currentRecord = currentRecord.duplicate();
+				} else {
+					// belongs to existing group
+					if (group.isFull()) {
+						// existing group was full already, one record is removed and rejected
+						group.add(currentRecord);
+						final DataRecord rejectedRecord = group.getLastRejectedRecord();
+						assert rejectedRecord == null;// group full before addition should always reject record
+						writeRejectedRecord(rejectedRecord);
+						
+						if (group.isLastRejectedFirst()) {
+							// first added record is contained in HashKey also, cannot be reused
+							currentRecord = currentRecord.duplicate();
+						} else {
+							// reuse existing record instance
+							currentRecord = rejectedRecord;
+						}
+					} else {
+						// group still not full, just add record only
+						group.add(currentRecord);
+						currentRecord = currentRecord.duplicate();
+					}
+				}
+			}
+			currentRecord = inPort.readRecord(currentRecord);
+		}
+		// flush all collected groups
+		for (final GroupOfLast group : groups.values()) {
+			group.writeOutRecords();
+			group.writeOutTail();
+		}
+	}
+	
+	private class GroupOfLast extends AbstractGroup {
+		private DataRecord lastRejectedRecord;
+		private boolean lastRejectedFirst = true;
+		
+		/**
+		 * 
+		 */
+		public GroupOfLast() {}
+		
+		/**
+		 * @param record
+		 */
+		@Override
+		public void add(final DataRecord record) {
+			records.add(record);
+			if (records.size() > noDupRecord) {
+				if (lastRejectedRecord != null) {
+					lastRejectedFirst  = false;
+				}
+				lastRejectedRecord = records.removeFirst();
+			} 
+		}
+
+		/**
+		 * @return
+		 */
+		public boolean isLastRejectedFirst() {
+			return lastRejectedFirst;
+		}
+
+		/**
+		 * @return
+		 */
+		public DataRecord getLastRejectedRecord() {
+			return lastRejectedRecord;
+		}
+	}
+	/**
+	 * 
+	 */
+	private void executeUnsortedUnique() throws IOException, InterruptedException {
+		final Map<HashKey, GroupOfUnique> groups = new LinkedHashMap<>();
+		DataRecord currentRecord = inPort.readRecord(DataRecordFactory.newRecord(metadata));
+		GroupOfUnique lastCreatedGroup = null;
+		while (currentRecord != null && runIt) {
+			if (!handleNullRecord(currentRecord, lastCreatedGroup)) {
+				final HashKey hashKey = new HashKey(recKey, currentRecord);
+				final GroupOfUnique group = groups.get(hashKey);
+				if (group == null) {
+					// first occurrence of key, create new group
+					lastCreatedGroup = new GroupOfUnique();
+					lastCreatedGroup.add(currentRecord);
+					groups.put(hashKey, lastCreatedGroup);
+					currentRecord = currentRecord.duplicate();
+				} else {
+					// record belongs to some existing group
+					if (group.isFull()) {
+						// group is filled over, reject it and flush to output immediately
+						group.reject();
+						// reject last added record also
+						writeRejectedRecord(currentRecord);
+					} else {
+						// add to existing incomplete uniqueness group
+						group.add(currentRecord);
+						currentRecord = currentRecord.duplicate();
+					}
+				}
+			}
+			currentRecord = inPort.readRecord(currentRecord);
+		}
+		// flush all unique groups
+		for (final GroupOfUnique group : groups.values()) {
+			if (group.isRejected()) {
+				group.writeOutTail();
+			} else {
+				group.accept();
+			}
+		}
+	}
+	
+	private class GroupOfUnique extends AbstractGroup {
+		private boolean rejected;
+		
+		/**
+		 * @return the rejected
+		 */
+		public boolean isRejected() {
+			return rejected;
+		}
+		
+		/**
+		 * @param record
+		 */
+		@Override
+		public void add(final DataRecord record) {
+			records.add(record);
+		}
+				
+		public void accept() throws IOException, InterruptedException {
+			writeOutRecords();
+			writeOutTail();
+		}
+		/**
+		 * @throws InterruptedException 
+		 * @throws IOException 
+		 * 
+		 */
+		public void reject() throws IOException, InterruptedException {
+			if (!rejected) {
+				writeRejectedRecords();
+				rejected  = true;
+			}
+		}
+		
+		/**
+		 * @return
+		 */
+		@Override
+		public boolean isFull() {
+			// according to documentation, unique groups can consist of one record only   
+			return records.size() >= SINGLE_RECORD || writtenToOut;
+		}
+	}
+	
+	private abstract class AbstractGroup {
+		protected final LinkedList<DataRecord> records = new LinkedList<>();
+		protected LinkedList<DataRecord> nullRecordsTail;
+		protected boolean writtenToOut;
+		
+		/**
+		 * 
+		 */
+		public AbstractGroup() {}
+		
+		protected void writeOutTail() throws IOException, InterruptedException {
+			if (nullRecordsTail != null) { // lazily initialized
+				for(final DataRecord record : nullRecordsTail) {
+					writeOutRecord(record);
+				}
+				nullRecordsTail.clear();
+			}
+		}
+		
+		public void writeRejectedRecords() throws IOException, InterruptedException {
+			for(final DataRecord record : records) {
+				writeRejectedRecord(record);
+			}
+			records.clear();
+			writtenToOut = true;
+		}
+		
+		public void writeOutRecords() throws IOException, InterruptedException {
+			for(final DataRecord record : records) {
+				writeOutRecord(record);
+			}
+			records.clear();
+			writtenToOut = true;
+		}
+		
+		/**
+		 * @param record
+		 */
+		public abstract void add(final DataRecord record);
+		
+		/**
+		 * @param record
+		 */
+		public void addToNullTail(final DataRecord record) {
+			// thread not safe lazy initialization
+			if (nullRecordsTail == null) {
+				nullRecordsTail = new LinkedList<>();
+			}
+			nullRecordsTail.add(record);
+		}
+		
+		/**
+		 * @return
+		 */
+		public boolean isFull() {
+			return records.size() >= noDupRecord || writtenToOut;
+		}
+	}
+	/**
+	 * @param record
+	 * @param lastCreatedGroup
+	 * @return
+	 * @throws InterruptedException 
+	 * @throws IOException 
+	 */
+	private boolean handleNullRecord(final DataRecord record, final AbstractGroup lastCreatedGroup) throws IOException, InterruptedException {
+		if (!equalNULLs && hasDataRecordSomeNullKey(record)) {
+			// record uniqueness by having some null field
+			if (lastCreatedGroup == null) {
+				// no not null (and always unique having equalNULLs==true) records were found before
+				writeOutRecord(record);
+			} else {
+				// add to null record tail of last created group
+				lastCreatedGroup.addToNullTail(record.duplicate());
+			}
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	private boolean hasDataRecordSomeNullKey(final DataRecord record) {
+		return hasDataRecordSomeNullKey(record, dedupKeys);
+	}
+	
+	public static boolean hasDataRecordSomeNullKey(final DataRecord record, final String[] keys) {
+		for (final String key : keys) {
+			if (record.getField(key).isNull()) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
      * Execution a de-duplication with first function.
      * 
      * @throws IOException
@@ -575,14 +987,17 @@ public class Dedup extends Node {
 		dedup = new Dedup(xattribs.getString(XML_ID_ATTRIBUTE),
 				dedupKey != null ? dedupKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX) : null);
 		if (xattribs.exists(XML_KEEP_ATTRIBUTE)){
-		    dedup.setKeep(xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ff].*") ? KEEP_FIRST :
-			    xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ll].*") ? KEEP_LAST : KEEP_UNIQUE);
+		    dedup.setKeep(xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ff].*") ? Keep.KEEP_FIRST :
+			    xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ll].*") ? Keep.KEEP_LAST : Keep.KEEP_UNIQUE);
 		}
 		if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
 		    dedup.setEqualNULLs(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
 		}
 		if (xattribs.exists(XML_NO_DUP_RECORD_ATTRIBUTE)){
 		    dedup.setNumberRecord(xattribs.getInteger(XML_NO_DUP_RECORD_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_SORTED_ATTRIBUTE)){
+		    dedup.setSorted(xattribs.getBoolean(XML_SORTED_ATTRIBUTE));
 		}
 		return dedup;
 	}
@@ -615,7 +1030,7 @@ public class Dedup extends Node {
          return status;
      }
 	
-	public void setKeep(int keep) {
+	public void setKeep(Keep keep) {
 		this.keep = keep;
 	}
 	
@@ -625,6 +1040,14 @@ public class Dedup extends Node {
 
 	public void setNumberRecord(int numberRecord) {
 		this.noDupRecord = numberRecord;
+	}
+	
+	public boolean isSorted() {
+		return sorted;
+	}
+
+	public void setSorted(boolean sorted) {
+		this.sorted = sorted;
 	}
 	
 	/**
