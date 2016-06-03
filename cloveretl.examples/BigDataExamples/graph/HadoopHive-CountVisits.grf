@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="4.2.0.M1" id="1361367492640" licenseCode="Javlin-Internal-License" licenseType="Commercial" modified="Mon Jan 13 18:38:19 CET 2014" modifiedBy="User" name="RunJobInHadoopHIVE" revision="1.44" showComponentDetails="true">
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361367492640" licenseCode="Javlin-Internal-License" licenseType="Commercial" modified="Mon Jan 13 18:38:19 CET 2014" modifiedBy="User" name="RunJobInHadoopHIVE" revision="1.44" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/meta_count_output.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata0"/>
@@ -14,7 +14,7 @@ Report the number of unique visitors per month from a potentially huge web acces
 (CloverETL, Hadoop HIVE, Hadoop MapReduce, and MongoDB)]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="46" id="Note5" textColor="000000" width="929" x="30" y="113">
-<attr name="text"><![CDATA[h3. This graph is part of the "[UniqueVisits-HadoopHive.jbf|navigator://../jobflow/UniqueVisits-HadoopHive.jbf]" jobflow.]]></attr>
+<attr name="text"><![CDATA[h3. This graph is part of the "[UniqueVisits-HadoopHive.jbf|navigator://BigDataExamples/jobflow/UniqueVisits-HadoopHive.jbf]" jobflow.]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="292" id="Note0" textColor="000000" width="351" x="131" y="223">
 <attr name="text"><![CDATA[h3. Unique Visitors using Hive Query
