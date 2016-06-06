@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="4.2.0.M1" id="1361358390393" licenseCode="Commercial Devel" licenseType="Commercial" modified="Mon Jan 13 18:38:52 CET 2014" modifiedBy="User" name="PrepareInputData" revision="1.71" showComponentDetails="true">
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361358390393" licenseCode="Commercial Devel" licenseType="Commercial" modified="Mon Jan 13 18:38:52 CET 2014" modifiedBy="User" name="PrepareInputData" revision="1.71" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/weblogs_parse_txt.fmt" id="Metadata0"/>
@@ -14,7 +14,7 @@ Report the number of unique visitors per month from a potentially huge web acces
 (CloverETL, Hadoop HIVE, and Hadoop MapReduce)]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="90" id="Note5" textColor="000000" width="929" x="30" y="120">
-<attr name="text"><![CDATA[h3. This graph is part of "UniqueVisits-HadoopHive.jbf" and "UniqueVisits-HadoopMapReduce.jbf" jobflows.
+<attr name="text"><![CDATA[h3. This graph is part of "[UniqueVisits-HadoopHive.jbf|navigator://BigDataExamples/jobflow/UniqueVisits-HadoopHive.jbf]" and "[UniqueVisits-HadoopMapReduce.jbf|navigator://BigDataExamples/jobflow/UniqueVisits-HadoopMapReduce.jbf]" jobflows.
 ]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="340" id="Note0" textColor="000000" width="314" x="308" y="228">
