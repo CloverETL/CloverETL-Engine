@@ -13,7 +13,7 @@ Report the number of unique visitors per month from a potentially huge web acces
 (CloverETL, Hadoop HIVE, Hadoop MapReduce, and MongoDB)]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="49" id="Note5" textColor="000000" width="929" x="30" y="123">
-<attr name="text"><![CDATA[h3. This graph is part of the "[UniqueVisits-MongoDB.jbf|navigator://../jobflow/UniqueVisits-MongoDB.jbf]" jobflow.]]></attr>
+<attr name="text"><![CDATA[h3. This graph is part of the "[UniqueVisits-MongoDB.jbf|navigator://BigDataExamples/jobflow/UniqueVisits-MongoDB.jbf]" jobflow.]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="377" id="Note0" textColor="000000" width="383" x="133" y="223">
 <attr name="text"><![CDATA[h3. Unique Visitors using MongoDB Aggregation Framework
