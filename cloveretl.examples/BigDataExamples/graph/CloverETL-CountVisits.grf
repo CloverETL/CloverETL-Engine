@@ -7,13 +7,13 @@
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<RichTextNote backgroundColor="404040" enabled="true" folded="false" fontSize="medium" height="101" id="Note4" textColor="FFFFFF" width="929" x="30" y="18">
+<RichTextNote backgroundColor="404040" enabled="true" folded="false" fontSize="medium" height="110" id="Note4" textColor="FFFFFF" width="929" x="30" y="9">
 <attr name="text"><![CDATA[h3. Big Data - Processing Web Access Log (Unique Visitors):  Pure CloverETL Solution
 Report the number of unique visitors per month from a potentially huge web access log using different methods.
 (CloverETL, Hadoop HIVE, and Hadoop MapReduce)]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="49" id="Note5" textColor="000000" width="929" x="30" y="118">
-<attr name="text"><![CDATA[h3. This graph is part of the "[UniqueVisits-CloverETL.jbf|navigator://../jobflow/UniqueVisits-CloverETL.jbf]" jobflow.]]></attr>
+<attr name="text"><![CDATA[h3. This graph is part of the "[UniqueVisits-CloverETL.jbf|navigator://BigDataExamples/jobflow/UniqueVisits-CloverETL.jbf]" jobflow.]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="248" id="Note0" textColor="000000" width="208" x="30" y="217">
 <attr name="text"><![CDATA[h3. Read Weblog (zipped)
