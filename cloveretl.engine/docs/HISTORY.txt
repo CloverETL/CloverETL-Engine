@@ -2,6 +2,13 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-2-0
+---------
+* Synchronized Server projects bugfixes
+* Data partitioning in CloverETL Server Corporate
+* IBM InfoSphere MDM 11.5 support
+* S3: Add region selection to Edit URL dialog
+
 
 REL-4-2-0-M1
 ------------
