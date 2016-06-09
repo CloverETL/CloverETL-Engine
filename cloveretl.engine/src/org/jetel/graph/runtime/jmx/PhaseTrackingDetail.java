@@ -101,7 +101,7 @@ public class PhaseTrackingDetail implements PhaseTracking {
 	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getParentGraphTracking()
 	 */
 	@Override
-	public GraphTracking getParentGraphTracking() {
+	public GraphTrackingDetail getParentGraphTracking() {
 		return parentGraphDetail;
 	}
 
@@ -163,7 +163,7 @@ public class PhaseTrackingDetail implements PhaseTracking {
 	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getNodeTracking()
 	 */
 	@Override
-	public NodeTracking[] getNodeTracking() {
+	public NodeTrackingDetail[] getNodeTracking() {
 		return nodesDetails;
 	}
 
@@ -171,7 +171,7 @@ public class PhaseTrackingDetail implements PhaseTracking {
 	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getNodeTracking(java.lang.String)
 	 */
 	@Override
-	public NodeTracking getNodeTracking(String nodeID) {
+	public NodeTrackingDetail getNodeTracking(String nodeID) {
 		for (NodeTrackingDetail nodeDetail : nodesDetails) {
 			if(nodeID.equals(nodeDetail.getNodeID())) {
 				return nodeDetail;
@@ -231,6 +231,4 @@ public class PhaseTrackingDetail implements PhaseTracking {
 			nodeDetail.phaseFinished();
 		}
 	}
-
-
 }
