@@ -124,7 +124,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getParentPhaseTracking()
 	 */
 	@Override
-	public PhaseTracking getParentPhaseTracking() {
+	public PhaseTrackingDetail getParentPhaseTracking() {
 		return parentPhaseDetail;
 	}
 
@@ -144,7 +144,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getInputPortTracking(int)
 	 */
 	@Override
-	public InputPortTracking getInputPortTracking(int portNumber) {
+	public InputPortTrackingDetail getInputPortTracking(int portNumber) {
 		for (InputPortTrackingDetail inputPortDetail : inputPortsDetails) {
 			if (inputPortDetail.getIndex() == portNumber) {
 				return inputPortDetail;
@@ -161,7 +161,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	 * @see org.jetel.graph.runtime.jmx.NodeTracking#getOutputPortTracking(int)
 	 */
 	@Override
-	public OutputPortTracking getOutputPortTracking(int portNumber) {
+	public OutputPortTrackingDetail getOutputPortTracking(int portNumber) {
 		for (OutputPortTrackingDetail outputPortDetail : outputPortsDetails) {
 			if (outputPortDetail.getIndex() == portNumber) {
 				return outputPortDetail;
