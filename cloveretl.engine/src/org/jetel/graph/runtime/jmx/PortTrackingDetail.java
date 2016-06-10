@@ -80,7 +80,7 @@ public abstract class PortTrackingDetail implements PortTracking {
 	 * @see org.jetel.graph.runtime.jmx.PortTracking#getParentNodeTracking()
 	 */
 	@Override
-	public NodeTracking getParentNodeTracking() {
+	public NodeTrackingDetail getParentNodeTracking() {
 		return parentNodeDetail;
 	}
 

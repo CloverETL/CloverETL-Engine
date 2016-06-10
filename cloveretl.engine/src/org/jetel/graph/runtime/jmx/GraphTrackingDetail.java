@@ -102,7 +102,7 @@ public class GraphTrackingDetail implements GraphTracking {
 	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getPhaseTracking(int)
 	 */
 	@Override
-	public PhaseTracking getPhaseTracking(int phaseNum) {
+	public PhaseTrackingDetail getPhaseTracking(int phaseNum) {
 		for (PhaseTrackingDetail phaseDetail : phasesDetails) {
 			if (phaseDetail.getPhaseNum() == phaseNum) {
 				return phaseDetail;
@@ -115,7 +115,7 @@ public class GraphTrackingDetail implements GraphTracking {
 	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getPhaseTracking()
 	 */
 	@Override
-	public PhaseTracking[] getPhaseTracking() {
+	public PhaseTrackingDetail[] getPhaseTracking() {
 		return phasesDetails;
 	}
 
@@ -123,7 +123,7 @@ public class GraphTrackingDetail implements GraphTracking {
 	 * @see org.jetel.graph.runtime.jmx.GraphTracking#getRunningPhaseTracking()
 	 */
 	@Override
-	public PhaseTracking getRunningPhaseTracking() {
+	public PhaseTrackingDetail getRunningPhaseTracking() {
 		return runningPhaseDetail;
 	}
 
