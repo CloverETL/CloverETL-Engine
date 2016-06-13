@@ -4,6 +4,7 @@
 
 REL-4-2-0
 ---------
+
 * Synchronized Server projects bugfixes
 * Data partitioning in CloverETL Server Corporate
 * IBM InfoSphere MDM 11.5 support
