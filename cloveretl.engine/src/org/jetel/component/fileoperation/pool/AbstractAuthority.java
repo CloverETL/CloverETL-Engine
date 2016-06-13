@@ -45,8 +45,12 @@ public abstract class AbstractAuthority implements Authority {
 		this(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort());
 	}
 
+	/**
+	 * use {@link URI#getRawUserInfo()} so the user info is not decoded - connections decode it again, which
+	 * causes problems with the plus sign, see CLO-8885
+	 */
 	public AbstractAuthority(URI uri) {
-		this(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort());
+		this(uri.getScheme(), uri.getRawUserInfo(), uri.getHost(), uri.getPort());
 	}
 
 	/**
