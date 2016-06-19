@@ -29,6 +29,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -43,7 +44,7 @@ import org.w3c.dom.Element;
 /**
  * Generic component, also called Hercules.
  * 
- * @author Kokon (info@cloveretl.com)
+ * @author Kokon, salamonp (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 5. 1. 2015
@@ -90,25 +91,55 @@ public class GenericComponent extends Node /*implements MetadataProvider*/ {
 		super.init();
 		initRecords();
 		genericTransform = getTransformFactory().createTransform();
-		genericTransform.init();
+		
+		executeWithTransformClassLoader(new CustomRunnable() {
+			@Override
+			public void run() {
+				genericTransform.init();
+			}
+		});
 	}
 
     @Override
     public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();
-    	genericTransform.preExecute();
+    	
+    	executeWithTransformClassLoader(new CustomRunnable() {
+			@Override
+			public void run() throws ComponentNotReadyException {
+				genericTransform.preExecute();
+			}
+		});
     }
 
 	@Override
 	public Result execute() throws Exception {
 		try {
-			genericTransform.execute();
-		} catch (Exception e) {
+			CustomRunnable executeRunnable = new CustomRunnable() {
+				@Override
+				public void run() {
+					try {
+						genericTransform.execute();
+					} catch (Exception e) {
+						this.exception = e;
+					}
+				}
+			};
+			executeWithTransformClassLoader(executeRunnable);
+			if (executeRunnable.exception != null) {
+				throw executeRunnable.exception;
+			}
+		} catch (final Exception e) {
 			if (ExceptionUtils.instanceOf(e, InterruptedException.class)) {
 				// return as fast as possible when interrupted
 				return Result.ABORTED;
 			}
-			genericTransform.executeOnError(e);
+			executeWithTransformClassLoader(new CustomRunnable() {
+				@Override
+				public void run() {
+					genericTransform.executeOnError(e);
+				}
+			});
 		}
 		
 		for (int i = 0; i < inRecords.length; i++) {
@@ -127,15 +158,33 @@ public class GenericComponent extends Node /*implements MetadataProvider*/ {
 
     @Override
     public void postExecute() throws ComponentNotReadyException {
-    	super.postExecute();
-    	genericTransform.postExecute();
-    }
+		try {
+			executeWithTransformClassLoader(new CustomRunnable() {
+				@Override
+				public void run() throws ComponentNotReadyException {
+					genericTransform.postExecute();
+				}
+			});
+		} finally {
+			// call to super must be last because super.postExecute() closes transformation's classloader
+			super.postExecute();
+		}
+	}
     
 	@Override
-	public synchronized void free() {	
+	public synchronized void free() {
 		super.free();
-		if (genericTransform != null) {
-			genericTransform.free();
+		try {
+			if (genericTransform != null) {
+				executeWithTransformClassLoader(new CustomRunnable() {
+					@Override
+					public void run() {
+						genericTransform.free();
+					}
+				});
+			}
+		} catch (ComponentNotReadyException e) {
+			throw new JetelRuntimeException(e);
 		}
 	}
 
@@ -164,7 +213,7 @@ public class GenericComponent extends Node /*implements MetadataProvider*/ {
 	}
 	
 	@Override
-	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+	public ConfigurationStatus checkConfig(final ConfigurationStatus status) {
 		super.checkConfig(status);
 		
 		if (charset != null && !Charset.isSupported(charset)) {
@@ -176,13 +225,20 @@ public class GenericComponent extends Node /*implements MetadataProvider*/ {
 			if (genericTransform == null) {
 				genericTransform = getTransformFactory().createTransform();
 			}
-			genericTransform.checkConfig(status); // delegating to implemented method
+			executeWithTransformClassLoader(new CustomRunnable() {
+				@Override
+				public void run() {
+					genericTransform.checkConfig(status); // delegating to implemented method
+				}
+			});
 		} catch (org.jetel.exception.LoadClassException e) {
 			if (ExceptionUtils.instanceOf(e, CompilationException.class)) {
 				status.add(ExceptionUtils.getMessage(e), Severity.WARNING, this, Priority.NORMAL);
 			} else {
 				status.add(ExceptionUtils.getMessage(e) + ". Make sure to set classpath correctly.", Severity.WARNING, this, Priority.NORMAL);
 			}
+		} catch (ComponentNotReadyException e) {
+			throw new JetelRuntimeException(e);
 		}
         return status;
 	}
@@ -237,6 +293,27 @@ public class GenericComponent extends Node /*implements MetadataProvider*/ {
 
 	public void setGenericTransformURL(String genericTransformURL) {
 		this.genericTransformURL = genericTransformURL;
+	}
+	
+	/**
+	 * fix CLO-8964
+	 * Runs given runnable with transformation's classloader set as thread context class loader.
+	 * This ensures that 3rd party code which uses context class loader has access to correct classpath.
+	 */
+	private void executeWithTransformClassLoader(CustomRunnable runnable) throws ComponentNotReadyException {
+		ClassLoader formerClassLoader = Thread.currentThread().getContextClassLoader();
+		try {
+			Thread.currentThread().setContextClassLoader(genericTransform.getClass().getClassLoader());
+			runnable.run();
+		} finally {
+			Thread.currentThread().setContextClassLoader(formerClassLoader);
+		}
+	}
+	
+	/** Runnable that throws ComponentNotReadyException */
+	private static abstract class CustomRunnable {
+		protected Exception exception;
+		public abstract void run() throws ComponentNotReadyException;
 	}
 	
 	// Currently hercules can't propagate metadata.
