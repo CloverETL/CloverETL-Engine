@@ -40,6 +40,7 @@ public class SerializedDataRecord implements Serializable {
 
 	private DataRecordMetadata metadata;
 	private byte serializedRecord[];
+	private long id;
 	private transient DataRecord record;
 	
 	public static SerializedDataRecord fromDataRecord(DataRecord record) {
@@ -48,8 +49,7 @@ public class SerializedDataRecord implements Serializable {
 		CloverBuffer buffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE, false);
 		record.serialize(buffer);
 		byte content[] = new byte[buffer.position()];
-		buffer.flip();
-		buffer.get(content);
+		buffer.flip().get(content);
 		result.serializedRecord = content;
 		return result;
 	}
@@ -62,5 +62,13 @@ public class SerializedDataRecord implements Serializable {
 			this.record = record;
 		}
 		return record;
+	}
+	
+	public long getId() {
+		return id;
+	}
+	
+	public void setId(long id) {
+		this.id = id;
 	}
 }

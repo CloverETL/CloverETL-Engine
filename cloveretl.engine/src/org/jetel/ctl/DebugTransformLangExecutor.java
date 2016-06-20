@@ -60,6 +60,8 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.string.StringUtils;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * @author dpavlis (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -88,6 +90,9 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	private boolean inExecution;
 	private boolean initialized;
 	private volatile boolean resumed = false;
+	
+	private long inputRecordIds[];
+	private long outputRecordIds[];
 
 	public enum DebugStep {
 		STEP_SUSPEND,
@@ -204,6 +209,20 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	}
 	
 	@Override
+	@SuppressFBWarnings("EI2")
+	public void setInputRecords(DataRecord[] inputRecords) {
+		super.setInputRecords(inputRecords);
+		this.inputRecordIds = createRecordIds(inputRecords);
+	}
+	
+	@Override
+	@SuppressFBWarnings("EI2")
+	public void setOutputRecords(DataRecord[] outputRecords) {
+		super.setOutputRecords(outputRecords);
+		this.outputRecordIds = createRecordIds(outputRecords);
+	}
+	
+	@Override
 	public void executeFunction(CLVFFunctionDeclaration node, Object[] data) {
 		/*
 		 * re-implementing super type method to push implicit function call onto stack
@@ -278,6 +297,14 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			prevSourceId = node.getSourceId();
 			stepAfter(node.getLine(), node);
 		}
+	}
+	
+	private long[] createRecordIds(DataRecord records[]) {
+		long result[] = new long[records != null ? records.length : 0];
+		for (int i = 0; i < result.length; ++i) {
+			result[i] = getStack().nextVariableId();
+		}
+		return result;
 	}
 	
 	private void beforeExecute() {
@@ -519,15 +546,19 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					VariableRetrievalResult result = new VariableRetrievalResult(global, local);
 					if (inputRecords != null && inputRecords.length > 0) {
 						List<SerializedDataRecord> records = new ArrayList<>(inputRecords.length);
-						for (DataRecord record : inputRecords) {
-							records.add(SerializedDataRecord.fromDataRecord(record));
+						for (int i = 0; i < inputRecords.length; ++i) {
+							SerializedDataRecord record = SerializedDataRecord.fromDataRecord(inputRecords[i]);
+							record.setId(inputRecordIds[i]);
+							records.add(record);
 						}
 						result.setInputRecords(records);
 					}
 					if (outputRecords != null && outputRecords.length > 0) {
 						List<SerializedDataRecord> records = new ArrayList<>(outputRecords.length);
-						for (DataRecord record : outputRecords) {
-							records.add(SerializedDataRecord.fromDataRecord(record));
+						for (int i = 0; i < outputRecordIds.length; ++i) {
+							SerializedDataRecord record = SerializedDataRecord.fromDataRecord(outputRecords[i]);
+							record.setId(outputRecordIds[i]);
+							records.add(record);
 						}
 						result.setOutputRecords(records);
 					}
