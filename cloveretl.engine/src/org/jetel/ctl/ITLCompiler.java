@@ -129,5 +129,11 @@ public interface ITLCompiler {
 	 * @throws ErrorMessageException if an error occurred
 	 */
 	public String convertToJava(String ctlCode, Class<?> targetInterface, String componentId) throws ErrorMessageException;
+	
+	/**
+	 * An id used to identify code source during debugging
+	 * @param sourceId
+	 */
+	public void setSourceId(String sourceId);
 
 }

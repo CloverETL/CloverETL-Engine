@@ -18,8 +18,10 @@
  */
 package org.jetel.component;
 
+import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.ctl.RaiseErrorException;
 import org.jetel.util.ExceptionUtils;
+import org.jetel.util.file.SandboxUrlUtils;
 
 /**
  * CLO-4084:
@@ -32,6 +34,11 @@ import org.jetel.util.ExceptionUtils;
  * @see <a href="https://bug.javlin.eu/browse/CLO-4084">CLO-4084</a>
  */
 public class TransformUtils {
+	
+	public static final String COMPONENT_ID_PARAM = "componentId"; //$NON-NLS-1$
+	public static final String PROPERTY_NAME_PARAM = "propertyName"; //$NON-NLS-1$
+	public static final String GRAPH_PARAMETER_NAME_PARAM = "graphParameterName"; //$NON-NLS-1$
+	public static final String PLUGIN_PARAM = "plugin"; //$NON-NLS-1$
 	
 	/**
 	 * Returns the error message passed to "onError" functions.
@@ -47,6 +54,28 @@ public class TransformUtils {
 		} else {
 			return ExceptionUtils.getMessage(t);
 		}
+	}
+
+
+	/**
+	 * Builds source id for identification of CTL transformations and expressions. Used in debugging.
+	 * @param jobUrl
+	 * @param params
+	 * @return
+	 */
+	public static String createCTLSourceId(String jobUrl, String... params) {
+		StringBuilder sourceIdSB = new StringBuilder(SandboxUrlUtils.escapeUrlPath(jobUrl));
+		for (int i = 0; i < params.length - 1; i+=2) {
+			if (i == 0) {
+				sourceIdSB.append("?");
+			} else {
+				sourceIdSB.append("&");
+			}
+			sourceIdSB.append(URIUtils.urlEncode(params[i]));
+			sourceIdSB.append("=");
+			sourceIdSB.append(URIUtils.urlEncode(params[i+1]));
+		}
+		return sourceIdSB.toString();
 	}
 
 }

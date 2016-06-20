@@ -35,10 +35,17 @@ public class CLVFIIfNode extends SimpleNode {
 		super(node);
 	}
 
+	@Override
+	public boolean isBreakable(){
+		return true;
+	}
+	
 	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */
 	@Override
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
 		try {
+			//debug
+			 if(visitor.inDebugMode()) visitor.debug(this, data);
 			return visitor.visit(this, data);
 		} catch (TransformLangExecutorRuntimeException e) {
 			if (e.getNode() == null) {

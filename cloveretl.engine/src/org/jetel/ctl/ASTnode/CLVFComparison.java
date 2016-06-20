@@ -49,10 +49,12 @@ public class CLVFComparison extends SimpleNode {
 		this.operator = node.operator;
 	}
 
-	/** Accept the visitor. * */
+	
+	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */
 	@Override
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
 		try {
+			if(visitor.inDebugMode()) visitor.debug(this, data);
 			return visitor.visit(this, data);
 		} catch (TransformLangExecutorRuntimeException e) {
 			if (e.getNode() == null) {
@@ -96,5 +98,10 @@ public class CLVFComparison extends SimpleNode {
 
 	public void setComparisonContext(TLFunctionCallContext comparisonContext) {
 		this.comparisonContext = comparisonContext;
+	}
+	
+	@Override
+	public boolean isBreakable(){
+		return true;
 	}
 }

@@ -209,6 +209,7 @@ public class GenericComponent extends Node /*implements MetadataProvider*/ {
 		transformFactory.setTransformUrl(genericTransformURL);
 		transformFactory.setCharset(charset);
 		transformFactory.setComponent(this);
+		transformFactory.setAttributeName(XML_GENERIC_TRANSFORM_ATTRIBUTE);
 		return transformFactory;
 	}
 	

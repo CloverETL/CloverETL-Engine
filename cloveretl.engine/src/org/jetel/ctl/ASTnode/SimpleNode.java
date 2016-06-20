@@ -17,6 +17,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.jetel.ctl.ASTnode;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+
 import org.jetel.ctl.ExpParser;
 import org.jetel.ctl.SyntacticPosition;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
@@ -30,10 +33,10 @@ public abstract class SimpleNode implements Node {
 	protected int id;
 	protected ExpParser parser;
 	public String sourceFilename;
+	private String sourceId;
 	private SyntacticPosition begin;
 	private SyntacticPosition end;
 	private TLType type;
-	
 	
 	public SimpleNode(int i) {
 		id = i;
@@ -222,18 +225,34 @@ public abstract class SimpleNode implements Node {
 	 * Override this method if you want to customize how the node dumps out its children.
 	 */
 
-	public void dump(String prefix) {
-		System.out.println(toString(prefix));
+	public void dump(PrintStream out, String prefix) {
+		out.println(String.format("%02d:%s",getLine(),toString(prefix)));
 		if (children != null) {
 			for (int i = 0; i < children.length; ++i) {
 				SimpleNode n = (SimpleNode) children[i];
 				if (n != null) {
-					n.dump(prefix + " ");
+					n.dump(out,prefix + " ");
 				}
 			}
 		}
 	}
 
+	public void dump(PrintWriter out, String prefix) {
+		out.format("%02d:%s\n",getLine(),toString(prefix));
+		if (children != null) {
+			for (int i = 0; i < children.length; ++i) {
+				SimpleNode n = (SimpleNode) children[i];
+				if (n != null) {
+					n.dump(out,prefix + " ");
+				}
+			}
+		}
+	}
+	
+	public void dump(String prefix){
+		dump(System.out,prefix);
+	}
+	
 	/*
 	 * implicitly call or childern with init(), if there is a need to initialize node, then the node should implement
 	 * its own init() method (non-Javadoc)
@@ -313,6 +332,19 @@ public abstract class SimpleNode implements Node {
 		}
 	}
 	
+	public String getSourceId() {
+		if (this.sourceId != null) {
+			return this.sourceId;
+		} else if (jjtGetParent() != null) {
+			return ((SimpleNode) jjtGetParent()).getSourceId();
+		}
+		return null;
+	}
+	
+	public void setSourceId(String sourceId) {
+		this.sourceId = sourceId;
+	}
+	
 	/**
 	 * Return id of this node. This corresponds with TransformLangParserTreeConstants
 	 * @return
@@ -338,6 +370,78 @@ public abstract class SimpleNode implements Node {
 		return parser;
 	}
 	
+	
+	public Node jjtNextSibling() {
+		final int childNum;
+		if (parent == null
+				|| ((childNum=((SimpleNode)jjtGetParent()).indexOf(this))+1 == parent.jjtGetNumChildren()))
+			return null;
+
+		return ((SimpleNode)parent).jjtGetChild(childNum + 1);
+	}
+
+	public Node jjtNextNonChild() {
+		SimpleNode p = this;
+		Node n = null;
+		while (p != null && n == null) {
+			n = p.jjtNextSibling();
+			if (n == null)
+				p = (SimpleNode)p.jjtGetParent();
+		}
+		return n;
+	}
+	
+	public Node jjtNextNonChild(Class whichClass) {
+		SimpleNode p = this;
+		Node n = null;
+		do {
+			while (p != null && n == null) {
+				n = p.jjtNextSibling();
+				if (n == null)
+					p = (SimpleNode) p.jjtGetParent();
+			}
+			if (n == null)
+				return n;
+			if (n.getClass().equals(whichClass)) {
+				return n;
+			} else {
+				n = null;
+			}
+		} while (true);
+	}
+	
+	/**
+	 * Searches all children (deep search) for specified Node type/class
+	 * 
+	 * @param whichClass
+	 * @return
+	 */
+	public Node jjtGetChilDeep(Class whichClass){
+		final int count=jjtGetNumChildren();
+		int i;
+		Node child;
+		for(i=0;i<count;i++){
+			child=jjtGetChild(i);
+			if(child.getClass().equals(whichClass)){
+				return child; 
+			}
+		}
+		for(i=0;i<count;i++){
+			child=jjtGetChild(i);
+			if ((child=((SimpleNode)child).jjtGetChilDeep(whichClass))!=null){
+				return child;
+			}
+		}
+		return null;
+	}
+	
+	
+	public Node jjtNextNode() {
+		Node n = jjtGetChild(0);
+		return n != null ? n : jjtNextNonChild();
+	}
+	
+	
 	/**
 	 *
 	 * Duplicates nodes within AST tree. Please be aware that internal links in nodes
@@ -347,6 +451,17 @@ public abstract class SimpleNode implements Node {
 	 * 
 	 * @return copy of subtree rooted in this node 
 	 */
-	public abstract SimpleNode duplicate();	
+	public abstract SimpleNode duplicate();
+	
+	
+	/**
+	 * Defines whether this node type is breakable - i.e. whether breakpoint can
+	 * be set on this node;
+	 * 
+	 * @return true if breakable, false otherwise
+	 */
+	public boolean isBreakable(){
+		return false;
+	}
 	
 }

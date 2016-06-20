@@ -207,6 +207,7 @@ public class Normalizer extends Node {
     	transformFactory.setTransformUrl(xformURL);
     	transformFactory.setCharset(charset);
     	transformFactory.setComponent(this);
+    	transformFactory.setAttributeName(XML_TRANSFORM_ATTRIBUTE);
     	transformFactory.setInMetadata(getInputPort(IN_PORT).getMetadata());
     	transformFactory.setOutMetadata(getOutputPort(OUT_PORT).getMetadata());
     	return transformFactory;

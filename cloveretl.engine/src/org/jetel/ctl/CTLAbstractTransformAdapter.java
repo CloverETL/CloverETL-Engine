@@ -21,6 +21,7 @@ package org.jetel.ctl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
+import org.jetel.component.Freeable;
 import org.jetel.component.Transform;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.ctl.data.TLType;
@@ -37,7 +38,7 @@ import org.jetel.graph.TransformationGraph;
  * @version 16th June 2010
  * @created 5th May 2010
  */
-public class CTLAbstractTransformAdapter implements Transform {
+public class CTLAbstractTransformAdapter implements Transform, Freeable {
 
 	/** The name of the CTL init() function. */
 	private static final String FUNCTION_INIT_NAME = "init";
@@ -194,6 +195,13 @@ public class CTLAbstractTransformAdapter implements Transform {
         }
 
         return (String) result;
+    }
+    
+    @Override
+    public void free() {
+    	if (executor instanceof Freeable) {
+    		((Freeable)executor).free();
+    	}
     }
 
 	/**

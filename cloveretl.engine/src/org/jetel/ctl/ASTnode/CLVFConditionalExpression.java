@@ -37,11 +37,13 @@ public class CLVFConditionalExpression extends SimpleNode {
 	public CLVFConditionalExpression(CLVFConditionalExpression node) {
 		super(node);
 	}
+	
 
 	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */
 	@Override
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
 		try {
+			if(visitor.inDebugMode()) visitor.debug(this, data);
 			return visitor.visit(this, data);
 		} catch (TransformLangExecutorRuntimeException e) {
 			if (e.getNode() == null) {
@@ -56,5 +58,10 @@ public class CLVFConditionalExpression extends SimpleNode {
 	@Override
 	public SimpleNode duplicate() {
 		return new CLVFConditionalExpression(this);
+	}
+
+	@Override
+	public boolean isBreakable() {
+		return true;
 	}
 }

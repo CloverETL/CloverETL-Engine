@@ -29,7 +29,7 @@ public class CLVFFunctionDeclaration extends SimpleNode {
 	public String name;
 	private TLType[] formalParams;
 	private Scope scope;
-	
+	private boolean generated;
 	
 	public CLVFFunctionDeclaration(int id) {
 		super(id);
@@ -106,6 +106,14 @@ public class CLVFFunctionDeclaration extends SimpleNode {
 		return this.scope;
 	}
 	
+	public boolean isGenerated() {
+		return generated;
+	}
+
+	public void setGenerated(boolean generated) {
+		this.generated = generated;
+	}
+
 	public String toHeaderString() {
 		final StringBuilder buf = new StringBuilder();
 		buf.append(getType() == null ? "null" : getType().toString()).append(" ");
@@ -122,5 +130,4 @@ public class CLVFFunctionDeclaration extends SimpleNode {
 		return buf.toString();
 		
 	}
-	
 }
