@@ -11,7 +11,7 @@
 	</requires>
 
 	<extension point-id="component">
-	  <ETLComponent category="deprecated" iconPath="clover:/plugin/org.jetel.component/icons/transformers/ExtFilter" name="Filter" type="FILTER" passThrough="true" defaultVisibility="false" className="org.jetel.component.Filter">
+	  <ETLComponent category="deprecated" iconPath="clover:/plugin/org.jetel.component/icons/transformers/ExtFilter" name="Filter" type="FILTER" passThrough="true" defaultVisibility="false" className="org.jetel.component.Filter" viewPlainData="false" viewGridData="false">
 	    <shortDescription>Filters incoming data.</shortDescription>
 	    <description>Receives data through connected input port, removes some data records depending on defined filter expression and sends the rest to the connected first output port. Rejected records are sent to the optional second output port if connected. This component is deprecated and should not be used anymore, we suggest you work with ExtFilter instead.</description>
 	    <inputPorts>
