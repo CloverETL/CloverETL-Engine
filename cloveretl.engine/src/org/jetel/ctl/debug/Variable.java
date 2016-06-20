@@ -37,6 +37,7 @@ public class Variable implements Cloneable, Serializable {
 	protected Object value;
 	protected boolean global;
 	protected TLType type;
+	protected long id;
 	
 	public Variable(){
 		name=null;
@@ -51,11 +52,12 @@ public class Variable implements Cloneable, Serializable {
 	}
 	
 	
-	public Variable(String name, TLType type, boolean global, Object value){
+	public Variable(String name, TLType type, boolean global, Object value, long id){
 		this.name=name;
 		this.type=type;
 		this.global=global;
 		this.value=value;
+		this.id = id;
 	}
 	
 	public TLType getType() {

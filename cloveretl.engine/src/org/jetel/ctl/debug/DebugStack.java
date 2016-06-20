@@ -36,6 +36,7 @@ import org.jetel.ctl.data.TLType;
 public class DebugStack extends Stack {
 	
 	private List<FunctionCallFrame> callStack;
+	private long varIdSeq;
 	
 	public static class FunctionCallFrame {
 		public CLVFFunctionCall functionCall;
@@ -60,7 +61,7 @@ public class DebugStack extends Stack {
 	
 	@Override
 	public void setVariable(int blockOffset, int variableOffset,Object value, String name, TLType type){
-		super.setVariable(blockOffset, variableOffset, new Variable(name,type, blockOffset < 0, value));
+		super.setVariable(blockOffset, variableOffset, new Variable(name,type, blockOffset < 0, value, nextVariableId()));
 	}
 	
 	@Override
@@ -161,5 +162,9 @@ public class DebugStack extends Stack {
 	
 	public ListIterator<FunctionCallFrame> getFunctionCallStack() {
 		return callStack.listIterator(callStack.size());
+	}
+	
+	public long nextVariableId() {
+		return ++varIdSeq;
 	}
 }
