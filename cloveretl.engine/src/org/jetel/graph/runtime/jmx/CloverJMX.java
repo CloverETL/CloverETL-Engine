@@ -194,5 +194,10 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 
 		sendNotification(new Notification(GRAPH_ERROR, this/*getGraphDetail()*/, notificationSequence++, message));
 	}
-
+	
+	synchronized public void nodeFinished(String message) {
+		if (!graphFinished) {
+			sendNotification(new Notification(NODE_FINISHED, this, notificationSequence++, message));
+		}
+	}
 }

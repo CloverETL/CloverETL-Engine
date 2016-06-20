@@ -615,6 +615,7 @@ public class MergeJoin extends Node implements MetadataProvider {
     	transformFactory.setTransformUrl(transformURL);
     	transformFactory.setCharset(charset);
     	transformFactory.setComponent(this);
+    	transformFactory.setAttributeName(XML_TRANSFORM_ATTRIBUTE);
     	transformFactory.setInMetadata(inMetadata);
     	transformFactory.setOutMetadata(outMetadata);
     	return transformFactory;

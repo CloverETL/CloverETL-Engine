@@ -18,8 +18,6 @@
  */
 package org.jetel.graph.runtime.jmx;
 
-
-
 /**
  * JMX managed bean which is dedicated to provide tracking information about running graph.
  * 
@@ -74,6 +72,11 @@ public interface CloverJMXMBean {
      * Notification identifier - graph ends with an error.
      */
     public static final String GRAPH_ERROR = "clover.graph.error";
+    
+    /**
+     * Notification identifier - node finished work (both normally and with error or abortion).
+     */
+    public static final String NODE_FINISHED = "clover.node.finished";
 
     
     /**
@@ -96,5 +99,12 @@ public interface CloverJMXMBean {
      * Client should call this method immediately after all tracking information have been received.
      */
     public void closeServer();
-
+    
+//    Thread[] getCtlThreads();
+//    
+//    StackFrame[] getStackFrames(long threadId);
+//    
+//    void resume(long threadId);
+//    
+//    void resumeAll();
 }

@@ -180,6 +180,7 @@ public class JavaExecute extends Node {
 		transformFactory.setTransformUrl(runnableURL);
 		transformFactory.setCharset(charset);
 		transformFactory.setComponent(this);
+		transformFactory.setAttributeName(XML_RUNNABLE_ATTRIBUTE);
 		return transformFactory;
 	}
 	
