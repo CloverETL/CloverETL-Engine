@@ -35,17 +35,38 @@ import org.jetel.ctl.data.TLType;
  */
 public class DebugStack extends Stack {
 	
-	private List<FunctionCallFrame> callStack;
+	private List<FunctionCallFrame> callStack = new ArrayList<>();
 	private long varIdSeq;
+	private long callIdSeq;
 	
 	public static class FunctionCallFrame {
-		public CLVFFunctionCall functionCall;
-		public int varStackIndex = -1;
-	}
-	
-	public DebugStack() {
-		super();
-		this.callStack = new ArrayList<>();
+		
+		private CLVFFunctionCall functionCall;
+		private int varStackIndex;
+		private long id;
+		
+		public FunctionCallFrame(CLVFFunctionCall functionCall, int varStackIndex, long id) {
+			super();
+			this.functionCall = functionCall;
+			this.varStackIndex = varStackIndex;
+			this.id = id;
+		}
+		
+		public FunctionCallFrame(CLVFFunctionCall functionCall, long id) {
+			this(functionCall, -1, id);
+		}
+		
+		public CLVFFunctionCall getFunctionCall() {
+			return functionCall;
+		}
+		
+		public int getVarStackIndex() {
+			return varStackIndex;
+		}
+		
+		public long getId() {
+			return id;
+		}
 	}
 	
 	public int getCurrentFunctionCallIndex() {
@@ -82,8 +103,8 @@ public class DebugStack extends Stack {
 	 */
 	public Object[] getAllLocalVariables() {
 		List<Object> vars = new ArrayList<Object>();
-		for (int i=1;i< variableStack.size();i++){
-			for(Object var:variableStack.get(i)){
+		for (int i = 1; i < variableStack.size(); i++){
+			for (Object var:variableStack.get(i)){
 				if (var!=null) vars.add(var);
 			}
 		}
@@ -94,8 +115,8 @@ public class DebugStack extends Stack {
 		FunctionCallFrame frame = callStack.get(functionCallIndex);
 		FunctionCallFrame nextFrame = functionCallIndex < callStack.size() - 1 ? callStack.get(functionCallIndex + 1) : null;
 		
-		final int startIndex = frame.varStackIndex < 0 /* global scope */ ? 1 : frame.varStackIndex;
-		final int stopIndex = nextFrame != null ? nextFrame.varStackIndex : variableStack.size();
+		final int startIndex = frame.getVarStackIndex() < 0 /* global scope */ ? 1 : frame.getVarStackIndex();
+		final int stopIndex = nextFrame != null ? nextFrame.getVarStackIndex() : variableStack.size();
 		
 		List<Object> vars = new ArrayList<>();
 		for (int i = startIndex; i < stopIndex; ++i) {
@@ -109,8 +130,8 @@ public class DebugStack extends Stack {
 	}
 	
 	public Object getVariable(String name){
-		for (int i=0;i< variableStack.size();i++){
-			for(Object var:variableStack.get(i)){
+		for (int i = 0; i < variableStack.size(); i++){
+			for (Object var:variableStack.get(i)){
 				if (((Variable)var).getName().equals(name)) return var;
 			}
 		}
@@ -119,8 +140,7 @@ public class DebugStack extends Stack {
 	
 	public void enteredSyntheticBlock(CLVFFunctionCall functionCallNode) {
 		if (functionCallNode != null) {
-			FunctionCallFrame frame = new FunctionCallFrame();
-			frame.functionCall = functionCallNode;
+			FunctionCallFrame frame = new FunctionCallFrame(functionCallNode, nextCallId());
 			callStack.add(frame);
 		}
 	}
@@ -141,9 +161,7 @@ public class DebugStack extends Stack {
 	public void enteredBlock(Scope blockScope, CLVFFunctionCall functionCallNode) {
 		super.enteredBlock(blockScope, functionCallNode);
 		if (functionCallNode != null) {
-			FunctionCallFrame frame = new FunctionCallFrame();
-			frame.functionCall = functionCallNode;
-			frame.varStackIndex = variableStack.size() - 1;
+			FunctionCallFrame frame = new FunctionCallFrame(functionCallNode, variableStack.size() - 1, nextCallId());
 			callStack.add(frame);
 		}
 	}
@@ -166,5 +184,9 @@ public class DebugStack extends Stack {
 	
 	public long nextVariableId() {
 		return ++varIdSeq;
+	}
+	
+	private long nextCallId() {
+		return ++callIdSeq;
 	}
 }
