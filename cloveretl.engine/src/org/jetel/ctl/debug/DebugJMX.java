@@ -70,6 +70,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	
 	private ObjectName jmxBeanName;
 	private volatile NotificationListener finishListener;
+	private final Object finishListenerLock = new Object();
 	
 	public DebugJMX(GraphRuntimeContext runtimeContext) {
 		this.runtimeContext = runtimeContext;
@@ -337,15 +338,17 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 			logger.info("Detected active debugged thread " + thread.getCTLThread() + ", interrupting...");
 			thread.getCTLThread().getJavaThread().interrupt();
 		}
-		if (finishListener != null) {
-			try {
-				MBeanServer server = ManagementFactory.getPlatformMBeanServer();
-				if (server.isRegistered(jmxBeanName)) {
-					server.removeNotificationListener(jmxBeanName, finishListener);
+		synchronized (finishListenerLock) {
+			if (finishListener != null) {
+				try {
+					MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+					if (server.isRegistered(jmxBeanName)) {
+						server.removeNotificationListener(jmxBeanName, finishListener);
+					}
+					finishListener = null;
+				} catch (ListenerNotFoundException | InstanceNotFoundException e) {
+					logger.warn("Could not remove node finish listener.", e);
 				}
-				finishListener = null;
-			} catch (ListenerNotFoundException | InstanceNotFoundException e) {
-				logger.warn("Could not remove node finish listener.", e);
 			}
 		}
 		activeThreads.clear();
@@ -367,15 +370,18 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		}
 	}
 	
-	private synchronized void ensureJmxListenerPresent(Node node) {
-		if (finishListener == null) {
-			try {
-				finishListener = new FinishNotificationListener();
-				jmxBeanName = node.getGraph().getWatchDog().getCloverJmxName();
-				ManagementFactory.getPlatformMBeanServer().addNotificationListener(
-					jmxBeanName, finishListener, new FinishNotificationFilter(), Long.valueOf(runtimeContext.getRunId()));
-			} catch (InstanceNotFoundException e) {
-				throw new JetelRuntimeException(e);
+	private void ensureJmxListenerPresent(Node node) {
+		synchronized (finishListenerLock) {
+			if (finishListener == null) {
+				try {
+					FinishNotificationListener listener = new FinishNotificationListener();
+					jmxBeanName = node.getGraph().getWatchDog().getCloverJmxName();
+					ManagementFactory.getPlatformMBeanServer().addNotificationListener(
+						jmxBeanName, listener, new FinishNotificationFilter(), Long.valueOf(runtimeContext.getRunId()));
+					finishListener = listener;
+				} catch (InstanceNotFoundException e) {
+					throw new JetelRuntimeException(e);
+				}
 			}
 		}
 	}
