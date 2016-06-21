@@ -34,7 +34,10 @@ import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.EqualsUtil;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 @SuppressWarnings("serial")
+@SuppressFBWarnings("SE_NO_SERIALVERSIONID")
 public abstract class TLType implements Serializable {
 	
 	public static final TLTypeVoid VOID = new TLTypeVoid();

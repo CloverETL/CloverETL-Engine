@@ -21,7 +21,10 @@ package org.jetel.ctl.data;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 @SuppressWarnings("serial")
+@SuppressFBWarnings("SE_NO_SERIALVERSIONID")
 public abstract class TLTypePrimitive extends TLType {
 
 	public static final TLTypeInteger INTEGER = new TLTypeInteger();
