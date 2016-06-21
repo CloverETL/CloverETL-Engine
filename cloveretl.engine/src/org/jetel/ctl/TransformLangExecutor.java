@@ -2788,8 +2788,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		try {
 		
 			//set input and output records (if given)
-			this.inputRecords = inputRecords;
-			this.outputRecords = outputRecords;
+			setInputRecords(inputRecords);
+			setOutputRecords(outputRecords);
 	
 			//clean previous return value
 			this.lastReturnValue = null;
