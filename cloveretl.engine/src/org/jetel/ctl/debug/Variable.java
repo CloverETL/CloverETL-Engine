@@ -79,6 +79,10 @@ public class Variable implements Cloneable, Serializable {
 		this.value = value;
 	}
 	
+	public long getId() {
+		return id;
+	}
+	
 	@Override
 	public String toString(){
 		return this.name + ":" + this.type + ":" + value;
