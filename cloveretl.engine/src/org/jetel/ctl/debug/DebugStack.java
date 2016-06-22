@@ -41,9 +41,9 @@ public class DebugStack extends Stack {
 	
 	public static class FunctionCallFrame {
 		
-		private CLVFFunctionCall functionCall;
-		private int varStackIndex;
-		private long id;
+		private final CLVFFunctionCall functionCall;
+		private final int varStackIndex; // index where local scopes of the call start
+		private final long id;
 		
 		public FunctionCallFrame(CLVFFunctionCall functionCall, int varStackIndex, long id) {
 			super();
@@ -81,12 +81,14 @@ public class DebugStack extends Stack {
 	}
 	
 	@Override
-	public void setVariable(int blockOffset, int variableOffset,Object value, String name, TLType type){
-		super.setVariable(blockOffset, variableOffset, new Variable(name,type, blockOffset < 0, value, nextVariableId()));
+	public void setVariable(int blockOffset, int variableOffset, Object value, String name, TLType type) {
+		Variable storedVar = (Variable)super.getVariable(blockOffset, variableOffset);
+		long id = storedVar != null ? storedVar.getId() : nextVariableId();
+		super.setVariable(blockOffset, variableOffset, new Variable(name,type, blockOffset < 0, value, id));
 	}
 	
 	@Override
-	public void setVariable(int blockOffset, int variableOffset,Object value){
+	public void setVariable(int blockOffset, int variableOffset, Object value){
 		Variable storedVar = (Variable)super.getVariable(blockOffset,variableOffset);
 		storedVar.setValue(value);
 		super.setVariable(blockOffset, variableOffset, storedVar);
@@ -94,7 +96,7 @@ public class DebugStack extends Stack {
 	
 	@Override
 	public Object getVariable(int blockOffset, int variableOffset){
-		Variable variable = (Variable) super.getVariable(blockOffset, variableOffset);
+		Variable variable = (Variable)super.getVariable(blockOffset, variableOffset);
 		return variable != null ? variable.getValue() : null;
 	}
 	
@@ -173,7 +175,7 @@ public class DebugStack extends Stack {
 	@Override
 	public void exitedBlock(CLVFFunctionCall functionCallNode) {
 		super.exitedBlock(functionCallNode);
-		if (functionCallNode !=null) {
+		if (functionCallNode != null) {
 			callStack.remove(callStack.size() - 1);
 		}
 	}

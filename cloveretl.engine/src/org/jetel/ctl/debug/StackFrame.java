@@ -36,7 +36,7 @@ public class StackFrame implements Serializable {
 	private String paramTypes[];
 	private boolean synthetic;
 	private boolean generated;
-	private long id;
+	private long callId;
 	
 	public int getLineNumber() {
 		return lineNumber;
@@ -86,11 +86,11 @@ public class StackFrame implements Serializable {
 		this.generated = generated;
 	}
 
-	public long getId() {
-		return id;
+	public long getCallId() {
+		return callId;
 	}
 
-	public void setId(long id) {
-		this.id = id;
-	}
+	public void setCallId(long callId) {
+		this.callId = callId;
+	}	
 }

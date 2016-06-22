@@ -354,7 +354,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 				FunctionCallFrame callFrame = iter.previous();
 				functionCall = callFrame.getFunctionCall();
 				StackFrame stackFrame = new StackFrame();
-				stackFrame.setId(callFrame.getId());
+				stackFrame.setCallId(callFrame.getId());
 				stackFrame.setName(functionCall.getName());
 				stackFrame.setSynthetic(functionCall.getId() == SYNTHETIC_FUNCTION_CALL_ID);
 				stackFrame.setGenerated(functionCall.getLocalFunction() != null ? functionCall.getLocalFunction().isGenerated() : false);
