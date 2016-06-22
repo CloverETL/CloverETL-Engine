@@ -416,17 +416,16 @@ public class Dedup extends Node {
 	}
 	
 	private static class GroupUnique {
-		private CloverBuffer recordBuffer;
+		private DataRecord record;
 		private boolean read = false;
 		
 		public GroupUnique(DataRecord record) {
-			recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
-			record.serialize(recordBuffer);
-			recordBuffer.flip();
+			this.record = record;
 		}
-		public CloverBuffer readRecord() {
+
+		public DataRecord readRecord() {
 			read = true;
-			return recordBuffer;
+			return record;
 		}
 		
 		public boolean isRead() {
@@ -443,7 +442,8 @@ public class Dedup extends Node {
 			hashKey.setDataRecord(record);
 			GroupUnique group = groups.get(hashKey);
 			if (group == null) {
-				groups.put(new HashKey(recordKeyReduced, record.duplicate(recordKey)), new GroupUnique(record));
+				DataRecord duplicate = record.duplicate();
+				groups.put(new HashKey(recordKey, duplicate), new GroupUnique(duplicate));
 			} else {
 				if (!group.isRead()) {
 					writeRejectedRecord(group.readRecord());
