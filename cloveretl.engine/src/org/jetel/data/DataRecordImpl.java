@@ -125,7 +125,7 @@ public class DataRecordImpl extends DataRecord {
 	 */
 	@Override
 	public DataRecordImpl duplicate(RecordKey recordKey) {
-		DataRecordMetadata keyMetadata = metadata.duplicate(recordKey);
+		DataRecordMetadata keyMetadata = recordKey != null ? metadata.duplicate(recordKey) : metadata;
 		DataRecordImpl keyRecord = newInstance(keyMetadata);
 		int keyFieldIndex = 0;
 		for (int i = 0; i < fields.length; i++) {
