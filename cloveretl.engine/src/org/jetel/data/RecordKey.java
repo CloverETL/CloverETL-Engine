@@ -63,6 +63,7 @@ public class RecordKey {
 
 	protected int keyFields[];
 	protected DataRecordMetadata metadata;
+	private DataRecordMetadata keyMetadata;
 	protected String keyFieldNames[];
 	private final static char KEY_ITEMS_DELIMITER = ':';
 	private final static int DEFAULT_STRING_KEY_LENGTH = 32;
@@ -470,12 +471,24 @@ public class RecordKey {
 	 * be used for creating data record composed from key fields only.
 	 * @return DataRecordMetadata object
 	 */
-	public DataRecordMetadata generateKeyRecordMetadata(){
+	public DataRecordMetadata generateKeyRecordMetadata() {
 		DataRecordMetadata metadata = new DataRecordMetadata(this.metadata.getName()+"key");
 		for (int i = 0; i < keyFields.length; i++) {
 			metadata.addField(this.metadata.getField(keyFields[i]).duplicate());
 		}
 		return metadata;
+	}
+	
+	/**
+	 * @return metadata which represents fields composing this key, it can
+	 * be used for creating data record composed from key fields only, internal
+	 * cached value is returned, so should not be changed!
+	 */
+	public DataRecordMetadata getKeyRecordMetadata() {
+		if (keyMetadata == null) {
+			keyMetadata = metadata.duplicate(this);
+		}
+		return keyMetadata;
 	}
 	
 	/**
@@ -789,7 +802,7 @@ public class RecordKey {
 		for (int i = 0; i < key.length; i++) {
 			key[i] = i;
 		}
-		RecordKey reducedRecordKey = new RecordKey(key, metadata.duplicate(this));
+		RecordKey reducedRecordKey = new RecordKey(key, getKeyRecordMetadata());
 		reducedRecordKey.setEqualNULLs(equalNULLs);
 		reducedRecordKey.init();
 		return reducedRecordKey;
