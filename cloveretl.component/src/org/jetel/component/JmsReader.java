@@ -195,6 +195,7 @@ public class JmsReader extends Node {
     	transformFactory.setTransformUrl(psorURL);
     	transformFactory.setCharset(charset);
     	transformFactory.setComponent(this);
+    	transformFactory.setAttributeName(XML_PSORCODE_ATTRIBUTE);
     	return transformFactory;
 	}
 	

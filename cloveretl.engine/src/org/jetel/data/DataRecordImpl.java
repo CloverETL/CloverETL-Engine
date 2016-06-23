@@ -113,16 +113,27 @@ public class DataRecordImpl extends DataRecord {
 
 	/**
 	 * Creates deep copy of existing record (field by field).
-	 * 
-	 * @return new DataRecord
 	 */
 	@Override
 	public DataRecordImpl duplicate() {
-		DataRecordImpl newRec = newInstance(metadata);
+		return duplicate(null);
+	}
+	
+	/**
+	 * Creates deep copy of existing record - only fields from the given key are considered.
+	 * RecordKey can be null, all fields are duplicated, see {@link #duplicate()}.
+	 */
+	@Override
+	public DataRecordImpl duplicate(RecordKey recordKey) {
+		DataRecordMetadata keyMetadata = recordKey != null ? metadata.duplicate(recordKey) : metadata;
+		DataRecordImpl keyRecord = newInstance(keyMetadata);
+		int keyFieldIndex = 0;
 		for (int i = 0; i < fields.length; i++) {
-			newRec.fields[i] = fields[i].duplicate();
+			if (recordKey == null || recordKey.isKeyField(i)) {
+				keyRecord.fields[keyFieldIndex++] = fields[i].duplicate();
+			}
 		}
-		return newRec;
+		return keyRecord;
 	}
 	
 	/**

@@ -35,7 +35,6 @@ import org.jetel.ctl.ASTnode.CLVFArrayAccessExpression;
 import org.jetel.ctl.ASTnode.CLVFAssignment;
 import org.jetel.ctl.ASTnode.CLVFBlock;
 import org.jetel.ctl.ASTnode.CLVFBreakStatement;
-import org.jetel.ctl.ASTnode.CLVFBreakpointNode;
 import org.jetel.ctl.ASTnode.CLVFCaseStatement;
 import org.jetel.ctl.ASTnode.CLVFComparison;
 import org.jetel.ctl.ASTnode.CLVFConditionalExpression;
@@ -88,6 +87,7 @@ import org.jetel.ctl.ASTnode.CastNode;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLTypePrimitive;
+import org.jetel.ctl.data.TLType.TLTypeByteArray;
 import org.jetel.ctl.data.TLType.TLTypeList;
 import org.jetel.ctl.data.TLType.TLTypeMap;
 import org.jetel.ctl.data.TLType.TLTypeRecord;
@@ -251,6 +251,17 @@ public class TypeChecker extends NavigatingVisitor {
 			return data;
 		}
 		
+		if (composite.getType().isByteArray()) {
+			SimpleNode index = (SimpleNode)node.jjtGetChild(1);
+			if (! index.getType().isInteger()) {
+				error(index,"Cannot convert from '" + index.getType().name() + "' to '" + TLTypePrimitive.INTEGER.name() + "'");
+				node.setType(TLType.ERROR);
+				return data;
+			}
+			node.setType(TLType.BYTEARRAY);
+			return data;
+		}
+		
 		error(node,"Expression is not a composite type but is resolved to '" + composite.getType().name() + "'",
 				"Expression must be a list or map");
 		node.setType(TLType.ERROR);
@@ -368,12 +379,6 @@ public class TypeChecker extends NavigatingVisitor {
 		super.visit(node, data);
 		node.setType(TLType.VOID);
 		checkChildren(node); // this will overwrite VOID with ERROR if children have errors
-		return data;
-	}
-
-	@Override
-	public Object visit(CLVFBreakpointNode node, Object data) {
-		node.setType(TLType.VOID);
 		return data;
 	}
 

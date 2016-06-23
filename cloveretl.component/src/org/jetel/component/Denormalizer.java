@@ -285,6 +285,7 @@ public class Denormalizer extends Node {
     	transformFactory.setTransformUrl(xformURL);
     	transformFactory.setCharset(charset);
     	transformFactory.setComponent(this);
+    	transformFactory.setAttributeName(XML_TRANSFORM_ATTRIBUTE);
     	transformFactory.setInMetadata(inMetadata);
     	transformFactory.setOutMetadata(outMetadata);
     	return transformFactory;

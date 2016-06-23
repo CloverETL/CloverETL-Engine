@@ -60,6 +60,7 @@ public class TLCompiler implements ITLCompiler {
 	protected int tabSize = 4; // CLO-2104: changed from 6 to Eclipse default tab width
 	protected Log logger;
 	protected String componentId;
+	private String sourceId;
 	private List<TLFunctionCallContext> functionContexts;
 	protected boolean lenient = false;
 
@@ -152,6 +153,9 @@ public class TLCompiler implements ITLCompiler {
 			ContextProvider.unregister(ctx);
 		}
 		
+		// source id - used in debugging
+		ast.setSourceId(sourceId);
+		
 		ASTBuilder astBuilder = createASTBuilder();
 		astBuilder.setLenient(lenient);
 		astBuilder.resolveAST(parseTree);
@@ -241,6 +245,9 @@ public class TLCompiler implements ITLCompiler {
 		} finally {
 			ContextProvider.unregister(ctx);
 		}
+		
+		// source id - used in debugging
+		ast.setSourceId(sourceId);
 		
 		ASTBuilder astBuilder = createASTBuilder();
 		astBuilder.setLenient(lenient);
@@ -361,7 +368,7 @@ public class TLCompiler implements ITLCompiler {
 	protected String wrapExpression(String expression, String syntheticFunctionName, Class<?> returnType) {
 		// compute return type
 		final TLType type = TLType.fromJavaType(returnType);
-		return "function " + type.name() +  " " + syntheticFunctionName + "() { " +
+		return "function " + type.name() +  " " + syntheticFunctionName + "() {" +
 				// CLO-4872: terminate trailing single-line comment in expression with \n
 				"return " + expression + "\n;" +
 				" }";
@@ -379,7 +386,12 @@ public class TLCompiler implements ITLCompiler {
 	 */
 	@Override
 	public Object getCompiledCode() {
-		final TransformLangExecutor executor = new TransformLangExecutor(parser,graph);
+		final TransformLangExecutor executor;
+		if (graph != null && graph.getRuntimeContext().isCtlDebug() && graph.getDebugJMX() != null /* null in check config */) {
+			executor = new DebugTransformLangExecutor(parser, graph);
+		} else {
+			executor = new TransformLangExecutor(parser, graph);
+		}
 		if (this.ast instanceof CLVFStart ) {
 			executor.setAst((CLVFStart)ast);
 		} else {
@@ -428,7 +440,6 @@ public class TLCompiler implements ITLCompiler {
 		return (CLVFStart)ast;
 	}
 
-
 	/**
 	 * @return Number of critical errors from the last validate call.
 	 * 
@@ -445,7 +456,6 @@ public class TLCompiler implements ITLCompiler {
 	public List<ErrorMessage> getDiagnosticMessages() {
 		return problemReporter.getDiagnosticMessages();
 	}
-
 
 	@Override
 	public int warningCount() {
@@ -466,6 +476,11 @@ public class TLCompiler implements ITLCompiler {
 		this.componentId = componentId;
 	}
 	
+	@Override
+	public void setSourceId(String sourceId) {
+		this.sourceId = sourceId;
+	}
+	
 	protected List<TLFunctionCallContext> getFunctionContexts() {
 		return functionContexts; 
 	}
@@ -481,5 +496,4 @@ public class TLCompiler implements ITLCompiler {
 	public TransformationGraph getGraph() {
 		return graph;
 	}
-
 }

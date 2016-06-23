@@ -18,6 +18,7 @@
  */
 package org.jetel.ctl.data;
 
+import java.io.Serializable;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -33,8 +34,12 @@ import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.EqualsUtil;
 
-public abstract class TLType {
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+@SuppressWarnings("serial")
+@SuppressFBWarnings("SE_NO_SERIALVERSIONID")
+public abstract class TLType implements Serializable {
+	
 	public static final TLTypeVoid VOID = new TLTypeVoid();
 	public static final TLTypeNull NULL = new TLTypeNull();
 	public static final TLTypeError ERROR = new TLTypeError();

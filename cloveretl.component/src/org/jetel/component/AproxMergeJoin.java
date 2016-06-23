@@ -844,7 +844,7 @@ public class AproxMergeJoin extends Node implements MetadataProvider {
     	transformFactory.setTransformClass(transformClassName);
     	transformFactory.setTransformUrl(transformURL);
     	transformFactory.setCharset(charset);
-    	transformFactory.setAttributeName("Transform");
+    	transformFactory.setAttributeName(XML_TRANSFORM_ATTRIBUTE); 
     	transformFactory.setComponent(this);
     	transformFactory.setInMetadata(getInMetadata());
     	transformFactory.setOutMetadata(getOutputPort(CONFORMING_OUT).getMetadata());
@@ -857,7 +857,7 @@ public class AproxMergeJoin extends Node implements MetadataProvider {
 		transformFactory.setTransformClass(transformClassNameForSuspicious);
 		transformFactory.setTransformUrl(transformURLForsuspicious);
 		transformFactory.setCharset(charset);
-		transformFactory.setAttributeName("Transform for suspicious");
+		transformFactory.setAttributeName(XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE);
 		transformFactory.setComponent(this);
 		transformFactory.setInMetadata(getInMetadata());
 		transformFactory.setOutMetadata(getOutputPort(SUSPICIOUS_OUT).getMetadata());

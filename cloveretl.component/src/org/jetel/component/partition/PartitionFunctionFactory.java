@@ -55,7 +55,7 @@ public class PartitionFunctionFactory {
 	public static final Pattern PATTERN_TL_CODE = Pattern.compile("function\\s+" + PartitionTL.GET_OUTPUT_PORT_FUNCTION_NAME);
 
 	private Node node;
-
+	
 	private DataRecordMetadata metadata;
 	
 	private String charset;
@@ -67,6 +67,9 @@ public class PartitionFunctionFactory {
 	private boolean useI18N;
 	
 	private String locale;
+
+	private String attributeName;
+
 
 	//runtime variables
 	private boolean[] startInclude;
@@ -82,6 +85,7 @@ public class PartitionFunctionFactory {
     	transformFactory.setTransformUrl(partitionURL);
     	transformFactory.setCharset(charset);
     	transformFactory.setComponent(node);
+    	transformFactory.setAttributeName(attributeName);
     	transformFactory.setInMetadata(metadata);
     	if (transformFactory.isTransformSpecified()) {
     		partitionFunction = transformFactory.createTransform();
@@ -243,6 +247,10 @@ public class PartitionFunctionFactory {
 
 	public void setLocale(String locale) {
 		this.locale = locale;
+	}
+	
+	public void setAttributeName(String attributeName) {
+		this.attributeName = attributeName;
 	}
 
 	/**

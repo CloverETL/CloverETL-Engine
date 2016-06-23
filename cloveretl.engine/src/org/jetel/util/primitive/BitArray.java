@@ -256,7 +256,7 @@ public class BitArray implements Serializable{
     
     /**
      * Sets specified bit in array of bytes - counting
-     * from left.
+     * from LEFT.
      * The bit parameter is ZERO based.
      * 
      * @param bytes
@@ -272,6 +272,22 @@ public class BitArray implements Serializable{
 		bytes.put(index, (byte) (bytes.get(index) | (1 << (bit % 8))));
 	}
 
+    /**
+     * Sets specified bit in array of bytes - counting
+     * from RIGHT.
+     * The bit positionparameter is ZERO based.
+     * 
+     * @param bytes
+     * @param bit
+     * @since 18.1.2007
+     */
+    public final static void setR(byte[] bytes,int bit){
+      	final int pos=(bytes.length<<3 )-1-bit;
+        bytes[pos>>3] |= (byte) (1 << (bit % 8));
+    }
+ 
+    
+    
     /**
      *  Gets status of specified bit in array of bytes - counting
      * from left.
@@ -292,6 +308,21 @@ public class BitArray implements Serializable{
 	}
 
     /**
+     *  Gets status of specified bit in array of bytes - counting
+     * from RIGHT.
+     *  The bit parameter is ZERO based.
+     * 
+     * @param bytes
+     * @param bit
+     * @return  true if set otherwise false
+     * @since 18.1.2007
+     */
+    public final static boolean isSetR(byte[] bytes,int bit){
+    	final int pos=(bytes.length<<3 )-1-bit;
+        return ((bytes[pos >> 3] & ((byte) (1 << (bit % 8)))) != 0 );
+    }
+    
+    /**
      * Resets specified bit in array of bytes - counting
      * from left.
      *  The bit parameter is ZERO based.
@@ -309,6 +340,20 @@ public class BitArray implements Serializable{
 		bytes.put(index, (byte) (bytes.get(index) & (~((1 << (bit % 8))))));
 	}
 
+    /**
+     * Resets specified bit in array of bytes - counting
+     * from RIGHT.
+     *  The bit parameter is ZERO based.
+     * 
+     * @param bytes
+     * @param bit
+     * @since 18.1.2007
+     */
+    public final static void resetR(byte[] bytes, int bit){
+    	final int pos=(bytes.length<<3 )-1-bit;
+        bytes[pos >> 3] &= (~((byte) (1 << (bit	 % 8))));
+    }
+    
     /*
      * Extracts encoded value/number in array of bits using mask
      * which defines which bits to use when extracting value.

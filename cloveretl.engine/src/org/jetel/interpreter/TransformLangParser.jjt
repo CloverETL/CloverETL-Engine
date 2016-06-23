@@ -47,7 +47,6 @@ PARSER_BEGIN(TransformLangParser)
 
 package org.jetel.interpreter;
 
-import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.interpreter.ASTnode.*;
 import org.jetel.util.string.StringUtils;
@@ -57,13 +56,8 @@ import org.jetel.component.CustomizedRecordTransform;
 import org.jetel.component.RecordTransform;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.List;
 import java.util.LinkedList;
-import java.io.FileInputStream;
-import java.io.BufferedInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.channels.Channels;
 import java.net.MalformedURLException;
@@ -75,8 +69,8 @@ public class TransformLangParser extends ExpParser {
 		
        DataRecordMetadata[] inRecordsMetadata;
        DataRecordMetadata[] outRecordsMetadata;
-       Map inDataRecordsMap;
-       Map outDataRecordsMap;
+       Map<String, Integer> inDataRecordsMap;
+       Map<String, Integer> outDataRecordsMap;
 	   ParserHelper parserHelper;       
        List<Throwable> parseExceptions;
        CustomizedRecordTransform custRecordTransform;
@@ -207,6 +201,7 @@ public class TransformLangParser extends ExpParser {
         this.projectDirURL = projectURL;
       }
 
+      @Override
       public final DataRecordMetadata getInRecordMeta(){
     	  if (inRecordsMetadata.length>0)
               return inRecordsMetadata[0];
@@ -214,6 +209,7 @@ public class TransformLangParser extends ExpParser {
     		  return null;
       }
       
+      @Override
       public final int getInRecordNum(String name){
       	try{
              return ((Integer)inDataRecordsMap.get(name)).intValue() ;
@@ -222,6 +218,7 @@ public class TransformLangParser extends ExpParser {
       	}
       }
       
+      @Override
       public final int getOutRecordNum(String name){
         try{
              return ((Integer)outDataRecordsMap.get(name)).intValue() ;
@@ -230,6 +227,7 @@ public class TransformLangParser extends ExpParser {
       	}
       }
       
+      @Override
       public final DataRecordMetadata getInRecordMeta(int num){
       	try{
              return inRecordsMetadata[num];
@@ -238,6 +236,7 @@ public class TransformLangParser extends ExpParser {
       	}
       }
       
+      @Override
       public final DataRecordMetadata getOutRecordMeta(int num){
       	try{
              return outRecordsMetadata[num];
@@ -246,10 +245,12 @@ public class TransformLangParser extends ExpParser {
       	}
       }
       
-       public final DataRecordMetadata[] getInRecordMetadata(){
+      @Override
+      public final DataRecordMetadata[] getInRecordMetadata(){
              return inRecordsMetadata;
       }
       
+      @Override
       public final DataRecordMetadata[] getOutRecordMetadata(){
              return outRecordsMetadata;
       }
@@ -262,10 +263,10 @@ public class TransformLangParser extends ExpParser {
       *  visit() method of TransformationLangExecutor can be called to
       *  execute function's body. 
       */
-      
-      public final Map getFunctions(){
+      @Override
+      public final Map getFunctions() {
         return parserHelper.functionSymbol;
-    }
+     }
     
      public final CLVFFunctionDeclaration getFunction(String name){
      	return (CLVFFunctionDeclaration) parserHelper.functionSymbol.get(name);

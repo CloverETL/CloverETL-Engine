@@ -39,6 +39,7 @@ public class CLVFIsNullNode extends SimpleNode {
 	@Override
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
 		try {
+			if(visitor.inDebugMode()) visitor.debug(this, data);
 			return visitor.visit(this, data);
 		} catch (TransformLangExecutorRuntimeException e) {
 			if (e.getNode() == null) {
@@ -53,5 +54,10 @@ public class CLVFIsNullNode extends SimpleNode {
 	@Override
 	public SimpleNode duplicate() {
 		return new CLVFIsNullNode(this);
+	}
+
+	@Override
+	public boolean isBreakable() {
+		return true;
 	}
 }

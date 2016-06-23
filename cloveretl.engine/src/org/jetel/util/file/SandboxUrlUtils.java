@@ -26,6 +26,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.StringTokenizer;
 
 import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.graph.ContextProvider;
@@ -292,4 +293,43 @@ public final class SandboxUrlUtils {
 		return new URI(urlString);
 	}
 	
+	/**
+	 * Escapes path segments in URL. The URL is not expected to have a query.
+	 * @param url
+	 * @return
+	 */
+	public static String escapeUrlPath(String url) {
+		return processUrlPath(url, true);
+	}
+	
+	public static String unescapeUrlPath(String url) {
+		return processUrlPath(url, false);
+	}
+	
+	private static String processUrlPath(String url, final boolean escape) {
+		if (url == null) {
+			return null;
+		}
+		StringBuilder result = new StringBuilder();
+		int protocolPos = url.indexOf("://");
+		if (protocolPos >= 0) {
+			result.append(url.substring(0, protocolPos + 3));
+			url = url.substring(protocolPos + 3);
+		}
+		StringTokenizer strtok = new StringTokenizer(url, "/");
+		if (url.startsWith("/")) {
+			result.append('/');
+		}
+		while (strtok.hasMoreElements()) {
+			String segment = strtok.nextToken();
+			result.append(escape ? URIUtils.urlEncode(segment) : URIUtils.urlDecode(segment));
+			if (strtok.hasMoreElements()) {
+				result.append('/');
+			}
+		}
+		if (url.endsWith("/")) {
+			result.append('/');
+		}
+		return result.toString();
+	}
 }

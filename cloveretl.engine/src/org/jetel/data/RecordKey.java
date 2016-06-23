@@ -193,6 +193,12 @@ public class RecordKey {
 		return keyFields;
 	}
 
+	/**
+	 * @return true if the given index is part of this key
+	 */
+	public boolean isKeyField(int index) {
+		return Arrays.binarySearch(getKeyFields(), index) >= 0;
+	}
     
     private int[] getKeyFieldsIndexes(DataRecordMetadata mdata, String[] fieldNames) {
     	int[] indexes = new int[fieldNames.length];
@@ -769,6 +775,26 @@ public class RecordKey {
 			useCollator = true;
 		}
 	}
+	
+	/**
+	 * This method returns new {@link RecordKey} instance derived from this {@link RecordKey}.
+	 * Metadata of resulted {@link RecordKey} contains only key fields.
+	 * Both keys, this and the result, are compatible to be compared.
+	 * The resulted {@link RecordKey} can be used with duplicates of {@link DataRecord}s
+	 * created with {@link DataRecord#duplicate(RecordKey)} method.
+	 * @see Dedup component
+	 */
+	public RecordKey getReducedRecordKey() {
+		int[] key = new int[getLength()];
+		for (int i = 0; i < key.length; i++) {
+			key[i] = i;
+		}
+		RecordKey reducedRecordKey = new RecordKey(key, metadata.duplicate(this));
+		reducedRecordKey.setEqualNULLs(equalNULLs);
+		reducedRecordKey.init();
+		return reducedRecordKey;
+	}
+	
 }
 // end RecordKey
 

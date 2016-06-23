@@ -63,23 +63,25 @@ PARSER_BEGIN(TransformLangParser)
 
 package org.jetel.ctl;
 
-import org.jetel.graph.TransformationGraph;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.net.URL;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
+import org.jetel.component.RecordTransform;
 import org.jetel.ctl.ASTnode.*;
+import org.jetel.ctl.data.Scope;
 import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLTypePrimitive;
-import org.jetel.ctl.data.Scope;
+import org.jetel.graph.TransformationGraph;
+import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.SandboxUrlUtils;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
-import org.jetel.util.file.FileUtils;
-import org.jetel.component.RecordTransform;
-import java.util.Map;
-import java.util.HashSet;
-import java.util.List;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.IOException;
-import java.net.URL;
 
 
 public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements TransformLangParserTreeConstants/*@egen*/ {/*@bgen(jjtree)*/
@@ -327,7 +329,20 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                 // we checked all special tokens and did not find #CTL2:COMPILED -> return false
                 return lastCompiled;
 	}
-    
+
+	private boolean isGenerated(Token token) {
+
+        boolean generated = false;
+        while (token.specialToken != null) {
+            if (token.specialToken.kind == TL_GENERATED) {
+                generated = true;
+                break;
+            } else {
+                token = token.specialToken;
+            }
+        }
+		return generated;
+    }
     
     public void parsingError(ParseException e) {
     	// inspired by ParseException.toString()
@@ -406,7 +421,9 @@ SPECIAL_TOKEN : {
 
 <WithinSingleLineComment> SKIP : { <~[]> }
 
-<WithinSingleLineComment, WithinComment> SPECIAL_TOKEN : {	< TL_SHEBANG : "#CTL2" > 	|	< TL_COMPILE : "#CTL2:COMPILE" >}
+<WithinSingleLineComment, WithinComment> SPECIAL_TOKEN : {	< TL_SHEBANG : "#CTL2" > 	|	< TL_COMPILE : "#CTL2:COMPILE" >
+	|
+	< TL_GENERATED : "#CTL2:GENERATED" >}
 
 
 
@@ -1015,6 +1032,8 @@ void ImportSource() :{/*@bgen(jjtree) ImportSource */
 				TransformLangParser parser = new TransformLangParser(this,filenameURL,input);				
 				parser.addParsedImports(getParsedImports());
 			 	parseTree = parser.Start();
+				String sourceId = SandboxUrlUtils.escapeUrlPath(FileUtils.getFileURL(projectURL, filenameURL).toString());
+				jjtn000.setSourceId(sourceId);
 			 	jjtn000.setSourceFilename(filenameURL);				jjtn000.jjtAddChild(parseTree,0);
 				jjtn000.jjtGetChild(0).jjtSetParent(jjtn000);
 				addParsedImports(parser.getParsedImports()); // merge child's imports
@@ -1147,9 +1166,11 @@ void V2FunctionDeclaration()                     :
 {/*@bgen(jjtree) FunctionDeclaration */
         try {
 /*@egen*/
-	
+	{
+		jjtn000.setGenerated(isGenerated(jj_nt));
+	}
 	"function"
-	{ 
+	{
 		jjtn000.begin(token.beginLine,token.beginColumn);
 	}
 	
