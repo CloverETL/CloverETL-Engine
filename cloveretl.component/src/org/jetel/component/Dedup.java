@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.collections.buffer.CircularFifoBuffer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
@@ -41,7 +42,6 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -307,7 +307,7 @@ public class Dedup extends Node {
 	 */
 	@Override
 	public Result execute() throws Exception {
-		if (sorted) {
+		if (sorted || dedupKeys == null) { //use algorithm for sorted input in case no key is specified
 			executeSorted();
 		} else {
 			executeUnsorted();
@@ -358,59 +358,54 @@ public class Dedup extends Node {
 	}
 
 	private static class GroupLast {
-		private CloverBuffer recordBuffer;
-		private RingRecordBuffer ringBuffer;
+		private final CircularFifoBuffer cicularRecordBuffer;
 		
-		public GroupLast(int noDupRecord, DataRecord record) throws IOException, InterruptedException {
-			recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
-	    	ringBuffer = new RingRecordBuffer(noDupRecord);
-	    	
-			try {
-				ringBuffer.init();
-			} catch (ComponentNotReadyException e) {
-				throw new JetelRuntimeException(e);
-			}
-			
-			ringBuffer.pushRecord(record);
+		public GroupLast(int noDupRecord, DataRecord record) {
+			cicularRecordBuffer = new CircularFifoBuffer(noDupRecord);
+			cicularRecordBuffer.add(record);
 		}
 
-		public CloverBuffer writeRecord(DataRecord record) throws IOException, InterruptedException {
-			if (ringBuffer.isFull()) {
-				ringBuffer.popRecord(recordBuffer);
-				ringBuffer.pushRecord(record);
-				return recordBuffer;
+		public DataRecord writeRecord(DataRecord record) {
+			if (cicularRecordBuffer.isFull()) {
+				final DataRecord overflowedRecord = (DataRecord) cicularRecordBuffer.remove();
+				cicularRecordBuffer.add(record);
+				return overflowedRecord;
 			} else {
-				ringBuffer.pushRecord(record);
+				cicularRecordBuffer.add(record);
 				return null;
 			}
 		}
 		
-		public CloverBuffer readRecord() throws IOException, InterruptedException {
-			return ringBuffer.popRecord(recordBuffer);
+		public DataRecord readRecord() {
+			if (!cicularRecordBuffer.isEmpty()) {
+				return (DataRecord) cicularRecordBuffer.remove();
+			} else {
+				return null;
+			}
 		}
 	}
 	
 	private void executeUnsortedLast() throws IOException, InterruptedException {
-		CloverBuffer cloverRecord;
-		Map<HashKey, GroupLast> groups = new LinkedHashMap<>(16, 0.75f, true);
-		HashKey hashKey = new HashKey(recordKey, null);
+		Map<HashKey, GroupLast> groups = new LinkedHashMap<>(16, 0.75f, true); //access order enabled
 		DataRecord record = DataRecordFactory.newRecord(metadata);
+		HashKey hashKey = new HashKey(recordKey, record);
+		DataRecord outputRecord;
 		
 		while (inPort.readRecord(record) != null && runIt) {
-			hashKey.setDataRecord(record);
 			GroupLast group = groups.get(hashKey);
+			DataRecord duplicate = record.duplicate();
 			if (group == null) {
-				groups.put(new HashKey(recordKeyReduced, record.duplicate(recordKey)), new GroupLast(noDupRecord, record));
+				groups.put(new HashKey(recordKeyReduced, record.duplicate(recordKey)), new GroupLast(noDupRecord, duplicate));
 			} else {
-				if ((cloverRecord = group.writeRecord(record)) != null) {
-					writeRejectedRecord(cloverRecord);
+				if ((outputRecord = group.writeRecord(duplicate)) != null) {
+					writeRejectedRecord(outputRecord);
 				}
 			}
 		}
 		//pour out the cached groups
 		for (GroupLast group : groups.values()) {
-			while ((cloverRecord = group.readRecord()) != null) {
-				writeOutRecord(cloverRecord);
+			while ((outputRecord = group.readRecord()) != null) {
+				writeOutRecord(outputRecord);
 			}
 		}
 	}
