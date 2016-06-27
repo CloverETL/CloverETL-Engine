@@ -40,20 +40,22 @@ public class WritableObject extends WritableContainer {
 	private final boolean hidden;
 	private final boolean root;
 	protected final String dataType;
+	protected final boolean rawValue;
 
-	public WritableObject(WritableValue name, WritableValue prefix, WriteNullElement writeNull, boolean root, String dataType) {
-		this(name, prefix, writeNull, null, ObjectNode.HIDE_DEFAULT, root, dataType);
+	public WritableObject(WritableValue name, WritableValue prefix, WriteNullElement writeNull, boolean root, boolean rawValue, String dataType) {
+		this(name, prefix, writeNull, null, ObjectNode.HIDE_DEFAULT, root, rawValue, dataType); 
 	}
 	
-	public WritableObject(WritableValue name, WritableValue prefix, WriteNullElement writeNull, boolean hidden, boolean root, String dataType) {
-		this(name, prefix, writeNull, null, hidden, root, dataType);
+	public WritableObject(WritableValue name, WritableValue prefix, WriteNullElement writeNull, boolean hidden, boolean root, boolean rawValue, String dataType) {
+		this(name, prefix, writeNull, null, hidden, root, rawValue, dataType);
 	}
 
-	public WritableObject(WritableValue name, WritableValue prefix, WriteNullElement writeNull, PortBinding portBinding, boolean hidden, boolean root, String dataType) {
+	public WritableObject(WritableValue name, WritableValue prefix, WriteNullElement writeNull, PortBinding portBinding, boolean hidden, boolean root, boolean rawValue, String dataType) {
 		super(name, prefix, writeNull, portBinding);
 		this.hidden = hidden;
 		this.root = root;
 		this.dataType = dataType;
+		this.rawValue = rawValue;
 	}
 
 	@Override
@@ -100,6 +102,7 @@ public class WritableObject extends WritableContainer {
 	public void addChild(WritableValue value) {
 		super.addChild(value);
 		value.dataType = dataType;
+		value.rawValue = rawValue;
 	}
 
 	@Override

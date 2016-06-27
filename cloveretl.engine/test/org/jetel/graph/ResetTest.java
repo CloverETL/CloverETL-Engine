@@ -71,6 +71,7 @@ public class ResetTest extends CloverTestCase {
 	private final static Map<String, List<String>> CLASSPATHS = new HashMap<String, List<String>>();
 	static {
 		CLASSPATHS.put("rpc-literal-service-test.grf", Collections.singletonList("lib/rpc-literal-test.jar"));
+		CLASSPATHS.put("3rdPartyCode_CLO-8964.grf", Collections.singletonList("lib/kafka-clients-0.10.0.0.jar"));
 	}
 		
 	private final static String GRAPHS_DIR = "graph";
@@ -351,6 +352,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("RecordToKeyValues") // CLO-7086: temporarily removed tests
 							&& !file.getName().equals("KeyValuesToRecord") // CLO-7086: temporarily removed tests
 							&& !file.getName().equals("DB2DataWriter") // can only work with db2 client
+							&& !file.getName().equals("hadoop") // removed temporarily - see CLO-8574
 							&& !file.getName().equals("windows"); // wokna only tests
 				}
 			};

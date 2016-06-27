@@ -402,7 +402,6 @@ public class runGraph {
         TransformationGraph graph = null;
 		try {
 			graph = TransformationGraphXMLReaderWriter.loadGraph(in, runtimeContext);
-			logger.info("Graph revision: " + graph.getRevision() + " Modified by: " + graph.getModifiedBy() + " Modified: " + graph.getModified());
 			initializeDictionary(dictionaryValues, graph);
 	        runGraph(graph);
         } catch (XMLConfigurationException e) {

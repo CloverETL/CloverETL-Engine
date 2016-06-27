@@ -76,6 +76,7 @@ public class MappingWriter implements MappingVisitor {
 		writePropertyAsCloverAttribute(element, MappingProperty.EXCLUDE);
 		writePropertyAsCloverAttribute(element, MappingProperty.WRITE_NULL_ELEMENT);
 		writePropertyAsCloverAttribute(element, MappingProperty.OMIT_NULL_ELEMENT);
+		writePropertyAsCloverAttribute(element, MappingProperty.RAW_VALUE);
 	}
 
 	@Override
@@ -150,6 +151,7 @@ public class MappingWriter implements MappingVisitor {
 		writePropertyAsCloverAttribute(element, MappingProperty.OMIT_NULL_ATTRIBUTE);
 		writePropertyAsCloverAttribute(element, MappingProperty.HIDE);
 		writePropertyAsCloverAttribute(element, MappingProperty.PARTITION);
+		writePropertyAsCloverAttribute(element, MappingProperty.RAW_VALUE);
 		if (element.getWildcardAttribute() != null) {
 			element.getWildcardAttribute().accept(this);
 		}

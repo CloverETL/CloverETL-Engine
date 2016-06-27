@@ -5214,15 +5214,52 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 	}
-	
+	public void test_cast_possible_null_values_CLO5762(){
+		doCompile("test_cast_possible_null_values_CLO5762");
+		
+		final Integer ZERO_AS_INT = Integer.valueOf(0);
+		check("integerResult", ZERO_AS_INT);
+		check("integerCurrent", ZERO_AS_INT);
+		
+		final Long ZERO_AS_LONG = Long.valueOf(0);
+		check("longResult", ZERO_AS_LONG);
+		check("longCurrent", ZERO_AS_LONG);
+		
+		check("unspecifiedResult", ZERO_AS_LONG);
+		check("unspecifiedCurrent", ZERO_AS_LONG);
+		
+		check("unspecifiedResult", ZERO_AS_LONG);
+		
+		final double ZERO_AS_DOUBLE = Double.valueOf(0.0); 
+		check("doubleResult1", ZERO_AS_DOUBLE);
+		check("doubleResult2", ZERO_AS_DOUBLE);
+		check("doubleCurrent1", ZERO_AS_DOUBLE);
+		check("doubleCurrent2", ZERO_AS_DOUBLE);
+
+		check("decimalResult1", new BigDecimal("0.000"));
+		check("decimalResult2", new BigDecimal("1.000"));
+		check("decimalResult3", new BigDecimal("2.000"));
+		check("decimalResult4", new BigDecimal("3.000"));
+		check("decimalResult5", new BigDecimal("4.000"));
+		check("decimalResult6", new BigDecimal("5.000"));
+		check("decimalResult7", new BigDecimal("6.000"));
+		
+		final BigDecimal ZERO_AS_DECIMAL = new BigDecimal(0.0);
+		check("decimalCurrent3", ZERO_AS_DECIMAL);
+		check("decimalCurrent4", ZERO_AS_DECIMAL);
+		check("decimalCurrent5", ZERO_AS_DECIMAL);
+		check("decimalCurrent6", ZERO_AS_DECIMAL);
+		check("decimalCurrent7", ZERO_AS_DECIMAL);		
+	}
 	public void test_sequence(){
 		doCompile("test_sequence");
-		check("intRes", Arrays.asList(0,1,2));
-		check("longRes", Arrays.asList(Long.valueOf(0),Long.valueOf(1),Long.valueOf(2)));
-		check("stringRes", Arrays.asList("0","1","2"));
-		check("intCurrent", Integer.valueOf(2));
-		check("longCurrent", Long.valueOf(2));
-		check("stringCurrent", "2");
+		check("intRes", Arrays.asList(0, 1, 2, 3, 4, 5));
+		check("longRes", Arrays.asList(Long.valueOf(0), Long.valueOf(1), Long.valueOf(2), 
+									   Long.valueOf(3), Long.valueOf(4), Long.valueOf(5)));
+		check("stringRes", Arrays.asList("0", "1", "2", "3", "4", "5"));
+		check("intCurrent", Integer.valueOf(5));
+		check("longCurrent", Long.valueOf(5));
+		check("stringCurrent", "5");
 	}
 	
 	//TODO: If this test fails please double check whether the test is correct?

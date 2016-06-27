@@ -55,6 +55,8 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MiscUtils;
@@ -175,7 +177,7 @@ import org.w3c.dom.Element;
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
  *
  */
-public class MergeJoin extends Node {
+public class MergeJoin extends Node implements MetadataProvider {
 	public enum Join {
 		INNER,
 		LEFT_OUTER,
@@ -203,6 +205,7 @@ public class MergeJoin extends Node {
 	public final static String COMPONENT_TYPE = "MERGE_JOIN";
 
 	private final static int WRITE_TO_PORT = 0;
+	private final static int REJECTED_PORT = 1;
 	private final static int DRIVER_ON_PORT = 0;
 	private final static int FIRST_SLAVE_PORT = 1;
 
@@ -216,7 +219,7 @@ public class MergeJoin extends Node {
 	private RecordTransform transformation = null;
 
 	private DataRecord[] inRecords;
-	private DataRecord[] outRecords;
+	private DataRecord[] outRecords; // outRecords of the transformation, not the whole component
 	
 	private Properties transformationParameters;
 	
@@ -244,6 +247,7 @@ public class MergeJoin extends Node {
 	int minCnt;
 
 	OutputPort outPort;
+	OutputPort rejectedPort;
 	private String joinKeys;
 	
 	@Deprecated
@@ -431,21 +435,39 @@ public class MergeJoin extends Node {
 			}
 		}
 	}
+	
+	/**
+	 * Sends all records from current driver run to reject port.
+	 */
+	private void rejectDriverRun() throws IOException, InterruptedException {
+		DataRecord driver;
+		while ((driver = reader[DRIVER_ON_PORT].next()) != null) {
+			writeRecord(REJECTED_PORT, driver);
+		}
+	}
 
 	@Override
 	public Result execute() throws Exception {
-	    boolean eofBroadcasted = false;
-
-	    while (loadNext() > 0){
-		    // if any input is empty and the inner join is selected, we don't need to read any more data records
+		
+	    while (loadNext() > 0) {
 		    if (anyInputEmpty && join == Join.INNER) {
-		        broadcastEOF();
-		        eofBroadcasted = true;
-
-		        break;
+		    	// some input is empty and inner join is selected -> there cannot be a match anymore
+		    	// now we just need to copy all remaining master records to reject port
+		    	if (rejectedPort == null || !reader[DRIVER_ON_PORT].hasData()) {
+		    		// reject port is not connected or there is no more records on master port -> just finish execution
+		    		break;
+		    	}
+		    	// send remaining master records to reject port until we read it all
+		    	if (minIndicator[DRIVER_ON_PORT]) {
+		    		rejectDriverRun();
+	    		}
+	    		continue;
 		    }
 
 		    if (join == Join.INNER && minCnt != inputCnt) { // not all records for current key available
+		    	if (rejectedPort != null && minIndicator[DRIVER_ON_PORT]) {
+		    		rejectDriverRun();
+		    	}
 				continue;
 			}
 			if (join == Join.LEFT_OUTER && !minIndicator[0]) {	// driver record for current key not available
@@ -469,10 +491,6 @@ public class MergeJoin extends Node {
 				}
 			}
 		}
-
-	    if (!eofBroadcasted) {
-	        broadcastEOF();
-	    }
 
 	    if (errorLog != null){
 			errorLog.flush();
@@ -572,6 +590,7 @@ public class MergeJoin extends Node {
 		inRecords = new DataRecord[inputCnt];
 		outRecords = new DataRecord[]{DataRecordFactory.newRecord(getOutputPort(WRITE_TO_PORT).getMetadata())};
 		outPort = getOutputPort(WRITE_TO_PORT);
+		rejectedPort = getOutputPort(REJECTED_PORT);
 		// init transformation
 		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] {
 				getOutputPort(WRITE_TO_PORT).getMetadata()};
@@ -800,9 +819,27 @@ public class MergeJoin extends Node {
 		super.checkConfig(status);
 		
 		if(!checkInputPorts(status, 2, Integer.MAX_VALUE)
-				|| !checkOutputPorts(status, 1, 1)) {
+				|| !checkOutputPorts(status, 1, 2)) {
 			return status;
 		}
+		
+		if (getOutputPort(REJECTED_PORT) != null) {
+            checkMetadata(status, getInputPort(DRIVER_ON_PORT), getOutputPort(REJECTED_PORT));
+            if (join != Join.INNER) {
+            	String message = "";
+            	switch (join) {
+            		case LEFT_OUTER:
+            			message = "Left outer join";
+            			break;
+            		case FULL_OUTER:
+            			message = "Full outer join";
+            			break;
+            		default:
+            	}
+        		status.add(message + " is selected, no records will be produced on second output port.",
+            			Severity.WARNING, this, Priority.NORMAL, XML_JOINTYPE_ATTRIBUTE);
+        	}
+        }
 		
 		if (charset != null && !Charset.isSupported(charset)) {
 			status.add(new ConfigurationProblem(
@@ -903,6 +940,26 @@ public class MergeJoin extends Node {
 	
 	public void setCharset(String charset) {
 		this.charset = charset;
+	}
+	
+	@Override
+	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		if (portIndex == 0) {
+			if (getOutputPort(1) != null) {
+				return metadataPropagationResolver.findMetadata(getOutputPort(1).getEdge());
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		if (portIndex == 1) {
+			if (getInputPort(0) != null) {
+				return metadataPropagationResolver.findMetadata(getInputPort(0).getEdge());
+			}
+		}
+		return null;
 	}
 
 }

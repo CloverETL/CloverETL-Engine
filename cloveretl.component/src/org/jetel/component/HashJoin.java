@@ -41,15 +41,17 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.TransformException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.TransformException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.graph.runtime.CloverWorker;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ExceptionUtils;
@@ -188,7 +190,7 @@ import org.w3c.dom.Element;
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
  *
  */
-public class HashJoin extends Node {
+public class HashJoin extends Node implements MetadataProvider {
 	public enum Join {
 		INNER, LEFT_OUTER, FULL_OUTER,
 	}
@@ -213,6 +215,7 @@ public class HashJoin extends Node {
 	private final static int DEFAULT_HASH_TABLE_INITIAL_CAPACITY = 512;
 
 	private final static int WRITE_TO_PORT = 0;
+	private final static int REJECTED_PORT = 1;
 	private final static int DRIVER_ON_PORT = 0;
 	private final static int FIRST_SLAVE_PORT = 1;
 
@@ -245,8 +248,9 @@ public class HashJoin extends Node {
 
 	private InputPort driverPort;
 	private OutputPort outPort;
+	private OutputPort rejectedPort;
 	DataRecord[] inRecords;
-	DataRecord[] outRecords;
+	DataRecord[] outRecords; // outRecords of the transformation, not the whole component
 	private String joinKey;
 	private String slaveOverrideKey;
 
@@ -336,6 +340,7 @@ public class HashJoin extends Node {
 
 		driverPort = getInputPort(DRIVER_ON_PORT);
 		outPort = getOutputPort(WRITE_TO_PORT);
+		rejectedPort = getOutputPort(REJECTED_PORT);
 
 		slaveCnt = inPorts.size() - FIRST_SLAVE_PORT;
 		if (driverJoiners == null) {// need to parse join key
@@ -432,7 +437,7 @@ public class HashJoin extends Node {
     	transformFactory.setCharset(charset);
     	transformFactory.setComponent(this);
     	transformFactory.setInMetadata(getInMetadata());
-    	transformFactory.setOutMetadata(getOutMetadata());
+    	transformFactory.setOutMetadata(new DataRecordMetadata[] {getOutputPort(WRITE_TO_PORT).getMetadata()});
     	return transformFactory;
 	}
 	
@@ -588,6 +593,9 @@ public class HashJoin extends Node {
 				}
 			}
 			if (slaveIdx < slaveCnt) { // missing slaves
+				if (rejectedPort != null) {
+					rejectedPort.writeRecord(driverRecord);
+				}
 				continue; // read next driver
 			}
 
@@ -631,6 +639,9 @@ public class HashJoin extends Node {
 				}
 			}
 			if (slaveIdx < slaveCnt) { // missing slaves
+				if (rejectedPort != null) {
+					rejectedPort.writeRecord(driverRecord);
+				}
 				continue; // read next driver
 			}
 
@@ -865,9 +876,27 @@ public class HashJoin extends Node {
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 
-		if (!checkInputPorts(status, 2, Integer.MAX_VALUE) || !checkOutputPorts(status, 1, 1)) {
+		if (!checkInputPorts(status, 2, Integer.MAX_VALUE) || !checkOutputPorts(status, 1, 2)) {
 			return status;
 		}
+		
+		if (getOutputPort(REJECTED_PORT) != null) {
+            checkMetadata(status, getInputPort(DRIVER_ON_PORT), getOutputPort(REJECTED_PORT));
+            if (join != Join.INNER) {
+            	String message = "";
+            	switch (join) {
+            		case LEFT_OUTER:
+            			message = "Left outer join";
+            			break;
+            		case FULL_OUTER:
+            			message = "Full outer join";
+            			break;
+            		default:
+            	}
+        		status.add(message + " is selected, no records will be produced on second output port.",
+            			Severity.WARNING, this, Priority.NORMAL, XML_JOINTYPE_ATTRIBUTE);
+        	}
+        }
 
 		if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
@@ -1032,5 +1061,25 @@ public class HashJoin extends Node {
 
 	public void setSlaveOverrideKey(String slaveOverrideKey) {
 		this.slaveOverrideKey = slaveOverrideKey;
+	}
+	
+	@Override
+	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		if (portIndex == 0) {
+			if (getOutputPort(1) != null) {
+				return metadataPropagationResolver.findMetadata(getOutputPort(1).getEdge());
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		if (portIndex == 1) {
+			if (getInputPort(0) != null) {
+				return metadataPropagationResolver.findMetadata(getInputPort(0).getEdge());
+			}
+		}
+		return null;
 	}
 }

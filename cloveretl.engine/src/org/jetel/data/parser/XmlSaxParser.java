@@ -18,11 +18,7 @@
  */
 package org.jetel.data.parser;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
@@ -30,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -158,6 +155,9 @@ public class XmlSaxParser {
 	protected SAXHandler saxHandler;
 
 	private NodeList mappingNodes;
+	
+	//holds records and fields that are already filled in the current record
+	private HashMap<DataRecord, ArrayList<DataField>> mappedFields = new HashMap<>(); 
 
 	public XmlSaxParser(TransformationGraph graph, Node parentComponent) {
 		this(graph, parentComponent,(String)null);
@@ -226,7 +226,7 @@ public class XmlSaxParser {
 				throw new ComponentNotReadyException(ex);
 			}
 		}
-		saxHandler = new SAXHandler(getXmlElementMappingValues());
+		saxHandler = new SAXHandler();
 		try {
 			// this is required to handle events for CDATA sections, processing instructions and entities
 			parser.setProperty("http://xml.org/sax/properties/lexical-handler", saxHandler);
@@ -433,8 +433,6 @@ public class XmlSaxParser {
 		// the active mapping
 		private XMLElementRuntimeMappingModel m_activeMapping = null;
 
-		private Set<String> cloverAttributes;
-
 		/**
 		 * This is needed to know whether to escape entities in output characters or not. Entities in CDATA should not
 		 * be escaped while entities in attribute values or characters should be escaped.
@@ -447,12 +445,8 @@ public class XmlSaxParser {
 		 */
 		private boolean m_element_as_text = false;
 
-		/**
-		 * @param cloverAttributes
-		 */
-		public SAXHandler(Set<String> cloverAttributes) {
+		public SAXHandler() {
 			super();
-			this.cloverAttributes = cloverAttributes;
 		}
 
 		/**
@@ -729,12 +723,14 @@ public class XmlSaxParser {
 					if (m_activeMapping.getOutputRecord() != null && m_activeMapping.getOutputRecord().hasField(fieldName)) {
 						String val = attributes.getValue(i);
 						DataField field = m_activeMapping.getOutputRecord().getField(fieldName);
-                    	// CLO-5793: XMLExtract - mapping of element content breaks functionality of empty string as value of empty element
-                    	if (field.getMetadata().getDataType() == DataFieldType.STRING) {
-                    		field.setValue(trim ? val.trim() : val);
-                    	} else {
-                    		field.fromString(trim ? val.trim() : val);
-                    	}
+						if (isNotMappedTo(m_activeMapping.getOutputRecord(), field)) {
+							// CLO-5793: XMLExtract - mapping of element content breaks functionality of empty string as value of empty element
+							if (field.getMetadata().getDataType() == DataFieldType.STRING) {
+								field.setValue(trim ? val.trim() : val);
+							} else {
+								field.fromString(trim ? val.trim() : val);
+							}
+						}
 					}
 				}
 			}
@@ -999,6 +995,11 @@ public class XmlSaxParser {
 							m_activeMapping.setCharactersProcessed(false);
 							// reset record
 							outRecord.reset();
+							//new record - clear info about mapped fields
+							Entry<DataRecord, ArrayList<DataField>> entry = getEntryFromMappedFields(outRecord);
+							if (entry != null) {
+								entry.getValue().clear();
+							}
 						}
 
 						m_activeMapping = m_activeMapping.getParent();
@@ -1256,7 +1257,7 @@ public class XmlSaxParser {
 						}											
 					} 
 					//CLO-7984 - don't implicitly map element content
-					if (fieldName == null && m_activeMapping.isImplicit() &&
+					if (fieldName == null && m_activeMapping.isImplicit() && !key.equals(XMLMappingConstants.ELEMENT_AS_TEXT) && !key.equals(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT) &&
 					!((m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT) || m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_AS_TEXT)) &&
 					   m_activeMapping.getElementName().equals(universalName) && m_activeMapping.getLevel() == m_level)) {
 						/*
@@ -1305,8 +1306,8 @@ public class XmlSaxParser {
                     try {
                     	String currentValue = getCurrentValue(startIndex, endIndex, excludeCDataTag);
                     	
-                    	// write the value - if the field value is not already set or if it is set because of implicit mapping (I am not really sure about the second condition, but it was already there...)
-                    	if ((field.getValue() == null || !cloverAttributes.contains(fieldName)) && field.getMetadata().getContainerType() == DataFieldContainerType.SINGLE) {
+                    	// write the value - if the field value is not already set
+                    	if (isNotMappedTo(m_activeMapping.getOutputRecord(), field) && field.getMetadata().getContainerType() == DataFieldContainerType.SINGLE) {
     						setFieldValue(field, currentValue);
     					} else if (field.getMetadata().getContainerType() == DataFieldContainerType.LIST) {
     						DataField myField = ((ListDataField) field).addField();
@@ -1351,6 +1352,52 @@ public class XmlSaxParser {
     	} else {
     		field.fromString(currentValue);
     	}
+	}
+	
+	/**
+	 * checks if this field has already been mapped to (i.e. if its value is already set)
+	 */
+	private boolean isNotMappedTo(DataRecord record, DataField field) {
+		boolean notMapped = true;
+		Entry<DataRecord, ArrayList<DataField>> entry = getEntryFromMappedFields(record);
+		ArrayList<DataField> fieldList = null;
+		
+		if (entry != null) {
+			fieldList = entry.getValue();
+		} else {
+			fieldList = new ArrayList<>();
+			mappedFields.put(record, fieldList);
+		}
+		
+		Iterator<DataField> fieldListItererator = fieldList.iterator();
+		while (fieldListItererator.hasNext()) {
+			if (fieldListItererator.next() == field) {
+				notMapped = false;
+				break;
+			}
+		}
+		
+		if (notMapped) {
+			fieldList.add(field);
+		}
+		
+		return notMapped;
+	}
+	
+	private Entry<DataRecord, ArrayList<DataField>> getEntryFromMappedFields(DataRecord record) {
+		Iterator<Entry<DataRecord, ArrayList<DataField>>> entrySetIterator = mappedFields.entrySet().iterator();
+		Entry<DataRecord, ArrayList<DataField>> entry = null;
+		
+		while (entrySetIterator.hasNext()) {
+			entry = entrySetIterator.next();
+			if (entry.getKey() == record) {
+				break;
+			} else {
+				entry = null;
+			}
+		}
+		
+		return entry;
 	}
 
 	/**
@@ -1436,27 +1483,6 @@ public class XmlSaxParser {
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(e);
 		}
-	}
-
-	private Set<String> getXmlElementMappingValues() {
-		try {
-			SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
-			DefaultHandler handler = new MyHandler();
-			InputStream is = null;
-			if (this.mappingURL != null) {
-				String filePath = FileUtils.getFile(graph.getRuntimeContext().getContextURL(), mappingURL);
-				is = new FileInputStream(new File(filePath));
-			} else if (this.mapping != null) {
-				is = new ByteArrayInputStream(mapping.getBytes("UTF-8"));
-			}
-			if (is != null) {
-				saxParser.parse(is, handler);
-				return ((MyHandler) handler).getCloverAttributes();
-			}
-		} catch (Exception e) {
-			return new HashSet<String>();
-		}
-		return new HashSet<String>();
 	}
 
 	/**

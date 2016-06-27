@@ -153,6 +153,7 @@ public class DataWriter extends Node {
     static Log logger = LogFactory.getLog(DataWriter.class);
 
 	public final static String COMPONENT_TYPE = "DATA_WRITER";
+	public final static String COMPONENT_TYPE_NEW = "FLAT_FILE_WRITER";
 	private final static int READ_FROM_PORT = 0;
 	private final static int OUTPUT_PORT = 0;
 	

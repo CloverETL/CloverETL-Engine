@@ -40,3 +40,14 @@ mapred/snappy-java-1.0.4.1.jar
 
 yarn/hadoop-yarn-common-2.0.0-cdh4.1.2.jar
 yarn/hadoop-yarn-api-2.0.0-cdh4.1.2.jar
+
+The Hive libraries are located in "/usr/lib/hive/lib" in your CDH installation.
+
+hive/hive-jdbc-0.8.1.jar
+hive/hadoop-core-0.20.205.jar
+hive/hive-exec-0.8.1.jar
+hive/hive-metastore-0.8.1.jar
+hive/hive-service-0.8.1.jar
+hive/libfb303-0.7.0.jar
+hive/slf4j-api-1.6.1.jar
+hive/slf4j-log4j12-1.6.1.jar

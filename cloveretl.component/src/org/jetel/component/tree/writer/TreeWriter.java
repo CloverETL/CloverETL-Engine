@@ -37,6 +37,8 @@ public interface TreeWriter {
 	
 	void writeLeaf(Object value, String dataType, WriteNullElement writeNullElement) throws JetelException;
 
+	void writeLeaf(Object value, String dataType, WriteNullElement writeNullElement, boolean rawValue) throws JetelException;
+
 	void writeEndNode(char[] name, WriteNullElement writeNullElement) throws JetelException;
 
 	void writeEndTree() throws JetelException;

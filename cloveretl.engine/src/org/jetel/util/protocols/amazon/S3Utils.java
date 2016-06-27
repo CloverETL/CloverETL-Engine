@@ -18,15 +18,21 @@
  */
 package org.jetel.util.protocols.amazon;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
 import org.jetel.util.ExceptionUtils;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -82,13 +88,25 @@ public class S3Utils {
 		return sse;
 	}
 
+	/**
+	 * CLO-8589: set content length to 0 to prevent a warning being logged.
+	 * 
+	 * @param service
+	 * @param bucketName
+	 * @param key
+	 */
+	public static void createEmptyObject(AmazonS3 service, String bucketName, String key) {
+		ObjectMetadata metadata = createPutObjectMetadata();
+		metadata.setContentLength(0);
+		service.putObject(bucketName, key, new ByteArrayInputStream(new byte[0]), metadata);
+	}
+	
 	public static void uploadFile(TransferManager tm, File file, String targetBucket, String targetKey) throws IOException {
 		Upload upload = null;
 		try {
 			PutObjectRequest request = new PutObjectRequest(targetBucket, targetKey, file);
 			if (isSSE()) {
-				ObjectMetadata metadata = new ObjectMetadata();
-				metadata.setSSEAlgorithm(ObjectMetadata.AES_256_SERVER_SIDE_ENCRYPTION);
+				ObjectMetadata metadata = createPutObjectMetadata();
 				request.withMetadata(metadata);
 			}
 			upload = tm.upload(request);
@@ -114,12 +132,44 @@ public class S3Utils {
 		}
 	}
 
+	/**
+	 * CLO-7293:
+	 * 
+	 * Creates new {@link ObjectMetadata}, sets SSE algorithm, if configured.
+	 * 
+	 * @return new {@link ObjectMetadata}
+	 */
+	private static ObjectMetadata createPutObjectMetadata() {
+		ObjectMetadata metadata = new ObjectMetadata();
+		metadata.setSSEAlgorithm(ObjectMetadata.AES_256_SERVER_SIDE_ENCRYPTION);
+		return metadata;
+	}
+
 	public static ListObjectsRequest listObjectRequest(String bucketName, String prefix, String delimiter) {
 		return new ListObjectsRequest(bucketName, prefix, null, delimiter, Integer.MAX_VALUE);
 	}
 	
 	public static IOException getIOException(Throwable t) {
-		// special handling of AmazonServiceException is no longer needed
+		if (t instanceof AmazonS3Exception) {
+			AmazonS3Exception e = (AmazonS3Exception) t;
+			Map<String, String> details = e.getAdditionalDetails();
+			if (details != null) {
+				String bucket = details.get("Bucket");
+				String endpoint = details.get("Endpoint");
+				// if selected endpoint does not match bucket location
+				if ((e.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY)
+						&& !StringUtils.isEmpty(bucket)
+						&& !StringUtils.isEmpty(endpoint)) {
+					if (endpoint.startsWith(bucket + ".")) {
+						endpoint = endpoint.substring(bucket.length() + 1);
+					}
+					t = new IOException(String.format("The bucket '%s' you are attempting to access must be addressed using the specified endpoint: '%s'.", bucket, endpoint), e);
+				} else if (!details.isEmpty()) { // otherwise just append more details
+					String message = e.getErrorMessage();
+					e.setErrorMessage(message + "\nDetails: " + details);
+				}
+			}
+		}
 		return ExceptionUtils.getIOException(t);
 	}
 	

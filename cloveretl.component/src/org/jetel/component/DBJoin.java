@@ -52,6 +52,8 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.lookup.DBLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ExceptionUtils;
@@ -146,7 +148,7 @@ import org.w3c.dom.Element;
  *
  *	@created October 10, 2006
  */
-public class DBJoin extends Node {
+public class DBJoin extends Node implements MetadataProvider {
 
     public static final String XML_SQL_QUERY_ATTRIBUTE = "sqlQuery"; //$NON-NLS-1$
     public static final String XML_URL_ATTRIBUTE = "url"; //$NON-NLS-1$
@@ -337,6 +339,10 @@ public class DBJoin extends Node {
         
         if (getOutputPort(REJECTED_PORT) != null) {
         	checkMetadata(status, getInputPort(READ_FROM_PORT), getOutputPort(REJECTED_PORT));
+        	if (leftOuterJoin) {
+        		status.add("Left outer join is selected, no records will be produced on second output port.",
+            			Severity.WARNING, this, Priority.NORMAL, XML_LEFTOUTERJOIN_ATTRIBUTE);
+        	}
         }
         
         if (charset != null && !Charset.isSupported(charset)) {
@@ -650,6 +656,26 @@ public class DBJoin extends Node {
 
 	public void setCharset(String charset) {
 		this.charset = charset;
+	}
+	
+	@Override
+	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		if (portIndex == 0) {
+			if (getOutputPort(1) != null) {
+				return metadataPropagationResolver.findMetadata(getOutputPort(1).getEdge());
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		if (portIndex == 1) {
+			if (getInputPort(0) != null) {
+				return metadataPropagationResolver.findMetadata(getInputPort(0).getEdge());
+			}
+		}
+		return null;
 	}
 
 	
