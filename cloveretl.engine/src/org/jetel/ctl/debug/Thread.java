@@ -20,8 +20,12 @@ package org.jetel.ctl.debug;
 
 import java.io.Serializable;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * This unit represents a thread in which a CTL code is being executed.
+ * 
+ * Note: this class has a natural ordering that is inconsistent with equals.
  * 
  * @author jan.michalica (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -74,6 +78,7 @@ public class Thread implements Serializable, Comparable<Thread> {
 	}
 	
 	@Override
+	@SuppressFBWarnings("EQ_COMPARETO_USE_OBJECT_EQUALS")
 	public int compareTo(Thread t) {
 		if (name == null) {
 			return t.name == null ? 0 : -1;

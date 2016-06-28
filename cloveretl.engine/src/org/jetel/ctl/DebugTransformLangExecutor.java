@@ -18,16 +18,12 @@
  */
 package org.jetel.ctl;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Properties;
-import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
@@ -81,7 +77,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	private String prevSourceId = null;
 	private BlockingQueue<DebugCommand> commandQueue;
 	private BlockingQueue<DebugStatus> statusQueue;
-	private PrintStream debug_print;
 	private DebugJMX debugJMX;
 	private Breakpoint curpoint;
 	private volatile RunToMark runToMark;
@@ -110,33 +105,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	
 	public DebugTransformLangExecutor(TransformLangParser parser, TransformationGraph graph) {
 		this(parser, graph, null);
-	}
-	
-	/**
-	 * @param node
-	 */
-	protected void printSourceLine(SimpleNode node) {
-		int curline = node.getLine();
-		Scanner scanner=null;
-		if (node.sourceFilename!=null){
-			try {
-				scanner = new Scanner(new File(node.getSourceFilename()));
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}else{
-			scanner = new Scanner(this.parser.getSource());
-		}
-		int index=0;
-		while(scanner.hasNextLine()){
-			String line=scanner.nextLine();
-			index++;
-			if (index==curline){
-				debug_print.println(line);
-			}
-		}
-		scanner.close();
 	}
 	
 	public void suspend() {
@@ -741,16 +709,19 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 				}
 					break;
 				}
-				try {
-					this.statusQueue.put(status);
-				} catch (InterruptedException e) {
-					logger.info("Debug interrupted in " + ctlThread);
-					throw new JetelRuntimeException("Interrupted while putting debug command result.");
+				if (status != null) {
+					try {
+						this.statusQueue.put(status);
+					} catch (InterruptedException e) {
+						logger.info("Debug interrupted in " + ctlThread);
+						throw new JetelRuntimeException("Interrupted while putting debug command result.");
+					}
 				}
 			}
 		}
 	}
 	
+	@SuppressFBWarnings("BC_UNCONFIRMED_CAST")
 	private DebugStack getStack() {
 		return (DebugStack)stack;
 	}

@@ -23,6 +23,8 @@ import java.io.Serializable;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.ctl.debug.DebugCommand.CommandType;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 public class DebugStatus implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
@@ -30,6 +32,7 @@ public class DebugStatus implements Serializable {
 	protected int line;
 	protected String sourceFilename;
 	protected boolean suspended;
+	@SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
 	protected transient SimpleNode node;
 	protected String message;
 	protected Object value;

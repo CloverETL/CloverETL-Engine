@@ -613,26 +613,10 @@ public class Dedup extends Node {
     }
 
     /**
-     * Tries to write given record to the rejected port, if is connected.
-     */
-	private void writeRejectedRecord(CloverBuffer record) throws IOException, InterruptedException {
-		if (rejectedPort != null) {
-			rejectedPort.writeRecordDirect(record);
-		}
-	}
-
-    /**
      * Writes given record to the out port.
      */
     private void writeOutRecord(DataRecord record) throws IOException, InterruptedException {
         outPort.writeRecord(record);
-    }
-
-    /**
-     * Writes given record to the out port.
-     */
-    private void writeOutRecord(CloverBuffer record) throws IOException, InterruptedException {
-        outPort.writeRecordDirect(record);
     }
 
 	/**
