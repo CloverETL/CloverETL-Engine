@@ -25,6 +25,7 @@ import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTimeZone;
+import org.threeten.bp.ZoneId;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -39,11 +40,14 @@ public class TimeZoneProvider implements Serializable {
 	
 	public static final String JODA_PREFIX = "joda:";
 	public static final String JAVA_PREFIX = "java:";
+	public static final String JAVA8_PREFIX = "java8:";
 	private static final String ISO8601_PREFIX = "iso-8601:";
 
 	private final TimeZone javaTimeZone;
 	
 	private final DateTimeZone jodaTimeZone;
+	
+	private final ZoneId java8TimeZone;
 	
 	private final String config;
 	
@@ -69,6 +73,7 @@ public class TimeZoneProvider implements Serializable {
 		
 		DateTimeZone joda = null;
 		TimeZone java = null;
+		ZoneId java8 = null;
 		String[] parts = StringUtils.split(timeZoneStr, ";");
 		if (parts != null) {
 			for (String id: parts) {
@@ -82,6 +87,8 @@ public class TimeZoneProvider implements Serializable {
 					joda = DateTimeZone.forID(id.substring(JODA_PREFIX.length()));
 				} else if (id.startsWith(ISO8601_PREFIX)) {
 					joda = DateTimeZone.forID(id.substring(ISO8601_PREFIX.length()));
+				} else if (id.startsWith(JAVA8_PREFIX)) {
+					java8= ZoneId.of(id.substring(JAVA8_PREFIX.length()));
 				} else {
 					if (id.startsWith(JAVA_PREFIX)) {
 						id = id.substring(JAVA_PREFIX.length());
@@ -92,6 +99,7 @@ public class TimeZoneProvider implements Serializable {
 		}
 		this.javaTimeZone = java;
 		this.jodaTimeZone = joda;
+		this.java8TimeZone = java8;
 	}
 	
 	/**
@@ -114,6 +122,16 @@ public class TimeZoneProvider implements Serializable {
 		return jodaTimeZone;
 	}
 
+	/**
+	 * @return the java8TimeZone
+	 */
+	public ZoneId getJava8TimeZone() {
+		if (java8TimeZone == null) {
+			throw new TimeZoneUndefinedException("No \"java8:\" time zone has been set: " + config);
+		}
+		return java8TimeZone;
+	}
+
 	@Override
 	public String toString() {
 		return config;
@@ -134,7 +152,15 @@ public class TimeZoneProvider implements Serializable {
 	public boolean hasJodaTimeZone() {
 		return this.jodaTimeZone != null;
 	}
-	
+
+	/**
+	 * Returns true it timezone string contained at least on Java8 timezone.
+	 * @return
+	 */
+	public boolean hasJava8TimeZone() {
+		return this.java8TimeZone != null;
+	}
+
 	/**
 	 * A subclass of {@link IllegalArgumentException},
 	 * so that the specific exception can be caught during validation.

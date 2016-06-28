@@ -89,6 +89,8 @@ public abstract class DataFieldFactory {
 						return new StringDataField(fieldMetadata,plain);
 					case DATE:
 						return new DateDataField(fieldMetadata,plain);
+					case NANODATE:
+						return new NanoDateDataField(fieldMetadata);
 					case NUMBER:
 						return new NumericDataField(fieldMetadata,plain);
 					case DECIMAL:

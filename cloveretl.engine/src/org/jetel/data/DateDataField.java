@@ -27,6 +27,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.HashCodeUtil;
 import org.jetel.util.bytes.CloverBuffer;
+import org.jetel.util.date.NanoDate;
 import org.jetel.util.formatter.DateFormatter;
 import org.jetel.util.formatter.DateFormatterFactory;
 import org.jetel.util.string.Compare;
@@ -236,6 +237,12 @@ public class DateDataField extends DataFieldImpl implements Comparable<Object> {
 		return isNull ? null : value;
 	}
 
+	/**
+	 * @return {@link NanoDate} representation of this date field
+	 */
+	public NanoDate getNanoDate() {
+		return isNull ? null : NanoDate.from(value);
+	}
 
 	/**
 	 *  Sets the Null value indicator
@@ -427,10 +434,7 @@ public class DateDataField extends DataFieldImpl implements Comparable<Object> {
 	}
 	
 	/**
-	 *  Gets the size attribute of the IntegerDataField object
-	 *
-	 * @return    The size value
-	 * @see	      org.jetel.data.DataField
+	 *  Gets the size attribute of the DateDataField object
 	 */
 	@Override
 	public int getSizeSerialized() {

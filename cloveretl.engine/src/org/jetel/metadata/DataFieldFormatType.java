@@ -30,6 +30,7 @@ import org.jetel.util.string.StringUtils;
 @CloverPublicAPI
 public enum DataFieldFormatType {
 	JAVA("java", "Default system date/time/number format"),
+	JAVA8("java8", "Java8 date/time format"),
 	JODA("joda", "Joda date/time format"),
 	ISO_8601("iso-8601", "ISO-8601 date/time format"),
 	EXCEL("excel", "Excel number/date/time format"),

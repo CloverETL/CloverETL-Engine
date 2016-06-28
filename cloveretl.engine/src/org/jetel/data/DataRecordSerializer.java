@@ -43,6 +43,7 @@ public interface DataRecordSerializer {
 		public abstract void serialize(CloverBuffer buffer, DecimalDataField field);
 		public abstract void serialize(CloverBuffer buffer, BooleanDataField field);
 		public abstract void serialize(CloverBuffer buffer, DateDataField field);
+		public abstract void serialize(CloverBuffer buffer, NanoDateDataField field);
 		public abstract void serialize(CloverBuffer buffer, ByteDataField field);
 		public abstract void serialize(CloverBuffer buffer, CompressedByteDataField field);
 		public abstract void serialize(CloverBuffer buffer, ListDataField field);
@@ -55,6 +56,7 @@ public interface DataRecordSerializer {
 		public abstract void deserialize(CloverBuffer buffer, DecimalDataField field);
 		public abstract void deserialize(CloverBuffer buffer, BooleanDataField field);
 		public abstract void deserialize(CloverBuffer buffer, DateDataField field);
+		public abstract void deserialize(CloverBuffer buffer, NanoDateDataField field);
 		public abstract void deserialize(CloverBuffer buffer, ByteDataField field);
 		public abstract void deserialize(CloverBuffer buffer, CompressedByteDataField field);
 		public abstract void deserialize(CloverBuffer buffer, ListDataField field);

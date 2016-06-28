@@ -648,7 +648,7 @@ public class DataFieldMetadata implements Serializable {
 				return dataRecordMetadata.getNumberFormatStr();
 			}
 
-			if (type == DataFieldType.DATE || type == DataFieldType.DATETIME) {
+			if (type == DataFieldType.DATE || type == DataFieldType.NANODATE || type == DataFieldType.DATETIME) {
 				return dataRecordMetadata.getDateFormatStr();
 			}
 		}
@@ -1484,6 +1484,17 @@ public class DataFieldMetadata implements Serializable {
 	 */
 	@Deprecated
 	public static final String DATE_TYPE = "date";
+
+	/**
+	 * @deprecated use {@link DataFieldType#NANODATE} instead
+	 */
+	@Deprecated
+	public static final char NANODATE_FIELD = 'Y';
+	/**
+	 * @deprecated use {@link DataFieldType#NANODATE} instead
+	 */
+	@Deprecated
+	public static final String NANODATE_TYPE = "nanodate";
 
 	/**
 	 * @deprecated use {@link DataFieldType#DATE} instead

@@ -24,6 +24,7 @@ import org.jetel.data.DataField;
 import org.jetel.data.StringDataField;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.util.CloverPublicAPI;
+import org.jetel.util.date.NanoDate;
 import org.jetel.util.string.CloverString;
 
 /**
@@ -60,6 +61,7 @@ public enum DataFieldType {
 			case CBYTE:
 			case STRING:
 			case DATE:
+			case NANODATE:
 			case DATETIME:
 				return true;
 			default:
@@ -68,7 +70,22 @@ public enum DataFieldType {
 		}
 	},
 
-	NUMBER("number", (byte) 2, Double.class, true, true,'N') {
+	NANODATE("nanodate", (byte) 9, NanoDate.class, false, true, 'Y') {
+		@Override
+		public boolean isSubtype(DataFieldType otherType) {
+			switch (otherType) {
+			case BYTE:
+			case CBYTE:
+			case STRING:
+			case NANODATE:
+				return true;
+			default:
+				return false;
+			}
+		}
+	},
+
+	NUMBER("number", (byte) 2, Double.class, true, true, 'N') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {

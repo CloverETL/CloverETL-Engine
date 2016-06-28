@@ -108,6 +108,12 @@ public class CloverDataRecordSerializer implements DataRecordSerializer {
 	}
 
 	@Override
+	public void serialize(CloverBuffer buffer, NanoDateDataField field) {
+		field.serialize(buffer);
+
+	}
+
+	@Override
 	public void serialize(CloverBuffer buffer, ByteDataField field) {
 		field.serialize(buffer);
 
@@ -168,6 +174,12 @@ public class CloverDataRecordSerializer implements DataRecordSerializer {
 
 	@Override
 	public void deserialize(CloverBuffer buffer, DateDataField field) {
+		field.deserialize(buffer);
+		
+	}
+
+	@Override
+	public void deserialize(CloverBuffer buffer, NanoDateDataField field) {
 		field.deserialize(buffer);
 		
 	}

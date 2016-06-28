@@ -52,5 +52,6 @@
 	<classpathentry kind="lib" path="lib/jackson-databind-2.5.3.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-core-2.5.3.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-annotations-2.5.3.jar"/>
+	<classpathentry kind="lib" path="lib/threetenbp-1.3.1.jar" sourcepath="lib.src/threetenbp-1.3.1-sources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
