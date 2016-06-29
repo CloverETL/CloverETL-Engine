@@ -30,7 +30,6 @@ public class DebugStatus implements Serializable {
 	protected int line;
 	protected String sourceFilename;
 	protected boolean suspended;
-	protected transient SimpleNode node;
 	protected String message;
 	protected Object value;
 	protected CommandType forCommand;
@@ -39,7 +38,6 @@ public class DebugStatus implements Serializable {
 
 	public DebugStatus(SimpleNode node, CommandType forCommand) {
 		this.line = node.getLine();
-		this.node = node;
 		this.sourceFilename = node.sourceFilename;
 		suspended = true;
 		value = null;
@@ -102,14 +100,6 @@ public class DebugStatus implements Serializable {
 
 	public void setSuspended(boolean suspended) {
 		this.suspended = suspended;
-	}
-
-	public SimpleNode getNode() {
-		return node;
-	}
-
-	public void setNode(SimpleNode node) {
-		this.node = node;
 	}
 
 	@Override

@@ -84,7 +84,7 @@ public class CLVFImportSource extends SimpleNode {
 
 	@Override
 	public void dump(PrintWriter out, String prefix) {
-		out.format("%02d:%s:%s\n",getLine(),sourceToImport,toString(prefix));
+		out.format("%02d:%s:%s%n",getLine(),sourceToImport,toString(prefix));
 		if (children != null) {
 			for (int i = 0; i < children.length; ++i) {
 				SimpleNode n = (SimpleNode) children[i];
