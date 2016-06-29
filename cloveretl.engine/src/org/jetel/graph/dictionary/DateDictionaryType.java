@@ -106,7 +106,7 @@ public class DateDictionaryType extends DictionaryType {
 
 	@Override
 	public TLType getTLType() {
-		return TLTypePrimitive.DATETIME;
+		return TLTypePrimitive.DATE;
 	}
 	
 	@Override

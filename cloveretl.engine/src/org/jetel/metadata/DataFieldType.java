@@ -21,10 +21,10 @@ package org.jetel.metadata;
 import java.util.Date;
 
 import org.jetel.data.DataField;
+import org.jetel.data.NanoDate;
 import org.jetel.data.StringDataField;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.util.CloverPublicAPI;
-import org.jetel.util.date.NanoDate;
 import org.jetel.util.string.CloverString;
 
 /**

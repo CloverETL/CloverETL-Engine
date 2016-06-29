@@ -111,11 +111,11 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 			break;
 		case DATE_LITERAL:
 			valueObj = parser.parseDate(valueImage);
-			setType(TLTypePrimitive.DATETIME);
+			setType(TLTypePrimitive.DATE);
 			break;
 		case DATETIME_LITERAL:
 			valueObj = parser.parseDateTime(valueImage);
-			setType(TLTypePrimitive.DATETIME);
+			setType(TLTypePrimitive.DATE);
 			break;
 		case NULL_LITERAL:
 			valueObj = null;

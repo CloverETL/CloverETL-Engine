@@ -33,7 +33,7 @@ package org.jetel.ctl.data;
  */
 public enum TLTypeEnum {
 	
-	STRING, INT, LONG, DOUBLE, DECIMAL, DATE, BYTEARRAY, BOOLEAN, MAP, LIST, RECORD, UNKNOWN;
+	STRING, INT, LONG, DOUBLE, DECIMAL, DATE, NANODATE, BYTEARRAY, BOOLEAN, MAP, LIST, RECORD, UNKNOWN;
 	
 	public static TLTypeEnum convertParamType(TLType type) {
 		if (type.isString()) {
@@ -50,6 +50,8 @@ public enum TLTypeEnum {
 			return BYTEARRAY;
 		} else if (type.isDate()) {
 			return DATE;
+		} else if (type.isNanoDate()) {
+			return NANODATE;
 		} else if (type.isBoolean()) {
 			return BOOLEAN;
 		} else if (type.isMap()) {

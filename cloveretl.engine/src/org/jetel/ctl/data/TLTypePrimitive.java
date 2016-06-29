@@ -31,7 +31,8 @@ public abstract class TLTypePrimitive extends TLType {
 	public static final TLTypeLong LONG = new TLTypeLong();
 	public static final TLTypeString STRING = new TLTypeString();
 	public static final TLTypeBoolean BOOLEAN = new TLTypeBoolean();
-	public static final TLTypeDateTime DATETIME = new TLTypeDateTime();
+	public static final TLTypeDate DATE = new TLTypeDate();
+	public static final TLTypeNanoDate NANODATE = new TLTypeNanoDate();
 	public static final TLTypeDouble DOUBLE = new TLTypeDouble();
 	public static final TLTypeDecimal DECIMAL = new TLTypeDecimal();
 	
@@ -177,8 +178,8 @@ public abstract class TLTypePrimitive extends TLType {
 		}
 	}
 
-	public static final class TLTypeDateTime extends TLTypePrimitive {
-		private TLTypeDateTime() {
+	public static final class TLTypeDate extends TLTypePrimitive {
+		private TLTypeDate() {
 
 		}
 
@@ -198,6 +199,43 @@ public abstract class TLTypePrimitive extends TLType {
 				return this;
 			}
 			
+			if (otherType.isNanoDate()) {
+				return otherType;
+			}
+			
+			if (otherType.isObject()) {
+				return otherType;
+			}
+			
+			if (otherType.isNull()) {
+				return this;
+			}
+			
+			return TLType.ERROR;
+		}
+	}
+
+	public static final class TLTypeNanoDate extends TLTypePrimitive {
+		private TLTypeNanoDate() {
+
+		}
+
+		@Override
+		public String name() {
+			return "nanodate";
+		}
+
+		@Override
+		public boolean isNumeric() {
+			return false;
+		}
+		
+		@Override
+		public TLType promoteWith(TLType otherType) {
+			if (otherType.isDate() || otherType.isNanoDate()) {
+				return this;
+			}
+
 			if (otherType.isObject()) {
 				return otherType;
 			}
@@ -297,7 +335,9 @@ public abstract class TLTypePrimitive extends TLType {
 				case DECIMAL:
 					return TLType.createList(DECIMAL);
 				case DATE:
-					return TLType.createList(DATETIME);
+					return TLType.createList(DATE);
+				case NANODATE:
+					return TLType.createList(NANODATE);
 				case BYTE:
 				case CBYTE:
 					return TLType.createList(BYTEARRAY);
@@ -319,7 +359,9 @@ public abstract class TLTypePrimitive extends TLType {
 				case DECIMAL:
 					return TLType.createMap(STRING, DECIMAL);
 				case DATE:
-					return TLType.createMap(STRING, DATETIME);
+					return TLType.createMap(STRING, DATE);
+				case NANODATE:
+					return TLType.createMap(STRING, NANODATE);
 				case BYTE:
 				case CBYTE:
 					return TLType.createMap(STRING, BYTEARRAY);
@@ -345,7 +387,9 @@ public abstract class TLTypePrimitive extends TLType {
 		case DECIMAL:
 			return DECIMAL;
 		case DATE:
-			return DATETIME;
+			return DATE;
+		case NANODATE:
+			return NANODATE;
 		case BYTE:
 		case CBYTE:
 			return BYTEARRAY;
@@ -369,6 +413,8 @@ public abstract class TLTypePrimitive extends TLType {
 			return DataFieldType.DECIMAL;
 		} else if (type.isDate()) {
 			return DataFieldType.DATE;
+		} else if (type.isNanoDate()) {
+			return DataFieldType.NANODATE;
 		} else if (type.isString()) {
 			return DataFieldType.STRING;
 		} else if (type.isBoolean()) {

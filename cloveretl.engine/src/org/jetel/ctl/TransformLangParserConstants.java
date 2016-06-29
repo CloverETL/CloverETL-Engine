@@ -135,129 +135,133 @@ public interface TransformLangParserConstants {
   /** RegularExpression Id. */
   int DATE_VAR = 73;
   /** RegularExpression Id. */
-  int DOUBLE_VAR = 74;
+  int NANODATE_VAR = 74;
   /** RegularExpression Id. */
-  int DECIMAL_VAR = 75;
+  int DOUBLE_VAR = 75;
   /** RegularExpression Id. */
-  int BOOLEAN_VAR = 76;
+  int DECIMAL_VAR = 76;
   /** RegularExpression Id. */
-  int STRING_VAR = 77;
+  int BOOLEAN_VAR = 77;
   /** RegularExpression Id. */
-  int BYTE_VAR = 78;
+  int STRING_VAR = 78;
   /** RegularExpression Id. */
-  int LIST_VAR = 79;
+  int BYTE_VAR = 79;
   /** RegularExpression Id. */
-  int MAP_VAR = 80;
+  int LIST_VAR = 80;
   /** RegularExpression Id. */
-  int RECORD_VAR = 81;
+  int MAP_VAR = 81;
   /** RegularExpression Id. */
-  int OBJECT_VAR = 82;
+  int RECORD_VAR = 82;
   /** RegularExpression Id. */
-  int VOID_VAR = 83;
+  int OBJECT_VAR = 83;
   /** RegularExpression Id. */
-  int BREAK = 84;
+  int VOID_VAR = 84;
   /** RegularExpression Id. */
-  int CONTINUE = 85;
+  int BREAK = 85;
   /** RegularExpression Id. */
-  int ELSE = 86;
+  int CONTINUE = 86;
   /** RegularExpression Id. */
-  int FOR = 87;
+  int ELSE = 87;
   /** RegularExpression Id. */
-  int FOR_EACH = 88;
+  int FOR = 88;
   /** RegularExpression Id. */
-  int FUNCTION = 89;
+  int FOR_EACH = 89;
   /** RegularExpression Id. */
-  int IF = 90;
+  int FUNCTION = 90;
   /** RegularExpression Id. */
-  int RETURN = 91;
+  int IF = 91;
   /** RegularExpression Id. */
-  int WHILE = 92;
+  int RETURN = 92;
   /** RegularExpression Id. */
-  int CASE = 93;
+  int WHILE = 93;
   /** RegularExpression Id. */
-  int ENUM = 94;
+  int CASE = 94;
   /** RegularExpression Id. */
-  int IMPORT = 95;
+  int ENUM = 95;
   /** RegularExpression Id. */
-  int SWITCH = 96;
+  int IMPORT = 96;
   /** RegularExpression Id. */
-  int CASE_DEFAULT = 97;
+  int SWITCH = 97;
   /** RegularExpression Id. */
-  int DO = 98;
+  int CASE_DEFAULT = 98;
   /** RegularExpression Id. */
-  int TRY = 99;
+  int DO = 99;
   /** RegularExpression Id. */
-  int CATCH = 100;
+  int TRY = 100;
   /** RegularExpression Id. */
-  int LOOKUP = 101;
+  int CATCH = 101;
   /** RegularExpression Id. */
-  int LOOKUP_NEXT = 102;
+  int LOOKUP = 102;
   /** RegularExpression Id. */
-  int LOOKUP_FOUND = 103;
+  int LOOKUP_NEXT = 103;
   /** RegularExpression Id. */
-  int LOOKUP_ADMIN = 104;
+  int LOOKUP_FOUND = 104;
   /** RegularExpression Id. */
-  int SEQUENCE = 105;
+  int LOOKUP_ADMIN = 105;
   /** RegularExpression Id. */
-  int LOGLEVEL_DEBUG = 106;
+  int SEQUENCE = 106;
   /** RegularExpression Id. */
-  int LOGLEVEL_INFO = 107;
+  int LOGLEVEL_DEBUG = 107;
   /** RegularExpression Id. */
-  int LOGLEVEL_WARN = 108;
+  int LOGLEVEL_INFO = 108;
   /** RegularExpression Id. */
-  int LOGLEVEL_ERROR = 109;
+  int LOGLEVEL_WARN = 109;
   /** RegularExpression Id. */
-  int LOGLEVEL_FATAL = 110;
+  int LOGLEVEL_ERROR = 110;
   /** RegularExpression Id. */
-  int LOGLEVEL_TRACE = 111;
+  int LOGLEVEL_FATAL = 111;
   /** RegularExpression Id. */
-  int DICTIONARY = 112;
+  int LOGLEVEL_TRACE = 112;
   /** RegularExpression Id. */
-  int DICT_SEPARATOR = 113;
+  int DICTIONARY = 113;
   /** RegularExpression Id. */
-  int DICT_IDENTIFIER = 114;
+  int DICT_SEPARATOR = 114;
   /** RegularExpression Id. */
-  int YEAR = 115;
+  int DICT_IDENTIFIER = 115;
   /** RegularExpression Id. */
-  int MONTH = 116;
+  int YEAR = 116;
   /** RegularExpression Id. */
-  int WEEK = 117;
+  int MONTH = 117;
   /** RegularExpression Id. */
-  int DAY = 118;
+  int WEEK = 118;
   /** RegularExpression Id. */
-  int HOUR = 119;
+  int DAY = 119;
   /** RegularExpression Id. */
-  int MINUTE = 120;
+  int HOUR = 120;
   /** RegularExpression Id. */
-  int SECOND = 121;
+  int MINUTE = 121;
   /** RegularExpression Id. */
-  int MILLISEC = 122;
+  int SECOND = 122;
   /** RegularExpression Id. */
-  int RETURN_OK = 123;
+  int MILLISEC = 123;
   /** RegularExpression Id. */
-  int RETURN_SKIP = 124;
+  int NANOSEC = 124;
   /** RegularExpression Id. */
-  int RETURN_ALL = 125;
+  int RETURN_OK = 125;
   /** RegularExpression Id. */
-  int RETURN_STOP = 126;
+  int RETURN_SKIP = 126;
   /** RegularExpression Id. */
-  int FIELD_ACCESS_OPERATOR = 127;
+  int RETURN_ALL = 127;
   /** RegularExpression Id. */
-  int RECORD_ACCESS_FIRST_PART = 128;
+  int RETURN_STOP = 128;
   /** RegularExpression Id. */
-  int RECORD_ACCESS_SECOND_PART = 129;
+  int FIELD_ACCESS_OPERATOR = 129;
   /** RegularExpression Id. */
-  int NUMERIC_ID = 130;
+  int RECORD_ACCESS_FIRST_PART = 130;
   /** RegularExpression Id. */
-  int STRING_ID = 131;
+  int RECORD_ACCESS_SECOND_PART = 131;
   /** RegularExpression Id. */
-  int IDENTIFIER = 132;
+  int NUMERIC_ID = 132;
   /** RegularExpression Id. */
-  int LETTER = 133;
+  int STRING_ID = 133;
   /** RegularExpression Id. */
-  int UNDERSCORE = 134;
+  int IDENTIFIER = 134;
   /** RegularExpression Id. */
-  int ERROR = 138;
+  int LETTER = 135;
+  /** RegularExpression Id. */
+  int UNDERSCORE = 136;
+  /** RegularExpression Id. */
+  int ERROR = 140;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -350,6 +354,7 @@ public interface TransformLangParserConstants {
     "\"integer\"",
     "\"long\"",
     "\"date\"",
+    "\"nanodate\"",
     "<DOUBLE_VAR>",
     "\"decimal\"",
     "\"boolean\"",
@@ -399,6 +404,7 @@ public interface TransformLangParserConstants {
     "\"minute\"",
     "\"second\"",
     "\"millisec\"",
+    "\"nanosec\"",
     "\"OK\"",
     "\"SKIP\"",
     "\"ALL\"",

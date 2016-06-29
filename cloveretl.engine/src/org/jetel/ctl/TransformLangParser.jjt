@@ -605,6 +605,7 @@ TOKEN :
     <INT_VAR: "integer" >
  |  <LONG_VAR: "long" >
  |  <DATE_VAR: "date" >
+ |  <NANODATE_VAR: "nanodate" >
  |  <DOUBLE_VAR: "number" | "double" >
  |  <DECIMAL_VAR: "decimal" >
  |  <BOOLEAN_VAR: "boolean" >
@@ -684,6 +685,7 @@ TOKEN :
 | < MINUTE: "minute" >
 | < SECOND: "second" >
 | < MILLISEC: "millisec" >
+| < NANOSEC: "nanosec" >
 }
 
 
@@ -1169,6 +1171,14 @@ void PrimitiveType() #Type:
     	 		jjtThis.begin(token.beginLine,token.beginColumn);
     	 		jjtThis.end(token.endLine,token.endColumn);  
     	 		jjtThis.setKind(DATE_VAR);
+    	 	}
+    	 ) 
+		|
+		 ( <NANODATE_VAR>	
+			{ 
+    	 		jjtThis.begin(token.beginLine,token.beginColumn);
+    	 		jjtThis.end(token.endLine,token.endColumn);  
+    	 		jjtThis.setKind(NANODATE_VAR);
     	 	}
     	 ) 
 		|
@@ -1755,7 +1765,7 @@ void TypeArgument() #void:
 void DateField() :
 {}
 {
-	( "year" | "month" | "week" | "day" | "hour" | "minute" | "second" | "millisec" )
+	( "year" | "month" | "week" | "day" | "hour" | "minute" | "second" | "millisec" | "nanosec" )
 	{
 		jjtThis.begin(token.beginLine,token.beginColumn); 
 		jjtThis.end(token.endLine,token.endColumn); 

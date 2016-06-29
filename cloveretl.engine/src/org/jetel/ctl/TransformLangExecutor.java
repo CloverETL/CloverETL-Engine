@@ -111,6 +111,7 @@ import org.jetel.data.DataFieldInvalidStateException;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
+import org.jetel.data.NanoDate;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
@@ -887,10 +888,43 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			return;
 		}
 
-		// Datetime
+		// Date
 		if (operationType.isDate()) {
 			final Date lhs = (Date) lhsValue;
 			final Date rhs = (Date) rhsValue;
+
+			switch (operator) {
+			case EQUAL:
+				stack.push(lhs.compareTo(rhs) == 0);
+				break;// equal
+			case LESS_THAN:
+				stack.push(lhs.compareTo(rhs) < 0);
+				break;// less than
+			case GREATER_THAN:
+				stack.push(lhs.compareTo(rhs) > 0);
+				break;// grater than
+			case LESS_THAN_EQUAL:
+				stack.push(lhs.compareTo(rhs) <= 0);
+				break;// less than equal
+			case GREATER_THAN_EQUAL:
+				stack.push(lhs.compareTo(rhs) >= 0);
+				break;// greater than equal
+			case NON_EQUAL:
+				stack.push(!lhs.equals(rhs));
+				break;
+			default:
+				// this should never happen !!!
+				logger.fatal("Internal error: Unsupported comparison operator !");
+				throw new RuntimeException("Internal error - Unsupported comparison operator !");
+			}
+
+			return;
+		}
+
+		// NanoDate
+		if (operationType.isNanoDate()) {
+			final NanoDate lhs = (NanoDate) lhsValue;
+			final NanoDate rhs = (NanoDate) rhsValue;
 
 			switch (operator) {
 			case EQUAL:
@@ -1620,6 +1654,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			return Long.valueOf(0);
 		} else if (varType.isDate()) {
 			return new Date(0);
+		} else if (varType.isNanoDate()) {
+			return new NanoDate();
 		} else if (varType.isDecimal()) {
 			return new BigDecimal(0);
 		}  else if (varType.isMap()) {
@@ -2453,6 +2489,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			return String.class;
 		case DATE:
 			return Date.class;
+		case NANODATE:
+			return NanoDate.class;
 		case NUMBER:
 			return Double.class;
 		case DECIMAL:
@@ -2493,13 +2531,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			// so that out-of-precision errors are discovered early
 			return ((Decimal) field.getValue()).getBigDecimalOutput();
 		case STRING:
-			// StringBuilder -> String
+			// CloverString -> String
 			return field.getValue().toString();
 
 		case BOOLEAN:
 		case INTEGER:
 		case LONG:
 		case NUMBER:
+		case NANODATE:
 			// relevant numeric object
 			return field.getValue();
 

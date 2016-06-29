@@ -31,6 +31,7 @@ import java.util.Map;
 import org.jetel.ctl.TLUtils;
 import org.jetel.ctl.TransformLangParserConstants;
 import org.jetel.data.DataRecord;
+import org.jetel.data.NanoDate;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.EqualsUtil;
 
@@ -612,6 +613,7 @@ public abstract class TLType implements Serializable {
 		case TransformLangParserConstants.MINUTE:
 		case TransformLangParserConstants.SECOND:
 		case TransformLangParserConstants.MILLISEC:
+		case TransformLangParserConstants.NANOSEC:
 			return new TLDateField(DateFieldEnum.fromToken(symbol));
 		case TransformLangParserConstants.LOGLEVEL_DEBUG:
 		case TransformLangParserConstants.LOGLEVEL_ERROR:
@@ -664,9 +666,13 @@ public abstract class TLType implements Serializable {
 	}
 	
 	public boolean isDate() {
-		return this == TLTypePrimitive.DATETIME;
+		return this == TLTypePrimitive.DATE;
 	}
-	
+
+	public boolean isNanoDate() {
+		return this == TLTypePrimitive.NANODATE;
+	}
+
 	public boolean isInteger() {
 		return this == TLTypePrimitive.INTEGER;
 	}
@@ -782,9 +788,13 @@ public abstract class TLType implements Serializable {
 		}
 		
 		if (Date.class.equals(type)) {
-			return TLTypePrimitive.DATETIME;
+			return TLTypePrimitive.DATE;
 		}
-		
+
+		if (NanoDate.class.equals(type)) {
+			return TLTypePrimitive.NANODATE;
+		}
+
 		if (String.class.equals(type)) {
 			return TLTypePrimitive.STRING;
 		}
@@ -834,7 +844,7 @@ public abstract class TLType implements Serializable {
 			Class<?> rawType = (Class<?>)toConvert;
 			if (rawType.isArray()) {
 				// we will receive this for var-arg functions
-				// so we will convert it into a single paramter of array-element type
+				// so we will convert it into a single parameter of array-element type
 				return TLType.fromJavaType(rawType.getComponentType());
 			} else if (rawType.isEnum()) {
 				// we will receive this for functions accepting type symbols (date fields, log levels, etc)
@@ -911,9 +921,15 @@ public abstract class TLType implements Serializable {
 		
 		if (from.isDate()) {
 			return	to.isDate() 	?	0		:
+					to.isNanoDate()	?	1		:	
 					to.isTypeVariable()	?	10		:	Integer.MAX_VALUE;
 		}
-		
+
+		if (from.isNanoDate()) {
+			return	to.isNanoDate() 	?	0		:
+					to.isTypeVariable()	?	10		:	Integer.MAX_VALUE;
+		}
+
 		if (from.isRecord()) {
 			if (to.isRecord()) {
 				// this handles built-in functions where arguments have metadata set to null

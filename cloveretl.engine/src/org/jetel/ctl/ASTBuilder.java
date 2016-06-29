@@ -604,7 +604,8 @@ public class ASTBuilder extends NavigatingVisitor {
 		TLTypePrimitive.LONG,
 		TLTypePrimitive.STRING,
 		TLTypePrimitive.BOOLEAN,
-		TLTypePrimitive.DATETIME,
+		TLTypePrimitive.DATE,
+		TLTypePrimitive.NANODATE,
 		TLTypePrimitive.DOUBLE,
 		TLTypePrimitive.DECIMAL,
 		TLTypePrimitive.BYTEARRAY,
@@ -990,7 +991,9 @@ public class ASTBuilder extends NavigatingVisitor {
 		case TransformLangParserConstants.STRING_VAR:
 			return TLTypePrimitive.STRING;
 		case TransformLangParserConstants.DATE_VAR:
-			return TLTypePrimitive.DATETIME;
+			return TLTypePrimitive.DATE;
+		case TransformLangParserConstants.NANODATE_VAR:
+			return TLTypePrimitive.NANODATE;
 		case TransformLangParserConstants.BYTE_VAR:
 			return TLTypePrimitive.BYTEARRAY;
 		case TransformLangParserConstants.BOOLEAN_VAR:
@@ -1015,7 +1018,7 @@ public class ASTBuilder extends NavigatingVisitor {
 		case TransformLangParserConstants.MAP_VAR:
 			TLType keyType = createType((CLVFType) typeNode.jjtGetChild(0));
 			if (!keyType.isPrimitive()) {
-				error(typeNode, "Map key must be a boolean, date, decimal, integer, long, number or string");
+				error(typeNode, "Map key must be a boolean, date, nanodate, decimal, integer, long, number or string");
 				return TLType.ERROR;
 			}
 			return TLType.createMap(keyType,

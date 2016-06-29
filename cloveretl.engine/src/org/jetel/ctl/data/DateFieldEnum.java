@@ -32,7 +32,8 @@ public enum DateFieldEnum {
 	HOUR(Calendar.HOUR),
 	MINUTE(Calendar.MINUTE),
 	SECOND(Calendar.SECOND),
-	MILLISEC(Calendar.MILLISECOND);
+	MILLISEC(Calendar.MILLISECOND),
+	NANOSEC(-1);
 	
 	private int calendarField;
 	
@@ -58,6 +59,8 @@ public enum DateFieldEnum {
 			return DateFieldEnum.SECOND;
 		case TransformLangParserConstants.MILLISEC:
 			return DateFieldEnum.MILLISEC;
+		case TransformLangParserConstants.NANOSEC:
+			return DateFieldEnum.NANOSEC;
 		default:
 			throw new IllegalArgumentException("Not a date field symbol: " + token);
 		}

@@ -29,6 +29,7 @@ import org.jetel.ctl.ASTnode.CLVFFunctionCall;
 import org.jetel.ctl.data.Scope;
 import org.jetel.ctl.data.TLType;
 import org.jetel.data.DataRecord;
+import org.jetel.data.NanoDate;
 
 /**
  * @author David Palis <david.pavlis@javlin.cz>
@@ -109,7 +110,11 @@ public class Stack {
 	public Date popDate() {
 		return (Date)pop();
 	}
-	
+
+	public NanoDate popNanoDate() {
+		return (NanoDate) pop();
+	}
+
 	@SuppressWarnings("unchecked")
 	public List<Object> popList() {
 		return (List<Object>)pop();

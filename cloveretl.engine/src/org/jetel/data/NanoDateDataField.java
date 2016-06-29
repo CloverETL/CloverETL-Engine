@@ -31,7 +31,6 @@ import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.HashCodeUtil;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
-import org.jetel.util.date.NanoDate;
 import org.jetel.util.string.Compare;
 import org.threeten.bp.Instant;
 import org.threeten.bp.format.DateTimeFormatter;

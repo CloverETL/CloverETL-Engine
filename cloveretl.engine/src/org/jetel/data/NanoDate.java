@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.util.date;
+package org.jetel.data;
 
 import java.sql.Timestamp;
 import java.util.Date;
@@ -127,7 +127,7 @@ public class NanoDate implements Comparable<NanoDate> {
 	/**
 	 * WARNING: this method is not part of the official @CloverPublicAPI
 	 */
-	public void setTime(Instant instant) {
+	void setTime(Instant instant) {
 		instantCache = instant;
 		this.seconds = instantCache.getEpochSecond();
 		this.nanos = instantCache.getNano();
@@ -136,7 +136,7 @@ public class NanoDate implements Comparable<NanoDate> {
 	/**
 	 * Sets the time from the given {@link NanoDate}.
 	 */
-	public void setTime(NanoDate nanoDate) {
+	void setTime(NanoDate nanoDate) {
 		this.seconds = nanoDate.seconds;
 		this.nanos = nanoDate.nanos;
 		instantCache = nanoDate.instantCache;
@@ -145,14 +145,14 @@ public class NanoDate implements Comparable<NanoDate> {
 	/**
 	 * Sets the time from the given {@link Date}.
 	 */
-	public void setTime(Date date) {
+	void setTime(Date date) {
 		setTime(Instant.ofEpochMilli(date.getTime()));
 	}
 
 	/**
 	 * Sets the time from the given {@link Timestamp}.
 	 */
-	public void setTime(Timestamp timestamp) {
+	void setTime(Timestamp timestamp) {
 		setTime(Instant.ofEpochSecond(timestamp.getTime() / MILLIS_PER_SECOND, timestamp.getNanos()));
 	}
 	
@@ -161,7 +161,7 @@ public class NanoDate implements Comparable<NanoDate> {
 	 * @see #getSeconds()
 	 * @see #getNanos()
 	 */
-	public void setTime(long seconds, int nanos) {
+	void setTime(long seconds, int nanos) {
 		this.seconds = seconds;
 		this.nanos = nanos;
 		this.instantCache = null;
@@ -170,7 +170,7 @@ public class NanoDate implements Comparable<NanoDate> {
 	/**
 	 * Resets the time to epoch start.
 	 */
-	public void setEpoch() {
+	void setEpoch() {
 		seconds = 0;
 		nanos = 0;
 		instantCache = null;

@@ -609,6 +609,7 @@ TOKEN :
     <INT_VAR: "integer" >
  |  <LONG_VAR: "long" >
  |  <DATE_VAR: "date" >
+ |  <NANODATE_VAR: "nanodate" >
  |  <DOUBLE_VAR: "number" | "double" >
  |  <DECIMAL_VAR: "decimal" >
  |  <BOOLEAN_VAR: "boolean" >
@@ -688,6 +689,7 @@ TOKEN :
 | < MINUTE: "minute" >
 | < SECOND: "second" >
 | < MILLISEC: "millisec" >
+| < NANOSEC: "nanosec" >
 }
 
 
@@ -1477,6 +1479,19 @@ void PrimitiveType()      :
     	 		jjtn000.begin(token.beginLine,token.beginColumn);
     	 		jjtn000.end(token.endLine,token.endColumn);  
     	 		jjtn000.setKind(DATE_VAR);
+    	 	}
+    	 ) 
+		|
+		 ( <NANODATE_VAR>/*@bgen(jjtree)*/
+                        {
+                          jjtree.closeNodeScope(jjtn000, true);
+                          jjtc000 = false;
+                        }
+/*@egen*/	
+			{ 
+    	 		jjtn000.begin(token.beginLine,token.beginColumn);
+    	 		jjtn000.end(token.endLine,token.endColumn);  
+    	 		jjtn000.setKind(NANODATE_VAR);
     	 	}
     	 ) 
 		|
@@ -2995,7 +3010,7 @@ void DateField() :
 {/*@bgen(jjtree) DateField */
         try {
 /*@egen*/
-	( "year" | "month" | "week" | "day" | "hour" | "minute" | "second" | "millisec" )/*@bgen(jjtree)*/
+	( "year" | "month" | "week" | "day" | "hour" | "minute" | "second" | "millisec" | "nanosec" )/*@bgen(jjtree)*/
         {
           jjtree.closeNodeScope(jjtn000, true);
           jjtc000 = false;
