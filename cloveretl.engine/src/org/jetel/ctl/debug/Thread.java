@@ -20,8 +20,6 @@ package org.jetel.ctl.debug;
 
 import java.io.Serializable;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 /**
  * This unit represents a thread in which a CTL code is being executed.
  * 
@@ -32,7 +30,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  *
  * @created 14.3.2016
  */
-public class Thread implements Serializable, Comparable<Thread> {
+public class Thread implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -75,16 +73,6 @@ public class Thread implements Serializable, Comparable<Thread> {
 	}
 	public void setSuspended(boolean suspended) {
 		this.suspended = suspended;
-	}
-	
-	@Override
-	@SuppressFBWarnings("EQ_COMPARETO_USE_OBJECT_EQUALS")
-	public int compareTo(Thread t) {
-		if (name == null) {
-			return t.name == null ? 0 : -1;
-		} else {
-			return t.name == null ? 1 : name.compareTo(t.name);
-		}
 	}
 	
 	@Override

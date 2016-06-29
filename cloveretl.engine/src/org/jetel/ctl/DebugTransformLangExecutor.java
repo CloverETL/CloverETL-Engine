@@ -708,14 +708,15 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					status.setValue(writer.toString());
 				}
 					break;
+				default: {
+					throw new JetelRuntimeException("Unknown command received by debug executor.");
 				}
-				if (status != null) {
-					try {
-						this.statusQueue.put(status);
-					} catch (InterruptedException e) {
-						logger.info("Debug interrupted in " + ctlThread);
-						throw new JetelRuntimeException("Interrupted while putting debug command result.");
-					}
+				}
+				try {
+					this.statusQueue.put(status);
+				} catch (InterruptedException e) {
+					logger.info("Debug interrupted in " + ctlThread);
+					throw new JetelRuntimeException("Interrupted while putting debug command result.");
 				}
 			}
 		}
