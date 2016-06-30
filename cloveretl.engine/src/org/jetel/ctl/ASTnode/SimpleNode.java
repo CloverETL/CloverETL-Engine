@@ -238,7 +238,7 @@ public abstract class SimpleNode implements Node {
 	}
 
 	public void dump(PrintWriter out, String prefix) {
-		out.format("%02d:%s\n",getLine(),toString(prefix));
+		out.format("%02d:%s%n",getLine(),toString(prefix));
 		if (children != null) {
 			for (int i = 0; i < children.length; ++i) {
 				SimpleNode n = (SimpleNode) children[i];

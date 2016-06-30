@@ -22,6 +22,7 @@ import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -213,7 +214,17 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 			}
 		}
 		Thread result[] = threads.toArray(new Thread[threads.size()]);
-		Arrays.sort(result);
+		
+		Arrays.sort(result, new Comparator<Thread>() {
+			@Override
+			public int compare(Thread t1, Thread t2) {
+				if (t1.getName() == null) {
+					return t2.getName() == null ? 0 : -1;
+				} else {
+					return t2.getName() == null ? 1 : t1.getName().compareTo(t2.getName());
+				}
+			}
+		});
 		return result;
 	}
 
