@@ -21,8 +21,12 @@ package org.jetel.util.formatter;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.util.MiscUtils;
+import org.threeten.bp.ZoneId;
+import org.threeten.bp.format.DateTimeFormatter;
+import org.threeten.bp.format.DateTimeFormatterBuilder;
 
 /**
  * Factory for internally used date formatters.
@@ -35,19 +39,19 @@ import org.jetel.util.MiscUtils;
  */
 public final class DateFormatterFactory {
 	
-	public static DateFormatter getFormatter(String formatString, Locale locale, TimeZoneProvider timeZoneProvider) {
+	public static DateFormatter getFormatter(String format, Locale locale, TimeZoneProvider timeZoneProvider) {
 		if (timeZoneProvider == null) {
 			timeZoneProvider = new TimeZoneProvider();
 		}
-		final DataFieldFormatType formatType = DataFieldFormatType.getFormatType(formatString);
+		final DataFieldFormatType formatType = DataFieldFormatType.getFormatType(format);
 		if (formatType == DataFieldFormatType.JODA) {
-			return new JodaDateFormatter(DataFieldFormatType.JODA.getFormat(formatString), locale, timeZoneProvider.getJodaTimeZone());
+			return new JodaDateFormatter(DataFieldFormatType.JODA.getFormat(format), locale, timeZoneProvider.getJodaTimeZone());
 		} else if (formatType == DataFieldFormatType.ISO_8601) {
-			return new Iso8601DateFormatter(DataFieldFormatType.ISO_8601.getFormat(formatString), locale, timeZoneProvider.getJodaTimeZone());
+			return new Iso8601DateFormatter(DataFieldFormatType.ISO_8601.getFormat(format), locale, timeZoneProvider.getJodaTimeZone());
 		} else {
 			TimeZone tz = timeZoneProvider.getJavaTimeZone();
-			if (DataFieldFormatType.getFormatType(formatString) == DataFieldFormatType.JAVA) {
-				return new JavaDateFormatter(DataFieldFormatType.JAVA.getFormat(formatString), locale, tz);
+			if (DataFieldFormatType.getFormatType(format) == DataFieldFormatType.JAVA) {
+				return new JavaDateFormatter(DataFieldFormatType.JAVA.getFormat(format), locale, tz);
 			} else {
 				return new JavaDateFormatter(locale, tz);
 			}
@@ -55,24 +59,24 @@ public final class DateFormatterFactory {
 		
 	}
 
-	public static DateFormatter getFormatter(String formatString, Locale locale, String timeZoneId) {
-		return getFormatter(formatString, locale, new TimeZoneProvider(timeZoneId));
+	public static DateFormatter getFormatter(String format, Locale locale, String timeZoneString) {
+		return getFormatter(format, locale, new TimeZoneProvider(timeZoneString));
 	}
 
-	public static DateFormatter getFormatter(String formatString, Locale locale) {
-		return getFormatter(formatString, locale, (TimeZoneProvider) null);
+	public static DateFormatter getFormatter(String format, Locale locale) {
+		return getFormatter(format, locale, (TimeZoneProvider) null);
 	}
 
-	public static DateFormatter getFormatter(String formatString, String localeString) {
-		return getFormatter(formatString, localeString, null);
+	public static DateFormatter getFormatter(String format, String localeString) {
+		return getFormatter(format, localeString, null);
 	}
 
-	public static DateFormatter getFormatter(String formatString, String localeString, String timeZoneString) {
-		return getFormatter(formatString, MiscUtils.createLocale(localeString), timeZoneString);
+	public static DateFormatter getFormatter(String format, String localeString, String timeZoneString) {
+		return getFormatter(format, MiscUtils.createLocale(localeString), timeZoneString);
 	}
 
-	public static DateFormatter getFormatter(String formatString) {
-		return getFormatter(formatString, (Locale) null);
+	public static DateFormatter getFormatter(String format) {
+		return getFormatter(format, (Locale) null);
 	}
 
 	public static DateFormatter getFormatter(Locale locale) {
@@ -83,6 +87,31 @@ public final class DateFormatterFactory {
 		return new JavaDateFormatter();
 	}
 
+	public static DateTimeFormatter getNanoDateFormatter(String format, String localeString, String timeZoneString) {
+		return getNanoDateFormatter(format, MiscUtils.createLocale(localeString), new TimeZoneProvider(timeZoneString));
+	}
+
+	public static DateTimeFormatter getNanoDateFormatter(String format, Locale locale, TimeZoneProvider timeZoneProvider) {
+		final DataFieldFormatType formatType = DataFieldFormatType.getFormatType(format);
+		if (formatType == DataFieldFormatType.JAVA8) {
+	        DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
+	        builder.appendPattern(DataFieldFormatType.JAVA8.getFormat(format));
+	        DateTimeFormatter formatter;
+	        if (locale != null) {
+	        	formatter = builder.toFormatter(locale);
+	        } else {
+	        	formatter = builder.toFormatter();
+	        }
+	        ZoneId zoneId = timeZoneProvider != null ? timeZoneProvider.getJava8TimeZone() : null;
+	        if (zoneId != null) {
+	        	formatter = formatter.withZone(zoneId);
+	        }
+			return formatter;
+		} else {
+			throw new JetelRuntimeException("missing java8 date format pattern");
+		}
+	}
+	
 	private DateFormatterFactory() {
 		throw new UnsupportedOperationException();
 	}

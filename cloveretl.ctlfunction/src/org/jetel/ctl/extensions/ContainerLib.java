@@ -32,6 +32,7 @@ import org.jetel.ctl.Stack;
 import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLType.TLTypeList;
 import org.jetel.data.DataRecord;
+import org.jetel.data.NanoDate;
 
 public class ContainerLib extends TLFunctionLibrary {
 	
@@ -297,6 +298,8 @@ public class ContainerLib extends TLFunctionLibrary {
 				s = sort(context, TLFunctionLibrary.<Boolean>convertTo(orig));
 			} else if (elem.isDate()) {
 				s = sort(context, TLFunctionLibrary.<Date>convertTo(orig));
+			} else if (elem.isNanoDate()) {
+				s = sort(context, TLFunctionLibrary.<NanoDate>convertTo(orig));
 			} else {
 				throw new IllegalArgumentException("Unknown type for sort: '" + elem.name() + "'");
 			}
@@ -344,6 +347,8 @@ public class ContainerLib extends TLFunctionLibrary {
 				s = reverse(context, TLFunctionLibrary.<Boolean>convertTo(orig));
 			} else if (elem.isDate()) {
 				s = reverse(context, TLFunctionLibrary.<Date>convertTo(orig));
+			} else if (elem.isNanoDate()) {
+				s = reverse(context, TLFunctionLibrary.<NanoDate>convertTo(orig));
 			} else if (elem.isRecord()) {
 				s = reverse(context, TLFunctionLibrary.<DataRecord>convertTo(orig));
 			} else {

@@ -21,15 +21,12 @@ package org.jetel.data;
 import java.nio.BufferOverflowException;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.Locale;
 
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.HashCodeUtil;
-import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.Compare;
 import org.threeten.bp.Instant;
@@ -57,11 +54,7 @@ public class NanoDateDataField extends DataFieldImpl implements Comparable<Objec
 
 	public NanoDateDataField(DataFieldMetadata metadata) {
 		super(metadata);
-		// create a date formatter based on the format string and locale
-		String format = metadata.getFormat(DataFieldFormatType.JAVA8);
-		Locale locale = MiscUtils.createLocale(metadata.getLocaleStr());
-		formatter = DateTimeFormatter.ofPattern(format, locale);
-		formatter = formatter.withZone(metadata.getTimeZone().getJava8TimeZone());
+		formatter = metadata.createNanoDateFormatter();
 		this.reset();
 	}
 
@@ -142,6 +135,14 @@ public class NanoDateDataField extends DataFieldImpl implements Comparable<Objec
 
 	public NanoDate getNanoDate() {
 		return isNull ? null : value;
+	}
+
+	/**
+	 * WARNING: the return value <code>org.threeten.bp.Instant</code>
+	 * will be changed to <code>java.time.Instant</code> after full support of java 8 by clover
+	 */
+	public Instant getInstant() {
+		return isNull ? null : value.getInstant();
 	}
 
 	@Override

@@ -561,11 +561,15 @@ public class TableauWriter extends Node  {
 			for (int i=0; i<recordMeta.getNumFields(); i++) {
 				DataFieldMetadata fieldMeta = recordMeta.getField(i);
 				DataFieldType fieldType= fieldMeta.getDataType();
-				if (fieldType == DataFieldType.LONG || fieldType == DataFieldType.DECIMAL || fieldType == DataFieldType.BYTE || fieldType == DataFieldType.CBYTE) {
+				if (fieldType == DataFieldType.LONG
+						|| fieldType == DataFieldType.DECIMAL
+						|| fieldType == DataFieldType.BYTE
+						|| fieldType == DataFieldType.CBYTE
+						|| fieldType == DataFieldType.NANODATE) {
 					status.add("Input metadata of \"" + getName() + "\" contain data type unsupported by Tableau! Metadata field "
 							+ recordMeta.getField(i).getName() + " of metadata " + recordMeta.getName() + " has type " + fieldType.getName()
 							+ "! Unsupported types are: " + DataFieldType.LONG.getName() + ", "	+ DataFieldType.DECIMAL.getName()
-							+ ", " + DataFieldType.BYTE.getName() + ", " + DataFieldType.CBYTE.getName(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+							+ ", " + DataFieldType.BYTE.getName() + ", " + DataFieldType.CBYTE.getName() + ", " + DataFieldType.NANODATE.getName(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
 				}
 				if (fieldMeta.getContainerType() != DataFieldContainerType.SINGLE) {
 					status.add("Input metadata of \"" + getName() + "\" have container unsupported by Tableau! Metadata field "

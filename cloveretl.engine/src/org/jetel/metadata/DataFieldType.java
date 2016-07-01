@@ -39,7 +39,7 @@ import org.jetel.util.string.CloverString;
 @CloverPublicAPI
 public enum DataFieldType {
 
-	STRING("string", (byte) 0, CloverString.class, false, false, 'S') {
+	STRING("string", (byte) 0, CloverString.class, false, false, false, 'S') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -53,7 +53,7 @@ public enum DataFieldType {
 		}
 	},
 
-	DATE("date", (byte) 1, Date.class, false, true, 'D') {
+	DATE("date", (byte) 1, Date.class, false, true, true, 'D') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -70,7 +70,7 @@ public enum DataFieldType {
 		}
 	},
 
-	NANODATE("nanodate", (byte) 9, NanoDate.class, false, true, 'Y') {
+	NANODATE("nanodate", (byte) 9, NanoDate.class, false, true, true, 'Y') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -85,7 +85,7 @@ public enum DataFieldType {
 		}
 	},
 
-	NUMBER("number", (byte) 2, Double.class, true, true, 'N') {
+	NUMBER("number", (byte) 2, Double.class, true, false, true, 'N') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -101,7 +101,7 @@ public enum DataFieldType {
 		}
 	},
 
-	INTEGER("integer", (byte) 3, Integer.class, true, true, 'i') {
+	INTEGER("integer", (byte) 3, Integer.class, true, false, true, 'i') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -119,7 +119,7 @@ public enum DataFieldType {
 		}
 	},
 
-	LONG("long", (byte) 4, Long.class, true, true, 'l') {
+	LONG("long", (byte) 4, Long.class, true, false, true, 'l') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -136,7 +136,7 @@ public enum DataFieldType {
 		}
 	},
 
-	DECIMAL("decimal", (byte) 5, Decimal.class, true, true, 'd') {
+	DECIMAL("decimal", (byte) 5, Decimal.class, true, false, true, 'd') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -154,7 +154,7 @@ public enum DataFieldType {
 		}
 	},
 
-	BYTE("byte", (byte) 6, byte[].class, false, false, 'B') {
+	BYTE("byte", (byte) 6, byte[].class, false, false, false, 'B') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -167,7 +167,7 @@ public enum DataFieldType {
 		}
 	},
 
-	CBYTE("cbyte", (byte) 7, byte[].class, false, false, 'Z') {
+	CBYTE("cbyte", (byte) 7, byte[].class, false, false, false, 'Z') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -180,7 +180,7 @@ public enum DataFieldType {
 		}
 	},
 	
-	BOOLEAN("boolean", (byte) 8, Boolean.class, false, true, 'b') {
+	BOOLEAN("boolean", (byte) 8, Boolean.class, false, false, true, 'b') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -193,18 +193,18 @@ public enum DataFieldType {
 		}
 	},
 
-	NULL("null", (byte) 100, Void.class, false, false, 'n'),
+	NULL("null", (byte) 100, Void.class, false, false, false, 'n'),
 
-	UNKNOWN("unknown", (byte) 101, Void.class, false, false, ' '),
+	UNKNOWN("unknown", (byte) 101, Void.class, false, false, false, ' '),
 
 	@Deprecated
-	SEQUENCE("sequence", (byte) 102, Void.class, false, false, 'q'),
+	SEQUENCE("sequence", (byte) 102, Void.class, false, false, false, 'q'),
 
 	/**
 	 * @deprecated use {@link #DATE} instead
 	 */
 	@Deprecated
-	DATETIME("datetime", (byte) 103, Date.class, false, true, 'T') {
+	DATETIME("datetime", (byte) 103, Date.class, false, false, true, 'T') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -229,6 +229,8 @@ public enum DataFieldType {
 	
 	//does the type represent a numeric type?
 	private boolean isNumeric;
+	//does the type represent a date type? (date or nanodate)
+	private boolean isDate;
 	//should be trimmed by default
 	private boolean isTrimType;
 	//short data type identification (it is identical with old fashion character identification of a type)
@@ -241,11 +243,12 @@ public enum DataFieldType {
 	 * stability against code changes. */
 	private byte byteIdentifier;
 	
-	private DataFieldType(String name, byte byteIdentifier,  Class<?> clazz, boolean isNumeric, boolean isTrimType, char shortName) {
+	private DataFieldType(String name, byte byteIdentifier,  Class<?> clazz, boolean isNumeric, boolean isDate, boolean isTrimType, char shortName) {
 		this.name = name;
 		this.byteIdentifier = byteIdentifier;
 		this.clazz = clazz;
 		this.isNumeric = isNumeric;
+		this.isDate = isDate;
 		this.isTrimType = isTrimType;
 		this.shortName = shortName;
 	}
@@ -315,7 +318,14 @@ public enum DataFieldType {
 	public boolean isNumeric() {
 		return isNumeric;
 	}
-	
+
+	/**
+	 * @return true if the type represents a date (date or nanodate)
+	 */
+	public boolean isDate() {
+		return isDate;
+	}
+
 	/**
 	 * @return true if the type should be trimmed
 	 */

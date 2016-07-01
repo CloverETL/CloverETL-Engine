@@ -46,6 +46,7 @@ import org.jetel.util.formatter.ParseBooleanException;
 import org.jetel.util.formatter.TimeZoneProvider;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
+import org.threeten.bp.format.DateTimeFormatter;
 
 /**
  * A class that represents metadata describing one particular data field.<br>
@@ -827,6 +828,14 @@ public class DataFieldMetadata implements Serializable {
 			throw new UnsupportedOperationException("DateFormatter is available only for date field metadata.");
 		}
 		return DateFormatterFactory.getFormatter(getFormatStr(), getLocaleStr(), getTimeZoneStr());
+	}
+
+	public DateTimeFormatter createNanoDateFormatter() {
+		if (type != DataFieldType.NANODATE) {
+			throw new UnsupportedOperationException("DateTimeFormatter is available only for nanodate field metadata.");
+		}
+		
+		return DateFormatterFactory.getNanoDateFormatter(getFormatStr(), getLocaleStr(), getTimeZoneStr());
 	}
 
 	/**

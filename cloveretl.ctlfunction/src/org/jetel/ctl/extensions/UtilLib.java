@@ -20,6 +20,7 @@ package org.jetel.ctl.extensions;
 
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import java.util.UUID;
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.data.TLTypeEnum;
 import org.jetel.data.DataRecord;
+import org.jetel.data.NanoDate;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.GraphParameter;
 import org.jetel.graph.GraphParameters;
@@ -348,10 +350,15 @@ public class UtilLib extends TLFunctionLibrary {
  	}
     
     @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
- 	public static final int hashCode(TLFunctionCallContext context, java.util.Date i) {
+ 	public static final int hashCode(TLFunctionCallContext context, Date i) {
  		return HashCodeUtil.hash(i);
  	}
-    
+
+    @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
+ 	public static final int hashCode(TLFunctionCallContext context, NanoDate i) {
+ 		return HashCodeUtil.hash(i);
+ 	}
+
     @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
  	public static final <E> int hashCode(TLFunctionCallContext context, List<E> list) {
  		return HashCodeUtil.hash(list);
@@ -416,6 +423,9 @@ public class UtilLib extends TLFunctionLibrary {
 				break;
 			case DATE:
 				stack.push(HashCodeUtil.hash(stack.popDate()));
+				break;
+			case NANODATE:
+				stack.push(HashCodeUtil.hash(stack.popNanoDate()));
 				break;
 			case BOOLEAN:
 				stack.push(HashCodeUtil.hash(stack.popBoolean().booleanValue()));

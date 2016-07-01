@@ -115,7 +115,9 @@ public class NanoDate implements Comparable<NanoDate> {
 	}
 	
 	/**
-	 * WARNING: this method is not part of the official @CloverPublicAPI
+	 * @return {@link Instant} representing this {@link NanoDate}
+	 * WARNING: the return value <code>org.threeten.bp.Instant</code>
+	 * will be changed to <code>java.time.Instant</code> after full support of java 8 by clover
 	 */
 	public Instant getInstant() {
 		if (instantCache == null) {
@@ -125,7 +127,7 @@ public class NanoDate implements Comparable<NanoDate> {
 	}
 	
 	/**
-	 * WARNING: this method is not part of the official @CloverPublicAPI
+	 * Sets the time from the given {@link Instant}.
 	 */
 	void setTime(Instant instant) {
 		instantCache = instant;
