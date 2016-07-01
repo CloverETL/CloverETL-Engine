@@ -2,6 +2,20 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-3-0-M1
+------------
+
+* CTL Debugging
+	- Breakpoints manipulation
+	- Step actions
+	- Debugging of both in-line and external CTL
+	- CTL threads in debug view
+	- CTL variables in variable view
+	- Support for suspend action
+* Improved order of components listed in Add/Find Component dialog
+* Status filters in Execution hierarchy - both Designer and Server
+* Redesign of DB connection dialog 
+
 REL-4-2-0
 ---------
 
