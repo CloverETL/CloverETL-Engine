@@ -35,6 +35,7 @@ public interface DebugJMXMBean {
     public static final String THREAD_RESUMED = "clover.thread.resumed";
     public static final String THREAD_STARTED = "clover.thread.started";
     public static final String THREAD_STOPPED = "clover.thread.stopped";
+    public static final String BP_CONDITION_ERROR = "clover.bp_condition.error";
 
 	void info(long threadId);
 	
