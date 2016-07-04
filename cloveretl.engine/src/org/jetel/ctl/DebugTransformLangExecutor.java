@@ -43,6 +43,7 @@ import org.jetel.ctl.debug.DebugCommand.CommandType;
 import org.jetel.ctl.debug.DebugJMX;
 import org.jetel.ctl.debug.DebugStack;
 import org.jetel.ctl.debug.DebugStack.FunctionCallFrame;
+import org.jetel.ctl.debug.condition.Condition;
 import org.jetel.ctl.debug.DebugStatus;
 import org.jetel.ctl.debug.RunToMark;
 import org.jetel.ctl.debug.SerializedDataRecord;
@@ -83,8 +84,10 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	private Thread ctlThread;
 	private java.lang.Thread lastActiveThread;
 	private boolean inExecution;
+	private boolean debugDisabled;
 	private boolean initialized;
 	private volatile boolean resumed = false;
+	private DebugStack debugStack;
 	
 	private long inputRecordIds[];
 	private long outputRecordIds[];
@@ -100,11 +103,20 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	public DebugTransformLangExecutor(TransformLangParser parser, TransformationGraph graph, Properties globalParameters) {
 		super(parser, graph, globalParameters);
 		this.curpoint = new Breakpoint(null, -1);
-		this.stack = new DebugStack();
+		this.debugStack = new DebugStack();
+		this.stack = this.debugStack;
 	}
 	
 	public DebugTransformLangExecutor(TransformLangParser parser, TransformationGraph graph) {
 		this(parser, graph, null);
+	}
+	
+	public DataRecord[] getInputDataRecords() {
+		return inputRecords;
+	}
+	
+	public DataRecord[] getOutputDataRecords() {
+		return outputRecords;
 	}
 	
 	public void suspend() {
@@ -118,7 +130,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 
 	@Override
 	public final void debug(SimpleNode node, Object data) {
-		if (!inExecution) {
+		if (debugDisabled || !inExecution) {
 			return;
 		} 
 		final int curLine = node.getLine();
@@ -231,12 +243,21 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			CLVFFunctionDeclaration synthFunc = new CLVFFunctionDeclaration(0);
 			synthFunc.setName(synthCall.getName());
 			synthCall.setCallTarget(synthFunc);
-			getStack().enteredSyntheticBlock(synthCall);
+			debugStack.enteredSyntheticBlock(synthCall);
 			Object value = super.executeExpression(expression);
-			getStack().exitedSyntheticBlock(synthCall);
+			debugStack.exitedSyntheticBlock(synthCall);
 			return value;
 		} finally {
 			afterExecute();
+		}
+	}
+	
+	public Object executeExpressionOutsideDebug(SimpleNode expression) {
+		try {
+			debugDisabled = true;
+			return super.executeExpression(expression);
+		} finally {
+			debugDisabled = false;
 		}
 	}
 	
@@ -249,9 +270,9 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			CLVFFunctionDeclaration synthFunc = new CLVFFunctionDeclaration(0);
 			synthFunc.setName(synthCall.getName());
 			synthCall.setCallTarget(synthFunc);
-			getStack().enteredSyntheticBlock(synthCall);
+			debugStack.enteredSyntheticBlock(synthCall);
 			super.executeInternal(node);
-			getStack().exitedSyntheticBlock(synthCall);
+			debugStack.exitedSyntheticBlock(synthCall);
 		} finally {
 			afterExecute();
 		}
@@ -260,7 +281,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	@Override
 	protected void executeFunction(CLVFFunctionCall node) {
 		super.executeFunction(node);
-		if (ctlThread.isStepping()) {
+		if (!debugDisabled && ctlThread.isStepping()) {
 			prevLine = node.getLine();
 			prevSourceId = node.getSourceId();
 			stepAfter(node.getLine(), node);
@@ -270,12 +291,15 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	private long[] createRecordIds(DataRecord records[]) {
 		long result[] = new long[records != null ? records.length : 0];
 		for (int i = 0; i < result.length; ++i) {
-			result[i] = getStack().nextVariableId();
+			result[i] = debugStack.nextVariableId();
 		}
 		return result;
 	}
 	
 	private void beforeExecute() {
+		if (debugDisabled) {
+			return;
+		}
 		prevLine = -1;
 		prevSourceId = null;
 		if (lastActiveThread != java.lang.Thread.currentThread()) {
@@ -294,6 +318,9 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	}
 	
 	private void afterExecute() {
+		if (debugDisabled) {
+			return;
+		}
 		lastActiveThread = ctlThread.getJavaThread();
 		unregisterCurrentThread();
 		stepTarget = -1;
@@ -313,7 +340,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	
 	private StackFrame[] getCallStack(SimpleNode node) {
 		List<StackFrame> callStack = new ArrayList<StackFrame>();
-		ListIterator<FunctionCallFrame> iter = getStack().getFunctionCallStack();
+		ListIterator<FunctionCallFrame> iter = debugStack.getFunctionCallStack();
 		CLVFFunctionCall functionCall = null;
 		int line = node.getLine();
 		String sourceId = node.getSourceId();
@@ -354,7 +381,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	}
 	
 	private void stepOver(final int curLine, SimpleNode node, Object data) {
-		if (stepTarget == getStack().getCurrentFunctionCallIndex()) {
+		if (stepTarget == debugStack.getCurrentFunctionCallIndex()) {
 			stepTarget = -1;
 			ctlThread.setStepping(false);
 			handleSuspension(node, CommandType.STEP_OVER);
@@ -366,7 +393,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	}
 	
 	private void stepOut(final int curLine, SimpleNode node, Object data) {
-		if (stepTarget == getStack().getCurrentFunctionCallIndex()) {
+		if (stepTarget == debugStack.getCurrentFunctionCallIndex()) {
 			stepTarget = -1;
 			ctlThread.setStepping(false);
 			handleSuspension(node, CommandType.STEP_OUT);
@@ -415,7 +442,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	}
 	
 	private void stepOverAfter(int curLine, SimpleNode node) {
-		if (stepTarget == getStack().getCurrentFunctionCallIndex() + 1) {
+		if (stepTarget == debugStack.getCurrentFunctionCallIndex() + 1) {
 			stepTarget = -1;
 			ctlThread.setStepping(false);
 			handleSuspension(node, CommandType.STEP_OVER);
@@ -425,7 +452,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	}
 	
 	private void stepOutAfter(int curLine, SimpleNode node) {
-		if (stepTarget == getStack().getCurrentFunctionCallIndex()) {
+		if (stepTarget == debugStack.getCurrentFunctionCallIndex()) {
 			stepTarget = -1;
 			ctlThread.setStepping(false);
 			handleSuspension(node, CommandType.STEP_OUT);
@@ -501,7 +528,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					List<Variable> global = new ArrayList<>();
 					List<Variable> local = new ArrayList<>();
 					
-					final Object[] globalVariables = getStack().getGlobalVariables();
+					final Object[] globalVariables = debugStack.getGlobalVariables();
 					for (int i = 0; i < globalVariables.length; i++) {
 						if (globalVariables[i] instanceof Variable) {
 							Variable variable = (Variable)globalVariables[i];
@@ -509,7 +536,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 						}
 					}
 					int index = (int) command.getValue();
-					final Object[] localVariables = getStack().getLocalVariables(index);
+					final Object[] localVariables = debugStack.getLocalVariables(index);
 					for (int i = 0; i < localVariables.length; i++) {
 						local.add(((Variable) localVariables[i]).serializableCopy());
 					}
@@ -539,7 +566,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					VariableID varID = (VariableID) command.getValue();
 					Variable var = null;
 					
-					final Object[] globalVars = getStack().getGlobalVariables();
+					final Object[] globalVars = debugStack.getGlobalVariables();
 					for (int i = 0; i < globalVars.length; i++) {
 						if (((Variable) globalVars[i]).getName().equals(varID.getName())) {
 							var = (Variable) globalVars[i];
@@ -547,7 +574,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 						}
 					}
 					
-					final Object[] vars = getStack().getLocalVariables(varID.getStackFrameDepth());
+					final Object[] vars = debugStack.getLocalVariables(varID.getStackFrameDepth());
 					for (int i = 0; i < vars.length; i++) {
 						if (((Variable) vars[i]).getName().equals(varID.getName())) {
 							var = (Variable) vars[i];
@@ -566,7 +593,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					break;
 				case SET_VAR:
 					Variable var2set = (Variable) command.getValue();
-					Variable variable = (Variable)getStack().getVariable(var2set.getName());
+					Variable variable = (Variable)debugStack.getVariable(var2set.getName());
 					status = new DebugStatus(node, CommandType.SET_VAR);
 					if (variable != null) {
 						if (variable.getType() != var2set.getType()){
@@ -615,7 +642,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					status = new DebugStatus(node, CommandType.STEP_OVER);
 					status.setSuspended(false);
 					this.step = DebugStep.STEP_OVER;
-					stepTarget = getStack().getCurrentFunctionCallIndex();
+					stepTarget = debugStack.getCurrentFunctionCallIndex();
 					ctlThread.setStepping(true);
 					handleResume(node, CommandType.STEP_OVER);
 					runLoop = false;
@@ -624,7 +651,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					status = new DebugStatus(node, CommandType.STEP_OUT);
 					status.setSuspended(false);
 					this.step = DebugStep.STEP_OUT;
-					stepTarget = getStack().getPreviousFunctionCallIndex();
+					stepTarget = debugStack.getPreviousFunctionCallIndex();
 					ctlThread.setStepping(true);
 					handleResume(node, CommandType.STEP_OUT);
 					runLoop = false;
@@ -722,11 +749,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		}
 	}
 	
-	@SuppressFBWarnings("BC_UNCONFIRMED_CAST")
-	private DebugStack getStack() {
-		return (DebugStack)stack;
-	}
-	
 	private Node findBreakableNode(SimpleNode startNode,int onLine){
 		if (startNode.getLine() == onLine && startNode.isBreakable()) return startNode;
 		SimpleNode childNode;
@@ -756,11 +778,23 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		if (!graph.getRuntimeContext().isCtlBreakingEnabled()) {
 			return false;
 		}
+		
 		for (Breakpoint bp : getCtlBreakpoints()) {
-			if (bp.equals(breakpoint)) {
-				return bp.isEnabled();
+			if (bp.equals(breakpoint) && bp.isEnabled()) {
+				Condition condition = bp.getCondition();
+				if (condition != null) {
+					try {
+						condition.evaluate(this);
+						return condition.isFulFilled();
+					} catch (TransformLangExecutorRuntimeException e) {
+						debugJMX.notifyConditionError(bp, e.getMessage());
+					}
+				} else {
+					return true;
+				}
 			}
 		}
+		
 		return false;
 	}
 	
