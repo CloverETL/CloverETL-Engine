@@ -47,7 +47,7 @@ public class ValueChangeCondition extends CtlExpressionCondition {
 	}
 
 	@Override
-	public synchronized void evaluate(DebugTransformLangExecutor executor) throws TransformLangExecutorRuntimeException {
+	public void evaluate(DebugTransformLangExecutor executor) throws TransformLangExecutorRuntimeException {
 		this.prevValue = curValue;
 		this.curValue = executor.executeExpressionOutsideDebug(getExpression(executor));
 		this.checkCount++;
