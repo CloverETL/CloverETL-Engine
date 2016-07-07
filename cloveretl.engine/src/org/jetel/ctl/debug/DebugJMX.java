@@ -82,6 +82,12 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		nodeThreads = new ConcurrentHashMap<>();
 		activeThreads = new ConcurrentHashMap<>();
 		executors = new CopyOnWriteArraySet<>();
+		/*
+		 * set initial breakpoints conditions
+		 */
+		for (Breakpoint breakpoint : runtimeContext.getCtlBreakpoints()) {
+			updateBreakpointCondition(breakpoint);
+		}
 	}
 	
 	public void registerTransformLangExecutor(DebugTransformLangExecutor executor) {

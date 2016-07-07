@@ -44,6 +44,7 @@ import org.jetel.ctl.debug.DebugJMX;
 import org.jetel.ctl.debug.DebugStack;
 import org.jetel.ctl.debug.DebugStack.FunctionCallFrame;
 import org.jetel.ctl.debug.condition.Condition;
+import org.jetel.ctl.debug.AdHocExpression;
 import org.jetel.ctl.debug.DebugStatus;
 import org.jetel.ctl.debug.RunToMark;
 import org.jetel.ctl.debug.SerializedDataRecord;
@@ -252,10 +253,18 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		}
 	}
 	
-	public Object executeExpressionOutsideDebug(SimpleNode expression) {
+	public Object executeExpressionOutsideDebug(AdHocExpression expression) {
 		try {
 			debugDisabled = true;
-			return super.executeExpression(expression);
+			final int initialLength = stack.length();
+			for (int i = 0; i < expression.jjtGetNumChildren(); i++) {
+				expression.jjtGetChild(i).jjtAccept(this, null);
+			}
+			if (stack.length() > initialLength) {
+				return stack.pop();
+			} else {
+				return null;
+			}
 		} finally {
 			debugDisabled = false;
 		}
@@ -781,12 +790,15 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		
 		for (Breakpoint bp : getCtlBreakpoints()) {
 			if (bp.equals(breakpoint) && bp.isEnabled()) {
-				Condition condition = bp.getCondition();
+				final Condition condition = bp.getCondition();
 				if (condition != null) {
 					try {
-						condition.evaluate(this);
-						return condition.isFulFilled();
-					} catch (TransformLangExecutorRuntimeException e) {
+						synchronized (condition) {
+							condition.evaluate(this);
+							return condition.isFulFilled();
+						}
+					} catch (Exception e) {
+						bp.setCondition(null);
 						debugJMX.notifyConditionError(bp, e.getMessage());
 					}
 				} else {

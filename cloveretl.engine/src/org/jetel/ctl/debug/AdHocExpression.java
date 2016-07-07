@@ -16,32 +16,24 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.ctl.debug.condition;
+package org.jetel.ctl.debug;
 
-import org.jetel.ctl.DebugTransformLangExecutor;
-import org.jetel.ctl.TransformLangExecutorRuntimeException;
+import org.jetel.ctl.ASTnode.SimpleNode;
 
 /**
  * @author jan.michalica (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 4.7.2016
+ * @created 7.7.2016
  */
-public class BooleanExpressionCondition extends CtlExpressionCondition {
+public class AdHocExpression extends SimpleNode {
 
-	private volatile Object value;
-	
-	public BooleanExpressionCondition(String expression) {
-		super(expression);
+	public AdHocExpression() {
+		super(0);
 	}
 
 	@Override
-	public boolean isFulFilled() {
-		return Boolean.TRUE.equals(value);
-	}
-
-	@Override
-	public void evaluate(DebugTransformLangExecutor executor) throws TransformLangExecutorRuntimeException {
-		this.value = executor.executeExpressionOutsideDebug(getExpression(executor));
+	public SimpleNode duplicate() {
+		throw new UnsupportedOperationException();
 	}
 }

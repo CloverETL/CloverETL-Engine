@@ -22,10 +22,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jetel.ctl.DebugTransformLangExecutor;
-import org.jetel.ctl.ErrorMessage;
 import org.jetel.ctl.TLCompiler;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.ASTnode.CLVFStartExpression;
+import org.jetel.ctl.debug.AdHocExpression;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -38,31 +38,26 @@ import org.jetel.metadata.DataRecordMetadata;
 public abstract class CtlExpressionCondition implements Condition {
 
 	protected String expression;
-	private CLVFStartExpression expressionStart;
+	private AdHocExpression expressionAst;
 	
 	public CtlExpressionCondition(String expression) {
 		super();
 		this.expression = expression;
 	}
 	
-	protected CLVFStartExpression getExpression(DebugTransformLangExecutor executor) throws TransformLangExecutorRuntimeException {
-		if (expressionStart == null) {
+	protected AdHocExpression getExpression(DebugTransformLangExecutor executor) throws TransformLangExecutorRuntimeException {
+		if (expressionAst == null) {
 			TLCompiler compiler = new TLCompiler(executor.getGraph(),
 				getMetadata(executor.getInputDataRecords()), getMetadata(executor.getOutputDataRecords()));
 			compiler.validateExpression(expression);
-			if (compiler.errorCount() > 0) {
-				// TODO improve reported error
-				StringBuilder sb = new StringBuilder();
-				for (ErrorMessage msg : compiler.getDiagnosticMessages()) {
-					sb.append(msg.getErrorMessage());
-					sb.append("/n");
-				}
-				throw new TransformLangExecutorRuntimeException(sb.toString());
+			CLVFStartExpression start = compiler.getExpression();
+			AdHocExpression exp = new AdHocExpression();
+			for (int i = 0; i < start.jjtGetNumChildren(); ++i) {
+				exp.jjtAddChild(start.jjtGetChild(i), i);
 			}
-			expressionStart = compiler.getExpression();
-			executor.init(expressionStart);
+			expressionAst = exp;
 		}
-		return expressionStart;
+		return expressionAst;
 	}
 	
 	private DataRecordMetadata[] getMetadata(DataRecord records[]) {
