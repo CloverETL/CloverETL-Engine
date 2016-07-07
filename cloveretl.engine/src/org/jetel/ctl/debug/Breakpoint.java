@@ -34,7 +34,7 @@ public class Breakpoint implements Comparable<Breakpoint>, Serializable {
     protected int hitCount;
     protected String expression;
     protected boolean valueChange;
-    protected transient Condition condition;
+    protected volatile transient Condition condition;
 	
 	public Breakpoint(String source, int line) {
 		this.source = source;
