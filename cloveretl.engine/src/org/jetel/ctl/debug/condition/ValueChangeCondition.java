@@ -21,6 +21,7 @@ package org.jetel.ctl.debug.condition;
 import org.apache.commons.lang.ObjectUtils;
 import org.jetel.ctl.DebugTransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
+import org.jetel.ctl.ASTnode.SimpleNode;
 
 /**
  * @author jan.michalica (info@cloveretl.com)
@@ -47,9 +48,9 @@ public class ValueChangeCondition extends CtlExpressionCondition {
 	}
 
 	@Override
-	public void evaluate(DebugTransformLangExecutor executor) throws TransformLangExecutorRuntimeException {
+	public void evaluate(DebugTransformLangExecutor executor, SimpleNode context) throws TransformLangExecutorRuntimeException {
 		this.prevValue = curValue;
-		this.curValue = executor.executeExpressionOutsideDebug(getExpression(executor));
+		this.curValue = executor.executeExpressionOutsideDebug(getExpression(executor, context));
 		this.checkCount++;
 	}
 }

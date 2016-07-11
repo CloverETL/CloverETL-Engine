@@ -43,8 +43,6 @@ import org.jetel.ctl.debug.DebugCommand.CommandType;
 import org.jetel.ctl.debug.DebugJMX;
 import org.jetel.ctl.debug.DebugStack;
 import org.jetel.ctl.debug.DebugStack.FunctionCallFrame;
-import org.jetel.ctl.debug.condition.Condition;
-import org.jetel.ctl.debug.AdHocExpression;
 import org.jetel.ctl.debug.DebugStatus;
 import org.jetel.ctl.debug.RunToMark;
 import org.jetel.ctl.debug.SerializedDataRecord;
@@ -53,9 +51,11 @@ import org.jetel.ctl.debug.Thread;
 import org.jetel.ctl.debug.Variable;
 import org.jetel.ctl.debug.VariableID;
 import org.jetel.ctl.debug.VariableRetrievalResult;
+import org.jetel.ctl.debug.condition.Condition;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.string.StringUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -253,18 +253,18 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		}
 	}
 	
-	public Object executeExpressionOutsideDebug(AdHocExpression expression) {
+	public Object executeExpressionOutsideDebug(List<Node> expression) {
 		try {
 			debugDisabled = true;
-			final int initialLength = stack.length();
-			for (int i = 0; i < expression.jjtGetNumChildren(); i++) {
-				expression.jjtGetChild(i).jjtAccept(this, null);
+			Object result = null;
+			for (Node node : expression) {
+				int stackSize = stack.length();
+				node.jjtAccept(this, null);
+				if (stack.length() > stackSize) {
+					result = stack.pop();
+				}
 			}
-			if (stack.length() > initialLength) {
-				return stack.pop();
-			} else {
-				return null;
-			}
+			return result;
 		} finally {
 			debugDisabled = false;
 		}
@@ -381,7 +381,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			runToMark = null;
 			handleSuspension(node, CommandType.RUN_TO_LINE);
 			handleCommand(node);
-		} else if ((runToMark == null || !runToMark.isSkipBreakpoints()) && isActiveBreakpoint(this.curpoint)) {
+		} else if ((runToMark == null || !runToMark.isSkipBreakpoints()) && isActiveBreakpoint(this.curpoint, node)) {
 			ctlThread.setStepping(false);
 			runToMark = null;
 			handleSuspension(node, null);
@@ -783,7 +783,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		return result;
 	}
 	
-	private boolean isActiveBreakpoint(Breakpoint breakpoint) {
+	private boolean isActiveBreakpoint(Breakpoint breakpoint, SimpleNode node) {
 		if (!graph.getRuntimeContext().isCtlBreakingEnabled()) {
 			return false;
 		}
@@ -794,12 +794,12 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 				if (condition != null) {
 					try {
 						synchronized (condition) {
-							condition.evaluate(this);
+							condition.evaluate(this, node);
 							return condition.isFulFilled();
 						}
 					} catch (Exception e) {
 						bp.setCondition(null);
-						debugJMX.notifyConditionError(bp, e.getMessage());
+						debugJMX.notifyConditionError(bp, ExceptionUtils.getMessage(e));
 					}
 				} else {
 					return true;
