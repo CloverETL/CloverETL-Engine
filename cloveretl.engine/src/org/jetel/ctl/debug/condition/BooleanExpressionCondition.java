@@ -20,6 +20,7 @@ package org.jetel.ctl.debug.condition;
 
 import org.jetel.ctl.DebugTransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
+import org.jetel.ctl.ASTnode.SimpleNode;
 
 /**
  * @author jan.michalica (info@cloveretl.com)
@@ -41,7 +42,7 @@ public class BooleanExpressionCondition extends CtlExpressionCondition {
 	}
 
 	@Override
-	public void evaluate(DebugTransformLangExecutor executor) throws TransformLangExecutorRuntimeException {
-		this.value = executor.executeExpressionOutsideDebug(getExpression(executor));
+	public void evaluate(DebugTransformLangExecutor executor, SimpleNode context) throws TransformLangExecutorRuntimeException {
+		this.value = executor.executeExpressionOutsideDebug(getExpression(executor, context));
 	}
 }

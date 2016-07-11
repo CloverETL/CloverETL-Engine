@@ -20,6 +20,7 @@ package org.jetel.ctl.debug.condition;
 
 import org.jetel.ctl.DebugTransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
+import org.jetel.ctl.ASTnode.SimpleNode;
 
 /**
  * @author jan.michalica (info@cloveretl.com)
@@ -30,7 +31,7 @@ import org.jetel.ctl.TransformLangExecutorRuntimeException;
 public class HitCountCondition implements Condition {
 
 	private final int maxHits;
-	private volatile int hitCount;
+	private int hitCount;
 
 	public HitCountCondition(int hitCount) {
 		super();
@@ -47,7 +48,7 @@ public class HitCountCondition implements Condition {
 	}
 
 	@Override
-	public void evaluate(DebugTransformLangExecutor executor) throws TransformLangExecutorRuntimeException {
+	public void evaluate(DebugTransformLangExecutor executor, SimpleNode context) throws TransformLangExecutorRuntimeException {
 		++hitCount;
 	}
 }

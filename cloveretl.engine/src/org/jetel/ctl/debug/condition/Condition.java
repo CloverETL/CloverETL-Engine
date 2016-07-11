@@ -20,6 +20,7 @@ package org.jetel.ctl.debug.condition;
 
 import org.jetel.ctl.DebugTransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
+import org.jetel.ctl.ASTnode.SimpleNode;
 
 /**
  * @author jan.michalica (info@cloveretl.com)
@@ -31,5 +32,5 @@ public interface Condition {
 
 	boolean isFulFilled();
 	
-	void evaluate(DebugTransformLangExecutor executor) throws TransformLangExecutorRuntimeException;
+	void evaluate(DebugTransformLangExecutor executor, SimpleNode context) throws TransformLangExecutorRuntimeException;
 }

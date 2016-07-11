@@ -22,10 +22,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jetel.ctl.DebugTransformLangExecutor;
+import org.jetel.ctl.ErrorMessage;
 import org.jetel.ctl.TLCompiler;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.ASTnode.CLVFStartExpression;
-import org.jetel.ctl.debug.AdHocExpression;
+import org.jetel.ctl.ASTnode.Node;
+import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -38,26 +40,33 @@ import org.jetel.metadata.DataRecordMetadata;
 public abstract class CtlExpressionCondition implements Condition {
 
 	protected String expression;
-	private AdHocExpression expressionAst;
+	private List<Node> nodes;
 	
 	public CtlExpressionCondition(String expression) {
 		super();
 		this.expression = expression;
 	}
 	
-	protected AdHocExpression getExpression(DebugTransformLangExecutor executor) throws TransformLangExecutorRuntimeException {
-		if (expressionAst == null) {
+	protected List<Node> getExpression(DebugTransformLangExecutor executor, SimpleNode context) throws TransformLangExecutorRuntimeException {
+		if (nodes == null) {
 			TLCompiler compiler = new TLCompiler(executor.getGraph(),
 				getMetadata(executor.getInputDataRecords()), getMetadata(executor.getOutputDataRecords()));
 			compiler.validateExpression(expression);
 			CLVFStartExpression start = compiler.getExpression();
-			AdHocExpression exp = new AdHocExpression();
-			for (int i = 0; i < start.jjtGetNumChildren(); ++i) {
-				exp.jjtAddChild(start.jjtGetChild(i), i);
+			if (!start.jjtHasChildren()) {
+				StringBuilder sb = new StringBuilder();
+				for (ErrorMessage msg : compiler.getDiagnosticMessages()) {
+					sb.append(msg.toString());
+					sb.append("\n");
+				}
+				throw new TransformLangExecutorRuntimeException(sb.toString());
 			}
-			expressionAst = exp;
+			nodes = new ArrayList<>();
+			for (int i = 0; i < start.jjtGetNumChildren(); ++i) {
+				nodes.add(start.jjtGetChild(i));
+			}
 		}
-		return expressionAst;
+		return nodes;
 	}
 	
 	private DataRecordMetadata[] getMetadata(DataRecord records[]) {
