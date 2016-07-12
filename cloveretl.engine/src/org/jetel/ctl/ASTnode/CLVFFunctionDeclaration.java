@@ -24,7 +24,7 @@ import org.jetel.ctl.TransformLangParserVisitor;
 import org.jetel.ctl.data.Scope;
 import org.jetel.ctl.data.TLType;
 
-public class CLVFFunctionDeclaration extends SimpleNode {
+public class CLVFFunctionDeclaration extends SimpleNode implements ScopeHolder {
 
 	public String name;
 	private TLType[] formalParams;
@@ -98,10 +98,13 @@ public class CLVFFunctionDeclaration extends SimpleNode {
 		return new CLVFFunctionDeclaration(this);
 	}
 
+	@Override
 	public void setScope(Scope currentScope) {
 		this.scope = currentScope;
 	}
 	
+	
+	@Override
 	public Scope getScope() {
 		return this.scope;
 	}
