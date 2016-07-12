@@ -19,6 +19,7 @@
 package org.jetel.ctl.debug.condition;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.jetel.ctl.DebugTransformLangExecutor;
@@ -51,13 +52,18 @@ public abstract class CtlExpressionCondition implements Condition {
 		if (nodes == null) {
 			TLCompiler compiler = new TLCompiler(executor.getGraph(),
 				getMetadata(executor.getInputDataRecords()), getMetadata(executor.getOutputDataRecords()));
-			compiler.validateExpression(expression);
+			compiler.validateExpressionInContext(expression, context);
 			CLVFStartExpression start = compiler.getExpression();
-			if (!start.jjtHasChildren()) {
+			if (start != null) {
+				executor.init(start);
+			}
+			if (start == null || !start.jjtHasChildren()) {
 				StringBuilder sb = new StringBuilder();
-				for (ErrorMessage msg : compiler.getDiagnosticMessages()) {
-					sb.append(msg.toString());
-					sb.append("\n");
+				for (Iterator<ErrorMessage> it = compiler.getDiagnosticMessages().iterator(); it.hasNext();) {
+					sb.append(it.next().toString());
+					if (it.hasNext()) {
+						sb.append("\n");
+					}
 				}
 				throw new TransformLangExecutorRuntimeException(sb.toString());
 			}
