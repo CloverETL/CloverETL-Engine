@@ -21,6 +21,7 @@ package org.jetel.ctl.debug;
 import java.io.Serializable;
 
 import org.jetel.ctl.debug.Breakpoint;
+import org.jetel.ctl.debug.condition.Condition;
 import org.jetel.util.string.StringUtils;
 
 public class Breakpoint implements Comparable<Breakpoint>, Serializable {
@@ -30,19 +31,23 @@ public class Breakpoint implements Comparable<Breakpoint>, Serializable {
 	protected int line;
 	protected String source;
     protected boolean enabled;
+    protected int hitCount;
+    protected String expression;
+    protected boolean valueChange;
+    protected volatile transient Condition condition;
 	
-	public Breakpoint(String source, int line){
-		this.source=source;
-		this.line=line;
-		this.enabled=true;
+	public Breakpoint(String source, int line) {
+		this.source = source;
+		this.line = line;
+		this.enabled = true;
 	}
 	
 	public boolean isEnabled(){
-		return this.enabled;
+		return enabled;
 	}
 	
 	public void setEnabled(boolean enabled){
-		this.enabled=enabled;
+		this.enabled = enabled;
 	}
 
 	public int getLine() {
@@ -59,6 +64,38 @@ public class Breakpoint implements Comparable<Breakpoint>, Serializable {
 
 	public void setSource(String source) {
 		this.source = source;
+	}
+
+	public int getHitCount() {
+		return hitCount;
+	}
+
+	public void setHitCount(int hitCount) {
+		this.hitCount = hitCount;
+	}
+
+	public String getExpression() {
+		return expression;
+	}
+
+	public void setExpression(String expression) {
+		this.expression = expression;
+	}
+
+	public boolean isValueChange() {
+		return valueChange;
+	}
+
+	public void setValueChange(boolean valueChange) {
+		this.valueChange = valueChange;
+	}
+
+	public Condition getCondition() {
+		return condition;
+	}
+
+	public void setCondition(Condition condition) {
+		this.condition = condition;
 	}
 
 	@Override

@@ -44,12 +44,16 @@ import javax.management.ObjectName;
 import org.apache.log4j.Logger;
 import org.jetel.ctl.DebugTransformLangExecutor;
 import org.jetel.ctl.debug.DebugCommand.CommandType;
+import org.jetel.ctl.debug.condition.BooleanExpressionCondition;
+import org.jetel.ctl.debug.condition.HitCountCondition;
+import org.jetel.ctl.debug.condition.ValueChangeCondition;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.jmx.CloverJMXMBean;
+import org.jetel.util.string.UnicodeBlanks;
 
 /**
  * A JMX bean for CTL debugger. It manages debugging of CTL threads - passes debug commands to threads and sends suspend
@@ -78,6 +82,12 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		nodeThreads = new ConcurrentHashMap<>();
 		activeThreads = new ConcurrentHashMap<>();
 		executors = new CopyOnWriteArraySet<>();
+		/*
+		 * set initial breakpoints conditions
+		 */
+		for (Breakpoint breakpoint : runtimeContext.getCtlBreakpoints()) {
+			updateBreakpointCondition(breakpoint);
+		}
 	}
 	
 	public void registerTransformLangExecutor(DebugTransformLangExecutor executor) {
@@ -147,6 +157,12 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	public void notifyThreadStop(Long threadId) {
 		Notification notification = new Notification(THREAD_STOPPED, this, ++notificationSequence);
 		notification.setUserData(threadId);
+		sendNotification(notification);
+	}
+	
+	public void notifyConditionError(Breakpoint breakpoint, String errorMessage) {
+		Notification notification = new Notification(BP_CONDITION_ERROR, this, ++notificationSequence);
+		notification.setUserData(new BreakpointConditionError(breakpoint, errorMessage));
 		sendNotification(notification);
 	}
 	
@@ -276,6 +292,10 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		for (Breakpoint bp : runtimeContext.getCtlBreakpoints()) {
 			if (bp.equals(breakpoint)) {
 				bp.setEnabled(breakpoint.isEnabled());
+				bp.setHitCount(breakpoint.getHitCount());
+				bp.setExpression(breakpoint.getExpression());
+				bp.setValueChange(breakpoint.isValueChange());
+				updateBreakpointCondition(bp);
 			}
 		}
 	}
@@ -393,6 +413,19 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 				} catch (InstanceNotFoundException e) {
 					throw new JetelRuntimeException(e);
 				}
+			}
+		}
+	}
+	
+	private void updateBreakpointCondition(Breakpoint breakpoint) {
+		breakpoint.setCondition(null);
+		if (breakpoint.getHitCount() > 0) {
+			breakpoint.setCondition(new HitCountCondition(breakpoint.getHitCount()));
+		} else if (!UnicodeBlanks.isBlank(breakpoint.getExpression())) {
+			if (breakpoint.isValueChange()) {
+				breakpoint.setCondition(new ValueChangeCondition(breakpoint.getExpression()));
+			} else {
+				breakpoint.setCondition(new BooleanExpressionCondition(breakpoint.getExpression()));
 			}
 		}
 	}

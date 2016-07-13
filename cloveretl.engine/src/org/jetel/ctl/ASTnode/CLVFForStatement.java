@@ -34,7 +34,7 @@ import org.jetel.ctl.data.Scope;
  * @author mtomcanyi
  *
  */
-public class CLVFForStatement extends SimpleNode {
+public class CLVFForStatement extends SimpleNode implements ScopeHolder {
 
 	private Scope scope;
 	
@@ -133,10 +133,12 @@ public class CLVFForStatement extends SimpleNode {
 		return (SimpleNode)(positions[i] >= 0 ? jjtGetChild(positions[i]) : null);
 	}
 	
+	@Override
 	public void setScope(Scope scope) {
 		this.scope = scope;
 	}
 	
+	@Override
 	public Scope getScope() {
 		return scope;
 	}
