@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1154,6 +1155,22 @@ public final class TransformationGraph extends GraphElement {
 		}
 
 		return ret;
+    }
+    
+    private Map<String, Node> nodesCached = null; // no synchronization, it's not a problem if the value is initialized twice
+    
+    /**
+     * CLO-9097
+     * 
+     * @deprecated
+     * Do not use! This method will be removed in future versions.
+     */
+    @Deprecated
+    public Map<String, Node> getNodesCached() {
+		if (nodesCached == null) {
+			nodesCached = Collections.unmodifiableMap(getNodes());
+		}
+		return nodesCached;
     }
 
     /**
