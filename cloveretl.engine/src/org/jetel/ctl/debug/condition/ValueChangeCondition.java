@@ -31,7 +31,6 @@ import org.jetel.ctl.ASTnode.SimpleNode;
  */
 public class ValueChangeCondition extends CtlExpressionCondition {
 
-	private int checkCount;
 	private Object prevValue;
 	private Object curValue;
 	
@@ -41,9 +40,6 @@ public class ValueChangeCondition extends CtlExpressionCondition {
 
 	@Override
 	public boolean isFulFilled() {
-		if (checkCount < 2) {
-			return false;
-		}
 		return !ObjectUtils.equals(prevValue, curValue);
 	}
 
@@ -51,6 +47,5 @@ public class ValueChangeCondition extends CtlExpressionCondition {
 	public void evaluate(DebugTransformLangExecutor executor, SimpleNode context) throws TransformLangExecutorRuntimeException {
 		this.prevValue = curValue;
 		this.curValue = executor.executeExpressionOutsideDebug(getExpression(executor, context));
-		this.checkCount++;
 	}
 }
