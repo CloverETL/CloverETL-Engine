@@ -32,8 +32,8 @@ import org.jetel.ctl.ASTnode.SimpleNode;
 public class ValueChangeCondition extends CtlExpressionCondition {
 
 	private int checkCount;
-	private volatile Object prevValue;
-	private volatile Object curValue;
+	private Object prevValue;
+	private Object curValue;
 	
 	public ValueChangeCondition(String expression) {
 		super(expression);
@@ -44,7 +44,7 @@ public class ValueChangeCondition extends CtlExpressionCondition {
 		if (checkCount < 2) {
 			return false;
 		}
-		return ObjectUtils.equals(prevValue, curValue);
+		return !ObjectUtils.equals(prevValue, curValue);
 	}
 
 	@Override
