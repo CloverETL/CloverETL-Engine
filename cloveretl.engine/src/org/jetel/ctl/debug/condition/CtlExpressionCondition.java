@@ -54,10 +54,7 @@ public abstract class CtlExpressionCondition implements Condition {
 				getMetadata(executor.getInputDataRecords()), getMetadata(executor.getOutputDataRecords()));
 			compiler.validateExpressionInContext(expression, context);
 			CLVFStartExpression start = compiler.getExpression();
-			if (start != null) {
-				executor.init(start);
-			}
-			if (start == null || !start.jjtHasChildren()) {
+			if (compiler.errorCount() > 0) {
 				StringBuilder sb = new StringBuilder();
 				for (Iterator<ErrorMessage> it = compiler.getDiagnosticMessages().iterator(); it.hasNext();) {
 					sb.append(it.next().toString());
@@ -67,6 +64,7 @@ public abstract class CtlExpressionCondition implements Condition {
 				}
 				throw new TransformLangExecutorRuntimeException(sb.toString());
 			}
+			executor.init(start);
 			nodes = new ArrayList<>();
 			for (int i = 0; i < start.jjtGetNumChildren(); ++i) {
 				nodes.add(start.jjtGetChild(i));
