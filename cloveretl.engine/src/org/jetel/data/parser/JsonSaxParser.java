@@ -59,7 +59,7 @@ public class JsonSaxParser extends SAXParser {
 	private static final String XML_NAME_ARRAY = "json_array"; //$NON-NLS-1$
 	private static final String XML_NAME_EMPTY = "UNNAMED"; //$NON-NLS-1$
 	private static final String XML_NAME_INVALID = "__INVALID_ELEMENT_NAME"; //$NON-NLS-1$
-	private static final String XML_ARRAY_DEPTH = "arrayDepth"; //$NON-NLS-1$
+	public static final String XML_ARRAY_DEPTH = "arrayDepth"; //$NON-NLS-1$
 	public static final String XML_ARRAY_ELEM = "arrayElem"; //$NON-NLS-1$
 
 	private static final JsonFactory JSON_FACTORY = new JsonFactory();
