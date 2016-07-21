@@ -798,15 +798,12 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 							return condition.isFulFilled();
 						}
 					} catch (Exception e) {
-						bp.setCondition(null);
 						debugJMX.notifyConditionError(bp, ExceptionUtils.getMessage(e));
 					}
-				} else {
-					return true;
 				}
+				return true;
 			}
 		}
-		
 		return false;
 	}
 	

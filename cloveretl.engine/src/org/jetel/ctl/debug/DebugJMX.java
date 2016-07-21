@@ -53,6 +53,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.jmx.CloverJMXMBean;
+import org.jetel.util.CompareUtils;
 import org.jetel.util.string.UnicodeBlanks;
 
 /**
@@ -234,11 +235,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		Arrays.sort(result, new Comparator<Thread>() {
 			@Override
 			public int compare(Thread t1, Thread t2) {
-				if (t1.getName() == null) {
-					return t2.getName() == null ? 0 : -1;
-				} else {
-					return t2.getName() == null ? 1 : t1.getName().compareTo(t2.getName());
-				}
+				return CompareUtils.compare(t1.getName(), t2.getName());
 			}
 		});
 		return result;
