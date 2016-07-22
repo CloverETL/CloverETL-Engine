@@ -509,9 +509,9 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         childThreads = new ArrayList<Thread>();
 
         //cluster related settings can be used only in cluster environment
-        if (!getGraph().getAuthorityProxy().isClusterEnabled()) {
+        if (!getGraph().getAuthorityProxy().isPartitioningEnabled()) {
         	//cluster components cannot be used in non-cluster environment
-        	if (ClusterUtils.isClusterComponent(getType())) {
+        	if (ClusterUtils.isDataPartitioningComponent(getType())) {
 				throw new JetelRuntimeException("Cluster component cannot be used in non-cluster environment.");
         	}
 			//non empty allocation is not allowed in non-cluster environment
