@@ -22,6 +22,7 @@ import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -43,12 +44,17 @@ import javax.management.ObjectName;
 import org.apache.log4j.Logger;
 import org.jetel.ctl.DebugTransformLangExecutor;
 import org.jetel.ctl.debug.DebugCommand.CommandType;
+import org.jetel.ctl.debug.condition.BooleanExpressionCondition;
+import org.jetel.ctl.debug.condition.HitCountCondition;
+import org.jetel.ctl.debug.condition.ValueChangeCondition;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.jmx.CloverJMXMBean;
+import org.jetel.util.CompareUtils;
+import org.jetel.util.string.UnicodeBlanks;
 
 /**
  * A JMX bean for CTL debugger. It manages debugging of CTL threads - passes debug commands to threads and sends suspend
@@ -77,6 +83,12 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		nodeThreads = new ConcurrentHashMap<>();
 		activeThreads = new ConcurrentHashMap<>();
 		executors = new CopyOnWriteArraySet<>();
+		/*
+		 * set initial breakpoints conditions
+		 */
+		for (Breakpoint breakpoint : runtimeContext.getCtlBreakpoints()) {
+			updateBreakpointCondition(breakpoint);
+		}
 	}
 	
 	public void registerTransformLangExecutor(DebugTransformLangExecutor executor) {
@@ -149,6 +161,12 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		sendNotification(notification);
 	}
 	
+	public void notifyConditionError(Breakpoint breakpoint, String errorMessage) {
+		Notification notification = new Notification(BP_CONDITION_ERROR, this, ++notificationSequence);
+		notification.setUserData(new BreakpointConditionError(breakpoint, errorMessage));
+		sendNotification(notification);
+	}
+	
 	@Override
 	public void resume(long threadId) {
 		for (ExecutorThread thread : activeThreads.values()) {
@@ -213,7 +231,13 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 			}
 		}
 		Thread result[] = threads.toArray(new Thread[threads.size()]);
-		Arrays.sort(result);
+		
+		Arrays.sort(result, new Comparator<Thread>() {
+			@Override
+			public int compare(Thread t1, Thread t2) {
+				return CompareUtils.compare(t1.getName(), t2.getName());
+			}
+		});
 		return result;
 	}
 
@@ -265,6 +289,10 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		for (Breakpoint bp : runtimeContext.getCtlBreakpoints()) {
 			if (bp.equals(breakpoint)) {
 				bp.setEnabled(breakpoint.isEnabled());
+				bp.setHitCount(breakpoint.getHitCount());
+				bp.setExpression(breakpoint.getExpression());
+				bp.setValueChange(breakpoint.isValueChange());
+				updateBreakpointCondition(bp);
 			}
 		}
 	}
@@ -382,6 +410,19 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 				} catch (InstanceNotFoundException e) {
 					throw new JetelRuntimeException(e);
 				}
+			}
+		}
+	}
+	
+	private void updateBreakpointCondition(Breakpoint breakpoint) {
+		breakpoint.setCondition(null);
+		if (breakpoint.getHitCount() > 0) {
+			breakpoint.setCondition(new HitCountCondition(breakpoint.getHitCount()));
+		} else if (!UnicodeBlanks.isBlank(breakpoint.getExpression())) {
+			if (breakpoint.isValueChange()) {
+				breakpoint.setCondition(new ValueChangeCondition(breakpoint.getExpression()));
+			} else {
+				breakpoint.setCondition(new BooleanExpressionCondition(breakpoint.getExpression()));
 			}
 		}
 	}

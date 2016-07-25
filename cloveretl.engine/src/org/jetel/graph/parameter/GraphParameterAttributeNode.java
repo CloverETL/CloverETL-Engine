@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlValue;
  * @created 1. 5. 2014
  */
 @XmlRootElement(name="attr")
-@XmlType(propOrder = { "name" })
+@XmlType(propOrder = { "name", "value" })
 public class GraphParameterAttributeNode {
 	
 	private String name;

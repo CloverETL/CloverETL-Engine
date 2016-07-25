@@ -228,7 +228,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 	
 	@Override
 	public void postExecute(){
-		if (carouselInitialized && (tapeCarousel!=null)) {
+		if (tapeCarousel != null) {
 			try {
 				tapeCarousel.free();
 				carouselInitialized = false;
