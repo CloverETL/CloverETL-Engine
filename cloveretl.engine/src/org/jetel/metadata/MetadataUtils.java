@@ -28,6 +28,7 @@ import java.nio.channels.WritableByteChannel;
 
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.bytes.CloverBuffer;
+import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.stream.StreamUtils;
 
 /**
@@ -161,5 +162,28 @@ public class MetadataUtils {
 			throw new JetelRuntimeException("Metadata " + metadata.getId() + " serialization failed.", e);
 		}
     }
+    
+    /**
+	 * Produces concatenation of metadata.
+	 * 
+	 * Result metadata are made by copying first metadata and copying all fields from subsequent metadata. 
+	 */
+    public static DataRecordMetadata getConcatenatedMetadata(DataRecordMetadata[] inputMetadata, String resultMetaName) {
+    	if (inputMetadata == null || inputMetadata.length == 0) {
+    		throw new JetelRuntimeException("Metadata concatenation failed");
+    	}
+		DataRecordMetadata outMeta = inputMetadata[0].duplicate();
+		for (int i = 1; i < inputMetadata.length; i++) {
+			for (DataFieldMetadata inFieldMeta : inputMetadata[i].getFields()) {
+				outMeta.addField(inFieldMeta.duplicate());
+			}
+		}
+		outMeta.setLabel(null); // because of normalization which is done later (it copies label into name, we don't want that)
+		outMeta.setName(resultMetaName);
+		TypedProperties props = outMeta.getRecordProperties();
+		props.clear(); // clear GUI properties (preview attachment etc.)
+		DataRecordMetadata.normalizeMetadata(outMeta);
+		return outMeta;
+	}
     
 }
