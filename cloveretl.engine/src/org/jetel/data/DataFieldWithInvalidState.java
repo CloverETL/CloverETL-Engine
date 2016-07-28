@@ -40,7 +40,7 @@ import org.jetel.util.bytes.CloverBuffer;
 public class DataFieldWithInvalidState extends DataField {
 
 	/** Wrapped data field. */
-	private DataField dataField;
+	protected DataField dataField;
 
 	/** Validity flag. */
 	private boolean valid = true;
