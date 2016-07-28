@@ -38,12 +38,14 @@ import org.jetel.ctl.ASTnode.Node;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.debug.Breakpoint;
+import org.jetel.ctl.debug.CTLExpressionHelper;
 import org.jetel.ctl.debug.DebugCommand;
 import org.jetel.ctl.debug.DebugCommand.CommandType;
 import org.jetel.ctl.debug.DebugJMX;
 import org.jetel.ctl.debug.DebugStack;
 import org.jetel.ctl.debug.DebugStack.FunctionCallFrame;
 import org.jetel.ctl.debug.DebugStatus;
+import org.jetel.ctl.debug.ExpressionResult;
 import org.jetel.ctl.debug.RunToMark;
 import org.jetel.ctl.debug.SerializedDataRecord;
 import org.jetel.ctl.debug.StackFrame;
@@ -687,6 +689,12 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					status = new DebugStatus(node, CommandType.GET_CALLSTACK);
 					status.setValue(callStack);
 					break;
+				case EVALUATE_EXPRESSION:
+					String expression = (String)command.getValue();
+					ExpressionResult er = evaluateExpression(expression, node);
+					status = new DebugStatus(node, CommandType.EVALUATE_EXPRESSION);
+					status.setValue(er);
+					break;
 				case REMOVE_BREAKPOINT:{
 					Breakpoint bpoint = (Breakpoint) command.getValue();
 					status = new DebugStatus(node, CommandType.REMOVE_BREAKPOINT);
@@ -756,6 +764,17 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 				}
 			}
 		}
+	}
+	
+	private ExpressionResult evaluateExpression(String expression, SimpleNode context) {
+		ExpressionResult result = new ExpressionResult();
+		try {
+			List<Node> compiled = CTLExpressionHelper.compileExpression(expression, this, context);
+			result.setValue(executeExpressionOutsideDebug(compiled));
+		} catch (Exception e) {
+			result.setError(e);
+		}
+		return result;
 	}
 	
 	private Node findBreakableNode(SimpleNode startNode,int onLine){

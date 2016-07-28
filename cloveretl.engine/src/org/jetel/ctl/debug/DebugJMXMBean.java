@@ -66,4 +66,6 @@ public interface DebugJMXMBean {
     VariableRetrievalResult listVariables(long threadId, int stackFrameDepth);
     
     Variable getVariableValue(long threadId, int stackFrameDepth, String name);
+    
+    ExpressionResult evaluateExpression(String expression, long threadId, int callStackIndex);
 }

@@ -16,36 +16,33 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.ctl.debug.condition;
+package org.jetel.ctl.debug;
 
-import java.util.List;
-
-import org.jetel.ctl.DebugTransformLangExecutor;
-import org.jetel.ctl.TransformLangExecutorRuntimeException;
-import org.jetel.ctl.ASTnode.Node;
-import org.jetel.ctl.ASTnode.SimpleNode;
-import org.jetel.ctl.debug.CTLExpressionHelper;
+import java.io.Serializable;
 
 /**
  * @author jan.michalica (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 4.7.2016
+ * @created 27.7.2016
  */
-public abstract class CtlExpressionCondition implements Condition {
+public class ExpressionResult implements Serializable {
 
-	protected String expression;
-	private List<Node> nodes;
+	private static final long serialVersionUID = 1L;
 	
-	public CtlExpressionCondition(String expression) {
-		super();
-		this.expression = expression;
+	private Object value;
+	private Exception error;
+	
+	public Object getValue() {
+		return value;
 	}
-	
-	protected List<Node> getExpression(DebugTransformLangExecutor executor, SimpleNode context) throws TransformLangExecutorRuntimeException {
-		if (nodes == null) {
-			nodes = CTLExpressionHelper.compileExpression(expression, executor, context);
-		}
-		return nodes;
+	public void setValue(Object value) {
+		this.value = value;
+	}
+	public Exception getError() {
+		return error;
+	}
+	public void setError(Exception error) {
+		this.error = error;
 	}
 }
