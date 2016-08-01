@@ -388,12 +388,21 @@ public class JsonExtract extends Node {
 				return runIt ? Result.FINISHED_OK : Result.ABORTED; // we were stopped by a stop signal... probably
 			}
 			throw new JetelException("SAX parsing exception", ex);
+		} finally {
+			broadcastEOF();
 		}
-
-		broadcastEOF();
+		
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 
 	}
+	
+	@Override
+    public void postExecute() throws ComponentNotReadyException {
+    	super.postExecute();
+    	if (m_inputSource != null) {
+    		org.apache.commons.io.IOUtils.closeQuietly(m_inputSource.getByteStream());
+    	}
+    }
 
 	/**
 	 * Switch to the next source file.
