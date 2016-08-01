@@ -46,7 +46,8 @@ public class DebugCommand {
 		STEP_OUT, 
 		STEP_OVER,
 		RUN_TO_LINE,
-		SUSPEND;
+		SUSPEND,
+		EVALUATE_EXPRESSION;
 	}
 	protected CommandType type;
 
