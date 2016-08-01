@@ -47,6 +47,7 @@ import org.jetel.ctl.debug.DebugCommand.CommandType;
 import org.jetel.ctl.debug.condition.BooleanExpressionCondition;
 import org.jetel.ctl.debug.condition.HitCountCondition;
 import org.jetel.ctl.debug.condition.ValueChangeCondition;
+import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Node;
@@ -353,6 +354,22 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 			throw new RuntimeException(e);
 		}
 		return null;
+	}
+	
+	@Override
+	public ExpressionResult evaluateExpression(String expression, long threadId, int callStackIndex) {
+		DebugCommand command = new DebugCommand(CommandType.EVALUATE_EXPRESSION);
+		command.setValue(expression);
+		try {
+			DebugStatus status = processCommand(threadId, command);
+			ExpressionResult result = (ExpressionResult)status.getValue();
+			if (result.getValue() instanceof DataRecord) {
+				result.setValue(SerializedDataRecord.fromDataRecord((DataRecord)result.getValue()));
+			}
+			return result;
+		} catch (InterruptedException e) {
+			throw new RuntimeException();
+		}
 	}
 	
 	public void free() {
