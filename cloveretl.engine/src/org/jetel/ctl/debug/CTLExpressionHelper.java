@@ -59,7 +59,6 @@ public class CTLExpressionHelper {
 			throw new TransformLangExecutorRuntimeException(sb.toString());
 		}
 		executor.init(start);
-		result = new ArrayList<>();
 		for (int i = 0; i < start.jjtGetNumChildren(); ++i) {
 			result.add(start.jjtGetChild(i));
 		}
