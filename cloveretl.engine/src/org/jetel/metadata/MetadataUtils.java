@@ -25,11 +25,13 @@ import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.bytes.CloverBuffer;
-import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.stream.StreamUtils;
+import org.jetel.util.string.StringUtils;
 
 /**
  * Various utilities for data record metadata manipulation.
@@ -164,25 +166,64 @@ public class MetadataUtils {
     }
     
     /**
+     * CLO-9269
 	 * Produces concatenation of metadata.
 	 * 
-	 * Result metadata are made by copying first metadata and copying all fields from subsequent metadata. 
+	 * Result metadata are made by copying first metadata and copying all fields from subsequent metadata.
+	 * 
+	 * Delimiters are normalized to produce consistent metadata (all fields with same delimiter)
 	 */
     public static DataRecordMetadata getConcatenatedMetadata(DataRecordMetadata[] inputMetadata, String resultMetaName) {
     	if (inputMetadata == null || inputMetadata.length == 0) {
     		throw new JetelRuntimeException("Metadata concatenation failed");
     	}
-		DataRecordMetadata outMeta = inputMetadata[0].duplicate();
+    	
+    	boolean fixLen = true; // should result metadata be fix length?
+    	for (DataRecordMetadata meta : inputMetadata) {
+    		if (meta.getParsingType() != DataRecordParsingType.FIXEDLEN) {
+    			fixLen = false;
+    			break;
+    		}
+    	}
+    	
+    	DataRecordMetadata outMeta = inputMetadata[0].duplicate();
+    	ArrayList<String> outFieldNameList = new ArrayList<>(Arrays.asList(inputMetadata[0].getFieldNamesArray()));
+		if (!fixLen) {
+			if (outMeta.getParsingType() != DataRecordParsingType.DELIMITED) {
+				outMeta.setParsingType(DataRecordParsingType.DELIMITED);
+			}
+			if (outMeta.getFieldDelimiter() == null) {
+				outMeta.setFieldDelimiter("|");
+			}
+			if (outMeta.getRecordDelimiter() == null) {
+				outMeta.setRecordDelimiter(System.getProperty("line.separator"));
+			}
+		}
+		
+		// add fields from remaining inputs
 		for (int i = 1; i < inputMetadata.length; i++) {
 			for (DataFieldMetadata inFieldMeta : inputMetadata[i].getFields()) {
 				outMeta.addField(inFieldMeta.duplicate());
+				outFieldNameList.add(inFieldMeta.getName());
 			}
 		}
-		outMeta.setLabel(null); // because of normalization which is done later (it copies label into name, we don't want that)
+		
+		outMeta.getRecordProperties().clear(); // clear GUI properties (preview attachment etc.)
+		
 		outMeta.setName(resultMetaName);
-		TypedProperties props = outMeta.getRecordProperties();
-		props.clear(); // clear GUI properties (preview attachment etc.)
-		DataRecordMetadata.normalizeMetadata(outMeta);
+		String[] normalizedNames = StringUtils.normalizeNames(outFieldNameList); // normalize field names (handles duplicate field names)
+		for (int i = 0; i < normalizedNames.length; i++) {
+			DataFieldMetadata field = outMeta.getField(i);
+			field.setName(normalizedNames[i]);
+			if (!fixLen) {
+				field.setSize(0);
+			}
+			field.setDelimiter(null);
+		}
+		
+		// add and remove a field to force rebuild of name index - this is necessary because we changed names of some fields
+		outMeta.addField(new DataFieldMetadata("dummy", null));
+		outMeta.delField(outMeta.getNumFields() - 1);
 		return outMeta;
 	}
     
