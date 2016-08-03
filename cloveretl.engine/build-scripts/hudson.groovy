@@ -13,6 +13,7 @@ def workspace = env['WORKSPACE']
 assert workspace
 def jenkinsBuildUrl = env['BUILD_URL']
 assert jenkinsBuildUrl
+def noTests = env['NO_TESTS']
 
 def javaVersion = System.getProperty("java.specification.version", "")
 
@@ -22,6 +23,8 @@ assert jobNameM.matches()
 jobBasename = jobNameM[0][1]
 jobGoal = jobNameM[0][3]
 versionSuffix = jobNameM[0][4]
+
+if( noTests ) runTests = false
 
 if( !jobGoal ) jobGoal = "after-commit"
 runTests = jobGoal.startsWith("tests") && jobGoal.contains("java") 
