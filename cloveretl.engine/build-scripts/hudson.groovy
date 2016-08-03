@@ -13,7 +13,6 @@ def workspace = env['WORKSPACE']
 assert workspace
 def jenkinsBuildUrl = env['BUILD_URL']
 assert jenkinsBuildUrl
-def noTests = env['NO_TESTS']
 
 def javaVersion = System.getProperty("java.specification.version", "")
 
@@ -56,8 +55,8 @@ println "buildNumber   = " + buildNumber
 println "javaVersion   = " + javaVersion 
 println "====================================================="
 
-println "Environment variables:"
-System.getenv().each{ println "\t${it}" }
+//println "Environment variables:"
+//System.getenv().each{ println "\t${it}" }
 
 baseD = new File( new File('').absolutePath )
 engineD = new File( baseD, "cloveretl.engine" ) 
@@ -70,8 +69,10 @@ new File(baseD, "cloveretl.test.scenarios/jobIdent.prm").write("JOB_IDENT=" + jo
 new File(baseD, "cloveretl.examples/ExtExamples/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 
 antCustomEnv = ["ANT_OPTS":"-Xmx2048m -XX:MaxPermSize=256m"]
+println "jobGoal = " + jobGoal
 if( !runTests ){
 	// compile engine and run some tests
+	println "**** Compile engine and run some tests"
 	antBaseD = engineD
 	antArgs = [
 		"-Dadditional.plugin.list=cloveretl.license.engine,cloveretl.component.hadoop,cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.tlfunction.commercial,cloveretl.ctlfunction.commercial,cloveretl.addressdoctor.commercial,cloveretl.profiler.commercial,cloveretl.mongodb.commercial,cloveretl.validator.commercial,cloveretl.initiate.engine,cloveretl.spreadsheet.commercial,cloveretl.oem.example.component,cloveretl.subgraph.commercial,cloveretl.tableau",
@@ -82,23 +83,27 @@ if( !runTests ){
 		"-Djavaversion=${javaVersion}",
 	]
 	if( jobGoal == "after-commit" ) {
+	println "**** Running ant target reports-hudson"
 		antTarget = "reports-hudson"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.7-Sun"
 		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/SFTPOperationHandlerTest.java,org/jetel/component/fileoperation/FTPOperationHandlerTest.java,com/opensys/cloveretl/component/EmailFilterTest.java"
 		antArgs += "-Druntests-target=runtests-scenario-after-commit"
 	} else if( jobGoal == "optimalized"){
-		antTarget = "reports-hudson-optimalized"
+	println "**** Running ant target reports-hudson-optimalized"	
+	antTarget = "reports-hudson-optimalized"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.6-Sun_optimalized"
 		antArgs += "-Dobfuscate.plugin.pattern=cloveretl\\.(?!ctlfunction).*"
 		antArgs += "-Druntests-dontrun=true"
 		antArgs += "-Druntests-target=runtests-scenario-after-commit-with-engine-classes"
 	} else if( jobGoal == "detail"){
+		println "**** Running ant target reports-hudson-detail"	
 		antTarget = "reports-hudson-detail"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.7-Sun_detail"
 		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java"
 		antArgs += "-Drun.coverage=true"
 		antArgs += "-Druntests-target=runtests-scenario-after-commit"
 	} else if( jobGoal == "tests-reset"){
+		println "****  Running ant target runtests-tests-reset"	
 		antTarget = "runtests-tests-reset"
 		antArgs += "-Druntests-plugins-dontrun=true"	
 		antArgs += "-Dtest.include=org/jetel/graph/ResetTest.java"
