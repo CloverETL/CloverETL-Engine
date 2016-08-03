@@ -24,8 +24,6 @@ jobBasename = jobNameM[0][1]
 jobGoal = jobNameM[0][3]
 versionSuffix = jobNameM[0][4]
 
-if( noTests ) runTests = false
-
 if( !jobGoal ) jobGoal = "after-commit"
 runTests = jobGoal.startsWith("tests") && jobGoal.contains("java") 
 if( runTests ) {
@@ -69,6 +67,8 @@ jobIdent += "-${versionSuffix}"
 jobIdent = jobIdent.replaceAll('-', '_').toLowerCase().replaceAll("after_commit", "a_c")
 new File(baseD, "cloveretl.test.scenarios/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 new File(baseD, "cloveretl.examples/ExtExamples/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
+
+if( noTests ) runTests = false
 
 antCustomEnv = ["ANT_OPTS":"-Xmx2048m -XX:MaxPermSize=256m"]
 if( !runTests ){
