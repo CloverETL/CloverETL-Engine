@@ -455,7 +455,7 @@ public class ResetTest extends CloverTestCase {
 
 			EngineInitializer.initGraph(graph);
 
-			for (int i = 0; i < 3; i++) {
+			for (int i = 0; i < 2; i++) {
 
 				final Future<Result> futureResult = runGraph.executeGraph(graph, runtimeContext);
 
