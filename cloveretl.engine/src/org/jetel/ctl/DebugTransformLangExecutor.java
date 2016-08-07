@@ -770,7 +770,8 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		ExpressionResult result = new ExpressionResult();
 		try {
 			List<Node> compiled = CTLExpressionHelper.compileExpression(expression, this, context);
-			result.setValue(executeExpressionOutsideDebug(compiled));
+			Object value = executeExpressionOutsideDebug(compiled);
+			result.setValue(Variable.deepCopy(value));
 		} catch (Exception e) {
 			result.setError(e);
 		}
