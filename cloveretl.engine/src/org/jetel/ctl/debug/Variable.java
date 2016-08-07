@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.jetel.ctl.data.TLType;
+import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 
 public class Variable implements Cloneable, Serializable {
@@ -98,7 +99,7 @@ public class Variable implements Cloneable, Serializable {
 		}
 	}
 	
-	private Object deepCopy(Object value) {
+	public static Object deepCopy(Object value) {
 		if (value instanceof Date) {
 			return new Date(((Date)value).getTime());
 		} else if (value instanceof List<?>) {
@@ -107,12 +108,14 @@ public class Variable implements Cloneable, Serializable {
 			return deepCopy((Map<?, ?>)value);
 		} else if (value instanceof DataRecord) {
 			return SerializedDataRecord.fromDataRecord((DataRecord)value);
+		} else if (value instanceof DataField) {
+			return SerializedDataField.fromDataField((DataField)value);
 		} else {
 			return value; // immutable objects
 		}
 	}
 	
-	private List<?> deepCopy(List<?> list) {
+	private static List<?> deepCopy(List<?> list) {
 		List<Object> result = new ArrayList<>(list.size());
 		for (Object o : list) {
 			result.add(deepCopy(o));
@@ -120,7 +123,7 @@ public class Variable implements Cloneable, Serializable {
 		return result;
 	}
 	
-	private Map<?, ?> deepCopy(Map<?, ?> map) {
+	private static Map<?, ?> deepCopy(Map<?, ?> map) {
 		Map<Object, Object> result = new LinkedHashMap<>(map.size());
 		for (Entry<?, ?> e : map.entrySet()) {
 			result.put(deepCopy(e.getKey()), deepCopy(e.getValue()));

@@ -333,7 +333,8 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("ValidationDefaultLanguageSettings.grf") // server test
 							&& !file.getName().equals("DB_rollback_CLO-4878.grf") // server test
 							&& !file.getName().equals("ValidationTransformLifeCycle.grf") // have to be run only once
-							&& !file.getName().equals("Tableau-ThreadSafe.grf"); // disabled test
+							&& !file.getName().equals("Tableau-ThreadSafe.grf") // disabled test
+							&& !file.getParentFile().getName().equals("Salesforce"); // graphs in Salesforce directory, disabled because of request limits
 				}
 			};
 			
@@ -454,7 +455,7 @@ public class ResetTest extends CloverTestCase {
 
 			EngineInitializer.initGraph(graph);
 
-			for (int i = 0; i < 3; i++) {
+			for (int i = 0; i < 2; i++) {
 
 				final Future<Result> futureResult = runGraph.executeGraph(graph, runtimeContext);
 
