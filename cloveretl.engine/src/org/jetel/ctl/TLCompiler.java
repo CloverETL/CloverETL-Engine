@@ -521,8 +521,8 @@ public class TLCompiler implements ITLCompiler {
 	private Scope findContainingScope(SimpleNode context) {
 		Node node = context;
 		while (node != null) {
-			if (node instanceof ScopeHolder) {
-				return ((ScopeHolder)node).getScope();
+			if (node.jjtGetParent() instanceof ScopeHolder) {
+				return ((ScopeHolder)node.jjtGetParent()).getScope();
 			}
 			if (node.jjtGetParent() instanceof CLVFIfStatement) {
 				CLVFIfStatement ifStatement = (CLVFIfStatement)node.jjtGetParent();
