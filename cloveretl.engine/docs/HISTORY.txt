@@ -2,6 +2,21 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-3-0-M2
+------------
+
+* CTL Debugging
+	- CTL conditional breakpoints
+	- Hit count breakpoints conditions 
+	- Inspect action 
+	- Watch action
+* Salesforce support
+	- Salecforce connection
+	- Salesforce bulk reader
+	- Salesforce bulk writer
+* Upgrade of bundled Eclipse 4.5 (Mars)
+* JNDI resource browser
+
 REL-4-3-0-M1
 ------------
 
