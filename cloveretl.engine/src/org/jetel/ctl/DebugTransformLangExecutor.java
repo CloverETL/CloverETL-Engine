@@ -45,6 +45,7 @@ import org.jetel.ctl.debug.DebugJMX;
 import org.jetel.ctl.debug.DebugStack;
 import org.jetel.ctl.debug.DebugStack.FunctionCallFrame;
 import org.jetel.ctl.debug.DebugStatus;
+import org.jetel.ctl.debug.CTLExpression;
 import org.jetel.ctl.debug.ExpressionResult;
 import org.jetel.ctl.debug.RunToMark;
 import org.jetel.ctl.debug.SerializedDataRecord;
@@ -690,7 +691,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					status.setValue(callStack);
 					break;
 				case EVALUATE_EXPRESSION:
-					String expression = (String)command.getValue();
+					CTLExpression expression = (CTLExpression)command.getValue();
 					ExpressionResult er = evaluateExpression(expression, node);
 					status = new DebugStatus(node, CommandType.EVALUATE_EXPRESSION);
 					status.setValue(er);
@@ -766,14 +767,28 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		}
 	}
 	
-	private ExpressionResult evaluateExpression(String expression, SimpleNode context) {
+	private ExpressionResult evaluateExpression(CTLExpression expression, SimpleNode context) {
+		DebugStack originalStack = this.debugStack;
 		ExpressionResult result = new ExpressionResult();
 		try {
-			List<Node> compiled = CTLExpressionHelper.compileExpression(expression, this, context);
+			if (expression.getCallStackIndex() < this.debugStack.getCurrentFunctionCallIndex()) {
+				FunctionCallFrame callFrame = this.debugStack.getFunctionCall(expression.getCallStackIndex() + 1);
+
+				if (callFrame == null) {
+					throw new JetelRuntimeException(String.format("Functional call for frame %d not exists.", expression.getCallStackIndex()));
+				}
+
+				context = callFrame.getFunctionCall();
+				DebugStack frameStack = this.debugStack.createShallowCopyUpToFrame(callFrame);
+				this.stack = this.debugStack = frameStack;
+			}
+			List<Node> compiled = CTLExpressionHelper.compileExpression(expression.getExpression(), this, context);
 			Object value = executeExpressionOutsideDebug(compiled);
 			result.setValue(Variable.deepCopy(value));
 		} catch (Exception e) {
 			result.setError(e);
+		} finally {
+			this.stack = this.debugStack = originalStack;
 		}
 		return result;
 	}
