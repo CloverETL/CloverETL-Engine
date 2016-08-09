@@ -26,6 +26,7 @@ import org.jetel.ctl.Stack;
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
 import org.jetel.ctl.data.Scope;
 import org.jetel.ctl.data.TLType;
+import org.jetel.exception.JetelRuntimeException;
 
 /**
  * @author dpavlis (info@cloveretl.com)
@@ -78,6 +79,14 @@ public class DebugStack extends Stack {
 			return callStack.size() - 2;
 		}
 		return -1;
+	}
+	
+	public FunctionCallFrame getFunctionCall(int stackFrameIndex) {
+		int callStackIndex = stackFrameIndex;
+		if (0 <= callStackIndex && callStackIndex < callStack.size()) {
+			return callStack.get(callStackIndex);
+		}
+		return null;
 	}
 	
 	@Override
@@ -190,5 +199,17 @@ public class DebugStack extends Stack {
 	
 	private long nextCallId() {
 		return ++callIdSeq;
+	}
+	
+	public DebugStack createShallowCopyUpToFrame(FunctionCallFrame callFrame) {
+		
+		if (!this.callStack.contains(callFrame)) {
+			throw new JetelRuntimeException(String.format("Call stack does not contain given call frame."));
+		}
+		
+		DebugStack debugStack = new DebugStack();
+		debugStack.variableStack = new ArrayList<>(this.variableStack.subList(0, callFrame.varStackIndex));
+	    debugStack.callStack = new ArrayList<>(this.callStack.subList(0, this.callStack.indexOf(callFrame)));
+		return debugStack;
 	}
 }

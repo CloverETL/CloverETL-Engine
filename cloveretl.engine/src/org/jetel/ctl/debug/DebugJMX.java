@@ -358,7 +358,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	@Override
 	public ExpressionResult evaluateExpression(String expression, long threadId, int callStackIndex) {
 		DebugCommand command = new DebugCommand(CommandType.EVALUATE_EXPRESSION);
-		command.setValue(expression);
+		command.setValue(new CTLExpression(expression, callStackIndex));
 		try {
 			DebugStatus status = processCommand(threadId, command);
 			return (ExpressionResult)status.getValue();
