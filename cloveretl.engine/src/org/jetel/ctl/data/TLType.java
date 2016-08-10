@@ -754,9 +754,9 @@ public abstract class TLType implements Serializable {
 		return false;
 	}
 	
-	public static TLType fromJavaType(Class<?> type) {
+	public static TLType fromJavaType(Class<?> type) throws IllegalArgumentException {
 	
-		if (byte.class.equals(type) || Byte.class.equals(type)) {
+		if (byte[].class.equals(type)) {
 			return TLTypePrimitive.BYTEARRAY;
 		}
 		
@@ -776,7 +776,6 @@ public abstract class TLType implements Serializable {
 			return TLTypePrimitive.DECIMAL;
 		}
 		
-		
 		if (boolean.class.equals(type) || Boolean.class.equals(type)) {
 			return TLTypePrimitive.BOOLEAN;
 		}
@@ -789,11 +788,11 @@ public abstract class TLType implements Serializable {
 			return TLTypePrimitive.STRING;
 		}
 
-		if (List.class.equals(type)) {
+		if (List.class.isAssignableFrom(type)) {
 			throw new IllegalArgumentException("List cannot be created by fromJavaType(Class)");
 		}
 		
-		if (Map.class.equals(type)) {
+		if (Map.class.isAssignableFrom(type)) {
 			throw new IllegalArgumentException("Map cannot be created by fromJavaType(Class)");
 		}
 		
@@ -801,7 +800,7 @@ public abstract class TLType implements Serializable {
 			return TLTypePrimitive.VOID;
 		}
 		
-		if (DataRecord.class.equals(type)) {
+		if (DataRecord.class.isAssignableFrom(type)) {
 			return TLType.RECORD;
 		}
 		
