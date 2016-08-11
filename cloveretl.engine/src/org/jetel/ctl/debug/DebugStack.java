@@ -81,8 +81,7 @@ public class DebugStack extends Stack {
 		return -1;
 	}
 	
-	public FunctionCallFrame getFunctionCall(int stackFrameIndex) {
-		int callStackIndex = stackFrameIndex;
+	public FunctionCallFrame getFunctionCall(int callStackIndex) {
 		if (0 <= callStackIndex && callStackIndex < callStack.size()) {
 			return callStack.get(callStackIndex);
 		}
