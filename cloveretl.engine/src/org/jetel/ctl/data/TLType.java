@@ -756,7 +756,7 @@ public abstract class TLType implements Serializable {
 	
 	public static TLType fromJavaType(Class<?> type) throws IllegalArgumentException {
 	
-		if (byte[].class.equals(type)) {
+		if (byte[].class.equals(type) || byte.class.equals(type) || Byte.class.equals(type)) {
 			return TLTypePrimitive.BYTEARRAY;
 		}
 		
