@@ -31,6 +31,20 @@ REL-4-3-0-M1
 * Status filters in Execution hierarchy - both Designer and Server
 * Redesign of DB connection dialog 
 
+REL-4-2-1
+---------
+
+* CLO-8982 Create sandbox directory on import of Server configuration
+* CLO-8901 Deleting project from disk outside of Designer should not remove sandbox files
+* CLO-8333 Possibility to delete files from disk when deleting sandboxes on Server
+* FIXES:
+	- CLO-9078 Visualization of clustered sandboxes is broken
+	- CLO-9029 Export to CloverETL Server sandbox doesn't work
+	- CLO-8880 Desiner freezes on disconnected projects
+	- CLO-9154 Checkconfig caused connection timeout when launching jobs from Designer
+	- CLO-8958 Synchronization fails on filenames that differ in letter case only
+	- CLO-8885 CopyFiles: Wrong escaping of plus sign in SFTP password
+
 REL-4-2-0
 ---------
 
