@@ -38,6 +38,7 @@ import org.jetel.ctl.ASTnode.Node;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.debug.Breakpoint;
+import org.jetel.ctl.debug.CTLExpression;
 import org.jetel.ctl.debug.CTLExpressionHelper;
 import org.jetel.ctl.debug.DebugCommand;
 import org.jetel.ctl.debug.DebugCommand.CommandType;
@@ -45,7 +46,6 @@ import org.jetel.ctl.debug.DebugJMX;
 import org.jetel.ctl.debug.DebugStack;
 import org.jetel.ctl.debug.DebugStack.FunctionCallFrame;
 import org.jetel.ctl.debug.DebugStatus;
-import org.jetel.ctl.debug.CTLExpression;
 import org.jetel.ctl.debug.ExpressionResult;
 import org.jetel.ctl.debug.RunToMark;
 import org.jetel.ctl.debug.SerializedDataRecord;
@@ -556,6 +556,9 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					if (inputRecords != null && inputRecords.length > 0) {
 						List<SerializedDataRecord> records = new ArrayList<>(inputRecords.length);
 						for (int i = 0; i < inputRecords.length; ++i) {
+							if (inputRecords[i] == null) {
+								continue;
+							}
 							SerializedDataRecord record = SerializedDataRecord.fromDataRecord(inputRecords[i]);
 							record.setId(inputRecordIds[i]);
 							records.add(record);
@@ -565,6 +568,9 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					if (outputRecords != null && outputRecords.length > 0) {
 						List<SerializedDataRecord> records = new ArrayList<>(outputRecords.length);
 						for (int i = 0; i < outputRecordIds.length; ++i) {
+							if (outputRecords[i] == null) {
+								continue;
+							}
 							SerializedDataRecord record = SerializedDataRecord.fromDataRecord(outputRecords[i]);
 							record.setId(outputRecordIds[i]);
 							records.add(record);
