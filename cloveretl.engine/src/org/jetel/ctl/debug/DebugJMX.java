@@ -326,18 +326,21 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	}
 	
 	@Override
-	public VariableRetrievalResult listVariables(long threadId, int stackFrameDepth) {
+	public ListVariableResult listVariables(long threadId, int frameIndex, boolean includeGlobal) {
 		DebugCommand command = new DebugCommand(CommandType.LIST_VARS);
-		command.setValue(stackFrameDepth);
+		ListVariableOptions options = new ListVariableOptions();
+		options.setFrameIndex(frameIndex);
+		options.setIncludeGlobal(includeGlobal);
+		command.setValue(options);
 		try {
 			DebugStatus status = processCommand(threadId, command);
-			if (status != null && status.getValue() instanceof VariableRetrievalResult) {
-				return (VariableRetrievalResult) status.getValue();
+			if (status != null && status.getValue() instanceof ListVariableResult) {
+				return (ListVariableResult) status.getValue();
 			}
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
-		return new VariableRetrievalResult(new ArrayList<Variable>(), new ArrayList<Variable>());
+		return new ListVariableResult(new ArrayList<Variable>(), new ArrayList<Variable>());
 	}
 	
 	@Override
