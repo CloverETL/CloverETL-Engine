@@ -380,11 +380,12 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	private ListVariableResult listVariables(int frameIndex, boolean includeGlobal) {
 		
 		ListVariableResult result = new ListVariableResult();
-	
-		final Object localVariables[] = debugStack.getLocalVariables(frameIndex);
-		result.setLocalVariables(new ArrayList<Variable>(localVariables.length));
-		for (int i = 0; i < localVariables.length; i++) {
-			result.getLocalVariables().add(((Variable) localVariables[i]).serializableCopy());
+		if (frameIndex >= 0) {
+			final Object localVariables[] = debugStack.getLocalVariables(frameIndex);
+			result.setLocalVariables(new ArrayList<Variable>(localVariables.length));
+			for (int i = 0; i < localVariables.length; i++) {
+				result.getLocalVariables().add(((Variable) localVariables[i]).serializableCopy());
+			}
 		}
 		if (includeGlobal) {
 			final Object globalVariables[] = debugStack.getGlobalVariables();
