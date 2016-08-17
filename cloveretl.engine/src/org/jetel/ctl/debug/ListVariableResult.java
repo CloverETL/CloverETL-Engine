@@ -28,7 +28,7 @@ import java.util.List;
  *
  * @created May 11, 2016
  */
-public class VariableRetrievalResult implements Serializable {
+public class ListVariableResult implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -37,7 +37,9 @@ public class VariableRetrievalResult implements Serializable {
 	private List<SerializedDataRecord> inputRecords;
 	private List<SerializedDataRecord> outputRecords;
 	
-	public VariableRetrievalResult(List<Variable> globalVariables, List<Variable> localVariables) {
+	public ListVariableResult() {}
+	
+	public ListVariableResult(List<Variable> globalVariables, List<Variable> localVariables) {
 		this.globalVariables = globalVariables;
 		this.localVariables = localVariables;	
 	}

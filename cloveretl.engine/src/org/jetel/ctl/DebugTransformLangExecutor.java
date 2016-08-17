@@ -47,13 +47,14 @@ import org.jetel.ctl.debug.DebugStack;
 import org.jetel.ctl.debug.DebugStack.FunctionCallFrame;
 import org.jetel.ctl.debug.DebugStatus;
 import org.jetel.ctl.debug.ExpressionResult;
+import org.jetel.ctl.debug.ListVariableOptions;
 import org.jetel.ctl.debug.RunToMark;
 import org.jetel.ctl.debug.SerializedDataRecord;
 import org.jetel.ctl.debug.StackFrame;
 import org.jetel.ctl.debug.Thread;
 import org.jetel.ctl.debug.Variable;
 import org.jetel.ctl.debug.VariableID;
-import org.jetel.ctl.debug.VariableRetrievalResult;
+import org.jetel.ctl.debug.ListVariableResult;
 import org.jetel.ctl.debug.condition.Condition;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelRuntimeException;
@@ -376,6 +377,53 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		return callStack.toArray(new StackFrame[callStack.size()]);
 	}
 	
+	private ListVariableResult listVariables(int frameIndex, boolean includeGlobal) {
+		
+		ListVariableResult result = new ListVariableResult();
+	
+		final Object localVariables[] = debugStack.getLocalVariables(frameIndex);
+		result.setLocalVariables(new ArrayList<Variable>(localVariables.length));
+		for (int i = 0; i < localVariables.length; i++) {
+			result.getLocalVariables().add(((Variable) localVariables[i]).serializableCopy());
+		}
+		if (includeGlobal) {
+			final Object globalVariables[] = debugStack.getGlobalVariables();
+			result.setGlobalVariables(new ArrayList<Variable>(globalVariables.length));
+			for (int i = 0; i < globalVariables.length; i++) {
+				if (globalVariables[i] instanceof Variable) {
+					Variable variable = (Variable)globalVariables[i];
+					result.getGlobalVariables().add(variable.serializableCopy());
+				}
+			}
+			
+			if (inputRecords != null && inputRecords.length > 0) {
+				List<SerializedDataRecord> records = new ArrayList<>(inputRecords.length);
+				for (int i = 0; i < inputRecords.length; ++i) {
+					if (inputRecords[i] == null) {
+						continue;
+					}
+					SerializedDataRecord record = SerializedDataRecord.fromDataRecord(inputRecords[i]);
+					record.setId(inputRecordIds[i]);
+					records.add(record);
+				}
+				result.setInputRecords(records);
+			}
+			if (outputRecords != null && outputRecords.length > 0) {
+				List<SerializedDataRecord> records = new ArrayList<>(outputRecords.length);
+				for (int i = 0; i < outputRecordIds.length; ++i) {
+					if (outputRecords[i] == null) {
+						continue;
+					}
+					SerializedDataRecord record = SerializedDataRecord.fromDataRecord(outputRecords[i]);
+					record.setId(outputRecordIds[i]);
+					records.add(record);
+				}
+				result.setOutputRecords(records);
+			}
+		}
+		return result;
+	}
+	
 	private void stepRun(final int curLine, SimpleNode node, Object data) {
 		curpoint.setLine(curLine);
 		curpoint.setSource(node.getSourceId());
@@ -537,48 +585,9 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			if (command != null) {
 				switch (command.getType()) {
 				case LIST_VARS:
-					List<Variable> global = new ArrayList<>();
-					List<Variable> local = new ArrayList<>();
-					
-					final Object[] globalVariables = debugStack.getGlobalVariables();
-					for (int i = 0; i < globalVariables.length; i++) {
-						if (globalVariables[i] instanceof Variable) {
-							Variable variable = (Variable)globalVariables[i];
-							global.add(variable.serializableCopy());
-						}
-					}
-					int index = (int) command.getValue();
-					final Object[] localVariables = debugStack.getLocalVariables(index);
-					for (int i = 0; i < localVariables.length; i++) {
-						local.add(((Variable) localVariables[i]).serializableCopy());
-					}
-					VariableRetrievalResult result = new VariableRetrievalResult(global, local);
-					if (inputRecords != null && inputRecords.length > 0) {
-						List<SerializedDataRecord> records = new ArrayList<>(inputRecords.length);
-						for (int i = 0; i < inputRecords.length; ++i) {
-							if (inputRecords[i] == null) {
-								continue;
-							}
-							SerializedDataRecord record = SerializedDataRecord.fromDataRecord(inputRecords[i]);
-							record.setId(inputRecordIds[i]);
-							records.add(record);
-						}
-						result.setInputRecords(records);
-					}
-					if (outputRecords != null && outputRecords.length > 0) {
-						List<SerializedDataRecord> records = new ArrayList<>(outputRecords.length);
-						for (int i = 0; i < outputRecordIds.length; ++i) {
-							if (outputRecords[i] == null) {
-								continue;
-							}
-							SerializedDataRecord record = SerializedDataRecord.fromDataRecord(outputRecords[i]);
-							record.setId(outputRecordIds[i]);
-							records.add(record);
-						}
-						result.setOutputRecords(records);
-					}
+					ListVariableOptions options = (ListVariableOptions)command.getValue();
 					status = new DebugStatus(node, CommandType.LIST_VARS);
-					status.setValue(result);
+					status.setValue(listVariables(options.getFrameIndex(), options.isIncludeGlobal()));
 					break;
 				case GET_VAR:
 					VariableID varID = (VariableID) command.getValue();
