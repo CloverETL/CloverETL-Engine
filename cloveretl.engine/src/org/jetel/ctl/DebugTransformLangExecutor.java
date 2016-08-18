@@ -185,7 +185,11 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	}
 	
 	@Override
-	public final boolean inDebugMode(){
+	public final boolean inDebugMode() {
+		/*
+		 * preserve interrupt detection
+		 */
+		super.inDebugMode();
 		return graph.getRuntimeContext().isCtlDebug();
 	}
 	
