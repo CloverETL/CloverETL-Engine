@@ -117,6 +117,7 @@ import org.jetel.data.lookup.Lookup;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.MissingFieldException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldContainerType;
@@ -3150,7 +3151,16 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	}
 	
 	@Override
-	public boolean inDebugMode(){
+	public boolean inDebugMode() {
+		/*
+		 * XXX this check does not belong here, but it is an easy way how to
+		 * ensure it will be called before visiting every node
+		 * 
+		 * CLO-9387
+		 */
+		if (Thread.interrupted()) {
+			throw new JetelRuntimeException("Execution thread was interrupted");
+		}
 		return false;
 	}
 
