@@ -43,6 +43,6 @@ public class BooleanExpressionCondition extends CtlExpressionCondition {
 
 	@Override
 	public void evaluate(DebugTransformLangExecutor executor, SimpleNode context) throws TransformLangExecutorRuntimeException {
-		this.value = executor.executeExpressionOutsideDebug(getExpression(executor, context));
+		this.value = executor.executeExpressionOutsideDebug(getExpression(executor, context), EXPRESSION_TIMEOUT_NS);
 	}
 }
