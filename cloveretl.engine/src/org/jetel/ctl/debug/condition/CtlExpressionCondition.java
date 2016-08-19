@@ -19,6 +19,7 @@
 package org.jetel.ctl.debug.condition;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.jetel.ctl.DebugTransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
@@ -34,6 +35,8 @@ import org.jetel.ctl.debug.CTLExpressionHelper;
  */
 public abstract class CtlExpressionCondition implements Condition {
 
+	protected static final long EXPRESSION_TIMEOUT_NS = TimeUnit.SECONDS.toNanos(10);
+	
 	protected String expression;
 	private List<Node> nodes;
 	

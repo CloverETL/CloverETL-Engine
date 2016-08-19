@@ -66,6 +66,8 @@ import org.jetel.util.string.UnicodeBlanks;
  */
 public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMXMBean {
 	
+	private static final long EXPRESSION_TIMEOUT_MS = 20000;
+	
 	private int notificationSequence;
     static Logger logger = Logger.getLogger(DebugJMX.class);
 	
@@ -361,7 +363,9 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	@Override
 	public ExpressionResult evaluateExpression(String expression, long threadId, int callStackIndex) {
 		DebugCommand command = new DebugCommand(CommandType.EVALUATE_EXPRESSION);
-		command.setValue(new CTLExpression(expression, callStackIndex));
+		CTLExpression exp = new CTLExpression(expression, callStackIndex);
+		exp.setTimeout(EXPRESSION_TIMEOUT_MS); // CLO-9391
+		command.setValue(exp);
 		try {
 			DebugStatus status = processCommand(threadId, command);
 			return (ExpressionResult)status.getValue();

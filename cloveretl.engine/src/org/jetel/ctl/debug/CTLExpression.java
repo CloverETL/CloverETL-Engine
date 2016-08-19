@@ -28,6 +28,7 @@ public class CTLExpression {
 
 	private String expression;
 	private int callStackIndex;
+	private long timeout;
 	
 	public CTLExpression(String expression, int stackFrameDepth) {
 		super();
@@ -49,5 +50,13 @@ public class CTLExpression {
 	
 	public void setCallStackIndex(int callStackIndex) {
 		this.callStackIndex = callStackIndex;
+	}
+
+	public long getTimeout() {
+		return timeout;
+	}
+
+	public void setTimeout(long timeout) {
+		this.timeout = timeout;
 	}
 }

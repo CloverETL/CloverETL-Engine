@@ -27,6 +27,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.jetel.component.Freeable;
@@ -48,13 +49,13 @@ import org.jetel.ctl.debug.DebugStack.FunctionCallFrame;
 import org.jetel.ctl.debug.DebugStatus;
 import org.jetel.ctl.debug.ExpressionResult;
 import org.jetel.ctl.debug.ListVariableOptions;
+import org.jetel.ctl.debug.ListVariableResult;
 import org.jetel.ctl.debug.RunToMark;
 import org.jetel.ctl.debug.SerializedDataRecord;
 import org.jetel.ctl.debug.StackFrame;
 import org.jetel.ctl.debug.Thread;
 import org.jetel.ctl.debug.Variable;
 import org.jetel.ctl.debug.VariableID;
-import org.jetel.ctl.debug.ListVariableResult;
 import org.jetel.ctl.debug.condition.Condition;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelRuntimeException;
@@ -93,6 +94,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	private boolean initialized;
 	private volatile boolean resumed = false;
 	private DebugStack debugStack;
+	private long expressionTimeout = Long.MIN_VALUE;
 	
 	private long inputRecordIds[];
 	private long outputRecordIds[];
@@ -186,10 +188,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	
 	@Override
 	public final boolean inDebugMode() {
-		/*
-		 * preserve interrupt detection
-		 */
-		super.inDebugMode();
 		return graph.getRuntimeContext().isCtlDebug();
 	}
 	
@@ -261,9 +259,12 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		}
 	}
 	
-	public Object executeExpressionOutsideDebug(List<Node> expression) {
+	public Object executeExpressionOutsideDebug(List<Node> expression, long timeoutNs) {
 		try {
 			debugDisabled = true;
+			if (timeoutNs > 0) {
+				expressionTimeout = System.nanoTime() + timeoutNs;
+			}
 			Object result = null;
 			for (Node node : expression) {
 				int stackSize = stack.length();
@@ -275,6 +276,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			return result;
 		} finally {
 			debugDisabled = false;
+			expressionTimeout = Long.MIN_VALUE;
 		}
 	}
 	
@@ -302,6 +304,16 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			prevLine = node.getLine();
 			prevSourceId = node.getSourceId();
 			stepAfter(node.getLine(), node);
+		}
+	}
+	
+	@Override
+	protected void onNodeVisit(SimpleNode node) {
+		super.onNodeVisit(node);
+		if (debugDisabled /* executing expression */ && expressionTimeout > Long.MIN_VALUE) {
+			if (System.nanoTime() > expressionTimeout) {
+				throw new JetelRuntimeException("Timeout exceeded while evaluating expression");
+			}
 		}
 	}
 	
@@ -803,7 +815,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 				this.stack = this.debugStack = frameStack;
 			}
 			List<Node> compiled = CTLExpressionHelper.compileExpression(expression.getExpression(), this, context);
-			Object value = executeExpressionOutsideDebug(compiled);
+			Object value = executeExpressionOutsideDebug(compiled, TimeUnit.MILLISECONDS.toNanos(expression.getTimeout()));
 			result.setValue(Variable.deepCopy(value));
 		} catch (Exception e) {
 			result.setError(e);
