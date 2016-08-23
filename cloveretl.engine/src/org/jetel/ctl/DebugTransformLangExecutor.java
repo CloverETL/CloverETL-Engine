@@ -18,8 +18,6 @@
  */
 package org.jetel.ctl;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
@@ -33,7 +31,6 @@ import org.apache.commons.lang.ObjectUtils;
 import org.jetel.component.Freeable;
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
-import org.jetel.ctl.ASTnode.CLVFImportSource;
 import org.jetel.ctl.ASTnode.CLVFParameters;
 import org.jetel.ctl.ASTnode.Node;
 import org.jetel.ctl.ASTnode.SimpleNode;
@@ -47,7 +44,6 @@ import org.jetel.ctl.debug.DebugJMX;
 import org.jetel.ctl.debug.DebugStack;
 import org.jetel.ctl.debug.DebugStack.FunctionCallFrame;
 import org.jetel.ctl.debug.DebugStatus;
-import org.jetel.ctl.debug.ExpressionResult;
 import org.jetel.ctl.debug.ListVariableOptions;
 import org.jetel.ctl.debug.ListVariableResult;
 import org.jetel.ctl.debug.RunToMark;
@@ -55,13 +51,11 @@ import org.jetel.ctl.debug.SerializedDataRecord;
 import org.jetel.ctl.debug.StackFrame;
 import org.jetel.ctl.debug.Thread;
 import org.jetel.ctl.debug.Variable;
-import org.jetel.ctl.debug.VariableID;
 import org.jetel.ctl.debug.condition.Condition;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ExceptionUtils;
-import org.jetel.util.string.StringUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -570,7 +564,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	private void handleSuspension(SimpleNode node, CommandType cause) {
 		ctlThread.setSuspended(true);
 		DebugStatus status = new DebugStatus(node, cause);
-		status.setSuspended(true);
 		status.setSourceFilename(node.getSourceId());
 		status.setThreadId(ctlThread.getId());
 		debugJMX.notifySuspend(status);
@@ -579,7 +572,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	private void handleResume(SimpleNode node, CommandType cause) {
 		ctlThread.setSuspended(false);
 		DebugStatus status = new DebugStatus(node, cause);
-		status.setSuspended(false);
 		status.setSourceFilename(node.getSourceId());
 		status.setThreadId(ctlThread.getId());
 		debugJMX.notifyResume(status);
@@ -600,195 +592,69 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 
 			DebugStatus status = null;
 			if (command != null) {
-				switch (command.getType()) {
-				case LIST_VARS:
-					ListVariableOptions options = (ListVariableOptions)command.getValue();
-					status = new DebugStatus(node, CommandType.LIST_VARS);
-					status.setValue(listVariables(options.getFrameIndex(), options.isIncludeGlobal()));
-					break;
-				case GET_VAR:
-					VariableID varID = (VariableID) command.getValue();
-					Variable var = null;
-					
-					final Object[] globalVars = debugStack.getGlobalVariables();
-					for (int i = 0; i < globalVars.length; i++) {
-						if (((Variable) globalVars[i]).getName().equals(varID.getName())) {
-							var = (Variable) globalVars[i];
-							break;
-						}
-					}
-					
-					final Object[] vars = debugStack.getLocalVariables(varID.getStackFrameDepth());
-					for (int i = 0; i < vars.length; i++) {
-						if (((Variable) vars[i]).getName().equals(varID.getName())) {
-							var = (Variable) vars[i];
-							break;
-						}
-					}
-					
-					status = new DebugStatus(node, CommandType.GET_VAR);
-					if (var != null) {
-						status.setValue(var.serializableCopy());
-					} else {
-						status.setError(true);
-						status.setValue(command.getValue());
-						status.setMessage("unknown variable name: " + varID.getName());
-					}
-					break;
-				case SET_VAR:
-					Variable var2set = (Variable) command.getValue();
-					Variable variable = (Variable)debugStack.getVariable(var2set.getName());
-					status = new DebugStatus(node, CommandType.SET_VAR);
-					if (variable != null) {
-						if (variable.getType() != var2set.getType()){
-							status.setError(true);
-							status.setMessage("incompatible data types: "+var2set.getName());
-							status.setValue(var2set);
-						}else{
-							variable.setValue(var2set.getValue());
-							status.setError(false);
-						}
-					} else {
-						status.setError(true);
-						status.setMessage("unknown variable name: "+var2set.getName());
-						status.setValue(var2set);
-					}
-					break;
-				case GET_IN_RECORDS:
-					status = new DebugStatus(node, CommandType.GET_IN_RECORDS);
-					status.setValue(this.inputRecords);
-					break;
-				case GET_OUT_RECORDS:
-					status = new DebugStatus(node, CommandType.GET_OUT_RECORDS);
-					status.setValue(this.outputRecords);
-					break;
-				case RESUME:
-					status = new DebugStatus(node, CommandType.RESUME);
-					status.setSuspended(false);
-					this.step = DebugStep.STEP_RUN;
-					handleResume(node, CommandType.RESUME);
-					runLoop = false;
-					break;
-				case SUSPEND:
-					status = new DebugStatus(node, CommandType.SUSPEND);
-					status.setSuspended(true);
-					this.step = DebugStep.STEP_SUSPEND;
-					break;
-				case STEP_IN:
-					status = new DebugStatus(node, CommandType.STEP_IN);
-					status.setSuspended(false);
-					this.step = DebugStep.STEP_INTO;
-					ctlThread.setStepping(true);
-					handleResume(node, CommandType.STEP_IN);
-					runLoop = false;
-					break;
-				case STEP_OVER:
-					status = new DebugStatus(node, CommandType.STEP_OVER);
-					status.setSuspended(false);
-					this.step = DebugStep.STEP_OVER;
-					stepTarget = debugStack.getCurrentFunctionCallIndex();
-					ctlThread.setStepping(true);
-					handleResume(node, CommandType.STEP_OVER);
-					runLoop = false;
-					break;
-				case STEP_OUT:
-					status = new DebugStatus(node, CommandType.STEP_OUT);
-					status.setSuspended(false);
-					this.step = DebugStep.STEP_OUT;
-					stepTarget = debugStack.getPreviousFunctionCallIndex();
-					ctlThread.setStepping(true);
-					handleResume(node, CommandType.STEP_OUT);
-					runLoop = false;
-					break;
-				case RUN_TO_LINE:
-					runToMark = (RunToMark)command.getValue();
-					status = new DebugStatus(node, CommandType.RUN_TO_LINE);
-					status.setSuspended(false);
-					this.step = DebugStep.STEP_RUN;
-					ctlThread.setStepping(true);
-					handleResume(node, CommandType.RUN_TO_LINE);
-					runLoop = false;
-					break;
-				case GET_AST: {
-					StringWriter writer = new StringWriter();
-					PrintWriter print = new PrintWriter(writer);
-					this.ast.dump(print, "CTL");
-					status = new DebugStatus(node, CommandType.GET_AST);
-					status.setValue(writer.toString());
-					}
-					break;
-				case GET_CALLSTACK:
-					StackFrame callStack[] = getCallStack(node);
-					status = new DebugStatus(node, CommandType.GET_CALLSTACK);
-					status.setValue(callStack);
-					break;
-				case EVALUATE_EXPRESSION:
-					CTLExpression expression = (CTLExpression)command.getValue();
-					ExpressionResult er = evaluateExpression(expression, node);
-					status = new DebugStatus(node, CommandType.EVALUATE_EXPRESSION);
-					status.setValue(er);
-					break;
-				case REMOVE_BREAKPOINT:{
-					Breakpoint bpoint = (Breakpoint) command.getValue();
-					status = new DebugStatus(node, CommandType.REMOVE_BREAKPOINT);
-					if (!getCtlBreakpoints().remove(bpoint)){
-						status.setError(true);
-						status.setMessage("can not find breakpoint: "+bpoint);
-						status.setValue(bpoint);
+				try {
+					switch (command.getType()) {
+					case LIST_VARS:
+						status = new DebugStatus(node, CommandType.LIST_VARS);
+						ListVariableOptions options = (ListVariableOptions)command.getValue();
+						status.setValue(listVariables(options.getFrameIndex(), options.isIncludeGlobal()));
+						break;
+					case RESUME:
+						status = new DebugStatus(node, CommandType.RESUME);
+						this.step = DebugStep.STEP_RUN;
+						handleResume(node, CommandType.RESUME);
+						runLoop = false;
+						break;
+					case STEP_IN:
+						status = new DebugStatus(node, CommandType.STEP_IN);
+						this.step = DebugStep.STEP_INTO;
+						ctlThread.setStepping(true);
+						handleResume(node, CommandType.STEP_IN);
+						runLoop = false;
+						break;
+					case STEP_OVER:
+						status = new DebugStatus(node, CommandType.STEP_OVER);
+						this.step = DebugStep.STEP_OVER;
+						stepTarget = debugStack.getCurrentFunctionCallIndex();
+						ctlThread.setStepping(true);
+						handleResume(node, CommandType.STEP_OVER);
+						runLoop = false;
+						break;
+					case STEP_OUT:
+						status = new DebugStatus(node, CommandType.STEP_OUT);
+						this.step = DebugStep.STEP_OUT;
+						stepTarget = debugStack.getPreviousFunctionCallIndex();
+						ctlThread.setStepping(true);
+						handleResume(node, CommandType.STEP_OUT);
+						runLoop = false;
+						break;
+					case RUN_TO_LINE:
+						status = new DebugStatus(node, CommandType.RUN_TO_LINE);
+						runToMark = (RunToMark)command.getValue();
+						this.step = DebugStep.STEP_RUN;
+						ctlThread.setStepping(true);
+						handleResume(node, CommandType.RUN_TO_LINE);
+						runLoop = false;
+						break;
+					case GET_CALLSTACK:
+						status = new DebugStatus(node, CommandType.GET_CALLSTACK);
+						StackFrame callStack[] = getCallStack(node);
+						status.setValue(callStack);
+						break;
+					case EVALUATE_EXPRESSION:
+						status = new DebugStatus(node, CommandType.EVALUATE_EXPRESSION);
+						CTLExpression expression = (CTLExpression)command.getValue();
+						Object result = evaluateExpression(expression, node);
+						status.setValue(result);
+						break;
+					default: {
+						throw new JetelRuntimeException("Unknown command received by debug executor.");
 					}
 					}
-					break;
-				case SET_BREAKPOINT: {
-					Breakpoint bpoint = (Breakpoint) command.getValue();
-					status = new DebugStatus(node, CommandType.SET_BREAKPOINT);
-					if (verifyBreakpoint(bpoint)){
-						if (!getCtlBreakpoints().add(bpoint)){
-							status.setError(true);
-							status.setMessage("breakpoint already set: "+bpoint);
-							status.setValue(bpoint);
-						}
-					}else{
-						status.setError(true);
-						status.setMessage("invalid breakpoint definition: "+bpoint);
-						status.setValue(bpoint);
-					}
-					}
-					break;
-				case LIST_BREAKPOINTS:
-					status = new DebugStatus(node, CommandType.LIST_BREAKPOINTS);
-					status.setValue(getCtlBreakpoints().toArray(new Breakpoint[0]));
-					status.setError(false);
-					break;
-				case SET_BREAKPOINTS:{
-					Breakpoint bpoints[] = (Breakpoint[]) command.getValue();
-					status = new DebugStatus(node, CommandType.SET_BREAKPOINTS);
-					for(Breakpoint bpoint: bpoints){
-						if (!verifyBreakpoint(bpoint)){
-							status.setError(true);
-							status.setMessage("invalid breakpoint definition: "+bpoint);
-							status.setValue(bpoint);
-							break;
-						}else{
-							getCtlBreakpoints().add(bpoint);
-						}
-					}
-					}
-					break;
-				case INFO: {
-					StringWriter writer = new StringWriter();
-					PrintWriter print = new PrintWriter(writer);
-					print.print("** Reached breakpoint on line: ");
-					print.print(node.getLine());
-					print.print(" on node: ");
-					print.println(node);
-					status = new DebugStatus(node, CommandType.INFO);
-					status.setValue(writer.toString());
+				} catch (Exception e) {
+					status.setException(e);
 				}
-					break;
-				default: {
-					throw new JetelRuntimeException("Unknown command received by debug executor.");
-				}
-				}
+
 				try {
 					this.statusQueue.put(status);
 				} catch (InterruptedException e) {
@@ -799,9 +665,9 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		}
 	}
 	
-	private ExpressionResult evaluateExpression(CTLExpression expression, SimpleNode context) {
+	private Object evaluateExpression(CTLExpression expression, SimpleNode context) {
 		DebugStack originalStack = this.debugStack;
-		ExpressionResult result = new ExpressionResult();
+		Object result;
 		try {
 			if (expression.getCallStackIndex() < this.debugStack.getCurrentFunctionCallIndex()) {
 				FunctionCallFrame callFrame = this.debugStack.getFunctionCall(expression.getCallStackIndex() + 1);
@@ -816,26 +682,13 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			}
 			List<Node> compiled = CTLExpressionHelper.compileExpression(expression.getExpression(), this, context);
 			Object value = executeExpressionOutsideDebug(compiled, TimeUnit.MILLISECONDS.toNanos(expression.getTimeout()));
-			result.setValue(Variable.deepCopy(value));
+			result = Variable.deepCopy(value);
 		} catch (Exception e) {
-			result.setError(e);
+			throw e;
 		} finally {
 			this.stack = this.debugStack = originalStack;
 		}
 		return result;
-	}
-	
-	private Node findBreakableNode(SimpleNode startNode,int onLine){
-		if (startNode.getLine() == onLine && startNode.isBreakable()) return startNode;
-		SimpleNode childNode;
-		for(int i=0;i<startNode.jjtGetNumChildren();i++){
-			childNode=(SimpleNode)startNode.jjtGetChild(i);	
-			if (childNode.getLine()>onLine || (childNode instanceof CLVFImportSource)) continue; //speed up optimization
-			if (findBreakableNode(childNode,onLine)!=null){
-				return childNode;
-			}
-		}
-		return null;
 	}
 	
 	private String[] getArgumentTypeNames(CLVFFunctionDeclaration decl) {
@@ -872,21 +725,5 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			}
 		}
 		return false;
-	}
-	
-	private boolean verifyBreakpoint(Breakpoint bpoint){
-		Node startImport;
-		if (bpoint.getSource()==null)
-			startImport=this.ast;
-		else{
-			startImport=this.imports.get(bpoint.getSource());
-			if (startImport==null) return false;
-		}
-		SimpleNode foundNode;
-		do{
-			foundNode= (SimpleNode) findBreakableNode((SimpleNode)startImport, bpoint.getLine());
-			if (foundNode==null) return false;
-		}while(!StringUtils.equalsWithNulls(foundNode.sourceFilename,bpoint.getSource()));
-		return true;
 	}
 }

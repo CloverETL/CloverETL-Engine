@@ -183,7 +183,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		}
 		try {
 			processCommand(threadId, new DebugCommand(CommandType.RESUME));
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -199,15 +199,6 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		NodeThread node = nodeThreads.get(Long.valueOf(threadId));
 		if (node != null && !node.isSuspend()) {
 			node.setSuspend(true);
-		}
-	}
-	
-	@Override
-	public void info(long threadId) {
-		try {
-			processCommand(threadId, new DebugCommand(CommandType.INFO));
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
 		}
 	}
 	
@@ -248,7 +239,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		try {
 			DebugStatus status = processCommand(threadId, new DebugCommand(CommandType.GET_CALLSTACK));
 			return status != null ? (StackFrame[])status.getValue() : new StackFrame[0];
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -311,7 +302,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 				throw new IllegalArgumentException("Invalid step type " + stepType);
 			}
 			processCommand(threadId, new DebugCommand(stepType));
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -322,7 +313,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		command.setValue(mark);
 		try {
 			processCommand(threadId, command);
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -339,39 +330,19 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 			if (status != null && status.getValue() instanceof ListVariableResult) {
 				return (ListVariableResult) status.getValue();
 			}
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 		return new ListVariableResult(new ArrayList<Variable>(), new ArrayList<Variable>());
 	}
 	
 	@Override
-	public Variable getVariableValue(long threadId, int stackFrameDepth, String name) {
-		DebugCommand command = new DebugCommand(CommandType.GET_VAR);
-		command.setValue(new VariableID(stackFrameDepth, name));
-		try {
-			DebugStatus status = processCommand(threadId, command);
-			if (status != null && status.getValue() instanceof Variable) {
-				return (Variable) status.getValue();
-			}
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
-		return null;
-	}
-	
-	@Override
-	public ExpressionResult evaluateExpression(String expression, long threadId, int callStackIndex) {
+	public Object evaluateExpression(String expression, long threadId, int callStackIndex) throws Exception {
 		DebugCommand command = new DebugCommand(CommandType.EVALUATE_EXPRESSION);
 		CTLExpression exp = new CTLExpression(expression, callStackIndex);
 		exp.setTimeout(EXPRESSION_TIMEOUT_MS); // CLO-9391
 		command.setValue(exp);
-		try {
-			DebugStatus status = processCommand(threadId, command);
-			return (ExpressionResult)status.getValue();
-		} catch (InterruptedException e) {
-			throw new RuntimeException();
-		}
+		return processCommand(threadId, command).getValue();
 	}
 	
 	public void free() {
@@ -407,10 +378,14 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
         return "org.jetel.ctl:type=DebugJMX_" + graphId + "_" + runId;
 	}
 	
-	private DebugStatus processCommand(long threadId, DebugCommand command) throws InterruptedException {
+	private DebugStatus processCommand(long threadId, DebugCommand command) throws Exception {
 		ExecutorThread thread = activeThreads.get(threadId);
 		if (thread != null) { 
-			return thread.getExecutor().executeCommand(command);
+			DebugStatus debugStatus = thread.getExecutor().executeCommand(command);
+			if (debugStatus.getException() != null) {
+				throw debugStatus.getException();
+			}
+			return debugStatus;
 		} else {
 			logger.warn(String.format("CTL debug: Thread with id '%d' is not running.", threadId));
 			return null;
