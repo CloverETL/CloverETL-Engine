@@ -83,6 +83,7 @@ public class UtilLib extends TLFunctionLibrary {
     	try {
     		Thread.sleep(millis);
     	} catch (InterruptedException e) {
+    		throw new JetelRuntimeException(e);
 		}
     }
 
