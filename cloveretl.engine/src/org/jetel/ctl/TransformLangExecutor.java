@@ -1270,6 +1270,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 		// loop execution
 		while (condition) {
+			checkInterrupt();
 			// loops always have (possibly fake) body
 			forBody.jjtAccept(this, data);
 			// check for break or continue statements
@@ -1386,6 +1387,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 		// loop execution
 		while (condition) {
+			checkInterrupt();
 			// block is responsible for cleanup
 			body.jjtAccept(this, data);
 			// check for break or continue statements
@@ -1476,6 +1478,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		
 		// loop execution
 		do {
+			checkInterrupt();
 			body.jjtAccept(this, data);
 			// check for break or continue statements
 			if (breakFlag) {
@@ -2696,6 +2699,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 	@Override
 	public Object visit(CLVFFunctionCall node, Object data) {
+		checkInterrupt();
 		onNodeVisit(node);
 		node.jjtGetChild(0).jjtAccept(this, data);
 		if (node.isExternal()) {
@@ -3214,9 +3218,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	}
 	
 	protected void onNodeVisit(SimpleNode node) {
-		// CLO-9387
+	}
+	
+	/*
+	 * CLO-9387
+	 */
+	protected void checkInterrupt() {
 		if (Thread.interrupted()) {
-			throw new JetelRuntimeException("Execution thread was interrupted");
+			throw new JetelRuntimeException("Execution thread was interrupted", new InterruptedException());
 		}
 	}
 }

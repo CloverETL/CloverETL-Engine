@@ -58,6 +58,7 @@ import org.jetel.graph.runtime.tracker.PrimitiveComponentTokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.ClusterUtils;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.StringUtils;
@@ -595,10 +596,14 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         } catch (InterruptedException ex) {
             setResultCode(Result.ABORTED);
         } catch (Exception ex) {
-            setResultCode(Result.ERROR);
-            resultException = createNodeException(ex);
-            msg = Message.createErrorMessage(this,
-                    new ErrorMsgBody(Result.ERROR.code(), Result.ERROR.message(), resultException));
+        	if (ExceptionUtils.instanceOf(ex, InterruptedException.class)) {
+        		setResultCode(Result.ABORTED);
+        	} else {
+        		setResultCode(Result.ERROR);
+                resultException = createNodeException(ex);
+                msg = Message.createErrorMessage(this,
+                        new ErrorMsgBody(Result.ERROR.code(), Result.ERROR.message(), resultException));
+        	}
         } catch (Throwable ex) {
         	logger.fatal(ex); 
             setResultCode(Result.ERROR);
