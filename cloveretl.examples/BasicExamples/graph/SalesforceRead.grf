@@ -48,12 +48,12 @@ The SalesforceBulkReader component is used to read from Salesforce.
 
 It uses a Salesforce connection for credentials and connection configuration.
 
-A SOQL query defines what data are returned and the output mapping maps them to output metadata.]]></attr>
+A SOQL query defines what data are returned and an output mapping maps them to output metadata.]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="162" id="Note1" textColor="444444" width="218" x="793" y="60">
 <attr name="text"><![CDATA[h3. Joining
 
-By joining Opportunities and Accounts on the Account IDs we get the data necessary to calculate the best accounts.]]></attr>
+By joining Opportunities with Accounts on the Account IDs we get the data necessary to calculate the best accounts.]]></attr>
 </RichTextNote>
 <Dictionary/>
 </Global>
@@ -61,7 +61,7 @@ By joining Opportunities and Accounts on the Account IDs we get the data necessa
 <Node guiName="Accounts" guiX="392" guiY="173" id="ACCOUNTS" sfConnection="MY_SALESFORCE" type="SALESFORCE_BULK_READER">
 <attr name="soqlQuery"><![CDATA[SELECT Name,Id From Account]]></attr>
 </Node>
-<Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/best_accounts.xlsx" guiName="Best accounts" guiX="883" guiY="326" id="BEST_ACCOUNTS" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
+<Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/best_accounts.xlsx" guiName="Best accounts" guiX="883" guiY="326" id="BEST_ACCOUNTS" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
 <Node guiName="ExtHashJoin" guiX="629" guiY="60" id="EXT_HASH_JOIN" joinKey="$AccountId=$Id" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[//#CTL2
 
