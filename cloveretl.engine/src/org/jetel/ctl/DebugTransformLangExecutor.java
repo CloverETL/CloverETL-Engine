@@ -302,8 +302,12 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	}
 	
 	@Override
-	protected void onNodeVisit(SimpleNode node) {
-		super.onNodeVisit(node);
+	protected void checkInterrupt() {
+		super.checkInterrupt();
+		checkTimeout();
+	}
+	
+	protected void checkTimeout() {
 		if (debugDisabled /* executing expression */ && expressionTimeout > Long.MIN_VALUE) {
 			if (System.nanoTime() > expressionTimeout) {
 				throw new JetelRuntimeException("Timeout exceeded while evaluating expression");
