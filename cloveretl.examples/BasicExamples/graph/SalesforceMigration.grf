@@ -129,10 +129,7 @@
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<RichTextNote backgroundColor="DAD8C9" folded="false" fontSize="medium" height="134" id="Note2" textColor="444444" width="775" x="145" y="-113">
-<attr name="backgroundColorR"><![CDATA[96]]></attr>
-<attr name="backgroundColorG"><![CDATA[255]]></attr>
-<attr name="backgroundColorB"><![CDATA[96]]></attr>
+<RichTextNote backgroundColor="DAD8C9" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" folded="false" fontSize="medium" height="199" id="Note2" textColor="444444" width="536" x="719" y="-184">
 <attr name="text"><![CDATA[h3. Migration to Salesforce with relationships between objects
 This example demonstrates migration to Salesforce using the SalesforceBulkWriter component. The source CSV files represent an in-house CRM system. We are loading Accounts and their respective Contacts to Salesforce. Contacts are bound to their parent Accounts via IDs and this example shows how to easily keep this relationship in Salesforce - by using the Salesforce keys generated when writing Accounts.]]></attr>
 </RichTextNote>
@@ -174,6 +171,16 @@ Contacts are written to Salesforce similarly as Accounts. To keep their relation
 Results of writing Contacts - successfully written and rejected records. Rejected records contain information about the problem in the Error field.
 
 ]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="DEF4AB" folded="false" fontSize="medium" height="199" id="Note7" textColor="444444" width="515" x="145" y="-184">
+<attr name="text"><![CDATA[h3. Connect to Salesforce
+
+This graph needs a connection to Salesforce. If you don't have a Salesforce username, password and security token, follow these steps:
+
+
+# create an account on [Salesforce|https://login.salesforce.com/]
+# get your security token (in Salesforce go to "Your Account Name" > My Settings > Personal > Reset My Security Token) - this will send the token to your email
+# enter your username, password and security token in the [Salesforce connection|element://SALESFORCE0]]]></attr>
 </RichTextNote>
 <Dictionary/>
 </Global>

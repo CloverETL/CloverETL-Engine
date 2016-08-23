@@ -34,10 +34,7 @@
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<RichTextNote backgroundColor="DAD8C9" folded="false" fontSize="medium" height="122" id="Note2" textColor="444444" width="919" x="92" y="-95">
-<attr name="backgroundColorR"><![CDATA[96]]></attr>
-<attr name="backgroundColorG"><![CDATA[255]]></attr>
-<attr name="backgroundColorB"><![CDATA[96]]></attr>
+<RichTextNote backgroundColor="DAD8C9" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" folded="false" fontSize="medium" height="122" id="Note2" textColor="444444" width="919" x="92" y="-95">
 <attr name="text"><![CDATA[h3. Reading from Salesforce
 This example demonstrates reading from Salesforce using the SalesforceBulkReader components. We read Opportunities and Accounts to get the information about Accounts with the highest total value of won Opportunities.]]></attr>
 </RichTextNote>
@@ -54,6 +51,16 @@ A SOQL query defines what data are returned and an output mapping maps them to o
 <attr name="text"><![CDATA[h3. Joining
 
 By joining Opportunities with Accounts on the Account IDs we get the data necessary to calculate the best accounts.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="DEF4AB" folded="false" fontSize="medium" height="222" id="Note7" textColor="444444" width="486" x="-415" y="-95">
+<attr name="text"><![CDATA[h3. Connect to Salesforce
+
+This graph needs a connection to Salesforce. If you don't have a Salesforce username, password and security token, follow these steps:
+
+
+# create an account on [Salesforce|https://login.salesforce.com/]
+# get your security token (in Salesforce go to "Your Account Name" > My Settings > Personal > Reset My Security Token) - this will send the token to your email
+# enter your username, password and security token in the [Salesforce connection|element://SALESFORCE0]]]></attr>
 </RichTextNote>
 <Dictionary/>
 </Global>
