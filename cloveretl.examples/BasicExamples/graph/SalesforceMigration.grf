@@ -133,7 +133,7 @@
 <attr name="backgroundColorR"><![CDATA[96]]></attr>
 <attr name="backgroundColorG"><![CDATA[255]]></attr>
 <attr name="backgroundColorB"><![CDATA[96]]></attr>
-<attr name="text"><![CDATA[h3. Migration to Salesforce with relationships
+<attr name="text"><![CDATA[h3. Migration to Salesforce with relationships between objects
 This example demonstrates migration to Salesforce using the SalesforceBulkWriter component. The source CSV files represent an in-house CRM system. We are loading Accounts and their respective Contacts to Salesforce. Contacts are bound to their parent Accounts via IDs and this example shows how to easily keep this relationship in Salesforce - by using the Salesforce keys generated when writing Accounts.]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="208" id="Note3" textColor="000000" width="128" x="145" y="205">
