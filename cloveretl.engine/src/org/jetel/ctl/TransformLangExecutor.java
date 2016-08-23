@@ -1305,6 +1305,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			final Collection<Object> iterable = composite.getType().isList() ? stack.popList() : stack.popMap().values();
 			
 			for (Object o : iterable) {
+				checkInterrupt();
 				setVariable(var,o);
 				// block is responsible for cleanup
 				body.jjtAccept(this, data);
@@ -1331,6 +1332,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 				final DataRecord record = stack.popRecord();
 				
 				for (int field : node.getTypeSafeFields()) {
+					checkInterrupt();
 					setVariable(var,fieldValue(record.getField(field)));
 					// block is responsible for cleanup
 					body.jjtAccept(this, data);
