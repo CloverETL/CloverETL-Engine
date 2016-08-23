@@ -334,6 +334,8 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("DB_rollback_CLO-4878.grf") // server test
 							&& !file.getName().equals("ValidationTransformLifeCycle.grf") // have to be run only once
 							&& !file.getName().equals("Tableau-ThreadSafe.grf") // disabled test
+							&& !file.getName().equals("SalesforceMigration.grf") // Salesforce example
+							&& !file.getName().equals("SalesforceRead.grf") // Salesforce example
 							&& (!file.getParentFile().getName().equals("Salesforce") || file.getName().equals("SalesforceBulkReaderWriter_allDataTypes.grf")) // CLO-9285, run 1 salesforce test
 							;
 				}
