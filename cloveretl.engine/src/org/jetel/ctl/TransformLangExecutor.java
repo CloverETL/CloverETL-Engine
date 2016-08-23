@@ -426,7 +426,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		return this.stack.getGlobalVariables()[vd.getVariableOffset()];
 	}
 	
-	private Object getLocalVariableValue(CLVFIdentifier node) {
+	protected Object getLocalVariableValue(CLVFIdentifier node) {
 		return stack.getVariable(node.getBlockOffset(), node.getVariableOffset());
 	}
 	
