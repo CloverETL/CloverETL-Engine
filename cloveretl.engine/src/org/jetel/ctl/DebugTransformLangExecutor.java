@@ -31,6 +31,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.jetel.component.Freeable;
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
+import org.jetel.ctl.ASTnode.CLVFIdentifier;
 import org.jetel.ctl.ASTnode.CLVFParameters;
 import org.jetel.ctl.ASTnode.Node;
 import org.jetel.ctl.ASTnode.SimpleNode;
@@ -667,6 +668,16 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 				}
 			}
 		}
+	}
+	
+	@Override
+	protected Object getLocalVariableValue(CLVFIdentifier node) {
+		try {
+			return debugStack.getVariableChecked(node.getBlockOffset(), node.getVariableOffset());
+		} catch (IllegalArgumentException e) {
+			throw new TransformLangExecutorRuntimeException("\'" + node.getName() + "\' cannot be resolved to a variable");
+		}
+		
 	}
 	
 	private Object evaluateExpression(CTLExpression expression, SimpleNode context) {
