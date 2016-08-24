@@ -657,6 +657,9 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					}
 					}
 				} catch (Exception e) {
+					if (status == null) {
+						status = new DebugStatus(node, null);
+					}
 					status.setException(e);
 				}
 
