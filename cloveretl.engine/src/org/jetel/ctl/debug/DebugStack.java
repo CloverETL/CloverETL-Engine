@@ -108,6 +108,15 @@ public class DebugStack extends Stack {
 		return variable != null ? variable.getValue() : null;
 	}
 	
+	public Object getVariableChecked(int blockOffset, int variableOffset) throws IllegalArgumentException {
+		Variable variable = (Variable)super.getVariable(blockOffset, variableOffset);
+		if (variable != null) {
+			return variable.getValue();
+		} else {
+			throw new IllegalArgumentException();
+		}
+	}
+	
 	/**
 	 * @return all local variables from all frames
 	 */
