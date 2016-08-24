@@ -2946,19 +2946,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 					throw new TransformLangExecutorRuntimeException("Unknown variable type: " + lhs);
 			}
 
-			if (inDebugMode()){
-				if (lhs instanceof CLVFVariableDeclaration){
-					CLVFVariableDeclaration var = (CLVFVariableDeclaration)lhs;
-					stack.setVariable(blockOffset, varOffset, value, var.getName(), var.getType());
-				} else if (lhs instanceof CLVFIdentifier) {
-					CLVFIdentifier ident = (CLVFIdentifier)lhs;
-					stack.setVariable(blockOffset, varOffset, value, ident.getName(), ident.getType());
-				} else {
-					throw new TransformLangExecutorRuntimeException("Unknown variable type: " + lhs);
-				}
-			} else {
-				stack.setVariable(blockOffset, varOffset, value);
-			}
+			stack.setVariable(blockOffset, varOffset, value);
 		}
 	}
 	
@@ -3152,16 +3140,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			return value; // immutable objects
 		}
 		
-	}
-	
-	@Override
-	public boolean inDebugMode() {
-		return false;
-	}
-
-	@Override
-	public void debug(SimpleNode node, Object data) {
-		//do nothing, just stub to allow debugging
 	}
 	
 	/*

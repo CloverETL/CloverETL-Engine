@@ -27,7 +27,6 @@ import java.util.Map;
 
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
 import org.jetel.ctl.data.Scope;
-import org.jetel.ctl.data.TLType;
 import org.jetel.data.DataRecord;
 
 /**
@@ -189,19 +188,6 @@ public class Stack {
 	 */
 	public int blockDepth(){
 		return variableStack.size();
-	}
-	
-	/**
-	 * Sets value of variable specified by variableIndex in block specified by blockIndex
-	 * 
-	 * @param blockOffset
-	 * @param variableOffset
-	 * @param value
-	 * @param varName
-	 * @param varType
-	 */
-	public void setVariable(int blockOffset, int variableOffset, Object value, String varName,TLType varType) {
-		throw new UnsupportedOperationException();
 	}
 	
 	/**

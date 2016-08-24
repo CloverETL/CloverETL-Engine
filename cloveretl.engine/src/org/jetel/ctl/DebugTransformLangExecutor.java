@@ -29,10 +29,48 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.jetel.component.Freeable;
+import org.jetel.ctl.ASTnode.CLVFAnd;
+import org.jetel.ctl.ASTnode.CLVFArrayAccessExpression;
+import org.jetel.ctl.ASTnode.CLVFAssignment;
+import org.jetel.ctl.ASTnode.CLVFBreakStatement;
+import org.jetel.ctl.ASTnode.CLVFCaseStatement;
+import org.jetel.ctl.ASTnode.CLVFComparison;
+import org.jetel.ctl.ASTnode.CLVFConditionalExpression;
+import org.jetel.ctl.ASTnode.CLVFConditionalFailExpression;
+import org.jetel.ctl.ASTnode.CLVFContinueStatement;
+import org.jetel.ctl.ASTnode.CLVFDictionaryNode;
+import org.jetel.ctl.ASTnode.CLVFDivNode;
+import org.jetel.ctl.ASTnode.CLVFDoStatement;
+import org.jetel.ctl.ASTnode.CLVFEvalNode;
+import org.jetel.ctl.ASTnode.CLVFFieldAccessExpression;
+import org.jetel.ctl.ASTnode.CLVFForStatement;
+import org.jetel.ctl.ASTnode.CLVFForeachStatement;
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
+import org.jetel.ctl.ASTnode.CLVFIIfNode;
 import org.jetel.ctl.ASTnode.CLVFIdentifier;
+import org.jetel.ctl.ASTnode.CLVFIfStatement;
+import org.jetel.ctl.ASTnode.CLVFIsNullNode;
+import org.jetel.ctl.ASTnode.CLVFLookupNode;
+import org.jetel.ctl.ASTnode.CLVFMemberAccessExpression;
+import org.jetel.ctl.ASTnode.CLVFNVL2Node;
+import org.jetel.ctl.ASTnode.CLVFNVLNode;
+import org.jetel.ctl.ASTnode.CLVFOr;
 import org.jetel.ctl.ASTnode.CLVFParameters;
+import org.jetel.ctl.ASTnode.CLVFPostfixExpression;
+import org.jetel.ctl.ASTnode.CLVFPrintErrNode;
+import org.jetel.ctl.ASTnode.CLVFPrintLogNode;
+import org.jetel.ctl.ASTnode.CLVFPrintStackNode;
+import org.jetel.ctl.ASTnode.CLVFRaiseErrorNode;
+import org.jetel.ctl.ASTnode.CLVFReturnStatement;
+import org.jetel.ctl.ASTnode.CLVFSequenceNode;
+import org.jetel.ctl.ASTnode.CLVFStartExpression;
+import org.jetel.ctl.ASTnode.CLVFSwitchStatement;
+import org.jetel.ctl.ASTnode.CLVFUnaryExpression;
+import org.jetel.ctl.ASTnode.CLVFUnaryNonStatement;
+import org.jetel.ctl.ASTnode.CLVFUnaryStatement;
+import org.jetel.ctl.ASTnode.CLVFVariableDeclaration;
+import org.jetel.ctl.ASTnode.CLVFWhileStatement;
 import org.jetel.ctl.ASTnode.Node;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.ctl.data.TLType;
@@ -54,6 +92,7 @@ import org.jetel.ctl.debug.Thread;
 import org.jetel.ctl.debug.Variable;
 import org.jetel.ctl.debug.condition.Condition;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ExceptionUtils;
@@ -63,6 +102,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 /**
  * @author dpavlis (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
+ * @author jan.michalica
  *
  * @created Nov 3, 2014
  */
@@ -107,8 +147,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	public DebugTransformLangExecutor(TransformLangParser parser, TransformationGraph graph, Properties globalParameters) {
 		super(parser, graph, globalParameters);
 		this.curpoint = new Breakpoint(null, -1);
-		this.debugStack = new DebugStack();
-		this.stack = this.debugStack;
+		setStack(new DebugStack());
 	}
 	
 	public DebugTransformLangExecutor(TransformLangParser parser, TransformationGraph graph) {
@@ -130,20 +169,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 
 	public void resume() {
 		resumed = true;
-	}
-
-	@Override
-	public final void debug(SimpleNode node, Object data) {
-		if (debugDisabled || !inExecution) {
-			return;
-		} 
-		final int curLine = node.getLine();
-		if (curLine == prevLine && ObjectUtils.equals(prevSourceId, node.getSourceId())) { 
-			return;
-		} 
-		prevLine = curLine;
-		prevSourceId = node.getSourceId();
-		step(curLine, node, data);
 	}
 	
 	@Override
@@ -181,11 +206,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	
 	public DebugStatus takeStatus() throws InterruptedException {
 		return statusQueue.take();
-	}
-	
-	@Override
-	public final boolean inDebugMode() {
-		return graph.getRuntimeContext().isCtlDebug();
 	}
 	
 	public Set<Breakpoint> getCtlBreakpoints() {
@@ -308,6 +328,65 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	}
 	
 	@Override
+	protected void setVariable(SimpleNode lhs, Object value) {
+		if (lhs.getId() == TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION) {
+			SimpleNode firstChild = (SimpleNode) lhs.jjtGetChild(0);
+			if (firstChild.getId() == TransformLangParserTreeConstants.JJTDICTIONARYNODE) {
+				try {
+					graph.getDictionary().setValue(((CLVFMemberAccessExpression) lhs).getName(), value);
+				} catch (ComponentNotReadyException e) {
+					throw new TransformLangExecutorRuntimeException("Dictionary is not initialized",e);
+				}
+			} else if (firstChild.getId() == TransformLangParserTreeConstants.JJTIDENTIFIER) {
+				final CLVFIdentifier recId = (CLVFIdentifier) firstChild;
+				final int fieldId = ((CLVFMemberAccessExpression) lhs).getFieldId();
+
+				DataRecord record = (DataRecord) stack.getVariable(recId.getBlockOffset(), recId.getVariableOffset());
+				record.getField(fieldId).setValue(value);
+			} else {
+				// TODO? TransformLangParserTreeConstants.JJTARRAYACCESSEXPRESSION
+				// too difficult to implement - we would need to re-evaluate LHS to get the variable
+				// containing the list or map, to be fixed with CL-2580
+				throw new TransformLangExecutorRuntimeException(firstChild, "variable initialization failed");
+			}
+		} else if(lhs.getId() == TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION) {
+			final CLVFFieldAccessExpression faNode = (CLVFFieldAccessExpression) lhs;
+			DataRecord record = faNode.isOutput() ? outputRecords[faNode.getRecordId()] : inputRecords[faNode.getRecordId()];
+			record.getField(faNode.getFieldId()).setValue(value);
+		} else {
+			int blockOffset = -1;
+			int varOffset = -1;
+
+			switch (lhs.getId()) {
+				case TransformLangParserTreeConstants.JJTIDENTIFIER:
+					final CLVFIdentifier id = (CLVFIdentifier) lhs;
+					blockOffset = id.getBlockOffset(); // jump N blocks back, -1 indicates global scope
+					varOffset = id.getVariableOffset(); // jump to M-th slot within block
+					break;
+				case TransformLangParserTreeConstants.JJTVARIABLEDECLARATION:
+					final CLVFVariableDeclaration var = (CLVFVariableDeclaration) lhs;
+					blockOffset = 0; // current block
+					varOffset = var.getVariableOffset(); // jump to M-th slot within block
+					break;
+				default:
+					throw new TransformLangExecutorRuntimeException("Unknown variable type: " + lhs);
+			}
+			/*
+			 * this is difference from super type
+			 */
+			if (lhs instanceof CLVFVariableDeclaration){
+				CLVFVariableDeclaration var = (CLVFVariableDeclaration)lhs;
+				debugStack.setVariable(blockOffset, varOffset, value, var.getName(), var.getType());
+			} else if (lhs instanceof CLVFIdentifier) {
+				CLVFIdentifier ident = (CLVFIdentifier)lhs;
+				debugStack.setVariable(blockOffset, varOffset, value, ident.getName(), ident.getType());
+			} else {
+				throw new TransformLangExecutorRuntimeException("Unknown variable type: " + lhs);
+			}
+		}
+	}
+	
+	@Override
 	protected void checkInterrupt() {
 		super.checkInterrupt();
 		checkTimeout();
@@ -319,6 +398,19 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 				throw new JetelRuntimeException("Timeout exceeded while evaluating expression");
 			}
 		}
+	}
+	
+	private void debug(SimpleNode node, Object data) {
+		if (debugDisabled || !inExecution) {
+			return;
+		} 
+		final int curLine = node.getLine();
+		if (curLine == prevLine && ObjectUtils.equals(prevSourceId, node.getSourceId())) { 
+			return;
+		} 
+		prevLine = curLine;
+		prevSourceId = node.getSourceId();
+		step(curLine, node, data);
 	}
 	
 	private long[] createRecordIds(DataRecord records[]) {
@@ -586,6 +678,10 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		status.setThreadId(ctlThread.getId());
 		debugJMX.notifyResume(status);
 	}
+	
+	private void setStack(DebugStack stack) {
+		this.stack = this.debugStack = stack;
+	}
 
 	private void handleCommand(SimpleNode node) {
 		
@@ -701,7 +797,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 
 				context = callFrame.getFunctionCall();
 				DebugStack frameStack = this.debugStack.createShallowCopyUpToFrame(callFrame);
-				this.stack = this.debugStack = frameStack;
+				setStack(frameStack);
 			}
 			List<Node> compiled = CTLExpressionHelper.compileExpression(expression.getExpression(), this, context);
 			Object value = executeExpressionOutsideDebug(compiled, TimeUnit.MILLISECONDS.toNanos(expression.getTimeout()));
@@ -709,7 +805,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			this.stack = this.debugStack = originalStack;
+			setStack(originalStack);
 		}
 		return result;
 	}
@@ -748,5 +844,240 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			}
 		}
 		return false;
+	}
+	
+	@Override
+	public Object visit(CLVFArrayAccessExpression node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFAssignment node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFBreakStatement node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFCaseStatement node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFComparison node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFConditionalExpression node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFConditionalFailExpression node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFContinueStatement node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFDictionaryNode node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFDivNode node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFDoStatement node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFEvalNode node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFFieldAccessExpression node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFForeachStatement node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFForStatement node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFFunctionCall node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFIfStatement node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFIIfNode node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFIsNullNode node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFLookupNode node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFMemberAccessExpression node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFNVL2Node node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFNVLNode node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFOr node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFAnd node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFPostfixExpression node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFPrintErrNode node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFPrintLogNode node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	@Deprecated
+	public Object visit(CLVFPrintStackNode node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFRaiseErrorNode node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFReturnStatement node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFSequenceNode node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFStartExpression node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFSwitchStatement node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFUnaryExpression node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFUnaryNonStatement node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFUnaryStatement node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFVariableDeclaration node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
+	}
+	
+	@Override
+	public Object visit(CLVFWhileStatement node, Object data) {
+		debug(node, data);
+		return super.visit(node, data);
 	}
 }
