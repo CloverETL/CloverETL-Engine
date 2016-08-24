@@ -70,6 +70,8 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	
 	public static final DebugStep INITIAL_DEBUG_STATE = DebugStep.STEP_RUN;
 	
+	public static final Object VOID_RESULT_MARKER = new Object();
+	
 	private static final int SYNTHETIC_FUNCTION_CALL_ID = -1;
 	private static final int IMPLICIT_FUCTION_CALL_ID = -2;
 	
@@ -295,6 +297,9 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	@Override
 	protected void executeFunction(CLVFFunctionCall node) {
 		super.executeFunction(node);
+		if (node.getType().isVoid()) {
+			stack.push(VOID_RESULT_MARKER);
+		}
 		if (!debugDisabled && ctlThread.isStepping()) {
 			prevLine = node.getLine();
 			prevSourceId = node.getSourceId();
