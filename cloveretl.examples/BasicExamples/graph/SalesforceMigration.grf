@@ -131,7 +131,7 @@
 </GraphParameters>
 <RichTextNote backgroundColor="DAD8C9" folded="false" fontSize="medium" height="199" id="Note2" textColor="444444" width="443" x="707" y="-184">
 <attr name="text"><![CDATA[h3. Migration to Salesforce with relationships between objects
-This example demonstrates migration to Salesforce using the SalesforceBulkWriter component. The source CSV files represent an in-house CRM system. We are loading Accounts and their respective Contacts to Salesforce. Contacts are bound to their parent Accounts via IDs and this example shows how to easily keep this relationship in Salesforce - by using the Salesforce keys (ObjectId) generated when writing Accounts.]]></attr>
+This example demonstrates migration to Salesforce using the SalesforceBulkWriter component. The source CSV files represent an in-house CRM system. We are loading [Accounts|element://ACCOUNTS] and their [Contacts|element://CONTACTS] to Salesforce. Contacts are bound to their parent Accounts via IDs and this example shows how to easily keep this relationship in Salesforce - by using the Salesforce keys (ObjectId) generated when writing Accounts.]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="208" id="Note4" textColor="444444" width="585" x="344" y="205">
 <attr name="text"><![CDATA[h3. Writing Accounts
@@ -171,7 +171,7 @@ The CSV files represent accounts and contacts in the source CRM. Typically these
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node fileURL="${DATAIN_DIR}/salesforce/accounts.csv" guiName="Accounts" guiX="145" guiY="67" id="ACCOUNTS1" skipRows="1" type="FLAT_FILE_READER"/>
+<Node fileURL="${DATAIN_DIR}/salesforce/accounts.csv" guiName="Accounts" guiX="145" guiY="67" id="ACCOUNTS" skipRows="1" type="FLAT_FILE_READER"/>
 <Node fileURL="${DATAIN_DIR}/salesforce/contacts.csv" guiName="Contacts" guiX="145" guiY="459" id="CONTACTS" skipRows="1" type="FLAT_FILE_READER"/>
 <Node guiName="Join Account SF ID" guiX="527" guiY="459" id="JOIN_ACCOUNT_SF_ID1" joinKey="$account_id=$id" joinType="leftOuter" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[//#CTL2
@@ -271,7 +271,7 @@ function integer transform() {
 </Node>
 <Node fileURL="${DATAOUT_DIR}/salesforce/written_accounts.txt" guiName="Written Accounts" guiX="1002" guiY="67" id="WRITTEN_ACCOUNTS" makeDirs="true" type="FLAT_FILE_WRITER"/>
 <Node fileURL="${DATAOUT_DIR}/salesforce/written_contacts.txt" guiName="Written Contacts" guiX="1002" guiY="459" id="WRITTEN_CONTACTS" makeDirs="true" type="FLAT_FILE_WRITER"/>
-<Edge debugMode="true" fromNode="ACCOUNTS1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="WRITE_ACCOUNTS:0"/>
+<Edge debugMode="true" fromNode="ACCOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="WRITE_ACCOUNTS:0"/>
 <Edge debugMode="true" fromNode="CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (output)" toNode="JOIN_ACCOUNT_SF_ID1:0"/>
 <Edge debugMode="true" fromNode="JOIN_ACCOUNT_SF_ID1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="WRITE_CONTACTS:0"/>
 <Edge fromNode="SIMPLE_COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="__dynamic_metadata_WRITE_ACCOUNTS_salesforce" toNode="WRITTEN_ACCOUNTS:0"/>
