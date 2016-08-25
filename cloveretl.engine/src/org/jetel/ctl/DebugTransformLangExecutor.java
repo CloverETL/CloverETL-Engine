@@ -317,9 +317,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	@Override
 	protected void executeFunction(CLVFFunctionCall node) {
 		super.executeFunction(node);
-		if (node.getType().isVoid()) {
-			stack.push(VOID_RESULT_MARKER);
-		}
 		if (!debugDisabled && ctlThread.isStepping()) {
 			prevLine = node.getLine();
 			prevSourceId = node.getSourceId();
@@ -939,6 +936,9 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	@Override
 	public Object visit(CLVFFunctionCall node, Object data) {
 		debug(node, data);
+		if (node.getType().isVoid()) {
+			stack.push(VOID_RESULT_MARKER);
+		}
 		return super.visit(node, data);
 	}
 	
