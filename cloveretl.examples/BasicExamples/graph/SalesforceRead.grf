@@ -11,7 +11,7 @@
 <Record fieldDelimiter="|" name="AccountStats" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
 <Field name="ID" type="string"/>
 <Field name="Name" type="string"/>
-<Field name="WonAmmount" type="decimal"/>
+<Field name="WonAmount" type="decimal"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
@@ -34,7 +34,7 @@
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<RichTextNote backgroundColor="DAD8C9" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" folded="false" fontSize="medium" height="122" id="Note2" textColor="444444" width="919" x="92" y="-95">
+<RichTextNote backgroundColor="DAD8C9" folded="false" fontSize="medium" height="122" id="Note2" textColor="444444" width="919" x="92" y="-95">
 <attr name="text"><![CDATA[h3. Reading from Salesforce
 This example demonstrates reading from Salesforce using the SalesforceBulkReader components. We read Opportunities and Accounts to get the information about Accounts with the highest total value of won Opportunities.]]></attr>
 </RichTextNote>
@@ -58,7 +58,7 @@ By joining Opportunities with Accounts on the Account IDs we get the data necess
 This graph needs a connection to Salesforce. If you don't have a Salesforce username, password and security token, follow these steps:
 
 
-# create an account on [Salesforce|https://login.salesforce.com/]
+# create an account in [Salesforce|https://login.salesforce.com/]
 # get your security token (in Salesforce go to "Your Account Name" > My Settings > Personal > Reset My Security Token) - this will send the token to your email
 # enter your username, password and security token in the [Salesforce connection|element://SALESFORCE0]]]></attr>
 </RichTextNote>
@@ -134,17 +134,17 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node guiName="Sort by ammounts" guiX="635" guiY="326" id="SORT_BY_AMMOUNTS" sortKey="WonAmmount(d)" type="EXT_SORT"/>
-<Node aggregateKey="AccountID" guiName="Sum ammounts" guiX="392" guiY="326" id="SUM_AMMOUNTS1" mapping="$ID:=$AccountID;$Name:=first($AccountName);$WonAmmount:=sum($Amount);" sorted="false" type="AGGREGATE"/>
+<Node guiName="Sort by amounts" guiX="635" guiY="326" id="SORT_BY_AMOUNTS" sortKey="WonAmount(d)" type="EXT_SORT"/>
+<Node aggregateKey="AccountID" guiName="Sum amounts" guiX="392" guiY="326" id="SUM_AMOUNTS" mapping="$ID:=$AccountID;$Name:=first($AccountName);$WonAmount:=sum($Amount);" sorted="false" type="AGGREGATE"/>
 <Node guiName="Won" guiX="392" guiY="60" id="WON" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[//#CTL2
 $in.0.IsWon == true]]></attr>
 </Node>
 <Edge debugMode="true" fromNode="ACCOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN:1"/>
-<Edge debugMode="true" fromNode="EXT_HASH_JOIN:0" guiBendpoints="773:79|773:285|370:285|370:345" guiLocks="773|370|285" guiRouter="Manual" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SUM_AMMOUNTS1:0"/>
+<Edge debugMode="true" fromNode="EXT_HASH_JOIN:0" guiBendpoints="773:79|773:285|370:285|370:345" guiLocks="773|370|285" guiRouter="Manual" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SUM_AMOUNTS:0"/>
 <Edge debugMode="true" fromNode="OPPORTUNITIES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WON:0"/>
-<Edge debugMode="true" fromNode="SORT_BY_AMMOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (input)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata3" toNode="BEST_ACCOUNTS:0"/>
-<Edge debugMode="true" fromNode="SUM_AMMOUNTS1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="SORT_BY_AMMOUNTS:0"/>
+<Edge debugMode="true" fromNode="SORT_BY_AMOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (input)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata3" toNode="BEST_ACCOUNTS:0"/>
+<Edge debugMode="true" fromNode="SUM_AMOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="SORT_BY_AMOUNTS:0"/>
 <Edge debugMode="true" fromNode="WON:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (driver)" outPort="Port 0 (accepted)" persistedImplicitMetadata="Metadata1" toNode="EXT_HASH_JOIN:0"/>
 </Phase>
 </Graph>

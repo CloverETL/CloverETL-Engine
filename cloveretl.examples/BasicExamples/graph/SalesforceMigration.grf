@@ -129,7 +129,7 @@
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<RichTextNote backgroundColor="DAD8C9" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" folded="false" fontSize="medium" height="199" id="Note2" textColor="444444" width="536" x="719" y="-184">
+<RichTextNote backgroundColor="DAD8C9" folded="false" fontSize="medium" height="199" id="Note2" textColor="444444" width="536" x="707" y="-184">
 <attr name="text"><![CDATA[h3. Migration to Salesforce with relationships between objects
 This example demonstrates migration to Salesforce using the SalesforceBulkWriter component. The source CSV files represent an in-house CRM system. We are loading Accounts and their respective Contacts to Salesforce. Contacts are bound to their parent Accounts via IDs and this example shows how to easily keep this relationship in Salesforce - by using the Salesforce keys generated when writing Accounts.]]></attr>
 </RichTextNote>
@@ -149,7 +149,7 @@ Results of writing Accounts - successfully written and rejected records. Rejecte
 
 The SalesforceBulkWriter component is used to write Accounts into Salesforce. It uses a Salesforce connection and an input mapping that maps input fields onto Salesforce Account object fields.
 
-After writing Accounts we send information about successfull writes to the first output port. They contain the full input record and an ObjectId field. The ObjectId field is the Salesforce auto-generated ID. This will be used later when writing Contacts for the accounts.
+After writing Accounts we send information about successful writes to the first output port. They contain the full input record and an ObjectId field. The ObjectId field is the Salesforce auto-generated ID. This will be used later when writing Contacts for the accounts.
 
 Second output port contains information about accounts that were rejected by Salesforce with a description of the cause.]]></attr>
 </RichTextNote>
@@ -178,7 +178,7 @@ Results of writing Contacts - successfully written and rejected records. Rejecte
 This graph needs a connection to Salesforce. If you don't have a Salesforce username, password and security token, follow these steps:
 
 
-# create an account on [Salesforce|https://login.salesforce.com/]
+# create an account in [Salesforce|https://login.salesforce.com/]
 # get your security token (in Salesforce go to "Your Account Name" > My Settings > Personal > Reset My Security Token) - this will send the token to your email
 # enter your username, password and security token in the [Salesforce connection|element://SALESFORCE0]]]></attr>
 </RichTextNote>
