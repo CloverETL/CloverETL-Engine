@@ -140,6 +140,9 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	private long inputRecordIds[];
 	private long outputRecordIds[];
 
+	private static final Pattern KEYWORD_PATTERN = Pattern.compile("ALL|OK|SKIP|STOP");
+	private static final Pattern RETURN_PATTERN = Pattern.compile("[ \t]*(return)[ \t]*");
+
 	public enum DebugStep {
 		STEP_SUSPEND,
 		STEP_INTO,
@@ -760,12 +763,12 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 						status = new DebugStatus(node, CommandType.EVALUATE_EXPRESSION);
 						CTLExpression expression = (CTLExpression)command.getValue();
 						// CLO-9416
-						Pattern pattern = Pattern.compile("ALL|OK|SKIP|STOP");
-						Matcher matcher = pattern.matcher(expression.getExpression());
+						Matcher matcher = KEYWORD_PATTERN.matcher(expression.getExpression());
 						if (matcher.find()) {
 							throw new JetelRuntimeException("Cannot evaluate statements containing keywords: ALL, OK, SKIP, STOP");
 						}
-						expression.setExpression(expression.getExpression().replaceFirst("[ \t]*(return)[ \t]*", ""));
+						matcher = RETURN_PATTERN.matcher(expression.getExpression());
+						expression.setExpression(matcher.replaceFirst(""));
 						Object result = evaluateExpression(expression, node);
 						status.setValue(result);
 						break;
