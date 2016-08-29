@@ -26,6 +26,8 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.jetel.component.Freeable;
@@ -747,6 +749,13 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					case EVALUATE_EXPRESSION:
 						status = new DebugStatus(node, CommandType.EVALUATE_EXPRESSION);
 						CTLExpression expression = (CTLExpression)command.getValue();
+						// CLO-9416
+						Pattern pattern = Pattern.compile("ALL|OK|SKIP|STOP");
+						Matcher matcher = pattern.matcher(expression.getExpression());
+						if (matcher.find()) {
+							throw new JetelRuntimeException("Cannot evaluate statements containing keywords: ALL, OK, SKIP, STOP");
+						}
+						expression.setExpression(expression.getExpression().replaceFirst("[ \t]*(return)[ \t]*", ""));
 						Object result = evaluateExpression(expression, node);
 						status.setValue(result);
 						break;
