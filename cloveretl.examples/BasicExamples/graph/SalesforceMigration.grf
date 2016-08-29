@@ -1,23 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Graph author="User" created="Tue Aug 02 16:07:04 CEST 2016" guiVersion="4.3.0" id="1470149454547" licenseCode="CLP1DJAVLI21013179BY" name="crm_migration" showComponentDetails="true">
 <Global>
-<Metadata id="Metadata7" previewAttachment="${DATAIN_DIR}/account_notes.csv" previewAttachmentCharset="UTF-8">
-<Record fieldDelimiter="," label="account_notes.csv" name="account_notes_csv" previewAttachment="${DATAIN_DIR}/account_notes.csv" previewAttachmentCharset="UTF-8" quoteChar="both" quotedStrings="false" recordDelimiter="\r\n" skipSourceRows="1" type="delimited">
-<Field name="id" type="integer"/>
-<Field name="title" type="string"/>
-<Field name="body" type="string"/>
-<Field eofAsDelimiter="true" name="account_id" type="integer"/>
-</Record>
-</Metadata>
-<Metadata id="Metadata8">
-<Record fieldDelimiter="|" name="account_notes_to_insert" recordDelimiter="\r\n" type="delimited">
-<Field name="id" trim="true" type="integer"/>
-<Field name="title" type="string"/>
-<Field name="body" type="string"/>
-<Field eofAsDelimiter="true" name="account_id" trim="true" type="integer"/>
-<Field name="account_sf_id" type="string"/>
-</Record>
-</Metadata>
 <Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="contacts_to_insert" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
 <Field name="id" trim="true" type="integer"/>
@@ -41,34 +24,6 @@
 <Field name="email" type="string"/>
 <Field name="phone" type="string"/>
 <Field eofAsDelimiter="true" name="account_id" type="integer"/>
-</Record>
-</Metadata>
-<Metadata id="Metadata5" previewAttachment="${DATAIN_DIR}/notes.csv" previewAttachmentCharset="UTF-8">
-<Record fieldDelimiter="," label="notes.csv" name="import_notes" previewAttachment="${DATAIN_DIR}/notes.csv" previewAttachmentCharset="UTF-8" quoteChar="both" quotedStrings="true" recordDelimiter="\n" skipSourceRows="0" type="delimited">
-<Field name="id" type="integer"/>
-<Field eofAsDelimiter="true" name="title" type="string"/>
-<Field name="body" type="string"/>
-<Field name="contact_id" type="integer"/>
-</Record>
-</Metadata>
-<Metadata id="Metadata3" previewAttachment="${DATAIN_DIR}/partners.csv" previewAttachmentCharset="UTF-8">
-<Record fieldDelimiter="," label="partners.csv" name="import_partners" previewAttachment="${DATAIN_DIR}/partners.csv" previewAttachmentCharset="UTF-8" quoteChar="both" quotedStrings="false" recordDelimiter="\n" skipSourceRows="0" type="delimited">
-<Field name="id" type="integer"/>
-<Field name="name" type="string"/>
-<Field eofAsDelimiter="true" name="account_id" type="integer"/>
-</Record>
-</Metadata>
-<Metadata id="Metadata6">
-<Record fieldDelimiter="|" name="note_to_insert" recordDelimiter="\n" type="delimited">
-<Field eofAsDelimiter="true" name="title" type="string"/>
-<Field name="body" type="string"/>
-<Field delimiter=";" name="contact_id" type="string"/>
-</Record>
-</Metadata>
-<Metadata id="Metadata4">
-<Record fieldDelimiter="|" name="partners_to_insert" recordDelimiter="\n" type="delimited">
-<Field name="name" type="string"/>
-<Field delimiter=";" name="account_sf_id" type="string"/>
 </Record>
 </Metadata>
 <MetadataGroup name="Implicit metadata" type="implicit">
@@ -211,7 +166,6 @@ function integer transform() {
 
 // Transforms input record into output record.
 function integer transform() {
-	$out.0.ExternalID__c = num2str($in.0.id);
 	$out.0.Name = $in.0.name;
 	$out.0.BillingCountry = $in.0.country;
 
@@ -278,7 +232,7 @@ function integer transform() {
 <Edge debugMode="true" fromNode="SIMPLE_COPY:1" guiBendpoints="966:100|966:432|509:432|509:492" guiLocks="966|509|432" guiRouter="Manual" id="Edge6" inPort="Port 1 (slave)" outPort="Port 1 (out)" persistedImplicitMetadata="__dynamic_metadata_WRITE_ACCOUNTS_salesforce1" toNode="JOIN_ACCOUNT_SF_ID1:1"/>
 <Edge debugMode="true" fromNode="WRITE_ACCOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (accepted records)" persistedImplicitMetadata="__dynamic_metadata_WRITE_ACCOUNTS_salesforce3" toNode="SIMPLE_COPY:0"/>
 <Edge debugMode="true" fromNode="WRITE_ACCOUNTS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 1 (rejected records)" persistedImplicitMetadata="__dynamic_metadata_WRITE_ACCOUNTS_salesforce2" toNode="REJECTED_ACCOUNTS1:0"/>
-<Edge fromNode="WRITE_CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" outPort="Port 0 (accepted records)" persistedImplicitMetadata="__dynamic_metadata_WRITE_CONTACTS_salesforce1" toNode="WRITTEN_CONTACTS:0"/>
+<Edge debugMode="true" fromNode="WRITE_CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" outPort="Port 0 (accepted records)" persistedImplicitMetadata="__dynamic_metadata_WRITE_CONTACTS_salesforce1" toNode="WRITTEN_CONTACTS:0"/>
 <Edge debugMode="true" fromNode="WRITE_CONTACTS:1" guiBendpoints="1002:492|1002:598" guiLocks="1002|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" outPort="Port 1 (rejected records)" persistedImplicitMetadata="__dynamic_metadata_WRITE_CONTACTS_salesforce" toNode="REJECTED_CONTACTS:0"/>
 </Phase>
 </Graph>
