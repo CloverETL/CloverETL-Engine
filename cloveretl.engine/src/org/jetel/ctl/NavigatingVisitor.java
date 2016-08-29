@@ -369,13 +369,4 @@ public class NavigatingVisitor implements TransformLangParserVisitor {
 	public Object visit(CastNode node, Object data) {
 		return visitNode(node,data);
 	}
-	
-	@Override
-	public boolean inDebugMode() {
-		return false;
-	}
-	
-	@Override
-	public void debug(SimpleNode node, Object data) {
-	}
 }

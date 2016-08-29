@@ -31,7 +31,8 @@ import org.jetel.exception.JetelRuntimeException;
 /**
  * @author dpavlis (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
- *
+ * @author jan.michalica
+ * 
  * @created Aug 20, 2014
  */
 public class DebugStack extends Stack {
@@ -88,7 +89,6 @@ public class DebugStack extends Stack {
 		return null;
 	}
 	
-	@Override
 	public void setVariable(int blockOffset, int variableOffset, Object value, String name, TLType type) {
 		Variable storedVar = (Variable)super.getVariable(blockOffset, variableOffset);
 		long id = storedVar != null ? storedVar.getId() : nextVariableId();
@@ -132,7 +132,7 @@ public class DebugStack extends Stack {
 	
 	public Object[] getLocalVariables(int functionCallIndex) {
 		FunctionCallFrame frame = callStack.get(functionCallIndex);
-		FunctionCallFrame nextFrame = functionCallIndex < callStack.size() - 1 ? callStack.get(functionCallIndex + 1) : null;
+		FunctionCallFrame nextFrame = functionCallIndex + 1 < callStack.size() ? callStack.get(functionCallIndex + 1) : null;
 		
 		final int startIndex = frame.getVarStackIndex() < 0 /* global scope */ ? 1 : frame.getVarStackIndex();
 		final int stopIndex = nextFrame != null ? nextFrame.getVarStackIndex() : variableStack.size();
@@ -216,7 +216,7 @@ public class DebugStack extends Stack {
 		}
 		
 		DebugStack debugStack = new DebugStack();
-		debugStack.variableStack = new ArrayList<>(this.variableStack.subList(0, callFrame.varStackIndex));
+		debugStack.variableStack = new ArrayList<>(this.variableStack.subList(0, callFrame.getVarStackIndex()));
 	    debugStack.callStack = new ArrayList<>(this.callStack.subList(0, this.callStack.indexOf(callFrame)));
 		return debugStack;
 	}
