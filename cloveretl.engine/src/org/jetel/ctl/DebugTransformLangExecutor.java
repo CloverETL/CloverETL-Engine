@@ -85,6 +85,7 @@ import org.jetel.ctl.debug.DebugJMX;
 import org.jetel.ctl.debug.DebugStack;
 import org.jetel.ctl.debug.DebugStack.FunctionCallFrame;
 import org.jetel.ctl.debug.DebugStatus;
+import org.jetel.ctl.debug.IdSequence;
 import org.jetel.ctl.debug.ListVariableOptions;
 import org.jetel.ctl.debug.ListVariableResult;
 import org.jetel.ctl.debug.RunToMark;
@@ -133,6 +134,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	private boolean initialized;
 	private volatile boolean resumed = false;
 	private DebugStack debugStack;
+	private IdSequence idSequence;
 	private long expressionTimeout = Long.MIN_VALUE;
 	
 	private long inputRecordIds[];
@@ -299,6 +301,13 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		}
 	}
 	
+	public void setIdSequence(IdSequence sequence) {
+		this.idSequence = sequence;
+		if (debugStack != null) {
+			debugStack.setIdSequence(sequence);
+		}
+	}
+	
 	@Override
 	protected void executeInternal(SimpleNode node) {
 		try {
@@ -415,7 +424,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	private long[] createRecordIds(DataRecord records[]) {
 		long result[] = new long[records != null ? records.length : 0];
 		for (int i = 0; i < result.length; ++i) {
-			result[i] = debugStack.nextVariableId();
+			result[i] = idSequence.nextId();
 		}
 		return result;
 	}
@@ -679,6 +688,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	}
 	
 	private void setStack(DebugStack stack) {
+		stack.setIdSequence(idSequence);
 		this.stack = this.debugStack = stack;
 	}
 
