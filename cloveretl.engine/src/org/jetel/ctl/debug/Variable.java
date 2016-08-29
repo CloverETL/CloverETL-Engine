@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.jetel.ctl.DebugTransformLangExecutor;
 import org.jetel.ctl.data.TLType;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
@@ -110,6 +111,12 @@ public class Variable implements Cloneable, Serializable {
 			return SerializedDataRecord.fromDataRecord((DataRecord)value);
 		} else if (value instanceof DataField) {
 			return SerializedDataField.fromDataField((DataField)value);
+		} else if (value == DebugTransformLangExecutor.VOID_RESULT_MARKER) {
+			Variable voidVariable = new Variable();
+			voidVariable.setType(TLType.VOID);
+			return voidVariable;
+		} else if (value instanceof Variable){
+			return ((Variable)value).serializableCopy();
 		} else {
 			return value; // immutable objects
 		}
