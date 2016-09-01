@@ -9,7 +9,6 @@
 </Metadata>
 <Metadata id="Metadata3" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="AccountStats" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field name="ID" type="string"/>
 <Field name="Name" type="string"/>
 <Field name="WonAmount" type="decimal"/>
 </Record>
@@ -47,7 +46,7 @@ It uses a Salesforce connection for credentials and connection configuration.
 
 A SOQL query defines what data are returned and an output mapping maps them to output metadata.]]></attr>
 </RichTextNote>
-<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="162" id="Note1" textColor="444444" width="218" x="749" y="404">
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="180" id="Note1" textColor="444444" width="145" x="822" y="404">
 <attr name="text"><![CDATA[h3. Joining
 
 By joining Opportunities with Accounts on the Account IDs we get the data necessary to calculate the best accounts.]]></attr>
@@ -66,8 +65,8 @@ If you don't have a Salesforce Username, Password and Security Token, follow the
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/best_accounts.xlsx" guiName="Best accounts" guiX="839" guiY="670" id="BEST_ACCOUNTS" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
-<Node guiName="ExtHashJoin" guiX="561" guiY="404" id="EXT_HASH_JOIN" joinKey="$AccountId=$Id" type="EXT_HASH_JOIN">
+<Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/best_accounts.xlsx" guiName="Best accounts" guiX="822" guiY="652" id="BEST_ACCOUNTS" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
+<Node guiName="Enrich Opportunities with Accounts" guiX="561" guiY="404" id="ENRICH_OPPORTUNITIES_WITH_ACCOUNTS" joinKey="$AccountId=$Id" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -135,17 +134,17 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node guiName="Sort by amounts" guiX="567" guiY="670" id="SORT_BY_AMOUNTS" sortKey="WonAmount(d)" type="EXT_SORT"/>
-<Node aggregateKey="AccountID" guiName="Sum amounts" guiX="324" guiY="670" id="SUM_AMOUNTS" mapping="$ID:=$AccountID;$Name:=first($AccountName);$WonAmount:=sum($Amount);" sorted="false" type="AGGREGATE"/>
+<Node guiName="Sort by amounts" guiX="554" guiY="652" id="SORT_BY_AMOUNTS" sortKey="WonAmount(d)" type="EXT_SORT"/>
+<Node aggregateKey="AccountID" guiName="Sum amounts" guiX="324" guiY="652" id="SUM_AMOUNTS" mapping="$Name:=first($AccountName);$WonAmount:=sum($Amount);" sorted="false" type="AGGREGATE"/>
 <Node guiName="Won" guiX="324" guiY="404" id="WON" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[//#CTL2
 $in.0.IsWon == true]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="EXT_HASH_JOIN:0" guiBendpoints="773:79|705:610|302:610|370:345" guiLocks="705|302|610" guiRouter="Manual" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SUM_AMOUNTS:0"/>
-<Edge debugMode="true" fromNode="SALESFORCE_READ_ACCOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN:1"/>
+<Edge debugMode="true" fromNode="ENRICH_OPPORTUNITIES_WITH_ACCOUNTS:0" guiBendpoints="804:423|804:610|302:610|370:345" guiLocks="804|302|610" guiRouter="Manual" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SUM_AMOUNTS:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_READ_ACCOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="ENRICH_OPPORTUNITIES_WITH_ACCOUNTS:1"/>
 <Edge debugMode="true" fromNode="SALESFORCE_READ_OPPORTUNITIES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WON:0"/>
 <Edge debugMode="true" fromNode="SORT_BY_AMOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (input)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata3" toNode="BEST_ACCOUNTS:0"/>
 <Edge debugMode="true" fromNode="SUM_AMOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="SORT_BY_AMOUNTS:0"/>
-<Edge debugMode="true" fromNode="WON:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (driver)" outPort="Port 0 (accepted)" persistedImplicitMetadata="Metadata1" toNode="EXT_HASH_JOIN:0"/>
+<Edge debugMode="true" fromNode="WON:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (driver)" outPort="Port 0 (accepted)" persistedImplicitMetadata="Metadata1" toNode="ENRICH_OPPORTUNITIES_WITH_ACCOUNTS:0"/>
 </Phase>
 </Graph>
