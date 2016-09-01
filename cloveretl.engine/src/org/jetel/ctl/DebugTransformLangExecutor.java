@@ -26,6 +26,8 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.jetel.component.Freeable;
@@ -83,6 +85,7 @@ import org.jetel.ctl.debug.DebugJMX;
 import org.jetel.ctl.debug.DebugStack;
 import org.jetel.ctl.debug.DebugStack.FunctionCallFrame;
 import org.jetel.ctl.debug.DebugStatus;
+import org.jetel.ctl.debug.IdSequence;
 import org.jetel.ctl.debug.ListVariableOptions;
 import org.jetel.ctl.debug.ListVariableResult;
 import org.jetel.ctl.debug.RunToMark;
@@ -131,10 +134,14 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	private boolean initialized;
 	private volatile boolean resumed = false;
 	private DebugStack debugStack;
+	private IdSequence idSequence;
 	private long expressionTimeout = Long.MIN_VALUE;
 	
 	private long inputRecordIds[];
 	private long outputRecordIds[];
+
+	private static final Pattern KEYWORD_PATTERN = Pattern.compile("ALL|OK|SKIP|STOP");
+	private static final Pattern RETURN_PATTERN = Pattern.compile("[ \t]*(return)[ \t]*");
 
 	public enum DebugStep {
 		STEP_SUSPEND,
@@ -231,11 +238,12 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		/*
 		 * re-implementing super type method to push implicit function call onto stack
 		 */
+		CLVFFunctionCall implicitCall = null;
 		try {
 			beforeExecute();
 			final CLVFParameters formal = (CLVFParameters)node.jjtGetChild(1);
 			
-			CLVFFunctionCall implicitCall = new CLVFFunctionCall(IMPLICIT_FUCTION_CALL_ID);
+			implicitCall = new CLVFFunctionCall(IMPLICIT_FUCTION_CALL_ID);
 			implicitCall.setName(node.getName());
 			implicitCall.setCallTarget(node);
 			
@@ -248,30 +256,35 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			// function return value will be saved in this.lastReturnValue
 			node.jjtGetChild(2).jjtAccept(this, null);
 			
+			
+		} finally {
 			// clear all break flags
 			if (breakFlag) {
 				breakFlag = false;
 			}
-			stack.exitedBlock(implicitCall);
-		} finally {
+			if (implicitCall != null) {
+				stack.exitedBlock(implicitCall);
+			}
 			afterExecute();
 		}
 	};
 	
 	@Override
 	public Object executeExpression(SimpleNode expression) {
+		CLVFFunctionCall synthCall = null;
 		try {
 			beforeExecute();
-			CLVFFunctionCall synthCall = new CLVFFunctionCall(SYNTHETIC_FUNCTION_CALL_ID);
+			synthCall = new CLVFFunctionCall(SYNTHETIC_FUNCTION_CALL_ID);
 			synthCall.setName("<expression>");
 			CLVFFunctionDeclaration synthFunc = new CLVFFunctionDeclaration(0);
 			synthFunc.setName(synthCall.getName());
 			synthCall.setCallTarget(synthFunc);
 			debugStack.enteredSyntheticBlock(synthCall);
-			Object value = super.executeExpression(expression);
-			debugStack.exitedSyntheticBlock(synthCall);
-			return value;
+			return super.executeExpression(expression);
 		} finally {
+			if (synthCall != null) {
+				debugStack.exitedSyntheticBlock(synthCall);
+			}
 			afterExecute();
 		}
 	}
@@ -297,19 +310,29 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		}
 	}
 	
+	public void setIdSequence(IdSequence sequence) {
+		this.idSequence = sequence;
+		if (debugStack != null) {
+			debugStack.setIdSequence(sequence);
+		}
+	}
+	
 	@Override
 	protected void executeInternal(SimpleNode node) {
+		CLVFFunctionCall synthCall = null;
 		try {
 			beforeExecute();
-			CLVFFunctionCall synthCall = new CLVFFunctionCall(SYNTHETIC_FUNCTION_CALL_ID);
+			synthCall = new CLVFFunctionCall(SYNTHETIC_FUNCTION_CALL_ID);
 			synthCall.setName("<global>");
 			CLVFFunctionDeclaration synthFunc = new CLVFFunctionDeclaration(0);
 			synthFunc.setName(synthCall.getName());
 			synthCall.setCallTarget(synthFunc);
 			debugStack.enteredSyntheticBlock(synthCall);
 			super.executeInternal(node);
-			debugStack.exitedSyntheticBlock(synthCall);
 		} finally {
+			if (synthCall != null) {
+				debugStack.exitedSyntheticBlock(synthCall);
+			}
 			afterExecute();
 		}
 	}
@@ -413,7 +436,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	private long[] createRecordIds(DataRecord records[]) {
 		long result[] = new long[records != null ? records.length : 0];
 		for (int i = 0; i < result.length; ++i) {
-			result[i] = debugStack.nextVariableId();
+			result[i] = idSequence.nextId();
 		}
 		return result;
 	}
@@ -677,6 +700,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	}
 	
 	private void setStack(DebugStack stack) {
+		stack.setIdSequence(idSequence);
 		this.stack = this.debugStack = stack;
 	}
 
@@ -689,7 +713,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			try {
 				command = commandQueue.take();
 			} catch (InterruptedException e) {
-				logger.info("Debug interrupted in " + ctlThread);
+				logger.info("Debugging interrupted in " + ctlThread);
 				throw new JetelRuntimeException("Interrupted while awaiting debug command.", e);
 			}
 
@@ -747,6 +771,13 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					case EVALUATE_EXPRESSION:
 						status = new DebugStatus(node, CommandType.EVALUATE_EXPRESSION);
 						CTLExpression expression = (CTLExpression)command.getValue();
+						// CLO-9416
+						Matcher matcher = KEYWORD_PATTERN.matcher(expression.getExpression());
+						if (matcher.find()) {
+							throw new JetelRuntimeException("Cannot evaluate statements containing keywords: ALL, OK, SKIP, STOP");
+						}
+						matcher = RETURN_PATTERN.matcher(expression.getExpression());
+						expression.setExpression(matcher.replaceFirst(""));
 						Object result = evaluateExpression(expression, node);
 						status.setValue(result);
 						break;
@@ -764,7 +795,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 				try {
 					this.statusQueue.put(status);
 				} catch (InterruptedException e) {
-					logger.info("Debug interrupted in " + ctlThread);
+					logger.info("Debugging interrupted in " + ctlThread);
 					throw new JetelRuntimeException("Interrupted while posting debug command result.", e);
 				}
 			}

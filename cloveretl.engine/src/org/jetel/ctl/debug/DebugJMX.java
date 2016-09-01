@@ -64,7 +64,7 @@ import org.jetel.util.string.UnicodeBlanks;
  *
  * @created 11. 3. 2016
  */
-public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMXMBean {
+public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMXMBean, IdSequence {
 	
 	private static final long EXPRESSION_TIMEOUT_MS = 20000;
 	
@@ -80,6 +80,8 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	private volatile NotificationListener finishListener;
 	private final Object finishListenerLock = new Object();
 	
+	private long idSeq;
+	
 	public DebugJMX(GraphRuntimeContext runtimeContext) {
 		this.runtimeContext = runtimeContext;
 		nodeThreads = new ConcurrentHashMap<>();
@@ -94,6 +96,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	}
 	
 	public void registerTransformLangExecutor(DebugTransformLangExecutor executor) {
+		executor.setIdSequence(this);
 		executors.add(executor);
 	}
 	
@@ -167,6 +170,11 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		Notification notification = new Notification(BP_CONDITION_ERROR, this, ++notificationSequence);
 		notification.setUserData(new BreakpointConditionError(breakpoint, errorMessage));
 		sendNotification(notification);
+	}
+	
+	@Override
+	public synchronized long nextId() {
+		return ++idSeq;
 	}
 	
 	@Override
