@@ -38,8 +38,7 @@ import org.jetel.exception.JetelRuntimeException;
 public class DebugStack extends Stack {
 	
 	private List<FunctionCallFrame> callStack = new ArrayList<>();
-	private long varIdSeq;
-	private long callIdSeq;
+	private IdSequence idSequence;
 	
 	public static class FunctionCallFrame {
 		
@@ -91,7 +90,7 @@ public class DebugStack extends Stack {
 	
 	public void setVariable(int blockOffset, int variableOffset, Object value, String name, TLType type) {
 		Variable storedVar = (Variable)super.getVariable(blockOffset, variableOffset);
-		long id = storedVar != null ? storedVar.getId() : nextVariableId();
+		long id = storedVar != null ? storedVar.getId() : idSequence.nextId();
 		super.setVariable(blockOffset, variableOffset, new Variable(name,type, blockOffset < 0, value, id));
 	}
 	
@@ -159,7 +158,7 @@ public class DebugStack extends Stack {
 	
 	public void enteredSyntheticBlock(CLVFFunctionCall functionCallNode) {
 		if (functionCallNode != null) {
-			FunctionCallFrame frame = new FunctionCallFrame(functionCallNode, nextCallId());
+			FunctionCallFrame frame = new FunctionCallFrame(functionCallNode, idSequence.nextId());
 			callStack.add(frame);
 		}
 	}
@@ -168,6 +167,10 @@ public class DebugStack extends Stack {
 		if (functionCallNode != null) {
 			callStack.remove(callStack.size() - 1);
 		}
+	}
+	
+	public void setIdSequence(IdSequence idSequence) {
+		this.idSequence = idSequence;
 	}
 	
 	/**
@@ -180,7 +183,7 @@ public class DebugStack extends Stack {
 	public void enteredBlock(Scope blockScope, CLVFFunctionCall functionCallNode) {
 		super.enteredBlock(blockScope, functionCallNode);
 		if (functionCallNode != null) {
-			FunctionCallFrame frame = new FunctionCallFrame(functionCallNode, variableStack.size() - 1, nextCallId());
+			FunctionCallFrame frame = new FunctionCallFrame(functionCallNode, variableStack.size() - 1, idSequence.nextId());
 			callStack.add(frame);
 		}
 	}
@@ -201,23 +204,16 @@ public class DebugStack extends Stack {
 		return callStack.listIterator(callStack.size());
 	}
 	
-	public long nextVariableId() {
-		return ++varIdSeq;
-	}
-	
-	private long nextCallId() {
-		return ++callIdSeq;
-	}
-	
 	public DebugStack createShallowCopyUpToFrame(FunctionCallFrame callFrame) {
 		
 		if (!this.callStack.contains(callFrame)) {
 			throw new JetelRuntimeException(String.format("Call stack does not contain given call frame."));
 		}
 		
-		DebugStack debugStack = new DebugStack();
-		debugStack.variableStack = new ArrayList<>(this.variableStack.subList(0, callFrame.getVarStackIndex()));
-	    debugStack.callStack = new ArrayList<>(this.callStack.subList(0, this.callStack.indexOf(callFrame)));
-		return debugStack;
+		DebugStack copy = new DebugStack();
+		copy.variableStack = new ArrayList<>(this.variableStack.subList(0, callFrame.getVarStackIndex()));
+		copy.callStack = new ArrayList<>(this.callStack.subList(0, this.callStack.indexOf(callFrame)));
+		copy.idSequence = this.idSequence;
+		return copy;
 	}
 }
