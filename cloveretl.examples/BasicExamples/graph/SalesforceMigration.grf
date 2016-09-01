@@ -27,7 +27,7 @@
 </Record>
 </Metadata>
 <MetadataGroup name="Implicit metadata" type="implicit">
-<Metadata id="__dynamic_metadata_WRITE_ACCOUNTS_salesforce">
+<Metadata id="__dynamic_metadata_SALESFORCE_WRITE_ACCOUNTS_salesforce">
 <Record fieldDelimiter="," label="accounts.csv" name="import_accounts_SalesforceResult" recordDelimiter="\n" type="delimited">
 <Field name="id" trim="true" type="integer"/>
 <Field name="name" type="string"/>
@@ -35,7 +35,7 @@
 <Field name="ObjectId" type="string"/>
 </Record>
 </Metadata>
-<Metadata id="__dynamic_metadata_WRITE_CONTACTS_salesforce">
+<Metadata id="__dynamic_metadata_SALESFORCE_WRITE_CONTACTS_salesforce">
 <Record fieldDelimiter="|" name="contacts_to_insert_SalesforceResult" recordDelimiter="\n" type="delimited">
 <Field name="id" trim="true" type="integer"/>
 <Field name="name" type="string"/>
@@ -45,15 +45,7 @@
 <Field name="Error" type="string"/>
 </Record>
 </Metadata>
-<Metadata id="__dynamic_metadata_WRITE_ACCOUNTS_salesforce1">
-<Record fieldDelimiter="," label="accounts.csv" name="import_accounts_SalesforceResult" recordDelimiter="\n" type="delimited">
-<Field name="id" trim="true" type="integer"/>
-<Field name="name" type="string"/>
-<Field eofAsDelimiter="true" name="country" type="string"/>
-<Field name="ObjectId" type="string"/>
-</Record>
-</Metadata>
-<Metadata id="__dynamic_metadata_WRITE_ACCOUNTS_salesforce2">
+<Metadata id="__dynamic_metadata_SALESFORCE_WRITE_ACCOUNTS_salesforce1">
 <Record fieldDelimiter="," label="accounts.csv" name="import_accounts_SalesforceResult" recordDelimiter="\n" type="delimited">
 <Field name="id" trim="true" type="integer"/>
 <Field name="name" type="string"/>
@@ -61,15 +53,7 @@
 <Field name="Error" type="string"/>
 </Record>
 </Metadata>
-<Metadata id="__dynamic_metadata_WRITE_ACCOUNTS_salesforce3">
-<Record fieldDelimiter="," label="accounts.csv" name="import_accounts_SalesforceResult" recordDelimiter="\n" type="delimited">
-<Field name="id" trim="true" type="integer"/>
-<Field name="name" type="string"/>
-<Field eofAsDelimiter="true" name="country" type="string"/>
-<Field name="ObjectId" type="string"/>
-</Record>
-</Metadata>
-<Metadata id="__dynamic_metadata_WRITE_CONTACTS_salesforce1">
+<Metadata id="__dynamic_metadata_SALESFORCE_WRITE_CONTACTS_salesforce1">
 <Record fieldDelimiter="|" name="contacts_to_insert_SalesforceResult" recordDelimiter="\n" type="delimited">
 <Field name="id" trim="true" type="integer"/>
 <Field name="name" type="string"/>
@@ -84,51 +68,57 @@
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<RichTextNote backgroundColor="DAD8C9" folded="false" fontSize="medium" height="199" id="Note2" textColor="444444" width="443" x="588" y="28">
-<attr name="text"><![CDATA[h3. Migration to Salesforce with relationships between objects
-This example demonstrates migration to Salesforce using the SalesforceBulkWriter component. The source CSV files represent an in-house CRM system. We are loading [Accounts|element://ACCOUNTS] and their [Contacts|element://CONTACTS] to Salesforce. Contacts are bound to their parent Accounts via IDs and this example shows how to easily keep this relationship in Salesforce - by using the Salesforce keys (ObjectId) generated when writing Accounts.]]></attr>
+<RichTextNote backgroundColor="DAD8C9" folded="false" fontSize="large" height="172" id="Note2" textColor="444444" width="1014" x="26" y="32">
+<attr name="text"><![CDATA[h3. Migrate Accounts and Contacts (with relationships) to Salesforce within a single transformation
+
+In this CRM migration example we start with two datasets ([Accounts|element://ACCOUNTS] and [Contacts|element://CONTACTS]) that are linked by foreign keys exported from a source CRM. We need to migrate those datasets to Salesforce, retaining the relationships using Salesforce ObjectId's.
+
+You will see you can do this in one go, using CloverETL's capability to pass new ObjectId's from one writer to another down the stream.
+]]></attr>
 </RichTextNote>
-<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="208" id="Note4" textColor="444444" width="585" x="225" y="417">
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="208" id="Note4" textColor="444444" width="585" x="226" y="549">
 <attr name="text"><![CDATA[h3. Writing Accounts
 
-The SalesforceBulkWriter component is used to write Accounts into Salesforce. It uses a Salesforce connection and an input mapping that maps input fields onto Salesforce Account object fields.
+We use SalesforceBulkWriter to write Accounts into Salesforce (notice the input mapping).
 
-After writing Accounts we send information about successful writes to the first output port. They contain the full input record and an ObjectId field. The ObjectId field is the Salesforce auto-generated ID. This will be used later when writing Contacts for the accounts.
+First output passes through successfully written records enriched with ObjectId field. We’ll use it later for joining Contacts with Accounts.
 
-Second output port contains information about accounts that were rejected by Salesforce with a description of the cause.]]></attr>
+Second output contains information about rejected records.
+]]></attr>
 </RichTextNote>
-<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="228" id="Note5" textColor="444444" width="316" x="225" y="763">
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="228" id="Note5" textColor="444444" width="316" x="225" y="885">
 <attr name="text"><![CDATA[h3. Joining Contacts with Accounts
 
 Contacts in the source CRM reference their parent Accounts via an ID field. These source ID fields are used to join the successfully written Accounts with the incoming Contacts. 
 
 Important part is to get the ObjectId field of Accounts (autogenerated ID created when writing Accounts to Salesforce) so it can be used to represent the relationship between Contacts and Accounts.]]></attr>
 </RichTextNote>
-<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="228" id="Note6" textColor="444444" width="247" x="563" y="763">
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="228" id="Note6" textColor="444444" width="247" x="563" y="885">
 <attr name="text"><![CDATA[h3. Writing Contacts
 
 Contacts are written to Salesforce similarly as Accounts. To keep their relationship to Accounts, they need to store the Account ObjectId in the Contact's AccountId field. The Account ObjectId was acquired previously by joining with results of writing Accounts.]]></attr>
 </RichTextNote>
-<RichTextNote backgroundColor="DEF4AB" folded="false" fontSize="medium" height="199" id="Note7" textColor="444444" width="515" x="26" y="28">
+<RichTextNote backgroundColor="DEF4AB" folded="false" fontSize="medium" height="170" id="Note7" textColor="444444" width="1014" x="26" y="215">
 <attr name="text"><![CDATA[h3. Connect to Salesforce
 
-This graph needs a connection to Salesforce. If you don't have a Salesforce username, password and security token, follow these steps:
+First, you'll need to configure a Salesforce connection in [Outline > Connections > My Salesforce|element://SALESFORCE0].
 
+If you don't have a Salesforce Username, Password and Security Token, follow these steps:
 
-# create an account in [Salesforce|https://login.salesforce.com/]
-# get your security token (in Salesforce go to "Your Account Name" > My Settings > Personal > Reset My Security Token) - this will send the token to your email
-# enter your username, password and security token in the [Salesforce connection|element://SALESFORCE0]]]></attr>
+# Create an account in [Salesforce|https://login.salesforce.com/]
+# Get your Security Token (in Salesforce go to "Your Account Name" > My Settings > Personal > Reset My Security Token) - this will send the token to your email
+# Enter your username, password and security token in the [Salesforce connection|element://SALESFORCE0]]]></attr>
 </RichTextNote>
-<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="301" id="Note8" textColor="444444" width="128" x="26" y="371">
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="301" id="Note8" textColor="444444" width="128" x="26" y="493">
 <attr name="text"><![CDATA[h3. Source CRM
 The CSV files represent accounts and contacts in the source CRM. Typically these would be read from database or via an API of the CRM.]]></attr>
 </RichTextNote>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node fileURL="${DATAIN_DIR}/salesforce/accounts.csv" guiName="Accounts" guiX="26" guiY="279" id="ACCOUNTS" skipRows="1" type="FLAT_FILE_READER"/>
-<Node fileURL="${DATAIN_DIR}/salesforce/contacts.csv" guiName="Contacts" guiX="26" guiY="671" id="CONTACTS" skipRows="1" type="FLAT_FILE_READER"/>
-<Node guiName="Join Account SF ID" guiX="408" guiY="671" id="JOIN_ACCOUNT_SF_ID1" joinKey="$account_id=$id" joinType="leftOuter" type="EXT_HASH_JOIN">
+<Node fileURL="${DATAIN_DIR}/salesforce/accounts.csv" guiName="Accounts" guiX="26" guiY="401" id="ACCOUNTS" skipRows="1" type="FLAT_FILE_READER"/>
+<Node fileURL="${DATAIN_DIR}/salesforce/contacts.csv" guiName="Contacts" guiX="26" guiY="793" id="CONTACTS" skipRows="1" type="FLAT_FILE_READER"/>
+<Node guiName="Join Account SF ID" guiX="408" guiY="793" id="JOIN_ACCOUNT_SF_ID1" joinKey="$account_id=$id" joinType="leftOuter" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -158,10 +148,11 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node fileURL="${DATAOUT_DIR}/salesforce/rejected_accounts.txt" guiName="Rejected Accounts" guiX="883" guiY="388" id="REJECTED_ACCOUNTS1" makeDirs="true" type="FLAT_FILE_WRITER"/>
-<Node fileURL="${DATAOUT_DIR}/salesforce/rejected_contacts.txt" guiName="Rejected Contacts" guiX="881" guiY="791" id="REJECTED_CONTACTS" makeDirs="true" type="FLAT_FILE_WRITER"/>
-<Node guiName="SimpleCopy" guiX="682" guiY="279" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
-<Node guiName="Write Accounts" guiX="228" guiY="279" id="WRITE_ACCOUNTS" object="Account" sfConnection="SALESFORCE0" type="SALESFORCE_BULK_WRITER">
+<Node fileURL="${DATAOUT_DIR}/salesforce/rejected_accounts.txt" guiName="Log Rejected Accounts" guiX="883" guiY="510" id="LOG_REJECTED_ACCOUNTS" makeDirs="true" type="FLAT_FILE_WRITER"/>
+<Node fileURL="${DATAOUT_DIR}/salesforce/rejected_contacts.txt" guiName="Log Rejected Contacts" guiX="881" guiY="913" id="LOG_REJECTED_CONTACTS" makeDirs="true" type="FLAT_FILE_WRITER"/>
+<Node fileURL="${DATAOUT_DIR}/salesforce/written_accounts.txt" guiName="Log Written Accounts" guiX="883" guiY="401" id="LOG_WRITTEN_ACCOUNTS" makeDirs="true" type="FLAT_FILE_WRITER"/>
+<Node fileURL="${DATAOUT_DIR}/salesforce/written_contacts.txt" guiName="Log Written Contacts" guiX="883" guiY="793" id="LOG_WRITTEN_CONTACTS" makeDirs="true" type="FLAT_FILE_WRITER"/>
+<Node guiName="Salesforce: Write Accounts" guiX="228" guiY="401" id="SALESFORCE_WRITE_ACCOUNTS" object="Account" sfConnection="SALESFORCE0" type="SALESFORCE_BULK_WRITER">
 <attr name="inputMapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -191,7 +182,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node guiName="Write Contacts" guiX="682" guiY="671" id="WRITE_CONTACTS" object="Contact" sfConnection="SALESFORCE0" type="SALESFORCE_BULK_WRITER">
+<Node guiName="Salesforce: Write Contacts" guiX="633" guiY="793" id="SALESFORCE_WRITE_CONTACTS" object="Contact" sfConnection="SALESFORCE0" type="SALESFORCE_BULK_WRITER">
 <attr name="inputMapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -223,16 +214,15 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node fileURL="${DATAOUT_DIR}/salesforce/written_accounts.txt" guiName="Written Accounts" guiX="883" guiY="279" id="WRITTEN_ACCOUNTS" makeDirs="true" type="FLAT_FILE_WRITER"/>
-<Node fileURL="${DATAOUT_DIR}/salesforce/written_contacts.txt" guiName="Written Contacts" guiX="883" guiY="671" id="WRITTEN_CONTACTS" makeDirs="true" type="FLAT_FILE_WRITER"/>
-<Edge debugMode="true" fromNode="ACCOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="WRITE_ACCOUNTS:0"/>
+<Node guiName="SimpleCopy" guiX="682" guiY="401" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
+<Edge debugMode="true" fromNode="ACCOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SALESFORCE_WRITE_ACCOUNTS:0"/>
 <Edge debugMode="true" fromNode="CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (output)" toNode="JOIN_ACCOUNT_SF_ID1:0"/>
-<Edge debugMode="true" fromNode="JOIN_ACCOUNT_SF_ID1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="WRITE_CONTACTS:0"/>
-<Edge fromNode="SIMPLE_COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="__dynamic_metadata_WRITE_ACCOUNTS_salesforce" toNode="WRITTEN_ACCOUNTS:0"/>
-<Edge debugMode="true" fromNode="SIMPLE_COPY:1" guiBendpoints="966:100|966:432|509:432|509:492" guiLocks="847|390|644" guiRouter="Manual" id="Edge6" inPort="Port 1 (slave)" outPort="Port 1 (out)" persistedImplicitMetadata="__dynamic_metadata_WRITE_ACCOUNTS_salesforce1" toNode="JOIN_ACCOUNT_SF_ID1:1"/>
-<Edge debugMode="true" fromNode="WRITE_ACCOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (accepted records)" persistedImplicitMetadata="__dynamic_metadata_WRITE_ACCOUNTS_salesforce3" toNode="SIMPLE_COPY:0"/>
-<Edge debugMode="true" fromNode="WRITE_ACCOUNTS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 1 (rejected records)" persistedImplicitMetadata="__dynamic_metadata_WRITE_ACCOUNTS_salesforce2" toNode="REJECTED_ACCOUNTS1:0"/>
-<Edge debugMode="true" fromNode="WRITE_CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" outPort="Port 0 (accepted records)" persistedImplicitMetadata="__dynamic_metadata_WRITE_CONTACTS_salesforce1" toNode="WRITTEN_CONTACTS:0"/>
-<Edge debugMode="true" fromNode="WRITE_CONTACTS:1" guiBendpoints="1002:492|1002:598" guiLocks="1002|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" outPort="Port 1 (rejected records)" persistedImplicitMetadata="__dynamic_metadata_WRITE_CONTACTS_salesforce" toNode="REJECTED_CONTACTS:0"/>
+<Edge debugMode="true" fromNode="JOIN_ACCOUNT_SF_ID1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SALESFORCE_WRITE_CONTACTS:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_WRITE_ACCOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (accepted records)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_WRITE_ACCOUNTS_salesforce" toNode="SIMPLE_COPY:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_WRITE_ACCOUNTS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 1 (rejected records)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_WRITE_ACCOUNTS_salesforce1" toNode="LOG_REJECTED_ACCOUNTS:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_WRITE_CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" outPort="Port 0 (accepted records)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_WRITE_CONTACTS_salesforce1" toNode="LOG_WRITTEN_CONTACTS:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_WRITE_CONTACTS:1" guiBendpoints="1002:492|1002:598" guiLocks="1002|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" outPort="Port 1 (rejected records)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_WRITE_CONTACTS_salesforce" toNode="LOG_REJECTED_CONTACTS:0"/>
+<Edge fromNode="SIMPLE_COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_WRITE_ACCOUNTS_salesforce" toNode="LOG_WRITTEN_ACCOUNTS:0"/>
+<Edge debugMode="true" fromNode="SIMPLE_COPY:1" guiBendpoints="816:409|847:752|390:752|394:801" guiLocks="847|390|752" guiRouter="Manual" id="Edge6" inPort="Port 1 (slave)" outPort="Port 1 (out)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_WRITE_ACCOUNTS_salesforce" toNode="JOIN_ACCOUNT_SF_ID1:1"/>
 </Phase>
 </Graph>

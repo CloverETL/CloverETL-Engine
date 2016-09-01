@@ -34,11 +34,11 @@
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<RichTextNote backgroundColor="DAD8C9" folded="false" fontSize="medium" height="122" id="Note2" textColor="444444" width="919" x="531" y="27">
+<RichTextNote backgroundColor="DAD8C9" folded="false" fontSize="large" height="144" id="Note2" textColor="444444" width="943" x="24" y="31">
 <attr name="text"><![CDATA[h3. Reading from Salesforce
-This example demonstrates reading from Salesforce using the SalesforceBulkReader components. We read [Opportunities|element://OPPORTUNITIES] and [Accounts|element://ACCOUNTS] to get the information about Accounts with the highest total value of won Opportunities.]]></attr>
+This example demonstrates reading from Salesforce using the SalesforceBulkReader components. We read [Opportunities|element://OPPORTUNITIES] and [Accounts|element://ACCOUNTS] to get the information about Accounts with the highest total value of won Opportunities and store the result in a [spreadsheet|element://BEST_ACCOUNTS].]]></attr>
 </RichTextNote>
-<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="228" id="Note0" textColor="444444" width="256" x="531" y="295">
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="228" id="Note0" textColor="444444" width="256" x="24" y="517">
 <attr name="text"><![CDATA[h3. Reading from Salesforce
 
 The SalesforceBulkReader component is used to read from Salesforce. 
@@ -47,29 +47,27 @@ It uses a Salesforce connection for credentials and connection configuration.
 
 A SOQL query defines what data are returned and an output mapping maps them to output metadata.]]></attr>
 </RichTextNote>
-<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="162" id="Note1" textColor="444444" width="218" x="1232" y="182">
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="162" id="Note1" textColor="444444" width="218" x="749" y="404">
 <attr name="text"><![CDATA[h3. Joining
 
 By joining Opportunities with Accounts on the Account IDs we get the data necessary to calculate the best accounts.]]></attr>
 </RichTextNote>
-<RichTextNote backgroundColor="DEF4AB" folded="false" fontSize="medium" height="222" id="Note7" textColor="444444" width="486" x="24" y="27">
+<RichTextNote backgroundColor="DEF4AB" folded="false" fontSize="medium" height="170" id="Note7" textColor="444444" width="943" x="24" y="201">
 <attr name="text"><![CDATA[h3. Connect to Salesforce
 
-This graph needs a connection to Salesforce. If you don't have a Salesforce username, password and security token, follow these steps:
+First, you'll need to configure a Salesforce connection in [Outline > Connections > My Salesforce|element://SALESFORCE0].
 
+If you don't have a Salesforce Username, Password and Security Token, follow these steps:
 
-# create an account in [Salesforce|https://login.salesforce.com/]
-# get your security token (in Salesforce go to "Your Account Name" > My Settings > Personal > Reset My Security Token) - this will send the token to your email
-# enter your username, password and security token in the [Salesforce connection|element://MY_SALESFORCE]]]></attr>
+# Create an account in [Salesforce|https://login.salesforce.com/]
+# Get your Security Token (in Salesforce go to "Your Account Name" > My Settings > Personal > Reset My Security Token) - this will send the token to your email
+# Enter your username, password and security token in the [Salesforce connection|element://SALESFORCE0]]]></attr>
 </RichTextNote>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node guiName="Accounts" guiX="831" guiY="295" id="ACCOUNTS" sfConnection="MY_SALESFORCE" type="SALESFORCE_BULK_READER">
-<attr name="soqlQuery"><![CDATA[SELECT Name,Id From Account]]></attr>
-</Node>
-<Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/best_accounts.xlsx" guiName="Best accounts" guiX="1322" guiY="448" id="BEST_ACCOUNTS" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
-<Node guiName="ExtHashJoin" guiX="1068" guiY="182" id="EXT_HASH_JOIN" joinKey="$AccountId=$Id" type="EXT_HASH_JOIN">
+<Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/best_accounts.xlsx" guiName="Best accounts" guiX="839" guiY="670" id="BEST_ACCOUNTS" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
+<Node guiName="ExtHashJoin" guiX="561" guiY="404" id="EXT_HASH_JOIN" joinKey="$AccountId=$Id" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -101,7 +99,10 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node guiName="Opportunities" guiX="531" guiY="182" id="OPPORTUNITIES" sfConnection="MY_SALESFORCE" type="SALESFORCE_BULK_READER">
+<Node guiName="Salesforce: Read Accounts" guiX="324" guiY="517" id="SALESFORCE_READ_ACCOUNTS" sfConnection="MY_SALESFORCE" type="SALESFORCE_BULK_READER">
+<attr name="soqlQuery"><![CDATA[SELECT Name,Id From Account]]></attr>
+</Node>
+<Node guiName="Salesforce: Read Opportunities" guiX="24" guiY="404" id="SALESFORCE_READ_OPPORTUNITIES" sfConnection="MY_SALESFORCE" type="SALESFORCE_BULK_READER">
 <attr name="soqlQuery"><![CDATA[SELECT Name,Amount,AccountId,IsWon From Opportunity]]></attr>
 <attr name="outputMapping"><![CDATA[//#CTL2
 
@@ -134,15 +135,15 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node guiName="Sort by amounts" guiX="1074" guiY="448" id="SORT_BY_AMOUNTS" sortKey="WonAmount(d)" type="EXT_SORT"/>
-<Node aggregateKey="AccountID" guiName="Sum amounts" guiX="831" guiY="448" id="SUM_AMOUNTS" mapping="$ID:=$AccountID;$Name:=first($AccountName);$WonAmount:=sum($Amount);" sorted="false" type="AGGREGATE"/>
-<Node guiName="Won" guiX="831" guiY="182" id="WON" type="EXT_FILTER">
+<Node guiName="Sort by amounts" guiX="567" guiY="670" id="SORT_BY_AMOUNTS" sortKey="WonAmount(d)" type="EXT_SORT"/>
+<Node aggregateKey="AccountID" guiName="Sum amounts" guiX="324" guiY="670" id="SUM_AMOUNTS" mapping="$ID:=$AccountID;$Name:=first($AccountName);$WonAmount:=sum($Amount);" sorted="false" type="AGGREGATE"/>
+<Node guiName="Won" guiX="324" guiY="404" id="WON" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[//#CTL2
 $in.0.IsWon == true]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="ACCOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN:1"/>
-<Edge debugMode="true" fromNode="EXT_HASH_JOIN:0" guiBendpoints="773:79|773:285|370:285|370:345" guiLocks="1212|809|405" guiRouter="Manual" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SUM_AMOUNTS:0"/>
-<Edge debugMode="true" fromNode="OPPORTUNITIES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WON:0"/>
+<Edge debugMode="true" fromNode="EXT_HASH_JOIN:0" guiBendpoints="773:79|705:610|302:610|370:345" guiLocks="705|302|610" guiRouter="Manual" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SUM_AMOUNTS:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_READ_ACCOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN:1"/>
+<Edge debugMode="true" fromNode="SALESFORCE_READ_OPPORTUNITIES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WON:0"/>
 <Edge debugMode="true" fromNode="SORT_BY_AMOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (input)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata3" toNode="BEST_ACCOUNTS:0"/>
 <Edge debugMode="true" fromNode="SUM_AMOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="SORT_BY_AMOUNTS:0"/>
 <Edge debugMode="true" fromNode="WON:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (driver)" outPort="Port 0 (accepted)" persistedImplicitMetadata="Metadata1" toNode="EXT_HASH_JOIN:0"/>
