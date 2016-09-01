@@ -704,7 +704,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			try {
 				command = commandQueue.take();
 			} catch (InterruptedException e) {
-				logger.info("Debug interrupted in " + ctlThread);
+				logger.info("Debugging interrupted in " + ctlThread);
 				throw new JetelRuntimeException("Interrupted while awaiting debug command.", e);
 			}
 
@@ -786,7 +786,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 				try {
 					this.statusQueue.put(status);
 				} catch (InterruptedException e) {
-					logger.info("Debug interrupted in " + ctlThread);
+					logger.info("Debugging interrupted in " + ctlThread);
 					throw new JetelRuntimeException("Interrupted while posting debug command result.", e);
 				}
 			}
