@@ -790,8 +790,11 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			@Override
 			public void work() throws Exception {
 				javax.xml.transform.Result result = new StreamResult(pipedWriter);
-				transformer.transform(new SAXSource(treeXmlReader, source), result);
-				pipedWriter.close();
+				try {
+					transformer.transform(new SAXSource(treeXmlReader, source), result);
+				} finally {
+					pipedWriter.close();
+				}
 			}
 
 			public void setInputOutput(Writer pipedWriter, InputSource source) {

@@ -101,16 +101,7 @@ public class DataRecordMap {
 	 * 			False - existing value remains, new is scrapped
 	 */
 	public DataRecordMap(RecordKey key, boolean duplicate, boolean overwrite) {
-		if (key == null) {
-			throw new NullPointerException("Put key can not be NULL");
-		}
-		threshold = (int) (DEFAULT_INITIAL_CAPACITY * LOAD_FACTOR);
-		table = new FullDataRecordEntry[DEFAULT_INITIAL_CAPACITY];
-
-		this.putKeyFields = key.getKeyFields();
-		this.equalNULLs = key.isEqualNULLs();
-		this.duplicate = duplicate;
-		this.overwrite = overwrite;
+		this(key, duplicate, DEFAULT_INITIAL_CAPACITY, overwrite);
 	}
 
 	/**
@@ -321,6 +312,7 @@ public class DataRecordMap {
 		for (int i = 0; i < tab.length; i++)
 			tab[i] = null;
 		size = 0;
+		duplicates = 0;
 	}
 	
 	
@@ -399,9 +391,10 @@ public class DataRecordMap {
 		return false;
 	}
 
-	private void addDuplicateEntry(DataRecordEntry entry, DataRecord record) {
-		DataRecordEntry duplicateEntry = entry.duplicate;
-		entry.duplicate = new DataRecordEntry(record, duplicateEntry);
+	private void addDuplicateEntry(FullDataRecordEntry entry, DataRecord record) {
+		//add the new duplicate to the end of linked list to keep the order
+		entry.lastDuplicate.duplicate = new DataRecordEntry(record, null);
+		entry.lastDuplicate = entry.lastDuplicate.duplicate;
 		duplicates++;
 	}
 
@@ -486,11 +479,13 @@ public class DataRecordMap {
 		FullDataRecordEntry next;
 		final int hash;
 		boolean retrieved = false;
-
+		DataRecordEntry lastDuplicate;
+		
 		FullDataRecordEntry(int h, DataRecord v, FullDataRecordEntry n) {
 			value = v;
 			next = n;
 			hash = h;
+			lastDuplicate = this;
 		}
 	}
 
@@ -709,9 +704,13 @@ public class DataRecordMap {
 
 		@Override
 		public DataRecord next() {
-			current = next;
-			seek();
-			return current.value;
+			if (next != null) {
+				current = next;
+				seek();
+				return current.value;
+			} else {
+				throw new NoSuchElementException();
+			}
 		}
 
 		@Override
