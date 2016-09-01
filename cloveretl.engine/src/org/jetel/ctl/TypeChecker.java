@@ -1046,6 +1046,7 @@ public class TypeChecker extends NavigatingVisitor {
 		if (!actual[1].isList() && !actual[1].isMap()) {
 			node.setType(TLType.ERROR);
 			error(node,functionErrorMessage("in", new TLType[]{TLType.OBJECT,TLType.createList(null)},actual));
+			return data;
 		}
 		
 		TLType elemType = actual[1].isList() ? ((TLTypeList)actual[1]).getElementType() : ((TLTypeMap)actual[1]).getKeyType();

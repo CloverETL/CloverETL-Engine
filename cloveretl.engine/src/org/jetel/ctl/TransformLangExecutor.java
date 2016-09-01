@@ -542,33 +542,35 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 	@Override
 	public Object visit(CLVFStart node, Object data) {
-
-		if (node.jjtGetParent() == null || (!(node.jjtGetParent() instanceof CLVFImportSource))) {
-			stack.enteredBlock(node.getScope());
-		}
-		
-		final int childCount = node.jjtGetNumChildren();
-		for (int i = 0; i < childCount; i++) {
-			// to save some execution time, we will skip function declarations
-			// because there is nothing to do in there anyway
-			final SimpleNode child = (SimpleNode)node.jjtGetChild(i);
-			if (child.getId() == TransformLangParserTreeConstants.JJTFUNCTIONDECLARATION) {
-				continue;
+		boolean blockEntered = false;
+		try {
+			if (node.jjtGetParent() == null || (!(node.jjtGetParent() instanceof CLVFImportSource))) {
+				stack.enteredBlock(node.getScope());
+				blockEntered = true;
 			}
-			// block is responsible for cleaning up results of statement expression
-			executeAndCleanup(node.jjtGetChild(i), data);
 			
-			// catch and reset any break interrupts
-			if (breakFlag) {
-				breakFlag = false;
+			final int childCount = node.jjtGetNumChildren();
+			for (int i = 0; i < childCount; i++) {
+				// to save some execution time, we will skip function declarations
+				// because there is nothing to do in there anyway
+				final SimpleNode child = (SimpleNode)node.jjtGetChild(i);
+				if (child.getId() == TransformLangParserTreeConstants.JJTFUNCTIONDECLARATION) {
+					continue;
+				}
+				// block is responsible for cleaning up results of statement expression
+				executeAndCleanup(node.jjtGetChild(i), data);
+				
+				// catch and reset any break interrupts
+				if (breakFlag) {
+					breakFlag = false;
+				}
+			}
+		} finally {
+			if (blockEntered && !keepGlobalScope) {
+				// debugging is off: throw away the global scope
+				stack.exitedBlock();
 			}
 		}
-
-		if (!keepGlobalScope && (node.jjtGetParent() == null || (!(node.jjtGetParent() instanceof CLVFImportSource)))) {
-			// debugging is off: throw away the global scope
-			stack.exitedBlock();
-		}
-		
 		return data; // this value is ignored in this example
 	}
 
@@ -577,15 +579,16 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 		int i, k = node.jjtGetNumChildren();
 		stack.enteredBlock(node.getScope());
-
-		for (i = 0; i < k; i++)
-			node.jjtGetChild(i).jjtAccept(this, data);
-
-		if (!keepGlobalScope) {
-			// debugging is off: throw away the global scope
-			stack.exitedBlock();
+		try {
+			for (i = 0; i < k; i++) {
+				node.jjtGetChild(i).jjtAccept(this, data);
+			}
+		} finally {
+			if (!keepGlobalScope) {
+				// debugging is off: throw away the global scope
+				stack.exitedBlock();
+			}
 		}
-		
 		return data; // this value is ignored in this example
 	}
 	
@@ -1233,107 +1236,80 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	@Override
 	public Object visit(CLVFForStatement node, Object data) {
 		stack.enteredBlock(node.getScope());
-		
-		SimpleNode forInit = node.getForInit();
-		SimpleNode forFinal = node.getForFinal();
-		SimpleNode forUpdate = node.getForUpdate();
-		SimpleNode forBody = node.getForBody();
-		
-		// execute init if exists
-		if (forInit != null) {
-			executeAndCleanup(forInit, data);
-		}
-		
-		// evaluate condition if exists, infinite loop if it does not exist
-		boolean condition = true;
-		if (forFinal != null) {
-			forFinal.jjtAccept(this, data); 
-			condition = stack.popBoolean();
-		}
-
-		// loop execution
-		while (condition) {
-			checkInterrupt();
-			// loops always have (possibly fake) body
-			forBody.jjtAccept(this, data);
-			// check for break or continue statements
-			if (breakFlag) {
-				if (breakType == BREAK_BREAK || breakType == BREAK_CONTINUE) {
-					breakFlag = false;
-				}
-				
-				if (breakType == BREAK_BREAK || breakType == BREAK_RETURN) {
-					stack.exitedBlock();
-					return data;
-				}
+		try {
+			SimpleNode forInit = node.getForInit();
+			SimpleNode forFinal = node.getForFinal();
+			SimpleNode forUpdate = node.getForUpdate();
+			SimpleNode forBody = node.getForBody();
+			
+			// execute init if exists
+			if (forInit != null) {
+				executeAndCleanup(forInit, data);
 			}
 			
-			// evaluate update clause
-			if (forUpdate != null) {
-				executeAndCleanup(forUpdate, data);
-			}
-			
-			// check final condition
+			// evaluate condition if exists, infinite loop if it does not exist
+			boolean condition = true;
 			if (forFinal != null) {
-				forFinal.jjtAccept(this, data);
+				forFinal.jjtAccept(this, data); 
 				condition = stack.popBoolean();
 			}
-		}
-
-		stack.exitedBlock();
-		return data;
-	}
-
-	@Override
-	public Object visit(CLVFForeachStatement node, Object data) {
-		stack.enteredBlock(node.getScope());
-		
-		final CLVFVariableDeclaration var = (CLVFVariableDeclaration)node.jjtGetChild(0);
-		
-		// loops always have (possibly fake) body
-		final SimpleNode body = (SimpleNode)node.jjtGetChild(2);
-		
-		SimpleNode composite = (SimpleNode)node.jjtGetChild(1);
-		
-		
-		if (composite.getType().isList() || composite.getType().isMap()) {
-			// iterable composite is a list - iterate over elements
-			// iterable composite is a map - iterate over values
-			// iterating over record fields
-			node.jjtGetChild(1).jjtAccept(this, data);
-			
-			final Collection<Object> iterable = composite.getType().isList() ? stack.popList() : stack.popMap().values();
-			
-			for (Object o : iterable) {
+	
+			// loop execution
+			while (condition) {
 				checkInterrupt();
-				setVariable(var,o);
-				// block is responsible for cleanup
-				body.jjtAccept(this, data);
-				// check for break or return statements
+				// loops always have (possibly fake) body
+				forBody.jjtAccept(this, data);
+				// check for break or continue statements
 				if (breakFlag) {
 					if (breakType == BREAK_BREAK || breakType == BREAK_CONTINUE) {
 						breakFlag = false;
 					}
 					
 					if (breakType == BREAK_BREAK || breakType == BREAK_RETURN) {
-						stack.exitedBlock();
 						return data;
 					}
 				}
-
+				
+				// evaluate update clause
+				if (forUpdate != null) {
+					executeAndCleanup(forUpdate, data);
+				}
+				
+				// check final condition
+				if (forFinal != null) {
+					forFinal.jjtAccept(this, data);
+					condition = stack.popBoolean();
+				}
 			}
+		} finally {
+			stack.exitedBlock();
+		}
+		return data;
+	}
 
-		} else {
-			// iterable composite is a record - iterate over type-safe fields
+	@Override
+	public Object visit(CLVFForeachStatement node, Object data) {
+		stack.enteredBlock(node.getScope());
+		try {
+			final CLVFVariableDeclaration var = (CLVFVariableDeclaration)node.jjtGetChild(0);
 			
-			if (node.getTypeSafeFields() != null) {
+			// loops always have (possibly fake) body
+			final SimpleNode body = (SimpleNode)node.jjtGetChild(2);
+			
+			SimpleNode composite = (SimpleNode)node.jjtGetChild(1);
+			
+			
+			if (composite.getType().isList() || composite.getType().isMap()) {
+				// iterable composite is a list - iterate over elements
+				// iterable composite is a map - iterate over values
 				// iterating over record fields
 				node.jjtGetChild(1).jjtAccept(this, data);
-				final DataRecord record = stack.popRecord();
 				
-				for (int field : node.getTypeSafeFields()) {
+				final Collection<Object> iterable = composite.getType().isList() ? stack.popList() : stack.popMap().values();
+				
+				for (Object o : iterable) {
 					checkInterrupt();
-					setVariable(var,fieldValue(record.getField(field)));
+					setVariable(var,o);
 					// block is responsible for cleanup
 					body.jjtAccept(this, data);
 					// check for break or return statements
@@ -1343,54 +1319,82 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 						}
 						
 						if (breakType == BREAK_BREAK || breakType == BREAK_RETURN) {
-							stack.exitedBlock();
 							return data;
 						}
 					}
 	
 				}
+	
+			} else {
+				// iterable composite is a record - iterate over type-safe fields
 				
+				if (node.getTypeSafeFields() != null) {
+					// iterating over record fields
+					node.jjtGetChild(1).jjtAccept(this, data);
+					final DataRecord record = stack.popRecord();
+					
+					for (int field : node.getTypeSafeFields()) {
+						checkInterrupt();
+						setVariable(var,fieldValue(record.getField(field)));
+						// block is responsible for cleanup
+						body.jjtAccept(this, data);
+						// check for break or return statements
+						if (breakFlag) {
+							if (breakType == BREAK_BREAK || breakType == BREAK_CONTINUE) {
+								breakFlag = false;
+							}
+							
+							if (breakType == BREAK_BREAK || breakType == BREAK_RETURN) {
+								return data;
+							}
+						}
+		
+					}
+					
+				}
 			}
+		} finally {
+			stack.exitedBlock();
 		}
-		stack.exitedBlock();
 		return data;
 	}
 
 	@Override
 	public Object visit(CLVFWhileStatement node, Object data) {
 		stack.enteredBlock(node.getScope());
-		final SimpleNode loopCondition = (SimpleNode)node.jjtGetChild(0);
-		
-		// loops always have (possibly fake) body
-		SimpleNode body = (SimpleNode)node.jjtGetChild(1);
-
-		// evaluate the condition
-		loopCondition.jjtAccept(this, data); 
-		boolean condition = stack.popBoolean();
-
-		// loop execution
-		while (condition) {
-			checkInterrupt();
-			// block is responsible for cleanup
-			body.jjtAccept(this, data);
-			// check for break or continue statements
-			if (breakFlag) {
-				if (breakType == BREAK_BREAK || breakType == BREAK_CONTINUE) {
-					breakFlag = false;
-				}
-				
-				if (breakType == BREAK_BREAK || breakType == BREAK_RETURN) {
-					stack.exitedBlock();
-					return data;
-				}
-			}
-
+		try {
+			final SimpleNode loopCondition = (SimpleNode)node.jjtGetChild(0);
+			
+			// loops always have (possibly fake) body
+			SimpleNode body = (SimpleNode)node.jjtGetChild(1);
+	
 			// evaluate the condition
-			loopCondition.jjtAccept(this, data);
-			condition = stack.popBoolean();
+			loopCondition.jjtAccept(this, data); 
+			boolean condition = stack.popBoolean();
+	
+			// loop execution
+			while (condition) {
+				checkInterrupt();
+				// block is responsible for cleanup
+				body.jjtAccept(this, data);
+				// check for break or continue statements
+				if (breakFlag) {
+					if (breakType == BREAK_BREAK || breakType == BREAK_CONTINUE) {
+						breakFlag = false;
+					}
+					
+					if (breakType == BREAK_BREAK || breakType == BREAK_RETURN) {
+						return data;
+					}
+				}
+	
+				// evaluate the condition
+				loopCondition.jjtAccept(this, data);
+				condition = stack.popBoolean();
+			}
+		} finally {
+			stack.exitedBlock();
 		}
-
-		stack.exitedBlock();
 		return data;
 	}
 
@@ -1403,14 +1407,20 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		if (condition) {
 			// block is responsible for cleanup
 			stack.enteredBlock(node.getThenScope());
-			node.jjtGetChild(1).jjtAccept(this, data);
-			stack.exitedBlock();
+			try {
+				node.jjtGetChild(1).jjtAccept(this, data);
+			} finally {
+				stack.exitedBlock();
+			}
 		} else { 
 			// else part exists
 			if (node.jjtGetNumChildren() > 2) {
 				stack.enteredBlock(node.getElseScope());
-				node.jjtGetChild(2).jjtAccept(this, data);
-				stack.exitedBlock();
+				try {
+					node.jjtGetChild(2).jjtAccept(this, data);
+				} finally {
+					stack.exitedBlock();
+				}
 			}
 		}
 
@@ -1448,35 +1458,34 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	@Override
 	public Object visit(CLVFDoStatement node, Object data) {
 		stack.enteredBlock(node.getScope());
-		
-		boolean condition = false;
-		final Node loopCondition = node.jjtGetChild(1);
-		// loops always have (possibly fake) body
-		final Node body = node.jjtGetChild(0);
-
-		
-		// loop execution
-		do {
-			checkInterrupt();
-			body.jjtAccept(this, data);
-			// check for break or continue statements
-			if (breakFlag) {
-				if (breakType == BREAK_BREAK || breakType == BREAK_CONTINUE) {
-					breakFlag = false;
+		try {
+			boolean condition = false;
+			final Node loopCondition = node.jjtGetChild(1);
+			// loops always have (possibly fake) body
+			final Node body = node.jjtGetChild(0);
+			
+			// loop execution
+			do {
+				checkInterrupt();
+				body.jjtAccept(this, data);
+				// check for break or continue statements
+				if (breakFlag) {
+					if (breakType == BREAK_BREAK || breakType == BREAK_CONTINUE) {
+						breakFlag = false;
+					}
+					
+					if (breakType == BREAK_BREAK || breakType == BREAK_RETURN) {
+						return data;
+					}
 				}
 				
-				if (breakType == BREAK_BREAK || breakType == BREAK_RETURN) {
-					stack.exitedBlock();
-					return data;
-				}
-			}
-			
-			// evaluate the condition
-			loopCondition.jjtAccept(this, data);
-			condition = stack.popBoolean();
-		} while (condition);
-
-		stack.exitedBlock();
+				// evaluate the condition
+				loopCondition.jjtAccept(this, data);
+				condition = stack.popBoolean();
+			} while (condition);
+		} finally {
+			stack.exitedBlock();
+		}
 		return data;
 	}
 
@@ -1484,25 +1493,49 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	public Object visit(CLVFSwitchStatement node, Object data) {
 		// switch statement is a block itself
 		stack.enteredBlock(node.getScope());
-		
-		// compute switch expression
-		SimpleNode switchExpression = (SimpleNode)node.jjtGetChild(0);
-		switchExpression.jjtAccept(this, data);
-		final Object switchVal = stack.pop();
-		
-		
-		for (int caseIdx : node.getCaseIndices()) {
-			node.jjtGetChild(caseIdx).jjtAccept(this, data);
-			final Object caseVal = stack.pop();
-			compare(switchVal,caseVal,switchExpression.getType(),TransformLangParserConstants.EQUAL);
-			boolean caseMatches = stack.popBoolean();
-			if (caseMatches) {
-				/*
-				 *  Case expression matches switch expression.
-				 *  Start executing until we hit a break or process all children.
-				 *  We don't need to evaluate case statements as they act just like labels.
-				 */ 
-				for (int i=caseIdx+1; i<node.jjtGetNumChildren(); i++) {
+		try {
+			// compute switch expression
+			SimpleNode switchExpression = (SimpleNode)node.jjtGetChild(0);
+			switchExpression.jjtAccept(this, data);
+			final Object switchVal = stack.pop();
+			
+			
+			for (int caseIdx : node.getCaseIndices()) {
+				node.jjtGetChild(caseIdx).jjtAccept(this, data);
+				final Object caseVal = stack.pop();
+				compare(switchVal,caseVal,switchExpression.getType(),TransformLangParserConstants.EQUAL);
+				boolean caseMatches = stack.popBoolean();
+				if (caseMatches) {
+					/*
+					 *  Case expression matches switch expression.
+					 *  Start executing until we hit a break or process all children.
+					 *  We don't need to evaluate case statements as they act just like labels.
+					 */ 
+					for (int i=caseIdx+1; i<node.jjtGetNumChildren(); i++) {
+						final SimpleNode child =(SimpleNode)node.jjtGetChild(i); 
+						if (child.getId() != TransformLangParserTreeConstants.JJTCASESTATEMENT) {
+							// switch is a block itself so it must clean-up after expression
+							executeAndCleanup(child, data);
+							if (breakFlag) {
+								// catch break interrupt
+								if (breakType == BREAK_BREAK) {
+									breakFlag = false;
+								}
+								// any of break/continue/return jumps away from switch body (to the block above)
+								return data;
+							}
+	
+						}
+					}
+					//stack.exitedBlock(); // CL-2501
+					return data;
+				}
+			}
+			/*
+			 * No match - default case processing
+			 */
+			if (node.hasDefaultClause()) {
+				for (int i=node.getDefaultCaseIndex()+1; i<node.jjtGetNumChildren(); i++) {
 					final SimpleNode child =(SimpleNode)node.jjtGetChild(i); 
 					if (child.getId() != TransformLangParserTreeConstants.JJTCASESTATEMENT) {
 						// switch is a block itself so it must clean-up after expression
@@ -1513,41 +1546,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 								breakFlag = false;
 							}
 							// any of break/continue/return jumps away from switch body (to the block above)
-							stack.exitedBlock();
 							return data;
 						}
-
-					}
-				}
-				
-				stack.exitedBlock(); // CL-2501
-				return data;
-			}
-		}
-		
-		/*
-		 * No match - default case processing
-		 */
-		if (node.hasDefaultClause()) {
-			for (int i=node.getDefaultCaseIndex()+1; i<node.jjtGetNumChildren(); i++) {
-				final SimpleNode child =(SimpleNode)node.jjtGetChild(i); 
-				if (child.getId() != TransformLangParserTreeConstants.JJTCASESTATEMENT) {
-					// switch is a block itself so it must clean-up after expression
-					executeAndCleanup(child, data);
-					if (breakFlag) {
-						// catch break interrupt
-						if (breakType == BREAK_BREAK) {
-							breakFlag = false;
-						}
-						// any of break/continue/return jumps away from switch body (to the block above)
-						stack.exitedBlock();
-						return data;
 					}
 				}
 			}
+		} finally {
+			stack.exitedBlock();
 		}
-
-		stack.exitedBlock();
 		return data;
 	}
 
@@ -2739,20 +2745,22 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	
 	public void executeFunction(CLVFFunctionDeclaration node, Object[] data) {
 		final CLVFParameters formal = (CLVFParameters)node.jjtGetChild(1);
-		stack.enteredBlock(node.getScope());
-		
-		for (int i=0; i<data.length; i++) {
-			setVariable((SimpleNode)formal.jjtGetChild(i), data[i]);
+		try {
+			stack.enteredBlock(node.getScope());
+			
+			for (int i=0; i<data.length; i++) {
+				setVariable((SimpleNode)formal.jjtGetChild(i), data[i]);
+			}
+			
+			// function return value will be saved in this.lastReturnValue
+			node.jjtGetChild(2).jjtAccept(this, null);
+		} finally {
+			// clear all break flags
+			if (breakFlag) {
+				breakFlag = false;
+			}
+			stack.exitedBlock();
 		}
-		
-		// function return value will be saved in this.lastReturnValue
-		node.jjtGetChild(2).jjtAccept(this, null);
-		
-		// clear all break flags
-		if (breakFlag) {
-			breakFlag = false;
-		}
-		stack.exitedBlock();
 	}
 
 	/**
@@ -2851,31 +2859,29 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		final CLVFArguments actual = (CLVFArguments)node.jjtGetChild(0);
 		
 		try{
-		// activate function scope
-		stack.enteredBlock(callTarget.getScope(),node);
-		
-		// set function parameters - they are already computed on stack
-		for (int i=actual.jjtGetNumChildren()-1; i>=0; i--) {
-			setVariable((SimpleNode)formal.jjtGetChild(i), stack.pop());
-		}
-		
-		// execute function body
-		callTarget.jjtGetChild(2).jjtAccept(this, null);
-		
-		// set the saved return value back onto stack
-		if (!node.getType().isVoid()) {
-			stack.push(this.lastReturnValue);
-			this.lastReturnValue = null;
-		}
-		
-		}finally{
-		// clear all break flags
-		if (breakFlag) {
-			breakFlag = false;
-		}
-		
-		// clear function scope
-		stack.exitedBlock(node);
+			// activate function scope
+			stack.enteredBlock(callTarget.getScope(),node);
+			
+			// set function parameters - they are already computed on stack
+			for (int i=actual.jjtGetNumChildren()-1; i>=0; i--) {
+				setVariable((SimpleNode)formal.jjtGetChild(i), stack.pop());
+			}
+			
+			// execute function body
+			callTarget.jjtGetChild(2).jjtAccept(this, null);
+			
+			// set the saved return value back onto stack
+			if (!node.getType().isVoid()) {
+				stack.push(this.lastReturnValue);
+				this.lastReturnValue = null;
+			}
+		} finally {
+			// clear all break flags
+			if (breakFlag) {
+				breakFlag = false;
+			}
+			// clear function scope
+			stack.exitedBlock(node);
 		}
 	}
 	
