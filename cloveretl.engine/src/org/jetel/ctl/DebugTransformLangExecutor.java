@@ -762,13 +762,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					case EVALUATE_EXPRESSION:
 						status = new DebugStatus(node, CommandType.EVALUATE_EXPRESSION);
 						CTLExpression expression = (CTLExpression)command.getValue();
-						// CLO-9416
-						Matcher matcher = KEYWORD_PATTERN.matcher(expression.getExpression());
-						if (matcher.find()) {
-							throw new JetelRuntimeException("Cannot evaluate statements containing keywords: ALL, OK, SKIP, STOP");
-						}
-						matcher = RETURN_PATTERN.matcher(expression.getExpression());
-						expression.setExpression(matcher.replaceFirst(""));
 						Object result = evaluateExpression(expression, node);
 						status.setValue(result);
 						break;
@@ -804,29 +797,34 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	}
 	
 	private Object evaluateExpression(CTLExpression expression, SimpleNode context) {
-		DebugStack originalStack = this.debugStack;
-		Object result;
+		final DebugStack originalStack = debugStack;
 		try {
-			if (expression.getCallStackIndex() < this.debugStack.getCurrentFunctionCallIndex()) {
-				FunctionCallFrame callFrame = this.debugStack.getFunctionCall(expression.getCallStackIndex() + 1);
-
-				if (callFrame == null) {
-					throw new JetelRuntimeException(String.format("Functional call for frame %d not exists.", expression.getCallStackIndex()));
-				}
-
-				context = callFrame.getFunctionCall();
-				DebugStack frameStack = this.debugStack.createShallowCopyUpToFrame(callFrame);
-				setStack(frameStack);
+			// CLO-9416
+			Matcher matcher = KEYWORD_PATTERN.matcher(expression.getExpression());
+			if (matcher.find()) {
+				throw new JetelRuntimeException("Cannot evaluate statements containing keywords: ALL, OK, SKIP, STOP");
 			}
-			List<Node> compiled = CTLExpressionHelper.compileExpression(expression.getExpression(), this, context);
+			matcher = RETURN_PATTERN.matcher(expression.getExpression());
+			expression.setExpression(matcher.replaceFirst(""));
+			
+			FunctionCallFrame frame = originalStack.getFunctionCall(expression.getCallStackIndex());
+			if (frame == null) {
+				throw new IllegalArgumentException("No frame for index " + expression.getCallStackIndex());
+			}
+			// always copy the stack as it could be corrupted by expression throwing an exception
+			DebugStack frameStack = originalStack.createCopyUpToFrame(frame);
+			SimpleNode expressionContext = context;
+			// switch expression context if not evaluating on top frame
+			if (expression.getCallStackIndex() != originalStack.getCurrentFunctionCallIndex()) {
+				expressionContext = originalStack.getFunctionCall(expression.getCallStackIndex() + 1).getFunctionCall();
+			}
+			List<Node> compiled = CTLExpressionHelper.compileExpression(expression.getExpression(), this, expressionContext);
+			setStack(frameStack);
 			Object value = executeExpressionOutsideDebug(compiled, TimeUnit.MILLISECONDS.toNanos(expression.getTimeout()));
-			result = Variable.deepCopy(value);
-		} catch (Exception e) {
-			throw e;
+			return Variable.deepCopy(value);
 		} finally {
 			setStack(originalStack);
 		}
-		return result;
 	}
 	
 	private String[] getArgumentTypeNames(CLVFFunctionDeclaration decl) {
