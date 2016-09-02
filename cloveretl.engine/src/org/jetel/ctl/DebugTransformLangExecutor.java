@@ -238,12 +238,11 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		/*
 		 * re-implementing super type method to push implicit function call onto stack
 		 */
-		CLVFFunctionCall implicitCall = null;
 		try {
 			beforeExecute();
 			final CLVFParameters formal = (CLVFParameters)node.jjtGetChild(1);
 			
-			implicitCall = new CLVFFunctionCall(IMPLICIT_FUCTION_CALL_ID);
+			CLVFFunctionCall implicitCall = new CLVFFunctionCall(IMPLICIT_FUCTION_CALL_ID);
 			implicitCall.setName(node.getName());
 			implicitCall.setCallTarget(node);
 			
@@ -256,35 +255,30 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			// function return value will be saved in this.lastReturnValue
 			node.jjtGetChild(2).jjtAccept(this, null);
 			
-			
-		} finally {
 			// clear all break flags
 			if (breakFlag) {
 				breakFlag = false;
 			}
-			if (implicitCall != null) {
-				stack.exitedBlock(implicitCall);
-			}
+			stack.exitedBlock(implicitCall);
+		} finally {
 			afterExecute();
 		}
 	};
 	
 	@Override
 	public Object executeExpression(SimpleNode expression) {
-		CLVFFunctionCall synthCall = null;
 		try {
 			beforeExecute();
-			synthCall = new CLVFFunctionCall(SYNTHETIC_FUNCTION_CALL_ID);
+			CLVFFunctionCall synthCall = new CLVFFunctionCall(SYNTHETIC_FUNCTION_CALL_ID);
 			synthCall.setName("<expression>");
 			CLVFFunctionDeclaration synthFunc = new CLVFFunctionDeclaration(0);
 			synthFunc.setName(synthCall.getName());
 			synthCall.setCallTarget(synthFunc);
 			debugStack.enteredSyntheticBlock(synthCall);
-			return super.executeExpression(expression);
+			Object value = super.executeExpression(expression);
+			debugStack.exitedSyntheticBlock(synthCall);
+			return value;
 		} finally {
-			if (synthCall != null) {
-				debugStack.exitedSyntheticBlock(synthCall);
-			}
 			afterExecute();
 		}
 	}
@@ -319,20 +313,17 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	
 	@Override
 	protected void executeInternal(SimpleNode node) {
-		CLVFFunctionCall synthCall = null;
 		try {
 			beforeExecute();
-			synthCall = new CLVFFunctionCall(SYNTHETIC_FUNCTION_CALL_ID);
+			CLVFFunctionCall synthCall = new CLVFFunctionCall(SYNTHETIC_FUNCTION_CALL_ID);
 			synthCall.setName("<global>");
 			CLVFFunctionDeclaration synthFunc = new CLVFFunctionDeclaration(0);
 			synthFunc.setName(synthCall.getName());
 			synthCall.setCallTarget(synthFunc);
 			debugStack.enteredSyntheticBlock(synthCall);
 			super.executeInternal(node);
+			debugStack.exitedSyntheticBlock(synthCall);
 		} finally {
-			if (synthCall != null) {
-				debugStack.exitedSyntheticBlock(synthCall);
-			}
 			afterExecute();
 		}
 	}
