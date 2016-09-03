@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.ListenerNotFoundException;
@@ -66,7 +67,7 @@ import org.jetel.util.string.UnicodeBlanks;
  */
 public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMXMBean, IdSequence {
 	
-	private static final long EXPRESSION_TIMEOUT_MS = 20000;
+	private static final long EXPRESSION_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(10);
 	
 	private int notificationSequence;
     static Logger logger = Logger.getLogger(DebugJMX.class);
