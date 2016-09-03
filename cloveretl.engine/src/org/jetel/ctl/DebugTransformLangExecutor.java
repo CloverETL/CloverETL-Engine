@@ -238,12 +238,11 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		/*
 		 * re-implementing super type method to push implicit function call onto stack
 		 */
-		CLVFFunctionCall implicitCall = null;
 		try {
 			beforeExecute();
 			final CLVFParameters formal = (CLVFParameters)node.jjtGetChild(1);
 			
-			implicitCall = new CLVFFunctionCall(IMPLICIT_FUCTION_CALL_ID);
+			CLVFFunctionCall implicitCall = new CLVFFunctionCall(IMPLICIT_FUCTION_CALL_ID);
 			implicitCall.setName(node.getName());
 			implicitCall.setCallTarget(node);
 			
@@ -256,35 +255,30 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 			// function return value will be saved in this.lastReturnValue
 			node.jjtGetChild(2).jjtAccept(this, null);
 			
-			
-		} finally {
 			// clear all break flags
 			if (breakFlag) {
 				breakFlag = false;
 			}
-			if (implicitCall != null) {
-				stack.exitedBlock(implicitCall);
-			}
+			stack.exitedBlock(implicitCall);
+		} finally {
 			afterExecute();
 		}
 	};
 	
 	@Override
 	public Object executeExpression(SimpleNode expression) {
-		CLVFFunctionCall synthCall = null;
 		try {
 			beforeExecute();
-			synthCall = new CLVFFunctionCall(SYNTHETIC_FUNCTION_CALL_ID);
+			CLVFFunctionCall synthCall = new CLVFFunctionCall(SYNTHETIC_FUNCTION_CALL_ID);
 			synthCall.setName("<expression>");
 			CLVFFunctionDeclaration synthFunc = new CLVFFunctionDeclaration(0);
 			synthFunc.setName(synthCall.getName());
 			synthCall.setCallTarget(synthFunc);
 			debugStack.enteredSyntheticBlock(synthCall);
-			return super.executeExpression(expression);
+			Object value = super.executeExpression(expression);
+			debugStack.exitedSyntheticBlock(synthCall);
+			return value;
 		} finally {
-			if (synthCall != null) {
-				debugStack.exitedSyntheticBlock(synthCall);
-			}
 			afterExecute();
 		}
 	}
@@ -319,20 +313,17 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	
 	@Override
 	protected void executeInternal(SimpleNode node) {
-		CLVFFunctionCall synthCall = null;
 		try {
 			beforeExecute();
-			synthCall = new CLVFFunctionCall(SYNTHETIC_FUNCTION_CALL_ID);
+			CLVFFunctionCall synthCall = new CLVFFunctionCall(SYNTHETIC_FUNCTION_CALL_ID);
 			synthCall.setName("<global>");
 			CLVFFunctionDeclaration synthFunc = new CLVFFunctionDeclaration(0);
 			synthFunc.setName(synthCall.getName());
 			synthCall.setCallTarget(synthFunc);
 			debugStack.enteredSyntheticBlock(synthCall);
 			super.executeInternal(node);
+			debugStack.exitedSyntheticBlock(synthCall);
 		} finally {
-			if (synthCall != null) {
-				debugStack.exitedSyntheticBlock(synthCall);
-			}
 			afterExecute();
 		}
 	}
@@ -771,13 +762,6 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 					case EVALUATE_EXPRESSION:
 						status = new DebugStatus(node, CommandType.EVALUATE_EXPRESSION);
 						CTLExpression expression = (CTLExpression)command.getValue();
-						// CLO-9416
-						Matcher matcher = KEYWORD_PATTERN.matcher(expression.getExpression());
-						if (matcher.find()) {
-							throw new JetelRuntimeException("Cannot evaluate statements containing keywords: ALL, OK, SKIP, STOP");
-						}
-						matcher = RETURN_PATTERN.matcher(expression.getExpression());
-						expression.setExpression(matcher.replaceFirst(""));
 						Object result = evaluateExpression(expression, node);
 						status.setValue(result);
 						break;
@@ -813,29 +797,34 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	}
 	
 	private Object evaluateExpression(CTLExpression expression, SimpleNode context) {
-		DebugStack originalStack = this.debugStack;
-		Object result;
+		final DebugStack originalStack = debugStack;
 		try {
-			if (expression.getCallStackIndex() < this.debugStack.getCurrentFunctionCallIndex()) {
-				FunctionCallFrame callFrame = this.debugStack.getFunctionCall(expression.getCallStackIndex() + 1);
-
-				if (callFrame == null) {
-					throw new JetelRuntimeException(String.format("Functional call for frame %d not exists.", expression.getCallStackIndex()));
-				}
-
-				context = callFrame.getFunctionCall();
-				DebugStack frameStack = this.debugStack.createShallowCopyUpToFrame(callFrame);
-				setStack(frameStack);
+			// CLO-9416
+			Matcher matcher = KEYWORD_PATTERN.matcher(expression.getExpression());
+			if (matcher.find()) {
+				throw new JetelRuntimeException("Cannot evaluate statements containing keywords: ALL, OK, SKIP, STOP");
 			}
-			List<Node> compiled = CTLExpressionHelper.compileExpression(expression.getExpression(), this, context);
+			matcher = RETURN_PATTERN.matcher(expression.getExpression());
+			expression.setExpression(matcher.replaceFirst(""));
+			
+			FunctionCallFrame frame = originalStack.getFunctionCall(expression.getCallStackIndex());
+			if (frame == null) {
+				throw new IllegalArgumentException("No frame for index " + expression.getCallStackIndex());
+			}
+			// always copy the stack as it could be corrupted by expression throwing an exception
+			DebugStack frameStack = originalStack.createCopyUpToFrame(frame);
+			SimpleNode expressionContext = context;
+			// switch expression context if not evaluating on top frame
+			if (expression.getCallStackIndex() != originalStack.getCurrentFunctionCallIndex()) {
+				expressionContext = originalStack.getFunctionCall(expression.getCallStackIndex() + 1).getFunctionCall();
+			}
+			List<Node> compiled = CTLExpressionHelper.compileExpression(expression.getExpression(), this, expressionContext);
+			setStack(frameStack);
 			Object value = executeExpressionOutsideDebug(compiled, TimeUnit.MILLISECONDS.toNanos(expression.getTimeout()));
-			result = Variable.deepCopy(value);
-		} catch (Exception e) {
-			throw e;
+			return Variable.deepCopy(value);
 		} finally {
 			setStack(originalStack);
 		}
-		return result;
 	}
 	
 	private String[] getArgumentTypeNames(CLVFFunctionDeclaration decl) {

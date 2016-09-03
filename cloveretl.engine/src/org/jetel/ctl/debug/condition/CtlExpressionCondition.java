@@ -35,7 +35,7 @@ import org.jetel.ctl.debug.CTLExpressionHelper;
  */
 public abstract class CtlExpressionCondition implements Condition {
 
-	protected static final long EXPRESSION_TIMEOUT_NS = TimeUnit.SECONDS.toNanos(10);
+	protected static final long EXPRESSION_TIMEOUT_NS = TimeUnit.SECONDS.toNanos(5);
 	
 	protected String expression;
 	private List<Node> nodes;

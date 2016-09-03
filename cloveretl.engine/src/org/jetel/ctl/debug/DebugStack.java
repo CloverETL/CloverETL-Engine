@@ -204,16 +204,27 @@ public class DebugStack extends Stack {
 		return callStack.listIterator(callStack.size());
 	}
 	
-	public DebugStack createShallowCopyUpToFrame(FunctionCallFrame callFrame) {
+	public DebugStack createCopyUpToFrame(FunctionCallFrame callFrame) {
 		
 		if (!this.callStack.contains(callFrame)) {
 			throw new JetelRuntimeException(String.format("Call stack does not contain given call frame."));
 		}
 		
+		final int frameIndex = callStack.indexOf(callFrame);
+		
 		DebugStack copy = new DebugStack();
-		copy.variableStack = new ArrayList<>(this.variableStack.subList(0, callFrame.getVarStackIndex()));
-		copy.callStack = new ArrayList<>(this.callStack.subList(0, this.callStack.indexOf(callFrame)));
+		copy.callStack = new ArrayList<>(callStack.subList(0, frameIndex + 1));
 		copy.idSequence = this.idSequence;
+		/*
+		 * variable stack has to be copied deeply to prevent original stack corruption should the expression have failed
+		 */
+		FunctionCallFrame nextFrame = frameIndex + 1 < callStack.size() ? callStack.get(frameIndex + 1) : null;
+		ArrayList<Object[]> varStackCopy = new ArrayList<>(variableStack.subList(0, nextFrame != null ? nextFrame.getVarStackIndex() : variableStack.size()));
+		for (int i = 0; i < varStackCopy.size(); ++i) {
+			varStackCopy.set(i, varStackCopy.get(i).clone());
+		}
+		copy.variableStack = varStackCopy;
+		
 		return copy;
 	}
 }
