@@ -13,9 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
 import org.apache.commons.io.filefilter.AbstractFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.logging.Log;
@@ -26,6 +23,9 @@ import org.jetel.main.runGraph;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
+
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /*
  * Copyright (c) 2004-2005 Javlin Consulting s.r.o. All rights reserved.
@@ -201,6 +201,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("LUTPersistent_wrong_metadata.grf") // ok, is to fail
 							&& !file.getName().equals("UDW_nonExistingDir_fail_CL-2478.grf") // ok, is to fail
 							&& !file.getName().equals("CTL_lookup_put_fail.grf") // ok, is to fail
+							&& !file.getName().equals("PersistentLookupTable_keyDuplicates_incompatibility.grf") // ok, is to fail
 							&& !file.getName().equals("SystemExecute_printBatchFile.grf") // ok, is to fail
 							&& !file.getName().equals("JoinMergeIssue_FailWhenMasterUnsorted.grf") // ok, is to fail
 							&& !file.getName().equals("UDW_remoteZipPartitioning_fail_CL-2564.grf") // ok, is to fail
