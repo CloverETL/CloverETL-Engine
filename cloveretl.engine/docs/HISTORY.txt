@@ -2,6 +2,27 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-3-0
+---------
+
+* CTL Debugging
+	- Hover tooltips for variables
+	- Visual improvements for breakpoints view
+* Salesforce
+	- Advanced connection tab
+	- Timeouts for connection
+	- Simplified login host
+	- SOQL validation
+* Improved TLS support
+* Persistent lookup allows duplicate keys
+* Parent jobs are kept in filtered execution hierarchy
+* Changed UI of DB connection
+* FIXES:
+	- CLO-9394: SpreadsheetDataReader mapping dialog can't handle large amount of data
+	- CLO-9336: NPE when a graph with a null output dictionary value is executed by a launch service
+	- CLO-9453: Recursive parameters are not evaluated correctly
+	- CLO-9386: Lookup CTL function next() returns records in reverse order
+
 REL-4-3-0-M2
 ------------
 
