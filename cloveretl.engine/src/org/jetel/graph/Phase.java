@@ -368,6 +368,10 @@ public class Phase extends GraphElement implements Comparable {
 		nodes.put(node.getId(), node);
         node.setPhase(this);
         node.setGraph(getGraph());
+        
+        if (getGraph() != null) {
+        	getGraph().clearCache();
+        }
 	}
 
 	/**
@@ -403,6 +407,9 @@ public class Phase extends GraphElement implements Comparable {
         if(removedNode != null) {
         	removedNode.setPhase(null);
         	removedNode.setGraph(null);
+        }
+        if (getGraph() != null) {
+        	getGraph().clearCache();
         }
     }
 

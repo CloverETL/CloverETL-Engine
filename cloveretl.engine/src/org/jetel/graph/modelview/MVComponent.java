@@ -76,4 +76,26 @@ public interface MVComponent extends MVGraphElement {
 	@Override
 	public MVGraph getParent();
 	
+	/**
+	 * @return true if this component is Subgraph component; false otherwise
+	 */
+	public boolean isSubgraphComponent();
+	
+	/**
+	 * @return true if this component is SubgraphInput component; false otherwise
+	 */
+	public boolean isSubgraphInputComponent();
+	
+	/**
+	 * @return true if this component is SubgraphOutput component; false otherwise
+	 */
+	public boolean isSubgraphOutputComponent();
+	
+	/**
+	 * If {@link #isSubgraphComponent()} is true this method returns the MV subgraph representation.
+	 * @return subgraph representation of this Subgraph component or fails for the other components
+	 * @see #isSubgraphComponent()
+	 */
+	public MVSubgraph getSubgraph();
+	
 }

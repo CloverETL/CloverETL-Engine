@@ -48,16 +48,14 @@ import org.jetel.graph.analyse.GraphCycleInspector;
 import org.jetel.graph.analyse.LoopsInspector;
 import org.jetel.graph.analyse.SingleGraphProvider;
 import org.jetel.graph.modelview.MVComponent;
-import org.jetel.graph.modelview.MVEdge;
 import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.MVSubgraph;
 import org.jetel.graph.modelview.impl.MVEngineGraph;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.graph.modelview.impl.MetadataPropagationResult;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.SingleThreadWatchDog;
-import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.metadata.MetadataUtils;
 import org.jetel.util.GraphUtils;
 import org.jetel.util.Pair;
 import org.jetel.util.SubgraphUtils;
@@ -120,7 +118,7 @@ public class TransformationGraphAnalyzer {
 		//perform automatic metadata propagation
 		if (propagateMetadata) {
 			//create model view for the graph
-			MVGraph mvGraph = new MVEngineGraph(graph, null);
+			MVGraph mvGraph = new MVEngineGraph(graph);
 			//first analyse subgraphs calling hierarchy - cannot be recursive
 			TransformationGraphAnalyzer.analyseSubgraphCallingHierarchy(mvGraph);
 			try {
@@ -226,7 +224,7 @@ public class TransformationGraphAnalyzer {
 		} else {
 			urlStack.add(url);
 		}
-		for (Entry<MVComponent, MVGraph> subgraph : graph.getMVSubgraphs().entrySet()) {
+		for (Entry<MVComponent, MVSubgraph> subgraph : graph.getMVSubgraphs().entrySet()) {
 			if (topLevel) {
 				causedComponent = subgraph.getKey();
 			}
@@ -254,29 +252,6 @@ public class TransformationGraphAnalyzer {
 		mvGraph.getModel().setMetadataPropagationResult(new MetadataPropagationResult(metadataPropagationResolver));
 	}
 
-	/**
-	 * Compares calculated implicit metadata with persisted implicit metadata,
-	 * should be identical.
-	 * @param mvGraph
-	 */
-	private static void validateImplicitMetadata(MVGraph mvGraph) {
-		for (MVEdge mvEdge : mvGraph.getMVEdges().values()) {
-			if (mvEdge.hasImplicitMetadata()) {
-				MVMetadata mvImplicitMetadata = mvEdge.getMetadata();
-				if (mvImplicitMetadata != null) {
-					DataRecordMetadata implicitMetadata = mvImplicitMetadata.getModel();
-					DataRecordMetadata persistedImplicitMetadata = mvEdge.getModel().getPersistedImplicitMetadata();
-					if (implicitMetadata != null && persistedImplicitMetadata != null
-							&& !MetadataUtils.equals(implicitMetadata, persistedImplicitMetadata)) {
-						//TODO improve exception message
-						throw new JetelRuntimeException("Metadata conflict detected");
-					}
-				}
-			}
-		}
-		
-	}
-	
 	private static final class SubgraphAnalyzer {
 		private final TransformationGraph subgraph;
 
@@ -342,10 +317,6 @@ public class TransformationGraphAnalyzer {
 	
 	private static class SubgraphAnalysisValidationException extends Exception {
 		private static final long serialVersionUID = -8502212649423859074L;
-
-		public SubgraphAnalysisValidationException(String message) {
-			super(message);
-		}
 	}
 	
 	private static class SubgraphAnalysisResult {

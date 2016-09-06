@@ -18,6 +18,8 @@
  */
 package org.jetel.graph.modelview;
 
+import java.util.List;
+
 import org.jetel.graph.Edge;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 
@@ -90,11 +92,6 @@ public interface MVEdge extends MVGraphElement {
 	public MVMetadata getImplicitMetadata();
 	
 	/**
-	 * Clears propagated metadata for this edge.
-	 */
-	public void unsetImplicitMetadata();
-
-	/**
 	 * Sets 'no metadata' for this edge. The 'no metadata' are metadata which
 	 * would be used for this edge if no direct metadata is set on this edge.
 	 * @param noMetadata
@@ -110,6 +107,11 @@ public interface MVEdge extends MVGraphElement {
 	 * @return referenced edge, from where metadata should be derived
 	 */
 	public MVEdge getMetadataRef();
+
+	/**
+	 * @return list of edges which refers to this edge; all the edges derive metadata from this edge
+	 */
+	public List<MVEdge> getMetadataRefInverted();
 
 	/**
 	 * Returns parent graph.

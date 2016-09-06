@@ -100,13 +100,6 @@ public class MVEngineMetadata extends MVEngineGraphElement implements MVMetadata
 	}
 
 	@Override
-	public void addToOriginPath(List<MVGraphElement> originPath) {
-		if (originPath != null) {
-			this.originPath.addAll(0, originPath);
-		}
-	}
-
-	@Override
 	public List<MVGraphElement> getOriginPath() {
 		return originPath;
 	}
@@ -114,6 +107,11 @@ public class MVEngineMetadata extends MVEngineGraphElement implements MVMetadata
 	@Override
 	public MVGraph getParent() {
 		return (MVGraph) super.getParent();
+	}
+
+	@Override
+	public boolean hasMaxPriority() {
+		return priority == MAX_PRIORITY;
 	}
 	
 }

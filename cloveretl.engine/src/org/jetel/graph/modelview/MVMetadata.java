@@ -20,7 +20,6 @@ package org.jetel.graph.modelview;
 
 import java.util.List;
 
-import org.jetel.component.StaticMetadataProvider;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -34,12 +33,6 @@ import org.jetel.metadata.DataRecordMetadata;
  * @created 19. 9. 2013
  */
 public interface MVMetadata extends MVGraphElement {
-
-	/**
-	 * This is the unbeatable priority. This is used in runtime for {@link StaticMetadataProvider}
-	 * - these metadata we are sure are on the right place.
-	 */
-	public static final int TOP_PRIORITY = Integer.MAX_VALUE;
 
 	/**
 	 * This high priority is used when metadata is defined directly on edge.
@@ -62,13 +55,18 @@ public interface MVMetadata extends MVGraphElement {
 	public static final int DEFAULT_PRIORITY = LOW_PRIORITY;
 
 	/**
+	 * Maximal metadata priority.
+	 */
+	public static final int MAX_PRIORITY = HIGH_PRIORITY;
+
+	/**
 	 * @return wrapped metadata, either DataRecordMetadata or GraphMetadata
 	 */
 	@Override
 	public DataRecordMetadata getModel();
 	
 	/**
-	 * @return deep copy of this instance
+	 * @return deep copy of this instance (model is not duplicated)
 	 */
 	public MVMetadata duplicate();
 	
@@ -98,13 +96,6 @@ public interface MVMetadata extends MVGraphElement {
 	public void addToOriginPath(MVGraphElement graphElement);
 
 	/**
-	 * Appends the given graph elements to metadata origin path.
-	 * Origin path is list of graph elements which were used for automatic metadata propagation for this metadata.
-	 * @param graphElement
-	 */
-	public void addToOriginPath(List<MVGraphElement> graphElement);
-	
-	/**
 	 * Origin path is list of graph elements which were used for automatic metadata propagation for this metadata.
 	 * @return origin path for this metadata
 	 */
@@ -115,5 +106,10 @@ public interface MVMetadata extends MVGraphElement {
 	 */
 	@Override
 	public MVGraph getParent();
+
+	/**
+	 * @return true if this metadata has maximal priority
+	 */
+	public boolean hasMaxPriority();
 
 }
