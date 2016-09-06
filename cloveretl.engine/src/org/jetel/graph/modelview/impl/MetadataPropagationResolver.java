@@ -91,6 +91,7 @@ public class MetadataPropagationResolver implements Serializable {
 			edgesToProcess = affectedEdges;
 			affectedEdges = tmp;
 			affectedEdges.clear();
+			edgesToProcess.remove(null);
 		}
 	}
 	
