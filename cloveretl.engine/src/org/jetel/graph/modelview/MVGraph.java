@@ -18,6 +18,7 @@
  */
 package org.jetel.graph.modelview;
 
+import java.util.List;
 import java.util.Map;
 
 import org.jetel.graph.Edge;
@@ -40,6 +41,11 @@ public interface MVGraph extends MVGraphElement {
 	public TransformationGraph getModel();
 
 	/**
+	 * @return MV representation of all components from this graph
+	 */
+	public Map<String, MVComponent> getMVComponents();
+
+	/**
 	 * @param componentId id of requested component
 	 * @return MV representation of a component from this graph 
 	 */
@@ -48,7 +54,7 @@ public interface MVGraph extends MVGraphElement {
 	/**
 	 * @return MV representation of all subgraph components from this graph 
 	 */
-	public Map<MVComponent, MVGraph> getMVSubgraphs();
+	public Map<MVComponent, MVSubgraph> getMVSubgraphs();
 
 	/**
 	 * @param edgeId id of requested edge
@@ -60,7 +66,12 @@ public interface MVGraph extends MVGraphElement {
 	 * @return collection of all edges in this graph
 	 */
 	public Map<String, MVEdge> getMVEdges();
-	
+
+	/**
+	 * @return all edges from this graph and its subgraphs recursively
+	 */
+	public List<MVEdge> getMVEdgesRecursive();
+
 	/**
 	 * @param edge requested edge
 	 * @return MV representation of the requested edge; the edge can be also from a subgraph 

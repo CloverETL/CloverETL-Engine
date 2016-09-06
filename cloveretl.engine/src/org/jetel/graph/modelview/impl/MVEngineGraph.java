@@ -18,7 +18,9 @@
  */
 package org.jetel.graph.modelview.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jetel.graph.Edge;
@@ -29,6 +31,7 @@ import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
 import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.MVSubgraph;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -47,13 +50,26 @@ public class MVEngineGraph extends MVEngineGraphElement implements MVGraph {
 
 	private Map<String, MVEdge> mvEdges;
 
-	private Map<MVComponent, MVGraph> mvSubgraphs;
+	private Map<MVComponent, MVSubgraph> mvSubgraphs;
+
+	public MVEngineGraph(TransformationGraph graph) {
+		this(graph, null);
+	}
 	
-	public MVEngineGraph(TransformationGraph graph, MVComponent parentMVSubgraphComponent) {
+	protected MVEngineGraph(TransformationGraph graph, MVComponent parentMVSubgraphComponent) {
 		super(graph, parentMVSubgraphComponent);
 		
-		this.mvComponents = new HashMap<>();
-		this.mvEdges = new HashMap<>();
+		//initialize inverted edge metadata references, see MVEdge#getMetadataRefInverted()
+		initMetadataReferences();
+	}
+	
+	private void initMetadataReferences() {
+		for (MVEdge edge : getMVEdges().values()) {
+			MVEngineEdge metadataRef = (MVEngineEdge) edge.getMetadataRef();
+			if (metadataRef != null) {
+				metadataRef.addMetadataRefInverted(edge);
+			}
+		}
 	}
 	
 	@Override
@@ -64,57 +80,50 @@ public class MVEngineGraph extends MVEngineGraphElement implements MVGraph {
 	@Override
 	public void reset() {
 		//reset all components
-		for (MVComponent mvComponent : mvComponents.values()) {
+		for (MVComponent mvComponent : getMVComponents().values()) {
 			mvComponent.reset();
 		}
 		//reset all edges
-		for (MVEdge mvEdge : mvEdges.values()) {
+		for (MVEdge mvEdge : getMVEdges().values()) {
 			mvEdge.reset();
 		}
 		//reset all subgraphs
-		for (MVGraph subgraph : getMVSubgraphs().values()) {
+		for (MVSubgraph subgraph : getMVSubgraphs().values()) {
 			subgraph.reset();
 		}
 	}
 
-	@SuppressWarnings("deprecation")
+	@Override
+	public Map<String, MVComponent> getMVComponents() {
+		if (mvComponents == null) {
+			mvComponents = new HashMap<>();
+			for (Node component : getModel().getNodes().values()) {
+				mvComponents.put(component.getId(), new MVEngineComponent(component, this));
+			}
+		}
+		return mvComponents;
+	}
+	
 	@Override
 	public MVComponent getMVComponent(String componentId) {
-		if (hasModel()) {
-			Node component = getModel().getNodesCached().get(componentId);
-			if (component != null) {
-				if (!mvComponents.containsKey(componentId)) {
-					MVComponent mvComponent = new MVEngineComponent(component, this);
-					mvComponents.put(componentId, mvComponent);
-					return mvComponent;
-				} else {
-					return mvComponents.get(componentId);
-				}
-			} else {
-				throw new IllegalArgumentException("unexpected component id, component does not exist in this graph");
-			}
+		Map<String, MVComponent> mvComponents = getMVComponents();
+		if (mvComponents.containsKey(componentId)) {
+			return mvComponents.get(componentId);
 		} else {
-			if (mvComponents.containsKey(componentId)) {
-				return mvComponents.get(componentId);
-			} else {
-				throw new IllegalArgumentException("unexpected component id, component does not exist in this graph");
-			}
+			throw new IllegalArgumentException("unexpected component id, component does not exist in this graph");
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
-	public Map<MVComponent, MVGraph> getMVSubgraphs() {
+	public Map<MVComponent, MVSubgraph> getMVSubgraphs() {
 		if (mvSubgraphs == null) {
 			mvSubgraphs = new HashMap<>();
-			if (hasModel()) {
-				for (Node component : getModel().getNodesCached().values()) {
-					if (component instanceof SubgraphComponent) {
-						TransformationGraph engineSubgraph = ((SubgraphComponent) component).getSubgraphNoMetadataPropagation(false);
-						if (engineSubgraph != null) { //can be null if the subgraph component is not correctly defined - invalid subgraph URL 
-							MVGraph mvSubgraph = new MVEngineGraph(engineSubgraph, getMVComponent(component.getId()));
-							mvSubgraphs.put(getMVComponent(component.getId()), mvSubgraph);
-						}
+			for (MVComponent component : getMVComponents().values()) {
+				if (component.isSubgraphComponent()) {
+					TransformationGraph engineSubgraph = ((SubgraphComponent) component.getModel()).getSubgraphNoMetadataPropagation(false);
+					if (engineSubgraph != null) { //can be null if the subgraph component is not correctly defined - invalid subgraph URL 
+						MVSubgraph mvSubgraph = new MVEngineSubgraph(engineSubgraph, getMVComponent(component.getId()));
+						mvSubgraphs.put(getMVComponent(component.getId()), mvSubgraph);
 					}
 				}
 			}
@@ -124,26 +133,13 @@ public class MVEngineGraph extends MVEngineGraphElement implements MVGraph {
 
 	@Override
 	public MVEdge getMVEdge(String edgeId) {
-		if (hasModel()) {
-			Edge edge = getModel().getEdges().get(edgeId);
-			if (edge != null) {
-				if (!mvEdges.containsKey(edgeId)) {
-					MVEdge mvEdge = new MVEngineEdge(edge, this);
-					mvEdges.put(edgeId, mvEdge);
-					return mvEdge;
-				} else {
-					return mvEdges.get(edgeId);
-				}
-			} else {
-				throw new IllegalArgumentException("unexpected edge id, edge does not exist in this graph");
-			}
-		} else {
-			if (mvEdges.containsKey(edgeId)) {
-				return mvEdges.get(edgeId);
-			} else {
-				throw new IllegalArgumentException("unexpected edge id, edge does not exist in this graph");
-			}
+		Map<String, MVEdge> mvEdges = getMVEdges();
+		
+		MVEdge result = mvEdges.get(edgeId);
+		if (result == null) {
+			throw new IllegalArgumentException("unexpected edge id, edge does not exist in this graph");
 		}
+		return result;
 	}
 	
 	@Override
@@ -178,7 +174,23 @@ public class MVEngineGraph extends MVEngineGraphElement implements MVGraph {
 
 	@Override
 	public Map<String, MVEdge> getMVEdges() {
+		if (mvEdges == null) {
+			mvEdges = new HashMap<>();
+			for (Edge edge : getModel().getEdges().values()) {
+				mvEdges.put(edge.getId(), new MVEngineEdge(edge, this));
+			}
+		}
 		return mvEdges;
+	}
+	
+	@Override
+	public List<MVEdge> getMVEdgesRecursive() {
+		List<MVEdge> result = new ArrayList<>();
+		result.addAll(getMVEdges().values());
+		for (MVGraph subgraph : getMVSubgraphs().values()) {
+			result.addAll(subgraph.getMVEdgesRecursive());
+		}
+		return result;
 	}
 	
 	@Override

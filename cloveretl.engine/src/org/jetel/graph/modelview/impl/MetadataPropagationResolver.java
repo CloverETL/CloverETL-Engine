@@ -20,10 +20,9 @@ package org.jetel.graph.modelview.impl;
 
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Set;
 
+import org.jetel.component.MetadataProvider;
 import org.jetel.graph.Edge;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.TransformationGraph;
@@ -58,47 +57,114 @@ public class MetadataPropagationResolver implements Serializable {
 	}
 	
 	/**
-	 * Main trigger for graph analysis.
+	 * Main trigger for metadata propagation.
 	 */
 	public void analyseGraph() {
-		//find "no metadata" for all edges with direct metadata
-		//"no metadata" is metadata, which would be used if the edge does not have the direct metadata associated
+		//find "no metadata" for all edges with explicit metadata
+		//"no metadata" is metadata, which would be used if the edge does not have the explicit metadata associated
 		if (mvGraph.getModel().getRuntimeContext().isCalculateNoMetadata()) {
 			findAllNoMetadata();
 		}
 
-		//go through graph hierarchy and search metadata for each edge if necessary
-		Queue<MVGraph> graphsToProcess = new LinkedList<>();
-		graphsToProcess.add(mvGraph);
-		while (!graphsToProcess.isEmpty()) {
-			MVGraph graphToProcess = graphsToProcess.poll();
-			for (Edge edge : graphToProcess.getModel().getEdges().values()) {
-				MVEdge mvEdge = graphToProcess.getMVEdge(edge.getId());
-				MVMetadata mvMetadata = findMetadata(mvEdge);
-				mvEdge.setImplicitMetadata(mvMetadata);
+		//perform metadata propagation
+		propagateMetadata();
+	}
+
+	/**
+	 * Metadata propagation is performed on {@link #mvGraph} model.
+	 */
+	private void propagateMetadata() {
+		//all edges in graph hierarchy (subgraphs included) will be visited
+		Set<MVEdge> edgesToProcess = new HashSet<>(mvGraph.getMVEdgesRecursive());
+		//affected edges are edges which will be visited in next iteration - all edges 'near' to updated edges
+		Set<MVEdge> affectedEdges = new HashSet<>();
+		while (!edgesToProcess.isEmpty()) { //do we have edges to visit?
+			//try to improve metadata propagation for all edges with potential to be changed
+			for (MVEdge mvEdge : edgesToProcess) {
+				if (updateMetadata(mvEdge)) {
+					//edge metadata has been updated, all 'near' edges will be added into affectedEdges and visited in next iteration
+					appendRelatedEdges(mvEdge, affectedEdges);
+				}
 			}
-			graphsToProcess.addAll(graphToProcess.getMVSubgraphs().values());
+			//switch edgesToProcess and affectedEdges for next iteration
+			Set<MVEdge> tmp = edgesToProcess;
+			edgesToProcess = affectedEdges;
+			affectedEdges = tmp;
+			affectedEdges.clear();
 		}
+	}
+	
+	/**
+	 * Tries to find better metadata propagation for the given edge.
+	 * @param edge inspected edge
+	 * @return true if the metadata for the given edge has been changed
+	 */
+	private boolean updateMetadata(MVEdge edge) {
+		//metadata propagation for edges with explicit metadata cannot be improved
+		//special case are edges with explicit metadata but with an implicit metadata as well - see #findAllNoMetadata()
+		if ((edge.hasImplicitMetadata() || !edge.hasExplicitMetadata()) && !hasMaxPriority(edge.getImplicitMetadata())) {
+			MVMetadata oldMetadata = edge.getMetadata();
+			MVMetadata newMetadata = findMetadata(edge);
+			newMetadata = combineMetadata(oldMetadata, newMetadata);
+			if (newMetadata != oldMetadata) {
+				edge.setImplicitMetadata(newMetadata);
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Find all edges which can be directly affected by metadata updated for the given edge and
+	 * append them to the affectedEdges set.
+	 * The affected edges will be analysed for potential metadata propagation in next iteration.
+	 */
+	private void appendRelatedEdges(MVEdge edge, Set<MVEdge> affectedEdges) {
+		//find affected edges for reader component
+		MVComponent reader = edge.getReader();
+		if (reader.isSubgraphComponent()) {
+			affectedEdges.add(reader.getSubgraph().getInputEdges().get(edge.getOutputPortIndex()));
+		} else if (reader.isSubgraphOutputComponent() && reader.getParentMVGraph().getParent() != null) {
+			affectedEdges.add(reader.getParentMVGraph().getParent().getOutputEdges().get(edge.getOutputPortIndex()));
+		} else {
+			affectedEdges.addAll(reader.getOutputEdges().values());
+			affectedEdges.addAll(reader.getInputEdges().values());
+		}
+
+		//find affected edges for writer component
+		MVComponent writer = edge.getWriter();
+		if (writer.isSubgraphComponent()) {
+			affectedEdges.add(writer.getSubgraph().getOutputEdges().get(edge.getInputPortIndex()));
+		} else if (writer.isSubgraphInputComponent() && writer.getParentMVGraph().getParent() != null) {
+			affectedEdges.add(writer.getParentMVGraph().getParent().getInputEdges().get(edge.getInputPortIndex()));
+		} else {
+			affectedEdges.addAll(writer.getOutputEdges().values());
+			affectedEdges.addAll(writer.getInputEdges().values());
+		}
+		
+		//find all edges which refers to the edge
+		affectedEdges.addAll(edge.getMetadataRefInverted());
 	}
 
 	/**
 	 * For all edges is also calculated which metadata would be propagated
-	 * to this edge from neighbours, if the edge does not have any metadata directly assigned.
+	 * to this edge from neighbours, if the edge does not have any metadata explicitly assigned.
 	 * It is useful only for designer purpose. Designer shows to user, which metadata
 	 * would be on the edge, for "no metadata" option on the edge. 
 	 */
 	private void findAllNoMetadata() {
-		//go through all edges without direct metadata
-		for (Edge edge : mvGraph.getModel().getEdges().values()) {
-			MVEdge mvEdge = mvGraph.getMVEdge(edge.getId());
-			//set virtual no metadata on the edge
-			mvEdge.setImplicitMetadata(null);
-			//find the "no metadata"
-			MVMetadata noMetadata = findMetadataFromNeighbours(mvEdge);
-			//remember the result
-			mvEdge.setNoMetadata(noMetadata);
-			//reset the resolver for next iteration
-			reset();
+		//go through all edges with explicit metadata
+		for (MVEdge edge : mvGraph.getMVEdges().values()) {
+			if (edge.hasExplicitMetadata()) {
+				//set virtual no metadata on the edge
+				edge.setImplicitMetadata(null);
+				//find the "no metadata"
+				propagateMetadata();
+				//remember the result
+				edge.setNoMetadata(edge.getMetadata());
+				//reset the resolver for next iteration
+				reset();
+			}
 		}
 	}
 	
@@ -107,49 +173,21 @@ public class MetadataPropagationResolver implements Serializable {
 	}
 	
 	/**
-	 * @return suggested metadata for given edge
+	 * Can be invoked from {@link MetadataProvider}s.
+	 * @return suggested metadata for the given edge
 	 */
 	public MVMetadata findMetadata(Edge edge) {
 		MVEdge mvEdge = mvGraph.getMVEdgeRecursive(edge);
-		return (mvEdge != null) ? findMetadata(mvEdge) : null;
+		return (mvEdge != null) ? mvEdge.getMetadata() : null;
 	}
 
-	/**
-	 * @return suggested metadata for given edge
-	 */
-	public MVMetadata findMetadata(MVEdge edge) {
-		if (!edge.hasMetadata()) {
-			edge.setImplicitMetadata(null); //to avoid recursive search
-			MVMetadata metadata = findMetadataInternal(edge);
-			if (metadata != null) {
-				//construct metadata origin path
-				metadata.addToOriginPath(edge);
-			}
-			edge.unsetImplicitMetadata();
-			return metadata;
-		} else {
-			MVMetadata metadata = edge.getMetadata();
-			return metadata != null ? metadata.duplicate() : null; //duplicate has to be returned due metadata origin path construction
-		}
-	}
-
-	private static MVMetadata combineMetadata(MVMetadata currentMetadata, MVMetadata newMetadata) {
-		if (currentMetadata == null) {
-			return newMetadata;
-		} else if (newMetadata == null) {
-			return currentMetadata;
-		} else {
-			return currentMetadata.getPriority() < newMetadata.getPriority() ? newMetadata : currentMetadata;
-		}
-	}
-	
-	private MVMetadata findMetadataInternal(MVEdge edge) {
+	private MVMetadata findMetadata(MVEdge edge) {
 		MVMetadata result = null;
 		
 		MVEdge referencedEdge = edge.getMetadataRef();
 		if (referencedEdge != null && ReferenceState.isValidState(edge.getModel().getMetadataReferenceState())) {
 			//metadata are dedicated by an edge reference
-			result = findMetadata(referencedEdge);
+			result = referencedEdge.getMetadata();
 			if (result != null) {
 				result.setPriority(MVMetadata.HIGH_PRIORITY);
 			} else if (isSelfReferenced(edge)) {
@@ -165,7 +203,7 @@ public class MetadataPropagationResolver implements Serializable {
 		
 		return result;
 	}
-
+	
 	private MVMetadata findMetadataFromNeighbours(MVEdge edge) {
 		MVMetadata result = null;
 		MVComponent originComponent = null;
@@ -175,7 +213,10 @@ public class MetadataPropagationResolver implements Serializable {
 		if (writer != null) {
 			if (writer.isPassThrough()) {
 				for (MVEdge inputEdge : writer.getInputEdges().values()) {
-					result = combineMetadata(result, findMetadata(inputEdge));
+					result = combineMetadata(result, inputEdge.getMetadata());
+					if (hasMaxPriority(result)) {
+						break;
+					}
 				}
 			} else {
 				result = combineMetadata(result, writer.getDefaultOutputMetadata(edge.getOutputPortIndex(), this));
@@ -186,18 +227,23 @@ public class MetadataPropagationResolver implements Serializable {
 		}
 
 		//check reader
-		MVComponent reader = edge.getReader();
-		if (reader != null) {
-			MVMetadata metadataFromWriter = result;
-			if (reader.isPassThrough()) {
-				for (MVEdge outputEdge : reader.getOutputEdges().values()) {
-					result = combineMetadata(result, findMetadata(outputEdge));
+		if (!hasMaxPriority(result)) {
+			MVComponent reader = edge.getReader();
+			if (reader != null) {
+				MVMetadata metadataFromWriter = result;
+				if (reader.isPassThrough()) {
+					for (MVEdge outputEdge : reader.getOutputEdges().values()) {
+						result = combineMetadata(result, outputEdge.getMetadata());
+						if (hasMaxPriority(result)) {
+							break;
+						}
+					}
+				} else {
+					result = combineMetadata(result, reader.getDefaultInputMetadata(edge.getInputPortIndex(), this));
 				}
-			} else {
-				result = combineMetadata(result, reader.getDefaultInputMetadata(edge.getInputPortIndex(), this));
-			}
-			if (result != metadataFromWriter) {
-				originComponent = reader;
+				if (result != metadataFromWriter) {
+					originComponent = reader;
+				}
 			}
 		}
 		
@@ -211,6 +257,26 @@ public class MetadataPropagationResolver implements Serializable {
 		}
 		
 		return result;
+	}
+
+	/**
+	 * @return metadata with higher priority; currentMetadata are preferred 
+	 */
+	private static MVMetadata combineMetadata(MVMetadata currentMetadata, MVMetadata newMetadata) {
+		if (currentMetadata == null) {
+			return newMetadata;
+		} else if (newMetadata == null) {
+			return currentMetadata;
+		} else {
+			return currentMetadata.getPriority() < newMetadata.getPriority() ? newMetadata : currentMetadata;
+		}
+	}
+
+	/**
+	 * @return true if the given metadata is not null and has maximal priority
+	 */
+	private static boolean hasMaxPriority(MVMetadata metadata) {
+		return metadata != null && metadata.hasMaxPriority();
 	}
 
 	/**

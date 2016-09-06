@@ -29,8 +29,10 @@ import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
 import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.MVSubgraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.MetadataRepository;
+import org.jetel.util.SubgraphUtils;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.string.StringUtils;
 
@@ -118,7 +120,7 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 
 		//no dynamic metadata found, let's use static metadata from component descriptor 
 		String metadataId = getModel().getDescriptor().getDefaultOutputMetadataId(portIndex);
-		return getStaticMetadata(metadataId);
+		return metadataId != null ? getStaticMetadata(metadataId) : null;
 	}
 
 	@Override
@@ -133,7 +135,7 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 		}
 		//no dynamic metadata found, let's use statical metadata from component descriptor 
 		String metadataId = getModel().getDescriptor().getDefaultInputMetadataId(portIndex);
-		return getStaticMetadata(metadataId);
+		return metadataId != null ? getStaticMetadata(metadataId) : null;
 	}
 	
 	/**
@@ -153,4 +155,28 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 		return (MVGraph) super.getParent();
 	}
 
+	@Override
+	public boolean isSubgraphComponent() {
+		return SubgraphUtils.isSubJobComponent(getModel().getType());
+	}
+	
+	@Override
+	public boolean isSubgraphInputComponent() {
+		return SubgraphUtils.isSubJobInputComponent(getModel().getType());
+	}
+	
+	@Override
+	public boolean isSubgraphOutputComponent() {
+		return SubgraphUtils.isSubJobOutputComponent(getModel().getType());
+	}
+
+	@Override
+	public MVSubgraph getSubgraph() {
+		if (isSubgraphComponent()) {
+			return getParentMVGraph().getMVSubgraphs().get(this);
+		} else {
+			throw new IllegalStateException();
+		}
+	}
+	
 }
