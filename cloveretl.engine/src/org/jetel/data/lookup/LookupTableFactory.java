@@ -18,6 +18,7 @@
  */
 package org.jetel.data.lookup;
 
+import java.io.InputStream;
 //import org.w3c.dom.Node;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.ComponentFactory;
@@ -185,9 +187,11 @@ public class LookupTableFactory {
 				// can't happen: we've checked it
 			}
         	TypedProperties lookupProperties = new TypedProperties(null,graph);
+        	InputStream stream = null;
         	try {
             	lookupProperties.setProperty(IGraphElement.XML_ID_ATTRIBUTE, attributes.getString(IGraphElement.XML_ID_ATTRIBUTE));
-				lookupProperties.load(FileUtils.getInputStream(graph.getRuntimeContext().getContextURL(), fileURL));
+            	stream = FileUtils.getInputStream(graph.getRuntimeContext().getContextURL(), fileURL);
+				lookupProperties.load(stream);
 				String metadata = lookupProperties.getStringProperty("metadata");
 				if (metadata != null && ! metadata.trim().equals("")) {
 					DataRecordMetadata lookupMetadata = MetadataFactory.fromFile(graph, lookupProperties.getStringProperty("metadata"));
@@ -206,6 +210,8 @@ public class LookupTableFactory {
 				}
 			} catch (Exception e) {
                 throw new RuntimeException("Lookup table is not configured properly.", e);
+			} finally {
+				IOUtils.closeQuietly(stream);
 			}
             result = LookupTableFactory.createLookupTable(lookupProperties);
         }else{

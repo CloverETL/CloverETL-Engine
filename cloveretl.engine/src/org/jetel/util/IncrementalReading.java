@@ -19,6 +19,7 @@
 package org.jetel.util;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
@@ -107,10 +109,14 @@ public class IncrementalReading {
     	incrementalValues = new HashMap<String, String>();
     	IncrementalData incremental;
     	Properties prop = new Properties();
+    	InputStream stream = null;
     	try {
-    		prop.load(FileUtils.getInputStream(contextURL, incrementalFile));
+    		stream = FileUtils.getInputStream(contextURL, incrementalFile);
+    		prop.load(stream);
 		} catch (IOException e) {
 			logger.warn("The incremental file not found or it is corrupted!", e);
+		} finally {
+			IOUtils.closeQuietly(stream);
 		}
 		incremental = new IncrementalData(prop);
 		incremental.add(incrementalKey);

@@ -26,7 +26,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
 import java.sql.ResultSet;
@@ -34,6 +33,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.database.sql.DBConnection;
@@ -160,16 +160,18 @@ public class AnalyzeDB {
 			} else if (argv[i].equalsIgnoreCase("-password")) {
 				config.setProperty("password",argv[++i]);
 			} else if (argv[i].equalsIgnoreCase("-config")) {
+				InputStream stream = null;
 				try{
-					InputStream stream = new BufferedInputStream(new FileInputStream(argv[++i]));
+					stream = new BufferedInputStream(new FileInputStream(argv[++i]));
                     config.load(stream);
-					stream.close();
 					if (config.getProperty("dbDriver") != null) optionSwitch |= 0x01; 
 					if (config.getProperty("dbURL") != null) optionSwitch |= 0x02;
 					if (config.getProperty("database") != null) optionSwitch |= 0x03;
 				}catch(Exception ex){
 					System.err.println("[Error] " + ExceptionUtils.getMessage(ex));
 					System.exit(-1);
+				} finally {
+					IOUtils.closeQuietly(stream);
 				}
 			} else if (argv[i].equalsIgnoreCase("-plugins")) {
                 i++;
