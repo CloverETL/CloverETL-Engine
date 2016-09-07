@@ -103,7 +103,7 @@ public class MetadataPropagationResolver implements Serializable {
 	private boolean updateMetadata(MVEdge edge) {
 		//metadata propagation for edges with explicit metadata cannot be improved
 		//special case are edges with explicit metadata but with an implicit metadata as well - see #findAllNoMetadata()
-		if ((edge.hasImplicitMetadata() || !edge.hasExplicitMetadata()) && !hasMaxPriority(edge.getImplicitMetadata())) {
+		if (edge.hasImplicitMetadata() || !edge.hasExplicitMetadata()) {
 			MVMetadata oldMetadata = edge.getMetadata();
 			MVMetadata newMetadata = findMetadata(edge);
 			newMetadata = combineMetadata(oldMetadata, newMetadata);
@@ -124,9 +124,9 @@ public class MetadataPropagationResolver implements Serializable {
 		//find affected edges for reader component
 		MVComponent reader = edge.getReader();
 		if (reader.isSubgraphComponent()) {
-			affectedEdges.add(reader.getSubgraph().getInputEdges().get(edge.getOutputPortIndex()));
+			affectedEdges.add(reader.getSubgraph().getInputEdges().get(edge.getInputPortIndex()));
 		} else if (reader.isSubgraphOutputComponent() && reader.getParentMVGraph().getParent() != null) {
-			affectedEdges.add(reader.getParentMVGraph().getParent().getOutputEdges().get(edge.getOutputPortIndex()));
+			affectedEdges.add(reader.getParentMVGraph().getParent().getOutputEdges().get(edge.getInputPortIndex()));
 		} else {
 			affectedEdges.addAll(reader.getOutputEdges().values());
 			affectedEdges.addAll(reader.getInputEdges().values());
@@ -135,9 +135,9 @@ public class MetadataPropagationResolver implements Serializable {
 		//find affected edges for writer component
 		MVComponent writer = edge.getWriter();
 		if (writer.isSubgraphComponent()) {
-			affectedEdges.add(writer.getSubgraph().getOutputEdges().get(edge.getInputPortIndex()));
+			affectedEdges.add(writer.getSubgraph().getOutputEdges().get(edge.getOutputPortIndex()));
 		} else if (writer.isSubgraphInputComponent() && writer.getParentMVGraph().getParent() != null) {
-			affectedEdges.add(writer.getParentMVGraph().getParent().getInputEdges().get(edge.getInputPortIndex()));
+			affectedEdges.add(writer.getParentMVGraph().getParent().getInputEdges().get(edge.getOutputPortIndex()));
 		} else {
 			affectedEdges.addAll(writer.getOutputEdges().values());
 			affectedEdges.addAll(writer.getInputEdges().values());
