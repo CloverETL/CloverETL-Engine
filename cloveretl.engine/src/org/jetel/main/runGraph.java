@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Appender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -189,8 +190,9 @@ public class runGraph {
                 isVerboseMode = true;
             } else if (args[i].startsWith(PROPERTY_FILE_SWITCH)) {
                 i++;
+                InputStream inStream = null;
                 try {
-                    InputStream inStream = new BufferedInputStream(
+                    inStream = new BufferedInputStream(
                             new FileInputStream(args[i]));
                     Properties properties = new Properties();
                     properties.load(inStream);
@@ -198,6 +200,8 @@ public class runGraph {
                 } catch (IOException ex) {
                     logger.error(ex);
                     System.exit(-1);
+                } finally {
+                	IOUtils.closeQuietly(inStream);
                 }
             } else if (args[i].startsWith(LOG4J_PROPERTY_FILE_SWITCH)) {
                 i++;

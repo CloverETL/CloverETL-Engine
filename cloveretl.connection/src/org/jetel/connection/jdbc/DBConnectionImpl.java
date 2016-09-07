@@ -34,9 +34,9 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.AbstractDBConnection.SqlQueryOptimizeOption;
 import org.jetel.connection.jdbc.driver.JdbcDriverDescription;
 import org.jetel.connection.jdbc.driver.JdbcDriverFactory;
 import org.jetel.connection.jdbc.driver.JdbcDriverImpl;
@@ -273,16 +273,17 @@ public class DBConnectionImpl extends AbstractDBConnection {
         if (initialSettings != null) {
             fromProperties(initialSettings);
         } else if(!StringUtils.isEmpty(configFileName)) {
+        	InputStream stream = null;
             try {
-                InputStream stream = FileUtils.getInputStream(getContextURL(), configFileName);
-
+                stream = FileUtils.getInputStream(getContextURL(), configFileName);
                 Properties tempProperties = new Properties();
                 tempProperties.load(stream);
                 fromProperties(tempProperties);
-                stream.close();
             } catch (Exception ex) {
                 throw new ComponentNotReadyException(ex);
-            }
+            } finally {
+				IOUtils.closeQuietly(stream);
+			}
         }
 
         prepareDriverLibraryURLs();

@@ -38,6 +38,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.naming.NoInitialContextException;
 
+import org.apache.commons.io.IOUtils;
 import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
 import org.jetel.exception.AttributeNotFoundException;
@@ -143,12 +144,14 @@ public class JmsConnection extends GraphElement implements IConnection {
 	
 	private static TypedProperties readConfig(URL contextURL, String cfgFile, TransformationGraph graph) {
 		TypedProperties config = new TypedProperties(null, graph);
+		InputStream stream = null;
 		try {
-            InputStream stream = FileUtils.getInputStream(contextURL, cfgFile);
+            stream = FileUtils.getInputStream(contextURL, cfgFile);
 			config.load(stream);
-			stream.close();
 		} catch (Exception ex) {
 			throw new RuntimeException("Config file for JMS connection not found (" + cfgFile +")", ex);
+		} finally {
+			IOUtils.closeQuietly(stream);
 		}
 		return config;
 	}
