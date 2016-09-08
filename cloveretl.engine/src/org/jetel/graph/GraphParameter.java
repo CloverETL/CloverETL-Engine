@@ -174,6 +174,18 @@ public class GraphParameter {
 		}
 	}
 	
+	/**
+	 * @return value of this graph parameter in plain text (CTL code is returned for dynamic parameters)
+	 */
+	@XmlTransient
+	public String getValueRaw() {
+		if (!hasDynamicValue()) {
+			return value != null ? value : "";
+		} else {
+			return dynamicValue.getTransformCode();
+		}
+	}
+	
 	public GraphParameterAttributeNode[] getAttrs() {
 		List<GraphParameterAttributeNode> ret = new ArrayList<>();
 
