@@ -732,16 +732,41 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	}
 
 	/**
+	 * Adds a field to the data record.
+	 * 
+	 * {@link #structureChanged()} method has to be called after sequence of invocations of this method
+	 *
+	 */
+	void addFieldFast(DataFieldMetadata field) {
+		addFieldFast(fields.size(), field);
+	}
+	
+	/**
+	 * Adds a field to the data record at the specified index.
+	 *
+	 * {@link #structureChanged()} method has to be called after sequence of invocations of this method
+	 */
+	public void addField(int index, DataFieldMetadata field) {
+		addField(index, field, true);
+	}
+
+	/**
 	 * Adds a field to the data record at the specified index.
 	 *
 	 * @param index the index to be used to add the field
 	 * @param field a <code>DataFieldMetadata</code> reference
 	 */
-	public void addField(int index, DataFieldMetadata field) {
+	void addFieldFast(int index, DataFieldMetadata field) {
+		addField(index, field, false);
+	}
+
+	private void addField(int index, DataFieldMetadata field, boolean updateCaches) {
 		field.setDataRecordMetadata(this);
 		fields.add(index, field);
 
-		structureChanged();
+		if (updateCaches) {
+			structureChanged();
+		}
 	}
 
 	/**
@@ -800,7 +825,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * null values - a wrapper would be needed but it is too complex to implement)
 	 * 
 	 */
-	private synchronized void structureChanged() {
+	void structureChanged() {
 		recordSize = -1;
 
 		updateFieldNamesMap();

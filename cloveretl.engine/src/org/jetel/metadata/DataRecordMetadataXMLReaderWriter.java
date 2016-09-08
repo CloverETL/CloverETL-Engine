@@ -934,8 +934,10 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				}
 			}
 			
-			recordMetadata.addField(field);
+			recordMetadata.addFieldFast(field);
 		}
+		
+		recordMetadata.structureChanged();
 		
 		return recordMetadata;
 	}

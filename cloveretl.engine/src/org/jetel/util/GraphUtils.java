@@ -376,7 +376,7 @@ public class GraphUtils {
 				DataFieldMetadata field = new DataFieldMetadata("_", DataFieldType.STRING, null);
 				field.setLabel(graphParameter.getName());
 				//set description to be shown in tooltip
-				String description = "Default value: '" + graphParameter.getValue() + "'";
+				String description = "Default value: '" + graphParameter.getValueRaw() + "'";
 				if (!StringUtils.isEmpty(graphParameter.getDescription())) {
 					description += "\nDescription: " + graphParameter.getDescription(); 
 				}

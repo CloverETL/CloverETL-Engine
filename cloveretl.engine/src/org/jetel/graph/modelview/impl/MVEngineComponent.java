@@ -52,6 +52,9 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 
 	private Map<Integer, MVEdge> outputEdges;
 	
+	private transient boolean metadataProviderFound = false;
+	private transient MetadataProvider metadataProvider;
+	
 	MVEngineComponent(Node engineComponent, MVGraph parentMVGraph) {
 		super(engineComponent, parentMVGraph);
 		
@@ -94,14 +97,17 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 	/**
 	 * @return metadata provider based on engine component
 	 */
-	private static MetadataProvider getMetadataProvider(Node engineComponent) {
-		MetadataProvider metadataProvider = null;
-		if (engineComponent instanceof MetadataProvider) {
-			metadataProvider = (MetadataProvider) engineComponent;
-		} else if (engineComponent != null && !StringUtils.isEmpty(engineComponent.getDescriptor().getMetadataProvider())) {
-			metadataProvider = ClassLoaderUtils.loadClassInstance(MetadataProvider.class, engineComponent.getDescriptor().getMetadataProvider(), engineComponent);
-			if (metadataProvider instanceof ComponentMetadataProvider) {
-				((ComponentMetadataProvider) metadataProvider).setComponent(engineComponent);
+	private MetadataProvider getMetadataProvider() {
+		if (!metadataProviderFound) {
+			metadataProviderFound = true;
+			Node engineComponent = getModel();
+			if (engineComponent instanceof MetadataProvider) {
+				metadataProvider = (MetadataProvider) engineComponent;
+			} else if (engineComponent != null && !StringUtils.isEmpty(engineComponent.getDescriptor().getMetadataProvider())) {
+				metadataProvider = ClassLoaderUtils.loadClassInstance(MetadataProvider.class, engineComponent.getDescriptor().getMetadataProvider(), engineComponent);
+				if (metadataProvider instanceof ComponentMetadataProvider) {
+					((ComponentMetadataProvider) metadataProvider).setComponent(engineComponent);
+				}
 			}
 		}
 		return metadataProvider;
@@ -110,7 +116,7 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 	@Override
 	public MVMetadata getDefaultOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		//first let's try to find default metadata dynamically from component instance
-		MetadataProvider metadataProvider = getMetadataProvider(getModel());
+		MetadataProvider metadataProvider = getMetadataProvider();
 		if (metadataProvider != null) {
 			MVMetadata metadata = metadataProvider.getOutputMetadata(portIndex, metadataPropagationResolver);
 			if (metadata != null) {
@@ -126,7 +132,7 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 	@Override
 	public MVMetadata getDefaultInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		//first let's try to find default metadata dynamically from component instance
-		MetadataProvider metadataProvider = getMetadataProvider(getModel());
+		MetadataProvider metadataProvider = getMetadataProvider();
 		if (metadataProvider != null) {
 			MVMetadata metadata = metadataProvider.getInputMetadata(portIndex, metadataPropagationResolver);
 			if (metadata != null) {
