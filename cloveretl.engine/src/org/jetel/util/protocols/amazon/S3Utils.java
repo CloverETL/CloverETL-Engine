@@ -22,6 +22,9 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.channels.SeekableByteChannel;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -171,6 +174,15 @@ public class S3Utils {
 			}
 		}
 		return ExceptionUtils.getIOException(t);
+	}
+	
+	public static SeekableByteChannel getReadableChannel(String url) throws IOException {
+		try {
+			URI uri = new URI(url);
+			return new S3SeekableByteChannel(uri);
+		} catch (URISyntaxException e) {
+			throw new IOException("Invalid URI", e);
+		}
 	}
 	
 }

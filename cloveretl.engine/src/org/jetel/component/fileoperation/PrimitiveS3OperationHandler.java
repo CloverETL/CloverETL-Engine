@@ -55,11 +55,13 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.MultiObjectDeleteException;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.transfer.TransferManager;
 
@@ -74,6 +76,11 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 	private static final String FORWARD_SLASH = "/";
 	
 	private static final Log log = LogFactory.getLog(PrimitiveS3OperationHandler.class);
+	
+	/*
+	 * To be removed when Amazon SDK is updated.
+	 */
+	private static final long END_OF_FILE = Long.MAX_VALUE - 1;
 
 	private ConnectionPool pool = ConnectionPool.getInstance();
 	
@@ -654,20 +661,65 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		
 	}
 	
-	public static InputStream getInputStream(URI uri, final PooledS3Connection connection) throws IOException {
+	/**
+	 * This method is NOT part of the public API.
+	 * 
+	 * Reads an object from S3, including its data.
+	 * The data must be read as soon as possible {@link S3Object#getObjectContent()}
+	 * and the stream should be closed to prevent resource leaks.
+	 * 
+	 * @see AmazonS3#getObject(GetObjectRequest)
+	 * 
+	 * @param uri		- target URI
+	 * @param service	- S3 service
+	 * @param start		- byte offset
+	 * 
+	 * @return S3Object
+	 * 
+	 * @throws IOException
+	 */
+	public static S3Object getObject(URI uri, AmazonS3 service, long start) throws IOException {
 		try {
 			uri = uri.normalize();
-			AmazonS3 service = connection.getService();
 			String[] path = getPath(uri);
 			String bucketName = path[0];
 			if (path.length < 2) {
 				throw new IOException(StringUtils.isEmpty(bucketName) ? "Cannot read from the root directory" : "Cannot read from bucket root directory");
 			}
-			S3Object object = service.getObject(bucketName, path[1]);
-			InputStream is = object.getObjectContent();
-			if (is == null) {
-				throw new IOException("No data available");
+			GetObjectRequest request = new GetObjectRequest(bucketName, path[1]);
+			if (start > 0) {
+				// CLO-9500:
+				// TODO replace this with GetObjectRequest.setRange(start) when the library is updated
+				request.setRange(start, END_OF_FILE);
 			}
+			S3Object object = service.getObject(request);
+			return object;
+		} catch (Exception e) {
+			throw S3Utils.getIOException(e);
+		}
+	}
+	
+	public static ObjectMetadata getObjectMetadata(URI uri, AmazonS3 service) throws IOException {
+		try {
+			String[] path = getPath(uri);
+			return service.getObjectMetadata(path[0], path[1]);
+		} catch (Exception e) {
+			throw S3Utils.getIOException(e);
+		}
+	}
+	
+	public static S3ObjectInputStream getObjectInputStream(S3Object object) throws IOException {
+		S3ObjectInputStream is = object.getObjectContent();
+		if (is == null) {
+			throw new IOException("No data available");
+		}
+		return is;
+	}
+	
+	public static InputStream getInputStream(URI uri, final PooledS3Connection connection) throws IOException {
+		try {
+			S3Object object = getObject(uri, connection.getService(), 0);
+			InputStream is = getObjectInputStream(object);
 			is = new FilterInputStream(is) {
 				@Override
 				public void close() throws IOException {
