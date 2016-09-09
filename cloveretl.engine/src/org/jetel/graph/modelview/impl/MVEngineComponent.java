@@ -29,8 +29,10 @@ import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
 import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.MVSubgraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.MetadataRepository;
+import org.jetel.util.SubgraphUtils;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.string.StringUtils;
 
@@ -49,6 +51,9 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 	private Map<Integer, MVEdge> inputEdges;
 
 	private Map<Integer, MVEdge> outputEdges;
+	
+	private transient boolean metadataProviderFound = false;
+	private transient MetadataProvider metadataProvider;
 	
 	MVEngineComponent(Node engineComponent, MVGraph parentMVGraph) {
 		super(engineComponent, parentMVGraph);
@@ -92,14 +97,17 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 	/**
 	 * @return metadata provider based on engine component
 	 */
-	private static MetadataProvider getMetadataProvider(Node engineComponent) {
-		MetadataProvider metadataProvider = null;
-		if (engineComponent instanceof MetadataProvider) {
-			metadataProvider = (MetadataProvider) engineComponent;
-		} else if (engineComponent != null && !StringUtils.isEmpty(engineComponent.getDescriptor().getMetadataProvider())) {
-			metadataProvider = ClassLoaderUtils.loadClassInstance(MetadataProvider.class, engineComponent.getDescriptor().getMetadataProvider(), engineComponent);
-			if (metadataProvider instanceof ComponentMetadataProvider) {
-				((ComponentMetadataProvider) metadataProvider).setComponent(engineComponent);
+	private MetadataProvider getMetadataProvider() {
+		if (!metadataProviderFound) {
+			metadataProviderFound = true;
+			Node engineComponent = getModel();
+			if (engineComponent instanceof MetadataProvider) {
+				metadataProvider = (MetadataProvider) engineComponent;
+			} else if (engineComponent != null && !StringUtils.isEmpty(engineComponent.getDescriptor().getMetadataProvider())) {
+				metadataProvider = ClassLoaderUtils.loadClassInstance(MetadataProvider.class, engineComponent.getDescriptor().getMetadataProvider(), engineComponent);
+				if (metadataProvider instanceof ComponentMetadataProvider) {
+					((ComponentMetadataProvider) metadataProvider).setComponent(engineComponent);
+				}
 			}
 		}
 		return metadataProvider;
@@ -108,7 +116,7 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 	@Override
 	public MVMetadata getDefaultOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		//first let's try to find default metadata dynamically from component instance
-		MetadataProvider metadataProvider = getMetadataProvider(getModel());
+		MetadataProvider metadataProvider = getMetadataProvider();
 		if (metadataProvider != null) {
 			MVMetadata metadata = metadataProvider.getOutputMetadata(portIndex, metadataPropagationResolver);
 			if (metadata != null) {
@@ -118,13 +126,13 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 
 		//no dynamic metadata found, let's use static metadata from component descriptor 
 		String metadataId = getModel().getDescriptor().getDefaultOutputMetadataId(portIndex);
-		return getStaticMetadata(metadataId);
+		return metadataId != null ? getStaticMetadata(metadataId) : null;
 	}
 
 	@Override
 	public MVMetadata getDefaultInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		//first let's try to find default metadata dynamically from component instance
-		MetadataProvider metadataProvider = getMetadataProvider(getModel());
+		MetadataProvider metadataProvider = getMetadataProvider();
 		if (metadataProvider != null) {
 			MVMetadata metadata = metadataProvider.getInputMetadata(portIndex, metadataPropagationResolver);
 			if (metadata != null) {
@@ -133,7 +141,7 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 		}
 		//no dynamic metadata found, let's use statical metadata from component descriptor 
 		String metadataId = getModel().getDescriptor().getDefaultInputMetadataId(portIndex);
-		return getStaticMetadata(metadataId);
+		return metadataId != null ? getStaticMetadata(metadataId) : null;
 	}
 	
 	/**
@@ -153,4 +161,28 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 		return (MVGraph) super.getParent();
 	}
 
+	@Override
+	public boolean isSubgraphComponent() {
+		return SubgraphUtils.isSubJobComponent(getModel().getType());
+	}
+	
+	@Override
+	public boolean isSubgraphInputComponent() {
+		return SubgraphUtils.isSubJobInputComponent(getModel().getType());
+	}
+	
+	@Override
+	public boolean isSubgraphOutputComponent() {
+		return SubgraphUtils.isSubJobOutputComponent(getModel().getType());
+	}
+
+	@Override
+	public MVSubgraph getSubgraph() {
+		if (isSubgraphComponent()) {
+			return getParentMVGraph().getMVSubgraphs().get(this);
+		} else {
+			throw new IllegalStateException();
+		}
+	}
+	
 }

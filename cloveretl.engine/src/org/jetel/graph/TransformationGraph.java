@@ -98,7 +98,9 @@ public final class TransformationGraph extends GraphElement {
 	private SubgraphPorts subgraphInputPorts = new SubgraphPorts(this);
 	
 	private SubgraphPorts subgraphOutputPorts = new SubgraphPorts(this);
-	
+
+    private Map<String, Node> nodesCache = null;
+
 	/**
 	 * Set of all persisted implicit metadata, which are used
 	 * for validation purpose. All edges with implicit metadata
@@ -1155,33 +1157,28 @@ public final class TransformationGraph extends GraphElement {
 		}
     }
     
+    void clearCache() {
+    	nodesCache = null;
+    }
+    
     /**
      * @return list of all nodes in all phases of this graph
      */
     public Map<String, Node> getNodes() {
+		if (nodesCache == null) {
+			nodesCache = Collections.unmodifiableMap(collectNodes());
+		}
+		return nodesCache;
+    }
+    
+    private Map<String, Node> collectNodes() {
 		Map<String, Node> ret = new LinkedHashMap<String, Node>();
 		
-		for(Phase phase : phases.values()) {
+		for (Phase phase : phases.values()) {
 			ret.putAll(phase.getNodes());
 		}
 
 		return ret;
-    }
-    
-    private Map<String, Node> nodesCached = null; // no synchronization, it's not a problem if the value is initialized twice
-    
-    /**
-     * CLO-9097
-     * 
-     * @deprecated
-     * Do not use! This method will be removed in future versions.
-     */
-    @Deprecated
-    public Map<String, Node> getNodesCached() {
-		if (nodesCached == null) {
-			nodesCached = Collections.unmodifiableMap(getNodes());
-		}
-		return nodesCached;
     }
 
     /**

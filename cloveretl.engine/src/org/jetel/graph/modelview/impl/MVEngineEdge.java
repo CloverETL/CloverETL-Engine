@@ -18,6 +18,9 @@
  */
 package org.jetel.graph.modelview.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jetel.graph.Edge;
 import org.jetel.graph.Node;
 import org.jetel.graph.modelview.MVComponent;
@@ -39,12 +42,18 @@ public class MVEngineEdge extends MVEngineGraphElement implements MVEdge {
 
 	private static final long serialVersionUID = -7961493466822405222L;
 
+	private boolean hasImplicitMetadata = false;
+
 	private MVMetadata implicitMetadata;
 	
 	private MVMetadata noMetadata;
 	
-	private boolean hasImplicitMetadata = false;
-
+	private boolean metadataRefResolved = false;
+	
+	private MVEdge metadataRef;
+	
+	private List<MVEdge> metadataRefInverted = new ArrayList<>();
+	
 	MVEngineEdge(Edge engineEdge, MVGraph parentMVGraph) {
 		super(engineEdge, parentMVGraph);
 	}
@@ -74,7 +83,7 @@ public class MVEngineEdge extends MVEngineGraphElement implements MVEdge {
 
 	@Override
 	public boolean hasMetadata() {
-		return hasImplicitMetadata || getModel().getMetadata() != null;
+		return hasExplicitMetadata() || hasImplicitMetadata();
 	}
 
 	@Override
@@ -89,21 +98,19 @@ public class MVEngineEdge extends MVEngineGraphElement implements MVEdge {
 
 	@Override
 	public MVMetadata getMetadata() {
-		if (hasMetadata()) {
-			if (hasImplicitMetadata) {
-				if (implicitMetadata != null) {
-					//duplicate is returned since propagated metadata can be changed
-					//by propagation process - for example Reformat propagates metadata
-					//from input to output ports, but priority of this metadata is decreased to ZERO level
-					return implicitMetadata.duplicate();
-				} else {
-					return null;
-				}
+		if (hasImplicitMetadata()) {
+			if (implicitMetadata != null) {
+				//duplicate is returned since propagated metadata can be changed
+				//by propagation process - for example Reformat propagates metadata
+				//from input to output ports, but priority of this metadata is decreased to ZERO level
+				return implicitMetadata.duplicate();
 			} else {
-				MVMetadata metadata = getParentMVGraph().createMVMetadata(getModel().getMetadata(), MVMetadata.HIGH_PRIORITY);
-				metadata.addToOriginPath(this);
-				return metadata;
+				return null;
 			}
+		} else if (hasExplicitMetadata()) {
+			MVMetadata metadata = getParentMVGraph().createMVMetadata(getModel().getMetadata(), MVMetadata.HIGH_PRIORITY);
+			metadata.addToOriginPath(this);
+			return metadata;
 		} else {
 			return null;
 		}
@@ -118,12 +125,6 @@ public class MVEngineEdge extends MVEngineGraphElement implements MVEdge {
 	@Override
 	public MVMetadata getImplicitMetadata() {
 		return implicitMetadata;
-	}
-	
-	@Override
-	public void unsetImplicitMetadata() {
-		hasImplicitMetadata = false;
-		this.implicitMetadata = null;
 	}
 	
 	@Override
@@ -153,19 +154,28 @@ public class MVEngineEdge extends MVEngineGraphElement implements MVEdge {
 	
 	@Override
 	public MVEdge getMetadataRef() {
-		String metadataRef = getModel().getMetadataRef();
-		if (!StringUtils.isEmpty(metadataRef)) {
-			String edgeId = ReferenceUtils.getElementID(metadataRef);
-			try {
-				MVEdge edge = getParentMVGraph().getMVEdge(edgeId);
-				return edge;
-			} catch (Exception e) {
-				//edge reference is somehow corrupted, let's ignore it
-				return null;
+		if (!metadataRefResolved) {
+			metadataRefResolved = true;
+			String metadataRefStr = getModel().getMetadataRef();
+			if (!StringUtils.isEmpty(metadataRefStr)) {
+				String edgeId = ReferenceUtils.getElementID(metadataRefStr);
+				try {
+					metadataRef = getParentMVGraph().getMVEdge(edgeId);
+				} catch (Exception e) {
+					//edge reference is somehow corrupted, let's ignore it
+				}
 			}
-		} else {
-			return null;
 		}
+		return metadataRef;
+	}
+	
+	@Override
+	public List<MVEdge> getMetadataRefInverted() {
+		return metadataRefInverted;
+	}
+
+	public void addMetadataRefInverted(MVEdge edge) {
+		metadataRefInverted.add(edge);
 	}
 	
 }

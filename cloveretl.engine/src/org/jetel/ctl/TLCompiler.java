@@ -518,7 +518,7 @@ public class TLCompiler implements ITLCompiler {
 		return graph;
 	}
 	
-	private Scope findContainingScope(SimpleNode context) {
+	public static Scope findContainingScope(SimpleNode context) {
 		Node node = context;
 		while (node != null) {
 			if (node.jjtGetParent() instanceof ScopeHolder) {
