@@ -100,10 +100,10 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node guiName="Salesforce: Read Accounts" guiX="324" guiY="548" id="SALESFORCE_READ_ACCOUNTS" sfConnection="MY_SALESFORCE" type="SALESFORCE_BULK_READER">
+<Node guiName="Salesforce: Bulk Read Accounts" guiX="324" guiY="548" id="SALESFORCE_BULK_READ_ACCOUNTS" sfConnection="MY_SALESFORCE" type="SALESFORCE_BULK_READER">
 <attr name="soqlQuery"><![CDATA[SELECT Name,Id From Account]]></attr>
 </Node>
-<Node guiName="Salesforce: Read Opportunities" guiX="24" guiY="435" id="SALESFORCE_READ_OPPORTUNITIES" sfConnection="MY_SALESFORCE" type="SALESFORCE_BULK_READER">
+<Node guiName="Salesforce: Bulk Read Opportunities" guiX="24" guiY="435" id="SALESFORCE_BULK_READ_OPPORTUNITIES" sfConnection="MY_SALESFORCE" type="SALESFORCE_BULK_READER">
 <attr name="soqlQuery"><![CDATA[SELECT Name,Amount,AccountId,IsWon From Opportunity]]></attr>
 <attr name="outputMapping"><![CDATA[//#CTL2
 
@@ -142,9 +142,9 @@ function integer transform() {
 <attr name="filterExpression"><![CDATA[//#CTL2
 $in.0.IsWon == true]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="ENRICH_OPPORTUNITIES_WITH_ACCOUNTS:0" guiBendpoints="804:423|804:610|302:610|370:345" guiLocks="804|302|610" guiRouter="Manual" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SUM_AMOUNTS:0"/>
-<Edge debugMode="true" fromNode="SALESFORCE_READ_ACCOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="ENRICH_OPPORTUNITIES_WITH_ACCOUNTS:1"/>
-<Edge debugMode="true" fromNode="SALESFORCE_READ_OPPORTUNITIES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WON:0"/>
+<Edge debugMode="true" fromNode="ENRICH_OPPORTUNITIES_WITH_ACCOUNTS:0" guiBendpoints="804:423|804:650|302:650|370:345" guiLocks="804|302|650" guiRouter="Manual" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SUM_AMOUNTS:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_BULK_READ_ACCOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="ENRICH_OPPORTUNITIES_WITH_ACCOUNTS:1"/>
+<Edge debugMode="true" fromNode="SALESFORCE_BULK_READ_OPPORTUNITIES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WON:0"/>
 <Edge debugMode="true" fromNode="SORT_BY_AMOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (input)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata3" toNode="BEST_ACCOUNTS:0"/>
 <Edge debugMode="true" fromNode="SUM_AMOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="SORT_BY_AMOUNTS:0"/>
 <Edge debugMode="true" fromNode="WON:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (driver)" outPort="Port 0 (accepted)" persistedImplicitMetadata="Metadata1" toNode="ENRICH_OPPORTUNITIES_WITH_ACCOUNTS:0"/>
