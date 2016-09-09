@@ -81,8 +81,8 @@ public class S3SeekableByteChannel implements SeekableByteChannel {
 
 	private void openChannel(long position) throws IOException {
 		try {
-			S3Object object = PrimitiveS3OperationHandler.getObject(uri, connection.getService(), position);
-			is = PrimitiveS3OperationHandler.getObjectInputStream(object);
+			S3Object object = S3Utils.getObject(uri, connection.getService(), position);
+			is = S3Utils.getObjectInputStream(object);
 			channel = Channels.newChannel(is);
 			// use getInstanceLength(), not getContentLength()!
 			this.size = object.getObjectMetadata().getInstanceLength();
