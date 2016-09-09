@@ -8,6 +8,7 @@
 <Field name="email" type="string"/>
 <Field name="phone" type="string"/>
 <Field eofAsDelimiter="true" name="account_sf_id" trim="true" type="string"/>
+<Field name="account_name" type="string"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata0" previewAttachment="${DATAIN_DIR}/accounts.csv" previewAttachmentCharset="UTF-8">
@@ -42,6 +43,7 @@
 <Field name="email" type="string"/>
 <Field name="phone" type="string"/>
 <Field eofAsDelimiter="true" name="account_sf_id" trim="true" type="string"/>
+<Field name="account_name" type="string"/>
 <Field name="Error" type="string"/>
 </Record>
 </Metadata>
@@ -60,6 +62,7 @@
 <Field name="email" type="string"/>
 <Field name="phone" type="string"/>
 <Field eofAsDelimiter="true" name="account_sf_id" trim="true" type="string"/>
+<Field name="account_name" type="string"/>
 <Field name="ObjectId" type="string"/>
 </Record>
 </Metadata>
@@ -128,6 +131,7 @@ The CSV files represent accounts and contacts in the source CRM. Typically these
 function integer transform() {
 	$out.0.* = $in.0.*;
 	$out.0.account_sf_id = $in.1.ObjectId;
+	$out.0.account_name = $in.1.name;
 
 	return ALL;
 }
@@ -151,10 +155,10 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node fileURL="${DATAOUT_DIR}/salesforce/rejected_accounts.txt" guiName="Log Rejected Accounts" guiX="883" guiY="603" id="LOG_REJECTED_ACCOUNTS" makeDirs="true" type="FLAT_FILE_WRITER"/>
-<Node fileURL="${DATAOUT_DIR}/salesforce/rejected_contacts.txt" guiName="Log Rejected Contacts" guiX="881" guiY="1006" id="LOG_REJECTED_CONTACTS" makeDirs="true" type="FLAT_FILE_WRITER"/>
-<Node fileURL="${DATAOUT_DIR}/salesforce/written_accounts.txt" guiName="Log Written Accounts" guiX="883" guiY="494" id="LOG_WRITTEN_ACCOUNTS" makeDirs="true" type="FLAT_FILE_WRITER"/>
-<Node fileURL="${DATAOUT_DIR}/salesforce/written_contacts.txt" guiName="Log Written Contacts" guiX="883" guiY="886" id="LOG_WRITTEN_CONTACTS" makeDirs="true" type="FLAT_FILE_WRITER"/>
+<Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/rejected_accounts.xls" guiName="Log Rejected Accounts" guiX="883" guiY="603" id="LOG_REJECTED_ACCOUNTS" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
+<Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/rejected_contacts.xls" guiName="Log Rejected Contacts" guiX="881" guiY="1006" id="LOG_REJECTED_CONTACTS" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
+<Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/written_accounts.xls" guiName="Log Written Accounts" guiX="883" guiY="494" id="LOG_WRITTEN_ACCOUNTS" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
+<Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/written_contacts.xls" guiName="Log Written Contacts" guiX="883" guiY="886" id="LOG_WRITTEN_CONTACTS" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
 <Node guiName="Salesforce: Write Accounts" guiX="228" guiY="494" id="SALESFORCE_WRITE_ACCOUNTS" object="Account" sfConnection="SALESFORCE0" type="SALESFORCE_BULK_WRITER">
 <attr name="inputMapping"><![CDATA[//#CTL2
 
@@ -222,10 +226,10 @@ function integer transform() {
 <Edge debugMode="true" fromNode="CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (output)" toNode="JOIN_ACCOUNT_SF_ID1:0"/>
 <Edge debugMode="true" fromNode="JOIN_ACCOUNT_SF_ID1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SALESFORCE_WRITE_CONTACTS:0"/>
 <Edge debugMode="true" fromNode="SALESFORCE_WRITE_ACCOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (accepted records)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_WRITE_ACCOUNTS_salesforce" toNode="SIMPLE_COPY:0"/>
-<Edge debugMode="true" fromNode="SALESFORCE_WRITE_ACCOUNTS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 1 (rejected records)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_WRITE_ACCOUNTS_salesforce1" toNode="LOG_REJECTED_ACCOUNTS:0"/>
-<Edge debugMode="true" fromNode="SALESFORCE_WRITE_CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" outPort="Port 0 (accepted records)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_WRITE_CONTACTS_salesforce1" toNode="LOG_WRITTEN_CONTACTS:0"/>
-<Edge debugMode="true" fromNode="SALESFORCE_WRITE_CONTACTS:1" guiBendpoints="1002:492|1002:598" guiLocks="1002|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" outPort="Port 1 (rejected records)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_WRITE_CONTACTS_salesforce" toNode="LOG_REJECTED_CONTACTS:0"/>
-<Edge fromNode="SIMPLE_COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_WRITE_ACCOUNTS_salesforce" toNode="LOG_WRITTEN_ACCOUNTS:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_WRITE_ACCOUNTS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (input)" outPort="Port 1 (rejected records)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_WRITE_ACCOUNTS_salesforce1" toNode="LOG_REJECTED_ACCOUNTS:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_WRITE_CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (input)" outPort="Port 0 (accepted records)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_WRITE_CONTACTS_salesforce1" toNode="LOG_WRITTEN_CONTACTS:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_WRITE_CONTACTS:1" guiBendpoints="1002:492|1002:598" guiLocks="1002|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (input)" outPort="Port 1 (rejected records)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_WRITE_CONTACTS_salesforce" toNode="LOG_REJECTED_CONTACTS:0"/>
+<Edge fromNode="SIMPLE_COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (input)" outPort="Port 0 (out)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_WRITE_ACCOUNTS_salesforce" toNode="LOG_WRITTEN_ACCOUNTS:0"/>
 <Edge debugMode="true" fromNode="SIMPLE_COPY:1" guiBendpoints="816:409|847:752|390:752|394:801" guiLocks="847|390|752" guiRouter="Manual" id="Edge6" inPort="Port 1 (slave)" outPort="Port 1 (out)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_WRITE_ACCOUNTS_salesforce" toNode="JOIN_ACCOUNT_SF_ID1:1"/>
 </Phase>
 </Graph>
