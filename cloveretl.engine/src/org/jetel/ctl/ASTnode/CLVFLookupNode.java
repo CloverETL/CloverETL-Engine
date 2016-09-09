@@ -148,4 +148,8 @@ public class CLVFLookupNode extends SimpleNode {
 		this.lookup = lookup;
 	}
 
+	@Override
+	public boolean isBreakable() {
+		return true;
+	}
 }

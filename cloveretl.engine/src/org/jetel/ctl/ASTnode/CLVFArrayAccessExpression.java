@@ -34,7 +34,7 @@ public class CLVFArrayAccessExpression extends SimpleNode {
 	public CLVFArrayAccessExpression(CLVFArrayAccessExpression node) {
 		super(node);
 	}
-
+	
 	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */
 	@Override
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
@@ -58,5 +58,10 @@ public class CLVFArrayAccessExpression extends SimpleNode {
 	@Override
 	public String toString() {
 		return jjtGetChild(0).toString() + "[" + jjtGetChild(1) + "]";
+	}
+
+	@Override
+	public boolean isBreakable() {
+		return true;
 	}
 }

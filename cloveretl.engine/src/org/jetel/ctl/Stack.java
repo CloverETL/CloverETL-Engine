@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.jetel.ctl.ASTnode.CLVFFunctionCall;
 import org.jetel.ctl.data.Scope;
 import org.jetel.data.DataRecord;
 
@@ -42,9 +43,9 @@ public class Stack {
     /** Grow factor for stack array realocation */
     public static final float GROW_FACTOR = 1.6f;
     
-    private Object[] stack;
-    private ArrayList<Object[]> variableStack;
-    private int top = -1;
+    protected Object[] stack;
+    protected ArrayList<Object[]> variableStack;
+    protected int top = -1;
     
 	public Stack(){
         this(STACK_DEPTH);
@@ -158,16 +159,35 @@ public class Stack {
 	 * Adds 'frame' on the variable stack for active block or function
 	 * 
 	 * @param blockScope	scope of active block
+	 * @param functionCallNode	the CTL AST Node of the function (call)
 	 */
-	public void enteredBlock(Scope blockScope) {
+	public void enteredBlock(Scope blockScope, CLVFFunctionCall functionCallNode) {
 		variableStack.add(new Object[blockScope.size()]);
 	}
+
+	
+	public final void enteredBlock(Scope blockScope) {
+		enteredBlock(blockScope, null);
+	}
+	
 	
 	/**
 	 * Removes 'frame' for active block or function
+	 * @param functionCallNode	the CTL AST Node of the function (call)
 	 */
-	public void exitedBlock() {
-		variableStack.remove(variableStack.size()-1);
+	public void exitedBlock(CLVFFunctionCall functionCallNode) {
+		variableStack.remove(variableStack.size() - 1);
+	}
+	
+	public final void exitedBlock() {
+		exitedBlock(null);
+	}
+	
+	/**
+	 *  Returns the depth of variable stack - i.e. how many blocks deep we are 
+	 */
+	public int blockDepth(){
+		return variableStack.size();
 	}
 	
 	/**
@@ -177,6 +197,7 @@ public class Stack {
 	 * @param variableOffset
 	 * @param value
 	 */
+	
 	public void setVariable(int blockOffset, int variableOffset, Object value) {
 		// blockIndex < 0 indicates access to the (always accessible) global scope
 		if (blockOffset < 0) {
@@ -214,7 +235,7 @@ public class Stack {
 	}
 
 	public Object[] getLocalVariables() {
-		return variableStack.get(variableStack.size()-1);
+		return variableStack.get(variableStack.size() - 1);
 	}
 	
 	public Object[] getGlobalVariables() {
@@ -232,5 +253,4 @@ public class Stack {
 			variableStack.toString() +
 			")";
 	}
-	
 }

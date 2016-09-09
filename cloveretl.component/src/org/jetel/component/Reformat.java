@@ -381,6 +381,7 @@ public class Reformat extends Node implements MetadataProvider {
     	transformFactory.setTransformUrl(transformURL);
     	transformFactory.setCharset(charset);
     	transformFactory.setComponent(this);
+    	transformFactory.setAttributeName(XML_TRANSFORM_ATTRIBUTE);
     	transformFactory.setInMetadata(getInMetadata());
     	transformFactory.setOutMetadata(getOutMetadata());
     	return transformFactory;

@@ -34,6 +34,12 @@ public class CLVFReturnStatement extends SimpleNode {
 	public CLVFReturnStatement(CLVFReturnStatement returnStatement) {
 		super(returnStatement);
 	}
+	
+	
+	@Override
+	public boolean isBreakable(){
+		return true;
+	}
 
 	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */
 	@Override

@@ -36,6 +36,11 @@ public class CLVFPrintLogNode extends SimpleNode {
 		super(node);
 	}
 
+	@Override
+	public boolean isBreakable(){
+		return true;
+	}
+	
 	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */
 	@Override
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {

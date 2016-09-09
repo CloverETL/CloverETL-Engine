@@ -100,4 +100,9 @@ public class CLVFSequenceNode extends SimpleNode {
 	public SimpleNode duplicate() {
 		return new CLVFSequenceNode(this);
 	}
+
+	@Override
+	public boolean isBreakable() {
+		return true;
+	}
 }

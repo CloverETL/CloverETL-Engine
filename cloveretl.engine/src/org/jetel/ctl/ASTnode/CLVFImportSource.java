@@ -18,6 +18,9 @@
  */
 package org.jetel.ctl.ASTnode;
 
+import java.io.PrintStream;
+import java.io.PrintWriter;
+
 import org.jetel.ctl.ExpParser;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.TransformLangParserVisitor;
@@ -64,5 +67,31 @@ public class CLVFImportSource extends SimpleNode {
 	@Override
 	public SimpleNode duplicate() {
 		return new CLVFImportSource(this);
+	}
+	
+	@Override
+	public void dump(PrintStream out, String prefix) {
+		out.println(String.format("%02d:%s:%s",getLine(),sourceToImport,toString(prefix)));
+		if (children != null) {
+			for (int i = 0; i < children.length; ++i) {
+				SimpleNode n = (SimpleNode) children[i];
+				if (n != null) {
+					n.dump(out,prefix + " ");
+				}
+			}
+		}
+	}
+
+	@Override
+	public void dump(PrintWriter out, String prefix) {
+		out.format("%02d:%s:%s%n",getLine(),sourceToImport,toString(prefix));
+		if (children != null) {
+			for (int i = 0; i < children.length; ++i) {
+				SimpleNode n = (SimpleNode) children[i];
+				if (n != null) {
+					n.dump(out,prefix + " ");
+				}
+			}
+		}
 	}
 }

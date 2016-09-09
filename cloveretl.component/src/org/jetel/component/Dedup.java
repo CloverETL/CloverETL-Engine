@@ -21,15 +21,20 @@ package org.jetel.component;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.collections.buffer.CircularFifoBuffer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
+import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.data.RingRecordBuffer;
 import org.jetel.enums.OrderEnum;
@@ -41,11 +46,12 @@ import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
-import org.jetel.graph.OutputPort;
+import org.jetel.graph.OutputPortDirect;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ExceptionUtils;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -98,6 +104,7 @@ public class Dedup extends Node {
 	private static final String XML_DEDUPKEY_ATTRIBUTE = "dedupKey";
 	private static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
 	private static final String XML_NO_DUP_RECORD_ATTRIBUTE = "noDupRecord";
+	private static final String XML_SORTED_ATTRIBUTE = "sorted";
 	
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DEDUP";
@@ -106,14 +113,19 @@ public class Dedup extends Node {
 
     private final static int WRITE_TO_PORT = 0;
     private final static int REJECTED_PORT = 1;
-
-	private final static int KEEP_FIRST = 1;
-	private final static int KEEP_LAST = -1;
-	private final static int KEEP_UNIQUE = 0;
-	
+    
+	private final static String UNKNOWN_KEEP_VALUE = "Unkown type of selection of held record within unique group.";
+    
+    /** Trigger for selection of held records within deduplication group.
+     *
+     */
+    private enum Keep { KEEP_FIRST, KEEP_LAST, KEEP_UNIQUE };
+    	
 	private final static int DEFAULT_NO_DUP_RECORD = 1;
+
+	private static final int SINGLE_RECORD = 1;
 	
-	private int keep = KEEP_FIRST;
+	private Keep keep = Keep.KEEP_FIRST;
 	private String[] dedupKeys;
 	private OrderEnum[] dedupOrderings;
 	private DedupComparator[] orderingComparators;
@@ -121,14 +133,15 @@ public class Dedup extends Node {
 	private boolean equalNULLs = true;
 	// number of duplicate record to be written to out port
 	private int noDupRecord = DEFAULT_NO_DUP_RECORD;
-
-    //runtime variables
+	private boolean sorted = true;
+	
+	//runtime variables
     int current;
     int previous;
     boolean isFirst;
     InputPort inPort;
-    OutputPort outPort;
-    OutputPort rejectedPort;
+    OutputPortDirect outPort;
+    OutputPortDirect rejectedPort;
     DataRecord[] records;
 
     //'last' dedup operation specific variables
@@ -141,11 +154,16 @@ public class Dedup extends Node {
 	private int recordNumber;
 	private int fieldNumber;
 	
+	// record key used to lookup incoming records from cache (hashmap) - only for unsorted input
+	private RecordKey recordKey;
+	// record key used for HashKey persisted in the cache (hashmap) - only for unsorted input
+	private RecordKey recordKeyReduced;
+	
 	/**
 	 *Constructor for the Dedup object
 	 *
 	 * @param  id         unique id of the component
-	 * @param  dedupKeys  definitio of key fields used to compare records
+	 * @param  dedupKeys  definition of key fields used to compare records
 	 */
 	public Dedup(String id, String[] dedupKeys) {
 		super(id);
@@ -254,10 +272,9 @@ public class Dedup extends Node {
     	}
     }    
 
-	
-	@Override
-	public Result execute() throws Exception {
-		records = new DataRecord[2];
+
+    private void executeSorted() throws Exception {
+    	records = new DataRecord[2];
         records[0] = DataRecordFactory.newRecord(inPort.getMetadata());
         records[1] = DataRecordFactory.newRecord(inPort.getMetadata());
         isFirst = true; // special treatment for 1st record
@@ -283,12 +300,162 @@ public class Dedup extends Node {
         	e.setFieldNo(getErrorFieldNumber());
         	throw e;
         }
-		
-        broadcastEOF();
-        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+    }
+
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.Node#execute()
+	 */
+	@Override
+	public Result execute() throws Exception {
+		if (sorted || dedupKeys == null) { //use algorithm for sorted input in case no key is specified
+			executeSorted();
+		} else {
+			executeUnsorted();
+		}
+		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
-    /**
+	private void executeUnsorted() throws IOException, InterruptedException {
+		recordKey = new RecordKey(dedupKeys, metadata);
+		recordKey.setEqualNULLs(equalNULLs);
+		recordKey.init();
+		
+		recordKeyReduced = recordKey.getReducedRecordKey();
+		
+		switch (keep) {
+		case KEEP_FIRST:
+			executeUnsortedFirst();
+			break;
+		case KEEP_LAST:
+			executeUnsortedLast();
+			break;
+		case KEEP_UNIQUE:
+			executeUnsortedUnique();
+			break;
+		default:
+			throw new AssertionError(UNKNOWN_KEEP_VALUE);
+		}
+	}
+
+	private void executeUnsortedFirst() throws IOException, InterruptedException {
+		Map<HashKey, int[]> groups = new HashMap<>();
+		HashKey hashKey = new HashKey(recordKey, null);
+		DataRecord record = DataRecordFactory.newRecord(metadata);
+		
+		while (inPort.readRecord(record) != null && runIt) {
+			hashKey.setDataRecord(record);
+			int[] groupSize = groups.get(hashKey);
+			if (groupSize == null) {
+				groups.put(new HashKey(recordKeyReduced, record.duplicate(recordKey)), new int[] { 1 });
+				writeOutRecord(record);
+			} else if (groupSize[0] < noDupRecord){
+				groupSize[0]++;
+				writeOutRecord(record);
+			} else {
+				writeRejectedRecord(record);
+			}
+		}
+	}
+
+	private static class GroupLast {
+		private final CircularFifoBuffer cicularRecordBuffer;
+		
+		public GroupLast(int noDupRecord, DataRecord record) {
+			cicularRecordBuffer = new CircularFifoBuffer(noDupRecord);
+			cicularRecordBuffer.add(record);
+		}
+
+		public DataRecord writeRecord(DataRecord record) {
+			if (cicularRecordBuffer.isFull()) {
+				final DataRecord overflowedRecord = (DataRecord) cicularRecordBuffer.remove();
+				cicularRecordBuffer.add(record);
+				return overflowedRecord;
+			} else {
+				cicularRecordBuffer.add(record);
+				return null;
+			}
+		}
+		
+		public DataRecord readRecord() {
+			if (!cicularRecordBuffer.isEmpty()) {
+				return (DataRecord) cicularRecordBuffer.remove();
+			} else {
+				return null;
+			}
+		}
+	}
+	
+	private void executeUnsortedLast() throws IOException, InterruptedException {
+		Map<HashKey, GroupLast> groups = new LinkedHashMap<>(16, 0.75f, true); //access order enabled
+		DataRecord record = DataRecordFactory.newRecord(metadata);
+		HashKey hashKey = new HashKey(recordKey, record);
+		DataRecord outputRecord;
+		
+		while (inPort.readRecord(record) != null && runIt) {
+			GroupLast group = groups.get(hashKey);
+			DataRecord duplicate = record.duplicate();
+			if (group == null) {
+				groups.put(new HashKey(recordKeyReduced, record.duplicate(recordKey)), new GroupLast(noDupRecord, duplicate));
+			} else {
+				if ((outputRecord = group.writeRecord(duplicate)) != null) {
+					writeRejectedRecord(outputRecord);
+				}
+			}
+		}
+		//pour out the cached groups
+		for (GroupLast group : groups.values()) {
+			while ((outputRecord = group.readRecord()) != null) {
+				writeOutRecord(outputRecord);
+			}
+		}
+	}
+	
+	private static class GroupUnique {
+		private DataRecord record;
+		private boolean read = false;
+		
+		public GroupUnique(DataRecord record) {
+			this.record = record;
+		}
+
+		public DataRecord readRecord() {
+			read = true;
+			return record;
+		}
+		
+		public boolean isRead() {
+			return read;
+		}
+	}
+	
+	private void executeUnsortedUnique() throws IOException, InterruptedException {
+		Map<HashKey, GroupUnique> groups = new LinkedHashMap<>();
+		HashKey hashKey = new HashKey(recordKey, null);
+		DataRecord record = DataRecordFactory.newRecord(metadata);
+		
+		while (inPort.readRecord(record) != null && runIt) {
+			hashKey.setDataRecord(record);
+			GroupUnique group = groups.get(hashKey);
+			if (group == null) {
+				DataRecord duplicate = record.duplicate();
+				groups.put(new HashKey(recordKey, duplicate), new GroupUnique(duplicate));
+			} else {
+				if (!group.isRead()) {
+					writeRejectedRecord(group.readRecord());
+				}
+				writeRejectedRecord(record);
+			}
+		}
+
+		//pour out the cached groups
+		for (GroupUnique group : groups.values()) {
+			if (!group.isRead()) {
+				writeOutRecord(group.readRecord());
+			}
+		}
+	}
+
+	/**
      * Execution a de-duplication with first function.
      * 
      * @throws IOException
@@ -438,29 +605,20 @@ public class Dedup extends Node {
     
     /**
      * Tries to write given record to the rejected port, if is connected.
-     * @param record
-     * @throws InterruptedException 
-     * @throws IOException 
      */
-    private void writeRejectedRecord(DataRecord record) throws IOException, 
-    		InterruptedException {
+    private void writeRejectedRecord(DataRecord record) throws IOException, InterruptedException {
         if(rejectedPort != null) {
             rejectedPort.writeRecord(record);
         }
     }
-    
+
     /**
      * Writes given record to the out port.
-     * 
-     * @param record
-     * @throws InterruptedException 
-     * @throws IOException 
      */
-    private void writeOutRecord(DataRecord record) throws IOException, 
-    		InterruptedException {
+    private void writeOutRecord(DataRecord record) throws IOException, InterruptedException {
         outPort.writeRecord(record);
     }
-    
+
 	/**
 	 * Description of the Method
 	 * 
@@ -479,13 +637,13 @@ public class Dedup extends Node {
 					"Input port (number " + READ_FROM_PORT + ") must be defined.");
 		}
 		
-		outPort = getOutputPort(WRITE_TO_PORT);
+		outPort = getOutputPortDirect(WRITE_TO_PORT);
 		if (outPort == null) {
 			throw new ComponentNotReadyException(this, 
 					"Output port (number " + WRITE_TO_PORT + ") must be defined.");
 		}
 		
-		rejectedPort = getOutputPort(REJECTED_PORT);
+		rejectedPort = getOutputPortDirect(REJECTED_PORT);
 		
         if (dedupKeys != null) {
 			metadata = getInputPort(READ_FROM_PORT).getMetadata();
@@ -575,14 +733,17 @@ public class Dedup extends Node {
 		dedup = new Dedup(xattribs.getString(XML_ID_ATTRIBUTE),
 				dedupKey != null ? dedupKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX) : null);
 		if (xattribs.exists(XML_KEEP_ATTRIBUTE)){
-		    dedup.setKeep(xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ff].*") ? KEEP_FIRST :
-			    xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ll].*") ? KEEP_LAST : KEEP_UNIQUE);
+		    dedup.setKeep(xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ff].*") ? Keep.KEEP_FIRST :
+			    xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ll].*") ? Keep.KEEP_LAST : Keep.KEEP_UNIQUE);
 		}
 		if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
 		    dedup.setEqualNULLs(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
 		}
 		if (xattribs.exists(XML_NO_DUP_RECORD_ATTRIBUTE)){
 		    dedup.setNumberRecord(xattribs.getInteger(XML_NO_DUP_RECORD_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_SORTED_ATTRIBUTE)){
+		    dedup.setSorted(xattribs.getBoolean(XML_SORTED_ATTRIBUTE));
 		}
 		return dedup;
 	}
@@ -615,7 +776,7 @@ public class Dedup extends Node {
          return status;
      }
 	
-	public void setKeep(int keep) {
+	public void setKeep(Keep keep) {
 		this.keep = keep;
 	}
 	
@@ -625,6 +786,14 @@ public class Dedup extends Node {
 
 	public void setNumberRecord(int numberRecord) {
 		this.noDupRecord = numberRecord;
+	}
+	
+	public boolean isSorted() {
+		return sorted;
+	}
+
+	public void setSorted(boolean sorted) {
+		this.sorted = sorted;
 	}
 	
 	/**

@@ -54,4 +54,9 @@ public class CLVFOr extends SimpleNode {
 	public SimpleNode duplicate() {
 		return new CLVFOr(this);
 	}
+
+	@Override
+	public boolean isBreakable() {
+		return true;
+	}
 }

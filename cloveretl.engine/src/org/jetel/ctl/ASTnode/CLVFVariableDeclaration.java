@@ -42,6 +42,11 @@ public class CLVFVariableDeclaration extends SimpleNode implements TransformLang
 		this.name = node.name;
 	}
 
+	@Override
+	public boolean isBreakable(){
+		return !(jjtGetParent() instanceof CLVFParameters); // CLO-8549
+	}
+	
 	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */
 	@Override
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {

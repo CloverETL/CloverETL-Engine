@@ -349,6 +349,7 @@ public class Partition extends Node {
 	private PartitionFunctionFactory getPartitionFunctionFactory() {
 		PartitionFunctionFactory partitionFceFactory = new PartitionFunctionFactory();
 		partitionFceFactory.setNode(this);
+		partitionFceFactory.setAttributeName(XML_PARTIONSOURCE_ATTRIBUTE);
 		partitionFceFactory.setMetadata(getInputPort(0).getMetadata());
 		partitionFceFactory.setPartitionKeyNames(partitionKeyNames);
 		partitionFceFactory.setPartitionRanges(partitionRanges);

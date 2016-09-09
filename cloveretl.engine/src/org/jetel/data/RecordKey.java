@@ -63,6 +63,7 @@ public class RecordKey {
 
 	protected int keyFields[];
 	protected DataRecordMetadata metadata;
+	private DataRecordMetadata keyMetadata;
 	protected String keyFieldNames[];
 	private final static char KEY_ITEMS_DELIMITER = ':';
 	private final static int DEFAULT_STRING_KEY_LENGTH = 32;
@@ -193,6 +194,12 @@ public class RecordKey {
 		return keyFields;
 	}
 
+	/**
+	 * @return true if the given index is part of this key
+	 */
+	public boolean isKeyField(int index) {
+		return Arrays.binarySearch(getKeyFields(), index) >= 0;
+	}
     
     private int[] getKeyFieldsIndexes(DataRecordMetadata mdata, String[] fieldNames) {
     	int[] indexes = new int[fieldNames.length];
@@ -464,12 +471,24 @@ public class RecordKey {
 	 * be used for creating data record composed from key fields only.
 	 * @return DataRecordMetadata object
 	 */
-	public DataRecordMetadata generateKeyRecordMetadata(){
+	public DataRecordMetadata generateKeyRecordMetadata() {
 		DataRecordMetadata metadata = new DataRecordMetadata(this.metadata.getName()+"key");
 		for (int i = 0; i < keyFields.length; i++) {
 			metadata.addField(this.metadata.getField(keyFields[i]).duplicate());
 		}
 		return metadata;
+	}
+	
+	/**
+	 * @return metadata which represents fields composing this key, it can
+	 * be used for creating data record composed from key fields only, internal
+	 * cached value is returned, so should not be changed!
+	 */
+	public DataRecordMetadata getKeyRecordMetadata() {
+		if (keyMetadata == null) {
+			keyMetadata = metadata.duplicate(this);
+		}
+		return keyMetadata;
 	}
 	
 	/**
@@ -769,6 +788,26 @@ public class RecordKey {
 			useCollator = true;
 		}
 	}
+	
+	/**
+	 * This method returns new {@link RecordKey} instance derived from this {@link RecordKey}.
+	 * Metadata of resulted {@link RecordKey} contains only key fields.
+	 * Both keys, this and the result, are compatible to be compared.
+	 * The resulted {@link RecordKey} can be used with duplicates of {@link DataRecord}s
+	 * created with {@link DataRecord#duplicate(RecordKey)} method.
+	 * @see Dedup component
+	 */
+	public RecordKey getReducedRecordKey() {
+		int[] key = new int[getLength()];
+		for (int i = 0; i < key.length; i++) {
+			key[i] = i;
+		}
+		RecordKey reducedRecordKey = new RecordKey(key, getKeyRecordMetadata());
+		reducedRecordKey.setEqualNULLs(equalNULLs);
+		reducedRecordKey.init();
+		return reducedRecordKey;
+	}
+	
 }
 // end RecordKey
 

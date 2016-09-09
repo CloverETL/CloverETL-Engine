@@ -23,7 +23,7 @@ import org.jetel.ctl.TransformLangParser;
 import org.jetel.ctl.TransformLangParserVisitor;
 import org.jetel.ctl.data.Scope;
 
-public class CLVFForeachStatement extends SimpleNode {
+public class CLVFForeachStatement extends SimpleNode implements ScopeHolder {
 	private Scope scope;
 	private int[] typeSafeFields;
 	
@@ -44,7 +44,12 @@ public class CLVFForeachStatement extends SimpleNode {
 			System.arraycopy(node.typeSafeFields, 0, this.typeSafeFields, 0, node.typeSafeFields.length);
 		}
 	}
-
+	
+	@Override
+	public boolean isBreakable(){
+		return true;
+	}
+	
 	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */
 	@Override
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
@@ -60,10 +65,12 @@ public class CLVFForeachStatement extends SimpleNode {
 		}
 	}
 
+	@Override
 	public void setScope(Scope scope) {
 		this.scope = scope;
 	}
 	
+	@Override
 	public Scope getScope() {
 		return scope;
 	}

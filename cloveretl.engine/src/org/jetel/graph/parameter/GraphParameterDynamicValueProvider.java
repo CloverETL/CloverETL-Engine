@@ -22,6 +22,7 @@ import java.text.MessageFormat;
 import java.util.Date;
 
 import org.jetel.component.TransformFactory;
+import org.jetel.component.TransformUtils;
 import org.jetel.ctl.ITLCompilerFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
@@ -126,6 +127,10 @@ public class GraphParameterDynamicValueProvider {
 		}
 		Node node = createNodeForTransformation();
 		factory.setComponent(node);
+		String jobUrl = graphProvider.getGraph().getRuntimeContext().getJobUrl();
+		if (jobUrl != null) {
+			factory.setTransformSourceId(TransformUtils.createCTLSourceId(jobUrl, TransformUtils.GRAPH_PARAMETER_NAME_PARAM, parameterName));
+		}
 		PropertyRefResolver propertyRefResolver = graphProvider.getGraph().getPropertyRefResolver();
 		String resolvedCode = propertyRefResolver.resolveRef(transformCode, RefResFlag.SPEC_CHARACTERS_OFF);
 		factory.setTransform(resolvedCode);

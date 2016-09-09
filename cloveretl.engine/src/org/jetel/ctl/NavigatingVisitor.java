@@ -251,11 +251,6 @@ public class NavigatingVisitor implements TransformLangParserVisitor {
 		return visitNode(node, data);
 	}
 
-	public Object visit(CLVFBreakpointNode node, Object data) {
-
-		return visitNode(node, data);
-	}
-
 	@Override
 	public Object visit(CLVFRaiseErrorNode node, Object data) {
 
@@ -300,6 +295,7 @@ public class NavigatingVisitor implements TransformLangParserVisitor {
 	@Override
 	public Object visit(SimpleNode node, Object data) {
 		throw new UnsupportedOperationException("Unreachable code");
+		
 	}
 	
 	@Override
@@ -373,6 +369,4 @@ public class NavigatingVisitor implements TransformLangParserVisitor {
 	public Object visit(CastNode node, Object data) {
 		return visitNode(node,data);
 	}
-
-
 }

@@ -40,6 +40,12 @@ public class CLVFCaseStatement extends SimpleNode {
 		super(node);
 		this.isDefaultClause = node.isDefaultClause;
 	}
+	
+	
+	@Override
+	public boolean isBreakable(){
+		return true;
+	}
 
 	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */
 	@Override

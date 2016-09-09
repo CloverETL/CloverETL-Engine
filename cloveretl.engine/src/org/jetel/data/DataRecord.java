@@ -18,7 +18,6 @@
  */
 package org.jetel.data;
 
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 
@@ -45,10 +44,14 @@ public abstract class DataRecord implements Comparable<Object>, Iterable<DataFie
 
 	/**
 	 * Creates deep copy of existing record (field by field).
-	 * 
-	 * @return new DataRecord
 	 */
 	public abstract DataRecord duplicate();
+
+	/**
+	 * Creates deep copy of existing record - only fields from the given key are considered.
+	 * RecordKey can be null, all fields are duplicated, see {@link #duplicate()}.
+	 */
+	public abstract DataRecord duplicate(RecordKey recordKey);
 
 	/**
 	 * Set fields by copying the fields from the record passed as argument.

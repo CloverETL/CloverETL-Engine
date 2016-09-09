@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jetel.component.Freeable;
 import org.jetel.component.RecordTransform;
 import org.jetel.component.RecordTransformDescriptor;
 import org.jetel.component.TransformFactory;
@@ -178,6 +179,11 @@ public class CTLMapping {
 	 * Error reporting purpose.  
 	 */
 	private String attributeName;
+	
+	/**
+	 * An id for identifying the code during CTL debugging
+	 */
+	private String transformSourceId;
 	
 	/**
 	 * Only constructor
@@ -392,6 +398,10 @@ public class CTLMapping {
 		}
 	}
 	
+	public void setTransformSourceId(String transformSourceId) {
+		this.transformSourceId = transformSourceId;
+	}
+	
 	public static class MissingRecordFieldMessage {
 		
 		public final String recordName;
@@ -452,11 +462,16 @@ public class CTLMapping {
 		initUsedOutputFields();
 		
 		if (!StringUtils.isEmpty(sourceCode)) {
+			RecordTransform transform = null;
 			try {
-				createTransform(xmlAttribute);
+				transform = createTransform(xmlAttribute);
 			} catch (JetelRuntimeException e) {
 				// report CTL error as a warning
 				status.add(new ConfigurationProblem(e, Severity.WARNING, component, Priority.NORMAL, attributeName));
+			} finally {
+				if (transform instanceof Freeable) {
+					((Freeable) transform).free();
+				}
 			}
 		}
 	}
@@ -468,6 +483,7 @@ public class CTLMapping {
     	transformFactory.setComponent(component);
     	transformFactory.setInMetadata(inputRecordsMetadata);
     	transformFactory.setOutMetadata(outputRecordsMetadata);
+		transformFactory.setTransformSourceId(transformSourceId);
     	return transformFactory;
 	}
 	
@@ -509,7 +525,11 @@ public class CTLMapping {
 		
 		initMetadata();
 		
-		initUsedOutputFields();
+		try {
+			initUsedOutputFields();
+		} catch (Exception ex) {
+			throw new ComponentNotReadyException(component, name + " initialization failed.", ex, xmlAttribute);
+		}
 		
 		//create CTL transformation
         if (!StringUtils.isEmpty(sourceCode)) {
@@ -517,10 +537,12 @@ public class CTLMapping {
 			try {
 				// initialise mapping
 		        if (!ctlTransformation.init(null, inputRecordsMetadata, outputRecordsMetadata)) {
-		            throw new ComponentNotReadyException(name + " initialization was unsuccessful.", xmlAttribute);
+		            throw new ComponentNotReadyException(component, name + " initialization was unsuccessful.", xmlAttribute);
 		        }
+			} catch (ComponentNotReadyException e) {
+				throw e;
 			} catch (Exception e) {
-				throw new JetelRuntimeException(name + " initialization failed.", e);
+				throw new ComponentNotReadyException(component, name + " initialization failed.", e, xmlAttribute);
 			}
         }
 	}

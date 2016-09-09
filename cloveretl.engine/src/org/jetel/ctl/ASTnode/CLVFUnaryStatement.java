@@ -53,6 +53,11 @@ public class CLVFUnaryStatement extends SimpleNode {
 		return operator;
 	}
 	
+	@Override
+	public boolean isBreakable(){
+		return true;
+	}
+	
 	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */
 	@Override
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {

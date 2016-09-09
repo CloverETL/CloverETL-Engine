@@ -27,9 +27,13 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.ctl.ASTnode.CLVFIfStatement;
 import org.jetel.ctl.ASTnode.CLVFStart;
 import org.jetel.ctl.ASTnode.CLVFStartExpression;
+import org.jetel.ctl.ASTnode.Node;
+import org.jetel.ctl.ASTnode.ScopeHolder;
 import org.jetel.ctl.ASTnode.SimpleNode;
+import org.jetel.ctl.data.Scope;
 import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.extensions.TLFunctionCallContext;
 import org.jetel.ctl.extensions.TLFunctionPluginRepository;
@@ -60,6 +64,7 @@ public class TLCompiler implements ITLCompiler {
 	protected int tabSize = 4; // CLO-2104: changed from 6 to Eclipse default tab width
 	protected Log logger;
 	protected String componentId;
+	private String sourceId;
 	private List<TLFunctionCallContext> functionContexts;
 	protected boolean lenient = false;
 
@@ -126,6 +131,14 @@ public class TLCompiler implements ITLCompiler {
 	
 	@Override
 	public List<ErrorMessage> validateExpression(Reader input) {
+		return validateExpressionInContext(input, null);
+	}
+	
+	public List<ErrorMessage> validateExpressionInContext(String input, SimpleNode context) {
+		return validateExpressionInContext(new SourceStringReader(input), context);
+	}
+	
+	public List<ErrorMessage> validateExpressionInContext(Reader input, SimpleNode context) {
 		if (!(input instanceof SourceCodeProvider)) {
 			input = copy(input);
 		}
@@ -137,6 +150,15 @@ public class TLCompiler implements ITLCompiler {
 	
 		parser.setTabSize(tabSize);
 		parser.enable_tracing();
+		
+		if (context != null) {
+			parser.setFunctions(context.getParser().getFunctions());
+			Scope containingScope = findContainingScope(context);
+			if (containingScope != null) {
+				parser.setCurrentScope(containingScope);
+			}
+		}
+		
 		CLVFStartExpression parseTree = null;
 		Context ctx = null;
 		try {
@@ -151,6 +173,9 @@ public class TLCompiler implements ITLCompiler {
 		} finally {
 			ContextProvider.unregister(ctx);
 		}
+		
+		// source id - used in debugging
+		ast.setSourceId(sourceId);
 		
 		ASTBuilder astBuilder = createASTBuilder();
 		astBuilder.setLenient(lenient);
@@ -241,6 +266,9 @@ public class TLCompiler implements ITLCompiler {
 		} finally {
 			ContextProvider.unregister(ctx);
 		}
+		
+		// source id - used in debugging
+		ast.setSourceId(sourceId);
 		
 		ASTBuilder astBuilder = createASTBuilder();
 		astBuilder.setLenient(lenient);
@@ -361,7 +389,7 @@ public class TLCompiler implements ITLCompiler {
 	protected String wrapExpression(String expression, String syntheticFunctionName, Class<?> returnType) {
 		// compute return type
 		final TLType type = TLType.fromJavaType(returnType);
-		return "function " + type.name() +  " " + syntheticFunctionName + "() { " +
+		return "function " + type.name() +  " " + syntheticFunctionName + "() {" +
 				// CLO-4872: terminate trailing single-line comment in expression with \n
 				"return " + expression + "\n;" +
 				" }";
@@ -379,7 +407,12 @@ public class TLCompiler implements ITLCompiler {
 	 */
 	@Override
 	public Object getCompiledCode() {
-		final TransformLangExecutor executor = new TransformLangExecutor(parser,graph);
+		final TransformLangExecutor executor;
+		if (graph != null && graph.getRuntimeContext().isCtlDebug() && graph.getDebugJMX() != null /* null in check config */) {
+			executor = new DebugTransformLangExecutor(parser, graph);
+		} else {
+			executor = new TransformLangExecutor(parser, graph);
+		}
 		if (this.ast instanceof CLVFStart ) {
 			executor.setAst((CLVFStart)ast);
 		} else {
@@ -428,7 +461,6 @@ public class TLCompiler implements ITLCompiler {
 		return (CLVFStart)ast;
 	}
 
-
 	/**
 	 * @return Number of critical errors from the last validate call.
 	 * 
@@ -445,7 +477,6 @@ public class TLCompiler implements ITLCompiler {
 	public List<ErrorMessage> getDiagnosticMessages() {
 		return problemReporter.getDiagnosticMessages();
 	}
-
 
 	@Override
 	public int warningCount() {
@@ -466,6 +497,11 @@ public class TLCompiler implements ITLCompiler {
 		this.componentId = componentId;
 	}
 	
+	@Override
+	public void setSourceId(String sourceId) {
+		this.sourceId = sourceId;
+	}
+	
 	protected List<TLFunctionCallContext> getFunctionContexts() {
 		return functionContexts; 
 	}
@@ -481,5 +517,27 @@ public class TLCompiler implements ITLCompiler {
 	public TransformationGraph getGraph() {
 		return graph;
 	}
-
+	
+	private Scope findContainingScope(SimpleNode context) {
+		Node node = context;
+		while (node != null) {
+			if (node.jjtGetParent() instanceof ScopeHolder) {
+				return ((ScopeHolder)node.jjtGetParent()).getScope();
+			}
+			if (node.jjtGetParent() instanceof CLVFIfStatement) {
+				CLVFIfStatement ifStatement = (CLVFIfStatement)node.jjtGetParent();
+				for (int i = 0; i < ifStatement.jjtGetNumChildren(); ++i) {
+					if (node == ifStatement.jjtGetChild(i)) {
+						if (i == 1) {
+							return ifStatement.getThenScope();
+						} else if (i == 2) {
+							return ifStatement.getElseScope();
+						}
+					}
+				}
+			}
+			node = node.jjtGetParent();
+		}
+		return null;
+	}
 }

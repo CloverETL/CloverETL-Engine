@@ -435,9 +435,7 @@ public class PropertyRefResolver {
 					evaluateExpressions(evaluatedReference, flag);
 				}
 				value.replace(propertyMatcher.start(), propertyMatcher.end(), evaluatedReference.toString());
-				if (canBeParamaterResolved) {
-					nextStart = propertyMatcher.start();
-				} else {
+				if (!canBeParamaterResolved && containsProperty(resolvedReference)) {
 					nextStart = propertyMatcher.start() + evaluatedReference.length();
 				}
 			} else {

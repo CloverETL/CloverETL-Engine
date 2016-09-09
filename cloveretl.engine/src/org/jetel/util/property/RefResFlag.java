@@ -74,23 +74,16 @@ public class RefResFlag {
 	private boolean ctlStatements;
 	/** Should be secure parameters resolved? */
 	private boolean secureParameters;
-	/** Should be unresolved secure parameters reported as an error?
-	 * If secureParameters=false, but a reference to a secure parameter
-	 * is found in resolved text, an exception is thrown by resolver.
-	 * This flag could avoid this default behaviour. */
-	private boolean forceSecureParameters;
 	
 	private RefResFlag(boolean specCharacters, boolean ctlStatements, boolean secureParamaters) {
 		this.specCharacters = specCharacters;
 		this.ctlStatements = ctlStatements;
 		this.secureParameters = secureParamaters;
-		this.forceSecureParameters = true;
 	}
 	private RefResFlag(RefResFlag flag) {
 		this.specCharacters = flag.specCharacters;
 		this.ctlStatements = flag.ctlStatements;
 		this.secureParameters = flag.secureParameters;
-		this.forceSecureParameters = flag.forceSecureParameters;
 	}
 	
 	/** Should be special characters resolved? */
@@ -127,17 +120,4 @@ public class RefResFlag {
 		result.secureParameters = secureParameters;
 		return result;
 	}
-
-	/** Should be unresolved secure parameters reported as an error? */
-	public boolean forceSecureParameters() {
-		return forceSecureParameters;
-	}
-
-	/** Should be unresolved secure parameters reported as an error? */
-	public RefResFlag forceSecureParameters(boolean forceSecureParameters) {
-		RefResFlag result = new RefResFlag(this);
-		result.forceSecureParameters = forceSecureParameters;
-		return result;
-	}
-
 }

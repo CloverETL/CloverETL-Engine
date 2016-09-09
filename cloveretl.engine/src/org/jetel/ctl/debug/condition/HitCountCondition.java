@@ -16,42 +16,39 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.ctl.ASTnode;
+package org.jetel.ctl.debug.condition;
 
-import org.jetel.ctl.ExpParser;
+import org.jetel.ctl.DebugTransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
-import org.jetel.ctl.TransformLangParserVisitor;
+import org.jetel.ctl.ASTnode.SimpleNode;
 
-public class CLVFBreakpointNode extends SimpleNode {
-	public CLVFBreakpointNode(int id) {
-		super(id);
+/**
+ * @author jan.michalica (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created 4.7.2016
+ */
+public class HitCountCondition implements Condition {
+
+	private final int maxHits;
+	private int hitCount;
+
+	public HitCountCondition(int hitCount) {
+		super();
+		this.maxHits = hitCount;
 	}
 
-	public CLVFBreakpointNode(ExpParser p, int id) {
-		super(p, id);
-	}
-
-	public CLVFBreakpointNode(CLVFBreakpointNode node) {
-		super(node);
-	}
-
-	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */
 	@Override
-	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
-		try {
-			return visitor.visit(this, data);
-		} catch (TransformLangExecutorRuntimeException e) {
-			if (e.getNode() == null) {
-				e.setNode(this);
-			}
-			throw e;
-		} catch (RuntimeException e) {
-			throw new TransformLangExecutorRuntimeException(this, null, e);
+	public boolean isFulFilled() {
+		if (hitCount >= maxHits) {
+			hitCount = 0;
+			return true;
 		}
+		return false;
 	}
-	
+
 	@Override
-	public SimpleNode duplicate() {
-		return new CLVFBreakpointNode(this);
+	public void evaluate(DebugTransformLangExecutor executor, SimpleNode context) throws TransformLangExecutorRuntimeException {
+		++hitCount;
 	}
 }

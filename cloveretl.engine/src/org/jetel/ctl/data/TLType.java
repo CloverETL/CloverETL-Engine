@@ -18,6 +18,7 @@
  */
 package org.jetel.ctl.data;
 
+import java.io.Serializable;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -33,8 +34,12 @@ import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.EqualsUtil;
 
-public abstract class TLType {
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+@SuppressWarnings("serial")
+@SuppressFBWarnings("SE_NO_SERIALVERSIONID")
+public abstract class TLType implements Serializable {
+	
 	public static final TLTypeVoid VOID = new TLTypeVoid();
 	public static final TLTypeNull NULL = new TLTypeNull();
 	public static final TLTypeError ERROR = new TLTypeError();
@@ -749,9 +754,9 @@ public abstract class TLType {
 		return false;
 	}
 	
-	public static TLType fromJavaType(Class<?> type) {
+	public static TLType fromJavaType(Class<?> type) throws IllegalArgumentException {
 	
-		if (byte.class.equals(type) || Byte.class.equals(type)) {
+		if (byte[].class.equals(type) || byte.class.equals(type) || Byte.class.equals(type)) {
 			return TLTypePrimitive.BYTEARRAY;
 		}
 		
@@ -771,7 +776,6 @@ public abstract class TLType {
 			return TLTypePrimitive.DECIMAL;
 		}
 		
-		
 		if (boolean.class.equals(type) || Boolean.class.equals(type)) {
 			return TLTypePrimitive.BOOLEAN;
 		}
@@ -784,11 +788,11 @@ public abstract class TLType {
 			return TLTypePrimitive.STRING;
 		}
 
-		if (List.class.equals(type)) {
+		if (List.class.isAssignableFrom(type)) {
 			throw new IllegalArgumentException("List cannot be created by fromJavaType(Class)");
 		}
 		
-		if (Map.class.equals(type)) {
+		if (Map.class.isAssignableFrom(type)) {
 			throw new IllegalArgumentException("Map cannot be created by fromJavaType(Class)");
 		}
 		
@@ -796,7 +800,7 @@ public abstract class TLType {
 			return TLTypePrimitive.VOID;
 		}
 		
-		if (DataRecord.class.equals(type)) {
+		if (DataRecord.class.isAssignableFrom(type)) {
 			return TLType.RECORD;
 		}
 		

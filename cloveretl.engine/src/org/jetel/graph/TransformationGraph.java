@@ -37,6 +37,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.ctl.debug.DebugJMX;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.database.IConnection;
@@ -129,6 +130,8 @@ public final class TransformationGraph extends GraphElement {
 	private long instanceCreated = System.currentTimeMillis();
 	
 	private WatchDog watchDog;
+	
+	private DebugJMX debugJMX;
 
 	private GraphParameters graphParameters;
 
@@ -558,6 +561,10 @@ public final class TransformationGraph extends GraphElement {
 			//analyse the graph if necessary - usually the graph is analysed already in TransformationGraphXMLReaderWriter
 			if (!isAnalysed()) {
 				TransformationGraphAnalyzer.analyseGraph(this, getRuntimeContext(), true);
+			}
+			// emit init event for debugger
+			if (getDebugJMX() != null) {
+				getDebugJMX().notifyInit();
 			}
 
 			//initialize dictionary
@@ -1137,6 +1144,10 @@ public final class TransformationGraph extends GraphElement {
 	    	//free dictionary /some readers use dictionary in the free method for the incremental reading
 	    	dictionary.free();
 	    	
+	    	if (debugJMX != null) {
+	    		debugJMX.free();
+	    	}
+	    	
 	    	setWatchDog(null);
 		} finally {
 			//unregister current thread from ContextProvider
@@ -1384,6 +1395,14 @@ public final class TransformationGraph extends GraphElement {
 
     public void setWatchDog(WatchDog watchDog) {
         this.watchDog = watchDog;
+    }
+    
+    public DebugJMX getDebugJMX() {
+    	return this.debugJMX;
+    }
+    
+    public void setDebugJMX(DebugJMX debugJMX) {
+    	this.debugJMX = debugJMX;
     }
 
     /**

@@ -352,6 +352,7 @@
 			usemixedcaseclassnames="false"
 			skipnonpubliclibraryclasses="false"
 			skipnonpubliclibraryclassmembers="false"
+			renamesourcefileattribute="Main"
 			applymapping="${apply.mapping}"
 			printmapping="${dir.obfuscate}/proGuard-mapping.txt"
 			printseeds="${dir.obfuscate}/proGuard-seeds.txt"
@@ -375,7 +376,7 @@
 
 			<keepattribute name="InnerClasses" />
 			<keepattribute name="Exceptions" />
-			<keepattributes filter="*Annotation*,Signature" />
+			<keepattributes filter="*Annotation*,Signature,SourceFile,LineNumberTable" />
 			<keep extends="java.lang.Enum"><field access="public"/><method access="public"/></keep>
 			
 			<keep extends="java.io.Serializable">
@@ -587,6 +588,7 @@
 			<keep name="com.initiatesystems.etl.dictionary.QueryMemberDictionaryType"><field access="public"/><method access="public"/></keep>
 			<keep name="com.initiatesystems.etl.formatter.MemPutJoiner"><field access="public"/><method access="public"/></keep>
 			
+			<keep name="com.opensys.cloveretl.connection.SOQLQuery"><field access="protected public"/><method access="protected public"/></keep>
 
 			<!-- template to copy&paste
 			<keep name="xxxxxx"><field access="protected public"/><method access="protected public"/></keep>

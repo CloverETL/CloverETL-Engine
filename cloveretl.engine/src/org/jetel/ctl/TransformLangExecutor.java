@@ -42,7 +42,6 @@ import org.jetel.ctl.ASTnode.CLVFArrayAccessExpression;
 import org.jetel.ctl.ASTnode.CLVFAssignment;
 import org.jetel.ctl.ASTnode.CLVFBlock;
 import org.jetel.ctl.ASTnode.CLVFBreakStatement;
-import org.jetel.ctl.ASTnode.CLVFBreakpointNode;
 import org.jetel.ctl.ASTnode.CLVFCaseStatement;
 import org.jetel.ctl.ASTnode.CLVFComparison;
 import org.jetel.ctl.ASTnode.CLVFConditionalExpression;
@@ -118,6 +117,7 @@ import org.jetel.data.lookup.Lookup;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.MissingFieldException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldContainerType;
@@ -144,6 +144,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * Magic header to recognize CTL code
 	 */
 	public static final String CTL_TRANSFORM_CODE_ID = "//#CTL2";
+	public static final String CTL_GENERATED_FUNCTION_ANNOTATION = "//#CTL2:GENERATED";
 	
 	/**
 	 *  Limits the precision of result to #DECIMAL_MAX_PRECISION digits
@@ -197,16 +198,19 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 	static Log logger = LogFactory.getLog(TransformLangExecutor.class);
 
-	private SimpleNode /* CLVFStart or CLVFStartExpression */ ast;
+	protected SimpleNode /* CLVFStart or CLVFStartExpression */ ast;
 	private boolean keepGlobalScope;
 	private Object lastReturnValue = null;
+	
+	/** control variables for debug mode*/
+	protected Map<String,Node> imports;
 	
 	/**
 	 * Allocates runtime data structures within the AST tree necessary for execution
 	 * 
 	 * @author Michal Tomcanyi <michal.tomcanyi@javlin.cz>
 	 */
-	private class InterpretedRuntimeInitializer extends NavigatingVisitor {
+	protected class InterpretedRuntimeInitializer extends NavigatingVisitor {
 		
 		/**
 		 * Entry method for initialization
@@ -272,6 +276,25 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			return data;
 		}
 		
+		@Override
+		public Object visit(CLVFImportSource node,Object data){
+			Object result = super.visit(node, data);
+			//adding reference to source file from which nodes were imported, ignore for duplicated imports
+			if (node.sourceFilename != null) {
+				TransformLangExecutor.this.imports.put(node.sourceFilename, node);
+				addSourceInfo((SimpleNode)node.jjtGetChild(0),node.sourceFilename);
+			}
+			return result;
+		}
+		
+		private void addSourceInfo(SimpleNode node, String sourceFilename){
+			node.setSourceFilename(sourceFilename);
+			for(int i=0;i<node.jjtGetNumChildren();i++){
+				addSourceInfo((SimpleNode)node.jjtGetChild(i),sourceFilename);
+			}
+		}
+		
+		
 	}
 	
 	private static class PostExecuteCleanupVisitor extends NavigatingVisitor {
@@ -302,6 +325,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		this.graph = graph;
 		stack = new Stack();
 		breakFlag = false;
+		this.imports=new HashMap<String,Node>();
 	}
 	
 	public TransformLangExecutor(TransformLangParser parser, TransformationGraph graph) {
@@ -402,7 +426,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		return this.stack.getGlobalVariables()[vd.getVariableOffset()];
 	}
 	
-	private Object getLocalVariableValue(CLVFIdentifier node) {
+	protected Object getLocalVariableValue(CLVFIdentifier node) {
 		return stack.getVariable(node.getBlockOffset(), node.getVariableOffset());
 	}
 	
@@ -431,17 +455,19 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		initInternal(ast);
 	}
 	
-	private void initInternal(SimpleNode ast) throws TransformLangExecutorRuntimeException {
+	protected void initInternal(SimpleNode ast) throws TransformLangExecutorRuntimeException {
 		if (ast == null) {
 			throw new TransformLangExecutorRuntimeException("AST tree to initialize is null");
 		}
-		
+
 		this.ast = ast;
 		InterpretedRuntimeInitializer init = new InterpretedRuntimeInitializer();
 		init.initialize(ast);
 	}
 	
-	public void preExecute() {}
+	public void preExecute() {
+	}
+	
 	
 	public void postExecute() {
 		
@@ -449,6 +475,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		cleanup.cleanup(ast);
 		lookupCache.clear();
 		lookupCounter = 0;
+		
 	}
 	
 	/**
@@ -484,7 +511,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * Execute statements (returning no value)
 	 * @param node
 	 */
-	private void executeInternal(SimpleNode node) {
+	protected void executeInternal(SimpleNode node) {
 		this.ast = node;
 		node.jjtAccept(this, null);
 	}
@@ -1226,6 +1253,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 		// loop execution
 		while (condition) {
+			checkInterrupt();
 			// loops always have (possibly fake) body
 			forBody.jjtAccept(this, data);
 			// check for break or continue statements
@@ -1277,6 +1305,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			final Collection<Object> iterable = composite.getType().isList() ? stack.popList() : stack.popMap().values();
 			
 			for (Object o : iterable) {
+				checkInterrupt();
 				setVariable(var,o);
 				// block is responsible for cleanup
 				body.jjtAccept(this, data);
@@ -1303,6 +1332,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 				final DataRecord record = stack.popRecord();
 				
 				for (int field : node.getTypeSafeFields()) {
+					checkInterrupt();
 					setVariable(var,fieldValue(record.getField(field)));
 					// block is responsible for cleanup
 					body.jjtAccept(this, data);
@@ -1340,6 +1370,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 		// loop execution
 		while (condition) {
+			checkInterrupt();
 			// block is responsible for cleanup
 			body.jjtAccept(this, data);
 			// check for break or continue statements
@@ -1426,6 +1457,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		
 		// loop execution
 		do {
+			checkInterrupt();
 			body.jjtAccept(this, data);
 			// check for break or continue statements
 			if (breakFlag) {
@@ -1519,6 +1551,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		return data;
 	}
 
+	
 	@Override
 	public Object visit(CLVFCaseStatement node, Object data) {
 		// execute the case expression and leave it on the stack for parent switch
@@ -1573,27 +1606,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		return data;
 	}
 
-	/**
-	 * @deprecated To be removed, not generated by the parser at all.
-	 */
-	@Deprecated
-	public Object visit(CLVFBreakpointNode node, Object data) {
-		// list all variables
-		LogLevelEnum logLevel = LogLevelEnum.DEBUG;
-		printLog(logLevel, "** list of global variables ***", node);
-		final Object[] globalVariables = stack.getGlobalVariables();
-		for (int i = 0; i < globalVariables.length; i++) {
-			printLog(logLevel, globalVariables[i], node);
-		}
-		printLog(logLevel, "** list of local variables ***", node);
-		final Object[] localVariables = stack.getLocalVariables();
-		for (int i = 0; i < localVariables.length; i++) {
-			printLog(logLevel, localVariables[i], node);
-		}
-
-		return data;
-	}
-	
 	private DataRecord createNewRecord(TLTypeRecord type) {
 		final DataRecordMetadata metaData = type.getMetadata();
 		return DataRecordFactory.newRecord(metaData);
@@ -1620,7 +1632,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			return new LinkedHashMap<Object,Object>();
 		}  else if (varType.isRecord()) {
 			return createNewRecord((TLTypeRecord) varType);
-		} 
+		}
 		
 		return null;
 	}
@@ -1647,10 +1659,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		}
 		
 		// default initializers
-		Object value = getDefaultValue(node.getType());
-		if (value != null) {
-			setVariable(node, value);
-		}
+		setVariable(node, getDefaultValue(node.getType()));
 		
 		return data;
 	}
@@ -2297,7 +2306,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	
 	@Override
 	public Object visit(CLVFUnaryStatement node, Object data) {
-		
 		final SimpleNode child = (SimpleNode)node.jjtGetChild(0);
 		child.jjtAccept(this, data);
 
@@ -2382,7 +2390,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 	@Override
 	public Object visit(CLVFListOfLiterals node, Object data) {
-		
 		if (!node.areAllItemsLiterals() || node.getValue() == null) {
 			List<Object> value = new ArrayList<Object>();
 			for (int i=0; i<node.jjtGetNumChildren(); i++) {
@@ -2581,6 +2588,26 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 								 : String.format("Attempting to access item %d from list of size %d", index, list.size());
 				throw new ArrayIndexOutOfBoundsException(message);
 			}
+		} else if (composite.getType().isByteArray()) {
+			byte[] list = stack.popByteArray();
+			
+			// compute index and push value stored in the list
+			node.jjtGetChild(1).jjtAccept(this, data);
+			Integer index = stack.popInt();
+			try {
+				stack.push(list[index]&0xff);
+			} catch (IndexOutOfBoundsException ex) {
+				String name = null;
+				if (composite.getId() == TransformLangParserTreeConstants.JJTIDENTIFIER) {
+					CLVFIdentifier id = (CLVFIdentifier) composite;
+					name = id.getName();
+				}
+				// TODO extract name from record fields of type list
+				String message = (name != null) 
+								 ? String.format("Attempting to access item %d from byte array \"%s\" of size %d", index, name, list.length)
+								 : String.format("Attempting to access item %d from byte array of size %d", index, list.length);
+				throw new ArrayIndexOutOfBoundsException(message);
+			}
 		}
 		
 		return data;
@@ -2622,10 +2649,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 	@Override
 	public Object visit(CLVFFunctionCall node, Object data) {
+		checkInterrupt();
 		node.jjtGetChild(0).jjtAccept(this, data);
 		if (node.isExternal()) {
 			assert node.getFunctionCallContext().getGraph() != null : "Graph is null";
-			node.getExtecutable().execute(stack, node.getFunctionCallContext());
+			node.getExecutable().execute(stack, node.getFunctionCallContext());
 		} else {
 			executeFunction(node);
 		}
@@ -2711,7 +2739,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	
 	public void executeFunction(CLVFFunctionDeclaration node, Object[] data) {
 		final CLVFParameters formal = (CLVFParameters)node.jjtGetChild(1);
-		
 		stack.enteredBlock(node.getScope());
 		
 		for (int i=0; i<data.length; i++) {
@@ -2721,13 +2748,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		// function return value will be saved in this.lastReturnValue
 		node.jjtGetChild(2).jjtAccept(this, null);
 		
-
-		
 		// clear all break flags
 		if (breakFlag) {
 			breakFlag = false;
 		}
-		
 		stack.exitedBlock();
 	}
 
@@ -2769,8 +2793,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		try {
 		
 			//set input and output records (if given)
-			this.inputRecords = inputRecords;
-			this.outputRecords = outputRecords;
+			setInputRecords(inputRecords);
+			setOutputRecords(outputRecords);
 	
 			//clean previous return value
 			this.lastReturnValue = null;
@@ -2821,36 +2845,37 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * 
 	 * @param node
 	 */
-	private void executeFunction(CLVFFunctionCall node) {
+	protected void executeFunction(CLVFFunctionCall node) {
 		final CLVFFunctionDeclaration callTarget = node.getLocalFunction();
 		final CLVFParameters formal = (CLVFParameters)callTarget.jjtGetChild(1);
 		final CLVFArguments actual = (CLVFArguments)node.jjtGetChild(0);
 		
-		try {
-			// activate function scope
-			stack.enteredBlock(callTarget.getScope());
-			
-			// set function parameters - they are already computed on stack
-			for (int i=actual.jjtGetNumChildren()-1; i>=0; i--) {
-				setVariable((SimpleNode)formal.jjtGetChild(i), stack.pop());
-			}
-			
-			// execute function body
-			callTarget.jjtGetChild(2).jjtAccept(this, null);
-			
-			// set the saved return value back onto stack
-			if (!node.getType().isVoid()) {
-				stack.push(this.lastReturnValue);
-				this.lastReturnValue = null;
-			}
-		} finally {
-			// clear all break flags
-			if (breakFlag) {
-				breakFlag = false;
-			}
-			
-			// clear function scope
-			stack.exitedBlock();
+		try{
+		// activate function scope
+		stack.enteredBlock(callTarget.getScope(),node);
+		
+		// set function parameters - they are already computed on stack
+		for (int i=actual.jjtGetNumChildren()-1; i>=0; i--) {
+			setVariable((SimpleNode)formal.jjtGetChild(i), stack.pop());
+		}
+		
+		// execute function body
+		callTarget.jjtGetChild(2).jjtAccept(this, null);
+		
+		// set the saved return value back onto stack
+		if (!node.getType().isVoid()) {
+			stack.push(this.lastReturnValue);
+			this.lastReturnValue = null;
+		}
+		
+		}finally{
+		// clear all break flags
+		if (breakFlag) {
+			breakFlag = false;
+		}
+		
+		// clear function scope
+		stack.exitedBlock(node);
 		}
 	}
 	
@@ -2877,7 +2902,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	}
 	
 	
-	private void setVariable(SimpleNode lhs, Object value) {
+	protected void setVariable(SimpleNode lhs, Object value) {
 		if (lhs.getId() == TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION) {
 			SimpleNode firstChild = (SimpleNode) lhs.jjtGetChild(0);
 			if (firstChild.getId() == TransformLangParserTreeConstants.JJTDICTIONARYNODE) {
@@ -3116,5 +3141,13 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		}
 		
 	}
-
+	
+	/*
+	 * CLO-9387
+	 */
+	protected void checkInterrupt() {
+		if (Thread.interrupted()) {
+			throw new JetelRuntimeException("Execution thread was interrupted", new InterruptedException());
+		}
+	}
 }

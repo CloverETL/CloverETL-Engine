@@ -24,12 +24,12 @@ import org.jetel.ctl.TransformLangParserVisitor;
 import org.jetel.ctl.data.Scope;
 import org.jetel.ctl.data.TLType;
 
-public class CLVFFunctionDeclaration extends SimpleNode {
+public class CLVFFunctionDeclaration extends SimpleNode implements ScopeHolder {
 
 	public String name;
 	private TLType[] formalParams;
 	private Scope scope;
-	
+	private boolean generated;
 	
 	public CLVFFunctionDeclaration(int id) {
 		super(id);
@@ -98,14 +98,25 @@ public class CLVFFunctionDeclaration extends SimpleNode {
 		return new CLVFFunctionDeclaration(this);
 	}
 
+	@Override
 	public void setScope(Scope currentScope) {
 		this.scope = currentScope;
 	}
 	
+	
+	@Override
 	public Scope getScope() {
 		return this.scope;
 	}
 	
+	public boolean isGenerated() {
+		return generated;
+	}
+
+	public void setGenerated(boolean generated) {
+		this.generated = generated;
+	}
+
 	public String toHeaderString() {
 		final StringBuilder buf = new StringBuilder();
 		buf.append(getType() == null ? "null" : getType().toString()).append(" ");
@@ -122,5 +133,4 @@ public class CLVFFunctionDeclaration extends SimpleNode {
 		return buf.toString();
 		
 	}
-	
 }

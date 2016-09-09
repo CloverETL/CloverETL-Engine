@@ -1190,10 +1190,16 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 
 	/**
 	 * Creates a deep copy of this data record metadata object.
-	 *
-	 * @return an exact copy of current data record metadata object
 	 */
 	public DataRecordMetadata duplicate() {
+		return duplicate(null);
+	}
+
+	/**
+	 * Creates a deep copy of this data record metadata object - only key fields are considered.
+	 * {@link RecordKey} can be null, all fields are duplicated.
+	 */
+	public DataRecordMetadata duplicate(RecordKey recordKey) {
 		DataRecordMetadata dataRecordMetadata = new DataRecordMetadata(name, parsingType);
 
 		dataRecordMetadata.setName(name);
@@ -1211,7 +1217,9 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		dataRecordMetadata.setEofAsDelimiter(eofAsDelimiter);
 
 		for (DataFieldMetadata field : fields) {
-			dataRecordMetadata.addField(field.duplicate());
+			if (recordKey == null || recordKey.isKeyField(field.getNumber())) {
+				dataRecordMetadata.addField(field.duplicate());
+			}
 		}
 
 		dataRecordMetadata.setRecordProperties(recordProperties);

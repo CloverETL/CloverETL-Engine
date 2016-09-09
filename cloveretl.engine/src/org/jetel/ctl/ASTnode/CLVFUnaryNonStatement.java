@@ -52,6 +52,11 @@ public class CLVFUnaryNonStatement extends SimpleNode {
 	public int getOperator() {
 		return operator;
 	}
+	
+	@Override
+	public boolean isBreakable(){
+		return true;
+	}
 
 	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */
 	@Override

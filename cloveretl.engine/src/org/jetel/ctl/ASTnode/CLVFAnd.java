@@ -34,7 +34,7 @@ public class CLVFAnd extends SimpleNode {
 	public CLVFAnd(CLVFAnd node) {
 		super(node);
 	}
-
+	
 	/** Accept the visitor. This method implementation is identical in all SimpleNode descendants. */
 	@Override
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
@@ -53,5 +53,10 @@ public class CLVFAnd extends SimpleNode {
 	@Override
 	public SimpleNode duplicate() {
 		return new CLVFAnd(this);
+	}
+
+	@Override
+	public boolean isBreakable() {
+		return true;
 	}
 }

@@ -45,7 +45,7 @@ public class ClusterUtils {
 	 * @param componentType
 	 * @return true if the given component is a cluster component
 	 */
-	public static boolean isClusterComponent(String componentType) {
+	public static boolean isDataPartitioningComponent(String componentType) {
 		return isClusterGather(componentType)
 				|| isClusterPartition(componentType)
 				|| isClusterRepartition(componentType)

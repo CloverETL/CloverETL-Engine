@@ -521,6 +521,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	}
 
 	@Override
+	public boolean isPartitioningEnabled() {
+		return false;
+	}
+
+	@Override
 	public Edge getParentGraphSourceEdge(int inputPortIndex) {
 		throw new UnsupportedOperationException("subgraphs are not avaible in standalone engine");
 	}

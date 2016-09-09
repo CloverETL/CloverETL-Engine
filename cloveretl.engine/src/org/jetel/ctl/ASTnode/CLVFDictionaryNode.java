@@ -55,4 +55,9 @@ public class CLVFDictionaryNode extends SimpleNode {
 	public SimpleNode duplicate() {
 		return new CLVFDictionaryNode(this);
 	}
+
+	@Override
+	public boolean isBreakable() {
+		return true;
+	}
 }

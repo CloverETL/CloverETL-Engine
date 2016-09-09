@@ -93,4 +93,9 @@ public class CLVFMemberAccessExpression extends SimpleNode {
 	public boolean isWildcard() {
 		return this.isWildcard;
 	}
+	
+	@Override
+	public boolean isBreakable() {
+		return true;
+	}
 }
