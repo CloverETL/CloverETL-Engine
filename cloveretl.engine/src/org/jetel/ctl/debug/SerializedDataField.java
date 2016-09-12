@@ -43,7 +43,7 @@ public class SerializedDataField implements Serializable {
 	public static SerializedDataField fromDataField(DataField field) {
 		SerializedDataField result = new SerializedDataField();
 		result.metadata = field.getMetadata();
-		CloverBuffer buffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE, false);
+		CloverBuffer buffer = CloverBuffer.allocate(Defaults.Record.FIELD_INITIAL_SIZE, false);
 		field.serialize(buffer);
 		byte content[] = new byte[buffer.position()];
 		buffer.flip().get(content);
