@@ -31,6 +31,7 @@ import org.jetel.graph.modelview.MVEdge;
 import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.EqualsUtil;
 import org.jetel.util.ReferenceState;
 
 /**
@@ -106,8 +107,7 @@ public class MetadataPropagationResolver implements Serializable {
 		if (edge.hasImplicitMetadata() || !edge.hasExplicitMetadata()) {
 			MVMetadata oldMetadata = edge.getMetadata();
 			MVMetadata newMetadata = findMetadata(edge);
-			newMetadata = combineMetadata(oldMetadata, newMetadata);
-			if (newMetadata != oldMetadata) {
+			if (!EqualsUtil.areEqual(newMetadata, oldMetadata)) {
 				edge.setImplicitMetadata(newMetadata);
 				return true;
 			}
