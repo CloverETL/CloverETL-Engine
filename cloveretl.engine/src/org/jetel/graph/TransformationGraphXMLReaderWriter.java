@@ -183,8 +183,6 @@ public class TransformationGraphXMLReaderWriter {
 	private final static String EDGE_ELEMENT = "Edge";
 	private final static String METADATA_ELEMENT = "Metadata";
 	public final static String METADATA_GROUP_ELEMENT = "MetadataGroup";
-	public final static String METADATA_GROUP_TYPE_ATTRIBUTE = "type";
-	public final static String METADATA_GROUP_TYPE_IMPLICIT = "implicit";
 	private final static String PHASE_ELEMENT = "Phase";
 	public final static String CONNECTION_ELEMENT = "Connection";
 	public final static String SEQUENCE_ELEMENT = "Sequence";
@@ -227,7 +225,6 @@ public class TransformationGraphXMLReaderWriter {
 	public final static String LARGE_ICON_PATH_ATTRIBUTE = "largeIconPath";
 	public final static String JOB_TYPE_ATTRIBUTE = "nature";
 	public final static String SHOW_COMPONENT_DETAILS_ATTRIBUTE = "showComponentDetails";
-	public final static String PERSISTED_IMPLICIT_METADATA_ATTRIBUTE = "persistedImplicitMetadata";
 	
 	private final static int ALLOCATE_MAP_SIZE=64;
 	/**
@@ -554,21 +551,7 @@ public class TransformationGraphXMLReaderWriter {
 		
 		List<Element> metadataGroupElements = getChildElements(metadataRoot, METADATA_GROUP_ELEMENT);
 		for (Element metadataGroupElement : metadataGroupElements) {
-			if (metadataGroupElement.hasAttribute(METADATA_GROUP_TYPE_ATTRIBUTE)
-					&& METADATA_GROUP_TYPE_IMPLICIT.equals(metadataGroupElement.getAttribute(METADATA_GROUP_TYPE_ATTRIBUTE))) {
-				//load persisted implicit metadata
-				Map<String, Object> persistedImplicitMetadata = new HashMap<>();
-				instantiateMetadata(metadataGroupElement, persistedImplicitMetadata);
-				for (Object piMetadata : persistedImplicitMetadata.values()) {
-					if (piMetadata instanceof DataRecordMetadata) {
-						graph.addPersistedImplicitMetadata((DataRecordMetadata) piMetadata);
-					} else {
-						throwXMLConfigurationException("Persisted implicit metadata cannot be defined as DB stub.");
-					}
-				}
-			} else {
-				instantiateMetadata(metadataGroupElement, metadata);
-			}
+			instantiateMetadata(metadataGroupElement, metadata);
 		}
 	}
 
@@ -747,7 +730,6 @@ public class TransformationGraphXMLReaderWriter {
 		int toPort;
 		String metadataRef;
 		ReferenceState metadataRefState;
-		String persistedImplicitMetadataId;
 		org.jetel.graph.Edge graphEdge;
 		org.jetel.graph.Node writerNode;
 		org.jetel.graph.Node readerNode;
@@ -780,7 +762,6 @@ public class TransformationGraphXMLReaderWriter {
             fastPropagate = attributes.getBoolean("fastPropagate", false);
             metadataRef = attributes.getString("metadataRef", null);
             metadataRefState = ReferenceState.fromString(attributes.getString("metadataRefState", ReferenceState.VALID_REFERENCE.toString()));
-            persistedImplicitMetadataId = attributes.getString(PERSISTED_IMPLICIT_METADATA_ATTRIBUTE, null);
             
 			Object metadataObj = edgeMetadataID != null ? metadata.get(edgeMetadataID) : null;
 			if (metadataObj == null && edgeMetadataID != null) {
@@ -807,16 +788,6 @@ public class TransformationGraphXMLReaderWriter {
 			graphEdge.setDebugSampleData(debugSampleData);
 			graphEdge.setMetadataRef(metadataRef);
 			graphEdge.setMetadataReferenceState(metadataRefState);
-			//persisted implicit metadata
-			if (!StringUtils.isEmpty(persistedImplicitMetadataId)) {
-				DataRecordMetadata persistedImplicitMetadata = graph.getPersistedImplicitMetadata(persistedImplicitMetadataId);
-				if (persistedImplicitMetadata != null) {
-					graphEdge.setPersistedImplicitMetadata(persistedImplicitMetadata);
-				} else {
-					//ignore this error - missing persisted implicit metadata are ignored - validation will be introduced in the future
-					//throwXMLConfigurationException("Can't find persisted implicit metadata ID '" + persistedImplicitMetadataId + "'.");
-				}
-			}
 			// set edge type
 			if (runtimeContext.getExecutionType() == ExecutionType.SINGLE_THREAD_EXECUTION) {
 				//in single thread execution all edges are buffered
