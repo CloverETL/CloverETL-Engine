@@ -70,11 +70,6 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	/** State of the reference to a graph element*/
 	protected ReferenceState metadataRefState;
 	
-	/** Implicit metadata which has been persisted. This metadata is used
-	 * for validation purpose. Calculated implicit metadata must be identical
-	 * with this persisted copy. */
-	protected DataRecordMetadata persistedImplicitMetadata;
-	
     protected boolean debugMode;
     protected EdgeDebugWriter edgeDebugWriter;
     protected long debugMaxRecords;
@@ -234,14 +229,6 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	
 	public void setMetadataReferenceState(ReferenceState refState) {
 		this.metadataRefState = refState;
-	}
-	
-	public DataRecordMetadata getPersistedImplicitMetadata() {
-		return persistedImplicitMetadata;
-	}
-	
-	public void setPersistedImplicitMetadata(DataRecordMetadata persistedImplicitMetadata) {
-		this.persistedImplicitMetadata = persistedImplicitMetadata;
 	}
 	
 	/* (non-Javadoc)
