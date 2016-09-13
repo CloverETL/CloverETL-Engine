@@ -38,6 +38,8 @@ import org.jetel.util.SubgraphUtils;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.string.StringUtils;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * General model wrapper for engine component ({@link Node}).
  * 
@@ -57,8 +59,10 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 	private transient boolean metadataProviderFound = false;
 	private transient MetadataProvider metadataProvider;
 	
-	private transient Map<Integer, MVMetadata> inputMetadataCache;
-	private transient Map<Integer, MVMetadata> outputMetadataCache;
+	@SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
+	private transient Map<Integer, MVMetadata> inputMetadataCache = new HashMap<>();
+	@SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
+	private transient Map<Integer, MVMetadata> outputMetadataCache = new HashMap<>();
 	
 	MVEngineComponent(Node engineComponent, MVGraph parentMVGraph) {
 		super(engineComponent, parentMVGraph);
@@ -72,9 +76,6 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 		for (Entry<Integer, org.jetel.graph.OutputPort> entry : engineComponent.getOutputPorts().entrySet()) {
 			outputEdges.put(entry.getKey(), parentMVGraph.getMVEdge(entry.getValue().getEdge().getId()));
 		}
-
-		inputMetadataCache = new HashMap<>();
-		outputMetadataCache = new HashMap<>();
 	}
 
 	@Override
