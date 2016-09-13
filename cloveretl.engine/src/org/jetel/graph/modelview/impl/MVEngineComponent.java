@@ -57,8 +57,8 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 	private transient boolean metadataProviderFound = false;
 	private transient MetadataProvider metadataProvider;
 	
-	private transient Map<Integer, MVMetadata> inputMetadataCache = new HashMap<>();
-	private transient Map<Integer, MVMetadata> outputMetadataCache = new HashMap<>();
+	private transient Map<Integer, MVMetadata> inputMetadataCache;
+	private transient Map<Integer, MVMetadata> outputMetadataCache;
 	
 	MVEngineComponent(Node engineComponent, MVGraph parentMVGraph) {
 		super(engineComponent, parentMVGraph);
@@ -72,6 +72,9 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 		for (Entry<Integer, org.jetel.graph.OutputPort> entry : engineComponent.getOutputPorts().entrySet()) {
 			outputEdges.put(entry.getKey(), parentMVGraph.getMVEdge(entry.getValue().getEdge().getId()));
 		}
+
+		inputMetadataCache = new HashMap<>();
+		outputMetadataCache = new HashMap<>();
 	}
 
 	@Override
