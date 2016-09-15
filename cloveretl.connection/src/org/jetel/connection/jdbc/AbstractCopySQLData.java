@@ -544,7 +544,6 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 							messages.add("Invalid SQL query. Incompatible types - field " + inMetadata.getField(transMap[i].getFieldJetel()).getName() + ", clover type: " + inMetadata.getDataFieldType(transMap[i].getFieldJetel()).getName() + ", sql type: " + SQLUtil.sqlType2str(pMeta.getParameterType(i + 1)));
 						} else {
 							// MSSQL returns NULL parameter types
-							messages.add("Compatibility of field types could not have been validated (not supported by the driver).");
 							break; // do not check the others
 						}
 					}
@@ -555,7 +554,8 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 		} catch (SQLException ex) {
 			// S1C00 MySQL, 99999 Oracle
 			if ("S1C00".equals(ex.getSQLState()) || "99999".equals(ex.getSQLState())) {
-				messages.add("Compatibility of field types could not have been validated (not supported by the driver).");
+				// see CLO-8801 - Get rid of "Field compatibility cannot be verified warning" (https://bug.javlin.eu/browse/CLO-8801)
+				// messages.add("Compatibility of field types could not have been validated (not supported by the driver).");
 				// 42704 , 42P01 postgre
 			} else if ("42704".equals(ex.getSQLState()) || "42P01".equals(ex.getSQLState())) {
 				messages.add("Table does not exist.");
