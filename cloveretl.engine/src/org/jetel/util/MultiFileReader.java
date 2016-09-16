@@ -624,6 +624,10 @@ public class MultiFileReader {
 		} catch (IOException e) {
 			logger.error("postExecute", e);
 		}
+        
+        if (channelIterator != null) {
+        	channelIterator.postExecute();
+        }
     }
     
     /*
@@ -632,9 +636,15 @@ public class MultiFileReader {
 	 */
     public void free() throws IOException {
     	try {
-			if (isSourceOpen) {
-				parser.free();
-			}
+    		try {
+    			if (channelIterator != null) {
+    				channelIterator.free();
+    			}
+    		} finally {
+    			if (isSourceOpen) {
+    				parser.free();
+    			}
+    		}
     	} catch (Exception e) {
     		logger.error("Failed to release resources orderly", e);
     	}

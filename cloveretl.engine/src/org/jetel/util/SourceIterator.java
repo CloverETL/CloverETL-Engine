@@ -22,13 +22,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.nio.channels.ReadableByteChannel;
+import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.Parser.DataSourceType;
@@ -41,6 +39,8 @@ import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.WcardPattern;
+import org.jetel.util.file.stream.Input;
+import org.jetel.util.file.stream.Wildcards;
 import org.jetel.util.property.PropertyRefResolver;
 
 //TODO: this is work in progress!
@@ -55,8 +55,6 @@ import org.jetel.util.property.PropertyRefResolver;
  */
 public class SourceIterator {
 	
-	private static Log DEFAULT_LOGGER = LogFactory.getLog(SourceIterator.class);
-
 	public static final String DICT_PREFIX = "dict:";
 	public static final String DICT_DISCRETE_SUFFIX = ":" + ProcessingType.DISCRETE;
 	private static final String PORT_PREFIX = "port:";
@@ -67,8 +65,11 @@ public class SourceIterator {
 
 	private String fileURL;
 	private URL contextURL;
-	private Iterator<String> filenameIterator;
+	private DirectoryStream<Input> fileDirectoryStream;
+	private Iterator<Input> fileIterator;
 	private List<String> files;
+
+	private Input currentFile;
 
 	private InputPort inputPort;
 	private ReadableChannelPortIterator portReadingIterator;
@@ -114,6 +115,11 @@ public class SourceIterator {
 		prepareDictionaryIterator();
 	}
 
+	// this should be called in postExecute()
+	private void closeResources() throws Exception {
+		FileUtils.close(fileDirectoryStream);
+	}
+
 	public void preExecute() throws ComponentNotReadyException {
 		// do nothing
 	}
@@ -124,7 +130,7 @@ public class SourceIterator {
 	 * 
 	 */
 	public boolean hasNext() {
-		return filenameIterator.hasNext() || dictionaryIterator.hasNext() ||
+		return fileIterator.hasNext() || dictionaryIterator.hasNext() ||
 			   (portReadingIterator != null && portReadingIterator.hasNext());
 	}
 
@@ -154,8 +160,9 @@ public class SourceIterator {
 		}
 
 		// read from urls
-		if (filenameIterator.hasNext()) {
-			currentSourceName = filenameIterator.next();
+		if (fileIterator.hasNext()) {
+			currentFile = fileIterator.next();
+			currentSourceName = currentFile.getAbsolutePath();
 			currentSourcePosition++;
 
 			// read from dictionary
@@ -168,7 +175,16 @@ public class SourceIterator {
 				return next();
 			}
 			currentSourceName = unificateFileName(currentSourceName);
-			return createDataSource(currentSourceName);
+			
+			try {
+				Object preferredInput = currentFile.getPreferredInput(preferredDataSourceType);
+				if (preferredInput != null) {
+					return preferredInput;
+				}
+				return currentFile.getPreferredInput(DataSourceType.CHANNEL);
+			} catch (IOException e) {
+				throw new JetelException("File is unreachable: " + currentSourceName, e);
+			}
 		}
 		return null;
 	}
@@ -196,6 +212,16 @@ public class SourceIterator {
 	public void postExecute() throws ComponentNotReadyException {
 		currentSourcePosition = 0;
 		currentSourceName = UNKNOWN_SOURCE_NAME;
+		
+		try {
+			closeResources();
+		} catch (Exception e) {
+			throw new ComponentNotReadyException("Failed to release resources", e);
+		}
+	}
+
+	public void free() throws Exception {
+		closeResources();
 	}
 
 	/**
@@ -219,7 +245,8 @@ public class SourceIterator {
 			throw new ComponentNotReadyException("Input port is not defined for '" + files.get(firstPortProtocolPosition) + "'.");
 
 		portProtocolFields = getAndRemoveProtocol(files, PORT_PREFIX, firstPortProtocolPosition);
-		this.filenameIterator = files.iterator();
+        this.fileDirectoryStream = Wildcards.newDirectoryStream(contextURL, fileURL);
+        this.fileIterator = fileDirectoryStream.iterator();
 		
 		isGraphDependentSource = firstPortProtocolPosition == 0 || getFirstProtocolPosition(files, DICT_PREFIX) == 0;
 	}
@@ -280,33 +307,6 @@ public class SourceIterator {
 		return null;
 	}
 	
-	private Object createDataSource(String filename) throws JetelException {
-		Object source = ReadableChannelIterator.getPreferredDataSource(contextURL, filename, preferredDataSourceType);
-		if (source != null) {
-			return source;
-		}
-		
-		return createReadableByteChannel(filename);
-	}
-
-	/**
-	 * Creates readable channel for a file name.
-	 * 
-	 * @param fileName
-	 * @return
-	 * @throws JetelException
-	 */
-	private ReadableByteChannel createReadableByteChannel(String fileName) throws JetelException {
-		DEFAULT_LOGGER.debug("Opening input file " + fileName);
-		try {
-			ReadableByteChannel channel = FileUtils.getReadableChannel(contextURL, fileName);
-			DEFAULT_LOGGER.debug("Reading input file " + fileName);
-			return channel;
-		} catch (IOException e) {
-			throw new JetelException("File is unreachable: " + fileName, e);
-		}
-	}
-
 	/**
 	 * Gets protocol position in file list.
 	 * 

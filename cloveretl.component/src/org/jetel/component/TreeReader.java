@@ -305,6 +305,21 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		}
 	}
 
+	@Override
+	public synchronized void free() {
+		try {
+			if (sourceIterator != null) {
+				try {
+					sourceIterator.free();
+				} catch (Exception e) {
+		    		LOG.error("Failed to release resources", e);
+				}
+			}
+		} finally {
+			super.free();
+		}
+	}
+
 	private void recordProviderReceiverInit() {
 		int portCount = getOutPorts().size();
 		outputRecords = new DataRecord[portCount];
@@ -450,6 +465,10 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
+
+		if (sourceIterator != null) {
+			sourceIterator.postExecute();
+		}
 	}
 
 	@Override

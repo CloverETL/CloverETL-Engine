@@ -20,13 +20,13 @@ package org.jetel.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -45,6 +45,8 @@ import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.WcardPattern;
+import org.jetel.util.file.stream.Input;
+import org.jetel.util.file.stream.Wildcards;
 import org.jetel.util.property.PropertyRefResolver;
 
 /***
@@ -71,7 +73,8 @@ public class ReadableChannelIterator {
 	// all file URLs and a context for URLs.
 	private String fileURL;
 	private URL contextURL;
-	private Iterator<String> filenameItor;
+	private DirectoryStream<Input> fileDirectoryStream;
+	private Iterator<Input> fileIterator;
 	private List<String> files; 
 
 	// input port support
@@ -89,6 +92,7 @@ public class ReadableChannelIterator {
 	// current source name
 	private String currentFileName;
 	
+	private Input currentFile;
 	
 	// true if fileURL contains port or dictionary protocol
 	private boolean isGraphDependentSource;
@@ -132,6 +136,23 @@ public class ReadableChannelIterator {
 		common(true);
 	}
 	
+	// this should be called in postExecute()
+	private void closeResources() throws Exception {
+		FileUtils.close(fileDirectoryStream);
+	}
+	
+	public void free() throws Exception {
+		closeResources();
+	}
+	
+	public void postExecute() throws ComponentNotReadyException {
+		try {
+			closeResources();
+		} catch (Exception e) {
+			throw new ComponentNotReadyException("Failed to release resources", e);
+		}
+	}
+	
 	private void common(boolean resolveAllFileNames) throws ComponentNotReadyException {
 		// charset
 		if (charset == null) charset = DEFAULT_CHARSET;
@@ -161,6 +182,11 @@ public class ReadableChannelIterator {
 	 */
 	public void reset() {
 		try {
+			try {
+				closeResources();
+			} catch (Exception e) {
+				defaultLogger.error("Failed to close resources", e);
+			}
 			init();
 		} catch (ComponentNotReadyException e) {
 			defaultLogger.error(e); //never happened
@@ -187,7 +213,8 @@ public class ReadableChannelIterator {
 			throw new ComponentNotReadyException("Input port is not defined for '" + files.get(firstPortProtocolPosition) + "'.");
 		
         portProtocolFields = getAndRemoveProtocol(files, PORT, firstPortProtocolPosition);
-        this.filenameItor = files.iterator();
+        this.fileDirectoryStream = Wildcards.newDirectoryStream(contextURL, fileURL);
+        this.fileIterator = fileDirectoryStream.iterator();
 	}
 
 	/**
@@ -211,7 +238,7 @@ public class ReadableChannelIterator {
 	 * TODO to make hasData method for the InputPort that waits for new data if the edge is empty. Is it good solution???
 	 */
 	public boolean hasNext() {
-		return dictionaryReadingIterator.hasNext() || filenameItor.hasNext() || (bInputPort && portReadingIterator.hasNext());
+		return dictionaryReadingIterator.hasNext() || fileIterator.hasNext() || (bInputPort && portReadingIterator.hasNext());
 	}
 
 	/**
@@ -245,8 +272,9 @@ public class ReadableChannelIterator {
 		}
 		
 		// read from urls
-		if (filenameItor.hasNext()) {
-			currentFileName = filenameItor.next();
+		if (fileIterator.hasNext()) {
+			currentFile = fileIterator.next();
+			currentFileName = currentFile.getAbsolutePath();
 			currentPortProtocolPosition++;
 			
 			// read from dictionary
@@ -256,16 +284,18 @@ public class ReadableChannelIterator {
 			}
 			currentFileName = unificateFileName(contextURL, currentFileName);
 			
-			Object preferredDataSource = getPreferredDataSource(contextURL, currentFileName, preferredDataSourceType);
-			if (preferredDataSource != null) {
-				return preferredDataSource;
+			try {
+				defaultLogger.debug("Opening input file " + currentFileName);
+				Object preferredInput = currentFile.getPreferredInput(preferredDataSourceType);
+				if (preferredInput != null) {
+					return preferredInput;
+				}
+				preferredInput = currentFile.getPreferredInput(DataSourceType.CHANNEL);
+				defaultLogger.debug("Reading input file " + currentFileName);
+				return preferredInput;
+			} catch (IOException e) {
+				throw new JetelException("File is unreachable: " + currentFileName, e);
 			}
-			
-			if (preferredDataSourceType == DataSourceType.STREAM) {
-				return createInputStream(currentFileName);
-			}
-			
-			return createReadableByteChannel(currentFileName);
 		}
 		return null;
 	}
@@ -356,42 +386,6 @@ public class ReadableChannelIterator {
 		if (portReadingIterator != null) portReadingIterator.blankRead();
 	}
 	
-	/**
-	 * Creates input stream for a file name.
-	 * 
-	 * @param fileName
-	 * @return
-	 * @throws JetelException
-	 */
-	private InputStream createInputStream(String fileName) throws JetelException {
-		defaultLogger.debug("Opening input file " + fileName);
-		try {
-			InputStream iStream = FileUtils.getInputStream(contextURL, fileName);
-			defaultLogger.debug("Reading input file " + fileName);
-			return iStream;
-		} catch (IOException e) {
-			throw new JetelException("File is unreachable: " + fileName, e);
-		}
-	}
-	
-	/**
-	 * Creates readable channel for a file name.
-	 * 
-	 * @param fileName
-	 * @return
-	 * @throws JetelException
-	 */
-	private ReadableByteChannel createReadableByteChannel(String fileName) throws JetelException {
-		defaultLogger.debug("Opening input file " + fileName);
-		try {
-			ReadableByteChannel channel = FileUtils.getReadableChannel(contextURL, fileName);
-			defaultLogger.debug("Reading input file " + fileName);
-			return channel;
-		} catch (IOException e) {
-			throw new JetelException("File is unreachable: " + fileName, e);
-		}
-	}
-
 	/**
 	 * Gets protocol position in file list.
 	 * @param files
