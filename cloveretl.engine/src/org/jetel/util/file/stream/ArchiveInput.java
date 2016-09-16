@@ -66,7 +66,7 @@ class ArchiveInput implements Input {
 			InputStream wrapper = wrap(is);
 			return (type == DataSourceType.STREAM) ? wrapper : Channels.newChannel(wrapper);
 		default:
-			throw new IllegalArgumentException();
+			return null;
 		}
 	}
 	
