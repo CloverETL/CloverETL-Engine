@@ -30,7 +30,7 @@ import org.jetel.ctl.ASTnode.SimpleNode;
  */
 public class BooleanExpressionCondition extends CtlExpressionCondition {
 
-	private volatile Object value;
+	private Object value;
 	
 	public BooleanExpressionCondition(String expression) {
 		super(expression);
@@ -43,6 +43,10 @@ public class BooleanExpressionCondition extends CtlExpressionCondition {
 
 	@Override
 	public void evaluate(DebugTransformLangExecutor executor, SimpleNode context) throws TransformLangExecutorRuntimeException {
-		this.value = executor.executeExpressionOutsideDebug(getExpression(executor, context), EXPRESSION_TIMEOUT_NS);
+		Object value = executor.evaluateExpression(getExpression(executor, context), EXPRESSION_TIMEOUT_NS);
+		if (!Boolean.class.isInstance(value)) {
+			throw new IllegalArgumentException("Breakpoint condition result is not a true/false value: " + value);
+		}
+		this.value = value;
 	}
 }

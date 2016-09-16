@@ -283,7 +283,17 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 		}
 	}
 	
-	public Object executeExpressionOutsideDebug(List<Node> expression, long timeoutNs) {
+	public Object evaluateExpression(List<Node> expression, long timeoutNs) {
+		DebugStack originalStack = debugStack;
+		try {
+			setStack(originalStack.createCopyUpToFrame(originalStack.getFunctionCall(originalStack.getCurrentFunctionCallIndex())));
+			return executeExpressionOutsideDebug(expression, timeoutNs);
+		} finally {
+			setStack(originalStack);
+		}
+	}
+	
+	private Object executeExpressionOutsideDebug(List<Node> expression, long timeoutNs) {
 		try {
 			debugDisabled = true;
 			if (timeoutNs > 0) {

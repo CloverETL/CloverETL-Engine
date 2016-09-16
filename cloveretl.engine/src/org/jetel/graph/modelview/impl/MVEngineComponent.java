@@ -18,6 +18,7 @@
  */
 package org.jetel.graph.modelview.impl;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,11 +31,14 @@ import org.jetel.graph.modelview.MVEdge;
 import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.graph.modelview.MVSubgraph;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.MetadataRepository;
 import org.jetel.util.SubgraphUtils;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.string.StringUtils;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * General model wrapper for engine component ({@link Node}).
@@ -51,6 +55,14 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 	private Map<Integer, MVEdge> inputEdges;
 
 	private Map<Integer, MVEdge> outputEdges;
+	
+	private transient boolean metadataProviderFound = false;
+	private transient MetadataProvider metadataProvider;
+	
+	@SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
+	private transient Map<Integer, MVMetadata> inputMetadataCache = new HashMap<>();
+	@SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
+	private transient Map<Integer, MVMetadata> outputMetadataCache = new HashMap<>();
 	
 	MVEngineComponent(Node engineComponent, MVGraph parentMVGraph) {
 		super(engineComponent, parentMVGraph);
@@ -94,14 +106,17 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 	/**
 	 * @return metadata provider based on engine component
 	 */
-	private static MetadataProvider getMetadataProvider(Node engineComponent) {
-		MetadataProvider metadataProvider = null;
-		if (engineComponent instanceof MetadataProvider) {
-			metadataProvider = (MetadataProvider) engineComponent;
-		} else if (engineComponent != null && !StringUtils.isEmpty(engineComponent.getDescriptor().getMetadataProvider())) {
-			metadataProvider = ClassLoaderUtils.loadClassInstance(MetadataProvider.class, engineComponent.getDescriptor().getMetadataProvider(), engineComponent);
-			if (metadataProvider instanceof ComponentMetadataProvider) {
-				((ComponentMetadataProvider) metadataProvider).setComponent(engineComponent);
+	private MetadataProvider getMetadataProvider() {
+		if (!metadataProviderFound) {
+			metadataProviderFound = true;
+			Node engineComponent = getModel();
+			if (engineComponent instanceof MetadataProvider) {
+				metadataProvider = (MetadataProvider) engineComponent;
+			} else if (engineComponent != null && !StringUtils.isEmpty(engineComponent.getDescriptor().getMetadataProvider())) {
+				metadataProvider = ClassLoaderUtils.loadClassInstance(MetadataProvider.class, engineComponent.getDescriptor().getMetadataProvider(), engineComponent);
+				if (metadataProvider instanceof ComponentMetadataProvider) {
+					((ComponentMetadataProvider) metadataProvider).setComponent(engineComponent);
+				}
 			}
 		}
 		return metadataProvider;
@@ -110,11 +125,18 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 	@Override
 	public MVMetadata getDefaultOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		//first let's try to find default metadata dynamically from component instance
-		MetadataProvider metadataProvider = getMetadataProvider(getModel());
+		MetadataProvider metadataProvider = getMetadataProvider();
 		if (metadataProvider != null) {
 			MVMetadata metadata = metadataProvider.getOutputMetadata(portIndex, metadataPropagationResolver);
 			if (metadata != null) {
-				return metadata;
+				//resulted metadata are compared with cache - the cached value is returned if both metadata seems to identical
+				MVMetadata oldMetadata = outputMetadataCache.get(portIndex);
+				if (oldMetadata != null && equalsMetadata(metadata, oldMetadata)) {
+					return oldMetadata;
+				} else {
+					outputMetadataCache.put(portIndex, metadata);
+					return metadata;
+				}
 			}
 		}
 
@@ -126,11 +148,18 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 	@Override
 	public MVMetadata getDefaultInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		//first let's try to find default metadata dynamically from component instance
-		MetadataProvider metadataProvider = getMetadataProvider(getModel());
+		MetadataProvider metadataProvider = getMetadataProvider();
 		if (metadataProvider != null) {
 			MVMetadata metadata = metadataProvider.getInputMetadata(portIndex, metadataPropagationResolver);
 			if (metadata != null) {
-				return metadata;
+				//resulted metadata are compared with cache - the cached value is returned if both metadata seems to identical
+				MVMetadata oldMetadata = inputMetadataCache.get(portIndex);
+				if (oldMetadata != null && equalsMetadata(metadata, oldMetadata)) {
+					return oldMetadata;
+				} else {
+					outputMetadataCache.put(portIndex, metadata);
+					return metadata;
+				}
 			}
 		}
 		//no dynamic metadata found, let's use statical metadata from component descriptor 
@@ -178,5 +207,43 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 			throw new IllegalStateException();
 		}
 	}
-	
+
+	/**
+	 * @param metadata1
+	 * @param metadata2
+	 * @return true if both metadata are equal - just major attributes are compared (id, names, fields count, types)
+	 */
+	private static boolean equalsMetadata(MVMetadata metadata1, MVMetadata metadata2) {
+		if (!metadata1.getId().equals(metadata2.getId())) {
+			return false;
+		}
+		if (metadata1.getPriority() != metadata2.getPriority()) {
+			return false;
+		}
+		
+		DataRecordMetadata dataRecordMetadata1 = metadata1.getModel();
+		DataRecordMetadata dataRecordMetadata2 = metadata2.getModel();
+
+		if (dataRecordMetadata1.getNumFields() != dataRecordMetadata2.getNumFields()) {
+			return false;
+		}
+		
+		if (!dataRecordMetadata1.getName().equals(dataRecordMetadata2.getName())) {
+			return false;
+		}
+
+		for (int i = 0; i < dataRecordMetadata1.getNumFields(); i++) {
+			DataFieldMetadata dataFieldMetadata1 = dataRecordMetadata1.getField(i);
+			DataFieldMetadata dataFieldMetadata2 = dataRecordMetadata2.getField(i);
+			if (!dataFieldMetadata1.getName().equals(dataFieldMetadata2.getName())) {
+				return false;
+			}
+			if (!dataFieldMetadata1.getDataType().equals(dataFieldMetadata2.getDataType())) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 }

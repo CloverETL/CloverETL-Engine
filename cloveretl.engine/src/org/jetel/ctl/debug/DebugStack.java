@@ -26,7 +26,6 @@ import org.jetel.ctl.Stack;
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
 import org.jetel.ctl.data.Scope;
 import org.jetel.ctl.data.TLType;
-import org.jetel.exception.JetelRuntimeException;
 
 /**
  * @author dpavlis (info@cloveretl.com)
@@ -207,7 +206,7 @@ public class DebugStack extends Stack {
 	public DebugStack createCopyUpToFrame(FunctionCallFrame callFrame) {
 		
 		if (!this.callStack.contains(callFrame)) {
-			throw new JetelRuntimeException(String.format("Call stack does not contain given call frame."));
+			throw new IllegalArgumentException("Call stack does not contain given call frame");
 		}
 		
 		final int frameIndex = callStack.indexOf(callFrame);

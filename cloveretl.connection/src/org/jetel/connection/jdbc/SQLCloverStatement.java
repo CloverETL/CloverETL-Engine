@@ -337,7 +337,12 @@ public class SQLCloverStatement {
 				status.add(new ConfigurationProblem(message, Severity.WARNING, element, Priority.NORMAL));
 			}
 		}
-		if (outMetadata == null) return status;
+		if (outMetadata == null) {
+			if (cloverOutputFields != null) {
+				status.add(new ConfigurationProblem("The RETURNING statement has been used in query but the second output port isn't connected!", Severity.ERROR, element, Priority.NORMAL));
+			}
+			return status;
+		}
 		DataRecord outRecord = DataRecordFactory.newRecord(outMetadata);
 		try {
 			prepareMapping(outRecord);
