@@ -47,17 +47,20 @@ public class XmlFormatter extends TreeFormatter {
 
 	private OutputStream outStream;
 
+	private final boolean writeXmlHeader;
+
 	/**
 	 * @param mapping
 	 * @param omitNewLines
 	 * @param charset
 	 * @param version
 	 */
-	public XmlFormatter(WritableMapping mapping, int maxPortIndex, boolean omitNewLines, String charset, String version) {
+	public XmlFormatter(WritableMapping mapping, int maxPortIndex, boolean omitNewLines, String charset, String version, boolean writeXmlHeader) {
 		super(mapping, maxPortIndex);
 		this.charset = charset;
 		this.version = version;
 		this.omitNewLines = omitNewLines;
+		this.writeXmlHeader = writeXmlHeader;
 	}
 	
 	@Override
@@ -80,7 +83,7 @@ public class XmlFormatter extends TreeFormatter {
 			throw new IllegalArgumentException("parameter " + outputDataTarget + " is not instance of WritableByteChannel");
 		}
 		
-		writer = new XmlWriter(outStream, charset, version, omitNewLines);
+		writer = new XmlWriter(outStream, charset, version, omitNewLines, writeXmlHeader);
 	}
 
 	@Override

@@ -46,6 +46,7 @@ public class ExtXmlWriter extends TreeWriter {
 	public static final String XML_OMIT_NEW_LINES_ATTRIBUTE = "omitNewLines";
 	public static final String XML_SCHEMA_URL_ATTRIBUTE = "xmlSchemaURL";
 	private static final String XML_CREATE_EMPTY_FILES_ATTRIBUTE = "createEmptyFiles";
+	public static final String XML_WRITE_XML_HEADER = "writeXmlHeader";
 
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ExtXmlWriter writer = null;
@@ -57,6 +58,7 @@ public class ExtXmlWriter extends TreeWriter {
 			writer.setMkDir(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
 		}
 		writer.setOmitNewLines(xattribs.getBoolean(XML_OMIT_NEW_LINES_ATTRIBUTE, false));
+		writer.setWriteXmlHeader(xattribs.getBoolean(XML_WRITE_XML_HEADER, true));
 		writer.setCreateEmptyFiles(xattribs.getBoolean(XML_CREATE_EMPTY_FILES_ATTRIBUTE, true));
 
 		return writer;
@@ -65,6 +67,7 @@ public class ExtXmlWriter extends TreeWriter {
 	private boolean mkDir;
 	private boolean omitNewLines;
 	private boolean createEmptyFiles;
+	private boolean writeXmlHeader;
 
 	public ExtXmlWriter(String id) {
 		super(id);
@@ -99,6 +102,10 @@ public class ExtXmlWriter extends TreeWriter {
     
 	@Override
 	protected BaseTreeFormatterProvider createFormatterProvider(WritableMapping engineMapping, int maxPortIndex) {
-		return new XmlFormatterProvider(engineMapping, maxPortIndex, omitNewLines, charset, designMapping.getVersion());
+		return new XmlFormatterProvider(engineMapping, maxPortIndex, omitNewLines, charset, designMapping.getVersion(), writeXmlHeader);
+	}
+
+	public void setWriteXmlHeader(boolean writeXmlHeader) {
+		this.writeXmlHeader = writeXmlHeader;
 	}
 }
