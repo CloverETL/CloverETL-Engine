@@ -1,66 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Graph author="User" created="Tue Aug 02 16:07:04 CEST 2016" guiVersion="4.4.0.M1" id="1470149454547" licenseCode="CLP1DJAVLI21013179BY" name="crm_migration" showComponentDetails="true">
 <Global>
-<MetadataGroup id="" name="Implicit metadata">
-<Metadata id="__dynamic_metadata_SALESFORCE_WRITE_ATTACHMENTS_salesforce">
-<Record fieldDelimiter="|" name="attachment_SalesforceResult" recordDelimiter="\n" type="delimited">
-<Field name="id" trim="true" type="integer"/>
-<Field name="file_name" type="string"/>
-<Field name="attachment_name" type="string"/>
-<Field name="account_name" type="string"/>
-<Field name="account_sf_id" type="string"/>
-<Field name="Error" type="string"/>
-</Record>
-</Metadata>
-<Metadata id="__dynamic_metadata_SALESFORCE_WRITE_ATTACHMENTS_salesforce1">
-<Record fieldDelimiter="|" name="attachment_SalesforceResult" recordDelimiter="\n" type="delimited">
-<Field name="id" trim="true" type="integer"/>
-<Field name="file_name" type="string"/>
-<Field name="attachment_name" type="string"/>
-<Field name="account_name" type="string"/>
-<Field name="account_sf_id" type="string"/>
-<Field name="ObjectId" type="string"/>
-</Record>
-</Metadata>
-<Metadata id="__dynamic_metadata_SALESFORCE_BULK_WRITE_CONTACTS_salesforce">
-<Record fieldDelimiter="|" name="contacts_to_insert_SalesforceResult" recordDelimiter="\n" type="delimited">
-<Field name="id" trim="true" type="integer"/>
-<Field name="name" type="string"/>
-<Field name="email" type="string"/>
-<Field name="phone" type="string"/>
-<Field eofAsDelimiter="true" name="account_sf_id" trim="true" type="string"/>
-<Field name="account_name" type="string"/>
-<Field name="Error" type="string"/>
-</Record>
-</Metadata>
-<Metadata id="__dynamic_metadata_SALESFORCE_BULK_WRITE_CONTACTS_salesforce1">
-<Record fieldDelimiter="|" name="contacts_to_insert_SalesforceResult" recordDelimiter="\n" type="delimited">
-<Field name="id" trim="true" type="integer"/>
-<Field name="name" type="string"/>
-<Field name="email" type="string"/>
-<Field name="phone" type="string"/>
-<Field eofAsDelimiter="true" name="account_sf_id" trim="true" type="string"/>
-<Field name="account_name" type="string"/>
-<Field name="ObjectId" type="string"/>
-</Record>
-</Metadata>
-<Metadata id="__dynamic_metadata_SALESFORCE_BULK_WRITE_ACCOUNTS_salesforce">
-<Record fieldDelimiter="," label="accounts.csv" name="import_accounts_SalesforceResult" recordDelimiter="\n" type="delimited">
-<Field name="id" trim="true" type="integer"/>
-<Field name="name" type="string"/>
-<Field eofAsDelimiter="true" name="country" type="string"/>
-<Field name="ObjectId" type="string"/>
-</Record>
-</Metadata>
-<Metadata id="__dynamic_metadata_SALESFORCE_BULK_WRITE_ACCOUNTS_salesforce1">
-<Record fieldDelimiter="," label="accounts.csv" name="import_accounts_SalesforceResult" recordDelimiter="\n" type="delimited">
-<Field name="id" trim="true" type="integer"/>
-<Field name="name" type="string"/>
-<Field eofAsDelimiter="true" name="country" type="string"/>
-<Field name="Error" type="string"/>
-</Record>
-</Metadata>
-</MetadataGroup>
 <Metadata id="Metadata4">
 <Record fieldDelimiter="|" name="attachment" recordDelimiter="\n" type="delimited">
 <Field name="id" trim="true" type="integer"/>
@@ -111,13 +51,13 @@
 <RichTextNote backgroundColor="DAD8C9" folded="false" fontSize="large" height="298" id="Note2" textColor="444444" width="1014" x="26" y="32">
 <attr name="text"><![CDATA[h3. Migrate Accounts and Contacts (with relationships) to Salesforce within a single transformation
 
-In this CRM migration example we start with two datasets ([Accounts|element://ACCOUNTS] and [Contacts|element://CONTACTS]) that are linked by foreign keys exported from a source CRM. We need to migrate those datasets to Salesforce, retaining the relationships using Salesforce ObjectId's.
+In this CRM migration example we start with three datasets ([Accounts|element://ACCOUNTS],  [Contacts|element://CONTACTS] and [Attachments|element://ATTACHMENTS]) that are linked by foreign keys exported from a source CRM. We need to migrate those datasets to Salesforce, retaining the relationships using Salesforce ObjectId's. The attachments show how to upload binary files to Salesforce, e.g. purchase orders.
 
 You will see you can do this in one go, using CloverETL's capability to pass new ObjectId's from one writer to another down the stream.
 
 See also the [SalesforceRead|open://BasicExamples/graph/SalesforceRead.grf] example.
 
-*Important:* this example uploads 100 new Accounts and 200 new Contacts to the Salesforce account. These new objects are tagged - the accounts have their Website field set to "CloverETL", the contacts have their Department field set to "CloverETL". You can use these tags later to find and delete the objects to clean-up after running this example.]]></attr>
+*Important:* this example uploads 100 new Accounts and 200 new Contacts to the Salesforce account. These new objects are tagged - the accounts have their Website field set to "CloverETL", the contacts have their Department field set to "CloverETL". You can use these tags later to find and delete the objects to clean-up after running this example. Deleting the Accounts automatically deletes their Attachments.]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="208" id="Note4" textColor="444444" width="585" x="226" y="693">
 <attr name="text"><![CDATA[h3. Writing Accounts
