@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="User" created="Wed Apr 02 17:07:51 CEST 2014" guiVersion="0.0.0.devel" id="1396451422194" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 10:15:23 CET 2016" modifiedBy="jansedlacek" name="Default graph name" nature="subgraph" revision="1.8" showComponentDetails="true">
+<Graph author="User" created="Wed Apr 02 17:07:51 CEST 2014" guiVersion="4.4.0.M1" id="1396451422194" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 10:15:23 CET 2016" modifiedBy="jansedlacek" name="Default graph name" nature="subgraph" revision="1.8" showComponentDetails="true">
 <Global>
 <inputPorts>
 <singlePort connected="true" name="0"/>
@@ -127,9 +127,9 @@ function integer generate() {
 integer counter = 1;
 // Transforms input record into output record.
 function integer transform() {
-	$0.currency = $0.currency;
-	$0.rate = $0.rate;
-	$0.id = counter++;
+	$out.0.currency = $in.0.currency;
+	$out.0.rate = $in.0.rate;
+	$out.0.id = counter++;
 
 	return 0;
 }
@@ -158,7 +158,7 @@ function integer transform() {
 
 // Transforms input record into output record.
 function integer transform() {
-	 $0.* = $0.*;
+	$out.0.* = $in.0.*;
 
 	return 0;
 }

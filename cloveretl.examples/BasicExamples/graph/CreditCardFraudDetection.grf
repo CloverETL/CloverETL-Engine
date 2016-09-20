@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Jul 21 09:24:12 CEST 2010" guiVersion="0.0.0.devel" id="1279697274740" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Feb 23 13:28:39 CET 2016" modifiedBy="jansedlacek" name="CreditCards" revision="1.130" showComponentDetails="true">
+<Graph author="avackova" created="Wed Jul 21 09:24:12 CEST 2010" guiVersion="4.4.0.M1" id="1279697274740" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Feb 23 13:28:39 CET 2016" modifiedBy="jansedlacek" name="CreditCards" revision="1.130" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/Transactions.fmt" id="Metadata6"/>
 <Metadata id="Metadata7" previewAttachment="${DATAIN_DIR}/customers.csv" previewAttachmentCharset="ISO-8859-1">
@@ -143,9 +143,9 @@ function integer transform() {
 integer counter = 1;
 // Transforms input record into output record.
 function integer transform() {
-	$0.currency = $0.currency;
-	$0.rate = $0.rate;
-	$0.id = counter++;
+	$out.0.currency = $in.0.currency;
+	$out.0.rate = $in.0.rate;
+	$out.0.id = counter++;
 
 	return 0;
 }
@@ -174,7 +174,7 @@ function integer transform() {
 
 // Transforms input record into output record.
 function integer transform() {
-	 $0.* = $0.*;
+	 $out.0.* = $in.0.*;
 
 	return 0;
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="0.0.0.devel" id="1280312940927" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Feb 23 14:07:20 CET 2016" modifiedBy="jansedlacek" name="graphFilters_Lookups" revision="1.45" showComponentDetails="true">
+<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="4.4.0.M1" id="1280312940927" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Feb 23 14:07:20 CET 2016" modifiedBy="jansedlacek" name="graphFilters_Lookups" revision="1.45" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/orders.fmt" id="Metadata1"/>
@@ -111,13 +111,13 @@ For each record:
 customers matched_record;
 // Transforms input record into output record.
 function integer transform() {
-	matched_record = lookup(customers_look).get($OrderID);
-		$0.orderid = $0.OrderID;
-	    $0.required_date = $0.RequiredDate;
-		$0.shipped_date = $0.ShippedDate;
-		$0.customer_firstname = matched_record.firstname;
-		$0.customer_lastname = matched_record.lastname;
-		$0.customer_country = matched_record.country;
+	matched_record = lookup(customers_look).get($in.0.OrderID);
+		$out.0.orderid = $in.0.OrderID;
+	    $out.0.required_date = $in.0.RequiredDate;
+		$out.0.shipped_date = $in.0.ShippedDate;
+		$out.0.customer_firstname = matched_record.firstname;
+		$out.0.customer_lastname = matched_record.lastname;
+		$out.0.customer_country = matched_record.country;
 
 		return 0;
 	}
