@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.Parser.DataSourceType;
@@ -55,6 +57,8 @@ import org.jetel.util.property.PropertyRefResolver;
  */
 public class SourceIterator {
 	
+	private static Log DEFAULT_LOGGER = LogFactory.getLog(SourceIterator.class);
+
 	public static final String DICT_PREFIX = "dict:";
 	public static final String DICT_DISCRETE_SUFFIX = ":" + ProcessingType.DISCRETE;
 	private static final String PORT_PREFIX = "port:";
@@ -65,7 +69,7 @@ public class SourceIterator {
 
 	private String fileURL;
 	private URL contextURL;
-	private DirectoryStream<Input> fileDirectoryStream;
+	private DirectoryStream<Input> directoryStream;
 	private Iterator<Input> fileIterator;
 	private List<String> files;
 
@@ -117,7 +121,7 @@ public class SourceIterator {
 
 	// this should be called in postExecute()
 	private void closeResources() throws Exception {
-		FileUtils.close(fileDirectoryStream);
+		FileUtils.close(directoryStream);
 	}
 
 	public void preExecute() throws ComponentNotReadyException {
@@ -219,9 +223,36 @@ public class SourceIterator {
 			throw new ComponentNotReadyException("Failed to release resources", e);
 		}
 	}
+	
+	/**
+	 * Utility method.
+	 * 
+	 * @param sourceIterator
+	 * @throws ComponentNotReadyException
+	 */
+	public static void postExecute(SourceIterator sourceIterator) throws ComponentNotReadyException {
+		if (sourceIterator != null) {
+			sourceIterator.postExecute();
+		}
+	}
 
-	public void free() throws Exception {
-		closeResources();
+	public void free() {
+		try {
+			closeResources();
+		} catch (Exception ex) {
+			DEFAULT_LOGGER.error("Failed to release resources", ex);
+		}
+	}
+	
+	/**
+	 * Utility method.
+	 * 
+	 * @param sourceIterator
+	 */
+	public static void free(SourceIterator sourceIterator) {
+		if (sourceIterator != null) {
+			sourceIterator.free();
+		}
 	}
 
 	/**
@@ -245,8 +276,8 @@ public class SourceIterator {
 			throw new ComponentNotReadyException("Input port is not defined for '" + files.get(firstPortProtocolPosition) + "'.");
 
 		portProtocolFields = getAndRemoveProtocol(files, PORT_PREFIX, firstPortProtocolPosition);
-        this.fileDirectoryStream = Wildcards.newDirectoryStream(contextURL, fileURL);
-        this.fileIterator = fileDirectoryStream.iterator();
+        this.directoryStream = Wildcards.newDirectoryStream(contextURL, fileURL);
+        this.fileIterator = directoryStream.iterator();
 		
 		isGraphDependentSource = firstPortProtocolPosition == 0 || getFirstProtocolPosition(files, DICT_PREFIX) == 0;
 	}
