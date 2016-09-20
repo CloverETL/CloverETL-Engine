@@ -20,6 +20,8 @@ package org.jetel.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -40,8 +42,12 @@ import org.jetel.data.Defaults;
 import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.graph.ContextProvider;
 import org.jetel.graph.InputPort;
+import org.jetel.graph.Node;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.dictionary.Dictionary;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.WcardPattern;
@@ -126,9 +132,28 @@ public class ReadableChannelIterator {
 		this.contextURL = contextURL;
 		
 		try {
-			this.origin = inputPort.getWriter().getId() + " from " + inputPort.getWriter().getGraph().getRuntimeContext().getJobUrl();
+			Node node = inputPort != null ? inputPort.getEdge().getReader() : ContextProvider.getNode();
+			if (node != null) {
+				this.origin = node.getId();
+				TransformationGraph graph = node.getGraph();
+				if (graph != null) {
+					GraphRuntimeContext context = node.getGraph().getRuntimeContext();
+					if (context != null) {
+						this.origin += " from " + node.getGraph().getRuntimeContext().getJobUrl();
+					}
+				}
+			} else {
+				try (
+					StringWriter sw = new StringWriter();
+					PrintWriter pw = new PrintWriter(sw);
+				) {
+					new Exception().printStackTrace(pw);
+					pw.close();
+					this.origin = sw.toString();
+				}
+			}
 		} catch (Exception ex) {
-			defaultLogger.error(ex);
+			defaultLogger.error("", ex);
 		}
 	}
 
