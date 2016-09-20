@@ -80,7 +80,7 @@ public class ReadableChannelIterator implements Closeable {
 	// all file URLs and a context for URLs.
 	private String fileURL;
 	private URL contextURL;
-	private DirectoryStream<Input> fileDirectoryStream;
+	private DirectoryStream<Input> directoryStream;
 	private Iterator<Input> fileIterator;
 	private List<String> files; 
 
@@ -181,7 +181,7 @@ public class ReadableChannelIterator implements Closeable {
 	@Override
 	public void close() throws IOException {
 		closed = true;
-		FileUtils.close(fileDirectoryStream);
+		FileUtils.close(directoryStream);
 	}
 	
 	@Override
@@ -290,8 +290,8 @@ public class ReadableChannelIterator implements Closeable {
 			throw new ComponentNotReadyException("Input port is not defined for '" + files.get(firstPortProtocolPosition) + "'.");
 		
         portProtocolFields = getAndRemoveProtocol(files, PORT, firstPortProtocolPosition);
-        this.fileDirectoryStream = Wildcards.newDirectoryStream(contextURL, fileURL);
-        this.fileIterator = fileDirectoryStream.iterator();
+        this.directoryStream = Wildcards.newDirectoryStream(contextURL, fileURL);
+        this.fileIterator = directoryStream.iterator();
 	}
 
 	/**
