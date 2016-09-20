@@ -509,6 +509,10 @@ public class ReadableChannelIterator implements Closeable {
 		return files.iterator();
 	}
 	
+	public Iterator<Input> getInputIterator() {
+		return fileIterator;
+	}
+	
 	/**
 	 * Returns current field name.
 	 */
