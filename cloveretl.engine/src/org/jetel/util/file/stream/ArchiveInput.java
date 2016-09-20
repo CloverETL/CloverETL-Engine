@@ -18,11 +18,11 @@
  */
 package org.jetel.util.file.stream;
 
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.Channels;
 
+import org.apache.commons.io.input.CloseShieldInputStream;
 import org.jetel.data.parser.Parser.DataSourceType;
 
 class ArchiveInput implements Input {
@@ -47,15 +47,7 @@ class ArchiveInput implements Input {
 	 * @throws IOException
 	 */
 	protected InputStream wrap(InputStream is) throws IOException {
-		InputStream wrapper = new FilterInputStream(is) {
-
-			@Override
-			public void close() throws IOException {
-				// do nothing, the InputStream is owned by the DirectoryStream
-			}
-			
-		};
-		return wrapper;
+		return new CloseShieldInputStream(is);
 	}
 
 	@Override
