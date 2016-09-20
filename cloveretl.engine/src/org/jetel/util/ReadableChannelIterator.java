@@ -18,6 +18,7 @@
  */
 package org.jetel.util;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -63,7 +64,7 @@ import org.jetel.util.property.PropertyRefResolver;
  * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
  *         (c) Javlin, a.s. (www.javlin.eu)
  */
-public class ReadableChannelIterator {
+public class ReadableChannelIterator implements Closeable {
 	
 	// logger
     private static Log defaultLogger = LogFactory.getLog(ReadableChannelIterator.class);
@@ -177,7 +178,8 @@ public class ReadableChannelIterator {
 	}
 	
 	// this should be called in postExecute()
-	private void closeResources() throws Exception {
+	@Override
+	public void close() throws IOException {
 		closed = true;
 		FileUtils.close(fileDirectoryStream);
 	}
@@ -192,7 +194,7 @@ public class ReadableChannelIterator {
 
 	public void free() {
 		try {
-			closeResources();
+			close();
 		} catch (Exception ex) {
 			defaultLogger.error("Failed to release resources", ex);
 		}
@@ -211,7 +213,7 @@ public class ReadableChannelIterator {
 	
 	public void postExecute() throws ComponentNotReadyException {
 		try {
-			closeResources();
+			close();
 		} catch (Exception e) {
 			throw new ComponentNotReadyException("Failed to release resources", e);
 		}
@@ -258,7 +260,7 @@ public class ReadableChannelIterator {
 	public void reset() {
 		try {
 			try {
-				closeResources();
+				close();
 			} catch (Exception e) {
 				defaultLogger.error("Failed to close resources", e);
 			}

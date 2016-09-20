@@ -18,6 +18,7 @@
  */
 package org.jetel.util;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -55,7 +56,7 @@ import org.jetel.util.property.PropertyRefResolver;
  * 
  * @created 19.10.2011
  */
-public class SourceIterator {
+public class SourceIterator implements Closeable {
 	
 	private static Log DEFAULT_LOGGER = LogFactory.getLog(SourceIterator.class);
 
@@ -120,7 +121,8 @@ public class SourceIterator {
 	}
 
 	// this should be called in postExecute()
-	private void closeResources() throws Exception {
+	@Override
+	public void close() throws IOException {
 		FileUtils.close(directoryStream);
 	}
 
@@ -218,7 +220,7 @@ public class SourceIterator {
 		currentSourceName = UNKNOWN_SOURCE_NAME;
 		
 		try {
-			closeResources();
+			close();
 		} catch (Exception e) {
 			throw new ComponentNotReadyException("Failed to release resources", e);
 		}
@@ -238,7 +240,7 @@ public class SourceIterator {
 
 	public void free() {
 		try {
-			closeResources();
+			close();
 		} catch (Exception ex) {
 			DEFAULT_LOGGER.error("Failed to release resources", ex);
 		}
