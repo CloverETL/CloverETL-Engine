@@ -625,9 +625,7 @@ public class MultiFileReader {
 			logger.error("postExecute", e);
 		}
         
-        if (channelIterator != null) {
-        	channelIterator.postExecute();
-        }
+        ReadableChannelIterator.postExecute(channelIterator);
     }
     
     /*
@@ -637,9 +635,7 @@ public class MultiFileReader {
     public void free() throws IOException {
     	try {
     		try {
-    			if (channelIterator != null) {
-    				channelIterator.free();
-    			}
+    			ReadableChannelIterator.free(channelIterator);
     		} finally {
     			if (isSourceOpen) {
     				parser.free();

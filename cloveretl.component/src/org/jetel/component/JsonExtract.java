@@ -335,6 +335,15 @@ public class JsonExtract extends Node {
 	}
 
 	@Override
+	public synchronized void free() {
+		try {
+			ReadableChannelIterator.free(readableChannelIterator);
+		} finally {
+			super.free();
+		}
+	}
+
+	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 
@@ -398,10 +407,14 @@ public class JsonExtract extends Node {
 	
 	@Override
     public void postExecute() throws ComponentNotReadyException {
-    	super.postExecute();
-    	if (m_inputSource != null) {
-    		org.apache.commons.io.IOUtils.closeQuietly(m_inputSource.getByteStream());
-    	}
+		try {
+			super.postExecute();
+			if (m_inputSource != null) {
+				org.apache.commons.io.IOUtils.closeQuietly(m_inputSource.getByteStream());
+			}
+		} finally {
+			ReadableChannelIterator.postExecute(readableChannelIterator);
+		}
     }
 
 	/**

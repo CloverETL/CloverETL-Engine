@@ -390,41 +390,49 @@ public class DBExecute extends Node {
 
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
-		super.postExecute();
-		if (errorLog != null){
-			try {
-				errorLog.flush();
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e);
-			}
-			try {
-				errorLog.close();
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e);
-			}
-		}
 		try {
-			if (callableStatement != null) {
-				for (SQLCloverCallableStatement statement : callableStatement) {
-					statement.close(); 
+			super.postExecute();
+			if (errorLog != null){
+				try {
+					errorLog.flush();
+				} catch (IOException e) {
+					throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e);
+				}
+				try {
+					errorLog.close();
+				} catch (IOException e) {
+					throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e);
 				}
 			}
-			if (sqlStatement != null) {
-				sqlStatement.close();
+			try {
+				if (callableStatement != null) {
+					for (SQLCloverCallableStatement statement : callableStatement) {
+						statement.close(); 
+					}
+				}
+				if (sqlStatement != null) {
+					sqlStatement.close();
+				}
+			} catch (SQLException e) {
+				logger.warn("SQLException when closing statement", e);
 			}
-		} catch (SQLException e) {
-			logger.warn("SQLException when closing statement", e);
-		}
-		// CLO-6100: do not close the connection, as we expect the graph to perform commit
-		if (transaction != InTransaction.NEVER_COMMIT) {
-			dbConnection.closeConnection(getId(), procedureCall ? OperationType.CALL : OperationType.WRITE);
+			// CLO-6100: do not close the connection, as we expect the graph to perform commit
+			if (transaction != InTransaction.NEVER_COMMIT) {
+				dbConnection.closeConnection(getId(), procedureCall ? OperationType.CALL : OperationType.WRITE);
+			}
+		} finally {
+			ReadableChannelIterator.postExecute(channelIterator);
 		}
 	}
 	
 	@Override
 	public synchronized void free() {
-		if (sqlScriptParser != null) {
-			sqlScriptParser.free();
+		try {
+			if (sqlScriptParser != null) {
+				sqlScriptParser.free();
+			}
+		} finally {
+			ReadableChannelIterator.free(channelIterator);
 		}
 		super.free();
 	}

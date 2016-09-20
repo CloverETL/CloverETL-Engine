@@ -161,7 +161,12 @@ public class ReadableChannelIterator {
 	 * Checks this class for the first using.
 	 */
 	public void checkConfig() throws ComponentNotReadyException {
-		common(false); // CLO-5399
+		try {
+			common(false); // CLO-5399
+		} finally {
+			// release resources
+			free(); // we assume the iterator will be re-initialized
+		}
 	}
 
 	/**
@@ -185,8 +190,23 @@ public class ReadableChannelIterator {
 		}
 	}
 
-	public void free() throws Exception {
-		closeResources();
+	public void free() {
+		try {
+			closeResources();
+		} catch (Exception ex) {
+			defaultLogger.error("Failed to release resources", ex);
+		}
+	}
+	
+	/**
+	 * Utility method to avoid null checking.
+	 * 
+	 * @param readableChannelIterator
+	 */
+	public static void free(ReadableChannelIterator readableChannelIterator) {
+		if (readableChannelIterator != null) {
+			readableChannelIterator.free();
+		}
 	}
 	
 	public void postExecute() throws ComponentNotReadyException {
@@ -194,6 +214,17 @@ public class ReadableChannelIterator {
 			closeResources();
 		} catch (Exception e) {
 			throw new ComponentNotReadyException("Failed to release resources", e);
+		}
+	}
+	
+	/**
+	 * Utility method to avoid null checking.
+	 * 
+	 * @param readableChannelIterator
+	 */
+	public static void postExecute(ReadableChannelIterator readableChannelIterator) throws ComponentNotReadyException {
+		if (readableChannelIterator != null) {
+			readableChannelIterator.postExecute();
 		}
 	}
 	
