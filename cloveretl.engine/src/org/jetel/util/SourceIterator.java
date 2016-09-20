@@ -21,6 +21,8 @@ package org.jetel.util;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.nio.file.DirectoryStream;
@@ -37,8 +39,12 @@ import org.jetel.enums.ProcessingType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
+import org.jetel.graph.ContextProvider;
 import org.jetel.graph.InputPort;
+import org.jetel.graph.Node;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.dictionary.Dictionary;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.WcardPattern;
@@ -98,10 +104,39 @@ public class SourceIterator implements Closeable {
 	// CLO-6632:
 	private DataSourceType preferredDataSourceType = DataSourceType.CHANNEL;
 
+	private String origin;
+	
+	private volatile boolean closed = false;
+
 	public SourceIterator(InputPort inputPort, URL contextURL, String fileURL) {
 		this.inputPort = inputPort;
 		this.fileURL = fileURL;
 		this.contextURL = contextURL;
+	
+		try {
+			Node node = inputPort != null ? inputPort.getEdge().getReader() : ContextProvider.getNode();
+			if (node != null) {
+				this.origin = node.getId();
+				TransformationGraph graph = node.getGraph();
+				if (graph != null) {
+					GraphRuntimeContext context = node.getGraph().getRuntimeContext();
+					if (context != null) {
+						this.origin += " from " + node.getGraph().getRuntimeContext().getJobUrl();
+					}
+				}
+			} else {
+				try (
+					StringWriter sw = new StringWriter();
+					PrintWriter pw = new PrintWriter(sw);
+				) {
+					new Exception().printStackTrace(pw);
+					pw.close();
+					this.origin = sw.toString();
+				}
+			}
+		} catch (Exception ex) {
+			DEFAULT_LOGGER.error("", ex);
+		}
 	}
 
 	public void checkConfig(ConfigurationStatus status) throws ComponentNotReadyException {
@@ -235,6 +270,14 @@ public class SourceIterator implements Closeable {
 	public static void postExecute(SourceIterator sourceIterator) throws ComponentNotReadyException {
 		if (sourceIterator != null) {
 			sourceIterator.postExecute();
+		}
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+		if (!closed) {
+			DEFAULT_LOGGER.error("Resource leak: ReadableChannelIterator created by " + origin + " was not closed");
 		}
 	}
 
