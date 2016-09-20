@@ -108,6 +108,10 @@ public class ReadableChannelIterator {
 	private int firstDictProtocolPosition;
 	private int currentPortProtocolPosition;
 	private List<String> portProtocolFields;
+	
+	private String origin;
+	
+	private volatile boolean closed = false;
 
 	/**
 	 * Constructor.
@@ -120,6 +124,12 @@ public class ReadableChannelIterator {
 		this.inputPort = inputPort;
 		this.fileURL = fileURL;
 		this.contextURL = contextURL;
+		
+		try {
+			this.origin = inputPort.getWriter().getId() + " from " + inputPort.getWriter().getGraph().getRuntimeContext().getJobUrl();
+		} catch (Exception ex) {
+			defaultLogger.error(ex);
+		}
 	}
 
 	/**
@@ -138,9 +148,18 @@ public class ReadableChannelIterator {
 	
 	// this should be called in postExecute()
 	private void closeResources() throws Exception {
+		closed = true;
 		FileUtils.close(fileDirectoryStream);
 	}
 	
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+		if (!closed) {
+			defaultLogger.error("Resource leak: ReadableChannelIterator created by " + origin + " was not closed");
+		}
+	}
+
 	public void free() throws Exception {
 		closeResources();
 	}
