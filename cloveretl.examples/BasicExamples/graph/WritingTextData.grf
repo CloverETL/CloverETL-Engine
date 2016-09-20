@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="lucie" created="Mon Jul 26 05:37:30 CEST 2010" guiVersion="0.0.0.devel" id="1280121426438" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 09:51:49 CET 2016" modifiedBy="jansedlacek" name="graphWritingTextData" revision="1.59" showComponentDetails="true">
+<Graph author="lucie" created="Mon Jul 26 05:37:30 CEST 2010" guiVersion="4.4.0.M1" id="1280121426438" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 09:51:49 CET 2016" modifiedBy="jansedlacek" name="graphWritingTextData" revision="1.59" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/customers_short.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
@@ -129,17 +129,17 @@ function void postExecute() {
 
 // Transforms input record into output record.
 function integer transform() {
-	$0.customerid = $0.customerid;
-	$0.firstname = $0.firstname;
-	$0.lastname = $0.lastname;
-	$0.city = $0.city;
-	$0.state = $0.state;
-	$0.country = $0.country;
-	$0.username = $0.username;
-	$0.password = $0.password;
-	$0.age = $0.age;
-	$0.income = $0.income;
-	$0.gender = $0.gender;
+	$out.0.customerid = $in.0.customerid;
+	$out.0.firstname = $in.0.firstname;
+	$out.0.lastname = $in.0.lastname;
+	$out.0.city = $in.0.city;
+	$out.0.state = $in.0.state;
+	$out.0.country = $in.0.country;
+	$out.0.username = $in.0.username;
+	$out.0.password = $in.0.password;
+	$out.0.age = $in.0.age;
+	$out.0.income = $in.0.income;
+	$out.0.gender = $in.0.gender;
 
 	return 0;
 }
