@@ -323,6 +323,7 @@ public class SourceIterator implements Closeable {
 		portProtocolFields = getAndRemoveProtocol(files, PORT_PREFIX, firstPortProtocolPosition);
         this.directoryStream = Wildcards.newDirectoryStream(contextURL, fileURL);
         this.fileIterator = directoryStream.iterator();
+        closed = false;
 		
 		isGraphDependentSource = firstPortProtocolPosition == 0 || getFirstProtocolPosition(files, DICT_PREFIX) == 0;
 	}

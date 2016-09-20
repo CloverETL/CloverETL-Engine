@@ -291,6 +291,7 @@ public class ReadableChannelIterator implements Closeable {
 		
         portProtocolFields = getAndRemoveProtocol(files, PORT, firstPortProtocolPosition);
         this.directoryStream = Wildcards.newDirectoryStream(contextURL, fileURL);
+        closed = false;
         this.fileIterator = directoryStream.iterator();
 	}
 
