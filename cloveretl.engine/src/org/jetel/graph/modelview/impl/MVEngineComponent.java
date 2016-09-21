@@ -157,7 +157,7 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 				if (oldMetadata != null && equalsMetadata(metadata, oldMetadata)) {
 					return oldMetadata;
 				} else {
-					outputMetadataCache.put(portIndex, metadata);
+					inputMetadataCache.put(portIndex, metadata);
 					return metadata;
 				}
 			}
