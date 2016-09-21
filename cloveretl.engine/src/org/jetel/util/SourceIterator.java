@@ -115,6 +115,7 @@ public class SourceIterator implements Closeable {
 	
 		try {
 			Node node = inputPort != null ? inputPort.getEdge().getReader() : ContextProvider.getNode();
+			this.origin = "";
 			if (node != null) {
 				this.origin = node.getId();
 				TransformationGraph graph = node.getGraph();
@@ -124,15 +125,14 @@ public class SourceIterator implements Closeable {
 						this.origin += " from " + node.getGraph().getRuntimeContext().getJobUrl();
 					}
 				}
-			} else {
-				try (
-					StringWriter sw = new StringWriter();
-					PrintWriter pw = new PrintWriter(sw);
-				) {
-					new Exception().printStackTrace(pw);
-					pw.close();
-					this.origin = sw.toString();
-				}
+			}
+			try (
+				StringWriter sw = new StringWriter();
+				PrintWriter pw = new PrintWriter(sw);
+			) {
+				new Exception().printStackTrace(pw);
+				pw.close();
+				this.origin += sw.toString();
 			}
 		} catch (Exception ex) {
 			DEFAULT_LOGGER.error("", ex);
