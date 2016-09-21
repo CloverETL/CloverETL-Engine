@@ -158,6 +158,7 @@ public class SourceIterator implements Closeable {
 	// this should be called in postExecute()
 	@Override
 	public void close() throws IOException {
+		closed = true;
 		FileUtils.close(directoryStream);
 	}
 
