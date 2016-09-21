@@ -277,7 +277,7 @@ public class SourceIterator implements Closeable {
 	protected void finalize() throws Throwable {
 		super.finalize();
 		if (!closed) {
-			DEFAULT_LOGGER.error("Resource leak: ReadableChannelIterator created by " + origin + " was not closed");
+			DEFAULT_LOGGER.error("Resource leak: SourceIterator created by " + origin + " was not closed");
 		}
 	}
 
