@@ -135,6 +135,10 @@ public class XmlParserFactory {
 		public DocumentBuilder getDocumentBuilder() {
 			return documentBuilder;
 		}
+		
+		public DocumentBuilderFactory getDocumentBuilderFactory() {
+			return documentBuilderFactory;
+		}
 	}
 	
 	/**
@@ -156,7 +160,7 @@ public class XmlParserFactory {
 		private DocumentBuilderFactory createDocumentBuilderFactory() {
 			DocumentBuilderFactory result = DocumentBuilderFactory.newInstance();
 			result.setNamespaceAware(namespaceAware);
-			result.setCoalescing(true);
+			result.setCoalescing(coalescing);
 			return result;
 		}
 		
