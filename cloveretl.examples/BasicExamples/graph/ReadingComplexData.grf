@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="krivanekm" created="Fri May 20 11:52:48 CEST 2011" guiVersion="0.0.0.devel" id="1305887240084" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Feb 23 15:57:21 CET 2016" modifiedBy="jansedlacek" name="PackageDelivery" revision="1.80" showComponentDetails="true">
+<Graph author="krivanekm" created="Fri May 20 11:52:48 CEST 2011" guiVersion="4.4.0.M1" id="1305887240084" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Feb 23 15:57:21 CET 2016" modifiedBy="jansedlacek" name="PackageDelivery" revision="1.80" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="in_batch" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -95,7 +95,7 @@ Check if the total value of shipments plus the total value of charges matches th
 <Phase number="0">
 <Node aggregateKey="stationCode;batchId" enabled="enabled" guiName="Sum Shipments" guiX="260" guiY="195" id="AGGREGATE0" mapping="$stationCode:=$stationCode;$batchId:=$batchId;$aggregateValue:=sum($baseValue);" sorted="false" type="AGGREGATE"/>
 <Node aggregateKey="stationCode;batchId" enabled="enabled" guiName="Sum Charges" guiX="260" guiY="303" id="AGGREGATE1" mapping="$stationCode:=$stationCode;$batchId:=$batchId;$aggregateValue:=sum($chargeValue);" sorted="false" type="AGGREGATE"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/Logistics_in.txt" guiName="ComplexDataReader" guiX="34" guiY="151" id="COMPLEX_DATA_READER0" selectorProperties="*Batch|3=5&#13;&#10;*Batch|2=5&#13;&#10;*Charge|3=3&#13;&#10;*Station|3=4&#13;&#10;*Charge|2=3&#13;&#10;*Shipment|3=2&#13;&#10;*Station|2=4&#13;&#10;*Shipment|2=2&#13;&#10;" stateMetadata="Metadata0:station&#10;Metadata1:batch&#10;Metadata2:shipment&#10;Metadata3:charge&#10;:to-station&#10;:to-batch" type="COMPLEX_DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/Logistics_in.txt" guiName="ComplexDataReader" guiX="34" guiY="151" id="COMPLEX_DATA_READER0" selectorProperties="*Charge|4_2=3&#13;&#10;*Batch|7_3=5&#13;&#10;*Station|2_2=4&#13;&#10;*Shipment|0_2=2&#13;&#10;*Batch|6_2=5&#13;&#10;*Charge|5_3=3&#13;&#10;*Station|3_3=4&#13;&#10;*Shipment|1_3=2&#13;&#10;" stateMetadata="Metadata0:station&#10;Metadata1:batch&#10;Metadata2:shipment&#10;Metadata3:charge&#10;:to-station&#10;:to-batch" type="COMPLEX_DATA_READER">
 <attr name="guiDescription"><![CDATA[Reading non-homogenous data with a state automaton and a selector. The automaton detects if the number of records does not match the header.]]></attr>
 <attr name="transformCode"><![CDATA[//#CTL2:COMPILE
 
@@ -116,10 +116,10 @@ function integer finalState(integer lastState) {
 function integer nextState_0() {
 	counter0++;
 	counter1 = 0;
-	if ($0.batchCount > 0) {
+	if ($in.0.batchCount > 0) {
 		return 1;
 	}
-	if ($0.batchCount == 0) {
+	if ($in.0.batchCount == 0) {
 		return 0;
 	}
 	return -1;
@@ -136,20 +136,20 @@ function integer nextOutput_0(integer seq) {
 function integer nextState_1() {
 	counter1++;
 	counter2 = 0;
-	if ($1.shipmentCount > 0) {
+	if ($in.1.shipmentCount > 0) {
 		return 2;
 	}
-	if (counter1 < $0.batchCount) {
+	if (counter1 < $in.0.batchCount) {
 		return 1;
 	}
-	if (counter1 == $0.batchCount) {
+	if (counter1 == $in.0.batchCount) {
 		return 0;
 	}
 	return -1;
 }
 function integer nextOutput_1_0() {
-	$0.* = $1.*;
-	$0.stationCode = $0.stationCode;
+	$out.0.* = $in.1.*;
+	$out.0.stationCode = $in.0.stationCode;
 	return 0;
 }
 function integer nextOutput_1_default(integer seq) {
@@ -164,15 +164,15 @@ function integer nextOutput_1(integer seq) {
 
 function integer nextState_2() {
 	counter2++;
-	if (counter2 > $1.shipmentCount) {
+	if (counter2 > $in.1.shipmentCount) {
 		return -1;
 	}
 	return ALL;
 }
 function integer nextOutput_2_0() {
-	$1.* = $2.*;
-	$1.stationCode = $0.stationCode;
-	$1.batchId = $1.batchId;
+	$out.1.* = $in.2.*;
+	$out.1.stationCode = $in.0.stationCode;
+	$out.1.batchId = $in.1.batchId;
 	return 1;
 }
 function integer nextOutput_2_default(integer seq) {
@@ -190,9 +190,9 @@ function integer nextState_3() {
 	return ALL;
 }
 function integer nextOutput_3_0() {
-	$2.* = $3.*;
-	$2.stationCode = $0.stationCode;
-	$2.batchId = $1.batchId;
+	$out.2.* = $in.3.*;
+	$out.2.stationCode = $in.0.stationCode;
+	$out.2.batchId = $in.1.batchId;
 	return 2;
 }
 function integer nextOutput_3_default(integer seq) {
@@ -207,7 +207,7 @@ function integer nextOutput_3(integer seq) {
 
 function integer nextState_4() {
 	counter4++;
-	if (counter1 < $0.batchCount || counter2 < $1.shipmentCount) {
+	if (counter1 < $in.0.batchCount || counter2 < $in.1.shipmentCount) {
 		return -1;
 	}
 	return 0;
@@ -223,7 +223,7 @@ function integer nextOutput_4(integer seq) {
 
 function integer nextState_5() {
 	counter5++;
-	if (counter2 < $1.shipmentCount) {
+	if (counter2 < $in.1.shipmentCount) {
 		return -1;
 	}
 	return 1;
@@ -272,12 +272,12 @@ $0.totalValue == $0.aggregateValue]]></attr>
 
 // Transforms input record into output record.
 function integer transform() {
-	$0.stationCode = $0.stationCode;
-	$0.batchId = $0.batchId;
-	$0.shipmentCount = $0.shipmentCount;
-	$0.totalValue = $0.totalValue;
-	$0.currencyCode = $0.currencyCode;
-	$0.aggregateValue = ($1.aggregateValue != null ? $1.aggregateValue : 0) + ($2.aggregateValue != null ? $2.aggregateValue : 0);
+	$out.0.stationCode = $in.0.stationCode;
+	$out.0.batchId = $in.0.batchId;
+	$out.0.shipmentCount = $in.0.shipmentCount;
+	$out.0.totalValue = $in.0.totalValue;
+	$out.0.currencyCode = $in.0.currencyCode;
+	$out.0.aggregateValue = ($in.1.aggregateValue != null ? $in.1.aggregateValue : 0) + ($in.2.aggregateValue != null ? $in.2.aggregateValue : 0);
 
 	return ALL;
 }

@@ -310,7 +310,7 @@ function integer transform() {
 
 // Returns the number of the output port where the input record will be sent.
 function integer getOutputPort() {
-	if ( $0.region == 1 ){
+	if ( $in.0.region == 1 ){
 		return 0;
 	} else {
 		return 1;

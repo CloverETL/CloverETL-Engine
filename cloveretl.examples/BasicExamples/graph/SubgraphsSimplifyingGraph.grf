@@ -109,12 +109,12 @@ _./data-in/eurofxref-daily.xml_]]></attr>
 
 // Transforms input record into output record.
 function integer transform() {
-	$0.transaction_id = $0.TransactionId;
-	$0.customer_id = $1.Id;
-	$0.amount = $0.Amount;
-	$0.currency = $0.CurrencyId;
-	$0.customer_last_name = $1.LastName;
-	$0.customer_first_name = $1.FirstName;
+	$out.0.transaction_id = $in.0.TransactionId;
+	$out.0.customer_id = $in.1.Id;
+	$out.0.amount = $in.0.Amount;
+	$out.0.currency = $in.0.CurrencyId;
+	$out.0.customer_last_name = $in.1.LastName;
+	$out.0.customer_first_name = $in.1.FirstName;
 
 	return 0;
 }
