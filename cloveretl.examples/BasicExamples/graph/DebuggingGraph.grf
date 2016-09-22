@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="0.0.0.devel" id="1280331230946" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Feb 23 13:55:35 CET 2016" modifiedBy="jansedlacek" name="CreatingFixedMixedCust" revision="1.129" showComponentDetails="true">
+<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="4.4.0.M1" id="1280331230946" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Feb 23 13:55:35 CET 2016" modifiedBy="jansedlacek" name="CreatingFixedMixedCust" revision="1.129" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/customers_fixed.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata1"/>
@@ -81,14 +81,14 @@ function integer transform() {
 	counter++;
 	boolean location = false;
 	double random_number = random();
-	printErr(counter + ": random() function returns random_number = " + random_number + " representing customerID = " + $customerID, location);
+	printErr(counter + ": random() function returns random_number = " + random_number + " representing customerID = " + $in.0.customerID, location);
 	if (random_number < ${sample}) {
 	printLog(info,"You get record number " + counter);
-		$0.* =$0.*;
+		$out.0.* = $in.0.*;
 		return 0;
 // random records are sent to output port 0
 	}
-	else $1.*=$0.*;
+	else $out.1.*= $in.0.*;
 	return 1;
 // the other records are sent to output port 1	
 }
@@ -132,28 +132,28 @@ integer count=0;
 // Transforms input record into output record.
 function integer transform() {
 	count++;
-	$0.customerID = $0.customerid;
-	$0.firstname = $0.firstname;
-	$0.lastname = $0.lastname;
-	$0.address1 = $0.address1;
-	$0.address2 = $0.address2;
-	$0.city = $0.city;
-	$0.state = $0.state;
-	$0.zip = $0.zip;
-	$0.country = $0.country;
-	$0.region = $0.region;
-	$0.email = $0.email;
-	$0.phone = $0.phone;
-	$0.creditcardtype = $0.creditcardtype;
-	$0.creditcard = $0.creditcard;
-	$0.creditcardexpiration = $0.creditcardexpiration;
-	$0.username = $0.username;
-	$0.password = $0.password;
-	$0.age = $0.age;
-	$0.income = $0.income;
-	if (($0.gender != "M") && ($0.gender != "F"))
-	raiseError($0.gender + " is not a valid gender. Go to record No. " + count + " and replace with 'M' or 'F'.");
-	else $0.gender = $0.gender;
+	$out.0.customerID = $in.0.customerid;
+	$out.0.firstname = $in.0.firstname;
+	$out.0.lastname = $in.0.lastname;
+	$out.0.address1 = $in.0.address1;
+	$out.0.address2 = $in.0.address2;
+	$out.0.city = $in.0.city;
+	$out.0.state = $in.0.state;
+	$out.0.zip = $in.0.zip;
+	$out.0.country = $in.0.country;
+	$out.0.region = $in.0.region;
+	$out.0.email = $in.0.email;
+	$out.0.phone = $in.0.phone;
+	$out.0.creditcardtype = $in.0.creditcardtype;
+	$out.0.creditcard = $in.0.creditcard;
+	$out.0.creditcardexpiration = $in.0.creditcardexpiration;
+	$out.0.username = $in.0.username;
+	$out.0.password = $in.0.password;
+	$out.0.age = $in.0.age;
+	$out.0.income = $in.0.income;
+	if (($in.0.gender != "M") && ($in.0.gender != "F"))
+	raiseError($in.0.gender + " is not a valid gender. Go to record No. " + count + " and replace with 'M' or 'F'.");
+	else $out.0.gender = $in.0.gender;
 
 	return 0;
 }
