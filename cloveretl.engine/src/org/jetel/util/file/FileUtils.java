@@ -64,6 +64,8 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.input.CloseShieldInputStream;
+import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.jetel.component.fileoperation.CloverURI;
 import org.jetel.component.fileoperation.FileManager;
 import org.jetel.component.fileoperation.Operation;
@@ -584,7 +586,7 @@ public class FileUtils {
     	
 		// std input (console)
 		if (input.equals(STD_CONSOLE)) {
-			return System.in;
+			return new CloseShieldInputStream(System.in);
 		}
 
         // get inner source
@@ -1464,7 +1466,7 @@ public class FileUtils {
     	
 		// std input (console)
 		if (isConsole(input)) {
-			return Channels.newOutputStream(new SystemOutByteChannel());
+			return new CloseShieldOutputStream(System.out);
 		}
 		
 		// get inner source
