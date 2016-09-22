@@ -47,7 +47,6 @@ import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
-import org.jetel.util.file.WcardPattern;
 import org.jetel.util.file.stream.Input;
 import org.jetel.util.file.stream.Wildcards;
 import org.jetel.util.property.PropertyRefResolver;
@@ -78,7 +77,6 @@ public class SourceIterator implements Closeable {
 	private URL contextURL;
 	private DirectoryStream<Input> directoryStream;
 	private Iterator<Input> fileIterator;
-	private List<String> files;
 
 	private Input currentFile;
 
@@ -307,26 +305,19 @@ public class SourceIterator implements Closeable {
 	 * @throws ComponentNotReadyException
 	 */
 	private void prepareSourceIterator() throws ComponentNotReadyException {
-		WcardPattern pat = new WcardPattern();
-		pat.setParent(contextURL);
-		pat.addPattern(fileURL, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
-		pat.resolveAllNames(true); // FIXME
-		try {
-			files = pat.filenames();
-		} catch (IOException e) {
-			throw new ComponentNotReadyException("Can't prepare file list from wildcard URL", e);
+		String[] parts = fileURL.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+
+		firstPortProtocolPosition = getFirstProtocolPosition(parts, PORT_PREFIX);
+		if (firstPortProtocolPosition >= 0 && inputPort == null) {
+			throw new ComponentNotReadyException("Input port is not defined for '" + parts[firstPortProtocolPosition] + "'.");
 		}
 
-		firstPortProtocolPosition = getFirstProtocolPosition(files, PORT_PREFIX);
-		if (firstPortProtocolPosition >= 0 && inputPort == null)
-			throw new ComponentNotReadyException("Input port is not defined for '" + files.get(firstPortProtocolPosition) + "'.");
-
-		portProtocolFields = getAndRemoveProtocol(files, PORT_PREFIX, firstPortProtocolPosition);
-        this.directoryStream = Wildcards.newDirectoryStream(contextURL, fileURL, null);
+		portProtocolFields = getElementsByProtocol(parts, PORT_PREFIX, firstPortProtocolPosition);
+        this.directoryStream = Wildcards.newDirectoryStream(contextURL, fileURL, null); // FIXME CheckConfigFilter
         this.fileIterator = directoryStream.iterator();
         closed = false;
 		
-		isGraphDependentSource = firstPortProtocolPosition == 0 || getFirstProtocolPosition(files, DICT_PREFIX) == 0;
+		isGraphDependentSource = firstPortProtocolPosition == 0 || getFirstProtocolPosition(parts, DICT_PREFIX) == 0;
 	}
 
 	private void preparePortIterator() throws ComponentNotReadyException {
@@ -392,9 +383,9 @@ public class SourceIterator implements Closeable {
 	 * @param protocol
 	 * @return
 	 */
-	private int getFirstProtocolPosition(List<String> files, String protocol) {
-		for (int i = 0; i < files.size(); i++) {
-			if (files.get(i).indexOf(protocol) == 0) {
+	private int getFirstProtocolPosition(String[] files, String protocol) {
+		for (int i = 0; i < files.length; i++) {
+			if (files[i].indexOf(protocol) == 0) {
 				// if (getMostInnerString(files.get(i)).indexOf(protocol) == 0) {
 				return i;
 			}
@@ -410,28 +401,19 @@ public class SourceIterator implements Closeable {
 	 * @param start
 	 * @return
 	 */
-	private List<String> getAndRemoveProtocol(List<String> files, String protocol, int start) {
-		ArrayList<String> result = new ArrayList<String>();
-		if (start < 0)
+	private List<String> getElementsByProtocol(String[] files, String protocol, int start) {
+		List<String> result = new ArrayList<String>();
+		if (start < 0) {
 			return result;
+		}
 		String file;
-		for (int i = start; i < files.size(); i++) {
-			file = files.get(i);
+		for (int i = start; i < files.length; i++) {
+			file = files[i];
 			if (file.indexOf(protocol) == 0) {
-				files.remove(i);
-				i--;
 				result.add(file);
 			}
 		}
 		return result;
-	}
-
-	public Iterator<String> getFileIterator() {
-		return files.iterator();
-	}
-	
-	public boolean isSingleSource() {
-		return files.size() <= 1;
 	}
 
 	public String getCurrentFileName() {
