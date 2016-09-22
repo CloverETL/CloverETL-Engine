@@ -54,6 +54,7 @@ import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.WcardPattern;
 import org.jetel.util.file.stream.Input;
 import org.jetel.util.file.stream.Wildcards;
+import org.jetel.util.file.stream.Wildcards.CheckConfigFilter;
 import org.jetel.util.property.PropertyRefResolver;
 
 /***
@@ -290,7 +291,7 @@ public class ReadableChannelIterator implements Closeable {
 			throw new ComponentNotReadyException("Input port is not defined for '" + files.get(firstPortProtocolPosition) + "'.");
 		
         portProtocolFields = getAndRemoveProtocol(files, PORT, firstPortProtocolPosition);
-        this.directoryStream = Wildcards.newDirectoryStream(contextURL, fileURL);
+        this.directoryStream = Wildcards.newDirectoryStream(contextURL, fileURL, resolveAllNames ? null : CheckConfigFilter.FILTER);
         closed = false;
         this.fileIterator = directoryStream.iterator();
 	}

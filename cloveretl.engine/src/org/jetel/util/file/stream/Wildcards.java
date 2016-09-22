@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 
 import org.jetel.data.Defaults;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.SandboxUrlUtils;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -43,13 +44,44 @@ public class Wildcards {
 	// Regex substitutions for wildcards. 
 	private final static String[] REGEX_SUBST = {".*", "."};
 
-	public static DirectoryStream<Input> newDirectoryStream(URL contextUrl, String[] patterns) {
-		WildcardDirectoryStream stream = new WildcardDirectoryStream(contextUrl, Arrays.asList(patterns));
+	public static class AcceptAllFilter<T> implements DirectoryStream.Filter<T> {
+		private AcceptAllFilter() {
+		}
+
+		@Override
+		public boolean accept(T entry) {
+			return true;
+		}
+
+		private static final AcceptAllFilter<Object> FILTER = new AcceptAllFilter<Object>();
+		
+		@SuppressWarnings("unchecked")
+		public static final <T> AcceptAllFilter<T> getInstance() {
+			return (AcceptAllFilter<T>) FILTER;
+		}
+	}
+	
+	public static class CheckConfigFilter implements DirectoryStream.Filter<URL> {
+		
+		protected CheckConfigFilter() {
+		}
+		
+		@Override
+		public boolean accept(URL url) throws IOException {
+			return SandboxUrlUtils.isSandboxUrl(url) || !FileUtils.isServerURL(url);
+		}
+		
+		public static final CheckConfigFilter FILTER = new CheckConfigFilter();
+		
+	}
+
+	public static DirectoryStream<Input> newDirectoryStream(URL contextUrl, String[] patterns, DirectoryStream.Filter<URL> filter) {
+		WildcardDirectoryStream stream = new WildcardDirectoryStream(contextUrl, Arrays.asList(patterns), filter);
 		return new CompoundDirectoryStream(stream);
 	}
 
-	public static DirectoryStream<Input> newDirectoryStream(URL contextUrl, String patterns) {
-		return newDirectoryStream(contextUrl, patterns.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX));
+	public static DirectoryStream<Input> newDirectoryStream(URL contextUrl, String patterns, DirectoryStream.Filter<URL> filter) {
+		return newDirectoryStream(contextUrl, patterns.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX), filter);
 	}
 	
 	private static class CompoundDirectoryStream extends AbstractDirectoryStream<Input> {

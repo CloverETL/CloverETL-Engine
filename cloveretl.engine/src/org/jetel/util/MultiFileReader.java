@@ -32,14 +32,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.Parser;
+import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.CloverBuffer;
-import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.stream.Input;
 import org.jetel.util.property.PropertyRefResolver;
 
 /**
@@ -165,31 +166,15 @@ public class MultiFileReader {
         checkChannelIterator();
         
 		String fName = null; 
-		Iterator<String> fit = channelIterator.getFileIterator();
+		Iterator<Input> fit = channelIterator.getInputIterator();
 		boolean closeLastStream = false;
 		while (fit.hasNext()) {
 			try {
-				fName = fit.next();
-				if (fName.equals(STD_IN)) continue;
-				if (fName.startsWith("dict:")) continue; //this test has to be here, since an involuntary warning is caused
-				String mostInnerFile = FileURLParser.getMostInnerAddress(fName);
-				URL url = FileUtils.getFileURL(contextURL, mostInnerFile);
-				if (FileUtils.isServerURL(url)) {
-					//FileUtils.checkServer(url); //this is very long operation
-					continue;
-				}
-				if (FileURLParser.isArchiveURL(fName)) {
-					// test if the archive file exists
-					// getReadableChannel is too long for archives
-					// CLO-702 - replaced manual file creation with FileUtils.convertUrlToFile()
-					File file = FileUtils.convertUrlToFile(url);
-					if (file.exists()) continue;
-					throw new ComponentNotReadyException(UNREACHABLE_FILE + fName);
-				}
-				
-				Object dataSource = ReadableChannelIterator.getPreferredDataSource(contextURL, fName, parser.getPreferredDataSourceType());
+				Input input = fit.next();
+				fName = input.getAbsolutePath();
+				Object dataSource = input.getPreferredInput(parser.getPreferredDataSourceType());
 				if (dataSource == null) {
-					dataSource = FileUtils.getReadableChannel(contextURL, fName);
+					dataSource = input.getPreferredInput(DataSourceType.CHANNEL);
 				}
 				parser.setDataSource(dataSource);
 				notifyFileChangeListeners(dataSource);

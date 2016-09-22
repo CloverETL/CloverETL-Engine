@@ -310,7 +310,7 @@ public class SourceIterator implements Closeable {
 		WcardPattern pat = new WcardPattern();
 		pat.setParent(contextURL);
 		pat.addPattern(fileURL, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
-		pat.resolveAllNames(true);
+		pat.resolveAllNames(true); // FIXME
 		try {
 			files = pat.filenames();
 		} catch (IOException e) {
@@ -322,7 +322,7 @@ public class SourceIterator implements Closeable {
 			throw new ComponentNotReadyException("Input port is not defined for '" + files.get(firstPortProtocolPosition) + "'.");
 
 		portProtocolFields = getAndRemoveProtocol(files, PORT_PREFIX, firstPortProtocolPosition);
-        this.directoryStream = Wildcards.newDirectoryStream(contextURL, fileURL);
+        this.directoryStream = Wildcards.newDirectoryStream(contextURL, fileURL, null);
         this.fileIterator = directoryStream.iterator();
         closed = false;
 		

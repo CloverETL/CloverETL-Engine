@@ -45,13 +45,26 @@ public class WildcardDirectoryStream extends AbstractDirectoryStream<DirectorySt
 	
 	private DirectoryStream<Input> currentIterator;
 	
+	private DirectoryStream.Filter<URL> filter;
+	
+	/**
+	 * @param patterns
+	 */
+	public WildcardDirectoryStream(URL contextUrl, Iterable<String> patterns, DirectoryStream.Filter<URL> filter) {
+		Objects.requireNonNull(patterns);
+		if (filter == null) {
+			filter = Wildcards.AcceptAllFilter.<URL>getInstance();
+		}
+		this.contextUrl = contextUrl;
+		this.patterns = patterns.iterator();
+		this.filter = filter;
+	}
+
 	/**
 	 * @param patterns
 	 */
 	public WildcardDirectoryStream(URL contextUrl, Iterable<String> patterns) {
-		Objects.requireNonNull(patterns);
-		this.contextUrl = contextUrl;
-		this.patterns = patterns.iterator();
+		this(contextUrl, patterns, null);
 	}
 
 	@Override
@@ -66,6 +79,10 @@ public class WildcardDirectoryStream extends AbstractDirectoryStream<DirectorySt
 	
 	protected DirectoryStream<Input> newDirectoryStream(String fileName) throws IOException {
 		URL url = FileUtils.getFileURL(contextUrl, fileName); // CL-2667: may throw MalformedURLException
+
+		if (!filter.accept(url)) {
+			return new CollectionDirectoryStream(contextUrl, Collections.<String>emptyList());
+		}
 
 		// try CustomPathResolvers first
 		for (CustomPathResolver resolver : FileUtils.getCustompathresolvers()) {
