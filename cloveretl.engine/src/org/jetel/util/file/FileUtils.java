@@ -81,7 +81,6 @@ import org.jetel.logger.SafeLog;
 import org.jetel.logger.SafeLogFactory;
 import org.jetel.util.MultiOutFile;
 import org.jetel.util.Pair;
-import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.protocols.ProxyAuthenticable;
 import org.jetel.util.protocols.ProxyConfiguration;
