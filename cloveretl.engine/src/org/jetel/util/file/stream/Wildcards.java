@@ -61,26 +61,35 @@ public class Wildcards {
 		}
 	}
 	
-	public static class CheckConfigFilter implements DirectoryStream.Filter<URL> {
+	public static class CheckConfigFilter implements DirectoryStream.Filter<String> {
 		
-		protected CheckConfigFilter() {
+		private final URL contextUrl;
+		
+		public CheckConfigFilter(URL contextUrl) {
+			this.contextUrl = contextUrl;
 		}
 		
 		@Override
-		public boolean accept(URL url) throws IOException {
-			return SandboxUrlUtils.isSandboxUrl(url) || !FileUtils.isServerURL(url);
+		public boolean accept(String input) throws IOException {
+			if (FileUtils.STD_CONSOLE.equals(input)) {
+				return false;
+			}
+			URL url = FileUtils.getFileURL(contextUrl, input);
+			return accept(url);
 		}
 		
-		public static final CheckConfigFilter FILTER = new CheckConfigFilter();
-		
+		private boolean accept(URL url) throws IOException {
+			return SandboxUrlUtils.isSandboxUrl(url) || !FileUtils.isServerURL(url);
+		}
+
 	}
 
-	public static DirectoryStream<Input> newDirectoryStream(URL contextUrl, String[] patterns, DirectoryStream.Filter<URL> filter) {
+	public static DirectoryStream<Input> newDirectoryStream(URL contextUrl, String[] patterns, DirectoryStream.Filter<String> filter) {
 		WildcardDirectoryStream stream = new WildcardDirectoryStream(contextUrl, Arrays.asList(patterns), filter);
 		return new CompoundDirectoryStream(stream);
 	}
 
-	public static DirectoryStream<Input> newDirectoryStream(URL contextUrl, String patterns, DirectoryStream.Filter<URL> filter) {
+	public static DirectoryStream<Input> newDirectoryStream(URL contextUrl, String patterns, DirectoryStream.Filter<String> filter) {
 		return newDirectoryStream(contextUrl, patterns.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX), filter);
 	}
 	

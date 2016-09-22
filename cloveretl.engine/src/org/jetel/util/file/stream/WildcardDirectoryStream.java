@@ -45,15 +45,15 @@ public class WildcardDirectoryStream extends AbstractDirectoryStream<DirectorySt
 	
 	private DirectoryStream<Input> currentIterator;
 	
-	private DirectoryStream.Filter<URL> filter;
+	private DirectoryStream.Filter<String> filter;
 	
 	/**
 	 * @param patterns
 	 */
-	public WildcardDirectoryStream(URL contextUrl, Iterable<String> patterns, DirectoryStream.Filter<URL> filter) {
+	public WildcardDirectoryStream(URL contextUrl, Iterable<String> patterns, DirectoryStream.Filter<String> filter) {
 		Objects.requireNonNull(patterns);
 		if (filter == null) {
-			filter = Wildcards.AcceptAllFilter.<URL>getInstance();
+			filter = Wildcards.AcceptAllFilter.<String>getInstance();
 		}
 		this.contextUrl = contextUrl;
 		this.patterns = patterns.iterator();
@@ -78,11 +78,11 @@ public class WildcardDirectoryStream extends AbstractDirectoryStream<DirectorySt
 	}
 	
 	protected DirectoryStream<Input> newDirectoryStream(String fileName) throws IOException {
-		URL url = FileUtils.getFileURL(contextUrl, fileName); // CL-2667: may throw MalformedURLException
-
-		if (!filter.accept(url)) {
+		if (!filter.accept(fileName)) {
 			return new CollectionDirectoryStream(contextUrl, Collections.<String>emptyList());
 		}
+		
+		URL url = FileUtils.getFileURL(contextUrl, fileName); // CL-2667: may throw MalformedURLException
 
 		// try CustomPathResolvers first
 		for (CustomPathResolver resolver : FileUtils.getCustompathresolvers()) {
@@ -150,6 +150,9 @@ public class WildcardDirectoryStream extends AbstractDirectoryStream<DirectorySt
 	}
 	
 	private Collection<String> listFiles(URL url, String fileName) throws IOException {
+		if (FileUtils.STD_CONSOLE.equals(fileName)) {
+			return Collections.singletonList(fileName);
+		}
 		String protocol = url.getProtocol().toLowerCase();
 		switch (protocol) {
 			case FileUtils.FILE_PROTOCOL:

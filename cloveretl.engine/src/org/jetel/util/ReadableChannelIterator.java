@@ -291,7 +291,7 @@ public class ReadableChannelIterator implements Closeable {
 			throw new ComponentNotReadyException("Input port is not defined for '" + files.get(firstPortProtocolPosition) + "'.");
 		
         portProtocolFields = getAndRemoveProtocol(files, PORT, firstPortProtocolPosition);
-        this.directoryStream = Wildcards.newDirectoryStream(contextURL, fileURL, resolveAllNames ? null : CheckConfigFilter.FILTER);
+        this.directoryStream = Wildcards.newDirectoryStream(contextURL, fileURL, resolveAllNames ? null : new CheckConfigFilter(contextURL));
         closed = false;
         this.fileIterator = directoryStream.iterator();
 	}

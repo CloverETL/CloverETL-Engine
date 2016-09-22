@@ -78,6 +78,9 @@ class URLInput implements Input {
 
 	@Override
 	public String getAbsolutePath() {
+		if (FileUtils.STD_CONSOLE.equals(file)) {
+			return file;
+		}
 		try {
 			return FileUtils.getFileURL(contextUrl, file).toString();
 		} catch (MalformedURLException e) {

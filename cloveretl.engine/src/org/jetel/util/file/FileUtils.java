@@ -2015,7 +2015,7 @@ public class FileUtils {
 	 * @return
 	 * @throws IOException
 	 */
-	public static boolean isServerURL(URL url) throws IOException {
+	public static boolean isServerURL(URL url) {
 		
 		return url != null && !url.getProtocol().equals(FILE_PROTOCOL);
 	}
