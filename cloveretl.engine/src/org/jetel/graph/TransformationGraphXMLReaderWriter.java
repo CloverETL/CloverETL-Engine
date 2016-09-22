@@ -36,9 +36,7 @@ import java.util.Properties;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -69,6 +67,8 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.metadata.MetadataFactory;
+import org.jetel.util.XmlParserFactory;
+import org.jetel.util.XmlParserFactory.DocumentBuilderProvider;
 import org.jetel.util.JAXBContextProvider;
 import org.jetel.util.ReferenceState;
 import org.jetel.util.file.FileUtils;
@@ -173,6 +173,7 @@ import org.xml.sax.SAXParseException;
  * @since    May 21, 2002
  */
 public class TransformationGraphXMLReaderWriter {
+	
 	/**
 	 * 
 	 */
@@ -242,6 +243,8 @@ public class TransformationGraphXMLReaderWriter {
 	
 	private static Log logger = LogFactory.getLog(TransformationGraphXMLReaderWriter.class);
 	
+	private static DocumentBuilderFactory documentBuilderFactory;
+
 	private Document outputXMLDocument = null;
 	
     private TransformationGraph graph;
@@ -302,36 +305,40 @@ public class TransformationGraphXMLReaderWriter {
 		}
 	}
 
+	private static synchronized DocumentBuilderProvider getDocumentBuilderProvider() {
+		if (documentBuilderFactory == null) {
+			documentBuilderFactory = DocumentBuilderFactory.newInstance();
+			 
+			documentBuilderFactory.setNamespaceAware(true);
+	
+			// Optional: set various configuration options
+			documentBuilderFactory.setValidating(validation);
+			documentBuilderFactory.setIgnoringComments(ignoreComments);
+			documentBuilderFactory.setIgnoringElementContentWhitespace(ignoreWhitespaces);
+			documentBuilderFactory.setCoalescing(putCDATAIntoText);
+			documentBuilderFactory.setExpandEntityReferences(!createEntityRefs);
+		}
+
+		return XmlParserFactory.getDocumentBuilder(documentBuilderFactory);
+	}
+	
 	private static Document prepareDocument(InputStream in) throws XMLConfigurationException {
 		Document document;
+		DocumentBuilderProvider documentBuilderProvider = null;
 		try {
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
- 
- 			dbf.setNamespaceAware(true);
-
-			// Optional: set various configuration options
-			dbf.setValidating(validation);
-			dbf.setIgnoringComments(ignoreComments);
-			dbf.setIgnoringElementContentWhitespace(ignoreWhitespaces);
-			dbf.setCoalescing(putCDATAIntoText);
-			dbf.setExpandEntityReferences(!createEntityRefs);
-			
-			DocumentBuilder db = dbf.newDocumentBuilder();
-			
+			documentBuilderProvider = getDocumentBuilderProvider();
 			if (in != null) {
-				db.setErrorHandler(null); // this avoid to print out to standard error output message "[Fatal Error] :1:1: Content is not allowed in prolog.", see CLO-1652
-				document = db.parse(new BufferedInputStream(in));
+				document = documentBuilderProvider.getDocumentBuilder().parse(new BufferedInputStream(in));
 				document.normalize();
 			}else{
-				document = db.newDocument();
+				document = documentBuilderProvider.getDocumentBuilder().newDocument();
 			}
-
 		}catch(SAXParseException ex){
 			throw new XMLConfigurationException("Error when parsing graph's XML definition  --> on line "+ex.getLineNumber()+" row "+ex.getColumnNumber(), ex);
-        }catch (ParserConfigurationException ex) {
+        }catch (Exception ex) {
             throw new XMLConfigurationException("Error when parsing graph's XML definition", ex);
-		}catch (Exception ex) {
-            throw new XMLConfigurationException("Error when parsing graph's XML definition", ex);
+		} finally {
+			XmlParserFactory.releaseDocumentBuilder(documentBuilderProvider);
 		}
 		
 		return document;

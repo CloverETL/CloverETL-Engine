@@ -28,7 +28,6 @@ import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -42,6 +41,8 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.GraphParameters;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.XmlParserFactory;
+import org.jetel.util.XmlParserFactory.DocumentBuilderProvider;
 import org.jetel.util.KeyFieldNamesUtils;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.string.QuotingDecoder;
@@ -122,9 +123,7 @@ import org.xml.sax.helpers.DefaultHandler;
 public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 
 	// Attributes
-	private DocumentBuilder db;
-
-	private DocumentBuilderFactory dbf;
+	private static DocumentBuilderFactory documentBuilderFactory;
 
 	private PropertyRefResolver refResolver;
 
@@ -228,40 +227,41 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		return read(in, null);
 	}
 	
+	private static synchronized DocumentBuilderProvider getDocumentBuilderProvider() {
+		if (documentBuilderFactory == null) {
+			documentBuilderFactory = DocumentBuilderFactory.newInstance();
+
+			documentBuilderFactory.setNamespaceAware(true);
+			documentBuilderFactory.setCoalescing(true);
+
+			// Optional: set various configuration options
+			documentBuilderFactory.setValidating(validation);
+			documentBuilderFactory.setIgnoringComments(ignoreComments);
+			documentBuilderFactory.setIgnoringElementContentWhitespace(ignoreWhitespaces);
+			documentBuilderFactory.setCoalescing(putCDATAIntoText);
+			documentBuilderFactory.setExpandEntityReferences(!createEntityRefs);
+		}
+		
+		return XmlParserFactory.getDocumentBuilder(documentBuilderFactory);
+	}
+	
 	public DataRecordMetadata read(InputStream in, String metadataId) {
 		Document document;
 
+		DocumentBuilderProvider documentBuilderProvider = null;
 		try {
-			// construct XML parser (if it is needed)
-			if ((dbf == null) || (db == null)) {
-				dbf = DocumentBuilderFactory.newInstance();
-
-				dbf.setNamespaceAware(true);
-                dbf.setCoalescing(true);
-
-				// Optional: set various configuration options
-				dbf.setValidating(validation);
-				dbf.setIgnoringComments(ignoreComments);
-				dbf.setIgnoringElementContentWhitespace(ignoreWhitespaces);
-				dbf.setCoalescing(putCDATAIntoText);
-				dbf.setExpandEntityReferences(!createEntityRefs);
-
-				db = dbf.newDocumentBuilder();
-			}
-
-			document = db.parse(new BufferedInputStream(in));
+			documentBuilderProvider = getDocumentBuilderProvider();
+			document = documentBuilderProvider.getDocumentBuilder().parse(new BufferedInputStream(in));
 			document.normalize();
-
 		} catch (SAXParseException ex) {
 			logger.error("SAX Exception on line "
 					+ ex.getLineNumber() + " row " + ex.getColumnNumber(), ex);
 			return null;
-		} catch (ParserConfigurationException ex) {
-			logger.error(ex);
-			return null;
 		} catch (Exception ex) {
 			logger.error(ex);
 			return null;
+		} finally {
+			XmlParserFactory.releaseDocumentBuilder(documentBuilderProvider);
 		}
 
 		try {
