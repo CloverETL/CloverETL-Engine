@@ -81,23 +81,19 @@ public class WildcardDirectoryStream extends AbstractDirectoryStream<DirectorySt
 		}
 		
 		// get inner source
-		String originalFileName = fileName;
 		Matcher matcher = FileURLParser.getURLMatcher(fileName);
 		String innerSource = null;
-		int iPreName = 0;
-		int iPostName = 0;
-		if (matcher != null && (innerSource = matcher.group(5)) != null) {
-			iPreName = (matcher.group(2) + matcher.group(3)).length()+1;
-			iPostName = iPreName + innerSource.length();
+		if ((matcher != null) && (matcher.group(5) != null)) {
+			innerSource = matcher.group(5);
 		} else {
 			// for archives without ...:(......), just ...:......
 			Matcher archMatcher = WcardPattern.getArchiveURLMatcher(fileName);
-			if (archMatcher != null && (innerSource = archMatcher.group(3)) != null) {
-				iPreName = archMatcher.group(2).length()+1;
-				iPostName = iPreName + innerSource.length();
-			} else if (archMatcher != null && (innerSource = archMatcher.group(7)) != null) {
-				iPreName = archMatcher.group(6).length()+1;
-				iPostName = iPreName + innerSource.length();
+			if (archMatcher != null) {
+				if (archMatcher.group(3) != null) {
+					innerSource = archMatcher.group(3);
+				} else if (archMatcher.group(7) != null) {
+					innerSource = archMatcher.group(7);
+				}
 			}
 		}
 		
