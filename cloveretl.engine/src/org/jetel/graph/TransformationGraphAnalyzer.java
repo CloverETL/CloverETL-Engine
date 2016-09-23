@@ -224,9 +224,9 @@ public class TransformationGraphAnalyzer {
 		} else {
 			urlStack.add(url);
 		}
-		for (Entry<MVComponent, MVSubgraph> subgraph : graph.getMVSubgraphs().entrySet()) {
+		for (Entry<String, MVSubgraph> subgraph : graph.getMVSubgraphs().entrySet()) {
 			if (topLevel) {
-				causedComponent = subgraph.getKey();
+				causedComponent = graph.getMVComponent(subgraph.getKey());
 			}
 			analyseSubgraphCallingHierarchy(subgraph.getValue(), causedComponent, urlStack);
 		}

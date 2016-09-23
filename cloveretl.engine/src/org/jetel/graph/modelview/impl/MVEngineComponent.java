@@ -202,7 +202,7 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 	@Override
 	public MVSubgraph getSubgraph() {
 		if (isSubgraphComponent()) {
-			return getParentMVGraph().getMVSubgraphs().get(this);
+			return getParentMVGraph().getMVSubgraphs().get(getId());
 		} else {
 			throw new IllegalStateException();
 		}
