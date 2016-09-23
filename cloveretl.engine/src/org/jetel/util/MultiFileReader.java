@@ -163,34 +163,38 @@ public class MultiFileReader {
      */
 	public void checkConfig(DataRecordMetadata metadata) throws ComponentNotReadyException {
         parser.init();
-        checkChannelIterator();
-        
-		String fName = null; 
-		Iterator<Input> fit = channelIterator.getInputIterator();
-		boolean closeLastStream = false;
-		while (fit.hasNext()) {
-			try {
-				Input input = fit.next();
-				fName = input.getAbsolutePath();
-				Object dataSource = input.getPreferredInput(parser.getPreferredDataSourceType());
-				if (dataSource == null) {
-					dataSource = input.getPreferredInput(DataSourceType.CHANNEL);
-				}
-				parser.setDataSource(dataSource);
-				notifyFileChangeListeners(dataSource);
-				
-				parser.setReleaseDataSource(closeLastStream = true);
-			} catch (Exception e) {
-				throw new ComponentNotReadyException(UNREACHABLE_FILE + fName, e);
-			}
-		}
-		if (closeLastStream) {
-			try {
-				parser.close();
-			} catch (IOException e) {
-				throw new ComponentNotReadyException("File '" + fName + "' cannot be closed.", e);
-			}
-		}
+        try {
+            checkChannelIterator();
+            
+    		String fName = null; 
+    		Iterator<Input> fit = channelIterator.getInputIterator();
+    		boolean closeLastStream = false;
+    		while (fit.hasNext()) {
+    			try {
+    				Input input = fit.next();
+    				fName = input.getAbsolutePath();
+    				Object dataSource = input.getPreferredInput(parser.getPreferredDataSourceType());
+    				if (dataSource == null) {
+    					dataSource = input.getPreferredInput(DataSourceType.CHANNEL);
+    				}
+    				parser.setDataSource(dataSource);
+    				notifyFileChangeListeners(dataSource);
+    				
+    				parser.setReleaseDataSource(closeLastStream = true);
+    			} catch (Exception e) {
+    				throw new ComponentNotReadyException(UNREACHABLE_FILE + fName, e);
+    			}
+    		}
+    		if (closeLastStream) {
+    			try {
+    				parser.close();
+    			} catch (IOException e) {
+    				throw new ComponentNotReadyException("File '" + fName + "' cannot be closed.", e);
+    			}
+    		}
+        } finally {
+        	ReadableChannelIterator.free(channelIterator);
+        }
 	}
 	
 	/**

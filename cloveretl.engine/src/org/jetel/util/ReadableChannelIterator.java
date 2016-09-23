@@ -165,7 +165,10 @@ public class ReadableChannelIterator implements Closeable {
 		try {
 			common(false); // CLO-5399
 		} finally {
-			// release resources
+			// release resources:
+			// MultiFileReader and some components use getInputIterator() method,
+			// but it only works with local files, closing should not break things
+			// this may change in the future if the DirectoryStream for local files is implemented using NIO API.
 			free(); // we assume the iterator will be re-initialized
 		}
 	}
