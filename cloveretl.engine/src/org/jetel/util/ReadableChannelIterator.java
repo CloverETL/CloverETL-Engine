@@ -31,6 +31,7 @@ import java.net.URL;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -281,8 +282,19 @@ public class ReadableChannelIterator implements Closeable {
 			throw new ComponentNotReadyException("Input port is not defined for '" + parts[firstPortProtocolPosition] + "'.");
 		}
 		
+		List<String> urls;
+		if (resolveAllNames) {
+			urls = Arrays.asList(parts);
+		} else {
+			try {
+				urls = new CheckConfigFilter(contextURL).filter(parts);
+			} catch (IOException ex) {
+				throw new ComponentNotReadyException("", ex);
+			}
+		}
+		
         portProtocolFields = getElementsByProtocol(parts, PORT, firstPortProtocolPosition);
-        this.directoryStream = Wildcards.newDirectoryStream(contextURL, parts, resolveAllNames ? null : new CheckConfigFilter(contextURL));
+        this.directoryStream = Wildcards.newDirectoryStream(contextURL, urls);
         closed = false;
         this.fileIterator = directoryStream.iterator();
 	}

@@ -22,8 +22,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.DirectoryStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.jetel.data.Defaults;
@@ -81,16 +83,30 @@ public class Wildcards {
 		private boolean accept(URL url) throws IOException {
 			return SandboxUrlUtils.isSandboxUrl(url) || !FileUtils.isServerURL(url);
 		}
+		
+		public List<String> filter(String... items) throws IOException {
+			List<String> result = new ArrayList<>(items.length);
+			for (String item: items) {
+				if (accept(item)) {
+					result.add(item);
+				}
+			}
+			return result;
+		}
 
 	}
 
-	public static DirectoryStream<Input> newDirectoryStream(URL contextUrl, String[] patterns, DirectoryStream.Filter<String> filter) {
-		WildcardDirectoryStream stream = new WildcardDirectoryStream(contextUrl, Arrays.asList(patterns), filter);
+	public static DirectoryStream<Input> newDirectoryStream(URL contextUrl, Iterable<String> patterns) {
+		WildcardDirectoryStream stream = new WildcardDirectoryStream(contextUrl, patterns);
 		return new CompoundDirectoryStream(stream);
 	}
 
-	public static DirectoryStream<Input> newDirectoryStream(URL contextUrl, String patterns, DirectoryStream.Filter<String> filter) {
-		return newDirectoryStream(contextUrl, patterns.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX), filter);
+	public static DirectoryStream<Input> newDirectoryStream(URL contextUrl, String[] patterns) {
+		return newDirectoryStream(contextUrl, Arrays.asList(patterns));
+	}
+
+	public static DirectoryStream<Input> newDirectoryStream(URL contextUrl, String patterns) {
+		return newDirectoryStream(contextUrl, patterns.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX));
 	}
 	
 	private static class CompoundDirectoryStream extends AbstractDirectoryStream<Input> {

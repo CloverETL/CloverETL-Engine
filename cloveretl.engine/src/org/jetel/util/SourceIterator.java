@@ -313,7 +313,7 @@ public class SourceIterator implements Closeable {
 		}
 
 		portProtocolFields = getElementsByProtocol(parts, PORT_PREFIX, firstPortProtocolPosition);
-        this.directoryStream = Wildcards.newDirectoryStream(contextURL, fileURL, null); // FIXME CheckConfigFilter
+        this.directoryStream = Wildcards.newDirectoryStream(contextURL, parts); // FIXME CheckConfigFilter
         this.fileIterator = directoryStream.iterator();
         closed = false;
 		
