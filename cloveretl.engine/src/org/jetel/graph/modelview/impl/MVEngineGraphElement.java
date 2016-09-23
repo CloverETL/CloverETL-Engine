@@ -24,6 +24,7 @@ import java.util.List;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVGraphElement;
+import org.jetel.util.EqualsUtil;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -43,6 +44,8 @@ public abstract class MVEngineGraphElement implements MVGraphElement {
 	private MVGraphElement parent;
 	
 	private String id; //id is persisted in local variable, because model is not serialized
+
+	private List<String> idPath;
 	
 	public MVEngineGraphElement(IGraphElement engineGraphElement, MVGraphElement parent) {
 		if (engineGraphElement == null) {
@@ -52,6 +55,8 @@ public abstract class MVEngineGraphElement implements MVGraphElement {
 		this.id = engineGraphElement.getId();
 		this.engineGraphElement = engineGraphElement;
 		this.parent = parent;
+		
+		initIdPath();
 	}
 	
 	@Override
@@ -91,23 +96,26 @@ public abstract class MVEngineGraphElement implements MVGraphElement {
 		return id;
 	}
 
-	@Override
-	public List<String> getIdPath() {
-		List<String> result = new ArrayList<>();
+	private void initIdPath() {
+		idPath = new ArrayList<>();
 		MVGraphElement index = this;
 		while (index != null) {
-			result.add(index.getId());
+			idPath.add(index.getId());
 			index = index.getParent();
 		}
-		return result;
+	}
+	
+	@Override
+	public List<String> getIdPath() {
+		return idPath;
 	}
 
 	@Override
 	public int hashCode() {
-		if (hasModel()) {
-			return System.identityHashCode(getModel());
+		if (idPath != null) {
+			return idPath.hashCode();
 		} else {
-			return getIdPath().hashCode();
+			return 0;
 		}
 	}
 
@@ -117,11 +125,8 @@ public abstract class MVEngineGraphElement implements MVGraphElement {
 			return false;
 		}
 		MVGraphElement graphElement = (MVGraphElement) obj;
-		if (hasModel()) {
-			return getModel() == graphElement.getModel();
-		} else {
-			return getIdPath().equals(graphElement.getIdPath());
-		}
+		
+		return EqualsUtil.areEqual(getIdPath(), graphElement.getIdPath());
 	}
 
 	@Override
