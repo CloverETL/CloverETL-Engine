@@ -142,8 +142,8 @@ public class FileUtils {
 	private static final String TGZ_PROTOCOL = "tgz";
 
 	// FTP-like protocol names
-	public static final String FTP_PROTOCOL = "ftp";
-	public static final String SFTP_PROTOCOL = "sftp";
+	private static final String FTP_PROTOCOL = "ftp";
+	private static final String SFTP_PROTOCOL = "sftp";
 	private static final String SCP_PROTOCOL = "scp";
 	
     private static final ArchiveURLStreamHandler ARCHIVE_URL_STREAM_HANDLER = new ArchiveURLStreamHandler();
@@ -168,8 +168,8 @@ public class FileUtils {
 
 	public static final Map<String, URLStreamHandler> handlers;
 
-	public static final String HTTP_PROTOCOL = "http";
-	public static final String HTTPS_PROTOCOL = "https";
+	private static final String HTTP_PROTOCOL = "http";
+	private static final String HTTPS_PROTOCOL = "https";
 	public static final String UTF8 = "UTF-8";
 
 	static {

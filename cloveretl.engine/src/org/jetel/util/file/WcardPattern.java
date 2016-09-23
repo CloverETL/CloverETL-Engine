@@ -186,7 +186,7 @@ public class WcardPattern {
 	 * @param filePat
 	 * @return
 	 */
-	public static int getWildCardIndex(String filePat) {
+	private int getWildCardIndex(String filePat) {
 		int resIdx = -1;
 		for (int wcardIdx = 0; wcardIdx < WCARD_CHAR.length; wcardIdx++) {
 			int i;
@@ -503,7 +503,7 @@ public class WcardPattern {
     	newFileStreamNames.add(originalFileName.substring(0, iPreName) + fileStreamName + originalFileName.substring(iPostName));
     }
     
-	public static List<String> getSandboxNames(URL url) {
+	private List<String> getSandboxNames(URL url) {
 		List<String> fileStreamNames = new ArrayList<String>();
 		if (hasWildcard(url)) {
 			IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
@@ -546,12 +546,12 @@ public class WcardPattern {
 		
 		// wildcards for file protocol
 		if (protocol.equals(FILE)) {
-			return getFileNames(parent, fileName);
+			return getFileNames(fileName);
 		}
 		
 		// wildcards for sftp protocol
 		else if (resolveAllNames && protocol.equals(SFTP)) {
-			return getSftpNames(parent, url);
+			return getSftpNames(url);
 		}
 		
 		// wildcards for ftp protocol
@@ -568,7 +568,7 @@ public class WcardPattern {
 		}
 		else if (resolveAllNames && (
 				protocol.equals(HTTP) || protocol.equals(HTTPS))) {
-			return getHttpNames(parent, url);
+			return getHttpNames(url);
 		}
 		// CLO-5532:
 		else if (protocol.equals(PORT_PROTOCOL) || protocol.equals(DICTIONARY_PROTOCOL)) {
@@ -584,14 +584,14 @@ public class WcardPattern {
 	}
 	
 	// matches the FILENAME part of a path: /dir/subdir/subsubdir/FILENAME
-	public static final Pattern FILENAME_PATTERN = Pattern.compile(".*/([^/]+/?)");
+	private static final Pattern FILENAME_PATTERN = Pattern.compile(".*/([^/]+/?)");
 
 	/**
 	 * Gets files from fileName that can contain wildcards or returns original name.
 	 * @param url
 	 * @return
 	 */
-	public static List<String> getFtpNames(URL url) {
+	private List<String> getFtpNames(URL url) {
 		// result list
 		List<String> mfiles = new ArrayList<String>();
 
@@ -662,7 +662,7 @@ public class WcardPattern {
 		return false;
 	}
 	
-	private static boolean hasAsteriskWildcard(URL url) {
+	private boolean hasAsteriskWildcard(URL url) {
 		String topmostFile = new File(url.getFile()).getName();
 		return topmostFile.indexOf('*') != -1;
 	}
@@ -670,7 +670,7 @@ public class WcardPattern {
 	/**
 	 * Gets files from HTTP source using WebDAV 
 	 */
-	public static List<String> getHttpNames(URL contextUrl, URL url) {
+	private List<String> getHttpNames(URL url) {
 		List<String> mfiles = new ArrayList<String>();
 
 		// We will only consider asterisk (*) as a wild-card in HTTP URL.
@@ -698,7 +698,7 @@ public class WcardPattern {
 		
 		Pair<String, String> parts = FileUtils.extractProxyString(url.toString());
 		try {
-			url = FileUtils.getFileURL(contextUrl, parts.getFirst());
+			url = FileUtils.getFileURL(parent, parts.getFirst());
 		} catch (MalformedURLException ex) {
 			
 		}
@@ -777,7 +777,7 @@ public class WcardPattern {
 	 * @param url
 	 * @return
 	 */
-	public static List<String> getSftpNames(URL contextUrl, URL url) {
+	private List<String> getSftpNames(URL url) {
 		// result list
 		List<String> mfiles = new ArrayList<String>();
 		
@@ -790,7 +790,7 @@ public class WcardPattern {
 		URL originalURL = url;
 		Pair<String, String> parts = FileUtils.extractProxyString(url.toString());
 		try {
-			url = FileUtils.getFileURL(contextUrl, parts.getFirst());
+			url = FileUtils.getFileURL(parent, parts.getFirst());
 		} catch (MalformedURLException ex) {
 			
 		}
@@ -845,7 +845,7 @@ public class WcardPattern {
 	 * @param fileName
 	 * @return
 	 */
-	public static List<String> getFileNames(URL contextUrl, String fileName) {
+	private List<String> getFileNames(String fileName) {
 		// result list
 		List<String> mfiles = new ArrayList<String>();
 
@@ -865,7 +865,7 @@ public class WcardPattern {
 		// check a directory
 		List<File> lResolvedPaths = new LinkedList<File>();
 		try {
-			URL url = FileUtils.getFileURL(contextUrl, dirName.toString());
+			URL url = FileUtils.getFileURL(parent, dirName.toString());
 			lResolvedPaths.add(new File(url.getQuery() != null ? url.getPath() + "?" + url.getQuery() : url.getPath()));
 		} catch (Exception e) {
 			lResolvedPaths.add(new File(dirName.toString()));
@@ -897,7 +897,7 @@ public class WcardPattern {
 	 * @param string
 	 * @return
 	 */
-	public static Collection<? extends File> getResolvedPaths(String sDir) {
+	private Collection<? extends File> getResolvedPaths(String sDir) {
 		List<File> lResolvedPaths = new LinkedList<File>();
 		int idxPathWildCard = getWildCardIndex(sDir);
 		if (idxPathWildCard == -1) {
@@ -990,7 +990,7 @@ public class WcardPattern {
 	/**
 	 * Filename filter for wildcard matching.
 	 */
-	public static class WcardFilter implements FilenameFilter {
+	private static class WcardFilter implements FilenameFilter {
 		
 		// Regex pattern equivalent to specified wildcard pattern.
 		private Pattern rePattern;

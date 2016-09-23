@@ -34,7 +34,6 @@ import org.jetel.enums.ArchiveType;
 import org.jetel.util.file.CustomPathResolver;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
-import org.jetel.util.file.SandboxUrlUtils;
 import org.jetel.util.file.WcardPattern;
 
 public class WildcardDirectoryStream extends AbstractDirectoryStream<DirectoryStream<Input>> {
@@ -136,26 +135,16 @@ public class WildcardDirectoryStream extends AbstractDirectoryStream<DirectorySt
 		if (FileUtils.STD_CONSOLE.equals(fileName)) {
 			return Collections.singletonList(fileName);
 		}
+		
 		String protocol = url.getProtocol().toLowerCase();
 		switch (protocol) {
-			case FileUtils.FILE_PROTOCOL:
-				return WcardPattern.getFileNames(contextUrl, fileName);
-			case SandboxUrlUtils.SANDBOX_PROTOCOL:
-				return WcardPattern.getSandboxNames(url);
-			case FileUtils.FTP_PROTOCOL:
-				URL ftpUrl = new URL(contextUrl, fileName, FileUtils.ftpStreamHandler);
-				return WcardPattern.getFtpNames(ftpUrl);
-			case FileUtils.SFTP_PROTOCOL:
-				return WcardPattern.getSftpNames(contextUrl, url);
-			case FileUtils.HTTP_PROTOCOL:
-			case FileUtils.HTTPS_PROTOCOL:
-				return WcardPattern.getHttpNames(contextUrl, url);
 			case FileUtils.PORT_PROTOCOL:
-				return Collections.<String>emptyList(); // returning fileName causes infinite loop
-			case FileUtils.DICTIONARY_PROTOCOL:
-				return Collections.singletonList(fileName);
+				return Collections.<String>emptyList(); // returning fileName causes infinite loop, why?
 			default:
-				throw new UnsupportedOperationException("Unsupported protocol: " + protocol);
+				WcardPattern wcardPattern = new WcardPattern();
+				wcardPattern.setParent(contextUrl);
+				wcardPattern.addPattern(fileName);
+				return wcardPattern.filenames();
 		}
 	}
 
