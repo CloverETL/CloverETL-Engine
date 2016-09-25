@@ -54,7 +54,7 @@ public interface MVGraph extends MVGraphElement {
 	/**
 	 * @return MV representation of all subgraph components from this graph 
 	 */
-	public Map<MVComponent, MVSubgraph> getMVSubgraphs();
+	public Map<String, MVSubgraph> getMVSubgraphs();
 
 	/**
 	 * @param edgeId id of requested edge

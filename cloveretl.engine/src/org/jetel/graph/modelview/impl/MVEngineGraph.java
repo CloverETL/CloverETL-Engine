@@ -50,7 +50,7 @@ public class MVEngineGraph extends MVEngineGraphElement implements MVGraph {
 
 	private Map<String, MVEdge> mvEdges;
 
-	private Map<MVComponent, MVSubgraph> mvSubgraphs;
+	private Map<String, MVSubgraph> mvSubgraphs;
 
 	public MVEngineGraph(TransformationGraph graph) {
 		this(graph, null);
@@ -115,15 +115,15 @@ public class MVEngineGraph extends MVEngineGraphElement implements MVGraph {
 	}
 
 	@Override
-	public Map<MVComponent, MVSubgraph> getMVSubgraphs() {
+	public Map<String, MVSubgraph> getMVSubgraphs() {
 		if (mvSubgraphs == null) {
 			mvSubgraphs = new HashMap<>();
 			for (MVComponent component : getMVComponents().values()) {
 				if (component.isSubgraphComponent()) {
 					TransformationGraph engineSubgraph = ((SubgraphComponent) component.getModel()).getSubgraphNoMetadataPropagation(false);
 					if (engineSubgraph != null) { //can be null if the subgraph component is not correctly defined - invalid subgraph URL 
-						MVSubgraph mvSubgraph = new MVEngineSubgraph(engineSubgraph, getMVComponent(component.getId()));
-						mvSubgraphs.put(getMVComponent(component.getId()), mvSubgraph);
+						MVSubgraph mvSubgraph = new MVEngineSubgraph(engineSubgraph, component);
+						mvSubgraphs.put(component.getId(), mvSubgraph);
 					}
 				}
 			}
