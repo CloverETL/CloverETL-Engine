@@ -19,8 +19,17 @@
 package org.jetel.util.file.stream;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.DirectoryStream;
 import java.util.Iterator;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.Node;
+import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -32,14 +41,53 @@ public abstract class AbstractDirectoryStream<T> implements DirectoryStream<T>, 
 	
 	private boolean iteratorReturned = false;
 
+	private volatile boolean closed = false;
+	
+	private String origin;
+
+	private static final Log defaultLogger = LogFactory.getLog(AbstractDirectoryStream.class);
+	
 	/**
 	 * 
 	 */
 	protected AbstractDirectoryStream() {
+		try {
+			Node node = ContextProvider.getNode();
+			this.origin = "";
+			if (node != null) {
+				this.origin = node.getId();
+				TransformationGraph graph = node.getGraph();
+				if (graph != null) {
+					GraphRuntimeContext context = node.getGraph().getRuntimeContext();
+					if (context != null) {
+						this.origin += " from " + node.getGraph().getRuntimeContext().getJobUrl();
+					}
+				}
+			}
+			try (
+				StringWriter sw = new StringWriter();
+				PrintWriter pw = new PrintWriter(sw);
+			) {
+				new Exception().printStackTrace(pw);
+				pw.close();
+				this.origin += sw.toString();
+			}
+		} catch (Exception ex) {
+			defaultLogger.error("", ex);
+		}
 	}
 
 	@Override
 	public void close() throws IOException {
+		closed = true;
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+		if (!closed) {
+			defaultLogger.error("Resource leak: " + getClass().getSimpleName() + " created by " + origin + " was not closed");
+		}
 	}
 
 	@Override

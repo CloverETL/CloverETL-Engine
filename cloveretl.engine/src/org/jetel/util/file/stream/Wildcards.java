@@ -126,7 +126,11 @@ public class Wildcards {
 
 		@Override
 		public void close() throws IOException {
-			parent.close();
+			try {
+				super.close();
+			} finally {
+				parent.close();
+			}
 		}
 		
 		private Input fillCache() throws IOException {

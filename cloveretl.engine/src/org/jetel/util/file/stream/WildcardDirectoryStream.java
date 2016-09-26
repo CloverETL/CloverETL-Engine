@@ -55,7 +55,11 @@ public class WildcardDirectoryStream extends AbstractDirectoryStream<DirectorySt
 
 	@Override
 	public void close() throws IOException {
-		FileUtils.close(directoryStream);
+		try {
+			super.close();
+		} finally {
+			FileUtils.close(directoryStream);
+		}
 	}
 
 	@Override

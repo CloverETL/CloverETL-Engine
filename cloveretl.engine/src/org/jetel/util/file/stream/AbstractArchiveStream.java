@@ -67,6 +67,7 @@ public abstract class AbstractArchiveStream<Stream extends InputStream, Entry> e
 	@Override
 	public void close() throws IOException {
 		try {
+			super.close();
 			FileUtils.close(archiveInputStream);
 			archiveInputStream = null;
 		} finally {
