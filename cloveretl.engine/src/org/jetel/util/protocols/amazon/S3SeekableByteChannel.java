@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
+import java.nio.channels.ClosedChannelException;
+import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.util.Objects;
@@ -57,6 +59,8 @@ public class S3SeekableByteChannel implements SeekableByteChannel {
 	private long size;
 	
 	private long position = 0;
+
+	private boolean eof = false;
 	
 	
 	/**
@@ -122,6 +126,10 @@ public class S3SeekableByteChannel implements SeekableByteChannel {
 
 	@Override
 	public int read(ByteBuffer dst) throws IOException {
+		checkOpen();
+		if (eof) {
+			return -1;
+		}
 		if (channel == null) {
 			openChannel(position);
 		}
@@ -132,21 +140,41 @@ public class S3SeekableByteChannel implements SeekableByteChannel {
 		return count;
 	}
 
+	/**
+	 * @throws ClosedChannelException
+	 */
+	private void checkOpen() throws ClosedChannelException {
+		if (!isOpen()) {
+			throw new ClosedChannelException();
+		}
+	}
+
 	@Override
 	public long position() throws IOException {
+		checkOpen();
 		return position;
 	}
 
 	@Override
 	public SeekableByteChannel position(long newPosition) throws IOException {
+		if (newPosition < 0) {
+			throw new IllegalArgumentException("The position can't be negative");
+		}
+		checkOpen();
 		closeChannel();
-		openChannel(newPosition);
+		if (newPosition >= size) {
+			eof = true;
+		} else {
+			eof = false;
+			openChannel(newPosition);
+		}
 		this.position = newPosition;
 		return this;
 	}
 
 	@Override
 	public long size() throws IOException {
+		checkOpen();
 		return size;
 	}
 
@@ -155,7 +183,7 @@ public class S3SeekableByteChannel implements SeekableByteChannel {
 	 */
 	@Override
 	public int write(ByteBuffer src) throws IOException {
-		throw new UnsupportedOperationException();
+		throw new NonWritableChannelException();
 	}
 
 	/**
@@ -163,7 +191,7 @@ public class S3SeekableByteChannel implements SeekableByteChannel {
 	 */
 	@Override
 	public SeekableByteChannel truncate(long size) throws IOException {
-		throw new UnsupportedOperationException();
+		throw new NonWritableChannelException();
 	}
 
 }
