@@ -42,7 +42,7 @@ public class WildcardDirectoryStream extends AbstractDirectoryStream<DirectorySt
 	// Collection of filename patterns.
 	private final Iterator<String> patterns;
 	
-	private DirectoryStream<Input> currentIterator;
+	private DirectoryStream<Input> directoryStream;
 	
 	/**
 	 * @param patterns
@@ -55,7 +55,7 @@ public class WildcardDirectoryStream extends AbstractDirectoryStream<DirectorySt
 
 	@Override
 	public void close() throws IOException {
-		FileUtils.close(currentIterator);
+		FileUtils.close(directoryStream);
 	}
 
 	@Override
@@ -174,9 +174,10 @@ public class WildcardDirectoryStream extends AbstractDirectoryStream<DirectorySt
 	@Override
 	public DirectoryStream<Input> next() {
 		try {
+			FileUtils.close(directoryStream); // close the previous stream
 			String fileName = patterns.next();
-			currentIterator = newDirectoryStream(fileName);
-			return currentIterator;
+			directoryStream = newDirectoryStream(fileName);
+			return directoryStream;
 		} catch (IOException ioe) {
 			throw new DirectoryIteratorException(ioe);
 		}
