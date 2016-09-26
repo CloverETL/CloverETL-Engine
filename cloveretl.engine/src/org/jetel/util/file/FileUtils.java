@@ -170,7 +170,7 @@ public class FileUtils {
 
 	private static final String HTTP_PROTOCOL = "http";
 	private static final String HTTPS_PROTOCOL = "https";
-	public static final String UTF8 = "UTF-8";
+	private static final String UTF8 = "UTF-8";
 
 	static {
 		Map<String, URLStreamHandler> h = new HashMap<String, URLStreamHandler>();

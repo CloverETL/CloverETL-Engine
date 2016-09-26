@@ -20,7 +20,6 @@ package org.jetel.util.file.stream;
 
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.util.Collection;
@@ -30,6 +29,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 
+import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.enums.ArchiveType;
 import org.jetel.util.file.CustomPathResolver;
 import org.jetel.util.file.FileURLParser;
@@ -80,35 +80,13 @@ public class WildcardDirectoryStream extends AbstractDirectoryStream<DirectorySt
 			}
 		}
 		
-		// get inner source
-		Matcher matcher = FileURLParser.getURLMatcher(fileName);
-		String innerSource = null;
-		if ((matcher != null) && (matcher.group(5) != null)) {
-			innerSource = matcher.group(5);
-		} else {
-			// for archives without ...:(......), just ...:......
-			Matcher archMatcher = WcardPattern.getArchiveURLMatcher(fileName);
-			if (archMatcher != null) {
-				if (archMatcher.group(3) != null) {
-					innerSource = archMatcher.group(3);
-				} else if (archMatcher.group(7) != null) {
-					innerSource = archMatcher.group(7);
-				}
-			}
-		}
-		
-		StringBuilder sbAnchor = new StringBuilder();
-		StringBuilder sbInnerInput = new StringBuilder();
-		ArchiveType archiveType = FileUtils.getArchiveType(fileName, sbInnerInput, sbAnchor);
-		if (innerSource == null) {
-			innerSource = sbInnerInput.toString();
-		}
+		ArchiveDescriptor archiveDescriptor = getArchiveDescriptor(fileName);
 
-		if (archiveType != null) {
+		if (archiveDescriptor != null) {
+			String anchor = URIUtils.urlDecode(archiveDescriptor.anchor); // CL-2579
+			String innerSource = archiveDescriptor.innerSource;
 			DirectoryStream<Input> innerStream = newDirectoryStream(innerSource);
-			String anchor = sbAnchor.toString();
-			anchor = URLDecoder.decode(anchor, FileUtils.UTF8); // CL-2579
-			switch (archiveType) {
+			switch (archiveDescriptor.archiveType) {
 			case ZIP:
 				return new ZipDirectoryStream(innerStream, anchor);
 			case TAR:
@@ -118,9 +96,11 @@ public class WildcardDirectoryStream extends AbstractDirectoryStream<DirectorySt
 			case GZIP:
 				return new GzipDirectoryStream(innerStream);
 			default:
-				throw new UnsupportedOperationException("Unsupported archive type: " + archiveType);
+				throw new UnsupportedOperationException("Unsupported archive type: " + archiveDescriptor.archiveType);
 			}
 		}
+		
+		// TODO implement DirectoryStream with real streaming for local files and for S3
 
 		// most protocols are handled by making a list of file URLs and iterating through the list
 		Collection<String> filenames = listFiles(url, fileName);
@@ -142,6 +122,53 @@ public class WildcardDirectoryStream extends AbstractDirectoryStream<DirectorySt
 				wcardPattern.addPattern(fileName);
 				return wcardPattern.filenames();
 		}
+	}
+	
+	private ArchiveDescriptor getArchiveDescriptor(String fileName) {
+		StringBuilder sbInnerInput = new StringBuilder();
+		StringBuilder sbAnchor = new StringBuilder();
+		ArchiveType archiveType = FileUtils.getArchiveType(fileName, sbInnerInput, sbAnchor);
+		if (archiveType == null) {
+			return null;
+		}
+		
+		// get inner source
+		String innerSource = null;
+		Matcher matcher = FileURLParser.getURLMatcher(fileName);
+		if ((matcher != null) && (matcher.group(5) != null)) {
+			innerSource = matcher.group(5);
+		} else {
+			// for archives without ...:(......), just ...:......
+			Matcher archMatcher = WcardPattern.getArchiveURLMatcher(fileName);
+			if (archMatcher != null) {
+				if (archMatcher.group(3) != null) {
+					innerSource = archMatcher.group(3);
+				} else if (archMatcher.group(7) != null) {
+					innerSource = archMatcher.group(7);
+				}
+			}
+		}
+		
+		return new ArchiveDescriptor(archiveType, innerSource, sbAnchor.toString());
+	}
+	
+	private static class ArchiveDescriptor {
+		
+		public final ArchiveType archiveType;
+		public final String innerSource;
+		public final String anchor;
+
+		/**
+		 * @param archiveType
+		 * @param innerSource
+		 * @param anchor
+		 */
+		public ArchiveDescriptor(ArchiveType archiveType, String innerSource, String anchor) {
+			this.archiveType = Objects.requireNonNull(archiveType);
+			this.innerSource = Objects.requireNonNull(innerSource);
+			this.anchor = anchor;
+		}
+		
 	}
 
 	@Override
