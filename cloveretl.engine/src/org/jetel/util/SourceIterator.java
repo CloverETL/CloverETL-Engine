@@ -157,7 +157,7 @@ public class SourceIterator implements Closeable {
 	@Override
 	public void close() throws IOException {
 		closed = true;
-		FileUtils.close(directoryStream);
+		FileUtils.closeAll(directoryStream, dictionaryIterator, portReadingIterator);
 	}
 
 	public void preExecute() throws ComponentNotReadyException {

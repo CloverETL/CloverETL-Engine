@@ -19,22 +19,22 @@
 package org.jetel.util;
 
 import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.ArrayList;
+import java.nio.file.DirectoryStream;
+import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
-import org.jetel.data.Defaults;
 import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.enums.ProcessingType;
 import org.jetel.exception.ComponentNotReadyException;
@@ -42,7 +42,8 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.InputPort;
 import org.jetel.util.file.FileUtils;
-import org.jetel.util.file.WcardPattern;
+import org.jetel.util.file.stream.Input;
+import org.jetel.util.file.stream.Wildcards;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 
@@ -52,7 +53,7 @@ import org.jetel.util.property.RefResFlag;
  * @author Jan Ausperger, Martin Slama (jan.ausperger@javlin.eu)
  *         (c) Javlin, a.s. (www.javlin.eu)
  */
-public class ReadableChannelPortIterator {
+public class ReadableChannelPortIterator implements Closeable {
 	
     private static Log defaultLogger = LogFactory.getLog(ReadableChannelPortIterator.class);
 	public static final String DEFAULT_CHARSET = "UTF-8"; //$NON-NLS-1$
@@ -351,11 +352,12 @@ public class ReadableChannelPortIterator {
 	/**
 	 * Source field data wrapper.
 	 */
-	private static class SourceFieldDataWrapper extends FieldDataWrapper {
+	private static class SourceFieldDataWrapper extends FieldDataWrapper implements Closeable {
 		// property resolver
 		private PropertyRefResolver propertyRefResolver;
 		private URL contextURL;
-		private Iterator<String> iterator = new ArrayList<String>(0).iterator();
+		private Iterator<Input> iterator = Collections.emptyIterator();
+		private DirectoryStream<Input> directoryStream;
 
 		/**
 		 * Constructor.
@@ -386,33 +388,29 @@ public class ReadableChannelPortIterator {
 		public Object getData(DataSourceType preferredDataSource) throws UnsupportedEncodingException, JetelException {
 			// urls processing
 			if (!hasData()) {
+				try {
+					// close the previous directory stream
+					FileUtils.close(directoryStream);
+				} catch (IOException ex) {
+					defaultLogger.error("Failed to release resources", ex);
+				}
 				String pattern = field.getValue().toString();
 				if (propertyRefResolver != null) {
 					pattern = propertyRefResolver.resolveRef(pattern, RefResFlag.SPEC_CHARACTERS_OFF);
 				}
-				WcardPattern pat = new WcardPattern();
-				pat.setParent(contextURL);
-		        pat.addPattern(pattern, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
-		        pat.resolveAllNames(true);
-		        try {
-					List<String> filenames = pat.filenames();
-					if (filenames.isEmpty()) {
-						return null;
-					}
-					iterator = filenames.iterator();
-				} catch (IOException e) {
-					throw new JetelException("Can't prepare file list from wildcard URL", e);
+				
+				this.directoryStream = Wildcards.newDirectoryStream(contextURL, pattern);
+				Iterator<Input> it = directoryStream.iterator();
+				if (!it.hasNext()) {
+					return null;
 				}
+				iterator = it;
 			}
 			
-			currentFileName = ReadableChannelIterator.unificateFileName(contextURL, iterator.next());
+			Input input = iterator.next();
+			currentFileName = ReadableChannelIterator.unificateFileName(contextURL, input.getAbsolutePath());
 			
-			Object dataSource = ReadableChannelIterator.getPreferredDataSource(contextURL, currentFileName, preferredDataSource);
-			if (dataSource != null) {
-				return dataSource;
-			}
-			
-			return createReadableByteChannel(currentFileName);
+			return getPreferredDataSource(input, preferredDataSource, currentFileName);
 		}
 		
 		@Override
@@ -421,23 +419,37 @@ public class ReadableChannelPortIterator {
 		}
 		
 		/**
-		 * Creates readable channel for a file name.
+		 * Tries to return data source of the preferred type.
+		 * Falls back to {@link ReadableByteChannel} if the attempt fails.
 		 * 
+		 * @param input
+		 * @param preferredDataSource
 		 * @param fileName
-		 * @return
+		 * 
+		 * @return datasource of the preferred type or {@link ReadableByteChannel}
 		 * @throws JetelException
 		 */
-		private ReadableByteChannel createReadableByteChannel(String fileName) throws JetelException {
+		private Object getPreferredDataSource(Input input, DataSourceType preferredDataSource, String fileName) throws JetelException {
 			defaultLogger.debug(UtilMessages.getString("ReadableChannelPortIterator_opening_input") + fileName); //$NON-NLS-1$
 			try {
-				ReadableByteChannel channel = FileUtils.getReadableChannel(contextURL, fileName);
+				Object dataSource = input.getPreferredInput(preferredDataSource);
+				if (dataSource != null) {
+					return dataSource;
+				}
+				dataSource = input.getPreferredInput(DataSourceType.CHANNEL);
 				defaultLogger.debug(UtilMessages.getString("ReadableChannelPortIterator_reading_input") + fileName); //$NON-NLS-1$
-				return channel;
+				return dataSource;
 			} catch (IOException e) {
 				throw new JetelException(UtilMessages.
 						getString("ReadableChannelPortIterator_file_unreachable") + fileName, e); //$NON-NLS-1$
 			}
 		}
+
+		@Override
+		public void close() throws IOException {
+			FileUtils.close(directoryStream);
+		}
+		
 	}
 
 	/**
@@ -525,5 +537,12 @@ public class ReadableChannelPortIterator {
 	    public ProcessingType getProcessingType() {
 	    	return processingType;
 	    }
+	}
+
+	@Override
+	public void close() throws IOException {
+		if (fieldDataWrapper instanceof Closeable) {
+			FileUtils.close((Closeable) fieldDataWrapper);
+		}
 	}
 }

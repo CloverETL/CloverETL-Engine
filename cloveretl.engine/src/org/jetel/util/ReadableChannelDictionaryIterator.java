@@ -20,6 +20,7 @@ package org.jetel.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -30,18 +31,21 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+import java.nio.file.DirectoryStream;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
+import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.enums.ProcessingType;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.util.file.FileUtils;
-import org.jetel.util.file.WcardPattern;
+import org.jetel.util.file.stream.Input;
+import org.jetel.util.file.stream.Wildcards;
 
 
 /***
@@ -50,7 +54,7 @@ import org.jetel.util.file.WcardPattern;
  * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
  *         (c) Javlin, a.s. (www.javlin.eu)
  */
-public class ReadableChannelDictionaryIterator {
+public class ReadableChannelDictionaryIterator implements Closeable {
 
     private static Log defaultLogger = LogFactory.getLog(ReadableChannelDictionaryIterator.class);
 	private static final String PARAM_DELIMITER = ":";
@@ -99,7 +103,7 @@ public class ReadableChannelDictionaryIterator {
 	 * @return
 	 */
 	public boolean hasNext() {
-		return channelIterator != null && channelIterator.hasNext();
+		return (channelIterator != null) && channelIterator.hasNext();
 	}
 
 	/**
@@ -146,18 +150,7 @@ public class ReadableChannelDictionaryIterator {
 	}
 	
 	private SourceFileNameChannelIterator createSourceFileNameChannelIterator(String source) throws JetelException {
-		WcardPattern pat = new WcardPattern();
-		pat.setParent(contextURL);
-		pat.addPattern(source, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
-		pat.resolveAllNames(true);
-		List<String> filenames;
-		try {
-			filenames = pat.filenames();
-		} catch (IOException e) {
-			throw new JetelException(e);
-		}
-		
-		return new SourceFileNameChannelIterator(contextURL, filenames);
+		return new SourceFileNameChannelIterator(contextURL, source);
 	}
 
 	/**
@@ -308,16 +301,16 @@ public class ReadableChannelDictionaryIterator {
 		}
 	}
 	
-	private static class SourceFileNameChannelIterator extends ObjectChannelIterator {
+	private static class SourceFileNameChannelIterator extends ObjectChannelIterator implements Closeable {
 		
-		private final URL contextURL;
-		private final Iterator<String> filenamesIterator;
+		private final Iterator<Input> filenamesIterator;
 		private String currentInnerFileName;
+		private DirectoryStream<Input> directoryStream;
 		
-		public SourceFileNameChannelIterator(URL contextURL, List<String> filenames) {
+		public SourceFileNameChannelIterator(URL contextURL, String mask) {
 			super();
-			this.contextURL = contextURL;
-			this.filenamesIterator = filenames.iterator();
+			this.directoryStream = Wildcards.newDirectoryStream(contextURL, mask);
+			this.filenamesIterator = directoryStream.iterator();
 		}
 		
 		@Override
@@ -332,11 +325,12 @@ public class ReadableChannelDictionaryIterator {
 		
 		@Override
 		public ReadableByteChannel next() {
-			currentInnerFileName = filenamesIterator.next();
+			Input input = filenamesIterator.next();
+			currentInnerFileName = input.getAbsolutePath();
 			
 			defaultLogger.debug("Opening input file " + currentInnerFileName);
 			try {
-				ReadableByteChannel channel = FileUtils.getReadableChannel(contextURL, currentInnerFileName);
+				ReadableByteChannel channel = (ReadableByteChannel) input.getPreferredInput(DataSourceType.CHANNEL);
 				defaultLogger.debug("Reading input file " + currentInnerFileName);
 				return channel;
 			} catch (IOException e) {
@@ -348,6 +342,11 @@ public class ReadableChannelDictionaryIterator {
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
+
+		@Override
+		public void close() throws IOException {
+			FileUtils.close(directoryStream);
+		}
 		
 	}
 
@@ -357,6 +356,13 @@ public class ReadableChannelDictionaryIterator {
 	
 	public void setContextURL(URL contextURL) {
 		this.contextURL = contextURL;
+	}
+
+	@Override
+	public void close() throws IOException {
+		if (channelIterator instanceof Closeable) {
+			FileUtils.close((Closeable) channelIterator);
+		}
 	}
 	
 }

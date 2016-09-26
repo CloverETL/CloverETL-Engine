@@ -184,7 +184,7 @@ public class ReadableChannelIterator implements Closeable {
 	@Override
 	public void close() throws IOException {
 		closed = true;
-		FileUtils.close(directoryStream);
+		FileUtils.closeAll(directoryStream, dictionaryReadingIterator, portReadingIterator);
 	}
 	
 	@Override
