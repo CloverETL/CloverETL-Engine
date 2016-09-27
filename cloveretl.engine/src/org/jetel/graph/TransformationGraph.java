@@ -121,7 +121,7 @@ public final class TransformationGraph extends GraphElement {
 	static Log logger = LogFactory.getLog(TransformationGraph.class);
 
 	/** Time stamp of instance creation time. */
-	private long instanceCreated = System.currentTimeMillis();
+	private final long instanceCreated = System.nanoTime();
 	
 	private WatchDog watchDog;
 	
@@ -1401,7 +1401,7 @@ public final class TransformationGraph extends GraphElement {
 	}
     
 	/**
-	 * @return time when this class instance was created
+	 * @return timestamp when this class instance was created (obtained from {@link System#nanoTime()}) 
 	 */
 	public long getInstanceCreated() {
 		return instanceCreated;
