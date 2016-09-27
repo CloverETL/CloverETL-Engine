@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.jetel.component.fileoperation.CloverURI;
 import org.jetel.component.fileoperation.FileManager;
+import org.jetel.component.fileoperation.Info;
 import org.jetel.component.fileoperation.S3OperationHandler;
 import org.jetel.component.fileoperation.SingleCloverURI;
 import org.jetel.component.fileoperation.result.ResolveResult;
@@ -100,6 +101,9 @@ public class S3PathResolver implements CustomPathResolver {
 			List<SingleCloverURI> resolved = resolveResult.getResult();
 			List<String> result = new ArrayList<>(resolved.size());
 			for (SingleCloverURI resultUri: resolved) {
+				if ((resultUri instanceof Info) && ((Info) resultUri).isDirectory()) {
+					continue; // CLO-9619
+				}
 				result.add(resultUri.toURI().toString());
 			}
 			return result;

@@ -817,6 +817,9 @@ public class WcardPattern {
 			Vector<?> v = sftpConnection.ls(url.getFile());				// note: too long operation
 			for (Object lsItem: v) {
 				LsEntry lsEntry = (LsEntry) lsItem;
+				if (lsEntry.getAttrs().isDir()) {
+					continue; // CLO-9619
+				}
 				String resolverdFileNameWithoutPath = lsEntry.getFilename();
 				
 				// replace file name
@@ -886,6 +889,9 @@ public class WcardPattern {
 				Arrays.sort(curMatch);
 				for (int fnIdx = 0; fnIdx < curMatch.length; fnIdx++) {
 					File f = new File(dir, curMatch[fnIdx]);
+					if (f.isDirectory()) {
+						continue; // CLO-9619
+					}
 					mfiles.add(f.getAbsolutePath());
 				}
 			}
