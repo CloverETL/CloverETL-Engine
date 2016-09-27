@@ -293,7 +293,7 @@ public class MetadataPropagationResolver implements Serializable {
 
 	/**
 	 * Creates MV model for given metadata.
-	 * @param metadata wrapped metadata instance
+	 * @param metadata metadata to be wrapped to MVMetadata (the instance shouldn't be shared, ID is changed)
 	 * @param relatedGraphElement graph element which request this operation (it is necessary to detect logical parent graph of the metadata)
 	 * @param identification string identifier of the metadata - should be unique in the scope of the relatedGraphElement
 	 * @param priority priority of the metadata
@@ -304,7 +304,6 @@ public class MetadataPropagationResolver implements Serializable {
 		if (parentEngineGraph == null) { //dynamic metadata
 			if (relatedGraphElement != null) {
 				parentEngineGraph = relatedGraphElement.getGraph();
-				//shouldn't be the metadata duplicated ???
 				metadata.setId("__dynamic_metadata_" + relatedGraphElement.getId() + "_" + (identification != null ? identification : metadata.getName()));
 			} else {
 				metadata.setId("__dynamic_metadata_" + (identification != null ? identification : metadata.getName()));
