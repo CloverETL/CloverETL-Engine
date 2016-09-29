@@ -182,7 +182,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	@Override
 	public Result call() {
 		if (logger.isDebugEnabled()) {
-		  	logger.debug("Watchdog thread is runnig");
+		  	logger.debug("Watchdog thread is running");
 		}
 		CURRENT_PHASE_LOCK.lock();
 		String originalThreadName = null;
