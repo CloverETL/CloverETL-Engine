@@ -63,7 +63,7 @@ import org.jetel.util.string.StringUtils;
 @CloverPublicAPI
 public class RecordKey {
 
-	protected int keyFields[];
+	protected volatile int keyFields[];
 	protected DataRecordMetadata metadata;
 	private DataRecordMetadata keyMetadata;
 	protected String keyFieldNames[];
@@ -191,7 +191,12 @@ public class RecordKey {
 	 */
 	public int[] getKeyFields() {
 		if (keyFields == null){
-			keyFields = getKeyFieldsIndexes(this.metadata, this.keyFieldNames);
+			synchronized (this) {
+				if(keyFields==null){
+					keyFields = getKeyFieldsIndexes(this.metadata, this.keyFieldNames);
+				}
+			}
+			
 		}
 		return keyFields;
 	}
