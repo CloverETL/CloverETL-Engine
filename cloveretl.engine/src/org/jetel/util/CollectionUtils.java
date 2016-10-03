@@ -5,6 +5,7 @@
  */
 package org.jetel.util;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -48,5 +49,20 @@ public class CollectionUtils {
         }
         
         return ret.toArray(arr);
+    }
+    
+    public static List<Integer> fromIntArray(final int[] arr){
+    	return new AbstractList<Integer>() {
+
+			@Override
+			public Integer get(int index) {
+				return arr[index];
+			}
+
+			@Override
+			public int size() {
+				return arr.length;
+			}
+		};
     }
 }
