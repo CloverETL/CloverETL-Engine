@@ -32,7 +32,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
  *
  * @created 5. 9. 2016
  */
-public class TarDirectoryStream extends AbstractArchiveStream<ArchiveInputStream, ArchiveEntry> {
+public class TarDirectoryStream extends ArchiveDirectoryStream<ArchiveInputStream, ArchiveEntry> {
 
 	/**
 	 * @param parent

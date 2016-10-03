@@ -30,7 +30,7 @@ import org.jetel.util.file.ArchiveUtils;
  *
  * @created 7. 9. 2016
  */
-public class GzipDirectoryStream extends AbstractArchiveStream<InputStream, Object> {
+public class GzipDirectoryStream extends ArchiveDirectoryStream<InputStream, Object> {
 	
 	private boolean firstEntry;
 	private static final Object ENTRY = new Object();

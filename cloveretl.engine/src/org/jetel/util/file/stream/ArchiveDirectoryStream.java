@@ -36,7 +36,7 @@ import org.jetel.util.file.FileUtils;
  *
  * @created 5. 9. 2016
  */
-public abstract class AbstractArchiveStream<Stream extends InputStream, Entry> extends AbstractDirectoryStream<Input> {
+public abstract class ArchiveDirectoryStream<Stream extends InputStream, Entry> extends AbstractDirectoryStream<Input> {
 	
 	private final DirectoryStream<Input> parentStream;
 	private final Iterator<Input> parent;
@@ -53,7 +53,7 @@ public abstract class AbstractArchiveStream<Stream extends InputStream, Entry> e
 	/**
 	 * 
 	 */
-	protected AbstractArchiveStream(DirectoryStream<Input> parent, String glob) {
+	protected ArchiveDirectoryStream(DirectoryStream<Input> parent, String glob) {
 		this.parentStream = parent;
 		this.parent = parent.iterator();
 		if (glob == null) {

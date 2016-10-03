@@ -30,7 +30,7 @@ import java.util.zip.ZipInputStream;
  *
  * @created 5. 9. 2016
  */
-public class ZipDirectoryStream extends AbstractArchiveStream<ZipInputStream, ZipEntry> {
+public class ZipDirectoryStream extends ArchiveDirectoryStream<ZipInputStream, ZipEntry> {
 
 	/**
 	 * @param parent
