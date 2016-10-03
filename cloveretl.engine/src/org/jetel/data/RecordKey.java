@@ -37,6 +37,7 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CloverPublicAPI;
+import org.jetel.util.CollectionUtils;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -222,13 +223,8 @@ public class RecordKey {
         for(int i=0;i<metadata.getNumFields();i++){
             allFields.add(Integer.valueOf(i));
         }
-        allFields.removeAll(Arrays.asList(keyFields));
-        int[] nonKey=new int[allFields.size()];
-        int counter=0;
-        for(Integer index : allFields){
-            nonKey[counter++]=index.intValue();
-        }
-        return nonKey;
+        allFields.removeAll(CollectionUtils.fromIntArray(getKeyFields()));
+        return CollectionUtils.toIntegerArray(allFields);
     }
 
 	/**
