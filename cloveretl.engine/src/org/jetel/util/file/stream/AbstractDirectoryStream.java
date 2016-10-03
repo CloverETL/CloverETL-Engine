@@ -97,7 +97,7 @@ public abstract class AbstractDirectoryStream<T> implements DirectoryStream<T>, 
 
 	@Override
 	public Iterator<T> iterator() {
-		if (iteratorReturned) {
+		if (iteratorReturned || closed) {
 			throw new IllegalStateException();
 		}
 		iteratorReturned = true;
