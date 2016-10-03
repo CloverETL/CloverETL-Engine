@@ -63,7 +63,7 @@ import org.jetel.util.string.StringUtils;
 @CloverPublicAPI
 public class RecordKey {
 
-	protected volatile int keyFields[];
+	private volatile int keyFields[];
 	protected DataRecordMetadata metadata;
 	private DataRecordMetadata keyMetadata;
 	protected String keyFieldNames[];
@@ -133,12 +133,12 @@ public class RecordKey {
 			keyStr.setLength(0); 
 		}
 
-		if (keyFields.length > 0) {
-			keyStr.append(record.getField(keyFields[0]).toString());
+		if (getKeyFields().length > 0) {
+			keyStr.append(record.getField(getKeyFields()[0]).toString());
 		}
-		for (int i = 1; i < keyFields.length; i++) {
+		for (int i = 1; i < getKeyFields().length; i++) {
 			keyStr.append(delimiter);
-			keyStr.append(record.getField(keyFields[i]).toString());
+			keyStr.append(record.getField(getKeyFields()[i]).toString());
 		}
 		return keyStr.toString();
 	}
@@ -150,37 +150,40 @@ public class RecordKey {
 	 */
 	public void init() {
 		
-		if (isInitialized) return;
+		if (isInitialized)
+			return;
+		synchronized (this) {
+			if (isInitialized)
+				return;
+			if (metadata == null) {
+				throw new NullPointerException("Metadata are null.");
+			}
 
-        if (metadata == null) {
-        	throw new NullPointerException("Metadata are null.");
-        }
+			if (keyFields == null) {
+				Integer position;
+				keyFields = new int[keyFieldNames.length];
+				Map<String, Integer> fields = metadata.getFieldNamesMap();
 
-	    if (keyFields == null) {
-            Integer position;
-            keyFields = new int[keyFieldNames.length];
-            Map<String, Integer> fields = metadata.getFieldNamesMap();
+				for (int i = 0; i < keyFieldNames.length; i++) {
+					if ((position = fields.get(keyFieldNames[i])) != null) {
+						keyFields[i] = position.intValue();
+					} else {
+						throw new RuntimeException("Field name specified as a key doesn't exist: " + keyFieldNames[i]);
+					}
+				}
+			} else if (keyFieldNames == null) {
+				keyFieldNames = new String[keyFields.length];
+				for (int i = 0; i < keyFields.length; i++) {
+					keyFieldNames[i] = metadata.getField(keyFields[i]).getName();
+				}
+			}
 
-            for (int i = 0; i < keyFieldNames.length; i++) {
-                if ((position = fields.get(keyFieldNames[i])) != null) {
-                    keyFields[i] = position.intValue();
-                } else {
-                    throw new RuntimeException(
-                            "Field name specified as a key doesn't exist: "
-                                    + keyFieldNames[i]);
-                }
-            }
-        }else if (keyFieldNames==null){
-            keyFieldNames=new String[keyFields.length];
-            for (int i=0;i<keyFields.length;i++){
-                keyFieldNames[i]=metadata.getField(keyFields[i]).getName();
-            }
-        }
-	    
-	    // update collators from field metadata
-	    updateCollators(metadata, keyFields);
+			// update collators from field metadata
+			updateCollators(metadata, keyFields);
 
-	    isInitialized = true;
+			isInitialized = true;
+
+		}
 	}
 
 
@@ -255,29 +258,29 @@ public class RecordKey {
 		}
     	comparedNulls = false;
 		if (equalNULLs){
-		    for (int i = 0; i < keyFields.length; i++) {
-		    	DataField field = record1.getField(keyFields[i]);
+		    for (int i = 0; i < getKeyFields().length; i++) {
+		    	DataField field = record1.getField(getKeyFields()[i]);
 				if (useCollator && collators[i] != null && (field instanceof StringDataField)) {
-			        compResult = ((StringDataField)field).compareTo(record2.getField(keyFields[i]), collators[i]);
+			        compResult = ((StringDataField)field).compareTo(record2.getField(getKeyFields()[i]), collators[i]);
 				} else {
-					compResult = field.compareTo(record2.getField(keyFields[i]));
+					compResult = field.compareTo(record2.getField(getKeyFields()[i]));
 				}
 		        if (compResult != 0) {
-		            if (!(record1.getField(keyFields[i]).isNull() && record2.getField(keyFields[i]).isNull())) {
+		            if (!(record1.getField(getKeyFields()[i]).isNull() && record2.getField(getKeyFields()[i]).isNull())) {
 		                return compResult;
 		            }
 		        }
 		    }
 		}else {
-		    for (int i = 0; i < keyFields.length; i++) {
-		    	DataField field = record1.getField(keyFields[i]);
+		    for (int i = 0; i < getKeyFields().length; i++) {
+		    	DataField field = record1.getField(getKeyFields()[i]);
 				if (useCollator && collators[i] != null && (field instanceof StringDataField)) {
-			        compResult = ((StringDataField)field).compareTo(record2.getField(keyFields[i]), collators[i]);
+			        compResult = ((StringDataField)field).compareTo(record2.getField(getKeyFields()[i]), collators[i]);
 				} else {
-					compResult = field.compareTo(record2.getField(keyFields[i]));
+					compResult = field.compareTo(record2.getField(getKeyFields()[i]));
 				}
 		        if (compResult != 0) {
-		            if (record1.getField(keyFields[i]).isNull() && record2.getField(keyFields[i]).isNull()) {
+		            if (record1.getField(getKeyFields()[i]).isNull() && record2.getField(getKeyFields()[i]).isNull()) {
 		            	comparedNulls = true;
 		            }
 		            return compResult;
@@ -303,35 +306,35 @@ public class RecordKey {
 		if (record1 == record2) return 0;
 		int compResult;
 		int[] record2KeyFields = secondKey.getKeyFields();
-		if (keyFields.length != record2KeyFields.length) {
+		if (getKeyFields().length != record2KeyFields.length) {
 			throw new RuntimeException("Can't compare. Keys have different number of DataFields");
 		}
 
 		comparedNulls = false;
 		if (equalNULLs){
-		    for (int i = 0; i < keyFields.length; i++) {
-		    	DataField field = record1.getField(keyFields[i]);
+		    for (int i = 0; i < getKeyFields().length; i++) {
+		    	DataField field = record1.getField(getKeyFields()[i]);
 				if (useCollator && collators[i] != null && (field instanceof StringDataField)) {
 			        compResult = ((StringDataField)field).compareTo(record2.getField(record2KeyFields[i]), collators[i]);
 				} else {
 					compResult = field.compareTo(record2.getField(record2KeyFields[i]));
 				}
 		        if (compResult != 0) {
-		            if (!(record1.getField(keyFields[i]).isNull() && record2.getField(record2KeyFields[i]).isNull())) {
+		            if (!(record1.getField(getKeyFields()[i]).isNull() && record2.getField(record2KeyFields[i]).isNull())) {
 		                return compResult;
 		            }
 		        }
 		    }
 		}else{
-		    for (int i = 0; i < keyFields.length; i++) {
-		    	DataField field = record1.getField(keyFields[i]);
+		    for (int i = 0; i < getKeyFields().length; i++) {
+		    	DataField field = record1.getField(getKeyFields()[i]);
 				if (useCollator && collators[i] != null && (field instanceof StringDataField)) {
 			        compResult = ((StringDataField)field).compareTo(record2.getField(record2KeyFields[i]), collators[i]);
 				} else {
 					compResult = field.compareTo(record2.getField(record2KeyFields[i]));
 				}
 		        if (compResult != 0) {
-		            if (record1.getField(keyFields[i]).isNull() && record2.getField(record2KeyFields[i]).isNull()) {
+		            if (record1.getField(getKeyFields()[i]).isNull() && record2.getField(record2KeyFields[i]).isNull()) {
 		            	comparedNulls = true;
 		            }
 		            return compResult;
@@ -362,12 +365,12 @@ public class RecordKey {
 	public boolean equals(RecordKey secondKey, DataRecord record1, DataRecord record2) {
 		if (record1 == record2) return true;
 		int[] record2KeyFields = secondKey.getKeyFields();
-		if (keyFields.length != record2KeyFields.length) { // records can not be equals based on defined key-fields
+		if (getKeyFields().length != record2KeyFields.length) { // records can not be equals based on defined key-fields
 			return false;
 		}
 		if (equalNULLs) {
-			for (int i = 0; i < keyFields.length; i++) {
-				DataField field1 = record1.getField(keyFields[i]);
+			for (int i = 0; i < getKeyFields().length; i++) {
+				DataField field1 = record1.getField(getKeyFields()[i]);
 		    	DataField field2 = record2.getField(record2KeyFields[i]);
 				if (!field1.equals(field2)) {
 					if (!(field1.isNull() && field2.isNull())) {
@@ -376,8 +379,8 @@ public class RecordKey {
 				}
 			}
 		} else {
-			for (int i = 0; i < keyFields.length; i++) {
-				DataField field1 = record1.getField(keyFields[i]);
+			for (int i = 0; i < getKeyFields().length; i++) {
+				DataField field1 = record1.getField(getKeyFields()[i]);
 		    	DataField field2 = record2.getField(record2KeyFields[i]);
 				if (!field1.equals(field2)) {
 					return false;
@@ -401,9 +404,9 @@ public class RecordKey {
 					" Possibly different structure");
 		}
 		if (equalNULLs){
-		    for (int i = 0; i < keyFields.length; i++) {
-		    	DataField field1 = record1.getField(keyFields[i]);
-		    	DataField field2 = record2.getField(keyFields[i]);
+		    for (int i = 0; i < getKeyFields().length; i++) {
+		    	DataField field1 = record1.getField(getKeyFields()[i]);
+		    	DataField field2 = record2.getField(getKeyFields()[i]);
 				if (useCollator && collators[i] != null && field1 instanceof StringDataField && field2 instanceof StringDataField) {
 					Object o1 = field1.getValue();
 					Object o2 = field2.getValue();
@@ -421,9 +424,9 @@ public class RecordKey {
 		        }
 		    }
 		}else{
-		    for (int i = 0; i < keyFields.length; i++) {
-		    	DataField field1 = record1.getField(keyFields[i]);
-		    	DataField field2 = record2.getField(keyFields[i]);
+		    for (int i = 0; i < getKeyFields().length; i++) {
+		    	DataField field1 = record1.getField(getKeyFields()[i]);
+		    	DataField field2 = record2.getField(getKeyFields()[i]);
 				if (useCollator && collators[i] != null && field1 instanceof StringDataField && field2 instanceof StringDataField) {
 					Object o1 = field1.getValue();
 					Object o2 = field2.getValue();
@@ -448,8 +451,8 @@ public class RecordKey {
 	 * @param record data record from which key fields will be serialized into ByteBuffer
 	 */
 	public void serializeKeyFields(CloverBuffer buffer,DataRecord record) {
-		for (int i = 0; i < keyFields.length; i++) {
-			record.getField(keyFields[i]).serialize(buffer);
+		for (int i = 0; i < getKeyFields().length; i++) {
+			record.getField(getKeyFields()[i]).serialize(buffer);
 		}
 	}
 	
@@ -462,8 +465,8 @@ public class RecordKey {
      * @since 29.1.2007
      */
     public void deserializeKeyFileds(CloverBuffer buffer,DataRecord record){
-        for (int i = 0; i < keyFields.length; i++) {
-            record.getField(keyFields[i]).deserialize(buffer);
+        for (int i = 0; i < getKeyFields().length; i++) {
+            record.getField(getKeyFields()[i]).deserialize(buffer);
         }
     }
     
@@ -475,8 +478,8 @@ public class RecordKey {
 	 */
 	public DataRecordMetadata generateKeyRecordMetadata() {
 		DataRecordMetadata metadata = new DataRecordMetadata(this.metadata.getName()+"key");
-		for (int i = 0; i < keyFields.length; i++) {
-			metadata.addField(this.metadata.getField(keyFields[i]).duplicate());
+		for (int i = 0; i < getKeyFields().length; i++) {
+			metadata.addField(this.metadata.getField(getKeyFields()[i]).duplicate());
 		}
 		return metadata;
 	}
@@ -501,15 +504,15 @@ public class RecordKey {
 	public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append("RecordKey[");
-        if (keyFields == null) {
+        if (getKeyFields() == null) {
             buffer.append("keyFields = ").append("null");
         } else {
             buffer.append("keyFields = ").append("[");
-            for (int i = 0; i < keyFields.length; i++) {
+            for (int i = 0; i < getKeyFields().length; i++) {
                 if (i != 0) {
                     buffer.append(", ");
                 }
-                buffer.append(keyFields[i]);
+                buffer.append(getKeyFields()[i]);
             }
             buffer.append("]");
         }
@@ -557,17 +560,17 @@ public class RecordKey {
     	List<Integer> incomparable = new ArrayList<Integer>();
 		int[] record2KeyFields = secondKey.getKeyFields();
 		DataRecordMetadata secondMetadata = secondKey.metadata;
-		for (int i = 0; i < Math.max(keyFields.length, record2KeyFields.length); i++) {
-			if (i<keyFields.length && i<record2KeyFields.length) {
-				if (metadata.getDataFieldType(keyFields[i]) != secondMetadata.getDataFieldType(record2KeyFields[i])) {
-					incomparable.add(keyFields[i]);
+		for (int i = 0; i < Math.max(getKeyFields().length, record2KeyFields.length); i++) {
+			if (i<getKeyFields().length && i<record2KeyFields.length) {
+				if (metadata.getDataFieldType(getKeyFields()[i]) != secondMetadata.getDataFieldType(record2KeyFields[i])) {
+					incomparable.add(getKeyFields()[i]);
 					incomparable.add(record2KeyFields[i]);
 				}
-			}else if (i>=keyFields.length) {
+			}else if (i>=getKeyFields().length) {
 				incomparable.add(null);
 				incomparable.add(record2KeyFields[i]);
 			}else {
-				incomparable.add(keyFields[i]);
+				incomparable.add(getKeyFields()[i]);
 				incomparable.add(null);
 			}
 		}
@@ -629,9 +632,9 @@ public class RecordKey {
     	
     	//if one of metadata are null check lengths of keys
     	if (isNull) {
-    		int masterLength = masterKey.keyFields != null ? masterKey.keyFields.length :
+    		int masterLength = masterKey.getKeyFields() != null ? masterKey.getKeyFields().length :
     			masterKey.keyFieldNames.length;
-    		int slaveLength = slaveKey.keyFields != null ? slaveKey.keyFields.length :
+    		int slaveLength = slaveKey.getKeyFields() != null ? slaveKey.getKeyFields().length :
     			slaveKey.keyFieldNames.length;
     		if (!(masterLength == slaveLength)) {
     			problem = new ConfigurationProblem("Keys have different number of DataFields", Severity.ERROR, component, Priority.NORMAL, slaveAttribute);
@@ -695,29 +698,29 @@ public class RecordKey {
 		int compResult;
     	comparedNulls = false;
 		if (equalNULLs){
-		    for (int i = 0; i < keyFields.length; i++) {
-		    	DataField field = record1.getField(keyFields[i]);
+		    for (int i = 0; i < getKeyFields().length; i++) {
+		    	DataField field = record1.getField(getKeyFields()[i]);
 				if (useCollator && collators[i] != null && (field instanceof StringDataField)) {
-			        compResult = ((StringDataField)field).compareTo(record2.getField(keyFields[i]), collators[i]);
+			        compResult = ((StringDataField)field).compareTo(record2.getField(getKeyFields()[i]), collators[i]);
 				} else {
-					compResult = field.compareTo(record2.getField(keyFields[i]));
+					compResult = field.compareTo(record2.getField(getKeyFields()[i]));
 				}
 		        if (compResult != 0) {
-		            if (!(record1.getField(keyFields[i]).isNull() && record2.getField(keyFields[i]).isNull())) {
+		            if (!(record1.getField(getKeyFields()[i]).isNull() && record2.getField(getKeyFields()[i]).isNull())) {
 		                return field;
 		            }
 		        }
 		    }
 		} else {
-		    for (int i = 0; i < keyFields.length; i++) {
-		    	DataField field = record1.getField(keyFields[i]);
+		    for (int i = 0; i < getKeyFields().length; i++) {
+		    	DataField field = record1.getField(getKeyFields()[i]);
 				if (useCollator && collators[i] != null && (field instanceof StringDataField)) {
-			        compResult = ((StringDataField)field).compareTo(record2.getField(keyFields[i]), collators[i]);
+			        compResult = ((StringDataField)field).compareTo(record2.getField(getKeyFields()[i]), collators[i]);
 				} else {
-					compResult = field.compareTo(record2.getField(keyFields[i]));
+					compResult = field.compareTo(record2.getField(getKeyFields()[i]));
 				}
 		        if (compResult != 0) {
-		            if (record1.getField(keyFields[i]).isNull() && record2.getField(keyFields[i]).isNull()) {
+		            if (record1.getField(getKeyFields()[i]).isNull() && record2.getField(getKeyFields()[i]).isNull()) {
 		            	comparedNulls = true;
 		            }
 		            return field;

@@ -183,8 +183,8 @@ public class RecordOrderedKey extends RecordKey {
 			keyStr.setLength(0);			
 		}
 		
-		for (int i = 0; i < keyFields.length; i++) {
-			keyStr.append(record.getField(keyFields[i]).toString());
+		for (int i = 0; i < getKeyFields().length; i++) {
+			keyStr.append(record.getField(getKeyFields()[i]).toString());
 			keyStr.append(KEY_ORDERING_1ST_DELIMITER);
 			keyStr.append(keyOrderings[i] ? "A" : "D");			
 			keyStr.append(KEY_ORDERING_2ND_DELIMITER);
@@ -219,28 +219,28 @@ public class RecordOrderedKey extends RecordKey {
 		}
 	    DataField field;
 		if (this.isEqualNULLs()){
-			for (int i = 0; i < keyFields.length; i++) {
-		        field = record1.getField(keyFields[i]);
+			for (int i = 0; i < getKeyFields().length; i++) {
+		        field = record1.getField(getKeyFields()[i]);
 				if (useCollator && collators[i] != null && (field instanceof StringDataField)) {
-			        compResult = ((StringDataField)field).compareTo(record2.getField(keyFields[i]), collators[i]);
+			        compResult = ((StringDataField)field).compareTo(record2.getField(getKeyFields()[i]), collators[i]);
 				} else {
-					compResult = field.compareTo(record2.getField(keyFields[i]));
+					compResult = field.compareTo(record2.getField(getKeyFields()[i]));
 				}
 		        if (!keyOrderings[i]) // Descending order
 		        	compResult = -compResult;
 		        if (compResult != 0) {
-		            if (!(record1.getField(keyFields[i]).isNull() && record2.getField(keyFields[i]).isNull())) {
+		            if (!(record1.getField(getKeyFields()[i]).isNull() && record2.getField(getKeyFields()[i]).isNull())) {
 		                return compResult;
 		            }
 		        }
 		    }
 		}else {
-		    for (int i = 0; i < keyFields.length; i++) {
-		        field = record1.getField(keyFields[i]);
+		    for (int i = 0; i < getKeyFields().length; i++) {
+		        field = record1.getField(getKeyFields()[i]);
 				if (useCollator && collators[i] != null && (field instanceof StringDataField)) {
-			        compResult = ((StringDataField)field).compareTo(record2.getField(keyFields[i]), collators[i]);
+			        compResult = ((StringDataField)field).compareTo(record2.getField(getKeyFields()[i]), collators[i]);
 				} else {
-					compResult = field.compareTo(record2.getField(keyFields[i]));
+					compResult = field.compareTo(record2.getField(getKeyFields()[i]));
 				}
 		        if (!keyOrderings[i]) // Descending order
 		        	compResult = -compResult;
@@ -268,13 +268,13 @@ public class RecordOrderedKey extends RecordKey {
 		if (record1 == record2) return 0;
 		int compResult;
 		int[] record2KeyFields = secondKey.getKeyFields();
-		if (keyFields.length != record2KeyFields.length) {
+		if (getKeyFields().length != record2KeyFields.length) {
 			throw new RuntimeException("Can't compare. Keys have different number of DataFields");
 		}
 		DataField field;
 		if (this.isEqualNULLs()){
-		    for (int i = 0; i < keyFields.length; i++) {
-		    	field = record1.getField(keyFields[i]);
+		    for (int i = 0; i < getKeyFields().length; i++) {
+		    	field = record1.getField(getKeyFields()[i]);
 		    	if (useCollator && collators[i] != null && (field instanceof StringDataField)) {
 		    		compResult = ((StringDataField)field).compareTo(record2.getField(record2KeyFields[i]), collators[i]);
 		    	} else {
@@ -284,14 +284,14 @@ public class RecordOrderedKey extends RecordKey {
 		        	compResult = -compResult;
 		        }
 		        if (compResult != 0) {
-		            if (!(record1.getField(keyFields[i]).isNull() && record2.getField(keyFields[i]).isNull())) {
+		            if (!(record1.getField(getKeyFields()[i]).isNull() && record2.getField(getKeyFields()[i]).isNull())) {
 		                return compResult;
 		            }
 		        }
 		    }
 		}else{
-		    for (int i = 0; i < keyFields.length; i++) {
-		    	field = record1.getField(keyFields[i]);
+		    for (int i = 0; i < getKeyFields().length; i++) {
+		    	field = record1.getField(getKeyFields()[i]);
 		    	if (useCollator && collators[i] != null && (field instanceof StringDataField)) {
 		    		compResult = ((StringDataField)field).compareTo(record2.getField(record2KeyFields[i]), collators[i]);
 		    	} else {
