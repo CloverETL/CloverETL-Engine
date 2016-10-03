@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.regex.Pattern;
 
-import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.file.FileUtils;
 
@@ -126,7 +125,7 @@ public abstract class AbstractArchiveStream<Stream extends InputStream, Entry> e
 		currentInput = input;
 		InputStream is = null;
 		try {
-			is = (InputStream) input.getPreferredInput(DataSourceType.STREAM);
+			is = input.getInputStream();
 			archiveInputStream = newArchiveInputStream(is);
 		} catch (Exception e) {
 			FileUtils.closeQuietly(is);

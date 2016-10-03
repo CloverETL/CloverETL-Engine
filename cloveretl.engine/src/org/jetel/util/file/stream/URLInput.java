@@ -30,7 +30,7 @@ import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.util.file.FileUtils;
 
-class URLInput implements Input {
+class URLInput extends AbstractInput {
 	
 	private final URL contextUrl;
 	private final String file;

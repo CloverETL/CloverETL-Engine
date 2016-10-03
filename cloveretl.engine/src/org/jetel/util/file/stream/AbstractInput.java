@@ -20,57 +20,31 @@ package org.jetel.util.file.stream;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 
-import org.apache.commons.io.input.CloseShieldInputStream;
 import org.jetel.data.parser.Parser.DataSourceType;
 
-class ArchiveInput extends AbstractInput {
-	
-	protected final String url;
-	protected final InputStream is;
+/**
+ * @author krivanekm (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created 27. 9. 2016
+ */
+public abstract class AbstractInput implements Input {
 
-	/**
-	 * @param cachedEntry
-	 * @param tarStream
-	 */
-	public ArchiveInput(String url, InputStream is) {
-		this.url = url;
-		this.is = is;
-	}
-	
-	/**
-	 * Archive input stream needs to be wrapped to prevent it from being closed.
-	 * 
-	 * @param is
-	 * @return
-	 * @throws IOException
-	 */
-	protected InputStream wrap(InputStream is) throws IOException {
-		return new CloseShieldInputStream(is);
+	@Override
+	public InputStream getInputStream() throws IOException {
+		return (InputStream) getPreferredInput(DataSourceType.STREAM);
 	}
 
 	@Override
-	public Object getPreferredInput(DataSourceType type) throws IOException {
-		switch (type) {
-		case STREAM:
-		case CHANNEL:
-			InputStream wrapper = wrap(is);
-			return (type == DataSourceType.STREAM) ? wrapper : Channels.newChannel(wrapper);
-		default:
-			return null;
-		}
+	public ReadableByteChannel getByteChannel() throws IOException {
+		return (ReadableByteChannel) getPreferredInput(DataSourceType.CHANNEL);
 	}
-	
+
 	@Override
 	public String toString() {
 		return getAbsolutePath();
 	}
-
-	@Override
-	public String getAbsolutePath() {
-		return url;
-	}
-	
 	
 }

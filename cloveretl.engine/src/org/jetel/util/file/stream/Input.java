@@ -19,6 +19,8 @@
 package org.jetel.util.file.stream;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.channels.ReadableByteChannel;
 
 import org.jetel.data.parser.Parser.DataSourceType;
 
@@ -31,6 +33,10 @@ import org.jetel.data.parser.Parser.DataSourceType;
 public interface Input {
 	
 	public Object getPreferredInput(DataSourceType type) throws IOException;
+	
+	public InputStream getInputStream() throws IOException;
+	
+	public ReadableByteChannel getByteChannel() throws IOException;
 	
 	/**
 	 * Returns the absolute path to the file as a string.
