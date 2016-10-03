@@ -66,7 +66,7 @@ public class RecordKey {
 	private volatile int keyFields[];
 	protected DataRecordMetadata metadata;
 	private DataRecordMetadata keyMetadata;
-	protected String keyFieldNames[];
+	private volatile String keyFieldNames[];
 	private final static char KEY_ITEMS_DELIMITER = ':';
 	private final static int DEFAULT_STRING_KEY_LENGTH = 32;
 	private boolean isInitialized = false;
@@ -196,7 +196,7 @@ public class RecordKey {
 		if (keyFields == null){
 			synchronized (this) {
 				if(keyFields==null){
-					keyFields = getKeyFieldsIndexes(this.metadata, this.keyFieldNames);
+					keyFields = getKeyFieldsIndexes(this.metadata, getKeyFieldNames());
 				}
 			}
 			
@@ -517,10 +517,10 @@ public class RecordKey {
             buffer.append("]");
         }
         buffer.append(", metadata = ").append(metadata.toString());
-        if (keyFieldNames == null) {
+        if (getKeyFieldNames() == null) {
             buffer.append(", keyFieldNames = ").append("null");
         } else {
-            buffer.append(", keyFieldNames = ").append(Arrays.asList(keyFieldNames).toString());
+            buffer.append(", keyFieldNames = ").append(Arrays.asList(getKeyFieldNames()).toString());
         }
         buffer.append(", KEY_ITEMS_DELIMITER = ").append(KEY_ITEMS_DELIMITER);
         buffer.append(", DEFAULT_KEY_LENGTH = ").append(DEFAULT_STRING_KEY_LENGTH);
@@ -633,9 +633,9 @@ public class RecordKey {
     	//if one of metadata are null check lengths of keys
     	if (isNull) {
     		int masterLength = masterKey.getKeyFields() != null ? masterKey.getKeyFields().length :
-    			masterKey.keyFieldNames.length;
+    			masterKey.getKeyFieldNames().length;
     		int slaveLength = slaveKey.getKeyFields() != null ? slaveKey.getKeyFields().length :
-    			slaveKey.keyFieldNames.length;
+    			slaveKey.getKeyFieldNames().length;
     		if (!(masterLength == slaveLength)) {
     			problem = new ConfigurationProblem("Keys have different number of DataFields", Severity.ERROR, component, Priority.NORMAL, slaveAttribute);
     			status.add(problem);
@@ -672,12 +672,25 @@ public class RecordKey {
     }
 
 	public String[] getKeyFieldNames() {
+		if (keyFieldNames == null) {
+			synchronized (this) {
+				if (keyFields == null) {
+					throw new IllegalStateException("Both keyFields and keyFieldNames are null.");
+				}
+				keyFieldNames = new String[keyFields.length];
+				String[] fieldNames = metadata.getFieldNamesArray();
+				int idx = 0;
+				for (int field : keyFields) {
+					keyFieldNames[idx++] = fieldNames[field];
+				}
+			}
+		}
 		return keyFieldNames;
 	}
 	
 	@Deprecated
     public void setCollator(RuleBasedCollator collator) {
-    	int len = keyFields != null ? keyFields.length : keyFieldNames.length;
+    	int len = keyFields != null ? keyFields.length : getKeyFieldNames().length;
     	collators = new RuleBasedCollator[len];
     	Arrays.fill(collators, collator);
     	useCollator = collators != null;
