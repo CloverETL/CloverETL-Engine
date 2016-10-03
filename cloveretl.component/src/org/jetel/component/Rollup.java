@@ -367,7 +367,6 @@ public class Rollup extends Node {
         if (groupKeyFields != null && groupKeyFields.length != 0) {
             groupKey = new RecordKey(groupKeyFields, getInputPort(INPUT_PORT_NUMBER).getMetadata());
             groupKey.setEqualNULLs(equalNULL);
-            groupKey.init();
         }
 
         if (recordRollup == null) {

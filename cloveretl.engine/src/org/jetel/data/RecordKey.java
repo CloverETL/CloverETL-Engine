@@ -597,33 +597,6 @@ public class RecordKey {
     		return status;
     	}
     	
-    	//init master key
-    	try{
-    		masterKey.init();
-    	}catch(NullPointerException e) {
-    		problem = new ConfigurationProblem("Key metadata are null.",Severity.WARNING, component, Priority.NORMAL, masterAttribute );
-    		status.add(problem);
-    		incomparable = new Integer[0];
-    		isNull = true;
-    	}catch(RuntimeException e) {
-    		problem = new ConfigurationProblem("Problem in master: " + ExceptionUtils.getMessage(e), Severity.ERROR, component, Priority.NORMAL, masterAttribute); 
-    		status.add(problem);
-    		incomparable = new Integer[0];
-    	}
-    	//init slave key
-    	try{
-    		slaveKey.init();
-    	}catch(NullPointerException e) {
-    		problem = new ConfigurationProblem("Slave metadata are null.",Severity.WARNING, component, Priority.NORMAL, masterAttribute );
-    		status.add(problem);
-    		incomparable = new Integer[0];
-    		isNull = true;
-    	}catch(RuntimeException e) {
-    		problem = new ConfigurationProblem("Problem in slave: " + ExceptionUtils.getMessage(e), Severity.ERROR, component, Priority.NORMAL, masterAttribute);
-    		status.add(problem);
-    		incomparable = new Integer[0];
-    	}
-    	
     	//if one of metadata are null check lengths of keys
     	if (isNull) {
     		int masterLength = masterKey.keyFields != null ? masterKey.keyFields.length :
@@ -803,7 +776,6 @@ public class RecordKey {
 		}
 		RecordKey reducedRecordKey = new RecordKey(key, getKeyRecordMetadata());
 		reducedRecordKey.setEqualNULLs(equalNULLs);
-		reducedRecordKey.init();
 		return reducedRecordKey;
 	}
 	

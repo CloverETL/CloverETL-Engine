@@ -395,9 +395,7 @@ public class HashJoin extends Node implements MetadataProvider {
 		slaveKeys = new RecordKey[slaveCnt];
 		for (int idx = 0; idx < slaveCnt; idx++) {
 			driverKeys[idx] = new RecordKey(driverJoiners[idx], driverPort.getMetadata());
-			driverKeys[idx].init();
 			slaveKeys[idx] = new RecordKey(slaveJoiners[idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
-			slaveKeys[idx].init();
 		}
 
 		// allocate maps

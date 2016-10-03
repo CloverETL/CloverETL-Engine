@@ -318,7 +318,6 @@ public class Dedup extends Node {
 	private void executeUnsorted() throws IOException, InterruptedException {
 		recordKey = new RecordKey(dedupKeys, metadata);
 		recordKey.setEqualNULLs(equalNULLs);
-		recordKey.init();
 		
 		recordKeyReduced = recordKey.getReducedRecordKey();
 		
@@ -686,7 +685,6 @@ public class Dedup extends Node {
 				lOrderingComparators.add(new DedupAutoComparator(recordKey));
 				bAutoExists = true;
 			}  
-			recordKey.init();
 
 		    // for DEDUP component, specify whether two fields with NULL
 		    // value indicator set are considered equal

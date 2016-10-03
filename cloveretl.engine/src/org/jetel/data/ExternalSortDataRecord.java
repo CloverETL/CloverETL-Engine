@@ -287,7 +287,6 @@ public class ExternalSortDataRecord implements ISortDataRecord {
         // initialize sort key which will be used when merging data
         sortKey = new RecordOrderedKey(sortKeysNames, sortOrderings, inMetadata, sorter.getComparator().getCollators());
         sortKey.setEqualNULLs(true);
-        sortKey.init();
 
         // initial creation & initialization of source records
         for (int i = 0; i < sourceRecords.length; i++) {

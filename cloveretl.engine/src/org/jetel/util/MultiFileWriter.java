@@ -292,11 +292,8 @@ public class MultiFileWriter {
     		throw new ComponentNotReadyException("Lookup table is not properly defined. The partition key is missing.");
     	}
 	    if (partitionKeyNames != null) {
-			partitionKey = new RecordKey(partitionKeyNames, metadata);
-		}
-	    if (partitionKey != null) {
 			try {
-				partitionKey.init();
+				partitionKey = new RecordKey(partitionKeyNames, metadata);
 				if (lookupTable != null) {
 					lookup = lookupTable.createLookup(partitionKey);
 				}

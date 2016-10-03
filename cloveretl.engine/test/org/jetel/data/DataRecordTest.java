@@ -68,7 +68,6 @@ public class DataRecordTest extends CloverTestCase {
 
 		RecordKey comparator = new RecordKey(record.getMetadata().getFieldNamesArray(), record.getMetadata());
 		comparator.setEqualNULLs(true);
-		comparator.init();
 
 		assertEquals(0, comparator.compare(record, deserializedRecord));
 	}

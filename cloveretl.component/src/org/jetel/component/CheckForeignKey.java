@@ -199,10 +199,8 @@ import org.w3c.dom.Element;
     				primaryKeys = tmp[PRIMERY_KEY_INDEX][0];
     			}
     		}
-    		(primaryKey = new RecordKey(primaryKeys, getInputPort(PRIMARY_ON_PORT)
-                    .getMetadata())).init();
-            (foreignKey = new RecordKey(foreignKeys,
-                    getInputPort(FOREIGN_ON_PORT).getMetadata())).init();
+    		primaryKey = new RecordKey(primaryKeys, getInputPort(PRIMARY_ON_PORT).getMetadata());
+    		foreignKey = new RecordKey(foreignKeys, getInputPort(FOREIGN_ON_PORT).getMetadata());
             
     		foreignKey.setEqualNULLs(equalNull);
     		primaryKey.setEqualNULLs(equalNull);

@@ -149,7 +149,6 @@ public abstract class XLSFormatter extends AbstractFormatter {
 	 */
 	public void setKeyFields(String[] fieldNames){
 		sheetNameKeyRecord = new RecordKey(fieldNames, metadata);
-		sheetNameKeyRecord.init();
 	}
 
 	/**
