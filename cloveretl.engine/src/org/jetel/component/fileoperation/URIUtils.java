@@ -129,6 +129,27 @@ public class URIUtils {
 			return str;
 		}
 	}
+	
+	/**
+	 * URL-encodes the specified path. Preserves forward slashes.
+	 * 
+	 * @param path
+	 * @return
+	 */
+	public static String urlEncodePath(String path) {
+		String[] parts = path.split(PATH_SEPARATOR);
+		StringBuilder sb = new StringBuilder();
+		for (String part: parts) {
+			sb.append(URIUtils.urlEncode(part));
+			sb.append('/');
+		}
+		
+		if (sb.length() > 0) {
+			sb.deleteCharAt(sb.length() - 1);
+		}
+		
+		return sb.toString();
+	}
 
 	public static String urlDecode(String str) {
 		try {

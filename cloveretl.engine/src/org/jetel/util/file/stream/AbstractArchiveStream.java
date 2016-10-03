@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.regex.Pattern;
 
+import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.file.FileUtils;
 
@@ -195,7 +196,7 @@ public abstract class AbstractArchiveStream<Stream extends InputStream, Entry> e
 		}
 	}
 	
-	protected abstract String getEntryUrl(String innerUrl, String entryName);
+	protected abstract String getEntryUrl(String innerUrl, String entryNameUrlEncoded);
 
 	@Override
 	public Input next() {
@@ -213,7 +214,8 @@ public abstract class AbstractArchiveStream<Stream extends InputStream, Entry> e
 	}
 
 	protected Input getEntryInput(Entry entry) {
-		return new ArchiveInput(getEntryUrl(currentInput.getAbsolutePath(), getName(entry)), archiveInputStream);
+		String entryName = getName(entry);
+		return new ArchiveInput(getEntryUrl(currentInput.getAbsolutePath(), URIUtils.urlEncodePath(entryName)), archiveInputStream);
 	}
 
 }
