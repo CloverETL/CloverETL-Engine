@@ -28,6 +28,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.concurrent.NotThreadSafe;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.jetel.enums.CollatorSensitivityType;
 import org.jetel.exception.ConfigurationProblem;
@@ -61,12 +63,13 @@ import org.jetel.util.string.StringUtils;
  * @created     January 26, 2003
  */
 @CloverPublicAPI
+@NotThreadSafe
 public class RecordKey {
 
-	private volatile int keyFields[];
+	private int keyFields[];
 	protected DataRecordMetadata metadata;
 	private DataRecordMetadata keyMetadata;
-	private volatile String keyFieldNames[];
+	private String keyFieldNames[];
 	private final static char KEY_ITEMS_DELIMITER = ':';
 	private final static int DEFAULT_STRING_KEY_LENGTH = 32;
 	private boolean isInitialized = false;
@@ -149,41 +152,37 @@ public class RecordKey {
 	 * @since    May 2, 2002
 	 */
 	public void init() {
-		
+
 		if (isInitialized)
 			return;
-		synchronized (this) {
-			if (isInitialized)
-				return;
-			if (metadata == null) {
-				throw new NullPointerException("Metadata are null.");
-			}
-
-			if (keyFields == null) {
-				Integer position;
-				keyFields = new int[keyFieldNames.length];
-				Map<String, Integer> fields = metadata.getFieldNamesMap();
-
-				for (int i = 0; i < keyFieldNames.length; i++) {
-					if ((position = fields.get(keyFieldNames[i])) != null) {
-						keyFields[i] = position.intValue();
-					} else {
-						throw new RuntimeException("Field name specified as a key doesn't exist: " + keyFieldNames[i]);
-					}
-				}
-			} else if (keyFieldNames == null) {
-				keyFieldNames = new String[keyFields.length];
-				for (int i = 0; i < keyFields.length; i++) {
-					keyFieldNames[i] = metadata.getField(keyFields[i]).getName();
-				}
-			}
-
-			// update collators from field metadata
-			updateCollators(metadata, keyFields);
-
-			isInitialized = true;
-
+		if (metadata == null) {
+			throw new NullPointerException("Metadata are null.");
 		}
+
+		if (keyFields == null) {
+			Integer position;
+			keyFields = new int[keyFieldNames.length];
+			Map<String, Integer> fields = metadata.getFieldNamesMap();
+
+			for (int i = 0; i < keyFieldNames.length; i++) {
+				if ((position = fields.get(keyFieldNames[i])) != null) {
+					keyFields[i] = position.intValue();
+				} else {
+					throw new RuntimeException("Field name specified as a key doesn't exist: " + keyFieldNames[i]);
+				}
+			}
+		} else if (keyFieldNames == null) {
+			keyFieldNames = new String[keyFields.length];
+			for (int i = 0; i < keyFields.length; i++) {
+				keyFieldNames[i] = metadata.getField(keyFields[i]).getName();
+			}
+		}
+
+		// update collators from field metadata
+		updateCollators(metadata, keyFields);
+
+		isInitialized = true;
+
 	}
 
 
@@ -194,12 +193,7 @@ public class RecordKey {
 	 */
 	public int[] getKeyFields() {
 		if (keyFields == null) {
-			synchronized (this) {
-				if (keyFields == null) {
-					keyFields = getKeyFieldsIndexes(this.metadata, getKeyFieldNames());
-				}
-			}
-
+			keyFields = getKeyFieldsIndexes(this.metadata, getKeyFieldNames());
 		}
 		return keyFields;
 	}
@@ -673,18 +667,17 @@ public class RecordKey {
 
 	public String[] getKeyFieldNames() {
 		if (keyFieldNames == null) {
-			synchronized (this) {
-				if (keyFields == null) {
-					throw new IllegalStateException("Both keyFields and keyFieldNames are null.");
-				}
-				keyFieldNames = new String[keyFields.length];
-				String[] fieldNames = metadata.getFieldNamesArray();
-				int idx = 0;
-				for (int field : keyFields) {
-					keyFieldNames[idx++] = fieldNames[field];
-				}
+			if (keyFields == null) {
+				throw new IllegalStateException("Both keyFields and keyFieldNames are null.");
+			}
+			keyFieldNames = new String[keyFields.length];
+			String[] fieldNames = metadata.getFieldNamesArray();
+			int idx = 0;
+			for (int field : keyFields) {
+				keyFieldNames[idx++] = fieldNames[field];
 			}
 		}
+
 		return keyFieldNames;
 	}
 	
