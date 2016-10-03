@@ -51,6 +51,12 @@ public class CollectionUtils {
         return ret.toArray(arr);
     }
     
+    /**
+     * Wraps an array of int[] as List&lt;Integer&gt;
+     * Used to bypass the problem that arrays aren't autoboxed/unboxed
+     * @param arr arrray of int[]
+     * @return A List&lt;Integer&gt; backed by given array. Supports operations supported by AbstractList.
+     */
     public static List<Integer> fromIntArray(final int[] arr){
     	return new AbstractList<Integer>() {
 
