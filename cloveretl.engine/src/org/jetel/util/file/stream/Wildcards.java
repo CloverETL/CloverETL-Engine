@@ -21,6 +21,7 @@ package org.jetel.util.file.stream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -169,7 +170,7 @@ public class Wildcards {
 				return (getNext() != null);
 			} catch (IOException e) {
 				FileUtils.closeQuietly(this);
-				return false;
+				throw new DirectoryIteratorException(e);
 			}
 		}
 
@@ -179,7 +180,7 @@ public class Wildcards {
 			try {
 				result = getNext();
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw new DirectoryIteratorException(e);
 			}
 			next = null;
 			return result;
