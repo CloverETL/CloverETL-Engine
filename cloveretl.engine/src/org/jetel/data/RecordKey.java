@@ -40,7 +40,6 @@ import org.jetel.graph.GraphElement;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.CollectionUtils;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.StringUtils;
@@ -206,15 +205,6 @@ public class RecordKey {
 	 */
 	public boolean isKeyField(int index) {
 		return ArrayUtils.contains(keyFields, index);
-	}
-    
-    private int[] getKeyFieldsIndexes(DataRecordMetadata mdata, String[] fieldNames) {
-    	int[] indexes = new int[fieldNames.length];
-    	Map<String, Integer> namesMap = mdata.getFieldNamesMap();
-    	for (int i=0; i<fieldNames.length; i++){
-    		indexes[i] = namesMap.get(fieldNames[i]);
-    	}
-		return indexes;
 	}
 
 	/**
