@@ -232,7 +232,7 @@ public class RecordKey {
 	 * @return length of key
 	 */
 	public int getLength() {
-	    return keyFields.length;
+	    return getKeyFields().length;
 	}
 	
 	/**
