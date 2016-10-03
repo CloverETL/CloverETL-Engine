@@ -55,6 +55,10 @@ public class CollectionDirectoryStream extends AbstractDirectoryStream<Input> {
 	@Override
 	public Input next() {
 		String url = it.next();
+		return createInput(contextUrl, url);
+	}
+	
+	protected Input createInput(URL contextUrl, String url) {
 		return new URLInput(contextUrl, url);
 	}
 
