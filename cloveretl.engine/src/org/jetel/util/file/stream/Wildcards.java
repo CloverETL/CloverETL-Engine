@@ -107,7 +107,8 @@ public class Wildcards {
 	}
 
 	public static DirectoryStream<Input> newDirectoryStream(URL contextUrl, String patterns) {
-		return newDirectoryStream(contextUrl, patterns.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX));
+		String[] parts = patterns.isEmpty() ? new String[0] : patterns.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+		return newDirectoryStream(contextUrl, parts);
 	}
 	
 	private static class CompoundDirectoryStream extends AbstractDirectoryStream<Input> {
