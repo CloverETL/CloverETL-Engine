@@ -28,6 +28,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.jetel.enums.CollatorSensitivityType;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -198,7 +199,7 @@ public class RecordKey {
 	 * @return true if the given index is part of this key
 	 */
 	public boolean isKeyField(int index) {
-		return Arrays.binarySearch(getKeyFields(), index) >= 0;
+		return ArrayUtils.contains(getKeyFields(), index);
 	}
     
     private int[] getKeyFieldsIndexes(DataRecordMetadata mdata, String[] fieldNames) {
