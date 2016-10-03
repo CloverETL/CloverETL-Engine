@@ -54,7 +54,6 @@ import org.jetel.util.string.StringUtils;
  * <i>Usage:</i><br>
  * <code>
  * key = new RecordKey(keyFieldNames,recordMetadata);<br>
- * key.init();<br>
  * key.compare(recordA,recordB);
  * </code>
  *
