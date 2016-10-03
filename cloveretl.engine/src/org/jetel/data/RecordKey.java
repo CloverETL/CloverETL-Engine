@@ -188,18 +188,18 @@ public class RecordKey {
 
 
 	/**
-	 *  Gets the keyFields attribute of the RecordKey object
+	 * Gets the keyFields attribute of the RecordKey object
 	 *
-	 * @return    The keyFields value
+	 * @return The keyFields value
 	 */
 	public int[] getKeyFields() {
-		if (keyFields == null){
+		if (keyFields == null) {
 			synchronized (this) {
-				if(keyFields==null){
+				if (keyFields == null) {
 					keyFields = getKeyFieldsIndexes(this.metadata, getKeyFieldNames());
 				}
 			}
-			
+
 		}
 		return keyFields;
 	}
