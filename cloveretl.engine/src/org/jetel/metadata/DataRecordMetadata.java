@@ -1034,10 +1034,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 			return null;
 		}
 
-		RecordKey recordKey = new RecordKey(keyFieldNames.toArray(new String[keyFieldNames.size()]), this);
-		recordKey.init();
-
-		return recordKey;
+		return new RecordKey(keyFieldNames.toArray(new String[keyFieldNames.size()]), this);
 	}
 
 	/**

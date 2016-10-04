@@ -267,7 +267,7 @@ public class RecordOrderedKey extends RecordKey {
 	public int compare(RecordKey secondKey, DataRecord record1, DataRecord record2) {
 		if (record1 == record2) return 0;
 		int compResult;
-		int[] record2KeyFields = secondKey.getKeyFields();
+		int[] record2KeyFields = secondKey.keyFields;
 		if (keyFields.length != record2KeyFields.length) {
 			throw new RuntimeException("Can't compare. Keys have different number of DataFields");
 		}

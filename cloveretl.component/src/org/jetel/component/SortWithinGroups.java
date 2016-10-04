@@ -378,8 +378,7 @@ public class SortWithinGroups extends Node {
         InputPort inputPort = getInputPort(INPUT_PORT_NUMBER);
 
         RecordKey groupKey = new RecordKey(groupKeyFields, inputPort.getMetadata());
-        groupKey.init();
-
+        
         DoubleRecordBuffer inputRecords = new DoubleRecordBuffer(inputPort.getMetadata());
 
         if (inputPort.readRecord(inputRecords.getCurrent()) != null) {

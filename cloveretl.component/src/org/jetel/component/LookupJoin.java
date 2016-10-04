@@ -515,7 +515,6 @@ public class LookupJoin extends Node implements MetadataProvider {
 	        	} else {
 		        	try {
 						recordKey = new RecordKey(joinKey, inMetadata[0]);
-						recordKey.init();
 					} catch (Exception e) {
 						status.add(new ConfigurationProblem("Join key parsing error.", e, Severity.ERROR, this, Priority.NORMAL, XML_JOIN_KEY_ATTRIBUTE));
 					}
@@ -546,7 +545,6 @@ public class LookupJoin extends Node implements MetadataProvider {
 		DataRecordMetadata outMetadata[] = { getOutputPort(WRITE_TO_PORT).getMetadata() };
 		try {
 			recordKey = new RecordKey(joinKey, inMetadata[0]);
-			recordKey.init();
 			if (transformation == null && !runtimeMetadata(lookupTable)) {
 				transformation = getTransformFactory(inMetadata, outMetadata).createTransform();
 			}

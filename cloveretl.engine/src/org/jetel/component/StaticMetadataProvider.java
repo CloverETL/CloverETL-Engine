@@ -18,8 +18,11 @@
  */
 package org.jetel.component;
 
+import java.util.Map;
+
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * This is basic implementation of MetadataProvider which has
@@ -34,27 +37,31 @@ public class StaticMetadataProvider implements SerializableMetadataProvider {
 	
 	private static final long serialVersionUID = -7111240454722386558L;
 	
-	private MVMetadata[] inputMetadata;
-	private MVMetadata[] outputMetadata;
+	private Map<Integer, MVMetadata> inputMetadata;
+	private Map<Integer, MVMetadata> outputMetadata;
 
-	public StaticMetadataProvider(MVMetadata[] inputMetadata, MVMetadata[] outputMetadata) {
+	public StaticMetadataProvider(Map<Integer, MVMetadata> inputMetadata, Map<Integer, MVMetadata> outputMetadata) {
 		this.inputMetadata = inputMetadata;
 		this.outputMetadata = outputMetadata;
 	}
-	
+
 	@Override
-	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
-		if (portIndex < outputMetadata.length && outputMetadata[portIndex] != null) {
-			return metadataPropagationResolver.createMVMetadata(outputMetadata[portIndex].getModel(), null, "output_" + portIndex, outputMetadata[portIndex].getPriority());
+	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		MVMetadata mvMetadata = inputMetadata.get(portIndex);
+		if (mvMetadata != null) {
+			DataRecordMetadata metadataDuplicate = mvMetadata.getModel().duplicate();
+			return metadataPropagationResolver.createMVMetadata(metadataDuplicate, null, "input_" + portIndex, mvMetadata.getPriority());
 		} else {
 			return null;
 		}
 	}
-	
+
 	@Override
-	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
-		if (portIndex < inputMetadata.length && inputMetadata[portIndex] != null) {
-			return metadataPropagationResolver.createMVMetadata(inputMetadata[portIndex].getModel(), null, "input_" + portIndex, inputMetadata[portIndex].getPriority());
+	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		MVMetadata mvMetadata = outputMetadata.get(portIndex);
+		if (mvMetadata != null) {
+			DataRecordMetadata metadataDuplicate = mvMetadata.getModel().duplicate();
+			return metadataPropagationResolver.createMVMetadata(metadataDuplicate, null, "output_" + portIndex, mvMetadata.getPriority());
 		} else {
 			return null;
 		}

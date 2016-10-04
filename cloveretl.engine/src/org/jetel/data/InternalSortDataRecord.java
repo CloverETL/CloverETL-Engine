@@ -92,7 +92,6 @@ public class InternalSortDataRecord implements ISortDataRecord {
 		recordColList = new ArrayList<DataRecordCol>(this.numCollections);
 		key = new RecordOrderedKey(keyItems, sortOrderings, metadata);
 		key.setEqualNULLs(true);
-		key.init();
 		recCounter=lastFound=currentColIndex= 0;
 		currentRecordCol=new DataRecordCol(oneColCapacity);
 		currentColSize=oneColCapacity;

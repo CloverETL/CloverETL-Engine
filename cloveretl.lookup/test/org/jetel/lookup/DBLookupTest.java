@@ -46,7 +46,6 @@ public class DBLookupTest extends CloverTestCase {
 		lookupTable = new DBLookupTable("MyLookup", conn, null, "select * from employee where last_name=?", 0);
 		lookupTable.init();
 		recordKey = new RecordKey(new String[] { "lname" }, customerMetadata);
-		recordKey.init();
 	}
 
 	@Override
