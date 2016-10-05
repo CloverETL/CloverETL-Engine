@@ -23,6 +23,7 @@ import java.io.Serializable;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
+import org.jetel.data.NullRecord;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.CloverBuffer;
 
@@ -46,20 +47,26 @@ public class SerializedDataRecord implements Serializable {
 	public static SerializedDataRecord fromDataRecord(DataRecord record) {
 		SerializedDataRecord result = new SerializedDataRecord();
 		result.metadata = record.getMetadata();
-		CloverBuffer buffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE, false);
-		record.serialize(buffer);
-		byte content[] = new byte[buffer.position()];
-		buffer.flip().get(content);
-		result.serializedRecord = content;
+		if (!NullRecord.NULL_RECORD.getMetadata().equals(record.getMetadata())) {
+			CloverBuffer buffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE, false);
+			record.serialize(buffer);
+			byte content[] = new byte[buffer.position()];
+			buffer.flip().get(content);
+			result.serializedRecord = content;
+		}
 		return result;
 	}
 	
 	public DataRecord getDataRecord() {
 		if (record == null) {
-			DataRecord record = DataRecordFactory.newRecord(metadata);
-			CloverBuffer buffer = CloverBuffer.wrap(serializedRecord);
-			record.deserialize(buffer);
-			this.record = record;
+			if (NullRecord.NULL_RECORD.getMetadata().equals(metadata)) {
+				this.record = NullRecord.NULL_RECORD;
+			} else {
+				DataRecord record = DataRecordFactory.newRecord(metadata);
+				CloverBuffer buffer = CloverBuffer.wrap(serializedRecord);
+				record.deserialize(buffer);
+				this.record = record;
+			}
 		}
 		return record;
 	}
