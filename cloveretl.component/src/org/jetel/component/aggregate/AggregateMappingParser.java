@@ -131,7 +131,6 @@ public class AggregateMappingParser {
 		this.lenient = lenient;
 		
 		keyFields = new HashSet<String>();
-		recordKey.init();
 		int[] keyFieldIndices = recordKey.getKeyFields();
 		for (int i : keyFieldIndices) {
 			keyFields.add(inMetadata.getField(i).getName());

@@ -810,8 +810,6 @@ public class AproxMergeJoin extends Node implements MetadataProvider {
 		RecordOrderedKey[] recKey = new RecordOrderedKey[2];
 		recKey[DRIVER_ON_PORT] = buildRecordOrderedKey(joinKeys, getInputPort(DRIVER_ON_PORT).getMetadata());
 		recKey[SLAVE_ON_PORT] = buildRecordOrderedKey(slaveOverrideKeys, getInputPort(SLAVE_ON_PORT).getMetadata());
-		recKey[DRIVER_ON_PORT].init();
-		recKey[SLAVE_ON_PORT].init();
 		fieldsToCompare[DRIVER_ON_PORT]=recKey[DRIVER_ON_PORT].getKeyFields();
 		fieldsToCompare[SLAVE_ON_PORT]=recKey[SLAVE_ON_PORT].getKeyFields();
 		comparator = new StringAproxComparator[joinParameters.length];
@@ -831,8 +829,6 @@ public class AproxMergeJoin extends Node implements MetadataProvider {
 		recordKey = new RecordOrderedKey[2];
 		recordKey[DRIVER_ON_PORT] = buildRecordOrderedKey(matchingKey, getInputPort(DRIVER_ON_PORT).getMetadata());
 		recordKey[SLAVE_ON_PORT] = buildRecordOrderedKey(slaveMatchingKey, getInputPort(SLAVE_ON_PORT).getMetadata());
-		recordKey[DRIVER_ON_PORT].init();
-		recordKey[SLAVE_ON_PORT].init();
 		conformityFieldsForConforming = findOutFields(joinKeys,getOutputPort(CONFORMING_OUT).getMetadata());
 		conformityFieldsForSuspicious = findOutFields(slaveOverrideKeys,getOutputPort(SUSPICIOUS_OUT).getMetadata());
 		dataBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);

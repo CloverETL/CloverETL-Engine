@@ -565,11 +565,9 @@ public class MergeJoin extends Node implements MetadataProvider {
 			}
 		}
 		driverKey = buildRecordKey(joiners[0], getInputPort(DRIVER_ON_PORT).getMetadata());
-		driverKey.init();
 		slaveKeys = new RecordOrderedKey[slaveCnt];
 		for (int idx = 0; idx < slaveCnt; idx++) {
 			slaveKeys[idx] = buildRecordKey(joiners[1 + idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
-			slaveKeys[idx].init();
 		}		
 		reader = new IInputReader[inputCnt];
 		reader[0] = new DriverReader(getInputPort(DRIVER_ON_PORT), driverKey);

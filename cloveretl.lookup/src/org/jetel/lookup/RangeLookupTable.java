@@ -258,12 +258,10 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 
 		if (startKey == null) {
 			startKey = new RecordKey(startFields, metadata);
-			startKey.init();
 		}        
 		startField = startKey.getKeyFields();
 		if (endKey == null) {
 			endKey = new RecordKey(endFields, metadata);
-			endKey.init();
 		}		
 		endField = endKey.getKeyFields();
 		
@@ -574,7 +572,6 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	public int[] getStartFields(){
 		if (startField == null) {
 			startKey = new RecordKey(startFields, metadata);
-			startKey.init();
 			startField = startKey.getKeyFields();			
 		}
 		return startField;
@@ -583,7 +580,6 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	public int[] getEndFields(){
 		if (endField == null) {
 			endKey = new RecordKey(endFields, metadata);
-			endKey.init();
 			endField = endKey.getKeyFields();			
 		}
 		return endField;

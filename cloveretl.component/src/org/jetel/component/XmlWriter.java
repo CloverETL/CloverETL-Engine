@@ -451,7 +451,6 @@ public class XmlWriter extends Node {
 		
 		private void addDataRecord(String relationKeysString, String[] relationKeysArray, DataRecord record) {
 			RecordKey recKey = new RecordKey( relationKeysArray, metadata);
-			recKey.init();
 			HashKey key = new HashKey(recKey, record);
 			TreeRecord tr = getTreeRecord(relationKeysString, key);
 			if (tr == null)

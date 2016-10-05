@@ -153,7 +153,6 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		this.metadata = metadata;
 		lookupTable = mapObject;
 		indexKey = new RecordKey(keys, metadata);
-		indexKey.init();
 	}
 
 	@Override
@@ -199,7 +198,6 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		if (indexKey == null) {
 			indexKey = new RecordKey(keys, metadata);
 		}
-		indexKey.init();
 		indexKey.setEqualNULLs(true);
 
 		if (lookupTable == null) {
@@ -391,12 +389,10 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 			metadata = getGraph().getDataRecordMetadata(metadataName, false);
 		}
 
-		if (indexKey == null) {
-			indexKey = new RecordKey(keys, metadata);
-		}
-
 		try {
-			indexKey.init();
+			if (indexKey == null) {
+				indexKey = new RecordKey(keys, metadata);
+			}
 		} catch (NullPointerException e) {
 			status.add(new ConfigurationProblem("Key metadata are null.", Severity.WARNING, this, Priority.NORMAL, XML_LOOKUP_KEY));
 			indexKey = null; // we have to create it once again in init method after creating metadata from stub

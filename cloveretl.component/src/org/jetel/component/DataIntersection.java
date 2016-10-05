@@ -608,8 +608,6 @@ public class DataIntersection extends Node implements MetadataProvider {
 		recordKeys = new RecordKey[2];
 		recordKeys[0] = new RecordKey(joinKeys, driverPort.getMetadata());
 		recordKeys[1] = new RecordKey(slaveOverrideKeys, slavePort.getMetadata());
-		recordKeys[0].init();
-		recordKeys[1].init();
 		//specify whether two fields with NULL value indicator set
         // are considered equal
         recordKeys[0].setEqualNULLs(equalNULLs);

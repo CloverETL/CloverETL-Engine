@@ -384,7 +384,6 @@ public class DBJoin extends Node implements MetadataProvider {
 
             try {
     			recordKey = new RecordKey(joinKey, getInputPort(READ_FROM_PORT).getMetadata());
-    			recordKey.init();
     		} catch (Exception e) {
     			ComponentNotReadyException outer = new ComponentNotReadyException(this, e);
     			outer.setAttributeName(XML_JOIN_KEY_ATTRIBUTE);
@@ -471,7 +470,6 @@ public class DBJoin extends Node implements MetadataProvider {
 
 		try {
 			recordKey = new RecordKey(joinKey, inMetadata[0]);
-			recordKey.init();
 			
 			if (transformation == null) {
 				TransformFactory<RecordTransform> transformFactory = getTransformFactory(inMetadata, outMetadata);

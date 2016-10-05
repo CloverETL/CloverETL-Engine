@@ -3113,7 +3113,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <property category="advanced" displayName="Omit new lines wherever possible" modifiable="true" name="omitNewLines" nullable="true" defaultHint="false">
 		      <singleType name="bool"/>
 	      </property>
-	      <property category="advanced" displayName="Insert XML header" modifiable="true" name="writeXmlHeader" nullable="true" defaultHint="true">
+	      <property category="advanced" displayName="Omit XML declaration" modifiable="true" name="omitXMLDeclaration" nullable="true" defaultHint="false">
 		      <singleType name="bool"/>
 	      </property>
 	      <property category="advanced" displayName="Cache size (e.g. '300MB','1GB')" modifiable="true" name="cacheSize" nullable="true" defaultHint="auto">
