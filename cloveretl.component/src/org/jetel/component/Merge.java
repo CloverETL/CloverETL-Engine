@@ -236,11 +236,11 @@ public class Merge extends Node {
         if(isInitialized()) return;
 		super.init();
 		
-		// initialize key
-		comparisonKey = new RecordKey(mergeKeys, getInputPort(0).getMetadata());
-		comparisonKey.setEqualNULLs(true);
+		
 		try {
-			comparisonKey.init();
+			// initialize key
+			comparisonKey = new RecordKey(mergeKeys, getInputPort(0).getMetadata());
+			comparisonKey.setEqualNULLs(true);
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, XML_MERGEKEY_ATTRIBUTE, e);
 		}

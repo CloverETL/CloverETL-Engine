@@ -246,7 +246,6 @@ public class Aggregate extends Node {
 		super.init();
 		
 		recordKey = new RecordKey(aggregateKeys, getInputPort(READ_FROM_PORT).getMetadata());
-		recordKey.init();
 		// specify whether two fields with NULL value indicator set are considered equal
 		recordKey.setEqualNULLs(equalNULLs);
 		

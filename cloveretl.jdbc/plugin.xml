@@ -179,6 +179,15 @@
 	</extension>
 
 	<extension point-id="jdbcDriver">
+		<parameter id="database" value="REDSHIFT"/>
+		<parameter id="name" value="Amazon Redshift"/>
+		<parameter id="dbDriver" value="com.amazon.redshift.jdbc41.Driver"/>
+		<parameter id="driverLibrary" value="lib/redshift/RedshiftJDBC41-1.1.17.1017.jar"/>
+		<parameter id="urlHint" value="jdbc:redshift://cluster_id.redshift.amazonaws.com:5439/database"/>
+		<parameter id="jdbcSpecific" value="REDSHIFT"/>
+	</extension>
+
+	<extension point-id="jdbcDriver">
 		<parameter id="database" value="MSSQL"/>
 		<parameter id="name" value="Microsoft SQL Server"/>
 		<parameter id="dbDriver" value="net.sourceforge.jtds.jdbc.Driver"/>

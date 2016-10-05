@@ -181,6 +181,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	/**  Main processing method for the WatchDog object */
 	@Override
 	public Result call() {
+		if (logger.isDebugEnabled()) {
+		  	logger.debug("Watchdog thread is running");
+		}
 		CURRENT_PHASE_LOCK.lock();
 		String originalThreadName = null;
 		long startTimestamp = System.currentTimeMillis();

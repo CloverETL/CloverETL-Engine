@@ -88,11 +88,6 @@ public class MVEngineMetadata extends MVEngineGraphElement implements MVMetadata
 	}
 	
 	@Override
-	public String getId() {
-		return metadata.getId();
-	}
-	
-	@Override
 	public void addToOriginPath(MVGraphElement graphElement) {
 		if (graphElement != null) { 
 			originPath.add(0, graphElement);
