@@ -18,7 +18,6 @@
  */
 package org.jetel.util.file.stream;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.DirectoryIteratorException;
@@ -27,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.jetel.data.Defaults;
 import org.jetel.util.file.FileUtils;
@@ -40,62 +38,6 @@ import org.jetel.util.file.SandboxUrlUtils;
  * @created 6. 9. 2016
  */
 public class Wildcards {
-
-	// Wildcard characters.
-	public final static char[] WCARD_CHAR = {'*', '?'};
-
-	// Regex substitutions for wildcards. 
-	private final static String[] REGEX_SUBST = {".*", "."};
-
-	public static class AcceptAllFilter<T> implements DirectoryStream.Filter<T> {
-		private AcceptAllFilter() {
-		}
-
-		@Override
-		public boolean accept(T entry) {
-			return true;
-		}
-
-		private static final AcceptAllFilter<Object> FILTER = new AcceptAllFilter<Object>();
-		
-		@SuppressWarnings("unchecked")
-		public static final <T> AcceptAllFilter<T> getInstance() {
-			return (AcceptAllFilter<T>) FILTER;
-		}
-	}
-	
-	public static class CheckConfigFilter implements DirectoryStream.Filter<String> {
-		
-		private final URL contextUrl;
-		
-		public CheckConfigFilter(URL contextUrl) {
-			this.contextUrl = contextUrl;
-		}
-		
-		@Override
-		public boolean accept(String input) throws IOException {
-			if (FileUtils.STD_CONSOLE.equals(input)) {
-				return false;
-			}
-			URL url = FileUtils.getFileURL(contextUrl, input);
-			return accept(url);
-		}
-		
-		private boolean accept(URL url) throws IOException {
-			return SandboxUrlUtils.isSandboxUrl(url) || !FileUtils.isServerURL(url);
-		}
-		
-		public List<String> filter(String... items) throws IOException {
-			List<String> result = new ArrayList<>(items.length);
-			for (String item: items) {
-				if (accept(item)) {
-					result.add(item);
-				}
-			}
-			return result;
-		}
-
-	}
 
 	public static DirectoryStream<Input> newDirectoryStream(URL contextUrl, Iterable<String> patterns) {
 		WildcardDirectoryStream stream = new WildcardDirectoryStream(contextUrl, patterns);
@@ -111,6 +53,14 @@ public class Wildcards {
 		return newDirectoryStream(contextUrl, parts);
 	}
 	
+	/**
+	 * Flattens DirectoryStream<DirectoryStream<Input>> into DirectoryStream<Input>.
+	 * 
+	 * @author krivanekm (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created 5. 10. 2016
+	 */
 	private static class CompoundDirectoryStream extends AbstractDirectoryStream<Input> {
 		
 		private final WildcardDirectoryStream parent;
@@ -189,65 +139,54 @@ public class Wildcards {
 
 	}
 
-	/**
-	 * Returns true if the URL, in the concrete his file, has a wildcard. 
-	 * @param url
-	 * @return
-	 */
-	public static boolean hasWildcard(URL url) {
-		return hasWildcard(url.getFile());
+	public static class AcceptAllFilter<T> implements DirectoryStream.Filter<T> {
+		private AcceptAllFilter() {
+		}
+
+		@Override
+		public boolean accept(T entry) {
+			return true;
+		}
+
+		private static final AcceptAllFilter<Object> FILTER = new AcceptAllFilter<Object>();
+		
+		@SuppressWarnings("unchecked")
+		public static final <T> AcceptAllFilter<T> getInstance() {
+			return (AcceptAllFilter<T>) FILTER;
+		}
 	}
 	
-	public static boolean hasWildcard(String fileURL) {
-		// check if the url has wildcards
-		String fileName = new File(fileURL).getName();
-		for (int wcardIdx = 0; wcardIdx < WCARD_CHAR.length; wcardIdx++) {
-			if (fileName.indexOf("" + WCARD_CHAR[wcardIdx]) >= 0) { // wildcard found
-				return true;
+	public static class CheckConfigFilter implements DirectoryStream.Filter<String> {
+		
+		private final URL contextUrl;
+		
+		public CheckConfigFilter(URL contextUrl) {
+			this.contextUrl = contextUrl;
+		}
+		
+		@Override
+		public boolean accept(String input) throws IOException {
+			if (FileUtils.STD_CONSOLE.equals(input)) {
+				return false;
 			}
+			URL url = FileUtils.getFileURL(contextUrl, input);
+			return accept(url);
 		}
-		return false;
-	}
-
-	/**
-	 * Creates compiled Pattern from String pattern with simplified syntax -- containing '*' and '?' symbols.
-	 * 
-	 * @param mask
-	 * @return
-	 */
-	public static Pattern compileSimplifiedPattern(String mask) {
-		return compileSimplifiedPattern(mask, WCARD_CHAR, REGEX_SUBST);
-	}
-
-	/**
-	 * Creates compiled Pattern from String pattern. Replaces characters from wildcardCharacters with strings from regexSubstitutions.
-	 * @param mask
-	 * @param wildcardCharacters eg. {'*', '?'}
-	 * @param regexSubstitutions eg. {".*", "."}
-	 * @return
-	 */
-	public static Pattern compileSimplifiedPattern(String mask, char[] wildcardCharacters, String[] regexSubstitutions) {
-		StringBuilder regex = new StringBuilder(mask);
-		regex.insert(0, REGEX_START_ANCHOR + REGEX_START_QUOTE);
-		for (int wcardIdx = 0; wcardIdx < wildcardCharacters.length; wcardIdx++) {
-			regex.replace(0, regex.length(), regex.toString().replace("" + wildcardCharacters[wcardIdx],
-					REGEX_END_QUOTE + regexSubstitutions[wcardIdx] + REGEX_START_QUOTE));
+		
+		private boolean accept(URL url) throws IOException {
+			return SandboxUrlUtils.isSandboxUrl(url) || !FileUtils.isServerURL(url);
 		}
-		regex.append(REGEX_END_QUOTE + REGEX_END_ANCHOR);
+		
+		public List<String> filter(String... items) throws IOException {
+			List<String> result = new ArrayList<>(items.length);
+			for (String item: items) {
+				if (accept(item)) {
+					result.add(item);
+				}
+			}
+			return result;
+		}
 
-		return Pattern.compile(regex.toString());
 	}
-
-	// Start sequence for regex quoting.
-	private final static String REGEX_START_QUOTE = "\\Q";
-
-	// End sequence for regex quoting
-	private final static String REGEX_END_QUOTE = "\\E";
-
-	// Regex start anchor.
-	private final static char REGEX_START_ANCHOR = '^';
-
-	// Regex end anchor.
-	private final static char REGEX_END_ANCHOR = '$';
 
 }
