@@ -328,11 +328,8 @@ public class Partition extends Node {
 		DataRecordMetadata inMetadata = getInputPort(0).getMetadata();
 		// initialize partition key - if defined
 	    if (partitionKeyNames != null) {
-			partitionKey = new RecordKey(partitionKeyNames, inMetadata);
-		}
-		if (partitionKey != null) {
-			try {
-				partitionKey.init();
+	    	try{
+	    		partitionKey = new RecordKey(partitionKeyNames, inMetadata);
 			} catch (Exception e) {
 				throw new ComponentNotReadyException(e);
 			}
@@ -437,11 +434,8 @@ public class Partition extends Node {
         try {
         	
     	    if (partitionKeyNames != null) {
-    			partitionKey = new RecordKey(partitionKeyNames, inMetadata);
-    		}
-    		if (partitionKey != null) {
-    			try {
-    				partitionKey.init();
+    	    	try {
+    	    		partitionKey = new RecordKey(partitionKeyNames, inMetadata);
     			} catch (Exception e) {
     				throw new ComponentNotReadyException(this, 
     						"Error during initialization of partition key.", e, XML_PARTITIONKEY_ATTRIBUTE);

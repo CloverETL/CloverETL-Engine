@@ -46,7 +46,6 @@ public class DataRecordMapTest extends CloverTestCase {
 		if (recordKey == null) {
 			recordKey = new RecordKey(new String[] {"key1", "key2"}, getMetadata());
 			recordKey.setEqualNULLs(true);
-			recordKey.init();
 		}
 		return recordKey;
 	}
@@ -55,7 +54,6 @@ public class DataRecordMapTest extends CloverTestCase {
 		if (recordKeyAllFields == null) {
 			recordKeyAllFields = new RecordKey(new String[] {"key1", "key2", "data1", "data2"}, getMetadata());
 			recordKeyAllFields.setEqualNULLs(true);
-			recordKeyAllFields.init();
 		}
 		return recordKeyAllFields;
 	}

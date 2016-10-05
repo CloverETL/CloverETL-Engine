@@ -28,6 +28,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.concurrent.NotThreadSafe;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.jetel.enums.CollatorSensitivityType;
 import org.jetel.exception.ConfigurationProblem;
@@ -37,7 +39,7 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CloverPublicAPI;
-import org.jetel.util.ExceptionUtils;
+import org.jetel.util.CollectionUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.StringUtils;
@@ -51,7 +53,6 @@ import org.jetel.util.string.StringUtils;
  * <i>Usage:</i><br>
  * <code>
  * key = new RecordKey(keyFieldNames,recordMetadata);<br>
- * key.init();<br>
  * key.compare(recordA,recordB);
  * </code>
  *
@@ -60,12 +61,13 @@ import org.jetel.util.string.StringUtils;
  * @created     January 26, 2003
  */
 @CloverPublicAPI
+@NotThreadSafe
 public class RecordKey {
 
 	protected int keyFields[];
 	protected DataRecordMetadata metadata;
 	private DataRecordMetadata keyMetadata;
-	protected String keyFieldNames[];
+	private String keyFieldNames[];
 	private final static char KEY_ITEMS_DELIMITER = ':';
 	private final static int DEFAULT_STRING_KEY_LENGTH = 32;
 	private boolean isInitialized = false;
@@ -88,6 +90,7 @@ public class RecordKey {
 	public RecordKey(String keyFieldNames[], DataRecordMetadata metadata) {
 		this.metadata = metadata;
 		this.keyFieldNames = keyFieldNames;
+		init();
 	}
 
 	/**
@@ -97,6 +100,7 @@ public class RecordKey {
 	public RecordKey(int keyFields[], DataRecordMetadata metadata) {
 		this.metadata = metadata;
 		this.keyFields = keyFields;
+		init();
 	}
 	
 	// end init
@@ -145,53 +149,54 @@ public class RecordKey {
 	/**
 	 *  Performs initialization of internal data structures
 	 *
-	 * @since    May 2, 2002
+	 * @since    	May 2, 2002
+	 * @deprecated	It's automatically initialized when calling constructor
 	 */
+	@Deprecated
 	public void init() {
-		
-		if (isInitialized) return;
 
-        if (metadata == null) {
-        	throw new NullPointerException("Metadata are null.");
-        }
+		if (isInitialized)
+			return;
+		if (metadata == null) {
+			throw new NullPointerException("Metadata are null.");
+		}
 
-	    if (keyFields == null) {
-            Integer position;
-            keyFields = new int[keyFieldNames.length];
-            Map<String, Integer> fields = metadata.getFieldNamesMap();
+		if (keyFields == null) {
+			Integer position;
+			keyFields = new int[keyFieldNames.length];
+			Map<String, Integer> fields = metadata.getFieldNamesMap();
 
-            for (int i = 0; i < keyFieldNames.length; i++) {
-                if ((position = fields.get(keyFieldNames[i])) != null) {
-                    keyFields[i] = position.intValue();
-                } else {
-                    throw new RuntimeException(
-                            "Field name specified as a key doesn't exist: "
-                                    + keyFieldNames[i]);
-                }
-            }
-        }else if (keyFieldNames==null){
-            keyFieldNames=new String[keyFields.length];
-            for (int i=0;i<keyFields.length;i++){
-                keyFieldNames[i]=metadata.getField(keyFields[i]).getName();
-            }
-        }
-	    
-	    // update collators from field metadata
-	    updateCollators(metadata, keyFields);
+			for (int i = 0; i < keyFieldNames.length; i++) {
+				if ((position = fields.get(keyFieldNames[i])) != null) {
+					keyFields[i] = position.intValue();
+				} else {
+					throw new RuntimeException("Field name specified as a key doesn't exist: " + keyFieldNames[i]);
+				}
+			}
+		} else if (keyFieldNames == null) {
+			keyFieldNames = new String[keyFields.length];
+			for (int i = 0; i < keyFields.length; i++) {
+				keyFieldNames[i] = metadata.getField(keyFields[i]).getName();
+			}
+		}
+		if (keyMetadata == null) {
+			keyMetadata = metadata.duplicate(this);
+		}
 
-	    isInitialized = true;
+		// update collators from field metadata
+		updateCollators(metadata, keyFields);
+
+		isInitialized = true;
+
 	}
 
 
 	/**
-	 *  Gets the keyFields attribute of the RecordKey object
+	 * Gets the keyFields attribute of the RecordKey object
 	 *
-	 * @return    The keyFields value
+	 * @return The keyFields value
 	 */
 	public int[] getKeyFields() {
-		if (keyFields == null){
-			keyFields = getKeyFieldsIndexes(this.metadata, this.keyFieldNames);
-		}
 		return keyFields;
 	}
 
@@ -199,16 +204,7 @@ public class RecordKey {
 	 * @return true if the given index is part of this key
 	 */
 	public boolean isKeyField(int index) {
-		return ArrayUtils.contains(getKeyFields(), index);
-	}
-    
-    private int[] getKeyFieldsIndexes(DataRecordMetadata mdata, String[] fieldNames) {
-    	int[] indexes = new int[fieldNames.length];
-    	Map<String, Integer> namesMap = mdata.getFieldNamesMap();
-    	for (int i=0; i<fieldNames.length; i++){
-    		indexes[i] = namesMap.get(fieldNames[i]);
-    	}
-		return indexes;
+		return ArrayUtils.contains(keyFields, index);
 	}
 
 	/**
@@ -222,13 +218,8 @@ public class RecordKey {
         for(int i=0;i<metadata.getNumFields();i++){
             allFields.add(Integer.valueOf(i));
         }
-        allFields.removeAll(Arrays.asList(keyFields));
-        int[] nonKey=new int[allFields.size()];
-        int counter=0;
-        for(Integer index : allFields){
-            nonKey[counter++]=index.intValue();
-        }
-        return nonKey;
+        allFields.removeAll(CollectionUtils.fromIntArray(keyFields));
+        return CollectionUtils.toIntegerArray(allFields);
     }
 
 	/**
@@ -301,7 +292,7 @@ public class RecordKey {
 	public int compare(RecordKey secondKey, DataRecord record1, DataRecord record2) {
 		if (record1 == record2) return 0;
 		int compResult;
-		int[] record2KeyFields = secondKey.getKeyFields();
+		int[] record2KeyFields = secondKey.keyFields;
 		if (keyFields.length != record2KeyFields.length) {
 			throw new RuntimeException("Can't compare. Keys have different number of DataFields");
 		}
@@ -360,7 +351,7 @@ public class RecordKey {
 	 */
 	public boolean equals(RecordKey secondKey, DataRecord record1, DataRecord record2) {
 		if (record1 == record2) return true;
-		int[] record2KeyFields = secondKey.getKeyFields();
+		int[] record2KeyFields = secondKey.keyFields;
 		if (keyFields.length != record2KeyFields.length) { // records can not be equals based on defined key-fields
 			return false;
 		}
@@ -486,9 +477,6 @@ public class RecordKey {
 	 * cached value is returned, so should not be changed!
 	 */
 	public DataRecordMetadata getKeyRecordMetadata() {
-		if (keyMetadata == null) {
-			keyMetadata = metadata.duplicate(this);
-		}
 		return keyMetadata;
 	}
 	
@@ -554,7 +542,7 @@ public class RecordKey {
      */
     private Integer[] getIncomparableFields(RecordKey secondKey){
     	List<Integer> incomparable = new ArrayList<Integer>();
-		int[] record2KeyFields = secondKey.getKeyFields();
+		int[] record2KeyFields = secondKey.keyFields;
 		DataRecordMetadata secondMetadata = secondKey.metadata;
 		for (int i = 0; i < Math.max(keyFields.length, record2KeyFields.length); i++) {
 			if (i<keyFields.length && i<record2KeyFields.length) {
@@ -597,33 +585,6 @@ public class RecordKey {
     		problem = new ConfigurationProblem("Slave key does not exist.", Severity.ERROR, component, Priority.NORMAL, masterAttribute );
     		status.add(problem);
     		return status;
-    	}
-    	
-    	//init master key
-    	try{
-    		masterKey.init();
-    	}catch(NullPointerException e) {
-    		problem = new ConfigurationProblem("Key metadata are null.",Severity.WARNING, component, Priority.NORMAL, masterAttribute );
-    		status.add(problem);
-    		incomparable = new Integer[0];
-    		isNull = true;
-    	}catch(RuntimeException e) {
-    		problem = new ConfigurationProblem("Problem in master: " + ExceptionUtils.getMessage(e), Severity.ERROR, component, Priority.NORMAL, masterAttribute); 
-    		status.add(problem);
-    		incomparable = new Integer[0];
-    	}
-    	//init slave key
-    	try{
-    		slaveKey.init();
-    	}catch(NullPointerException e) {
-    		problem = new ConfigurationProblem("Slave metadata are null.",Severity.WARNING, component, Priority.NORMAL, masterAttribute );
-    		status.add(problem);
-    		incomparable = new Integer[0];
-    		isNull = true;
-    	}catch(RuntimeException e) {
-    		problem = new ConfigurationProblem("Problem in slave: " + ExceptionUtils.getMessage(e), Severity.ERROR, component, Priority.NORMAL, masterAttribute);
-    		status.add(problem);
-    		incomparable = new Integer[0];
     	}
     	
     	//if one of metadata are null check lengths of keys
@@ -805,7 +766,6 @@ public class RecordKey {
 		}
 		RecordKey reducedRecordKey = new RecordKey(key, getKeyRecordMetadata());
 		reducedRecordKey.setEqualNULLs(equalNULLs);
-		reducedRecordKey.init();
 		return reducedRecordKey;
 	}
 	
