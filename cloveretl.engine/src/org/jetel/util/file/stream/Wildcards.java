@@ -40,8 +40,8 @@ import org.jetel.util.file.SandboxUrlUtils;
 public class Wildcards {
 
 	public static DirectoryStream<Input> newDirectoryStream(URL contextUrl, Iterable<String> patterns) {
-		WildcardDirectoryStream stream = new WildcardDirectoryStream(contextUrl, patterns);
-		return new CompoundDirectoryStream(stream);
+		DirectoryStream<DirectoryStream<Input>> streams = new WildcardDirectoryStream(contextUrl, patterns);
+		return new CompoundDirectoryStream<>(streams);
 	}
 
 	public static DirectoryStream<Input> newDirectoryStream(URL contextUrl, String[] patterns) {
@@ -54,26 +54,29 @@ public class Wildcards {
 	}
 	
 	/**
-	 * Flattens DirectoryStream<DirectoryStream<Input>> into DirectoryStream<Input>.
+	 * Flattens DirectoryStream<DirectoryStream<T>> into DirectoryStream<T>.
 	 * 
 	 * @author krivanekm (info@cloveretl.com)
 	 *         (c) Javlin, a.s. (www.cloveretl.com)
 	 *
 	 * @created 5. 10. 2016
 	 */
-	private static class CompoundDirectoryStream extends AbstractDirectoryStream<Input> {
+	private static class CompoundDirectoryStream<T> extends AbstractDirectoryStream<T> {
 		
-		private final WildcardDirectoryStream parent;
-		private DirectoryStream<Input> currentStream;
-		private Iterator<Input> currentIterator;
+		private final DirectoryStream<DirectoryStream<T>> parent;
+		private final Iterator<DirectoryStream<T>> streamIterator;
 		
-		private Input next;
+		private DirectoryStream<T> currentStream;
+		private Iterator<T> elementIterator;
+		
+		private T next;
 
 		/**
 		 * @param parent
 		 */
-		public CompoundDirectoryStream(WildcardDirectoryStream parent) {
+		public CompoundDirectoryStream(DirectoryStream<DirectoryStream<T>> parent) {
 			this.parent = parent;
+			this.streamIterator = parent.iterator();
 		}
 
 		@Override
@@ -85,30 +88,30 @@ public class Wildcards {
 			}
 		}
 		
-		private Input fillCache() throws IOException {
+		private T fillCache() throws IOException {
 			if (currentStream == null) {
-				if (parent.hasNext()) {
-					currentStream = parent.next();
-					currentIterator = currentStream.iterator();
+				if (streamIterator.hasNext()) {
+					currentStream = streamIterator.next();
+					elementIterator = currentStream.iterator();
 				} else {
 					return null;
 				}
 			}
 			
-			while (!currentIterator.hasNext() && parent.hasNext()) {
+			while (!elementIterator.hasNext() && streamIterator.hasNext()) {
 				currentStream.close();
-				currentStream = parent.next();
-				currentIterator = currentStream.iterator();
+				currentStream = streamIterator.next();
+				elementIterator = currentStream.iterator();
 			}
 			
-			if (currentIterator.hasNext()) {
-				next = currentIterator.next();
+			if (elementIterator.hasNext()) {
+				next = elementIterator.next();
 			}
 			
 			return next;
 		}
 		
-		private Input getNext() throws IOException {
+		private T getNext() throws IOException {
 			if (next == null) {
 				next = fillCache();
 			}
@@ -126,8 +129,8 @@ public class Wildcards {
 		}
 
 		@Override
-		public Input next() {
-			Input result;
+		public T next() {
+			T result;
 			try {
 				result = getNext();
 			} catch (IOException e) {
