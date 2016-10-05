@@ -153,6 +153,11 @@ public class WildcardDirectoryStream extends AbstractDirectoryStream<DirectorySt
 			}
 		}
 		
+		if (innerSource == null) {
+			// failed to parse archive inner source, the code should be fixed 
+			throw new IllegalArgumentException("Failed to parse URL: " + fileName);
+		}
+		
 		return new ArchiveDescriptor(archiveType, innerSource, sbAnchor.toString());
 	}
 	
