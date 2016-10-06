@@ -18,11 +18,13 @@
  */
 package org.jetel.component.fileoperation;
 
+import static org.jetel.util.protocols.amazon.S3Utils.FORWARD_SLASH;
+import static org.jetel.util.protocols.amazon.S3Utils.getPath;
+import static org.jetel.util.protocols.amazon.S3Utils.getInputStream;
+
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FilterInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -59,9 +61,8 @@ import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.MultiObjectDeleteException;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManager; 
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -71,32 +72,9 @@ import com.amazonaws.services.s3.transfer.TransferManager;
  */
 public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 	
-	private static final String FORWARD_SLASH = "/";
-	
 	private static final Log log = LogFactory.getLog(PrimitiveS3OperationHandler.class);
-
-	private ConnectionPool pool = ConnectionPool.getInstance();
 	
-	/**
-	 * Extracts bucket name and key from the URI.
-	 * If the key is empty, the returned array has just one element.
-	 * For an URI pointing to S3 root,
-	 * an array containing one empty string is returned.
-	 * 
-	 * @param uri
-	 * @return [bucketName, key] or [bucketName]
-	 */
-	protected static String[] getPath(URI uri) {
-		String path = uri.getPath();
-		if (path.startsWith(FORWARD_SLASH)) {
-			path = path.substring(1);
-		}
-		String[] parts = path.split(FORWARD_SLASH, 2);
-		if ((parts.length == 2) && parts[1].isEmpty()) {
-			return new String[] {parts[0]};
-		}
-		return parts;
-	}
+	private ConnectionPool pool = ConnectionPool.getInstance();
 	
 	private static String appendSlash(String input) {
 		if (!input.endsWith(FORWARD_SLASH)) {
@@ -654,33 +632,11 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 		
 	}
 	
-	public static InputStream getInputStream(URI uri, final PooledS3Connection connection) throws IOException {
+	public static ObjectMetadata getObjectMetadata(URI uri, AmazonS3 service) throws IOException {
 		try {
-			uri = uri.normalize();
-			AmazonS3 service = connection.getService();
 			String[] path = getPath(uri);
-			String bucketName = path[0];
-			if (path.length < 2) {
-				throw new IOException(StringUtils.isEmpty(bucketName) ? "Cannot read from the root directory" : "Cannot read from bucket root directory");
-			}
-			S3Object object = service.getObject(bucketName, path[1]);
-			InputStream is = object.getObjectContent();
-			if (is == null) {
-				throw new IOException("No data available");
-			}
-			is = new FilterInputStream(is) {
-				@Override
-				public void close() throws IOException {
-					try {
-						super.close();
-					} finally {
-						connection.returnToPool();
-					}
-				}
-			};
-			return is;
+			return service.getObjectMetadata(path[0], path[1]);
 		} catch (Exception e) {
-			connection.returnToPool();
 			throw S3Utils.getIOException(e);
 		}
 	}
