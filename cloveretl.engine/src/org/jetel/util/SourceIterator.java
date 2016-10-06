@@ -18,11 +18,14 @@
  */
 package org.jetel.util;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.nio.channels.ReadableByteChannel;
+import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -36,11 +39,16 @@ import org.jetel.enums.ProcessingType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
+import org.jetel.graph.ContextProvider;
 import org.jetel.graph.InputPort;
+import org.jetel.graph.Node;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.dictionary.Dictionary;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
-import org.jetel.util.file.WcardPattern;
+import org.jetel.util.file.stream.Input;
+import org.jetel.util.file.stream.Wildcards;
 import org.jetel.util.property.PropertyRefResolver;
 
 //TODO: this is work in progress!
@@ -53,7 +61,7 @@ import org.jetel.util.property.PropertyRefResolver;
  * 
  * @created 19.10.2011
  */
-public class SourceIterator {
+public class SourceIterator implements Closeable {
 	
 	private static Log DEFAULT_LOGGER = LogFactory.getLog(SourceIterator.class);
 
@@ -67,8 +75,10 @@ public class SourceIterator {
 
 	private String fileURL;
 	private URL contextURL;
-	private Iterator<String> filenameIterator;
-	private List<String> files;
+	private DirectoryStream<Input> directoryStream;
+	private Iterator<Input> fileIterator;
+
+	private Input currentFile;
 
 	private InputPort inputPort;
 	private ReadableChannelPortIterator portReadingIterator;
@@ -92,10 +102,39 @@ public class SourceIterator {
 	// CLO-6632:
 	private DataSourceType preferredDataSourceType = DataSourceType.CHANNEL;
 
+	private String origin;
+	
+	private volatile boolean closed = false;
+
 	public SourceIterator(InputPort inputPort, URL contextURL, String fileURL) {
 		this.inputPort = inputPort;
 		this.fileURL = fileURL;
 		this.contextURL = contextURL;
+	
+		try {
+			Node node = inputPort != null ? inputPort.getEdge().getReader() : ContextProvider.getNode();
+			this.origin = "";
+			if (node != null) {
+				this.origin = node.getId();
+				TransformationGraph graph = node.getGraph();
+				if (graph != null) {
+					GraphRuntimeContext context = node.getGraph().getRuntimeContext();
+					if (context != null) {
+						this.origin += " from " + node.getGraph().getRuntimeContext().getJobUrl();
+					}
+				}
+			}
+			try (
+				StringWriter sw = new StringWriter();
+				PrintWriter pw = new PrintWriter(sw);
+			) {
+				new Exception().printStackTrace(pw);
+				pw.close();
+				this.origin += sw.toString();
+			}
+		} catch (Exception ex) {
+			DEFAULT_LOGGER.error("", ex);
+		}
 	}
 
 	public void checkConfig(ConfigurationStatus status) throws ComponentNotReadyException {
@@ -114,6 +153,13 @@ public class SourceIterator {
 		prepareDictionaryIterator();
 	}
 
+	// this should be called in postExecute()
+	@Override
+	public void close() throws IOException {
+		closed = true;
+		FileUtils.closeAll(directoryStream, dictionaryIterator, portReadingIterator);
+	}
+
 	public void preExecute() throws ComponentNotReadyException {
 		// do nothing
 	}
@@ -124,7 +170,7 @@ public class SourceIterator {
 	 * 
 	 */
 	public boolean hasNext() {
-		return filenameIterator.hasNext() || dictionaryIterator.hasNext() ||
+		return fileIterator.hasNext() || dictionaryIterator.hasNext() ||
 			   (portReadingIterator != null && portReadingIterator.hasNext());
 	}
 
@@ -154,8 +200,9 @@ public class SourceIterator {
 		}
 
 		// read from urls
-		if (filenameIterator.hasNext()) {
-			currentSourceName = filenameIterator.next();
+		if (fileIterator.hasNext()) {
+			currentFile = fileIterator.next();
+			currentSourceName = currentFile.getAbsolutePath();
 			currentSourcePosition++;
 
 			// read from dictionary
@@ -168,7 +215,16 @@ public class SourceIterator {
 				return next();
 			}
 			currentSourceName = unificateFileName(currentSourceName);
-			return createDataSource(currentSourceName);
+			
+			try {
+				Object preferredInput = currentFile.getPreferredInput(preferredDataSourceType);
+				if (preferredInput != null) {
+					return preferredInput;
+				}
+				return currentFile.getPreferredInput(DataSourceType.CHANNEL);
+			} catch (IOException e) {
+				throw new JetelException("File is unreachable: " + currentSourceName, e);
+			}
 		}
 		return null;
 	}
@@ -196,6 +252,51 @@ public class SourceIterator {
 	public void postExecute() throws ComponentNotReadyException {
 		currentSourcePosition = 0;
 		currentSourceName = UNKNOWN_SOURCE_NAME;
+		
+		try {
+			close();
+		} catch (Exception e) {
+			throw new ComponentNotReadyException("Failed to release resources", e);
+		}
+	}
+	
+	/**
+	 * Utility method.
+	 * 
+	 * @param sourceIterator
+	 * @throws ComponentNotReadyException
+	 */
+	public static void postExecute(SourceIterator sourceIterator) throws ComponentNotReadyException {
+		if (sourceIterator != null) {
+			sourceIterator.postExecute();
+		}
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+		if (!closed) {
+			DEFAULT_LOGGER.error("Resource leak: SourceIterator created by " + origin + " was not closed");
+		}
+	}
+
+	public void free() {
+		try {
+			close();
+		} catch (Exception ex) {
+			DEFAULT_LOGGER.error("Failed to release resources", ex);
+		}
+	}
+	
+	/**
+	 * Utility method.
+	 * 
+	 * @param sourceIterator
+	 */
+	public static void free(SourceIterator sourceIterator) {
+		if (sourceIterator != null) {
+			sourceIterator.free();
+		}
 	}
 
 	/**
@@ -204,24 +305,19 @@ public class SourceIterator {
 	 * @throws ComponentNotReadyException
 	 */
 	private void prepareSourceIterator() throws ComponentNotReadyException {
-		WcardPattern pat = new WcardPattern();
-		pat.setParent(contextURL);
-		pat.addPattern(fileURL, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
-		pat.resolveAllNames(true);
-		try {
-			files = pat.filenames();
-		} catch (IOException e) {
-			throw new ComponentNotReadyException("Can't prepare file list from wildcard URL", e);
+		String[] parts = fileURL.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+
+		firstPortProtocolPosition = getFirstProtocolPosition(parts, PORT_PREFIX);
+		if (firstPortProtocolPosition >= 0 && inputPort == null) {
+			throw new ComponentNotReadyException("Input port is not defined for '" + parts[firstPortProtocolPosition] + "'.");
 		}
 
-		firstPortProtocolPosition = getFirstProtocolPosition(files, PORT_PREFIX);
-		if (firstPortProtocolPosition >= 0 && inputPort == null)
-			throw new ComponentNotReadyException("Input port is not defined for '" + files.get(firstPortProtocolPosition) + "'.");
-
-		portProtocolFields = getAndRemoveProtocol(files, PORT_PREFIX, firstPortProtocolPosition);
-		this.filenameIterator = files.iterator();
+		portProtocolFields = getElementsByProtocol(parts, PORT_PREFIX, firstPortProtocolPosition);
+        this.directoryStream = Wildcards.newDirectoryStream(contextURL, parts); // FIXME CheckConfigFilter
+        this.fileIterator = directoryStream.iterator();
+        closed = false;
 		
-		isGraphDependentSource = firstPortProtocolPosition == 0 || getFirstProtocolPosition(files, DICT_PREFIX) == 0;
+		isGraphDependentSource = firstPortProtocolPosition == 0 || getFirstProtocolPosition(parts, DICT_PREFIX) == 0;
 	}
 
 	private void preparePortIterator() throws ComponentNotReadyException {
@@ -280,33 +376,6 @@ public class SourceIterator {
 		return null;
 	}
 	
-	private Object createDataSource(String filename) throws JetelException {
-		Object source = ReadableChannelIterator.getPreferredDataSource(contextURL, filename, preferredDataSourceType);
-		if (source != null) {
-			return source;
-		}
-		
-		return createReadableByteChannel(filename);
-	}
-
-	/**
-	 * Creates readable channel for a file name.
-	 * 
-	 * @param fileName
-	 * @return
-	 * @throws JetelException
-	 */
-	private ReadableByteChannel createReadableByteChannel(String fileName) throws JetelException {
-		DEFAULT_LOGGER.debug("Opening input file " + fileName);
-		try {
-			ReadableByteChannel channel = FileUtils.getReadableChannel(contextURL, fileName);
-			DEFAULT_LOGGER.debug("Reading input file " + fileName);
-			return channel;
-		} catch (IOException e) {
-			throw new JetelException("File is unreachable: " + fileName, e);
-		}
-	}
-
 	/**
 	 * Gets protocol position in file list.
 	 * 
@@ -314,9 +383,9 @@ public class SourceIterator {
 	 * @param protocol
 	 * @return
 	 */
-	private int getFirstProtocolPosition(List<String> files, String protocol) {
-		for (int i = 0; i < files.size(); i++) {
-			if (files.get(i).indexOf(protocol) == 0) {
+	private int getFirstProtocolPosition(String[] files, String protocol) {
+		for (int i = 0; i < files.length; i++) {
+			if (files[i].indexOf(protocol) == 0) {
 				// if (getMostInnerString(files.get(i)).indexOf(protocol) == 0) {
 				return i;
 			}
@@ -332,28 +401,19 @@ public class SourceIterator {
 	 * @param start
 	 * @return
 	 */
-	private List<String> getAndRemoveProtocol(List<String> files, String protocol, int start) {
-		ArrayList<String> result = new ArrayList<String>();
-		if (start < 0)
+	private List<String> getElementsByProtocol(String[] files, String protocol, int start) {
+		List<String> result = new ArrayList<String>();
+		if (start < 0) {
 			return result;
+		}
 		String file;
-		for (int i = start; i < files.size(); i++) {
-			file = files.get(i);
+		for (int i = start; i < files.length; i++) {
+			file = files[i];
 			if (file.indexOf(protocol) == 0) {
-				files.remove(i);
-				i--;
 				result.add(file);
 			}
 		}
 		return result;
-	}
-
-	public Iterator<String> getFileIterator() {
-		return files.iterator();
-	}
-	
-	public boolean isSingleSource() {
-		return files.size() <= 1;
 	}
 
 	public String getCurrentFileName() {

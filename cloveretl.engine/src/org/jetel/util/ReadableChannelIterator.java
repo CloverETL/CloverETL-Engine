@@ -18,16 +18,20 @@
  */
 package org.jetel.util;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -40,11 +44,17 @@ import org.jetel.data.Defaults;
 import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.graph.ContextProvider;
 import org.jetel.graph.InputPort;
+import org.jetel.graph.Node;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.dictionary.Dictionary;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
-import org.jetel.util.file.WcardPattern;
+import org.jetel.util.file.stream.Input;
+import org.jetel.util.file.stream.Wildcards;
+import org.jetel.util.file.stream.Wildcards.CheckConfigFilter;
 import org.jetel.util.property.PropertyRefResolver;
 
 /***
@@ -55,7 +65,7 @@ import org.jetel.util.property.PropertyRefResolver;
  * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
  *         (c) Javlin, a.s. (www.javlin.eu)
  */
-public class ReadableChannelIterator {
+public class ReadableChannelIterator implements Closeable {
 	
 	// logger
     private static Log defaultLogger = LogFactory.getLog(ReadableChannelIterator.class);
@@ -71,8 +81,8 @@ public class ReadableChannelIterator {
 	// all file URLs and a context for URLs.
 	private String fileURL;
 	private URL contextURL;
-	private Iterator<String> filenameItor;
-	private List<String> files; 
+	private DirectoryStream<Input> directoryStream;
+	private Iterator<Input> fileIterator;
 
 	// input port support
 	private InputPort inputPort;
@@ -89,8 +99,9 @@ public class ReadableChannelIterator {
 	// current source name
 	private String currentFileName;
 	
+	private Input currentFile;
 	
-	// true if fileURL contains port or dictionary protocol
+	// true if the first fileURL contains port or dictionary protocol
 	private boolean isGraphDependentSource;
 
 	// true if fileURL contains port protocol 
@@ -104,6 +115,10 @@ public class ReadableChannelIterator {
 	private int firstDictProtocolPosition;
 	private int currentPortProtocolPosition;
 	private List<String> portProtocolFields;
+	
+	private String origin;
+	
+	private volatile boolean closed = false;
 
 	/**
 	 * Constructor.
@@ -116,13 +131,46 @@ public class ReadableChannelIterator {
 		this.inputPort = inputPort;
 		this.fileURL = fileURL;
 		this.contextURL = contextURL;
+		
+		try {
+			Node node = inputPort != null ? inputPort.getEdge().getReader() : ContextProvider.getNode();
+			this.origin = "";
+			if (node != null) {
+				this.origin = node.getId();
+				TransformationGraph graph = node.getGraph();
+				if (graph != null) {
+					GraphRuntimeContext context = node.getGraph().getRuntimeContext();
+					if (context != null) {
+						this.origin += " from " + node.getGraph().getRuntimeContext().getJobUrl();
+					}
+				}
+			}
+			try (
+				StringWriter sw = new StringWriter();
+				PrintWriter pw = new PrintWriter(sw);
+			) {
+				new Exception().printStackTrace(pw);
+				pw.close();
+				this.origin += sw.toString();
+			}
+		} catch (Exception ex) {
+			defaultLogger.error("", ex);
+		}
 	}
 
 	/**
 	 * Checks this class for the first using.
 	 */
 	public void checkConfig() throws ComponentNotReadyException {
-		common(false); // CLO-5399
+		try {
+			common(false); // CLO-5399
+		} finally {
+			// release resources:
+			// MultiFileReader and some components use getInputIterator() method,
+			// but it only works with local files, closing should not break things
+			// this may change in the future if the DirectoryStream for local files is implemented using NIO API.
+			free(); // we assume the iterator will be re-initialized
+		}
 	}
 
 	/**
@@ -130,6 +178,59 @@ public class ReadableChannelIterator {
 	 */
 	public void init() throws ComponentNotReadyException {
 		common(true);
+	}
+	
+	// this should be called in postExecute()
+	@Override
+	public void close() throws IOException {
+		closed = true;
+		FileUtils.closeAll(directoryStream, dictionaryReadingIterator, portReadingIterator);
+	}
+	
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+		if (!closed) {
+			defaultLogger.error("Resource leak: ReadableChannelIterator created by " + origin + " was not closed");
+		}
+	}
+
+	public void free() {
+		try {
+			close();
+		} catch (Exception ex) {
+			defaultLogger.error("Failed to release resources", ex);
+		}
+	}
+	
+	/**
+	 * Utility method to avoid null checking.
+	 * 
+	 * @param readableChannelIterator
+	 */
+	public static void free(ReadableChannelIterator readableChannelIterator) {
+		if (readableChannelIterator != null) {
+			readableChannelIterator.free();
+		}
+	}
+	
+	public void postExecute() throws ComponentNotReadyException {
+		try {
+			close();
+		} catch (Exception e) {
+			throw new ComponentNotReadyException("Failed to release resources", e);
+		}
+	}
+	
+	/**
+	 * Utility method to avoid null checking.
+	 * 
+	 * @param readableChannelIterator
+	 */
+	public static void postExecute(ReadableChannelIterator readableChannelIterator) throws ComponentNotReadyException {
+		if (readableChannelIterator != null) {
+			readableChannelIterator.postExecute();
+		}
 	}
 	
 	private void common(boolean resolveAllFileNames) throws ComponentNotReadyException {
@@ -161,6 +262,11 @@ public class ReadableChannelIterator {
 	 */
 	public void reset() {
 		try {
+			try {
+				close();
+			} catch (Exception e) {
+				defaultLogger.error("Failed to close resources", e);
+			}
 			init();
 		} catch (ComponentNotReadyException e) {
 			defaultLogger.error(e); //never happened
@@ -172,22 +278,28 @@ public class ReadableChannelIterator {
 	 * @throws ComponentNotReadyException
 	 */
 	private void prepareFileIterator(boolean resolveAllNames) throws ComponentNotReadyException {
-		WcardPattern pat = new WcardPattern();
-		pat.setParent(contextURL);
-        pat.addPattern(fileURL, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
-        pat.resolveAllNames(resolveAllNames);
-        try {
-			files = pat.filenames();
-		} catch (IOException e) {
-			throw new ComponentNotReadyException("Can't prepare file list from wildcard URL", e);
+		String[] parts = fileURL.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+        firstPortProtocolPosition = getFirstProtocolPosition(parts, PORT);
+        firstDictProtocolPosition = getFirstProtocolPosition(parts, DICT);
+		if ((firstPortProtocolPosition >= 0) && (inputPort == null)) {
+			throw new ComponentNotReadyException("Input port is not defined for '" + parts[firstPortProtocolPosition] + "'.");
 		}
-        firstPortProtocolPosition = getFirstProtocolPosition(files, PORT);
-        firstDictProtocolPosition = getFirstProtocolPosition(files, DICT);
-		if (firstPortProtocolPosition >= 0 && inputPort == null) 
-			throw new ComponentNotReadyException("Input port is not defined for '" + files.get(firstPortProtocolPosition) + "'.");
 		
-        portProtocolFields = getAndRemoveProtocol(files, PORT, firstPortProtocolPosition);
-        this.filenameItor = files.iterator();
+		List<String> urls;
+		if (resolveAllNames) {
+			urls = Arrays.asList(parts);
+		} else {
+			try {
+				urls = new CheckConfigFilter(contextURL).filter(parts);
+			} catch (IOException ex) {
+				throw new ComponentNotReadyException("", ex);
+			}
+		}
+		
+        portProtocolFields = getElementsByProtocol(parts, PORT, firstPortProtocolPosition);
+        this.directoryStream = Wildcards.newDirectoryStream(contextURL, urls);
+        closed = false;
+        this.fileIterator = directoryStream.iterator();
 	}
 
 	/**
@@ -211,7 +323,7 @@ public class ReadableChannelIterator {
 	 * TODO to make hasData method for the InputPort that waits for new data if the edge is empty. Is it good solution???
 	 */
 	public boolean hasNext() {
-		return dictionaryReadingIterator.hasNext() || filenameItor.hasNext() || (bInputPort && portReadingIterator.hasNext());
+		return dictionaryReadingIterator.hasNext() || fileIterator.hasNext() || (bInputPort && portReadingIterator.hasNext());
 	}
 
 	/**
@@ -245,8 +357,9 @@ public class ReadableChannelIterator {
 		}
 		
 		// read from urls
-		if (filenameItor.hasNext()) {
-			currentFileName = filenameItor.next();
+		if (fileIterator.hasNext()) {
+			currentFile = fileIterator.next();
+			currentFileName = currentFile.getAbsolutePath();
 			currentPortProtocolPosition++;
 			
 			// read from dictionary
@@ -256,16 +369,18 @@ public class ReadableChannelIterator {
 			}
 			currentFileName = unificateFileName(contextURL, currentFileName);
 			
-			Object preferredDataSource = getPreferredDataSource(contextURL, currentFileName, preferredDataSourceType);
-			if (preferredDataSource != null) {
-				return preferredDataSource;
+			try {
+				defaultLogger.debug("Opening input file " + currentFileName);
+				Object preferredInput = currentFile.getPreferredInput(preferredDataSourceType);
+				if (preferredInput != null) {
+					return preferredInput;
+				}
+				preferredInput = currentFile.getPreferredInput(DataSourceType.CHANNEL);
+				defaultLogger.debug("Reading input file " + currentFileName);
+				return preferredInput;
+			} catch (IOException e) {
+				throw new JetelException("File is unreachable: " + currentFileName, e);
 			}
-			
-			if (preferredDataSourceType == DataSourceType.STREAM) {
-				return createInputStream(currentFileName);
-			}
-			
-			return createReadableByteChannel(currentFileName);
 		}
 		return null;
 	}
@@ -357,50 +472,14 @@ public class ReadableChannelIterator {
 	}
 	
 	/**
-	 * Creates input stream for a file name.
-	 * 
-	 * @param fileName
-	 * @return
-	 * @throws JetelException
-	 */
-	private InputStream createInputStream(String fileName) throws JetelException {
-		defaultLogger.debug("Opening input file " + fileName);
-		try {
-			InputStream iStream = FileUtils.getInputStream(contextURL, fileName);
-			defaultLogger.debug("Reading input file " + fileName);
-			return iStream;
-		} catch (IOException e) {
-			throw new JetelException("File is unreachable: " + fileName, e);
-		}
-	}
-	
-	/**
-	 * Creates readable channel for a file name.
-	 * 
-	 * @param fileName
-	 * @return
-	 * @throws JetelException
-	 */
-	private ReadableByteChannel createReadableByteChannel(String fileName) throws JetelException {
-		defaultLogger.debug("Opening input file " + fileName);
-		try {
-			ReadableByteChannel channel = FileUtils.getReadableChannel(contextURL, fileName);
-			defaultLogger.debug("Reading input file " + fileName);
-			return channel;
-		} catch (IOException e) {
-			throw new JetelException("File is unreachable: " + fileName, e);
-		}
-	}
-
-	/**
 	 * Gets protocol position in file list.
 	 * @param files
 	 * @param protocol
 	 * @return
 	 */
-	private int getFirstProtocolPosition(List<String> files, String protocol) {
-		for (int i=0; i<files.size(); i++) {
-			if (files.get(i).indexOf(protocol) == 0) {
+	private int getFirstProtocolPosition(String[] files, String protocol) {
+		for (int i=0; i<files.length; i++) {
+			if (files[i].indexOf(protocol) == 0) {
 			//if (getMostInnerString(files.get(i)).indexOf(protocol) == 0) {
 				return i;
 			}			
@@ -415,27 +494,22 @@ public class ReadableChannelIterator {
 	 * @param start
 	 * @return
 	 */
-	private List<String> getAndRemoveProtocol(List<String> files, String protocol, int start) {
-		ArrayList<String> result = new ArrayList<String>();
+	private List<String> getElementsByProtocol(String[] files, String protocol, int start) {
+		List<String> result = new ArrayList<String>();
 		if (start < 0) return result;
+		
 		String file;
-		for (int i=start; i<files.size(); i++) {
-			file = files.get(i);
+		for (int i = start; i < files.length; i++) {
+			file = files[i];
 			if (file.indexOf(protocol) == 0) {
-				files.remove(i);
-				i--;
 				result.add(file);
 			}
 		}
 		return result;
 	}
 	
-	/**
-	 * Gets file iterator.
-	 * @return
-	 */
-	public Iterator<String> getFileIterator() {
-		return files.iterator();
+	public Iterator<Input> getInputIterator() {
+		return fileIterator;
 	}
 	
 	/**
