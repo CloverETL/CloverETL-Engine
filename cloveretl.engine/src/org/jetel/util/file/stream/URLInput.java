@@ -65,6 +65,7 @@ class URLInput extends AbstractInput {
 			} catch (Exception e) {
 				// DO NOTHING - just try to open a stream based on the currentFileName in the next step
 			}
+			break;
 		case FILE:
 			try {
 				File f = FileUtils.getJavaFile(contextUrl, file);
@@ -72,6 +73,7 @@ class URLInput extends AbstractInput {
 			} catch (Exception e) {
 				//DO NOTHING - just try to prepare a data source in other way
 			}
+			break;
 		}
 		return null;
 	}
