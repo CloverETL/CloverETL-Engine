@@ -65,7 +65,7 @@ import com.github.sardine.impl.SardineException;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 
 import de.schlichtherle.truezip.file.TFile;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
@@ -86,7 +86,7 @@ public class WcardPattern {
 	private final static Pattern ARCHIVE_SOURCE = Pattern.compile("((zip|gzip|tar|tgz):([^\\(].*[^\\)])#(.*))|((zip|gzip|tar|tgz):([^\\(].*[^\\)])$)");
 	
 	// Wildcard characters.
-	@SuppressWarnings("MS")
+	@SuppressFBWarnings("MS")
 	public final static char[] WCARD_CHAR = {'*', '?'};
 
 	// Regex substitutions for wildcards. 
@@ -503,7 +503,7 @@ public class WcardPattern {
     	newFileStreamNames.add(originalFileName.substring(0, iPreName) + fileStreamName + originalFileName.substring(iPostName));
     }
     
-	private List<String> getSanboxNames(URL url) {
+	private List<String> getSandboxNames(URL url) {
 		List<String> fileStreamNames = new ArrayList<String>();
 		if (hasWildcard(url)) {
 			IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
@@ -564,7 +564,7 @@ public class WcardPattern {
 		}
 		
 		else if (protocol.equals(SandboxUrlUtils.SANDBOX_PROTOCOL)) {
-			return getSanboxNames(url);
+			return getSandboxNames(url);
 		}
 		else if (resolveAllNames && (
 				protocol.equals(HTTP) || protocol.equals(HTTPS))) {
@@ -817,6 +817,9 @@ public class WcardPattern {
 			Vector<?> v = sftpConnection.ls(url.getFile());				// note: too long operation
 			for (Object lsItem: v) {
 				LsEntry lsEntry = (LsEntry) lsItem;
+				if (lsEntry.getAttrs().isDir()) {
+					continue; // CLO-9619
+				}
 				String resolverdFileNameWithoutPath = lsEntry.getFilename();
 				
 				// replace file name
@@ -886,6 +889,9 @@ public class WcardPattern {
 				Arrays.sort(curMatch);
 				for (int fnIdx = 0; fnIdx < curMatch.length; fnIdx++) {
 					File f = new File(dir, curMatch[fnIdx]);
+					if (f.isDirectory()) {
+						continue; // CLO-9619
+					}
 					mfiles.add(f.getAbsolutePath());
 				}
 			}

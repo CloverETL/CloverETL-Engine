@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class CollectionUtils {
     
-    public static void addAll(Collection col, Iterator it) {
+    public static <E> void addAll(Collection<E> col, Iterator<? extends E> it) {
         while (it.hasNext()) {
         	col.add(it.next());
         }

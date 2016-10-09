@@ -93,6 +93,9 @@ public interface CustomPathResolver {
 	/**
 	 * Method should resolve wildcard URL - i.e. return list of concrete files/URLs
 	 * 
+	 * CLO-9619: The result should NOT contain directories. 
+	 * It is the responsibility of the resolver to filter them out.
+	 * 
 	 * @param contextURL working/home directory
 	 * @param fileURL
 	 * @return list of resolved filenames 

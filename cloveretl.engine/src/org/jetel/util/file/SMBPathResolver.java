@@ -106,6 +106,9 @@ public class SMBPathResolver implements CustomPathResolver {
 				List<SmbFile> resolvedFiles = SMBOperationHandler.resolve(SMBOperationHandler.decodeURI(new URI(fileURL)));
 				List<String> result = new ArrayList<String>(resolvedFiles.size());
 				for (SmbFile file: resolvedFiles) {
+					if (file.isDirectory()) {
+						continue; // CLO-9619
+					}
 					result.add(SMBOperationHandler.toURI(file).toString()); // CLO-3052: convert SmbFile to URI to encode spaces as %20
 				}
 				return result;

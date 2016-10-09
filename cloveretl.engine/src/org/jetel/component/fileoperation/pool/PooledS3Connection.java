@@ -247,7 +247,7 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 	 * @throws IOException
 	 */
 	public InputStream getInputStream(URI uri) throws IOException {
-		return PrimitiveS3OperationHandler.getInputStream(uri, this);
+		return S3Utils.getInputStream(uri, this);
 	}
 
 	/**

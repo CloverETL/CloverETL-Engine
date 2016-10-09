@@ -577,7 +577,6 @@ public class RecordKey {
     		RecordKey slaveKey, String slaveAttribute, ConfigurationStatus status, GraphElement component) {
     	
     	boolean isNull = false;
-    	Integer[] incomparable = null;
     	ConfigurationProblem problem;
     	
     	//slave key is null
@@ -602,9 +601,7 @@ public class RecordKey {
     	//check if key fields are comparable
     	String message;
     	Integer d,s;
-    	if (incomparable == null) {
-    		incomparable = masterKey.getIncomparableFields(slaveKey);
-    	}
+    	Integer[] incomparable = masterKey.getIncomparableFields(slaveKey);
 		for (int i = 0; i < incomparable.length; i+=2) {
 			d = incomparable[i];
 			s = incomparable[i+1];
