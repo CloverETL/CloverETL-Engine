@@ -378,13 +378,21 @@ public class DBInputTable extends Node {
 	
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
-		super.postExecute();
-		connection.closeConnection(getId(), OperationType.READ);
+		try {
+			ReadableChannelIterator.postExecute(channelIterator);
+		} finally {
+			super.postExecute();
+			connection.closeConnection(getId(), OperationType.READ);
+		}
 	}
 	
 	@Override
     public synchronized void free() {
-    	super.free();
+		try {
+			ReadableChannelIterator.free(channelIterator);
+		} finally {
+			super.free();
+		}
     }
 
 	/**

@@ -20,22 +20,30 @@ package org.jetel.util.protocols.amazon;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.channels.SeekableByteChannel;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
+import org.jetel.component.fileoperation.pool.PooledS3Connection;
 import org.jetel.util.ExceptionUtils;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.Upload;
 
@@ -47,10 +55,17 @@ import com.amazonaws.services.s3.transfer.Upload;
  */
 public class S3Utils {
 	
+	public static final String FORWARD_SLASH = "/";
+	
 	private static String JETS3T_PROPERTIES_FILENAME = "jets3t.properties";
 	
 	private static String JETS3T_SERVER_SIDE_ENCRYPTION_PROPERTY = "s3service.server-side-encryption";
 	
+	/*
+	 * To be removed when Amazon SDK is updated.
+	 */
+	private static final long END_OF_FILE = Long.MAX_VALUE - 1;
+
 	private static Boolean sse = null;
 	
 	private S3Utils() {
@@ -88,6 +103,27 @@ public class S3Utils {
 		return sse;
 	}
 
+	/**
+	 * Extracts bucket name and key from the URI.
+	 * If the key is empty, the returned array has just one element.
+	 * For an URI pointing to S3 root,
+	 * an array containing one empty string is returned.
+	 * 
+	 * @param uri
+	 * @return [bucketName, key] or [bucketName]
+	 */
+	public static String[] getPath(URI uri) {
+		String path = uri.getPath();
+		if (path.startsWith(FORWARD_SLASH)) {
+			path = path.substring(1);
+		}
+		String[] parts = path.split(FORWARD_SLASH, 2);
+		if ((parts.length == 2) && parts[1].isEmpty()) {
+			return new String[] {parts[0]};
+		}
+		return parts;
+	}
+	
 	/**
 	 * CLO-8589: set content length to 0 to prevent a warning being logged.
 	 * 
@@ -173,4 +209,109 @@ public class S3Utils {
 		return ExceptionUtils.getIOException(t);
 	}
 	
+	/**
+	 * Reads an object from S3, including its data.
+	 * 
+     * <p>
+     * Callers should be very careful when using this method; the returned
+     * Amazon S3 object contains a direct stream of data from the HTTP connection.
+     * The underlying HTTP connection cannot be closed until the user
+     * finishes reading the data and closes the stream. Callers should
+     * therefore:
+     * </p>
+     * <ul>
+     *  <li>Use the data from the input stream in Amazon S3 object as soon as possible,</li>
+     *  <li>Close the input stream in Amazon S3 object as soon as possible.</li>
+     * </ul>
+     * <p>
+     * If callers do not follow those rules, then the client can run out of
+     * resources if allocating too many open, but unused, HTTP connections.
+     * </p>
+     * 
+	 * @see AmazonS3#getObject(GetObjectRequest)
+	 * 
+	 * @param uri		- target URI
+	 * @param service	- S3 service
+	 * @param start		- byte offset
+	 * 
+	 * @return S3Object
+	 * 
+	 * @throws IOException
+	 */
+	static S3Object getObject(URI uri, AmazonS3 service, long start) throws IOException {
+		try {
+			uri = uri.normalize();
+			String[] path = getPath(uri);
+			String bucketName = path[0];
+			if (path.length < 2) {
+				throw new IOException(StringUtils.isEmpty(bucketName) ? "Cannot read from the root directory" : "Cannot read from bucket root directory");
+			}
+			GetObjectRequest request = new GetObjectRequest(bucketName, path[1]);
+			if (start > 0) {
+				// CLO-9500:
+				// TODO replace this with GetObjectRequest.setRange(start) when the library is updated
+				request.setRange(start, END_OF_FILE);
+			}
+			S3Object object = service.getObject(request);
+			return object;
+		} catch (Exception e) {
+			throw S3Utils.getIOException(e);
+		}
+	}
+	
+	static S3ObjectInputStream getObjectInputStream(S3Object object) throws IOException {
+		S3ObjectInputStream is = object.getObjectContent();
+		if (is == null) {
+			throw new IOException("No data available");
+		}
+		return is;
+	}
+	
+	public static SeekableByteChannel getReadableChannel(String url) throws IOException {
+		try {
+			URI uri = new URI(url);
+			return new S3SeekableByteChannel(uri);
+		} catch (URISyntaxException e) {
+			throw new IOException("Invalid URI", e);
+		}
+	}
+
+	private static InputStream getObjectInputStream(URI uri, AmazonS3 service, long start) throws IOException {
+		S3Object object = getObject(uri, service, start);
+		return getObjectInputStream(object);
+	}
+	
+	/**
+	 * Returns an {@link InputStream} for reading data from the specified object
+	 * using the provided connection. 
+	 * 
+	 * <p><b>The stream takes ownership of the connection!</b>
+	 * The connection is released when the stream is closed.</p>
+	 * 
+	 * 
+	 * @param uri
+	 * @param connection
+	 * @return
+	 * @throws IOException
+	 */
+	public static InputStream getInputStream(URI uri, final PooledS3Connection connection) throws IOException {
+		try {
+			InputStream is = S3Utils.getObjectInputStream(uri, connection.getService(), 0);
+			is = new FilterInputStream(is) {
+				@Override
+				public void close() throws IOException {
+					try {
+						super.close();
+					} finally {
+						connection.returnToPool();
+					}
+				}
+			};
+			return is;
+		} catch (Exception e) {
+			connection.returnToPool();
+			throw S3Utils.getIOException(e);
+		}
+	}
+
 }

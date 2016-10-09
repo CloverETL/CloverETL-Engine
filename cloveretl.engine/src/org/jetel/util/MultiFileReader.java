@@ -32,14 +32,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.Parser;
+import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.CloverBuffer;
-import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.stream.Input;
 import org.jetel.util.property.PropertyRefResolver;
 
 /**
@@ -162,50 +163,38 @@ public class MultiFileReader {
      */
 	public void checkConfig(DataRecordMetadata metadata) throws ComponentNotReadyException {
         parser.init();
-        checkChannelIterator();
-        
-		String fName = null; 
-		Iterator<String> fit = channelIterator.getFileIterator();
-		boolean closeLastStream = false;
-		while (fit.hasNext()) {
-			try {
-				fName = fit.next();
-				if (fName.equals(STD_IN)) continue;
-				if (fName.startsWith("dict:")) continue; //this test has to be here, since an involuntary warning is caused
-				String mostInnerFile = FileURLParser.getMostInnerAddress(fName);
-				URL url = FileUtils.getFileURL(contextURL, mostInnerFile);
-				if (FileUtils.isServerURL(url)) {
-					//FileUtils.checkServer(url); //this is very long operation
-					continue;
-				}
-				if (FileURLParser.isArchiveURL(fName)) {
-					// test if the archive file exists
-					// getReadableChannel is too long for archives
-					// CLO-702 - replaced manual file creation with FileUtils.convertUrlToFile()
-					File file = FileUtils.convertUrlToFile(url);
-					if (file.exists()) continue;
-					throw new ComponentNotReadyException(UNREACHABLE_FILE + fName);
-				}
-				
-				Object dataSource = ReadableChannelIterator.getPreferredDataSource(contextURL, fName, parser.getPreferredDataSourceType());
-				if (dataSource == null) {
-					dataSource = FileUtils.getReadableChannel(contextURL, fName);
-				}
-				parser.setDataSource(dataSource);
-				notifyFileChangeListeners(dataSource);
-				
-				parser.setReleaseDataSource(closeLastStream = true);
-			} catch (Exception e) {
-				throw new ComponentNotReadyException(UNREACHABLE_FILE + fName, e);
-			}
-		}
-		if (closeLastStream) {
-			try {
-				parser.close();
-			} catch (IOException e) {
-				throw new ComponentNotReadyException("File '" + fName + "' cannot be closed.", e);
-			}
-		}
+        try {
+            checkChannelIterator();
+            
+    		String fName = null; 
+    		Iterator<Input> fit = channelIterator.getInputIterator();
+    		boolean closeLastStream = false;
+    		while (fit.hasNext()) {
+    			try {
+    				Input input = fit.next();
+    				fName = input.getAbsolutePath();
+    				Object dataSource = input.getPreferredInput(parser.getPreferredDataSourceType());
+    				if (dataSource == null) {
+    					dataSource = input.getPreferredInput(DataSourceType.CHANNEL);
+    				}
+    				parser.setDataSource(dataSource);
+    				notifyFileChangeListeners(dataSource);
+    				
+    				parser.setReleaseDataSource(closeLastStream = true);
+    			} catch (Exception e) {
+    				throw new ComponentNotReadyException(UNREACHABLE_FILE + fName, e);
+    			}
+    		}
+    		if (closeLastStream) {
+    			try {
+    				parser.close();
+    			} catch (IOException e) {
+    				throw new ComponentNotReadyException("File '" + fName + "' cannot be closed.", e);
+    			}
+    		}
+        } finally {
+        	ReadableChannelIterator.free(channelIterator);
+        }
 	}
 	
 	/**
@@ -315,9 +304,6 @@ public class MultiFileReader {
 				iSource++;
 				parser.setDataSource(source);
 				notifyFileChangeListeners(source);
-				if (!channelIterator.isGraphDependentSource()) {
-					parser.setReleaseDataSource(!autoFilling.getFilename().equals(STD_IN));
-				}
 				Object sourcePosition;
 				if ((sourcePosition = incrementalReading.getSourcePosition(channelIterator.getCurrentFileName())) != null) {
 					parser.movePosition(sourcePosition);
@@ -624,6 +610,8 @@ public class MultiFileReader {
 		} catch (IOException e) {
 			logger.error("postExecute", e);
 		}
+        
+        ReadableChannelIterator.postExecute(channelIterator);
     }
     
     /*
@@ -632,9 +620,13 @@ public class MultiFileReader {
 	 */
     public void free() throws IOException {
     	try {
-			if (isSourceOpen) {
-				parser.free();
-			}
+    		try {
+    			ReadableChannelIterator.free(channelIterator);
+    		} finally {
+    			if (isSourceOpen) {
+    				parser.free();
+    			}
+    		}
     	} catch (Exception e) {
     		logger.error("Failed to release resources orderly", e);
     	}

@@ -64,6 +64,8 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.input.CloseShieldInputStream;
+import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.jetel.component.fileoperation.CloverURI;
 import org.jetel.component.fileoperation.FileManager;
 import org.jetel.component.fileoperation.Operation;
@@ -79,7 +81,6 @@ import org.jetel.logger.SafeLog;
 import org.jetel.logger.SafeLogFactory;
 import org.jetel.util.MultiOutFile;
 import org.jetel.util.Pair;
-import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.protocols.ProxyAuthenticable;
 import org.jetel.util.protocols.ProxyConfiguration;
@@ -584,7 +585,7 @@ public class FileUtils {
     	
 		// std input (console)
 		if (input.equals(STD_CONSOLE)) {
-			return System.in;
+			return new CloseShieldInputStream(System.in);
 		}
 
         // get inner source
@@ -1464,7 +1465,7 @@ public class FileUtils {
     	
 		// std input (console)
 		if (isConsole(input)) {
-			return Channels.newOutputStream(new SystemOutByteChannel());
+			return new CloseShieldOutputStream(System.out);
 		}
 		
 		// get inner source
@@ -2014,7 +2015,7 @@ public class FileUtils {
 	 * @return
 	 * @throws IOException
 	 */
-	public static boolean isServerURL(URL url) throws IOException {
+	public static boolean isServerURL(URL url) {
 		
 		return url != null && !url.getProtocol().equals(FILE_PROTOCOL);
 	}

@@ -305,6 +305,15 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		}
 	}
 
+	@Override
+	public synchronized void free() {
+		try {
+			SourceIterator.free(sourceIterator);
+		} finally {
+			super.free();
+		}
+	}
+
 	private void recordProviderReceiverInit() {
 		int portCount = getOutPorts().size();
 		outputRecords = new DataRecord[portCount];
@@ -449,7 +458,11 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
-		super.postExecute();
+		try {
+			SourceIterator.postExecute(sourceIterator);
+		} finally {
+			super.postExecute();
+		}
 	}
 
 	@Override
@@ -558,9 +571,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				bdfe.setFieldName(e.getFieldMetadata().getName());
 				bdfe.setRecordName(e.getFieldMetadata().getDataRecordMetadata().getName());
 				String errorMsg = ExceptionUtils.getMessage(bdfe) + "; output port: " + e.getPortIndex();
-				if (!sourceIterator.isSingleSource()) {
-					errorMsg += "; input source: " + sourceIterator.getCurrentFileName();
-				}
+				errorMsg += "; input source: " + sourceIterator.getCurrentFileName();
 				LOG.error(errorMsg);
 			}
 			if (maxErrors != -1 && ++errorsCount > maxErrors) {
