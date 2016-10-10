@@ -647,10 +647,14 @@ public class DBOutputTable extends Node implements MetadataProvider {
 	
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
-		super.postExecute();
-		if (recordsInCommit != Integer.MAX_VALUE) {
-			// CLO-6100: do not close the connection, as we expect the graph to perform commit
-			dbConnection.closeConnection(getId(), OperationType.WRITE);
+		try {
+			super.postExecute();
+			if (recordsInCommit != Integer.MAX_VALUE) {
+				// CLO-6100: do not close the connection, as we expect the graph to perform commit
+				dbConnection.closeConnection(getId(), OperationType.WRITE);
+			}
+		} finally {
+			ReadableChannelIterator.postExecute(channelReadingIterator);
 		}
 	}
 	
@@ -713,10 +717,14 @@ public class DBOutputTable extends Node implements MetadataProvider {
 	
 	@Override
 	public synchronized void free() {
-		super.free();
-//		if (dbConnection != null) {
-//			dbConnection.free();
-//		}
+		try {
+			ReadableChannelIterator.free(channelReadingIterator);
+		} finally {
+			super.free();
+//			if (dbConnection != null) {
+//				dbConnection.free();
+//			}
+		}
 	}
 
 	private void runInNormalMode() throws SQLException,InterruptedException,IOException, JetelException{

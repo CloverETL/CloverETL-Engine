@@ -230,6 +230,9 @@ public class HadoopPathResolver implements CustomPathResolver {
 					List<String> filenames=new ArrayList<String>(statuses.length);
 
 					for (HadoopFileStatus status: statuses) {
+						if (status.isDir()) {
+							continue; // CLO-9619
+						}
 						if (status.getFile().getPath().matches(matchPattern)) {
 							filenames.add(new StringBuilder(HadoopURLUtils.HDFS_PROTOCOL_URL_PREFIX).append(hadoopConnName).append(status.getFile().getPath()).toString());
 						}

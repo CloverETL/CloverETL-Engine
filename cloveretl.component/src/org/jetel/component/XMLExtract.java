@@ -57,8 +57,8 @@ import org.jetel.util.AutoFilling;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.XmlUtils;
-import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.stream.Input;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
@@ -381,6 +381,15 @@ public class XMLExtract extends Node {
 	}
 
 	@Override
+	public synchronized void free() {
+		try {
+			ReadableChannelIterator.free(readableChannelIterator);
+		} finally {
+			super.free();
+		}
+	}
+
+	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 
@@ -445,9 +454,13 @@ public class XMLExtract extends Node {
 	
     @Override
     public void postExecute() throws ComponentNotReadyException {
-    	super.postExecute();
-    	if (m_inputSource != null) {
-    		org.apache.commons.io.IOUtils.closeQuietly(m_inputSource.getByteStream());
+    	try {
+    		super.postExecute();
+    		if (m_inputSource != null) {
+    			org.apache.commons.io.IOUtils.closeQuietly(m_inputSource.getByteStream());
+    		}
+    	} finally {
+    		ReadableChannelIterator.postExecute(readableChannelIterator);
     	}
     }
 
@@ -649,32 +662,15 @@ public class XMLExtract extends Node {
 				this.readableChannelIterator.checkConfig();
 
 				String fName = null;
-				Iterator<String> fit = readableChannelIterator.getFileIterator();
+				Iterator<Input> fit = readableChannelIterator.getInputIterator();
 				while (fit.hasNext()) {
 					try {
-						fName = fit.next();
-						if (fName.equals("-"))
-							continue;
-						if (fName.startsWith("dict:"))
-							continue; // this test has to be here, since an involuntary warning is caused
-						String mostInnerFile = FileURLParser.getMostInnerAddress(fName);
-						URL url = FileUtils.getFileURL(contextURL, mostInnerFile);
-						if (FileUtils.isServerURL(url)) {
-							// FileUtils.checkServer(url); //this is very long operation
-							continue;
+						Input input = fit.next();
+						fName = input.getAbsolutePath();
+						try (ReadableByteChannel channel = (ReadableByteChannel) input.getPreferredInput(DataSourceType.CHANNEL)) {
+							// do nothing, just close the channel
 						}
-						if (FileURLParser.isArchiveURL(fName)) {
-							// test if the archive file exists
-							// getReadableChannel is too long for archives
-							String path = url.getRef() != null ? url.getFile() + "#" + url.getRef() : url.getFile();
-							if (new File(path).exists())
-								continue;
-							throw new ComponentNotReadyException("File is unreachable: " + fName);
-						}
-						FileUtils.getReadableChannel(contextURL, fName).close();
 					} catch (IOException e) {
-						throw new ComponentNotReadyException("File is unreachable: " + fName, e);
-					} catch (ComponentNotReadyException e) {
 						throw new ComponentNotReadyException("File is unreachable: " + fName, e);
 					}
 				}

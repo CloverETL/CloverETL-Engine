@@ -292,20 +292,28 @@ public class XSLDataTransformer extends Node {
 	
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
-		super.postExecute();
 		try {
-			xsltIs.close(); //closing XSLT opened in xsltMappingTransition or transformer
-			//files opened by channelIterator are closed in execute()
-		} catch (IOException e) {
-			throw new ComponentNotReadyException(e);
+			super.postExecute();
+			try {
+				xsltIs.close(); //closing XSLT opened in xsltMappingTransition or transformer
+				//files opened by channelIterator are closed in execute()
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(e);
+			}
+		} finally {
+			ReadableChannelIterator.postExecute(channelIterator);
 		}
 	}
 
 	
 	@Override
 	public void free() {
-        if(!isInitialized()) return;
-		super.free();
+		try {
+			ReadableChannelIterator.free(channelIterator);
+		} finally {
+			if(!isInitialized()) return;
+			super.free();
+		}
 	}
 	
 	/**
