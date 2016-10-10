@@ -55,6 +55,7 @@ import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Edge;
+import org.jetel.graph.GraphParameter;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -542,6 +543,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	@Override
 	public long getNextTokenIdFromParentJob() {
 		throw new UnsupportedOperationException("token ID sequence is not available for local execution");
+	}
+
+	@Override
+	public void modifyGraphParameter(GraphParameter graphParameter) {
+		// no params modifications
 	}
 	
 }

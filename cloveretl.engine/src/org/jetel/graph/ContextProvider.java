@@ -20,6 +20,7 @@ package org.jetel.graph;
 
 import java.net.URL;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Stack;
 
@@ -122,6 +123,20 @@ public class ContextProvider {
 	}
 	
 	/**
+	 * @see #registerParameter(String, Object)
+	 * Returns value of specified context param.
+	 * @param 
+	 * @return
+	 */
+	public static Object getContextParameter(String key) {
+		Context ctx = getContext();
+		if (ctx == null)
+			return null;
+		Object value = ctx.getParameter(key);
+		return value;
+	}
+	
+	/**
 	 * @return true if a context is registered for current thread
 	 */
 	public static boolean hasContext() {
@@ -149,6 +164,28 @@ public class ContextProvider {
     	} else {
     		return JobType.DEFAULT;
     	}
+	}
+
+	/**
+	 * Add parameter to the Context on the contexts stack peek. Creates new context, if the context doesn't exist.
+	 * Returns newly created context instance or null, if the parameter was added to the existing context.  
+	 *  
+	 * @return Context instance, which should be passed for de-registration in {@link #unregister(Context)} method
+	 */
+	public static synchronized Context registerParameter(String key, Object value) {
+		if (key == null || value == null) {
+			return null;
+		}
+		Context ctx = getContext();
+		if (ctx == null) {
+			ctx = new Context(null, null);
+			registerContext(ctx);
+			ctx.addParameter(key, value);
+			return ctx;
+		} else {
+			ctx.addParameter(key, value);
+			return null;
+		}
 	}
 	
 	/**
@@ -239,6 +276,8 @@ public class ContextProvider {
 	public static class Context {
 		private Node node;
 		private TransformationGraph graph;
+		private Map<String, Object> parameters;
+		
 		Context(Node node, TransformationGraph graph) {
 			this.node = node;
 			this.graph = graph;
@@ -250,13 +289,32 @@ public class ContextProvider {
 			return graph;
 		}
 		
+		public void addParameter(String key, Object value) {
+			if (parameters == null) {
+				parameters = new LinkedHashMap<String,Object>();
+			}
+			parameters.put(key, value);
+		}
+		
+		public Object getParameter(String key) {
+			if (parameters == null)
+				return null;
+			else 
+				return parameters.get(key);
+		}
+		
 		@Override
 		public String toString() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("context(");
 			if (node != null) {
-				return "context(component:" + node.toString() + ", graph:" + graph.toString() + ")";
-			} else {
-				return "context(graph:" + graph.toString() + ")";
+				sb.append("component:" + node.toString() + ", ");
 			}
+			if (graph != null) {
+				sb.append("graph:" + graph.toString() +", ");
+			}
+			sb.append("params:" + parameters + ")");
+			return sb.toString();
 		}
 	}
 	
