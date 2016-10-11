@@ -86,6 +86,7 @@ public class XmlWriter extends TreeWriterBase implements NamespaceWriter, Attrib
 
 	private boolean startTagOpened = false;
 	private final boolean writeXmlDeclaration;
+	private boolean writtenAnything = false;
 
 	public XmlWriter(OutputStream outStream, String charset, String version, boolean omitNewLines, boolean writeXmlDeclaration) {
 		this.charset = charset;
@@ -152,7 +153,7 @@ public class XmlWriter extends TreeWriterBase implements NamespaceWriter, Attrib
 				closeStartTag(values[i] == TagContent.VALUE_CHILD);
 			}
 
-			if (!omitNewLines) {
+			if (!omitNewLines && writtenAnything) {
 				indent(i);
 			}
 
@@ -430,6 +431,7 @@ public class XmlWriter extends TreeWriterBase implements NamespaceWriter, Attrib
 				}
 				buffer.append(data, offset, length);
 			}
+			writtenAnything = true;
 		} catch (IOException e) {
 			throw new JetelException(e);
 		}
