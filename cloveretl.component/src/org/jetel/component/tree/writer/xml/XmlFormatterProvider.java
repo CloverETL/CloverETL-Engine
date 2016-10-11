@@ -34,18 +34,18 @@ public class XmlFormatterProvider extends BaseTreeFormatterProvider {
 	private final boolean omitNewLines;
 	private final String encoding;
 	private final String version;
-	private final boolean writeXmlHeader;
+	private final boolean writeXmlDeclaration;
 
-	public XmlFormatterProvider(WritableMapping mapping, int maxPortIndex, boolean omitNewLines, String encoding, String version, boolean writeXmlHeader) {
+	public XmlFormatterProvider(WritableMapping mapping, int maxPortIndex, boolean omitNewLines, String encoding, String version, boolean writeXmlDeclaration) {
 		super(mapping, maxPortIndex);
 		this.omitNewLines = omitNewLines;
 		this.encoding = encoding;
 		this.version = version;
-		this.writeXmlHeader = writeXmlHeader;
+		this.writeXmlDeclaration = writeXmlDeclaration;
 	}
 
 	@Override
 	public TreeFormatter getNewFormatter() {
-		return new XmlFormatter(mapping, maxPortIndex, omitNewLines, encoding, version, writeXmlHeader);
+		return new XmlFormatter(mapping, maxPortIndex, omitNewLines, encoding, version, writeXmlDeclaration);
 	}
 }

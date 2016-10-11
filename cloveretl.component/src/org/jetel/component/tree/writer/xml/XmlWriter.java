@@ -85,14 +85,14 @@ public class XmlWriter extends TreeWriterBase implements NamespaceWriter, Attrib
 	private int writtenDepth;
 
 	private boolean startTagOpened = false;
-	private final boolean writeXmlHeader;
+	private final boolean writeXmlDeclaration;
 
-	public XmlWriter(OutputStream outStream, String charset, String version, boolean omitNewLines, boolean writeXmlHeader) {
+	public XmlWriter(OutputStream outStream, String charset, String version, boolean omitNewLines, boolean writeXmlDeclaration) {
 		this.charset = charset;
 		this.version = version;
 		this.encoder = Charset.forName(charset).newEncoder();
 		this.omitNewLines = omitNewLines;
-		this.writeXmlHeader = writeXmlHeader;
+		this.writeXmlDeclaration = writeXmlDeclaration;
 		try {
 			this.outStreamWriter = new OutputStreamWriter(outStream, charset);
 		} catch (UnsupportedEncodingException e) {
@@ -243,7 +243,7 @@ public class XmlWriter extends TreeWriterBase implements NamespaceWriter, Attrib
 
 	@Override
 	public void writeStartTree() throws JetelException {
-		if (writeXmlHeader) {
+		if (writeXmlDeclaration) {
 			writeContent("<?xml version=\"".toCharArray(), false, false);
 			writeContent(version.toCharArray(), false, false);
 			writeContent("\" encoding=\"".toCharArray(), false, false);
