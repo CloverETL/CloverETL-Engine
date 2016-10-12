@@ -796,10 +796,15 @@
 		</if>
 		<echo message="*** plugin.java.src.header.file=${plugin.java.src.header.file}"/>
 		
-		<fileset id="header.check.fileset" dir="${dir.src}">
-			<include name="**/*.java"/>
-			<exclude name="ConsoleDemoJava.java"/>
-		</fileset>
+		<if>
+			<not><isreference refid="header.check.fileset"/></not>
+			<then>
+				<fileset id="header.check.fileset" dir="${dir.src}">
+					<include name="**/*.java"/>
+					<exclude name="ConsoleDemoJava.java"/>
+				</fileset>
+			</then>
+		</if>
 		
 		<fileheading heading="${plugin.java.src.header.file}" dryrun="true" propertyifrewritten="java.src.header.invalid">
 			<fileset refid="header.check.fileset" />
