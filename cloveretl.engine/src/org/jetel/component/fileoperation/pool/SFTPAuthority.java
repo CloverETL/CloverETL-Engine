@@ -50,6 +50,8 @@ public class SFTPAuthority extends AbstractAuthority implements Authority {
 	 */
 	private static final String SSH_KEYS_DIR = "ssh-keys";
 	
+	public static final String CONTEXT_PARAMETER_KEY_SSH_KEYS_DIR = "CONTEXT_PARAMETER_KEY_SSH_KEYS_DIR";
+	
 	private static boolean accept(String filename) {
 		return filename.toLowerCase().endsWith(".key");
 	}
@@ -105,7 +107,17 @@ public class SFTPAuthority extends AbstractAuthority implements Authority {
 		}
 		
 		try {
-			URL url = FileUtils.getFileURL(ContextProvider.getContextURL(), SSH_KEYS_DIR);
+			URL url = null;
+			
+			// try SSH keys directory path from thread context
+			String sshKeysDir = (String)ContextProvider.getContextParameter(CONTEXT_PARAMETER_KEY_SSH_KEYS_DIR);
+			if (sshKeysDir != null){
+				url = FileUtils.getFileURL((URL)null, sshKeysDir);
+			} else {
+				// ssh-key subdir of project root
+				url = FileUtils.getFileURL(ContextProvider.getContextURL(), SSH_KEYS_DIR);
+			}
+			
 			File file = null;
 			try {
 				// optimization, conversion to File usually works at runtime
