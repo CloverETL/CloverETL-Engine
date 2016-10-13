@@ -89,7 +89,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>type</b></td><td>"DATA_READER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>fileURL</b></td><td>path to the input files</td>
- *  <tr><td><b>charset</b></td><td>character encoding of the input file (if not specified, then ISO-8859-1 is used)</td>
+ *  <tr><td><b>charset</b></td><td>character encoding of the input file (if not specified, then UTF-8 is used)</td>
  *  <tr><td><b>dataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
  *  <tr><td><b>skipLeadingBlanks</b><br><i>optional</i></td><td>specifies whether leading blanks at each fixlen field should be skipped. Default value is TRUE.<br>
  *  <i>Note: if this option is ON (TRUE), then field composed of all blanks/spaces is transformed to NULL (zero length string).</i></td>
@@ -106,7 +106,7 @@ import org.w3c.dom.Element;
  *  </table>
  *
  *  <h4>Example:</h4>
- *  <pre>&lt;Node type="DATA_READER" id="InputFile" fileURL="zip:http://www.store.com/data.zip#data.txt" charset="ISO-8859-15"/&gt;</pre>
+ *  <pre>&lt;Node type="DATA_READER" id="InputFile" fileURL="zip:http://www.store.com/data.zip#data.txt" charset="UTF-85"/&gt;</pre>
  *
  * @author      Martin Zatopek, David Pavlis, Javlin Consulting s.r.o. (www.javlinconsulting.cz)
  * @since       April 4, 2002

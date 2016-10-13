@@ -224,7 +224,7 @@ import org.w3c.dom.Element;
  * <td>Additional http header properties.</td>
  * <tr>
  * <td><b>charset</b></td>
- * <td>Character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
+ * <td>Character encoding of the output file (if not specified, then UTF-8 is used)</td>
  * <tr>
  * <td><b>inputField</b></td>
  * <td>The input field whose content is sent as the request.</td>
