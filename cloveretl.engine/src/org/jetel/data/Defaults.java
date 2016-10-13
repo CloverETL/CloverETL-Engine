@@ -490,7 +490,7 @@ public final class Defaults {
 	public final static class DataParser {
 		public static void init() {
 			FIELD_BUFFER_LENGTH = getIntProperties("DataParser.FIELD_BUFFER_LENGTH", 512);
-			DEFAULT_CHARSET_DECODER = getStringProperties("DataParser.DEFAULT_CHARSET_DECODER", "ISO-8859-1");
+			DEFAULT_CHARSET_DECODER = getStringProperties("DataParser.DEFAULT_CHARSET_DECODER", "UTF-8");
 		}
 
 		/**
@@ -504,7 +504,7 @@ public final class Defaults {
 		/**
 		 * default character-decoder to be used if not specified
 		 */
-		public static String DEFAULT_CHARSET_DECODER;// = "ISO-8859-1";
+		public static String DEFAULT_CHARSET_DECODER;// = "UTF-8";
 	}
 
 	/**
@@ -515,7 +515,7 @@ public final class Defaults {
 	 */
 	public final static class DataFormatter {
 		public static void init() {
-			DEFAULT_CHARSET_ENCODER = getStringProperties("DataFormatter.DEFAULT_CHARSET_ENCODER", "ISO-8859-1");
+			DEFAULT_CHARSET_ENCODER = getStringProperties("DataFormatter.DEFAULT_CHARSET_ENCODER", "UTF-8");
 			FIELD_BUFFER_LENGTH = getIntProperties("DataFormatter.FIELD_BUFFER_LENGTH", 512);
 			DELIMITER_DELIMITERS_REGEX = getStringProperties("DataFormatter.DELIMITER_DELIMITERS_REGEX", "\\\\\\|");
 			DELIMITER_DELIMITERS = getStringProperties("DataFormatter.DELIMITER_DELIMITERS", "\\\\|");
@@ -524,7 +524,7 @@ public final class Defaults {
 		/**
 		 * default character-encoder to be used
 		 */
-		public static String DEFAULT_CHARSET_ENCODER;// = "ISO-8859-1";
+		public static String DEFAULT_CHARSET_ENCODER;// = "UTF-8";
 		/**
 		 * max length of field's value representation (bytes or characters).<br>
 		 * If your records contain long fields (usually text-memos), increase the limit here.
