@@ -2,6 +2,39 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-4-0-M1
+------------
+
+* Salesforce
+	* CLO-9172 Salesforce SOAP Writer
+	* CLO-9538 SalesforceWriter: non existent file when uploading attachments is reported on reject port
+	* CLO-9492 SalesforceWriter: upload attachments to Salesforce via specified path
+	* CLO-9502 SalesforceBulkWriter: warning if trying to use unsupported upload of attachments
+	* CLO-9428 SOQL editor
+	* CLO-9429 SOQL syntax highlighting
+	* CLO-9328 Inline edit SOQL in component editor
+* File event listener for remote locations
+	* CLO-3934 File event listener for remote locations
+	* CLO-9473 Listener for failed listener
+* Performance
+	* CLO-9466 Designer performance drop for graph with many subgraphs
+	* CLO-6584 UniversalDataReader very slow when using wildcards in archives
+* Misc
+	* CLO-7143 Redshift JDBC driver bundled with CloverETL
+	* CLO-9500 ParallelReader support for S3
+	* CLO-9465 Allow to not generate XML declaration in XMLWriter
+	* CLO-9412 Make variable tooltip work for records
+	* CLO-9244 Improve formatting of CTL in graph xml
+	* CLO-9201 Data inspector - search improvement
+	* CLO-9535 Update Java in Designer bundle to 1.8.0_101
+	* CLO-8973 File URL dialog: explain discrete/source/stream port writing or reading
+	* CLO-9530 Implicit metadata should not be persisted any more
+* Fixes
+	* CLO-9097 Automatic metadata propagation makes Designer unresponsive
+* Compatibility
+	* CLO-9619 Wildcard resolution in readers matches directories
+	
+
 REL-4-3-0
 ---------
 

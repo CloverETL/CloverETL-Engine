@@ -58,7 +58,7 @@ public class ExtXmlWriter extends TreeWriter {
 			writer.setMkDir(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
 		}
 		writer.setOmitNewLines(xattribs.getBoolean(XML_OMIT_NEW_LINES_ATTRIBUTE, false));
-		writer.setWriteXmlHeader(!xattribs.getBoolean(XML_OMIT_XML_DECLARATION, false));
+		writer.setWriteXmlDeclaration(!xattribs.getBoolean(XML_OMIT_XML_DECLARATION, false));
 		writer.setCreateEmptyFiles(xattribs.getBoolean(XML_CREATE_EMPTY_FILES_ATTRIBUTE, true));
 
 		return writer;
@@ -67,7 +67,7 @@ public class ExtXmlWriter extends TreeWriter {
 	private boolean mkDir;
 	private boolean omitNewLines;
 	private boolean createEmptyFiles;
-	private boolean writeXmlHeader;
+	private boolean writeXmlDeclaration;
 
 	public ExtXmlWriter(String id) {
 		super(id);
@@ -102,10 +102,10 @@ public class ExtXmlWriter extends TreeWriter {
     
 	@Override
 	protected BaseTreeFormatterProvider createFormatterProvider(WritableMapping engineMapping, int maxPortIndex) {
-		return new XmlFormatterProvider(engineMapping, maxPortIndex, omitNewLines, charset, designMapping.getVersion(), writeXmlHeader);
+		return new XmlFormatterProvider(engineMapping, maxPortIndex, omitNewLines, charset, designMapping.getVersion(), writeXmlDeclaration);
 	}
 
-	public void setWriteXmlHeader(boolean writeXmlHeader) {
-		this.writeXmlHeader = writeXmlHeader;
+	public void setWriteXmlDeclaration(boolean writeXmlDeclaration) {
+		this.writeXmlDeclaration = writeXmlDeclaration;
 	}
 }

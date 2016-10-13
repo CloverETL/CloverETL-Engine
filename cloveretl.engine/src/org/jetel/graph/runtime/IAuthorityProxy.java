@@ -45,6 +45,7 @@ import org.jetel.exception.TempFileCreationException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Edge;
 import org.jetel.graph.EdgeBase;
+import org.jetel.graph.GraphParameter;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
 import org.jetel.graph.Node;
@@ -660,5 +661,11 @@ public abstract class IAuthorityProxy {
 	 * @return next token ID from parent jobflow
 	 */
 	public abstract long getNextTokenIdFromParentJob();
+
+	/**
+	 * Method implementation may modify specified parameter before it's assigned to the parent graph.
+	 * E.g. parameter may be set as secured. 
+	 */
+	public abstract void modifyGraphParameter(GraphParameter graphParameter);
 	
 }
