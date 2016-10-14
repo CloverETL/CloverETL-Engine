@@ -798,10 +798,12 @@
 		</if>
 		<echo message="*** plugin.java.src.header.file=${plugin.java.src.header.file}"/>
 		
+		<!-- Allow plugins to exclude classes by overriding the property -->
+		<property name="check-sources.excludes" value="" />
+		
 		<fileheading heading="${plugin.java.src.header.file}" dryrun="true" propertyifrewritten="java.src.header.invalid">
-			<fileset dir="${dir.src}">
+			<fileset dir="${dir.src}" excludes="${check-sources.excludes}">
 				<include name="**/*.java"/>
-				<exclude name="ConsoleDemoJava.java"/>
 			</fileset>
 		</fileheading>
 		
