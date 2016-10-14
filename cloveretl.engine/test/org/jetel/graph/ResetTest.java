@@ -303,6 +303,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("UDR_unmappable_characters_DataParser_fail.grf") // negative test
 							&& !file.getName().equals("UDR_unmappable_characters_DataParser_skip_fail.grf") // negative test
 							&& !file.getName().equals("UDR_unmappable_characters_SimpleDataParser_fail.grf") // negative test
+							&& !file.getName().equals("UDR_checkConfig_missingFile_CLO-9584.grf") // negative test
 							&& !file.getName().equals("WildcardsInDirPath.grf") // negative test
 							&& !file.getName().equals("dataGenerator.grf") // negative test
 							&& !file.getName().equals("BuiltInGraphParameters_parent.grf") // server test
