@@ -144,8 +144,12 @@ public class TypedProperties extends Properties {
     }
     
     public Integer getIntProperty(String key, int defaultValue) {
-        Integer prop = getIntProperty(key);
-        return (prop != null) ? prop : defaultValue;
+    	try {
+	        Integer prop = getIntProperty(key);
+	        return (prop != null) ? prop : defaultValue;
+    	} catch (NumberFormatException e) {
+    		return defaultValue;
+    	}
     }
     
     public Long getLongProperty(String key) {
@@ -155,8 +159,12 @@ public class TypedProperties extends Properties {
     }
     
     public Long getLongProperty(String key, long defaultValue) {
-        Long prop = getLongProperty(key);
-        return (prop != null) ? prop : defaultValue;
+        try {
+	    	Long prop = getLongProperty(key);
+	        return (prop != null) ? prop : defaultValue;
+        } catch (NumberFormatException e) {
+        	return defaultValue;
+        }
     }
 
     public Double getDoubleProperty(String key) {
@@ -166,8 +174,12 @@ public class TypedProperties extends Properties {
     }
     
     public Double getDoubleProperty(String key, double defaultValue) {
-        Double prop = getDoubleProperty(key);
-        return (prop != null) ? prop : defaultValue;
+    	try {
+	        Double prop = getDoubleProperty(key);
+	        return (prop != null) ? prop : defaultValue;
+        } catch (NumberFormatException e) {
+        	return defaultValue;
+        }
     }
 
     public String getStringProperty(String key) {

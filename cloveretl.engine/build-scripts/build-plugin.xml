@@ -530,7 +530,9 @@
 			<keep name="com.opensys.cloveretl.component.jobflow.TrackingMetadataToolkit$ComponentFieldNameStructure"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.component.jobflow.TrackingMetadataToolkit$PortFieldNameStructure"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.component.jobflow.TrackingMetadataToolkit$FieldType"><field access="public"/><method access="public"/></keep>
-
+			<keep name="com.opensys.cloveretl.util.SalesforceUtils"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.util.SalesforceUtils$SalesforceFieldComparable"><field access="public"/><method access="public"/></keep>
+						
 			<keep name="com.cloveretl.profiler.engine.DProfiler"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="com.cloveretl.profiler.engine.functions.*"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="com.cloveretl.profiler.engine.model.*"><field access="protected public"/><method access="protected public"/></keep>
