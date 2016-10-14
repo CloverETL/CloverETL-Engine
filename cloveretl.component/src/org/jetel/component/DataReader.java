@@ -273,7 +273,7 @@ public class DataReader extends Node {
 					}
 					outPort.writeRecord(record);
 				} catch (BadDataFormatException bdfe) {
-					if (policyType == PolicyType.STRICT) {
+					if (policyType == PolicyType.STRICT || bdfe.isFatal()) {
 						throw bdfe;
 					} else {
 						if (logging) {
