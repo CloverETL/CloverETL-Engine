@@ -29,6 +29,10 @@
      </Match>
      
      <Match>
+       <Package name="~com\.opensys\.cloveretl\.component\.salesforce.*" />
+     </Match>
+
+     <Match>
        <Package name="~com\.google.*" />
      </Match>
      <Match>
