@@ -876,7 +876,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		public int readChar() throws IOException, OperationNotSupportedException {
 			// simple cases first
 			if (charBuffer.hasRemaining()) {
-				return charBuffer.get();
+				return DATA_AVAILABLE;
 			}
 			if (endOfInput) {
 				return END_OF_INPUT;

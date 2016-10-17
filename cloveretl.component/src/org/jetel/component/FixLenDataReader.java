@@ -92,7 +92,7 @@ import org.w3c.dom.Element;
  *  Default is true. It doesn't have any effect in byte mode.</td>
  *  <tr><td><b>skipEmpty</b></td><td>Values true/false. Specifies whether empty records are to be ignored. 
  *  Default is true. It doesn't have any effect in byte mode.</td>
- *  <tr><td><b>charset</b></td><td>character encoding of the input file (if not specified, then UTF-8 is used)</td>
+ *  <tr><td><b>charset</b></td><td>character encoding of the input file (if not specified, then ISO-8859-1 is used)</td>
  *  <tr><td><b>dataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
  *  <tr><td><b>skipFirstLine</b></td><td>specifies whether first record/line should be skipped. Default value is FALSE. If record delimiter is specified than skip one record else first line of flat file.</td>
  *  <tr><td><b>skipRows</b><br><i>optional</i></td><td>specifies how many records/rows should be skipped from the source file. Good for handling files where first rows is a header not a real data. Dafault is 0.</td>
