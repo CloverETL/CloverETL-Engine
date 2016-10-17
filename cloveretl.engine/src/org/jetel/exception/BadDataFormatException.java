@@ -220,20 +220,5 @@ public class BadDataFormatException extends RuntimeException implements Iterable
 			ex = ex.next;
 		}while (ex != null);
 		return exceptions.iterator();
-	}
-
-	/**
-	 * Fatal BDFE should abort further data parsing.
-	 * 
-	 * @return true if SkipRecordException is one of the suppressed exception
-	 */
-	public boolean isFatal() {
-		for (Throwable t : getSuppressed()) {
-			if (t instanceof SkipRecordException) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
+	}    
 }
