@@ -42,7 +42,6 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
-import org.jetel.exception.SkipRecordException;
 import org.jetel.exception.UnexpectedEndOfRecordDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -159,19 +158,12 @@ public class CharByteDataParser extends AbstractTextParser {
 		}
 	}
 
-	private DataRecord parsingErrorFound(String exceptionMessage, DataRecord record, int fieldNum, String offendingValue) {
-		return parsingErrorFound(exceptionMessage, record, fieldNum, offendingValue, null);
-	}
-
-	private DataRecord parsingErrorFound(BadDataFormatException e, DataRecord record, int fieldNum) {
-		return parsingErrorFound(e.getSimpleMessage(), record, Math.min(fieldNum, numFields - 1), 
-				e.getOffendingValue() != null ? e.getOffendingValue().toString() : null, e);
-	}
-
-	private DataRecord parsingErrorFound(String exceptionMessage, DataRecord record, int fieldNum, String offendingValue, BadDataFormatException e) {
+	private DataRecord parsingErrorFound(String exceptionMessage, DataRecord record, int fieldNum, String offendingValue, boolean isFatal) {
 		if (exceptionHandler != null) {
+			BadDataFormatException bdfe = new BadDataFormatException(exceptionMessage);
+			bdfe.setFatal(isFatal);
 			exceptionHandler.populateHandler(exceptionMessage, record, recordCounter, fieldNum,
-					offendingValue, e);
+					offendingValue, bdfe);
 			return record;
 		} else {
 			throw new RuntimeException("Parsing error: " + exceptionMessage + 
@@ -228,7 +220,7 @@ public class CharByteDataParser extends AbstractTextParser {
 							return null;
 						} else {
 							if (consumerIdx != numConsumers - 1) {
-								return parsingErrorFound("Incomplete record at the end of input", record, consumerIdx, null);
+								return parsingErrorFound("Incomplete record at the end of input", record, consumerIdx, null, false);
 							} else {
 								break;
 							}
@@ -251,21 +243,23 @@ public class CharByteDataParser extends AbstractTextParser {
 				if (cfg.isVerbose()) {
 					lastRawRecord = getLastRawRecord(); 
 				}
-				return parsingErrorFound(e.getSimpleMessage(), record, consumerIdx, null);
+				return parsingErrorFound(e.getSimpleMessage(), record, consumerIdx, null, false);
 			} catch (BadDataFormatException e) {
 				if (recordSkipper != null) {
 					try {
 						recordSkipper.skipInput(consumerIdx);
 					} catch (Exception ex2) { // CLO-5703
-						e.addSuppressed(new SkipRecordException(ex2));
+						logger.warn("Record skipping failed", ex2);
+						e.setFatal(true);
 					}
 				}
 				if (cfg.isVerbose()) {
 					lastRawRecord = getLastRawRecord(); 
 				}
-				return parsingErrorFound(e, record, Math.min(consumerIdx, numFields - 1));
+				return parsingErrorFound(e.getSimpleMessage(), record, Math.min(consumerIdx, numFields - 1), //in case extra delimiter consumer is used - index of consumer does not need to match index of field 
+						e.getOffendingValue() != null ? e.getOffendingValue().toString() : null, e.isFatal());
 			} catch (RuntimeException e){
-				return parsingErrorFound(e.getMessage(), record, consumerIdx, null);
+				return parsingErrorFound(e.getMessage(), record, consumerIdx, null, false);
 			} finally {
 				if (verboseInputReader != null) {
 					verboseInputReader.releaseOuterMark();
