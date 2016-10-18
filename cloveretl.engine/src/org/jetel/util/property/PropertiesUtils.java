@@ -45,6 +45,9 @@ import org.jetel.util.string.StringUtils;
  * @since Feb 20, 2009
  */
 public class PropertiesUtils {
+	
+	public static final String PROPERTIES_FILE_ENCODING = "ISO-8859-1";
+	
 	/**
 	 * Loads properties from stream.
 	 * 
