@@ -23,10 +23,12 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.jetel.enums.ProcessingType;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.file.FileUtils.ArchiveURLStreamHandler;
+import org.jetel.util.file.FileUtils.PortURL;
 import org.jetel.util.protocols.proxy.ProxyHandler;
 import org.jetel.util.protocols.sftp.SFTPStreamHandler;
 
@@ -1131,4 +1133,55 @@ public class FileUtilsTest extends CloverTestCase {
 			assertEquals(i + " - " + row[0], row[5], FileUtils.normalize(row[0]));
 		}
 	}
+	
+	public void testGetPortURL() {
+		assertPortUrl("0", "field1", ProcessingType.SOURCE, FileUtils.getPortURL("port:$0.field1:source"));
+		assertPortUrl("record1", "field1", ProcessingType.SOURCE, FileUtils.getPortURL("port:$record1.field1:source"));
+		assertPortUrl("record1", "a123", ProcessingType.SOURCE, FileUtils.getPortURL("port:$record1.a123:source"));
+		assertPortUrl("1", "field1", ProcessingType.DISCRETE, FileUtils.getPortURL("port:$1.field1:discrete"));
+		assertPortUrl("1", "field1", ProcessingType.STREAM, FileUtils.getPortURL("port:$1.field1:stream"));
+		assertPortUrl("1", "field1", ProcessingType.DISCRETE, FileUtils.getPortURL("port:$1.field1:"));
+		assertPortUrl("1", "field1", ProcessingType.DISCRETE, FileUtils.getPortURL("port:$1.field1"));
+		assertPortUrl(null, "field1", ProcessingType.DISCRETE, FileUtils.getPortURL("port:$field1"));
+		assertPortUrl(null, "field1", ProcessingType.DISCRETE, FileUtils.getPortURL("port:$field1:discrete"));
+		assertPortUrl(null, "field1", ProcessingType.SOURCE, FileUtils.getPortURL("port:$field1:source"));
+		assertPortUrl(null, "field1", ProcessingType.STREAM, FileUtils.getPortURL("port:$field1:stream"));
+		assertInvalidPortUrl("port:");
+		assertInvalidPortUrl("port::");
+		assertInvalidPortUrl("port:a:");
+		assertInvalidPortUrl("port::abc");
+		assertInvalidPortUrl("port:$");
+		assertInvalidPortUrl("port:$:abc");
+		assertInvalidPortUrl("port:$:source");
+		assertInvalidPortUrl("port:$.");
+		assertInvalidPortUrl("port:$.:");
+		assertInvalidPortUrl("port:$.:stream");
+		assertInvalidPortUrl("port:$.ab:stream");
+		assertInvalidPortUrl("port:$1");
+		assertInvalidPortUrl("port:$1:stream");
+		assertInvalidPortUrl("port:$1.:stream");
+		assertInvalidPortUrl("port:$asd.:stream");
+		assertInvalidPortUrl("port:$asd.123");
+		assertInvalidPortUrl("port:$asd.123:stream");
+		assertInvalidPortUrl("port:asd.123:stream");
+		assertInvalidPortUrl("port:asd123:stream");
+		assertInvalidPortUrl("port:$$asd:stream");
+		assertInvalidPortUrl("Port:$0.field1:source");
+	}
+	
+	private void assertPortUrl(String expectedRecordName, String expectedFieldName, ProcessingType expectedProcessingType, PortURL portUrl) {
+		assertEquals(expectedRecordName, portUrl.getRecordName());
+		assertEquals(expectedFieldName, portUrl.getFieldName());
+		assertEquals(expectedProcessingType, portUrl.getProcessingType());
+	}
+
+	private void assertInvalidPortUrl(String portUrlStr) {
+		try {
+			FileUtils.getPortURL(portUrlStr);
+			assertTrue("Port URL '" + portUrlStr + "' is considered as valid, which is not expected.", false);
+		} catch (JetelRuntimeException e) {
+			//ok
+		}
+	}
+	
 }
