@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.StreamTokenizer;
 import java.io.UnsupportedEncodingException;
 import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -91,6 +92,8 @@ public class StringUtils {
 	
 	private static Transliterator LATIN_TRANSLITERATOR = null;
 
+	private static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
+	
 	static {
 		try {
 			// try to be fail-safe to prevent errors caused by missing locales etc.
@@ -2776,11 +2779,9 @@ public class StringUtils {
 	}
 	
 	private static String toStringInternalBytes(byte[] bytes) {
-		try {
-			return new String(bytes, Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(String.format("Unknown charset: %s", Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER));
-		}
+		//ISO-8859-1 encoding is used instead of default UTF-8, which is not suitable for common bytes conversion
+		//see [CLO-9676 Change default encoding to UTF-8]
+		return new String(bytes, ISO_8859_1);
 	}
 
 	private static final <E> String toStringInternalList(List<E> list) {
