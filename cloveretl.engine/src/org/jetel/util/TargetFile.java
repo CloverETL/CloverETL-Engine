@@ -329,6 +329,7 @@ public class TargetFile {
 		
 		// check setting
 		String fieldName = portUrl.getFieldName();
+		fieldProcesstingType = portUrl.getProcessingType();
 		if (record.hasField(fieldName)) {
 			field = record.getField(fieldName);
 		} else if (field == null) {
