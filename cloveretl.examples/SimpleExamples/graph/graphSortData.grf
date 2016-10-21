@@ -14,7 +14,7 @@ Sort key can have different fields to be sorted in different order. The key look
 fieldJ(a);...;fieldN(d)
 The "a" and "d" letters mean that records are to be sorted in ascending or descending order, respectively, on this field.]]></attr>
 </Node>
-<Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiName="Orders" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiName="Orders" guiX="20" guiY="20" id="INPUT1" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.sorted" guiName="Orders Sorted" guiX="403" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
 <Node debugPrint="true" enabled="enabled" guiName="The same output" guiX="403" guiY="151" id="TRASH0" type="TRASH"/>
 <Edge debugMode="false" fromNode="EXT_SORT:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="OUTPUT:0"/>
