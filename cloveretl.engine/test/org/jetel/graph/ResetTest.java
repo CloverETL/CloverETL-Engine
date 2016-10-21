@@ -37,7 +37,6 @@ public class ResetTest extends CloverTestCase {
 	private final static String[] EXAMPLE_PATH = {
 			"../cloveretl.examples/SimpleExamples/",
 			"../cloveretl.examples/AdvancedExamples/",
-			"../cloveretl.examples/CTL1FunctionsTutorial/",
 			"../cloveretl.examples/CTL2FunctionsTutorial/",
 			"../cloveretl.examples/DataProfiling/",
 			"../cloveretl.examples/DataSampling/",
