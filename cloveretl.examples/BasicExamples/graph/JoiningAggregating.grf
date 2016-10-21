@@ -321,7 +321,7 @@ function integer getOutputPort() {
 // function init(partitionCount) {}
 ]]></attr>
 </Node>
-<Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/products.csv" guiName="Products" guiX="643" guiY="791" id="PRODUCTS" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/products.csv" guiName="Products" guiX="643" guiY="791" id="PRODUCTS" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Reads products info]]></attr>
 </Node>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/customers_without_order_region1.csv" guiName="Region 1 customers" guiX="872" guiY="206" id="REGION_1_CUSTOMERS" type="DATA_WRITER"/>

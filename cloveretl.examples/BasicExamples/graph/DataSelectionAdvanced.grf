@@ -129,7 +129,7 @@ Clover is able to read files (URLs) stored externally. In this way you can easil
 <Node charset="ISO-8859-1" enabled="enabled" fileURL="zip:(./data-in/delimited/Orders.zip)#Orders_Argentina.csv;zip:(./data-in/delimited/Orders.zip)#Orders_Brazil.csv;zip:(./data-in/delimited/Orders.zip)#Orders_Venezuela.csv;" guiName="3 sheets from .zip" guiX="51" guiY="510" id="DATA_READER0" skipSourceRows="1" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[List of files]]></attr>
 </Node>
-<Node append="false" charset="ISO-8859-1" enabled="enabled" fileURL="${DATATMP_DIR}/had_duplicate_records.txt" guiName="has duplicate" guiX="798" guiY="602" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER">
+<Node append="false" enabled="enabled" fileURL="${DATATMP_DIR}/had_duplicate_records.txt" guiName="has duplicate" guiX="798" guiY="602" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Writes duplicates to tmp file]]></attr>
 </Node>
 <Node dedupKey="OrderID(a);ShipCountry(a)" enabled="enabled" guiName="removes duplicates" guiX="605" guiY="510" id="DEDUP0" type="DEDUP"/>
