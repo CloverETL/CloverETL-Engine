@@ -1,3 +1,0 @@
-someverylongstring;[era];find($0.Arg,$0.Regex);[e,e,r,r]
-someverylongstring;[eoi];find($0.Arg,$0.Regex);[o,e,e,o,i]
-anotherverylooongstring;[eor];find($0.Arg,$0.Regex);[o,e,r,e,r,o,o,o,r]

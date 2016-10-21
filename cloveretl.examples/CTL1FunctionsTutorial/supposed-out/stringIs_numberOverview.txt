@@ -1,5 +1,0 @@
-test;is_number($0.Arg);false
-têst;is_number($0.Arg);false
-5;is_number($0.Arg);true
-123456732325;is_number($0.Arg);true
-1234.28e-3;is_number($0.Arg);true

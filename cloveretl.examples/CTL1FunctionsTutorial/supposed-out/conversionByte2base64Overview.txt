@@ -1,4 +1,0 @@
-a;byte2base64($0.Bytearray);YQ==
-de;byte2base64($0.Bytearray);ZGU=
-ghi;byte2base64($0.Bytearray);Z2hp
-helloworld;byte2base64($0.Bytearray);aGVsbG93b3JsZA==

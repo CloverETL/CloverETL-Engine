@@ -1,1 +1,0 @@
-Error message text from user;print_log(debug,$0.Message);print_log(info,$0.Message);print_log(warn,$0.Message);print_log(error,$0.Message);print_log(fatal,$0.Message)

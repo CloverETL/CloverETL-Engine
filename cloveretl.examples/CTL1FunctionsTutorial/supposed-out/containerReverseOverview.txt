@@ -1,2 +1,0 @@
-[milk,butter,onion,apple,egg];reverse(List);[egg,apple,onion,butter,milk];[egg,apple,onion,butter,milk]
-[honey,cherry,carrot,pear,garlic];reverse(List);[garlic,pear,carrot,cherry,honey];[garlic,pear,carrot,cherry,honey]
