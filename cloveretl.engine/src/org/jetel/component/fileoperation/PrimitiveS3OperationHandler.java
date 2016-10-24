@@ -36,6 +36,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
@@ -765,7 +766,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 					}
 				} catch (AmazonS3Exception e) {
 					// CLO-9194: provide more detailed error message
-					if (e.getErrorCode().equals("AccessDenied")) {
+					if (Objects.equals(e.getErrorCode(), "AccessDenied")) {
 						throw new IOException("Failed to list all buckets. Check that the user has s3:ListAllMyBuckets permission.", S3Utils.getIOException(e));
 					} else {
 						throw e;
