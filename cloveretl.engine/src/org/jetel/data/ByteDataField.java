@@ -55,6 +55,13 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 public class ByteDataField extends DataFieldImpl implements Comparable<Object> {
 
 	/**
+	 * This charset is used for byte[] <-> string conversion, default charset (UTF-8)
+	 * cannot be used, since UTF-8 cannot handle some byte sequences.
+	 * @see CLO-9676
+	 */
+	private static final String DEFAULT_CHARSET = "ISO-8859-1";
+	
+	/**
 	 *  Description of the Field
 	 *
 	 *@since    October 29, 2002
@@ -337,7 +344,7 @@ public class ByteDataField extends DataFieldImpl implements Comparable<Object> {
 	 */
     @Override
 	public String toString() {
-        return toString(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+        return toString(DEFAULT_CHARSET);
     }
 
     
@@ -367,7 +374,7 @@ public class ByteDataField extends DataFieldImpl implements Comparable<Object> {
 
 	@Override
 	public void fromString(CharSequence seq) {
-		fromString(seq, Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+		fromString(seq, DEFAULT_CHARSET);
 	}
 
     /**
