@@ -450,7 +450,9 @@ public class LdapReader extends Node {
 	@Override
 	public synchronized void free() {
 		super.free();
-		parser.close();
+		if (parser != null) {
+			parser.close();
+		}
 		fieldMatcherArray=null;
 	}
 

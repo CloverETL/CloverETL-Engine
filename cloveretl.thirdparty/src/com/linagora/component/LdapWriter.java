@@ -383,7 +383,9 @@ public class LdapWriter extends Node {
 	@Override
 	public synchronized void free() {
 		super.free();
-		this.formatter.close();
+		if (formatter != null) {
+			formatter.close();
+		}
 	}
 
 	public String getMultiValueSeparator() {
