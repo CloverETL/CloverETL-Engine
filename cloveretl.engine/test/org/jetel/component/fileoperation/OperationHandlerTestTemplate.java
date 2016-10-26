@@ -1295,13 +1295,13 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		result = manager.list(relativeURI("file-vs-dir/file/"), new ListParameters().setRecursive(true)).getResult();
 		System.out.println(result);
 		assertEquals(0, result.size());
-
-		{
-			URI root = baseUri.resolve("/");
-			CloverURI uri = CloverURI.createURI(root + ".");
-			ListResult listResult = manager.list(uri);
-			assertTrue(listResult.getFirstErrorMessage(), listResult.success());
-		}
+	}
+	
+	public void testListRoot() {
+		URI root = baseUri.resolve("/");
+		CloverURI uri = CloverURI.createURI(root + ".");
+		ListResult listResult = manager.list(uri);
+		assertTrue(listResult.getFirstErrorMessage(), listResult.success());
 	}
 	
 	protected CloverURI relativeURI(String uri) throws URISyntaxException {
