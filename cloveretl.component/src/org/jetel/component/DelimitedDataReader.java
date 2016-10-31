@@ -155,7 +155,7 @@ public class DelimitedDataReader extends Node {
 	public DelimitedDataReader(String id, String fileURL, String charset) {
 		super(id);
 		this.fileURL = fileURL;
-		parser = new DelimitedDataParser(getOutputPort(OUTPUT_PORT).getMetadata(), this.charset = charset);
+		this.charset = charset;
 	}
 
 	@Override
@@ -219,7 +219,7 @@ public class DelimitedDataReader extends Node {
 	}
 
 	private void prepareParser() {
-		parser = new DelimitedDataParser(getOutputPort(OUTPUT_PORT).getMetadata());
+		parser = new DelimitedDataParser(getOutputPort(OUTPUT_PORT).getMetadata(), charset);
 		parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
 		parser.setTrim(trim);
 		parser.setSkipLeadingBlanks(skipLeadingBlanks);
