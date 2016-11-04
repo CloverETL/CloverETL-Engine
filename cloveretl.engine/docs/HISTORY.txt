@@ -2,6 +2,21 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-3-1
+---------
+
+* MongoDB improvements
+	- CLO-5728 MongoDB connection should support authenticationDatabase option
+	- CLO-9579Ability to use SSL with MongoDB
+* FIXES
+	- CLO-9743 Cannot create runtime context URL in RunGraph in opensource Engine
+	- CLO-9658 Designer-Server synchronization seems to be stuck when client-side files can't be created
+	- CLO-9650 Issues in Designer with ExecuteGraph running a graph from another sandbox
+	- CLO-9632 CTL Debugging error "Could not list variables: Can't serialize NullRecord"
+	- CLO-9498 Multiple "To" email address doesn't work in Event Listener form
+	- CLO-9487 Wrong return type of getKeys() function in documentation
+	- CLO-9194 S3 connection validation requires ListAllMyBuckets permission
+
 REL-4-3-0
 ---------
 
