@@ -548,6 +548,7 @@
 
 			<keep name="com.opensys.cloveretl.connection.nosql.mongo.IMongoClient"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="com.opensys.cloveretl.connection.nosql.mongo.IMongoDBCursor"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.connection.nosql.mongo.MongoUtils"><field access="public"/><method access="public"/></keep>
 			
 			<keep name="com.opensys.cloveretl.validator.*"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.validator.params.*"><field access="public"/><method access="public"/></keep>
