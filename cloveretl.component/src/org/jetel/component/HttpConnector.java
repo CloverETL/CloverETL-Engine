@@ -902,7 +902,7 @@ public class HttpConnector extends Node {
 	 */
 	private static final String ATTRIBUTES_RECORD_NAME = "Attributes";
 
-	public static final String ADDITIONAL_HTTP_HEADERS_RECORD_NAME = "AdditionlHTTPHeaders";
+	public static final String ADDITIONAL_HTTP_HEADERS_RECORD_NAME = "AdditionalHTTPHeaders";
 
 	public static final String REQUEST_PARAMETERS_RECORD_NAME = "RequestParameters";
 
