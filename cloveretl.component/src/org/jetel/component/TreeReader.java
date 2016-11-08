@@ -41,6 +41,7 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.tree.reader.AbortParsingException;
@@ -717,25 +718,32 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				}
 
 				Pipe pipe = Pipe.open();
-				
+				Reader reader;
+				Writer writer;
 				try {
 					TreeStreamParser treeStreamParser = parserProvider.getTreeStreamParser();
 					treeStreamParser.setTreeContentHandler(new TreeXmlContentHandlerAdapter());
 					XMLReader treeXmlReader = new TreeXMLReaderAdaptor(treeStreamParser);
 					pipeTransformer = new PipeTransformer(TreeReader.this, treeXmlReader);
 
-					pipeTransformer.setInputOutput(Channels.newWriter(pipe.sink(), "UTF-8"), source);
+					writer = Channels.newWriter(pipe.sink(), "UTF-8");
+					pipeTransformer.setInputOutput(writer, source);
 					pipeParser = new PipeParser(TreeReader.this, pushParser, rootContext);
-					pipeParser.setInput(Channels.newReader(pipe.source(), "UTF-8"));
+					reader = Channels.newReader(pipe.source(), "UTF-8");
+					pipeParser.setInput(reader);
 				} catch (TransformerFactoryConfigurationError e) {
 					throw new JetelRuntimeException("Failed to instantiate transformer", e);
 				}
 
 				Thread transformingThread = pipeTransformer.startWorker();
 				Thread parsingThread = pipeParser.startWorker();
-
-				manageThread(transformingThread);
-				manageThread(parsingThread);
+				try {
+					manageThread(transformingThread);
+					manageThread(parsingThread);
+				} finally {
+					IOUtils.closeQuietly(writer);
+					IOUtils.closeQuietly(reader);
+				}
 			} else {
 				throw new JetelRuntimeException("Could not read input " + input);
 			}
@@ -802,9 +810,10 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				javax.xml.transform.Result result = new StreamResult(pipedWriter);
 				try {
 					transformer.transform(new SAXSource(treeXmlReader, source), result);
-					pipedWriter.close();
 				} catch (Throwable t) {
 					StreamConvertingXPathProcessor.this.failure = t;
+				} finally {
+					IOUtils.closeQuietly(pipedWriter);
 				}
 			}
 
@@ -833,6 +842,8 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 					pushParser.parse(rootContext, new SAXSource(new InputSource(pipedReader)));
 				} catch (Throwable t) {
 					StreamConvertingXPathProcessor.this.failure = t;
+				} finally {
+					IOUtils.closeQuietly(pipedReader);
 				}
 			}
 			
