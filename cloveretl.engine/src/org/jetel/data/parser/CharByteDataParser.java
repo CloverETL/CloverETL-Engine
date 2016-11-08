@@ -158,10 +158,12 @@ public class CharByteDataParser extends AbstractTextParser {
 		}
 	}
 
-	private DataRecord parsingErrorFound(String exceptionMessage, DataRecord record, int fieldNum, String offendingValue) {
+	private DataRecord parsingErrorFound(String exceptionMessage, DataRecord record, int fieldNum, String offendingValue, boolean isFatal) {
 		if (exceptionHandler != null) {
+			BadDataFormatException bdfe = new BadDataFormatException(exceptionMessage);
+			bdfe.setFatal(isFatal);
 			exceptionHandler.populateHandler(exceptionMessage, record, recordCounter, fieldNum,
-					offendingValue, new BadDataFormatException(exceptionMessage));
+					offendingValue, bdfe);
 			return record;
 		} else {
 			throw new RuntimeException("Parsing error: " + exceptionMessage + 
@@ -218,7 +220,7 @@ public class CharByteDataParser extends AbstractTextParser {
 							return null;
 						} else {
 							if (consumerIdx != numConsumers - 1) {
-								return parsingErrorFound("Incomplete record at the end of input", record, consumerIdx, null);
+								return parsingErrorFound("Incomplete record at the end of input", record, consumerIdx, null, false);
 							} else {
 								break;
 							}
@@ -241,23 +243,23 @@ public class CharByteDataParser extends AbstractTextParser {
 				if (cfg.isVerbose()) {
 					lastRawRecord = getLastRawRecord(); 
 				}
-				return parsingErrorFound(e.getSimpleMessage(), record, consumerIdx, null);
+				return parsingErrorFound(e.getSimpleMessage(), record, consumerIdx, null, false);
 			} catch (BadDataFormatException e) {
 				if (recordSkipper != null) {
 					try {
 						recordSkipper.skipInput(consumerIdx);
-					} catch (OperationNotSupportedException ex2) { // CLO-5703
+					} catch (Exception ex2) { // CLO-5703
 						logger.warn("Record skipping failed", ex2);
-						e.addSuppressed(ex2);
+						e.setFatal(true);
 					}
 				}
 				if (cfg.isVerbose()) {
 					lastRawRecord = getLastRawRecord(); 
 				}
 				return parsingErrorFound(e.getSimpleMessage(), record, Math.min(consumerIdx, numFields - 1), //in case extra delimiter consumer is used - index of consumer does not need to match index of field 
-						e.getOffendingValue() != null ? e.getOffendingValue().toString() : null);
+						e.getOffendingValue() != null ? e.getOffendingValue().toString() : null, e.isFatal());
 			} catch (RuntimeException e){
-				return parsingErrorFound(e.getMessage(), record, consumerIdx, null);
+				return parsingErrorFound(e.getMessage(), record, consumerIdx, null, false);
 			} finally {
 				if (verboseInputReader != null) {
 					verboseInputReader.releaseOuterMark();

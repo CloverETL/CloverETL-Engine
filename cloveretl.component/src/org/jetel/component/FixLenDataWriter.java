@@ -76,7 +76,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>fileURL</b></td><td>Output files mask.
  *  Use wildcard '#' to specify where to insert sequential number of file. Number of consecutive wildcards specifies
  *  minimal length of the number. Name without wildcard specifies only one file.</td>
- *  <tr><td><b>charset</b><br><i>optional</i></td><td>character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
+ *  <tr><td><b>charset</b><br><i>optional</i></td><td>character encoding of the output file (if not specified, then UTF-8 is used)</td>
  *  <tr><td><b>append</b><br><i>optional</i></td><td>whether to append data at the end if output file exists or replace it (values: true/false). Default is false</td>
  *  <tr><td><b>outputFieldNames</b><br><i>optional</i></td><td>print names of individual fields into output file - as a first row (values: true/false, default:false)</td>
  *  <tr><td><b>filler</b><br><i>optional</i></td><td>allows specifying what character will be used for padding output fields. Default is " " (space)></td>

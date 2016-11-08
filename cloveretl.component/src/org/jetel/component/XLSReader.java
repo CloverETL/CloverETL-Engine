@@ -110,7 +110,7 @@ import org.w3c.dom.Element;
  *  by $. Xls fields may be missing, then columns are read in order they are 
  *  in xls sheet and are given to proper metadata fields</td>
  *  </tr>
- *  <tr><td><b>charset</b></td><td>character encoding of the input file, default encoding is set to  ISO-8859-1 </td>
+ *  <tr><td><b>charset</b></td><td>character encoding of the input file, default encoding is set to  UTF-8 </td>
  *  </table>
  *
  *  <h4>Example:</h4>

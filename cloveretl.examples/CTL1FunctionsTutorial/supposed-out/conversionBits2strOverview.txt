@@ -1,4 +1,0 @@
-U;bits2str($0.Bytearray);10101010
-�;bits2str($0.Bytearray);111101111111110110111101
-�;bits2str($0.Bytearray);111101111111110110111101
-d;bits2str($0.Bytearray);00100110

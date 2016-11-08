@@ -329,20 +329,20 @@ function integer getOutputPort() {
 <Edge fromNode="CALCULATE_DVD_STATS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge15" inPort="Port 1 (slave)" metadata="Metadata6" outPort="Port 0 (out)" toNode="ENHANCE_BY_PRODUC_STATS:1"/>
 <Edge debugMode="true" fromNode="CALCULATE_STATS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (input)" metadata="Metadata3" outPort="Port 0 (out)" toNode="CUSTOMERS_REPORT:0"/>
 <Edge fromNode="CATEGORIES:0" guiBendpoints="190:772|190:744" guiLocks="369|null|null" guiRouter="Manhattan" id="Edge13" inPort="Port 1 (slave)" metadata="Metadata5" outPort="Port 0 (output)" toNode="EXT_HASH_JOIN0:1"/>
-<Edge debugMode="true" fromNode="COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata2" toNode="CALCULATE_STATS:0"/>
-<Edge fromNode="COPY:1" guiBendpoints="641:441|641:765|546:765|546:797" guiLocks="607|512|745" guiRouter="Manual" id="Edge3" inPort="Port 0 (in)" outPort="Port 1 (out)" persistedImplicitMetadata="Metadata2" toNode="CALCULATE_DVD_STATS:0"/>
+<Edge debugMode="true" fromNode="COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="CALCULATE_STATS:0"/>
+<Edge fromNode="COPY:1" guiBendpoints="641:441|641:765|546:765|546:797" guiLocks="607|512|745" guiRouter="Manual" id="Edge3" inPort="Port 0 (in)" outPort="Port 1 (out)" toNode="CALCULATE_DVD_STATS:0"/>
 <Edge fromNode="CUSTOMERS1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="MERGE_CUSTOMERS:0"/>
 <Edge fromNode="CUSTOMERS2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="MERGE_CUSTOMERS:1"/>
 <Edge debugMode="true" fromNode="ENHANCE_BY_PRODUC_STATS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge17" inPort="Port 0 (input)" metadata="Metadata6" outPort="Port 0 (out)" toNode="PRODUCTS_REPORT:0"/>
 <Edge debugMode="true" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge14" inPort="Port 0 (driver)" metadata="Metadata6" outPort="Port 0 (out)" toNode="ENHANCE_BY_PRODUC_STATS:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 1 (set B)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata1" toNode="INTERSECT_DATA:1"/>
-<Edge debugMode="true" fromNode="INTERSECT_DATA:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (only in A)" persistedImplicitMetadata="Metadata0" toNode="PARTITION0:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 1 (set B)" outPort="Port 0 (out)" toNode="INTERSECT_DATA:1"/>
+<Edge debugMode="true" fromNode="INTERSECT_DATA:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (only in A)" toNode="PARTITION0:0"/>
 <Edge debugMode="true" fromNode="INTERSECT_DATA:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (in A &amp; B)" toNode="COPY:0"/>
-<Edge debugMode="true" fromNode="INTERSECT_DATA:2" guiBendpoints="606:332|606:506|440:506|440:535" guiLocks="572|406|486" guiRouter="Manual" id="Edge8" inPort="Port 0 (in)" outPort="Port 2 (only in B)" persistedImplicitMetadata="Metadata1" toNode="ORDERS_W_O_CUSTOMERS:0"/>
-<Edge debugMode="true" fromNode="MERGE_CUSTOMERS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge16" inPort="Port 0 (set A)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata0" toNode="INTERSECT_DATA:0"/>
+<Edge debugMode="true" fromNode="INTERSECT_DATA:2" guiBendpoints="606:332|606:506|440:506|440:535" guiLocks="572|406|486" guiRouter="Manual" id="Edge8" inPort="Port 0 (in)" outPort="Port 2 (only in B)" toNode="ORDERS_W_O_CUSTOMERS:0"/>
+<Edge debugMode="true" fromNode="MERGE_CUSTOMERS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge16" inPort="Port 0 (set A)" outPort="Port 0 (out)" toNode="INTERSECT_DATA:0"/>
 <Edge fromNode="ORDERS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
-<Edge debugMode="false" fromNode="PARTITION0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata0" toNode="REGION_1_CUSTOMERS:0"/>
-<Edge debugMode="false" fromNode="PARTITION0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" outPort="Port 1 (out)" persistedImplicitMetadata="Metadata0" toNode="REGION_2_CUSTOMERS:0"/>
+<Edge debugMode="false" fromNode="PARTITION0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="REGION_1_CUSTOMERS:0"/>
+<Edge debugMode="false" fromNode="PARTITION0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" outPort="Port 1 (out)" toNode="REGION_2_CUSTOMERS:0"/>
 <Edge fromNode="PRODUCTS:0" guiBendpoints="226:809|226:874" guiLocks="226|null|null" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (driver)" metadata="Metadata4" outPort="Port 0 (output)" toNode="EXT_HASH_JOIN0:0"/>
 </Phase>
 <Phase number="1">

@@ -1,2 +1,0 @@
-Nancy Davodio;[Dvo];R;replace($0.Arg,$0.Regex,$0.ReplaceSet);Nancy RaRRdiR
-Andrew Fuller;[Flr];Bs;replace($0.Arg,$0.Regex,$0.ReplaceSet);AndBsew BsuBsBseBs

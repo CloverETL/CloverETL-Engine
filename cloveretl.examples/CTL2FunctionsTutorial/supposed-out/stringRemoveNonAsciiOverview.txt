@@ -1,3 +1,3 @@
-teœcik;removeNonAscii($0.Arg);tecik
-æMaroš;removeNonAscii($0.Arg);Maro
-¹fternoon;removeNonAscii($0.Arg);fternoon
+teÂœcik;removeNonAscii($0.Arg);tecik
+Ã¦MaroÂš;removeNonAscii($0.Arg);Maro
+Â¹fternoon;removeNonAscii($0.Arg);fternoon
