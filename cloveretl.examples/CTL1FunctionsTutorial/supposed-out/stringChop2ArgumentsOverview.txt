@@ -1,8 +1,0 @@
-Nancy;cy;chop($0.Arg1,$0.Arg2);Nan
-Nancy;ncy;chop($0.Arg1,$0.Arg2);Na
-Nancy;y;chop($0.Arg1,$0.Arg2);Nanc
-Andrew;w;chop($0.Arg1,$0.Arg2);Andre
-Andrew;fw;chop($0.Arg1,$0.Arg2);Andrew
-Andrew;nw;chop($0.Arg1,$0.Arg2);Andrew
-Andrew;Andrew;chop($0.Arg1,$0.Arg2);
-Andrew;And;chop($0.Arg1,$0.Arg2);Andrew

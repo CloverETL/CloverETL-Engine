@@ -1,59 +1,59 @@
 10248|VINET|5|1996-07-04|1996-08-01|1996-07-16|3|32|Vins et alcools Chevalier|59 rue de l'Abbaye|Reims|France||51100
 10251|VICTE|3|1996-07-08|1996-08-05|1996-07-15|1|41|Victuailles en stock|2, rue du Commerce|Lyon|France||69004
-10265|BLONP|2|1996-07-25|1996-08-22|1996-08-12|1|55|Blondel pcre et fils|24, place Kléber|Strasbourg|France||67000
+10265|BLONP|2|1996-07-25|1996-08-22|1996-08-12|1|55|Blondel pcre et fils|24, place KlÃ©ber|Strasbourg|France||67000
 10274|VINET|6|1996-08-06|1996-09-03|1996-08-16|1|6|Vins et alcools Chevalier|59 rue de l'Abbaye|Reims|France||51100
 10295|VINET|2|1996-09-02|1996-09-30|1996-09-10|2|1|Vins et alcools Chevalier|59 rue de l'Abbaye|Reims|France||51100
-10297|BLONP|5|1996-09-04|1996-10-16|1996-09-10|2|6|Blondel pcre et fils|24, place Kléber|Strasbourg|France||67000
+10297|BLONP|5|1996-09-04|1996-10-16|1996-09-10|2|6|Blondel pcre et fils|24, place KlÃ©ber|Strasbourg|France||67000
 10311|DUMON|1|1996-09-20|1996-10-04|1996-09-26|3|25|Du monde entier|67, rue des Cinquante Otages|Nantes|France||44000
 10331|BONAP|9|1996-10-16|1996-11-27|1996-10-21|1|10|Bon app'|12, rue des Bouchers|Marseille|France||13008
 10334|VICTE|8|1996-10-21|1996-11-18|1996-10-28|2|9|Victuailles en stock|2, rue du Commerce|Lyon|France||69004
 10340|BONAP|1|1996-10-29|1996-11-26|1996-11-08|3|166|Bon app'|12, rue des Bouchers|Marseille|France||13008
 10350|LAMAI|6|1996-11-11|1996-12-09|1996-12-03|2|64|La maison d'Asie|1 rue Alsace-Lorraine|Toulouse|France||31000
 10358|LAMAI|5|1996-11-20|1996-12-18|1996-11-27|1|20|La maison d'Asie|1 rue Alsace-Lorraine|Toulouse|France||31000
-10360|BLONP|4|1996-11-22|1996-12-20|1996-12-02|3|132|Blondel pcre et fils|24, place Kléber|Strasbourg|France||67000
+10360|BLONP|4|1996-11-22|1996-12-20|1996-12-02|3|132|Blondel pcre et fils|24, place KlÃ©ber|Strasbourg|France||67000
 10362|BONAP|3|1996-11-25|1996-12-23|1996-11-28|1|96|Bon app'|12, rue des Bouchers|Marseille|France||13008
 10371|LAMAI|1|1996-12-03|1996-12-31|1996-12-24|1|0|La maison d'Asie|1 rue Alsace-Lorraine|Toulouse|France||31000
-10408|FOLIG|8|1997-01-08|1997-02-05|1997-01-14|1|11|Folies gourmandes|184, chaussée de Tournai|Lille|France||59000
+10408|FOLIG|8|1997-01-08|1997-02-05|1997-01-14|1|11|Folies gourmandes|184, chaussÃ©e de Tournai|Lille|France||59000
 10413|LAMAI|3|1997-01-14|1997-02-11|1997-01-16|2|96|La maison d'Asie|1 rue Alsace-Lorraine|Toulouse|France||31000
 10425|LAMAI|6|1997-01-24|1997-02-21|1997-02-14|2|8|La maison d'Asie|1 rue Alsace-Lorraine|Toulouse|France||31000
-10436|BLONP|3|1997-02-05|1997-03-05|1997-02-11|2|157|Blondel pcre et fils|24, place Kléber|Strasbourg|France||67000
-10449|BLONP|3|1997-02-18|1997-03-18|1997-02-27|2|53|Blondel pcre et fils|24, place Kléber|Strasbourg|France||67000
+10436|BLONP|3|1997-02-05|1997-03-05|1997-02-11|2|157|Blondel pcre et fils|24, place KlÃ©ber|Strasbourg|France||67000
+10449|BLONP|3|1997-02-18|1997-03-18|1997-02-27|2|53|Blondel pcre et fils|24, place KlÃ©ber|Strasbourg|France||67000
 10450|VICTE|8|1997-02-19|1997-03-19|1997-03-11|2|7|Victuailles en stock|2, rue du Commerce|Lyon|France||69004
 10454|LAMAI|4|1997-02-21|1997-03-21|1997-02-25|3|3|La maison d'Asie|1 rue Alsace-Lorraine|Toulouse|France||31000
 10459|VICTE|4|1997-02-27|1997-03-27|1997-02-28|2|25|Victuailles en stock|2, rue du Commerce|Lyon|France||69004
 10470|BONAP|4|1997-03-11|1997-04-08|1997-03-14|2|65|Bon app'|12, rue des Bouchers|Marseille|France||13008
 10478|VICTE|2|1997-03-18|1997-04-01|1997-03-26|3|5|Victuailles en stock|2, rue du Commerce|Lyon|France||69004
-10480|FOLIG|6|1997-03-20|1997-04-17|1997-03-24|2|1|Folies gourmandes|184, chaussée de Tournai|Lille|France||59000
+10480|FOLIG|6|1997-03-20|1997-04-17|1997-03-24|2|1|Folies gourmandes|184, chaussÃ©e de Tournai|Lille|France||59000
 10493|LAMAI|4|1997-04-02|1997-04-30|1997-04-10|3|11|La maison d'Asie|1 rue Alsace-Lorraine|Toulouse|France||31000
 10500|LAMAI|6|1997-04-09|1997-05-07|1997-04-17|1|43|La maison d'Asie|1 rue Alsace-Lorraine|Toulouse|France||31000
 10511|BONAP|4|1997-04-18|1997-05-16|1997-04-21|3|351|Bon app'|12, rue des Bouchers|Marseille|France||13008
 10525|BONAP|1|1997-05-02|1997-05-30|1997-05-23|2|11|Bon app'|12, rue des Bouchers|Marseille|France||13008
 10546|VICTE|1|1997-05-23|1997-06-20|1997-05-27|3|195|Victuailles en stock|2, rue du Commerce|Lyon|France||69004
-10559|BLONP|6|1997-06-05|1997-07-03|1997-06-13|1|8|Blondel pcre et fils|24, place Kléber|Strasbourg|France||67000
-10566|BLONP|9|1997-06-12|1997-07-10|1997-06-18|1|88|Blondel pcre et fils|24, place Kléber|Strasbourg|France||67000
-10584|BLONP|4|1997-06-30|1997-07-28|1997-07-04|1|59|Blondel pcre et fils|24, place Kléber|Strasbourg|France||67000
+10559|BLONP|6|1997-06-05|1997-07-03|1997-06-13|1|8|Blondel pcre et fils|24, place KlÃ©ber|Strasbourg|France||67000
+10566|BLONP|9|1997-06-12|1997-07-10|1997-06-18|1|88|Blondel pcre et fils|24, place KlÃ©ber|Strasbourg|France||67000
+10584|BLONP|4|1997-06-30|1997-07-28|1997-07-04|1|59|Blondel pcre et fils|24, place KlÃ©ber|Strasbourg|France||67000
 10609|DUMON|7|1997-07-24|1997-08-21|1997-07-30|2|2|Du monde entier|67, rue des Cinquante Otages|Nantes|France||44000
 10610|LAMAI|8|1997-07-25|1997-08-22|1997-08-06|1|27|La maison d'Asie|1 rue Alsace-Lorraine|Toulouse|France||31000
-10628|BLONP|4|1997-08-12|1997-09-09|1997-08-20|3|30|Blondel pcre et fils|24, place Kléber|Strasbourg|France||67000
+10628|BLONP|4|1997-08-12|1997-09-09|1997-08-20|3|30|Blondel pcre et fils|24, place KlÃ©ber|Strasbourg|France||67000
 10631|LAMAI|8|1997-08-14|1997-09-11|1997-08-15|1|1|La maison d'Asie|1 rue Alsace-Lorraine|Toulouse|France||31000
-10634|FOLIG|4|1997-08-15|1997-09-12|1997-08-21|3|487|Folies gourmandes|184, chaussée de Tournai|Lille|France||59000
+10634|FOLIG|4|1997-08-15|1997-09-12|1997-08-21|3|487|Folies gourmandes|184, chaussÃ©e de Tournai|Lille|France||59000
 10663|BONAP|2|1997-09-10|1997-09-24|1997-10-03|2|113|Bon app'|12, rue des Bouchers|Marseille|France||13008
 10671|FRANR|1|1997-09-17|1997-10-15|1997-09-24|1|30|France restauration|54, rue Royale|Nantes|France||44000
-10679|BLONP|8|1997-09-23|1997-10-21|1997-09-30|3|28|Blondel pcre et fils|24, place Kléber|Strasbourg|France||67000
+10679|BLONP|8|1997-09-23|1997-10-21|1997-09-30|3|28|Blondel pcre et fils|24, place KlÃ©ber|Strasbourg|France||67000
 10683|DUMON|2|1997-09-26|1997-10-24|1997-10-01|1|4|Du monde entier|67, rue des Cinquante Otages|Nantes|France||44000
 10715|BONAP|3|1997-10-23|1997-11-06|1997-10-29|1|63|Bon app'|12, rue des Bouchers|Marseille|France||13008
 10730|BONAP|5|1997-11-05|1997-12-03|1997-11-14|1|20|Bon app'|12, rue des Bouchers|Marseille|France||13008
 10732|BONAP|3|1997-11-06|1997-12-04|1997-11-07|1|17|Bon app'|12, rue des Bouchers|Marseille|France||13008
 10737|VINET|2|1997-11-11|1997-12-09|1997-11-18|2|8|Vins et alcools Chevalier|59 rue de l'Abbaye|Reims|France||51100
-10738|SPECD|2|1997-11-12|1997-12-10|1997-11-18|1|3|Spécialités du monde|25, rue Lauriston|Paris|France||75016
+10738|SPECD|2|1997-11-12|1997-12-10|1997-11-18|1|3|SpÃ©cialitÃ©s du monde|25, rue Lauriston|Paris|France||75016
 10739|VINET|3|1997-11-12|1997-12-10|1997-11-17|3|11|Vins et alcools Chevalier|59 rue de l'Abbaye|Reims|France||51100
 10755|BONAP|4|1997-11-26|1997-12-24|1997-11-28|2|17|Bon app'|12, rue des Bouchers|Marseille|France||13008
-10763|FOLIG|3|1997-12-03|1997-12-31|1997-12-08|3|37|Folies gourmandes|184, chaussée de Tournai|Lille|France||59000
+10763|FOLIG|3|1997-12-03|1997-12-31|1997-12-08|3|37|Folies gourmandes|184, chaussÃ©e de Tournai|Lille|France||59000
 10787|LAMAI|2|1997-12-19|1998-01-02|1997-12-26|1|250|La maison d'Asie|1 rue Alsace-Lorraine|Toulouse|France||31000
-10789|FOLIG|1|1997-12-22|1998-01-19|1997-12-31|2|101|Folies gourmandes|184, chaussée de Tournai|Lille|France||59000
+10789|FOLIG|1|1997-12-22|1998-01-19|1997-12-31|2|101|Folies gourmandes|184, chaussÃ©e de Tournai|Lille|France||59000
 10806|VICTE|3|1997-12-31|1998-01-28|1998-01-05|2|22|Victuailles en stock|2, rue du Commerce|Lyon|France||69004
 10814|VICTE|3|1998-01-05|1998-02-02|1998-01-14|3|131|Victuailles en stock|2, rue du Commerce|Lyon|France||69004
-10826|BLONP|6|1998-01-12|1998-02-09|1998-02-06|1|7|Blondel pcre et fils|24, place Kléber|Strasbourg|France||67000
+10826|BLONP|6|1998-01-12|1998-02-09|1998-02-06|1|7|Blondel pcre et fils|24, place KlÃ©ber|Strasbourg|France||67000
 10827|BONAP|1|1998-01-12|1998-01-26|1998-02-06|2|64|Bon app'|12, rue des Bouchers|Marseille|France||13008
 10832|LAMAI|2|1998-01-14|1998-02-11|1998-01-19|2|43|La maison d'Asie|1 rue Alsace-Lorraine|Toulouse|France||31000
 10843|VICTE|4|1998-01-21|1998-02-18|1998-01-26|2|9|Victuailles en stock|2, rue du Commerce|Lyon|France||69004
@@ -63,242 +63,242 @@
 10871|BONAP|9|1998-02-05|1998-03-05|1998-02-10|2|112|Bon app'|12, rue des Bouchers|Marseille|France||13008
 10876|BONAP|7|1998-02-09|1998-03-09|1998-02-12|3|60|Bon app'|12, rue des Bouchers|Marseille|France||13008
 10890|DUMON|7|1998-02-16|1998-03-16|1998-02-18|1|33|Du monde entier|67, rue des Cinquante Otages|Nantes|France||44000
-10907|SPECD|6|1998-02-25|1998-03-25|1998-02-27|3|9|Spécialités du monde|25, rue Lauriston|Paris|France||75016
+10907|SPECD|6|1998-02-25|1998-03-25|1998-02-27|3|9|SpÃ©cialitÃ©s du monde|25, rue Lauriston|Paris|France||75016
 10923|LAMAI|7|1998-03-03|1998-04-14|1998-03-13|3|68|La maison d'Asie|1 rue Alsace-Lorraine|Toulouse|France||31000
 10927|LACOR|4|1998-03-05|1998-04-02|1998-04-08|1|20|La corne d'abondance|67, avenue de l'Europe|Versailles|France||78000
 10932|BONAP|8|1998-03-06|1998-04-03|1998-03-24|1|135|Bon app'|12, rue des Bouchers|Marseille|France||13008
 10940|BONAP|8|1998-03-11|1998-04-08|1998-03-23|3|20|Bon app'|12, rue des Bouchers|Marseille|France||13008
-10964|SPECD|3|1998-03-20|1998-04-17|1998-03-24|2|87|Spécialités du monde|25, rue Lauriston|Paris|France||75016
+10964|SPECD|3|1998-03-20|1998-04-17|1998-03-24|2|87|SpÃ©cialitÃ©s du monde|25, rue Lauriston|Paris|France||75016
 10971|FRANR|2|1998-03-24|1998-04-21|1998-04-02|2|122|France restauration|54, rue Royale|Nantes|France||44000
 10972|LACOR|4|1998-03-24|1998-04-21|1998-03-26|2|0|La corne d'abondance|67, avenue de l'Europe|Versailles|France||78000
 10973|LACOR|6|1998-03-24|1998-04-21|1998-03-27|2|15|La corne d'abondance|67, avenue de l'Europe|Versailles|France||78000
-11043|SPECD|5|1998-04-22|1998-05-20|1998-04-29|2|9|Spécialités du monde|25, rue Lauriston|Paris|France||75016
+11043|SPECD|5|1998-04-22|1998-05-20|1998-04-29|2|9|SpÃ©cialitÃ©s du monde|25, rue Lauriston|Paris|France||75016
 11051|LAMAI|7|1998-04-27|1998-05-25||3|3|La maison d'Asie|1 rue Alsace-Lorraine|Toulouse|France||31000
 11076|BONAP|4|1998-05-06|1998-06-03||2|38|Bon app'|12, rue des Bouchers|Marseille|France||13008
-10249|TOMSP|6|1996-07-05|1996-08-16|1996-07-10|1|12|Toms Spezialitäten|Luisenstr. 48|Münster|Germany||44087
-10260|OTTIK|4|1996-07-19|1996-08-16|1996-07-29|1|55|Ottilies Käseladen|Mehrheimerstr. 369|Köln|Germany||50739
-10267|FRANK|4|1996-07-29|1996-08-26|1996-08-06|1|209|Frankenversand|Berliner Platz 43|München|Germany||80805
-10273|QUICK|3|1996-08-05|1996-09-02|1996-08-12|3|76|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
+10249|TOMSP|6|1996-07-05|1996-08-16|1996-07-10|1|12|Toms SpezialitÃ¤ten|Luisenstr. 48|MÃ¼nster|Germany||44087
+10260|OTTIK|4|1996-07-19|1996-08-16|1996-07-29|1|55|Ottilies KÃ¤seladen|Mehrheimerstr. 369|KÃ¶ln|Germany||50739
+10267|FRANK|4|1996-07-29|1996-08-26|1996-08-06|1|209|Frankenversand|Berliner Platz 43|MÃ¼nchen|Germany||80805
+10273|QUICK|3|1996-08-05|1996-09-02|1996-08-12|3|76|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
 10277|MORGK|2|1996-08-09|1996-09-06|1996-08-13|3|126|Morgenstern Gesundkost|Heerstr. 22|Leipzig|Germany||04179
 10279|LEHMS|8|1996-08-13|1996-09-10|1996-08-16|2|26|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.|Germany||60528
 10284|LEHMS|4|1996-08-19|1996-09-16|1996-08-27|1|77|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.|Germany||60528
-10285|QUICK|1|1996-08-20|1996-09-17|1996-08-26|2|77|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
-10286|QUICK|8|1996-08-21|1996-09-18|1996-08-30|3|229|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
+10285|QUICK|1|1996-08-20|1996-09-17|1996-08-26|2|77|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
+10286|QUICK|8|1996-08-21|1996-09-18|1996-08-30|3|229|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
 10301|WANDK|8|1996-09-09|1996-10-07|1996-09-17|2|45|Die Wandernde Kuh|Adenauerallee 900|Stuttgart|Germany||70563
 10312|WANDK|2|1996-09-23|1996-10-21|1996-10-03|2|40|Die Wandernde Kuh|Adenauerallee 900|Stuttgart|Germany||70563
-10313|QUICK|2|1996-09-24|1996-10-22|1996-10-04|2|2|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
-10323|KOENE|4|1996-10-07|1996-11-04|1996-10-14|1|5|Königlich Essen|Maubelstr. 90|Brandenburg|Germany||14776
-10325|KOENE|1|1996-10-09|1996-10-23|1996-10-14|3|65|Königlich Essen|Maubelstr. 90|Brandenburg|Germany||14776
-10337|FRANK|4|1996-10-24|1996-11-21|1996-10-29|3|108|Frankenversand|Berliner Platz 43|München|Germany||80805
-10342|FRANK|4|1996-10-30|1996-11-13|1996-11-04|2|55|Frankenversand|Berliner Platz 43|München|Germany||80805
+10313|QUICK|2|1996-09-24|1996-10-22|1996-10-04|2|2|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
+10323|KOENE|4|1996-10-07|1996-11-04|1996-10-14|1|5|KÃ¶niglich Essen|Maubelstr. 90|Brandenburg|Germany||14776
+10325|KOENE|1|1996-10-09|1996-10-23|1996-10-14|3|65|KÃ¶niglich Essen|Maubelstr. 90|Brandenburg|Germany||14776
+10337|FRANK|4|1996-10-24|1996-11-21|1996-10-29|3|108|Frankenversand|Berliner Platz 43|MÃ¼nchen|Germany||80805
+10342|FRANK|4|1996-10-30|1996-11-13|1996-11-04|2|55|Frankenversand|Berliner Platz 43|MÃ¼nchen|Germany||80805
 10343|LEHMS|4|1996-10-31|1996-11-28|1996-11-06|1|110|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.|Germany||60528
-10345|QUICK|2|1996-11-04|1996-12-02|1996-11-11|2|249|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
+10345|QUICK|2|1996-11-04|1996-12-02|1996-11-11|2|249|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
 10348|WANDK|4|1996-11-07|1996-12-05|1996-11-15|2|1|Die Wandernde Kuh|Adenauerallee 900|Stuttgart|Germany||70563
 10356|WANDK|6|1996-11-18|1996-12-16|1996-11-27|2|37|Die Wandernde Kuh|Adenauerallee 900|Stuttgart|Germany||70563
-10361|QUICK|1|1996-11-22|1996-12-20|1996-12-03|2|183|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
+10361|QUICK|1|1996-11-22|1996-12-20|1996-12-03|2|183|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
 10363|DRACD|4|1996-11-26|1996-12-24|1996-12-04|3|31|Drachenblut Delikatessen|Walserweg 21|Aachen|Germany||52066
 10391|DRACD|3|1996-12-23|1997-01-20|1996-12-31|3|5|Drachenblut Delikatessen|Walserweg 21|Aachen|Germany||52066
-10396|FRANK|1|1996-12-27|1997-01-10|1997-01-06|3|135|Frankenversand|Berliner Platz 43|München|Germany||80805
-10407|OTTIK|2|1997-01-07|1997-02-04|1997-01-30|2|91|Ottilies Käseladen|Mehrheimerstr. 369|Köln|Germany||50739
-10418|QUICK|4|1997-01-17|1997-02-14|1997-01-24|1|18|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
-10438|TOMSP|3|1997-02-06|1997-03-06|1997-02-14|2|8|Toms Spezialitäten|Luisenstr. 48|Münster|Germany||44087
-10446|TOMSP|6|1997-02-14|1997-03-14|1997-02-19|1|15|Toms Spezialitäten|Luisenstr. 48|Münster|Germany||44087
-10451|QUICK|4|1997-02-19|1997-03-05|1997-03-12|3|189|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
-10456|KOENE|8|1997-02-25|1997-04-08|1997-02-28|2|8|Königlich Essen|Maubelstr. 90|Brandenburg|Germany||14776
-10457|KOENE|2|1997-02-25|1997-03-25|1997-03-03|1|12|Königlich Essen|Maubelstr. 90|Brandenburg|Germany||14776
-10468|KOENE|3|1997-03-07|1997-04-04|1997-03-12|3|44|Königlich Essen|Maubelstr. 90|Brandenburg|Germany||14776
-10488|FRANK|8|1997-03-27|1997-04-24|1997-04-02|2|5|Frankenversand|Berliner Platz 43|München|Germany||80805
+10396|FRANK|1|1996-12-27|1997-01-10|1997-01-06|3|135|Frankenversand|Berliner Platz 43|MÃ¼nchen|Germany||80805
+10407|OTTIK|2|1997-01-07|1997-02-04|1997-01-30|2|91|Ottilies KÃ¤seladen|Mehrheimerstr. 369|KÃ¶ln|Germany||50739
+10418|QUICK|4|1997-01-17|1997-02-14|1997-01-24|1|18|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
+10438|TOMSP|3|1997-02-06|1997-03-06|1997-02-14|2|8|Toms SpezialitÃ¤ten|Luisenstr. 48|MÃ¼nster|Germany||44087
+10446|TOMSP|6|1997-02-14|1997-03-14|1997-02-19|1|15|Toms SpezialitÃ¤ten|Luisenstr. 48|MÃ¼nster|Germany||44087
+10451|QUICK|4|1997-02-19|1997-03-05|1997-03-12|3|189|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
+10456|KOENE|8|1997-02-25|1997-04-08|1997-02-28|2|8|KÃ¶niglich Essen|Maubelstr. 90|Brandenburg|Germany||14776
+10457|KOENE|2|1997-02-25|1997-03-25|1997-03-03|1|12|KÃ¶niglich Essen|Maubelstr. 90|Brandenburg|Germany||14776
+10468|KOENE|3|1997-03-07|1997-04-04|1997-03-12|3|44|KÃ¶niglich Essen|Maubelstr. 90|Brandenburg|Germany||14776
+10488|FRANK|8|1997-03-27|1997-04-24|1997-04-02|2|5|Frankenversand|Berliner Platz 43|MÃ¼nchen|Germany||80805
 10497|LEHMS|7|1997-04-04|1997-05-02|1997-04-07|1|36|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.|Germany||60528
 10501|BLAUS|9|1997-04-09|1997-05-07|1997-04-16|3|9|Blauer See Delikatessen|Forsterstr. 57|Mannheim|Germany||68306
-10506|KOENE|9|1997-04-15|1997-05-13|1997-05-02|2|21|Königlich Essen|Maubelstr. 90|Brandenburg|Germany||14776
-10508|OTTIK|1|1997-04-16|1997-05-14|1997-05-13|2|5|Ottilies Käseladen|Mehrheimerstr. 369|Köln|Germany||50739
+10506|KOENE|9|1997-04-15|1997-05-13|1997-05-02|2|21|KÃ¶niglich Essen|Maubelstr. 90|Brandenburg|Germany||14776
+10508|OTTIK|1|1997-04-16|1997-05-14|1997-05-13|2|5|Ottilies KÃ¤seladen|Mehrheimerstr. 369|KÃ¶ln|Germany||50739
 10509|BLAUS|4|1997-04-17|1997-05-15|1997-04-29|1|0|Blauer See Delikatessen|Forsterstr. 57|Mannheim|Germany||68306
 10513|WANDK|7|1997-04-22|1997-06-03|1997-04-28|1|106|Die Wandernde Kuh|Adenauerallee 900|Stuttgart|Germany||70563
-10515|QUICK|2|1997-04-23|1997-05-07|1997-05-23|1|204|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
+10515|QUICK|2|1997-04-23|1997-05-07|1997-05-23|1|204|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
 10522|LEHMS|4|1997-04-30|1997-05-28|1997-05-06|1|45|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.|Germany||60528
-10527|QUICK|7|1997-05-05|1997-06-02|1997-05-07|1|42|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
+10527|QUICK|7|1997-05-05|1997-06-02|1997-05-07|1|42|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
 10534|LEHMS|8|1997-05-12|1997-06-09|1997-05-14|2|28|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.|Germany||60528
 10536|LEHMS|3|1997-05-14|1997-06-11|1997-06-06|2|59|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.|Germany||60528
-10540|QUICK|3|1997-05-19|1997-06-16|1997-06-13|3|1008|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
-10542|KOENE|1|1997-05-20|1997-06-17|1997-05-26|3|11|Königlich Essen|Maubelstr. 90|Brandenburg|Germany||14776
-10548|TOMSP|3|1997-05-26|1997-06-23|1997-06-02|2|1|Toms Spezialitäten|Luisenstr. 48|Münster|Germany||44087
-10549|QUICK|5|1997-05-27|1997-06-10|1997-05-30|1|171|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
-10554|OTTIK|4|1997-05-30|1997-06-27|1997-06-05|3|121|Ottilies Käseladen|Mehrheimerstr. 369|Köln|Germany||50739
+10540|QUICK|3|1997-05-19|1997-06-16|1997-06-13|3|1008|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
+10542|KOENE|1|1997-05-20|1997-06-17|1997-05-26|3|11|KÃ¶niglich Essen|Maubelstr. 90|Brandenburg|Germany||14776
+10548|TOMSP|3|1997-05-26|1997-06-23|1997-06-02|2|1|Toms SpezialitÃ¤ten|Luisenstr. 48|MÃ¼nster|Germany||44087
+10549|QUICK|5|1997-05-27|1997-06-10|1997-05-30|1|171|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
+10554|OTTIK|4|1997-05-30|1997-06-27|1997-06-05|3|121|Ottilies KÃ¤seladen|Mehrheimerstr. 369|KÃ¶ln|Germany||50739
 10557|LEHMS|9|1997-06-03|1997-06-17|1997-06-06|2|97|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.|Germany||60528
-10560|FRANK|8|1997-06-06|1997-07-04|1997-06-09|1|37|Frankenversand|Berliner Platz 43|München|Germany||80805
+10560|FRANK|8|1997-06-06|1997-07-04|1997-06-09|1|37|Frankenversand|Berliner Platz 43|MÃ¼nchen|Germany||80805
 10575|MORGK|5|1997-06-20|1997-07-04|1997-06-30|1|127|Morgenstern Gesundkost|Heerstr. 22|Leipzig|Germany||04179
-10580|OTTIK|4|1997-06-26|1997-07-24|1997-07-01|3|76|Ottilies Käseladen|Mehrheimerstr. 369|Köln|Germany||50739
+10580|OTTIK|4|1997-06-26|1997-07-24|1997-07-01|3|76|Ottilies KÃ¤seladen|Mehrheimerstr. 369|KÃ¶ln|Germany||50739
 10582|BLAUS|3|1997-06-27|1997-07-25|1997-07-14|2|28|Blauer See Delikatessen|Forsterstr. 57|Mannheim|Germany||68306
-10588|QUICK|2|1997-07-03|1997-07-31|1997-07-10|3|195|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
+10588|QUICK|2|1997-07-03|1997-07-31|1997-07-10|3|195|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
 10592|LEHMS|3|1997-07-08|1997-08-05|1997-07-16|1|32|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.|Germany||60528
 10593|LEHMS|7|1997-07-09|1997-08-06|1997-08-13|2|174|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.|Germany||60528
-10608|TOMSP|4|1997-07-23|1997-08-20|1997-08-01|2|28|Toms Spezialitäten|Luisenstr. 48|Münster|Germany||44087
+10608|TOMSP|4|1997-07-23|1997-08-20|1997-08-01|2|28|Toms SpezialitÃ¤ten|Luisenstr. 48|MÃ¼nster|Germany||44087
 10614|BLAUS|8|1997-07-29|1997-08-26|1997-08-01|3|2|Blauer See Delikatessen|Forsterstr. 57|Mannheim|Germany||68306
-10623|FRANK|8|1997-08-07|1997-09-04|1997-08-12|2|97|Frankenversand|Berliner Platz 43|München|Germany||80805
-10630|KOENE|1|1997-08-13|1997-09-10|1997-08-19|2|32|Königlich Essen|Maubelstr. 90|Brandenburg|Germany||14776
+10623|FRANK|8|1997-08-07|1997-09-04|1997-08-12|2|97|Frankenversand|Berliner Platz 43|MÃ¼nchen|Germany||80805
+10630|KOENE|1|1997-08-13|1997-09-10|1997-08-19|2|32|KÃ¶niglich Essen|Maubelstr. 90|Brandenburg|Germany||14776
 10632|WANDK|8|1997-08-14|1997-09-11|1997-08-19|1|41|Die Wandernde Kuh|Adenauerallee 900|Stuttgart|Germany||70563
 10640|WANDK|4|1997-08-21|1997-09-18|1997-08-28|1|24|Die Wandernde Kuh|Adenauerallee 900|Stuttgart|Germany||70563
 10643|ALFKI|6|1997-08-25|1997-09-22|1997-09-02|1|29|Alfreds Futterkiste|Obere Str. 57|Berlin|Germany||12209
 10651|WANDK|8|1997-09-01|1997-09-29|1997-09-11|2|21|Die Wandernde Kuh|Adenauerallee 900|Stuttgart|Germany||70563
-10653|FRANK|1|1997-09-02|1997-09-30|1997-09-19|1|93|Frankenversand|Berliner Platz 43|München|Germany||80805
-10658|QUICK|4|1997-09-05|1997-10-03|1997-09-08|1|364|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
+10653|FRANK|1|1997-09-02|1997-09-30|1997-09-19|1|93|Frankenversand|Berliner Platz 43|MÃ¼nchen|Germany||80805
+10658|QUICK|4|1997-09-05|1997-10-03|1997-09-08|1|364|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
 10668|WANDK|1|1997-09-15|1997-10-13|1997-09-23|2|47|Die Wandernde Kuh|Adenauerallee 900|Stuttgart|Germany||70563
-10670|FRANK|4|1997-09-16|1997-10-14|1997-09-18|1|203|Frankenversand|Berliner Platz 43|München|Germany||80805
-10675|FRANK|5|1997-09-19|1997-10-17|1997-09-23|2|32|Frankenversand|Berliner Platz 43|München|Germany||80805
-10684|OTTIK|3|1997-09-26|1997-10-24|1997-09-30|1|146|Ottilies Käseladen|Mehrheimerstr. 369|Köln|Germany||50739
-10691|QUICK|2|1997-10-03|1997-11-14|1997-10-22|2|810|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
+10670|FRANK|4|1997-09-16|1997-10-14|1997-09-18|1|203|Frankenversand|Berliner Platz 43|MÃ¼nchen|Germany||80805
+10675|FRANK|5|1997-09-19|1997-10-17|1997-09-23|2|32|Frankenversand|Berliner Platz 43|MÃ¼nchen|Germany||80805
+10684|OTTIK|3|1997-09-26|1997-10-24|1997-09-30|1|146|Ottilies KÃ¤seladen|Mehrheimerstr. 369|KÃ¶ln|Germany||50739
+10691|QUICK|2|1997-10-03|1997-11-14|1997-10-22|2|810|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
 10692|ALFKI|4|1997-10-03|1997-10-31|1997-10-13|2|61|Alfreds Futterkiste|Obere Str. 57|Berlin|Germany||12209
-10694|QUICK|8|1997-10-06|1997-11-03|1997-10-09|3|398|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
+10694|QUICK|8|1997-10-06|1997-11-03|1997-10-09|3|398|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
 10699|MORGK|3|1997-10-09|1997-11-06|1997-10-13|3|1|Morgenstern Gesundkost|Heerstr. 22|Leipzig|Germany||04179
 10702|ALFKI|4|1997-10-13|1997-11-24|1997-10-21|1|24|Alfreds Futterkiste|Obere Str. 57|Berlin|Germany||12209
-10717|FRANK|1|1997-10-24|1997-11-21|1997-10-29|2|59|Frankenversand|Berliner Platz 43|München|Germany||80805
-10718|KOENE|1|1997-10-27|1997-11-24|1997-10-29|3|171|Königlich Essen|Maubelstr. 90|Brandenburg|Germany||14776
-10721|QUICK|5|1997-10-29|1997-11-26|1997-10-31|3|49|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
-10745|QUICK|9|1997-11-18|1997-12-16|1997-11-27|1|4|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
-10765|QUICK|3|1997-12-04|1998-01-01|1997-12-09|3|43|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
-10766|OTTIK|4|1997-12-05|1998-01-02|1997-12-09|1|158|Ottilies Käseladen|Mehrheimerstr. 369|Köln|Germany||50739
+10717|FRANK|1|1997-10-24|1997-11-21|1997-10-29|2|59|Frankenversand|Berliner Platz 43|MÃ¼nchen|Germany||80805
+10718|KOENE|1|1997-10-27|1997-11-24|1997-10-29|3|171|KÃ¶niglich Essen|Maubelstr. 90|Brandenburg|Germany||14776
+10721|QUICK|5|1997-10-29|1997-11-26|1997-10-31|3|49|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
+10745|QUICK|9|1997-11-18|1997-12-16|1997-11-27|1|4|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
+10765|QUICK|3|1997-12-04|1998-01-01|1997-12-09|3|43|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
+10766|OTTIK|4|1997-12-05|1998-01-02|1997-12-09|1|158|Ottilies KÃ¤seladen|Mehrheimerstr. 369|KÃ¶ln|Germany||50739
 10772|LEHMS|3|1997-12-10|1998-01-07|1997-12-19|2|91|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.|Germany||60528
 10779|MORGK|3|1997-12-16|1998-01-13|1998-01-14|2|58|Morgenstern Gesundkost|Heerstr. 22|Leipzig|Germany||04179
-10788|QUICK|1|1997-12-22|1998-01-19|1998-01-19|2|43|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
-10791|FRANK|6|1997-12-23|1998-01-20|1998-01-01|2|17|Frankenversand|Berliner Platz 43|München|Germany||80805
+10788|QUICK|1|1997-12-22|1998-01-19|1998-01-19|2|43|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
+10791|FRANK|6|1997-12-23|1998-01-20|1998-01-01|2|17|Frankenversand|Berliner Platz 43|MÃ¼nchen|Germany||80805
 10797|DRACD|7|1997-12-25|1998-01-22|1998-01-05|2|33|Drachenblut Delikatessen|Walserweg 21|Aachen|Germany||52066
-10799|KOENE|9|1997-12-26|1998-02-06|1998-01-05|3|31|Königlich Essen|Maubelstr. 90|Brandenburg|Germany||14776
-10817|KOENE|3|1998-01-06|1998-01-20|1998-01-13|2|306|Königlich Essen|Maubelstr. 90|Brandenburg|Germany||14776
+10799|KOENE|9|1997-12-26|1998-02-06|1998-01-05|3|31|KÃ¶niglich Essen|Maubelstr. 90|Brandenburg|Germany||14776
+10817|KOENE|3|1998-01-06|1998-01-20|1998-01-13|2|306|KÃ¶niglich Essen|Maubelstr. 90|Brandenburg|Germany||14776
 10825|DRACD|1|1998-01-09|1998-02-06|1998-01-14|1|79|Drachenblut Delikatessen|Walserweg 21|Aachen|Germany||52066
-10833|OTTIK|6|1998-01-15|1998-02-12|1998-01-23|2|71|Ottilies Käseladen|Mehrheimerstr. 369|Köln|Germany||50739
+10833|OTTIK|6|1998-01-15|1998-02-12|1998-01-23|2|71|Ottilies KÃ¤seladen|Mehrheimerstr. 369|KÃ¶ln|Germany||50739
 10835|ALFKI|1|1998-01-15|1998-02-12|1998-01-21|3|70|Alfreds Futterkiste|Obere Str. 57|Berlin|Germany||12209
-10845|QUICK|8|1998-01-21|1998-02-04|1998-01-30|1|213|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
-10849|KOENE|9|1998-01-23|1998-02-20|1998-01-30|2|1|Königlich Essen|Maubelstr. 90|Brandenburg|Germany||14776
+10845|QUICK|8|1998-01-21|1998-02-04|1998-01-30|1|213|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
+10849|KOENE|9|1998-01-23|1998-02-20|1998-01-30|2|1|KÃ¶niglich Essen|Maubelstr. 90|Brandenburg|Germany||14776
 10853|BLAUS|9|1998-01-27|1998-02-24|1998-02-03|2|54|Blauer See Delikatessen|Forsterstr. 57|Mannheim|Germany||68306
-10859|FRANK|1|1998-01-29|1998-02-26|1998-02-02|2|76|Frankenversand|Berliner Platz 43|München|Germany||80805
+10859|FRANK|1|1998-01-29|1998-02-26|1998-02-02|2|76|Frankenversand|Berliner Platz 43|MÃ¼nchen|Germany||80805
 10862|LEHMS|8|1998-01-30|1998-03-13|1998-02-02|2|53|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.|Germany||60528
-10865|QUICK|2|1998-02-02|1998-02-16|1998-02-12|1|348|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
-10878|QUICK|4|1998-02-10|1998-03-10|1998-02-12|1|47|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
+10865|QUICK|2|1998-02-02|1998-02-16|1998-02-12|1|348|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
+10878|QUICK|4|1998-02-10|1998-03-10|1998-02-12|1|47|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
 10891|LEHMS|7|1998-02-17|1998-03-17|1998-02-19|2|20|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.|Germany||60528
-10893|KOENE|9|1998-02-18|1998-03-18|1998-02-20|2|78|Königlich Essen|Maubelstr. 90|Brandenburg|Germany||14776
-10929|FRANK|6|1998-03-05|1998-04-02|1998-03-12|1|34|Frankenversand|Berliner Platz 43|München|Germany||80805
+10893|KOENE|9|1998-02-18|1998-03-18|1998-02-20|2|78|KÃ¶niglich Essen|Maubelstr. 90|Brandenburg|Germany||14776
+10929|FRANK|6|1998-03-05|1998-04-02|1998-03-12|1|34|Frankenversand|Berliner Platz 43|MÃ¼nchen|Germany||80805
 10934|LEHMS|3|1998-03-09|1998-04-06|1998-03-12|3|32|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.|Germany||60528
-10938|QUICK|3|1998-03-10|1998-04-07|1998-03-16|2|32|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
+10938|QUICK|3|1998-03-10|1998-04-07|1998-03-16|2|32|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
 10945|MORGK|4|1998-03-12|1998-04-09|1998-03-18|1|10|Morgenstern Gesundkost|Heerstr. 22|Leipzig|Germany||04179
 10952|ALFKI|1|1998-03-16|1998-04-27|1998-03-24|1|40|Alfreds Futterkiste|Obere Str. 57|Berlin|Germany||12209
 10956|BLAUS|6|1998-03-17|1998-04-28|1998-03-20|2|45|Blauer See Delikatessen|Forsterstr. 57|Mannheim|Germany||68306
-10962|QUICK|8|1998-03-19|1998-04-16|1998-03-23|2|276|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
-10967|TOMSP|2|1998-03-23|1998-04-20|1998-04-02|2|62|Toms Spezialitäten|Luisenstr. 48|Münster|Germany||44087
-10991|QUICK|1|1998-04-01|1998-04-29|1998-04-07|1|39|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
-10996|QUICK|4|1998-04-02|1998-04-30|1998-04-10|2|1|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
-10999|OTTIK|6|1998-04-03|1998-05-01|1998-04-10|2|96|Ottilies Käseladen|Mehrheimerstr. 369|Köln|Germany||50739
+10962|QUICK|8|1998-03-19|1998-04-16|1998-03-23|2|276|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
+10967|TOMSP|2|1998-03-23|1998-04-20|1998-04-02|2|62|Toms SpezialitÃ¤ten|Luisenstr. 48|MÃ¼nster|Germany||44087
+10991|QUICK|1|1998-04-01|1998-04-29|1998-04-07|1|39|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
+10996|QUICK|4|1998-04-02|1998-04-30|1998-04-10|2|1|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
+10999|OTTIK|6|1998-04-03|1998-05-01|1998-04-10|2|96|Ottilies KÃ¤seladen|Mehrheimerstr. 369|KÃ¶ln|Germany||50739
 11011|ALFKI|3|1998-04-09|1998-05-07|1998-04-13|1|1|Alfreds Futterkiste|Obere Str. 57|Berlin|Germany||12209
-11012|FRANK|1|1998-04-09|1998-04-23|1998-04-17|3|243|Frankenversand|Berliner Platz 43|München|Germany||80805
-11020|OTTIK|2|1998-04-14|1998-05-12|1998-04-16|2|43|Ottilies Käseladen|Mehrheimerstr. 369|Köln|Germany||50739
-11021|QUICK|3|1998-04-14|1998-05-12|1998-04-21|1|297|QUICK-Stop|Taucherstraße 10|Cunewalde|Germany||01307
-11028|KOENE|2|1998-04-16|1998-05-14|1998-04-22|1|30|Königlich Essen|Maubelstr. 90|Brandenburg|Germany||14776
+11012|FRANK|1|1998-04-09|1998-04-23|1998-04-17|3|243|Frankenversand|Berliner Platz 43|MÃ¼nchen|Germany||80805
+11020|OTTIK|2|1998-04-14|1998-05-12|1998-04-16|2|43|Ottilies KÃ¤seladen|Mehrheimerstr. 369|KÃ¶ln|Germany||50739
+11021|QUICK|3|1998-04-14|1998-05-12|1998-04-21|1|297|QUICK-Stop|TaucherstraÃŸe 10|Cunewalde|Germany||01307
+11028|KOENE|2|1998-04-16|1998-05-14|1998-04-22|1|30|KÃ¶niglich Essen|Maubelstr. 90|Brandenburg|Germany||14776
 11036|DRACD|8|1998-04-20|1998-05-18|1998-04-22|3|149|Drachenblut Delikatessen|Walserweg 21|Aachen|Germany||52066
 11046|WANDK|8|1998-04-23|1998-05-21|1998-04-24|2|72|Die Wandernde Kuh|Adenauerallee 900|Stuttgart|Germany||70563
 11058|BLAUS|9|1998-04-29|1998-05-27||3|31|Blauer See Delikatessen|Forsterstr. 57|Mannheim|Germany||68306
 11067|DRACD|1|1998-05-04|1998-05-18|1998-05-06|2|8|Drachenblut Delikatessen|Walserweg 21|Aachen|Germany||52066
 11070|LEHMS|2|1998-05-05|1998-06-02||1|136|Lehmanns Marktstand|Magazinweg 7|Frankfurt a.M.|Germany||60528
-10250|HANAR|4|1996-07-08|1996-08-05|1996-07-12|2|66|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|Brazil|RJ|05454-876
-10253|HANAR|3|1996-07-10|1996-07-24|1996-07-16|2|58|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|Brazil|RJ|05454-876
+10250|HANAR|4|1996-07-08|1996-08-05|1996-07-12|2|66|Hanari Carnes|Rua do PaÃ§o, 67|Rio de Janeiro|Brazil|RJ|05454-876
+10253|HANAR|3|1996-07-10|1996-07-24|1996-07-16|2|58|Hanari Carnes|Rua do PaÃ§o, 67|Rio de Janeiro|Brazil|RJ|05454-876
 10256|WELLI|3|1996-07-15|1996-08-12|1996-07-17|2|14|Wellington Importadora|Rua do Mercado, 12|Resende|Brazil|SP|08737-363
-10261|QUEDE|4|1996-07-19|1996-08-16|1996-07-30|2|3|Que Delícia|Rua da Panificadora, 12|Rio de Janeiro|Brazil|RJ|02389-673
+10261|QUEDE|4|1996-07-19|1996-08-16|1996-07-30|2|3|Que DelÃ­cia|Rua da Panificadora, 12|Rio de Janeiro|Brazil|RJ|02389-673
 10287|RICAR|8|1996-08-22|1996-09-19|1996-08-28|3|13|Ricardo Adocicados|Av. Copacabana, 267|Rio de Janeiro|Brazil|RJ|02389-890
-10290|COMMI|8|1996-08-27|1996-09-24|1996-09-03|1|80|Comércio Mineiro|Av. dos Lusíadas, 23|Sao Paulo|Brazil|SP|05432-043
-10291|QUEDE|6|1996-08-27|1996-09-24|1996-09-04|2|6|Que Delícia|Rua da Panificadora, 12|Rio de Janeiro|Brazil|RJ|02389-673
-10292|TRADH|1|1996-08-28|1996-09-25|1996-09-02|2|1|Tradiçao Hipermercados|Av. Ines de Castro, 414|Sao Paulo|Brazil|SP|05634-030
+10290|COMMI|8|1996-08-27|1996-09-24|1996-09-03|1|80|ComÃ©rcio Mineiro|Av. dos LusÃ­adas, 23|Sao Paulo|Brazil|SP|05432-043
+10291|QUEDE|6|1996-08-27|1996-09-24|1996-09-04|2|6|Que DelÃ­cia|Rua da Panificadora, 12|Rio de Janeiro|Brazil|RJ|02389-673
+10292|TRADH|1|1996-08-28|1996-09-25|1996-09-02|2|1|TradiÃ§ao Hipermercados|Av. Ines de Castro, 414|Sao Paulo|Brazil|SP|05634-030
 10299|RICAR|4|1996-09-06|1996-10-04|1996-09-13|2|30|Ricardo Adocicados|Av. Copacabana, 267|Rio de Janeiro|Brazil|RJ|02389-890
-10347|FAMIA|4|1996-11-06|1996-12-04|1996-11-08|3|3|Familia Arquibaldo|Rua Orós, 92|Sao Paulo|Brazil|SP|05442-030
+10347|FAMIA|4|1996-11-06|1996-12-04|1996-11-08|3|3|Familia Arquibaldo|Rua OrÃ³s, 92|Sao Paulo|Brazil|SP|05442-030
 10372|QUEEN|5|1996-12-04|1997-01-01|1996-12-09|2|891|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|Brazil|SP|05487-020
-10379|QUEDE|2|1996-12-11|1997-01-08|1996-12-13|1|45|Que Delícia|Rua da Panificadora, 12|Rio de Janeiro|Brazil|RJ|02389-673
-10386|FAMIA|9|1996-12-18|1997-01-01|1996-12-25|3|14|Familia Arquibaldo|Rua Orós, 92|Sao Paulo|Brazil|SP|05442-030
+10379|QUEDE|2|1996-12-11|1997-01-08|1996-12-13|1|45|Que DelÃ­cia|Rua da Panificadora, 12|Rio de Janeiro|Brazil|RJ|02389-673
+10386|FAMIA|9|1996-12-18|1997-01-01|1996-12-25|3|14|Familia Arquibaldo|Rua OrÃ³s, 92|Sao Paulo|Brazil|SP|05442-030
 10406|QUEEN|7|1997-01-07|1997-02-18|1997-01-13|1|108|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|Brazil|SP|05487-020
-10414|FAMIA|2|1997-01-14|1997-02-11|1997-01-17|3|21|Familia Arquibaldo|Rua Orós, 92|Sao Paulo|Brazil|SP|05442-030
+10414|FAMIA|2|1997-01-14|1997-02-11|1997-01-17|3|21|Familia Arquibaldo|Rua OrÃ³s, 92|Sao Paulo|Brazil|SP|05442-030
 10420|WELLI|3|1997-01-21|1997-02-18|1997-01-27|1|44|Wellington Importadora|Rua do Mercado, 12|Resende|Brazil|SP|08737-363
-10421|QUEDE|8|1997-01-21|1997-03-04|1997-01-27|1|99|Que Delícia|Rua da Panificadora, 12|Rio de Janeiro|Brazil|RJ|02389-673
+10421|QUEDE|8|1997-01-21|1997-03-04|1997-01-27|1|99|Que DelÃ­cia|Rua da Panificadora, 12|Rio de Janeiro|Brazil|RJ|02389-673
 10423|GOURL|6|1997-01-23|1997-02-06|1997-02-24|3|24|Gourmet Lanchonetes|Av. Brasil, 442|Campinas|Brazil|SP|04876-786
 10447|RICAR|4|1997-02-14|1997-03-14|1997-03-07|2|69|Ricardo Adocicados|Av. Copacabana, 267|Rio de Janeiro|Brazil|RJ|02389-890
-10466|COMMI|4|1997-03-06|1997-04-03|1997-03-13|1|12|Comércio Mineiro|Av. dos Lusíadas, 23|Sao Paulo|Brazil|SP|05432-043
+10466|COMMI|4|1997-03-06|1997-04-03|1997-03-13|1|12|ComÃ©rcio Mineiro|Av. dos LusÃ­adas, 23|Sao Paulo|Brazil|SP|05432-043
 10481|RICAR|8|1997-03-20|1997-04-17|1997-03-25|2|64|Ricardo Adocicados|Av. Copacabana, 267|Rio de Janeiro|Brazil|RJ|02389-890
 10487|QUEEN|2|1997-03-26|1997-04-23|1997-03-28|2|71|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|Brazil|SP|05487-020
-10494|COMMI|4|1997-04-02|1997-04-30|1997-04-09|2|66|Comércio Mineiro|Av. dos Lusíadas, 23|Sao Paulo|Brazil|SP|05432-043
-10496|TRADH|7|1997-04-04|1997-05-02|1997-04-07|2|47|Tradiçao Hipermercados|Av. Ines de Castro, 414|Sao Paulo|Brazil|SP|05634-030
-10512|FAMIA|7|1997-04-21|1997-05-19|1997-04-24|2|4|Familia Arquibaldo|Rua Orós, 92|Sao Paulo|Brazil|SP|05442-030
-10541|HANAR|2|1997-05-19|1997-06-16|1997-05-29|1|69|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|Brazil|RJ|05454-876
+10494|COMMI|4|1997-04-02|1997-04-30|1997-04-09|2|66|ComÃ©rcio Mineiro|Av. dos LusÃ­adas, 23|Sao Paulo|Brazil|SP|05432-043
+10496|TRADH|7|1997-04-04|1997-05-02|1997-04-07|2|47|TradiÃ§ao Hipermercados|Av. Ines de Castro, 414|Sao Paulo|Brazil|SP|05634-030
+10512|FAMIA|7|1997-04-21|1997-05-19|1997-04-24|2|4|Familia Arquibaldo|Rua OrÃ³s, 92|Sao Paulo|Brazil|SP|05442-030
+10541|HANAR|2|1997-05-19|1997-06-16|1997-05-29|1|69|Hanari Carnes|Rua do PaÃ§o, 67|Rio de Janeiro|Brazil|RJ|05454-876
 10563|RICAR|2|1997-06-10|1997-07-22|1997-06-24|2|60|Ricardo Adocicados|Av. Copacabana, 267|Rio de Janeiro|Brazil|RJ|02389-890
-10581|FAMIA|3|1997-06-26|1997-07-24|1997-07-02|1|3|Familia Arquibaldo|Rua Orós, 92|Sao Paulo|Brazil|SP|05442-030
+10581|FAMIA|3|1997-06-26|1997-07-24|1997-07-02|1|3|Familia Arquibaldo|Rua OrÃ³s, 92|Sao Paulo|Brazil|SP|05442-030
 10585|WELLI|7|1997-07-01|1997-07-29|1997-07-10|1|13|Wellington Importadora|Rua do Mercado, 12|Resende|Brazil|SP|08737-363
-10587|QUEDE|1|1997-07-02|1997-07-30|1997-07-09|1|63|Que Delícia|Rua da Panificadora, 12|Rio de Janeiro|Brazil|RJ|02389-673
-10606|TRADH|4|1997-07-22|1997-08-19|1997-07-31|3|79|Tradiçao Hipermercados|Av. Ines de Castro, 414|Sao Paulo|Brazil|SP|05634-030
+10587|QUEDE|1|1997-07-02|1997-07-30|1997-07-09|1|63|Que DelÃ­cia|Rua da Panificadora, 12|Rio de Janeiro|Brazil|RJ|02389-673
+10606|TRADH|4|1997-07-22|1997-08-19|1997-07-31|3|79|TradiÃ§ao Hipermercados|Av. Ines de Castro, 414|Sao Paulo|Brazil|SP|05634-030
 10622|RICAR|4|1997-08-06|1997-09-03|1997-08-11|3|51|Ricardo Adocicados|Av. Copacabana, 267|Rio de Janeiro|Brazil|RJ|02389-890
 10637|QUEEN|6|1997-08-19|1997-09-16|1997-08-26|1|201|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|Brazil|SP|05487-020
 10644|WELLI|3|1997-08-25|1997-09-22|1997-09-01|2|0|Wellington Importadora|Rua do Mercado, 12|Resende|Brazil|SP|08737-363
-10645|HANAR|4|1997-08-26|1997-09-23|1997-09-02|1|12|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|Brazil|RJ|05454-876
-10647|QUEDE|4|1997-08-27|1997-09-10|1997-09-03|2|46|Que Delícia|Rua da Panificadora, 12|Rio de Janeiro|Brazil|RJ|02389-673
+10645|HANAR|4|1997-08-26|1997-09-23|1997-09-02|1|12|Hanari Carnes|Rua do PaÃ§o, 67|Rio de Janeiro|Brazil|RJ|05454-876
+10647|QUEDE|4|1997-08-27|1997-09-10|1997-09-03|2|46|Que DelÃ­cia|Rua da Panificadora, 12|Rio de Janeiro|Brazil|RJ|02389-673
 10648|RICAR|5|1997-08-28|1997-10-09|1997-09-09|2|14|Ricardo Adocicados|Av. Copacabana, 267|Rio de Janeiro|Brazil|RJ|02389-890
-10650|FAMIA|5|1997-08-29|1997-09-26|1997-09-03|3|177|Familia Arquibaldo|Rua Orós, 92|Sao Paulo|Brazil|SP|05442-030
+10650|FAMIA|5|1997-08-29|1997-09-26|1997-09-03|3|177|Familia Arquibaldo|Rua OrÃ³s, 92|Sao Paulo|Brazil|SP|05442-030
 10652|GOURL|4|1997-09-01|1997-09-29|1997-09-08|2|7|Gourmet Lanchonetes|Av. Brasil, 442|Campinas|Brazil|SP|04876-786
 10659|QUEEN|7|1997-09-05|1997-10-03|1997-09-10|2|106|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|Brazil|SP|05487-020
 10685|GOURL|4|1997-09-29|1997-10-13|1997-10-03|2|34|Gourmet Lanchonetes|Av. Brasil, 442|Campinas|Brazil|SP|04876-786
-10690|HANAR|1|1997-10-02|1997-10-30|1997-10-03|1|16|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|Brazil|RJ|05454-876
+10690|HANAR|1|1997-10-02|1997-10-30|1997-10-03|1|16|Hanari Carnes|Rua do PaÃ§o, 67|Rio de Janeiro|Brazil|RJ|05454-876
 10704|QUEEN|6|1997-10-14|1997-11-11|1997-11-07|1|5|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|Brazil|SP|05487-020
 10709|GOURL|1|1997-10-17|1997-11-14|1997-11-20|3|211|Gourmet Lanchonetes|Av. Brasil, 442|Campinas|Brazil|SP|04876-786
-10720|QUEDE|8|1997-10-28|1997-11-11|1997-11-05|2|10|Que Delícia|Rua da Panificadora, 12|Rio de Janeiro|Brazil|RJ|02389-673
-10725|FAMIA|4|1997-10-31|1997-11-28|1997-11-05|3|11|Familia Arquibaldo|Rua Orós, 92|Sao Paulo|Brazil|SP|05442-030
+10720|QUEDE|8|1997-10-28|1997-11-11|1997-11-05|2|10|Que DelÃ­cia|Rua da Panificadora, 12|Rio de Janeiro|Brazil|RJ|02389-673
+10725|FAMIA|4|1997-10-31|1997-11-28|1997-11-05|3|11|Familia Arquibaldo|Rua OrÃ³s, 92|Sao Paulo|Brazil|SP|05442-030
 10728|QUEEN|4|1997-11-04|1997-12-02|1997-11-11|2|58|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|Brazil|SP|05487-020
 10734|GOURL|2|1997-11-07|1997-12-05|1997-11-12|3|2|Gourmet Lanchonetes|Av. Brasil, 442|Campinas|Brazil|SP|04876-786
-10770|HANAR|8|1997-12-09|1998-01-06|1997-12-17|3|5|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|Brazil|RJ|05454-876
+10770|HANAR|8|1997-12-09|1998-01-06|1997-12-17|3|5|Hanari Carnes|Rua do PaÃ§o, 67|Rio de Janeiro|Brazil|RJ|05454-876
 10777|GOURL|7|1997-12-15|1997-12-29|1998-01-21|2|3|Gourmet Lanchonetes|Av. Brasil, 442|Campinas|Brazil|SP|04876-786
-10783|HANAR|4|1997-12-18|1998-01-15|1997-12-19|2|125|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|Brazil|RJ|05454-876
+10783|HANAR|4|1997-12-18|1998-01-15|1997-12-19|2|125|Hanari Carnes|Rua do PaÃ§o, 67|Rio de Janeiro|Brazil|RJ|05454-876
 10786|QUEEN|8|1997-12-19|1998-01-16|1997-12-23|1|111|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|Brazil|SP|05487-020
 10790|GOURL|6|1997-12-22|1998-01-19|1997-12-26|1|28|Gourmet Lanchonetes|Av. Brasil, 442|Campinas|Brazil|SP|04876-786
-10794|QUEDE|6|1997-12-24|1998-01-21|1998-01-02|1|21|Que Delícia|Rua da Panificadora, 12|Rio de Janeiro|Brazil|RJ|02389-673
+10794|QUEDE|6|1997-12-24|1998-01-21|1998-01-02|1|21|Que DelÃ­cia|Rua da Panificadora, 12|Rio de Janeiro|Brazil|RJ|02389-673
 10803|WELLI|4|1997-12-30|1998-01-27|1998-01-06|1|55|Wellington Importadora|Rua do Mercado, 12|Resende|Brazil|SP|08737-363
 10809|WELLI|7|1998-01-01|1998-01-29|1998-01-07|1|5|Wellington Importadora|Rua do Mercado, 12|Resende|Brazil|SP|08737-363
 10813|RICAR|1|1998-01-05|1998-02-02|1998-01-09|1|47|Ricardo Adocicados|Av. Copacabana, 267|Rio de Janeiro|Brazil|RJ|02389-890
-10830|TRADH|4|1998-01-13|1998-02-24|1998-01-21|2|82|Tradiçao Hipermercados|Av. Ines de Castro, 414|Sao Paulo|Brazil|SP|05634-030
-10834|TRADH|1|1998-01-15|1998-02-12|1998-01-19|3|30|Tradiçao Hipermercados|Av. Ines de Castro, 414|Sao Paulo|Brazil|SP|05634-030
-10839|TRADH|3|1998-01-19|1998-02-16|1998-01-22|3|35|Tradiçao Hipermercados|Av. Ines de Castro, 414|Sao Paulo|Brazil|SP|05634-030
+10830|TRADH|4|1998-01-13|1998-02-24|1998-01-21|2|82|TradiÃ§ao Hipermercados|Av. Ines de Castro, 414|Sao Paulo|Brazil|SP|05634-030
+10834|TRADH|1|1998-01-15|1998-02-12|1998-01-19|3|30|TradiÃ§ao Hipermercados|Av. Ines de Castro, 414|Sao Paulo|Brazil|SP|05634-030
+10839|TRADH|3|1998-01-19|1998-02-16|1998-01-22|3|35|TradiÃ§ao Hipermercados|Av. Ines de Castro, 414|Sao Paulo|Brazil|SP|05634-030
 10851|RICAR|5|1998-01-26|1998-02-23|1998-02-02|1|161|Ricardo Adocicados|Av. Copacabana, 267|Rio de Janeiro|Brazil|RJ|02389-890
 10868|QUEEN|7|1998-02-04|1998-03-04|1998-02-23|2|191|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|Brazil|SP|05487-020
 10877|RICAR|1|1998-02-09|1998-03-09|1998-02-19|1|38|Ricardo Adocicados|Av. Copacabana, 267|Rio de Janeiro|Brazil|RJ|02389-890
-10886|HANAR|1|1998-02-13|1998-03-13|1998-03-02|1|5|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|Brazil|RJ|05454-876
+10886|HANAR|1|1998-02-13|1998-03-13|1998-03-02|1|5|Hanari Carnes|Rua do PaÃ§o, 67|Rio de Janeiro|Brazil|RJ|05454-876
 10900|WELLI|1|1998-02-20|1998-03-20|1998-03-04|2|2|Wellington Importadora|Rua do Mercado, 12|Resende|Brazil|SP|08737-363
-10903|HANAR|3|1998-02-24|1998-03-24|1998-03-04|3|37|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|Brazil|RJ|05454-876
+10903|HANAR|3|1998-02-24|1998-03-24|1998-03-04|3|37|Hanari Carnes|Rua do PaÃ§o, 67|Rio de Janeiro|Brazil|RJ|05454-876
 10905|WELLI|9|1998-02-24|1998-03-24|1998-03-06|2|14|Wellington Importadora|Rua do Mercado, 12|Resende|Brazil|SP|08737-363
 10913|QUEEN|4|1998-02-26|1998-03-26|1998-03-04|1|33|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|Brazil|SP|05487-020
 10914|QUEEN|6|1998-02-27|1998-03-27|1998-03-02|1|21|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|Brazil|SP|05487-020
-10922|HANAR|5|1998-03-03|1998-03-31|1998-03-05|3|63|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|Brazil|RJ|05454-876
-10925|HANAR|3|1998-03-04|1998-04-01|1998-03-13|1|2|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|Brazil|RJ|05454-876
+10922|HANAR|5|1998-03-03|1998-03-31|1998-03-05|3|63|Hanari Carnes|Rua do PaÃ§o, 67|Rio de Janeiro|Brazil|RJ|05454-876
+10925|HANAR|3|1998-03-04|1998-04-01|1998-03-13|1|2|Hanari Carnes|Rua do PaÃ§o, 67|Rio de Janeiro|Brazil|RJ|05454-876
 10935|WELLI|4|1998-03-09|1998-04-06|1998-03-18|3|48|Wellington Importadora|Rua do Mercado, 12|Resende|Brazil|SP|08737-363
 10959|GOURL|6|1998-03-18|1998-04-29|1998-03-23|2|5|Gourmet Lanchonetes|Av. Brasil, 442|Campinas|Brazil|SP|04876-786
 10961|QUEEN|8|1998-03-19|1998-04-16|1998-03-30|1|104|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|Brazil|SP|05487-020
-10969|COMMI|1|1998-03-23|1998-04-20|1998-03-30|2|0|Comércio Mineiro|Av. dos Lusíadas, 23|Sao Paulo|Brazil|SP|05432-043
-10981|HANAR|1|1998-03-27|1998-04-24|1998-04-02|2|193|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|Brazil|RJ|05454-876
-10989|QUEDE|2|1998-03-31|1998-04-28|1998-04-02|1|35|Que Delícia|Rua da Panificadora, 12|Rio de Janeiro|Brazil|RJ|02389-673
-11022|HANAR|9|1998-04-14|1998-05-12|1998-05-04|2|6|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|Brazil|RJ|05454-876
-11042|COMMI|2|1998-04-22|1998-05-06|1998-05-01|1|30|Comércio Mineiro|Av. dos Lusíadas, 23|Sao Paulo|Brazil|SP|05432-043
+10969|COMMI|1|1998-03-23|1998-04-20|1998-03-30|2|0|ComÃ©rcio Mineiro|Av. dos LusÃ­adas, 23|Sao Paulo|Brazil|SP|05432-043
+10981|HANAR|1|1998-03-27|1998-04-24|1998-04-02|2|193|Hanari Carnes|Rua do PaÃ§o, 67|Rio de Janeiro|Brazil|RJ|05454-876
+10989|QUEDE|2|1998-03-31|1998-04-28|1998-04-02|1|35|Que DelÃ­cia|Rua da Panificadora, 12|Rio de Janeiro|Brazil|RJ|02389-673
+11022|HANAR|9|1998-04-14|1998-05-12|1998-05-04|2|6|Hanari Carnes|Rua do PaÃ§o, 67|Rio de Janeiro|Brazil|RJ|05454-876
+11042|COMMI|2|1998-04-22|1998-05-06|1998-05-01|1|30|ComÃ©rcio Mineiro|Av. dos LusÃ­adas, 23|Sao Paulo|Brazil|SP|05432-043
 11049|GOURL|3|1998-04-24|1998-05-22|1998-05-04|1|8|Gourmet Lanchonetes|Av. Brasil, 442|Campinas|Brazil|SP|04876-786
-11052|HANAR|3|1998-04-27|1998-05-25|1998-05-01|1|67|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|Brazil|RJ|05454-876
+11052|HANAR|3|1998-04-27|1998-05-25|1998-05-01|1|67|Hanari Carnes|Rua do PaÃ§o, 67|Rio de Janeiro|Brazil|RJ|05454-876
 11059|RICAR|2|1998-04-29|1998-06-10||2|86|Ricardo Adocicados|Av. Copacabana, 267|Rio de Janeiro|Brazil|RJ|02389-890
 11068|QUEEN|8|1998-05-04|1998-06-01||2|82|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|Brazil|SP|05487-020
-10252|SUPRD|4|1996-07-09|1996-08-06|1996-07-11|2|51|Supremes délices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
-10302|SUPRD|4|1996-09-10|1996-10-08|1996-10-09|2|6|Supremes délices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
-10458|SUPRD|7|1997-02-26|1997-03-26|1997-03-04|3|147|Supremes délices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
-10463|SUPRD|5|1997-03-04|1997-04-01|1997-03-06|3|15|Supremes délices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
-10475|SUPRD|9|1997-03-14|1997-04-11|1997-04-04|1|69|Supremes délices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
+10252|SUPRD|4|1996-07-09|1996-08-06|1996-07-11|2|51|Supremes dÃ©lices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
+10302|SUPRD|4|1996-09-10|1996-10-08|1996-10-09|2|6|Supremes dÃ©lices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
+10458|SUPRD|7|1997-02-26|1997-03-26|1997-03-04|3|147|Supremes dÃ©lices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
+10463|SUPRD|5|1997-03-04|1997-04-01|1997-03-06|3|15|Supremes dÃ©lices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
+10475|SUPRD|9|1997-03-14|1997-04-11|1997-04-04|1|69|Supremes dÃ©lices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
 10529|MAISD|5|1997-05-07|1997-06-04|1997-05-09|2|67|Maison Dewey|Rue Joseph-Bens 532|Bruxelles|Belgium||B-1180
 10649|MAISD|5|1997-08-28|1997-09-25|1997-08-29|3|6|Maison Dewey|Rue Joseph-Bens 532|Bruxelles|Belgium||B-1180
 10760|MAISD|4|1997-12-01|1997-12-29|1997-12-10|1|156|Maison Dewey|Rue Joseph-Bens 532|Bruxelles|Belgium||B-1180
-10767|SUPRD|4|1997-12-05|1998-01-02|1997-12-15|3|2|Supremes délices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
-10841|SUPRD|5|1998-01-20|1998-02-17|1998-01-29|2|424|Supremes délices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
-10846|SUPRD|2|1998-01-22|1998-03-05|1998-01-23|3|56|Supremes délices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
-10885|SUPRD|6|1998-02-12|1998-03-12|1998-02-18|3|6|Supremes délices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
+10767|SUPRD|4|1997-12-05|1998-01-02|1997-12-15|3|2|Supremes dÃ©lices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
+10841|SUPRD|5|1998-01-20|1998-02-17|1998-01-29|2|424|Supremes dÃ©lices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
+10846|SUPRD|2|1998-01-22|1998-03-05|1998-01-23|3|56|Supremes dÃ©lices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
+10885|SUPRD|6|1998-02-12|1998-03-12|1998-02-18|3|6|Supremes dÃ©lices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
 10892|MAISD|4|1998-02-17|1998-03-17|1998-02-19|2|120|Maison Dewey|Rue Joseph-Bens 532|Bruxelles|Belgium||B-1180
 10896|MAISD|7|1998-02-19|1998-03-19|1998-02-27|3|32|Maison Dewey|Rue Joseph-Bens 532|Bruxelles|Belgium||B-1180
-10930|SUPRD|4|1998-03-06|1998-04-17|1998-03-18|3|16|Supremes délices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
+10930|SUPRD|4|1998-03-06|1998-04-17|1998-03-18|3|16|Supremes dÃ©lices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
 10978|MAISD|9|1998-03-26|1998-04-23|1998-04-23|2|33|Maison Dewey|Rue Joseph-Bens 532|Bruxelles|Belgium||B-1180
 11004|MAISD|3|1998-04-07|1998-05-05|1998-04-20|1|45|Maison Dewey|Rue Joseph-Bens 532|Bruxelles|Belgium||B-1180
-11035|SUPRD|2|1998-04-20|1998-05-18|1998-04-24|2|0|Supremes délices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
-11038|SUPRD|1|1998-04-21|1998-05-19|1998-04-30|2|30|Supremes délices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
+11035|SUPRD|2|1998-04-20|1998-05-18|1998-04-24|2|0|Supremes dÃ©lices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
+11038|SUPRD|1|1998-04-21|1998-05-19|1998-04-30|2|30|Supremes dÃ©lices|Boulevard Tirou, 255|Charleroi|Belgium||B-6000
 10254|CHOPS|5|1996-07-11|1996-08-08|1996-07-23|2|23|Chop-suey Chinese|Hauptstr. 31|Bern|Switzerland||3012
 10255|RICSU|9|1996-07-12|1996-08-09|1996-07-15|3|148|Richter Supermarkt|Starenweg 5|Gencve|Switzerland||1204
 10370|CHOPS|6|1996-12-03|1996-12-31|1996-12-27|2|1|Chop-suey Chinese|Hauptstr. 31|Bern|Switzerland||3012
@@ -317,52 +317,52 @@
 11033|RICSU|7|1998-04-17|1998-05-15|1998-04-23|3|85|Richter Supermarkt|Starenweg 5|Gencve|Switzerland||1204
 11041|CHOPS|3|1998-04-22|1998-05-20|1998-04-28|2|48|Chop-suey Chinese|Hauptstr. 31|Bern|Switzerland||3012
 11075|RICSU|8|1998-05-06|1998-06-03||2|6|Richter Supermarkt|Starenweg 5|Gencve|Switzerland||1204
-10257|HILAA|4|1996-07-16|1996-08-13|1996-07-22|3|82|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Venezuela|Táchira|5022
+10257|HILAA|4|1996-07-16|1996-08-13|1996-07-22|3|82|HILARIÃ“N-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San CristÃ³bal|Venezuela|TÃ¡chira|5022
 10268|GROSR|8|1996-07-30|1996-08-27|1996-08-02|3|66|GROSELLA-Restaurante|5a Ave. Los Palos Grandes|Caracas|Venezuela|DF|1081
-10283|LILAS|3|1996-08-16|1996-09-13|1996-08-23|3|85|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
-10296|LILAS|6|1996-09-03|1996-10-01|1996-09-11|1|0|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
-10330|LILAS|3|1996-10-16|1996-11-13|1996-10-28|1|13|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
-10357|LILAS|1|1996-11-19|1996-12-17|1996-12-02|3|35|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
-10381|LILAS|3|1996-12-12|1997-01-09|1996-12-13|3|8|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
-10395|HILAA|6|1996-12-26|1997-01-23|1997-01-03|1|184|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Venezuela|Táchira|5022
+10283|LILAS|3|1996-08-16|1996-09-13|1996-08-23|3|85|LILA-Supermercado|Carrera 52 con Ave. BolÃ­var #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
+10296|LILAS|6|1996-09-03|1996-10-01|1996-09-11|1|0|LILA-Supermercado|Carrera 52 con Ave. BolÃ­var #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
+10330|LILAS|3|1996-10-16|1996-11-13|1996-10-28|1|13|LILA-Supermercado|Carrera 52 con Ave. BolÃ­var #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
+10357|LILAS|1|1996-11-19|1996-12-17|1996-12-02|3|35|LILA-Supermercado|Carrera 52 con Ave. BolÃ­var #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
+10381|LILAS|3|1996-12-12|1997-01-09|1996-12-13|3|8|LILA-Supermercado|Carrera 52 con Ave. BolÃ­var #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
+10395|HILAA|6|1996-12-26|1997-01-23|1997-01-03|1|184|HILARIÃ“N-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San CristÃ³bal|Venezuela|TÃ¡chira|5022
 10405|LINOD|1|1997-01-06|1997-02-03|1997-01-22|1|35|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Venezuela|Nueva Esparta|4980
-10461|LILAS|1|1997-02-28|1997-03-28|1997-03-05|3|149|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
-10476|HILAA|8|1997-03-17|1997-04-14|1997-03-24|3|4|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Venezuela|Táchira|5022
+10461|LILAS|1|1997-02-28|1997-03-28|1997-03-05|3|149|LILA-Supermercado|Carrera 52 con Ave. BolÃ­var #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
+10476|HILAA|8|1997-03-17|1997-04-14|1997-03-24|3|4|HILARIÃ“N-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San CristÃ³bal|Venezuela|TÃ¡chira|5022
 10485|LINOD|4|1997-03-25|1997-04-08|1997-03-31|2|64|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Venezuela|Nueva Esparta|4980
-10486|HILAA|1|1997-03-26|1997-04-23|1997-04-02|2|31|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Venezuela|Táchira|5022
-10490|HILAA|7|1997-03-31|1997-04-28|1997-04-03|2|210|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Venezuela|Táchira|5022
-10498|HILAA|8|1997-04-07|1997-05-05|1997-04-11|2|30|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Venezuela|Táchira|5022
-10499|LILAS|4|1997-04-08|1997-05-06|1997-04-16|2|102|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
-10543|LILAS|8|1997-05-21|1997-06-18|1997-05-23|2|48|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
-10552|HILAA|2|1997-05-29|1997-06-26|1997-06-05|1|83|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Venezuela|Táchira|5022
-10601|HILAA|7|1997-07-16|1997-08-27|1997-07-22|1|58|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Venezuela|Táchira|5022
-10613|HILAA|4|1997-07-29|1997-08-26|1997-08-01|2|8|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Venezuela|Táchira|5022
+10486|HILAA|1|1997-03-26|1997-04-23|1997-04-02|2|31|HILARIÃ“N-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San CristÃ³bal|Venezuela|TÃ¡chira|5022
+10490|HILAA|7|1997-03-31|1997-04-28|1997-04-03|2|210|HILARIÃ“N-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San CristÃ³bal|Venezuela|TÃ¡chira|5022
+10498|HILAA|8|1997-04-07|1997-05-05|1997-04-11|2|30|HILARIÃ“N-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San CristÃ³bal|Venezuela|TÃ¡chira|5022
+10499|LILAS|4|1997-04-08|1997-05-06|1997-04-16|2|102|LILA-Supermercado|Carrera 52 con Ave. BolÃ­var #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
+10543|LILAS|8|1997-05-21|1997-06-18|1997-05-23|2|48|LILA-Supermercado|Carrera 52 con Ave. BolÃ­var #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
+10552|HILAA|2|1997-05-29|1997-06-26|1997-06-05|1|83|HILARIÃ“N-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San CristÃ³bal|Venezuela|TÃ¡chira|5022
+10601|HILAA|7|1997-07-16|1997-08-27|1997-07-22|1|58|HILARIÃ“N-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San CristÃ³bal|Venezuela|TÃ¡chira|5022
+10613|HILAA|4|1997-07-29|1997-08-26|1997-08-01|2|8|HILARIÃ“N-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San CristÃ³bal|Venezuela|TÃ¡chira|5022
 10638|LINOD|3|1997-08-20|1997-09-17|1997-09-01|1|158|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Venezuela|Nueva Esparta|4980
-10641|HILAA|4|1997-08-22|1997-09-19|1997-08-26|2|180|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Venezuela|Táchira|5022
+10641|HILAA|4|1997-08-22|1997-09-19|1997-08-26|2|180|HILARIÃ“N-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San CristÃ³bal|Venezuela|TÃ¡chira|5022
 10697|LINOD|3|1997-10-08|1997-11-05|1997-10-14|1|46|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Venezuela|Nueva Esparta|4980
-10705|HILAA|9|1997-10-15|1997-11-12|1997-11-18|2|4|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Venezuela|Táchira|5022
+10705|HILAA|9|1997-10-15|1997-11-12|1997-11-18|2|4|HILARIÃ“N-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San CristÃ³bal|Venezuela|TÃ¡chira|5022
 10729|LINOD|8|1997-11-04|1997-12-16|1997-11-14|3|141|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Venezuela|Nueva Esparta|4980
-10780|LILAS|2|1997-12-16|1997-12-30|1997-12-25|1|42|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
+10780|LILAS|2|1997-12-16|1997-12-30|1997-12-25|1|42|LILA-Supermercado|Carrera 52 con Ave. BolÃ­var #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
 10785|GROSR|1|1997-12-18|1998-01-15|1997-12-24|3|2|GROSELLA-Restaurante|5a Ave. Los Palos Grandes|Caracas|Venezuela|DF|1081
-10796|HILAA|3|1997-12-25|1998-01-22|1998-01-14|1|27|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Venezuela|Táchira|5022
+10796|HILAA|3|1997-12-25|1998-01-22|1998-01-14|1|27|HILARIÃ“N-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San CristÃ³bal|Venezuela|TÃ¡chira|5022
 10811|LINOD|8|1998-01-02|1998-01-30|1998-01-08|1|31|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Venezuela|Nueva Esparta|4980
-10823|LILAS|5|1998-01-09|1998-02-06|1998-01-13|2|164|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
+10823|LILAS|5|1998-01-09|1998-02-06|1998-01-13|2|164|LILA-Supermercado|Carrera 52 con Ave. BolÃ­var #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
 10838|LINOD|3|1998-01-19|1998-02-16|1998-01-23|3|59|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Venezuela|Nueva Esparta|4980
 10840|LINOD|4|1998-01-19|1998-03-02|1998-02-16|2|3|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Venezuela|Nueva Esparta|4980
-10863|HILAA|4|1998-02-02|1998-03-02|1998-02-17|2|30|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Venezuela|Táchira|5022
-10899|LILAS|5|1998-02-20|1998-03-20|1998-02-26|3|1|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
-10901|HILAA|4|1998-02-23|1998-03-23|1998-02-26|1|62|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Venezuela|Táchira|5022
+10863|HILAA|4|1998-02-02|1998-03-02|1998-02-17|2|30|HILARIÃ“N-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San CristÃ³bal|Venezuela|TÃ¡chira|5022
+10899|LILAS|5|1998-02-20|1998-03-20|1998-02-26|3|1|LILA-Supermercado|Carrera 52 con Ave. BolÃ­var #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
+10901|HILAA|4|1998-02-23|1998-03-23|1998-02-26|1|62|HILARIÃ“N-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San CristÃ³bal|Venezuela|TÃ¡chira|5022
 10919|LINOD|2|1998-03-02|1998-03-30|1998-03-04|2|20|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Venezuela|Nueva Esparta|4980
 10954|LINOD|5|1998-03-17|1998-04-28|1998-03-20|1|28|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Venezuela|Nueva Esparta|4980
-10957|HILAA|8|1998-03-18|1998-04-15|1998-03-27|3|105|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Venezuela|Táchira|5022
-10960|HILAA|3|1998-03-19|1998-04-02|1998-04-08|1|2|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Venezuela|Táchira|5022
-10976|HILAA|1|1998-03-25|1998-05-06|1998-04-03|1|38|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Venezuela|Táchira|5022
-10997|LILAS|8|1998-04-03|1998-05-15|1998-04-13|2|74|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
+10957|HILAA|8|1998-03-18|1998-04-15|1998-03-27|3|105|HILARIÃ“N-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San CristÃ³bal|Venezuela|TÃ¡chira|5022
+10960|HILAA|3|1998-03-19|1998-04-02|1998-04-08|1|2|HILARIÃ“N-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San CristÃ³bal|Venezuela|TÃ¡chira|5022
+10976|HILAA|1|1998-03-25|1998-05-06|1998-04-03|1|38|HILARIÃ“N-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San CristÃ³bal|Venezuela|TÃ¡chira|5022
+10997|LILAS|8|1998-04-03|1998-05-15|1998-04-13|2|74|LILA-Supermercado|Carrera 52 con Ave. BolÃ­var #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
 11014|LINOD|2|1998-04-10|1998-05-08|1998-04-15|3|24|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Venezuela|Nueva Esparta|4980
 11039|LINOD|1|1998-04-21|1998-05-19||2|65|LINO-Delicateses|Ave. 5 de Mayo Porlamar|I. de Margarita|Venezuela|Nueva Esparta|4980
-11055|HILAA|7|1998-04-28|1998-05-26|1998-05-05|2|121|HILARIÓN-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San Cristóbal|Venezuela|Táchira|5022
-11065|LILAS|8|1998-05-01|1998-05-29||1|13|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
-11071|LILAS|1|1998-05-05|1998-06-02||1|1|LILA-Supermercado|Carrera 52 con Ave. Bolívar #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
+11055|HILAA|7|1998-04-28|1998-05-26|1998-05-05|2|121|HILARIÃ“N-Abastos|Carrera 22 con Ave. Carlos Soublette #8-35|San CristÃ³bal|Venezuela|TÃ¡chira|5022
+11065|LILAS|8|1998-05-01|1998-05-29||1|13|LILA-Supermercado|Carrera 52 con Ave. BolÃ­var #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
+11071|LILAS|1|1998-05-05|1998-06-02||1|1|LILA-Supermercado|Carrera 52 con Ave. BolÃ­var #65-98 Llano Largo|Barquisimeto|Venezuela|Lara|3508
 10258|ERNSH|1|1996-07-17|1996-08-14|1996-07-23|1|141|Ernst Handel|Kirchgasse 6|Graz|Austria||8010
 10263|ERNSH|9|1996-07-23|1996-08-20|1996-07-31|3|146|Ernst Handel|Kirchgasse 6|Graz|Austria||8010
 10351|ERNSH|1|1996-11-11|1996-12-09|1996-11-20|1|162|Ernst Handel|Kirchgasse 6|Graz|Austria||8010
@@ -403,34 +403,34 @@
 11017|ERNSH|9|1998-04-13|1998-05-11|1998-04-20|2|754|Ernst Handel|Kirchgasse 6|Graz|Austria||8010
 11053|PICCO|2|1998-04-27|1998-05-25|1998-04-29|2|53|Piccolo und mehr|Geislweg 14|Salzburg|Austria||5020
 11072|ERNSH|4|1998-05-05|1998-06-02||2|259|Ernst Handel|Kirchgasse 6|Graz|Austria||8010
-10259|CENTC|4|1996-07-18|1996-08-15|1996-07-25|3|3|Centro comercial Moctezuma|Sierras de Granada 9993|México D.F.|Mexico||05022
-10276|TORTU|8|1996-08-08|1996-08-22|1996-08-14|3|14|Tortuga Restaurante|Avda. Azteca 123|México D.F.|Mexico||05033
-10293|TORTU|1|1996-08-29|1996-09-26|1996-09-11|3|21|Tortuga Restaurante|Avda. Azteca 123|México D.F.|Mexico||05033
-10304|TORTU|1|1996-09-12|1996-10-10|1996-09-17|2|64|Tortuga Restaurante|Avda. Azteca 123|México D.F.|Mexico||05033
-10308|ANATR|7|1996-09-18|1996-10-16|1996-09-24|3|2|Ana Trujillo Emparedados y helados|Avda. de la Constitución 2222|México D.F.|Mexico||05021
-10319|TORTU|7|1996-10-02|1996-10-30|1996-10-11|3|64|Tortuga Restaurante|Avda. Azteca 123|México D.F.|Mexico||05033
-10322|PERIC|7|1996-10-04|1996-11-01|1996-10-23|3|0|Pericles Comidas clásicas|Calle Dr. Jorge Cash 321|México D.F.|Mexico||05033
-10354|PERIC|8|1996-11-14|1996-12-12|1996-11-20|3|54|Pericles Comidas clásicas|Calle Dr. Jorge Cash 321|México D.F.|Mexico||05033
-10365|ANTON|3|1996-11-27|1996-12-25|1996-12-02|2|22|Antonio Moreno Taquería|Mataderos  2312|México D.F.|Mexico||05023
-10474|PERIC|5|1997-03-13|1997-04-10|1997-03-21|2|83|Pericles Comidas clásicas|Calle Dr. Jorge Cash 321|México D.F.|Mexico||05033
-10502|PERIC|2|1997-04-10|1997-05-08|1997-04-29|1|69|Pericles Comidas clásicas|Calle Dr. Jorge Cash 321|México D.F.|Mexico||05033
-10507|ANTON|7|1997-04-15|1997-05-13|1997-04-22|1|47|Antonio Moreno Taquería|Mataderos  2312|México D.F.|Mexico||05023
-10518|TORTU|4|1997-04-25|1997-05-09|1997-05-05|2|218|Tortuga Restaurante|Avda. Azteca 123|México D.F.|Mexico||05033
-10535|ANTON|4|1997-05-13|1997-06-10|1997-05-21|1|16|Antonio Moreno Taquería|Mataderos  2312|México D.F.|Mexico||05023
-10573|ANTON|7|1997-06-19|1997-07-17|1997-06-20|3|85|Antonio Moreno Taquería|Mataderos  2312|México D.F.|Mexico||05023
-10576|TORTU|3|1997-06-23|1997-07-07|1997-06-30|3|19|Tortuga Restaurante|Avda. Azteca 123|México D.F.|Mexico||05033
-10625|ANATR|3|1997-08-08|1997-09-05|1997-08-14|1|44|Ana Trujillo Emparedados y helados|Avda. de la Constitución 2222|México D.F.|Mexico||05021
-10676|TORTU|2|1997-09-22|1997-10-20|1997-09-29|2|2|Tortuga Restaurante|Avda. Azteca 123|México D.F.|Mexico||05033
-10677|ANTON|1|1997-09-22|1997-10-20|1997-09-26|3|4|Antonio Moreno Taquería|Mataderos  2312|México D.F.|Mexico||05023
-10682|ANTON|3|1997-09-25|1997-10-23|1997-10-01|2|36|Antonio Moreno Taquería|Mataderos  2312|México D.F.|Mexico||05023
-10759|ANATR|3|1997-11-28|1997-12-26|1997-12-12|3|12|Ana Trujillo Emparedados y helados|Avda. de la Constitución 2222|México D.F.|Mexico||05021
-10842|TORTU|1|1998-01-20|1998-02-17|1998-01-29|3|54|Tortuga Restaurante|Avda. Azteca 123|México D.F.|Mexico||05033
-10856|ANTON|3|1998-01-28|1998-02-25|1998-02-10|2|58|Antonio Moreno Taquería|Mataderos  2312|México D.F.|Mexico||05023
-10915|TORTU|2|1998-02-27|1998-03-27|1998-03-02|2|4|Tortuga Restaurante|Avda. Azteca 123|México D.F.|Mexico||05033
-10926|ANATR|4|1998-03-04|1998-04-01|1998-03-11|3|40|Ana Trujillo Emparedados y helados|Avda. de la Constitución 2222|México D.F.|Mexico||05021
-10995|PERIC|1|1998-04-02|1998-04-30|1998-04-06|3|46|Pericles Comidas clásicas|Calle Dr. Jorge Cash 321|México D.F.|Mexico||05033
-11069|TORTU|1|1998-05-04|1998-06-01|1998-05-06|2|16|Tortuga Restaurante|Avda. Azteca 123|México D.F.|Mexico||05033
-11073|PERIC|2|1998-05-05|1998-06-02||2|25|Pericles Comidas clásicas|Calle Dr. Jorge Cash 321|México D.F.|Mexico||05033
+10259|CENTC|4|1996-07-18|1996-08-15|1996-07-25|3|3|Centro comercial Moctezuma|Sierras de Granada 9993|MÃ©xico D.F.|Mexico||05022
+10276|TORTU|8|1996-08-08|1996-08-22|1996-08-14|3|14|Tortuga Restaurante|Avda. Azteca 123|MÃ©xico D.F.|Mexico||05033
+10293|TORTU|1|1996-08-29|1996-09-26|1996-09-11|3|21|Tortuga Restaurante|Avda. Azteca 123|MÃ©xico D.F.|Mexico||05033
+10304|TORTU|1|1996-09-12|1996-10-10|1996-09-17|2|64|Tortuga Restaurante|Avda. Azteca 123|MÃ©xico D.F.|Mexico||05033
+10308|ANATR|7|1996-09-18|1996-10-16|1996-09-24|3|2|Ana Trujillo Emparedados y helados|Avda. de la ConstituciÃ³n 2222|MÃ©xico D.F.|Mexico||05021
+10319|TORTU|7|1996-10-02|1996-10-30|1996-10-11|3|64|Tortuga Restaurante|Avda. Azteca 123|MÃ©xico D.F.|Mexico||05033
+10322|PERIC|7|1996-10-04|1996-11-01|1996-10-23|3|0|Pericles Comidas clÃ¡sicas|Calle Dr. Jorge Cash 321|MÃ©xico D.F.|Mexico||05033
+10354|PERIC|8|1996-11-14|1996-12-12|1996-11-20|3|54|Pericles Comidas clÃ¡sicas|Calle Dr. Jorge Cash 321|MÃ©xico D.F.|Mexico||05033
+10365|ANTON|3|1996-11-27|1996-12-25|1996-12-02|2|22|Antonio Moreno TaquerÃ­a|Mataderos  2312|MÃ©xico D.F.|Mexico||05023
+10474|PERIC|5|1997-03-13|1997-04-10|1997-03-21|2|83|Pericles Comidas clÃ¡sicas|Calle Dr. Jorge Cash 321|MÃ©xico D.F.|Mexico||05033
+10502|PERIC|2|1997-04-10|1997-05-08|1997-04-29|1|69|Pericles Comidas clÃ¡sicas|Calle Dr. Jorge Cash 321|MÃ©xico D.F.|Mexico||05033
+10507|ANTON|7|1997-04-15|1997-05-13|1997-04-22|1|47|Antonio Moreno TaquerÃ­a|Mataderos  2312|MÃ©xico D.F.|Mexico||05023
+10518|TORTU|4|1997-04-25|1997-05-09|1997-05-05|2|218|Tortuga Restaurante|Avda. Azteca 123|MÃ©xico D.F.|Mexico||05033
+10535|ANTON|4|1997-05-13|1997-06-10|1997-05-21|1|16|Antonio Moreno TaquerÃ­a|Mataderos  2312|MÃ©xico D.F.|Mexico||05023
+10573|ANTON|7|1997-06-19|1997-07-17|1997-06-20|3|85|Antonio Moreno TaquerÃ­a|Mataderos  2312|MÃ©xico D.F.|Mexico||05023
+10576|TORTU|3|1997-06-23|1997-07-07|1997-06-30|3|19|Tortuga Restaurante|Avda. Azteca 123|MÃ©xico D.F.|Mexico||05033
+10625|ANATR|3|1997-08-08|1997-09-05|1997-08-14|1|44|Ana Trujillo Emparedados y helados|Avda. de la ConstituciÃ³n 2222|MÃ©xico D.F.|Mexico||05021
+10676|TORTU|2|1997-09-22|1997-10-20|1997-09-29|2|2|Tortuga Restaurante|Avda. Azteca 123|MÃ©xico D.F.|Mexico||05033
+10677|ANTON|1|1997-09-22|1997-10-20|1997-09-26|3|4|Antonio Moreno TaquerÃ­a|Mataderos  2312|MÃ©xico D.F.|Mexico||05023
+10682|ANTON|3|1997-09-25|1997-10-23|1997-10-01|2|36|Antonio Moreno TaquerÃ­a|Mataderos  2312|MÃ©xico D.F.|Mexico||05023
+10759|ANATR|3|1997-11-28|1997-12-26|1997-12-12|3|12|Ana Trujillo Emparedados y helados|Avda. de la ConstituciÃ³n 2222|MÃ©xico D.F.|Mexico||05021
+10842|TORTU|1|1998-01-20|1998-02-17|1998-01-29|3|54|Tortuga Restaurante|Avda. Azteca 123|MÃ©xico D.F.|Mexico||05033
+10856|ANTON|3|1998-01-28|1998-02-25|1998-02-10|2|58|Antonio Moreno TaquerÃ­a|Mataderos  2312|MÃ©xico D.F.|Mexico||05023
+10915|TORTU|2|1998-02-27|1998-03-27|1998-03-02|2|4|Tortuga Restaurante|Avda. Azteca 123|MÃ©xico D.F.|Mexico||05033
+10926|ANATR|4|1998-03-04|1998-04-01|1998-03-11|3|40|Ana Trujillo Emparedados y helados|Avda. de la ConstituciÃ³n 2222|MÃ©xico D.F.|Mexico||05021
+10995|PERIC|1|1998-04-02|1998-04-30|1998-04-06|3|46|Pericles Comidas clÃ¡sicas|Calle Dr. Jorge Cash 321|MÃ©xico D.F.|Mexico||05033
+11069|TORTU|1|1998-05-04|1998-06-01|1998-05-06|2|16|Tortuga Restaurante|Avda. Azteca 123|MÃ©xico D.F.|Mexico||05033
+11073|PERIC|2|1998-05-05|1998-06-02||2|25|Pericles Comidas clÃ¡sicas|Calle Dr. Jorge Cash 321|MÃ©xico D.F.|Mexico||05033
 10262|RATTC|8|1996-07-22|1996-08-19|1996-07-25|3|48|Rattlesnake Canyon Grocery|2817 Milton Dr.|Albuquerque|USA|NM|87110
 10269|WHITC|5|1996-07-31|1996-08-14|1996-08-09|1|5|White Clover Markets|1029 - 12th Ave. S.|Seattle|USA|WA|98124
 10271|SPLIR|6|1996-08-01|1996-08-29|1996-08-30|2|5|Split Rail Beer & Ale|P.O. Box 555|Lander|USA|WY|82520
@@ -566,43 +566,43 @@ Suite 2|Portland|USA|OR|97201
 11064|SAVEA|1|1998-05-01|1998-05-29|1998-05-04|1|30|Save-a-lot Markets|187 Suffolk Ln.|Boise|USA|ID|83720
 11066|WHITC|7|1998-05-01|1998-05-29|1998-05-04|2|45|White Clover Markets|1029 - 12th Ave. S.|Seattle|USA|WA|98124
 11077|RATTC|1|1998-05-06|1998-06-03||2|9|Rattlesnake Canyon Grocery|2817 Milton Dr.|Albuquerque|USA|NM|87110
-10264|FOLKO|6|1996-07-24|1996-08-21|1996-08-23|3|4|Folk och fä HB|Akergatan 24|Bräcke|Sweden||S-844 67
-10278|BERGS|8|1996-08-12|1996-09-09|1996-08-16|2|93|Berglunds snabbköp|Berguvsvägen  8|Lulea|Sweden||S-958 22
-10280|BERGS|2|1996-08-14|1996-09-11|1996-09-12|1|9|Berglunds snabbköp|Berguvsvägen  8|Lulea|Sweden||S-958 22
-10327|FOLKO|2|1996-10-11|1996-11-08|1996-10-14|1|63|Folk och fä HB|Akergatan 24|Bräcke|Sweden||S-844 67
-10378|FOLKO|5|1996-12-10|1997-01-07|1996-12-19|3|5|Folk och fä HB|Akergatan 24|Bräcke|Sweden||S-844 67
-10384|BERGS|3|1996-12-16|1997-01-13|1996-12-20|3|169|Berglunds snabbköp|Berguvsvägen  8|Lulea|Sweden||S-958 22
-10434|FOLKO|3|1997-02-03|1997-03-03|1997-02-13|2|18|Folk och fä HB|Akergatan 24|Bräcke|Sweden||S-844 67
-10444|BERGS|3|1997-02-12|1997-03-12|1997-02-21|3|4|Berglunds snabbköp|Berguvsvägen  8|Lulea|Sweden||S-958 22
-10445|BERGS|3|1997-02-13|1997-03-13|1997-02-20|1|9|Berglunds snabbköp|Berguvsvägen  8|Lulea|Sweden||S-958 22
-10460|FOLKO|8|1997-02-28|1997-03-28|1997-03-03|1|16|Folk och fä HB|Akergatan 24|Bräcke|Sweden||S-844 67
-10524|BERGS|1|1997-05-01|1997-05-29|1997-05-07|2|245|Berglunds snabbköp|Berguvsvägen  8|Lulea|Sweden||S-958 22
-10533|FOLKO|8|1997-05-12|1997-06-09|1997-05-22|1|188|Folk och fä HB|Akergatan 24|Bräcke|Sweden||S-844 67
-10561|FOLKO|2|1997-06-06|1997-07-04|1997-06-09|2|242|Folk och fä HB|Akergatan 24|Bräcke|Sweden||S-844 67
-10572|BERGS|3|1997-06-18|1997-07-16|1997-06-25|2|116|Berglunds snabbköp|Berguvsvägen  8|Lulea|Sweden||S-958 22
-10626|BERGS|1|1997-08-11|1997-09-08|1997-08-20|2|139|Berglunds snabbköp|Berguvsvägen  8|Lulea|Sweden||S-958 22
-10654|BERGS|5|1997-09-02|1997-09-30|1997-09-11|1|55|Berglunds snabbköp|Berguvsvägen  8|Lulea|Sweden||S-958 22
-10672|BERGS|9|1997-09-17|1997-10-01|1997-09-26|2|96|Berglunds snabbköp|Berguvsvägen  8|Lulea|Sweden||S-958 22
-10689|BERGS|1|1997-10-01|1997-10-29|1997-10-07|2|13|Berglunds snabbköp|Berguvsvägen  8|Lulea|Sweden||S-958 22
-10703|FOLKO|6|1997-10-14|1997-11-11|1997-10-20|2|152|Folk och fä HB|Akergatan 24|Bräcke|Sweden||S-844 67
-10733|BERGS|1|1997-11-07|1997-12-05|1997-11-10|3|110|Berglunds snabbköp|Berguvsvägen  8|Lulea|Sweden||S-958 22
-10762|FOLKO|3|1997-12-02|1997-12-30|1997-12-09|1|329|Folk och fä HB|Akergatan 24|Bräcke|Sweden||S-844 67
-10774|FOLKO|4|1997-12-11|1997-12-25|1997-12-12|1|48|Folk och fä HB|Akergatan 24|Bräcke|Sweden||S-844 67
-10778|BERGS|3|1997-12-16|1998-01-13|1997-12-24|1|7|Berglunds snabbköp|Berguvsvägen  8|Lulea|Sweden||S-958 22
-10824|FOLKO|8|1998-01-09|1998-02-06|1998-01-30|1|1|Folk och fä HB|Akergatan 24|Bräcke|Sweden||S-844 67
-10837|BERGS|9|1998-01-16|1998-02-13|1998-01-23|3|13|Berglunds snabbköp|Berguvsvägen  8|Lulea|Sweden||S-958 22
-10857|BERGS|8|1998-01-28|1998-02-25|1998-02-06|2|189|Berglunds snabbköp|Berguvsvägen  8|Lulea|Sweden||S-958 22
-10866|BERGS|5|1998-02-03|1998-03-03|1998-02-12|1|109|Berglunds snabbköp|Berguvsvägen  8|Lulea|Sweden||S-958 22
-10875|BERGS|4|1998-02-06|1998-03-06|1998-03-03|2|32|Berglunds snabbköp|Berguvsvägen  8|Lulea|Sweden||S-958 22
-10880|FOLKO|7|1998-02-10|1998-03-24|1998-02-18|1|88|Folk och fä HB|Akergatan 24|Bräcke|Sweden||S-844 67
-10902|FOLKO|1|1998-02-23|1998-03-23|1998-03-03|1|44|Folk och fä HB|Akergatan 24|Bräcke|Sweden||S-844 67
-10924|BERGS|3|1998-03-04|1998-04-01|1998-04-08|2|152|Berglunds snabbköp|Berguvsvägen  8|Lulea|Sweden||S-958 22
-10955|FOLKO|8|1998-03-17|1998-04-14|1998-03-20|2|3|Folk och fä HB|Akergatan 24|Bräcke|Sweden||S-844 67
-10977|FOLKO|8|1998-03-26|1998-04-23|1998-04-10|3|208|Folk och fä HB|Akergatan 24|Bräcke|Sweden||S-844 67
-10980|FOLKO|4|1998-03-27|1998-05-08|1998-04-17|1|1|Folk och fä HB|Akergatan 24|Bräcke|Sweden||S-844 67
-10993|FOLKO|7|1998-04-01|1998-04-29|1998-04-10|3|9|Folk och fä HB|Akergatan 24|Bräcke|Sweden||S-844 67
-11001|FOLKO|2|1998-04-06|1998-05-04|1998-04-14|2|197|Folk och fä HB|Akergatan 24|Bräcke|Sweden||S-844 67
-11050|FOLKO|8|1998-04-27|1998-05-25|1998-05-05|2|59|Folk och fä HB|Akergatan 24|Bräcke|Sweden||S-844 67
+10264|FOLKO|6|1996-07-24|1996-08-21|1996-08-23|3|4|Folk och fÃ¤ HB|Akergatan 24|BrÃ¤cke|Sweden||S-844 67
+10278|BERGS|8|1996-08-12|1996-09-09|1996-08-16|2|93|Berglunds snabbkÃ¶p|BerguvsvÃ¤gen  8|Lulea|Sweden||S-958 22
+10280|BERGS|2|1996-08-14|1996-09-11|1996-09-12|1|9|Berglunds snabbkÃ¶p|BerguvsvÃ¤gen  8|Lulea|Sweden||S-958 22
+10327|FOLKO|2|1996-10-11|1996-11-08|1996-10-14|1|63|Folk och fÃ¤ HB|Akergatan 24|BrÃ¤cke|Sweden||S-844 67
+10378|FOLKO|5|1996-12-10|1997-01-07|1996-12-19|3|5|Folk och fÃ¤ HB|Akergatan 24|BrÃ¤cke|Sweden||S-844 67
+10384|BERGS|3|1996-12-16|1997-01-13|1996-12-20|3|169|Berglunds snabbkÃ¶p|BerguvsvÃ¤gen  8|Lulea|Sweden||S-958 22
+10434|FOLKO|3|1997-02-03|1997-03-03|1997-02-13|2|18|Folk och fÃ¤ HB|Akergatan 24|BrÃ¤cke|Sweden||S-844 67
+10444|BERGS|3|1997-02-12|1997-03-12|1997-02-21|3|4|Berglunds snabbkÃ¶p|BerguvsvÃ¤gen  8|Lulea|Sweden||S-958 22
+10445|BERGS|3|1997-02-13|1997-03-13|1997-02-20|1|9|Berglunds snabbkÃ¶p|BerguvsvÃ¤gen  8|Lulea|Sweden||S-958 22
+10460|FOLKO|8|1997-02-28|1997-03-28|1997-03-03|1|16|Folk och fÃ¤ HB|Akergatan 24|BrÃ¤cke|Sweden||S-844 67
+10524|BERGS|1|1997-05-01|1997-05-29|1997-05-07|2|245|Berglunds snabbkÃ¶p|BerguvsvÃ¤gen  8|Lulea|Sweden||S-958 22
+10533|FOLKO|8|1997-05-12|1997-06-09|1997-05-22|1|188|Folk och fÃ¤ HB|Akergatan 24|BrÃ¤cke|Sweden||S-844 67
+10561|FOLKO|2|1997-06-06|1997-07-04|1997-06-09|2|242|Folk och fÃ¤ HB|Akergatan 24|BrÃ¤cke|Sweden||S-844 67
+10572|BERGS|3|1997-06-18|1997-07-16|1997-06-25|2|116|Berglunds snabbkÃ¶p|BerguvsvÃ¤gen  8|Lulea|Sweden||S-958 22
+10626|BERGS|1|1997-08-11|1997-09-08|1997-08-20|2|139|Berglunds snabbkÃ¶p|BerguvsvÃ¤gen  8|Lulea|Sweden||S-958 22
+10654|BERGS|5|1997-09-02|1997-09-30|1997-09-11|1|55|Berglunds snabbkÃ¶p|BerguvsvÃ¤gen  8|Lulea|Sweden||S-958 22
+10672|BERGS|9|1997-09-17|1997-10-01|1997-09-26|2|96|Berglunds snabbkÃ¶p|BerguvsvÃ¤gen  8|Lulea|Sweden||S-958 22
+10689|BERGS|1|1997-10-01|1997-10-29|1997-10-07|2|13|Berglunds snabbkÃ¶p|BerguvsvÃ¤gen  8|Lulea|Sweden||S-958 22
+10703|FOLKO|6|1997-10-14|1997-11-11|1997-10-20|2|152|Folk och fÃ¤ HB|Akergatan 24|BrÃ¤cke|Sweden||S-844 67
+10733|BERGS|1|1997-11-07|1997-12-05|1997-11-10|3|110|Berglunds snabbkÃ¶p|BerguvsvÃ¤gen  8|Lulea|Sweden||S-958 22
+10762|FOLKO|3|1997-12-02|1997-12-30|1997-12-09|1|329|Folk och fÃ¤ HB|Akergatan 24|BrÃ¤cke|Sweden||S-844 67
+10774|FOLKO|4|1997-12-11|1997-12-25|1997-12-12|1|48|Folk och fÃ¤ HB|Akergatan 24|BrÃ¤cke|Sweden||S-844 67
+10778|BERGS|3|1997-12-16|1998-01-13|1997-12-24|1|7|Berglunds snabbkÃ¶p|BerguvsvÃ¤gen  8|Lulea|Sweden||S-958 22
+10824|FOLKO|8|1998-01-09|1998-02-06|1998-01-30|1|1|Folk och fÃ¤ HB|Akergatan 24|BrÃ¤cke|Sweden||S-844 67
+10837|BERGS|9|1998-01-16|1998-02-13|1998-01-23|3|13|Berglunds snabbkÃ¶p|BerguvsvÃ¤gen  8|Lulea|Sweden||S-958 22
+10857|BERGS|8|1998-01-28|1998-02-25|1998-02-06|2|189|Berglunds snabbkÃ¶p|BerguvsvÃ¤gen  8|Lulea|Sweden||S-958 22
+10866|BERGS|5|1998-02-03|1998-03-03|1998-02-12|1|109|Berglunds snabbkÃ¶p|BerguvsvÃ¤gen  8|Lulea|Sweden||S-958 22
+10875|BERGS|4|1998-02-06|1998-03-06|1998-03-03|2|32|Berglunds snabbkÃ¶p|BerguvsvÃ¤gen  8|Lulea|Sweden||S-958 22
+10880|FOLKO|7|1998-02-10|1998-03-24|1998-02-18|1|88|Folk och fÃ¤ HB|Akergatan 24|BrÃ¤cke|Sweden||S-844 67
+10902|FOLKO|1|1998-02-23|1998-03-23|1998-03-03|1|44|Folk och fÃ¤ HB|Akergatan 24|BrÃ¤cke|Sweden||S-844 67
+10924|BERGS|3|1998-03-04|1998-04-01|1998-04-08|2|152|Berglunds snabbkÃ¶p|BerguvsvÃ¤gen  8|Lulea|Sweden||S-958 22
+10955|FOLKO|8|1998-03-17|1998-04-14|1998-03-20|2|3|Folk och fÃ¤ HB|Akergatan 24|BrÃ¤cke|Sweden||S-844 67
+10977|FOLKO|8|1998-03-26|1998-04-23|1998-04-10|3|208|Folk och fÃ¤ HB|Akergatan 24|BrÃ¤cke|Sweden||S-844 67
+10980|FOLKO|4|1998-03-27|1998-05-08|1998-04-17|1|1|Folk och fÃ¤ HB|Akergatan 24|BrÃ¤cke|Sweden||S-844 67
+10993|FOLKO|7|1998-04-01|1998-04-29|1998-04-10|3|9|Folk och fÃ¤ HB|Akergatan 24|BrÃ¤cke|Sweden||S-844 67
+11001|FOLKO|2|1998-04-06|1998-05-04|1998-04-14|2|197|Folk och fÃ¤ HB|Akergatan 24|BrÃ¤cke|Sweden||S-844 67
+11050|FOLKO|8|1998-04-27|1998-05-25|1998-05-05|2|59|Folk och fÃ¤ HB|Akergatan 24|BrÃ¤cke|Sweden||S-844 67
 10266|WARTH|3|1996-07-26|1996-09-06|1996-07-31|3|26|Wartian Herkku|Torikatu 38|Oulu|Finland||90110
 10270|WARTH|1|1996-08-01|1996-08-29|1996-08-02|1|137|Wartian Herkku|Torikatu 38|Oulu|Finland||90110
 10320|WARTH|5|1996-10-03|1996-10-17|1996-10-18|3|35|Wartian Herkku|Torikatu 38|Oulu|Finland||90110
@@ -653,29 +653,29 @@ Suite 2|Portland|USA|OR|97201
 11026|FRANS|4|1998-04-15|1998-05-13|1998-04-28|1|47|Franchi S.p.A.|Via Monte Bianco 34|Torino|Italy||10100
 11060|FRANS|2|1998-04-30|1998-05-28|1998-05-04|2|11|Franchi S.p.A.|Via Monte Bianco 34|Torino|Italy||10100
 11062|REGGC|4|1998-04-30|1998-05-28||2|30|Reggiani Caseifici|Strada Provinciale 124|Reggio Emilia|Italy||42100
-10281|ROMEY|4|1996-08-14|1996-08-28|1996-08-21|1|3|Romero y tomillo|Gran Vía, 1|Madrid|Spain||28001
-10282|ROMEY|4|1996-08-15|1996-09-12|1996-08-21|1|13|Romero y tomillo|Gran Vía, 1|Madrid|Spain||28001
-10303|GODOS|7|1996-09-11|1996-10-09|1996-09-18|2|108|Godos Cocina Típica|C/ Romero, 33|Sevilla|Spain||41101
-10306|ROMEY|1|1996-09-16|1996-10-14|1996-09-23|3|8|Romero y tomillo|Gran Vía, 1|Madrid|Spain||28001
-10326|BOLID|4|1996-10-10|1996-11-07|1996-10-14|2|78|Bólido Comidas preparadas|C/ Araquil, 67|Madrid|Spain||28023
-10366|GALED|8|1996-11-28|1997-01-09|1996-12-30|2|10|Galería del gastronómo|Rambla de Cataluna, 23|Barcelona|Spain||8022
-10426|GALED|4|1997-01-27|1997-02-24|1997-02-06|1|19|Galería del gastronómo|Rambla de Cataluna, 23|Barcelona|Spain||8022
-10550|GODOS|7|1997-05-28|1997-06-25|1997-06-06|3|4|Godos Cocina Típica|C/ Romero, 33|Sevilla|Spain||41101
-10568|GALED|3|1997-06-13|1997-07-11|1997-07-09|3|7|Galería del gastronómo|Rambla de Cataluna, 23|Barcelona|Spain||8022
-10629|GODOS|4|1997-08-12|1997-09-09|1997-08-20|3|85|Godos Cocina Típica|C/ Romero, 33|Sevilla|Spain||41101
-10801|BOLID|4|1997-12-29|1998-01-26|1997-12-31|2|97|Bólido Comidas preparadas|C/ Araquil, 67|Madrid|Spain||28023
-10872|GODOS|5|1998-02-05|1998-03-05|1998-02-09|2|175|Godos Cocina Típica|C/ Romero, 33|Sevilla|Spain||41101
-10874|GODOS|5|1998-02-06|1998-03-06|1998-02-11|2|20|Godos Cocina Típica|C/ Romero, 33|Sevilla|Spain||41101
-10887|GALED|8|1998-02-13|1998-03-13|1998-02-16|3|1|Galería del gastronómo|Rambla de Cataluna, 23|Barcelona|Spain||8022
-10888|GODOS|1|1998-02-16|1998-03-16|1998-02-23|2|52|Godos Cocina Típica|C/ Romero, 33|Sevilla|Spain||41101
-10911|GODOS|3|1998-02-26|1998-03-26|1998-03-05|1|38|Godos Cocina Típica|C/ Romero, 33|Sevilla|Spain||41101
-10917|ROMEY|4|1998-03-02|1998-03-30|1998-03-11|2|8|Romero y tomillo|Gran Vía, 1|Madrid|Spain||28001
-10928|GALED|1|1998-03-05|1998-04-02|1998-03-18|1|1|Galería del gastronómo|Rambla de Cataluna, 23|Barcelona|Spain||8022
-10948|GODOS|3|1998-03-13|1998-04-10|1998-03-19|3|23|Godos Cocina Típica|C/ Romero, 33|Sevilla|Spain||41101
-10970|BOLID|9|1998-03-24|1998-04-07|1998-04-24|1|16|Bólido Comidas preparadas|C/ Araquil, 67|Madrid|Spain||28023
-11009|GODOS|2|1998-04-08|1998-05-06|1998-04-10|1|59|Godos Cocina Típica|C/ Romero, 33|Sevilla|Spain||41101
-11013|ROMEY|2|1998-04-09|1998-05-07|1998-04-10|1|33|Romero y tomillo|Gran Vía, 1|Madrid|Spain||28001
-11037|GODOS|7|1998-04-21|1998-05-19|1998-04-27|1|3|Godos Cocina Típica|C/ Romero, 33|Sevilla|Spain||41101
+10281|ROMEY|4|1996-08-14|1996-08-28|1996-08-21|1|3|Romero y tomillo|Gran VÃ­a, 1|Madrid|Spain||28001
+10282|ROMEY|4|1996-08-15|1996-09-12|1996-08-21|1|13|Romero y tomillo|Gran VÃ­a, 1|Madrid|Spain||28001
+10303|GODOS|7|1996-09-11|1996-10-09|1996-09-18|2|108|Godos Cocina TÃ­pica|C/ Romero, 33|Sevilla|Spain||41101
+10306|ROMEY|1|1996-09-16|1996-10-14|1996-09-23|3|8|Romero y tomillo|Gran VÃ­a, 1|Madrid|Spain||28001
+10326|BOLID|4|1996-10-10|1996-11-07|1996-10-14|2|78|BÃ³lido Comidas preparadas|C/ Araquil, 67|Madrid|Spain||28023
+10366|GALED|8|1996-11-28|1997-01-09|1996-12-30|2|10|GalerÃ­a del gastronÃ³mo|Rambla de Cataluna, 23|Barcelona|Spain||8022
+10426|GALED|4|1997-01-27|1997-02-24|1997-02-06|1|19|GalerÃ­a del gastronÃ³mo|Rambla de Cataluna, 23|Barcelona|Spain||8022
+10550|GODOS|7|1997-05-28|1997-06-25|1997-06-06|3|4|Godos Cocina TÃ­pica|C/ Romero, 33|Sevilla|Spain||41101
+10568|GALED|3|1997-06-13|1997-07-11|1997-07-09|3|7|GalerÃ­a del gastronÃ³mo|Rambla de Cataluna, 23|Barcelona|Spain||8022
+10629|GODOS|4|1997-08-12|1997-09-09|1997-08-20|3|85|Godos Cocina TÃ­pica|C/ Romero, 33|Sevilla|Spain||41101
+10801|BOLID|4|1997-12-29|1998-01-26|1997-12-31|2|97|BÃ³lido Comidas preparadas|C/ Araquil, 67|Madrid|Spain||28023
+10872|GODOS|5|1998-02-05|1998-03-05|1998-02-09|2|175|Godos Cocina TÃ­pica|C/ Romero, 33|Sevilla|Spain||41101
+10874|GODOS|5|1998-02-06|1998-03-06|1998-02-11|2|20|Godos Cocina TÃ­pica|C/ Romero, 33|Sevilla|Spain||41101
+10887|GALED|8|1998-02-13|1998-03-13|1998-02-16|3|1|GalerÃ­a del gastronÃ³mo|Rambla de Cataluna, 23|Barcelona|Spain||8022
+10888|GODOS|1|1998-02-16|1998-03-16|1998-02-23|2|52|Godos Cocina TÃ­pica|C/ Romero, 33|Sevilla|Spain||41101
+10911|GODOS|3|1998-02-26|1998-03-26|1998-03-05|1|38|Godos Cocina TÃ­pica|C/ Romero, 33|Sevilla|Spain||41101
+10917|ROMEY|4|1998-03-02|1998-03-30|1998-03-11|2|8|Romero y tomillo|Gran VÃ­a, 1|Madrid|Spain||28001
+10928|GALED|1|1998-03-05|1998-04-02|1998-03-18|1|1|GalerÃ­a del gastronÃ³mo|Rambla de Cataluna, 23|Barcelona|Spain||8022
+10948|GODOS|3|1998-03-13|1998-04-10|1998-03-19|3|23|Godos Cocina TÃ­pica|C/ Romero, 33|Sevilla|Spain||41101
+10970|BOLID|9|1998-03-24|1998-04-07|1998-04-24|1|16|BÃ³lido Comidas preparadas|C/ Araquil, 67|Madrid|Spain||28023
+11009|GODOS|2|1998-04-08|1998-05-06|1998-04-10|1|59|Godos Cocina TÃ­pica|C/ Romero, 33|Sevilla|Spain||41101
+11013|ROMEY|2|1998-04-09|1998-05-07|1998-04-10|1|33|Romero y tomillo|Gran VÃ­a, 1|Madrid|Spain||28001
+11037|GODOS|7|1998-04-21|1998-05-19|1998-04-27|1|3|Godos Cocina TÃ­pica|C/ Romero, 33|Sevilla|Spain||41101
 10289|BSBEV|7|1996-08-26|1996-09-23|1996-08-28|3|23|B's Beverages|Fauntleroy Circus|London|UK||EC2 5NT
 10315|ISLAT|4|1996-09-26|1996-10-24|1996-10-03|2|42|Island Trading|Garden House
 Crowther Way|Cowes|UK|Isle of Wight|PO31 7PJ
@@ -781,38 +781,38 @@ Stratford St. Mary|Colchester|UK|Essex|CO7 6JX
 10985|HUNGO|2|1998-03-30|1998-04-27|1998-04-02|1|92|Hungry Owl All-Night Grocers|8 Johnstown Road|Cork|Ireland|Co. Cork|
 11063|HUNGO|3|1998-04-30|1998-05-28|1998-05-06|2|82|Hungry Owl All-Night Grocers|8 Johnstown Road|Cork|Ireland|Co. Cork|
 10328|FURIB|4|1996-10-14|1996-11-11|1996-10-17|3|87|Furia Bacalhau e Frutos do Mar|Jardim das rosas n. 32|Lisboa|Portugal||1675
-10336|PRINI|7|1996-10-23|1996-11-20|1996-10-25|2|16|Princesa Isabel Vinhos|Estrada da saúde n. 58|Lisboa|Portugal||1756
+10336|PRINI|7|1996-10-23|1996-11-20|1996-10-25|2|16|Princesa Isabel Vinhos|Estrada da saÃºde n. 58|Lisboa|Portugal||1756
 10352|FURIB|3|1996-11-12|1996-11-26|1996-11-18|3|1|Furia Bacalhau e Frutos do Mar|Jardim das rosas n. 32|Lisboa|Portugal||1675
-10397|PRINI|5|1996-12-27|1997-01-24|1997-01-02|1|60|Princesa Isabel Vinhos|Estrada da saúde n. 58|Lisboa|Portugal||1756
-10433|PRINI|3|1997-02-03|1997-03-03|1997-03-04|3|74|Princesa Isabel Vinhos|Estrada da saúde n. 58|Lisboa|Portugal||1756
+10397|PRINI|5|1996-12-27|1997-01-24|1997-01-02|1|60|Princesa Isabel Vinhos|Estrada da saÃºde n. 58|Lisboa|Portugal||1756
+10433|PRINI|3|1997-02-03|1997-03-03|1997-03-04|3|74|Princesa Isabel Vinhos|Estrada da saÃºde n. 58|Lisboa|Portugal||1756
 10464|FURIB|4|1997-03-04|1997-04-01|1997-03-14|2|89|Furia Bacalhau e Frutos do Mar|Jardim das rosas n. 32|Lisboa|Portugal||1675
-10477|PRINI|5|1997-03-17|1997-04-14|1997-03-25|2|13|Princesa Isabel Vinhos|Estrada da saúde n. 58|Lisboa|Portugal||1756
+10477|PRINI|5|1997-03-17|1997-04-14|1997-03-25|2|13|Princesa Isabel Vinhos|Estrada da saÃºde n. 58|Lisboa|Portugal||1756
 10491|FURIB|8|1997-03-31|1997-04-28|1997-04-08|3|17|Furia Bacalhau e Frutos do Mar|Jardim das rosas n. 32|Lisboa|Portugal||1675
 10551|FURIB|4|1997-05-28|1997-07-09|1997-06-06|3|73|Furia Bacalhau e Frutos do Mar|Jardim das rosas n. 32|Lisboa|Portugal||1675
 10604|FURIB|1|1997-07-18|1997-08-15|1997-07-29|1|7|Furia Bacalhau e Frutos do Mar|Jardim das rosas n. 32|Lisboa|Portugal||1675
 10664|FURIB|1|1997-09-10|1997-10-08|1997-09-19|3|1|Furia Bacalhau e Frutos do Mar|Jardim das rosas n. 32|Lisboa|Portugal||1675
 10963|FURIB|9|1998-03-19|1998-04-16|1998-03-26|3|3|Furia Bacalhau e Frutos do Mar|Jardim das rosas n. 32|Lisboa|Portugal||1675
-11007|PRINI|8|1998-04-08|1998-05-06|1998-04-13|2|202|Princesa Isabel Vinhos|Estrada da saúde n. 58|Lisboa|Portugal||1756
-10332|MEREP|3|1996-10-17|1996-11-28|1996-10-21|2|53|Mcre Paillarde|43 rue St. Laurent|Montréal|Canada|Québec|H1J 1C3
-10339|MEREP|2|1996-10-28|1996-11-25|1996-11-04|2|16|Mcre Paillarde|43 rue St. Laurent|Montréal|Canada|Québec|H1J 1C3
-10376|MEREP|1|1996-12-09|1997-01-06|1996-12-13|2|20|Mcre Paillarde|43 rue St. Laurent|Montréal|Canada|Québec|H1J 1C3
+11007|PRINI|8|1998-04-08|1998-05-06|1998-04-13|2|202|Princesa Isabel Vinhos|Estrada da saÃºde n. 58|Lisboa|Portugal||1756
+10332|MEREP|3|1996-10-17|1996-11-28|1996-10-21|2|53|Mcre Paillarde|43 rue St. Laurent|MontrÃ©al|Canada|QuÃ©bec|H1J 1C3
+10339|MEREP|2|1996-10-28|1996-11-25|1996-11-04|2|16|Mcre Paillarde|43 rue St. Laurent|MontrÃ©al|Canada|QuÃ©bec|H1J 1C3
+10376|MEREP|1|1996-12-09|1997-01-06|1996-12-13|2|20|Mcre Paillarde|43 rue St. Laurent|MontrÃ©al|Canada|QuÃ©bec|H1J 1C3
 10389|BOTTM|4|1996-12-20|1997-01-17|1996-12-24|2|47|Bottom-Dollar Markets|23 Tsawassen Blvd.|Tsawassen|Canada|BC|T2F 8M4
 10410|BOTTM|3|1997-01-10|1997-02-07|1997-01-15|3|2|Bottom-Dollar Markets|23 Tsawassen Blvd.|Tsawassen|Canada|BC|T2F 8M4
 10411|BOTTM|9|1997-01-10|1997-02-07|1997-01-21|3|24|Bottom-Dollar Markets|23 Tsawassen Blvd.|Tsawassen|Canada|BC|T2F 8M4
-10424|MEREP|7|1997-01-23|1997-02-20|1997-01-27|2|371|Mcre Paillarde|43 rue St. Laurent|Montréal|Canada|Québec|H1J 1C3
+10424|MEREP|7|1997-01-23|1997-02-20|1997-01-27|2|371|Mcre Paillarde|43 rue St. Laurent|MontrÃ©al|Canada|QuÃ©bec|H1J 1C3
 10431|BOTTM|4|1997-01-30|1997-02-13|1997-02-07|2|44|Bottom-Dollar Markets|23 Tsawassen Blvd.|Tsawassen|Canada|BC|T2F 8M4
-10439|MEREP|6|1997-02-07|1997-03-07|1997-02-10|3|4|Mcre Paillarde|43 rue St. Laurent|Montréal|Canada|Québec|H1J 1C3
+10439|MEREP|6|1997-02-07|1997-03-07|1997-02-10|3|4|Mcre Paillarde|43 rue St. Laurent|MontrÃ©al|Canada|QuÃ©bec|H1J 1C3
 10492|BOTTM|3|1997-04-01|1997-04-29|1997-04-11|1|63|Bottom-Dollar Markets|23 Tsawassen Blvd.|Tsawassen|Canada|BC|T2F 8M4
 10495|LAUGB|3|1997-04-03|1997-05-01|1997-04-11|3|5|Laughing Bacchus Wine Cellars|2319 Elm St.|Vancouver|Canada|BC|V3F 2K1
-10505|MEREP|3|1997-04-14|1997-05-12|1997-04-21|3|7|Mcre Paillarde|43 rue St. Laurent|Montréal|Canada|Québec|H1J 1C3
-10565|MEREP|8|1997-06-11|1997-07-09|1997-06-18|2|7|Mcre Paillarde|43 rue St. Laurent|Montréal|Canada|Québec|H1J 1C3
-10570|MEREP|3|1997-06-17|1997-07-15|1997-06-19|3|189|Mcre Paillarde|43 rue St. Laurent|Montréal|Canada|Québec|H1J 1C3
-10590|MEREP|4|1997-07-07|1997-08-04|1997-07-14|3|45|Mcre Paillarde|43 rue St. Laurent|Montréal|Canada|Québec|H1J 1C3
-10605|MEREP|1|1997-07-21|1997-08-18|1997-07-29|2|379|Mcre Paillarde|43 rue St. Laurent|Montréal|Canada|Québec|H1J 1C3
-10618|MEREP|1|1997-08-01|1997-09-12|1997-08-08|1|155|Mcre Paillarde|43 rue St. Laurent|Montréal|Canada|Québec|H1J 1C3
-10619|MEREP|3|1997-08-04|1997-09-01|1997-08-07|3|91|Mcre Paillarde|43 rue St. Laurent|Montréal|Canada|Québec|H1J 1C3
+10505|MEREP|3|1997-04-14|1997-05-12|1997-04-21|3|7|Mcre Paillarde|43 rue St. Laurent|MontrÃ©al|Canada|QuÃ©bec|H1J 1C3
+10565|MEREP|8|1997-06-11|1997-07-09|1997-06-18|2|7|Mcre Paillarde|43 rue St. Laurent|MontrÃ©al|Canada|QuÃ©bec|H1J 1C3
+10570|MEREP|3|1997-06-17|1997-07-15|1997-06-19|3|189|Mcre Paillarde|43 rue St. Laurent|MontrÃ©al|Canada|QuÃ©bec|H1J 1C3
+10590|MEREP|4|1997-07-07|1997-08-04|1997-07-14|3|45|Mcre Paillarde|43 rue St. Laurent|MontrÃ©al|Canada|QuÃ©bec|H1J 1C3
+10605|MEREP|1|1997-07-21|1997-08-18|1997-07-29|2|379|Mcre Paillarde|43 rue St. Laurent|MontrÃ©al|Canada|QuÃ©bec|H1J 1C3
+10618|MEREP|1|1997-08-01|1997-09-12|1997-08-08|1|155|Mcre Paillarde|43 rue St. Laurent|MontrÃ©al|Canada|QuÃ©bec|H1J 1C3
+10619|MEREP|3|1997-08-04|1997-09-01|1997-08-07|3|91|Mcre Paillarde|43 rue St. Laurent|MontrÃ©al|Canada|QuÃ©bec|H1J 1C3
 10620|LAUGB|2|1997-08-05|1997-09-02|1997-08-14|3|1|Laughing Bacchus Wine Cellars|2319 Elm St.|Vancouver|Canada|BC|V3F 2K1
-10724|MEREP|8|1997-10-30|1997-12-11|1997-11-05|2|58|Mcre Paillarde|43 rue St. Laurent|Montréal|Canada|Québec|H1J 1C3
+10724|MEREP|8|1997-10-30|1997-12-11|1997-11-05|2|58|Mcre Paillarde|43 rue St. Laurent|MontrÃ©al|Canada|QuÃ©bec|H1J 1C3
 10742|BOTTM|3|1997-11-14|1997-12-12|1997-11-18|3|244|Bottom-Dollar Markets|23 Tsawassen Blvd.|Tsawassen|Canada|BC|T2F 8M4
 10810|LAUGB|2|1998-01-01|1998-01-29|1998-01-07|3|4|Laughing Bacchus Wine Cellars|2319 Elm St.|Vancouver|Canada|BC|V3F 2K1
 10918|BOTTM|3|1998-03-02|1998-03-30|1998-03-11|3|49|Bottom-Dollar Markets|23 Tsawassen Blvd.|Tsawassen|Canada|BC|T2F 8M4
@@ -848,30 +848,30 @@ Stratford St. Mary|Colchester|UK|Essex|CO7 6JX
 10906|WOLZA|4|1998-02-25|1998-03-11|1998-03-03|3|26|Wolski Zajazd|ul. Filtrowa 68|Warszawa|Poland||01-012
 10998|WOLZA|8|1998-04-03|1998-04-17|1998-04-17|2|20|Wolski Zajazd|ul. Filtrowa 68|Warszawa|Poland||01-012
 11044|WOLZA|4|1998-04-23|1998-05-21|1998-05-01|1|9|Wolski Zajazd|ul. Filtrowa 68|Warszawa|Poland||01-012
-10387|SANTG|1|1996-12-18|1997-01-15|1996-12-20|2|94|Santé Gourmet|Erling Skakkes gate 78|Stavern|Norway||4110
-10520|SANTG|7|1997-04-29|1997-05-27|1997-05-01|1|13|Santé Gourmet|Erling Skakkes gate 78|Stavern|Norway||4110
-10639|SANTG|7|1997-08-20|1997-09-17|1997-08-27|3|39|Santé Gourmet|Erling Skakkes gate 78|Stavern|Norway||4110
-10831|SANTG|3|1998-01-14|1998-02-11|1998-01-23|2|72|Santé Gourmet|Erling Skakkes gate 78|Stavern|Norway||4110
-10909|SANTG|1|1998-02-26|1998-03-26|1998-03-10|2|53|Santé Gourmet|Erling Skakkes gate 78|Stavern|Norway||4110
-11015|SANTG|2|1998-04-10|1998-04-24|1998-04-20|2|5|Santé Gourmet|Erling Skakkes gate 78|Stavern|Norway||4110
-10409|OCEAN|3|1997-01-09|1997-02-06|1997-01-14|1|30|Océano Atlántico Ltda.|Ing. Gustavo Moncada 8585
+10387|SANTG|1|1996-12-18|1997-01-15|1996-12-20|2|94|SantÃ© Gourmet|Erling Skakkes gate 78|Stavern|Norway||4110
+10520|SANTG|7|1997-04-29|1997-05-27|1997-05-01|1|13|SantÃ© Gourmet|Erling Skakkes gate 78|Stavern|Norway||4110
+10639|SANTG|7|1997-08-20|1997-09-17|1997-08-27|3|39|SantÃ© Gourmet|Erling Skakkes gate 78|Stavern|Norway||4110
+10831|SANTG|3|1998-01-14|1998-02-11|1998-01-23|2|72|SantÃ© Gourmet|Erling Skakkes gate 78|Stavern|Norway||4110
+10909|SANTG|1|1998-02-26|1998-03-26|1998-03-10|2|53|SantÃ© Gourmet|Erling Skakkes gate 78|Stavern|Norway||4110
+11015|SANTG|2|1998-04-10|1998-04-24|1998-04-20|2|5|SantÃ© Gourmet|Erling Skakkes gate 78|Stavern|Norway||4110
+10409|OCEAN|3|1997-01-09|1997-02-06|1997-01-14|1|30|OcÃ©ano AtlÃ¡ntico Ltda.|Ing. Gustavo Moncada 8585
 Piso 20-A|Buenos Aires|Argentina||1010
 10448|RANCH|4|1997-02-17|1997-03-17|1997-02-24|2|39|Rancho grande|Av. del Libertador 900|Buenos Aires|Argentina||1010
 10521|CACTU|8|1997-04-29|1997-05-27|1997-05-02|2|17|Cactus Comidas para llevar|Cerrito 333|Buenos Aires|Argentina||1010
-10531|OCEAN|7|1997-05-08|1997-06-05|1997-05-19|1|8|Océano Atlántico Ltda.|Ing. Gustavo Moncada 8585
+10531|OCEAN|7|1997-05-08|1997-06-05|1997-05-19|1|8|OcÃ©ano AtlÃ¡ntico Ltda.|Ing. Gustavo Moncada 8585
 Piso 20-A|Buenos Aires|Argentina||1010
 10716|RANCH|4|1997-10-24|1997-11-21|1997-10-27|2|23|Rancho grande|Av. del Libertador 900|Buenos Aires|Argentina||1010
 10782|CACTU|9|1997-12-17|1998-01-14|1997-12-22|3|1|Cactus Comidas para llevar|Cerrito 333|Buenos Aires|Argentina||1010
 10819|CACTU|2|1998-01-07|1998-02-04|1998-01-16|3|20|Cactus Comidas para llevar|Cerrito 333|Buenos Aires|Argentina||1010
 10828|RANCH|9|1998-01-13|1998-01-27|1998-02-04|1|91|Rancho grande|Av. del Libertador 900|Buenos Aires|Argentina||1010
 10881|CACTU|4|1998-02-11|1998-03-11|1998-02-18|1|3|Cactus Comidas para llevar|Cerrito 333|Buenos Aires|Argentina||1010
-10898|OCEAN|4|1998-02-20|1998-03-20|1998-03-06|2|1|Océano Atlántico Ltda.|Ing. Gustavo Moncada 8585
+10898|OCEAN|4|1998-02-20|1998-03-20|1998-03-06|2|1|OcÃ©ano AtlÃ¡ntico Ltda.|Ing. Gustavo Moncada 8585
 Piso 20-A|Buenos Aires|Argentina||1010
 10916|RANCH|1|1998-02-27|1998-03-27|1998-03-09|2|64|Rancho grande|Av. del Libertador 900|Buenos Aires|Argentina||1010
 10937|CACTU|7|1998-03-10|1998-03-24|1998-03-13|3|32|Cactus Comidas para llevar|Cerrito 333|Buenos Aires|Argentina||1010
-10958|OCEAN|7|1998-03-18|1998-04-15|1998-03-27|2|50|Océano Atlántico Ltda.|Ing. Gustavo Moncada 8585
+10958|OCEAN|7|1998-03-18|1998-04-15|1998-03-27|2|50|OcÃ©ano AtlÃ¡ntico Ltda.|Ing. Gustavo Moncada 8585
 Piso 20-A|Buenos Aires|Argentina||1010
-10986|OCEAN|8|1998-03-30|1998-04-27|1998-04-21|2|218|Océano Atlántico Ltda.|Ing. Gustavo Moncada 8585
+10986|OCEAN|8|1998-03-30|1998-04-27|1998-04-21|2|218|OcÃ©ano AtlÃ¡ntico Ltda.|Ing. Gustavo Moncada 8585
 Piso 20-A|Buenos Aires|Argentina||1010
 11019|RANCH|6|1998-04-13|1998-05-11||3|3|Rancho grande|Av. del Libertador 900|Buenos Aires|Argentina||1010
 11054|CACTU|8|1998-04-28|1998-05-26||1|0|Cactus Comidas para llevar|Cerrito 333|Buenos Aires|Argentina||1010

@@ -50,6 +50,7 @@ import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.RestrictedByteArrayOutputStream;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.FileUtils.PortURL;
 
 
 /**
@@ -65,8 +66,6 @@ public class TargetFile {
 	private static final char NUM_CHAR='#';			// file markter that is replacet file tag.
 	private static final String EMPTY_STRING="";
 	private static final String PARAM_DELIMITER = ":";
-	private static final String PORT_DELIMITER = "\\.";
-	private static final String PORT_PROTOCOL = "port:";
 	private static final String DICT_PROTOCOL = "dict:";
 
 	private DecimalFormat format;					// it is used if the file tag is a number
@@ -154,7 +153,7 @@ public class TargetFile {
     		charset = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
     	}
 
-    	if (fileURL != null && fileURL.startsWith(PORT_PROTOCOL)) {
+    	if (FileUtils.isPortURL(fileURL)) {
         	initPortFields();
     	} else if (outputPort != null) {
     		throw new ComponentNotReadyException("File url must contains port or dict protocol.");
@@ -326,21 +325,13 @@ public class TargetFile {
 		record = DataRecordFactory.newRecord(outputPort.getMetadata());
 
 		// parse target url
-		String[] aField = fileURL.substring(PORT_PROTOCOL.length()).split(PARAM_DELIMITER);
-		if (aField.length < 1) {
-			throw new ComponentNotReadyException("The source string '" + fileURL + "' is not valid.");
-		}
-
-		String[] aFieldNamePort = aField[0].split(PORT_DELIMITER);
-		fieldProcesstingType = ProcessingType.fromString(aField.length > 1 ? aField[1] : null, ProcessingType.DISCRETE);
-		if (aFieldNamePort.length < 2) {
-			throw new ComponentNotReadyException("The source string '" + fileURL + "' is not valid.");
-		}
-
+		PortURL portUrl = FileUtils.getPortURL(fileURL);
+		
 		// check setting
-		String fName = aFieldNamePort[1];
-		if (record.hasField(fName)) {
-			field = record.getField(fName);
+		String fieldName = portUrl.getFieldName();
+		fieldProcesstingType = portUrl.getProcessingType();
+		if (record.hasField(fieldName)) {
+			field = record.getField(fieldName);
 		} else if (field == null) {
 			throw new ComponentNotReadyException("The field not found for the statement: '" + fileURL + "'");
 		}

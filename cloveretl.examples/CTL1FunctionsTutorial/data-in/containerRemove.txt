@@ -1,5 +1,0 @@
-milk;butter;onion;apple;egg;2
-milk;butter;onion;apple;egg;0
-milk;butter;onion;apple;egg;1
-milk;butter;onion;apple;egg;3
-milk;butter;onion;apple;egg;4

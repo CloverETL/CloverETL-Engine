@@ -73,6 +73,7 @@ import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.data.Defaults;
 import org.jetel.enums.ArchiveType;
+import org.jetel.enums.ProcessingType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
@@ -1212,14 +1213,18 @@ public class FileUtils {
 		return input.startsWith(DICTIONARY_PROTOCOL);
 	}
 	
-	private static boolean isPort(String input) {
-		return input.startsWith(PORT_PROTOCOL);
+	/**
+	 * @param input
+	 * @return true if the given url starts with "port:" prefix
+	 */
+	public static boolean isPortURL(String fileUrl) {
+		return fileUrl != null && fileUrl.startsWith(PORT_PROTOCOL);
 	}
 	
 	public static boolean isLocalFile(URL contextUrl, String input) {
 		if (input.startsWith("file:")) {
 			return true;
-		} else if (isRemoteFile(input) || isConsole(input) || isSandbox(input) || isArchive(input) || isDictionary(input) || isPort(input)) {
+		} else if (isRemoteFile(input) || isConsole(input) || isSandbox(input) || isArchive(input) || isDictionary(input) || isPortURL(input)) {
 			return false;
 		} else {
 			try {
@@ -2729,6 +2734,63 @@ public class FileUtils {
 		int prefixLength = getPrefixLength(path);
 		return new String[] {path.substring(0, prefixLength), path.substring(prefixLength)};
 	}
+	
+	/**
+	 * This class represents result of parsing port URL, for example "port:$0.field1:source".
+	 */
+	public static class PortURL {
+		private String recordName;
+		private String fieldName;
+		private ProcessingType processingType;
+		
+		public PortURL(String recordName, String fieldName, ProcessingType processingType) {
+			this.recordName = recordName;
+			this.fieldName = fieldName;
+			this.processingType = processingType;
+		}
+
+		public String getRecordName() {
+			return recordName;
+		}
+
+		public String getFieldName() {
+			return fieldName;
+		}
+
+		public ProcessingType getProcessingType() {
+			return processingType;
+		}
+	}
+	
+	private static final String PORT_URL_REGEXP = "port:\\$(([^.]*)\\.)?([^:]*)(:(.*))?";
+	private static final Pattern PORT_URL_PATTERN = Pattern.compile(PORT_URL_REGEXP);
+	
+	/**
+	 * This method parses the given port URL, for example "port:$0.field1:source"
+	 * and the resulted {@link PortURL} will contain recordName "0", fieldName "field1"
+	 * and processing type "source".
+	 * @param portUrlStr
+	 * @return port URL representation - record id, field name and processing type (discrete, source or stream)
+	 * @see #isPortURL(String)
+	 */
+	public static PortURL getPortURL(String portUrlStr) {
+		Matcher matcher = PORT_URL_PATTERN.matcher(portUrlStr);
+		if (matcher.matches()) {
+			String recordName = matcher.group(2);
+			String fieldName = matcher.group(3);
+			ProcessingType processingType = ProcessingType.fromString(matcher.group(5), ProcessingType.DISCRETE);
+			if (recordName != null && !StringUtils.isNumber(recordName) && !StringUtils.isValidObjectName(recordName)) {
+				throw new JetelRuntimeException("Invalid record identifier '" + recordName + "' in port URL: " + portUrlStr);
+			}
+			if (!StringUtils.isValidObjectName(fieldName)) {
+				throw new JetelRuntimeException("Invalid field name '" + fieldName + "' in port URL: " + portUrlStr);
+			}
+			return new PortURL(recordName, fieldName, processingType);
+		} else {
+			throw new JetelRuntimeException("URL '" + portUrlStr + "' is not valid port URL.");
+		}
+	}
+	
 }
 
 /*

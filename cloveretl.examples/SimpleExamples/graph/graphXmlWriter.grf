@@ -1,26 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Thu Dec 11 15:46:21 CET 2007" description="This graph demonstrates functionality of XML writer components." guiVersion="0.0.0.devel" id="1198081350738" licenseType="Evaluation Devel" modified="Mon Sep 19 11:02:09 CEST 2011" modifiedBy="avackova" name="Testing XML writer" revision="1.68" showComponentDetails="true">
+<Graph author="avackova" created="Thu Dec 11 15:46:21 CET 2007" description="This graph demonstrates functionality of XML writer components." guiVersion="0.0.0.devel" id="1198081350738" licenseCode="Commercial Devel" licenseType="Evaluation Devel" modified="Mon Sep 19 11:02:09 CEST 2011" modifiedBy="avackova" name="Testing XML writer" revision="1.68" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/addresses.fmt" id="Metadata3"/>
 <Metadata fileURL="${META_DIR}/delimited/customers.fmt" id="Metadata2"/>
 <Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node dedupKey="OrderID(a)" enabled="enabled" guiHeight="85" guiName="Dedup" guiWidth="128" guiX="241" guiY="22" id="DEDUP0" type="DEDUP">
+<Node dedupKey="OrderID(a)" enabled="enabled" guiName="Dedup" guiX="241" guiY="22" id="DEDUP0" type="DEDUP">
 <attr name="guiDescription"><![CDATA[OrderID]]></attr>
 </Node>
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="101" guiName="Orders" guiWidth="128" guiX="24" guiY="21" id="INPUT1" type="DATA_READER"/>
-<Node dataPolicy="Controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="101" guiName="Employees" guiWidth="128" guiX="24" guiY="130" id="INPUT2" quotedStrings="true" type="DATA_READER">
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiName="Orders" guiX="24" guiY="21" id="INPUT1" type="DATA_READER"/>
+<Node dataPolicy="Controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiName="Employees" guiX="24" guiY="130" id="INPUT2" quotedStrings="true" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Remove quotes ("Quoted strings" attribute)]]></attr>
 </Node>
-<Node charset="UTF-8" dataPolicy="Controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiHeight="101" guiName="Customers" guiWidth="128" guiX="24" guiY="237" id="INPUT3" quotedStrings="true" type="DATA_READER">
+<Node dataPolicy="Controlled" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_delimited.txt" guiName="Customers" guiX="24" guiY="237" id="INPUT3" quotedStrings="true" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Remove quotes ("Quoted strings" attribute)]]></attr>
 </Node>
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/addresses.dat" guiHeight="101" guiName="Addresses" guiWidth="128" guiX="24" guiY="349" id="INPUT4" type="DATA_READER"/>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/xmlOut.xml" guiHeight="101" guiName="XML Output File" guiWidth="148" guiX="411" guiY="211" id="XML_OUT" omitNewLines="false" type="EXT_XML_WRITER">
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/addresses.dat" guiName="Addresses" guiX="24" guiY="349" id="INPUT4" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/xmlOut.xml" guiName="XML Output File" guiX="411" guiY="211" id="XML_OUT" omitNewLines="false" type="EXT_XML_WRITER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <root xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
   <customer CUSTOMERID="$2.CUSTOMERID" clover:inPort="2">
