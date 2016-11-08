@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="User" created="Tue Aug 02 16:07:04 CEST 2016" guiVersion="4.4.0.M1" id="1470149454547" licenseCode="CLP1DJAVLI21013179BY" name="crm_migration" showComponentDetails="true">
+<Graph author="User" created="Tue Aug 02 16:07:04 CEST 2016" guiVersion="4.4.0.M2" id="1470149454547" licenseCode="CLP1DJAVLI21013179BY" name="crm_migration" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata4">
 <Record fieldDelimiter="|" name="attachment" recordDelimiter="\n" type="delimited">
@@ -174,10 +174,10 @@ function integer transform() {
 ]]></attr>
 </Node>
 <Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/rejected_accounts.xls" guiName="Log Rejected Accounts" guiX="883" guiY="654" id="LOG_REJECTED_ACCOUNTS" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
+<Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/rejected_attachments.xls" guiName="Log Rejected Attachments" guiX="877" guiY="1401" id="LOG_REJECTED_ATTACHMENTS" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
 <Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/rejected_contacts.xls" guiName="Log Rejected Contacts" guiX="881" guiY="1057" id="LOG_REJECTED_CONTACTS" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
 <Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/written_accounts.xls" guiName="Log Written Accounts" guiX="883" guiY="545" id="LOG_WRITTEN_ACCOUNTS" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
 <Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/written_attachments.xls" guiName="Log Written Attachments" guiX="877" guiY="1295" id="LOG_WRITTEN_ATTACHMENTS" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
-<Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/rejected_attachments.xls" guiName="Log Written Attachments" guiX="877" guiY="1401" id="LOG_WRITTEN_ATTACHMENTS1" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
 <Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/written_contacts.xls" guiName="Log Written Contacts" guiX="883" guiY="937" id="LOG_WRITTEN_CONTACTS" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
 <Node guiName="Salesforce: Bulk Write Accounts" guiX="228" guiY="545" id="SALESFORCE_BULK_WRITE_ACCOUNTS" object="Account" sfConnection="SALESFORCE0" type="SALESFORCE_BULK_WRITER">
 <attr name="inputMapping"><![CDATA[//#CTL2
@@ -280,14 +280,14 @@ function integer transform() {
 <Edge debugMode="true" fromNode="CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (output)" toNode="ENRICH_CONTACTS_WITH_ACCOUNT_OBJECT_ID:0"/>
 <Edge debugMode="true" fromNode="ENRICH_ATTACHMENTS_WITH_ACCOUNT_OBJECT_ID:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SALESFORCE_WRITE_ATTACHMENTS:0"/>
 <Edge debugMode="true" fromNode="ENRICH_CONTACTS_WITH_ACCOUNT_OBJECT_ID:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SALESFORCE_BULK_WRITE_CONTACTS:0"/>
-<Edge debugMode="true" fromNode="SALESFORCE_BULK_WRITE_ACCOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (accepted records)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_BULK_WRITE_ACCOUNTS_salesforce" toNode="SIMPLE_COPY:0"/>
-<Edge debugMode="true" fromNode="SALESFORCE_BULK_WRITE_ACCOUNTS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (input)" outPort="Port 1 (rejected records)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_BULK_WRITE_ACCOUNTS_salesforce1" toNode="LOG_REJECTED_ACCOUNTS:0"/>
-<Edge debugMode="true" fromNode="SALESFORCE_BULK_WRITE_CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (input)" outPort="Port 0 (accepted records)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_BULK_WRITE_CONTACTS_salesforce1" toNode="LOG_WRITTEN_CONTACTS:0"/>
-<Edge debugMode="true" fromNode="SALESFORCE_BULK_WRITE_CONTACTS:1" guiBendpoints="1002:492|1002:598" guiLocks="1002|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (input)" outPort="Port 1 (rejected records)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_BULK_WRITE_CONTACTS_salesforce" toNode="LOG_REJECTED_CONTACTS:0"/>
-<Edge debugMode="true" fromNode="SALESFORCE_WRITE_ATTACHMENTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (input)" outPort="Port 0 (accepted records)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_WRITE_ATTACHMENTS_salesforce1" toNode="LOG_WRITTEN_ATTACHMENTS:0"/>
-<Edge debugMode="true" fromNode="SALESFORCE_WRITE_ATTACHMENTS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (input)" outPort="Port 1 (rejected records)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_WRITE_ATTACHMENTS_salesforce" toNode="LOG_WRITTEN_ATTACHMENTS1:0"/>
-<Edge fromNode="SIMPLE_COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (input)" outPort="Port 0 (out)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_BULK_WRITE_ACCOUNTS_salesforce" toNode="LOG_WRITTEN_ACCOUNTS:0"/>
-<Edge debugMode="true" fromNode="SIMPLE_COPY:1" guiBendpoints="816:409|847:916|280:916|280:913" guiLocks="847|280|916" guiRouter="Manual" id="Edge6" inPort="Port 1 (slave)" outPort="Port 1 (out)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_BULK_WRITE_ACCOUNTS_salesforce" toNode="ENRICH_CONTACTS_WITH_ACCOUNT_OBJECT_ID:1"/>
-<Edge debugMode="true" fromNode="SIMPLE_COPY:2" guiBendpoints="826:541|826:1275|247:1275|247:1277" guiLocks="826|247|1275" guiRouter="Manual" id="Edge4" inPort="Port 1 (slave)" outPort="Port 2 (out)" persistedImplicitMetadata="__dynamic_metadata_SALESFORCE_BULK_WRITE_ACCOUNTS_salesforce" toNode="ENRICH_ATTACHMENTS_WITH_ACCOUNT_OBJECT_ID:1"/>
+<Edge debugMode="true" fromNode="SALESFORCE_BULK_WRITE_ACCOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (accepted records)" toNode="SIMPLE_COPY:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_BULK_WRITE_ACCOUNTS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (input)" outPort="Port 1 (rejected records)" toNode="LOG_REJECTED_ACCOUNTS:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_BULK_WRITE_CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (input)" outPort="Port 0 (accepted records)" toNode="LOG_WRITTEN_CONTACTS:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_BULK_WRITE_CONTACTS:1" guiBendpoints="1002:492|1002:598" guiLocks="1002|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (input)" outPort="Port 1 (rejected records)" toNode="LOG_REJECTED_CONTACTS:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_WRITE_ATTACHMENTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (input)" outPort="Port 0 (accepted records)" toNode="LOG_WRITTEN_ATTACHMENTS:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_WRITE_ATTACHMENTS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (input)" outPort="Port 1 (rejected records)" toNode="LOG_REJECTED_ATTACHMENTS:0"/>
+<Edge fromNode="SIMPLE_COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (input)" outPort="Port 0 (out)" toNode="LOG_WRITTEN_ACCOUNTS:0"/>
+<Edge debugMode="true" fromNode="SIMPLE_COPY:1" guiBendpoints="816:409|847:916|280:916|280:913" guiLocks="847|280|916" guiRouter="Manual" id="Edge6" inPort="Port 1 (slave)" outPort="Port 1 (out)" toNode="ENRICH_CONTACTS_WITH_ACCOUNT_OBJECT_ID:1"/>
+<Edge debugMode="true" fromNode="SIMPLE_COPY:2" guiBendpoints="826:541|826:1275|247:1275|247:1277" guiLocks="826|247|1275" guiRouter="Manual" id="Edge4" inPort="Port 1 (slave)" outPort="Port 2 (out)" toNode="ENRICH_ATTACHMENTS_WITH_ACCOUNT_OBJECT_ID:1"/>
 </Phase>
 </Graph>
