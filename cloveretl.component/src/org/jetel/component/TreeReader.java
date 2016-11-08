@@ -717,37 +717,47 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 					source.setEncoding(charset);
 				}
 
-				Pipe pipe = Pipe.open();
-				Reader reader;
-				Writer writer;
+				Pipe pipe = null;
 				try {
-					TreeStreamParser treeStreamParser = parserProvider.getTreeStreamParser();
-					treeStreamParser.setTreeContentHandler(new TreeXmlContentHandlerAdapter());
-					XMLReader treeXmlReader = new TreeXMLReaderAdaptor(treeStreamParser);
-					pipeTransformer = new PipeTransformer(TreeReader.this, treeXmlReader);
+					pipe = Pipe.open();
+					try {
+						TreeStreamParser treeStreamParser = parserProvider.getTreeStreamParser();
+						treeStreamParser.setTreeContentHandler(new TreeXmlContentHandlerAdapter());
+						XMLReader treeXmlReader = new TreeXMLReaderAdaptor(treeStreamParser);
+						pipeTransformer = new PipeTransformer(TreeReader.this, treeXmlReader);
 
-					writer = Channels.newWriter(pipe.sink(), "UTF-8");
-					pipeTransformer.setInputOutput(writer, source);
-					pipeParser = new PipeParser(TreeReader.this, pushParser, rootContext);
-					reader = Channels.newReader(pipe.source(), "UTF-8");
-					pipeParser.setInput(reader);
-				} catch (TransformerFactoryConfigurationError e) {
-					throw new JetelRuntimeException("Failed to instantiate transformer", e);
-				}
+						pipeTransformer.setInputOutput(Channels.newWriter(pipe.sink(), "UTF-8"), source);
+						pipeParser = new PipeParser(TreeReader.this, pushParser, rootContext);
+						pipeParser.setInput(Channels.newReader(pipe.source(), "UTF-8"));
+					} catch (TransformerFactoryConfigurationError e) {
+						throw new JetelRuntimeException("Failed to instantiate transformer", e);
+					}
 
-				Thread transformingThread = pipeTransformer.startWorker();
-				Thread parsingThread = pipeParser.startWorker();
-				try {
+					Thread transformingThread = pipeTransformer.startWorker();
+					Thread parsingThread = pipeParser.startWorker();
+					
 					manageThread(transformingThread);
 					manageThread(parsingThread);
 				} finally {
-					IOUtils.closeQuietly(writer);
-					IOUtils.closeQuietly(reader);
+					if (pipe != null) {
+						closeQuietly(pipe.sink());
+						closeQuietly(pipe.source());
+					}
 				}
 			} else {
 				throw new JetelRuntimeException("Could not read input " + input);
 			}
 
+		}
+		
+		private void closeQuietly(Closeable c) {
+			if (c != null) {
+				try {
+					c.close();
+				} catch (Exception e) {
+					// ignore
+				}
+			}
 		}
 
 		private void manageThread(Thread thread) throws Exception {
