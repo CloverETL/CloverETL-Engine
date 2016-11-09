@@ -6,8 +6,7 @@ REL-4-3-1
 ---------
 
 * MongoDB improvements
-	- CLO-5728 MongoDB connection should support authenticationDatabase option
-	- CLO-9579Ability to use SSL with MongoDB
+	- CLO-9674 Update MongoDB driver to version 2.14.2
 * FIXES
 	- CLO-9743 Cannot create runtime context URL in RunGraph in opensource Engine
 	- CLO-9658 Designer-Server synchronization seems to be stuck when client-side files can't be created
