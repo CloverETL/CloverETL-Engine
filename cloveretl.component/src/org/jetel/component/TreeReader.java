@@ -41,6 +41,7 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.tree.reader.AbortParsingException;
@@ -724,30 +725,47 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 					source.setEncoding(charset);
 				}
 
-				Pipe pipe = Pipe.open();
-				
+				Pipe pipe = null;
 				try {
-					TreeStreamParser treeStreamParser = parserProvider.getTreeStreamParser();
-					treeStreamParser.setTreeContentHandler(new TreeXmlContentHandlerAdapter());
-					XMLReader treeXmlReader = new TreeXMLReaderAdaptor(treeStreamParser);
-					pipeTransformer = new PipeTransformer(TreeReader.this, treeXmlReader);
+					pipe = Pipe.open();
+					try {
+						TreeStreamParser treeStreamParser = parserProvider.getTreeStreamParser();
+						treeStreamParser.setTreeContentHandler(new TreeXmlContentHandlerAdapter());
+						XMLReader treeXmlReader = new TreeXMLReaderAdaptor(treeStreamParser);
+						pipeTransformer = new PipeTransformer(TreeReader.this, treeXmlReader);
 
-					pipeTransformer.setInputOutput(Channels.newWriter(pipe.sink(), "UTF-8"), source);
-					pipeParser = new PipeParser(TreeReader.this, pushParser, rootContext);
-					pipeParser.setInput(Channels.newReader(pipe.source(), "UTF-8"));
-				} catch (TransformerFactoryConfigurationError e) {
-					throw new JetelRuntimeException("Failed to instantiate transformer", e);
+						pipeTransformer.setInputOutput(Channels.newWriter(pipe.sink(), "UTF-8"), source);
+						pipeParser = new PipeParser(TreeReader.this, pushParser, rootContext);
+						pipeParser.setInput(Channels.newReader(pipe.source(), "UTF-8"));
+					} catch (TransformerFactoryConfigurationError e) {
+						throw new JetelRuntimeException("Failed to instantiate transformer", e);
+					}
+
+					Thread transformingThread = pipeTransformer.startWorker();
+					Thread parsingThread = pipeParser.startWorker();
+					
+					manageThread(transformingThread);
+					manageThread(parsingThread);
+				} finally {
+					if (pipe != null) {
+						closeQuietly(pipe.sink());
+						closeQuietly(pipe.source());
+					}
 				}
-
-				Thread transformingThread = pipeTransformer.startWorker();
-				Thread parsingThread = pipeParser.startWorker();
-
-				manageThread(transformingThread);
-				manageThread(parsingThread);
 			} else {
 				throw new JetelRuntimeException("Could not read input " + input);
 			}
 
+		}
+		
+		private void closeQuietly(Closeable c) {
+			if (c != null) {
+				try {
+					c.close();
+				} catch (Exception e) {
+					// ignore
+				}
+			}
 		}
 
 		private void manageThread(Thread thread) throws Exception {
@@ -810,9 +828,10 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				javax.xml.transform.Result result = new StreamResult(pipedWriter);
 				try {
 					transformer.transform(new SAXSource(treeXmlReader, source), result);
-					pipedWriter.close();
 				} catch (Throwable t) {
 					StreamConvertingXPathProcessor.this.failure = t;
+				} finally {
+					IOUtils.closeQuietly(pipedWriter);
 				}
 			}
 
@@ -841,6 +860,8 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 					pushParser.parse(rootContext, new SAXSource(new InputSource(pipedReader)));
 				} catch (Throwable t) {
 					StreamConvertingXPathProcessor.this.failure = t;
+				} finally {
+					IOUtils.closeQuietly(pipedReader);
 				}
 			}
 			
