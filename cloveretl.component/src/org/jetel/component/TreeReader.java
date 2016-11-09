@@ -36,6 +36,7 @@ import java.util.Set;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.sax.SAXSource;
@@ -806,12 +807,10 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			}
 
 			@Override
-			public void work() {
+			public void work() throws TransformerException {
 				javax.xml.transform.Result result = new StreamResult(pipedWriter);
 				try {
 					transformer.transform(new SAXSource(treeXmlReader, source), result);
-				} catch (Throwable t) {
-					StreamConvertingXPathProcessor.this.failure = t;
 				} finally {
 					IOUtils.closeQuietly(pipedWriter);
 				}
@@ -844,8 +843,6 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			public void work() throws InterruptedException, AbortParsingException {
 				try {
 					pushParser.parse(rootContext, new SAXSource(new InputSource(pipedReader)), inputRecord);
-				} catch (Throwable t) {
-					StreamConvertingXPathProcessor.this.failure = t;
 				} finally {
 					IOUtils.closeQuietly(pipedReader);
 				}
