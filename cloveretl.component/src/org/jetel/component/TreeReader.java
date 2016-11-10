@@ -104,6 +104,8 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
@@ -777,6 +779,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 		}
 		
+		@SuppressFBWarnings("DE_MIGHT_IGNORE")
 		private void closeQuietly(Closeable c) {
 			if (c != null) {
 				try {
