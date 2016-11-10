@@ -18,7 +18,9 @@
  */
 package org.jetel.data;
 
+import org.jetel.data.primitive.Decimal.OutOfPrecisionException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.bytes.CloverBuffer;
@@ -37,6 +39,10 @@ public class DataRecordTest extends CloverTestCase {
 	private static final int NULL_FIELDS = 0xDDBA;
 
 	private DataRecord record;
+	
+	private DataRecord copySource;
+	private DataRecord copyTarget1;
+	private DataRecord copyTarget2;
 
 	@Override
 	protected void setUp() throws Exception {
@@ -53,6 +59,26 @@ public class DataRecordTest extends CloverTestCase {
 		for (int i = 0; i < NUMBER_OF_FIELDS; i++) {
 			record.getField(i).setValue((((1 << i) & NULL_FIELDS) != 0) ? null : i);
 		}
+		
+		////
+		
+		DataRecordMetadata copySourceMeta = new DataRecordMetadata("record");
+		DataFieldMetadata sourceDecimal = new DataFieldMetadata("field1", DataFieldType.DECIMAL, ",");
+		sourceDecimal.setProperty(DataFieldMetadata.LENGTH_ATTR, "8");
+		sourceDecimal.setProperty(DataFieldMetadata.SCALE_ATTR, "3");
+		copySourceMeta.addField(sourceDecimal);
+		
+		DataRecordMetadata copyTargetMeta1 = copySourceMeta.duplicate();
+		DataRecordMetadata copyTargetMeta2 = copySourceMeta.duplicate();
+		
+		copyTargetMeta2.getField(0).setProperty(DataFieldMetadata.LENGTH_ATTR, "2");
+		copyTargetMeta2.getField(0).setProperty(DataFieldMetadata.SCALE_ATTR, "2");
+		
+		copySource = DataRecordFactory.newRecord(copySourceMeta);
+		copyTarget1 = DataRecordFactory.newRecord(copyTargetMeta1);
+		copyTarget2 = DataRecordFactory.newRecord(copyTargetMeta2);
+		
+		copySource.getField(0).setValue(123.01);
 	}
 
 	/**
@@ -70,6 +96,34 @@ public class DataRecordTest extends CloverTestCase {
 		comparator.setEqualNULLs(true);
 
 		assertEquals(0, comparator.compare(record, deserializedRecord));
+	}
+	
+	public void testCopyFieldsByName() {
+		copyTarget1.copyFieldsByName(copySource);
+		RecordKey comparator = new RecordKey(copySource.getMetadata().getFieldNamesArray(), copySource.getMetadata());
+		comparator.setEqualNULLs(true);
+		assertEquals(0, comparator.compare(copySource, copyTarget1));
+		
+		try {
+			copyTarget2.copyFieldsByName(copySource);
+			fail("copyFieldsByName was expected to throw exception");
+		} catch (OutOfPrecisionException e) {
+			// expected
+		}
+	}
+	
+	public void testCopyFieldsByPosition() {
+		copyTarget1.copyFieldsByPosition(copySource);
+		RecordKey comparator = new RecordKey(copySource.getMetadata().getFieldNamesArray(), copySource.getMetadata());
+		comparator.setEqualNULLs(true);
+		assertEquals(0, comparator.compare(copySource, copyTarget1));
+		
+		try {
+			copyTarget2.copyFieldsByPosition(copySource);
+			fail("copyFieldsByPosition was expected to throw exception");
+		} catch (OutOfPrecisionException e) {
+			// expected
+		}
 	}
 
 }
