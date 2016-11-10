@@ -18,6 +18,8 @@
  */
 package org.jetel.data;
 
+import java.util.Date;
+
 import org.jetel.data.primitive.Decimal.OutOfPrecisionException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
@@ -67,6 +69,10 @@ public class DataRecordTest extends CloverTestCase {
 		sourceDecimal.setProperty(DataFieldMetadata.LENGTH_ATTR, "8");
 		sourceDecimal.setProperty(DataFieldMetadata.SCALE_ATTR, "3");
 		copySourceMeta.addField(sourceDecimal);
+		copySourceMeta.addField(new DataFieldMetadata("field2", DataFieldType.STRING, ","));
+		copySourceMeta.addField(new DataFieldMetadata("field3", DataFieldType.INTEGER, ","));
+		copySourceMeta.addField(new DataFieldMetadata("field4", DataFieldType.DATE, ","));
+		copySourceMeta.addField(new DataFieldMetadata("field5", DataFieldType.BOOLEAN, ","));
 		
 		DataRecordMetadata copyTargetMeta1 = copySourceMeta.duplicate();
 		DataRecordMetadata copyTargetMeta2 = copySourceMeta.duplicate();
@@ -79,6 +85,10 @@ public class DataRecordTest extends CloverTestCase {
 		copyTarget2 = DataRecordFactory.newRecord(copyTargetMeta2);
 		
 		copySource.getField(0).setValue(123.01);
+		copySource.getField(1).setValue("hello");
+		copySource.getField(2).setValue(3);
+		copySource.getField(3).setValue(new Date());
+		copySource.getField(4).setValue(true);
 	}
 
 	/**
