@@ -164,7 +164,7 @@ public class DataRecordImpl extends DataRecord {
 	/**
 	 * Set fields by copying the fields from the record passed as argument.
 	 * Can handle situation when records are not exactly the same.
-     * For incompatible fields default value is setted.
+     * For incompatible fields default value is set (except on decimals).
      * This operation is not intended for time critical purposes - in this case 
      * consider to use copyFrom() method instead.
 	 *
@@ -187,7 +187,9 @@ public class DataRecordImpl extends DataRecord {
 			//fieldMetadata = metadata.getField(i);
 			sourceField = sourceRecord.getField(i);
 			targetField = this.getField(i);
-			if (targetField.getMetadata().isSubtype(sourceField.getMetadata())) {
+			if (targetField.getMetadata().isSubtype(sourceField.getMetadata()) ||
+            		(sourceField.getMetadata().getDataType() == DataFieldType.DECIMAL && targetField.getMetadata().getDataType() == DataFieldType.DECIMAL)) {
+				// fix CLO-9831 : decimals are be mapped by name even if their precision doesn't fit
 				targetField.setValue(sourceField);
 			} else {
 				targetField.setToDefaultValue();
@@ -198,7 +200,7 @@ public class DataRecordImpl extends DataRecord {
 	/**
 	 * Set fields by copying name-matching fields' values from the record passed as argument.<br>
      * If two fields match by name but not by type, target field is set to default value.
-     * For incompatible fields default value is set.
+     * For incompatible fields default value is set (except on decimals).
      * This operation is not intended for time critical purposes - in this case 
      * consider to use copyFrom() method instead.
 	 *  
@@ -221,7 +223,9 @@ public class DataRecordImpl extends DataRecord {
             if (srcFieldPos >= 0) {
                 sourceField = sourceRecord.getField(srcFieldPos);
                 result[i] = true;
-                if (sourceField.getMetadata().isSubtype(targetField.getMetadata())) {
+                if (sourceField.getMetadata().isSubtype(targetField.getMetadata()) ||
+                		(sourceField.getMetadata().getDataType() == DataFieldType.DECIMAL && targetField.getMetadata().getDataType() == DataFieldType.DECIMAL)) {
+                	// fix CLO-9831 : decimals are be mapped by name even if their precision doesn't fit
                     targetField.setValue(sourceField);
                 } else {
                     targetField.setToDefaultValue();
