@@ -1262,8 +1262,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 	
 	<target name="pmd" depends="pmd-init" description="Analyze the source code with PMD">
 		<mkdir dir="${dir.pmdreport}"/>
-		<pmd shortFilenames="true" rulesetfiles="${pmd.ruleset.file}">
-			<sourceLanguage name="java" version="1.7"/>
+		<pmd targetjdk="1.6" rulesetfiles="${pmd.ruleset.file}">
 			<formatter type="xml" toFile="${dir.pmdreport}/pmdreport.xml"/>
 			<fileset dir="../" includes="**/*.java"/>
 		</pmd>
