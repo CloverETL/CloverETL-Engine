@@ -2,6 +2,29 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-4-0-M2
+------------
+
+* Change default encoding to UTF-8
+* Salesforce
+	* CLO-9171 Salesforce SOAP Reader
+	* CLO-9718 SOQL Editor - Warning for loss of selected elements
+	* CLO-9702 SOQL Editor - Add option to easily clear filters
+	* CLO-9677 SOQL Editor - Indicate that Drag & Drop is possible
+* Remote Event Listeners
+	* CLO-9659 Easily create an e-mail notification on failure
+	* CLO-9805 Indicate that e-mail failure notification creates new TaskFailureListener
+	* CLO-9723 Specification of URL in File Listener form
+	* CLO-9839 Constant URL validation makes it hard to fill the File event listener form
+	* CLO-9715 List parameters injected by task failure listener
+* IMPROVEMENTS
+	* CLO-9569 Highlight of record count number for selected edges
+* FIXES
+	* CLO-9804 Bound response mapping of WebServiceClient causes NullPointerException
+* COMPATIBILITY
+	* Change default encoding to UTF-8
+	* CLO-9831 Default mapping (by name) doesn't work with decimals
+	
 REL-4-4-0-M1
 ------------
 
@@ -16,6 +39,7 @@ REL-4-4-0-M1
 * File event listener for remote locations
 	* CLO-3934 File event listener for remote locations
 	* CLO-9473 Listener for failed listener
+	* CLO-9590 Higher priority cluster node selection
 * Performance
 	* CLO-9466 Designer performance drop for graph with many subgraphs
 	* CLO-6584 UniversalDataReader very slow when using wildcards in archives
@@ -28,7 +52,7 @@ REL-4-4-0-M1
 	* CLO-9201 Data inspector - search improvement
 	* CLO-9535 Update Java in Designer bundle to 1.8.0_101
 	* CLO-8973 File URL dialog: explain discrete/source/stream port writing or reading
-	* CLO-9530 Implicit metadata should not be persisted any more
+	* CLO-9530 Implicit metadata is not persisted any more
 * Fixes
 	* CLO-9097 Automatic metadata propagation makes Designer unresponsive
 * Compatibility
@@ -629,7 +653,7 @@ REL 3-4-0-M1
 	- Hive JDBC specific
 * CTL2 wrapper for returning capturing groups from regex
 * CTL function for writing into lookup table
-* SystemExecute - new attribute “Ignore exit value�?
+* SystemExecute - new attribute “Ignore exit value�?
 * Write binary data without padding with 0
 
 REL-3-3-1
