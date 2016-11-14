@@ -18,6 +18,12 @@
 <Field eofAsDelimiter="true" name="account_id" type="integer"/>
 </Record>
 </Metadata>
+<Metadata id="Metadata5" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="attachments_download" previewAttachmentCharset="ISO-8859-1" type="delimited">
+<Field delimiter="," name="Name" type="string"/>
+<Field delimiter="," name="Body" type="byte"/>
+</Record>
+</Metadata>
 <Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="contacts_to_insert" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
 <Field name="id" trim="true" type="integer"/>
@@ -102,6 +108,18 @@ The CSV files represent accounts and contacts in the source CRM. Typically these
 Attachments are written using the SalesforceWriter component (the SalesforceBulkWriter component does not support writing attachments). To upload attachments you need to write to the Attachment object. In this case we're sending paths to files with the attachment contents. It's also possible to directly send byte fields with the attachment content.
 
 Each attachment has an owner object that is referenced via the ParentId field. In this case we set it to ObjectId of the previously written Accounts.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="259" id="Note1" textColor="444444" width="563" x="26" y="1627">
+<attr name="text"><![CDATA[h3. Reading Attachments
+
+Attachments can be read using the SalesforceReader component (the SalesforceBulkReader component does not support reading attachments). To read attachments you need to specify a SOQL query that reads Body field from the Attachment object. Then in the output mapping of the component, map the Body field onto a Clover field of type byte. 
+
+The Clover byte fields containing the attachment content can be stored in database BLOB fields, or as in this example in files on the filesystem. The FlatFileWriter component's partitioning feature is used in this case to save each attachment in a separate file. Important part - in the input metadata of the FlatFileWriter component, set the "Record delimiter" property of the record to an empty value, otherwise the delimiter (newline by default) would be appended after the byte content.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="129" id="Note3" textColor="444444" width="435" x="612" y="1757">
+<attr name="text"><![CDATA[h3. Advanced SOQL
+
+The SOQL used here is reading attachments that were written in the above steps of the graph. See how it's filtering only attachments belonging to specific Accounts - subqueries cannot be used here because they don't support binary fields.]]></attr>
 </RichTextNote>
 <Dictionary/>
 </Global>
@@ -289,5 +307,40 @@ function integer transform() {
 <Edge fromNode="SIMPLE_COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (input)" outPort="Port 0 (out)" toNode="LOG_WRITTEN_ACCOUNTS:0"/>
 <Edge debugMode="true" fromNode="SIMPLE_COPY:1" guiBendpoints="816:409|847:916|280:916|280:913" guiLocks="847|280|916" guiRouter="Manual" id="Edge6" inPort="Port 1 (slave)" outPort="Port 1 (out)" toNode="ENRICH_CONTACTS_WITH_ACCOUNT_OBJECT_ID:1"/>
 <Edge debugMode="true" fromNode="SIMPLE_COPY:2" guiBendpoints="826:541|826:1275|247:1275|247:1277" guiLocks="826|247|1275" guiRouter="Manual" id="Edge4" inPort="Port 1 (slave)" outPort="Port 2 (out)" toNode="ENRICH_ATTACHMENTS_WITH_ACCOUNT_OBJECT_ID:1"/>
+</Phase>
+<Phase number="1">
+<Node guiName="Salesforce: Read Attachments" guiX="612" guiY="1627" id="SALESFORCE_READ_ATTACHMENTS" sfConnection="SALESFORCE0" type="SALESFORCE_READER">
+<attr name="soqlQuery"><![CDATA[SELECT Name, Body FROM Attachment WHERE ParentId IN ( SELECT Id FROM Account WHERE Website = 'CloverETL')]]></attr>
+<attr name="outputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.Name = $in.0.Name;
+	$out.0.Body = $in.0.Body;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node fileURL="${DATAOUT_DIR}/salesforce/attachments/#" guiName="Save attachments as files" guiX="877" guiY="1627" id="SAVE_ATTACHMENTS_AS_FILES" makeDirs="true" partitionFileTag="keyNameFileTag" partitionKey="Name" type="FLAT_FILE_WRITER"/>
+<Edge debugMode="true" fromNode="SALESFORCE_READ_ATTACHMENTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge14" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="SAVE_ATTACHMENTS_AS_FILES:0"/>
 </Phase>
 </Graph>
