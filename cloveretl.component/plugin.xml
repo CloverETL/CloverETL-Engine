@@ -111,7 +111,7 @@
 	    </inputPorts>
 	    <outputPorts>
 	      <singlePort name="0" required="false">
-	        <MetadataProvider id="fileWriterOutputMetadataProvider"/>
+	        <MetadataProvider id="textBasedWriterMetadataProvider"/>
               </singlePort>
 	    </outputPorts>
 	    <properties>
@@ -272,7 +272,7 @@
 	    </inputPorts>
 	    <outputPorts>
 	      <singlePort name="0" required="false">
-	        <MetadataProvider id="fileWriterOutputMetadataProvider"/>
+	        <MetadataProvider id="textBasedWriterMetadataProvider"/>
               </singlePort>
 	    </outputPorts>
 	    <properties>
@@ -2120,7 +2120,7 @@
 	    </inputPorts>
 	    <outputPorts>
 	      <singlePort name="0" required="false">
-	        <MetadataProvider id="fileWriterOutputMetadataProvider"/>
+	        <MetadataProvider id="binaryBasedWriterMetadataProvider"/>
               </singlePort>
 	    </outputPorts>
 	    <properties>
@@ -2242,7 +2242,7 @@
 	    </inputPorts>
 	    <outputPorts>
 	      <singlePort name="0" required="false">
-		<MetadataProvider id="fileWriterOutputMetadataProvider"/>
+		<MetadataProvider id="textBasedWriterMetadataProvider"/>
 	      </singlePort>
 	    </outputPorts>
 	    <properties>
@@ -3088,7 +3088,7 @@ Sends all resulting records to all connected output ports.</description>
 	    </inputPorts>
 	    <outputPorts>
 	      <singlePort name="0" required="false">
-	      	<MetadataProvider id="fileWriterOutputMetadataProvider"/>
+	      	<MetadataProvider id="textBasedWriterMetadataProvider"/>
 	      </singlePort>
 	    </outputPorts>
 	    <properties>
