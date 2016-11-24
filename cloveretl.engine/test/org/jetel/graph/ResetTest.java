@@ -234,6 +234,10 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("GEOCoding.grf") // contains subgraphs
 							&& !file.getName().equals("RandomDataGenerator.grf") // contains subgraphs
 							&& !file.getName().equals("graphHTTPConnector.grf") // external service is unstable
+							&& !file.getName().equals("WSC_Soap12_CLO-3349.grf") // external service is unstable (see CLO-9877)
+							&& !file.getName().equals("WebServiceClient.grf") // external service is unstable
+							&& !file.getName().equals("WebServiceClient1.grf") // external service is unstable
+							&& !file.getName().equals("WebServiceClientWithNS.grf") // external service is unstable
 							&& !file.getName().equals("CLO-2214_pre_post_execute_race_condition.grf") // ok, is to fail
 							&& !file.getName().equals("EmptyGraph.grf") // ok, is to fail
 							&& !file.getName().equals("informix.grf") // remove after CLO-2793 solved
