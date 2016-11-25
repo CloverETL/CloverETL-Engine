@@ -31,6 +31,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.jetel.plugin.PluginClassLoader;
+import org.jetel.util.CompoundEnumeration;
 
 /**
  * Utility to create a "union" of class loaders.
@@ -70,43 +71,6 @@ public final class MultiParentClassLoader extends ClassLoader {
 			};
 		};
 	};
-	
-	protected static class EnumerationChain<T> implements Enumeration<T> {
-		
-		private Enumeration<T> enums[];
-		private int index = 0;
-		
-		@SuppressWarnings("unchecked")
-		public EnumerationChain(Enumeration<T> ... enums) {
-			if (enums == null) {
-				throw new NullPointerException();
-			}
-			this.enums = enums;
-		}
-		
-		@Override
-		public boolean hasMoreElements() {
-			return next();
-		}
-		
-		@Override
-		public T nextElement() {
-			if (!next()) {
-				throw new NoSuchElementException();
-			}
-			return (T)enums[index].nextElement();
-		}
-		
-		private boolean next() {
-			while (index < enums.length) {
-				if (enums[index] != null && enums[index].hasMoreElements()) {
-					return true;
-				}
-				index++;
-			}
-			return false;
-		}
-	}
 	
 	private final ClassLoader parents[];
 	
@@ -177,14 +141,13 @@ public final class MultiParentClassLoader extends ClassLoader {
 		return null;
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	protected Enumeration<URL> findResources(String resName) throws IOException {
-		
 		List<Enumeration<URL>> enums = new LinkedList<Enumeration<URL>>();
 		for (ClassLoader parent : parents) {
 			enums.add(parent.getResources(resName));
 		}
-		return new EnumerationChain<URL>(enums.toArray(new Enumeration[enums.size()]));
+		return new CompoundEnumeration<URL>(enums);
 	}
+	
 }

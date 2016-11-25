@@ -18,19 +18,18 @@
  */
 package org.jetel.util.classloader;
 
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.jetel.data.Defaults;
+import org.jetel.util.CompoundEnumeration;
 import org.jetel.util.string.StringUtils;
-
-import java.io.IOException;
-import java.util.Enumeration;
-import java.util.Iterator;
-import org.apache.commons.collections.IteratorUtils;
 
 /**
  * Class-loader extended from URL classloader which by default loads classes and finds resources
@@ -239,20 +238,17 @@ public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinit
 		return url;
 	}
 	
-	@SuppressWarnings({"unchecked"})
 	@Override
 	public Enumeration<URL> getResources(String name) throws IOException {
-		Iterator<URL> iterator;
 		if (greedy) {
 			if (log.isTraceEnabled())
 				log.trace(this+" S-F trying to load resources: "+ name);
-        	iterator = IteratorUtils.chainedIterator(IteratorUtils.asIterator(findResources(name)), IteratorUtils.asIterator(getParent().getResources(name)));
+			return new CompoundEnumeration<>(Arrays.asList(findResources(name), getParent().getResources(name)));
         } else {
         	if (log.isTraceEnabled())
 				log.trace(this+" P-F trying to load resources: "+ name);
-        	iterator = IteratorUtils.chainedIterator(IteratorUtils.asIterator(super.getResources(name)), IteratorUtils.asIterator(findResources(name)));
+        	return super.getResources(name);
         }
-		return IteratorUtils.asEnumeration(iterator);
 	}
 
 	@Override
