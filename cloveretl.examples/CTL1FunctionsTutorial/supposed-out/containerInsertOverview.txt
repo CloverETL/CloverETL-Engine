@@ -1,4 +1,0 @@
-[milk,butter,onion];2;apple;egg;insert(List,$0.FromIndex,$0.NewElement3,$0.NewElement4);true;[milk,butter,apple,egg,onion]
-[milk,butter,onion];0;apple;egg;insert(List,$0.FromIndex,$0.NewElement3,$0.NewElement4);true;[apple,egg,milk,butter,onion]
-[milk,butter,onion];1;apple;egg;insert(List,$0.FromIndex,$0.NewElement3,$0.NewElement4);true;[milk,apple,egg,butter,onion]
-[milk,butter,onion];3;apple;egg;insert(List,$0.FromIndex,$0.NewElement3,$0.NewElement4);true;[milk,butter,onion,apple,egg]

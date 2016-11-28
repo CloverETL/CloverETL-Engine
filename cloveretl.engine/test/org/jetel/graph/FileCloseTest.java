@@ -155,6 +155,7 @@ public class FileCloseTest extends CloverTestCase {
 			// create multifile reader
 			TextParserConfiguration dataParserCfg = new TextParserConfiguration();
 			dataParserCfg.setMetadata(dataRecordMetadata);
+			dataParserCfg.setCharset("ISO-8859-1");
 			DataParser dataParser = new DataParser(dataParserCfg);
 			MultiFileReader multiFileReader = new MultiFileReader(dataParser, null, detaInDir + "/delimited/" + "orders?.dat");
 

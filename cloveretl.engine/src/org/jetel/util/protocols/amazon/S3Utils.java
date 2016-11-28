@@ -185,7 +185,7 @@ public class S3Utils {
 		return new ListObjectsRequest(bucketName, prefix, null, delimiter, Integer.MAX_VALUE);
 	}
 	
-	public static IOException getIOException(Throwable t) {
+	private static Throwable processS3Exception(Throwable t) {
 		if (t instanceof AmazonS3Exception) {
 			AmazonS3Exception e = (AmazonS3Exception) t;
 			Map<String, String> details = e.getAdditionalDetails();
@@ -206,6 +206,22 @@ public class S3Utils {
 				}
 			}
 		}
+		
+		return t;
+	}
+	
+	public static IOException getIOException(Throwable t) {
+		// detect empty key in all exceptions
+		if (t instanceof AmazonClientException) {
+			Throwable cause = ExceptionUtils.getRootCause(t);
+			if (cause instanceof IllegalArgumentException) {
+				if ("Empty key".equals(cause.getMessage())) {
+					return new IOException("S3 URL does not contain valid keys. Please supply access key and secret key in the following format: s3://<AccessKey>:<SecretKey>@s3.amazonaws.com/<bucket>", processS3Exception(t));
+				}
+			}
+		}
+		
+		t = processS3Exception(t);
 		return ExceptionUtils.getIOException(t);
 	}
 	

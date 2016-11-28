@@ -261,6 +261,10 @@ public class URLOperationHandlerTest extends OperationHandlerTestTemplate {
 	}
 
 	@Override
+	public void testListRoot() {
+	}
+
+	@Override
 	public void testCreate() throws Exception {
 	}
 

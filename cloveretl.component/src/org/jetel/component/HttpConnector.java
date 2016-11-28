@@ -224,7 +224,7 @@ import org.w3c.dom.Element;
  * <td>Additional http header properties.</td>
  * <tr>
  * <td><b>charset</b></td>
- * <td>Character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
+ * <td>Character encoding of the output file (if not specified, then UTF-8 is used)</td>
  * <tr>
  * <td><b>inputField</b></td>
  * <td>The input field whose content is sent as the request.</td>
@@ -902,7 +902,7 @@ public class HttpConnector extends Node {
 	 */
 	private static final String ATTRIBUTES_RECORD_NAME = "Attributes";
 
-	public static final String ADDITIONAL_HTTP_HEADERS_RECORD_NAME = "AdditionlHTTPHeaders";
+	public static final String ADDITIONAL_HTTP_HEADERS_RECORD_NAME = "AdditionalHTTPHeaders";
 
 	public static final String REQUEST_PARAMETERS_RECORD_NAME = "RequestParameters";
 

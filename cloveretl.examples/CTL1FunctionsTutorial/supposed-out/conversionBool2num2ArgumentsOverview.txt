@@ -1,2 +1,0 @@
-true;bool2num($0.Boolean,int);1;bool2num($0.Boolean,long);1;bool2num($0.Boolean,decimal);1.00;bool2num($0.Boolean,number);1.0
-false;bool2num($0.Boolean,int);0;bool2num($0.Boolean,long);0;bool2num($0.Boolean,decimal);0.00;bool2num($0.Boolean,number);0.0

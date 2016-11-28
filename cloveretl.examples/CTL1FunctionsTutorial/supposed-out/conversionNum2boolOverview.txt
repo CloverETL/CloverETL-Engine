@@ -1,2 +1,0 @@
-1.00;num2bool($0.Decimal);true
-0.00;num2bool($0.Decimal);false

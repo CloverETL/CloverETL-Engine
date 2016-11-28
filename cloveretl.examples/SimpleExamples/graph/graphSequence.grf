@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This example extends graphOrdersReformat in a sence that&#10;the counter used for generating OrderKey is taken from&#10;Sequence object which is persistent between graph executions - i.e.&#10;you get continuous sequence of unique numbers.&#10;For successfull compilation, tools.jar library must be part of CLASSPATH.&#10;" guiVersion="0.0.0.devel" id="1204550328210" licenseType="Evaluation Devel" modified="Mon Jun 13 10:35:11 CEST 2011" modifiedBy="avackova" name="Testing Reformat" revision="1.25" showComponentDetails="true">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This example extends graphOrdersReformat in a sence that&#10;the counter used for generating OrderKey is taken from&#10;Sequence object which is persistent between graph executions - i.e.&#10;you get continuous sequence of unique numbers.&#10;For successfull compilation, tools.jar library must be part of CLASSPATH.&#10;" guiVersion="0.0.0.devel" id="1204550328210" licenseCode="Commercial Devel" licenseType="Evaluation Devel" modified="Mon Jun 13 10:35:11 CEST 2011" modifiedBy="avackova" name="Testing Reformat" revision="1.25" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/ordersInfo.fmt" id="Metadata1"/>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Sequence cached="5" fileURL="${SEQ_DIR}/sequence.dat" id="Sequence0" name="seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="101" guiName="Orders" guiWidth="128" guiX="20" guiY="20" id="INPUT" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.dat.out" guiHeight="101" guiName="Orders Transformed" guiWidth="173" guiX="370" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="101" guiName="Reformat" guiWidth="128" guiX="195" guiY="20" id="REF" type="REFORMAT">
+<Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiName="Orders" guiX="20" guiY="20" id="INPUT" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.dat.out" guiName="Orders Transformed" guiX="370" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
+<Node enabled="enabled" guiName="Reformat" guiX="195" guiY="20" id="REF" type="REFORMAT">
 <attr name="transform"><![CDATA[
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.DataRecord;

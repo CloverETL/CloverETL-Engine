@@ -31,9 +31,9 @@ import org.jetel.enums.ProcessingType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -47,6 +47,7 @@ import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.FileUtils.PortURL;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
@@ -220,24 +221,14 @@ public class CloverDataWriter extends Node {
 	}
 	
 	private void checkFileURL() throws ComponentNotReadyException {
-		String PORT_PROTOCOL = "port:";
-		String FIELD_DELIMITER = "\\.";
-		if (!StringUtils.isEmpty(fileURL) && fileURL.startsWith(PORT_PROTOCOL)) {
-			String[] aField = fileURL.substring(PORT_PROTOCOL.length()).split(":");
-			if (aField.length < 1) {
-				throw new ComponentNotReadyException("The source string '" + fileURL + "' is not valid.");
+		if (FileUtils.isPortURL(fileURL)) {
+			PortURL portUrl = FileUtils.getPortURL(fileURL);
+			if (portUrl.getProcessingType() == ProcessingType.SOURCE) {
+				throw new ComponentNotReadyException("Unsupported output method: " + portUrl.getProcessingType());
 			}
-			ProcessingType fieldProcessingType = ProcessingType.fromString(aField.length > 1 ? aField[1] : null, ProcessingType.DISCRETE);
-			if (fieldProcessingType == ProcessingType.SOURCE) {
-				throw new ComponentNotReadyException("Unsupported output method: " + fieldProcessingType);
-			}
-			String[] aFieldNamePort = aField[0].split(FIELD_DELIMITER);
-			if (aFieldNamePort.length < 2) {
-				throw new ComponentNotReadyException("The source string '" + fileURL + "' is not valid.");
-			}
-			String fName = aFieldNamePort[1];
+			String fieldName = portUrl.getFieldName();
 			DataRecordMetadata record = getOutputPort(OUTPUT_PORT).getMetadata();
-			DataFieldMetadata field = record.getField(fName);
+			DataFieldMetadata field = record.getField(fieldName);
 			if (field == null) {
 				throw new ComponentNotReadyException("The field not found for the statement: '" + fileURL + "'");
 			}
@@ -287,7 +278,7 @@ public class CloverDataWriter extends Node {
         
         try {
         	checkFileURL();
-        } catch (ComponentNotReadyException e) {
+        } catch (Exception e) {
         	status.add(e, Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE);
         }
         

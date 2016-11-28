@@ -35,6 +35,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
@@ -54,6 +55,7 @@ import org.jetel.util.string.StringUtils;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
@@ -732,10 +734,19 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 			URI baseUri = connection.getBaseUri();
 			List<Info> result;
 			if (bucketName.isEmpty()) { // root - list buckets
-				List<Bucket> buckets = service.listBuckets();
-				result = new ArrayList<Info>(buckets.size());
-				for (Bucket bucket: buckets) {
-					result.add(getBucketInfo(bucket.getName(), baseUri));
+				try {
+					List<Bucket> buckets = service.listBuckets();
+					result = new ArrayList<Info>(buckets.size());
+					for (Bucket bucket: buckets) {
+						result.add(getBucketInfo(bucket.getName(), baseUri));
+					}
+				} catch (AmazonS3Exception e) {
+					// CLO-9194: provide more detailed error message
+					if (Objects.equals(e.getErrorCode(), "AccessDenied")) {
+						throw new IOException("Failed to list all buckets. Check that the user has s3:ListAllMyBuckets permission.", S3Utils.getIOException(e));
+					} else {
+						throw e;
+					}
 				}
 			} else {
 				String prefix = "";

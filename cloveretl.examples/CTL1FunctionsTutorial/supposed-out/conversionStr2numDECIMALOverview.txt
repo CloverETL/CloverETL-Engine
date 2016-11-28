@@ -1,4 +1,0 @@
-12;10;str2num($0.String,decimal,$0.Radix);12.00
-2.78;10;str2num($0.String,decimal,$0.Radix);2.78
-1.5678;10;str2num($0.String,decimal,$0.Radix);1.56
-3.134;10;str2num($0.String,decimal,$0.Radix);3.13
