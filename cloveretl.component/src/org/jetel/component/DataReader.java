@@ -559,6 +559,11 @@ public class DataReader extends Node {
 			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
 		} else {
 			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+			if (policyType != PolicyType.CONTROLLED && getOutputPort(LOG_PORT) != null) {
+				status.add("Error port only receives data if Data policy is set to Controlled.", Severity.WARNING, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+			} else if (policyType == PolicyType.CONTROLLED && getOutputPort(LOG_PORT) == null) {
+				status.add("Data policy is set to Controlled and the Error port is not connected.", Severity.WARNING, this, Priority.NORMAL);
+			}
 		}
 
         if (charset != null && !Charset.isSupported(charset)) {
