@@ -1,4 +1,7 @@
-<plugin id="org.jetel.bulkloader" version="0.0.0.devel">
+<plugin id="org.jetel.bulkloader" 
+	version="0.0.0.devel" 
+	provider-name="Javlin a.s.">
+	
 	<runtime>
 		<library path="bin/"/>
 		<library path="lib/infobright-core-3.0-remote.jar"/>
