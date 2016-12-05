@@ -42,6 +42,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.graph.Node;
@@ -314,13 +315,17 @@ public class DBInputTable extends Node {
 					inputParser.setDataSource(source);
 					DataRecord statementRecord = DataRecordFactory.newRecord(statementMetadata);
     				//read statements from byte channel
-    				while ((statementRecord = inputParser.getNext(statementRecord)) != null) {
-    					currentQuery = propertyResolver.resolveRef(statementRecord.getField(0).toString());
-       					if (printStatements) {
-    						logger.info("Executing statement: " + currentQuery);
-    					}
-       					parser = processSqlQuery(currentQuery);
-    				}
+					try {
+	    				while ((statementRecord = inputParser.getNext(statementRecord)) != null) {
+	    					currentQuery = propertyResolver.resolveRef(statementRecord.getField(0).toString());
+	       					if (printStatements) {
+	    						logger.info("Executing statement: " + currentQuery);
+	    					}
+	       					parser = processSqlQuery(currentQuery);
+	    				}
+					} catch (Exception e) {
+						throw new JetelRuntimeException("Parsing SQL statements from '" + channelIterator.getCurrentFileName() + "' failed.", e);
+					}
 				}
 			}
 			// save values of incremental key into file
