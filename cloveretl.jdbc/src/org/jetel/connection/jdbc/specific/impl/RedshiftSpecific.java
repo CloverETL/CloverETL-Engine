@@ -24,6 +24,7 @@ import org.jetel.connection.jdbc.specific.conn.RedshiftConnection;
 import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.JetelException;
+import org.jetel.metadata.DataFieldMetadata;
 
 /**
  * CLO-7037:
@@ -47,4 +48,15 @@ public class RedshiftSpecific extends PostgreSpecific {
 		return new RedshiftConnection(dbConnection, connection, operationType);
 	}
 
+	@Override
+	public int jetelType2sql(DataFieldMetadata field) {
+		switch (field.getDataType()) {
+		case BYTE:
+		case CBYTE:
+			throw new IllegalArgumentException("Can't handle Clover's data type: " + field.getDataType().getName());
+		default:
+			return super.jetelType2sql(field);
+		}
+	}
+	
 }
