@@ -70,7 +70,7 @@ public class ResetTest extends CloverTestCase {
 	private final static Map<String, List<String>> CLASSPATHS = new HashMap<String, List<String>>();
 	static {
 		CLASSPATHS.put("rpc-literal-service-test.grf", Collections.singletonList("lib/rpc-literal-test.jar"));
-		CLASSPATHS.put("3rdPartyCode_CLO-8964.grf", Collections.singletonList("lib/kafka-clients-0.10.0.0.jar"));
+		CLASSPATHS.put("3rdPartyCode_CLO-8964.grf", Collections.singletonList("lib/Classloading_CLO-9137.jar"));
 	}
 		
 	private final static String GRAPHS_DIR = "graph";
