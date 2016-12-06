@@ -270,6 +270,7 @@ public final class DBLookup implements Lookup {
 	}
 	
 	public void close() throws SQLException {
+		statement.close();
 	}
 	
 	private void reset() {
