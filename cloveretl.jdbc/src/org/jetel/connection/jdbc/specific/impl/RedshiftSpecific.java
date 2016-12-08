@@ -61,7 +61,7 @@ public class RedshiftSpecific extends PostgreSpecific {
 	
 	@Override
 	public ClassLoader getDriverClassLoaderParent() {
-		//attempt to fix invalid error logging
+		//this parent classloader is necessary for correct reporting of issues from redshift driver
 		return Thread.currentThread().getContextClassLoader();
 	}
 	
