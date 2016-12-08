@@ -2,6 +2,56 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-4-0
+---------
+
+* Salesforce
+	* CLO-9915 SalesforceReader subquery join type - left outer join
+	* CLO-9902 SalesforceReader - ability to read deleted records
+	* CLO-9891 Extract metadata from SalesforceReader
+	* CLO-9890 Use SOQL parser also in SalesforceBulkReader
+	* CLO-9888 SalesforceReader checkconfig
+	* CLO-9963 Prevent using unsupported SOQL functions
+	* CLO-9878 SalesforceReader - support functions in subqueries
+	* CLO-9853 SalesforceReader - support function convertCurrency()
+	* CLO-9835 SalesforceReader - support function count()
+	* CLO-9819 SalesforceReader - support function distance()
+	* CLO-9827 SalesforceReader - support string literals
+	* CLO-9823 SalesforceReader - support polymorphic keys and relationships
+	* CLO-9926 SalesforceReader - warn about presence of compound fields in SOQL query
+* Remote Event Listeners
+	* CLO-9758 FileListener check - size didn't change for some time
+	* CLO-9724 Redesign/reorder file listener form
+	* CLO-9919 Polishing of File Event Listener tab
+	* CLO-9954 Single click toggle of Scheduler enablement
+	* CLO-9906 Show implicit parameters while creating/editing File Listener
+	* CLO-9905 Show custom parameters in File Listener's detail
+	* CLO-9854 Change default failure notification e-mail template
+	* CLO-9623 Event listeners - distinguish mandatory fields
+* Server
+	* CLO-9651 Healthy suspended nodes should rejoin cluster
+	* CLO-9959 Warn users that the Server is running on OpenJDK
+* Designer
+	* CLO-9920 Show decimal precision and scale in Transform Editor
+* FIXES
+	* CLO-9938 SalesforceReaders - query with Order or Group doesn't work
+	* CLO-9935 SalesforceBulkWriter doesn't handle unprocessed records
+	* CLO-9933 Internal Salesforce connection persists default hostname "login.salesforce.com"
+	* CLO-9903 SalesforceReader doesn't return subquery results when letter case in query doesn't match
+	* CLO-9833 SalesforceReader reads null instead of compound field
+	* CLO-9981 Cannot listen for S3 location - ListFile component works OK with same URL
+	* CLO-9875 Server Temp Space setting not being used after restart
+	* CLO-9829 Value of Root context blank in JNDI Browser
+	* CLO-8349 Logs should support Unicode characters
+	* CLO-9911 Not able to link connection from component editor dialog
+	* CLO-9872 EmailFilter throws ConcurrentModificationException
+	* CLO-9757 EmailFilter creating multiple duplicate records
+	* CLO-9873 MSSQLDataWriter with sqlncli (bcp for linux) throws "Unable to open BCP host data-file"
+* COMPATIBILITY
+	* CLO-9915 SalesforceReader subquery join type - left outer join
+	* CLO-9890 Use SOQL parser also in SalesforceBulkReader
+
+
 REL-4-4-0-M2
 ------------
 
