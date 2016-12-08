@@ -36,7 +36,7 @@
 <attr name="text"><![CDATA[h3. Reading from Salesforce
 This example demonstrates reading from Salesforce to get the information about Accounts with the highest total value of won Opportunities. 
 
-This example shows 2 approaches - using SalesforceBulkReader components (that use Bulk API to read [Accounts|element://SALESFORCE_BULK_READ_ACCOUNTS] and [Opportunities|element://SALESFORCE_BULK_READ_OPPORTUNITIES]) and SalesforceReader component (that  calls a complex SOQL [query|element://SALESFORCE_COMPLEX_SOQL_VIA_SOAP] via the SOAP API). The bulk reading is better for larger amounts of data, but supports only simpler SOQL queries and requires a more complex graph. Reading via the SOAP API allows you to utilise the full power of SOQL to get the result in one step , but has worse performance for larger amounts of data.
+This example shows 2 approaches - using SalesforceBulkReader components (that use Bulk API to read [Accounts|element://SALESFORCE_BULK_READ_ACCOUNTS] and [Opportunities|element://SALESFORCE_BULK_READ_OPPORTUNITIES]) and SalesforceReader component (that  calls a complex SOQL [query|element://SALESFORCE_COMPLEX_SOQL_VIA_SOAP] via the SOAP API). The bulk reading is better for larger amounts of data, but supports only simpler SOQL queries and requires a more complex graph. Reading via the SOAP API allows you to utilise the full power of SOQL to get the result in one step, but has worse performance for larger amounts of data.
 
 See also the [SalesforceMigration|open://BasicExamples/graph/SalesforceMigration.grf] example.]]></attr>
 </RichTextNote>
