@@ -59,4 +59,10 @@ public class RedshiftSpecific extends PostgreSpecific {
 		}
 	}
 	
+	@Override
+	public ClassLoader getDriverClassLoaderParent() {
+		//attempt to fix invalid error logging
+		return Thread.currentThread().getContextClassLoader();
+	}
+	
 }
