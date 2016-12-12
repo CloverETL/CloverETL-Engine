@@ -21,6 +21,8 @@ package org.jetel.util.exec;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jetel.util.MiscUtils;
+
 
 /**
  * Provides type of current platform - WINDOWS, LINUX, MAC.
@@ -48,7 +50,7 @@ public class PlatformUtils {
 	private static final String osArch = System.getProperty("os.arch");
 	
 	static {
-		String platformIdentifier = System.getProperty("os.name").toLowerCase();
+		String platformIdentifier = String.valueOf(MiscUtils.getSystemPropertySafe("os.name")).toLowerCase();
 		
 		if (platformIdentifier.contains("mac")) {
 			platformType = PlatformType.MAC;

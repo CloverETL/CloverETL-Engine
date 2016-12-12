@@ -67,21 +67,21 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.metadata.MetadataFactory;
-import org.jetel.util.XmlParserFactory;
-import org.jetel.util.XmlParserFactory.DocumentBuilderProvider;
 import org.jetel.util.JAXBContextProvider;
 import org.jetel.util.ReferenceState;
+import org.jetel.util.XmlParserFactory;
+import org.jetel.util.XmlParserFactory.DocumentBuilderProvider;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
+import org.jetel.util.string.UnicodeBlanks;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXParseException;
-
 
 /**
  *  Helper class which reads transformation graph definition from XML data
@@ -1005,8 +1005,13 @@ public class TransformationGraphXMLReaderWriter {
 		if (additionalProperties.containsKey(gp.getName())) {
 			gp.setValue(additionalProperties.getProperty(gp.getName()));
 			gp.setCanBeResolved(!runtimeContext.getJobType().isSubJob());
-		}
-		else {
+			String value = runtimeContext.getAdditionalProperties().getProperty(gp.getName());
+			if (gp.isSecure() && !UnicodeBlanks.isBlank(value) && !runtimeContext.getAuthorityProxy().isSecureParameterValue(value)) {
+				logger.warn("Parameter " + gp.getName() + " is marked as 'Secure' but has not an encrypted value");
+			} else if (!gp.isSecure() && !UnicodeBlanks.isBlank(value) && runtimeContext.getAuthorityProxy().isSecureParameterValue(value)) {
+				logger.warn("Parameter " + gp.getName() + " is not marked as 'Secure' but has an encrypted value");
+			}
+		} else {
 			// gp.setValue(gp.getValue());
 		}
 	}

@@ -648,6 +648,10 @@ public abstract class IAuthorityProxy {
 		throw new JetelRuntimeException("Secure parameters are supported only in CloverETL Server environment.");
 	}
 
+	public boolean isSecureParameterValue(String parameterValue) {
+		return false;
+	}
+	
 	/**
 	 * @return meta information about runtime authority
 	 */
