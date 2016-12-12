@@ -39,7 +39,6 @@ REL-4-4-0
 	* CLO-9933 Internal Salesforce connection persists default hostname "login.salesforce.com"
 	* CLO-9903 SalesforceReader doesn't return subquery results when letter case in query doesn't match
 	* CLO-9833 SalesforceReader reads null instead of compound field
-	* CLO-9981 Cannot listen for S3 location - ListFile component works OK with same URL
 	* CLO-9875 Server Temp Space setting not being used after restart
 	* CLO-9829 Value of Root context blank in JNDI Browser
 	* CLO-8349 Logs should support Unicode characters
