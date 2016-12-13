@@ -448,8 +448,12 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         key.setEqualNULLs(true); //see CLO-5786
 
         try {
-        	lookup = new DBLookup(new SQLCloverStatement(sqlConnection, sqlQuery, keyRecord, key.getKeyFieldNames()),
-    				key, keyRecord);
+        	SQLCloverStatement sqlCloverStatement = new SQLCloverStatement(sqlConnection, sqlQuery, keyRecord, key.getKeyFieldNames());
+        	//Redshift JDBC connection cannot call 'prepareStatement()' method concurrently, see CLO-9995
+        	synchronized (sqlConnection) {
+        		sqlCloverStatement.init();
+        	}
+        	lookup = new DBLookup(sqlCloverStatement, key, keyRecord);
         } catch (SQLException e) {
             throw new ComponentNotReadyException(this, e);
         }
