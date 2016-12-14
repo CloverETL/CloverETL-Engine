@@ -77,6 +77,7 @@ public final class DBLookup implements Lookup {
 	public DBLookup(SQLCloverStatement statement, RecordKey key,
 			DataRecord record) throws SQLException, ComponentNotReadyException {
 		this.statement = statement;
+		this.statement.init();
 		this.key = new HashKey(key, record);
 	}
 	
