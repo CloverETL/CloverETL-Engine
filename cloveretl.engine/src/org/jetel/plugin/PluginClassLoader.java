@@ -100,11 +100,11 @@ public class PluginClassLoader extends GreedyURLClassLoader {
     
    private Class<?> findClassInPrerequisities(String name) throws ClassNotFoundException {
        //try all dependant plugins
-       for(int i = 0; i < importPlugins.length; i++) {
+       for (PluginDescriptor pluginDescriptor : importPlugins) {
            try {
                if (log.isTraceEnabled())
-            	   log.trace(this+" trying to find:"+ name + " in "+getClassLoaderId(importPlugins[i].getClassLoader()));
-               Class<?> cl = ((PluginClassLoader) importPlugins[i].getClassLoader()).loadClass(name);
+            	   log.trace(this+" trying to find:"+ name + " in "+getClassLoaderId(pluginDescriptor.getClassLoader()));
+               Class<?> cl = pluginDescriptor.getClassLoader().loadClass(name);
                if (log.isTraceEnabled() && cl != null)
             	   log.trace(this+" class:"+ name + " found by "+getClassLoaderId(cl.getClassLoader()));
                return cl;
