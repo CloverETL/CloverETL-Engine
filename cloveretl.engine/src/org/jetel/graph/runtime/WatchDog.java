@@ -114,6 +114,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
     private TokenTracker tokenTracker;
 
+    /**
+     * This flag indicates that the {@link #free()} method has been invoked.
+     * The flag is used for correct abortation of WatchDog thread if necessary. 
+     */
+    private volatile boolean isReleased = false;
+    
 	/**
 	 *Constructor for the WatchDog object
 	 *
@@ -533,6 +539,13 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				return watchDogStatus != Result.ABORTED ? Result.FINISHED_OK : Result.ABORTED;
 			}
 
+			if (isReleased) {
+				//WatchDog#free() method has been invoked, so the running graph has been released (free method) as well
+				//so no more messages will come, let's finish this phase watching
+				//this can happen if abortation of a component failed
+				return Result.ABORTED;
+			}
+			
 			// gather graph tracking
 			//etl graphs are tracked only in regular intervals, jobflows are tracked more precise, whenever something happens
 			if (message == null || ContextProvider.getRuntimeJobType().isJobflow()) {
@@ -597,25 +610,29 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		} catch (RuntimeException e) {
 			throw new JetelRuntimeException("Graph abort failed.", e);
 		} finally {
-			synchronized (ABORT_MONITOR) {
-				CURRENT_PHASE_LOCK.unlock();
-				long startAbort = System.currentTimeMillis();
-				while (!abortFinished && waitForAbort) {
-					long interval = System.currentTimeMillis() - startAbort;
-					if (interval > ABORT_TIMEOUT) {
-						throw new IllegalStateException("Graph aborting error! Timeout "+ABORT_TIMEOUT+"ms exceeded!");
+			try {
+				synchronized (ABORT_MONITOR) {
+					CURRENT_PHASE_LOCK.unlock();
+					if (waitForAbort) {
+						long startAbort = System.currentTimeMillis();
+						while (!abortFinished) {
+							long interval = System.currentTimeMillis() - startAbort;
+							if (interval > ABORT_TIMEOUT) {
+								throw new IllegalStateException("Graph aborting error! Timeout "+ABORT_TIMEOUT+"ms exceeded!");
+							}
+					        try {
+					        	//the aborting thread try to wait for end of graph run
+								ABORT_MONITOR.wait(ABORT_WAIT);
+							} catch (InterruptedException ignore) {	}// catch
+						}// while
 					}
-			        try {
-			        	//the aborting thread try to wait for end of graph run
-						ABORT_MONITOR.wait(ABORT_WAIT);
-					} catch (InterruptedException ignore) {	}// catch
-				}// while
-			}// synchronized
-
-			//rollback MDC
-			MDC.remove("runId");
-			if (oldMDCRunId != null) {
-				MDC.put("runId", oldMDCRunId);
+				}// synchronized
+			} finally {
+				//rollback MDC
+				MDC.remove("runId");
+				if (oldMDCRunId != null) {
+					MDC.put("runId", oldMDCRunId);
+				}
 			}
 		}// finally
 	}
@@ -869,8 +886,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
      * if the {@link #call()} method is not invoked or cannot be invoked due some error or exception,
      * this method should be used to clean up. See CLO-5764.
      */
-    public void freeOnError() {
+    public void freeJMX() {
     	finishJMX();
+    }
+    
+    public void free() {
+    	isReleased = true;
     }
     
 	/**
