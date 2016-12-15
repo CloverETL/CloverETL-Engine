@@ -1109,7 +1109,10 @@ public final class TransformationGraph extends GraphElement {
 	    		debugJMX.free();
 	    	}
 	    	
-	    	setWatchDog(null);
+	    	if (watchDog != null) {
+	    		watchDog.free();
+	    		watchDog = null;
+	    	}
 		} finally {
 			//unregister current thread from ContextProvider
 			ContextProvider.unregister(c);
