@@ -37,7 +37,6 @@ public class ResetTest extends CloverTestCase {
 	private final static String[] EXAMPLE_PATH = {
 			"../cloveretl.examples/SimpleExamples/",
 			"../cloveretl.examples/AdvancedExamples/",
-			"../cloveretl.examples/CTL1FunctionsTutorial/",
 			"../cloveretl.examples/CTL2FunctionsTutorial/",
 			"../cloveretl.examples/DataProfiling/",
 			"../cloveretl.examples/DataSampling/",
@@ -71,7 +70,7 @@ public class ResetTest extends CloverTestCase {
 	private final static Map<String, List<String>> CLASSPATHS = new HashMap<String, List<String>>();
 	static {
 		CLASSPATHS.put("rpc-literal-service-test.grf", Collections.singletonList("lib/rpc-literal-test.jar"));
-		CLASSPATHS.put("3rdPartyCode_CLO-8964.grf", Collections.singletonList("lib/kafka-clients-0.10.0.0.jar"));
+		CLASSPATHS.put("3rdPartyCode_CLO-8964.grf", Collections.singletonList("lib/Classloading_CLO-9137.jar"));
 	}
 		
 	private final static String GRAPHS_DIR = "graph";
@@ -146,6 +145,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("XLSXWildcardControlled7.grf") // ok, is to fail
 							&& !file.getName().equals("SSWRITER_MultilineInsertIntoTemplate.grf") // uses graph parameter definition from after-commit.ts
 							&& !file.getName().equals("SSWRITER_FormatInMetadata.grf") // uses graph parameter definition from after-commit.ts
+							&& !file.getName().equals("SSW_stringOutputField.grf") // ok, is to fail
 							&& !file.getName().equals("WSC_NamespaceBindingsDefined.grf") // ok, is to fail
 							&& !file.getName().equals("FailingGraph.grf") // ok, is to fail
 							&& !file.getName().equals("RunGraph_FailWhenUnderlyingGraphFails.grf") // probably should fail, recheck after added to after-commit.ts
@@ -234,6 +234,10 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("GEOCoding.grf") // contains subgraphs
 							&& !file.getName().equals("RandomDataGenerator.grf") // contains subgraphs
 							&& !file.getName().equals("graphHTTPConnector.grf") // external service is unstable
+							&& !file.getName().equals("WSC_Soap12_CLO-3349.grf") // external service is unstable (see CLO-9877)
+							&& !file.getName().equals("WebServiceClient.grf") // external service is unstable
+							&& !file.getName().equals("WebServiceClient1.grf") // external service is unstable
+							&& !file.getName().equals("WebServiceClientWithNS.grf") // external service is unstable
 							&& !file.getName().equals("CLO-2214_pre_post_execute_race_condition.grf") // ok, is to fail
 							&& !file.getName().equals("EmptyGraph.grf") // ok, is to fail
 							&& !file.getName().equals("informix.grf") // remove after CLO-2793 solved
@@ -350,6 +354,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("bigRecords") // runs too long
 							&& !file.getName().equals("cluster") // cluster tests
 							&& !file.getName().equals("S3") 
+							&& !file.getName().equals("Redshift") // redshift tests
 							&& !file.getName().equals("email") 
 							&& !file.getName().equals("performance") 
 							&& !file.getName().equals("dataPolicy") // negative tests 

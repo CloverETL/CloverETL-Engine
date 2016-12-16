@@ -75,7 +75,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>type</b></td><td>"DELIMITED_DATA_READER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>fileURL</b></td><td>path to the input files</td>
- *  <tr><td><b>charset</b></td><td>character encoding of the input file (if not specified, then ISO-8859-1 is used)</td>
+ *  <tr><td><b>charset</b></td><td>character encoding of the input file (if not specified, then UTF-8 is used)</td>
  *  <tr><td><b>dataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
  *  <tr><td><b>skipFirstLine</b></td><td>specifies whether first record/line should be skipped. Default value is FALSE. If record delimiter is specified than skip one record else first line of flat file.</td>
  *  <tr><td><b>skipRows</b><br><i>optional</i></td><td>specifies how many records/rows should be skipped from the source file. Good for handling files where first rows is a header not a real data. Dafault is 0.</td>
@@ -86,7 +86,7 @@ import org.w3c.dom.Element;
  *  </table>
  *
  *  <h4>Example:</h4>
- *  <pre>&lt;Node type="DELIMITED_DATA_READER" id="InputFile" fileURL="/tmp/mydata.dat" charset="ISO-8859-15"/&gt;</pre>
+ *  <pre>&lt;Node type="DELIMITED_DATA_READER" id="InputFile" fileURL="/tmp/mydata.dat" charset="UTF-85"/&gt;</pre>
  *
  * @author      dpavlis
  * @since       April 4, 2002
@@ -155,7 +155,7 @@ public class DelimitedDataReader extends Node {
 	public DelimitedDataReader(String id, String fileURL, String charset) {
 		super(id);
 		this.fileURL = fileURL;
-		parser = new DelimitedDataParser(getOutputPort(OUTPUT_PORT).getMetadata(), this.charset = charset);
+		this.charset = charset;
 	}
 
 	@Override
@@ -219,7 +219,7 @@ public class DelimitedDataReader extends Node {
 	}
 
 	private void prepareParser() {
-		parser = new DelimitedDataParser(getOutputPort(OUTPUT_PORT).getMetadata());
+		parser = new DelimitedDataParser(getOutputPort(OUTPUT_PORT).getMetadata(), charset);
 		parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
 		parser.setTrim(trim);
 		parser.setSkipLeadingBlanks(skipLeadingBlanks);

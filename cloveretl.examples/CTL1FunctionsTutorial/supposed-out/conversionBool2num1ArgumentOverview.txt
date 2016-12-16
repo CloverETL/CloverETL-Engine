@@ -1,2 +1,0 @@
-1;bool2num($0.Boolean);1;bool2num($0.Boolean);1;bool2num($0.Boolean);1.00;bool2num($0.Boolean);1.0
-0;bool2num($0.Boolean);0;bool2num($0.Boolean);0;bool2num($0.Boolean);0.00;bool2num($0.Boolean);0.0

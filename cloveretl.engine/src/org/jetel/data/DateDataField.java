@@ -20,6 +20,7 @@ package org.jetel.data;
 
 import java.nio.BufferOverflowException;
 import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.Date;
 
 import org.jetel.exception.BadDataFormatException;
@@ -165,6 +166,13 @@ public class DateDataField extends DataFieldImpl implements Comparable<Object> {
 				value = new Date(((Timestamp) _value).getTime());
 		    } else {
 		    	value.setTime(((Timestamp) _value).getTime());
+		    }
+		    setNull(false);
+		} else if (_value instanceof Calendar) {
+		    if (value == null) {
+				value = new Date(((Calendar) _value).getTimeInMillis());
+		    } else {
+		    	value.setTime(((Calendar) _value).getTimeInMillis());
 		    }
 		    setNull(false);
 		}else if (_value instanceof Number){

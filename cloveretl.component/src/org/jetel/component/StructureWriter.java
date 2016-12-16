@@ -92,7 +92,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>fileURL</b></td><td>Output files mask.
  *  Use wildcard '#' to specify where to insert sequential number of file. Number of consecutive wildcards specifies
  *  minimal length of the number. Name without wildcard specifies only one file.</td>
- *  <tr><td><b>charset</b></td><td>character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
+ *  <tr><td><b>charset</b></td><td>character encoding of the output file (if not specified, then UTF-8 is used)</td>
  *  <tr><td><b>append</b></td><td>whether to append data at the end if output file exists or replace it (values: true/false)</td>
  *  <tr><td><b>mask</b></td><td>template for formating records. Every occurrence 
  *  of $fieldName will be replaced by value of the fieldName. The rest of text will

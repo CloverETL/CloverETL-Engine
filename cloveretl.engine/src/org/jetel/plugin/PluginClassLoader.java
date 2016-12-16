@@ -18,17 +18,18 @@
  */
 package org.jetel.plugin;
 
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.jetel.util.CompoundEnumeration;
 import org.jetel.util.classloader.GreedyURLClassLoader;
 
 /**
@@ -93,37 +94,17 @@ public class PluginClassLoader extends GreedyURLClassLoader {
         try {
             return super.findClass(name);
         } catch(ClassNotFoundException e) {
-            return findClassInPrerequisities(name, null);
+            return findClassInPrerequisities(name);
         }
     }
     
-    synchronized public Class<?> findClass(String name, Set<String> seen) throws ClassNotFoundException {
-        //firstly we will try if this class is not loaded yet
-        Class<?> ret = null;
-        ret = findLoadedClass(name);
-        if(ret != null) {
-            return ret; // found already loaded class in this plug-in
-        }
-        
-        //secondly we try use findClass() method from URLClassLoader
-        return findClass(name);
-    }
-
-   private Class<?> findClassInPrerequisities(String name, Set<String> seen) throws ClassNotFoundException {
-       if(seen == null) {
-           seen = new HashSet<String>();
-       }
-       seen.add(getPluginDescriptor().getId());
-
+   private Class<?> findClassInPrerequisities(String name) throws ClassNotFoundException {
        //try all dependant plugins
        for(int i = 0; i < importPlugins.length; i++) {
-           if(seen.contains(importPlugins[i].getId())) {
-               continue;
-           }
            try {
                if (log.isTraceEnabled())
             	   log.trace(this+" trying to find:"+ name + " in "+getClassLoaderId(importPlugins[i].getClassLoader()));
-               Class<?> cl = ((PluginClassLoader) importPlugins[i].getClassLoader()).findClass(name, seen);
+               Class<?> cl = ((PluginClassLoader) importPlugins[i].getClassLoader()).loadClass(name);
                if (log.isTraceEnabled() && cl != null)
             	   log.trace(this+" class:"+ name + " found by "+getClassLoaderId(cl.getClassLoader()));
                return cl;
@@ -134,7 +115,31 @@ public class PluginClassLoader extends GreedyURLClassLoader {
        
        throw new ClassNotFoundException(name);
    }
-       
+
+	@Override
+	public URL getResource(String name) {
+		URL resource = super.getResource(name);
+		if (resource == null) {
+			for (PluginDescriptor pluginDescriptor : importPlugins) {
+				resource = pluginDescriptor.getClassLoader().getResource(name);
+				if (resource != null) {
+					return resource;
+				}
+			}
+		}
+		return resource;
+	}
+
+	@Override
+	public Enumeration<URL> getResources(String name) throws IOException {
+		List<Enumeration<URL>> resources = new ArrayList<Enumeration<URL>>();
+		resources.add(super.getResources(name));
+		for (PluginDescriptor pluginDescriptor : importPlugins) {
+			resources.add(pluginDescriptor.getClassLoader().getResources(name));
+		}
+		return new CompoundEnumeration<URL>(resources);
+	}
+
     /**
      * @return returns the plug-in descriptor
      */

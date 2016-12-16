@@ -124,13 +124,13 @@ public class DelimitedDataParser extends AbstractParser {
 	 */
 	public DelimitedDataParser(DataRecordMetadata metadata, String charsetDecoder, QuotingDecoder qdecoder) {
 		this.metadata = metadata;
-		this.charSet = charsetDecoder;
+		this.charSet = charsetDecoder != null ? charsetDecoder : Defaults.DataParser.DEFAULT_CHARSET_DECODER;
 		this.qdecoder = qdecoder;
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
         charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		fieldStringBuffer = new StringBuilder(Defaults.Record.FIELD_INITIAL_SIZE);
 		delimiterCandidateBuffer = new char [DELIMITER_CANDIDATE_BUFFER_LENGTH];
-		decoder = Charset.forName(charsetDecoder).newDecoder();
+		decoder = Charset.forName(charSet).newDecoder();
 	}
 
 

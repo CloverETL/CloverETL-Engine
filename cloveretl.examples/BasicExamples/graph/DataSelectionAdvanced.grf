@@ -74,10 +74,10 @@ Clover is able to read files (URLs) stored externally. In this way you can easil
 </Global>
 <Phase number="0">
 <Node aggregateKey="ShipCountry;" enabled="enabled" guiName="how many from?" guiX="517" guiY="286" id="AGGREGATE0" mapping="$From:=$ShipCountry;$Count:=count();" sorted="false" type="AGGREGATE"/>
-<Node enabled="enabled" fileURL="tar:(gzip:(${DATAIN_DIR}/delimited/Orders.TGZ))#Orders_Spain.csv" guiName="1 sheet from .TGZ" guiX="51" guiY="612" id="DATA_READER3" skipLeadingBlanks="false" skipRows="1" type="DATA_READER">
+<Node charset="ISO-8859-1" enabled="enabled" fileURL="tar:(gzip:(${DATAIN_DIR}/delimited/Orders.TGZ))#Orders_Spain.csv" guiName="1 sheet from .TGZ" guiX="51" guiY="612" id="DATA_READER3" skipLeadingBlanks="false" skipRows="1" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[One file]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="tar:(${DATAIN_DIR}/delimited/Orders.tar)#Orders_Br*.csv" guiName="selects from .tar" guiX="59" guiY="720" id="DATA_READER4" skipRows="1" type="DATA_READER">
+<Node charset="ISO-8859-1" enabled="enabled" fileURL="tar:(${DATAIN_DIR}/delimited/Orders.tar)#Orders_Br*.csv" guiName="selects from .tar" guiX="59" guiY="720" id="DATA_READER4" skipRows="1" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Wildcard usage]]></attr>
 </Node>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/Orders.xlsx" guiName="reads whole .xlsx" guiX="87" guiY="256" id="READS_WHOLE_XLSX" sheet="*" type="SPREADSHEET_READER">
@@ -126,7 +126,7 @@ Clover is able to read files (URLs) stored externally. In this way you can easil
 <Phase number="1">
 <Node aggregateKey="ShipCountry" enabled="enabled" guiName="how many from?" guiX="788" guiY="510" id="AGGREGATE1" mapping="$From:=$ShipCountry;$Count:=count();" sorted="false" type="AGGREGATE"/>
 <Node enabled="enabled" guiName="concatenates" guiX="320" guiY="510" id="CONCATENATE0" type="CONCATENATE"/>
-<Node enabled="enabled" fileURL="zip:(./data-in/delimited/Orders.zip)#Orders_Argentina.csv;zip:(./data-in/delimited/Orders.zip)#Orders_Brazil.csv;zip:(./data-in/delimited/Orders.zip)#Orders_Venezuela.csv;" guiName="3 sheets from .zip" guiX="51" guiY="510" id="DATA_READER0" skipSourceRows="1" type="DATA_READER">
+<Node charset="ISO-8859-1" enabled="enabled" fileURL="zip:(./data-in/delimited/Orders.zip)#Orders_Argentina.csv;zip:(./data-in/delimited/Orders.zip)#Orders_Brazil.csv;zip:(./data-in/delimited/Orders.zip)#Orders_Venezuela.csv;" guiName="3 sheets from .zip" guiX="51" guiY="510" id="DATA_READER0" skipSourceRows="1" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[List of files]]></attr>
 </Node>
 <Node append="false" enabled="enabled" fileURL="${DATATMP_DIR}/had_duplicate_records.txt" guiName="has duplicate" guiX="798" guiY="602" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER">
@@ -136,15 +136,15 @@ Clover is able to read files (URLs) stored externally. In this way you can easil
 <Node enabled="enabled" guiName="ExtSort" guiX="464" guiY="510" id="EXT_SORT0" sortKey="OrderID(a);ShipCountry(a)" type="EXT_SORT"/>
 <Node debugPrint="true" enabled="enabled" guiName="prints to stdout" guiX="953" guiY="510" id="TRASH1" type="TRASH"/>
 <Edge debugMode="true" fromNode="AGGREGATE1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="TRASH1:0"/>
-<Edge debugMode="true" fromNode="CONCATENATE0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata4" toNode="EXT_SORT0:0"/>
+<Edge debugMode="true" fromNode="CONCATENATE0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
 <Edge fromNode="DATA_READER0:0" guiBendpoints="266:391|266:489" guiLocks="254|null|null" guiRouter="Manual" id="Edge7" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (output)" toNode="CONCATENATE0:0"/>
-<Edge debugMode="true" fromNode="DEDUP0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (in)" outPort="Port 0 (unique)" persistedImplicitMetadata="Metadata4" toNode="AGGREGATE1:0"/>
-<Edge fromNode="DEDUP0:1" guiBendpoints="838:513|838:564|815:564|815:616" guiLocks="783|760|467" guiRouter="Manual" id="Edge11" inPort="Port 0 (in)" outPort="Port 1 (duplicate)" persistedImplicitMetadata="Metadata4" toNode="DATA_WRITER0:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata4" toNode="DEDUP0:0"/>
+<Edge debugMode="true" fromNode="DEDUP0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (in)" outPort="Port 0 (unique)" toNode="AGGREGATE1:0"/>
+<Edge fromNode="DEDUP0:1" guiBendpoints="838:513|838:564|815:564|815:616" guiLocks="783|760|467" guiRouter="Manual" id="Edge11" inPort="Port 0 (in)" outPort="Port 1 (duplicate)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
 </Phase>
 <Phase number="2">
 <Node aggregateKey="ShipCountry" enabled="enabled" guiName="how many from?" guiX="663" guiY="826" id="AGGREGATE2" mapping="$From:=$ShipCountry;$Count:=count();" sorted="false" type="AGGREGATE"/>
-<Node enabled="enabled" fileURL="port:$0.fileURL:source" guiName="reads files data" guiX="490" guiY="826" id="DATA_READER1" skipSourceRows="1" type="DATA_READER"/>
+<Node charset="ISO-8859-1" enabled="enabled" fileURL="port:$0.fileURL:source" guiName="reads files data" guiX="490" guiY="826" id="DATA_READER1" skipSourceRows="1" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/filenames.txt" guiName="reads files location" guiX="311" guiY="826" id="DATA_READER2" type="DATA_READER"/>
 <Node debugFilename="${DATAOUT_DIR}/NumberOfCustomers.out" debugPrint="true" enabled="enabled" guiName="prints debug in file" guiX="841" guiY="822" id="TRASH2" type="TRASH"/>
 <Edge debugMode="true" fromNode="AGGREGATE2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="TRASH2:0"/>

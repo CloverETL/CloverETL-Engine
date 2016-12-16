@@ -51,6 +51,8 @@ public class BadDataFormatException extends RuntimeException implements Iterable
     
     private String recordName = null;
     
+    private boolean isFatal = false;
+    
 	public BadDataFormatException() {
 		super();
 	}
@@ -220,5 +222,17 @@ public class BadDataFormatException extends RuntimeException implements Iterable
 			ex = ex.next;
 		}while (ex != null);
 		return exceptions.iterator();
-	}    
+	}
+
+	public void setFatal(boolean isFatal) {
+		this.isFatal = isFatal;
+	}
+
+	/**
+	 * Fatal BDFE should abort further data parsing.
+	 */
+	public boolean isFatal() {
+		return isFatal;
+	}
+	
 }

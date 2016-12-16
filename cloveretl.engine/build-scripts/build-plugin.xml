@@ -530,6 +530,12 @@
 			<keep name="com.opensys.cloveretl.component.jobflow.TrackingMetadataToolkit$ComponentFieldNameStructure"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.component.jobflow.TrackingMetadataToolkit$PortFieldNameStructure"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.component.jobflow.TrackingMetadataToolkit$FieldType"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.salesforce.ast.SOQLQuery"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.salesforce.ast.SOQLFromExpression"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.salesforce.ast.SOQLObject"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.salesforce.ast.SOQLQualifiedName"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.salesforce.QueryMetadataExtractor"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.salesforce.QueryParsingInfo"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.util.SalesforceUtils"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.util.SalesforceUtils$SalesforceFieldComparable"><field access="public"/><method access="public"/></keep>
 						
