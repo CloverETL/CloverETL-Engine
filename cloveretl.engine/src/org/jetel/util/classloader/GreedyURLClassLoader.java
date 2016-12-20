@@ -88,32 +88,6 @@ public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinit
         this.clExcludedPackages = excludedPackages;
     }
 
-	/**
-	 * @param name name of loaded packaged, resource or class
-	 * @return true if 'greedy' (parent last) approach should be used by this classloader
-	 */
-	private boolean isGreedy(String name) {
-		if (!greedy) {
-			//this classloader is not 'greedy' at all
-			return false;
-		} else {
-			//this classloader is 'greedy' by default, check excluded packages
-			if (clExcludedPackages != null) {
-				for (String pack : clExcludedPackages) {
-					if (!StringUtils.isEmpty(pack)) {
-						if (pack.endsWith(".")) {
-							pack = pack.substring(0, pack.length() - 1);
-						}
-						if (name.equals(pack) || name.startsWith(pack + ".")) {
-							return false;
-						}
-					}
-				}
-			}
-			return true;
-		}
-	}
-
     /**
      * Greedy/regular class loader, where classes from specified packages are loaded by regular/greedy algorithm.
      * @param urls the URLs from which to load classes and resources
@@ -129,8 +103,21 @@ public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinit
 
 	@Override
 	protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-		if (isGreedy(name)) {
-			return loadClassGreedy(name, resolve);
+		boolean useGreedyAlgorithm = greedy;
+		
+		// for specified packages use inverse strategy - parents first
+		if (clExcludedPackages != null){
+			for (String pack : clExcludedPackages){
+				if (name.startsWith(pack)) {
+					useGreedyAlgorithm = !useGreedyAlgorithm;
+					break;
+				}
+			}
+		}
+	
+		if (useGreedyAlgorithm) {
+			Class<?> c = loadClassGreedy(name, resolve);
+			return c;
 		} else {
 	        if (log.isTraceEnabled())
 	      	   log.trace(this+" P-F loading: "+ name);
@@ -173,7 +160,18 @@ public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinit
 	 */
 	@Override
 	protected Package getPackage(String name) {
-		if (isGreedy(name)) {
+		
+		boolean greedyLoading = greedy;
+		if (clExcludedPackages != null) {
+			for (String excludedPkg : clExcludedPackages) {
+				if (excludedPkg.equals(name) || name.startsWith(excludedPkg + ".")) {
+					greedyLoading = !greedyLoading;
+					break;
+				}
+			}
+		}
+		
+		if (greedyLoading) {
 			return findPackage(name);
 		} else {
 			return super.getPackage(name);
@@ -220,7 +218,7 @@ public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinit
 
 	@Override
 	public URL getResource(String name) {
-		if (isGreedy(name)) {
+		if (greedy) {
 			if (log.isTraceEnabled())
 				log.trace(this+" S-F trying to load resource: "+ name);
 			URL url = findResource(name);
@@ -242,7 +240,7 @@ public class GreedyURLClassLoader extends URLClassLoader implements ClassDefinit
 	
 	@Override
 	public Enumeration<URL> getResources(String name) throws IOException {
-		if (isGreedy(name)) {
+		if (greedy) {
 			if (log.isTraceEnabled())
 				log.trace(this+" S-F trying to load resources: "+ name);
 			return new CompoundEnumeration<>(Arrays.asList(findResources(name), getParent().getResources(name)));
