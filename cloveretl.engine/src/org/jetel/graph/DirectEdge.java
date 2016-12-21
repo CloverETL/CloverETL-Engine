@@ -50,10 +50,6 @@ public class DirectEdge extends EdgeBase {
     private boolean readerWait;
     private volatile boolean writerWait;
 	private int readBufferLimit;
-	/** How long has been reader blocked on the edge (in nanoseconds). */
-	private long readerWaitingTime;
-	/** How long has been writer blocked on the edge (in nanoseconds). */
-	private long writerWaitingTime;
 	
 	private final static int EOF=Integer.MAX_VALUE;
 
@@ -61,6 +57,18 @@ public class DirectEdge extends EdgeBase {
      * Monitor for {@link #waitForEOF()}
      */
 	private final Object eofMonitor = new Object();
+	
+	/**
+	 * Timeout (in ms) after which the reading thread forces switch of reading and writing buffers.
+	 * @see #forceBuffersSwitch
+	 */
+	private static final int MAX_WAITING_TIME = 1000;
+
+	/**
+	 * This flag indicates, that reading thread is waiting too long.
+	 * The reading and writing buffers should be switched as soon as possible.
+	 */
+	private volatile boolean forceBuffersSwitch;
 	
 	/**
 	 *Constructor for the Edge object
@@ -105,16 +113,6 @@ public class DirectEdge extends EdgeBase {
     	return writeBuffer.capacity() + readBuffer.capacity() + tmpDataRecord.capacity();
     }
     
-    @Override
-    public long getReaderWaitingTime() {
-    	return readerWaitingTime / 1000000;
-    }
-    
-    @Override
-    public long getWriterWaitingTime() {
-    	return writerWaitingTime / 1000000;
-    }
-    
 	/**
 	 *  Description of the Method
 	 *
@@ -142,9 +140,6 @@ public class DirectEdge extends EdgeBase {
 	public void preExecute() {
 		super.preExecute();
 		
-		readerWaitingTime = 0;
-		writerWaitingTime = 0;
-		
 		readBuffer.clear();
 		writeBuffer.clear();
 		inputRecordCounter = 0;
@@ -156,6 +151,7 @@ public class DirectEdge extends EdgeBase {
 		isClosed=false;
 	    readerWait=false;
 	    writerWait=false;
+	    forceBuffersSwitch = false;
 	}
 	
 	// Operations
@@ -231,7 +227,6 @@ public class DirectEdge extends EdgeBase {
 	    return true;
 	}
 
-	
 	private synchronized boolean fillReadBuffer() throws InterruptedException{
 	    if(isClosed) return false;
         if(writerWait) {
@@ -240,20 +235,13 @@ public class DirectEdge extends EdgeBase {
             notify();
         } else {
             readerWait = true;
-            if (verbose) {
-            	//readerWaitingTime is advanced only in verbose mode
-                long startTime = System.nanoTime();
-                while(readerWait) {
-                    wait();
+    		wait(MAX_WAITING_TIME); //just wait 1 second
+    		if (readerWait) { //it seems that 1 second is not enough
+    			forceBuffersSwitch = true; //force buffers switch to get at least few records from writing buffer
+                while (readerWait) { //wait for writing thread to perform the buffer switch
+                	wait();
                 }
-                if (inputRecordCounter > 0) {
-                	readerWaitingTime += System.nanoTime() - startTime;
-                }
-            } else {
-	            while(readerWait) {
-	                wait();
-	            }
-            }
+    		}
         }
 	    return true;
 	}
@@ -301,6 +289,13 @@ public class DirectEdge extends EdgeBase {
         outputRecordCounter++;
         // one more record written
         bufferedRecords.incrementAndGet();
+        
+        if (forceBuffersSwitch) {
+        	//reading thread forces the buffers switch
+        	//we are sure, that writing buffer contains at least one record
+        	//so let's switch the buffers
+        	flushWriteBuffer();
+        }
     }
 
 	/**
@@ -333,27 +328,26 @@ public class DirectEdge extends EdgeBase {
         byteCounter += dataLength;
         outputRecordCounter++;
         bufferedRecords.incrementAndGet();
+        
+        if (forceBuffersSwitch) {
+        	//reading thread forces the buffers switch
+        	//we are sure, that writing buffer contains at least one record
+        	//so let's switch the buffers
+        	flushWriteBuffer();
+        }
     }
 
 	private synchronized void flushWriteBuffer() throws InterruptedException{
 	    if(readerWait) {
 	        switchBuffers();
             readerWait = false;
+            forceBuffersSwitch = false;
             notify();
         } else {
             writerWait = true;
-            if (verbose) {
-            	//writerWaitingTime is advanced only in verbose mode
-                long startTime = System.nanoTime();
-                while(writerWait) {
-        	        wait();
-        	    }
-                writerWaitingTime += System.nanoTime() - startTime;
-            } else {
-	            while(writerWait) {
-	    	        wait();
-	    	    }
-            }
+            while(writerWait) {
+    	        wait();
+    	    }
         }
 	}
 	
