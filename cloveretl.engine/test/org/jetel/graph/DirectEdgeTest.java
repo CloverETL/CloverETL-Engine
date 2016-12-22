@@ -20,9 +20,11 @@ package org.jetel.graph;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
@@ -41,7 +43,7 @@ import org.jetel.test.CloverTestCase;
  */
 public class DirectEdgeTest extends CloverTestCase {
 
-	private static final int MAX_WAITING_TIME = 1500 * 1000000;
+	private static final long MAX_WAITING_TIME = 3000 * 1000000l; //3 seconds
 
 	private static DataRecordMetadata metadata;
 	
@@ -71,14 +73,22 @@ public class DirectEdgeTest extends CloverTestCase {
 				long start = System.nanoTime();
 				edge.readRecord(record);
 				long elapsedTime = System.nanoTime() - start;
-				assertTrue(elapsedTime < MAX_WAITING_TIME);
-				assertEquals(((IntegerDataField)record.getField(0)).getValue(), (Integer) 1);
+				assertTrue("reader thread timeouted " + elapsedTime, elapsedTime < MAX_WAITING_TIME);
+				assertEquals("invalid record detected", ((IntegerDataField)record.getField(0)).getValue(), (Integer) 1);
 				return null;
 			}
 		};
 
-		executorService.submit(writer);
-		executorService.submit(reader).get();
+		Future<Void> writerJob = executorService.submit(writer);
+		Future<Void> readerJob = executorService.submit(reader);
+		
+		readerJob.get(); //wait for reader thread
+		writerJob.cancel(true); //reader thread succeed, cancel the writer job and wait for potential errors
+		try {
+			writerJob.get();
+		} catch (CancellationException e) {
+			//OK
+		}
 	}
 	
 	private synchronized static DataRecordMetadata getMetadata() throws ComponentNotReadyException {
