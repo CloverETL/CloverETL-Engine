@@ -27,6 +27,8 @@ import org.jetel.data.Defaults;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * A class that represents DirectEdge - data connection between two NODEs.<br>
  * This Edge is in-memory buffered for better performance, however the buffer is limited in size 
@@ -227,6 +229,7 @@ public class DirectEdge extends EdgeBase {
 	    return true;
 	}
 
+	@SuppressFBWarnings("WA_NOT_IN_LOOP")
 	private synchronized boolean fillReadBuffer() throws InterruptedException{
 	    if(isClosed) return false;
         if(writerWait) {
