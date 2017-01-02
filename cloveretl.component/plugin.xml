@@ -1919,7 +1919,7 @@
 			<singleType name="sqlQuery" type="select" />
 	      </property>
 	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" primaryAttribute="true">
-	        <singleType name="transform" outputPortName="0" />
+	        <singleType name="dbJoinTransform"/>
 	      </property>
 	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" delegate="transform">
 	        <singleType name="file" />
