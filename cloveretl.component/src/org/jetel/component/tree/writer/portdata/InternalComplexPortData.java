@@ -24,8 +24,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections4.MultiValuedMap;
+import org.apache.commons.collections4.multimap.ArrayListValuedHashMap;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 
 /**
@@ -39,10 +42,30 @@ import org.jetel.graph.InputPort;
  */
 class InternalComplexPortData extends InternalPortData {
 
+	private MultiValuedMap<DataRecordKey, DataRecord> records;
+
 	InternalComplexPortData(InputPort inPort, Set<List<String>> keys) {
 		super(inPort, keys);
 	}
 	
+	@Override
+	public void init() throws ComponentNotReadyException {
+		super.init();
+		records = new ArrayListValuedHashMap<>();
+	}
+	
+	@Override
+	public void free() {
+		super.free();
+		records = null;
+	}
+	
+	@Override
+	public void postExecute() throws ComponentNotReadyException {
+		super.postExecute();
+		records.clear();
+	}
+
 	@Override
 	public void put(DataRecord record) throws IOException {
 		if (nullKey) {
@@ -53,15 +76,14 @@ class InternalComplexPortData extends InternalPortData {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	protected Collection<DataRecord> fetchData(int key[], int parentKey[], DataRecord keyData) {
 		
 		if (key == null) {
-			return records.getCollection(DataRecordKey.NULL_KEY);
+			return records.get(DataRecordKey.NULL_KEY);
 		}
 		DataRecordKey recordKey = createRecordKey(key, parentKey, keyData, keyRecord);
-		Collection<DataRecord> data = records.getCollection(recordKey);
+		Collection<DataRecord> data = records.get(recordKey);
 		keyRecord.reset();
 		return data;
 	}
