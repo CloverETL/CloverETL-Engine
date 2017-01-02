@@ -698,9 +698,9 @@ public class MsSqlDataWriter extends BulkLoader {
 	
 	private String getData() {
 		try {
-			return StringUtils.quote(dataFile.getCanonicalPath());
+			return dataFile.getCanonicalPath();
 		} catch (IOException ioe) {
-			return StringUtils.quote(dataFile.getAbsolutePath());
+			return dataFile.getAbsolutePath();
 		}
 	}
 
