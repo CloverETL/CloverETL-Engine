@@ -26,6 +26,9 @@
 <GraphParameter label="Path to bcp utility" name="BCP_UTILITY_PATH" public="true" required="true" value="C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\110\Tools\Binn\bcp.exe">
 <ComponentReference referencedComponent="MS_SQL_DATA_WRITER0" referencedProperty="bcpUtilityPath"/>
 </GraphParameter>
+<GraphParameter category="advanced" label="Parameters" name="PARAMETERS" public="true" required="false" value="characterType|errFile=${DATAOUT_DIR}\err.bcp">
+<ComponentReference referencedComponent="MS_SQL_DATA_WRITER0" referencedProperty="parameters"/>
+</GraphParameter>
 <GraphParameter name="SERVER_NAME" value="VIRT-ORANGE"/>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
@@ -47,7 +50,7 @@ A set of conditions must be fulfilled to be able to work with this component. SQ
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/mssql.dat" guiName="DATA_READER0" guiX="24" guiY="24" id="DATA_READER0" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Input data]]></attr>
 </Node>
-<Node bcpUtilityPath="${BCP_UTILITY_PATH}" columnDelimiter="|" database="test" enabled="enabled" fileURL="${DATAOUT_DIR}/adresar s mezerou/exchange.bcp" guiName="MS_SQL_DATA_WRITER0" guiX="291" guiY="24" id="MS_SQL_DATA_WRITER0" owner="dbo" parameters="characterType|errFile=${DATAOUT_DIR}\err.bcp" password="my_pass" serverName="${SERVER_NAME}" table="test" type="MS_SQL_DATA_WRITER" username="testUser">
+<Node bcpUtilityPath="${BCP_UTILITY_PATH}" columnDelimiter="|" database="test" enabled="enabled" fileURL="${DATAOUT_DIR}/adresar s mezerou/exchange.bcp" guiName="MS_SQL_DATA_WRITER0" guiX="291" guiY="24" id="MS_SQL_DATA_WRITER0" owner="dbo" parameters="${PARAMETERS}" password="my_pass" serverName="${SERVER_NAME}" table="test" type="MS_SQL_DATA_WRITER" username="testUser">
 <attr name="guiDescription"><![CDATA[Receiving data through input port.]]></attr>
 </Node>
 <Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="MS_SQL_DATA_WRITER0:0"/>
@@ -56,7 +59,7 @@ A set of conditions must be fulfilled to be able to work with this component. SQ
 <Node append="false" charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}\out.txt" guiName="DATA_WRITER0" guiX="341" guiY="146" id="DATA_WRITER0" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Invalid data with error message.]]></attr>
 </Node>
-<Node bcpUtilityPath="${BCP_UTILITY_PATH}" columnDelimiter=";" database="test" enabled="enabled" fileURL="${DATAIN_DIR}\delimited\mssql.dat" guiName="MS_SQL_DATA_WRITER1" guiX="25" guiY="146" id="MS_SQL_DATA_WRITER1" owner="dbo" parameters="characterType|errFile=${DATAOUT_DIR}\err.bcp" password="my_pass" serverName="${SERVER_NAME}" table="test" type="MS_SQL_DATA_WRITER" username="testUser">
+<Node bcpUtilityPath="${BCP_UTILITY_PATH}" columnDelimiter=";" database="test" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/mssql.dat" guiName="MS_SQL_DATA_WRITER1" guiX="25" guiY="146" id="MS_SQL_DATA_WRITER1" owner="dbo" parameters="${PARAMETERS}" password="my_pass" serverName="${SERVER_NAME}" table="test" type="MS_SQL_DATA_WRITER" username="testUser">
 <attr name="guiDescription"><![CDATA[Reading data from the file specified.]]></attr>
 </Node>
 <Edge debugMode="true" fromNode="MS_SQL_DATA_WRITER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="MetadataOut" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
