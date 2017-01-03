@@ -362,7 +362,7 @@ public class Dedup extends Node {
 		}
 
 		public DataRecord writeRecord(DataRecord record) {
-			if (cicularRecordBuffer.isFull()) {
+			if (cicularRecordBuffer.isAtFullCapacity()) {
 				final DataRecord overflowedRecord = (DataRecord) cicularRecordBuffer.remove();
 				cicularRecordBuffer.add(record);
 				return overflowedRecord;
