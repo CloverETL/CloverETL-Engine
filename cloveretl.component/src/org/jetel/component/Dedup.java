@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.collections.buffer.CircularFifoBuffer;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
@@ -51,7 +51,6 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ExceptionUtils;
-import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -123,8 +122,6 @@ public class Dedup extends Node {
     	
 	private final static int DEFAULT_NO_DUP_RECORD = 1;
 
-	private static final int SINGLE_RECORD = 1;
-	
 	private Keep keep = Keep.KEEP_FIRST;
 	private String[] dedupKeys;
 	private OrderEnum[] dedupOrderings;
@@ -357,15 +354,15 @@ public class Dedup extends Node {
 	}
 
 	private static class GroupLast {
-		private final CircularFifoBuffer cicularRecordBuffer;
+		private final CircularFifoQueue<DataRecord> cicularRecordBuffer;
 		
 		public GroupLast(int noDupRecord, DataRecord record) {
-			cicularRecordBuffer = new CircularFifoBuffer(noDupRecord);
+			cicularRecordBuffer = new CircularFifoQueue<>(noDupRecord);
 			cicularRecordBuffer.add(record);
 		}
 
 		public DataRecord writeRecord(DataRecord record) {
-			if (cicularRecordBuffer.isFull()) {
+			if (cicularRecordBuffer.isAtFullCapacity()) {
 				final DataRecord overflowedRecord = (DataRecord) cicularRecordBuffer.remove();
 				cicularRecordBuffer.add(record);
 				return overflowedRecord;
@@ -694,11 +691,6 @@ public class Dedup extends Node {
 		lOrderingComparators.toArray(orderingComparators);
 	}
 	
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-	}
-
 	@Override
 	public synchronized void free() {
 		super.free();

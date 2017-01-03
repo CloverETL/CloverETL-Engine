@@ -20,14 +20,11 @@ package org.jetel.component.tree.writer.portdata;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.apache.commons.collections.map.MultiValueMap;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
@@ -43,7 +40,6 @@ import org.jetel.graph.InputPort;
  */
 abstract class InternalPortData extends PortData {
 
-	protected MultiValueMap records;
 	protected DataRecord keyRecord;
 	
 	InternalPortData(InputPort inPort, Set<List<String>> keys) {
@@ -58,25 +54,13 @@ abstract class InternalPortData extends PortData {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		records = createRecordMap();
 		keyRecord = DataRecordFactory.newRecord(inPort.getMetadata());
-	}
-	
-	protected MultiValueMap createRecordMap() {
-		return MultiValueMap.decorate(new HashMap<Object, Object>(), LinkedList.class);
 	}
 	
 	@Override
 	public void free() {
 		super.free();
-		records = null;
 		keyRecord = null;
-	}
-	
-	@Override
-	public void postExecute() throws ComponentNotReadyException {
-		super.postExecute();
-		records.clear();
 	}
 	
 	@Override
