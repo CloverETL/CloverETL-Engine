@@ -2,7 +2,7 @@
  
    	<runtime>
 		<library path="my_lib_ctl1.jar"/>
-		<library path="lib/commons-codec-1.4.jar"/>
+		<library path="lib/commons-codec-1.10.jar"/>
 	</runtime>
  
  
