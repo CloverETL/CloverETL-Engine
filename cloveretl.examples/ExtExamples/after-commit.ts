@@ -139,4 +139,12 @@
      	 <DBTableToXMLFile outputTable="test" supposedTable="test" outputTableConnection="infobright" supposedXMLFile="supposed-out/infobright_out.InfobrightDataWriter.xml"/>
 	</FunctionalTest>
 	
+	<FunctionalTest ident="MsSqlDataWriter" graphFile="graph/graphMsSqlDataWriter.grf">
+		<Property name="BCP_UTILITY_PATH" value="!TODO!"/>
+		<Property name="PARAMETERS" value="characterType|errFile=${DATAOUT_DIR}/err.bcp"/>
+		<FlatFile outputFile="data-out/err.bcp" supposedFile="supposed-out/err.MsSqlWriter.bcp"/>	                                                                    
+		<FlatFile outputFile="data-out/exchange.bcp" supposedFile="supposed-out/exchange.MsSqlWriter.bcp"/>	                                                                    
+		<FlatFile outputFile="data-out/out.txt" supposedFile="supposed-out/out.MsSqlWriter.txt"/>	                                                                    
+	</FunctionalTest>
+	
 </TestScenario>
