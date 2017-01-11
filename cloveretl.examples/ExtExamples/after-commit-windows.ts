@@ -5,6 +5,7 @@
 	<GlobalRegEx ident="error" expression="^ERROR" caseSensitive="false" occurences="0" />
 
 	<FunctionalTest ident="MsSqlDataWriter" graphFile="graph/graphMsSqlDataWriter.grf">
+		<Property name="CONN_DIR" value="../../cloveretl.test.scenarios/conn" />
 		<Property name="BCP_UTILITY_PATH" value="C:/Program Files/Microsoft SQL Server/100/Tools/Binn/bcp.exe"/>
 		<Property name="PARAMETERS" value="characterType|errFile=${DATAOUT_DIR}\err.bcp"/>
 		<Property name="USER" value="sa"/>

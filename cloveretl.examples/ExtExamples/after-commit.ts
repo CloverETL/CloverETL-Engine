@@ -140,6 +140,7 @@
 	</FunctionalTest>
 	
 	<FunctionalTest ident="MsSqlDataWriter" graphFile="graph/graphMsSqlDataWriter.grf">
+		<Property name="CONN_DIR" value="../../cloveretl.test.scenarios/conn" />
 		<Property name="BCP_UTILITY_PATH" value="/usr/bin/bcp"/>
 		<Property name="PARAMETERS" value="characterType|errFile=${DATAOUT_DIR}/err.bcp"/>
 		<Property name="USER" value="sa"/>
