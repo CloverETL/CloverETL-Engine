@@ -41,6 +41,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
@@ -294,9 +295,7 @@ public class DataReader extends Node {
 							logger.warn(ExceptionUtils.getMessage("Error in input source: " + reader.getSourceName(), bdfe));
 						}
 						if (maxErrorCount != -1 && ++errorCount > maxErrorCount) {
-							logger.error("DataParser (" + getName()
-									+ "): Max error count exceeded.");
-							return Result.ERROR;
+							throw new JetelRuntimeException("Max error count exceeded.", bdfe);
 						}
 					}
 				}
