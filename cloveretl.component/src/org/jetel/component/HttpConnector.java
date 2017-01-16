@@ -45,21 +45,19 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import oauth.signpost.OAuthConsumer;
-import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
@@ -75,7 +73,6 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.AuthSchemes;
-import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpDelete;
@@ -90,13 +87,10 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpTrace;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIUtils;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.cookie.Cookie;
-import org.apache.http.cookie.CookieSpecProvider;
 import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
@@ -113,13 +107,14 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.TargetAuthenticationStrategy;
 import org.apache.http.impl.cookie.BasicClientCookie;
-import org.apache.http.impl.cookie.BestMatchSpecFactory;
-import org.apache.http.impl.cookie.BrowserCompatSpecFactory;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.log4j.Level;
+import org.jetel.component.HttpConnector.HTTPRequestConfiguration;
+import org.jetel.component.HttpConnector.PartWithName;
+import org.jetel.component.HttpConnector.RequestResult;
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
@@ -130,11 +125,11 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -159,6 +154,9 @@ import org.jetel.util.protocols.UserInfo;
 import org.jetel.util.stream.StreamUtils;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
+
+import oauth.signpost.OAuthConsumer;
+import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 
 /**
  * * <h3>HttpConnector Component</h3>
@@ -278,11 +276,6 @@ import org.w3c.dom.Element;
 public class HttpConnector extends Node {
 
 	private final static Log logger = LogFactory.getLog(HttpConnector.class);
-
-	/**
-	 * Type of this component.
-	 */
-	private final static String COMPONENT_TYPE = "HTTP_CONNECTOR";
 
 	/**
 	 * The port index used for data record input
@@ -3308,10 +3301,6 @@ public class HttpConnector extends Node {
 			}
 		}
 
-		Registry<CookieSpecProvider> r = RegistryBuilder.<CookieSpecProvider> create().register(CookieSpecs.BEST_MATCH, new BestMatchSpecFactory()).register(CookieSpecs.BROWSER_COMPATIBILITY, new BrowserCompatSpecFactory()).build();
-
-		builder.setDefaultCookieSpecRegistry(r);
-
 		this.httpContext = new BasicHttpContext();
 
 		httpContext.setAttribute(HttpClientContext.COOKIE_STORE, this.cookieStore);
@@ -3596,54 +3585,6 @@ public class HttpConnector extends Node {
 		matcher.appendTail(sb);
 
 		return sb.toString();
-	}
-
-	/**
-	 * Checks if there are suitable metadata fields for substitution of all placeholders in given string.
-	 * 
-	 * @return true if and only if there are suitable metadata fields for substitution of all placeholders
-	 */
-	private boolean isPossibleToMapVariables(String urlTemplate) {
-
-		boolean possibleToMapVariables = true;
-		try {
-			String tempUrl = "";
-			if (urlTemplate.indexOf('*') > 0) {
-				StringTokenizer st = new StringTokenizer(urlTemplate, "*");
-				while (st.hasMoreTokens()) {
-					tempUrl += st.nextToken();
-				}
-			} else {
-				tempUrl = urlTemplate;
-			}
-
-			Set<String> variablesAtUrl = new HashSet<String>();
-			while (tempUrl.indexOf('{') > 0 && tempUrl.length() > 0) {
-				String propertyName = tempUrl.substring(tempUrl.indexOf('{') + 1, tempUrl.indexOf('}'));
-				tempUrl = tempUrl.substring(tempUrl.indexOf('}') + 1, tempUrl.length());
-				variablesAtUrl.add(propertyName);
-			}
-
-			Set<String> variablesAtMetadata = new HashSet<String>();
-			if (inputPort != null) {
-				DataRecordMetadata metadata = inputPort.getMetadata();
-				String[] metadataNames = metadata.getFieldNamesArray();
-				for (String metadataName : metadataNames) {
-					variablesAtMetadata.add(metadataName);
-				}
-			}
-
-			for (String urlPlaceholder : variablesAtUrl) {
-				if (!variablesAtMetadata.contains(urlPlaceholder)) {
-					possibleToMapVariables = false;
-					break;
-				}
-			}
-		} catch (Exception e) {
-			possibleToMapVariables = false;
-		}
-
-		return possibleToMapVariables;
 	}
 
 	/**
