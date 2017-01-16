@@ -12,7 +12,7 @@
 			<attribute name="javadoc_location" value="http://logging.apache.org/log4j/1.2/apidocs/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry exported="true" kind="lib" path="lib/jsch-0.1.52.jar" sourcepath="lib.src/jsch-0.1.52.zip"/>
+	<classpathentry exported="true" kind="lib" path="lib/jsch-0.1.54.jar" sourcepath="lib.src/jsch-0.1.54.zip"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-cli-1.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry exported="true" kind="lib" path="lib/annotations.jar"/>
@@ -52,8 +52,8 @@
 	<classpathentry kind="lib" path="lib/aws-java-sdk-core-1.11.75.jar"/>
 	<classpathentry kind="lib" path="lib/aws-java-sdk-s3-1.11.75.jar"/>
 	<classpathentry kind="lib" path="lib/aws-java-sdk-kms-1.11.75.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/httpclient-4.5.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/httpclient-4.5.2.jar" sourcepath="lib.src/httpcomponents-client-4.5.2-src.zip"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.10.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/httpcore-4.4.5.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/httpcore-4.4.5.jar" sourcepath="lib.src/httpcomponents-core-4.4.5-src.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
