@@ -56,6 +56,7 @@ public final class DictionaryValuesContainer implements Serializable {
 	
 	private final Map<String, Serializable> values;
 	private final Set<String> dirtyKeys;
+	private Set<String> nonPersistableKeys;
 
 	/**
 	 * 
@@ -146,14 +147,15 @@ public final class DictionaryValuesContainer implements Serializable {
 						|| (entry.isOutput() && includeOutput) 
 						|| (includeNonDefined && !entry.isInput() && !entry.isOutput())) {
 					if (val==null || val instanceof Serializable) {
-						synchronized (result.values) {
-							result.values.put(entryName, (Serializable)val);
-							if (entry.isDirty()) {
-								result.dirtyKeys.add(entryName);
-							}
+						result.values.put(entryName, (Serializable)val);
+						if (entry.isDirty()) {
+							result.dirtyKeys.add(entryName);
 						}
 					} else {
-						log.warn("Non-Serializable Dictionary entry: key:"+entryName+" value:"+val);
+						log.debug("Non-Serializable Dictionary entry: key:"+entryName+" value:"+val);
+						if (!(val instanceof Serializable)) {
+							result.nonPersistableKeys.add(entryName);
+						}
 					}
 				}
 			}
@@ -198,6 +200,7 @@ public final class DictionaryValuesContainer implements Serializable {
 	public DictionaryValuesContainer() {
 		values = new HashMap<String, Serializable>();
 		dirtyKeys = new HashSet<String>();
+		nonPersistableKeys = new HashSet<>();
 	}
 
 	public void setValue(String key, Serializable value) {
@@ -259,6 +262,7 @@ public final class DictionaryValuesContainer implements Serializable {
 		synchronized (values) {
 			values.clear();
 			dirtyKeys.clear();
+			nonPersistableKeys.clear();
 		}
 	}
 	
@@ -305,6 +309,12 @@ public final class DictionaryValuesContainer implements Serializable {
 		return tm;
 	}
 	
+	public boolean hasNonPersistableKeys() {
+		synchronized (values) {
+			return !nonPersistableKeys.isEmpty();
+		}
+	}
+	
 	/**
 	 * Creates shallow copy. There will be references from the original and from the copy to the same instance. 
 	 * @return
@@ -314,6 +324,7 @@ public final class DictionaryValuesContainer implements Serializable {
 		synchronized (values) {
 			result.values.putAll(values);
 			result.dirtyKeys.addAll(dirtyKeys);
+			result.nonPersistableKeys.addAll(nonPersistableKeys);
 		}
 		return result;
 	}
@@ -368,7 +379,10 @@ public final class DictionaryValuesContainer implements Serializable {
 	}
 	
 	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();  
+        in.defaultReadObject(); 
+        if (nonPersistableKeys == null) {
+        	nonPersistableKeys = new HashSet<>();
+        }
 	}
 
 	/**
