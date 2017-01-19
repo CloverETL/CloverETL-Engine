@@ -213,11 +213,8 @@ public class S3Utils {
 	public static IOException getIOException(Throwable t) {
 		// detect empty key in all exceptions
 		if (t instanceof AmazonClientException) {
-			Throwable cause = ExceptionUtils.getRootCause(t);
-			if (cause instanceof IllegalArgumentException) {
-				if ("Empty key".equals(cause.getMessage())) {
-					return new IOException("S3 URL does not contain valid keys. Please supply access key and secret key in the following format: s3://<AccessKey>:<SecretKey>@s3.amazonaws.com/<bucket>", processS3Exception(t));
-				}
+			if (t.getMessage() != null && t.getMessage().matches(".*non-empty Access Key.*")) {
+				return new IOException("S3 URL does not contain valid keys. Please supply access key and secret key in the following format: s3://<AccessKey>:<SecretKey>@s3.amazonaws.com/<bucket>", processS3Exception(t));
 			}
 		}
 		
