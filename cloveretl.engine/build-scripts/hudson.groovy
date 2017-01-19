@@ -214,8 +214,8 @@ if( env['ComSpec'] ) {
 }
 
 /* Setting up testLevel for salesforce tests */
-testlevel = env['testlevel']
-if ( testlevel ) {
+if ( env['testlevel'] ) {
+	testlevel = "-Dtestlevel=${env['testlevel']}"
 	antArgs += testlevel
 	println "Test level set to:"
 	println testlevel
