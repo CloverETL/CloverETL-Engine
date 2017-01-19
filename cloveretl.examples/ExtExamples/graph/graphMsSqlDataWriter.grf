@@ -82,7 +82,7 @@ CREATE TABLE [dbo].[test](
 <Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="MS_SQL_DATA_WRITER0:0"/>
 </Phase>
 <Phase number="2">
-<Node append="false" charset="UTF-8" fileURL="${DATAOUT_DIR}\out.txt" guiName="DATA_WRITER0" guiX="341" guiY="146" id="DATA_WRITER0" type="DATA_WRITER">
+<Node append="false" charset="UTF-8" fileURL="${DATAOUT_DIR}/out.txt" guiName="DATA_WRITER0" guiX="341" guiY="146" id="DATA_WRITER0" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Invalid data with error message.]]></attr>
 </Node>
 <Node bcpUtilityPath="${BCP_UTILITY_PATH}" columnDelimiter=";" database="test" fileURL="${DATAIN_DIR}/delimited/mssql.dat" guiName="MS_SQL_DATA_WRITER1" guiX="25" guiY="146" id="MS_SQL_DATA_WRITER1" owner="dbo" parameters="${PARAMETERS}" password="${PASS}" serverName="${SERVER_NAME}" table="test" type="MS_SQL_DATA_WRITER" username="${USER}">
