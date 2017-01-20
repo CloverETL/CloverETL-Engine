@@ -45,10 +45,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,7 +57,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
@@ -112,9 +111,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.log4j.Level;
-import org.jetel.component.HttpConnector.HTTPRequestConfiguration;
-import org.jetel.component.HttpConnector.PartWithName;
-import org.jetel.component.HttpConnector.RequestResult;
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
@@ -125,11 +121,11 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -1427,9 +1423,9 @@ public class HttpConnector extends Node {
 
 		super.init();
 
-		// if charset isn't filled, we use the system default
+		// if charset isn't filled, we use the engine default, see CLO-10204
 		if (StringUtils.isEmpty(this.charset)) {
-			this.charset = Charset.defaultCharset().name();
+			this.charset = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
 		}
 
 		tryToInit(null);
@@ -1492,12 +1488,16 @@ public class HttpConnector extends Node {
 	 * @return a string value of the given field.
 	 */
 	private String getStringInputParameterValue(int index) {
+		return getStringInputParameterValue(index, null);
+	}
+	
+	private String getStringInputParameterValue(int index, String defaultValue) {
 		Object value = inputParamsRecord.getField(index).getValue();
 		if (value != null) {
 			return value.toString();
 		}
 
-		return null;
+		return defaultValue;
 	}
 	
 	private int getIntInputParameterValue(int index, int defaultValue) {
@@ -1550,7 +1550,7 @@ public class HttpConnector extends Node {
 		// outputFieldNameToUse = getStringInputParameterValue(IP_OUTPUT_FIELD_NAME_INDEX);
 		outputFileUrlToUse = getStringInputParameterValue(IP_OUTPUT_FILE_URL_INDEX);
 		appendOutputToUse = getBooleanInputParameterValue(IP_APPEND_OUTPUT_INDEX, Boolean.FALSE);
-		charsetToUse = getStringInputParameterValue(IP_CHARSET_INDEX);
+		charsetToUse = getStringInputParameterValue(IP_CHARSET_INDEX, Defaults.DataParser.DEFAULT_CHARSET_DECODER);
 		addInputFieldsAsParametersToUse = getBooleanInputParameterValue(IP_ADD_INPUT_FIELDS_AS_PARAMETERS_INDEX, Boolean.FALSE);
 		addInputFieldsAsParametersToToUse = getStringInputParameterValue(IP_ADD_INPUT_FIELDS_AS_PARAMETERS_TO_INDEX);
 		ignoredFieldsToUse = getStringInputParameterValue(IP_IGNORED_FIELDS_INDEX);
@@ -1740,7 +1740,7 @@ public class HttpConnector extends Node {
 					try {
 						ByteArrayOutputStream entityBytes = new ByteArrayOutputStream();
 						entity.writeTo(entityBytes);
-						result.append(new String(entityBytes.toByteArray(), entity.getContentEncoding() == null ? Charset.defaultCharset().name() : entity.getContentEncoding().getValue()));
+						result.append(new String(entityBytes.toByteArray(), entity.getContentEncoding() == null ? charsetToUse : entity.getContentEncoding().getValue()));
 					} catch (IOException e) {
 						// ignore
 					}
@@ -1783,7 +1783,7 @@ public class HttpConnector extends Node {
 					try {
 						ByteArrayOutputStream entityBytes = new ByteArrayOutputStream();
 						entity.writeTo(entityBytes);
-						result.append(new String(entityBytes.toByteArray(), entity.getContentEncoding() == null ? Charset.defaultCharset().name() : entity.getContentEncoding().getValue()));
+						result.append(new String(entityBytes.toByteArray(), entity.getContentEncoding() == null ? charsetToUse : entity.getContentEncoding().getValue()));
 					} catch (IOException e) {
 						// ignore
 					}
@@ -2837,7 +2837,7 @@ public class HttpConnector extends Node {
 		Object content = configuration.getContent();
 		if (content != null) {
 			HttpEntity entity = null;
-			ContentType contentType = ContentType.create(ContentType.TEXT_PLAIN.getMimeType(), charsetToUse == null ? Defaults.DataParser.DEFAULT_CHARSET_DECODER : charsetToUse);
+			ContentType contentType = ContentType.create(ContentType.TEXT_PLAIN.getMimeType(), charsetToUse);
 			if (content instanceof String) {
 				entity = new StringEntity((String) content, contentType);
 			} else if (content instanceof byte[]) {
@@ -3125,7 +3125,7 @@ public class HttpConnector extends Node {
 				
 				String value = parameter.getValue().content != null ? parameter.getValue().content : "";
 				String contentTypeString = parameter.getValue().conentType != null ? parameter.getValue().conentType : ContentType.TEXT_PLAIN.getMimeType();
-				Charset charset = parameter.getValue().charset != null ? Charset.forName(parameter.getValue().charset) : Charset.defaultCharset();
+				Charset charset = Charset.forName(parameter.getValue().charset != null ? parameter.getValue().charset : Defaults.DataParser.DEFAULT_CHARSET_DECODER);
 
 				ContentType contentType = ContentType.create(contentTypeString, charset);
 				
@@ -3606,11 +3606,7 @@ public class HttpConnector extends Node {
 	 */
 	private String getResponseContentAsString(InputStream responseInputStream) throws IOException {
 		try {
-			if (charsetToUse == null) {
-				return IOUtils.toString(responseInputStream);
-			} else {
-				return IOUtils.toString(responseInputStream, charsetToUse);
-			}
+			return IOUtils.toString(responseInputStream, charsetToUse);
 		} finally {
 			closeStreamSilent(responseInputStream);
 		}
