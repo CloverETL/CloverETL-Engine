@@ -124,7 +124,9 @@ public class MetadataPropagationResolver implements Serializable {
 		//find affected edges for reader component
 		MVComponent reader = edge.getReader();
 		if (reader.isSubgraphComponent()) {
-			affectedEdges.add(reader.getSubgraph().getInputEdges().get(edge.getInputPortIndex()));
+			if (reader.getSubgraph() != null) { //can be null if the subgraph reference is not valid
+				affectedEdges.add(reader.getSubgraph().getInputEdges().get(edge.getInputPortIndex()));
+			}
 		} else if (reader.isSubgraphOutputComponent() && reader.getParentMVGraph().getParent() != null) {
 			affectedEdges.add(reader.getParentMVGraph().getParent().getOutputEdges().get(edge.getInputPortIndex()));
 		} else {
@@ -135,7 +137,9 @@ public class MetadataPropagationResolver implements Serializable {
 		//find affected edges for writer component
 		MVComponent writer = edge.getWriter();
 		if (writer.isSubgraphComponent()) {
-			affectedEdges.add(writer.getSubgraph().getOutputEdges().get(edge.getOutputPortIndex()));
+			if (writer.getSubgraph() != null) { //can be null if the subgraph reference is not valid
+				affectedEdges.add(writer.getSubgraph().getOutputEdges().get(edge.getOutputPortIndex()));
+			}
 		} else if (writer.isSubgraphInputComponent() && writer.getParentMVGraph().getParent() != null) {
 			affectedEdges.add(writer.getParentMVGraph().getParent().getInputEdges().get(edge.getOutputPortIndex()));
 		} else {
