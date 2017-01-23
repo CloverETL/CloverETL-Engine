@@ -26,6 +26,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,6 +36,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
@@ -146,13 +148,13 @@ public final class DictionaryValuesContainer implements Serializable {
 				if ((entry.isInput() && includeInput) 
 						|| (entry.isOutput() && includeOutput) 
 						|| (includeNonDefined && !entry.isInput() && !entry.isOutput())) {
-					if (val==null || val instanceof Serializable) {
+					if (isSerializable(val)) {
 						result.values.put(entryName, (Serializable)val);
 						if (entry.isDirty()) {
 							result.dirtyKeys.add(entryName);
 						}
 					} else {
-						log.debug("Non-Serializable Dictionary entry: key:"+entryName+" value:"+val);
+						log.warn("Non-serializable dictionary entry: key: "+entryName+", value: "+val);
 						if (!(val instanceof Serializable)) {
 							result.nonPersistableKeys.add(entryName);
 						}
@@ -192,6 +194,48 @@ public final class DictionaryValuesContainer implements Serializable {
 				}
 			}
 		}
+	}
+	
+	public static boolean isSerializable(Object object) {
+		
+		if (object == null) {
+			return true;
+		}
+		if (!(object instanceof Serializable)) {
+			return false;
+		}
+		/*
+		 * CLO-10089 - the object has to be not only serializable,
+		 * but also its type has to be accessible on the core level
+		 */
+		ClassLoader loader = DictionaryValuesContainer.class.getClassLoader();
+		try {
+			Class<?> type = loader.loadClass(object.getClass().getName());
+			if (!type.equals(object.getClass())) {
+				return false;
+			}
+		} catch (Exception e) {
+			return false;
+		}
+		
+		if (object instanceof Collection<?>) {
+			Collection<?> col = (Collection<?>)object;
+			for (Object item : col) {
+				if (!isSerializable(item)) {
+					return false;
+				}
+			}
+		} else if (object instanceof Map<?, ?>) {
+			Map<?, ?> map = (Map<?, ?>)object;
+			for (Entry<?, ?> e : map.entrySet()) {
+				if (!isSerializable(e.getKey()) || !isSerializable(e.getValue())) {
+					return false;
+				}
+			}
+		}
+		// TODO arrays?
+		
+		return true;
 	}
 	
 	/**
@@ -301,8 +345,8 @@ public final class DictionaryValuesContainer implements Serializable {
 	 * TreeMap sorts by the keys.
 	 * @return
 	 */
-	public TreeMap<String, Serializable> getContent() {
-		TreeMap<String, Serializable> tm = new TreeMap<String, Serializable>();
+	public SortedMap<String, Serializable> getContent() {
+		SortedMap<String, Serializable> tm = new TreeMap<String, Serializable>();
 		synchronized (values) {
 			tm.putAll(values);
 		}
