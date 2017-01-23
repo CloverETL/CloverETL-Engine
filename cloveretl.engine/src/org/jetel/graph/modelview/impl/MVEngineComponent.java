@@ -199,6 +199,9 @@ public class MVEngineComponent extends MVEngineGraphElement implements MVCompone
 		return SubgraphUtils.isSubJobOutputComponent(getModel().getType());
 	}
 
+	/**
+	 * Can return null if the Subgraph component does not have valid subgraph reference. 
+	 */
 	@Override
 	public MVSubgraph getSubgraph() {
 		if (isSubgraphComponent()) {
