@@ -32,7 +32,7 @@
 	<classpathentry kind="lib" path="lib/truezip-path-7.7.5.jar"/>
 	<classpathentry kind="lib" path="lib/truezip-swing-7.7.5.jar"/>
 	<classpathentry kind="lib" path="lib/sardine-5.0.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/httpmime-4.3.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/httpmime-4.5.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/poi-3.12-20150511.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/poi-ooxml-3.12-20150511.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/poi-ooxml-schemas-3.12-20150511.jar"/>
