@@ -106,6 +106,7 @@
 					<!-- this is not an actual library, the module is loaded dynamically into separated classloader -->
 					<exclude name="**/cloveretl.component.dominoloader.jar"/>
 					<exclude name="**/cloveretl.connection.mongodb.jar"/>
+					<exclude name="**/cloveretl.connection.mongodb3.jar"/>
 				</fileset>
 				<!-- fileset plugin-lib-files contains all files in plugin lib directory, may contain executables (e.g. cloveretl.bulkloader), used while package plugin -->
 				<fileset id="plugin-lib-files" dir="${dir.lib}">
