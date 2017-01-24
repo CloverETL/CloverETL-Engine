@@ -343,6 +343,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("SalesforceMigration.grf") // Salesforce example
 							&& !file.getName().equals("SalesforceRead.grf") // Salesforce example
 							&& (!file.getParentFile().getName().equals("Salesforce") || file.getName().equals("SalesforceBulkReaderWriter_allDataTypes.grf")) // CLO-9285, run 1 salesforce test
+							&& !file.getParentFile().getName().equals("Wave") // Salesfore Wave
 							;
 				}
 			};
