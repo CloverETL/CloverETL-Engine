@@ -155,9 +155,7 @@ public final class DictionaryValuesContainer implements Serializable {
 						}
 					} else {
 						log.warn("Non-serializable dictionary entry: key: "+entryName+", value: "+val);
-						if (!(val instanceof Serializable)) {
-							result.nonPersistableKeys.add(entryName);
-						}
+						result.nonPersistableKeys.add(entryName);
 					}
 				}
 			}
