@@ -102,6 +102,8 @@ import com.linagora.ldap.LdapParser;
  *  <tr><td><b>pageSize</b><br><i>optional</i></td><td>If >0 then LDAP server is queried in paging mode and this attribute defines how many records are returned on one page.<td></td></tr>
  *  <tr><td><b>allAttributes</b><br><i>optional</i></td><td>True/False - query LDAP for all available attributes or only those directly mappable on output fields.When using defaultField then this
  *  should be set to True.<td></td></tr>
+ *  <tr><td><b>binaryAttributes</b><br><i>optional</i></td><td>List of (space separated) LDAP attributes which should be handled as binary data. Default is String.<td></td></tr>
+ *  <tr><td><b>ldapExtraProperties</b><br><i>optional</i></td><td>Java Property-like style of key-value definitions which will be added to LDAP connection environment.<td></td></tr>
  * <!-- to be added <tr><td><b>DataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td></tr> -->
  *  </table>
  * 
