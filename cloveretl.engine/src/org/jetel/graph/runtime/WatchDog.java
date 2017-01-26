@@ -444,7 +444,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
     /**
      * Register given jmx mbean.
      */
-    private synchronized void registerTrackingMBean(CloverJMX cloverJMX) {
+    private void registerTrackingMBean(CloverJMX cloverJMX) {
         String mbeanId = graph.getId();
         
         // Construct the ObjectName for the MBean we will register
