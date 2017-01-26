@@ -401,7 +401,7 @@ public class LdapReader extends Node {
 					xattribs.getString(XML_FILTER_ATTRIBUTE, null),
 					i_scope,
 					xattribs.getString(XML_USER_ATTRIBUTE),
-					xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, RefResFlag.SECURE_PARAMATERS));
+					xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, RefResFlag.PASSWORD));
 		} else {
 			aLdapReader = new LdapReader(
 					xattribs.getString(Node.XML_ID_ATTRIBUTE),

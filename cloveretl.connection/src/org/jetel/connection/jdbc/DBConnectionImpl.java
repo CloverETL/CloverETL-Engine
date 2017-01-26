@@ -194,7 +194,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
 		TypedProperties typedProperties = new TypedProperties(properties, getGraph());
 
 		setUser(typedProperties.getStringProperty(XML_USER_ATTRIBUTE, null));
-		setPassword(typedProperties.getStringProperty(XML_PASSWORD_ATTRIBUTE, null, RefResFlag.SECURE_PARAMATERS));
+		setPassword(typedProperties.getStringProperty(XML_PASSWORD_ATTRIBUTE, null, RefResFlag.PASSWORD));
 		setDbUrl(typedProperties.getStringProperty(XML_DBURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
 		setDbDriver(typedProperties.getStringProperty(XML_DBDRIVER_ATTRIBUTE, null));
 		setDatabase(typedProperties.getStringProperty(XML_DATABASE_ATTRIBUTE, null));

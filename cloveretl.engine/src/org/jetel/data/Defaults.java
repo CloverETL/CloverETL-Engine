@@ -681,22 +681,12 @@ public final class Defaults {
 	public final static class GraphProperties {
 
 		public static void init() {
-			EXPRESSION_EVALUATION_ENABLED = getBooleanProperties(
-					"GraphProperties.EXPRESSION_EVALUATION_ENABLED", true);
-
-			EXPRESSION_PLACEHOLDER_REGEX = getStringProperties(
-					"GraphProperties.EXPRESSION_PLACEHOLDER_REGEX", "(?<!\\\\)`(.*?)(?<!\\\\)`");
 			PROPERTY_PLACEHOLDER_REGEX = getStringProperties(
 					"GraphProperties.PROPERTY_PLACEHOLDER_REGEX", "\\$\\{([a-zA-Z_]\\w*)\\}");
 			PROPERTY_ALLOWED_RECURSION_DEPTH = getIntProperties(
 					"GraphProperties.PROPERTY_ALLOWED_RECURSION_DEPTH", 1000);
 		}
 
-		/** determines whether the CTL expressions within properties should be evaluated or not */
-		public static boolean EXPRESSION_EVALUATION_ENABLED;// = true
-
-		/** a regular expression describing the format of CTL expressions */
-		public static String EXPRESSION_PLACEHOLDER_REGEX;// = "(?<!\\\\)`(.*?)(?<!\\\\)`";
 		/** a regular expression describing the format of property references */
 		public static String PROPERTY_PLACEHOLDER_REGEX;// = "\\$\\{([a-zA-Z_]\\w*)\\}";
 

@@ -37,53 +37,37 @@ public class RefResFlag {
 	 * Regular resolving type - special characters and ctl expressions are turned on, secure parameters are turned off.
 	 * Regular parameters are resolved all the time.
 	 */
-	public static final RefResFlag REGULAR = new RefResFlag(true, true, false);
+	public static final RefResFlag REGULAR = new RefResFlag(true);
 
 	/**
 	 * Everything is turned off - only parameters are resolved.
 	 */
-	public static final RefResFlag ALL_OFF = new RefResFlag(false, false, false);
+	public static final RefResFlag ALL_OFF = new RefResFlag(false);
 
 	/**
 	 * Everything is turned off - only ctl expressions are turned on.
-	 * Regular parameters are resolved all the time.
 	 */
-	public static final RefResFlag SPEC_CHARACTERS_OFF = new RefResFlag(false, true, false);
+	public static final RefResFlag SPEC_CHARACTERS_OFF = new RefResFlag(false);
 
 	/**
-	 * Everything is turned off - only special characters are turned on.
-	 * Regular parameters are resolved all the time.
+	 * Special flag for URL resolution. 
 	 */
-	public static final RefResFlag CTL_EXPRESSIONS_OFF = new RefResFlag(true, false, false);
+	public static final RefResFlag URL = SPEC_CHARACTERS_OFF;
 
 	/**
-	 * Everything is turned off - only secure parameters are turned on.
-	 * Regular parameters are resolved all the time.
+	 * Special flag for passwords resolution.
 	 */
-	public static final RefResFlag SECURE_PARAMATERS = SPEC_CHARACTERS_OFF.resolveSecureParameters(true);
-
-	/**
-	 * Special flag for URL resolution. Only ctl expressions and secure parameters are resolved. 
-	 * Regular parameters are resolved all the time.
-	 */
-	public static final RefResFlag URL = SPEC_CHARACTERS_OFF.resolveSecureParameters(true);
+	public static final RefResFlag PASSWORD = SPEC_CHARACTERS_OFF;
 
 	/** Should be special characters resolved? */
 	private boolean specCharacters;
-	/** Should be ctl expressions resolved? */
-	private boolean ctlStatements;
-	/** Should be secure parameters resolved? */
-	private boolean secureParameters;
 	
-	private RefResFlag(boolean specCharacters, boolean ctlStatements, boolean secureParamaters) {
+	private RefResFlag(boolean specCharacters) {
 		this.specCharacters = specCharacters;
-		this.ctlStatements = ctlStatements;
-		this.secureParameters = secureParamaters;
 	}
+
 	private RefResFlag(RefResFlag flag) {
 		this.specCharacters = flag.specCharacters;
-		this.ctlStatements = flag.ctlStatements;
-		this.secureParameters = flag.secureParameters;
 	}
 	
 	/** Should be special characters resolved? */
@@ -97,27 +81,4 @@ public class RefResFlag {
 		return result;
 	}
 	
-	/** Should be ctl expressions resolved? */
-	public boolean resolveCTLStatements() {
-		return ctlStatements;
-	}
-
-	/** Should be ctl expressions resolved? */
-	public RefResFlag resolveCTLStatements(boolean ctlStatements) {
-		RefResFlag result = new RefResFlag(this);
-		result.ctlStatements = ctlStatements;
-		return result;
-	}
-
-	/** Should be secure parameters resolved? */
-	public boolean resolveSecureParameters() {
-		return secureParameters;
-	}
-
-	/** Should be secure parameters resolved? */
-	public RefResFlag resolveSecureParameters(boolean secureParameters) {
-		RefResFlag result = new RefResFlag(this);
-		result.secureParameters = secureParameters;
-		return result;
-	}
 }

@@ -319,7 +319,7 @@ public class LdapWriter extends Node {
 					xattribs.getStringEx(XML_LDAPURL_ATTRIBUTE, RefResFlag.URL),
 					action,
 					xattribs.getString(XML_USER_ATTRIBUTE),
-					xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, RefResFlag.SECURE_PARAMATERS));
+					xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, RefResFlag.PASSWORD));
 		} else {
 			aSimpleLdapWriter = new LdapWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_LDAPURL_ATTRIBUTE),

@@ -2477,7 +2477,7 @@ public class HttpConnector extends Node {
 		httpConnector.setTemporaryFilePrefix(xattribs.getString(XML_TEMPORARY_FILE_PREFIX, "http-response-"));
 		httpConnector.setAuthenticationMethod(xattribs.getString(XML_AUTHENTICATION_METHOD_ATTRIBUTE, "BASIC"));
 		httpConnector.setUsername(xattribs.getString(XML_USERNAME_ATTRIBUTE, null));
-		httpConnector.setPassword(xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, null, RefResFlag.SECURE_PARAMATERS));
+		httpConnector.setPassword(xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, null, RefResFlag.PASSWORD));
 		httpConnector.setAddInputFieldsAsParameters(xattribs.getBoolean(XML_ADD_INPUT_FIELDS_AS_PARAMETERS_ATTRIBUTE, false));
 		httpConnector.setAddInputFieldsAsParametersTo(xattribs.getString(XML_ADD_INPUT_FIELDS_AS_PARAMETERS_TO_ATTRIBUTE, "QUERY"));
 		httpConnector.setIgnoredFields(xattribs.getString(XML_IGNORED_FIELDS_ATTRIBUTE, null));

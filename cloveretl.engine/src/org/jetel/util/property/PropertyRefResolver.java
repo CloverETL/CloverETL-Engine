@@ -40,7 +40,6 @@ import org.jetel.graph.GraphParameters;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.interpreter.CTLExpressionEvaluator;
-import org.jetel.interpreter.ParseException;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.string.StringUtils;
 
@@ -70,18 +69,12 @@ import org.jetel.util.string.StringUtils;
  */
 public class PropertyRefResolver {
 
-	/** the character used to quote CTL expressions */
-	private static final char EXPRESSION_QUOTE = Defaults.GraphProperties.EXPRESSION_PLACEHOLDER_REGEX.charAt(
-			Defaults.GraphProperties.EXPRESSION_PLACEHOLDER_REGEX.length() - 1);
-
 	/** the logger for this class */
 	private static final Log logger = LogFactory.getLog(PropertyRefResolver.class);
 
 	/** properties used for resolving property references */
 	private final GraphParameters parameters;
 
-	/** the regex pattern used to find CTL expressions */
-	private static final Pattern expressionPattern = Pattern.compile(Defaults.GraphProperties.EXPRESSION_PLACEHOLDER_REGEX);
 	/** the regex pattern used to find property references */
 	private static final Pattern propertyPattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX);
 
@@ -289,12 +282,7 @@ public class PropertyRefResolver {
 		
 		String formerValue = value.toString();
 		try {
-			//evaluate CTL expressions
-			if (flag.resolveCTLStatements()) {
-				evaluateExpressions(value, flag);
-			}
-	
-			//resolve remaining property references
+			//resolve property references
 			resolveReferences(value, flag);
 		} catch (RecursionOverflowedException e) {
 			if (ContextProvider.getRuntimeContext() == null || ContextProvider.getRuntimeContext().isStrictGraphFactorization()) {
@@ -315,56 +303,6 @@ public class PropertyRefResolver {
 
 			value.setLength(0);
 			value.append(resolvedValue);
-		}
-	}
-
-	/**
-	 * Finds and evaluates CTL expressions present in the given string buffer. Property references present in the CTL
-	 * expressions are resolved before evaluation. The result is stored back in the given string buffer.
-	 *
-	 * @param value a string buffer containing CTL expressions
-	 *
-	 * @return <code>true</code> if at least one CTL expression was found and evaluated, <code>false</code> otherwise
-	 */
-	private void evaluateExpressions(StringBuilder value, RefResFlag flag) {
-		if (!Defaults.GraphProperties.EXPRESSION_EVALUATION_ENABLED) {
-			return;
-		}
-
-		Matcher expressionMatcher = expressionPattern.matcher(value);
-		while (expressionMatcher.find()) {
-			//aren't we too deep in recursion?
-			if (isRecursionOverflowed()) {
-				throw new RecursionOverflowedException(PropertyMessages.getString("PropertyRefResolver_infinite_recursion_warning")); //$NON-NLS-1$
-			}
-
-			String expression = expressionMatcher.group(1);
-
-			if (StringUtils.isEmpty(expression)) {
-				// no evaluation is necessary in case of empty CTL expressions
-				value.delete(expressionMatcher.start(), expressionMatcher.end());
-				expressionMatcher.region(expressionMatcher.start(), value.length());
-			} else {
-				// resolve property references that might be present in the CTL expression
-				StringBuilder resolvedExpression = new StringBuilder(expression);
-				resolveReferences(resolvedExpression, flag);
-
-				// make sure that expression quotes are unescaped before evaluation of the CTL expression
-				StringUtils.unescapeCharacters(resolvedExpression, EXPRESSION_QUOTE);
-
-				try {
-					// finally evaluate the CTL expression
-					String evaluatedExpression = expressionEvaluator.evaluate(resolvedExpression.toString());
-
-					// update the expression matcher so that find() starts at the correct index
-					value.replace(expressionMatcher.start(), expressionMatcher.end(), evaluatedExpression);
-					expressionMatcher.region(expressionMatcher.start() + evaluatedExpression.length(), value.length());
-
-				} catch (ParseException exception) {
-					errorMessages.add(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_invalid_ctl_warning"), resolvedExpression)); //$NON-NLS-1$
-					logger.warn(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_evaluation_failed_warning"), resolvedExpression), exception); //$NON-NLS-1$
-				}
-			}
 		}
 	}
 
@@ -429,14 +367,9 @@ public class PropertyRefResolver {
 			}
 			
 			if (resolvedReference != null) {
-				// evaluate the CTL expression that might be present in the property
-				StringBuilder evaluatedReference = new StringBuilder(resolvedReference);
-				if (flag.resolveCTLStatements()) {
-					evaluateExpressions(evaluatedReference, flag);
-				}
-				value.replace(propertyMatcher.start(), propertyMatcher.end(), evaluatedReference.toString());
+				value.replace(propertyMatcher.start(), propertyMatcher.end(), resolvedReference);
 				if (!canBeParamaterResolved && containsProperty(resolvedReference)) {
-					nextStart = propertyMatcher.start() + evaluatedReference.length();
+					nextStart = propertyMatcher.start() + resolvedReference.length();
 				}
 			} else {
 				nextStart = propertyMatcher.end();
@@ -570,18 +503,6 @@ public class PropertyRefResolver {
 			}
 		} else {
 			return null;
-		}
-	}
-	
-	/**
-	 * @param value tested string
-	 * @return true if the given string represents CTL expression, for example "`today()`; false otherwise 
-	 */
-	public static boolean isCTLExpression(String value){
-		if (!StringUtils.isEmpty(value)) {
-			return expressionPattern.matcher(value).matches();
-		} else {
-			return false;
 		}
 	}
 	

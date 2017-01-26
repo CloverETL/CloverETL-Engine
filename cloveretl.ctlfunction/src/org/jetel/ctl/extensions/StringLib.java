@@ -1617,22 +1617,19 @@ public class StringLib extends TLFunctionLibrary {
 	public static final String resolveParams(TLFunctionCallContext context, String value) {
 		return resolveParams(context, value, false, true);
 	}
-	
+
+	@TLFunctionAnnotation("Resolves parameters in a given string.")
+	public static final String resolveParams(TLFunctionCallContext context, String value, boolean resolveSpecialChars) {
+		return resolveParams(context, value, resolveSpecialChars, true);
+	}
+
 	@TLFunctionAnnotation("Resolves parameters in a given string.")
 	public static final String resolveParams(TLFunctionCallContext context, String value, boolean resolveSpecialChars, boolean resolveCTL) {
 		RefResFlag refResFlag = null;
 		if (resolveSpecialChars) {
-			if (resolveCTL) {
-				refResFlag = RefResFlag.REGULAR;
-			} else {
-				refResFlag = RefResFlag.CTL_EXPRESSIONS_OFF;
-			}
+			refResFlag = RefResFlag.REGULAR;
 		} else {
-			if (resolveCTL) {
-				refResFlag = RefResFlag.SPEC_CHARACTERS_OFF;
-			} else {
-				refResFlag = RefResFlag.ALL_OFF;
-			}
+			refResFlag = RefResFlag.SPEC_CHARACTERS_OFF;
 		}
 		PropertyRefResolver refResolver = ((TLPropertyRefResolverCache) context.getCache()).getCachedPropertyRefResolver();
 		return refResolver.resolveRef(value, refResFlag);
@@ -1649,6 +1646,10 @@ public class StringLib extends TLFunctionLibrary {
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams().length == 1) {
 				stack.push(resolveParams(context, stack.popString()));
+			} else if (context.getParams().length == 2) {
+				final boolean resolveSpecialChars = stack.popBoolean();
+				final String value = stack.popString();
+				stack.push(resolveParams(context, value, resolveSpecialChars));
 			} else if (context.getParams().length == 3) {
 				final boolean resolveCTL = stack.popBoolean();
 				final boolean resolveSpecialChars = stack.popBoolean();

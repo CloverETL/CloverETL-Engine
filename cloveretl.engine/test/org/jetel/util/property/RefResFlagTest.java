@@ -30,43 +30,14 @@ public class RefResFlagTest extends CloverTestCase {
 
 	public void test() {
 		assertTrue(RefResFlag.ALL_OFF.resolveSpecCharacters() == false);
-		assertTrue(RefResFlag.ALL_OFF.resolveCTLStatements() == false);
-		assertTrue(RefResFlag.ALL_OFF.resolveSecureParameters() == false);
 		
-		assertTrue(RefResFlag.CTL_EXPRESSIONS_OFF.resolveSpecCharacters() == true);
-		assertTrue(RefResFlag.CTL_EXPRESSIONS_OFF.resolveCTLStatements() == false);
-		assertTrue(RefResFlag.CTL_EXPRESSIONS_OFF.resolveSecureParameters() == false);
-
 		assertTrue(RefResFlag.SPEC_CHARACTERS_OFF.resolveSpecCharacters() == false);
-		assertTrue(RefResFlag.SPEC_CHARACTERS_OFF.resolveCTLStatements() == true);
-		assertTrue(RefResFlag.SPEC_CHARACTERS_OFF.resolveSecureParameters() == false);
 
 		assertTrue(RefResFlag.REGULAR.resolveSpecCharacters() == true);
-		assertTrue(RefResFlag.REGULAR.resolveCTLStatements() == true);
-		assertTrue(RefResFlag.REGULAR.resolveSecureParameters() == false);
-
-		assertTrue(RefResFlag.SECURE_PARAMATERS.resolveSpecCharacters() == false);
-		assertTrue(RefResFlag.SECURE_PARAMATERS.resolveCTLStatements() == true);
-		assertTrue(RefResFlag.SECURE_PARAMATERS.resolveSecureParameters() == true);
 
 		assertTrue(RefResFlag.URL.resolveSpecCharacters() == false);
-		assertTrue(RefResFlag.URL.resolveCTLStatements() == true);
-		assertTrue(RefResFlag.URL.resolveSecureParameters() == true);
 		
 		RefResFlag flag;
-		flag = RefResFlag.REGULAR.resolveCTLStatements(false);
-		assertTrue(flag.resolveCTLStatements() == false);
-		assertTrue(RefResFlag.REGULAR.resolveCTLStatements() == true);
-		flag = flag.resolveCTLStatements(true);
-		assertTrue(flag.resolveCTLStatements() == true);
-		assertTrue(RefResFlag.REGULAR.resolveCTLStatements() == true);
-
-		flag = RefResFlag.REGULAR.resolveSecureParameters(false);
-		assertTrue(flag.resolveSecureParameters() == false);
-		assertTrue(RefResFlag.REGULAR.resolveSecureParameters() == false);
-		flag = flag.resolveSecureParameters(true);
-		assertTrue(flag.resolveSecureParameters() == true);
-		assertTrue(RefResFlag.REGULAR.resolveSecureParameters() == false);
 
 		flag = RefResFlag.REGULAR.resolveSpecCharacters(false);
 		assertTrue(flag.resolveSpecCharacters() == false);
