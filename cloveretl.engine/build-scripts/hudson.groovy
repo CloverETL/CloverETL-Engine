@@ -60,6 +60,7 @@ System.getenv().each{ println "\t${it}" }
 baseD = new File( new File('').absolutePath )
 engineD = new File( baseD, "cloveretl.engine" ) 
 testEnvironmentD = new File( baseD, "cloveretl.test.environment" ) 
+trustStoreF = new File(baseD, "cloveretl.test.scenarios/truststore/certs") //set default truststore - some tests might use different one
 
 jobIdent = testName ? testName : jobGoal
 jobIdent += "-${versionSuffix}"
@@ -78,7 +79,7 @@ if( !runTests ){
 		"-Dcte.hudson.link=job/${jobName}/${buildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
 		"-Djavaversion=${javaVersion}",
-		"-Drunscenarios.trustStore=-Djavax.net.ssl.trustStore=${new File(baseD, 'cloveretl.test.scenarios/truststore/certs')}"
+		"-Drunscenarios.trustStore=-Djavax.net.ssl.trustStore=${trustStoreF)}"
 	]
 	if( jobGoal == "after-commit" ) {
 		antTarget = "reports-hudson"
@@ -160,7 +161,6 @@ if( !runTests ){
 		antTarget = "run-scenarios-with-engine-build"
 		antArgs += "-Drunscenarios.Xmx=-Xmx512m"
 		trustStoreF = new File(baseD, "cloveretl.test.scenarios/truststore/proxyTests.truststore")
-		antArgs += "-Drunscenarios.trustStore=-Djavax.net.ssl.trustStore=${trustStoreF}"
 	}
 	if (testName == "night") { //night tests need more memory
 		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
@@ -176,7 +176,7 @@ if( !runTests ){
 		antArgs += "-Drunscenarios.Xmso=-Xmso2048k" // CLO-4730, CLO-4567
 	}
 
-	
+	antArgs += "-Drunscenarios.trustStore=-Djavax.net.ssl.trustStore=${trustStoreF}"
 	
 	cloverD = new File(baseD, "cloverETL")
 	// removing files from previous build 
