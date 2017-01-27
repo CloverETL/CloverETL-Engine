@@ -79,7 +79,7 @@ if( !runTests ){
 		"-Dcte.hudson.link=job/${jobName}/${buildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
 		"-Djavaversion=${javaVersion}",
-		"-Drunscenarios.trustStore=-Djavax.net.ssl.trustStore=${trustStoreF)}"
+		"-Drunscenarios.trustStore=-Djavax.net.ssl.trustStore=${trustStoreF}"
 	]
 	if( jobGoal == "after-commit" ) {
 		antTarget = "reports-hudson"
