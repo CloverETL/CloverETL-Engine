@@ -19,7 +19,10 @@
 package com.linagora.component;
 
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -99,6 +102,8 @@ import com.linagora.ldap.LdapParser;
  *  <tr><td><b>pageSize</b><br><i>optional</i></td><td>If >0 then LDAP server is queried in paging mode and this attribute defines how many records are returned on one page.<td></td></tr>
  *  <tr><td><b>allAttributes</b><br><i>optional</i></td><td>True/False - query LDAP for all available attributes or only those directly mappable on output fields.When using defaultField then this
  *  should be set to True.<td></td></tr>
+ *  <tr><td><b>binaryAttributes</b><br><i>optional</i></td><td>List of (space separated) LDAP attributes which should be handled as binary data. Default is String.<td></td></tr>
+ *  <tr><td><b>ldapExtraProperties</b><br><i>optional</i></td><td>Java Property-like style of key-value definitions which will be added to LDAP connection environment.<td></td></tr>
  * <!-- to be added <tr><td><b>DataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td></tr> -->
  *  </table>
  * 
@@ -146,6 +151,8 @@ public class LdapReader extends Node {
 	private static final String XML_DEFAULT_MAPPING_FIELD = "defaultField";
 	private static final String XML_PAGE_SIZE = "pageSize";
 	private static final String XML_ALL_LDAP_ATTRIBUTES = "allAttributes";
+	private static final String XML_ADDITIONAL_BINARY_ATTRIBUTES = "binaryAttributes";
+	private static final String XML_ADDITIONAL_LDAP_ENV = "ldapExtraProperties";
 
 	/**
 	 * Component type
@@ -177,6 +184,8 @@ public class LdapReader extends Node {
 	 *  List fields handle multivalues naturally 
 	 **/
 	private String multiValueSeparator = "|";
+	private String additionalBinaryAttributes;
+	private String ldapExtraPropertiesDef;
 	
 	
 	private AliasHandling aliasHandling;
@@ -247,6 +256,20 @@ public class LdapReader extends Node {
 		}
 		if (pageSize>0) parser.setPageSize(pageSize);
 		parser.setAllAttributes(allAttributes);
+		
+		if (additionalBinaryAttributes!=null && additionalBinaryAttributes.length()>0){
+			parser.setAdditionalBinaryAttributes(additionalBinaryAttributes);
+		}
+		if (ldapExtraPropertiesDef!=null && ldapExtraPropertiesDef.length()>0){
+			Properties env = new Properties();
+			try{
+				env.load(new StringReader(ldapExtraPropertiesDef));
+				parser.setAdditionalLDAPConnectionEnvironment(env);
+			}catch(IOException ex){
+				//do nothing.. ignore
+			}
+			
+		}
 		
 		/*
 		 * TODO : well... I don't know how to add LdapConnection node to transformation graph.
@@ -428,6 +451,12 @@ public class LdapReader extends Node {
 		if (xattribs.exists(XML_ALL_LDAP_ATTRIBUTES)){
 			aLdapReader.setAllAttributes(xattribs.getBoolean(XML_ALL_LDAP_ATTRIBUTES));
 		}
+		if (xattribs.exists(XML_ADDITIONAL_BINARY_ATTRIBUTES)){
+			aLdapReader.setAdditionalBinaryAttributes(xattribs.getString(XML_ADDITIONAL_BINARY_ATTRIBUTES));
+		}
+		if (xattribs.exists(XML_ADDITIONAL_LDAP_ENV)){
+			aLdapReader.setLdapExtraPropertiesDef(XML_ADDITIONAL_LDAP_ENV);
+		}
 		
 		return aLdapReader;
 	}
@@ -534,5 +563,21 @@ public class LdapReader extends Node {
 			source=matcher.replaceAll(field.toString());
 		}
 		return source;
+	}
+
+
+	/**
+	 * @param additionalBinaryAttributes the additionalBinaryAttributes to set
+	 */
+	public void setAdditionalBinaryAttributes(String additionalBinaryAttributes) {
+		this.additionalBinaryAttributes = additionalBinaryAttributes;
+	}
+
+
+	/**
+	 * @param ldapExtraPropertiesDef the ldapExtraPropertiesDef to set
+	 */
+	public void setLdapExtraPropertiesDef(String ldapExtraPropertiesDef) {
+		this.ldapExtraPropertiesDef = ldapExtraPropertiesDef;
 	}
 }

@@ -20,6 +20,7 @@ package com.linagora.ldap;
 
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.Map;
 
 import javax.naming.CompositeName;
 import javax.naming.Context;
@@ -42,6 +43,9 @@ import org.apache.commons.logging.LogFactory;
 
 public class LdapManager {
 
+	
+	private static final String DEFAULT_BINARY_ATTRIBUTES = "photo jpegphoto jpegPhoto objectGUID";
+	private static final String JAVA_NAMING_LDAP_ATTRIBUTES_BINARY = "java.naming.ldap.attributes.binary";
 	private static final String DEFAULT_CTX = "com.sun.jndi.ldap.LdapCtxFactory";
 	private static final String DEREF_ALIASES_ENV_PROPERTY = "java.naming.ldap.derefAliases";
 
@@ -188,8 +192,8 @@ public class LdapManager {
 		 */
 		this.env.put(Context.PROVIDER_URL, url);
 
-		this.env.put("java.naming.ldap.attributes.binary",
-				"photo jpegphoto jpegPhoto"); // special hack to handle non-standard binary atts, from jxplorer
+		this.env.put(JAVA_NAMING_LDAP_ATTRIBUTES_BINARY,
+				DEFAULT_BINARY_ATTRIBUTES); // special hack to handle non-standard binary atts, from jxplorer
 	}
 
 	/**
@@ -212,7 +216,33 @@ public class LdapManager {
 		this.env.put(Context.SECURITY_PRINCIPAL, userDN); // add the full user dn
 		this.env.put(Context.SECURITY_CREDENTIALS, pwd);
 	}
-
+	
+	
+	/**
+	 * Overrides the default environment properties of the LDAP connection. Has to be called
+	 * before  openContext() to have an effect. 
+	 * Default settings can be change by providing new values for property names
+	 * 
+	 * @param newEnv new entries or overwrite of existing entries.
+	 */
+	public void addEnv(Map<String,String> newEnv){
+		this.env.putAll(newEnv);
+	}
+	
+	public Hashtable<String,String> getEnv(){
+		return this.env;
+	}
+	
+	/**
+	 * Add specific attribute name to the list of LDAP attributes which should be handled as binary data.
+	 * @see https://docs.oracle.com/javase/jndi/tutorial/ldap/misc/attrs.html
+	 * Default handling is string.
+	 * @param attributeName
+	 */
+	public void addBinaryAttribute(String attributeName){
+		this.env.put(JAVA_NAMING_LDAP_ATTRIBUTES_BINARY,(this.env.get(JAVA_NAMING_LDAP_ATTRIBUTES_BINARY)+" "+attributeName));
+	}
+	
 	/**
 	 * @return a newly created DirContext.
 	 */

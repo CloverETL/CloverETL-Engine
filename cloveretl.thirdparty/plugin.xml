@@ -95,6 +95,12 @@
           <property category="advanced" displayName="Default field" modifiable="true" name="defaultField" nullable="true">
             <singleType name="field" outputPortName="0" type="string" containerType="map"/>
           </property>
+          <property category="advanced" displayName="Binary attributes" modifiable="true" name="binaryAttributes" nullable="true">
+            <singleType name="multiline"/>
+          </property>
+          <property category="advanced" displayName="LDAP Connection Properties" modifiable="true" name="ldapExtraProperties" nullable="true">
+            <singleType name="multiline"/>
+          </property>
 	    </properties>
 	  </ETLComponent>
 	</extension>
