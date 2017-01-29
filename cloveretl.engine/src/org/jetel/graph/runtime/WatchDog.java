@@ -168,10 +168,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		watchDogStatus = Result.READY;
 	}
 	
-	private void finishJMX() {
+	private synchronized void finishJMX() {
 		if (provideJMX && finishJMX && jmxObjectName != null) {
 			try {
 				getMBeanServer().unregisterMBean(jmxObjectName);
+	            logger.debug("unregister MBean with name: " + jmxObjectName.getCanonicalName());
+				jmxObjectName = null;
 			} catch (InstanceNotFoundException e) {
 				if (logger.isDebugEnabled()) {
 					logger.info("JMX notification listener not found", e);
@@ -891,6 +893,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
     }
     
     public void free() {
+    	//the JMX bean should be already released, but if the graph has been aborted
+    	//earlier than call() method, JMX bean can be still registered
+    	//so try to release the JMX bean again
+    	freeJMX();
     	isReleased = true;
     }
     
