@@ -61,6 +61,8 @@ import org.jetel.util.ExceptionUtils;
 import org.jetel.util.primitive.MultiValueMap;
 import org.jetel.util.property.PropertyRefResolver;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 
 /**
  *  Description of the Class
@@ -831,7 +833,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
         return graph;
     }
 
-	public void setUseJMX(boolean useJMX) {
+	@SuppressFBWarnings("IS2_INCONSISTENT_SYNC")
+    public void setUseJMX(boolean useJMX) {
 		this.provideJMX = useJMX;
 	}
 
@@ -839,6 +842,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		return runtimeContext;
 	}
 
+	@SuppressFBWarnings("IS2_INCONSISTENT_SYNC")
 	public CloverJMX getCloverJmx() {
 		return cloverJMX;
 	}
