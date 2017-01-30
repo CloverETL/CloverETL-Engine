@@ -157,6 +157,7 @@ if( !runTests ){
 		//testing derby database is not available under windows platform, so target is changed
 		antTarget = "run-scenarios-with-engine-build"
 		antArgs += "-Drunscenarios.Xmx=-Xmx512m"
+		trustStoreF = trustStoreF.getCanonicalPath().replaceAll("\\\\", "/") // use forward slashes in path on windows
 	}
 	if( testName == "after-commit-proxy" ){
 		antTarget = "run-scenarios-with-engine-build"
