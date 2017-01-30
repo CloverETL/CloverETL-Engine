@@ -129,7 +129,7 @@ function integer generate() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="ExtFilter" guiX="326" guiY="25" id="EXT_FILTER" type="EXT_FILTER">
+<Node enabled="enabled" guiName="Filter" guiX="326" guiY="25" id="EXT_FILTER" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[//#CTL2
 dictionary.filter_firstRecord ? !(dictionary.filter_firstRecord = false) : false]]></attr>
 </Node>
