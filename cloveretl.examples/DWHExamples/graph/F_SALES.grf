@@ -90,7 +90,7 @@ If the data is stored in database instead of files, the DBJoin component can be 
 <attr name="guiDescription"><![CDATA[Sales fact table stores two aggregable attributes (UNITS, TOTAL_PRICE) , one degenerate dimension (INVOICE_NUMBER) and is linked with 4 dimension (Customer, Date, Store and Product).]]></attr>
 </Node>
 <Node enabled="enabled" fileURL="${TABLES}/F_SALES.tbl" guiHeight="101" guiName="INSERT to F_SALES" guiWidth="168" guiX="839" guiY="179" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="69" guiName="ExtFilter" guiWidth="128" guiX="967" guiY="55" id="EXT_FILTER0" type="EXT_FILTER">
+<Node enabled="enabled" guiHeight="69" guiName="Filter" guiWidth="128" guiX="967" guiY="55" id="EXT_FILTER0" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[$0.TRANSACTION_DATE >= $0.from_date AND ( isnull($0.to_date) OR $0.TRANSACTION_DATE <= $0.to_date )]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="85" guiName="Lookup ID_D_STORE" guiWidth="177" guiX="458" guiY="55" id="LOOKUP_JOIN0" joinKey="STORE_NUMBER" lookupTable="LookupTable2" type="LOOKUP_JOIN">

@@ -61,7 +61,7 @@ If the graph parameter "GET_HOSTNAME" is set to the value "1", the graph returns
 <Node aggregateKey="ip_address" enabled="enabled" guiHeight="69" guiName="Aggregate" guiWidth="128" guiX="853" guiY="81" id="AGGREGATE0" mapping="$ip_address:=$ip_address;$access_count:=count();" type="AGGREGATE"/>
 <Node aggregateKey="request" enabled="enabled" guiHeight="69" guiName="Aggregate" guiWidth="128" guiX="855" guiY="201" id="AGGREGATE1" mapping="$request:=$request;$count:=count();" type="AGGREGATE"/>
 <Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAIN_DIR}/access_log" guiHeight="101" guiName="ReadParseAccessLog" guiWidth="179" guiX="27" guiY="61" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" guiHeight="69" guiName="ExtFilter" guiWidth="128" guiX="213" guiY="62" id="EXT_FILTER0" type="EXT_FILTER">
+<Node enabled="enabled" guiHeight="69" guiName="Filter" guiWidth="128" guiX="213" guiY="62" id="EXT_FILTER0" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[NOT($0.request ~= '^.*\.(png|gif|css|zip|jpg|txt|ico|xml|tdp|swf)$')]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="85" guiName="Sort by ip_address" guiWidth="161" guiX="684" guiY="81" id="EXT_SORT0" sortKey="ip_address(a)" sorterInitialCapacity="10000" type="EXT_SORT"/>
