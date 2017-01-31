@@ -42,14 +42,6 @@ public interface TransformDescriptor<T> {
 	public Class<T> getTransformClass();
 
 	/**
-	 * Creates instance of {@link #getTransformClass()} class based on the CTL1 transformation code. 
-	 * @param transformCode CTL1 transformation code to be converted to dedicated class
-	 * @param logger a logger necessary for CTL1 compiler
-	 * @return instance of transformation interface defined by CTL1 transformation code 
-	 */
-	public T createCTL1Transform(String transformCode, Logger logger);
-	
-	/**
 	 * @return class which is used for compiled mode of CTL2 compiler
 	 * to be overridden by generated java code    
 	 */

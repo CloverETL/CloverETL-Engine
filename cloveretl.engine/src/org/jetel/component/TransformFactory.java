@@ -43,7 +43,6 @@ import org.jetel.exception.MissingFieldException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.CodeParser;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.file.FileUtils;
@@ -118,11 +117,6 @@ public class TransformFactory<T> {
 			@Override
 			public Class<T> getTransformClass() {
 				return transformClass;
-			}
-
-			@Override
-			public T createCTL1Transform(String transformCode, Logger logger) {
-				throw new UnsupportedOperationException("CTL1 is not supported in '" + transformClass.getName() + "'.");
 			}
 
 			@Override
@@ -283,16 +277,12 @@ public class TransformFactory<T> {
     	
         switch (language) {
         case JAVA:
-        	transformCode = preprocessJavaCode(transformCode, inMetadata, outMetadata, component, false);
             transformation = DynamicJavaClass.instantiate(transformCode, transformDescriptor.getTransformClass(), component);
             break;
         case JAVA_PREPROCESS:
-        	transformCode = preprocessJavaCode(transformCode, inMetadata, outMetadata, component, true);
-            transformation = DynamicJavaClass.instantiate(transformCode, transformDescriptor.getTransformClass(), component);
-            break;
+        	throw new JetelRuntimeException("CTLLite is no more supported language, please convert your code to CTL2.");
         case CTL1:
-        	transformation = transformDescriptor.createCTL1Transform(transformCode, component.getLog());
-            break;
+        	throw new JetelRuntimeException("CTL1 is no more supported language, please convert your code to CTL2.");
         case CTL2:
         	if (charset == null) {
         		charset = Defaults.DEFAULT_SOURCE_CODE_CHARSET;
@@ -336,24 +326,6 @@ public class TransformFactory<T> {
         return transformation;
     }
     
-    /**
-     * Java code is pre-processed by {@link CodeParser} before compilation.
-     */
-    private static String preprocessJavaCode(String transformCode, DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, Node node, boolean addTransformCodeStub) {
-        // creating dynamicTransformCode from internal transformation format
-        CodeParser codeParser = new CodeParser(inMetadata, outMetadata);
-        if (!addTransformCodeStub) 
-        	// we must turn this off, because we don't have control about the rest of Java source
-        	// and thus we cannot create the declaration of symbolic constants
-        	codeParser.setUseSymbolicNames(false);
-        codeParser.setSourceCode(transformCode);
-        codeParser.parse();
-        if (addTransformCodeStub) {
-        	codeParser.addTransformCodeStub("Transform" + node.getId());
-        }
-        return codeParser.getSourceCode();
-    }
-
 	/**
 	 * Sets transformation code.
 	 */

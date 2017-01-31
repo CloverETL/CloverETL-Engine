@@ -26,11 +26,9 @@ import org.jetel.ctl.ITLCompiler;
 import org.jetel.ctl.TLCompilerFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.CompoundException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.interpreter.ParseException;
-import org.jetel.interpreter.TransformLangParser;
-import org.jetel.interpreter.ASTnode.CLVFStartExpression;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.compile.ClassLoaderUtils;
 
@@ -88,20 +86,7 @@ public class RecordFilterFactory {
 	    	// initialize transformation
 	    	filter.init();
 		} else {
-			// old TL initialization
-			TransformLangParser parser = new TransformLangParser(metadata, NO_METADATA, filterExpression);
-			try {
-				  final CLVFStartExpression recordFilter = parser.StartExpression();
-				  filter = new RecordFilterTL(recordFilter);
-				  if (graph != null ){
-					  filter.setGraph(graph);
-				  }
-				  filter.init();
-			} catch (ParseException ex) {
-                throw new ComponentNotReadyException("Parser error when parsing expression", ex);
-            } catch (Exception e) {
-				throw new ComponentNotReadyException("Error when initializing expression", e);
-			}
+        	throw new JetelRuntimeException("CTL1 is no more supported language, please convert your code to CTL2.");
 		}
 		
 		return filter;

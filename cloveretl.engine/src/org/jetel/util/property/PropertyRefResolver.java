@@ -39,7 +39,6 @@ import org.jetel.graph.GraphParameter;
 import org.jetel.graph.GraphParameters;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.IAuthorityProxy;
-import org.jetel.interpreter.CTLExpressionEvaluator;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.string.StringUtils;
 
@@ -77,9 +76,6 @@ public class PropertyRefResolver {
 
 	/** the regex pattern used to find property references */
 	private static final Pattern propertyPattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX);
-
-	/** the CTL expression evaluator used to evaluate CTL expressions */
-	private final CTLExpressionEvaluator expressionEvaluator = new CTLExpressionEvaluator();
 
 	/** the set (same errors need to be listed once only) of errors that occurred during evaluation of a single string */
 	private final Set<String> errorMessages = new HashSet<String>();

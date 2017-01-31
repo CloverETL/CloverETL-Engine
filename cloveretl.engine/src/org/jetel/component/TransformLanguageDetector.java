@@ -21,7 +21,6 @@ package org.jetel.component;
 import java.util.regex.Pattern;
 
 import org.jetel.ctl.TransformLangExecutor;
-import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.string.CommentsProcessor;
 
 /**
@@ -50,6 +49,9 @@ public class TransformLanguageDetector {
     public static final Pattern PATTERN_PREPROCESS_1 = Pattern.compile("\\$\\{out\\."); 
     public static final Pattern PATTERN_PREPROCESS_2 = Pattern.compile("\\$\\{in\\.");
 
+    public static final String TL_TRANSFORM_CODE_ID="//#TL";  // magic header determining that the source code is obsolete CTL1
+    public static final String TL_TRANSFORM_CODE_ID2="//#CTL1";  // magic header determining that the source code is obsolete CTL1
+
     /**
      * Guesses type of transformation code based on
      * code itself - looks for certain patterns within the code.
@@ -59,8 +61,8 @@ public class TransformLanguageDetector {
       
     	// First, try to identify the starting string
     	
-    	if (getPattern(WrapperTL.TL_TRANSFORM_CODE_ID).matcher(transformationCode).find() ||
-    			getPattern(WrapperTL.TL_TRANSFORM_CODE_ID2).matcher(transformationCode).find()) {
+    	if (getPattern(TL_TRANSFORM_CODE_ID).matcher(transformationCode).find() ||
+    			getPattern(TL_TRANSFORM_CODE_ID2).matcher(transformationCode).find()) {
     		return TransformLanguage.CTL1;
         }
         

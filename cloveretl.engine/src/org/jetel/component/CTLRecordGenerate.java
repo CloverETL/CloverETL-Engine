@@ -43,6 +43,9 @@ import org.jetel.util.ExceptionUtils;
  */
 public abstract class CTLRecordGenerate extends CTLAbstractTransform implements RecordGenerate {
 
+    public static final String GENERATE_FUNCTION_NAME = "generate";
+    public static final String GENERATE_ON_ERROR_FUNCTION_NAME = "generateOnError";
+
 	/** Output data records used by the generator, or <code>null</code> if not accessible. */
 	private DataRecord[] outputRecords = null;
 
@@ -61,7 +64,7 @@ public abstract class CTLRecordGenerate extends CTLAbstractTransform implements 
 	 *
 	 * @throws ComponentNotReadyException if the initialization fails
 	 */
-	@CTLEntryPoint(name = RecordGenerateTL.INIT_FUNCTION_NAME, required = false)
+	@CTLEntryPoint(name = INIT_FUNCTION_NAME, required = false)
 	protected Boolean initDelegate() throws ComponentNotReadyException {
 		// does nothing and succeeds by default, may be overridden by generated transform classes
 		return true;
@@ -94,7 +97,7 @@ public abstract class CTLRecordGenerate extends CTLAbstractTransform implements 
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = RecordGenerateTL.GENERATE_FUNCTION_NAME, required = true)
+	@CTLEntryPoint(name = GENERATE_FUNCTION_NAME, required = true)
 	protected abstract Integer generateDelegate() throws ComponentNotReadyException, TransformException;
 
 	@Override
@@ -131,8 +134,8 @@ public abstract class CTLRecordGenerate extends CTLAbstractTransform implements 
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = RecordGenerateTL.GENERATE_ON_ERROR_FUNCTION_NAME, parameterNames = {
-			RecordTransformTL.ERROR_MESSAGE_PARAM_NAME, RecordTransformTL.STACK_TRACE_PARAM_NAME }, required = false)
+	@CTLEntryPoint(name = GENERATE_ON_ERROR_FUNCTION_NAME, parameterNames = {
+			ERROR_MESSAGE_PARAM_NAME, STACK_TRACE_PARAM_NAME }, required = false)
 	protected Integer generateOnErrorDelegate(String errorMessage, String stackTrace)
 			throws ComponentNotReadyException, TransformException {
 		throw new UnsupportedOperationException();

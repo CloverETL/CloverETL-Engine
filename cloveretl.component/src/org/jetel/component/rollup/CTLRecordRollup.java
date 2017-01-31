@@ -42,6 +42,32 @@ import org.jetel.util.ExceptionUtils;
  */
 public abstract class CTLRecordRollup extends CTLAbstractTransform implements RecordRollup {
 
+    /** the name of the initGroup() function in CTL */
+    public static final String INIT_GROUP_FUNCTION_NAME = "initGroup";
+    /** the name of the initGroupOnError() function in CTL */
+    public static final String INIT_GROUP_ON_ERROR_FUNCTION_NAME = "initGroupOnError";
+    /** the name of the updateGroup() function in CTL */
+    public static final String UPDATE_GROUP_FUNCTION_NAME = "updateGroup";
+    /** the name of the updateGroupOnError() function in CTL */
+    public static final String UPDATE_GROUP_ON_ERROR_FUNCTION_NAME = "updateGroupOnError";
+    /** the name of the finishGroup() function in CTL */
+    public static final String FINISH_GROUP_FUNCTION_NAME = "finishGroup";
+    /** the name of the finishGroupOnError() function in CTL */
+    public static final String FINISH_GROUP_ON_ERROR_FUNCTION_NAME = "finishGroupOnError";
+    /** the name of the updateTransform() function in CTL */
+    public static final String UPDATE_TRANSFORM_FUNCTION_NAME = "updateTransform";
+    /** the name of the updateTransformOnError() function in CTL */
+    public static final String UPDATE_TRANSFORM_ON_ERROR_FUNCTION_NAME = "updateTransformOnError";
+    /** the name of the transform() function in CTL */
+    public static final String TRANSFORM_FUNCTION_NAME = "transform";
+    /** the name of the transformOnError() function in CTL */
+    public static final String TRANSFORM_ON_ERROR_FUNCTION_NAME = "transformOnError";
+
+    /** the name of the counter param used in CTL */
+    public static final String COUNTER_PARAM_NAME = "counter";
+    /** the name of the groupAccumulator param used in CTL */
+    public static final String GROUP_ACCUMULATOR_PARAM_NAME = "groupAccumulator";
+
 	/** Input data record used by rollup transform, or <code>null</code> if not accessible. */
 	private DataRecord inputRecord = null;
 	/** Output data records used by rollup transform, or <code>null</code> if not accessible. */
@@ -62,7 +88,7 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 	 *
 	 * @throws ComponentNotReadyException if the initialization fails
 	 */
-	@CTLEntryPoint(name = RecordRollupTL.INIT_FUNCTION_NAME, required = false)
+	@CTLEntryPoint(name = INIT_FUNCTION_NAME, required = false)
 	protected void initDelegate() throws ComponentNotReadyException {
 		// does nothing by default, may be overridden by generated transform classes
 	}
@@ -93,8 +119,8 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = RecordRollupTL.INIT_GROUP_FUNCTION_NAME, parameterNames = {
-			RecordRollupTL.GROUP_ACCUMULATOR_PARAM_NAME }, required = true)
+	@CTLEntryPoint(name = INIT_GROUP_FUNCTION_NAME, parameterNames = {
+			GROUP_ACCUMULATOR_PARAM_NAME }, required = true)
 	protected abstract void initGroupDelegate(DataRecord groupAccumulator)
 			throws ComponentNotReadyException, TransformException;
 
@@ -131,9 +157,9 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = RecordRollupTL.INIT_GROUP_ON_ERROR_FUNCTION_NAME, parameterNames = {
-			RecordRollupTL.ERROR_MESSAGE_PARAM_NAME, RecordRollupTL.STACK_TRACE_PARAM_NAME,
-			RecordRollupTL.GROUP_ACCUMULATOR_PARAM_NAME }, required = false)
+	@CTLEntryPoint(name = INIT_GROUP_ON_ERROR_FUNCTION_NAME, parameterNames = {
+			ERROR_MESSAGE_PARAM_NAME, STACK_TRACE_PARAM_NAME,
+			GROUP_ACCUMULATOR_PARAM_NAME }, required = false)
 	protected void initGroupOnErrorDelegate(String errorMessage, String stackTrace, DataRecord groupAccumulator)
 			throws ComponentNotReadyException, TransformException {
 		throw new UnsupportedOperationException();
@@ -169,8 +195,8 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = RecordRollupTL.UPDATE_GROUP_FUNCTION_NAME, parameterNames = {
-			RecordRollupTL.GROUP_ACCUMULATOR_PARAM_NAME }, required = true)
+	@CTLEntryPoint(name = UPDATE_GROUP_FUNCTION_NAME, parameterNames = {
+			GROUP_ACCUMULATOR_PARAM_NAME }, required = true)
 	protected abstract Boolean updateGroupDelegate(DataRecord groupAccumulator)
 			throws ComponentNotReadyException, TransformException;
 
@@ -212,9 +238,9 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = RecordRollupTL.UPDATE_GROUP_ON_ERROR_FUNCTION_NAME, parameterNames = {
-			RecordRollupTL.ERROR_MESSAGE_PARAM_NAME, RecordRollupTL.STACK_TRACE_PARAM_NAME,
-			RecordRollupTL.GROUP_ACCUMULATOR_PARAM_NAME }, required = false)
+	@CTLEntryPoint(name = UPDATE_GROUP_ON_ERROR_FUNCTION_NAME, parameterNames = {
+			ERROR_MESSAGE_PARAM_NAME, STACK_TRACE_PARAM_NAME,
+			GROUP_ACCUMULATOR_PARAM_NAME }, required = false)
 	protected Boolean updateGroupOnErrorDelegate(String errorMessage, String stackTrace, DataRecord groupAccumulator)
 			throws ComponentNotReadyException, TransformException {
 		throw new UnsupportedOperationException();
@@ -250,8 +276,8 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = RecordRollupTL.FINISH_GROUP_FUNCTION_NAME, parameterNames = {
-			RecordRollupTL.GROUP_ACCUMULATOR_PARAM_NAME }, required = true)
+	@CTLEntryPoint(name = FINISH_GROUP_FUNCTION_NAME, parameterNames = {
+			GROUP_ACCUMULATOR_PARAM_NAME }, required = true)
 	protected abstract Boolean finishGroupDelegate(DataRecord groupAccumulator)
 			throws ComponentNotReadyException, TransformException;
 
@@ -293,9 +319,9 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = RecordRollupTL.FINISH_GROUP_ON_ERROR_FUNCTION_NAME, parameterNames = {
-			RecordRollupTL.ERROR_MESSAGE_PARAM_NAME, RecordRollupTL.STACK_TRACE_PARAM_NAME,
-			RecordRollupTL.GROUP_ACCUMULATOR_PARAM_NAME }, required = false)
+	@CTLEntryPoint(name = FINISH_GROUP_ON_ERROR_FUNCTION_NAME, parameterNames = {
+			ERROR_MESSAGE_PARAM_NAME, STACK_TRACE_PARAM_NAME,
+			GROUP_ACCUMULATOR_PARAM_NAME }, required = false)
 	protected Boolean finishGroupOnErrorDelegate(String errorMessage, String stackTrace, DataRecord groupAccumulator)
 			throws ComponentNotReadyException, TransformException {
 		throw new UnsupportedOperationException();
@@ -335,8 +361,8 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = RecordRollupTL.UPDATE_TRANSFORM_FUNCTION_NAME, parameterNames = {
-			RecordRollupTL.COUNTER_PARAM_NAME, RecordRollupTL.GROUP_ACCUMULATOR_PARAM_NAME }, required = true)
+	@CTLEntryPoint(name = UPDATE_TRANSFORM_FUNCTION_NAME, parameterNames = {
+			COUNTER_PARAM_NAME, GROUP_ACCUMULATOR_PARAM_NAME }, required = true)
 	protected abstract Integer updateTransformDelegate(Integer counter, DataRecord groupAccumulator)
 			throws ComponentNotReadyException, TransformException;
 
@@ -381,9 +407,9 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = RecordRollupTL.UPDATE_TRANSFORM_ON_ERROR_FUNCTION_NAME, parameterNames = {
-			RecordRollupTL.ERROR_MESSAGE_PARAM_NAME, RecordRollupTL.STACK_TRACE_PARAM_NAME,
-			RecordRollupTL.COUNTER_PARAM_NAME, RecordRollupTL.GROUP_ACCUMULATOR_PARAM_NAME }, required = false)
+	@CTLEntryPoint(name = UPDATE_TRANSFORM_ON_ERROR_FUNCTION_NAME, parameterNames = {
+			ERROR_MESSAGE_PARAM_NAME, STACK_TRACE_PARAM_NAME,
+			COUNTER_PARAM_NAME, GROUP_ACCUMULATOR_PARAM_NAME }, required = false)
 	protected Integer updateTransformOnErrorDelegate(String errorMessage, String stackTrace, Integer counter,
 			DataRecord groupAccumulator) throws ComponentNotReadyException, TransformException {
 		throw new UnsupportedOperationException();
@@ -423,8 +449,8 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = RecordRollupTL.TRANSFORM_FUNCTION_NAME, parameterNames = {
-			RecordRollupTL.COUNTER_PARAM_NAME, RecordRollupTL.GROUP_ACCUMULATOR_PARAM_NAME }, required = true)
+	@CTLEntryPoint(name = TRANSFORM_FUNCTION_NAME, parameterNames = {
+			COUNTER_PARAM_NAME, GROUP_ACCUMULATOR_PARAM_NAME }, required = true)
 	protected abstract Integer transformDelegate(Integer counter, DataRecord groupAccumulator)
 			throws ComponentNotReadyException, TransformException;
 
@@ -469,9 +495,9 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = RecordRollupTL.TRANSFORM_ON_ERROR_FUNCTION_NAME, parameterNames = {
-			RecordRollupTL.ERROR_MESSAGE_PARAM_NAME, RecordRollupTL.STACK_TRACE_PARAM_NAME,
-			RecordRollupTL.COUNTER_PARAM_NAME, RecordRollupTL.GROUP_ACCUMULATOR_PARAM_NAME }, required = false)
+	@CTLEntryPoint(name = TRANSFORM_ON_ERROR_FUNCTION_NAME, parameterNames = {
+			ERROR_MESSAGE_PARAM_NAME, STACK_TRACE_PARAM_NAME,
+			COUNTER_PARAM_NAME, GROUP_ACCUMULATOR_PARAM_NAME }, required = false)
 	protected Integer transformOnErrorDelegate(String errorMessage, String stackTrace, Integer counter,
 			DataRecord groupAccumulator) throws ComponentNotReadyException, TransformException {
 		throw new UnsupportedOperationException();

@@ -82,12 +82,12 @@ public final class CTLRecordPartitionAdapter extends CTLAbstractTransformAdapter
         // initialize global scope and call user initialization function
 		super.init(numPartitions);
 
-		getOuputPortFunction = executor.getFunction(PartitionTL.GET_OUTPUT_PORT_FUNCTION_NAME);
-		getOuputPortOnErrorFunction = executor.getFunction(PartitionTL.GET_OUTPUT_PORT_ON_ERROR_FUNCTION_NAME,
+		getOuputPortFunction = executor.getFunction(CTLRecordPartition.GET_OUTPUT_PORT_FUNCTION_NAME);
+		getOuputPortOnErrorFunction = executor.getFunction(CTLRecordPartition.GET_OUTPUT_PORT_ON_ERROR_FUNCTION_NAME,
 				TLTypePrimitive.STRING, TLTypePrimitive.STRING);
 
 		if (getOuputPortFunction == null) {
-			throw new ComponentNotReadyException(PartitionTL.GET_OUTPUT_PORT_FUNCTION_NAME + " is not defined");
+			throw new ComponentNotReadyException(CTLRecordPartition.GET_OUTPUT_PORT_FUNCTION_NAME + " is not defined");
 		}
 	}
 

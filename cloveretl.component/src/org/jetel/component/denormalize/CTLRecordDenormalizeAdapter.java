@@ -79,19 +79,19 @@ public class CTLRecordDenormalizeAdapter extends CTLAbstractTransformAdapter imp
 		// initialize global scope and call user initialization function
 		super.init();
 
-		appendFunction = executor.getFunction(RecordDenormalizeTL.APPEND_FUNCTION_NAME);
-		appendOnErrorFunction = executor.getFunction(RecordDenormalizeTL.APPEND_ON_ERROR_FUNCTION_NAME,
+		appendFunction = executor.getFunction(CTLRecordDenormalize.APPEND_FUNCTION_NAME);
+		appendOnErrorFunction = executor.getFunction(CTLRecordDenormalize.APPEND_ON_ERROR_FUNCTION_NAME,
 				TLTypePrimitive.STRING, TLTypePrimitive.STRING);
-		transformFunction = executor.getFunction(RecordDenormalizeTL.TRANSFORM_FUNCTION_NAME);
-		transformOnErrorFunction = executor.getFunction(RecordDenormalizeTL.TRANSFORM_ON_ERROR_FUNCTION_NAME,
+		transformFunction = executor.getFunction(CTLRecordDenormalize.TRANSFORM_FUNCTION_NAME);
+		transformOnErrorFunction = executor.getFunction(CTLRecordDenormalize.TRANSFORM_ON_ERROR_FUNCTION_NAME,
 				TLTypePrimitive.STRING, TLTypePrimitive.STRING);
-		cleanFunction = executor.getFunction(RecordDenormalizeTL.CLEAN_FUNCTION_NAME);
+		cleanFunction = executor.getFunction(CTLRecordDenormalize.CLEAN_FUNCTION_NAME);
 
 		if (appendFunction == null) {
-			throw new ComponentNotReadyException(RecordDenormalizeTL.APPEND_FUNCTION_NAME + " function must be defined");
+			throw new ComponentNotReadyException(CTLRecordDenormalize.APPEND_FUNCTION_NAME + " function must be defined");
 		}
 		if (transformFunction == null) {
-			throw new ComponentNotReadyException(RecordDenormalizeTL.TRANSFORM_FUNCTION_NAME + " function must be defined");
+			throw new ComponentNotReadyException(CTLRecordDenormalize.TRANSFORM_FUNCTION_NAME + " function must be defined");
 		}
 
 		return true;
