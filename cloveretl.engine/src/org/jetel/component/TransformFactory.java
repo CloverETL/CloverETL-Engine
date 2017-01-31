@@ -52,7 +52,7 @@ import org.jetel.util.string.StringUtils;
 
 /**
  * This class is used to instantiate a class based on source code.
- * Supported languages are CTL1, CTL2, java and pre-processed java.
+ * Supported languages are CTL2 and java.
  * Instance of this factory can be created only by two factory methods<br>
  * <li>
  * 		{@link #createTransformFactory(TransformDescriptor)} - creates factory based on given TransformDescriptor
@@ -145,7 +145,7 @@ public class TransformFactory<T> {
 	
 	/**
 	 * Configuration check, mainly invoked from {@link Node#checkConfig(ConfigurationStatus)}.
-	 * Only CTL1 and CTL2 code is compiled to ensure correctness of all settings.
+	 * Only CTL2 code is compiled to ensure correctness of all settings.
 	 * Java code is not validated.
 	 * @param status
 	 * @return
@@ -170,8 +170,14 @@ public class TransformFactory<T> {
 	        // only the transform and transformURL parameters are checked, transformClass is ignored
 	        if (checkTransform != null) {
 	        	TransformLanguage transformLanguage = TransformLanguageDetector.guessLanguage(checkTransform);
-	        	if (transformLanguage == TransformLanguage.CTL1
-	        			|| transformLanguage == TransformLanguage.CTL2) {
+
+	        	if (transformLanguage == TransformLanguage.UNKNOWN) {
+	        		String messagePrefix = attributeName != null ? attributeName + ": can't" : "Can't";
+	        		status.add(new ConfigurationProblem(messagePrefix + " determine transformation language",
+	        				Severity.WARNING, component, Priority.NORMAL, attributeName));
+	        	} else if (!transformLanguage.isSupported()) {
+					status.add(new ConfigurationProblem(transformLanguage.getName() + " is not a supported language any more, please convert your code to CTL2.", Severity.ERROR, component, Priority.NORMAL, null));
+	        	} else if (transformLanguage == TransformLanguage.CTL2) {
 	        		// only CTL is checked
 	        		T transform = null;
 	    			try {
@@ -184,10 +190,6 @@ public class TransformFactory<T> {
 							((Freeable)transform).free();
 						}
 					}
-	        	} else if (transformLanguage == null) {
-	        		String messagePrefix = attributeName != null ? attributeName + ": can't" : "Can't";
-	        		status.add(new ConfigurationProblem(messagePrefix + " determine transformation language",
-	        				Severity.WARNING, component, Priority.NORMAL, attributeName));
 	        	}
 	        }
         }
@@ -280,9 +282,9 @@ public class TransformFactory<T> {
             transformation = DynamicJavaClass.instantiate(transformCode, transformDescriptor.getTransformClass(), component);
             break;
         case JAVA_PREPROCESS:
-        	throw new JetelRuntimeException("CTLLite is no more supported language, please convert your code to CTL2.");
+        	throw new JetelRuntimeException("CTLLite is not a supported language any more, please convert your code to CTL2.");
         case CTL1:
-        	throw new JetelRuntimeException("CTL1 is no more supported language, please convert your code to CTL2.");
+        	throw new JetelRuntimeException("CTL1 is not a supported language any more, please convert your code to CTL2.");
         case CTL2:
         	if (charset == null) {
         		charset = Defaults.DEFAULT_SOURCE_CODE_CHARSET;

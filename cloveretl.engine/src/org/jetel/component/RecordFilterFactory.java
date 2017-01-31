@@ -90,7 +90,7 @@ public class RecordFilterFactory {
 	    	// initialize transformation
 	    	filter.init();
 		} else {
-        	throw new JetelRuntimeException("CTL1 is no more supported language, please convert your code to CTL2.");
+        	throw new JetelRuntimeException("CTL1 is not a supported language any more, please convert your code to CTL2.");
 		}
 		
 		return filter;

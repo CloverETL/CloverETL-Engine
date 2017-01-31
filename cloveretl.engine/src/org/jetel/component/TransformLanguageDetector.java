@@ -34,10 +34,26 @@ import org.jetel.util.string.CommentsProcessor;
 public class TransformLanguageDetector {
 
 	public static enum TransformLanguage {
-		JAVA,
-		JAVA_PREPROCESS,
-		CTL1,
-		CTL2;
+		JAVA("Java", true),
+		JAVA_PREPROCESS("CTLLite", false),
+		CTL1("CTL1", false),
+		CTL2("CTL2", true),
+		UNKNOWN("unknown", false);
+
+		private String name;
+		private boolean supported;
+		
+		private TransformLanguage(String name, boolean supported) {
+			this.name = name;
+			this.supported = supported;
+		}
+		
+		public String getName() {
+			return name;
+		}
+		public boolean isSupported() {
+			return supported;
+		}
 	}
 	
     public static final Pattern PATTERN_CLASS = Pattern.compile("class\\s+\\w+"); 
@@ -89,7 +105,7 @@ public class TransformLanguageDetector {
             return TransformLanguage.JAVA_PREPROCESS;
         }
         
-        return null;
+        return TransformLanguage.UNKNOWN;
     }
 
     private static Pattern getPattern(String hashBang) {
