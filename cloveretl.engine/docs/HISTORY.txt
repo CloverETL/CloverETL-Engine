@@ -2,6 +2,34 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-5-0-M1
+------------
+
+* MongoDB
+	* CLO-5728 MongoDB connection supports authenticationDatabase option
+	* CLO-10175 Support Mongo 3.X driver
+	* CLO-9579 Ability to use SSL with MongoDB
+* Server event listeners
+	* CLO-10063 Merge event listener tabs into one
+	* CLO-9845 Ignore empty files option for file listeners
+	* CLO-10064 Unify layout of editing forms for listeners
+	* CLO-10025 Show last performed file listener check
+* Restart action in Execution History
+	* CLO-9499 Restart action in Execution History
+	* CLO-9709 Restart unchanged job from server UI
+* Salesforce Wave support
+	* CLO-9493 Write to Salesforce Wave
+* Cluster changes
+	* CLO-10069 Cluster: reset autoresume counter after some time
+* Other improvements
+	* CLO-6538 Update JSch to 0.1.54
+	* CLO-7448 JSON and XML extract mapping dialog should validate metadata
+	* CLO-9633 Data inspector - display quoted string in list
+* FIXES
+	* CLO-9873 MSSQLDataWriter with sqlncli (bcp for linux) throws "Unable to open BCP host data-file"
+	* CLO-8609 SFTP: Slow reading from Titan FTP Server
+
+
 REL-4-4-0
 ---------
 
