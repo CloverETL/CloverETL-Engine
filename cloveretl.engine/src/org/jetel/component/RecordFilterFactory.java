@@ -48,6 +48,10 @@ public class RecordFilterFactory {
 	public static RecordFilter createFilter(String filterExpression, DataRecordMetadata metadata, TransformationGraph graph, String id, String attributeName, String sourceId, Log logger) throws ComponentNotReadyException {
 		return createFilter(filterExpression, new DataRecordMetadata[] { metadata }, graph, id, attributeName, sourceId, logger);
 	}
+
+	public static RecordsFilter createFilter(String filterExpression, DataRecordMetadata[] metadata, TransformationGraph graph, String id, String attributeName, String sourceId) throws ComponentNotReadyException {
+		return createFilter(filterExpression, metadata, graph, id, attributeName, sourceId, null);
+	}
 	
 	public static RecordsFilter createFilter(String filterExpression, DataRecordMetadata[] metadata, TransformationGraph graph, String id, String attributeName, String sourceId, Log logger) throws ComponentNotReadyException {
 		RecordsFilter filter;
