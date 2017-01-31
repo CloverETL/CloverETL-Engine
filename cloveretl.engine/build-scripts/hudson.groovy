@@ -103,6 +103,7 @@ if( !runTests ){
 		antArgs += "-Druntests-plugins-dontrun=true"	
 		antArgs += "-Dtest.include=org/jetel/graph/ResetTest.java"
 		antArgs += "-Druntests.engine.Xmx=-Xmx3072m"
+		antArgs += "-Dadditional.jvmargs=-Djavax.net.ssl.trustStore=${trustStoreF}"
 		//antArgs += "-Dadditional.jvmargs=-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=33333 -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=172.22.2.28"
 	} else {
 		println "ERROR: Unknown goal '${jobGoal}'"
@@ -156,6 +157,7 @@ if( !runTests ){
 		//testing derby database is not available under windows platform, so target is changed
 		antTarget = "run-scenarios-with-engine-build"
 		antArgs += "-Drunscenarios.Xmx=-Xmx512m"
+		trustStoreF = trustStoreF.getCanonicalPath().replaceAll("\\\\", "/") // use forward slashes in path on windows
 	}
 	if( testName == "after-commit-proxy" ){
 		antTarget = "run-scenarios-with-engine-build"
