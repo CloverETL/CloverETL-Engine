@@ -49,13 +49,6 @@ import org.jetel.util.string.StringUtils;
  * properties are evaluated after resolving. This mechanism enables arbitrary nesting of CTL expressions and property
  * references within the properties.
  * <p>
- * By default, CTL expressions have to be enclosed within back quotes, i.e. <code>`&lt;ctl_expression&gt;`</code>, and
- * property references use the <code>${}</code> notation, i.e. <code>${property_reference}</code>. Escaped back quote,
- * i.e. <code>\`</code>, within CTL expressions produces a single back quote in the result.
- * This behaviour might be altered by modifying the <code>Defaults.GraphProperties.EXPRESSION_PLACEHOLDER_REGEX</code>
- * and <code>Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX</code> configuration properties. Expression evaluation
- * might be disabled by setting the <code>Defaults.GraphProperties.EXPRESSION_EVALUATION_ENABLED</code> configuration
- * property to <code>false</code>.
  * 
  * NOTE: this class is not thread safe
  * 

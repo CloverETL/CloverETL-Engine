@@ -273,9 +273,6 @@ public class TransformFactory<T> {
     	T transformation = null;
     	
     	TransformLanguage language = TransformLanguageDetector.guessLanguage(transformCode);
-    	if (language == null) {
-    		throw new LoadClassException("Can't determine transformation language.");
-    	}
     	
         switch (language) {
         case JAVA:
@@ -321,6 +318,8 @@ public class TransformFactory<T> {
         		throw new LoadClassException("Invalid type of record transformation");
         	}
             break;
+        case UNKNOWN:
+    		throw new LoadClassException("Can't determine transformation language.");
         default:
             throw new LoadClassException("Can't determine transformation code.");
         }
