@@ -1,0 +1,4 @@
+function transform() {
+	$0.outField := $0.inField + " CTL1 external";
+	return OK
+}
