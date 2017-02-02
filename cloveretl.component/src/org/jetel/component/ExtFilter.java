@@ -100,9 +100,9 @@ import org.w3c.dom.Element;
  * <i>Note: you can also put the expression inside the XML Node - see examples.</i>
  *  <h4>Examples:</h4>
  * Want to filter on HireDate field. HireDate must be less than 31st of December 1993<br>
- *  <pre>&lt;Node id="FILTEREMPL1" type="EXT_FILTER" filterExpression="$HireDate &amp;lt; &quot;1993-12-31&quot;"/&gt;</pre>
+ *  <pre>&lt;Node id="FILTEREMPL1" type="EXT_FILTER" filterExpression="//#CTL2&#13;&#10;$HireDate &amp;lt; &quot;1993-12-31&quot;"/&gt;</pre>
  * Want to filter on Name and Age fields. Name must start with 'A' char and Age must be greater than 25<br> 
- * <pre>&lt;Node id="FILTEREMPL1" type="EXT_FILTER" filterExpression="$Name~=&quot;^A.*&quot; and $Age &amp;gt;25"/&gt;</pre>
+ * <pre>&lt;Node id="FILTEREMPL1" type="EXT_FILTER" filterExpression="//#CTL2&#13;&#10;$Name~=&quot;^A.*&quot; and $Age &amp;gt;25"/&gt;</pre>
  * <pre>&lt;Node id="FILTEREMPL1" type="EXT_FILTER"&gt;
  * $Name~="^A.*" and $Age.gt.25
  *&lt;/Node&gt;</pre>
