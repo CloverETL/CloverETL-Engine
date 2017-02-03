@@ -21,9 +21,8 @@ package org.jetel.util.property;
 /**
  * This object is used to distinguish various type of property referecence resolvinng 
  * in the PorpertyRefResolver.
- * Currently are available just two boolean switches 
+ * Currently are available just one boolean switches 
  * - resolve special characters (\n, \r, \t, ...)
- * - resolve ctl statements (`date2str(today(),"dd-MM-yyyy")`)
  * 
  * @see PropertyRefResolver
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)

@@ -713,7 +713,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		for (ErrorMessage errorMessage : compiler.getDiagnosticMessages()) {
 			String expectedError = it.next();
-			if (!expectedError.equals(errorMessage.getErrorMessage())) {
+			if (expectedError != null && !expectedError.equals(errorMessage.getErrorMessage())) {
 				throw new AssertionFailedError("Error : \'" + compiler.getDiagnosticMessages().get(0).getErrorMessage() + "\', but expected: \'" + expectedError + "\'");
 			}
 		}
@@ -726,6 +726,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	protected void doCompileExpectError(String expStr, String testIdentifier, List<String> errCodes) {
 		doCompileExpectError(createDefaultGraph(), expStr, testIdentifier, errCodes);
+	}
+
+	protected void doCompileExpectError(String testIdentifier) {
+		doCompileExpectError(testIdentifier, (String) null);
 	}
 
 	protected void doCompileExpectError(String testIdentifier, String errCode) {
@@ -11789,13 +11793,15 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_stringlib_resolveParams() {
 		doCompile("test_stringlib_resolveParams");
-		check("resultNoParams", "Special character representing new line is: \\n calling CTL function MESSAGE; $DATAIN_DIR=./data-in");
-		check("resultFalseFalseParams", "Special character representing new line is: \\n calling CTL function `uppercase(\"message\")`; $DATAIN_DIR=./data-in");
-		check("resultTrueFalseParams", "Special character representing new line is: \n calling CTL function `uppercase(\"message\")`; $DATAIN_DIR=./data-in");
-		check("resultFalseTrueParams", "Special character representing new line is: \\n calling CTL function MESSAGE; $DATAIN_DIR=./data-in");
-		check("resultTrueTrueParams", "Special character representing new line is: \n calling CTL function MESSAGE; $DATAIN_DIR=./data-in");
+		check("resultNoParams", "Special character representing new line is: \\n calling CTL function `uppercase(\"message\")`; $DATAIN_DIR=./data-in");
+		check("resultFalseParam", "Special character representing new line is: \\n calling CTL function `uppercase(\"message\")`; $DATAIN_DIR=./data-in");
+		check("resultTrueParam", "Special character representing new line is: \n calling CTL function `uppercase(\"message\")`; $DATAIN_DIR=./data-in");
 	}
-	
+
+	public void test_stringlib_resolveParams_CLO_10331() {
+		doCompileExpectError("test_stringlib_resolveParams_CLO-10331");
+	}
+
 	public void test_utillib_getEnvironmentVariables() {
 		doCompile("test_utillib_getEnvironmentVariables");
 		check("empty", false);
@@ -11865,7 +11871,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("PROJECT", ".");
 		params.put("DATAIN_DIR", "./data-in");
-		params.put("COUNT", "3");
+		params.put("COUNT", "`1+2`");
 		params.put("NEWLINE", "\\n"); // special characters should NOT be resolved
 		check("params", params);
 		check("ret1", null);
@@ -11878,7 +11884,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("PROJECT", ".");
 		params.put("DATAIN_DIR", "./data-in");
-		params.put("COUNT", "3");
+		params.put("COUNT", "`1+2`");
 		params.put("NEWLINE", "\\n"); // special characters should NOT be resolved
 		params.put("NONEXISTING", null);
 		check("params", params);
