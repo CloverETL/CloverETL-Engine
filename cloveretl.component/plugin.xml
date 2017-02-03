@@ -2511,7 +2511,7 @@ Sends all resulting records to all connected output ports.</description>
 	  <ETLComponent category="joiners" iconPath="icons/joiners/LookUpJoin" name="LookupJoin"  type="LOOKUP_JOIN" className="org.jetel.component.LookupJoin">
 	    <shortDescription>Joins incoming data flow with records from lookup table.</shortDescription>
 	    <description>Receives data through connected input port (drivers), for each join key value contained in driver data records searches corresponding data records with the same key value in lookup table (slaves). Every pair of driver and slave records is sent to transformation class that joins them to form outgoing data flow. Resulting data records are sent to the first output port. Driver records without slave are sent to the second output port if connected and if inner join (default) is performed.</description>
-	    <inputPorts>`
+	    <inputPorts>
 	      <singlePort name="0" required="true"/>
 	    </inputPorts>
 	    <outputPorts>
