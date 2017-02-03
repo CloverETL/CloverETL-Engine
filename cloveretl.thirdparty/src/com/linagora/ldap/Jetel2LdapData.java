@@ -28,7 +28,6 @@ import org.jetel.data.DataField;
 import org.jetel.data.ListDataField;
 import org.jetel.data.StringDataField;
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.string.StringUtils;
 
@@ -57,7 +56,9 @@ abstract public class Jetel2LdapData {
 
 	public Jetel2LdapData(String _multiSeparator) {
 		this.multiSeparator = _multiSeparator;
-		splitter = Pattern.compile(Pattern.quote(_multiSeparator));
+		if (multiSeparator != null) {
+			splitter = Pattern.compile(Pattern.quote(_multiSeparator));
+		}
 	}
 
 	public String getMultiSeparator() {
