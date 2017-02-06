@@ -32,14 +32,15 @@ More detailed information about this graph can be found in the "readme.html" fil
 <attr name="guiDescription"><![CDATA[Customers]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="101" guiName="ExtHashJoin" guiWidth="128" guiX="471" guiY="407" id="EXT_HASH_JOIN0" joinKey="$EmployeeID=$EmployeeID;#" type="EXT_HASH_JOIN">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.AmountID := $0.AmountID;
-	$0.EmployeeID := $0.EmployeeID;
-	$0.EmployeeSurname := $1.EmployeeSurname;
-	$0.EmployeeFirstname := $1.EmployeeFirstname;
+function integer transform() {
+	$0.AmountID = $0.AmountID;
+	$0.EmployeeID = $0.EmployeeID;
+	$0.EmployeeSurname = $1.EmployeeSurname;
+	$0.EmployeeFirstname = $1.EmployeeFirstname;
+	return ALL;
 }
 
 // Called during component initialization.
@@ -50,15 +51,16 @@ function transform() {
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="101" guiName="ExtHashJoin" guiWidth="128" guiX="527" guiY="576" id="EXT_HASH_JOIN1" joinKey="$CustomerID=$CustomerID;#" type="EXT_HASH_JOIN">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.CustomerID := $0.CustomerID;
-	$0.CustomerSurname := $1.CustomerSurname;
-	$0.CustomerFirstname := $1.CustomerFirstname;
-	$0.CustomerState := $1.CustomerState;
-	$0.AmountID := $0.AmountID;
+function integer transform() {
+	$0.CustomerID = $0.CustomerID;
+	$0.CustomerSurname = $1.CustomerSurname;
+	$0.CustomerFirstname = $1.CustomerFirstname;
+	$0.CustomerState = $1.CustomerState;
+	$0.AmountID = $0.AmountID;
+	return ALL;
 }
 
 // Called during component initialization.

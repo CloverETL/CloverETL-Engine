@@ -50,27 +50,28 @@ If the data is stored in database instead of files, the D_CUSTOMER_update.tbl an
 <Phase number="0">
 <Node enabled="enabled" equalNULL="false" guiHeight="101" guiName="DataIntersection" guiWidth="152" guiX="633" guiY="83" id="DATA_INTERSECTION0" joinKey="$CUSTOMER_NUMBER=$CUSTOMER_NUMBER" keyDuplicates="false" type="DATA_INTERSECTION">
 <attr name="order"><![CDATA[Asc]]></attr>
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.ID_D_CUSTOMER := $0.ID_D_CUSTOMER;
-	$0.FIRST_NAME := $0.FIRST_NAME;
-	$0.LAST_NAME := $0.LAST_NAME;
-	$0.CUSTOMER_NUMBER := $0.CUSTOMER_NUMBER;
-	$0.EMAIL := $0.EMAIL;
-	$0.STREET_ADDRESS := $0.STREET_ADDRESS;
-	$0.ZIP_CODE := $0.ZIP_CODE;
-	$0.CITY := $0.CITY;
-	$0.FROM_DATE := $0.FROM_DATE;
-	$0.TO_DATE := $0.TO_DATE;
-	$0.FIRST_NAME_NEW := $1.FIRST_NAME;
-	$0.LAST_NAME_NEW := $1.LAST_NAME;
-	$0.CUSTOMER_NUMBER_NEW := $1.CUSTOMER_NUMBER;
-	$0.EMAIL_NEW := $1.EMAIL;
-	$0.STREET_ADDRESS_NEW := $1.STREET_ADDRESS;
-	$0.ZIP_CODE_NEW := $1.ZIP_CODE;
-	$0.CITY_NEW := $1.CITY;
+function integer transform() {
+	$0.ID_D_CUSTOMER = $0.ID_D_CUSTOMER;
+	$0.FIRST_NAME = $0.FIRST_NAME;
+	$0.LAST_NAME = $0.LAST_NAME;
+	$0.CUSTOMER_NUMBER = $0.CUSTOMER_NUMBER;
+	$0.EMAIL = $0.EMAIL;
+	$0.STREET_ADDRESS = $0.STREET_ADDRESS;
+	$0.ZIP_CODE = $0.ZIP_CODE;
+	$0.CITY = $0.CITY;
+	$0.FROM_DATE = $0.FROM_DATE;
+	$0.TO_DATE = $0.TO_DATE;
+	$0.FIRST_NAME_NEW = $1.FIRST_NAME;
+	$0.LAST_NAME_NEW = $1.LAST_NAME;
+	$0.CUSTOMER_NUMBER_NEW = $1.CUSTOMER_NUMBER;
+	$0.EMAIL_NEW = $1.EMAIL;
+	$0.STREET_ADDRESS_NEW = $1.STREET_ADDRESS;
+	$0.ZIP_CODE_NEW = $1.ZIP_CODE;
+	$0.CITY_NEW = $1.CITY;
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.
@@ -101,19 +102,20 @@ OR $STREET_ADDRESS != $STREET_ADDRESS_NEW OR $ZIP_CODE != $ZIP_CODE_NEW OR $CITY
 <Node enabled="enabled" guiHeight="101" guiName="Sort by CUSTOMER_NUMBER" guiWidth="238" guiX="193" guiY="28" id="EXT_SORT0" sortKey="CUSTOMER_NUMBER(a);FROM_DATE(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="85" guiName="Sort by CUSTOMER_NUMBER" guiWidth="238" guiX="192" guiY="154" id="EXT_SORT1" sortKey="CUSTOMER_NUMBER(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="101" guiName="Add ID_D_CUSTOMER &amp; FROM_DATE" guiWidth="293" guiX="856" guiY="186" id="REFORMAT0" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.FIRST_NAME := $0.FIRST_NAME;
-	$0.LAST_NAME := $0.LAST_NAME;
-	$0.CUSTOMER_NUMBER := $0.CUSTOMER_NUMBER;
-	$0.EMAIL := $0.EMAIL;
-	$0.STREET_ADDRESS := $0.STREET_ADDRESS;
-	$0.ZIP_CODE := $0.ZIP_CODE;
-	$0.CITY := $0.CITY;
-	$0.ID_D_CUSTOMER := sequence(Sequence0).next;
-	$0.FROM_DATE := trunc(today());
+function integer transform() {
+	$0.FIRST_NAME = $0.FIRST_NAME;
+	$0.LAST_NAME = $0.LAST_NAME;
+	$0.CUSTOMER_NUMBER = $0.CUSTOMER_NUMBER;
+	$0.EMAIL = $0.EMAIL;
+	$0.STREET_ADDRESS = $0.STREET_ADDRESS;
+	$0.ZIP_CODE = $0.ZIP_CODE;
+	$0.CITY = $0.CITY;
+	$0.ID_D_CUSTOMER = sequence(ID_D_CUSTOMER).next();
+	$0.FROM_DATE = trunc(today());
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.
@@ -128,20 +130,21 @@ function transform() {
 <attr name="guiDescription"><![CDATA[Processing  records, that are not contained in DWH but contained in OLTP]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="69" guiName="Set TO_DATE" guiWidth="128" guiX="1253" guiY="45" id="REFORMAT1" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.ID_D_CUSTOMER := $0.ID_D_CUSTOMER;
-	$0.FIRST_NAME := $0.FIRST_NAME;
-	$0.LAST_NAME := $0.LAST_NAME;
-	$0.CUSTOMER_NUMBER := $0.CUSTOMER_NUMBER;
-	$0.EMAIL := $0.EMAIL;
-	$0.STREET_ADDRESS := $0.STREET_ADDRESS;
-	$0.ZIP_CODE := $0.ZIP_CODE;
-	$0.CITY := $0.CITY;
-	$0.FROM_DATE := $0.FROM_DATE;
-	$0.TO_DATE := trunc(today())-1;
+function integer transform() {
+	$0.ID_D_CUSTOMER = $0.ID_D_CUSTOMER;
+	$0.FIRST_NAME = $0.FIRST_NAME;
+	$0.LAST_NAME = $0.LAST_NAME;
+	$0.CUSTOMER_NUMBER = $0.CUSTOMER_NUMBER;
+	$0.EMAIL = $0.EMAIL;
+	$0.STREET_ADDRESS = $0.STREET_ADDRESS;
+	$0.ZIP_CODE = $0.ZIP_CODE;
+	$0.CITY = $0.CITY;
+	$0.FROM_DATE = $0.FROM_DATE;
+	$0.TO_DATE = trunc(today())-1;
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.
@@ -155,19 +158,20 @@ function transform() {
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="69" guiName="Add ID_D_CUSTOMER and FROM_DATE" guiWidth="309" guiX="1254" guiY="135" id="REFORMAT2" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.ID_D_CUSTOMER := sequence(Sequence0).next;
-	$0.FIRST_NAME := $0.FIRST_NAME_NEW;
-	$0.LAST_NAME := $0.LAST_NAME_NEW;
-	$0.CUSTOMER_NUMBER := $0.CUSTOMER_NUMBER_NEW;
-	$0.EMAIL := $0.EMAIL_NEW;
-	$0.STREET_ADDRESS := $0.STREET_ADDRESS_NEW;
-	$0.ZIP_CODE := $0.ZIP_CODE_NEW;
-	$0.CITY := $0.CITY_NEW;
-	$0.FROM_DATE := trunc(today());
+function integer transform() {
+	$0.ID_D_CUSTOMER = sequence(ID_D_CUSTOMER).next();
+	$0.FIRST_NAME = $0.FIRST_NAME_NEW;
+	$0.LAST_NAME = $0.LAST_NAME_NEW;
+	$0.CUSTOMER_NUMBER = $0.CUSTOMER_NUMBER_NEW;
+	$0.EMAIL = $0.EMAIL_NEW;
+	$0.STREET_ADDRESS = $0.STREET_ADDRESS_NEW;
+	$0.ZIP_CODE = $0.ZIP_CODE_NEW;
+	$0.CITY = $0.CITY_NEW;
+	$0.FROM_DATE = trunc(today());
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.

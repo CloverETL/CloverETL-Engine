@@ -44,11 +44,12 @@ Both the input parameters and the fields for the result output set are specified
 </Phase>
 <Phase number="1">
 <Node enabled="enabled" guiHeight="98" guiName="Client ID-s" guiWidth="128" guiX="26" guiY="133" id="DATA_GENERATOR0" recordsNumber="1000" type="DATA_GENERATOR">
-<attr name="generate"><![CDATA[//#TL
+<attr name="generate"><![CDATA[//#CTL2
 
 // Generates output record.
-function generate() {
-	$0.klient_id := sequence(Sequence0).next;
+function integer generate() {
+	$0.klient_id = sequence(Sequence0).next;
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.

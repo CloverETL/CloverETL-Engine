@@ -32,16 +32,17 @@ More detailed information about this graph can be found in the "readme.html" fil
 </Node>
 <Node dedupKey="EmployeeID;CustomerID" enabled="enabled" guiHeight="69" guiName="Dedup" guiWidth="128" guiX="848" guiY="434" id="DEDUP1" keep="first" type="DEDUP"/>
 <Node enabled="enabled" guiHeight="101" guiName="ExtHashJoin" guiWidth="128" guiX="459" guiY="434" id="EXT_HASH_JOIN0" joinKey="$CustomerID=$CustomerID;#" type="EXT_HASH_JOIN">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.CustomerSurname := $1.CustomerSurname;
-	$0.CustomerFirstname := $1.CustomerFirstname;
-	$0.CustomerState := $1.CustomerState;
-	$0.EmployeeID := $0.EmployeeID;
-	$0.CustomerID := $0.CustomerID;
+function integer transform() {
+	$0.CustomerSurname = $1.CustomerSurname;
+	$0.CustomerFirstname = $1.CustomerFirstname;
+	$0.CustomerState = $1.CustomerState;
+	$0.EmployeeID = $0.EmployeeID;
+	$0.CustomerID = $0.CustomerID;
 	
+	return ALL;
 }
 
 // Called during component initialization.
@@ -52,14 +53,15 @@ function transform() {
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="101" guiName="ExtHashJoin" guiWidth="128" guiX="464" guiY="603" id="EXT_HASH_JOIN1" joinKey="$AmountID=$AmountID;#" type="EXT_HASH_JOIN">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.AmountID := $0.AmountID;
-	$0.CustomerID := $0.CustomerID;
-	$0.EmployeeID := $0.EmployeeID;
-	$0.Amount := $1.Amount;
+function integer transform() {
+	$0.AmountID = $0.AmountID;
+	$0.CustomerID = $0.CustomerID;
+	$0.EmployeeID = $0.EmployeeID;
+	$0.Amount = $1.Amount;
+	return ALL;
 }
 
 // Called during component initialization.

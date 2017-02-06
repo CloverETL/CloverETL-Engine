@@ -33,7 +33,7 @@ For the CTL2 equaivalent of this older TL syntax see  graphOrdersTLNewReformat.g
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="101" guiName="Orders" guiWidth="128" guiX="20" guiY="20" id="INPUT" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.dat.out" guiHeight="101" guiName="Orders Transformed" guiWidth="173" guiX="370" guiY="20" id="OUTPUT" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="69" guiName="Reformat" guiWidth="128" guiX="195" guiY="20" id="REF" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 int key;
 
 
@@ -48,12 +48,13 @@ function sum(a,b){
 }
 
 
-function transform() {
-	$0.CUSTOMERID := $0.CustomerID;
-	$0.PRODUCTID := ++key;
-	$0.ORDERID := $0.OrderID;
-	$0.CUSTOMER := join(';',$0.ShipName,$0.ShipAddress,$0.ShipCity,$0.ShipCountry);
-	$0.SHIPTIME := datediff($0.RequiredDate,$0.ShippedDate,day);
+function integer transform() {
+	$0.CUSTOMERID = $0.CustomerID;
+	$0.PRODUCTID = ++key;
+	$0.ORDERID = $0.OrderID;
+	$0.CUSTOMER = join(';',$0.ShipName,$0.ShipAddress,$0.ShipCity,$0.ShipCountry);
+	$0.SHIPTIME = datediff($0.RequiredDate,$0.ShippedDate,day);
+	return ALL;
 }
 
 ]]></attr>

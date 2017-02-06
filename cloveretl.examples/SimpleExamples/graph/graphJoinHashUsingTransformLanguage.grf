@@ -12,12 +12,14 @@
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="101" guiName="Employees" guiWidth="128" guiX="24" guiY="120" id="INPUT2" type="DATA_READER"/>
 <Node enabled="enabled" guiHeight="101" guiName="Join of Orders with Employees" guiWidth="250" guiX="249" guiY="24" id="JOIN" joinKey="$EmployeeID=$EmployeeID" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[
-function transform() {
-	$0.OrderID := $OrderID;
-	$0.CustomerID := $CustomerID;
-	$0.EmployeeID := num2str($EmployeeID);
-	$0.EmployeeID2 := num2str($1.EmployeeID);
-	$0.LastName := $1.LastName;
+//CTL2
+function integer transform() {
+	$0.OrderID = $OrderID;
+	$0.CustomerID = $CustomerID;
+	$0.EmployeeID = num2str($EmployeeID);
+	$0.EmployeeID2 = num2str($1.EmployeeID);
+	$0.LastName = $1.LastName;
+	return ALL;
 }
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Inner join: Orders without an Employee are not joined and transformed.]]></attr>

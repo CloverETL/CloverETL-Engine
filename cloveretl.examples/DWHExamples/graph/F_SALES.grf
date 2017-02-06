@@ -94,18 +94,19 @@ If the data is stored in database instead of files, the DBJoin component can be 
 <attr name="filterExpression"><![CDATA[$0.TRANSACTION_DATE >= $0.from_date AND ( isnull($0.to_date) OR $0.TRANSACTION_DATE <= $0.to_date )]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="85" guiName="Lookup ID_D_STORE" guiWidth="177" guiX="458" guiY="55" id="LOOKUP_JOIN0" joinKey="STORE_NUMBER" lookupTable="LookupTable2" type="LOOKUP_JOIN">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.INVOICE_NUMBER := $0.INVOICE_NUMBER;
-	$0.UPC := $0.UPC;
-	$0.CUSTOMER_NUMBER := $0.CUSTOMER_NUMBER;
-	$0.PRICE_PER_UNIT := $0.PRICE_PER_UNIT;
-	$0.UNITS := $0.UNITS;
-	$0.total_price := $0.total_price;
-	$0.id_d_store := $1.ID_D_STORE;
-	$0.TRANSACTION_DATE := $0.TRANSACTION_DATE;
+function integer transform() {
+	$0.INVOICE_NUMBER = $0.INVOICE_NUMBER;
+	$0.UPC = $0.UPC;
+	$0.CUSTOMER_NUMBER = $0.CUSTOMER_NUMBER;
+	$0.PRICE_PER_UNIT = $0.PRICE_PER_UNIT;
+	$0.UNITS = $0.UNITS;
+	$0.total_price = $0.total_price;
+	$0.id_d_store = $1.ID_D_STORE;
+	$0.TRANSACTION_DATE = $0.TRANSACTION_DATE;
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.
@@ -119,20 +120,21 @@ function transform() {
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="85" guiName="Lookup ID_D_CUSTOMER" guiWidth="210" guiX="689" guiY="55" id="LOOKUP_JOIN1" joinKey="CUSTOMER_NUMBER" lookupTable="LookupTable0" type="LOOKUP_JOIN">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.INVOICE_NUMBER := $0.INVOICE_NUMBER;
-	$0.UPC := $0.UPC;
-	$0.PRICE_PER_UNIT := $0.PRICE_PER_UNIT;
-	$0.UNITS := $0.UNITS;
-	$0.total_price := $0.total_price;
-	$0.id_d_store := $0.id_d_store;
-	$0.id_d_customer := $1.ID_D_CUSTOMER;
-	$0.from_date := $1.FROM_DATE;
-	$0.to_date := $1.TO_DATE;
-	$0.TRANSACTION_DATE := $0.TRANSACTION_DATE;
+function integer transform() {
+	$0.INVOICE_NUMBER = $0.INVOICE_NUMBER;
+	$0.UPC = $0.UPC;
+	$0.PRICE_PER_UNIT = $0.PRICE_PER_UNIT;
+	$0.UNITS = $0.UNITS;
+	$0.total_price = $0.total_price;
+	$0.id_d_store = $0.id_d_store;
+	$0.id_d_customer = $1.ID_D_CUSTOMER;
+	$0.from_date = $1.FROM_DATE;
+	$0.to_date = $1.TO_DATE;
+	$0.TRANSACTION_DATE = $0.TRANSACTION_DATE;
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.
@@ -146,18 +148,19 @@ function transform() {
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="85" guiName="Lookup ID_D_PRODUCT" guiWidth="199" guiX="315" guiY="179" id="LOOKUP_JOIN2" joinKey="UPC" lookupTable="LookupTable1" type="LOOKUP_JOIN">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.INVOICE_NUMBER := $0.INVOICE_NUMBER;
-	$0.TRANSACTION_DATE := $0.TRANSACTION_DATE;
-	$0.PRICE_PER_UNIT := $0.PRICE_PER_UNIT;
-	$0.UNITS := $0.UNITS;
-	$0.total_price := $0.total_price;
-	$0.id_d_store := $0.id_d_store;
-	$0.id_d_customer := $0.id_d_customer;
-	$0.id_d_product := $1.ID_D_PRODUCT;
+function integer transform() {
+	$0.INVOICE_NUMBER = $0.INVOICE_NUMBER;
+	$0.TRANSACTION_DATE = $0.TRANSACTION_DATE;
+	$0.PRICE_PER_UNIT = $0.PRICE_PER_UNIT;
+	$0.UNITS = $0.UNITS;
+	$0.total_price = $0.total_price;
+	$0.id_d_store = $0.id_d_store;
+	$0.id_d_customer = $0.id_d_customer;
+	$0.id_d_product = $1.ID_D_PRODUCT;
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.
@@ -171,17 +174,18 @@ function transform() {
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="85" guiName="Lookup ID_D_DATE" guiWidth="167" guiX="570" guiY="179" id="LOOKUP_JOIN3" joinKey="TRANSACTION_DATE" lookupTable="LookupTable3" type="LOOKUP_JOIN">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.total_price := $0.total_price;
-	$0.id_d_store := $0.id_d_store;
-	$0.id_d_customer := $0.id_d_customer;
-	$0.id_d_product := $0.id_d_product;
-	$0.id_d_date := $1.ID_D_DATE;
-	$0.invoice_number := $0.INVOICE_NUMBER;
-	$0.units := $0.UNITS;
+function integer transform() {
+	$0.total_price = $0.total_price;
+	$0.id_d_store = $0.id_d_store;
+	$0.id_d_customer = $0.id_d_customer;
+	$0.id_d_product = $0.id_d_product;
+	$0.id_d_date = $1.ID_D_DATE;
+	$0.invoice_number = $0.INVOICE_NUMBER;
+	$0.units = $0.UNITS;
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.
@@ -195,18 +199,19 @@ function transform() {
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="69" guiName="Compute TOTAL_PRICE" guiWidth="198" guiX="218" guiY="55" id="REFORMAT0" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.STORE_NUMBER := $0.STORE_NUMBER;
-	$0.UPC := $0.UPC;
-	$0.CUSTOMER_NUMBER := $0.CUSTOMER_NUMBER;
-	$0.PRICE_PER_UNIT := $0.PRICE_PER_UNIT;
-	$0.UNITS := $0.UNITS;
-	$0.total_price := $0.PRICE_PER_UNIT * $0.UNITS;
-	$0.INVOICE_NUMBER := $0.INVOICE_NUMBER;
-	$0.TRANSACTION_DATE := $0.TRANSACTION_DATE;
+function integer transform() {
+	$0.STORE_NUMBER = $0.STORE_NUMBER;
+	$0.UPC = $0.UPC;
+	$0.CUSTOMER_NUMBER = $0.CUSTOMER_NUMBER;
+	$0.PRICE_PER_UNIT = $0.PRICE_PER_UNIT;
+	$0.UNITS = $0.UNITS;
+	$0.total_price = $0.PRICE_PER_UNIT * $0.UNITS;
+	$0.INVOICE_NUMBER = $0.INVOICE_NUMBER;
+	$0.TRANSACTION_DATE = $0.TRANSACTION_DATE;
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.

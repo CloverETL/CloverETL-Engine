@@ -227,11 +227,11 @@ In this graph, four methods are used to generate Matching key:
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="152" guiY="48" id="REFORMAT6" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 string LastName;
 string FirstName;
-int LN;
-int FN;
+integer LN;
+integer FN;
 LN=4;
 FN=3;
 function forLeft() {
@@ -242,39 +242,41 @@ function forLeft() {
 	}
 	while (length(FirstName) < FN) {
 		FirstName = FirstName + " ";
-	}	
+	}
+	return ALL;
 }
 
 
 // Transforms input record into output record.
-function transform() {
+function integer transform() {
 	forLeft();
-	$0.customer_id := $0.customer_id;
-	$0.account_num := $0.account_num;
-	$0.lname := $0.lname;
-	$0.fname := $0.fname;
-	$0.mi := $0.mi;
-	$0.address1 := $0.address1;
-	$0.city := $0.city;
-	$0.state_province := $0.state_province;
-	$0.postal_code := $0.postal_code;
-	$0.country := $0.country;
-	$0.customer_region_id := $0.customer_region_id;
-	$0.phone1 := $0.phone1;
-	$0.phone2 := $0.phone2;
-	$0.birthdate := $0.birthdate;
-	$0.marital_status := $0.marital_status;
-	$0.yearly_income := $0.yearly_income;
-	$0.gender := $0.gender;
-	$0.total_children := $0.total_children;
-	$0.num_children_at_home := $0.num_children_at_home;
-	$0.education := $0.education;
-	$0.date_accnt_opened := $0.date_accnt_opened;
-	$0.member_card := $0.member_card;
-	$0.occupation := $0.occupation;
-	$0.houseowner := $0.houseowner;
-	$0.num_cars_owned := $0.num_cars_owned;
-	$0.key := left(LastName,LN) + left(FirstName,FN);
+	$0.customer_id = $0.customer_id;
+	$0.account_num = $0.account_num;
+	$0.lname = $0.lname;
+	$0.fname = $0.fname;
+	$0.mi = $0.mi;
+	$0.address1 = $0.address1;
+	$0.city = $0.city;
+	$0.state_province = $0.state_province;
+	$0.postal_code = $0.postal_code;
+	$0.country = $0.country;
+	$0.customer_region_id = $0.customer_region_id;
+	$0.phone1 = $0.phone1;
+	$0.phone2 = $0.phone2;
+	$0.birthdate = $0.birthdate;
+	$0.marital_status = $0.marital_status;
+	$0.yearly_income = $0.yearly_income;
+	$0.gender = $0.gender;
+	$0.total_children = $0.total_children;
+	$0.num_children_at_home = $0.num_children_at_home;
+	$0.education = $0.education;
+	$0.date_accnt_opened = $0.date_accnt_opened;
+	$0.member_card = $0.member_card;
+	$0.occupation = $0.occupation;
+	$0.houseowner = $0.houseowner;
+	$0.num_cars_owned = $0.num_cars_owned;
+	$0.key = left(LastName,LN) + left(FirstName,FN);
+	return ALL;
 }
 
 // Called during component initialization.
@@ -286,14 +288,14 @@ function transform() {
 <attr name="guiDescription"><![CDATA[Last name and First name together are used to create an artificial key.]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="156" guiY="216" id="REFORMAT7" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 string LastName;
 string FirstName;
-int LN;
-int FN;
+integer LN;
+integer FN;
 LN=4;
 FN=3;
-function forLeft() {
+function integer forLeft() {
 	LastName = nvl($0.last_name,"");
 	FirstName = nvl($0.first_name,"");
 	while (length(LastName) < LN) {
@@ -302,29 +304,31 @@ function forLeft() {
 	while (length(FirstName) < FN) {
 		FirstName = FirstName + " ";
 	}
+	return ALL;
 }
 
 // Transforms input record into output record.
-function transform() {
+function integer transform() {
 	forLeft();
-	$0.employee_id := $0.employee_id;
-	$0.full_name := $0.full_name;
-	$0.first_name := $0.first_name;
-	$0.last_name := $0.last_name;
-	$0.position_id := $0.position_id;
-	$0.position_title := $0.position_title;
-	$0.store_id := $0.store_id;
-	$0.department_id := $0.department_id;
-	$0.birth_date := $0.birth_date;
-	$0.hire_date := $0.hire_date;
-	$0.end_date := $0.end_date;
-	$0.salary := $0.salary;
-	$0.supervisor_id := $0.supervisor_id;
-	$0.education_level := $0.education_level;
-	$0.marital_status := $0.marital_status;
-	$0.gender := $0.gender;
-	$0.management_role := $0.management_role;
+	$0.employee_id = $0.employee_id;
+	$0.full_name = $0.full_name;
+	$0.first_name = $0.first_name;
+	$0.last_name = $0.last_name;
+	$0.position_id = $0.position_id;
+	$0.position_title = $0.position_title;
+	$0.store_id = $0.store_id;
+	$0.department_id = $0.department_id;
+	$0.birth_date = $0.birth_date;
+	$0.hire_date = $0.hire_date;
+	$0.end_date = $0.end_date;
+	$0.salary = $0.salary;
+	$0.supervisor_id = $0.supervisor_id;
+	$0.education_level = $0.education_level;
+	$0.marital_status = $0.marital_status;
+	$0.gender = $0.gender;
+	$0.management_role = $0.management_role;
 	$0.key := left(LastName,LN) + left(FirstName,FN);
+	return ALL;
 }
 
 // Called during component initialization.
@@ -370,36 +374,37 @@ function transform() {
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="157" guiY="505" id="REFORMAT0" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.customer_id := $0.customer_id;
-	$0.account_num := $0.account_num;
-	$0.lname := $0.lname;
-	$0.fname := $0.fname;
-	$0.mi := $0.mi;
-	$0.address1 := $0.address1;
-	$0.city := $0.city;
-	$0.state_province := $0.state_province;
-	$0.postal_code := $0.postal_code;
-	$0.country := $0.country;
-	$0.customer_region_id := $0.customer_region_id;
-	$0.phone1 := $0.phone1;
-	$0.phone2 := $0.phone2;
-	$0.birthdate := $0.birthdate;
-	$0.marital_status := $0.marital_status;
-	$0.yearly_income := $0.yearly_income;
-	$0.gender := $0.gender;
-	$0.total_children := $0.total_children;
-	$0.num_children_at_home := $0.num_children_at_home;
-	$0.education := $0.education;
-	$0.date_accnt_opened := $0.date_accnt_opened;
-	$0.member_card := $0.member_card;
-	$0.occupation := $0.occupation;
-	$0.houseowner := $0.houseowner;
-	$0.num_cars_owned := $0.num_cars_owned;
-	$0.key := soundex($lname + $fname);
+function integer transform() {
+	$0.customer_id = $0.customer_id;
+	$0.account_num = $0.account_num;
+	$0.lname = $0.lname;
+	$0.fname = $0.fname;
+	$0.mi = $0.mi;
+	$0.address1 = $0.address1;
+	$0.city = $0.city;
+	$0.state_province = $0.state_province;
+	$0.postal_code = $0.postal_code;
+	$0.country = $0.country;
+	$0.customer_region_id = $0.customer_region_id;
+	$0.phone1 = $0.phone1;
+	$0.phone2 = $0.phone2;
+	$0.birthdate = $0.birthdate;
+	$0.marital_status = $0.marital_status;
+	$0.yearly_income = $0.yearly_income;
+	$0.gender = $0.gender;
+	$0.total_children = $0.total_children;
+	$0.num_children_at_home = $0.num_children_at_home;
+	$0.education = $0.education;
+	$0.date_accnt_opened = $0.date_accnt_opened;
+	$0.member_card = $0.member_card;
+	$0.occupation = $0.occupation;
+	$0.houseowner = $0.houseowner;
+	$0.num_cars_owned = $0.num_cars_owned;
+	$0.key = soundex($lname + $fname);
+	return ALL;
 }
 
 // Called during component initialization.
@@ -411,28 +416,29 @@ function transform() {
 <attr name="guiDescription"><![CDATA[Last name and First name together are used to create an artificial key.]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="155" guiY="667" id="REFORMAT1" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.employee_id := $0.employee_id;
-	$0.full_name := $0.full_name;
-	$0.first_name := $0.first_name;
-	$0.last_name := $0.last_name;
-	$0.position_id := $0.position_id;
-	$0.position_title := $0.position_title;
-	$0.store_id := $0.store_id;
-	$0.department_id := $0.department_id;
-	$0.birth_date := $0.birth_date;
-	$0.hire_date := $0.hire_date;
-	$0.end_date := $0.end_date;
-	$0.salary := $0.salary;
-	$0.supervisor_id := $0.supervisor_id;
-	$0.education_level := $0.education_level;
-	$0.marital_status := $0.marital_status;
-	$0.gender := $0.gender;
-	$0.management_role := $0.management_role;
-	$0.key := soundex(nvl($last_name,'') + $first_name);
+function integer transform() {
+	$0.employee_id = $0.employee_id;
+	$0.full_name = $0.full_name;
+	$0.first_name = $0.first_name;
+	$0.last_name = $0.last_name;
+	$0.position_id = $0.position_id;
+	$0.position_title = $0.position_title;
+	$0.store_id = $0.store_id;
+	$0.department_id = $0.department_id;
+	$0.birth_date = $0.birth_date;
+	$0.hire_date = $0.hire_date;
+	$0.end_date = $0.end_date;
+	$0.salary = $0.salary;
+	$0.supervisor_id = $0.supervisor_id;
+	$0.education_level = $0.education_level;
+	$0.marital_status = $0.marital_status;
+	$0.gender = $0.gender;
+	$0.management_role = $0.management_role;
+	$0.key = soundex(nvl($last_name,'') + $first_name);
+			return ALL;
 }
 
 // Called during component initialization.
@@ -478,36 +484,37 @@ function transform() {
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="158" guiY="951" id="REFORMAT2" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.customer_id := $0.customer_id;
-	$0.account_num := $0.account_num;
-	$0.lname := $0.lname;
-	$0.fname := $0.fname;
-	$0.mi := $0.mi;
-	$0.address1 := $0.address1;
-	$0.city := $0.city;
-	$0.state_province := $0.state_province;
-	$0.postal_code := $0.postal_code;
-	$0.country := $0.country;
-	$0.customer_region_id := $0.customer_region_id;
-	$0.phone1 := $0.phone1;
-	$0.phone2 := $0.phone2;
-	$0.birthdate := $0.birthdate;
-	$0.marital_status := $0.marital_status;
-	$0.yearly_income := $0.yearly_income;
-	$0.gender := $0.gender;
-	$0.total_children := $0.total_children;
-	$0.num_children_at_home := $0.num_children_at_home;
-	$0.education := $0.education;
-	$0.date_accnt_opened := $0.date_accnt_opened;
-	$0.member_card := $0.member_card;
-	$0.occupation := $0.occupation;
-	$0.houseowner := $0.houseowner;
-	$0.num_cars_owned := $0.num_cars_owned;
-	$0.key := metaphone($lname + $fname);
+function integer transform() {
+	$0.customer_id = $0.customer_id;
+	$0.account_num = $0.account_num;
+	$0.lname = $0.lname;
+	$0.fname = $0.fname;
+	$0.mi = $0.mi;
+	$0.address1 = $0.address1;
+	$0.city = $0.city;
+	$0.state_province = $0.state_province;
+	$0.postal_code = $0.postal_code;
+	$0.country = $0.country;
+	$0.customer_region_id = $0.customer_region_id;
+	$0.phone1 = $0.phone1;
+	$0.phone2 = $0.phone2;
+	$0.birthdate = $0.birthdate;
+	$0.marital_status = $0.marital_status;
+	$0.yearly_income = $0.yearly_income;
+	$0.gender = $0.gender;
+	$0.total_children = $0.total_children;
+	$0.num_children_at_home = $0.num_children_at_home;
+	$0.education = $0.education;
+	$0.date_accnt_opened = $0.date_accnt_opened;
+	$0.member_card = $0.member_card;
+	$0.occupation = $0.occupation;
+	$0.houseowner = $0.houseowner;
+	$0.num_cars_owned = $0.num_cars_owned;
+	$0.key = metaphone($lname + $fname);
+	return ALL;
 }
 
 // Called during component initialization.
@@ -519,28 +526,29 @@ function transform() {
 <attr name="guiDescription"><![CDATA[Last name and First name together are used to create an artificial key.]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="162" guiY="1110" id="REFORMAT3" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.employee_id := $0.employee_id;
-	$0.full_name := $0.full_name;
-	$0.first_name := $0.first_name;
-	$0.last_name := $0.last_name;
-	$0.position_id := $0.position_id;
-	$0.position_title := $0.position_title;
-	$0.store_id := $0.store_id;
-	$0.department_id := $0.department_id;
-	$0.birth_date := $0.birth_date;
-	$0.hire_date := $0.hire_date;
-	$0.end_date := $0.end_date;
-	$0.salary := $0.salary;
-	$0.supervisor_id := $0.supervisor_id;
-	$0.education_level := $0.education_level;
-	$0.marital_status := $0.marital_status;
-	$0.gender := $0.gender;
-	$0.management_role := $0.management_role;
-	$0.key := metaphone(nvl($last_name,'') + $first_name);
+function integer transform() {
+	$0.employee_id = $0.employee_id;
+	$0.full_name = $0.full_name;
+	$0.first_name = $0.first_name;
+	$0.last_name = $0.last_name;
+	$0.position_id = $0.position_id;
+	$0.position_title = $0.position_title;
+	$0.store_id = $0.store_id;
+	$0.department_id = $0.department_id;
+	$0.birth_date = $0.birth_date;
+	$0.hire_date = $0.hire_date;
+	$0.end_date = $0.end_date;
+	$0.salary = $0.salary;
+	$0.supervisor_id = $0.supervisor_id;
+	$0.education_level = $0.education_level;
+	$0.marital_status = $0.marital_status;
+	$0.gender = $0.gender;
+	$0.management_role = $0.management_role;
+	$0.key = metaphone(nvl($last_name,'') + $first_name);
+	return ALL;
 }
 
 // Called during component initialization.
@@ -586,36 +594,37 @@ function transform() {
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="174" guiY="1423" id="REFORMAT4" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.customer_id := $0.customer_id;
-	$0.account_num := $0.account_num;
-	$0.lname := $0.lname;
-	$0.fname := $0.fname;
-	$0.mi := $0.mi;
-	$0.address1 := $0.address1;
-	$0.city := $0.city;
-	$0.state_province := $0.state_province;
-	$0.postal_code := $0.postal_code;
-	$0.country := $0.country;
-	$0.customer_region_id := $0.customer_region_id;
-	$0.phone1 := $0.phone1;
-	$0.phone2 := $0.phone2;
-	$0.birthdate := $0.birthdate;
-	$0.marital_status := $0.marital_status;
-	$0.yearly_income := $0.yearly_income;
-	$0.gender := $0.gender;
-	$0.total_children := $0.total_children;
-	$0.num_children_at_home := $0.num_children_at_home;
-	$0.education := $0.education;
-	$0.date_accnt_opened := $0.date_accnt_opened;
-	$0.member_card := $0.member_card;
-	$0.occupation := $0.occupation;
-	$0.houseowner := $0.houseowner;
-	$0.num_cars_owned := $0.num_cars_owned;
-	$0.key := NYSIIS($lname);
+function integer transform() {
+	$0.customer_id = $0.customer_id;
+	$0.account_num = $0.account_num;
+	$0.lname = $0.lname;
+	$0.fname = $0.fname;
+	$0.mi = $0.mi;
+	$0.address1 = $0.address1;
+	$0.city = $0.city;
+	$0.state_province = $0.state_province;
+	$0.postal_code = $0.postal_code;
+	$0.country = $0.country;
+	$0.customer_region_id = $0.customer_region_id;
+	$0.phone1 = $0.phone1;
+	$0.phone2 = $0.phone2;
+	$0.birthdate = $0.birthdate;
+	$0.marital_status = $0.marital_status;
+	$0.yearly_income = $0.yearly_income;
+	$0.gender = $0.gender;
+	$0.total_children = $0.total_children;
+	$0.num_children_at_home = $0.num_children_at_home;
+	$0.education = $0.education;
+	$0.date_accnt_opened = $0.date_accnt_opened;
+	$0.member_card = $0.member_card;
+	$0.occupation = $0.occupation;
+	$0.houseowner = $0.houseowner;
+	$0.num_cars_owned = $0.num_cars_owned;
+	$0.key = NYSIIS($lname);
+	return ALL;
 }
 
 // Called during component initialization.
@@ -627,28 +636,29 @@ function transform() {
 <attr name="guiDescription"><![CDATA[Last name and First name together are used to create an artificial key.]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="168" guiY="1578" id="REFORMAT5" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.employee_id := $0.employee_id;
-	$0.full_name := $0.full_name;
-	$0.first_name := $0.first_name;
-	$0.last_name := $0.last_name;
-	$0.position_id := $0.position_id;
-	$0.position_title := $0.position_title;
-	$0.store_id := $0.store_id;
-	$0.department_id := $0.department_id;
-	$0.birth_date := $0.birth_date;
-	$0.hire_date := $0.hire_date;
-	$0.end_date := $0.end_date;
-	$0.salary := $0.salary;
-	$0.supervisor_id := $0.supervisor_id;
-	$0.education_level := $0.education_level;
-	$0.marital_status := $0.marital_status;
-	$0.gender := $0.gender;
-	$0.management_role := $0.management_role;
-	$0.key := NYSIIS(nvl($last_name,''));
+function integer transform() {
+	$0.employee_id = $0.employee_id;
+	$0.full_name = $0.full_name;
+	$0.first_name = $0.first_name;
+	$0.last_name = $0.last_name;
+	$0.position_id = $0.position_id;
+	$0.position_title = $0.position_title;
+	$0.store_id = $0.store_id;
+	$0.department_id = $0.department_id;
+	$0.birth_date = $0.birth_date;
+	$0.hire_date = $0.hire_date;
+	$0.end_date = $0.end_date;
+	$0.salary = $0.salary;
+	$0.supervisor_id = $0.supervisor_id;
+	$0.education_level = $0.education_level;
+	$0.marital_status = $0.marital_status;
+	$0.gender = $0.gender;
+	$0.management_role = $0.management_role;
+	$0.key = NYSIIS(nvl($last_name,''));
+	return ALL;
 }
 
 // Called during component initialization.

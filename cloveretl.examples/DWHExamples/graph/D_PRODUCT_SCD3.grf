@@ -39,17 +39,18 @@ If the data is stored in database instead of files, the D_PRODUCT_update.tbl and
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiHeight="103" guiName="DataIntersection" guiWidth="152" guiX="415" guiY="95" id="DATA_INTERSECTION0" joinKey="$UPC=$UPC" type="DATA_INTERSECTION">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.ID_D_PRODUCT := $0.ID_D_PRODUCT;
-	$0.UPC := $0.UPC;
-	$0.PRODUCT_DESCRIPTION := $0.PRODUCT_DESCRIPTION;
-	$0.BRAND_DESCRIPTION := $0.BRAND_DESCRIPTION;
-	$0.DEPARTMENT_DESCRIPTION := $0.DEPARTMENT_DESCRIPTION;
-	$0.PREVIOUS_DEPARTMENT := $0.PREVIOUS_DEPARTMENT;
-	$0.DEPARTMENT_DESCRIPTION_NEW := $1.DEPARTMENT_DESCRIPTION;
+function integer transform() {
+	$0.ID_D_PRODUCT = $0.ID_D_PRODUCT;
+	$0.UPC = $0.UPC;
+	$0.PRODUCT_DESCRIPTION = $0.PRODUCT_DESCRIPTION;
+	$0.BRAND_DESCRIPTION = $0.BRAND_DESCRIPTION;
+	$0.DEPARTMENT_DESCRIPTION = $0.DEPARTMENT_DESCRIPTION;
+	$0.PREVIOUS_DEPARTMENT = $0.PREVIOUS_DEPARTMENT;
+	$0.DEPARTMENT_DESCRIPTION_NEW = $1.DEPARTMENT_DESCRIPTION;
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.
@@ -82,15 +83,16 @@ function transform() {
 <Node enabled="enabled" guiHeight="86" guiName="Sort by UPC" guiWidth="128" guiX="239" guiY="43" id="EXT_SORT0" sortKey="UPC(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="86" guiName="Sort by UPC" guiWidth="128" guiX="240" guiY="159" id="EXT_SORT1" sortKey="UPC(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="103" guiName="Add ID_D_PRODUCT" guiWidth="175" guiX="603" guiY="229" id="REFORMAT0" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.UPC := $0.UPC;
-	$0.PRODUCT_DESCRIPTION := $0.PRODUCT_DESCRIPTION;
-	$0.BRAND_DESCRIPTION := $0.BRAND_DESCRIPTION;
-	$0.DEPARTMENT_DESCRIPTION := $0.DEPARTMENT_DESCRIPTION;
-	$0.ID_D_PRODUCT := sequence(Sequence0).next;
+function integer transform() {
+	$0.UPC = $0.UPC;
+	$0.PRODUCT_DESCRIPTION = $0.PRODUCT_DESCRIPTION;
+	$0.BRAND_DESCRIPTION = $0.BRAND_DESCRIPTION;
+	$0.DEPARTMENT_DESCRIPTION = $0.DEPARTMENT_DESCRIPTION;
+	$0.ID_D_PRODUCT = sequence(ID_D_PRODUCT).next();
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.
@@ -105,16 +107,17 @@ function transform() {
 <attr name="guiDescription"><![CDATA[Processing records not contained in DWH but contained in OLTP]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="69" guiName="Set DEPARTMENT" guiWidth="159" guiX="798" guiY="109" id="REFORMAT1" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.ID_D_PRODUCT := $0.ID_D_PRODUCT;
-	$0.UPC := $0.UPC;
-	$0.PRODUCT_DESCRIPTION := $0.PRODUCT_DESCRIPTION;
-	$0.BRAND_DESCRIPTION := $0.BRAND_DESCRIPTION;
-	$0.DEPARTMENT_DESCRIPTION := $0.DEPARTMENT_DESCRIPTION_NEW;
-	$0.PREVIOUS_DEPARTMENT := $0.DEPARTMENT_DESCRIPTION;
+function integer transform() {
+	$0.ID_D_PRODUCT = $0.ID_D_PRODUCT;
+	$0.UPC = $0.UPC;
+	$0.PRODUCT_DESCRIPTION = $0.PRODUCT_DESCRIPTION;
+	$0.BRAND_DESCRIPTION = $0.BRAND_DESCRIPTION;
+	$0.DEPARTMENT_DESCRIPTION = $0.DEPARTMENT_DESCRIPTION_NEW;
+	$0.PREVIOUS_DEPARTMENT = $0.DEPARTMENT_DESCRIPTION;
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.

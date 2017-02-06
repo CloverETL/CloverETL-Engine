@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph illustrates usage of the new Aggregate component. " guiVersion="0.0.0.devel" id="1204535282174" licenseType="Evaluation Devel" modified="Mon Jun 13 10:09:54 CEST 2011" modifiedBy="avackova" name="TestingSort" revision="1.72" showComponentDetails="true">
+<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph illustrates usage of the new Aggregate component. " guiVersion="4.5.0.M1" id="1204535282174" licenseCode="Javlin-Internal-License" licenseType="Evaluation Devel" modified="Mon Jun 13 10:09:54 CEST 2011" modifiedBy="avackova" name="TestingSort" revision="1.72" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/ordersAggregate.fmt" id="Metadata1"/>
@@ -10,49 +10,54 @@
 <Field name="avgFreight" type="number"/>
 </Record>
 </Metadata>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="288" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="The same output" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="267" x="997" y="-19"/>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node aggregateKey="ShipCountry" enabled="enabled" guiHeight="101" guiName="AGGREGATE" guiWidth="128" guiX="625" guiY="24" id="AGGREGATE" mapping="$ShipCountry:=$ShipCountry;$Count:=count();$AvgFreight:=avg($Freight)" sorted="true" type="AGGREGATE">
+<Node aggregateKey="ShipCountry" enabled="enabled" guiName="AGGREGATE" guiX="625" guiY="24" id="AGGREGATE" mapping="$ShipCountry:=$ShipCountry;$Count:=count();$AvgFreight:=avg($Freight)" sorted="true" type="AGGREGATE">
 <attr name="guiDescription"><![CDATA[Counts number of records and average freight in each group]]></attr>
 </Node>
-<Node dedupKey="ShipName;ShipCity;OrderID;CustomerID;EmployeeID;OrderDate;RequiredDate;ShippedDate;ShipVia;Freight;ShipAddress;ShipRegion;ShipPostalCode;ShipCountry" enabled="enabled" guiHeight="85" guiName="Dedup equal records" guiWidth="178" guiX="425" guiY="24" id="DEDUP0" keep="first" type="DEDUP">
+<Node dedupKey="ShipName;ShipCity;OrderID;CustomerID;EmployeeID;OrderDate;RequiredDate;ShippedDate;ShipVia;Freight;ShipAddress;ShipRegion;ShipPostalCode;ShipCountry" enabled="enabled" guiName="Dedup equal records" guiX="425" guiY="24" id="DEDUP0" keep="first" type="DEDUP">
 <attr name="guiDescription"><![CDATA[Unique records]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="85" guiName="ExtSort (ShipCountry)" guiWidth="188" guiX="173" guiY="24" id="EXT_SORT" sortKey="ShipCountry(a)" type="EXT_SORT"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="101" guiName="Orders" guiWidth="128" guiX="20" guiY="24" id="INPUT1" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.aggregated" guiHeight="101" guiName="Orders Aggegated" guiWidth="163" guiX="1017" guiY="24" id="OUTPUT" type="DATA_WRITER"/>
+<Node enabled="enabled" guiName="ExtSort (ShipCountry)" guiX="173" guiY="24" id="EXT_SORT" sortKey="ShipCountry(a)" type="EXT_SORT"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiName="Orders" guiX="20" guiY="24" id="INPUT1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.aggregated" guiName="Orders Aggegated" guiX="1017" guiY="24" id="OUTPUT" type="DATA_WRITER"/>
 <Edge debugMode="true" fromNode="AGGREGATE:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
 <Edge debugMode="true" fromNode="DEDUP0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (unique)" toNode="AGGREGATE:0"/>
 <Edge debugMode="true" fromNode="EXT_SORT:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="MIDDLE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
 <Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" guiHeight="85" guiName="ExtSort (ShipCountry)" guiWidth="188" guiX="789" guiY="135" id="EXT_SORT1" sortKey="ShipCountry(a)" type="EXT_SORT"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="101" guiName="Orders" guiWidth="128" guiX="23" guiY="135" id="INPUT4" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.aggregated_Rollup" guiHeight="101" guiName="Orders Aggregated (Rollup" guiWidth="225" guiX="1017" guiY="135" id="OUTPUT3" type="DATA_WRITER"/>
-<Node enabled="enabled" groupAccumulatorMetadataId="Metadata2" groupKeyFields="ShipCountry" guiHeight="101" guiName="Rollup" guiWidth="128" guiX="625" guiY="135" id="ROLLUP4" inputSorted="false" type="ROLLUP">
-<attr name="transform"><![CDATA[//#TL
+<Node enabled="enabled" guiName="ExtSort (ShipCountry)" guiX="789" guiY="135" id="EXT_SORT1" sortKey="ShipCountry(a)" type="EXT_SORT"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiName="Orders" guiX="23" guiY="135" id="INPUT4" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.aggregated_Rollup" guiName="Orders Aggregated (Rollup" guiX="1017" guiY="135" id="OUTPUT3" type="DATA_WRITER"/>
+<Node enabled="enabled" groupAccumulatorMetadataId="Metadata2" groupKeyFields="ShipCountry" guiName="Rollup" guiX="625" guiY="135" id="ROLLUP4" inputSorted="false" type="ROLLUP">
+<attr name="transform"><![CDATA[//#CTL2
 
 // Called for the first data record in a group.
-function initGroup(groupAccumulator) {
+function integer initGroup(string groupAccumulator) {
 	groupAccumulator["count"] = 0;
 	groupAccumulator["totalFreight"] = 0;
+	return ALL;
 }
 
 // Called for each data record in a group (including the first one and the last one).
 // Implicitly returns false => updateTransform is not called.
-function updateGroup(groupAccumulator) {
+function integer updateGroup(string groupAccumulator) {
 	groupAccumulator["count"] = groupAccumulator["count"] + 1;
 	groupAccumulator["totalFreight"] = 	groupAccumulator["totalFreight"] + $0.Freight;
+	return ALL;
 }
 
 // Called for the last data record in a group.
 // Implicitly returns true => transform is called.
-function finishGroup(groupAccumulator) {
+function boolean finishGroup(string groupAccumulator) {
 	groupAccumulator["avgFreight"] = groupAccumulator["totalFreight"]/groupAccumulator["count"];
+	return false;
 }
 
 // Called to transform data records for intermediate output using the group accumulator.
@@ -60,7 +65,8 @@ function finishGroup(groupAccumulator) {
 // Implicitly returns SKIP to skip sending any data records to output.
 // Returning ALL would cause each data record to be sent to its corresponding output port.
 // A port number may be returned to specify which data record should be sent to output.
-function updateTransform(counter, groupAccumulator) {
+function integer updateTransform(integer counter, string groupAccumulator) {
+	return ALL;
 }
 
 // Called to transform data records for output using the group accumulator.
@@ -68,12 +74,12 @@ function updateTransform(counter, groupAccumulator) {
 // Implicitly returns SKIP to skip sending any data records to output.
 // Returning ALL would cause each data record to be sent to its corresponding output port.
 // A port number may be returned to specify which data record should be sent to output.
-function transform(counter, groupAccumulator) {
+function integer transform( integer counter, string groupAccumulator) {
 	if (counter > 0) return SKIP;
-	$0.ShipCountry := $0.ShipCountry;
-	$0.Count := groupAccumulator["count"];
-	$0.AvgFreight := groupAccumulator["avgFreight"];
-	return ALL	
+	$0.ShipCountry = $0.ShipCountry;
+	$0.Count = groupAccumulator["count"];
+	$0.AvgFreight = groupAccumulator["avgFreight"];
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.
@@ -91,27 +97,29 @@ function transform(counter, groupAccumulator) {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Rollup can serve as Aggregator.]]></attr>
 </Node>
-<Node enabled="enabled" groupAccumulatorMetadataId="Metadata2" groupKeyFields="OrderID;CustomerID;EmployeeID;OrderDate;RequiredDate;ShippedDate;ShipVia;Freight;ShipName;ShipAddress;ShipCity;ShipRegion;ShipPostalCode;ShipCountry" guiHeight="101" guiName="Dedup equal records" guiWidth="178" guiX="425" guiY="135" id="ROLLUP5" inputSorted="false" type="ROLLUP">
-<attr name="transform"><![CDATA[//#TL
-int INT;
+<Node enabled="enabled" groupAccumulatorMetadataId="Metadata2" groupKeyFields="OrderID;CustomerID;EmployeeID;OrderDate;RequiredDate;ShippedDate;ShipVia;Freight;ShipName;ShipAddress;ShipCity;ShipRegion;ShipPostalCode;ShipCountry" guiName="Dedup equal records" guiX="425" guiY="135" id="ROLLUP5" inputSorted="false" type="ROLLUP">
+<attr name="transform"><![CDATA[//#CTL2
+integer INT;
 INT = 2;
 
 
 // Called for the first data record in a group.
-function initGroup(groupAccumulator) {
+function integer initGroup(string groupAccumulator) {
 	groupAccumulator["count"] = 0;
+	return ALL;
 }
 
 // Called for each data record in a group (including the first one and the last one).
 // Implicitly returns false => updateTransform is not called.
-function updateGroup(groupAccumulator) {
+function integer updateGroup(string groupAccumulator) {
 	groupAccumulator["count"] = groupAccumulator["count"] + 1;
 	if (groupAccumulator["count"] < INT) return true;
 }
 
 // Called for the last data record in a group.
 // Implicitly returns true => transform is called.
-function finishGroup(groupAccumulator) {
+function boolean finishGroup(string groupAccumulator) {
+	return false;
 }
 
 // Called to transform data records for intermediate output using the group accumulator.
@@ -119,10 +127,10 @@ function finishGroup(groupAccumulator) {
 // Implicitly returns SKIP to skip sending any data records to output.
 // Returning ALL would cause each data record to be sent to its corresponding output port.
 // A port number may be returned to specify which data record should be sent to output.
-function updateTransform(counter, groupAccumulator) {
+function integer updateTransform(integer counter, string groupAccumulator) {
 	if (counter > 0) return SKIP;
-	$0.* := $0.*;
-	return ALL
+	$0.* = $0.*;
+	return ALL;
 }
 
 // Called to transform data records for output using the group accumulator.
@@ -130,7 +138,8 @@ function updateTransform(counter, groupAccumulator) {
 // Implicitly returns SKIP to skip sending any data records to output.
 // Returning ALL would cause each data record to be sent to its corresponding output port.
 // A port number may be returned to specify which data record should be sent to output.
-function transform(counter, groupAccumulator) {
+function integer transform(integer counter, string groupAccumulator) {
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.

@@ -56,17 +56,18 @@ An autofilling function (global_row_count) is used for a field of the edge metad
 <attr name="base"><![CDATA[dc=javlin,dc=eu]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="101" guiName="Reformat" guiWidth="128" guiX="191" guiY="196" id="REFORMAT1" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.sn := $0.sn;
-	$0.cn := $0.cn;
-	$0.telephoneNumber := $0.telephoneNumber;
-	$0.objectClass := $0.objectClass;
-	$0.dn := $0.dn;
-	$0.ou := $0.ou;
-	$0.st := lookup(LookupTable0,random_int(0,42)).COUNTRY_NAME;
+function integer transform() {
+	$0.sn = $0.sn;
+	$0.cn = $0.cn;
+	$0.telephoneNumber = $0.telephoneNumber;
+	$0.objectClass = $0.objectClass;
+	$0.dn = $0.dn;
+	$0.ou = $0.ou;
+	$0.st = lookup(LookupTable0,random_int(0,42)).COUNTRY_NAME;
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.

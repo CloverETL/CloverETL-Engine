@@ -32,7 +32,7 @@ The same graph written in CTL2 is graphDBFJoinTLNew.grf.]]></attr>
 </Node>
 <Node ascendingInputs="true" enabled="enabled" guiHeight="101" guiName="Orders Complete Info" guiWidth="187" guiX="381" guiY="58" id="JOIN" joinKey="$ORDERID;#$ORDERID;#" joinType="leftOuter" type="EXT_MERGE_JOIN">
 <attr name="transform"><![CDATA[
-//#TL
+//#CTL2
 function price_per_unit(unit_price,quantity,discount){
 	return (unit_price*quantity - discount)/quantity
 }
@@ -41,32 +41,34 @@ function ship_time(ordered,shipped){
 	else return datediff(shipped,ordered,day);
 }
 
-function transform(){
+function integer transform(){
 	string datum;
 	int shiptime;
 	datum = $ORDERS_DBF.SHIPPEDDAT;
 	if (!isnull(datum)) {
 		shiptime=ship_time($ORDERS_DBF.ORDERDATE,str2date(datum,"yyyyMMdd")); 
 	} else { shiptime=-1;}
-	$ORDERS_Info.ORDERID:=$ORDERS_DBF.ORDERID;
-	$ORDERS_Info.CUSTOMERID:=$ORDERS_DBF.CUSTOMERID;
-	$ORDERS_Info.PRODUCTID:=$Bigodata_dbf.PRODUCTID;
-	$ORDERS_Info.UNITPRICE:=$Bigodata_dbf.UNITPRICE;
-	$ORDERS_Info.PRICE_PER_UNIT:=price_per_unit($Bigodata_dbf.UNITPRICE,$Bigodata_dbf.QUANTITY,$Bigodata_dbf.DISCOUNT);
-	$ORDERS_Info.QUANTITY:=$Bigodata_dbf.QUANTITY;
-	$ORDERS_Info.DISCOUNT:=$Bigodata_dbf.DISCOUNT;
-	$ORDERS_Info.SHIPTIME:=shiptime;
+	$ORDERS_Info.ORDERID=$ORDERS_DBF.ORDERID;
+	$ORDERS_Info.CUSTOMERID=$ORDERS_DBF.CUSTOMERID;
+	$ORDERS_Info.PRODUCTID=$Bigodata_dbf.PRODUCTID;
+	$ORDERS_Info.UNITPRICE=$Bigodata_dbf.UNITPRICE;
+	$ORDERS_Info.PRICE_PER_UNIT=price_per_unit($Bigodata_dbf.UNITPRICE,$Bigodata_dbf.QUANTITY,$Bigodata_dbf.DISCOUNT);
+	$ORDERS_Info.QUANTITY=$Bigodata_dbf.QUANTITY;
+	$ORDERS_Info.DISCOUNT=$Bigodata_dbf.DISCOUNT;
+	$ORDERS_Info.SHIPTIME=shiptime;
+	return ALL;
 }
 ]]></attr>
 <attr name="guiDescription"><![CDATA[joinType is set to "Left outer join" to process also Orders without Details. slaveDuplicates attribute is set to true as order may include multiple ordered items.]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="101" guiName="Orders and Customers" guiWidth="190" guiX="596" guiY="58" id="JOIN_CUSTOMER" joinKey="$CUSTOMERID=$CUSTOMERID;#" joinType="leftOuter" type="EXT_HASH_JOIN">
 <attr name="transform"><![CDATA[
-//#TL
+//#CTL2
 function copyFields(){
-	$ORDERS_Info.*:=$ORDERS_Info.*;
+	$ORDERS_Info.*=$ORDERS_Info.*;
+	return ALL;
 }
-function transform(){
+function integer transform(){
 	copyFields();
 	//only for debugging
 	if (isnull($Customer.CompanyName)) {
@@ -74,7 +76,8 @@ function transform(){
 	}else {
 		print_err("$Customer.CompanyName="+$Customer.CompanyName);
 	}
-	$ORDERS_Info.CUSTOMER:= nvl($Customer.CompanyName,"N/A");
+	$ORDERS_Info.CUSTOMER= nvl($Customer.CompanyName,"N/A");
+	return ALL;
  }
 
 ]]></attr>

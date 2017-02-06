@@ -79,14 +79,15 @@
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="101" guiName="ExtMergeJoin" guiWidth="130" guiX="213" guiY="385" id="EXT_MERGE_JOIN1" joinKey="$seqKey#$seqKey;" type="EXT_MERGE_JOIN">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.car := $0.car;
-	$0.seqKey := $0.seqKey;
-	$0.mobilephone := $0.mobilephone;
-	$0.financial_bonus := (($1.monthly_bonus)*12)+($1.yearly_bonus);
+function integer transform() {
+	$0.car = $0.car;
+	$0.seqKey = $0.seqKey;
+	$0.mobilephone = $0.mobilephone;
+	$0.financial_bonus = (($1.monthly_bonus)*12)+($1.yearly_bonus);
+	return ALL;
 }
 	
 // Called to return a user-defined error message when an error occurs.

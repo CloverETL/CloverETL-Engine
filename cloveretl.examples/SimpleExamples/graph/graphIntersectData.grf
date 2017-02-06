@@ -24,16 +24,17 @@ By default, component has also Allow key duplicates set to true. In other words,
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiHeight="101" guiName="DataIntersection" guiWidth="152" guiX="394" guiY="11" id="DATA_INTERSECTION0" joinKey="$EmployeeID=$EMP_NO" type="DATA_INTERSECTION">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.EMP_NO := $0.EmployeeID;
-	$0.FIRST_NAME := $0.FirstName;
-	$0.LAST_NAME := $0.LastName;
-	$0.FULL_NAME := $1.FULL_NAME;
-	$0.HIRE_DATE := $1.HIRE_DATE;
-	$0.HIRE_DATE := $0.HireDate;
+function integer transform() {
+	$0.EMP_NO = $0.EmployeeID;
+	$0.FIRST_NAME = $0.FirstName;
+	$0.LAST_NAME = $0.LastName;
+	$0.FULL_NAME = $1.FULL_NAME;
+	$0.HIRE_DATE = $1.HIRE_DATE;
+	$0.HIRE_DATE = $0.HireDate;
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.

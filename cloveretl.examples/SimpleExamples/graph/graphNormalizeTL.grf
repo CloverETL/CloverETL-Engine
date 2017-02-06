@@ -25,7 +25,7 @@ For the CTL2 equaivalent of this older TL syntax see  graphNormalizeTLNew.grf.
 <attr name="DataPolicy"><![CDATA[Strict]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="101" guiName="Normalizer" guiWidth="128" guiX="367" guiY="30" id="NORMALIZER0" type="NORMALIZER">
-<attr name="normalize"><![CDATA[//#TL
+<attr name="normalize"><![CDATA[//#CTL2
 list customers;
 // This transformation defines the way in which a single input record is normalized
 // into multiple output records.
@@ -44,9 +44,10 @@ function count() {
 // It is called count() times for each input record.
 // The idx argument specifies which output record is being created,
 // its values range is from 0 to count() - 1.
-function transform(idx) {
-	$0.customers := customers[idx];
-	$0.EmployeeID := $EmployeeID;
+function integer transform(idx) {
+	$0.customers = customers[idx];
+	$0.EmployeeID = $EmployeeID;
+	return ALL;
 }
 
 // Called after transform(count-1) to return the resources that have been used to their initial state

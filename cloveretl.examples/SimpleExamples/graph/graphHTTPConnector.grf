@@ -49,12 +49,14 @@ SOAPAction="http\://www.schemaweb.info/webservices/methods/GetRDFTriples"
 <Phase number="1">
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/city_overview.txt" guiName="UniversalDataWriter" guiX="864" guiY="11" id="DATA_WRITER2" type="DATA_WRITER"/>
 <Node enabled="enabled" guiName="Join Location with additional info" guiX="582" guiY="11" id="EXT_HASH_JOIN0" joinKey="$location_key=$applicable_location;#" type="EXT_HASH_JOIN">
-<attr name="transform"><![CDATA[function transform() {
+<attr name="transform"><![CDATA[//CTL2
+function integer transform() {
 	list l = find($1.moreWeatherInformation,"=[-\\d\\.]+");
-	$0.city := $0.city;
-	$0.state := $0.state;
-	$0.lat := str2num(substring(l[0],1,length(l[0])),decimal);
-	$0.long := str2num(substring(l[1],1,length(l[1])),decimal);
+	$0.city = $0.city;
+	$0.state = $0.state;
+	$0.lat = str2num(substring(l[0],1,length(l[0])),decimal);
+	$0.long = str2num(substring(l[1],1,length(l[1])),decimal);
+	return ALL;
 }
 ]]></attr>
 </Node>

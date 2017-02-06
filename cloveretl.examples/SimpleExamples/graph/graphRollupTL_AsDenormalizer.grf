@@ -65,7 +65,7 @@ function append() {
 	employee = $EmployeeID;
 }
 
-function transform() {
+function integer transform() {
 	$0.customers_count := numRec;
 	$0.customers := customer;
 	$0.EmployeeID := employee;
@@ -100,7 +100,7 @@ function append() {
 	employee = $EmployeeID;
 }
 
-function transform() {
+function integer transform() {
 	$0.customers_count := numRec;
 	$0.customers := customer;
 	$0.EmployeeID := employee;
@@ -126,12 +126,13 @@ function clean(){
 <attr name="DataPolicy"><![CDATA[Strict]]></attr>
 </Node>
 <Node enabled="enabled" groupAccumulatorMetadataId="Metadata1" groupKeyFields="EmployeeID" guiHeight="69" guiName="Rollup-Need not be sorted" guiWidth="222" guiX="392" guiY="252" id="ROLLUP0" inputSorted="false" type="ROLLUP">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Called for the first data record in a group.
 function initGroup(groupAccumulator) {
 	groupAccumulator["customer"] = "";
 	groupAccumulator["numRec"] = 0;
+	return ALL;
 }
 
 // Called for each data record in a group (including the first one and the last one).
@@ -163,7 +164,7 @@ function transform(counter, groupAccumulator) {
 	if (counter > 0) return SKIP;
 	$0.customers_count := groupAccumulator["numRec"];
 	$0.customers := groupAccumulator["customer"];
-	$0.EmployeeID := $0.EmployeeID;
+	$0.EmployeeID = $0.EmployeeID;
 	return ALL
 }
 

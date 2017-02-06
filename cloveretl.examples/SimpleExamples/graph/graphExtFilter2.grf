@@ -21,7 +21,8 @@ Filtering condition counts the time elapsed from the birth of an employee and th
 <Phase number="0">
 <Node enabled="enabled" guiHeight="103" guiName="ExtFilter" guiWidth="128" guiX="195" guiY="20" id="FILTEREMPL1" type="EXT_FILTER">
 <attr name="guiDescription"><![CDATA[Employees who were hired before the age of 35 years.]]></attr>
-<attr name="filterExpression"><![CDATA[datediff($0.HireDate,$BirthDate,year).lt.${hireAge}]]></attr>
+<attr name="filterExpression"><![CDATA[//#CTL2
+datediff($0.HireDate,$BirthDate,year).lt.${hireAge}]]></attr>
 </Node>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="103" guiName="Employees" guiWidth="128" guiX="20" guiY="20" id="INPUT1" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Reads employees data]]></attr>

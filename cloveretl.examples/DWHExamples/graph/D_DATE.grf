@@ -24,28 +24,29 @@ The default values can be overwritten by runtime specification of parameters (-P
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiHeight="98" guiName="DataGenerator" guiWidth="137" guiX="45" guiY="17" id="DATA_GENERATOR0" recordsNumber="`datediff(${TO},${FROM},day)`" type="DATA_GENERATOR">
-<attr name="generate"><![CDATA[//#TL
+<attr name="generate"><![CDATA[//#CTL2
 date d = ${FROM} - 1;
 string SAT = date2str(2009-10-24, 'E');
 string SUN = date2str(2009-10-25, 'E');
 
 // Generates output record.
-function generate() {
-	int year_quarter;
+function integer generate() {
+	integer year_quarter;
 	d = d + 1;
 	
 	year_quarter = str2num(date2str(d, 'M'), int) + 3 / 4;
 	
-	$0.ID_D_DATE := sequence(Sequence0).next;
-	$0.DATE := d;
-	$0.DAY_OF_WEEK_DESCRIPTION := date2str(d, 'EEEE');
-	$0.DAY_OF_MONTH := str2num(date2str(d, 'd'), int);
-	$0.WEEK_OF_YEAR := str2num(date2str(d, 'w'), int);
-	$0.MONTH_OF_YEAR := str2num(date2str(d, 'M'), int);
-	$0.MONTH_OF_YEAR_DESCRIPTION := date2str(d, 'MMMM');
-	$0.YEAR_QUARTER := year_quarter;
-	$0.YEAR := str2num(date2str(d, 'yyyy'), int);
-	$0.WEEKDAY_INDICATOR := iif( date2str(d, 'E') == SAT || date2str(d, 'E') == SUN, '${WEEKEND}', '${WEEKDAY}');
+	$0.ID_D_DATE = sequence(ID_D_DATE).next();
+	$0.DATE = d;
+	$0.DAY_OF_WEEK_DESCRIPTION = date2str(d, 'EEEE');
+	$0.DAY_OF_MONTH = str2num(date2str(d, 'd'), int);
+	$0.WEEK_OF_YEAR = str2num(date2str(d, 'w'), int);
+	$0.MONTH_OF_YEAR = str2num(date2str(d, 'M'), int);
+	$0.MONTH_OF_YEAR_DESCRIPTION = date2str(d, 'MMMM');
+	$0.YEAR_QUARTER = year_quarter;
+	$0.YEAR = str2num(date2str(d, 'yyyy'), int);
+	$0.WEEKDAY_INDICATOR = iif( date2str(d, 'E') == SAT || date2str(d, 'E') == SUN, '${WEEKEND}', '${WEEKDAY}');
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.

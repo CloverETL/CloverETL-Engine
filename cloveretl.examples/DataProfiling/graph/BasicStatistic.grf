@@ -94,13 +94,14 @@ This component collects basic information about string data also: finds first no
 <attr name="guiDescription"><![CDATA[Convert date data from miliseconds to the value pellucid to user. For data of all other types, there is used default toString transformation.]]></attr>
 </Node>
 <Node enabled="enabled" groupAccumulatorMetadataId="Metadata2" groupKeyFields="fieldName" guiHeight="101" guiName="Statistic" guiWidth="128" guiX="335" guiY="285" id="ROLLUP0" inputSorted="false" type="ROLLUP">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Called for the first data record in a new group. Starts the parsing of the new group.
 function initGroup(groupAccumulator) {
 	groupAccumulator["fieldName"] = $fieldName;
 	groupAccumulator["count"] = 0;
 	groupAccumulator["countNotNull"] = 0;
+	return ALL;
 }
 
 // Called for each data record in the group (including the first one and the last one).
@@ -153,19 +154,19 @@ function updateTransform(counter, groupAccumulator){
 // Can also return a number of the output port to which individual data record should be sent.
 function transform(counter, groupAccumulator) {
 	if (counter > 0) return SKIP;
-	$fieldName := groupAccumulator["fieldName"];
-	$type := $type;
-	$min := groupAccumulator["min"];
-	$max := groupAccumulator["max"];
-	$average := groupAccumulator["average"];
-	$count := groupAccumulator["count"];
-	$countNotNull := groupAccumulator["countNotNull"];
-	$countNull := groupAccumulator["count"] - groupAccumulator["countNotNull"];
-	$firstNotNull := groupAccumulator["firstNotNull"];
+	$fieldName = groupAccumulator["fieldName"];
+	$type = $type;
+	$min = groupAccumulator["min"];
+	$max = groupAccumulator["max"];
+	$average = groupAccumulator["average"];
+	$count = groupAccumulator["count"];
+	$countNotNull = groupAccumulator["countNotNull"];
+	$countNull = groupAccumulator["count"] - groupAccumulator["countNotNull"];
+	$firstNotNull = groupAccumulator["firstNotNull"];
 	//if isnull(groupAccumulator["isAscii"]) --> all are Ascii or all are null
-	$isAscii := iif(!isnull(groupAccumulator["isAscii"]), groupAccumulator["isAscii"], iif(groupAccumulator["countNotNull"] > 0, true, false));
+	$isAscii = iif(!isnull(groupAccumulator["isAscii"]), groupAccumulator["isAscii"], iif(groupAccumulator["countNotNull"] > 0, true, false));
 	//if isnull(groupAccumulator["isNumber"]) --> all are numbers or all are null
-	$isNumber := iif(!isnull(groupAccumulator["isNumber"]), groupAccumulator["isNumber"], iif(groupAccumulator["countNotNull"] > 0 , true, false));
+	$isNumber = iif(!isnull(groupAccumulator["isNumber"]), groupAccumulator["isNumber"], iif(groupAccumulator["countNotNull"] > 0 , true, false));
 	return ALL
 }
 

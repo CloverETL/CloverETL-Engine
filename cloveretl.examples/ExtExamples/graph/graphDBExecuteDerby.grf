@@ -53,11 +53,12 @@ Both the input parameters and the fields for the result output set are specified
 </Phase>
 <Phase number="1">
 <Node enabled="enabled" guiHeight="69" guiName="ID-s generator" guiWidth="134" guiX="18" guiY="106" id="DATA_GENERATOR3" recordsNumber="100" type="DATA_GENERATOR">
-<attr name="generate"><![CDATA[//#TL
+<attr name="generate"><![CDATA[//#CTL2
 
 // Generates output record.
-function generate() {
-	$0.id := sequence(Sequence0).next;
+function integer generate() {
+	$0.id = sequence(Sequence0).next;
+	return ALL;
 }
 
 // Called during component initialization.

@@ -138,9 +138,10 @@ Reformat also stores fields for further processing in the graph dictionary . The
 This components serves also as a filter if STATISTIC_FIELDS or NOT_STATISTIC_FIELDS parameter is not empty.]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="101" guiName="TypePartition" guiWidth="128" guiX="342" guiY="22" id="PARTITION0" partitionKey="type" type="PARTITION">
-<attr name="partitionSource"><![CDATA[//#TL
+<attr name="partitionSource"><![CDATA[//#CTL2
 // This transformation partitions input records into multiple output ports.
-import '${TRANS_DIR}/types.ctl';
+import '${TRANS_DIR	return ALL;
+}/types.ctl';
 
 map portMap; 
 
@@ -170,10 +171,11 @@ function getOutputPort() {
 string histFields = "";
 int count = -1;
 
-//#TL
+//#CTL2
 function modus(type){
 	switch (type) {
-			case DATE:return date2str($modusDate,'${DATE_FORMAT}')
+			case DATE:return date2str($modusDate,'${DATE_FORMAT	return ALL;
+}')
 			case DECIMAL:return num2str($modusNumber)
 			case INTEGER:return num2str($modusNumber)
 			case LONG:return num2str($modusNumber)
@@ -186,29 +188,29 @@ function modus(type){
 }
 
 // Transforms input record into output record.
-function transform() {
+function integer transform() {
 	if (count == -1) {//remember number of records, always the same
 		count = $count; 
 	}
 	if ($countUnique < ${HISTOGRAM_THRESHOLD}) {
 		histFields = concat(histFields, $fieldName, ';');
 	}
-	$fieldName := $fieldName;
-	$type := $type;
-	$count := count;
-	$countNotNull := $countNotNull;
-	$countUnique := $countUnique;
-	$min := iif($type == STRING, $minString, 
+	$fieldName = $fieldName;
+	$type = $type;
+	$count = count;
+	$countNotNull = $countNotNull;
+	$countUnique = $countUnique;
+	$min = iif($type == STRING, $minString, 
 				iif($type == DATE, date2str($minDate,'${DATE_FORMAT}'), 
 								   num2str($minNumber)));
-	$max := iif($type == STRING, $maxString, 
+	$max = iif($type == STRING, $maxString, 
 				iif($type == DATE, date2str($maxDate,'${DATE_FORMAT}'), 
 								   num2str($maxNumber)));
-	$avgNumber := $avgNumber;
-	$median := iif($type == STRING, $medianString, 
+	$avgNumber = $avgNumber;
+	$median = iif($type == STRING, $medianString, 
 				iif($type == DATE, date2str($medianDate,'${DATE_FORMAT}'), 
 								   num2str($medianNumber)));
-	$modus := modus($type);
+	$modus = modus($type);
 	return ALL
 }
 
@@ -337,8 +339,9 @@ function transform() {
 <Node aggregateKey="fieldName;valueByte" enabled="enabled" equalNULL="true" guiHeight="69" guiName="Byte Aggregate" guiWidth="145" guiX="522" guiY="668" id="AGGREGATE9" mapping="$fieldName:=$fieldName;$type:=first($type);$valueByte:=$valueByte;$count:=count();" sorted="false" type="AGGREGATE"/>
 <Node enabled="enabled" guiHeight="101" guiName="ExtSort" guiWidth="128" guiX="1041" guiY="733" id="EXT_SORT0" sortKey="fieldName(a);value(a)" type="EXT_SORT"/>
 <Node enabled="enabled" errorLog="${DATATMP_DIR}/skipped.log" guiHeight="101" guiName="Histogram filter" guiWidth="145" guiX="287" guiY="559" id="REFORMAT1" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
-import '${TRANS_DIR}/types.ctl';
+<attr name="transform"><![CDATA[//#CTL2
+import '${TRANS_DIR	return ALL;
+}/types.ctl';
 
 list histFields = null;
 boolean initialized = false;
@@ -351,27 +354,27 @@ function initInternal(){
 }
 
 function map0(){
-	$0.*:= $0.*;
+	$0.*= $0.*;
 }
 
 function map1(){
-	$1.*:= $0.*;
+	$1.*= $0.*;
 }
 
 function map2(){
-	$2.*:= $0.*;
+	$2.*= $0.*;
 }
 
 function map3(){
-	$3.*:= $0.*;
+	$3.*= $0.*;
 }
 
 function map4(){
-	$4.*:= $0.*;
+	$4.*= $0.*;
 }
 
 // Transforms input record into output record.
-function transform() {
+function integer transform() {
 	if (!initialized) {
 		initInternal();
 	}
@@ -447,16 +450,16 @@ function initInternal(){
 }
 
 // Transforms input record into output record.
-function transform() {
+function integer transform() {
 	if (!initialized){
 		initInternal();
 	}
 	percentLenght = $count*l/countAll;
-	$fieldName := $fieldName;
-	$type := $type;
-	$count := $count;
-	$value := to_string($type);
-	$countGraphic := concat(substring(max,0,percentLenght), substring(filler,percentLenght,l-percentLenght));
+	$fieldName = $fieldName;
+	$type = $type;
+	$count = $count;
+	$value = to_string($type);
+	$countGraphic = concat(substring(max,0,percentLenght), substring(filler,percentLenght,l-percentLenght));
 	return ALL
 }
 

@@ -32,14 +32,15 @@ More detailed information about this graph can be found in the "readme.html" fil
 <Node enabled="enabled" guiName="ExtSort" guiX="586" guiY="493" id="EXT_SORT1" sortKey="CustomerID(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiName="ExtSort" guiX="655" guiY="232" id="EXT_SORT2" sortKey="ParentID(a);ChildName(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiName="Reformat" guiX="419" guiY="493" id="REFORMAT0" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.CustomerID := $0.CustomerID;
-	$0.CustomerState := $0.CustomerState;
-	$0.CustomerSurname := $0.CustomerSurname;
-	$0.CustomerFirstname := $0.CustomerFirstname;
+function integer transform() {
+	$0.CustomerID = $0.CustomerID;
+	$0.CustomerState = $0.CustomerState;
+	$0.CustomerSurname = $0.CustomerSurname;
+	$0.CustomerFirstname = $0.CustomerFirstname;
+	return ALL;
 }
 
 // Called during component initialization.

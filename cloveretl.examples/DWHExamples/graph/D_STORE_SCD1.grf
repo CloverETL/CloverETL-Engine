@@ -46,24 +46,25 @@ If the data is stored in database instead of files, the D_STORE_update.tbl and D
 <Phase number="0">
 <Node enabled="enabled" guiHeight="101" guiName="DataIntersection" guiWidth="152" guiX="479" guiY="136" id="DATA_INTERSECTION0" joinKey="$STORE_NUMBER=$STORE_NUMBER" keyDuplicates="false" type="DATA_INTERSECTION">
 <attr name="order"><![CDATA[Asc]]></attr>
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.ID_D_STORE := $0.ID_D_STORE;
-	$0.STORE_NUMBER := $0.STORE_NUMBER;
-	$0.STORE_NAME := $0.STORE_NAME;
-	$0.STORE_STREET_ADDRESS := $0.STORE_STREET_ADDRESS;
-	$0.STORE_CITY := $0.STORE_CITY;
-	$0.STORE_MANAGER := $0.STORE_MANAGER;
-	$0.STORE_ZIP_CODE := $0.STORE_ZIP_CODE;
-	$0.NO_EMPLOYEE := $0.NO_EMPLOYEE;
-	$0.STORE_NAME_NEW := $1.STORE_NAME;
-	$0.STORE_STREET_ADDRESS_NEW := $1.STORE_STREET_ADDRESS;
-	$0.STORE_CITY_NEW := $1.STORE_CITY;
-	$0.STORE_MANAGER_NEW := $1.STORE_MANAGER;
-	$0.STORE_ZIP_CODE_NEW := $1.STORE_ZIP_CODE;
-	$0.NO_EMPLOYEE_NEW := $1.NO_EMPLOYEE;
+function integer transform() {
+	$0.ID_D_STORE = $0.ID_D_STORE;
+	$0.STORE_NUMBER = $0.STORE_NUMBER;
+	$0.STORE_NAME = $0.STORE_NAME;
+	$0.STORE_STREET_ADDRESS = $0.STORE_STREET_ADDRESS;
+	$0.STORE_CITY = $0.STORE_CITY;
+	$0.STORE_MANAGER = $0.STORE_MANAGER;
+	$0.STORE_ZIP_CODE = $0.STORE_ZIP_CODE;
+	$0.NO_EMPLOYEE = $0.NO_EMPLOYEE;
+	$0.STORE_NAME_NEW = $1.STORE_NAME;
+	$0.STORE_STREET_ADDRESS_NEW = $1.STORE_STREET_ADDRESS;
+	$0.STORE_CITY_NEW = $1.STORE_CITY;
+	$0.STORE_MANAGER_NEW = $1.STORE_MANAGER;
+	$0.STORE_ZIP_CODE_NEW = $1.STORE_ZIP_CODE;
+	$0.NO_EMPLOYEE_NEW = $1.NO_EMPLOYEE;
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.
@@ -91,18 +92,19 @@ OR $STORE_MANAGER != $STORE_MANAGER_NEW OR $STORE_ZIP_CODE != $STORE_ZIP_CODE_NE
 <Node enabled="enabled" guiHeight="85" guiName="Sort by STORE_NUMBER" guiWidth="205" guiX="251" guiY="87" id="EXT_SORT0" sortKey="STORE_NUMBER(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="85" guiName="Sort by STORE_NUMBER" guiWidth="205" guiX="253" guiY="225" id="EXT_SORT1" sortKey="STORE_NUMBER(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="101" guiName="Add ID_D_STORE" guiWidth="153" guiX="653" guiY="243" id="REFORMAT0" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.STORE_NUMBER := $0.STORE_NUMBER;
-	$0.STORE_NAME := $0.STORE_NAME;
-	$0.STORE_STREET_ADDRESS := $0.STORE_STREET_ADDRESS;
-	$0.STORE_CITY := $0.STORE_CITY;
-	$0.STORE_MANAGER := $0.STORE_MANAGER;
-	$0.STORE_ZIP_CODE := $0.STORE_ZIP_CODE;
-	$0.NO_EMPLOYEE := $0.NO_EMPLOYEE;
-	$0.ID_D_STORE := sequence(Sequence0).next;
+function integer transform() {
+	$0.STORE_NUMBER = $0.STORE_NUMBER;
+	$0.STORE_NAME = $0.STORE_NAME;
+	$0.STORE_STREET_ADDRESS = $0.STORE_STREET_ADDRESS;
+	$0.STORE_CITY = $0.STORE_CITY;
+	$0.STORE_MANAGER = $0.STORE_MANAGER;
+	$0.STORE_ZIP_CODE = $0.STORE_ZIP_CODE;
+	$0.NO_EMPLOYEE = $0.NO_EMPLOYEE;
+	$0.ID_D_STORE = sequence(ID_D_STORE).next();
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.
@@ -117,18 +119,19 @@ function transform() {
 <attr name="guiDescription"><![CDATA[Processing the records not contained in DWH but contained in OLTP]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="69" guiName="Select new values" guiWidth="160" guiX="818" guiY="129" id="REFORMAT1" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.ID_D_STORE := $0.ID_D_STORE;
-	$0.STORE_NUMBER := $0.STORE_NUMBER;
-	$0.STORE_NAME := $0.STORE_NAME_NEW;
-	$0.STORE_STREET_ADDRESS := $0.STORE_STREET_ADDRESS_NEW;
-	$0.STORE_CITY := $0.STORE_CITY_NEW;
-	$0.STORE_MANAGER := $0.STORE_MANAGER_NEW;
-	$0.STORE_ZIP_CODE := $0.STORE_ZIP_CODE_NEW;
-	$0.NO_EMPLOYEE := $0.NO_EMPLOYEE_NEW;
+function integer transform() {
+	$0.ID_D_STORE = $0.ID_D_STORE;
+	$0.STORE_NUMBER = $0.STORE_NUMBER;
+	$0.STORE_NAME = $0.STORE_NAME_NEW;
+	$0.STORE_STREET_ADDRESS = $0.STORE_STREET_ADDRESS_NEW;
+	$0.STORE_CITY = $0.STORE_CITY_NEW;
+	$0.STORE_MANAGER = $0.STORE_MANAGER_NEW;
+	$0.STORE_ZIP_CODE = $0.STORE_ZIP_CODE_NEW;
+	$0.NO_EMPLOYEE = $0.NO_EMPLOYEE_NEW;
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.

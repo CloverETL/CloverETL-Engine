@@ -83,13 +83,14 @@
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiName="Data Intersection" guiX="564" guiY="144" id="DATA_INTERSECTION0" joinKey="$lname=$last_name;$fname=$first_name" type="DATA_INTERSECTION">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.lname := $0.lname;
-	$0.fname := $0.fname;
-	$0.full_name := $1.full_name;
+function integer transform() {
+	$0.lname = $0.lname;
+	$0.fname = $0.fname;
+	$0.full_name = $1.full_name;
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.
