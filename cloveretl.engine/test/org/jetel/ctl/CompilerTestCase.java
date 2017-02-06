@@ -2111,6 +2111,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile(expStr, "test_import");
 	}
 	
+	public void test_import_CLO10313() {
+		doCompile("test_import_CLO10313");
+		
+		check("int", 87);
+		check("str", "87");
+	}
+	
 	public void test_scope() throws ComponentNotReadyException, TransformException {
 		System.out.println("\nMapping test:");
 		// String expStr =
