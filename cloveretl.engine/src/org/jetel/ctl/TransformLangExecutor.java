@@ -282,7 +282,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			//adding reference to source file from which nodes were imported, ignore for duplicated imports
 			if (node.sourceFilename != null) {
 				TransformLangExecutor.this.imports.put(node.sourceFilename, node);
-				addSourceInfo((SimpleNode)node.jjtGetChild(0),node.sourceFilename);
+				if (node.jjtHasChildren()) { // CLO-10313: may not have any children if the import is duplicated
+					// the first child should be CLVFStart
+					addSourceInfo((SimpleNode)node.jjtGetChild(0),node.sourceFilename);
+				}
 			}
 			return result;
 		}
