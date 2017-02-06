@@ -2,6 +2,23 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-4-1
+---------
+
+* Confusing ending of truncated extremely long error message in log
+* FIXES
+	* CLO-10327	Visual cron expression dialog tab change forces page refresh
+	* CLO-10313 Multiple import: ignoring redundant occurrences throws Unexpected null value
+	* CLO-10240 Metadata propagation fail for parametrized subgraph hierarchy
+	* CLO-10236 Null Pointer Exception on opening parameter file
+	* CLO-10223	objectGUID attribute cannot be correctly obtained from Active Directory
+	* CLO-10058	Incorrect Test Launch Service URL when switching to HTTPS
+	* CLO-10101	Scheduling: Cron expression edit dialog doesn't work
+	* CLO-9995 Redshift: DBLookupTable cannot be used concurrently by two components in one phase
+	* CLO-9843 Ordering of sequences in graph xml changes after save
+	* CLO-9760 LDAPWriter - byte on input throws NPE
+	* CLO-8507 Added config properties are not visible with Oracle DB
+
 REL-4-4-0
 ---------
 
