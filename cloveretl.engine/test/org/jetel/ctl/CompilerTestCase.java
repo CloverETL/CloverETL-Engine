@@ -665,7 +665,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		List<ErrorMessage> messages = compiler.compile(expStr, CTLRecordTransform.class, testIdentifier);
 		printMessages(messages);
 		if (compiler.errorCount() > 0) {
-			throw new AssertionFailedError("Error in execution. Check standard output for details.");
+			throw new AssertionFailedError("Error in execution. Check standard output for details.\n" + messages);
 		}
 
 		// *** NOTE: please don't remove this commented code. It is used for debugging
