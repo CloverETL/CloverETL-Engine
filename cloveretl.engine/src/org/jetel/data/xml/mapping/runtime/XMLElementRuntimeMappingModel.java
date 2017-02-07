@@ -624,6 +624,14 @@ public class XMLElementRuntimeMappingModel extends XMLRuntimeMappingModel {
 		return ancestorField;
 	}
 	
+	public int getDataRecordOutputPortNumber() {
+		if (usingParentRecord && producingParent != null) {
+			return producingParent.getOutputPortNumber();
+		} else {
+			return getOutputPortNumber();
+		}
+	}
+	
 	// === getters and setters
 
 	public String getElementName() {
