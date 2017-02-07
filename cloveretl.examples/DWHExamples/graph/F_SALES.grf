@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Petr" created="Tue Sep 29 10:18:42 CEST 2009" guiVersion="0.0.0.devel" id="1254235145118" licenseType="Evaluation Devel" modified="Fri Jun 10 10:31:00 CEST 2011" modifiedBy="avackova" name="F_SALES" revision="1.30" showComponentDetails="true">
+<Graph author="Petr" created="Tue Sep 29 10:18:42 CEST 2009" guiVersion="4.5.0.M1" id="1254235145118" licenseCode="Javlin-Internal-License" licenseType="Evaluation Devel" modified="Fri Jun 10 10:31:00 CEST 2011" modifiedBy="avackova" name="F_SALES" revision="1.30" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/D_CUSTOMER.fmt" id="Metadata2"/>
 <Metadata fileURL="${META_DIR}/D_DATE.fmt" id="Metadata8"/>
@@ -67,7 +67,9 @@
 <Field length="10" name="total_price" scale="2" type="decimal"/>
 </Record>
 </Metadata>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <LookupTable charset="ISO-8859-1" fileURL="${TABLES}/D_CUSTOMER.tbl" id="LookupTable0" initialSize="512" key="CUSTOMER_NUMBER" keyDuplicates="true" metadata="Metadata2" name="D_CUSTOMER_Lookup" type="simpleLookup"/>
 <LookupTable charset="windows-1250" fileURL="${TABLES}/D_DATE.tbl" id="LookupTable3" initialSize="512" key="DATE" metadata="Metadata8" name="D_DATE_Lookup" type="simpleLookup"/>
 <LookupTable charset="ISO-8859-1" fileURL="${TABLES}/D_PRODUCT.tbl" id="LookupTable1" initialSize="512" key="UPC" metadata="Metadata3" name="D_PRODUCT_Lookup" type="simpleLookup"/>
@@ -86,14 +88,15 @@ If the data is stored in database instead of files, the DBJoin component can be 
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/Sales_24092009.csv" guiHeight="101" guiName="Sales_input" guiWidth="128" guiX="47" guiY="55" id="DATA_READER0" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Sales_24092009.csv" guiName="Sales_input" guiX="47" guiY="55" id="DATA_READER0" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Sales fact table stores two aggregable attributes (UNITS, TOTAL_PRICE) , one degenerate dimension (INVOICE_NUMBER) and is linked with 4 dimension (Customer, Date, Store and Product).]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${TABLES}/F_SALES.tbl" guiHeight="101" guiName="INSERT to F_SALES" guiWidth="168" guiX="839" guiY="179" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="69" guiName="ExtFilter" guiWidth="128" guiX="967" guiY="55" id="EXT_FILTER0" type="EXT_FILTER">
-<attr name="filterExpression"><![CDATA[$0.TRANSACTION_DATE >= $0.from_date AND ( isnull($0.to_date) OR $0.TRANSACTION_DATE <= $0.to_date )]]></attr>
+<Node enabled="enabled" fileURL="${TABLES}/F_SALES.tbl" guiName="INSERT to F_SALES" guiX="839" guiY="179" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiName="ExtFilter" guiX="967" guiY="55" id="EXT_FILTER0" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[//#CTL2
+$0.TRANSACTION_DATE >= $0.from_date AND ( isnull($0.to_date) OR $0.TRANSACTION_DATE <= $0.to_date )]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="85" guiName="Lookup ID_D_STORE" guiWidth="177" guiX="458" guiY="55" id="LOOKUP_JOIN0" joinKey="STORE_NUMBER" lookupTable="LookupTable2" type="LOOKUP_JOIN">
+<Node enabled="enabled" guiName="Lookup ID_D_STORE" guiX="458" guiY="55" id="LOOKUP_JOIN0" joinKey="STORE_NUMBER" lookupTable="LookupTable2" type="LOOKUP_JOIN">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -119,7 +122,7 @@ function integer transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="85" guiName="Lookup ID_D_CUSTOMER" guiWidth="210" guiX="689" guiY="55" id="LOOKUP_JOIN1" joinKey="CUSTOMER_NUMBER" lookupTable="LookupTable0" type="LOOKUP_JOIN">
+<Node enabled="enabled" guiName="Lookup ID_D_CUSTOMER" guiX="689" guiY="55" id="LOOKUP_JOIN1" joinKey="CUSTOMER_NUMBER" lookupTable="LookupTable0" type="LOOKUP_JOIN">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -147,7 +150,7 @@ function integer transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="85" guiName="Lookup ID_D_PRODUCT" guiWidth="199" guiX="315" guiY="179" id="LOOKUP_JOIN2" joinKey="UPC" lookupTable="LookupTable1" type="LOOKUP_JOIN">
+<Node enabled="enabled" guiName="Lookup ID_D_PRODUCT" guiX="315" guiY="179" id="LOOKUP_JOIN2" joinKey="UPC" lookupTable="LookupTable1" type="LOOKUP_JOIN">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -173,7 +176,7 @@ function integer transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="85" guiName="Lookup ID_D_DATE" guiWidth="167" guiX="570" guiY="179" id="LOOKUP_JOIN3" joinKey="TRANSACTION_DATE" lookupTable="LookupTable3" type="LOOKUP_JOIN">
+<Node enabled="enabled" guiName="Lookup ID_D_DATE" guiX="570" guiY="179" id="LOOKUP_JOIN3" joinKey="TRANSACTION_DATE" lookupTable="LookupTable3" type="LOOKUP_JOIN">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -198,7 +201,7 @@ function integer transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="69" guiName="Compute TOTAL_PRICE" guiWidth="198" guiX="218" guiY="55" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" guiName="Compute TOTAL_PRICE" guiX="218" guiY="55" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
