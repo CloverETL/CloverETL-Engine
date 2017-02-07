@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Oct 24 13:04:40 CEST 2006" description="This graph illustrates usage of Approximative Join component.&#10;This component requires prepared data: they have &#10;to have a key (component Key Generator or Reformat creates it) &#10;and be sorted by this key." guiVersion="0.0.0.devel" id="1200561503662" licenseType="Evaluation Devel" modified="Fri Jun 10 15:04:54 CEST 2011" modifiedBy="avackova" name="graphFixedLengthData" revision="1.190" showComponentDetails="true">
+<Graph author="avackova" created="Tue Oct 24 13:04:40 CEST 2006" description="This graph illustrates usage of Approximative Join component.&#10;This component requires prepared data: they have &#10;to have a key (component Key Generator or Reformat creates it) &#10;and be sorted by this key." guiVersion="4.5.0.M1" id="1200561503662" licenseCode="Javlin-Internal-License" licenseType="Evaluation Devel" modified="Fri Jun 10 15:04:54 CEST 2011" modifiedBy="avackova" name="graphFixedLengthData" revision="1.190" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata4">
 <Record name="conforming_out" recordDelimiter="\n" recordSize="71" type="fixed">
@@ -157,7 +157,9 @@
 <Field length="8" name="_total_conformity_" nullable="true" scale="2" shift="0" type="number"/>
 </Record>
 </Metadata>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Sequence cached="10" fileURL="${SEQ_DIR}/id1.seq" id="Sequence1" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
 <Sequence cached="10" fileURL="${SEQ_DIR}/id0.seq" id="Sequence0" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
 <Sequence cached="10" fileURL="${SEQ_DIR}/id2.seq" id="Sequence2" name="id" start="1" step="1" type="SIMPLE_SEQUENCE"/>
@@ -204,29 +206,28 @@ In this graph, four methods are used to generate Matching key:
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node conformity="0.81" enabled="enabled" guiHeight="101" guiName="Join on Names" guiWidth="134" guiX="445" guiY="132" id="APROX_MERGE_JOIN1" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
-<attr name="seq_name"><![CDATA[Sequence0]]></attr>
+<Node conformity="0.81" enabled="enabled" guiName="Join on Names" guiX="445" guiY="132" id="APROX_MERGE_JOIN1" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" seq_name="Sequence0" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
 <attr name="guiDescription"><![CDATA[Finds records, that can represent the same entity, but differs slightly on the fields of interest.]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employee.txt" guiHeight="101" guiName="employee" guiWidth="128" guiX="12" guiY="216" id="DATA_READER0" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employee.txt" guiName="employee" guiX="12" guiY="216" id="DATA_READER0" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Data with employees]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/suspiciousSubstring.txt" guiHeight="101" guiName="joined - similarity less then 0.8" guiWidth="247" guiX="625" guiY="119" id="DELIMITED_DATA_WRITER_NIO0" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeeSubstring.out" guiHeight="101" guiName="employee without pair" guiWidth="193" guiX="625" guiY="345" id="DELIMITED_DATA_WRITER_NIO1" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="85" guiName="ExtSort on Key" guiWidth="137" guiX="297" guiY="48" id="EXT_SORT0" sortKey="key(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="85" guiName="ExtSort on Key" guiWidth="137" guiX="300" guiY="216" id="EXT_SORT1" sortKey="key(a)" type="EXT_SORT"/>
-<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="101" guiName="customer" guiWidth="128" guiX="8" guiY="48" id="FIXLEN_DATA_READER_NIO0" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/suspiciousSubstring.txt" guiName="joined - similarity less then 0.8" guiX="625" guiY="119" id="DELIMITED_DATA_WRITER_NIO0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeeSubstring.out" guiName="employee without pair" guiX="625" guiY="345" id="DELIMITED_DATA_WRITER_NIO1" type="DATA_WRITER"/>
+<Node enabled="enabled" guiName="ExtSort on Key" guiX="297" guiY="48" id="EXT_SORT0" sortKey="key(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiName="ExtSort on Key" guiX="300" guiY="216" id="EXT_SORT1" sortKey="key(a)" type="EXT_SORT"/>
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiName="customer" guiX="8" guiY="48" id="FIXLEN_DATA_READER_NIO0" type="DATA_READER">
 <attr name="byteMode"><![CDATA[false]]></attr>
-<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 <attr name="guiDescription"><![CDATA[Data with customers]]></attr>
-</Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conformingSubstring.txt" guiHeight="101" guiName="joined - similarity greater then 0.8" guiWidth="273" guiX="625" guiY="9" id="FIXLEN_DATA_WRITER_NIO0" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersSubstring.out" guiHeight="101" guiName="customer without pair" guiWidth="189" guiX="625" guiY="230" id="FIXLEN_DATA_WRITER_NIO1" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conformingSubstring.txt" guiName="joined - similarity greater then 0.8" guiX="625" guiY="9" id="FIXLEN_DATA_WRITER_NIO0" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="152" guiY="48" id="REFORMAT6" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersSubstring.out" guiName="customer without pair" guiX="625" guiY="230" id="FIXLEN_DATA_WRITER_NIO1" type="DATA_WRITER">
+<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Creating Key" guiX="152" guiY="48" id="REFORMAT6" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 string LastName;
 string FirstName;
@@ -234,7 +235,7 @@ integer LN;
 integer FN;
 LN=4;
 FN=3;
-function forLeft() {
+function integer forLeft() {
 	LastName = nvl($0.lname,"");
 	FirstName = nvl($0.fname,"");
 	while (length(LastName) < LN) {
@@ -287,7 +288,7 @@ function integer transform() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Last name and First name together are used to create an artificial key.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="156" guiY="216" id="REFORMAT7" type="REFORMAT">
+<Node enabled="enabled" guiName="Creating Key" guiX="156" guiY="216" id="REFORMAT7" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 string LastName;
 string FirstName;
@@ -351,29 +352,29 @@ function integer transform() {
 <Edge debugMode="false" fromNode="REFORMAT7:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT1:0"/>
 </Phase>
 <Phase number="1">
-<Node conformity="0.81" enabled="enabled" guiHeight="101" guiName="Join on Names" guiWidth="134" guiX="445" guiY="589" id="APROX_MERGE_JOIN2" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
+<Node conformity="0.81" enabled="enabled" guiName="Join on Names" guiX="445" guiY="589" id="APROX_MERGE_JOIN2" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
 <attr name="seq_name"><![CDATA[Sequence1]]></attr>
 <attr name="guiDescription"><![CDATA[Finds records, that can represent the same entity, but differs slightly on the fields of interest.]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employee.txt" guiHeight="101" guiName="employee" guiWidth="128" guiX="10" guiY="667" id="DATA_READER1" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employee.txt" guiName="employee" guiX="10" guiY="667" id="DATA_READER1" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Data with employees]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/suspiciousSoundex.txt" guiHeight="101" guiName="joined - similarity less then 0.8" guiWidth="247" guiX="626" guiY="567" id="DELIMITED_DATA_WRITER_NIO2" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeeSoundex.out" guiHeight="101" guiName="employee without pair" guiWidth="193" guiX="627" guiY="784" id="DELIMITED_DATA_WRITER_NIO3" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="85" guiName="ExtSort on Key" guiWidth="137" guiX="298" guiY="667" id="EXT_SORT2" sortKey="key(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="85" guiName="Ext ort on Key" guiWidth="132" guiX="297" guiY="505" id="EXT_SORT3" sortKey="key(a)" type="EXT_SORT"/>
-<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="101" guiName="customer" guiWidth="128" guiX="8" guiY="505" id="FIXLEN_DATA_READER_NIO1" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/suspiciousSoundex.txt" guiName="joined - similarity less then 0.8" guiX="626" guiY="567" id="DELIMITED_DATA_WRITER_NIO2" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeeSoundex.out" guiName="employee without pair" guiX="627" guiY="784" id="DELIMITED_DATA_WRITER_NIO3" type="DATA_WRITER"/>
+<Node enabled="enabled" guiName="ExtSort on Key" guiX="298" guiY="667" id="EXT_SORT2" sortKey="key(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiName="Ext ort on Key" guiX="297" guiY="505" id="EXT_SORT3" sortKey="key(a)" type="EXT_SORT"/>
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiName="customer" guiX="8" guiY="505" id="FIXLEN_DATA_READER_NIO1" type="DATA_READER">
 <attr name="byteMode"><![CDATA[false]]></attr>
-<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 <attr name="guiDescription"><![CDATA[Data with customers]]></attr>
-</Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersSoundex.out" guiHeight="101" guiName="customer without pair" guiWidth="189" guiX="628" guiY="677" id="FIXLEN_DATA_WRITER_NIO2" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conformingSoundex.txt" guiHeight="101" guiName="joined - similarity greater then 0.8" guiWidth="273" guiX="626" guiY="455" id="FIXLEN_DATA_WRITER_NIO3" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersSoundex.out" guiName="customer without pair" guiX="628" guiY="677" id="FIXLEN_DATA_WRITER_NIO2" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="157" guiY="505" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conformingSoundex.txt" guiName="joined - similarity greater then 0.8" guiX="626" guiY="455" id="FIXLEN_DATA_WRITER_NIO3" type="DATA_WRITER">
+<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Creating Key" guiX="157" guiY="505" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -415,7 +416,7 @@ function integer transform() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Last name and First name together are used to create an artificial key.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="155" guiY="667" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" guiName="Creating Key" guiX="155" guiY="667" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -461,29 +462,29 @@ function integer transform() {
 <Edge debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge15" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT2:0"/>
 </Phase>
 <Phase number="2">
-<Node conformity="0.81" enabled="enabled" guiHeight="101" guiName="Join on Names" guiWidth="134" guiX="454" guiY="1037" id="APROX_MERGE_JOIN3" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
+<Node conformity="0.81" enabled="enabled" guiName="Join on Names" guiX="454" guiY="1037" id="APROX_MERGE_JOIN3" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
 <attr name="seq_name"><![CDATA[Sequence2]]></attr>
 <attr name="guiDescription"><![CDATA[Finds records, that can represent the same entity, but differs slightly on the fields of interest.]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employee.txt" guiHeight="101" guiName="employee" guiWidth="128" guiX="16" guiY="1114" id="DATA_READER2" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employee.txt" guiName="employee" guiX="16" guiY="1114" id="DATA_READER2" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Data with employees]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/suspiciousMetaphone.txt" guiHeight="101" guiName="joined - similarity less then 0.8" guiWidth="247" guiX="626" guiY="1000" id="DELIMITED_DATA_WRITER_NIO4" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeeMetaphone.out" guiHeight="101" guiName="employee without pair" guiWidth="193" guiX="626" guiY="1214" id="DELIMITED_DATA_WRITER_NIO5" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="85" guiName="ExtSort on Key" guiWidth="137" guiX="304" guiY="1114" id="EXT_SORT4" sortKey="key(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="85" guiName="ExtSort on Key" guiWidth="137" guiX="305" guiY="951" id="EXT_SORT5" sortKey="key(a)" type="EXT_SORT"/>
-<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="101" guiName="customer" guiWidth="128" guiX="16" guiY="951" id="FIXLEN_DATA_READER_NIO2" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/suspiciousMetaphone.txt" guiName="joined - similarity less then 0.8" guiX="626" guiY="1000" id="DELIMITED_DATA_WRITER_NIO4" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeeMetaphone.out" guiName="employee without pair" guiX="626" guiY="1214" id="DELIMITED_DATA_WRITER_NIO5" type="DATA_WRITER"/>
+<Node enabled="enabled" guiName="ExtSort on Key" guiX="304" guiY="1114" id="EXT_SORT4" sortKey="key(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiName="ExtSort on Key" guiX="305" guiY="951" id="EXT_SORT5" sortKey="key(a)" type="EXT_SORT"/>
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiName="customer" guiX="16" guiY="951" id="FIXLEN_DATA_READER_NIO2" type="DATA_READER">
 <attr name="byteMode"><![CDATA[false]]></attr>
-<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 <attr name="guiDescription"><![CDATA[Data with customers]]></attr>
-</Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersMetaphone.out" guiHeight="101" guiName="customer without pair" guiWidth="189" guiX="626" guiY="1109" id="FIXLEN_DATA_WRITER_NIO4" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conformingMetaphone.txt" guiHeight="101" guiName="joined - similarity greater then 0.8" guiWidth="273" guiX="626" guiY="892" id="FIXLEN_DATA_WRITER_NIO5" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersMetaphone.out" guiName="customer without pair" guiX="626" guiY="1109" id="FIXLEN_DATA_WRITER_NIO4" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="158" guiY="951" id="REFORMAT2" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conformingMetaphone.txt" guiName="joined - similarity greater then 0.8" guiX="626" guiY="892" id="FIXLEN_DATA_WRITER_NIO5" type="DATA_WRITER">
+<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Creating Key" guiX="158" guiY="951" id="REFORMAT2" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -525,7 +526,7 @@ function integer transform() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Last name and First name together are used to create an artificial key.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="162" guiY="1110" id="REFORMAT3" type="REFORMAT">
+<Node enabled="enabled" guiName="Creating Key" guiX="162" guiY="1110" id="REFORMAT3" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -571,29 +572,29 @@ function integer transform() {
 <Edge debugMode="false" fromNode="REFORMAT3:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge21" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT4:0"/>
 </Phase>
 <Phase number="3">
-<Node conformity="0.81" enabled="enabled" guiHeight="101" guiName="Join on Names" guiWidth="134" guiX="465" guiY="1514" id="APROX_MERGE_JOIN4" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
+<Node conformity="0.81" enabled="enabled" guiName="Join on Names" guiX="465" guiY="1514" id="APROX_MERGE_JOIN4" joinKey="$fname=$first_name(3 0.8 true false false false);$lname=$last_name(4 0.2 true false false false);" matchingKey="$key=$key;#" transformClass="customizedTransformExample" transformURLForSuspicious="${TRANS_DIR}/TransformForSuspicious.clt" type="APROX_MERGE_JOIN">
 <attr name="seq_name"><![CDATA[Sequence3]]></attr>
 <attr name="guiDescription"><![CDATA[Finds records, that can represent the same entity, but differs slightly on the fields of interest.]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employee.txt" guiHeight="101" guiName="employee" guiWidth="128" guiX="23" guiY="1578" id="DATA_READER3" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employee.txt" guiName="employee" guiX="23" guiY="1578" id="DATA_READER3" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Data with employees]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/suspiciousNYSIIS.txt" guiHeight="101" guiName="joined - similarity less then 0.8" guiWidth="247" guiX="626" guiY="1443" id="DELIMITED_DATA_WRITER_NIO6" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeeNYSIIS.out" guiHeight="101" guiName="employee without pair" guiWidth="193" guiX="628" guiY="1662" id="DELIMITED_DATA_WRITER_NIO7" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="85" guiName="ExtSort on Key" guiWidth="137" guiX="312" guiY="1423" id="EXT_SORT6" sortKey="key(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="85" guiName="ExtSort on Key" guiWidth="137" guiX="312" guiY="1578" id="EXT_SORT7" sortKey="key(a)" type="EXT_SORT"/>
-<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="101" guiName="customer" guiWidth="128" guiX="23" guiY="1423" id="FIXLEN_DATA_READER_NIO3" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/suspiciousNYSIIS.txt" guiName="joined - similarity less then 0.8" guiX="626" guiY="1443" id="DELIMITED_DATA_WRITER_NIO6" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employeeNYSIIS.out" guiName="employee without pair" guiX="628" guiY="1662" id="DELIMITED_DATA_WRITER_NIO7" type="DATA_WRITER"/>
+<Node enabled="enabled" guiName="ExtSort on Key" guiX="312" guiY="1423" id="EXT_SORT6" sortKey="key(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiName="ExtSort on Key" guiX="312" guiY="1578" id="EXT_SORT7" sortKey="key(a)" type="EXT_SORT"/>
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiName="customer" guiX="23" guiY="1423" id="FIXLEN_DATA_READER_NIO3" type="DATA_READER">
 <attr name="byteMode"><![CDATA[false]]></attr>
-<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 <attr name="guiDescription"><![CDATA[Data with customers]]></attr>
-</Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conformingNYSIIS.txt" guiHeight="85" guiName="joined - similarity greater then 0.8" guiWidth="273" guiX="626" guiY="1331" id="FIXLEN_DATA_WRITER_NIO6" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersNYSIIS.out" guiHeight="101" guiName="customer without pair" guiWidth="189" guiX="627" guiY="1554" id="FIXLEN_DATA_WRITER_NIO7" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conformingNYSIIS.txt" guiName="joined - similarity greater then 0.8" guiX="626" guiY="1331" id="FIXLEN_DATA_WRITER_NIO6" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="174" guiY="1423" id="REFORMAT4" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customersNYSIIS.out" guiName="customer without pair" guiX="627" guiY="1554" id="FIXLEN_DATA_WRITER_NIO7" type="DATA_WRITER">
+<attr name="OneRecordPerLine"><![CDATA[true]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Creating Key" guiX="174" guiY="1423" id="REFORMAT4" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -635,7 +636,7 @@ function integer transform() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Last name and First name together are used to create an artificial key.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="Creating Key" guiWidth="128" guiX="168" guiY="1578" id="REFORMAT5" type="REFORMAT">
+<Node enabled="enabled" guiName="Creating Key" guiX="168" guiY="1578" id="REFORMAT5" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.

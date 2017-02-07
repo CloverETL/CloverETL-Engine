@@ -1,3 +1,4 @@
+//#CTL2
 function integer transform() {
 	$0.lname = $0.lname;
 	$0.fname = $0.fname;
@@ -7,4 +8,5 @@ function integer transform() {
 	$0.last_name = $1.last_name;
 	$0.birth_date = $1.birth_date;
 	$0.gender1 = $1.gender;
+	return ALL;
 }
