@@ -59,6 +59,7 @@ import org.jetel.util.bytes.PackedDecimal;
 import org.jetel.util.crypto.Base64;
 import org.jetel.util.crypto.Digest;
 import org.jetel.util.crypto.Digest.DigestType;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.formatter.TimeZoneProvider;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.PropertiesUtilsTest;
@@ -664,7 +665,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		List<ErrorMessage> messages = compiler.compile(expStr, CTLRecordTransform.class, testIdentifier);
 		printMessages(messages);
 		if (compiler.errorCount() > 0) {
-			throw new AssertionFailedError("Error in execution. Check standard output for details.");
+			throw new AssertionFailedError("Error in execution. Check standard output for details.\n" + messages);
 		}
 
 		// *** NOTE: please don't remove this commented code. It is used for debugging
@@ -2109,6 +2110,18 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				"	return 0;\n" +
 				"}\n";
 		doCompile(expStr, "test_import");
+	}
+	
+	public void test_import_CLO10313() {
+		TransformationGraph graph = createDefaultGraph();
+		String url = FileUtils.removeTrailingSlash(getClass().getSuperclass().getResource(".").toString());
+		graph.getGraphParameters().getGraphParameter("PROJECT").setValue(url);
+		String testIdentifier = "test_import_CLO10313";
+		String expStr = loadSourceCode(testIdentifier);
+		doCompile(expStr, testIdentifier, graph, new DataRecord[0], new DataRecord[0]);
+		
+		check("int", 87);
+		check("str", "87");
 	}
 	
 	public void test_scope() throws ComponentNotReadyException, TransformException {

@@ -322,12 +322,93 @@ public class XmlSaxParser {
 			RuntimeMappingModelFactory factory = new RuntimeMappingModelFactory(context);
 
 			// build runtime mapping model
-			addMapping(factory.createRuntimeMappingModel(mappingResult.getMapping()));
+			XMLElementRuntimeMappingModel mappingModel = factory.createRuntimeMappingModel(mappingResult.getMapping());
+
+			List<String> invalidMappingMessages = checkMappingToOutputFields(mappingModel);
+			if (!invalidMappingMessages.isEmpty()) {
+				return invalidMappingMessages;
+			}
+
+			addMapping(mappingModel);
 		}
 
 		return Collections.emptyList();
 	}
 
+	private List<String> checkMappingToOutputFields(XMLElementRuntimeMappingModel mappingModel) {
+		List<String> list = new ArrayList<>();
+		DataRecord dataRecord = mappingModel.getOutputRecord();
+				
+		if (dataRecord != null) {
+			if (mappingModel.getExplicitCloverFields()!=null) {
+				for (String field : mappingModel.getExplicitCloverFields()) {
+					if (!dataRecord.hasField(field)) {
+						list.add(String.format("Metadata field '%s' not found on port %s", 
+								field, mappingModel.getDataRecordOutputPortNumber()));
+					}
+				}
+			}
+			
+			String sequenceFieldName = mappingModel.getSequenceField();
+			if (sequenceFieldName != null && !dataRecord.hasField(sequenceFieldName)) {
+				list.add(String.format("Metadata field '%s' is not found on port %s", 
+						sequenceFieldName, mappingModel.getDataRecordOutputPortNumber()));
+			}
+			
+			Map<String, String> headersToFields = mappingModel.getResponseHttpHeadersToOutputFields();
+			if (headersToFields != null && !headersToFields.isEmpty()) {
+				for (String field : headersToFields.values()) {
+					if (!dataRecord.hasField(field)) {
+						list.add(String.format("Metadata field '%s' is not found on port %s", 
+								field, mappingModel.getDataRecordOutputPortNumber()));
+					}
+				}
+			}
+			
+			String[] generatedKey = mappingModel.getGeneratedKeyFields();
+			String[] parentKey = mappingModel.getParentKeyFields();
+			if (parentKey != null && generatedKey != null) {
+				if (generatedKey.length != parentKey.length && generatedKey.length != 1) {
+					list.add(String.format("%s: XML Extract Mapping's generatedKey and parentKey attribute has different number of field.", 
+							parentComponent.getId()));
+				} else {
+										
+					for (int i = 0; i < generatedKey.length; i++) {
+						if (!dataRecord.hasField(generatedKey[i])) {
+							list.add(String.format("Metadata field '%s' is not found on port %s", 
+									generatedKey[i], mappingModel.getDataRecordOutputPortNumber()));
+						}
+					}
+					
+					XMLElementRuntimeMappingModel parentKeyFieldsMapping = mappingModel.getParent();
+					while (parentKeyFieldsMapping != null && parentKeyFieldsMapping.getOutputRecord() == null) {
+						parentKeyFieldsMapping = parentKeyFieldsMapping.getParent();
+					}
+					
+					for (int i = 0; i < parentKey.length; i++) {
+						if (parentKeyFieldsMapping != null && parentKeyFieldsMapping.getOutputRecord() != null 
+								&& !parentKeyFieldsMapping.getOutputRecord().hasField(parentKey[i])) {
+							list.add(String.format("Metadata field '%s' is not found on port %s", 
+									parentKey[i], parentKeyFieldsMapping.getDataRecordOutputPortNumber()));
+						}
+					}
+				}
+			} else if (parentKey == null && generatedKey != null) {
+				list.add(String.format("Mapping's parentKey attribute not defined on element %s, outPort:%s.", 
+						mappingModel.getElementName(), mappingModel.getDataRecordOutputPortNumber()));
+			} else if (parentKey != null && generatedKey == null) {
+				list.add(String.format("Mapping's generatedKey attribute not defined on element %s, outPort:%s.", 
+						mappingModel.getElementName(), mappingModel.getDataRecordOutputPortNumber()));
+			}
+		}
+		if(mappingModel.getChildren() != null) {
+			for (XMLElementRuntimeMappingModel child : mappingModel.getChildren().values()) {
+				list.addAll(checkMappingToOutputFields(child));
+			}
+		}
+		return list;
+	}
+	
 	private static int performMapping(RecordTransform transformation, DataRecord inRecord, DataRecord outRecord,
 			String errMessage) {
 		try {
@@ -578,7 +659,7 @@ public class XmlSaxParser {
 									}
 									for (int i = 0; i < parentKey.length; i++) {
 										boolean existGeneratedKeyField = (outRecord != null) && (generatedKey.length == 1 ? outRecord.hasField(generatedKey[0]) : outRecord.hasField(generatedKey[i]));
-										boolean existParentKeyField = parentKeyFieldsMapping != null && parentKeyFieldsMapping.getOutputRecord().hasField(parentKey[i]);
+										boolean existParentKeyField = parentKeyFieldsMapping != null && parentKeyFieldsMapping.getOutputRecord()!=null && parentKeyFieldsMapping.getOutputRecord().hasField(parentKey[i]);
 										if (!existGeneratedKeyField) {
 											logger.warn(parentComponent.getId() + ": XML Extract Mapping's generatedKey field was not found. generatedKey: " + (generatedKey.length == 1 ? generatedKey[0] : generatedKey[i]) + " of element " + m_activeMapping.getElementName() + ", outPort: " + m_activeMapping.getOutputPortNumber());
 											m_activeMapping.setGeneratedKeyFields(null);
@@ -1156,7 +1237,7 @@ public class XmlSaxParser {
 						if (startIndexPosition >= 0) {
 							int endIndexPosition = this.firstIndexWithType(new HashSet<CharacterBufferMarkerType>(Arrays.asList(CharacterBufferMarkerType.SUBTREE_WITH_TAG_START, CharacterBufferMarkerType.SUBTREE_WITH_TAG_END, CharacterBufferMarkerType.SUBTREE_END, CharacterBufferMarkerType.SUBTREE_START)), startIndexPosition);
 							endIndexPosition--; // we need one marker before found
-							if (endIndexPosition < 0 && startIndexPosition >= 0) {
+							if (endIndexPosition < 0) {
 								endIndexPosition = this.lastIndexWithType(CharacterBufferMarkerType.CHARACTERS_END);
 							}
 
@@ -1172,7 +1253,7 @@ public class XmlSaxParser {
 								this.m_elementContentStartIndexStack.get(endIndexPosition);
 							}
 							startIndex = this.m_elementContentStartIndexStack.get(startIndexPosition).index;
-							if(startIndexPosition>=0 && endIndexPosition>startIndexPosition) {
+							if(endIndexPosition>startIndexPosition) {
 								for(int i=endIndexPosition; i>=startIndexPosition; i--) {
 									this.m_elementContentStartIndexStack.remove(i);
 								}
@@ -1217,7 +1298,7 @@ public class XmlSaxParser {
 							if (startIndexPosition >= 0) {
 								int endIndexPosition = this.firstIndexWithType(new HashSet<CharacterBufferMarkerType>(Arrays.asList(CharacterBufferMarkerType.SUBTREE_WITH_TAG_START, CharacterBufferMarkerType.SUBTREE_WITH_TAG_END, CharacterBufferMarkerType.SUBTREE_END, CharacterBufferMarkerType.SUBTREE_START)), startIndexPosition);
 								endIndexPosition--; // we need one marker before found
-								if (endIndexPosition < 0 && startIndexPosition >= 0) {
+								if (endIndexPosition < 0) {
 									endIndexPosition = this.lastIndexWithType(CharacterBufferMarkerType.CHARACTERS_END);
 								}
 
@@ -1233,7 +1314,7 @@ public class XmlSaxParser {
 									this.m_elementContentStartIndexStack.get(endIndexPosition);
 								}
 								startIndex = this.m_elementContentStartIndexStack.get(startIndexPosition).index;
-								if(startIndexPosition>=0 && endIndexPosition>startIndexPosition) {
+								if(endIndexPosition>startIndexPosition) {
 									for(int i=endIndexPosition; i>=startIndexPosition; i--) {
 										this.m_elementContentStartIndexStack.remove(i);
 									}
@@ -1438,7 +1519,7 @@ public class XmlSaxParser {
 			for (int i = 0; i < length; i++) {
 				String xmlField = atts.getQName(i);
 				attributeNames.add(xmlField);
-				if (xmlField.equals("cloverFields")) {
+				if (xmlField.equals(XML_CLOVERFIELDS)) {
 					cloverAttributes.add(atts.getValue(i));
 				}
 			}
