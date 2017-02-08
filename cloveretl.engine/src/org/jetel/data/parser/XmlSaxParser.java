@@ -389,7 +389,7 @@ public class XmlSaxParser {
 						if (parentKeyFieldsMapping != null && parentKeyFieldsMapping.getOutputRecord() != null 
 								&& !parentKeyFieldsMapping.getOutputRecord().hasField(parentKey[i])) {
 							list.add(String.format("Metadata field '%s' is not found on port %s", 
-									parentKey[i], mappingModel.getDataRecordOutputPortNumber()));
+									parentKey[i], parentKeyFieldsMapping.getDataRecordOutputPortNumber()));
 						}
 					}
 				}
