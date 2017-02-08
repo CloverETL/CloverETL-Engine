@@ -1,4 +1,4 @@
-import "import_CLO-10313_master.ctl";
+import "${PROJECT}/import_CLO-10313_master.ctl";
 
 string str;
 
