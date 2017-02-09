@@ -178,7 +178,7 @@ if( !runTests ){
 		antArgs += "-Drunscenarios.Xmso=-Xmso2048k" // CLO-4730, CLO-4567
 	}
 
-	antArgs += "-Drunscenarios.trustStore=-Djavax.net.ssl.trustStore=${trustStoreF}"
+	antArgs += "-Drunscenarios.trustStore=\"-Djavax.net.ssl.trustStore=${trustStoreF}\""
 	
 	cloverD = new File(baseD, "cloverETL")
 	// removing files from previous build 
