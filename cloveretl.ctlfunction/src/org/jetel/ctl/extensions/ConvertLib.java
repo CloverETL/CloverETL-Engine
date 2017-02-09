@@ -1278,7 +1278,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Converts binary data into hex string escaping each byte.")
 	public static final String byte2hex(TLFunctionCallContext context, byte[] src, String escapeChar) {
-		return StringUtils.bytesToHexString(src,escapeChar.charAt(0));
+		return StringUtils.bytesToHexString(src, escapeChar);
 	}
 	
 	// BYTE2HEX
