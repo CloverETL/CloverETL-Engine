@@ -146,7 +146,7 @@ function integer transform() {
 	$0.ZIP_CODE = $0.ZIP_CODE;
 	$0.CITY = $0.CITY;
 	$0.FROM_DATE = $0.FROM_DATE;
-	$0.TO_DATE = trunc(today())-1;
+	$0.TO_DATE = dateAdd(today(),-1,day);
 	return ALL;
 }
 
