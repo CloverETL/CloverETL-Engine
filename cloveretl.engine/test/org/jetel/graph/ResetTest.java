@@ -238,6 +238,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("WebServiceClient.grf") // external service is unstable
 							&& !file.getName().equals("WebServiceClient1.grf") // external service is unstable
 							&& !file.getName().equals("WebServiceClientWithNS.grf") // external service is unstable
+							&& !file.getName().equals("WebServiceClient_HttpHeaders_invalid_field.grf") // negative test
 							&& !file.getName().equals("CLO-2214_pre_post_execute_race_condition.grf") // ok, is to fail
 							&& !file.getName().equals("EmptyGraph.grf") // ok, is to fail
 							&& !file.getName().equals("informix.grf") // remove after CLO-2793 solved
@@ -344,6 +345,9 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("SalesforceRead.grf") // Salesforce example
 							&& (!file.getParentFile().getName().equals("Salesforce") || file.getName().equals("SalesforceBulkReaderWriter_allDataTypes.grf")) // CLO-9285, run 1 salesforce test
 							&& !file.getParentFile().getName().equals("Wave") // Salesfore Wave
+							&& !file.getName().startsWith("JSONExtract_employees_invalid_") // negative test
+							&& !file.getName().equals("JSONExtract_AllTypes_invalid_field.grf") // negative test
+							&& !file.getName().equals("SetTrustStore.grf") // env set-up graph
 							;
 				}
 			};
