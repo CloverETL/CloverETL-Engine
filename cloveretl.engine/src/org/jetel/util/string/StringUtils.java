@@ -320,29 +320,33 @@ public class StringUtils {
         return new String(chars);
     }
 
-    
     /**
-     * Converts the given byte array into its HEX representation and prefixes each byte with specified character.
+     * Converts the given byte array into its HEX representation and prefixes each byte with specified string.
      * @param buf bytearray to convert to string
      * @param prefix prefix character to use
      * @return
      */
-    public static String bytesToHexString(byte[] buf,char prefix) {
+    public static String bytesToHexString(byte[] buf, String prefix) {
     	if (buf == null) {
     		return null;
     	}
- 
-        char[] chars = new char[3 * buf.length];
-        int pos=0;
-        for (int i = 0; i < buf.length; ++i) {
-            chars[pos++]=prefix;
-        	chars[pos++] = HEX_CHARS[(buf[i] & 0xF0) >>> 4];
-            chars[pos++] = HEX_CHARS[buf[i] & 0x0F];
-        }
-        return new String(chars);
+    	
+    	int prefixLength = (prefix == null ? 0 : prefix.length());
+    	
+    	char[] chars = new char[(2 + prefixLength) * buf.length];
+    	int pos = 0;
+    	for (int i = 0; i < buf.length; ++i) {
+
+    		for (int j = 0; j < prefixLength; j++) {
+    			chars[pos++] = prefix.charAt(j);
+    		}
+
+    		chars[pos++] = HEX_CHARS[(buf[i] & 0xF0) >>> 4];
+    		chars[pos++] = HEX_CHARS[buf[i] & 0x0F];
+    	}
+    	return new String(chars);
     }
 
-    
     /**
 	 * Converts the given string with HEX representation of an array into the byte array.
 	 * For instance "010A0F107F81003F4041" will be converted to byte[] { 1, 10, 15, 16, 127, -127, 0, 63, 64, 65}
@@ -1058,11 +1062,6 @@ public class StringUtils {
 			}
 		}
 	}
-	
-	private static void fillString(StringBuilder strBuff, String source, int start, int length) {
-		fillString(strBuff,source,start,length,' ');
-	}
-	
 
 	/**
 	 * Description of the Method

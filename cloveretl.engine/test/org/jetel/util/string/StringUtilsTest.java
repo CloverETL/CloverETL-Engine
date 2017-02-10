@@ -727,6 +727,29 @@ public class StringUtilsTest extends CloverTestCase {
 		bytes = new byte[] { 1, 10, 15, 16, 127, -127, 0, 63, 64, 65};
 		assertEquals("010a0f107f81003f4041", StringUtils.bytesToHexString(bytes));
 	}
+	
+	public void testBytesToHexStringWithPrefix() {
+		assertNull(StringUtils.bytesToHexString(null, null));
+
+		assertEquals("", StringUtils.bytesToHexString(new byte[0], ""));
+
+		byte[] bytes = new byte[1];
+		assertEquals("\\00", StringUtils.bytesToHexString(bytes, "\\"));
+
+		bytes[0] = 1;
+		assertEquals("##01", StringUtils.bytesToHexString(bytes, "##"));
+
+		bytes = new byte[2];
+		bytes[0] = 10;
+		bytes[1] = 15;
+		assertEquals("0a0f", StringUtils.bytesToHexString(bytes, ""));
+
+		assertEquals("0a0f", StringUtils.bytesToHexString(bytes, null));
+
+		bytes = new byte[] {15, 16, 127, -127, 0};
+		assertEquals("\\\\\\0f\\\\\\10\\\\\\7f\\\\\\81\\\\\\00", StringUtils.bytesToHexString(bytes, "\\\\\\"));
+	}
+	
 
 	public void testHexStringToBytes() {
 		assertNull(StringUtils.hexStringToBytes(null));
