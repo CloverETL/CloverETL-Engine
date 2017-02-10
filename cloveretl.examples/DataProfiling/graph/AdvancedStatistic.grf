@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Dec 09 11:23:30 GMT+01:00 2009" guiVersion="4.5.0.M1" id="1260358279137" licenseCode="Javlin-Internal-License" licenseType="Evaluation Devel" modified="Mon Oct 10 12:43:04 CEST 2011" modifiedBy="avackova" name="BasicStatistic1" revision="1.292" showComponentDetails="true">
+<Graph author="avackova" created="Wed Dec 09 11:23:30 GMT+01:00 2009" guiVersion="0.0.0.devel" id="1260358279137" licenseCode="Commercial Devel" licenseType="Evaluation Devel" modified="Mon Oct 10 12:43:04 CEST 2011" modifiedBy="avackova" name="BasicStatistic1" revision="1.292" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${metadata}" id="Metadata0"/>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
@@ -120,7 +120,10 @@ Reformat also stores fields for further processing in the graph dictionary . The
 <Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="88" id="Note9" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Histogram unificaton" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="275" x="737" y="628">
 <attr name="text"><![CDATA[Simple Gather and Reformat components gather all histograms to one stream and convert various data types to their string representation.]]></attr>
 </Note>
-<Dictionary/>
+<Dictionary>
+<Entry input="false" name="histFields" output="false" type="string"/>
+<Entry input="false" name="count" output="false" type="string"/>
+</Dictionary>
 </Global>
 <Phase number="0">
 <Node aggregateKey="fieldName" enabled="enabled" equalNULL="true" guiName="Boolean Aggregate" guiX="522" guiY="22" id="AGGREGATE0" mapping="$fieldName:=$fieldName;$type:=first($type);$count:=count();$countNotNull:=countnonnull($valueBoolean);$countUnique:=countunique($valueBoolean);$modusBoolean:=modus($valueBoolean);" sorted="false" type="AGGREGATE"/>
@@ -144,15 +147,15 @@ This components serves also as a filter if STATISTIC_FIELDS or NOT_STATISTIC_FIE
 // This transformation partitions input records into multiple output ports.
 import '${TRANS_DIR}/types.ctl';
 
-map portMap; 
+map[string, integer] portMap; 
 
 // Returns the number of the output port where the input record will be sent.
-function integerget OutputPort() {
-	return portMap[$type]
+function integer getOutputPort() {
+	return portMap[$type];
 }
 
 // Called during component initialization, partitionCount is the number of output ports.
-function integer init(partitionCount) {
+ function void init(integer partitionCount) {
  	portMap[DATE] = 1;
  	portMap[DECIMAL] = 4;
   	portMap[INTEGER] = 4;
@@ -162,36 +165,52 @@ function integer init(partitionCount) {
   	portMap[BYTE] = 3;
   	portMap[CBYTE] = 3;
   	portMap[STRING] = 2;
-	return ALL;
-}
+ }
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Partitions data depending on the value type, so Aggregate components work with not empty records.]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Simplification" guiX="882" guiY="329" id="REFORMAT0" type="REFORMAT">
-<attr name="transform"><![CDATA[import '${TRANS_DIR}/types.ctl';
+<attr name="transform"><![CDATA[//#CTL2
+import '${TRANS_DIR}/types.ctl';
 
 string histFields = "";
-int count = -1;
+integer count = -1;
 
-//#CTL2
-function integer modus(type){
-	switch (type) {
-			case DATE:return date2str($modusDate,'${DATE_FORMAT}')
-			case DECIMAL:return num2str($modusNumber)
-			case INTEGER:return num2str($modusNumber)
-			case LONG:return num2str($modusNumber)
-			case NUMBER:return num2str($modusNumber)
-			case BOOLEAN:return to_string($modusBoolean)
-			case BYTE:return to_string($modusByte)
-			case CBYTE:return to_string($modusByte)
-			case STRING:return $modusString
+function string modus(string type){
+	if (type == DATE) {
+		return date2str($modusDate,'${DATE_FORMAT}');
 	}
+	if (type == DECIMAL) {
+		return num2str($modusNumber);
+	}
+	if (type == INTEGER) {
+		return num2str($modusNumber);
+	}
+	if (type == LONG) {
+		return num2str($modusNumber);
+	}
+	if (type == NUMBER) {
+		return num2str($modusNumber);
+	}
+	if (type == BOOLEAN) {
+		return toString($modusBoolean);
+	}
+	if (type == BYTE) {
+		return byte2str($modusByte, null);
+	}
+	if (type == CBYTE) {
+		return byte2str($modusByte, null);
+	}
+	if (type == STRING) {
+		return $modusString;
+	}
+	return null;
 }
 
 // Transforms input record into output record.
 function integer transform() {
 	if (count == -1) {//remember number of records, always the same
-		count = $count; 
+		count = long2integer($count); 
 	}
 	if ($countUnique < ${HISTOGRAM_THRESHOLD}) {
 		histFields = concat(histFields, $fieldName, ';');
@@ -212,7 +231,7 @@ function integer transform() {
 				iif($type == DATE, date2str($medianDate,'${DATE_FORMAT}'), 
 								   num2str($medianNumber)));
 	$modus = modus($type);
-	return ALL
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.
@@ -222,10 +241,9 @@ function integer transform() {
 // function init() {}
 
 // Called after the component finishes.
- function integer finished() {
- 	write_dict('histFields',histFields);
- 	write_dict('count',num2str(count));
-	return ALL;
+ function void finished() {
+ 	dictionary.histFields = histFields;
+ 	dictionary.count = num2str(count);
  }
 ]]></attr>
 </Node>
@@ -346,37 +364,31 @@ import '${TRANS_DIR}/types.ctl';
 
 string[] histFields = null;
 boolean initialized = false;
-map portMap;
-int port;
+map[string, integer] portMap;
+integer port;
 
-function initInternal(){
-	histFields = split(read_dict("histFields"),';');
+function void initInternal(){
+	histFields = split(dictionary.histFields,';');
 	initialized = true;
-	return ALL;
 }
 
-function map0(){
+function void map0(){
 	$0.*= $0.*;
-	return ALL;
 }
 
-function map1(){
+function void map1(){
 	$1.*= $0.*;
-	return ALL;
 }
 
-function map2(){
+function void map2(){
 	$2.*= $0.*;
-	return ALL;
 }
 
-function map3(){
+function void map3(){
 	$3.*= $0.*;
-	return ALL;
 }
 
-function map4(){
-	return ALL;
+function void map4(){
 	$4.*= $0.*;
 }
 
@@ -385,7 +397,7 @@ function integer transform() {
 	if (!initialized) {
 		initInternal();
 	}
-	if (!($0.fieldName.in.histFields)) return SKIP;
+	if (!(containsValue(histFields, $0.fieldName))) return SKIP;
 	port = portMap[$type];
 	switch (port) {
 		case 0:map0();
@@ -394,16 +406,16 @@ function integer transform() {
 		case 3:map3();
 		case 4:map4();
 	}
-	return port
+	return port;
 }
 
 // Called to return a user-defined error message when an error occurs.
- function getMessage() {
+ function string getMessage() {
  	return "Field " + $fieldName + "is not among histogram fields";
  }
 
 // Called during component initialization.
- function init() {
+ function void init() {
   	portMap[DATE] = 1;
  	portMap[DECIMAL] = 4;
   	portMap[INTEGER] = 4;
@@ -421,38 +433,55 @@ function integer transform() {
 <attr name="guiDescription"><![CDATA[Filters values, for which frequency counts will be calculated. It also serves as a type partition like in Phase 0.]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Simplification" guiX="882" guiY="733" id="REFORMAT2" type="REFORMAT">
-<attr name="transform"><![CDATA[import '${TRANS_DIR}/types.ctl';
+<attr name="transform"><![CDATA[//#CTL2
+import '${TRANS_DIR}/types.ctl';
 
 string histFields = "";
 string max="####################################################################################################";
 string fillerChar = "\u00b7";
 string filler ='';
-int l = length(max);
+integer l = length(max);
 boolean initialized = false;
 long countAll;
-int percentLenght;
+integer percentLenght;
 
-//#TL
-function to_string(type){
-	switch (type) {
-			case DATE:return iif(isnull($valueDate), '', date2str($valueDate,'${DATE_FORMAT}'))
-			case DECIMAL:return iif(isnull($valueNumber), '', num2str($valueNumber))
-			case INTEGER:return iif(isnull($valueNumber), '', num2str($valueNumber))
-			case LONG:return iif(isnull($valueNumber), '', num2str($valueNumber))
-			case NUMBER:return iif(isnull($valueNumber), '', num2str($valueNumber))
-			case BOOLEAN:return to_string($valueBoolean)
-			case BYTE:return to_string($valueByte)
-			case CBYTE:return to_string($valueByte)
-			case STRING:return $valueString
+function string to_string(string type){
+	if (type == DATE) {
+		return iif(isnull($valueDate), '', date2str($valueDate,'${DATE_FORMAT}'));
 	}
+	if (type == DECIMAL) {
+		return iif(isnull($valueNumber), '', num2str($valueNumber));
+	}
+	if (type == INTEGER) {
+		return iif(isnull($valueNumber), '', num2str($valueNumber));
+	}
+	if (type == LONG) {
+		return iif(isnull($valueNumber), '', num2str($valueNumber));
+	}
+	if (type == NUMBER) {
+		return iif(isnull($valueNumber), '', num2str($valueNumber));
+	}
+	if (type == BOOLEAN) {
+		return toString($valueBoolean);
+	}
+	if (type == BYTE) {
+		return byte2str($valueByte, null);
+	}
+	if (type == CBYTE) {
+		return byte2str($valueByte, null);
+	}
+	if (type == STRING) {
+		return $valueString;
+	}
+	return null;
 }
 
-function initInternal(){
-	int i;	
+function void initInternal(){
+	integer i;	
 	for (i;i<l;i++){
 		filler = concat(filler,fillerChar);
 	}
-	countAll = str2num(read_dict('count'), long);
+	countAll = str2long(dictionary.count);
 	initialized = true;
 }
 
@@ -461,13 +490,13 @@ function integer transform() {
 	if (!initialized){
 		initInternal();
 	}
-	percentLenght = $count*l/countAll;
+	percentLenght = long2integer($count*l/countAll);
 	$fieldName = $fieldName;
 	$type = $type;
 	$count = $count;
 	$value = to_string($type);
 	$countGraphic = concat(substring(max,0,percentLenght), substring(filler,percentLenght,l-percentLenght));
-	return ALL
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.
@@ -483,11 +512,11 @@ function integer transform() {
 <Node enabled="enabled" guiName="SimpleGather" guiX="737" guiY="733" id="SIMPLE_GATHER1" type="SIMPLE_GATHER"/>
 <Node enabled="enabled" guiName="DataWriter" guiX="1187" guiY="733" id="STRUCTURE_WRITER1" type="${WRITER_TYPE}">
 <attr name="sheetName"><![CDATA[Histogram]]></attr>
-<attr name="append"><![CDATA[true]]></attr>
 <attr name="debugPrint"><![CDATA[true]]></attr>
-<attr name="charset"><![CDATA[${charset}]]></attr>
+<attr name="append"><![CDATA[true]]></attr>
 <attr name="guiDescription"><![CDATA[Appends histograms to statistic created in the previous phase. 
 As a STRUCTURE_WRITER it creates the table with histograms and closes html page. If changed to XLS_WRITER, it creates "Histogram" sheet and inserts it to existing xls file.]]></attr>
+<attr name="charset"><![CDATA[${charset}]]></attr>
 <attr name="fileURL"><![CDATA[${output_file}]]></attr>
 <attr name="header"><![CDATA[
 <H2>Histograms</H2>
