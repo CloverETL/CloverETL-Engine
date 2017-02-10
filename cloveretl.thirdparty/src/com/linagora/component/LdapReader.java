@@ -19,10 +19,7 @@
 package com.linagora.component;
 
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.List;
-import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -47,6 +44,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -163,9 +161,6 @@ public class LdapReader extends Node {
 	
 	private final static int INPUT_PORT = 0;
 	
-	private final static int DEFAULT_PAGE_SIZE=0; // no paging of search results
-	
-	
 	/**
 	 * The LDAP parser connected to the directory
 	 */
@@ -239,7 +234,9 @@ public class LdapReader extends Node {
 	
 	@Override
 	public void init() throws ComponentNotReadyException {
-        if(isInitialized()) return;
+		if(isInitialized()) {
+			return;
+		}
 		super.init();
 		
 		if(this.user != null) {
@@ -261,14 +258,7 @@ public class LdapReader extends Node {
 			parser.setAdditionalBinaryAttributes(additionalBinaryAttributes);
 		}
 		if (ldapExtraPropertiesDef!=null && ldapExtraPropertiesDef.length()>0){
-			Properties env = new Properties();
-			try{
-				env.load(new StringReader(ldapExtraPropertiesDef));
-				parser.setAdditionalLDAPConnectionEnvironment(env);
-			}catch(IOException ex){
-				//do nothing.. ignore
-			}
-			
+			parser.setAdditionalLDAPConnectionEnvironment(PropertiesUtils.loadProperties(ldapExtraPropertiesDef));
 		}
 		
 		/*
@@ -455,7 +445,7 @@ public class LdapReader extends Node {
 			aLdapReader.setAdditionalBinaryAttributes(xattribs.getString(XML_ADDITIONAL_BINARY_ATTRIBUTES));
 		}
 		if (xattribs.exists(XML_ADDITIONAL_LDAP_ENV)){
-			aLdapReader.setLdapExtraPropertiesDef(XML_ADDITIONAL_LDAP_ENV);
+			aLdapReader.setLdapExtraPropertiesDef(xattribs.getString(XML_ADDITIONAL_LDAP_ENV));
 		}
 		
 		return aLdapReader;
@@ -547,25 +537,23 @@ public class LdapReader extends Node {
 		this.allAttributes = allAttributes;
 	}
 	
-	
 	private String resolveFieldReferences(String source, DataRecord record){
-		for(int i=0;i<record.getNumFields();i++){
-			DataField field=record.getField(i);
-			String name=field.getMetadata().getName();
-			Matcher matcher=fieldMatcherArray[field.getMetadata().getNumber()];
-			if (matcher==null){
-				Pattern pattern=Pattern.compile(Pattern.quote("$"+name));
-				matcher=pattern.matcher(source);
-				fieldMatcherArray[field.getMetadata().getNumber()]=matcher;
-			}else{
+		for (int i=0 ; i < record.getNumFields(); i++) {
+			DataField field = record.getField(i);
+			String name = field.getMetadata().getName();
+			Matcher matcher = fieldMatcherArray[field.getMetadata().getNumber()];
+			if (matcher == null) {
+				Pattern pattern = Pattern.compile(Pattern.quote("$"+name));
+				matcher = pattern.matcher(source);
+				fieldMatcherArray[field.getMetadata().getNumber()] = matcher;
+			} else {
 				matcher.reset(source);
 			}
-			source=matcher.replaceAll(field.toString());
+			source=matcher.replaceAll(Matcher.quoteReplacement(field.toString()));
 		}
 		return source;
 	}
-
-
+	
 	/**
 	 * @param additionalBinaryAttributes the additionalBinaryAttributes to set
 	 */
