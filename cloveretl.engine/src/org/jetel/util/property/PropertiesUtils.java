@@ -34,6 +34,7 @@ import java.util.Properties;
 
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.string.StringUtils;
+import org.jetel.util.string.UnicodeBlanks;
 
 /**
  * Utility methods for {@link Properties} handling.
@@ -102,6 +103,30 @@ public class PropertiesUtils {
 		propertiesCopy.store(outputStream, null);
 	}
 
+	/**
+	 * Load properties from String. 
+	 * @param propertiesString
+	 * 			property list (key and element pairs)
+	 * @return properties as Map 
+	 * @throws IOException
+	 */
+	public static Map<String, String> loadProperties(String propertiesString) {
+		if (UnicodeBlanks.isBlank(propertiesString)) {
+			return Collections.emptyMap();
+		}
+		
+		Map<String, String> result = new LinkedHashMap<>();
+		
+		Properties properties = PropertiesUtils.parseProperties(propertiesString);
+		
+		for (String key : properties.stringPropertyNames()) {
+			String value = properties.getProperty(key);
+			result.put(key, value);
+		}
+		
+		return result;
+	}
+	
 	/**
 	 * Stores graph properties, storing property with key projectPropertyKey first with special comment.
 	 * 
