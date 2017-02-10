@@ -105,7 +105,7 @@ For each record:
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders_late.txt" guiName="writes info in file" guiX="717" guiY="528" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
 <Node enabled="enabled" guiName="shipped late" guiX="231" guiY="540" id="EXT_FILTER0" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[//#CTL2
-$0.RequiredDate < $0.ShippedDate]]></attr>
+$0.ShippedDate != null && $0.RequiredDate < $0.ShippedDate]]></attr>
 </Node>
 <Node enabled="enabled" guiName="orders + lookup tbl" guiX="474" guiY="549" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2

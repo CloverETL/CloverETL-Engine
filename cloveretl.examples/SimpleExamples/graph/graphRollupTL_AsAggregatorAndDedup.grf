@@ -110,7 +110,7 @@ function void initGroup(groupAccumulator groupAccumulator) {
 function boolean updateGroup(groupAccumulator groupAccumulator) {
 	groupAccumulator.count = groupAccumulator.count + 1;
 	if (groupAccumulator.count < INT) return true;
-	return true;
+	return false;
 }
 
 // Called for the last data records in all groups sequentially, but only after all incoming data records have been parsed.

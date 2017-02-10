@@ -180,7 +180,7 @@ function void initGroup(groupAccumulator groupAccumulator) {
 // Implicitly returns false => updateTransform is not called.
 function boolean updateGroup(groupAccumulator groupAccumulator) {
 	groupAccumulator.numRec = groupAccumulator.numRec + 1;
-	groupAccumulator.customer = iif(isnull(groupAccumulator.customer) == false, groupAccumulator.customer + " - ", "") + $0.CustomerID;
+	groupAccumulator.customer = iif(groupAccumulator.customer != "", groupAccumulator.customer + " - ", "") + $0.CustomerID;
 	return false;
 }
 
@@ -227,8 +227,8 @@ function integer transform(integer counter, groupAccumulator groupAccumulator) {
 ]]></attr>
 </Node>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/denormalizedTLwithoutOrder_Rollup.out" guiName="Customers Grouped for Each Employee" guiX="888" guiY="252" id="WRITER3" type="DATA_WRITER"/>
-<Edge debugMode="false" fromNode="EXT_SORT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER3:0"/>
-<Edge debugMode="false" fromNode="INPUT4:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="ROLLUP0:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER3:0"/>
+<Edge debugMode="true" fromNode="INPUT4:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="ROLLUP0:0"/>
 <Edge debugMode="false" fromNode="ROLLUP0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT1:0"/>
 </Phase>
 </Graph>
