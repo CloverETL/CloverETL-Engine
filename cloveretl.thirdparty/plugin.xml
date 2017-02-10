@@ -146,6 +146,12 @@
 	      <property category="advanced" displayName="Fields to ignore" modifiable="true" name="ignoreFields" nullable="true">
         	<singleType name="key" inputPortName="0" rightLabel="Fields to ignore:" />
       	  </property>
+      	  <property category="advanced" displayName="Binary attributes" modifiable="true" name="binaryAttributes" nullable="true">
+            <singleType name="multiline" />
+          </property>
+      	  <property category="advanced" displayName="LDAP Connection Properties" modifiable="true" name="ldapExtraProperties" nullable="true">
+            <singleType name="multiline" />
+          </property>
 	    </properties>
 	  </ETLComponent>
 	</extension>
