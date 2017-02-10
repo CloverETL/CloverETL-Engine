@@ -99,7 +99,7 @@ Orders need to be matched with customers for an output report
 <Phase number="1">
 <Node enabled="enabled" guiName="Extract Late Orders" guiX="267" guiY="653" id="EXTRACT_LATE_ORDERS" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[//#CTL2
-$0.RequiredDate < $0.ShippedDate]]></attr>
+$in.0.ShippedDate != null && $0.RequiredDate < $0.ShippedDate]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Get Customer Details" guiX="472" guiY="653" id="GET_CUSTOMER_DETAILS" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2

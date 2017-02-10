@@ -277,8 +277,6 @@
 
 </FunctionalTest>
 
-</FunctionalTest>
-
 <FunctionalTest ident="OrdersTLReformatExtern" graphFile="graph/graphOrdersTLReformatExtern.grf">
 	 <FlatFile outputFile="data-out/orders.dat.out" supposedFile="supposed-out//orders.dat.OrdersReformat.out"/>
      
