@@ -8,5 +8,12 @@
 <GraphParameter name="sample_size" value="0.1"/>
 <GraphParameter name="sampling_field" value="JOB_GRADE"/>
 <GraphParameter name="sort_data" value="enabled"/>
-<GraphParameter name="timing" value="`1.0/${sample_size}`"/>
+<GraphParameter name="timing">
+<attr name="dynamicValue"><![CDATA[//#CTL2
+
+function double getValue() {
+	return 1.0 / str2double(getParamValue("sample_size"));
+}
+]]></attr>
+</GraphParameter>
 </GraphParameters>

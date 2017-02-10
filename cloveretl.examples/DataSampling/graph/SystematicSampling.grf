@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Thu Jun 10 12:22:42 CEST 2010" guiVersion="4.5.0.M1" id="1276168864901" licenseCode="Javlin-Internal-License" licenseType="Evaluation Devel" modified="Fri Jun 17 11:51:33 CEST 2011" modifiedBy="avackova" name="SystematicSamplingOneField" revision="1.89" showComponentDetails="true">
+<Graph author="avackova" created="Thu Jun 10 12:22:42 CEST 2010" guiVersion="0.0.0.devel" id="1276168864901" licenseCode="Javlin-Internal-License" licenseType="Evaluation Devel" modified="Fri Jun 17 11:51:33 CEST 2011" modifiedBy="avackova" name="SystematicSamplingOneField" revision="1.89" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${metadata}" id="Metadata0"/>
 <GraphParameters>
 <GraphParameter name="output_file" value="${DATAOUT_DIR}/systematicSample.txt"/>
-<GraphParameter name="rec_no" value="randomInteger(1,num2num(${timing}))"/>
+<GraphParameter name="rec_no">
+<attr name="dynamicValue"><![CDATA[//#CTL2
+
+function integer getValue() {
+	return randomInteger(1, double2integer(str2double(getParamValue("timing"))));
+}
+]]></attr>
+</GraphParameter>
 <GraphParameterFile fileURL="parameters.prm"/>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
@@ -44,7 +51,13 @@ rec_no - number of first record, that is chosen for sample. Do not change this, 
 <Node enabled="enabled" guiName="Reformat" guiX="407" guiY="-13" id="REFORMAT0" transformURL="${TRANS_DIR}/systematicSampling.ctl" type="REFORMAT">
 <attr name="guiDescription"><![CDATA[Systematic sampling relies on arranging the data set according to some ordering scheme and then selecting elements at regular intervals through that ordered list. Systematic sampling involves a random start and then proceeds with the selection of every k-th element from then onwards. First element and interval depends on required sample set size.]]></attr>
 </Node>
-<Node charset="${charset}" debugPrint="true" enabled="enabled" fileURL="${output_file}" guiName="DataWriter" guiX="581" guiY="-13" id="STRUCTURE_WRITER0" namesRow="1" sheetName="SystematicSampling" type="${WRITER_TYPE}"/>
+<Node enabled="enabled" guiName="DataWriter" guiX="581" guiY="-13" id="STRUCTURE_WRITER0" type="${WRITER_TYPE}">
+<attr name="fileURL"><![CDATA[${output_file}]]></attr>
+<attr name="debugPrint"><![CDATA[true]]></attr>
+<attr name="sheetName"><![CDATA[SystematicSampling]]></attr>
+<attr name="namesRow"><![CDATA[1]]></attr>
+<attr name="charset"><![CDATA[${charset}]]></attr>
+</Node>
 <Edge fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT0:0"/>
 <Edge fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="REFORMAT0:0"/>
 <Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="STRUCTURE_WRITER0:0"/>
