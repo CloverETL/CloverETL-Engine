@@ -18,9 +18,9 @@
  */
 package com.linagora.ldap;
 
-import java.util.Arrays;
+import java.io.IOException;
 import java.util.Map;
-import java.util.Map.Entry;
+
 
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -33,7 +33,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.MapDataField;
-import org.jetel.data.StringDataField;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
@@ -41,6 +40,7 @@ import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.string.CloverString;
 import org.jetel.util.string.StringUtils;
 
@@ -117,6 +117,8 @@ public class LdapFormatter {
 	private Jetel2LdapString string2attribute;
 	private int dnFieldIdx;
 	private int[] ignoreFields;
+	private String additionalBinaryAttributes;
+	private String ldapExtraPropertiesDef;
 	
 	/**
 	 * A logger (log4j) for the class
@@ -147,8 +149,9 @@ public class LdapFormatter {
 	 * @param object not used !
 	 * @param metadata describing input data to transform to LDAP object
 	 * @throws NamingException 
+	 * @throws IOException 
 	 */
-	public void open(Object object, DataRecordMetadata metadata) throws BadDataFormatException, NamingException {
+	public void open(Object object, DataRecordMetadata metadata) throws BadDataFormatException, NamingException, IOException {
 		
 		this.metadata = metadata;
 		
@@ -166,6 +169,9 @@ public class LdapFormatter {
 		} else {
 			this.ldapManager = new LdapManager(this.ldapUrl);
 		}
+		
+		ldapManager.addBinaryAttribute(additionalBinaryAttributes);
+		ldapManager.addEnv(PropertiesUtils.loadProperties(ldapExtraPropertiesDef));
 		
 		//Actually try to connect to LDAP directory
 		this.ldapManager.openContext();
@@ -421,5 +427,12 @@ public class LdapFormatter {
 		}
 		return false;
 	}
-
+	
+	public void setAdditionalBinaryAttributes(String additionalBinaryAttributes) {
+		this.additionalBinaryAttributes = additionalBinaryAttributes;
+	}
+	
+	public void setLdapExtraPropertiesDef(String ldapExtraPropertiesDef) {
+		this.ldapExtraPropertiesDef = ldapExtraPropertiesDef;
+	}
 }

@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -142,7 +143,11 @@ public class LdapParser extends AbstractParser {
 
 	LdapDataSource dataSource;
 	
+	private String additionalBinaryAttributes;
+	private Map<String,String> additionalLDAPConnectionEnvironment;
+	
 
+	
 	private static Log logger = LogFactory.getLog(LdapParser.class);
 
 	/**
@@ -202,6 +207,10 @@ public class LdapParser extends AbstractParser {
 		
 		ldapManager.setAliasHandling(aliasHandling);
 		ldapManager.setReferralHandling(referralHandling);
+		//potentially override the default setup of environment
+		if (this.additionalBinaryAttributes!=null) ldapManager.addBinaryAttribute(this.additionalBinaryAttributes);
+		if (this.additionalLDAPConnectionEnvironment!=null) ldapManager.addEnv(additionalLDAPConnectionEnvironment);
+		
 		if (pageSize>0){
 			ldapManager.setPageSize(pageSize);
 		}
@@ -219,7 +228,7 @@ public class LdapParser extends AbstractParser {
 	        try {
 	        		initTransMap();
 			} catch (Exception e) {
-				throw new ComponentNotReadyException("Error during intitialization of LdapParser.", e);
+				throw new ComponentNotReadyException("Error during intitialization of LDAP Parser.", e);
 			}
 		}
 		if (transDefault==null && defaultMappingFieldId>=0){
@@ -227,6 +236,23 @@ public class LdapParser extends AbstractParser {
 		}
 	}
 
+	/**
+	 * Allows to add to the list (space-separated) of attributes to be handled as binary data
+	 * @param additionalBinaryAttributes the additionalBinaryAttributes to set
+	 */
+	public void setAdditionalBinaryAttributes(String additionalBinaryAttributes) {
+		this.additionalBinaryAttributes = additionalBinaryAttributes;
+	}
+
+	/**
+	 * Allows to add (or overried) default environment parameters for the LDAP connection
+	 * @param additionalLDAPConnectionEnvironment the additionalLDAPConnectionEnvironment to set
+	 */
+	public void setAdditionalLDAPConnectionEnvironment(@SuppressWarnings("rawtypes") Map additionalLDAPConnectionEnvironment) {
+		this.additionalLDAPConnectionEnvironment = additionalLDAPConnectionEnvironment;
+	}
+
+	
 	/**
 	 * @throws ComponentNotReadyException
 	 */
@@ -445,7 +471,7 @@ public class LdapParser extends AbstractParser {
 			attrs.put("dn", dn);
 		} catch (NamingException e) {
 			throw new JetelException (
-					"Error when trying to get datas from Ldap directory entry :"
+					"Error when trying to get data from Ldap directory entry :"
 					+ dn + " ", e);
 		}
 

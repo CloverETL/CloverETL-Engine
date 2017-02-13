@@ -31,12 +31,12 @@ function integer transform() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Employees who can speak a foreign language fluently are joined with those who were hired before 31 December 1993.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="ExtFilter (HireDate)" guiWidth="172" guiX="303" guiY="279" id="FILTEREMPL1" type="EXT_FILTER">
+<Node enabled="enabled" guiHeight="101" guiName="Filter (HireDate)" guiWidth="172" guiX="303" guiY="279" id="FILTEREMPL1" type="EXT_FILTER">
 <attr name="guiDescription"><![CDATA[Those employees who were hired before 31 December 1993 are sent to the first output port. The others are sent to the second output port.]]></attr>
 <attr name="filterExpression"><![CDATA[//#CTL2
 $HireDate<1993-12-31]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="ExtFilter (Fluent)" guiWidth="154" guiX="302" guiY="56" id="FILTEREMPL2" type="EXT_FILTER">
+<Node enabled="enabled" guiHeight="101" guiName="Filter (Fluent)" guiWidth="154" guiX="302" guiY="56" id="FILTEREMPL2" type="EXT_FILTER">
 <attr name="guiDescription"><![CDATA[Employees who can speak a foreign language fluently are sent to the first output port]]></attr>
 <attr name="filterExpression"><![CDATA[//#CTL2
 $Memo~=".*fluent.*"]]></attr>

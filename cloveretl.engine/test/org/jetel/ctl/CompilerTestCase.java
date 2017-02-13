@@ -664,7 +664,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		List<ErrorMessage> messages = compiler.compile(expStr, CTLRecordTransform.class, testIdentifier);
 		printMessages(messages);
 		if (compiler.errorCount() > 0) {
-			throw new AssertionFailedError("Error in execution. Check standard output for details.");
+			throw new AssertionFailedError("Error in execution. Check standard output for details.\n" + messages);
 		}
 
 		// *** NOTE: please don't remove this commented code. It is used for debugging
@@ -2113,6 +2113,19 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				"	return 0;\n" +
 				"}\n";
 		doCompile(expStr, "test_import");
+	}
+	
+	public void test_import_CLO10313() {
+		TransformationGraph graph = createDefaultGraph();
+		String url = getClass().getSuperclass().getResource("test_import_CLO10313.ctl").toString();
+		url = url.substring(0, url.lastIndexOf('/'));
+		graph.getGraphParameters().getGraphParameter("PROJECT").setValue(url);
+		String testIdentifier = "test_import_CLO10313";
+		String expStr = loadSourceCode(testIdentifier);
+		doCompile(expStr, testIdentifier, graph, new DataRecord[0], new DataRecord[0]);
+		
+		check("int", 87);
+		check("str", "87");
 	}
 	
 	public void test_scope() throws ComponentNotReadyException, TransformException {

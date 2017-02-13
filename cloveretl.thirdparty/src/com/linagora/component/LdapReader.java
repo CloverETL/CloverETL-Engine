@@ -44,6 +44,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -99,6 +100,8 @@ import com.linagora.ldap.LdapParser;
  *  <tr><td><b>pageSize</b><br><i>optional</i></td><td>If >0 then LDAP server is queried in paging mode and this attribute defines how many records are returned on one page.<td></td></tr>
  *  <tr><td><b>allAttributes</b><br><i>optional</i></td><td>True/False - query LDAP for all available attributes or only those directly mappable on output fields.When using defaultField then this
  *  should be set to True.<td></td></tr>
+ *  <tr><td><b>binaryAttributes</b><br><i>optional</i></td><td>List of (space separated) LDAP attributes which should be handled as binary data. Default is String.<td></td></tr>
+ *  <tr><td><b>ldapExtraProperties</b><br><i>optional</i></td><td>Java Property-like style of key-value definitions which will be added to LDAP connection environment.<td></td></tr>
  * <!-- to be added <tr><td><b>DataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td></tr> -->
  *  </table>
  * 
@@ -146,6 +149,8 @@ public class LdapReader extends Node {
 	private static final String XML_DEFAULT_MAPPING_FIELD = "defaultField";
 	private static final String XML_PAGE_SIZE = "pageSize";
 	private static final String XML_ALL_LDAP_ATTRIBUTES = "allAttributes";
+	private static final String XML_ADDITIONAL_BINARY_ATTRIBUTES = "binaryAttributes";
+	private static final String XML_ADDITIONAL_LDAP_ENV = "ldapExtraProperties";
 
 	/**
 	 * Component type
@@ -155,9 +160,6 @@ public class LdapReader extends Node {
 	private final static int OUTPUT_PORT = 0;
 	
 	private final static int INPUT_PORT = 0;
-	
-	private final static int DEFAULT_PAGE_SIZE=0; // no paging of search results
-	
 	
 	/**
 	 * The LDAP parser connected to the directory
@@ -177,6 +179,8 @@ public class LdapReader extends Node {
 	 *  List fields handle multivalues naturally 
 	 **/
 	private String multiValueSeparator = "|";
+	private String additionalBinaryAttributes;
+	private String ldapExtraPropertiesDef;
 	
 	
 	private AliasHandling aliasHandling;
@@ -230,7 +234,9 @@ public class LdapReader extends Node {
 	
 	@Override
 	public void init() throws ComponentNotReadyException {
-        if(isInitialized()) return;
+		if(isInitialized()) {
+			return;
+		}
 		super.init();
 		
 		if(this.user != null) {
@@ -247,6 +253,13 @@ public class LdapReader extends Node {
 		}
 		if (pageSize>0) parser.setPageSize(pageSize);
 		parser.setAllAttributes(allAttributes);
+		
+		if (additionalBinaryAttributes!=null && additionalBinaryAttributes.length()>0){
+			parser.setAdditionalBinaryAttributes(additionalBinaryAttributes);
+		}
+		if (ldapExtraPropertiesDef!=null && ldapExtraPropertiesDef.length()>0){
+			parser.setAdditionalLDAPConnectionEnvironment(PropertiesUtils.loadProperties(ldapExtraPropertiesDef));
+		}
 		
 		/*
 		 * TODO : well... I don't know how to add LdapConnection node to transformation graph.
@@ -428,6 +441,12 @@ public class LdapReader extends Node {
 		if (xattribs.exists(XML_ALL_LDAP_ATTRIBUTES)){
 			aLdapReader.setAllAttributes(xattribs.getBoolean(XML_ALL_LDAP_ATTRIBUTES));
 		}
+		if (xattribs.exists(XML_ADDITIONAL_BINARY_ATTRIBUTES)){
+			aLdapReader.setAdditionalBinaryAttributes(xattribs.getString(XML_ADDITIONAL_BINARY_ATTRIBUTES));
+		}
+		if (xattribs.exists(XML_ADDITIONAL_LDAP_ENV)){
+			aLdapReader.setLdapExtraPropertiesDef(xattribs.getString(XML_ADDITIONAL_LDAP_ENV));
+		}
 		
 		return aLdapReader;
 	}
@@ -518,21 +537,35 @@ public class LdapReader extends Node {
 		this.allAttributes = allAttributes;
 	}
 	
-	
 	private String resolveFieldReferences(String source, DataRecord record){
-		for(int i=0;i<record.getNumFields();i++){
-			DataField field=record.getField(i);
-			String name=field.getMetadata().getName();
-			Matcher matcher=fieldMatcherArray[field.getMetadata().getNumber()];
-			if (matcher==null){
-				Pattern pattern=Pattern.compile(Pattern.quote("$"+name));
-				matcher=pattern.matcher(source);
-				fieldMatcherArray[field.getMetadata().getNumber()]=matcher;
-			}else{
+		for (int i=0 ; i < record.getNumFields(); i++) {
+			DataField field = record.getField(i);
+			String name = field.getMetadata().getName();
+			Matcher matcher = fieldMatcherArray[field.getMetadata().getNumber()];
+			if (matcher == null) {
+				Pattern pattern = Pattern.compile(Pattern.quote("$"+name));
+				matcher = pattern.matcher(source);
+				fieldMatcherArray[field.getMetadata().getNumber()] = matcher;
+			} else {
 				matcher.reset(source);
 			}
-			source=matcher.replaceAll(field.toString());
+			source=matcher.replaceAll(Matcher.quoteReplacement(field.toString()));
 		}
 		return source;
+	}
+	
+	/**
+	 * @param additionalBinaryAttributes the additionalBinaryAttributes to set
+	 */
+	public void setAdditionalBinaryAttributes(String additionalBinaryAttributes) {
+		this.additionalBinaryAttributes = additionalBinaryAttributes;
+	}
+
+
+	/**
+	 * @param ldapExtraPropertiesDef the ldapExtraPropertiesDef to set
+	 */
+	public void setLdapExtraPropertiesDef(String ldapExtraPropertiesDef) {
+		this.ldapExtraPropertiesDef = ldapExtraPropertiesDef;
 	}
 }

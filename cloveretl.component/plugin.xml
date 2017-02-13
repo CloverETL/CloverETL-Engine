@@ -1356,7 +1356,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="transformers" iconPath="icons/transformers/ExtFilter" name="ExtFilter"  type="EXT_FILTER" passThrough="true" className="org.jetel.component.ExtFilter">
+	  <ETLComponent category="transformers" iconPath="icons/transformers/ExtFilter" name="Filter"  type="EXT_FILTER" passThrough="true" className="org.jetel.component.ExtFilter">
 	    <shortDescription>Filters incoming data.</shortDescription>
 	    <description>Receives data records through connected input port, removes some of them depending on defined filter expression and sends the rest to the connected first output port. Rejected records are sent to the optional second output port if connected.</description>
 	    <inputPorts>

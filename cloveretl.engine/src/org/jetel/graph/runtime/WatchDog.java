@@ -61,6 +61,8 @@ import org.jetel.util.ExceptionUtils;
 import org.jetel.util.primitive.MultiValueMap;
 import org.jetel.util.property.PropertyRefResolver;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 
 /**
  *  Description of the Class
@@ -168,10 +170,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		watchDogStatus = Result.READY;
 	}
 	
-	private void finishJMX() {
+	private synchronized void finishJMX() {
 		if (provideJMX && finishJMX && jmxObjectName != null) {
 			try {
 				getMBeanServer().unregisterMBean(jmxObjectName);
+	            logger.debug("unregister MBean with name: " + jmxObjectName.getCanonicalName());
+				jmxObjectName = null;
 			} catch (InstanceNotFoundException e) {
 				if (logger.isDebugEnabled()) {
 					logger.info("JMX notification listener not found", e);
@@ -829,7 +833,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
         return graph;
     }
 
-	public void setUseJMX(boolean useJMX) {
+	@SuppressFBWarnings("IS2_INCONSISTENT_SYNC")
+    public void setUseJMX(boolean useJMX) {
 		this.provideJMX = useJMX;
 	}
 
@@ -837,6 +842,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		return runtimeContext;
 	}
 
+	@SuppressFBWarnings("IS2_INCONSISTENT_SYNC")
 	public CloverJMX getCloverJmx() {
 		return cloverJMX;
 	}
@@ -891,6 +897,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
     }
     
     public void free() {
+    	//the JMX bean should be already released, but if the graph has been aborted
+    	//earlier than call() method, JMX bean can be still registered
+    	//so try to release the JMX bean again
+    	freeJMX();
     	isReleased = true;
     }
     

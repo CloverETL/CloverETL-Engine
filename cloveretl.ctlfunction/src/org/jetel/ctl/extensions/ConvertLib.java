@@ -1276,6 +1276,11 @@ public class ConvertLib extends TLFunctionLibrary {
 		return StringUtils.bytesToHexString(src);
 	}
 	
+	@TLFunctionAnnotation("Converts binary data into hex string escaping each byte.")
+	public static final String byte2hex(TLFunctionCallContext context, byte[] src, String escapeChar) {
+		return StringUtils.bytesToHexString(src, escapeChar);
+	}
+	
 	// BYTE2HEX
 	public static class Byte2HexFunction implements TLFunctionPrototype {
 
@@ -1285,7 +1290,13 @@ public class ConvertLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			stack.push(byte2hex(context, stack.popByteArray()));
+			if (context.getParams().length>1){
+				String prefix=stack.popString();
+				stack.push(byte2hex(context, stack.popByteArray(),prefix));
+			}
+			else{
+				stack.push(byte2hex(context, stack.popByteArray()));
+			}
 		}
 	}
 	

@@ -120,7 +120,7 @@ SOAPAction=http\://www.webserviceX.NET/GetCitiesByCountry
 </Phase>
 <Phase number="3">
 <Node charset="UTF-16" enabled="enabled" fileURL="${DATAOUT_DIR}/weatherPL$.xml" guiName="UniversalDataWriter" guiX="708" guiY="761" id="DATA_WRITER3" recordsPerFile="1" type="DATA_WRITER"/>
-<Node enabled="enabled" guiName="ExtFilter" guiX="524" guiY="761" id="EXT_FILTER0" type="EXT_FILTER">
+<Node enabled="enabled" guiName="Filter" guiX="524" guiY="761" id="EXT_FILTER0" type="EXT_FILTER">
 <attr name="guiDescription"><![CDATA[Filters valid data only]]></attr>
 <attr name="filterExpression"><![CDATA[//#CTL2
 $0.field ?= '<\?xml.*']]></attr>

@@ -141,6 +141,8 @@ public class LdapWriter extends Node {
 	/** The attribute name in grf file used to specify a multi-value separator */
 	private static final String XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE = "multiValueSeparator";
 	private static final String XML_IGNORE_FIELDS = "ignoreFields";
+	private static final String XML_ADDITIONAL_BINARY_ATTRIBUTES = "binaryAttributes";
+	private static final String XML_ADDITIONAL_LDAP_ENV = "ldapExtraProperties";
 	
 	/*
 	 * Action values available on xml file.
@@ -153,8 +155,7 @@ public class LdapWriter extends Node {
 	private static final String XML_REPLACE_ATTRIBUTES_VALUE = "replace_attributes";
 	/** Required action : remove attributes on existing entries in LDAP directory */
 	private static final String XML_REMOVE_ATTRIBUTES_VALUE = "remove_attributes";
-	
-	
+
 	/** URL used to connect to the LDAP directory */
 	private String ldapUrl;
 	/** Required action, mapped from the name */
@@ -168,6 +169,9 @@ public class LdapWriter extends Node {
 	/** This string is used as a multi-value separator. 
 	 *  One jetel field can contain multiple values separated by this string. */
 	private String multiValueSeparator = "|";
+	
+	private String additionalBinaryAttributes;
+	private String ldapExtraPropertiesDef;
 	
 	/**
 	 * Input fields to ignore (if any) during processing
@@ -214,6 +218,13 @@ public class LdapWriter extends Node {
 
 		this.formatter = new LdapFormatter(this.ldapUrl, this.action, this.user, this.passwd);
 		this.formatter.setMultiValueSeparator(multiValueSeparator);
+		
+		if (additionalBinaryAttributes != null && additionalBinaryAttributes.length() > 0){
+			formatter.setAdditionalBinaryAttributes(additionalBinaryAttributes);
+		}
+		if (ldapExtraPropertiesDef != null && ldapExtraPropertiesDef.length() > 0){
+			formatter.setLdapExtraPropertiesDef(ldapExtraPropertiesDef);
+		}
 		
 		DataRecordMetadata metadata = getInputPort(READ_FROM_PORT).getMetadata();
 		// based on file mask, create/open output file
@@ -332,7 +343,12 @@ public class LdapWriter extends Node {
 		if (xattribs.exists(XML_IGNORE_FIELDS)){
 			aSimpleLdapWriter.setIgnoreFields(xattribs.getString(XML_IGNORE_FIELDS).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 		}
-		
+		if (xattribs.exists(XML_ADDITIONAL_BINARY_ATTRIBUTES)){
+			aSimpleLdapWriter.setAdditionalBinaryAttributes(xattribs.getString(XML_ADDITIONAL_BINARY_ATTRIBUTES));
+		}
+		if (xattribs.exists(XML_ADDITIONAL_LDAP_ENV)){
+			aSimpleLdapWriter.setLdapExtraPropertiesDef(xattribs.getString(XML_ADDITIONAL_LDAP_ENV));
+		}
 		return aSimpleLdapWriter;
 	}
 
@@ -408,4 +424,11 @@ public class LdapWriter extends Node {
 		this.ignoreFields = ignoreFields;
 	}
 
+	public void setAdditionalBinaryAttributes(String additionalBinaryAttributes) {
+		this.additionalBinaryAttributes = additionalBinaryAttributes;
+	}
+
+	public void setLdapExtraPropertiesDef(String ldapExtraPropertiesDef) {
+		this.ldapExtraPropertiesDef = ldapExtraPropertiesDef;
+	}
 }

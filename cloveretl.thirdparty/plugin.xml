@@ -13,7 +13,7 @@
 	<extension point-id="component">
 	  <ETLComponent category="deprecated" iconPath="clover:/plugin/org.jetel.component/icons/transformers/ExtFilter" name="Filter" type="FILTER" passThrough="true" defaultVisibility="false" className="org.jetel.component.Filter" viewPlainData="false" viewGridData="false">
 	    <shortDescription>Filters incoming data.</shortDescription>
-	    <description>Receives data through connected input port, removes some data records depending on defined filter expression and sends the rest to the connected first output port. Rejected records are sent to the optional second output port if connected. This component is deprecated and should not be used anymore, we suggest you work with ExtFilter instead.</description>
+	    <description>Receives data through connected input port, removes some data records depending on defined filter expression and sends the rest to the connected first output port. Rejected records are sent to the optional second output port if connected. This component is deprecated and should not be used anymore, we suggest you work with non-deprecated Filter instead.</description>
 	    <inputPorts>
 	      <singlePort name="0" required="true" />
 	    </inputPorts>
@@ -95,6 +95,12 @@
           <property category="advanced" displayName="Default field" modifiable="true" name="defaultField" nullable="true">
             <singleType name="field" outputPortName="0" type="string" containerType="map"/>
           </property>
+          <property category="advanced" displayName="Binary attributes" modifiable="true" name="binaryAttributes" nullable="true">
+            <singleType name="multiline"/>
+          </property>
+          <property category="advanced" displayName="LDAP Connection Properties" modifiable="true" name="ldapExtraProperties" nullable="true">
+            <singleType name="multiline"/>
+          </property>
 	    </properties>
 	  </ETLComponent>
 	</extension>
@@ -140,6 +146,12 @@
 	      <property category="advanced" displayName="Fields to ignore" modifiable="true" name="ignoreFields" nullable="true">
         	<singleType name="key" inputPortName="0" rightLabel="Fields to ignore:" />
       	  </property>
+      	  <property category="advanced" displayName="Binary attributes" modifiable="true" name="binaryAttributes" nullable="true">
+            <singleType name="multiline" />
+          </property>
+      	  <property category="advanced" displayName="LDAP Connection Properties" modifiable="true" name="ldapExtraProperties" nullable="true">
+            <singleType name="multiline" />
+          </property>
 	    </properties>
 	  </ETLComponent>
 	</extension>
