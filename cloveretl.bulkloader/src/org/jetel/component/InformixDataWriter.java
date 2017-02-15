@@ -625,7 +625,7 @@ public class InformixDataWriter extends BulkLoader {
     		informixDataWriter.setUser(xattribs.getString(XML_USER_ATTRIBUTE));
     	}
     	if (xattribs.exists(XML_PASSWORD_ATTRIBUTE)) {
-    		informixDataWriter.setPassword(xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, RefResFlag.SECURE_PARAMATERS));
+    		informixDataWriter.setPassword(xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, RefResFlag.PASSWORD));
     	}
     	if (xattribs.exists(XML_IGNORE_UNIQUE_KEY_VIOLATION_ATTRIBUTE)) {
     		informixDataWriter.setIgnoreUniqueKeyViolation(xattribs.getBoolean(XML_IGNORE_UNIQUE_KEY_VIOLATION_ATTRIBUTE));

@@ -46,6 +46,10 @@ import org.jetel.util.bytes.CloverBuffer;
  */
 public abstract class CTLRecordPartition extends CTLAbstractTransform implements PartitionFunction {
 
+	public static final String GET_OUTPUT_PORT_FUNCTION_NAME = "getOutputPort";
+	public static final String GET_OUTPUT_PORT_ON_ERROR_FUNCTION_NAME = "getOutputPortOnError";
+	public static final String PARTITION_COUNT_PARAM_NAME = "partitionCount";
+
 	/** Input data record used for partitioning, or <code>null</code> if not accessible. */
 	private DataRecord inputRecord = null;
 
@@ -69,8 +73,8 @@ public abstract class CTLRecordPartition extends CTLAbstractTransform implements
 	 *
 	 * @throws ComponentNotReadyException if the initialization fails
 	 */
-	@CTLEntryPoint(name = PartitionTL.INIT_FUNCTION_NAME, parameterNames = {
-			PartitionTL.PARTITION_COUNT_PARAM_NAME }, required = false)
+	@CTLEntryPoint(name = INIT_FUNCTION_NAME, parameterNames = {
+			PARTITION_COUNT_PARAM_NAME }, required = false)
 	protected void initDelegate(Integer partitionCount) throws ComponentNotReadyException {
 		// does nothing by default, may be overridden by generated transform classes
 	}
@@ -107,7 +111,7 @@ public abstract class CTLRecordPartition extends CTLAbstractTransform implements
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = PartitionTL.GET_OUTPUT_PORT_FUNCTION_NAME, required = true)
+	@CTLEntryPoint(name = GET_OUTPUT_PORT_FUNCTION_NAME, required = true)
 	protected abstract Integer getOutputPortDelegate() throws ComponentNotReadyException, TransformException;
 
 	@Override
@@ -150,8 +154,8 @@ public abstract class CTLRecordPartition extends CTLAbstractTransform implements
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = PartitionTL.GET_OUTPUT_PORT_ON_ERROR_FUNCTION_NAME, parameterNames = {
-			PartitionTL.ERROR_MESSAGE_PARAM_NAME, PartitionTL.STACK_TRACE_PARAM_NAME }, required = false)
+	@CTLEntryPoint(name = GET_OUTPUT_PORT_ON_ERROR_FUNCTION_NAME, parameterNames = {
+			ERROR_MESSAGE_PARAM_NAME, STACK_TRACE_PARAM_NAME }, required = false)
 	protected Integer getOutputPortOnErrorDelegate(String errorMessage, String stackTrace)
 			throws ComponentNotReadyException, TransformException {
 		throw new UnsupportedOperationException();

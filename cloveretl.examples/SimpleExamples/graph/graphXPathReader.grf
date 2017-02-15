@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="In this example data are read from employees.xml file. 'Mapping' attribute describes dependencies between xml nodes and metadata fields. " guiVersion="0.0.0.devel" id="1204551969115" licenseType="Evaluation Devel" modified="Fri Jun 17 13:47:08 CEST 2011" modifiedBy="avackova" name="XXX" revision="1.36" showComponentDetails="true">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="In this example data are read from employees.xml file. 'Mapping' attribute describes dependencies between xml nodes and metadata fields. " guiVersion="4.5.0.M1" id="1204551969115" licenseCode="Javlin-Internal-License" licenseType="Evaluation Devel" modified="Fri Jun 17 13:47:08 CEST 2011" modifiedBy="avackova" name="XXX" revision="1.36" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata2">
 <Record fieldDelimiter=";" name="BenefitsOthers" recordDelimiter="\r\n" recordSize="-1" type="delimited">
@@ -58,35 +58,38 @@
 <Field name="jobID" nullable="false" shift="0" type="integer"/>
 </Record>
 </Metadata>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Sequence cached="50" fileURL="${SEQ_DIR}/xpathsequence.seq" id="Sequence0" name="seqKey" start="0" step="1" type="SIMPLE_SEQUENCE"/>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputEMPL.txt" guiHeight="101" guiName="Employees" guiWidth="128" guiX="420" guiY="12" id="DATA_WRITER0" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputEMPL.txt" guiName="Employees" guiX="420" guiY="12" id="DATA_WRITER0" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[false]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputCHILD.txt" guiHeight="101" guiName="Children" guiWidth="128" guiX="420" guiY="120" id="DATA_WRITER2" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputCHILD.txt" guiName="Children" guiX="420" guiY="120" id="DATA_WRITER2" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputPROJ.txt" guiHeight="101" guiName="Projects" guiWidth="128" guiX="420" guiY="228" id="DATA_WRITER3" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputPROJ.txt" guiName="Projects" guiX="420" guiY="228" id="DATA_WRITER3" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputCUSTOM.txt" guiHeight="101" guiName="Customers" guiWidth="128" guiX="420" guiY="336" id="DATA_WRITER4" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputCUSTOM.txt" guiName="Customers" guiX="420" guiY="336" id="DATA_WRITER4" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputBENEF.txt" guiHeight="101" guiName="Join - Benefits" guiWidth="134" guiX="420" guiY="446" id="DATA_WRITER5" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/XMLoutputBENEF.txt" guiName="Join - Benefits" guiX="420" guiY="446" id="DATA_WRITER5" type="DATA_WRITER">
 <attr name="OneRecordPerLine"><![CDATA[true]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="ExtMergeJoin" guiWidth="130" guiX="213" guiY="385" id="EXT_MERGE_JOIN1" joinKey="$seqKey#$seqKey;" type="EXT_MERGE_JOIN">
-<attr name="transform"><![CDATA[//#TL
+<Node enabled="enabled" guiName="ExtMergeJoin" guiX="213" guiY="385" id="EXT_MERGE_JOIN1" joinKey="$seqKey#$seqKey;" type="EXT_MERGE_JOIN">
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.car := $0.car;
-	$0.seqKey := $0.seqKey;
-	$0.mobilephone := $0.mobilephone;
-	$0.financial_bonus := (($1.monthly_bonus)*12)+($1.yearly_bonus);
+function integer transform() {
+	$0.car = $0.car;
+	$0.seqKey = $0.seqKey;
+	$0.mobilephone = $0.mobilephone;
+	$0.financial_bonus = (($1.monthly_bonus)*12)+($1.yearly_bonus);
+	return ALL;
 }
 	
 // Called to return a user-defined error message when an error occurs.
@@ -96,13 +99,14 @@ function transform() {
 // function init() {}
 
 // Called after the component finishes.
- function finished() {
-     sequence(Sequence0).reset;
+ function integer finished() {
+     sequence(seqKey).reset();
+     return ALL;
  }
 ]]></attr>
 <attr name="guiDescription"><![CDATA[A sequence is used to join data]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/other/employees.xml" guiHeight="101" guiName="Employees.xml" guiWidth="138" guiX="22" guiY="128" id="XML_XPATH_READER0" type="XML_XPATH_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/other/employees.xml" guiName="Employees.xml" guiX="22" guiY="128" id="XML_XPATH_READER0" type="XML_XPATH_READER">
 <attr name="mapping"><![CDATA[
 	<Context xpath="/employees/employee" outPort="0">
 		<Mapping nodeName="salary" cloverField="basic_salary"/>

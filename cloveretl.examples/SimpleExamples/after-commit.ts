@@ -80,16 +80,6 @@
 	<FlatFile outputFile="data-out/joinedDBFordersNA.out" supposedFile="supposed-out/joinedDBFordersNA.DBFJoin.java8.out"/>
 </FunctionalTest>
 
-<FunctionalTest ident="DBFJoinTL" graphFile="graph/graphDBFJoinTL.grf" excludedJavaVersions="1.8">
-	 <FlatFile outputFile="data-out/joinedDBForders.out" supposedFile="supposed-out/joinedDBForders.DBFJoin.out"/>
-	 <FlatFile outputFile="data-out/joinedDBFordersNA.out" supposedFile="supposed-out/joinedDBFordersNA.DBFJoin.out"/>
-</FunctionalTest>
-
-<FunctionalTest ident="DBFJoinTL_java8" graphFile="graph/graphDBFJoinTL.grf" excludedJavaVersions="1.7">
-	 <FlatFile outputFile="data-out/joinedDBForders.out" supposedFile="supposed-out/joinedDBForders.DBFJoin.java8.out"/>
-	 <FlatFile outputFile="data-out/joinedDBFordersNA.out" supposedFile="supposed-out/joinedDBFordersNA.DBFJoin.java8.out"/>
-</FunctionalTest>
-
 <FunctionalTest ident="DBFJoinTLNew" graphFile="graph/graphDBFJoinTLNew.grf" excludedJavaVersions="1.8">
 	 <FlatFile outputFile="data-out/joinedDBForders.out" supposedFile="supposed-out/joinedDBForders.DBFJoin.New.out"/>
 	 <FlatFile outputFile="data-out/joinedDBFordersNA.out" supposedFile="supposed-out/joinedDBFordersNA.DBFJoin.New.out"/>
@@ -250,14 +240,6 @@
 
 </FunctionalTest>
 
-
-<FunctionalTest ident="NormalizeTL" graphFile="graph/graphNormalizeTL.grf">
-	 <FlatFile outputFile="data-out/normalized.out" supposedFile="supposed-out//normalized.NormalizeTL.out"/>
-     
-<DeleteFile file="data-out/normalized.out"/>
-
-</FunctionalTest>
-
 <FunctionalTest ident="NormalizeTLNew" graphFile="graph/graphNormalizeTLNew.grf">
 	 <FlatFile outputFile="data-out/normalized.out" supposedFile="supposed-out//normalized.NormalizeTL.out"/>
      
@@ -290,13 +272,6 @@
 
 <FunctionalTest ident="OrdersTLNewReformat" graphFile="graph/graphOrdersTLNewReformat.grf">
 	 <FlatFile outputFile="data-out/orders.dat.out" supposedFile="supposed-out/orders.dat.OrdersReformat.out"/>
-     
-<DeleteFile file="data-out/orders.dat.out"/>
-
-</FunctionalTest>
-
-<FunctionalTest ident="OrdersTLReformat" graphFile="graph/graphOrdersTLReformat.grf">
-	 <FlatFile outputFile="data-out/orders.dat.out" supposedFile="supposed-out//orders.dat.OrdersReformat.out"/>
      
 <DeleteFile file="data-out/orders.dat.out"/>
 

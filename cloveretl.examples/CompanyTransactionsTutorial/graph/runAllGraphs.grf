@@ -27,11 +27,12 @@ Data Reader reads names of graphs to execute, Reformat adds path to graph names 
 <attr name="guiDescription"><![CDATA[Reads names of graphs to execute]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="98" guiName="Reformat" guiWidth="128" guiX="218" guiY="35" id="REFORMAT0" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.graphName := "${GRAPH_DIR}/"+$0.graphName;
+function integer transform() {
+	$0.graphName = "${GRAPH_DIR}/"+$0.graphName;
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.

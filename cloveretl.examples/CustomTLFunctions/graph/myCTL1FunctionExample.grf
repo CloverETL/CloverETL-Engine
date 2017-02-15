@@ -11,11 +11,12 @@
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiHeight="0" guiName="DataGenerator" guiWidth="0" guiX="28" guiY="28" id="DATA_GENERATOR0" recordsNumber="3" type="DATA_GENERATOR">
-<attr name="generate"><![CDATA[//#TL
+<attr name="generate"><![CDATA[//#CTL2
 
 // Generates output record.
-function generate() {
-	$0.field1 := 'word';
+function string generate() {
+	$0.field1 = 'word';
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.
@@ -29,7 +30,7 @@ function generate() {
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="220" guiY="28" id="REFORMAT0" type="REFORMAT">
-<attr name="transform"><![CDATA[//#CTL1
+<attr name="transform"><![CDATA[//#CTL2
 int counter = 0;
 
 function value(rec_no){
@@ -42,8 +43,9 @@ function value(rec_no){
 }
 
 // Transforms input record into output record.
-function transform() {
-	$0.field1 := value(counter++);
+function integer transform() {
+	$0.field1 = value(counter++);
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.

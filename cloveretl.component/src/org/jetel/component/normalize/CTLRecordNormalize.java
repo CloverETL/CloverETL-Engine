@@ -43,6 +43,14 @@ import org.jetel.util.ExceptionUtils;
  */
 public abstract class CTLRecordNormalize extends CTLAbstractTransform implements RecordNormalize {
 
+	public static final String COUNT_FUNCTION_NAME = "count";
+	public static final String COUNT_ON_ERROR_FUNCTION_NAME = "countOnError";
+	public static final String TRANSFORM_FUNCTION_NAME = "transform";
+	public static final String TRANSFORM_ON_ERROR_FUNCTION_NAME = "transformOnError";
+	public static final String CLEAN_FUNCTION_NAME = "clean";
+
+	public static final String IDX_PARAM_NAME = "idx";
+
 	/** Input data record used for normalization, or <code>null</code> if not accessible. */
 	private DataRecord inputRecord = null;
 	/** Output data record used for normalization, or <code>null</code> if not accessible. */
@@ -65,7 +73,7 @@ public abstract class CTLRecordNormalize extends CTLAbstractTransform implements
 	 *
 	 * @throws ComponentNotReadyException if the initialization fails
 	 */
-	@CTLEntryPoint(name = RecordNormalizeTL.INIT_FUNCTION_NAME, required = false)
+	@CTLEntryPoint(name = INIT_FUNCTION_NAME, required = false)
 	protected Boolean initDelegate() throws ComponentNotReadyException {
 		// does nothing and succeeds by default, may be overridden by generated transform classes
 		return true;
@@ -98,7 +106,7 @@ public abstract class CTLRecordNormalize extends CTLAbstractTransform implements
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = RecordNormalizeTL.COUNT_FUNCTION_NAME, required = true)
+	@CTLEntryPoint(name = COUNT_FUNCTION_NAME, required = true)
 	protected abstract Integer countDelegate() throws ComponentNotReadyException, TransformException;
 
 	@Override
@@ -135,8 +143,8 @@ public abstract class CTLRecordNormalize extends CTLAbstractTransform implements
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = RecordNormalizeTL.COUNT_ON_ERROR_FUNCTION_NAME, parameterNames = {
-			RecordNormalizeTL.ERROR_MESSAGE_PARAM_NAME, RecordNormalizeTL.STACK_TRACE_PARAM_NAME }, required = false)
+	@CTLEntryPoint(name = COUNT_ON_ERROR_FUNCTION_NAME, parameterNames = {
+			ERROR_MESSAGE_PARAM_NAME, STACK_TRACE_PARAM_NAME }, required = false)
 	protected Integer countOnErrorDelegate(String errorMessage, String stackTrace)
 			throws ComponentNotReadyException, TransformException {
 		throw new UnsupportedOperationException();
@@ -171,8 +179,8 @@ public abstract class CTLRecordNormalize extends CTLAbstractTransform implements
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = RecordNormalizeTL.TRANSFORM_FUNCTION_NAME, parameterNames = {
-			RecordNormalizeTL.IDX_PARAM_NAME }, required = true)
+	@CTLEntryPoint(name = TRANSFORM_FUNCTION_NAME, parameterNames = {
+			IDX_PARAM_NAME }, required = true)
 	protected abstract Integer transformDelegate(Integer idx) throws ComponentNotReadyException, TransformException;
 
 	@Override
@@ -213,16 +221,16 @@ public abstract class CTLRecordNormalize extends CTLAbstractTransform implements
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = RecordNormalizeTL.TRANSFORM_ON_ERROR_FUNCTION_NAME, parameterNames = {
-			RecordNormalizeTL.ERROR_MESSAGE_PARAM_NAME, RecordNormalizeTL.STACK_TRACE_PARAM_NAME,
-			RecordNormalizeTL.IDX_PARAM_NAME }, required = false)
+	@CTLEntryPoint(name = TRANSFORM_ON_ERROR_FUNCTION_NAME, parameterNames = {
+			ERROR_MESSAGE_PARAM_NAME, STACK_TRACE_PARAM_NAME,
+			IDX_PARAM_NAME }, required = false)
 	protected Integer transformOnErrorDelegate(String errorMessage, String stackTrace, Integer idx)
 			throws ComponentNotReadyException, TransformException {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	@CTLEntryPoint(name = RecordNormalizeTL.CLEAN_FUNCTION_NAME, required = false)
+	@CTLEntryPoint(name = CLEAN_FUNCTION_NAME, required = false)
 	public void clean() {
 		// does nothing by default, may be overridden by generated transform classes
 	}

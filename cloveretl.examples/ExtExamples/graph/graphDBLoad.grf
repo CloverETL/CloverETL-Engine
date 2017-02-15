@@ -135,23 +135,24 @@ insert into myuser_${JOB_IDENT} values($EMP_NO, $LAST_NAME, $FIRST_NAME);
 update customers_${JOB_IDENT} set LNAME = $LAST_NAME where ID=$EMP_NO returning $updated:=update_count, $firstname:=$FIRST_NAME;]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Error Message Processed" guiX="359" guiY="109" id="REFORMAT0" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.Error_code := $0.Error_code;
-	$0.Error_message := replace($0.Error_message,"[\r\n]+"," ");
-	$0.EMP_NO := $0.EMP_NO;
-	$0.FIRST_NAME := $0.FIRST_NAME;
-	$0.LAST_NAME := $0.LAST_NAME;
-	$0.PHONE_EXT := $0.PHONE_EXT;
-	$0.HIRE_DATE := $0.HIRE_DATE;
-	$0.DEPT_NO := $0.DEPT_NO;
-	$0.JOB_CODE := $0.JOB_CODE;
-	$0.JOB_GRADE := $0.JOB_GRADE;
-	$0.JOB_COUNTRY := $0.JOB_COUNTRY;
-	$0.SALARY := $0.SALARY;
-	$0.FULL_NAME := $0.FULL_NAME;
+function integer transform() {
+	$0.Error_code = $0.Error_code;
+	$0.Error_message = replace($0.Error_message,"[\r\n]+"," ");
+	$0.EMP_NO = $0.EMP_NO;
+	$0.FIRST_NAME = $0.FIRST_NAME;
+	$0.LAST_NAME = $0.LAST_NAME;
+	$0.PHONE_EXT = $0.PHONE_EXT;
+	$0.HIRE_DATE = $0.HIRE_DATE;
+	$0.DEPT_NO = $0.DEPT_NO;
+	$0.JOB_CODE = $0.JOB_CODE;
+	$0.JOB_GRADE = $0.JOB_GRADE;
+	$0.JOB_COUNTRY = $0.JOB_COUNTRY;
+	$0.SALARY = $0.SALARY;
+	$0.FULL_NAME = $0.FULL_NAME;
+	return ALL;
 }
 
 // Called during component initialization.

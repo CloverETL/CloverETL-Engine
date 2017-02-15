@@ -45,11 +45,6 @@ public class RecordTransformDescriptor implements TransformDescriptor<RecordTran
 	}
 
 	@Override
-	public RecordTransform createCTL1Transform(String transformCode, Logger logger) {
-		return new RecordTransformTL(transformCode, logger);
-	}
-
-	@Override
 	public Class<? extends CTLAbstractTransform> getCompiledCTL2TransformClass() {
 		return CTLRecordTransform.class;
 	}

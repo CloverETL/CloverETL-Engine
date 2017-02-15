@@ -44,12 +44,12 @@ public class CTLGraphParameterValueTransformAdapter extends CTLAbstractTransform
 	public void init() throws ComponentNotReadyException {
 		super.init();
 		
-		getParameterValueFunction = executor.getFunction(GET_PARAMETER_VALUE_FUNCTION_NAME);
+		getParameterValueFunction = executor.getFunction(CTLGraphParameterValueTransform.GET_PARAMETER_VALUE_FUNCTION_NAME);
 		if (getParameterValueFunction == null) {
-			throw new ComponentNotReadyException(GET_PARAMETER_VALUE_FUNCTION_NAME + " is not defined");
+			throw new ComponentNotReadyException(CTLGraphParameterValueTransform.GET_PARAMETER_VALUE_FUNCTION_NAME + " is not defined");
 		}
 		if (!(getParameterValueFunction.getType().isPrimitive())) {
-			throw new ComponentNotReadyException(GET_PARAMETER_VALUE_FUNCTION_NAME + " must return a primitive data type");
+			throw new ComponentNotReadyException(CTLGraphParameterValueTransform.GET_PARAMETER_VALUE_FUNCTION_NAME + " must return a primitive data type");
 		}
 	}
 

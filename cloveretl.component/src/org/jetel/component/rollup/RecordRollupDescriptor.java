@@ -46,11 +46,6 @@ public class RecordRollupDescriptor implements TransformDescriptor<RecordRollup>
 	}
 
 	@Override
-	public RecordRollup createCTL1Transform(String transformCode, Logger logger) {
-		return new RecordRollupTL(transformCode, logger);
-	}
-
-	@Override
 	public Class<? extends CTLAbstractTransform> getCompiledCTL2TransformClass() {
 		return CTLRecordRollup.class;
 	}

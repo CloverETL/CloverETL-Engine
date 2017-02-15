@@ -41,11 +41,6 @@ public class GraphParameterValueFunctionDescriptor implements TransformDescripto
 	}
 
 	@Override
-	public GraphParameterValueFunction createCTL1Transform(String transformCode, Logger logger) {
-		throw new UnsupportedOperationException("Cannot use CTL1 in graph parameter dynamic value");
-	}
-
-	@Override
 	public Class<? extends CTLAbstractTransform> getCompiledCTL2TransformClass() {
 		return CTLGraphParameterValueTransform.class;
 	}

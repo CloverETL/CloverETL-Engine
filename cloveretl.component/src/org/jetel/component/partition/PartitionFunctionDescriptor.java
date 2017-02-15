@@ -46,11 +46,6 @@ public class PartitionFunctionDescriptor implements TransformDescriptor<Partitio
 	}
 
 	@Override
-	public PartitionFunction createCTL1Transform(String transformCode, Logger logger) {
-		return new PartitionTL(transformCode, logger);
-	}
-
-	@Override
 	public Class<? extends CTLAbstractTransform> getCompiledCTL2TransformClass() {
 		return CTLRecordPartition.class;
 	}

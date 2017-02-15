@@ -31,11 +31,6 @@ import org.jetel.ctl.ASTnode.CLVFFieldAccessExpression;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.data.Defaults;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.interpreter.ParseException;
-import org.jetel.interpreter.TransformLangParser;
-import org.jetel.interpreter.ASTnode.CLVFDirectMapping;
-import org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration;
-import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
@@ -274,95 +269,6 @@ public final class TLUtils {
     	}
     }
 
-	// Following old TL parser functions are now deprecated 
-    @Deprecated
-	private static boolean isTLSimpleTransformFunctionNode(CLVFStart record, String functionName, int functionParams) {
-		int numTopChildren = record.jjtGetNumChildren();
-		
-		/* Detection of simple mapping inside transform(idx) function */
-		if (record.jjtHasChildren()) {
-			for (int i = 0; i < numTopChildren; i++) {
-				org.jetel.interpreter.ASTnode.Node node = record.jjtGetChild(i);
-				if (node instanceof org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration) {
-					if (((CLVFFunctionDeclaration)node).name.equals(functionName)) {
-						CLVFFunctionDeclaration transFunction = (CLVFFunctionDeclaration)node;
-						if (transFunction.numParams != functionParams) 
-							return false;
-						int numTransChildren = transFunction.jjtGetNumChildren();
-	    				for (int j = 0; j < numTransChildren; j++) {
-	    					org.jetel.interpreter.ASTnode.Node fNode = transFunction.jjtGetChild(j);
-	    					if (!(fNode instanceof CLVFDirectMapping)) {
-//	    						System.out.println("Function transform(idx) must contain direct mappings only");
-	    						return false;
-	    					}
-	    				}
-						return true;
-					}
-				}
-			}		
-		}  
-		return false;
-	}
-    
-	@Deprecated
-    public static boolean isTLSimpleTransform(DataRecordMetadata[] inMeta,
-    		DataRecordMetadata[] outMeta, String transform) {
-    	
-    	return isTLSimpleFunction(inMeta, outMeta, transform, "transform");
-    }
-    
-    @Deprecated
-    public static boolean isTLSimpleFunction(DataRecordMetadata[] inMeta,
-    		DataRecordMetadata[] outMeta, String transform, String funtionName) {
-    	
-    	TransformLangParser parser = new TransformLangParser(inMeta, outMeta, transform);
-    	CLVFStart record = null;
-    	
-        try {
-            record = parser.Start();
-            record.init();
-        } catch (ParseException e) {
-            System.out.println("Error when parsing expression: " + e.getMessage().split(System.getProperty("line.separator"))[0]);
-            return false;
-        }
-    	return isTLSimpleTransformFunctionNode(record, funtionName, 0);
-    }
-
-    @Deprecated
-    public static boolean isTLSimpleDenormalizer(DataRecordMetadata[] inMeta,
-    		DataRecordMetadata[] outMeta, String transform) {
-    	
-    	TransformLangParser parser = new TransformLangParser(inMeta, outMeta, transform);
-    	CLVFStart record = null;
-    	
-        try {
-            record = parser.Start();
-            record.init();
-        } catch (ParseException e) {
-            System.out.println("Error when parsing expression: " + e.getMessage().split(System.getProperty("line.separator"))[0]);
-            return false;
-        }
-    	return isTLSimpleTransformFunctionNode(record, "transform", 0);
-    }
-    
-    @Deprecated
-    public static boolean isTLSimpleNormalizer(DataRecordMetadata[] inMeta,
-    		DataRecordMetadata[] outMeta, String transform) {
-    	
-    	TransformLangParser parser = new TransformLangParser(inMeta, outMeta, transform);
-    	CLVFStart record = null;
-    	
-        try {
-            record = parser.Start();
-            record.init();
-        } catch (ParseException e) {
-            System.out.println("Error when parsing expression: " + e.getMessage().split(System.getProperty("line.separator"))[0]);
-            return false;
-        }
-    	return isTLSimpleTransformFunctionNode(record, "transform", 1);
-    }
-   
-    
     public static boolean isSimpleFunction(TransformationGraph graph, DataRecordMetadata[] inMeta,
     		DataRecordMetadata[] outMeta, String code, String functionName, String charset) {
     	

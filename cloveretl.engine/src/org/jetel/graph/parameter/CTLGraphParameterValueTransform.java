@@ -33,6 +33,9 @@ import org.jetel.exception.TransformException;
  */
 public abstract class CTLGraphParameterValueTransform extends CTLAbstractTransform implements GraphParameterValueFunction {
 
+	public static final String GET_PARAMETER_VALUE_FUNCTION_NAME = "getValue";
+	public static final String INIT_FUNCTION_NAME = "init";
+
 	@Override
 	public void init() throws ComponentNotReadyException {
 		globalScopeInit();

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Petr" created="Tue Sep 29 10:18:42 CEST 2009" guiVersion="0.0.0.devel" id="1254226439664" licenseType="Evaluation Devel" modified="Tue May 24 09:18:29 CEST 2011" modifiedBy="avackova" name="D_PRODUCT_SCD3" revision="1.25" showComponentDetails="true">
+<Graph author="Petr" created="Tue Sep 29 10:18:42 CEST 2009" guiVersion="4.5.0.M1" id="1254226439664" licenseCode="Javlin-Internal-License" licenseType="Evaluation Devel" modified="Tue May 24 09:18:29 CEST 2011" modifiedBy="avackova" name="D_PRODUCT_SCD3" revision="1.25" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/D_PRODUCT.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/Product.fmt" id="Metadata0"/>
@@ -14,7 +14,9 @@
 <Field name="DEPARTMENT_DESCRIPTION_NEW" type="string"/>
 </Record>
 </Metadata>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Sequence cached="5" fileURL="${SEQ_DIR}/ID_D_PRODUCT.seq" id="Sequence0" name="ID_D_PRODUCT" start="1" step="1" type="SIMPLE_SEQUENCE"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="144" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Data Warehouse" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="46" y="8"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="144" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="OLTP" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="153" x="46" y="156"/>
@@ -38,18 +40,19 @@ If the data is stored in database instead of files, the D_PRODUCT_update.tbl and
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="103" guiName="DataIntersection" guiWidth="152" guiX="415" guiY="95" id="DATA_INTERSECTION0" joinKey="$UPC=$UPC" type="DATA_INTERSECTION">
-<attr name="transform"><![CDATA[//#TL
+<Node enabled="enabled" guiName="DataIntersection" guiX="415" guiY="95" id="DATA_INTERSECTION0" joinKey="$UPC=$UPC" type="DATA_INTERSECTION">
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.ID_D_PRODUCT := $0.ID_D_PRODUCT;
-	$0.UPC := $0.UPC;
-	$0.PRODUCT_DESCRIPTION := $0.PRODUCT_DESCRIPTION;
-	$0.BRAND_DESCRIPTION := $0.BRAND_DESCRIPTION;
-	$0.DEPARTMENT_DESCRIPTION := $0.DEPARTMENT_DESCRIPTION;
-	$0.PREVIOUS_DEPARTMENT := $0.PREVIOUS_DEPARTMENT;
-	$0.DEPARTMENT_DESCRIPTION_NEW := $1.DEPARTMENT_DESCRIPTION;
+function integer transform() {
+	$0.ID_D_PRODUCT = $0.ID_D_PRODUCT;
+	$0.UPC = $0.UPC;
+	$0.PRODUCT_DESCRIPTION = $0.PRODUCT_DESCRIPTION;
+	$0.BRAND_DESCRIPTION = $0.BRAND_DESCRIPTION;
+	$0.DEPARTMENT_DESCRIPTION = $0.DEPARTMENT_DESCRIPTION;
+	$0.PREVIOUS_DEPARTMENT = $0.PREVIOUS_DEPARTMENT;
+	$0.DEPARTMENT_DESCRIPTION_NEW = $1.DEPARTMENT_DESCRIPTION;
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.
@@ -63,34 +66,36 @@ function transform() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Records are intersected on natural key]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/Product_25092009.csv" guiHeight="103" guiName="Product_input" guiWidth="131" guiX="57" guiY="188" id="DATA_READER0" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Product_25092009.csv" guiName="Product_input" guiX="57" guiY="188" id="DATA_READER0" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Snapshot of the online transaction processing system (OLTP) as of 25th Sep 2009]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${TABLES}/D_PRODUCT.tbl" guiHeight="103" guiName="D_PRODUCT" guiWidth="128" guiX="55" guiY="43" id="DATA_READER1" type="DATA_READER">
+<Node enabled="enabled" fileURL="${TABLES}/D_PRODUCT.tbl" guiName="D_PRODUCT" guiX="55" guiY="43" id="DATA_READER1" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Product dimension as of 24th Sep 2009]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${TABLES}/D_PRODUCT_insert.tbl" guiHeight="86" guiName="INSERT to D_PRODUCT" guiWidth="196" guiX="798" guiY="229" id="DATA_WRITER0" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${TABLES}/D_PRODUCT_insert.tbl" guiName="INSERT to D_PRODUCT" guiX="798" guiY="229" id="DATA_WRITER0" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[New products]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${TABLES}/D_PRODUCT_update.tbl" guiHeight="86" guiName="UPDATE D_PRODUCT" guiWidth="181" guiX="981" guiY="109" id="DATA_WRITER1" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${TABLES}/D_PRODUCT_update.tbl" guiName="UPDATE D_PRODUCT" guiX="981" guiY="109" id="DATA_WRITER1" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Changed products]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="103" guiName="Find differences" guiWidth="145" guiX="602" guiY="109" id="EXT_FILTER0" type="EXT_FILTER">
+<Node enabled="enabled" guiName="Find differences" guiX="602" guiY="109" id="EXT_FILTER0" type="EXT_FILTER">
 <attr name="guiDescription"><![CDATA[Processing records contained in both DWH and OLTP]]></attr>
-<attr name="filterExpression"><![CDATA[$DEPARTMENT_DESCRIPTION != $DEPARTMENT_DESCRIPTION_NEW]]></attr>
+<attr name="filterExpression"><![CDATA[//#CTL2
+$DEPARTMENT_DESCRIPTION != $DEPARTMENT_DESCRIPTION_NEW]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="86" guiName="Sort by UPC" guiWidth="128" guiX="239" guiY="43" id="EXT_SORT0" sortKey="UPC(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="86" guiName="Sort by UPC" guiWidth="128" guiX="240" guiY="159" id="EXT_SORT1" sortKey="UPC(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="103" guiName="Add ID_D_PRODUCT" guiWidth="175" guiX="603" guiY="229" id="REFORMAT0" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<Node enabled="enabled" guiName="Sort by UPC" guiX="239" guiY="43" id="EXT_SORT0" sortKey="UPC(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiName="Sort by UPC" guiX="240" guiY="159" id="EXT_SORT1" sortKey="UPC(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiName="Add ID_D_PRODUCT" guiX="603" guiY="229" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.UPC := $0.UPC;
-	$0.PRODUCT_DESCRIPTION := $0.PRODUCT_DESCRIPTION;
-	$0.BRAND_DESCRIPTION := $0.BRAND_DESCRIPTION;
-	$0.DEPARTMENT_DESCRIPTION := $0.DEPARTMENT_DESCRIPTION;
-	$0.ID_D_PRODUCT := sequence(Sequence0).next;
+function integer transform() {
+	$0.UPC = $0.UPC;
+	$0.PRODUCT_DESCRIPTION = $0.PRODUCT_DESCRIPTION;
+	$0.BRAND_DESCRIPTION = $0.BRAND_DESCRIPTION;
+	$0.DEPARTMENT_DESCRIPTION = $0.DEPARTMENT_DESCRIPTION;
+	$0.ID_D_PRODUCT = sequence(ID_D_PRODUCT).next();
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.
@@ -104,17 +109,18 @@ function transform() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Processing records not contained in DWH but contained in OLTP]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="69" guiName="Set DEPARTMENT" guiWidth="159" guiX="798" guiY="109" id="REFORMAT1" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<Node enabled="enabled" guiName="Set DEPARTMENT" guiX="798" guiY="109" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.ID_D_PRODUCT := $0.ID_D_PRODUCT;
-	$0.UPC := $0.UPC;
-	$0.PRODUCT_DESCRIPTION := $0.PRODUCT_DESCRIPTION;
-	$0.BRAND_DESCRIPTION := $0.BRAND_DESCRIPTION;
-	$0.DEPARTMENT_DESCRIPTION := $0.DEPARTMENT_DESCRIPTION_NEW;
-	$0.PREVIOUS_DEPARTMENT := $0.DEPARTMENT_DESCRIPTION;
+function integer transform() {
+	$0.ID_D_PRODUCT = $0.ID_D_PRODUCT;
+	$0.UPC = $0.UPC;
+	$0.PRODUCT_DESCRIPTION = $0.PRODUCT_DESCRIPTION;
+	$0.BRAND_DESCRIPTION = $0.BRAND_DESCRIPTION;
+	$0.DEPARTMENT_DESCRIPTION = $0.DEPARTMENT_DESCRIPTION_NEW;
+	$0.PREVIOUS_DEPARTMENT = $0.DEPARTMENT_DESCRIPTION;
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.
@@ -127,7 +133,7 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="69" guiName="Trash" guiWidth="128" guiX="602" guiY="16" id="TRASH0" type="TRASH"/>
+<Node enabled="enabled" guiName="Trash" guiX="602" guiY="16" id="TRASH0" type="TRASH"/>
 <Edge fromNode="DATA_INTERSECTION0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (only in A)" toNode="TRASH0:0"/>
 <Edge debugMode="false" fromNode="DATA_INTERSECTION0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (in A &amp; B)" toNode="EXT_FILTER0:0"/>
 <Edge fromNode="DATA_INTERSECTION0:2" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (only in B)" toNode="REFORMAT0:0"/>

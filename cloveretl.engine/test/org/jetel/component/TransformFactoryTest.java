@@ -130,17 +130,8 @@ public class TransformFactoryTest extends CloverTestCase {
 		transformFactory.setOutMetadata(getOutMetadata());
 		ConfigurationStatus status = new ConfigurationStatus();
 		transformFactory.checkConfig(status);
-		assertTrue(status.isEmpty());
-		assertTrue(transformFactory.isTransformSpecified());
-		
-		RecordTransform recordTransform = transformFactory.createTransform();
-		recordTransform.init(null, getInMetadata(), getOutMetadata());
-		DataRecord inRecord = DataRecordFactory.newRecord(getInMetadata()[0]);
-		inRecord.getField("inField").setValue("input data string");
-		DataRecord outRecord = DataRecordFactory.newRecord(getOutMetadata()[0]);
-		
-		recordTransform.transform(new DataRecord[] { inRecord }, new DataRecord[] { outRecord });
-		assertEquals("input data string!", outRecord.getField("outField").getValue().toString());
+		assertEquals(1, status.size());
+		assertEquals("CTL1 is not a supported language any more, please convert your code to CTL2.", status.get(0).getMessage());
 	}
 
 	public void testCreateTransformCTL1TransformUrl() throws TransformException, ComponentNotReadyException {
@@ -151,17 +142,8 @@ public class TransformFactoryTest extends CloverTestCase {
 		transformFactory.setOutMetadata(getOutMetadata());
 		ConfigurationStatus status = new ConfigurationStatus();
 		transformFactory.checkConfig(status);
-		assertTrue(status.isEmpty());
-		assertTrue(transformFactory.isTransformSpecified());
-		
-		RecordTransform recordTransform = transformFactory.createTransform();
-		recordTransform.init(null, getInMetadata(), getOutMetadata());
-		DataRecord inRecord = DataRecordFactory.newRecord(getInMetadata()[0]);
-		inRecord.getField("inField").setValue("input data string");
-		DataRecord outRecord = DataRecordFactory.newRecord(getOutMetadata()[0]);
-		
-		recordTransform.transform(new DataRecord[] { inRecord }, new DataRecord[] { outRecord });
-		assertEquals("input data string CTL1 external", outRecord.getField("outField").getValue().toString());
+		assertEquals(1, status.size());
+		assertEquals("CTL1 is not a supported language any more, please convert your code to CTL2.", status.get(0).getMessage());
 	}
 
 	public void testCreateTransformCTL2Transform() throws TransformException, ComponentNotReadyException {

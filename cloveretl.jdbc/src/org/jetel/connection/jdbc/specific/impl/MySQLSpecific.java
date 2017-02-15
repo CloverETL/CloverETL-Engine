@@ -92,7 +92,7 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 
 	@Override
     public String quoteIdentifier(String identifier) {
-        return ("\\`" + identifier + "\\`");
+        return ("`" + identifier + "`");
     }
 
 	@Override
