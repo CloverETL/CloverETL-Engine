@@ -68,12 +68,12 @@ public class CTLRecordGenerateAdapter extends CTLAbstractTransformAdapter implem
         // initialize global scope and call user initialization function
 		super.init();
 
-		generateFunction = executor.getFunction(RecordGenerateTL.GENERATE_FUNCTION_NAME);
-		generateOnErrorFunction = executor.getFunction(RecordGenerateTL.GENERATE_ON_ERROR_FUNCTION_NAME,
+		generateFunction = executor.getFunction(CTLRecordGenerate.GENERATE_FUNCTION_NAME);
+		generateOnErrorFunction = executor.getFunction(CTLRecordGenerate.GENERATE_ON_ERROR_FUNCTION_NAME,
 				TLTypePrimitive.STRING, TLTypePrimitive.STRING);
 
 		if (generateFunction  == null) {
-			throw new ComponentNotReadyException(RecordGenerateTL.GENERATE_FUNCTION_NAME + " function is not defined");
+			throw new ComponentNotReadyException(CTLRecordGenerate.GENERATE_FUNCTION_NAME + " function is not defined");
 		}
 
 		return true;

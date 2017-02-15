@@ -94,7 +94,7 @@ public abstract class CTLGenericTransform extends CTLAbstractTransform implement
 	 *
 	 * @throws ComponentNotReadyException if the initialization fails
 	 */
-	@CTLEntryPoint(name = RecordTransformTL.INIT_FUNCTION_NAME, required = false)
+	@CTLEntryPoint(name = INIT_FUNCTION_NAME, required = false)
 	protected Boolean initDelegate() throws ComponentNotReadyException {
 		// does nothing and succeeds by default, may be overridden by generated transform classes
 		return true;
@@ -145,7 +145,7 @@ public abstract class CTLGenericTransform extends CTLAbstractTransform implement
 	 * @throws TransformException if an error occurred
 	 */
 	@CTLEntryPoint(name = EXECUTE_ON_ERROR_FUNCTION_NAME, parameterNames = {
-			RecordTransformTL.ERROR_MESSAGE_PARAM_NAME, RecordTransformTL.STACK_TRACE_PARAM_NAME }, required = false)
+			ERROR_MESSAGE_PARAM_NAME, STACK_TRACE_PARAM_NAME }, required = false)
 	protected void executeOnErrorDelegate(String errorMessage, String stackTrace) {
 		throw new UnsupportedOperationException();
 	}

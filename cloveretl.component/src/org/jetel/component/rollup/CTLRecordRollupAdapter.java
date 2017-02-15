@@ -104,22 +104,22 @@ public final class CTLRecordRollupAdapter extends CTLAbstractTransformAdapter im
 		super.init();
 
 		// initialize both required and optional CTL functions
-		initGroupFunction = executor.getFunction(RecordRollupTL.INIT_GROUP_FUNCTION_NAME, TLType.RECORD);
-		initGroupOnErrorFunction = executor.getFunction(RecordRollupTL.INIT_GROUP_ON_ERROR_FUNCTION_NAME,
+		initGroupFunction = executor.getFunction(CTLRecordRollup.INIT_GROUP_FUNCTION_NAME, TLType.RECORD);
+		initGroupOnErrorFunction = executor.getFunction(CTLRecordRollup.INIT_GROUP_ON_ERROR_FUNCTION_NAME,
 				TLTypePrimitive.STRING, TLTypePrimitive.STRING, TLType.RECORD);
-		updateGroupFunction = executor.getFunction(RecordRollupTL.UPDATE_GROUP_FUNCTION_NAME, TLType.RECORD);
-		updateGroupOnErrorFunction = executor.getFunction(RecordRollupTL.UPDATE_GROUP_ON_ERROR_FUNCTION_NAME,
+		updateGroupFunction = executor.getFunction(CTLRecordRollup.UPDATE_GROUP_FUNCTION_NAME, TLType.RECORD);
+		updateGroupOnErrorFunction = executor.getFunction(CTLRecordRollup.UPDATE_GROUP_ON_ERROR_FUNCTION_NAME,
 				TLTypePrimitive.STRING, TLTypePrimitive.STRING, TLType.RECORD);
-		finishGroupFunction = executor.getFunction(RecordRollupTL.FINISH_GROUP_FUNCTION_NAME, TLType.RECORD);
-		finishGroupOnErrorFunction = executor.getFunction(RecordRollupTL.FINISH_GROUP_ON_ERROR_FUNCTION_NAME,
+		finishGroupFunction = executor.getFunction(CTLRecordRollup.FINISH_GROUP_FUNCTION_NAME, TLType.RECORD);
+		finishGroupOnErrorFunction = executor.getFunction(CTLRecordRollup.FINISH_GROUP_ON_ERROR_FUNCTION_NAME,
 				TLTypePrimitive.STRING, TLTypePrimitive.STRING, TLType.RECORD);
-		updateTransformFunction = executor.getFunction(RecordRollupTL.UPDATE_TRANSFORM_FUNCTION_NAME,
+		updateTransformFunction = executor.getFunction(CTLRecordRollup.UPDATE_TRANSFORM_FUNCTION_NAME,
 				TLTypePrimitive.INTEGER, TLType.RECORD);
-		updateTransformOnErrorFunction = executor.getFunction(RecordRollupTL.UPDATE_TRANSFORM_ON_ERROR_FUNCTION_NAME,
+		updateTransformOnErrorFunction = executor.getFunction(CTLRecordRollup.UPDATE_TRANSFORM_ON_ERROR_FUNCTION_NAME,
 				TLTypePrimitive.STRING, TLTypePrimitive.STRING, TLTypePrimitive.INTEGER, TLType.RECORD);
-		transformFunction = executor.getFunction(RecordRollupTL.TRANSFORM_FUNCTION_NAME,
+		transformFunction = executor.getFunction(CTLRecordRollup.TRANSFORM_FUNCTION_NAME,
 				TLTypePrimitive.INTEGER, TLType.RECORD);
-		transformOnErrorFunction = executor.getFunction(RecordRollupTL.TRANSFORM_ON_ERROR_FUNCTION_NAME,
+		transformOnErrorFunction = executor.getFunction(CTLRecordRollup.TRANSFORM_ON_ERROR_FUNCTION_NAME,
 				TLTypePrimitive.STRING, TLTypePrimitive.STRING, TLTypePrimitive.INTEGER, TLType.RECORD);
 
 		// check if all required functions are present, otherwise we cannot continue
@@ -130,23 +130,23 @@ public final class CTLRecordRollupAdapter extends CTLAbstractTransformAdapter im
     	Concatenate missingFunctions = new Concatenate(", ");
 
     	if (initGroupFunction == null) {
-    		missingFunctions.append(RecordRollupTL.INIT_GROUP_FUNCTION_NAME + "()");
+    		missingFunctions.append(CTLRecordRollup.INIT_GROUP_FUNCTION_NAME + "()");
     	}
 
     	if (updateGroupFunction == null) {
-    		missingFunctions.append(RecordRollupTL.UPDATE_GROUP_FUNCTION_NAME + "()");
+    		missingFunctions.append(CTLRecordRollup.UPDATE_GROUP_FUNCTION_NAME + "()");
     	}
 
     	if (finishGroupFunction == null) {
-    		missingFunctions.append(RecordRollupTL.FINISH_GROUP_FUNCTION_NAME + "()");
+    		missingFunctions.append(CTLRecordRollup.FINISH_GROUP_FUNCTION_NAME + "()");
     	}
 
     	if (updateTransformFunction == null) {
-    		missingFunctions.append(RecordRollupTL.UPDATE_TRANSFORM_FUNCTION_NAME + "()");
+    		missingFunctions.append(CTLRecordRollup.UPDATE_TRANSFORM_FUNCTION_NAME + "()");
     	}
 
     	if (transformFunction == null) {
-    		missingFunctions.append(RecordRollupTL.TRANSFORM_FUNCTION_NAME + "()");
+    		missingFunctions.append(CTLRecordRollup.TRANSFORM_FUNCTION_NAME + "()");
     	}
 
     	if (!missingFunctions.isEmpty()) {

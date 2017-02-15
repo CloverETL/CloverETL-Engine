@@ -19,7 +19,6 @@
 package org.jetel.component.partition;
 
 import java.util.Arrays;
-import java.util.regex.Pattern;
 
 import org.jetel.component.TransformFactory;
 import org.jetel.data.Defaults;
@@ -51,8 +50,6 @@ public class PartitionFunctionFactory {
 	public static final char END_CLOSED = '>';
 
 	private static final String PORT_NO_FIELD_NAME = "portNo"; 
-
-	public static final Pattern PATTERN_TL_CODE = Pattern.compile("function\\s+" + PartitionTL.GET_OUTPUT_PORT_FUNCTION_NAME);
 
 	private Node node;
 	

@@ -86,12 +86,12 @@ public final class CTLRecordTransformAdapter extends CTLAbstractTransformAdapter
         // initialize global scope and call user initialization function
 		super.init();
 
-		transformFunction = executor.getFunction(RecordTransformTL.TRANSFORM_FUNCTION_NAME);
-		transformOnErrorFunction = executor.getFunction(RecordTransformTL.TRANSFORM_ON_ERROR_FUNCTION_NAME,
+		transformFunction = executor.getFunction(CTLRecordTransform.TRANSFORM_FUNCTION_NAME);
+		transformOnErrorFunction = executor.getFunction(CTLRecordTransform.TRANSFORM_ON_ERROR_FUNCTION_NAME,
 				TLTypePrimitive.STRING, TLTypePrimitive.STRING);
 
 		if (transformFunction == null) {
-			throw new ComponentNotReadyException(RecordTransformTL.TRANSFORM_FUNCTION_NAME + " function must be defined");
+			throw new ComponentNotReadyException(CTLRecordTransform.TRANSFORM_FUNCTION_NAME + " function must be defined");
 		}
 
 		return true;

@@ -44,6 +44,12 @@ import org.jetel.util.ExceptionUtils;
  */
 public abstract class CTLRecordDenormalize extends CTLAbstractTransform implements RecordDenormalize {
 
+	public static final String APPEND_FUNCTION_NAME = "append";
+	public static final String APPEND_ON_ERROR_FUNCTION_NAME = "appendOnError";
+	public static final String TRANSFORM_FUNCTION_NAME = "transform";
+	public static final String TRANSFORM_ON_ERROR_FUNCTION_NAME = "transformOnError";
+	public static final String CLEAN_FUNCTION_NAME = "clean";
+
 	/** Input data record used for denormalization, or <code>null</code> if not accessible. */
 	protected DataRecord inputRecord = null;
 	/** Output data record used for denormalization, or <code>null</code> if not accessible. */
@@ -66,7 +72,7 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 	 *
 	 * @throws ComponentNotReadyException if the initialization fails
 	 */
-	@CTLEntryPoint(name = RecordDenormalizeTL.INIT_FUNCTION_NAME, required = false)
+	@CTLEntryPoint(name = INIT_FUNCTION_NAME, required = false)
 	protected Boolean initDelegate() throws ComponentNotReadyException {
 		// does nothing and succeeds by default, may be overridden by generated transform classes
 		return true;
@@ -101,7 +107,7 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = RecordDenormalizeTL.APPEND_FUNCTION_NAME, required = true)
+	@CTLEntryPoint(name = APPEND_FUNCTION_NAME, required = true)
 	protected abstract Integer appendDelegate() throws ComponentNotReadyException, TransformException;
 
 	@Override
@@ -140,8 +146,8 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = RecordDenormalizeTL.APPEND_ON_ERROR_FUNCTION_NAME, parameterNames = {
-			RecordDenormalizeTL.ERROR_MESSAGE_PARAM_NAME, RecordDenormalizeTL.STACK_TRACE_PARAM_NAME }, required = false)
+	@CTLEntryPoint(name = APPEND_ON_ERROR_FUNCTION_NAME, parameterNames = {
+			ERROR_MESSAGE_PARAM_NAME, STACK_TRACE_PARAM_NAME }, required = false)
 	protected Integer appendOnErrorDelegate(String errorMessage, String stackTrace)
 			throws ComponentNotReadyException, TransformException {
 		throw new UnsupportedOperationException();
@@ -176,7 +182,7 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = RecordDenormalizeTL.TRANSFORM_FUNCTION_NAME, required = true)
+	@CTLEntryPoint(name = TRANSFORM_FUNCTION_NAME, required = true)
 	protected abstract Integer transformDelegate() throws ComponentNotReadyException, TransformException;
 
 	@Override
@@ -215,15 +221,15 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = RecordDenormalizeTL.TRANSFORM_ON_ERROR_FUNCTION_NAME, parameterNames = {
-			RecordDenormalizeTL.ERROR_MESSAGE_PARAM_NAME, RecordDenormalizeTL.STACK_TRACE_PARAM_NAME }, required = false)
+	@CTLEntryPoint(name = TRANSFORM_ON_ERROR_FUNCTION_NAME, parameterNames = {
+			ERROR_MESSAGE_PARAM_NAME, STACK_TRACE_PARAM_NAME }, required = false)
 	protected Integer transformOnErrorDelegate(String errorMessage, String stackTrace)
 			throws ComponentNotReadyException, TransformException {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	@CTLEntryPoint(name = RecordDenormalizeTL.CLEAN_FUNCTION_NAME, required = false)
+	@CTLEntryPoint(name = CLEAN_FUNCTION_NAME, required = false)
 	public void clean() {
 		// does nothing by default, may be overridden by generated transform classes
 	}

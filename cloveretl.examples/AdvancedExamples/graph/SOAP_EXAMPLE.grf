@@ -64,18 +64,20 @@ function integer transform() {
 <attr name="guiDescription"><![CDATA[Information about temperatures for individual time range is joined with information about geographical locations.]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="101" guiName="Join time with layout key" guiWidth="212" guiX="-1" guiY="109" id="EXT_HASH_JOIN2" joinKey="$parent_id=$id;#" type="EXT_HASH_JOIN">
-<attr name="transform"><![CDATA[sequence(Sequence1).reset;
+<attr name="transform"><![CDATA[//#CTL2
+sequence(time_seq).reset();
 
 string start_time;
 string end_time;
 
-function transform() {
+function integer transform() {
 	start_time = concat(substring($0.start_valid_time,0,22), substring($0.start_valid_time,23,2));
 	end_time = concat(substring($0.end_valid_time,0,22), substring($0.end_valid_time,23,2));
-	$0.start_valid_time := str2date(start_time, "yyyy-MM-dd'T'HH:mm:ssZ");
-	$0.end_valid_time := str2date(end_time, "yyyy-MM-dd'T'HH:mm:ssZ");
-	$0.layout_key := $1.layout_key;
-	$0.time_dim_id := sequence(Sequence1).next;
+	$0.start_valid_time = str2date(start_time, "yyyy-MM-dd'T'HH:mm:ssZ");
+	$0.end_valid_time = str2date(end_time, "yyyy-MM-dd'T'HH:mm:ssZ");
+	$0.layout_key = $1.layout_key;
+	$0.time_dim_id = sequence(time_seq).next();
+	return ALL;
 }
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Information about time ranges is joined with layout-keys. ]]></attr>

@@ -43,12 +43,6 @@ public class GenericTransformDescriptor implements TransformDescriptor<GenericTr
 	}
 
 	@Override
-	public GenericTransform createCTL1Transform(String transformCode, Logger logger) {
-		throw new UnsupportedOperationException("CTL1 is not supported in '" + GenericTransform.class.getName() + "'.");
-		//return new GenericTransformTL(transformCode, logger);
-	}
-
-	@Override
 	public Class<? extends CTLAbstractTransform> getCompiledCTL2TransformClass() {
 		return CTLGenericTransform.class;
 	}

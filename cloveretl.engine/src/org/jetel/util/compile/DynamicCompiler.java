@@ -162,7 +162,7 @@ public final class DynamicCompiler {
 	}
 	
 	/**
-	 * Answers plugins that declare extensions related to CTL (resp. TL).
+	 * Answers plugins that declare extensions related to CTL2.
 	 * @return
 	 */
 	public static Collection<PluginDescriptor> getCTLRelatedPlugins() {
@@ -170,7 +170,6 @@ public final class DynamicCompiler {
 		final List<PluginDescriptor> result = new ArrayList<PluginDescriptor>();
 		for (PluginDescriptor plugin : Plugins.getPluginDescriptors().values()) {
 			if (!plugin.getExtensions(TLFunctionLibraryDescription.EXTENSION_POINT_ID).isEmpty() ||
-				!plugin.getExtensions(org.jetel.interpreter.extensions.TLFunctionLibraryDescription.EXTENSION_POINT_ID).isEmpty() ||
 				!plugin.getExtensions(TLCompilerDescription.EXTENSION_POINT_ID).isEmpty()) {
 				result.add(plugin);
 			}

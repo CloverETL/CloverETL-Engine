@@ -1034,7 +1034,7 @@ public class MsSqlDataWriter extends BulkLoader {
 			msSqlDataWriter.setUser(xattribs.getString(XML_USER_ATTRIBUTE));
 		}
 		if (xattribs.exists(XML_PASSWORD_ATTRIBUTE)) {
-			msSqlDataWriter.setPassword(xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, RefResFlag.SECURE_PARAMATERS));
+			msSqlDataWriter.setPassword(xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, RefResFlag.PASSWORD));
 		}
 		if (xattribs.exists(XML_COLUMN_DELIMITER_ATTRIBUTE)) {
     		msSqlDataWriter.setColumnDelimiter(xattribs.getString(XML_COLUMN_DELIMITER_ATTRIBUTE));

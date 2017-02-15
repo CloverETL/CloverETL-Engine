@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Dec 09 11:23:30 GMT+01:00 2009" guiVersion="0.0.0.devel" id="1260358279137" licenseType="Evaluation Devel" modified="Mon Oct 10 12:43:04 CEST 2011" modifiedBy="avackova" name="BasicStatistic1" revision="1.292" showComponentDetails="true">
+<Graph author="avackova" created="Wed Dec 09 11:23:30 GMT+01:00 2009" guiVersion="0.0.0.devel" id="1260358279137" licenseCode="Commercial Devel" licenseType="Evaluation Devel" modified="Mon Oct 10 12:43:04 CEST 2011" modifiedBy="avackova" name="BasicStatistic1" revision="1.292" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${metadata}" id="Metadata0"/>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
@@ -73,12 +73,14 @@
 <Field name="modus" type="string"/>
 </Record>
 </Metadata>
-<Property id="GraphParameter0" name="HISTOGRAM_THRESHOLD" value="25"/>
-<Property id="GraphParameter1" name="NOT_STATISTIC_FIELDS" value=""/>
-<Property id="GraphParameter2" name="output_file" value="${DATAOUT_DIR}/histogram.html"/>
-<Property fileURL="parameters.prm" id="GraphParameter3"/>
-<Property id="GraphParameter9" name="STATISTIC_FIELDS" value=""/>
-<Property fileURL="workspace.prm" id="GraphParameter10"/>
+<GraphParameters>
+<GraphParameter name="HISTOGRAM_THRESHOLD" value="25"/>
+<GraphParameter name="NOT_STATISTIC_FIELDS"/>
+<GraphParameter name="STATISTIC_FIELDS"/>
+<GraphParameter name="output_file" value="${DATAOUT_DIR}/histogram.html"/>
+<GraphParameterFile fileURL="parameters.prm"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="240" backgroundColorG="150" backgroundColorR="222" folded="false" height="259" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Advanced statistic - description" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="363" x="-127" y="131">
 <attr name="text"><![CDATA[This graph finds statistic for input data file:
 - number of records in data file
@@ -118,39 +120,42 @@ Reformat also stores fields for further processing in the graph dictionary . The
 <Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="88" id="Note9" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Histogram unificaton" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="275" x="737" y="628">
 <attr name="text"><![CDATA[Simple Gather and Reformat components gather all histograms to one stream and convert various data types to their string representation.]]></attr>
 </Note>
-<Dictionary/>
+<Dictionary>
+<Entry input="false" name="histFields" output="false" type="string"/>
+<Entry input="false" name="count" output="false" type="string"/>
+</Dictionary>
 </Global>
 <Phase number="0">
-<Node aggregateKey="fieldName" enabled="enabled" equalNULL="true" guiHeight="69" guiName="Boolean Aggregate" guiWidth="170" guiX="522" guiY="22" id="AGGREGATE0" mapping="$fieldName:=$fieldName;$type:=first($type);$count:=count();$countNotNull:=countnonnull($valueBoolean);$countUnique:=countunique($valueBoolean);$modusBoolean:=modus($valueBoolean);" sorted="false" type="AGGREGATE"/>
-<Node aggregateKey="fieldName" enabled="enabled" equalNULL="true" guiHeight="69" guiName="Byte Aggregate" guiWidth="145" guiX="522" guiY="276" id="AGGREGATE1" mapping="$fieldName:=$fieldName;$type:=first($type);$count:=count();$countNotNull:=countnonnull($valueByte);$countUnique:=countunique($valueByte);$modusByte:=modus($valueByte);" sorted="false" type="AGGREGATE"/>
-<Node aggregateKey="fieldName" enabled="enabled" equalNULL="true" guiHeight="69" guiName="Date Aggregate" guiWidth="146" guiX="522" guiY="102" id="AGGREGATE2" mapping="$fieldName:=$fieldName;$type:=first($type);$count:=count();$countNotNull:=countnonnull($valueDate);$countUnique:=countunique($valueDate);$minDate:=min($valueDate);$maxDate:=max($valueDate);$medianDate:=median($valueDate);$modusDate:=modus($valueDate);" sorted="false" type="AGGREGATE"/>
-<Node aggregateKey="fieldName" enabled="enabled" equalNULL="true" guiHeight="69" guiName="Number Aggregate" guiWidth="168" guiX="522" guiY="361" id="AGGREGATE3" mapping="$fieldName:=$fieldName;$type:=first($type);$count:=count();$countNotNull:=countnonnull($valueNumber);$countUnique:=countunique($valueNumber);$minNumber:=min($valueNumber);$maxNumber:=max($valueNumber);$avgNumber:=avg($valueNumber);$medianNumber:=median($valueNumber);$modusNumber:=modus($valueNumber);" sorted="false" type="AGGREGATE"/>
-<Node aggregateKey="fieldName" enabled="enabled" equalNULL="true" guiHeight="69" guiName="String Aggregate" guiWidth="155" guiX="522" guiY="184" id="AGGREGATE4" mapping="$fieldName:=$fieldName;$type:=first($type);$count:=count();$countNotNull:=countnonnull($valueString);$countUnique:=countunique($valueString);$minString:=min($valueString);$maxString:=max($valueString);$medianString:=median($valueString);$modusString:=modus($valueString);" sorted="false" type="AGGREGATE"/>
-<Node enabled="enabled" guiHeight="85" guiName="DataReader" guiWidth="128" guiX="-132" guiY="22" id="DATA_READER1" type="${READER_TYPE}">
+<Node aggregateKey="fieldName" enabled="enabled" equalNULL="true" guiName="Boolean Aggregate" guiX="522" guiY="22" id="AGGREGATE0" mapping="$fieldName:=$fieldName;$type:=first($type);$count:=count();$countNotNull:=countnonnull($valueBoolean);$countUnique:=countunique($valueBoolean);$modusBoolean:=modus($valueBoolean);" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName" enabled="enabled" equalNULL="true" guiName="Byte Aggregate" guiX="522" guiY="276" id="AGGREGATE1" mapping="$fieldName:=$fieldName;$type:=first($type);$count:=count();$countNotNull:=countnonnull($valueByte);$countUnique:=countunique($valueByte);$modusByte:=modus($valueByte);" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName" enabled="enabled" equalNULL="true" guiName="Date Aggregate" guiX="522" guiY="102" id="AGGREGATE2" mapping="$fieldName:=$fieldName;$type:=first($type);$count:=count();$countNotNull:=countnonnull($valueDate);$countUnique:=countunique($valueDate);$minDate:=min($valueDate);$maxDate:=max($valueDate);$medianDate:=median($valueDate);$modusDate:=modus($valueDate);" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName" enabled="enabled" equalNULL="true" guiName="Number Aggregate" guiX="522" guiY="361" id="AGGREGATE3" mapping="$fieldName:=$fieldName;$type:=first($type);$count:=count();$countNotNull:=countnonnull($valueNumber);$countUnique:=countunique($valueNumber);$minNumber:=min($valueNumber);$maxNumber:=max($valueNumber);$avgNumber:=avg($valueNumber);$medianNumber:=median($valueNumber);$modusNumber:=modus($valueNumber);" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName" enabled="enabled" equalNULL="true" guiName="String Aggregate" guiX="522" guiY="184" id="AGGREGATE4" mapping="$fieldName:=$fieldName;$type:=first($type);$count:=count();$countNotNull:=countnonnull($valueString);$countUnique:=countunique($valueString);$minString:=min($valueString);$maxString:=max($valueString);$medianString:=median($valueString);$modusString:=modus($valueString);" sorted="false" type="AGGREGATE"/>
+<Node enabled="enabled" guiName="DataReader" guiX="-132" guiY="22" id="DATA_READER1" type="${READER_TYPE}">
 <attr name="fileURL"><![CDATA[${input_file}]]></attr>
 <attr name="startRow"><![CDATA[2]]></attr>
 <attr name="sheetName"><![CDATA[*]]></attr>
 <attr name="charset"><![CDATA[${charset}]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="85" guiName="ExtSort" guiWidth="128" guiX="1041" guiY="329" id="EXT_SORT1" sortKey="fieldName(a)" type="EXT_SORT"/>
-<Node enabled="enabled" errorLog="${DATATMP_DIR}/stat_skipped.log" guiHeight="101" guiName="Normalizer" guiWidth="128" guiX="13" guiY="22" id="NORMALIZER0" normalizeURL="${TRANS_DIR}/DataNormalizer1.java" type="NORMALIZER">
+<Node enabled="enabled" guiName="ExtSort" guiX="1041" guiY="329" id="EXT_SORT1" sortKey="fieldName(a)" type="EXT_SORT"/>
+<Node enabled="enabled" errorLog="${DATATMP_DIR}/stat_skipped.log" guiName="Normalizer" guiX="13" guiY="22" id="NORMALIZER0" normalizeURL="${TRANS_DIR}/DataNormalizer1.java" type="NORMALIZER">
 <attr name="guiDescription"><![CDATA[ Creates "normalized" records from each input record. Such "normalized" record contains information about each input field: its original name, type and value. Depending on the type only one output field's value is fulfilled.
 This components serves also as a filter if STATISTIC_FIELDS or NOT_STATISTIC_FIELDS parameter is not empty.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="TypePartition" guiWidth="128" guiX="342" guiY="22" id="PARTITION0" partitionKey="type" type="PARTITION">
-<attr name="partitionSource"><![CDATA[//#TL
+<Node enabled="enabled" guiName="TypePartition" guiX="342" guiY="22" id="PARTITION0" partitionKey="type" type="PARTITION">
+<attr name="partitionSource"><![CDATA[//#CTL2
 // This transformation partitions input records into multiple output ports.
 import '${TRANS_DIR}/types.ctl';
 
-map portMap; 
+map[string, integer] portMap; 
 
 // Returns the number of the output port where the input record will be sent.
-function getOutputPort() {
-	return portMap[$type]
+function integer getOutputPort() {
+	return portMap[$type];
 }
 
 // Called during component initialization, partitionCount is the number of output ports.
- function init(partitionCount) {
+ function void init(integer partitionCount) {
  	portMap[DATE] = 1;
  	portMap[DECIMAL] = 4;
   	portMap[INTEGER] = 4;
@@ -164,52 +169,69 @@ function getOutputPort() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Partitions data depending on the value type, so Aggregate components work with not empty records.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="69" guiName="Simplification" guiWidth="128" guiX="882" guiY="329" id="REFORMAT0" type="REFORMAT">
-<attr name="transform"><![CDATA[import '${TRANS_DIR}/types.ctl';
+<Node enabled="enabled" guiName="Simplification" guiX="882" guiY="329" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+import '${TRANS_DIR}/types.ctl';
 
 string histFields = "";
-int count = -1;
+integer count = -1;
 
-//#TL
-function modus(type){
-	switch (type) {
-			case DATE:return date2str($modusDate,'${DATE_FORMAT}')
-			case DECIMAL:return num2str($modusNumber)
-			case INTEGER:return num2str($modusNumber)
-			case LONG:return num2str($modusNumber)
-			case NUMBER:return num2str($modusNumber)
-			case BOOLEAN:return to_string($modusBoolean)
-			case BYTE:return to_string($modusByte)
-			case CBYTE:return to_string($modusByte)
-			case STRING:return $modusString
+function string modus(string type){
+	if (type == DATE) {
+		return date2str($modusDate,'${DATE_FORMAT}');
 	}
+	if (type == DECIMAL) {
+		return num2str($modusNumber);
+	}
+	if (type == INTEGER) {
+		return num2str($modusNumber);
+	}
+	if (type == LONG) {
+		return num2str($modusNumber);
+	}
+	if (type == NUMBER) {
+		return num2str($modusNumber);
+	}
+	if (type == BOOLEAN) {
+		return toString($modusBoolean);
+	}
+	if (type == BYTE) {
+		return byte2str($modusByte, null);
+	}
+	if (type == CBYTE) {
+		return byte2str($modusByte, null);
+	}
+	if (type == STRING) {
+		return $modusString;
+	}
+	return null;
 }
 
 // Transforms input record into output record.
-function transform() {
+function integer transform() {
 	if (count == -1) {//remember number of records, always the same
-		count = $count; 
+		count = long2integer($count); 
 	}
 	if ($countUnique < ${HISTOGRAM_THRESHOLD}) {
 		histFields = concat(histFields, $fieldName, ';');
 	}
-	$fieldName := $fieldName;
-	$type := $type;
-	$count := count;
-	$countNotNull := $countNotNull;
-	$countUnique := $countUnique;
-	$min := iif($type == STRING, $minString, 
+	$fieldName = $fieldName;
+	$type = $type;
+	$count = count;
+	$countNotNull = $countNotNull;
+	$countUnique = $countUnique;
+	$min = iif($type == STRING, $minString, 
 				iif($type == DATE, date2str($minDate,'${DATE_FORMAT}'), 
 								   num2str($minNumber)));
-	$max := iif($type == STRING, $maxString, 
+	$max = iif($type == STRING, $maxString, 
 				iif($type == DATE, date2str($maxDate,'${DATE_FORMAT}'), 
 								   num2str($maxNumber)));
-	$avgNumber := $avgNumber;
-	$median := iif($type == STRING, $medianString, 
+	$avgNumber = $avgNumber;
+	$median = iif($type == STRING, $medianString, 
 				iif($type == DATE, date2str($medianDate,'${DATE_FORMAT}'), 
 								   num2str($medianNumber)));
-	$modus := modus($type);
-	return ALL
+	$modus = modus($type);
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.
@@ -219,15 +241,15 @@ function transform() {
 // function init() {}
 
 // Called after the component finishes.
- function finished() {
- 	write_dict('histFields',histFields);
- 	write_dict('count',num2str(count));
+ function void finished() {
+ 	dictionary.histFields = histFields;
+ 	dictionary.count = num2str(count);
  }
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="72" guiName="SimpleCopy" guiWidth="128" guiX="168" guiY="22" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
-<Node enabled="enabled" guiHeight="84" guiName="SimpleGather" guiWidth="128" guiX="737" guiY="329" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
-<Node enabled="enabled" guiHeight="101" guiName="DataWriter" guiWidth="128" guiX="1204" guiY="329" id="STRUCTURE_WRITER0" type="${WRITER_TYPE}">
+<Node enabled="enabled" guiName="SimpleCopy" guiX="168" guiY="22" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiName="SimpleGather" guiX="737" guiY="329" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
+<Node enabled="enabled" guiName="DataWriter" guiX="1204" guiY="329" id="STRUCTURE_WRITER0" type="${WRITER_TYPE}">
 <attr name="sheetName"><![CDATA[Statistic]]></attr>
 <attr name="debugPrint"><![CDATA[true]]></attr>
 <attr name="charset"><![CDATA[${charset}]]></attr>
@@ -316,8 +338,8 @@ function transform() {
 <Edge fromNode="AGGREGATE2:0" guiBendpoints="720:122|720:360" guiLocks="720|685|null" guiRouter="Manual" id="Edge10" inPort="Port 1 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SIMPLE_GATHER0:1"/>
 <Edge fromNode="AGGREGATE3:0" guiBendpoints="695:381|695:396" guiLocks="695|null|null" guiRouter="Manual" id="Edge11" inPort="Port 4 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SIMPLE_GATHER0:4"/>
 <Edge fromNode="AGGREGATE4:0" guiBendpoints="709:204|709:372" guiLocks="709|null|null" guiRouter="Manual" id="Edge12" inPort="Port 2 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SIMPLE_GATHER0:2"/>
-<Edge fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (in)" toNode="NORMALIZER0:0"/>
-<Edge fromNode="EXT_SORT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (out)" metadata="Metadata3" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER0:0"/>
+<Edge fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="NORMALIZER0:0"/>
+<Edge fromNode="EXT_SORT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER0:0"/>
 <Edge fromNode="NORMALIZER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="SIMPLE_COPY0:0"/>
 <Edge fromNode="PARTITION0:0" guiBendpoints="514:34|514:42" guiLocks="514|null|null" guiRouter="Manual" id="Edge15" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="AGGREGATE0:0"/>
 <Edge fromNode="PARTITION0:1" guiBendpoints="510:46|510:122" guiLocks="510|null|null" guiRouter="Manual" id="Edge17" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="AGGREGATE2:0"/>
@@ -330,52 +352,52 @@ function transform() {
 <Edge fromNode="SIMPLE_GATHER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
 </Phase>
 <Phase number="1">
-<Node aggregateKey="fieldName;valueBoolean" enabled="enabled" equalNULL="true" guiHeight="69" guiName="Boolean Aggregate" guiWidth="170" guiX="522" guiY="451" id="AGGREGATE10" mapping="$fieldName:=$fieldName;$type:=first($type);$valueBoolean:=$valueBoolean;$count:=count();" sorted="false" type="AGGREGATE"/>
-<Node aggregateKey="fieldName;valueString" enabled="enabled" equalNULL="true" guiHeight="69" guiName="String Aggregate" guiWidth="155" guiX="522" guiY="592" id="AGGREGATE6" mapping="$fieldName:=$fieldName;$type:=first($type);$valueString:=$valueString;$count:=count();" sorted="false" type="AGGREGATE"/>
-<Node aggregateKey="fieldName;valueNumber" enabled="enabled" equalNULL="true" guiHeight="69" guiName="Number Aggregate" guiWidth="168" guiX="522" guiY="751" id="AGGREGATE7" mapping="$fieldName:=$fieldName;$type:=first($type);$valueNumber:=$valueNumber;$count:=count();" sorted="false" type="AGGREGATE"/>
-<Node aggregateKey="fieldName;valueDate" enabled="enabled" equalNULL="true" guiHeight="69" guiName="Date Aggregate" guiWidth="146" guiX="522" guiY="523" id="AGGREGATE8" mapping="$fieldName:=$fieldName;$type:=first($type);$valueDate:=$valueDate;$count:=count();" sorted="false" type="AGGREGATE"/>
-<Node aggregateKey="fieldName;valueByte" enabled="enabled" equalNULL="true" guiHeight="69" guiName="Byte Aggregate" guiWidth="145" guiX="522" guiY="668" id="AGGREGATE9" mapping="$fieldName:=$fieldName;$type:=first($type);$valueByte:=$valueByte;$count:=count();" sorted="false" type="AGGREGATE"/>
-<Node enabled="enabled" guiHeight="101" guiName="ExtSort" guiWidth="128" guiX="1041" guiY="733" id="EXT_SORT0" sortKey="fieldName(a);value(a)" type="EXT_SORT"/>
-<Node enabled="enabled" errorLog="${DATATMP_DIR}/skipped.log" guiHeight="101" guiName="Histogram filter" guiWidth="145" guiX="287" guiY="559" id="REFORMAT1" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<Node aggregateKey="fieldName;valueBoolean" enabled="enabled" equalNULL="true" guiName="Boolean Aggregate" guiX="522" guiY="451" id="AGGREGATE10" mapping="$fieldName:=$fieldName;$type:=first($type);$valueBoolean:=$valueBoolean;$count:=count();" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName;valueString" enabled="enabled" equalNULL="true" guiName="String Aggregate" guiX="522" guiY="592" id="AGGREGATE6" mapping="$fieldName:=$fieldName;$type:=first($type);$valueString:=$valueString;$count:=count();" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName;valueNumber" enabled="enabled" equalNULL="true" guiName="Number Aggregate" guiX="522" guiY="751" id="AGGREGATE7" mapping="$fieldName:=$fieldName;$type:=first($type);$valueNumber:=$valueNumber;$count:=count();" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName;valueDate" enabled="enabled" equalNULL="true" guiName="Date Aggregate" guiX="522" guiY="523" id="AGGREGATE8" mapping="$fieldName:=$fieldName;$type:=first($type);$valueDate:=$valueDate;$count:=count();" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="fieldName;valueByte" enabled="enabled" equalNULL="true" guiName="Byte Aggregate" guiX="522" guiY="668" id="AGGREGATE9" mapping="$fieldName:=$fieldName;$type:=first($type);$valueByte:=$valueByte;$count:=count();" sorted="false" type="AGGREGATE"/>
+<Node enabled="enabled" guiName="ExtSort" guiX="1041" guiY="733" id="EXT_SORT0" sortKey="fieldName(a);value(a)" type="EXT_SORT"/>
+<Node enabled="enabled" errorLog="${DATATMP_DIR}/skipped.log" guiName="Histogram filter" guiX="287" guiY="559" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
 import '${TRANS_DIR}/types.ctl';
 
-list histFields = null;
+string[] histFields = null;
 boolean initialized = false;
-map portMap;
-int port;
+map[string, integer] portMap;
+integer port;
 
-function initInternal(){
-	histFields = split(read_dict("histFields"),';');
+function void initInternal(){
+	histFields = split(dictionary.histFields,';');
 	initialized = true;
 }
 
-function map0(){
-	$0.*:= $0.*;
+function void map0(){
+	$0.*= $0.*;
 }
 
-function map1(){
-	$1.*:= $0.*;
+function void map1(){
+	$1.*= $0.*;
 }
 
-function map2(){
-	$2.*:= $0.*;
+function void map2(){
+	$2.*= $0.*;
 }
 
-function map3(){
-	$3.*:= $0.*;
+function void map3(){
+	$3.*= $0.*;
 }
 
-function map4(){
-	$4.*:= $0.*;
+function void map4(){
+	$4.*= $0.*;
 }
 
 // Transforms input record into output record.
-function transform() {
+function integer transform() {
 	if (!initialized) {
 		initInternal();
 	}
-	if (!($0.fieldName.in.histFields)) return SKIP;
+	if (!(containsValue(histFields, $0.fieldName))) return SKIP;
 	port = portMap[$type];
 	switch (port) {
 		case 0:map0();
@@ -384,16 +406,16 @@ function transform() {
 		case 3:map3();
 		case 4:map4();
 	}
-	return port
+	return port;
 }
 
 // Called to return a user-defined error message when an error occurs.
- function getMessage() {
+ function string getMessage() {
  	return "Field " + $fieldName + "is not among histogram fields";
  }
 
 // Called during component initialization.
- function init() {
+ function void init() {
   	portMap[DATE] = 1;
  	portMap[DECIMAL] = 4;
   	portMap[INTEGER] = 4;
@@ -410,54 +432,71 @@ function transform() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Filters values, for which frequency counts will be calculated. It also serves as a type partition like in Phase 0.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="69" guiName="Simplification" guiWidth="128" guiX="882" guiY="733" id="REFORMAT2" type="REFORMAT">
-<attr name="transform"><![CDATA[import '${TRANS_DIR}/types.ctl';
+<Node enabled="enabled" guiName="Simplification" guiX="882" guiY="733" id="REFORMAT2" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+import '${TRANS_DIR}/types.ctl';
 
 string histFields = "";
 string max="####################################################################################################";
 string fillerChar = "\u00b7";
 string filler ='';
-int l = length(max);
+integer l = length(max);
 boolean initialized = false;
 long countAll;
-int percentLenght;
+integer percentLenght;
 
-//#TL
-function to_string(type){
-	switch (type) {
-			case DATE:return iif(isnull($valueDate), '', date2str($valueDate,'${DATE_FORMAT}'))
-			case DECIMAL:return iif(isnull($valueNumber), '', num2str($valueNumber))
-			case INTEGER:return iif(isnull($valueNumber), '', num2str($valueNumber))
-			case LONG:return iif(isnull($valueNumber), '', num2str($valueNumber))
-			case NUMBER:return iif(isnull($valueNumber), '', num2str($valueNumber))
-			case BOOLEAN:return to_string($valueBoolean)
-			case BYTE:return to_string($valueByte)
-			case CBYTE:return to_string($valueByte)
-			case STRING:return $valueString
+function string to_string(string type){
+	if (type == DATE) {
+		return iif(isnull($valueDate), '', date2str($valueDate,'${DATE_FORMAT}'));
 	}
+	if (type == DECIMAL) {
+		return iif(isnull($valueNumber), '', num2str($valueNumber));
+	}
+	if (type == INTEGER) {
+		return iif(isnull($valueNumber), '', num2str($valueNumber));
+	}
+	if (type == LONG) {
+		return iif(isnull($valueNumber), '', num2str($valueNumber));
+	}
+	if (type == NUMBER) {
+		return iif(isnull($valueNumber), '', num2str($valueNumber));
+	}
+	if (type == BOOLEAN) {
+		return toString($valueBoolean);
+	}
+	if (type == BYTE) {
+		return byte2str($valueByte, null);
+	}
+	if (type == CBYTE) {
+		return byte2str($valueByte, null);
+	}
+	if (type == STRING) {
+		return $valueString;
+	}
+	return null;
 }
 
-function initInternal(){
-	int i;	
+function void initInternal(){
+	integer i;	
 	for (i;i<l;i++){
 		filler = concat(filler,fillerChar);
 	}
-	countAll = str2num(read_dict('count'), long);
+	countAll = str2long(dictionary.count);
 	initialized = true;
 }
 
 // Transforms input record into output record.
-function transform() {
+function integer transform() {
 	if (!initialized){
 		initInternal();
 	}
-	percentLenght = $count*l/countAll;
-	$fieldName := $fieldName;
-	$type := $type;
-	$count := $count;
-	$value := to_string($type);
-	$countGraphic := concat(substring(max,0,percentLenght), substring(filler,percentLenght,l-percentLenght));
-	return ALL
+	percentLenght = long2integer($count*l/countAll);
+	$fieldName = $fieldName;
+	$type = $type;
+	$count = $count;
+	$value = to_string($type);
+	$countGraphic = concat(substring(max,0,percentLenght), substring(filler,percentLenght,l-percentLenght));
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.
@@ -470,8 +509,8 @@ function transform() {
 // function finished() { }
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="84" guiName="SimpleGather" guiWidth="128" guiX="737" guiY="733" id="SIMPLE_GATHER1" type="SIMPLE_GATHER"/>
-<Node enabled="enabled" guiHeight="101" guiName="DataWriter" guiWidth="128" guiX="1187" guiY="733" id="STRUCTURE_WRITER1" type="${WRITER_TYPE}">
+<Node enabled="enabled" guiName="SimpleGather" guiX="737" guiY="733" id="SIMPLE_GATHER1" type="SIMPLE_GATHER"/>
+<Node enabled="enabled" guiName="DataWriter" guiX="1187" guiY="733" id="STRUCTURE_WRITER1" type="${WRITER_TYPE}">
 <attr name="sheetName"><![CDATA[Histogram]]></attr>
 <attr name="debugPrint"><![CDATA[true]]></attr>
 <attr name="append"><![CDATA[true]]></attr>
@@ -527,7 +566,7 @@ As a STRUCTURE_WRITER it creates the table with histograms and closes html page.
 <Edge fromNode="AGGREGATE7:0" guiBendpoints="" guiRouter="Manhattan" id="Edge38" inPort="Port 4 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SIMPLE_GATHER1:4"/>
 <Edge fromNode="AGGREGATE8:0" guiBendpoints="711:543|711:755" guiLocks="711|null|null" guiRouter="Manual" id="Edge35" inPort="Port 1 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SIMPLE_GATHER1:1"/>
 <Edge fromNode="AGGREGATE9:0" guiBendpoints="693:688|693:779" guiLocks="693|null|null" guiRouter="Manual" id="Edge37" inPort="Port 3 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SIMPLE_GATHER1:3"/>
-<Edge fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (out)" metadata="Metadata5" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER1:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER1:0"/>
 <Edge fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge27" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="AGGREGATE10:0"/>
 <Edge fromNode="REFORMAT1:1" guiBendpoints="" guiRouter="Manhattan" id="Edge28" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="AGGREGATE8:0"/>
 <Edge fromNode="REFORMAT1:2" guiBendpoints="" guiRouter="Manhattan" id="Edge29" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 2 (out)" toNode="AGGREGATE6:0"/>

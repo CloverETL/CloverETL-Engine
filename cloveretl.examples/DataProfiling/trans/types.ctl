@@ -1,4 +1,4 @@
-string BOOLEAN = boolean;
+string BOOLEAN = 'boolean';
 string DATE = 'date';
 string DECIMAL = 'decimal';
 string INTEGER = 'integer';

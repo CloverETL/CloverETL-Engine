@@ -207,8 +207,7 @@ public interface IGraphElement {
     
     /**
      * This methods is easy way how to get valid property reference resolver,
-     * which can be used to resolve graph parameters (${x}), special characters (\n) and
-     * in-line CTL code (`today()`) in a given string.
+     * which can be used to resolve graph parameters (${x}) and special characters (\n) in a given string.
      * @return property reference resolver populated with parameters of parent graph
      */
     public PropertyRefResolver getPropertyRefResolver();

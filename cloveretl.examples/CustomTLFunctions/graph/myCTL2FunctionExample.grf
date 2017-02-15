@@ -11,11 +11,12 @@
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiHeight="0" guiName="DataGenerator" guiWidth="0" guiX="28" guiY="28" id="DATA_GENERATOR0" recordsNumber="3" type="DATA_GENERATOR">
-<attr name="generate"><![CDATA[//#TL
+<attr name="generate"><![CDATA[//#CTL2
 
 // Generates output record.
-function generate() {
-	$0.field1 := 'word';
+function string generate() {
+	$0.field1 = 'word';
+	return ALL;
 }
 
 // Called to return a user-defined error message when an error occurs.

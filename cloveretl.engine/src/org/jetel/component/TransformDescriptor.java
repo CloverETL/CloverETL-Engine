@@ -25,7 +25,7 @@ import org.jetel.ctl.TransformLangExecutor;
 /**
  * This class aggregates all necessary information for a transformation interface
  * (transformation code loaded by various components RecordTransform, RecordRollup, JavaRunnable, ...)
- * to be instantiated by {@link TransformFactory}. Supported languages are java, CTL1 and CTL2.
+ * to be instantiated by {@link TransformFactory}. Supported languages are java and CTL2.
  * 
  * @see TransformFactory
  * @author Kokon (info@cloveretl.com)
@@ -41,14 +41,6 @@ public interface TransformDescriptor<T> {
 	 */
 	public Class<T> getTransformClass();
 
-	/**
-	 * Creates instance of {@link #getTransformClass()} class based on the CTL1 transformation code. 
-	 * @param transformCode CTL1 transformation code to be converted to dedicated class
-	 * @param logger a logger necessary for CTL1 compiler
-	 * @return instance of transformation interface defined by CTL1 transformation code 
-	 */
-	public T createCTL1Transform(String transformCode, Logger logger);
-	
 	/**
 	 * @return class which is used for compiled mode of CTL2 compiler
 	 * to be overridden by generated java code    

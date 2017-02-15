@@ -1,7 +1,9 @@
-#Wed Dec 23 10:00:41 GMT+01:00 2009
-input_file=${DATAIN_DIR}/ORDERS.xls
-WRITER_TYPE=STRUCTURE_WRITER
-metadata=${META_DIR}/orders.fmt
-READER_TYPE=XLS_READER
-DATE_FORMAT=dd/MM/yyyy HH\:mm\:ss
-charset=ISO-8859-1
+<?xml version="1.0" encoding="UTF-8"?>
+<GraphParameters>
+<GraphParameter name="DATE_FORMAT" value="dd/MM/yyyy HH:mm:ss"/>
+<GraphParameter name="READER_TYPE" value="XLS_READER"/>
+<GraphParameter name="WRITER_TYPE" value="STRUCTURE_WRITER"/>
+<GraphParameter name="charset" value="ISO-8859-1"/>
+<GraphParameter name="input_file" value="${DATAIN_DIR}/ORDERS.xls"/>
+<GraphParameter name="metadata" value="${META_DIR}/orders.fmt"/>
+</GraphParameters>

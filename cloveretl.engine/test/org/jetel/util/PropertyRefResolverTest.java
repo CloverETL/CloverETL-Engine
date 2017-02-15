@@ -131,21 +131,20 @@ public class PropertyRefResolverTest extends CloverTestCase {
 	}
 
 	public void testEvaluate() {
-		assertEquals("<null>", resolver.resolveRef("`null`"));
-		assertEquals("1 + 1 = 2", resolver.resolveRef("1 + 1 = `1 + 1`"));
-		assertEquals("Hello, World!", resolver.resolveRef("`'H' + 'e' + 'll' + 'o'`, World!"));
-		assertEquals("CTL expression: done", resolver.resolveRef("CTL expression: `${ctl}`"));
-		assertEquals("m", resolver.resolveRef("`substring('${user}', 0, 1)`"));
-		assertEquals("back quoted `CTL expression`", resolver.resolveRef("back quoted `'\\`CTL expression\\`'`"));
+		assertEquals("`null`", resolver.resolveRef("`null`"));
+		assertEquals("1 + 1 = `1 + 1`", resolver.resolveRef("1 + 1 = `1 + 1`"));
+		assertEquals("`'H' + 'e' + 'll' + 'o'`, World!", resolver.resolveRef("`'H' + 'e' + 'll' + 'o'`, World!"));
+		assertEquals("CTL expression: `'`'do' + 'ne'`'`", resolver.resolveRef("CTL expression: `${ctl}`"));
+		assertEquals("`substring('myself', 0, 1)`", resolver.resolveRef("`substring('${user}', 0, 1)`"));
+		assertEquals("back quoted `'`CTL expression`'`", resolver.resolveRef("back quoted `'\\`CTL expression\\`'`"));
 		assertEquals("just back quotes (`)", resolver.resolveRef("just back quotes (\\`)"));
-		assertEquals("empty CTL expression", resolver.resolveRef("emp``ty CTL expression"));
+		assertEquals("emp``ty CTL expression", resolver.resolveRef("emp``ty CTL expression"));
 		
-		assertEquals("xxxyyyzzz", resolver.resolveRef("`'$' + '{' + 'pwd' + '}'`"));
-		assertEquals("'done'", resolver.resolveRef("`'$' + '{' + 'ctl' + '}'`"));
+		assertEquals("`'$' + '{' + 'pwd' + '}'`", resolver.resolveRef("`'$' + '{' + 'pwd' + '}'`"));
+		assertEquals("`'$' + '{' + 'ctl' + '}'`", resolver.resolveRef("`'$' + '{' + 'ctl' + '}'`"));
 		
-		assertEquals("\n MESSAGE", resolver.resolveRef(TEST_STRING, RefResFlag.REGULAR));
-		assertEquals("\n `uppercase(\"message\")`", resolver.resolveRef(TEST_STRING, RefResFlag.CTL_EXPRESSIONS_OFF));
-		assertEquals("\\n MESSAGE", resolver.resolveRef(TEST_STRING, RefResFlag.SPEC_CHARACTERS_OFF));
+		assertEquals("\n `uppercase(\"message\")`", resolver.resolveRef(TEST_STRING, RefResFlag.REGULAR));
+		assertEquals("\\n `uppercase(\"message\")`", resolver.resolveRef(TEST_STRING, RefResFlag.SPEC_CHARACTERS_OFF));
 		assertEquals("\\n `uppercase(\"message\")`", resolver.resolveRef(TEST_STRING, RefResFlag.ALL_OFF));
 	}
 	
@@ -159,18 +158,12 @@ public class PropertyRefResolverTest extends CloverTestCase {
 	}
 
 	public void testSecureParameters() {
-//		assertEquals("neco ${secureParameter} neco", resolver.resolveRef("neco ${secureParameter} neco", RefResFlag.REGULAR));
-//		assertEquals("neco ${secureParameter} neco", resolver.resolveRef("neco ${secureParameter} neco", RefResFlag.ALL_OFF));
-//		assertEquals("neco ${secureParameter} neco", resolver.resolveRef("neco ${secureParameter} neco", RefResFlag.CTL_EXPRESSIONS_OFF));
-//		assertEquals("neco ${secureParameter} neco", resolver.resolveRef("neco ${secureParameter} neco", RefResFlag.SPEC_CHARACTERS_OFF));
-		assertEquals("neco secureValue neco", resolver.resolveRef("neco ${secureParameter} neco", RefResFlag.SECURE_PARAMATERS));
-		assertEquals("neco secureValue neco myself neco", resolver.resolveRef("neco ${secureParameter} neco ${user} neco", RefResFlag.SECURE_PARAMATERS));
-		assertEquals("\\nneco secureValue neco myself neco", resolver.resolveRef("\\nneco ${secureParameter} neco ${user} neco", RefResFlag.SECURE_PARAMATERS));
-		assertEquals("\\nneco secureValue neco myself neco", resolver.resolveRef("\\nneco ${secureParameter} neco ${user} neco", RefResFlag.ALL_OFF.resolveSecureParameters(true)));
-		assertEquals("\nneco secureValue neco myself neco", resolver.resolveRef("\\nneco ${secureParameter} neco ${user} neco", RefResFlag.ALL_OFF.resolveSecureParameters(true).resolveSpecCharacters(true)));
-//		assertEquals("\nneco ${secureParameter} neco myself neco", resolver.resolveRef("\\nneco ${secureParameter} neco ${user} neco", RefResFlag.ALL_OFF.resolveSecureParameters(false).resolveSpecCharacters(true)));
-//		assertEquals("otherPass", resolver.resolveRef("${password}", RefResFlag.ALL_OFF.resolveSecureParameters(true)));
-		assertEquals("xxxyyyzzz", resolver.resolveRef("${password}", RefResFlag.ALL_OFF.resolveSecureParameters(false)));
+		assertEquals("neco secureValue neco", resolver.resolveRef("neco ${secureParameter} neco", RefResFlag.SPEC_CHARACTERS_OFF));
+		assertEquals("neco secureValue neco myself neco", resolver.resolveRef("neco ${secureParameter} neco ${user} neco", RefResFlag.SPEC_CHARACTERS_OFF));
+		assertEquals("\\nneco secureValue neco myself neco", resolver.resolveRef("\\nneco ${secureParameter} neco ${user} neco", RefResFlag.SPEC_CHARACTERS_OFF));
+		assertEquals("\\nneco secureValue neco myself neco", resolver.resolveRef("\\nneco ${secureParameter} neco ${user} neco", RefResFlag.ALL_OFF));
+		assertEquals("\nneco secureValue neco myself neco", resolver.resolveRef("\\nneco ${secureParameter} neco ${user} neco", RefResFlag.ALL_OFF.resolveSpecCharacters(true)));
+		assertEquals("xxxyyyzzz", resolver.resolveRef("${password}", RefResFlag.ALL_OFF));
 	}
 	
 	public void testIsPropertyReference() {
