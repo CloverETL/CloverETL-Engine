@@ -558,7 +558,7 @@ public class OracleDataWriter extends BulkLoader {
         OracleDataWriter oracleDataWriter = new OracleDataWriter(xattribs.getString(XML_ID_ATTRIBUTE),
                 xattribs.getStringEx(XML_SQLLDR_ATTRIBUTE, null, RefResFlag.URL),
                 xattribs.getString(XML_USER_ATTRIBUTE, null),
-                xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, null, RefResFlag.SECURE_PARAMATERS),
+                xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, null, RefResFlag.PASSWORD),
                 xattribs.getString(XML_TNSNAME_ATTRIBUTE, null));
         if (xattribs.exists(XML_TABLE_ATTRIBUTE)) {
             oracleDataWriter.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));

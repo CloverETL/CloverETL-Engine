@@ -6,7 +6,6 @@ graphCloverData.grf
 graphDataGeneratorExt.grf
 graphDataPolicy.grf
 graphDBFJoin.grf
-graphDBFJoinTL.grf
 graphDBFJoinTLNew.grf
 graphDBFLoad.grf
 graphDBFWrite.grf
@@ -29,13 +28,11 @@ graphJoinMergeInline.grf
 graphLookupReader.grf
 graphMergeData.grf
 graphNormalizeInline.grf
-graphNormalizeTL.grf
 graphNormalizeTLNew.grf
 graphOrdersReformat.grf
 graphOrdersReformatExternTransform.grf
 graphOrdersReformatInline.grf
 graphOrdersTLNewReformat.grf
-graphOrdersTLReformat.grf
 graphOrdersTLReformatExtern.grf
 graphParametrizedLookup.grf
 graphPartition_KeyHashCode.grf
@@ -85,7 +82,6 @@ graphCloverData.grf
 graphDataGeneratorExt.grf
 graphDataPolicy.grf
 graphDBFJoin.grf
-graphDBFJoinTL.grf
 graphDBFJoinTLNew.grf
 graphDBFLoad.grf
 graphDBFWrite.grf
@@ -108,13 +104,11 @@ graphJoinMergeInline.grf
 graphLookupReader.grf
 graphMergeData.grf
 graphNormalizeInline.grf
-graphNormalizeTL.grf
 graphNormalizeTLNew.grf
 graphOrdersReformat.grf
 graphOrdersReformatExternTransform.grf
 graphOrdersReformatInline.grf
 graphOrdersTLNewReformat.grf
-graphOrdersTLReformat.grf
 graphOrdersTLReformatExtern.grf
 graphParametrizedLookup.grf
 graphPartition_KeyHashCode.grf

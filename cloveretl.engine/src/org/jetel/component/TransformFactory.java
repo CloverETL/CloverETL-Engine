@@ -43,7 +43,6 @@ import org.jetel.exception.MissingFieldException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.CodeParser;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.file.FileUtils;
@@ -53,7 +52,7 @@ import org.jetel.util.string.StringUtils;
 
 /**
  * This class is used to instantiate a class based on source code.
- * Supported languages are CTL1, CTL2, java and pre-processed java.
+ * Supported languages are CTL2 and java.
  * Instance of this factory can be created only by two factory methods<br>
  * <li>
  * 		{@link #createTransformFactory(TransformDescriptor)} - creates factory based on given TransformDescriptor
@@ -121,11 +120,6 @@ public class TransformFactory<T> {
 			}
 
 			@Override
-			public T createCTL1Transform(String transformCode, Logger logger) {
-				throw new UnsupportedOperationException("CTL1 is not supported in '" + transformClass.getName() + "'.");
-			}
-
-			@Override
 			public Class<? extends CTLAbstractTransform> getCompiledCTL2TransformClass() {
 				throw new UnsupportedOperationException("CTL2 is not supported in '" + transformClass.getName() + "'.");
 			}
@@ -151,7 +145,7 @@ public class TransformFactory<T> {
 	
 	/**
 	 * Configuration check, mainly invoked from {@link Node#checkConfig(ConfigurationStatus)}.
-	 * Only CTL1 and CTL2 code is compiled to ensure correctness of all settings.
+	 * Only CTL2 code is compiled to ensure correctness of all settings.
 	 * Java code is not validated.
 	 * @param status
 	 * @return
@@ -176,8 +170,14 @@ public class TransformFactory<T> {
 	        // only the transform and transformURL parameters are checked, transformClass is ignored
 	        if (checkTransform != null) {
 	        	TransformLanguage transformLanguage = TransformLanguageDetector.guessLanguage(checkTransform);
-	        	if (transformLanguage == TransformLanguage.CTL1
-	        			|| transformLanguage == TransformLanguage.CTL2) {
+
+	        	if (transformLanguage == TransformLanguage.UNKNOWN) {
+	        		String messagePrefix = attributeName != null ? attributeName + ": can't" : "Can't";
+	        		status.add(new ConfigurationProblem(messagePrefix + " determine transformation language",
+	        				Severity.WARNING, component, Priority.NORMAL, attributeName));
+	        	} else if (!transformLanguage.isSupported()) {
+					status.add(new ConfigurationProblem(transformLanguage.getName() + " is not a supported language any more, please convert your code to CTL2.", Severity.ERROR, component, Priority.NORMAL, null));
+	        	} else if (transformLanguage == TransformLanguage.CTL2) {
 	        		// only CTL is checked
 	        		T transform = null;
 	    			try {
@@ -190,10 +190,6 @@ public class TransformFactory<T> {
 							((Freeable)transform).free();
 						}
 					}
-	        	} else if (transformLanguage == null) {
-	        		String messagePrefix = attributeName != null ? attributeName + ": can't" : "Can't";
-	        		status.add(new ConfigurationProblem(messagePrefix + " determine transformation language",
-	        				Severity.WARNING, component, Priority.NORMAL, attributeName));
 	        	}
 	        }
         }
@@ -277,22 +273,15 @@ public class TransformFactory<T> {
     	T transformation = null;
     	
     	TransformLanguage language = TransformLanguageDetector.guessLanguage(transformCode);
-    	if (language == null) {
-    		throw new LoadClassException("Can't determine transformation language.");
-    	}
     	
         switch (language) {
         case JAVA:
-        	transformCode = preprocessJavaCode(transformCode, inMetadata, outMetadata, component, false);
             transformation = DynamicJavaClass.instantiate(transformCode, transformDescriptor.getTransformClass(), component);
             break;
         case JAVA_PREPROCESS:
-        	transformCode = preprocessJavaCode(transformCode, inMetadata, outMetadata, component, true);
-            transformation = DynamicJavaClass.instantiate(transformCode, transformDescriptor.getTransformClass(), component);
-            break;
+        	throw new JetelRuntimeException("CTLLite is not a supported language any more, please convert your code to CTL2.");
         case CTL1:
-        	transformation = transformDescriptor.createCTL1Transform(transformCode, component.getLog());
-            break;
+        	throw new JetelRuntimeException("CTL1 is not a supported language any more, please convert your code to CTL2.");
         case CTL2:
         	if (charset == null) {
         		charset = Defaults.DEFAULT_SOURCE_CODE_CHARSET;
@@ -329,6 +318,8 @@ public class TransformFactory<T> {
         		throw new LoadClassException("Invalid type of record transformation");
         	}
             break;
+        case UNKNOWN:
+    		throw new LoadClassException("Can't determine transformation language.");
         default:
             throw new LoadClassException("Can't determine transformation code.");
         }
@@ -336,24 +327,6 @@ public class TransformFactory<T> {
         return transformation;
     }
     
-    /**
-     * Java code is pre-processed by {@link CodeParser} before compilation.
-     */
-    private static String preprocessJavaCode(String transformCode, DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, Node node, boolean addTransformCodeStub) {
-        // creating dynamicTransformCode from internal transformation format
-        CodeParser codeParser = new CodeParser(inMetadata, outMetadata);
-        if (!addTransformCodeStub) 
-        	// we must turn this off, because we don't have control about the rest of Java source
-        	// and thus we cannot create the declaration of symbolic constants
-        	codeParser.setUseSymbolicNames(false);
-        codeParser.setSourceCode(transformCode);
-        codeParser.parse();
-        if (addTransformCodeStub) {
-        	codeParser.addTransformCodeStub("Transform" + node.getId());
-        }
-        return codeParser.getSourceCode();
-    }
-
 	/**
 	 * Sets transformation code.
 	 */

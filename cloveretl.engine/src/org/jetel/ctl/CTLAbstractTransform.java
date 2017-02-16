@@ -37,6 +37,27 @@ import org.jetel.graph.dictionary.StringDictionaryType;
  */
 public abstract class CTLAbstractTransform implements Transform {
 
+	//TODO overit zda jsou vsechny konstanty potreba
+	
+    /** the name of the init() function in CTL */
+	public static final String INIT_FUNCTION_NAME = "init";
+    /** the name of the preExecute() function in CTL */
+	public static final String PRE_EXECUTE_FUNCTION_NAME = "preExecute";
+    /** the name of the postExecute() function in CTL */
+	public static final String POST_EXECUTE_FUNCTION_NAME = "postExecute";
+    /** the name of the getMessage() function in CTL */
+	public static final String GET_MESSAGE_FUNCTION_NAME = "getMessage";
+
+    /** the name of the finished() function in CTL */
+	public static final String FINISHED_FUNCTION_NAME = "finished";
+    /** the name of the reset() function in CTL */
+	public static final String RESET_FUNCTION_NAME = "reset";
+
+    /** the name of the errorMessage param used in CTL */
+    public static final String ERROR_MESSAGE_PARAM_NAME = "errorMessage";
+    /** the name of the stackTrace param used in CTL */
+    public static final String STACK_TRACE_PARAM_NAME = "stackTrace";
+
 	/** The logger used by this class and generated transform classes. */
 	protected static final Log logger = LogFactory.getLog(CTLAbstractTransform.class);
 

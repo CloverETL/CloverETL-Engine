@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This is practical ilustration of usage CloverETL.&#10;This graph tranforms data for branch bank. On inputs &#10;are clients, month interests and chargets and &#10;half-year bonus. On outputs we have aggregated &#10;revenues by clients, clients without revenues and &#10;clients from database, who are not in input file." guiVersion="0.0.0.devel" id="1204553576084" licenseType="Commercial" modified="Thu Jan 09 14:23:44 CET 2014" modifiedBy="krivanekm" name="Revenues of one half-year" revision="1.56" showComponentDetails="true">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This is practical ilustration of usage CloverETL.&#10;This graph tranforms data for branch bank. On inputs &#10;are clients, month interests and chargets and &#10;half-year bonus. On outputs we have aggregated &#10;revenues by clients, clients without revenues and &#10;clients from database, who are not in input file." guiVersion="4.5.0.M1" id="1204553576084" licenseCode="Javlin-Internal-License" licenseType="Commercial" modified="Thu Jan 09 14:23:44 CET 2014" modifiedBy="krivanekm" name="Revenues of one half-year" revision="1.56" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="Aggr_revenues" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
@@ -82,10 +82,12 @@ function integer transform() {
 <Node enabled="enabled" guiName="Ext Sort" guiX="164" guiY="28" id="EXT_SORT0" sortKey="Client_id" type="EXT_SORT"/>
 <Node enabled="enabled" guiName="Ext Sort" guiX="163" guiY="149" id="EXT_SORT1" sortKey="Client_id" type="EXT_SORT"/>
 <Node enabled="enabled" guiName="Filter" guiX="475" guiY="149" id="FILTER0" type="EXT_FILTER">
-<attr name="filterExpression"><![CDATA[$Client_id_n>0]]></attr>
+<attr name="filterExpression"><![CDATA[//#CTL2
+$Client_id_n>0]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Filter" guiX="476" guiY="28" id="FILTER1" type="EXT_FILTER">
-<attr name="filterExpression"><![CDATA[$Client_id_n<0]]></attr>
+<attr name="filterExpression"><![CDATA[//#CTL2
+$Client_id_n<0]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Reformat" guiX="625" guiY="149" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
@@ -148,7 +150,8 @@ function integer transform() {
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Filter" guiX="479" guiY="506" id="FILTER2" type="EXT_FILTER">
-<attr name="filterExpression"><![CDATA[$Client_id_n<0]]></attr>
+<attr name="filterExpression"><![CDATA[//#CTL2
+$Client_id_n<0]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Simple Copy" guiX="626" guiY="358" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
 <Node enabled="enabled" guiName="Sort" guiX="316" guiY="358" id="SORT1" sortKey="Client_id" sortOrder="Ascending" type="EXT_SORT"/>

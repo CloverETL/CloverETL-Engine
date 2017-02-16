@@ -882,7 +882,7 @@ public class MysqlDataWriter extends BulkLoader {
 			mysqlDataWriter.setUser(xattribs.getString(XML_USER_ATTRIBUTE));
 		}
 		if (xattribs.exists(XML_PASSWORD_ATTRIBUTE)) {
-			mysqlDataWriter.setPassword(xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, RefResFlag.SECURE_PARAMATERS));
+			mysqlDataWriter.setPassword(xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, RefResFlag.PASSWORD));
 		}
 		if (xattribs.exists(XML_COMMAND_URL_ATTRIBUTE)) {
 			mysqlDataWriter.setCommandURL((xattribs.getStringEx(XML_COMMAND_URL_ATTRIBUTE, RefResFlag.URL)));

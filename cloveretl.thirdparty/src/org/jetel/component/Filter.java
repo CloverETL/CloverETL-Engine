@@ -81,8 +81,8 @@ import org.w3c.dom.Element;
  *  </table>
  * 
  *  <h4>Example:</h4>
- *  <pre>&lt;Node id="FILTEREMPL1" type="FILTER" filterExpression="HireDate&amp;lt;1993-12-31"/&gt;</pre>
- *  <pre>&lt;Node id="FILTEREMPL1" type="FILTER" filterExpression="Name~^A.*;Age>25"/&gt;</pre>
+ *  <pre>&lt;Node id="FILTEREMPL1" type="FILTER" filterExpression="//#CTL2&#13;&#10;HireDate&amp;lt;1993-12-31"/&gt;</pre>
+ *  <pre>&lt;Node id="FILTEREMPL1" type="FILTER" filterExpression="//#CTL2&#13;&#10;Name~^A.*;Age>25"/&gt;</pre>
  *
  * @author     rbauduin
  * @since    July 23, 2003

@@ -30,9 +30,6 @@ import org.jetel.exception.TransformException;
  */
 public interface GraphParameterValueFunction extends Transform {
 
-	public static final String GET_PARAMETER_VALUE_FUNCTION_NAME = "getValue";
-	public static final String INIT_FUNCTION_NAME = "init";
-	
 	/**
 	 * Called before {@link #getParameterValue()} is called for the first time.
 	 * @throws ComponentNotReadyException 

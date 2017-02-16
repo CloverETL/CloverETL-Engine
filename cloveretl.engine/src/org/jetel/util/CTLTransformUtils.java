@@ -26,7 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.jetel.component.RecordTransformTL;
+import org.jetel.component.CTLRecordTransform;
 import org.jetel.ctl.ErrorMessage;
 import org.jetel.ctl.NavigatingVisitor;
 import org.jetel.ctl.TLCompiler;
@@ -97,7 +97,7 @@ public class CTLTransformUtils {
     				child.jjtAccept(this, data);
     				break;
     			case JJTFUNCTIONDECLARATION:
-    				if (((org.jetel.ctl.ASTnode.CLVFFunctionDeclaration)child).getName().equals(RecordTransformTL.TRANSFORM_FUNCTION_NAME)) {
+    				if (((org.jetel.ctl.ASTnode.CLVFFunctionDeclaration)child).getName().equals(CTLRecordTransform.TRANSFORM_FUNCTION_NAME)) {
     					// scan statements in function body 
     					return child.jjtGetChild(2).jjtAccept(this, data);
     				}

@@ -46,11 +46,6 @@ public class RecordDenormalizeDescriptor implements TransformDescriptor<RecordDe
 	}
 
 	@Override
-	public RecordDenormalize createCTL1Transform(String transformCode, Logger logger) {
-		return new RecordDenormalizeTL(logger, transformCode);
-	}
-
-	@Override
 	public Class<? extends CTLAbstractTransform> getCompiledCTL2TransformClass() {
 		return CTLRecordDenormalize.class;
 	}

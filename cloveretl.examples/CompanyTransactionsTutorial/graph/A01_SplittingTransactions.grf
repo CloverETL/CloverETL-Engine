@@ -45,22 +45,23 @@ More detailed information about this graph can be found in the "readme.html" fil
 <Node enabled="enabled" guiHeight="85" guiName="ExtSort" guiWidth="128" guiX="475" guiY="404" id="EXT_SORT2" sortKey="AmountID(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="101" guiName="ExtSort" guiWidth="128" guiX="475" guiY="298" id="EXT_SORT3" sortKey="AmountID(a);CustomerID(a);EmployeeID(a)" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="101" guiName="Splitting data" guiWidth="129" guiX="269" guiY="422" id="REFORMAT4" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.AmountID := $0.AmountID;
-	$1.Amount := $0.Amount;
-	$0.CustomerID := $0.CustomerID;
-	$2.CustomerState := $0.CustomerState;
-	$2.CustomerSurname := $0.CustomerSurname;
-	$2.CustomerFirstname := $0.CustomerFirstname;
-	$0.EmployeeID := $0.EmployeeID;
-	$3.EmployeeSurname := $0.EmployeeSurname;
-	$3.EmployeeFirstname := $0.EmployeeFirstname;
-	$1.AmountID := $0.AmountID;
-	$2.CustomerID := $0.CustomerID;
-	$3.EmployeeID := $0.EmployeeID;
+function integer transform() {
+	$0.AmountID = $0.AmountID;
+	$1.Amount = $0.Amount;
+	$0.CustomerID = $0.CustomerID;
+	$2.CustomerState = $0.CustomerState;
+	$2.CustomerSurname = $0.CustomerSurname;
+	$2.CustomerFirstname = $0.CustomerFirstname;
+	$0.EmployeeID = $0.EmployeeID;
+	$3.EmployeeSurname = $0.EmployeeSurname;
+	$3.EmployeeFirstname = $0.EmployeeFirstname;
+	$1.AmountID = $0.AmountID;
+	$2.CustomerID = $0.CustomerID;
+	$3.EmployeeID = $0.EmployeeID;
+	return ALL;
 }
 
 // Called during component initialization.

@@ -73,7 +73,7 @@ if( !runTests ){
 	// compile engine and run some tests
 	antBaseD = engineD
 	antArgs = [
-		"-Dadditional.plugin.list=cloveretl.license.engine,cloveretl.component.hadoop,cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.tlfunction.commercial,cloveretl.ctlfunction.commercial,cloveretl.addressdoctor.commercial,cloveretl.profiler.commercial,cloveretl.mongodb.commercial,cloveretl.validator.commercial,cloveretl.initiate.engine,cloveretl.spreadsheet.commercial,cloveretl.oem.example.component,cloveretl.subgraph.commercial,cloveretl.tableau",
+		"-Dadditional.plugin.list=cloveretl.license.engine,cloveretl.component.hadoop,cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.ctlfunction.commercial,cloveretl.addressdoctor.commercial,cloveretl.profiler.commercial,cloveretl.mongodb.commercial,cloveretl.validator.commercial,cloveretl.initiate.engine,cloveretl.spreadsheet.commercial,cloveretl.oem.example.component,cloveretl.subgraph.commercial,cloveretl.tableau",
 		"-Dcte.logpath=${workspace}/cte-logs",
 		"-Dcteguiloglink=${jenkinsBuildUrl}/artifact/cte-logs/",
 		"-Dcte.hudson.link=job/${jobName}/${buildNumber}",
@@ -178,7 +178,7 @@ if( !runTests ){
 		antArgs += "-Drunscenarios.Xmso=-Xmso2048k" // CLO-4730, CLO-4567
 	}
 
-	antArgs += "-Drunscenarios.trustStore=-Djavax.net.ssl.trustStore=${trustStoreF}"
+	antArgs += "-Drunscenarios.trustStore=\"-Djavax.net.ssl.trustStore=${trustStoreF}\""
 	
 	cloverD = new File(baseD, "cloverETL")
 	// removing files from previous build 

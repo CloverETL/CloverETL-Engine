@@ -46,11 +46,6 @@ public class RecordNormalizeDescriptor implements TransformDescriptor<RecordNorm
 	}
 
 	@Override
-	public RecordNormalize createCTL1Transform(String transformCode, Logger logger) {
-		return new RecordNormalizeTL(logger, transformCode);
-	}
-
-	@Override
 	public Class<? extends CTLAbstractTransform> getCompiledCTL2TransformClass() {
 		return CTLRecordNormalize.class;
 	}

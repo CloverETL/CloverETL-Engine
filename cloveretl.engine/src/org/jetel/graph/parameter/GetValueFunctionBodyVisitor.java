@@ -55,7 +55,7 @@ public class GetValueFunctionBodyVisitor extends PositionedCodeVisitor {
 	
 	@Override
 	public Object visit(CLVFFunctionDeclaration node, Object data) {
-		if (!node.getName().equals(GraphParameterValueFunction.GET_PARAMETER_VALUE_FUNCTION_NAME)) {
+		if (!node.getName().equals(CTLGraphParameterValueTransform.GET_PARAMETER_VALUE_FUNCTION_NAME)) {
 			return super.visit(node, data);
 		}
 		if (node.jjtGetNumChildren() < 3) {

@@ -43,6 +43,9 @@ import org.jetel.util.ExceptionUtils;
  */
 public abstract class CTLRecordTransform extends CTLAbstractTransform implements RecordTransform {
 
+    public static final String TRANSFORM_FUNCTION_NAME = "transform";
+    public static final String TRANSFORM_ON_ERROR_FUNCTION_NAME = "transformOnError";
+
 	/** Input data records used for transform, or <code>null</code> if not accessible. */
 	private DataRecord[] inputRecords = null;
 	/** Output data records used for transform, or <code>null</code> if not accessible. */
@@ -65,7 +68,7 @@ public abstract class CTLRecordTransform extends CTLAbstractTransform implements
 	 *
 	 * @throws ComponentNotReadyException if the initialization fails
 	 */
-	@CTLEntryPoint(name = RecordTransformTL.INIT_FUNCTION_NAME, required = false)
+	@CTLEntryPoint(name = INIT_FUNCTION_NAME, required = false)
 	protected Boolean initDelegate() throws ComponentNotReadyException {
 		// does nothing and succeeds by default, may be overridden by generated transform classes
 		return true;
@@ -140,8 +143,8 @@ public abstract class CTLRecordTransform extends CTLAbstractTransform implements
 	 * @throws ComponentNotReadyException if some internal initialization failed
 	 * @throws TransformException if an error occurred
 	 */
-	@CTLEntryPoint(name = RecordTransformTL.TRANSFORM_ON_ERROR_FUNCTION_NAME, parameterNames = {
-			RecordTransformTL.ERROR_MESSAGE_PARAM_NAME, RecordTransformTL.STACK_TRACE_PARAM_NAME }, required = false)
+	@CTLEntryPoint(name = TRANSFORM_ON_ERROR_FUNCTION_NAME, parameterNames = {
+			ERROR_MESSAGE_PARAM_NAME, STACK_TRACE_PARAM_NAME }, required = false)
 	protected Integer transformOnErrorDelegate(String errorMessage, String stackTrace)
 			throws ComponentNotReadyException, TransformException {
 		throw new UnsupportedOperationException();

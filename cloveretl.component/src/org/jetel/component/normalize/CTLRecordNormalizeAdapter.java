@@ -82,20 +82,20 @@ public final class CTLRecordNormalizeAdapter extends CTLAbstractTransformAdapter
         // initialize global scope and call user initialization function
 		super.init();
 
-		countFunction = executor.getFunction(RecordNormalizeTL.COUNT_FUNCTION_NAME);
-		countOnErrorFunction = executor.getFunction(RecordNormalizeTL.COUNT_ON_ERROR_FUNCTION_NAME,
+		countFunction = executor.getFunction(CTLRecordNormalize.COUNT_FUNCTION_NAME);
+		countOnErrorFunction = executor.getFunction(CTLRecordNormalize.COUNT_ON_ERROR_FUNCTION_NAME,
 				TLTypePrimitive.STRING, TLTypePrimitive.STRING);
-		transformFunction = executor.getFunction(RecordNormalizeTL.TRANSFORM_FUNCTION_NAME, TLTypePrimitive.INTEGER);
-		transformOnErrorFunction = executor.getFunction(RecordNormalizeTL.TRANSFORM_ON_ERROR_FUNCTION_NAME,
+		transformFunction = executor.getFunction(CTLRecordNormalize.TRANSFORM_FUNCTION_NAME, TLTypePrimitive.INTEGER);
+		transformOnErrorFunction = executor.getFunction(CTLRecordNormalize.TRANSFORM_ON_ERROR_FUNCTION_NAME,
 				TLTypePrimitive.STRING, TLTypePrimitive.STRING, TLTypePrimitive.INTEGER);
-		cleanFunction = executor.getFunction(RecordNormalizeTL.CLEAN_FUNCTION_NAME);
+		cleanFunction = executor.getFunction(CTLRecordNormalize.CLEAN_FUNCTION_NAME);
 
 		if (countFunction == null) {
-			throw new ComponentNotReadyException(RecordNormalizeTL.COUNT_FUNCTION_NAME + " function is not defined");
+			throw new ComponentNotReadyException(CTLRecordNormalize.COUNT_FUNCTION_NAME + " function is not defined");
 		}
 
 		if (transformFunction  == null) {
-			throw new ComponentNotReadyException(RecordNormalizeTL.TRANSFORM_FUNCTION_NAME + " function is not defined");
+			throw new ComponentNotReadyException(CTLRecordNormalize.TRANSFORM_FUNCTION_NAME + " function is not defined");
 		}
 
 		return true;

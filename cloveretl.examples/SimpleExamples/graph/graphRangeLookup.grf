@@ -35,11 +35,13 @@
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/peoplesOnTour.dat" guiHeight="101" guiName="Delimited Data Reader" guiWidth="194" guiX="30" guiY="173" id="DATA_READER0" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/peopleAtTour.out" guiHeight="101" guiName="Universal Data Writer" guiWidth="184" guiX="450" guiY="173" id="DATA_WRITER0" type="DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="101" guiName="Lookup Join" guiWidth="128" guiX="286" guiY="173" id="LOOKUP_JOIN0" joinKey="date;time;name" lookupTable="LookupTable0" type="LOOKUP_JOIN">
-<attr name="transform"><![CDATA[function transform() {
-	$0.name := $0.name;
-	$0.date := $0.date;
-	$0.time := $0.time;
-	$0.activity := $1.name;
+<attr name="transform"><![CDATA[//CTL2
+function integer transform() {
+	$0.name = $0.name;
+	$0.date = $0.date;
+	$0.time = $0.time;
+	$0.activity = $1.name;
+	return ALL;
 }
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Data records from the edge and the lookup table are joined based on the key.  LookupJoin has three fields specified as Join key. These are contained in metadata on the input edge. Range lookup table has 6 fields which correspond to the three fields from the edge. The records on the edge are joined with those from lookup table if the values of the three fields on the edge are included in the ranges specified by the 6 fields of metadata of range lookup table.]]></attr>

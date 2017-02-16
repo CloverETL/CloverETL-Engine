@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.util.Properties;
 import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
@@ -38,7 +37,7 @@ public class FileCloseTest extends CloverTestCase {
 
 	static Log logger = LogFactory.getLog(FileCloseTest.class);
 
-	private Properties properties;
+	private GraphParameters graphParameters;
 
 	/**
 	 * Sets up the fixture, for example, open a network connection.
@@ -49,10 +48,9 @@ public class FileCloseTest extends CloverTestCase {
 		super.setUp();
 		initEngine();
 		
-		properties = new Properties();
-		try (FileInputStream fis = new FileInputStream(new File(EXAMPLE_PATH + "workspace.prm"))) {
-			properties.load(fis);
-		}
+		graphParameters = new GraphParameters();
+		TransformationGraphXMLReaderWriter reader = new TransformationGraphXMLReaderWriter(new GraphRuntimeContext());
+		reader.instantiateGraphParametersFile(graphParameters, EXAMPLE_PATH + "workspace.prm");
 	}
 
 	
@@ -134,7 +132,7 @@ public class FileCloseTest extends CloverTestCase {
 		File file1 = null;
 		File file2 = null;
 		try {
-			PropertyRefResolver propertyRefResolver = new PropertyRefResolver(properties);
+			PropertyRefResolver propertyRefResolver = new PropertyRefResolver(graphParameters);
 			String metaDir = EXAMPLE_PATH + propertyRefResolver.resolveRef("${META_DIR}");
 			String detaInDir = EXAMPLE_PATH + propertyRefResolver.resolveRef("${DATAIN_DIR}");
 			file1 = new File(detaInDir + "/delimited/" + "orders1.dat");

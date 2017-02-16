@@ -1743,7 +1743,7 @@ public class DB2DataWriter extends Node {
         DB2DataWriter writer = new DB2DataWriter(xattribs.getString(XML_ID_ATTRIBUTE),
                 xattribs.getString(XML_DATABASE_ATTRIBUTE, null),
                 xattribs.getString(XML_USERNAME_ATTRIBUTE, null),
-                xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, null, RefResFlag.SECURE_PARAMATERS),
+                xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, null, RefResFlag.PASSWORD),
                 xattribs.getString(XML_TABLE_ATTRIBUTE, null),
                 LoadMode.valueOf(xattribs.getString(XML_MODE_ATTRIBUTE, DEFAULT_TABLE_LOAD_MODE).toLowerCase()),
                 xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.URL),
