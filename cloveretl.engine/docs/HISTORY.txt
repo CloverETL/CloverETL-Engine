@@ -2,6 +2,31 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-5-0-M2
+------------
+
+* Engine
+	* CLO-10300 "ExtFilter" renamed to "Filter"
+	* CLO-10204 HTTPConnector respects configured charset (used system default previously)
+	* CLO-10108 Better handling of timeout in ExecuteScript
+	* CLO-6378 Removed CTL1 support
+	* CLO-10331 Removed CTL function resolveParams() with resolveCTL flag
+
+* Designer changes
+	* CLO-10320 Runtime starts automatically on Designer startup
+	* CLO-10325 Empty graph editor shows hint for adding component
+	* CLO-10319 Create new project hint is shown in empty Navigator
+	
+* Server UI Improvements
+	* CLO-10068 Changed table UI for Event Listeners
+	* CLO-10306 Plain text improvements in Send e-mail task
+	* CLO-9710 Restart job with changed input parameters
+
+* Others
+	* CLO-10170 Updated Salesforce API version to 39
+	* CLO-9907 JSONExtract now fails when mapping into non existing metadata fields
+	
+
 REL-4-5-0-M1
 ------------
 
