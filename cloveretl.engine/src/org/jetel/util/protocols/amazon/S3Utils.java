@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
 import org.jetel.component.fileoperation.pool.PooledS3Connection;
 import org.jetel.util.ExceptionUtils;
