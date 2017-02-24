@@ -18,6 +18,7 @@
  */
 package org.jetel.graph;
 
+import org.apache.commons.lang.WordUtils;
 import org.jetel.util.FileType;
 import org.jetel.util.string.StringUtils;
 
@@ -80,6 +81,15 @@ public enum JobType {
 	
 	public String getLabel() {
 		return label;
+	}
+	
+	/**
+	 * Identical with {@link #getLabel()} only for {@link #PROFILER_JOB}
+	 * is returned 'Profiler Job' instead of 'Profiler job'.
+	 * @return capitalized label
+	 */
+	public String getCapitalizedLabel() {
+		return WordUtils.capitalizeFully(label);
 	}
 	
 	@Override
