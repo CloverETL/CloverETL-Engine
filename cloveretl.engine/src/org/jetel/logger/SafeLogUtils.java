@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
  */
 public class SafeLogUtils {
 	/** Pattern for identifying URL with password in a given text */
-	private static final Pattern URL_PASSWORD_PATTERN = Pattern.compile(".+://([^/]*?):([^\\*]*?)@.+", Pattern.DOTALL);
+	private static final Pattern URL_PASSWORD_PATTERN = Pattern.compile("\\w+://.*?:([^/]*)@", Pattern.DOTALL);
 	
 	/*
 	 * a://b:c@d
@@ -57,26 +57,18 @@ public class SafeLogUtils {
 			return null;
 		}
 		
-		//secondly, try to detect passwords in possible URLs 
-		boolean changed = false;
-		String result = text;
-		do {
-			changed = false;
-			Matcher m = URL_PASSWORD_PATTERN.matcher(result);
-			
-			if (m.matches()) {
-				StringBuilder builder = new StringBuilder(result.substring(0, m.start(2)));
-
-				builder.append("***");
-				builder.append(result.substring(m.end(2)));
-				result = builder.toString();
-				
-				changed = true;
-			} 
-		} while (changed); 
+		StringBuilder result = new StringBuilder();
+		Matcher m = URL_PASSWORD_PATTERN.matcher(text);
+		int pointer = 0;
+		while (m.find()) {
+		    String s = m.group(1);
+		    result.append(text.substring(pointer, m.start(1)));
+		    result.append("***");
+		    pointer = m.end(1);
+		}
+		result.append(text.substring(pointer, text.length()));
 		
-		
-		return result;
+		return result.toString();
 	}
 	
 	private SafeLogUtils() {
