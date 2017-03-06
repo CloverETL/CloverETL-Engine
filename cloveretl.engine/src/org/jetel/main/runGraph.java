@@ -564,18 +564,23 @@ public class runGraph {
 			"Running on {0} CPU(s)" +
     		", OS {1}" +
     		", architecture {2}" + 
-    		", Java version {3} ({4})" +
-    		", max available memory for JVM {5} KB");
+    		", max available memory for JVM {3} KB");
+	private static MessageFormat RUNTIME_HEADER_4 = new MessageFormat("Running on {0}, {1}, {2}");
 	
 	public static void printRuntimeHeader() {
         logger.info(RUNTIME_HEADER_1.format(new Object[] {JetelVersion.LIBRARY_BUILD_YEAR}));
         logger.info(RUNTIME_HEADER_2.format(new Object[] {getInfo()}));
-        logger.info(RUNTIME_HEADER_3.format(new Object[] {Runtime.getRuntime().availableProcessors(),
+        logger.info(RUNTIME_HEADER_3.format(new Object[] {
+        		Runtime.getRuntime().availableProcessors(),
         		System.getProperty("os.name"),
         		System.getProperty("os.arch"),
+        		Runtime.getRuntime().maxMemory() / 1024
+        }));
+        logger.info(RUNTIME_HEADER_4.format(new Object[] {
+        		System.getProperty("java.runtime.name"),
         		System.getProperty("java.version"),
-        		System.getProperty("java.vendor"),
-        		Runtime.getRuntime().maxMemory() / 1024}));
+        		System.getProperty("java.vendor")
+        }));
 	}
 	
 	/**
