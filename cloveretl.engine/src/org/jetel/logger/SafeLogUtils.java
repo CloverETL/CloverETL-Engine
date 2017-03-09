@@ -61,7 +61,6 @@ public class SafeLogUtils {
 		Matcher m = URL_PASSWORD_PATTERN.matcher(text);
 		int pointer = 0;
 		while (m.find()) {
-		    String s = m.group(1);
 		    result.append(text.substring(pointer, m.start(1)));
 		    result.append("***");
 		    pointer = m.end(1);
