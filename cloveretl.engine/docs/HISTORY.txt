@@ -2,6 +2,29 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-5-0
+---------
+* Changes
+	* CLO-10512	Drop support of 32bit linux
+	* CLO-10405	Send email task: Easier plain text html extraction
+	* CLO-10474	SalesforceWriter - allow to configure batch size
+	* CLO-10325	Add hint to empty graph editor how to add a component
+	* CLO-9936 SalesforceBulkWriter - allow to configure batch mode and size
+	
+
+* FIXES
+	* CLO-10549	Fixed MSSQL structure to prevent Deadlock during configuration import
+	* CLO-10543 Metadata extracted from Salesforce are quoted by default
+	* CLO-10536	Import configuration preview changes live model of data
+	* CLO-10494	UI changes of TaskHistory table
+	* CLO-10471	Extract metadata from MSSQL fails when record start with number
+	* CLO-10457	Logged passwords in plaintext when incorrectly escaped
+	* CLO-10389	Killing finished job causes exception
+	* CLO-10108	ExecuteScript: No kill after timeout
+	* CLO-9808 Profiler reporting console login hitch
+	* CLO-9532 Metadata extraction: file preview shows escaped characters
+
+
 REL-4-5-0-M2
 ------------
 
