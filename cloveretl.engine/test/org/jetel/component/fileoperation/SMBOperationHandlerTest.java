@@ -209,6 +209,11 @@ public class SMBOperationHandlerTest extends OperationHandlerTestTemplate {
 	protected long getTolerance() {
 		return 1000;
 	}
+	
+	@Override
+	protected String getRootDirName() {
+		return "VIRT-ORANGE";
+	}
 
 	@Override
 	public void testCreateDated() throws Exception {
