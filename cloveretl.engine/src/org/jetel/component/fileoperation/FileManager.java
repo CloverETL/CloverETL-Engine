@@ -1072,9 +1072,16 @@ public class FileManager {
 						}
 					}
 					try {
-						List<Info> infos = handler.list(target, params); 
-						if (infos != null) {
-							result.add(target, infos);
+						if (params.isListDirectoryContents()) {
+							// List the contents of the directories.
+							List<Info> infos = handler.list(target, params); 
+							if (infos != null) {
+								result.add(target, infos);
+							}
+						} else {
+							// List the directories themselves.
+							InfoResult infoResult = info(target);
+							result.add(target, infoResult.getResult());
 						}
 					} catch (Exception ex) {
 						result.addFailure(target, new IOException(FileOperationMessages.getString("FileManager.listing_failed"), ex)); //$NON-NLS-1$
