@@ -28,6 +28,7 @@ import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.nio.file.Files;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -557,15 +558,29 @@ public class runGraph {
         
 	}
 
+	private static MessageFormat RUNTIME_HEADER_1 = new MessageFormat("***  CloverETL, (c) 2002-{0} Javlin a.s.  ***");
+	private static MessageFormat RUNTIME_HEADER_2 = new MessageFormat("Running with {0}");
+	private static MessageFormat RUNTIME_HEADER_3 = new MessageFormat(
+			"Running on {0} CPU(s)" +
+    		", OS {1}" +
+    		", architecture {2}" + 
+    		", max available memory for JVM {3} KB");
+	private static MessageFormat RUNTIME_HEADER_4 = new MessageFormat("Running on {0}, {1}, {2}");
+	
 	public static void printRuntimeHeader() {
-        logger.info("***  CloverETL, (c) 2002-" + JetelVersion.LIBRARY_BUILD_YEAR + " Javlin a.s.  ***");
-        logger.info("Running with " + getInfo());
-
-        logger.info("Running on " + Runtime.getRuntime().availableProcessors() + " CPU(s), " +
-        		"OS " + System.getProperty("os.name") +
-        		", architecture " + System.getProperty("os.arch") + 
-        		", Java version " + System.getProperty("java.version") +
-        		", max available memory for JVM " + Runtime.getRuntime().maxMemory() / 1024 + " KB");
+        logger.info(RUNTIME_HEADER_1.format(new Object[] {JetelVersion.LIBRARY_BUILD_YEAR}));
+        logger.info(RUNTIME_HEADER_2.format(new Object[] {getInfo()}));
+        logger.info(RUNTIME_HEADER_3.format(new Object[] {
+        		Runtime.getRuntime().availableProcessors(),
+        		System.getProperty("os.name"),
+        		System.getProperty("os.arch"),
+        		Runtime.getRuntime().maxMemory() / 1024
+        }));
+        logger.info(RUNTIME_HEADER_4.format(new Object[] {
+        		System.getProperty("java.runtime.name"),
+        		System.getProperty("java.version"),
+        		System.getProperty("java.vendor")
+        }));
 	}
 	
 	/**
