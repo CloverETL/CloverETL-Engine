@@ -1315,6 +1315,14 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertEquals(1, result.size());
 			assertEquals("eclipse", result.get(0).getName());
 			printInfo(baseUri, result);
+		} {
+			// Wrong path
+			ListResult listResult = manager.list(relativeURI("dir1/doesnotexist"), new ListParameters()
+						.setListDirectoryContents(false)
+					);
+			assertEquals(1, listResult.totalCount());
+			assertEquals(0, listResult.successCount());
+			assertEquals(1, listResult.failCount());
 		}
 	}
 	
