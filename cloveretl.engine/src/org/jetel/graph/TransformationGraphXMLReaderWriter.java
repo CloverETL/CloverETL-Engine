@@ -202,6 +202,18 @@ public class TransformationGraphXMLReaderWriter {
 	public final static String SUBGRAPH_PORT_KEEP_EDGE_ATTRIBUTE = "keepEdge";
 	public final static String SUBGRAPH_PORT_CONNECTED_ATTRIBUTE = "connected";
 	
+	public final static String ENDPOINT_SETTINGS_ELEM = "EndpointSettings";
+	public final static String ENDPOINT_SETTINGS_URL_PATH_ATTR = "urlPath";
+	public final static String ENDPOINT_SETTINGS_DESCRIPTION_ELEM = "Description";
+	public final static String ENDPOINT_SETTINGS_METHOD_ELEM = "RequestMethod";
+	public final static String ENDPOINT_SETTINGS_METHOD_NAME_ATTR = "name";
+	public final static String ENDPOINT_SETTINGS_PARAM_ELEM = "RequestParameter";
+	public final static String ENDPOINT_SETTINGS_PARAM_NAME_ATTR = "name";
+	public final static String ENDPOINT_SETTINGS_PARAM_TYPE_ATTR = "type";
+	public final static String ENDPOINT_SETTINGS_PARAM_FORMAT_ATTR = "format";
+	public final static String ENDPOINT_SETTINGS_PARAM_REQUIRED_ATTR = "required";
+	public final static String ENDPOINT_SETTINGS_PARAM_DESCRIPTION_ATTR = "description";
+	
 	private final static String DICTIONARY_ELEMENT = "Dictionary";
 	private final static String DICTIONARY_ENTRY_ELEMENT = "Entry";
 	private final static String DICTIONARY_ENTRY_ID = "id";
