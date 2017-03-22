@@ -17,9 +17,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.jetel.graph.runtime;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,6 +53,7 @@ import org.jetel.graph.ContextProvider;
 import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.IGraphElement;
+import org.jetel.graph.NodeErrorListener;
 import org.jetel.graph.Node;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
@@ -75,9 +78,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	/**
 	 * This lock object guards currentPhase variable and watchDogStatus. 
 	 */
-	private final Lock CURRENT_PHASE_LOCK = new ReentrantLock();
+	private final Lock currentPhaseLock = new ReentrantLock();
 
-	private final Object ABORT_MONITOR = new Object();
+	private final Object abortMonitor = new Object();
 	private boolean abortFinished = false;
 	
     public final static String MBEAN_NAME_PREFIX = "CLOVERJMX_";
@@ -88,7 +91,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 	public static final String WATCHDOG_THREAD_NAME_PREFIX = "WatchDog_";
 	
-    private int[] _MSG_LOCK=new int[0];
+    private final Object messageMonitor = new Object();
     
     private static Logger logger = Logger.getLogger(WatchDog.class);
 
@@ -118,7 +121,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
     /**
      * This flag indicates that the {@link #free()} method has been invoked.
-     * The flag is used for correct abortation of WatchDog thread if necessary. 
+     * The flag is used for correct abortion of WatchDog thread if necessary. 
      */
     private volatile boolean isReleased = false;
     
@@ -194,9 +197,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		if (logger.isDebugEnabled()) {
 		  	logger.debug("Watchdog thread is running");
 		}
-		CURRENT_PHASE_LOCK.lock();
+		currentPhaseLock.lock();
 		String originalThreadName = null;
-		long startTimestamp = System.currentTimeMillis();
+		final long startTimestamp = System.nanoTime();
 
 		//we have to register current watchdog's thread to context provider - from now all 
 		//ContextProvider.getGraph() invocations return proper transformation graph
@@ -216,8 +219,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	    		Thread t = Thread.currentThread();
 	    		originalThreadName = t.getName();
 				String newThreadName = WATCHDOG_THREAD_NAME_PREFIX + runtimeContext.getRunId();
-				if (logger.isTraceEnabled())
-						logger.trace("rename thread " + originalThreadName + " to " + newThreadName);
+				if (logger.isTraceEnabled()) {
+					logger.trace("rename thread " + originalThreadName + " to " + newThreadName);
+				}
 			  	t.setName(newThreadName);
 	    		
 			  	logger.debug("Job execution type: " + getGraphRuntimeContext().getJobType());
@@ -276,7 +280,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			           		if (runtimeContext.isSynchronizedRun()) {
 			           			logger.info("Waiting for phase " + phases[currentPhaseNum] + " approval...");
 		           				watchDogStatus = Result.WAITING;
-		           				CURRENT_PHASE_LOCK.unlock();
+		           				currentPhaseLock.unlock();
 			           			synchronized (cloverJMX) {
 				           			while (cloverJMX.getApprovedPhaseNumber() < phases[currentPhaseNum].getPhaseNum() 
 				           					&& watchDogStatus == Result.WAITING) { //graph was maybe aborted
@@ -287,10 +291,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				           				}
 				           			}
 			           			}
-		           				CURRENT_PHASE_LOCK.lock();
+		           				currentPhaseLock.lock();
 		           				//watchdog was aborted while was waiting for next phase approval
 		           				if (watchDogStatus == Result.ABORTED) {
-		    	                    logger.warn("!!! Graph execution aborted !!!");
+		    	                    logger.warn("Job execution aborted");
 		    	                    break;
 		           				} else {
 		           					watchDogStatus = Result.RUNNING;
@@ -301,13 +305,13 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			                phaseResult = executePhase(phases[currentPhaseNum]);
 			                phases[currentPhaseNum].setResult(phaseResult);
 			                
-			                if(phaseResult == Result.ABORTED)      {
+			                if(phaseResult == Result.ABORTED) {
 			                	cloverJMX.phaseAborted();
-			                    logger.warn("!!! Phase execution aborted !!!");
+			                    logger.warn("Phase execution aborted");
 			                    break;
-			                } else if(phaseResult == Result.ERROR) {
+			                } else if (phaseResult == Result.ERROR) {
 			                	cloverJMX.phaseError(getErrorMessage());
-			                    logger.error("!!! Phase finished with error - stopping graph run !!!");
+			                    logger.error("Phase finished with error - stopping job run");
 			                    break;
 			                }
 			           		cloverJMX.phaseFinished();
@@ -326,7 +330,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		    				setCauseGraphElement(((ComponentNotReadyException) e).getGraphElement());
 		    			}
 		           		watchDogStatus = Result.ERROR;
-		           		ExceptionUtils.logException(logger, "Graph post-execute method failed.", e);
+		           		ExceptionUtils.logException(logger, "Job post-execute method failed.", e);
 		           	}
 	
 		           	//aborted graph does not follow last phase status
@@ -342,7 +346,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	           		} catch (Exception e) {
 	           			setCauseException(e);
 		           		watchDogStatus = Result.ERROR;
-		           		ExceptionUtils.logException(logger, "Graph commit failed", e, Level.FATAL);
+		           		ExceptionUtils.logException(logger, "Job commit failed", e, Level.FATAL);
 	           		}
 	           	} else {
 	           		try {
@@ -350,7 +354,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	           		} catch (Exception e) {
 	           			setCauseException(e);
 		           		watchDogStatus = Result.ERROR;
-		           		ExceptionUtils.logException(logger, "Graph rollback failed", e, Level.FATAL);
+		           		ExceptionUtils.logException(logger, "Job rollback failed", e, Level.FATAL);
 	           		}
 	           	}
 
@@ -358,7 +362,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	    		graph.getDictionary().printContent(logger, "Final dictionary content:");
 	       	} catch (Throwable t) {
 	       		//something was seriously wrong, let's abort the graph if necessary and report the error
-				CURRENT_PHASE_LOCK.unlock(); //current phase monitor needs to be unlocked before aborting
+				currentPhaseLock.unlock(); //current phase monitor needs to be unlocked before aborting
 				try {
 					abort(false);
 				} catch (Exception e) {
@@ -371,7 +375,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	       		ExceptionUtils.logException(logger, "Error watchdog execution", t);
 	       	} finally {
 	           	sendFinalJmxNotification();
-	            logger.info("WatchDog thread finished - total execution time: " + (System.currentTimeMillis() - startTimestamp) / 1000 + " (sec)");
+	            logger.info("WatchDog thread finished - total execution time: " + TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - startTimestamp) + " (sec)");
 			}
 		} finally {
             //we have to unregister current watchdog's thread from context provider
@@ -379,10 +383,11 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 			finishJMX();
             
-			CURRENT_PHASE_LOCK.unlock();
+			currentPhaseLock.unlock();
 			
-			if (originalThreadName != null)
+			if (originalThreadName != null) {
 				Thread.currentThread().setName(originalThreadName);
+			}
             MDC.remove("runId");
 		}
 
@@ -421,9 +426,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
        	}
 		
 		//if the graph was aborted, now the aborting thread is waiting for final notification - this is the way how to send him notice about the graph finished right now
-		synchronized (ABORT_MONITOR) {
+		synchronized (abortMonitor) {
 			abortFinished = true;
-			ABORT_MONITOR.notifyAll();
+			abortMonitor.notifyAll();
 		}
 	}
 
@@ -488,13 +493,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 * @return            Description of the Return Value
 	 * @since             July 29, 2002
 	 */
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings("UL")
+    @SuppressFBWarnings("UL")
 	private Result watch(Phase phase) throws InterruptedException {
 		Message<?> message;
-		Set<Node> phaseNodes;
 
 		// let's create a copy of leaf nodes - we will watch them
-		phaseNodes = new HashSet<Node>(phase.getNodes().values());
+		Set<Node> phaseNodes = new HashSet<Node>(phase.getNodes().values());
 
 		// is there any node running ? - this test is necessary for phases without nodes - empty phase
 		if (phaseNodes.isEmpty()) {
@@ -504,25 +508,41 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		// entering the loop awaiting completion of work by all leaf nodes
 		while (true) {
 			// wait on error message queue
-			CURRENT_PHASE_LOCK.unlock();
+			currentPhaseLock.unlock();
 			try {
 				message = inMsgQueue.poll(runtimeContext.getTrackingInterval(), TimeUnit.MILLISECONDS);
 			} finally {
-				CURRENT_PHASE_LOCK.lock();
+				currentPhaseLock.lock();
 			}
 			
 			if (message != null) {
-				switch(message.getType()){
+				switch (message.getType()){
 				case ERROR:
 					setCauseException(((ErrorMsgBody) message.getBody()).getSourceException());
 					setCauseGraphElement(message.getSender());
+					
 					if (getCauseException() == null) {
 						setCauseException(new JetelRuntimeException(String.format("Graph element %s failed with unknown cause.", message.getSender())));
 					}
 					ExceptionUtils.logException(logger, null, getCauseException());
+					/*
+					 * notify about current failure before phase is finished
+					 */
+					Node failedNode = null;
+					if (message.getSender() instanceof Node) {
+						failedNode = (Node)message.getSender();
+					}
+					for (NodeErrorListener handler : getErrorListeners()) {
+						try {
+							handler.nodeFailed(failedNode, getCauseException());
+						} catch (Exception e) {
+							logger.error("Unhandled exception in error handler", e);
+						}
+					}
+					
 					return Result.ERROR;
 				case MESSAGE:
-					synchronized (_MSG_LOCK) {
+					synchronized (messageMonitor) {
 						if (message.getRecipient() != null) {
 							outMsgMap.putValue(message.getRecipient(), message);
 						}
@@ -546,12 +566,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			if (isReleased) {
 				//WatchDog#free() method has been invoked, so the running graph has been released (free method) as well
 				//so no more messages will come, let's finish this phase watching
-				//this can happen if abortation of a component failed
+				//this can happen if abortion of a component failed
 				return Result.ABORTED;
 			}
 			
 			// gather graph tracking
-			//etl graphs are tracked only in regular intervals, jobflows are tracked more precise, whenever something happens
+			//ETL graphs are tracked only in regular intervals, jobflows are tracked more precise, whenever something happens
 			if (message == null || ContextProvider.getRuntimeJobType().isJobflow()) {
 				cloverJMX.gatherTrackingDetails();
 			}
@@ -579,20 +599,19 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	}
 	
 	private void abort(boolean waitForAbort) {
-		CURRENT_PHASE_LOCK.lock();
+		currentPhaseLock.lock();
 		//only running or waiting graph can be aborted
 		if (watchDogStatus != Result.RUNNING && watchDogStatus != Result.WAITING) {
 			//if the graph status is not final, so the graph was aborted
 			if (!watchDogStatus.isStop()) {
 		        watchDogStatus = Result.ABORTED;
 			}
-			CURRENT_PHASE_LOCK.unlock();
+			currentPhaseLock.unlock();
 			return;
 		}
-		Object oldMDCRunId = null;
+		final Object oldMDCRunId = MDC.get("runId");
 		try {
-			//update MDC for current thread to route logging message to correct logging destination
-			oldMDCRunId = MDC.get("runId");
+			//update MDC for current thread to route logging message to correct logging destination 
 			MDC.put("runId", runtimeContext.getRunId());
 			
 			//if the phase is running broadcast all nodes in the phase they should be aborted
@@ -615,18 +634,18 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			throw new JetelRuntimeException("Graph abort failed.", e);
 		} finally {
 			try {
-				synchronized (ABORT_MONITOR) {
-					CURRENT_PHASE_LOCK.unlock();
+				synchronized (abortMonitor) {
+					currentPhaseLock.unlock();
 					if (waitForAbort) {
 						long startAbort = System.currentTimeMillis();
 						while (!abortFinished) {
 							long interval = System.currentTimeMillis() - startAbort;
 							if (interval > ABORT_TIMEOUT) {
-								throw new IllegalStateException("Graph aborting error! Timeout "+ABORT_TIMEOUT+"ms exceeded!");
+								throw new IllegalStateException("Graph aborting error! Timeout " + ABORT_TIMEOUT + "ms exceeded!");
 							}
 					        try {
 					        	//the aborting thread try to wait for end of graph run
-								ABORT_MONITOR.wait(ABORT_WAIT);
+								abortMonitor.wait(ABORT_WAIT);
 							} catch (InterruptedException ignore) {	}// catch
 						}// while
 					}
@@ -650,15 +669,15 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 */
 	private void startUpNodes(Phase phase) {
 		synchronized(threadManager) {
-			while(threadManager.getFreeThreadsCount() < phase.getNodes().size()) { //it is sufficient, not necessary condition - so we have to time to time wake up and check it again
+			while (threadManager.getFreeThreadsCount() < phase.getNodes().size()) { //it is sufficient, not necessary condition - so we have to time to time wake up and check it again
 				try {
 					threadManager.wait(); //from time to time thread is woken up to check the condition again
 				} catch (InterruptedException e) {
-					throw new RuntimeException("WatchDog was interrupted while was waiting for free workers for nodes in phase " + phase.getPhaseNum());
+					throw new RuntimeException("WatchDog was interrupted while was waiting for free workers for nodes in phase " + phase.getLabel());
 				}
 			}
 			if (phase.getNodes().size() > 0) {
-				//this barrier can be broken only when all components and wathdog is waiting there
+				//this barrier can be broken only when all components and watchdog is waiting there
 				CyclicBarrier preExecuteBarrier = new CyclicBarrier(phase.getNodes().size() + 1);
 				//this barrier is used for synchronization of all components between pre-execute and execute
 				//it is necessary to finish all pre-execute's before execution
@@ -674,9 +693,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 					preExecuteBarrier.await();
 					logger.debug("All components are ready to start.");
 				} catch (InterruptedException e) {
-					throw new RuntimeException("WatchDog was interrupted while was waiting for workers startup in phase " + phase.getPhaseNum());
+					throw new RuntimeException("WatchDog was interrupted while was waiting for workers startup in phase " + phase.getLabel());
 				} catch (BrokenBarrierException e) {
-					throw new RuntimeException("WatchDog or a worker was interrupted while was waiting for nodes tartup in phase " + phase.getPhaseNum());
+					throw new RuntimeException("WatchDog or a worker was interrupted while was waiting for nodes tartup in phase " + phase.getLabel());
 				}
 			}
 		}
@@ -702,7 +721,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			}
 			return Result.ERROR;
 		}
-		logger.info("Starting up all nodes in phase [" + phase.getPhaseNum() + "]");
+		logger.info("Starting up all nodes in phase [" + phase.getLabel() + "]");
 		startUpNodes(phase);
 
 		logger.info("Successfully started all nodes in phase!");
@@ -710,12 +729,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		Result phaseStatus = Result.N_A;
         try{
             phaseStatus = watch(phase);
-        }catch(InterruptedException ex){
+        } catch (InterruptedException ex){
             phaseStatus = Result.ABORTED;
         } finally {
         	
             //now we can notify all waiting phases for free threads
-            synchronized(threadManager) {
+            synchronized (threadManager) {
             	threadManager.releaseNodeThreads(phase.getNodes().size());
                 threadManager.notifyAll();
             }
@@ -724,8 +743,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	            //abort still running components - for failed graphs
 	        	for (Node node : phase.getNodes().values()) {
 	        		if (!node.getResultCode().isStop()) {
-	    				if (logger.isTraceEnabled())
-								logger.trace("try to abort node "+node);
+	    				if (logger.isTraceEnabled()) {
+							logger.trace("Trying to abort node "+node);
+	    				}
 	        			node.abort();
 	        		}
 	        	}
@@ -755,7 +775,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
     @Override
 	public Message<?>[] receiveMessage(GraphElement recipient, final long wait) {
         Message<?>[] msg = null;
-        synchronized (_MSG_LOCK) {
+        synchronized (messageMonitor) {
             msg=(Message[])outMsgMap.get(recipient).toArray(new Message<?>[0]);
             if (msg!=null) {
                 outMsgMap.remove(recipient);
@@ -766,7 +786,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
     @Override
 	public boolean hasMessage(GraphElement recipient) {
-        synchronized (_MSG_LOCK ){
+        synchronized (messageMonitor ){
             return outMsgMap.containsKey(recipient);
         }
     }
@@ -800,7 +820,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
     			causes.add(causeException);
     		}
     		causes.add(e);
-    		causeException = new CompoundException(causes.toArray(new Throwable[0]));
+    		causeException = new CompoundException(causes.toArray(new Throwable[causes.size()]));
     	}
     }
 
@@ -902,6 +922,16 @@ public class WatchDog implements Callable<Result>, CloverPost {
     	//so try to release the JMX bean again
     	freeJMX();
     	isReleased = true;
+    }
+    
+    private Collection<NodeErrorListener> getErrorListeners() {
+    	List<NodeErrorListener> result = new ArrayList<>();
+    	for (Node node : graph.getNodes().values()) {
+    		if (node instanceof NodeErrorListener) {
+    			result.add((NodeErrorListener)node);
+    		}
+    	}
+    	return result;
     }
     
 	/**

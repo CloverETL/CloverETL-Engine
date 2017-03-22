@@ -46,8 +46,11 @@ import org.jetel.util.ExceptionUtils;
  * @see         OtherClasses
  */
 
-public class Phase extends GraphElement implements Comparable {
+public class Phase extends GraphElement implements Comparable<Phase> {
 
+	public static final int INITIAL_PHASE_ID = -1;
+	public static final int FINAL_PHASE_ID = -2;
+	
 	// Attributes
 
 	// Associations
@@ -76,7 +79,7 @@ public class Phase extends GraphElement implements Comparable {
 	 * @since            April 2, 2002
 	 */
 	public Phase(int phaseNum) {
-		super(Integer.toString(phaseNum));
+		super(getPhaseLabel(phaseNum));
 		
 		this.phaseNum = phaseNum;
 		nodes = new LinkedHashMap<String, Node>();
@@ -114,6 +117,10 @@ public class Phase extends GraphElement implements Comparable {
 	public int getPhaseNum() {
 		return phaseNum;
 	}
+	
+	public String getLabel() {
+		return getPhaseLabel(phaseNum);
+	}
 
 
 	/**
@@ -136,7 +143,7 @@ public class Phase extends GraphElement implements Comparable {
         if(isInitialized()) return;
 		super.init();
 
-		logger.info("Initializing phase " + phaseNum);
+		logger.info("Initializing phase " + getLabel());
 
         //initialization of all edges
         if(logger.isDebugEnabled()){
@@ -159,7 +166,7 @@ public class Phase extends GraphElement implements Comparable {
 		logger.debug("Initializing nodes");
         }
 		for (Node node : nodes.values()) {
-			ClassLoader formerClassLoader = Thread.currentThread().getContextClassLoader();
+			final ClassLoader formerClassLoader = Thread.currentThread().getContextClassLoader();
 
 			Context c = ContextProvider.registerNode(node);
 			try {
@@ -180,7 +187,7 @@ public class Phase extends GraphElement implements Comparable {
 			}
 		}
         
-		logger.info("Phase " + phaseNum + " initialized successfully.");
+		logger.info("Phase " + getLabel() + " initialized successfully.");
 		
         result = Result.READY;
 		// initialized OK
@@ -531,14 +538,29 @@ public class Phase extends GraphElement implements Comparable {
 	 * @return     Description of the Return Value
 	 */
 	@Override
-	public int compareTo(Object to) {
-		int toPhaseNum = ((Phase) to).getPhaseNum();
-		if (phaseNum > toPhaseNum) {
-			return 1;
-		} else if (phaseNum < toPhaseNum) {
-			return -1;
-		} else {
-			return 0;
+	public int compareTo(Phase other) {
+		
+		final int otherPhaseNum = other.getPhaseNum();
+		switch (phaseNum) {
+		case INITIAL_PHASE_ID: {
+			return otherPhaseNum == INITIAL_PHASE_ID ? 0 : -1;
+		}
+		case FINAL_PHASE_ID: {
+			return otherPhaseNum == FINAL_PHASE_ID ? 0 : 1;
+		}
+		default: {
+			switch (otherPhaseNum) {
+			case INITIAL_PHASE_ID: {
+				return phaseNum == INITIAL_PHASE_ID ? 0 : 1;
+			}
+			case FINAL_PHASE_ID: {
+				return phaseNum == FINAL_PHASE_ID ? 0 : -1;
+			}
+			default: {
+				return Integer.compare(phaseNum, otherPhaseNum);
+			}
+			}
+		}
 		}
 	}
     
@@ -572,9 +594,21 @@ public class Phase extends GraphElement implements Comparable {
     public void setCheckPoint(boolean isCheckPoint) {
         this.isCheckPoint = isCheckPoint;
     }
-
+    
+    protected static String getPhaseLabel(int phaseNum) {
+    	switch (phaseNum) {
+    	case INITIAL_PHASE_ID: {
+    		return "InitialPhase";
+    	}
+    	case FINAL_PHASE_ID: {
+    		return "FinalPhase";
+    	}
+    	default: {
+    		return Integer.toString(phaseNum);
+    	}
+    	}
+    }
 }
 /*
  *  end class Phase
  */
-

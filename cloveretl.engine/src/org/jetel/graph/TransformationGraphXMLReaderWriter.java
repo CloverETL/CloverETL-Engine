@@ -42,6 +42,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.XMLEvent;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.ComponentFactory;
@@ -202,12 +203,12 @@ public class TransformationGraphXMLReaderWriter {
 	public final static String SUBGRAPH_PORT_KEEP_EDGE_ATTRIBUTE = "keepEdge";
 	public final static String SUBGRAPH_PORT_CONNECTED_ATTRIBUTE = "connected";
 	
-	public final static String ENDPOINT_SETTINGS_ELEM = "EndpointSettings";
+	public final static String ENDPOINT_SETTINGS_ELEMENT = "EndpointSettings";
 	public final static String ENDPOINT_SETTINGS_URL_PATH_ATTR = "urlPath";
 	public final static String ENDPOINT_SETTINGS_DESCRIPTION_ELEM = "Description";
-	public final static String ENDPOINT_SETTINGS_METHOD_ELEM = "RequestMethod";
+	public final static String ENDPOINT_SETTINGS_METHOD_ELEMENT = "RequestMethod";
 	public final static String ENDPOINT_SETTINGS_METHOD_NAME_ATTR = "name";
-	public final static String ENDPOINT_SETTINGS_PARAM_ELEM = "RequestParameter";
+	public final static String ENDPOINT_SETTINGS_PARAM_ELEMENT = "RequestParameter";
 	public final static String ENDPOINT_SETTINGS_PARAM_NAME_ATTR = "name";
 	public final static String ENDPOINT_SETTINGS_PARAM_TYPE_ATTR = "type";
 	public final static String ENDPOINT_SETTINGS_PARAM_FORMAT_ATTR = "format";
@@ -594,14 +595,14 @@ public class TransformationGraphXMLReaderWriter {
 					try {
 					    recordMetadata=MetadataFactory.fromFile(graph, fileURL);
 	                } catch (IOException ex) {
-	                	throwXMLConfigurationException("Can't parse metadata '" + metadataID + "'. Error when reading/parsing record metadata definition file '" + fileURL +"'.", ex);
+	                	throwXMLConfigurationException("Cannot parse metadata '" + metadataID + "'. Error when reading/parsing record metadata definition file '" + fileURL +"'.", ex);
 	                }
 				}// metadata from analyzing DB table (JDBC) - will be resolved
 				// later during Edge init - just put stub now.
 				else if (attributes.exists(DataRecordMetadataXMLReaderWriter.CONNECTION_ATTR)){
 					IConnection connection = graph.getConnection(attributes.getString(DataRecordMetadataXMLReaderWriter.CONNECTION_ATTR));
 					if(connection == null) {
-						throwXMLConfigurationException("Can't find Connection id - " + attributes.getString(DataRecordMetadataXMLReaderWriter.CONNECTION_ATTR) + ".");
+						throwXMLConfigurationException("Cannot find Connection id - " + attributes.getString(DataRecordMetadataXMLReaderWriter.CONNECTION_ATTR) + ".");
 					} else {
 						recordMetadata = new DataRecordMetadataStub(connection, attributes.attributes2Properties(null));
 					}
@@ -784,7 +785,7 @@ public class TransformationGraphXMLReaderWriter {
             
 			Object metadataObj = edgeMetadataID != null ? metadata.get(edgeMetadataID) : null;
 			if (metadataObj == null && edgeMetadataID != null) {
-				throwXMLConfigurationException("Can't find metadata ID '" + edgeMetadataID + "'.");
+				throwXMLConfigurationException("Cannot find metadata ID '" + edgeMetadataID + "'.");
 			}
 			// do we have real metadata or stub only ??
 			if (metadataObj instanceof DataRecordMetadata){
@@ -825,13 +826,13 @@ public class TransformationGraphXMLReaderWriter {
 			}
 			writerNode = graph.getNodes().get(specNodePort[0]);
 			if (writerNode == null) {
-				throwXMLConfigurationException("Can't find node with ID: " + fromNodeAttr);
+				throwXMLConfigurationException("Cannot find node with ID: " + fromNodeAttr);
 				continue;
 			}
             try{
                 fromPort=Integer.parseInt(specNodePort[1]);
             }catch(NumberFormatException ex){
-                throwXMLConfigurationException("Can't parse \"fromNode\"  port number value at edge "+edgeID+" : "+specNodePort[1]);
+                throwXMLConfigurationException("Cannot parse \"fromNode\"  port number value at edge "+edgeID+" : "+specNodePort[1]);
                 continue;
             }
             
@@ -849,13 +850,13 @@ public class TransformationGraphXMLReaderWriter {
 			// Node & port specified in form of: <nodeID>:<portNum>
 			readerNode = graph.getNodes().get(specNodePort[0]);
 			if (readerNode == null) {
-				throwXMLConfigurationException("Can't find node ID: " + toNodeAttr);
+				throwXMLConfigurationException("Cannot find node ID: " + toNodeAttr);
 				continue;
 			}
             try{
                 toPort=Integer.parseInt(specNodePort[1]);
             }catch(NumberFormatException ex){
-                throwXMLConfigurationException("Can't parse \"toNode\" number value at edge "+edgeID+" : "+specNodePort[1]);
+                throwXMLConfigurationException("Cannot parse \"toNode\" number value at edge "+edgeID+" : "+specNodePort[1]);
                 continue;
             }
 			// check whether port isn't already assigned
@@ -1060,7 +1061,7 @@ public class TransformationGraphXMLReaderWriter {
         	try {
         		graphParameters.addProperties(loadGraphProperties(resolvedFileURL));
         	} catch(IOException ex) {
-        		throwXMLConfigurationException("Can't load property definition from " + resolvedFileURL, ex);
+        		throwXMLConfigurationException("Cannot load property definition from " + resolvedFileURL, ex);
         	}
         }
 	}
@@ -1176,13 +1177,7 @@ public class TransformationGraphXMLReaderWriter {
         } catch(MalformedURLException e) {
         	throwXMLConfigurationException("Wrong URL/filename of file specified: " + fileURL, e);
         } finally {
-        	if (inStream != null) {
-        		try {
-        			inStream.close();
-        		} catch (IOException e) {
-        			//DO NOTHING
-        		}
-        	}
+        	IOUtils.closeQuietly(inStream);
         }
     	return null;
     }

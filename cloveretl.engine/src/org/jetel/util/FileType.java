@@ -36,7 +36,8 @@ public enum FileType {
 	METADATA("fmt"), //$NON-NLS-1$
 	CTL_TRANSFORMATION("ctl"), //$NON-NLS-1$
 	SUBGRAPH("sgrf"), //$NON-NLS-1$
-	SUBJOBFLOW("sjbf"); //$NON-NLS-1$
+	SUBJOBFLOW("sjbf"), //$NON-NLS-1$
+	RESTJOB("rjb");
 	
 	public final String extension;
 	

@@ -85,7 +85,7 @@ public final class TransformationGraph extends GraphElement {
 	
     private static final int MAX_ALLOWED_OBJ_IDX = 1000000;
 
-    private Map <Integer,Phase> phases;
+    private Map <Integer, Phase> phases;
 
     private Map <String,IConnection> connections;
 
@@ -479,17 +479,15 @@ public final class TransformationGraph extends GraphElement {
 	}
 	
 	/**
-     * Return array of Phases defined within graph sorted (ascentially)
+     * Return array of Phases defined within graph sorted (ascending)
      * according phase numbers.
      * 
 	 * @return Returns the Phases array.
 	 */
 	public Phase[] getPhases() {
-		
 		final Collection<Phase> retList = phases.values();
 		final Phase[] ret = retList.toArray(new Phase[retList.size()]);
 		Arrays.sort(ret);
-		
 		return ret; 
 	}
     
@@ -843,7 +841,7 @@ public final class TransformationGraph extends GraphElement {
 	 * @since         August 3, 2003
 	 */
 	public void addPhase(Phase phase) throws GraphConfigurationException {
-		if (phases.put(phase.getPhaseNum(),phase)!=null){
+		if (phases.put(phase.getPhaseNum(), phase) != null){
 		    throw new GraphConfigurationException("Phase already exists in graph "+phase);
         }
 		phase.setGraph(this);
