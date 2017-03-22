@@ -37,7 +37,7 @@ public enum FileType {
 	CTL_TRANSFORMATION("ctl"), //$NON-NLS-1$
 	SUBGRAPH("sgrf"), //$NON-NLS-1$
 	SUBJOBFLOW("sjbf"), //$NON-NLS-1$
-	RESTJOB("rjb");
+	RESTJOB("rjb"); //$NON-NLS-1$
 	
 	public final String extension;
 	
@@ -109,7 +109,7 @@ public enum FileType {
 	 * @return <code>true</code> for {@link #ETL_GRAPH}, {@link #JOBFLOW}, {@link #SUBGRAPH}, and {@link #SUBJOBFLOW}
 	 */
 	public boolean isGraph() {
-		return this == ETL_GRAPH || this == JOBFLOW || this == SUBGRAPH || this == SUBJOBFLOW;
+		return this == ETL_GRAPH || this == JOBFLOW || this == SUBGRAPH || this == SUBJOBFLOW || this == RESTJOB;
 	}
 
 }
