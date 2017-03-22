@@ -24,7 +24,7 @@ package org.jetel.graph;
  *
  * @created 21.3.2017
  */
-public interface NodeErrorAware {
+public interface NodeErrorListener {
 
 	void nodeFailed(Node node, Throwable error);
 }
