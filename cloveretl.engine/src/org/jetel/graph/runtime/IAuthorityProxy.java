@@ -672,4 +672,10 @@ public abstract class IAuthorityProxy {
 	 */
 	public abstract void modifyGraphParameter(GraphParameter graphParameter);
 	
+	/**
+	 * Returns instance of HttpContext if this job is a RestJob
+	 * @return
+	 */
+	public abstract HttpContext getHttpContext();
+	
 }

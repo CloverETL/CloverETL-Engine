@@ -549,5 +549,10 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	public void modifyGraphParameter(GraphParameter graphParameter) {
 		// no params modifications
 	}
+
+	@Override
+	public HttpContext getHttpContext() {
+		throw new UnsupportedOperationException("HTTP Context is not available for local execution");
+	}
 	
 }
