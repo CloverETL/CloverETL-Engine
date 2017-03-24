@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.RemoteEdgeComponent;
 import org.jetel.data.DataRecord;
+import org.jetel.enums.EdgeDebugMode;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -58,6 +59,9 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 
     private static Log logger = LogFactory.getLog(Edge.class);
 
+    private static final int DEFAULT_DEBUG_MAX_RECORDS = 1000;
+    private static final int DEFAULT_DEBUG_MAX_BYTES = 1024 * 1024; // 1MB
+    
 	protected Node reader;
 	protected Node writer;
     
@@ -70,7 +74,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	/** State of the reference to a graph element*/
 	protected ReferenceState metadataRefState;
 	
-    protected boolean debugMode;
+    protected EdgeDebugMode debugMode;
     protected EdgeDebugWriter edgeDebugWriter;
     protected long debugMaxRecords;
     protected boolean debugLastRecords;
@@ -114,21 +118,21 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @param  metadata  Metadata describing data transported by this edge
 	 * @since            April 2, 2002
 	 */
-	public Edge(String id, DataRecordMetadata metadata, boolean debugMode) {
+	public Edge(String id, DataRecordMetadata metadata, EdgeDebugMode debugMode) {
         super(id);
 		this.metadata = metadata;
-        this.debugMode = debugMode;
+        this.debugMode = debugMode != null ? debugMode : EdgeDebugMode.DEFAULT;
 		reader = writer = null;
 		edge = null;
 		eofSent = false;
 	}
 
     public Edge(String id, DataRecordMetadata metadata) {
-        this(id, metadata, false);
+        this(id, metadata, null);
     }
     
 	public Edge(String id, DataRecordMetadataStub metadataStub) {
-		this(id, createMetadataFromStub(metadataStub), false);
+		this(id, createMetadataFromStub(metadataStub), null);
 	}
 
 	private static DataRecordMetadata createMetadataFromStub(DataRecordMetadataStub metadataStub) {
@@ -155,12 +159,17 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		this.edgeType = otherEdge.edgeType;
 	}
 
-    public void setDebugMode(boolean debugMode) {
-    	this.debugMode = debugMode;
+    public void setDebugMode(EdgeDebugMode debugMode) {
+    	this.debugMode = debugMode != null ? debugMode : EdgeDebugMode.DEFAULT;
     }
     
-    public boolean isDebugMode() {
+    public EdgeDebugMode getDebugMode() {
     	return debugMode;
+    }
+    
+    public boolean isEdgeDebugging() {
+    	return getGraph().isEdgeDebugging()
+    			&& debugMode != EdgeDebugMode.OFF;
     }
     
     public void setDebugMaxRecords(long debugMaxRecords) {
@@ -454,21 +463,39 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	}
 
 	protected void initDebugMode() {
-		if (debugMode && getGraph().isDebugMode()) {
+		if (isEdgeDebugging()) {
             String debugFileName = getDebugFileName();
-            logger.debug("Edge '" + getId() + "' is running in debug mode. (" + debugFileName + ")");
-            edgeDebugWriter = new EdgeDebugWriter(this, debugFileName, metadata);
-            edgeDebugWriter.setDebugMaxRecords(debugMaxRecords);
-            edgeDebugWriter.setDebugLastRecords(debugLastRecords);
-            edgeDebugWriter.setFilterExpression(debugFilterExpression);
-            edgeDebugWriter.setSampleData(debugSampleData);
-			
-            try {
+			switch(debugMode) {
+			case ALL:
+	            logger.debug("Edge '" + getId() + "' is running in debug mode ALL (" + debugFileName + ")");
+	            edgeDebugWriter = new EdgeDebugWriter(this, debugFileName, metadata);
+	            break;
+			case DEFAULT:
+	            logger.debug("Edge '" + getId() + "' is running in debug mode DEFAULT (" + debugFileName + ")");
+	            edgeDebugWriter = new EdgeDebugWriter(this, debugFileName, metadata);
+	            edgeDebugWriter.setDebugMaxRecords(DEFAULT_DEBUG_MAX_RECORDS);
+	            edgeDebugWriter.setDebugMaxBytes(DEFAULT_DEBUG_MAX_BYTES);
+	            break;
+			case OFF:
+	            logger.debug("Edge '" + getId() + "' has debug turned off");
+				//no debugging
+				break;
+			case CUSTOM:
+	            logger.debug("Edge '" + getId() + "' is running in debug mode CUSTOM (" + debugFileName + ")");
+	            edgeDebugWriter = new EdgeDebugWriter(this, debugFileName, metadata);
+	            edgeDebugWriter.setDebugMaxRecords(debugMaxRecords);
+	            edgeDebugWriter.setDebugLastRecords(debugLastRecords);
+	            edgeDebugWriter.setFilterExpression(debugFilterExpression);
+	            edgeDebugWriter.setSampleData(debugSampleData);
+				break;
+			}
+
+			try {
                 edgeDebugWriter.init();
             } catch (Exception ex) {
                 throw new JetelRuntimeException("Edge debugger initialisation failed.", ex);
             }
-        }
+		}
 	}
 	
 	/* (non-Javadoc)
