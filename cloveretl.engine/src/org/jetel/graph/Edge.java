@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.RemoteEdgeComponent;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.enums.EdgeDebugMode;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ComponentNotReadyException;
@@ -59,9 +60,6 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 
     private static Log logger = LogFactory.getLog(Edge.class);
 
-    private static final int DEFAULT_DEBUG_MAX_RECORDS = 1000;
-    private static final int DEFAULT_DEBUG_MAX_BYTES = 1024 * 1024; // 1MB
-    
 	protected Node reader;
 	protected Node writer;
     
@@ -473,8 +471,8 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 			case DEFAULT:
 	            logger.debug("Edge '" + getId() + "' is running in debug mode DEFAULT (" + debugFileName + ")");
 	            edgeDebugWriter = new EdgeDebugWriter(this, debugFileName, metadata);
-	            edgeDebugWriter.setDebugMaxRecords(DEFAULT_DEBUG_MAX_RECORDS);
-	            edgeDebugWriter.setDebugMaxBytes(DEFAULT_DEBUG_MAX_BYTES);
+	            edgeDebugWriter.setDebugMaxRecords(Defaults.Graph.DEFAULT_EDGE_DEBUGGING_MAX_RECORDS);
+	            edgeDebugWriter.setDebugMaxBytes(Defaults.Graph.DEFAULT_EDGE_DEBUGGING_MAX_BYTES);
 	            break;
 			case OFF:
 	            logger.debug("Edge '" + getId() + "' has debug turned off");
