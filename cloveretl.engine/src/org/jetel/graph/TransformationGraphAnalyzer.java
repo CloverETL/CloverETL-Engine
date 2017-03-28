@@ -163,8 +163,6 @@ public class TransformationGraphAnalyzer {
 		
 		Phase inputPhase = new Phase(Phase.INITIAL_PHASE_ID);
 		Phase outputPhase = new Phase(Phase.FINAL_PHASE_ID);
-		graph.addPhase(inputPhase);
-		graph.addPhase(outputPhase);
 		
 		for (Phase phase : graph.getPhases()) {
 			Set<Node> input = new HashSet<>();
@@ -172,8 +170,12 @@ public class TransformationGraphAnalyzer {
 			for (Node node : phase.getNodes().values()) {
 				if (node.isPartOfRestInput()) {
 					input.add(node);
+					List<Node> incoming = findPrecedentNodesRecursive(node, null);
+					input.addAll(incoming);
 				} else if (node.isPartOfRestOutput()) {
+					List<Node> outgoing = findFollowingNodesRecursive(node, null);
 					output.add(node);
+					output.addAll(outgoing);
 				}
 			}
 			for (Node node : input) {
@@ -184,6 +186,13 @@ public class TransformationGraphAnalyzer {
 				phase.deleteNode(node);
 				outputPhase.addNode(node);
 			}
+		}
+		
+		if (!inputPhase.getNodes().isEmpty()) {
+			graph.addPhase(inputPhase);
+		}
+		if (!outputPhase.getNodes().isEmpty()) {
+			graph.addPhase(outputPhase);
 		}
 	}
 	
@@ -639,7 +648,7 @@ public class TransformationGraphAnalyzer {
 			Node writer = edge.getWriter(); //can be null for remote edges
 			readerPhase = reader != null ? reader.getPhase() : null;
 			writerPhase = writer != null ? writer.getPhase() : null;
-			if (readerPhase.getPhaseNum() > writerPhase.getPhaseNum()) {
+			if (readerPhase.getPhaseNum() != writerPhase.getPhaseNum()) {
 				// edge connecting two nodes belonging to different phases
 				// has to be buffered
 				edge.setEdgeType(EdgeTypeEnum.PHASE_CONNECTION);

@@ -216,7 +216,7 @@ public class ComponentFactory {
 				component.setPartOfDebugOutput(xattribs.getBoolean(Node.XML_PART_OF_DEBUG_OUTPUT_ATTRIBUTE, false));
 				
 				component.setPartOfRestInput(xattribs.getBoolean(Node.XML_PART_OF_REST_INPUT, false));
-				component.setPartOfRestOutput(xattribs.getBoolean(Node.XML_PART_OF_DEBUG_OUTPUT_ATTRIBUTE, false));
+				component.setPartOfRestOutput(xattribs.getBoolean(Node.XML_PART_OF_REST_OUTPUT, false));
 			}
 			
 			//remember all component's attribute for further usage, see getComponentProperty() CTL method
