@@ -42,7 +42,7 @@ public enum JobType {
 	PROFILER_JOB("profilerJob", "Profiler job", FileType.PROFILER_JOB),
 	SUBGRAPH("subgraph", "Subgraph", FileType.SUBGRAPH, ETL_GRAPH),
 	SUBJOBFLOW("subjobflow", "Subjobflow", FileType.SUBJOBFLOW, JOBFLOW),
-	RESTJOB("restJob", "REST Job", FileType.RESTJOB, ETL_GRAPH);
+	RESTJOB("restJob", "REST Job", FileType.RESTJOB);
 
 	/** This type is used in case the type is not specified in different way. */
 	public static final JobType DEFAULT = ETL_GRAPH;

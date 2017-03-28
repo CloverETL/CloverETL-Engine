@@ -38,7 +38,7 @@ import org.jetel.util.string.StringUtils;
 public enum DataRecordNature {
 
 	/** This nature represents regular data record, which is dedicated for ETL graphs */
-	DATA_RECORD("dataRecord", JobType.ETL_GRAPH),
+	DATA_RECORD("dataRecord", JobType.ETL_GRAPH, JobType.RESTJOB),
 	/** This nature represents tokens, which are dedicate for jobflows */
 	TOKEN("token", JobType.JOBFLOW);
 
@@ -46,10 +46,10 @@ public enum DataRecordNature {
 	public static DataRecordNature DEFAULT = DATA_RECORD;
 
 	private String id;
-	private JobType respectiveJobType;
-	private DataRecordNature(String id, JobType respectiveJobType) {
+	private JobType respectiveJobTypes[];
+	private DataRecordNature(String id, JobType ... respectiveJobTypes) {
 		this.id = id;
-		this.respectiveJobType = respectiveJobType;
+		this.respectiveJobTypes = respectiveJobTypes;
 	}
 	
 	@Override
@@ -77,8 +77,10 @@ public enum DataRecordNature {
 			return DEFAULT;
 		}
 		for (DataRecordNature dataRecordNature : values()) {
-			if (jobType.isSubTypeOf(dataRecordNature.respectiveJobType)) {
-				return dataRecordNature;
+			for (JobType natureJobType : dataRecordNature.respectiveJobTypes) {
+				if (jobType.isSubTypeOf(natureJobType)) {
+					return dataRecordNature;
+				}
 			}
 		}
 		throw new IllegalArgumentException("unexpected job type " + jobType);
