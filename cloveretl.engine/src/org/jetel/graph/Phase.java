@@ -539,25 +539,27 @@ public class Phase extends GraphElement implements Comparable<Phase> {
 	 */
 	@Override
 	public int compareTo(Phase other) {
-		
-		final int otherPhaseNum = other.getPhaseNum();
-		switch (phaseNum) {
+		return comparePhaseNumber(phaseNum, other.getPhaseNum());
+	}
+	
+	public static int comparePhaseNumber(final int n1, final int n2) {
+		switch (n1) {
 		case INITIAL_PHASE_ID: {
-			return otherPhaseNum == INITIAL_PHASE_ID ? 0 : -1;
+			return n2 == INITIAL_PHASE_ID ? 0 : -1;
 		}
 		case FINAL_PHASE_ID: {
-			return otherPhaseNum == FINAL_PHASE_ID ? 0 : 1;
+			return n2 == FINAL_PHASE_ID ? 0 : 1;
 		}
 		default: {
-			switch (otherPhaseNum) {
+			switch (n2) {
 			case INITIAL_PHASE_ID: {
-				return phaseNum == INITIAL_PHASE_ID ? 0 : 1;
+				return n1 == INITIAL_PHASE_ID ? 0 : 1;
 			}
 			case FINAL_PHASE_ID: {
-				return phaseNum == FINAL_PHASE_ID ? 0 : -1;
+				return n1 == FINAL_PHASE_ID ? 0 : -1;
 			}
 			default: {
-				return Integer.compare(phaseNum, otherPhaseNum);
+				return Integer.compare(n1, n2);
 			}
 			}
 		}
