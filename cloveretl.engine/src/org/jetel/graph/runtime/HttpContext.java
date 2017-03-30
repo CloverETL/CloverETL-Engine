@@ -46,5 +46,5 @@ public interface HttpContext {
 	void setResponseStatus(int status);
 	
 	/** Sends error response to the client */
-	void sendResponseError(int status, String message) throws IOException;
+	void sendResponseError(ErrorMessage message) throws IOException;
 }
