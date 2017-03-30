@@ -432,21 +432,43 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		uri = relativeURI("foo");
 		System.out.println(uri.getAbsoluteURI());
 		info = manager.info(uri);
+		assertEquals("foo", info.getName());
 		assertTrue(String.format("%s is not a directory", uri), info.isDirectory());
 		
+		uri = relativeURI("foo/");
+		System.out.println(uri.getAbsoluteURI());
+		info = manager.info(uri);
+		assertEquals("foo", info.getName());
+		assertTrue(String.format("%s is not a directory", uri), info.isDirectory());
+		
+		uri = relativeURI("foo/.");
+		System.out.println(uri.getAbsoluteURI());
+		info = manager.info(uri);
+		assertEquals("foo", info.getName());
+		assertTrue(String.format("%s is not a directory", uri), info.isDirectory());
+		
+		uri = relativeURI("foo/../foo");
+		System.out.println(uri.getAbsoluteURI());
+		info = manager.info(uri);
+		assertEquals("foo", info.getName());
+		assertTrue(String.format("%s is not a directory", uri), info.isDirectory());
+
 		uri = relativeURI("foo/bar");
 		System.out.println(uri.getAbsoluteURI());
 		info = manager.info(uri);
+		assertEquals("bar", info.getName());
 		assertTrue(String.format("%s is not a file", uri), info.isFile());
 		
 		uri = relativeURI("foo/./bar");
 		System.out.println(uri.getAbsoluteURI());
 		info = manager.info(uri);
+		assertEquals("bar", info.getName());
 		assertTrue(String.format("%s is not a file", uri), info.isFile());
 
 		uri = relativeURI("foo/../foo/bar");
 		System.out.println(uri.getAbsoluteURI());
 		info = manager.info(uri);
+		assertEquals("bar", info.getName());
 		assertTrue(String.format("%s is not a file", uri), info.isFile());
 		
 		{
@@ -1305,15 +1327,47 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertEquals(1, result.size());
 			assertEquals("eclipse", result.get(0).getName());
 			printInfo(baseUri, result);
+		} { 
+			result = manager.list(relativeURI("dir1/eclipse/"), new ListParameters()
+						.setListDirectoryContents(false)
+					).getResult();
+			System.out.println(result);
+			assertEquals(1, result.size());
+			assertEquals("eclipse", result.get(0).getName());
+			printInfo(baseUri, result);
+		} { 
+			result = manager.list(relativeURI("dir1/eclipse/."), new ListParameters()
+						.setListDirectoryContents(false)
+					).getResult();
+			System.out.println(result);
+			assertEquals(1, result.size());
+			assertEquals("eclipse", result.get(0).getName());
+			printInfo(baseUri, result);
+		} { 
+			result = manager.list(relativeURI("dir1/./eclipse/./.."), new ListParameters()
+						.setListDirectoryContents(false)
+					).getResult();
+			System.out.println(result);
+			assertEquals(1, result.size());
+			assertEquals("dir1", result.get(0).getName());
+			printInfo(baseUri, result);
+		} {
+			result = manager.list(relativeURI("dir?/ec*se"), new ListParameters()
+						.setListDirectoryContents(false)
+					).getResult();
+			System.out.println(result);
+			assertEquals(1, result.size());
+			assertEquals("eclipse", result.get(0).getName());
+			printInfo(baseUri, result);
 		} {
 			// Recursive has not effect in that case.
-			result = manager.list(relativeURI("dir1/eclipse"), new ListParameters()
+			result = manager.list(relativeURI("dir1"), new ListParameters()
 						.setListDirectoryContents(false)
 						.setRecursive(true)
 					).getResult();
 			System.out.println(result);
 			assertEquals(1, result.size());
-			assertEquals("eclipse", result.get(0).getName());
+			assertEquals("dir1", result.get(0).getName());
 			printInfo(baseUri, result);
 		} {
 			// Wrong path
