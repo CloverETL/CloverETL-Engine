@@ -348,6 +348,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().startsWith("JSONExtract_employees_invalid_") // negative test
 							&& !file.getName().equals("JSONExtract_AllTypes_invalid_field.grf") // negative test
 							&& !file.getName().equals("SetTrustStore.grf") // env set-up graph
+							&& !file.getName().equals("check-logs.grf") // graph for checking logs from server tests
 							;
 				}
 			};
