@@ -118,6 +118,8 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 			}
 			if (name.equals("/")) {
 				name = ""; // root directory has no name
+			} else if (name.endsWith(URIUtils.PATH_SEPARATOR)) {
+				name = name.substring(0, name.length()-1);
 			}
 			this.name = name;
 			// name is modified just for the URI

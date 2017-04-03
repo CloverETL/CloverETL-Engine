@@ -112,9 +112,9 @@ public final class TransformationGraph extends GraphElement {
 	
 	private Enigma enigma = null;
 	
-    private boolean debugMode = true;
+    private boolean edgeDebugging = true;
     
-    private String debugModeStr;
+    private String edgeDebuggingStr;
     
     private long debugMaxRecords = 0;
     
@@ -270,19 +270,19 @@ public final class TransformationGraph extends GraphElement {
      * Sets debug mode on the edges.
 	 * @param debug
 	 */
-    private boolean isDebugModeResolved = true;
+    private boolean isEdgeDebuggingResolved = true;
     
-	public void setDebugMode(boolean debugMode) {
-	    this.debugMode = debugMode;
-        isDebugModeResolved = true;
+	public void setDebugMode(boolean edgeDebugging) {
+	    this.edgeDebugging = edgeDebugging;
+        isEdgeDebuggingResolved = true;
     }
 
-    public void setDebugMode(String debugModeStr) {
-        if(debugModeStr == null || debugModeStr.length() == 0) {
-            isDebugModeResolved = true;
+    public void setEdgeDebugging(String edgeDebuggingStr) {
+        if(edgeDebuggingStr == null || edgeDebuggingStr.length() == 0) {
+            isEdgeDebuggingResolved = true;
         } else {
-            this.debugModeStr = debugModeStr;
-            isDebugModeResolved = false;
+            this.edgeDebuggingStr = edgeDebuggingStr;
+            isEdgeDebuggingResolved = false;
         }
     }
 
@@ -290,16 +290,16 @@ public final class TransformationGraph extends GraphElement {
      * @param debug
      * @return <b>true</b> if is debug on; else <b>false</b>
      */
-    public boolean isDebugMode() {
-        if(!isDebugModeResolved) {
+    public boolean isEdgeDebugging() {
+        if(!isEdgeDebuggingResolved) {
             PropertyRefResolver prr = new PropertyRefResolver(getGraphParameters());
-            debugMode = Boolean.valueOf(prr.resolveRef(debugModeStr)).booleanValue();
-            isDebugModeResolved = true;
+            edgeDebugging = Boolean.valueOf(prr.resolveRef(edgeDebuggingStr)).booleanValue();
+            isEdgeDebuggingResolved = true;
         }
         
-        if (debugMode) {
+        if (edgeDebugging) {
 	        if (watchDog != null) {
-	        	return watchDog.getGraphRuntimeContext().isDebugMode();
+	        	return watchDog.getGraphRuntimeContext().isEdgeDebugging();
 	        } else {
 	            return true;
 	        }

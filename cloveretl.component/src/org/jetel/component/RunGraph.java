@@ -517,7 +517,7 @@ public class RunGraph extends Node{
 		runtimeContext.setContextURL(this.getGraph().getRuntimeContext().getContextURL());
 		runtimeContext.setLogLocation(outputFileName);
 		runtimeContext.setLogLevel(this.getGraph().getRuntimeContext().getLogLevel());
-		runtimeContext.setDebugMode(this.getGraph().getRuntimeContext().isDebugMode());
+		runtimeContext.setEdgeDebugging(this.getGraph().getRuntimeContext().isEdgeDebugging());
 		runtimeContext.setSkipCheckConfig(this.getGraph().getRuntimeContext().isSkipCheckConfig());
 		runtimeContext.setUseJMX(this.getGraph().getRuntimeContext().useJMX());
 		runtimeContext.setRuntimeClassPath(this.getGraph().getRuntimeContext().getRuntimeClassPath());
