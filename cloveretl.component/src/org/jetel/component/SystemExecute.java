@@ -46,11 +46,11 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -548,7 +548,7 @@ public class SystemExecute extends Node{
 	
 	private void deleteBatch(){
 		if (interpreter != null) {
-			if ((batch != null) && !getGraph().getRuntimeContext().isDebugMode()) {
+			if ((batch != null) && !getGraph().getRuntimeContext().isEdgeDebugging()) {
 				if (batch.delete() || !batch.exists()) {
 					batch = null;
 				} else {

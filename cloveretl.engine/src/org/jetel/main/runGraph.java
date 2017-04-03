@@ -169,7 +169,7 @@ public class runGraph {
         String password = null;
         boolean waitForJMXClient = GraphRuntimeContext.DEFAULT_WAIT_FOR_JMX_CLIENT;
         boolean useJMX = GraphRuntimeContext.DEFAULT_USE_JMX;
-        boolean debugMode = GraphRuntimeContext.DEFAULT_DEBUG_MODE;
+        boolean edgeDebugging = GraphRuntimeContext.DEFAULT_EDGE_DEBUGGING;
         boolean tokenTracking = GraphRuntimeContext.DEFAULT_TOKEN_TRACKING;
         boolean skipCheckConfig = GraphRuntimeContext.DEFAULT_SKIP_CHECK_CONFIG;
         String debugDirectory = null;
@@ -270,7 +270,7 @@ public class runGraph {
             } else if (args[i].startsWith(NO_TOKEN_TRACKING_SWITCH)){
             	tokenTracking = false;
             } else if (args[i].startsWith(NO_DEBUG_SWITCH)) {
-                debugMode = false;
+                edgeDebugging = false;
             } else if (args[i].startsWith(DEBUG_DIRECTORY_SWITCH)) {
                 i++;
                 debugDirectory = args[i]; 
@@ -353,7 +353,7 @@ public class runGraph {
         runtimeContext.setSkipCheckConfig(skipCheckConfig);
         runtimeContext.setUseJMX(useJMX);
         runtimeContext.setTokenTracking(tokenTracking);
-        runtimeContext.setDebugMode(debugMode);
+        runtimeContext.setEdgeDebugging(edgeDebugging);
         runtimeContext.setDebugDirectory(debugDirectory);
         runtimeContext.setContextURL(contextURL);
         runtimeContext.setLogLevel(logLevel);

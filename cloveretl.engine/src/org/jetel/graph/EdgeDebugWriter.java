@@ -61,6 +61,7 @@ public class EdgeDebugWriter {
 
     private long debugStartRecord;
     private long debugMaxRecords; // max number of debugged records; 0 -> infinite
+    private long debugMaxBytes; // max number of debugged bytes; 0 -> infinite
     private boolean debugLastRecords;
     private String filterExpression;
     private boolean sampleData;
@@ -82,6 +83,9 @@ public class EdgeDebugWriter {
     private long recordsCounter = 0;
     /** the number of debugged (stored) records */
     private long debuggedRecords = 0;
+    
+    /** the number of bytes in debug cache so far */
+    private long debuggedBytes = 0;
     
     private String excludedFields[];
     
@@ -112,7 +116,7 @@ public class EdgeDebugWriter {
 	    	formatter.init(metadata);
 	
 	        if (debugMaxRecords > 0 && debugLastRecords) {
-	        	ringRecordBuffer = new RingRecordBuffer(debugMaxRecords);
+	        	ringRecordBuffer = new RingRecordBuffer(debugMaxRecords * 2); // for each incoming record, two records are stored (see ordinal record) 
 	        	ringRecordBuffer.init();
 	        	
 	        	DataRecordMetadata recordOrdinalMetadata = new DataRecordMetadata("recordOrdinal");
@@ -160,8 +164,8 @@ public class EdgeDebugWriter {
 	    		ringRecordBuffer.pushRecord(record);
             }
         } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(record)) {
-        	formatter.writeLong(recordsCounter);
-        	formatter.write(record);
+        	debuggedBytes += formatter.writeLong(recordsCounter);
+        	debuggedBytes += formatter.write(record);
         	flushIfNeeded();
         	debuggedRecords++;
         }
@@ -209,8 +213,8 @@ public class EdgeDebugWriter {
 	        		ringRecordBuffer.pushRecord(byteBuffer);
 	        	}
 	        } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(byteBuffer)) {
-	        	formatter.writeLong(recordsCounter);
-	        	formatter.writeDirect(byteBuffer); 
+	        	debuggedBytes += formatter.writeLong(recordsCounter);
+	        	debuggedBytes += formatter.writeDirect(byteBuffer); 
 	        	flushIfNeeded();
 	        	debuggedRecords++;
 	        }
@@ -226,7 +230,8 @@ public class EdgeDebugWriter {
     }
     
     private boolean checkNoOfDebuggedRecords() {
-    	return (debugMaxRecords == 0 || debuggedRecords < debugMaxRecords);
+    	return (debugMaxRecords == 0 || debuggedRecords < debugMaxRecords)
+    			&& (debugMaxBytes == 0 || debuggedBytes < debugMaxBytes);
     }
 
     public void eof() throws IOException {
@@ -299,6 +304,14 @@ public class EdgeDebugWriter {
 	 */
 	public void setDebugMaxRecords(long debugMaxRecords) {
 		this.debugMaxRecords = debugMaxRecords;
+	}
+
+	public long getDebugMaxBytes() {
+		return debugMaxBytes;
+	}
+
+	public void setDebugMaxBytes(long debugMaxBytes) {
+		this.debugMaxBytes = debugMaxBytes;
 	}
 
 	/**
