@@ -715,6 +715,11 @@ public final class Defaults {
 					Defaults.Record.RECORD_INITIAL_SIZE * 10);
 			DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS = getIntProperties(
 					"Graph.DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS", 4);
+		    DEFAULT_EDGE_DEBUGGING_MAX_RECORDS = getIntProperties(
+					"Graph.DEFAULT_EDGE_DEBUGGING_MAX_RECORDS", 1000);
+		    DEFAULT_EDGE_DEBUGGING_MAX_BYTES = getIntProperties(
+					"Graph.DEFAULT_EDGE_DEBUGGING_MAX_BYTES", 1024 * 1024); // 1MB
+
 		}
 
 		/**
@@ -737,6 +742,17 @@ public final class Defaults {
 		 * speed but not much.
 		 */
 		public static int DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS;
+		
+	    /**
+	     * Maximal number of records persisted on an edge for default edge debugging.
+	     */
+	    public static int DEFAULT_EDGE_DEBUGGING_MAX_RECORDS; // = 1000;
+
+	    /**
+	     * Maximal number of bytes persisted on an edge for default edge debugging.
+	     */
+	    public static int DEFAULT_EDGE_DEBUGGING_MAX_BYTES; // = 1024 * 1024; // 1MB
+
 	}
 
 	public final static class OracleConnection {
