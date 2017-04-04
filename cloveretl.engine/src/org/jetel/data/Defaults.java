@@ -38,6 +38,8 @@ import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTimeZone;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * Helper class which contains some framework-wide constants definitions.<br>
  * Change the compile-time defaults here !
@@ -45,6 +47,7 @@ import org.joda.time.DateTimeZone;
  * @author dpavlis
  * @created January 23, 2003
  */
+@SuppressFBWarnings("MS_CANNOT_BE_FINAL")
 public final class Defaults {
 	private static Properties properties;
 	private static Log logger = LogFactory.getLog(Defaults.class);
