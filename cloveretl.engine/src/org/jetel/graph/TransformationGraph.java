@@ -601,9 +601,6 @@ public final class TransformationGraph extends GraphElement {
 		//check all required graph parameters whether the values have been passed from executor
 		validateRequiredGraphParameters();
 		
-		//print out types of all edges
-		printEdgesInfo();
-		
 		//pre-execute initialization of dictionary
 		dictionary.preExecute();
 		
@@ -639,8 +636,66 @@ public final class TransformationGraph extends GraphElement {
 				throw new ComponentNotReadyException(lookupTable, "Pre-Execution of lookup table " + lookupTable + "failed.", e);
 			}
 		}
+		
+		//output edges from SubgraphInput component and input edges to SubgraphOutput component
+		//can be shared with parent graph if possible
+		shareSubgraphInputEdges();
+		shareSubgraphOutputEdges();
+
+		//print out types of all edges
+		printEdgesInfo();
 	}
 	
+	/**
+	 * This method tries to detect whether output edges from SubgraphInput component
+	 * can be shared with parent graph.
+	 */
+	private void shareSubgraphInputEdges() {
+		//update output edges of SubgraphInput component - can we share edge base from parent graph with local output edge?
+		if (getGraph().getRuntimeJobType().isSubJob()) {
+			Node subgraphInput = SubgraphUtils.getSubgraphInput(this);
+			if (subgraphInput != null) { //subgraph input component can be null for clustered subgraphs, where only one partition has SGI and SGO components
+				for (OutputPort outputPort : subgraphInput.getOutPorts()) {
+					//edge from this graph
+					Edge outputEdge = outputPort.getEdge();
+					//corresponding edge from parent graph
+					Edge parentEdge = getGraph().getAuthorityProxy().getParentGraphSourceEdge(outputPort.getOutputPortNumber());
+					//is it possible to share edge base between these two edges?
+					if (parentEdge != null && SubgraphUtils.isSubgraphInputEdgeShared(outputEdge, parentEdge)) {
+						//let's share the edge base
+						outputEdge.setEdge(parentEdge.getEdgeBase());
+						outputEdge.setSharedEdgeBaseFromWriter(true);
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * This method tries to detect whether input edges from SubgraphOutput component
+	 * can be shared with parent graph.
+	 */
+	private void shareSubgraphOutputEdges() {
+        //update input edges of SubgraphOutput component - can we share edge base from parent graph with local input edge?
+		if (getGraph().getRuntimeJobType().isSubJob()) {
+			Node subgraphOutput = SubgraphUtils.getSubgraphOutput(this);
+			if (subgraphOutput != null) { //subgraph output component can be null for clustered subgraphs, where only one partition has SGI and SGO components
+				for (InputPort inputPort : subgraphOutput.getInPorts()) {
+					//edge from this graph
+					Edge inputEdge = inputPort.getEdge();
+					//corresponding edge from parent graph
+					Edge parentEdge = getGraph().getAuthorityProxy().getParentGraphTargetEdge(inputPort.getInputPortNumber());
+					//is it possible to share edge base between these two edges?
+					if (parentEdge != null && SubgraphUtils.isSubgraphOutputEdgeShared(inputEdge, parentEdge)) {
+						//let's share the edge base
+						inputEdge.setEdge(parentEdge.getEdgeBase());
+						inputEdge.setSharedEdgeBaseFromReader(true);
+					}
+				}
+			}
+		}
+	}
+
 	@Override
 	@Deprecated
 	public synchronized void reset() throws ComponentNotReadyException {
@@ -1121,6 +1176,8 @@ public final class TransformationGraph extends GraphElement {
     
     void clearCache() {
     	nodesCache = null;
+    	subgraphInputComponent = null;
+    	subgraphOutputComponent = null;
     }
     
     /**
