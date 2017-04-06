@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
+import javax.tools.ToolProvider;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Appender;
 import org.apache.log4j.Level;
@@ -565,7 +567,7 @@ public class runGraph {
     		", OS {1}" +
     		", architecture {2}" + 
     		", max available memory for JVM {3} KB");
-	private static MessageFormat RUNTIME_HEADER_4 = new MessageFormat("Running on {0}, {1}, {2}");
+	private static MessageFormat RUNTIME_HEADER_4 = new MessageFormat("Running on {0}, {1}, {2} ({3})");
 	
 	public static void printRuntimeHeader() {
         logger.info(RUNTIME_HEADER_1.format(new Object[] {JetelVersion.LIBRARY_BUILD_YEAR}));
@@ -579,8 +581,20 @@ public class runGraph {
         logger.info(RUNTIME_HEADER_4.format(new Object[] {
         		System.getProperty("java.runtime.name"),
         		System.getProperty("java.version"),
-        		System.getProperty("java.vendor")
+        		System.getProperty("java.vendor"),
+        		isCompilerAvailable() ? "JDK" : "JRE - runtime compilation is not available!"
         }));
+	}
+	
+	/**
+	 * @return true if JDK with valid java compiler is detected, false for simple JRE
+	 */
+	private static Boolean isCompilerAvailable;
+	private static synchronized boolean isCompilerAvailable() {
+		if (isCompilerAvailable == null) {
+			isCompilerAvailable = ToolProvider.getSystemJavaCompiler() != null;
+		}
+		return isCompilerAvailable;
 	}
 	
 	/**
