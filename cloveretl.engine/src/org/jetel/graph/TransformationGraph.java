@@ -299,7 +299,9 @@ public final class TransformationGraph extends GraphElement {
         
         if (edgeDebugging) {
 	        if (watchDog != null) {
-	        	return watchDog.getGraphRuntimeContext().isEdgeDebugging();
+	        	//edge debugging is disabled for non-persistent graphs
+	        	return watchDog.getGraphRuntimeContext().getRunId() > 0
+	        			&& watchDog.getGraphRuntimeContext().isEdgeDebugging();
 	        } else {
 	            return true;
 	        }
