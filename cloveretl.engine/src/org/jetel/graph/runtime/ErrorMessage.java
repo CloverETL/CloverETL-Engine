@@ -30,35 +30,35 @@ import javax.xml.bind.annotation.XmlRootElement;
  *
  * @created Mar 21, 2017
  */
-@XmlRootElement(name = "error-message")
+@XmlRootElement(name = "ErrorMessage")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class ErrorMessage {
 	
 	/**
 	 * Numeric http status code 
 	 */
-	@XmlElement(name="http-code")
-	private int httpCode;
+	@XmlElement(name="StatusCode")
+	private int statusCode;
 	
 	/**
 	 * Textual phrase of status line
 	 */
-	@XmlElement(name="message")
-	private String message;
+	@XmlElement(name="ReasonPhrase")
+	private String reasonPhrase;
 	
 	public ErrorMessage() {
 	}
 	
-	public ErrorMessage(int httpCode, String message) {
-		this.httpCode = httpCode;
-		this.message = message;
+	public ErrorMessage(int statusCode, String reasonPhrase) {
+		this.statusCode = statusCode;
+		this.reasonPhrase = reasonPhrase;
 	}
 
-	public int getHttpCode() {
-		return httpCode;
+	public int getStatusCode() {
+		return statusCode;
 	}
 
-	public String getMessage() {
-		return message;
+	public String getReasonPhrase() {
+		return reasonPhrase;
 	}
 }
