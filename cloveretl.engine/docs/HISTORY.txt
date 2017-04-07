@@ -2,6 +2,38 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-6-0-M1
+------------
+
+* CLO-10558	Designer Tutorial
+* CLO-10569	Automatic debugging on edges
+* Designer UX Improvements
+	* CLO-10579	Do not show unneeded Secure Storage prompt at Designer startup
+	* CLO-10562	Easier to find search in palette
+	* CLO-10559	Designer should parse licenses more leniently
+	* CLO-10548	Prevent Designer Windows installer from looking frozen
+	* CLO-10672	Data Inspector should indicate that debugging is disabled on the edge
+	* CLO-10580	Improve error message of SpreadSheetDataWriter when file extension is not specified
+	* CLO-10255	Standardise PLUS sign behaviour in "Edit graph parameters" and "Edit metadata" screens
+	* CLO-9748	UP and DOWN button in Edit values wizard in Graph parameter editor type
+* Server Improvements
+	* CLO-10596	Unify and improve Server DB structures
+	* CLO-10239	Count of aggregated events in task history
+	* CLO-10134	Last execution and successes/failures count in listeners table
+	* CLO-10613	Remove tracking_* tables
+	* CLO-10495	Useless "kill source event" checkbox in Scheduling
+	* CLO-9585	Show version and build number on server login page
+* Misc
+	* CLO-10564	Add action to open list of Examples
+	* CLO-10539	Set charset for new Clover projects to UTF-8
+	* CLO-10210	Print Java vendor into the log file
+	* CLO-7082	Add a switch to ListFiles to return information about a directory itself, not its contents
+	* CLO-6594	CustomJavaComponent documentation should contain where external jars should be located
+	* CLO-9991	Salesforce SOQL content assist should be uppercase
+* Compatibility
+	* CLO-10096	Update Java bundled with Designer to JDK 8u121
+
+
 REL-4-5-0
 ---------
 * Changes
