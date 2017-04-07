@@ -104,13 +104,13 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Simple POST" guiX="236" guiY="490" id="HTTP_CONNECTOR2" outFileUrl="${DATAOUT_DIR}/PostResult.xml" password="clover" requestMethod="POST" type="HTTP_CONNECTOR" url="http://clover-4-3.server-demo-ec2.cloveretl.com/clover/request_processor/sandbox_content" username="clover">
+<Node enabled="enabled" guiName="Simple POST" guiX="236" guiY="490" id="HTTP_CONNECTOR2" outFileUrl="${DATAOUT_DIR}/PostResult.xml" password="clover" requestMethod="POST" type="HTTP_CONNECTOR" url="http://clover-4-6.server-demo-ec2.cloveretl.com/clover/request_processor/sandbox_content" username="clover">
 <attr name="requestContent"><![CDATA[sandbox=default]]></attr>
 <attr name="headerProperties"><![CDATA[Content-Type=application/x-www-form-urlencoded
 ]]></attr>
 <attr name="guiDescription"><![CDATA[A simple POST can also be executed.  This is only shown for illustrative  purposes  and is deliberetely not connected within the graph]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Simple GET" guiX="47" guiY="496" id="SIMPLE_GET" outFileUrl="${DATAOUT_DIR}/GetResult.xml" password="clover" requestMethod="GET" type="HTTP_CONNECTOR" url="http://clover-4-3.server-demo-ec2.cloveretl.com/clover/request_processor/sandbox_content?sandbox=default" username="clover">
+<Node enabled="enabled" guiName="Simple GET" guiX="47" guiY="496" id="SIMPLE_GET" outFileUrl="${DATAOUT_DIR}/GetResult.xml" password="clover" requestMethod="GET" type="HTTP_CONNECTOR" url="http://clover-4-6.server-demo-ec2.cloveretl.com/clover/request_processor/sandbox_content?sandbox=default" username="clover">
 <attr name="guiDescription"><![CDATA[A simple GET can also be executed.  This is only shown for illustrative  purposes  and is deliberetely not connected within the graph]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Trash" guiX="635" guiY="295" id="TRASH0" type="TRASH"/>
