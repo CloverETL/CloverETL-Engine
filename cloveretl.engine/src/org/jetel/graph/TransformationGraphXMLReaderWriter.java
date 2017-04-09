@@ -740,7 +740,7 @@ public class TransformationGraphXMLReaderWriter {
 		String fromNodeAttr;
 		String toNodeAttr;
 		String edgeType = null;
-        EdgeDebugMode debugMode = EdgeDebugMode.DEFAULT;
+        EdgeDebugMode debugMode;
         String debugFilterExpression = null;
         long debugMaxRecords = 0;
         boolean debugLastRecords = true;

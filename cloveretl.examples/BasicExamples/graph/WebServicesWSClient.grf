@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Kokon" created="Wed Sep 16 10:19:19 CEST 2009" guiVersion="0.0.0.devel" id="1253101461188" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 09:46:32 CET 2016" modifiedBy="jansedlacek" name="g" revision="1.403" showComponentDetails="true">
+<Graph author="Kokon" created="Wed Sep 16 10:19:19 CEST 2009" guiVersion="4.6.0.M1" id="1253101461188" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 09:46:32 CET 2016" modifiedBy="jansedlacek" name="g" revision="1.403" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata10">
 <Record fieldDelimiter="|" name="ArrayOfForecast" recordDelimiter="\r\n" type="delimited">
@@ -119,7 +119,7 @@ Example demonstrates a functional Web service providing a list of *.grf files fr
 <attr name="filterExpression"><![CDATA[//#CTL2
 endsWith($in.0.name,".grf")]]></attr>
 </Node>
-<Node guiName="List files in graph directory" guiX="421" guiY="297" id="LIST_FILES_IN_GRAPH_DIRECTORY" operationName="{http://server.cloveretl.com/CloverServerWS/}CloverServerWS_service#CloverServerWS_port#ListFiles" type="WEB_SERVICE_CLIENT" wsdlURL="http://clover-4-3.server-demo-ec2.cloveretl.com/clover/webservice?wsdl">
+<Node guiName="List files in graph directory" guiX="421" guiY="297" id="LIST_FILES_IN_GRAPH_DIRECTORY" operationName="{http://server.cloveretl.com/CloverServerWS/}CloverServerWS_service#CloverServerWS_port#ListFiles" type="WEB_SERVICE_CLIENT" wsdlURL="http://clover-4-6.server-demo-ec2.cloveretl.com/clover/webservice?wsdl">
 <attr name="namespaceBindings"><![CDATA[Clov=http://server.cloveretl.com/CloverServerWS/
 incl=http://www.w3.org/2004/08/xop/include
 XMLS=http://www.w3.org/2001/XMLSchema]]></attr>
@@ -142,7 +142,7 @@ XMLS=http://www.w3.org/2001/XMLSchema]]></attr>
 </Mappings>
 ]]></attr>
 </Node>
-<Node guiName="List sandboxes" guiX="222" guiY="297" id="LIST_SANDBOXES" operationName="{http://server.cloveretl.com/CloverServerWS/}CloverServerWS_service#CloverServerWS_port#GetSandboxes" type="WEB_SERVICE_CLIENT" wsdlURL="http://clover-4-3.server-demo-ec2.cloveretl.com/clover/webservice?wsdl">
+<Node guiName="List sandboxes" guiX="222" guiY="297" id="LIST_SANDBOXES" operationName="{http://server.cloveretl.com/CloverServerWS/}CloverServerWS_service#CloverServerWS_port#GetSandboxes" type="WEB_SERVICE_CLIENT" wsdlURL="http://clover-4-6.server-demo-ec2.cloveretl.com/clover/webservice?wsdl">
 <attr name="namespaceBindings"><![CDATA[Clov=http://server.cloveretl.com/CloverServerWS/
 incl=http://www.w3.org/2004/08/xop/include
 XMLS=http://www.w3.org/2001/XMLSchema]]></attr>
@@ -162,9 +162,11 @@ XMLS=http://www.w3.org/2001/XMLSchema]]></attr>
 </Mappings>
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Login" guiX="23" guiY="297" id="LOGIN" operationName="{http://server.cloveretl.com/CloverServerWS/}CloverServerWS_service#CloverServerWS_port#Login" type="WEB_SERVICE_CLIENT" wsdlURL="http://clover-4-3.server-demo-ec2.cloveretl.com/clover/webservice?wsdl">
+<Node enabled="enabled" guiName="Login" guiX="23" guiY="297" id="LOGIN" operationName="{http://server.cloveretl.com/CloverServerWS/}CloverServerWS_service#CloverServerWS_port#Login" type="WEB_SERVICE_CLIENT" wsdlURL="http://clover-4-6.server-demo-ec2.cloveretl.com/clover/webservice?wsdl">
 <attr name="namespaceBindings"><![CDATA[Clov=http\://server.cloveretl.com/CloverServerWS/
-]]></attr>
+
+incl=http://www.w3.org/2004/08/xop/include
+XMLS=http://www.w3.org/2001/XMLSchema]]></attr>
 <attr name="requestStructure"><![CDATA[<clov:Login xmlns:clov="http://server.cloveretl.com/CloverServerWS/">
   <username>clover</username>
   <password>clover</password>
@@ -181,7 +183,7 @@ XMLS=http://www.w3.org/2001/XMLSchema]]></attr>
 </Mappings>
 ]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="GRAPHS_ONLY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (input)" outPort="Port 0 (accepted)" persistedImplicitMetadata="Metadata4" toNode="FILE_LIST_TO_XLSX:0"/>
+<Edge debugMode="true" fromNode="GRAPHS_ONLY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (input)" outPort="Port 0 (accepted)" toNode="FILE_LIST_TO_XLSX:0"/>
 <Edge debugMode="true" fromNode="LIST_FILES_IN_GRAPH_DIRECTORY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (response)" toNode="GRAPHS_ONLY:0"/>
 <Edge debugMode="true" fromNode="LIST_SANDBOXES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (request)" metadata="Metadata0" outPort="Port 0 (response)" toNode="LIST_FILES_IN_GRAPH_DIRECTORY:0"/>
 <Edge debugMode="true" fromNode="LOGIN:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (request)" metadata="Metadata1" outPort="Port 0 (response)" toNode="LIST_SANDBOXES:0"/>
