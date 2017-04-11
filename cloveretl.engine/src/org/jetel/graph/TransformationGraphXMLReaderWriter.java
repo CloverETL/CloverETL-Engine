@@ -51,6 +51,7 @@ import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.database.ConnectionFactory;
 import org.jetel.database.IConnection;
+import org.jetel.enums.EdgeDebugMode;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.AttributeNotFoundException;
@@ -454,7 +455,7 @@ public class TransformationGraphXMLReaderWriter {
 	        
 	        grfAttributes.setResolveReferences(false);
 	        //get debug mode
-	        graph.setDebugMode(grfAttributes.getString("debugMode", "true"));
+	        graph.setEdgeDebugging(grfAttributes.getString("debugMode", "true"));
 	        //get debugMaxRecords
 	        graph.setDebugMaxRecords(grfAttributes.getLong("debugMaxRecords", 0));
 	        
@@ -520,7 +521,7 @@ public class TransformationGraphXMLReaderWriter {
 				instantiatePhases(phaseElements);
 		
 				NodeList edgeElements = document.getElementsByTagName(EDGE_ELEMENT);
-				instantiateEdges(edgeElements, metadata, graph.isDebugMode(), graph.getDebugMaxRecords());
+				instantiateEdges(edgeElements, metadata, graph.getDebugMaxRecords());
 
 				//finally analyse the graph
 				try {
@@ -720,13 +721,13 @@ public class TransformationGraphXMLReaderWriter {
 	 * @param  nodes         Description of Parameter
 	 * @since                May 24, 2002
 	 */
-	private void instantiateEdges(NodeList edgeElements, Map<String, Object> metadata, boolean graphDebugMode, long graphDebugMaxRecords) throws XMLConfigurationException,GraphConfigurationException {
+	private void instantiateEdges(NodeList edgeElements, Map<String, Object> metadata, long graphDebugMaxRecords) throws XMLConfigurationException,GraphConfigurationException {
 		String edgeID="unknown";
 		String edgeMetadataID;
 		String fromNodeAttr;
 		String toNodeAttr;
 		String edgeType = null;
-        boolean debugMode = false;
+        EdgeDebugMode debugMode;
         String debugFilterExpression = null;
         long debugMaxRecords = 0;
         boolean debugLastRecords = true;
@@ -756,7 +757,7 @@ public class TransformationGraphXMLReaderWriter {
 				throwXMLConfigurationException("Missing attribute at edge '" + edgeID + "'.", ex);
 				continue;
 			}
-			debugMode = attributes.getBoolean("debugMode", false);
+			debugMode = EdgeDebugMode.fromString(attributes.getString("debugMode", null));
             
             if (graphDebugMaxRecords == 0) { // if this value isn't defined for whole graph 
             	debugMaxRecords = attributes.getLong("debugMaxRecords", 0);

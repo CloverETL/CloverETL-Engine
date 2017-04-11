@@ -350,6 +350,8 @@ public class SFTPOperationHandler implements IOperationHandler {
 			this.parent = parent;
 			if (name.equals(URIUtils.CURRENT_DIR_NAME)) {
 				name = ""; // CLO-4118
+			} else if (name.endsWith(URIUtils.PATH_SEPARATOR)) {
+				name = name.substring(0, name.length()-1);
 			}
 			this.name = name;
 			if (file.getAttrs().isDir() && !name.endsWith(URIUtils.PATH_SEPARATOR)) {

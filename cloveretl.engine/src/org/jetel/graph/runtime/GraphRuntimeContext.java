@@ -53,7 +53,7 @@ public class GraphRuntimeContext {
 	public static final boolean DEFAULT_VERBOSE_MODE = false;
 	public static final boolean DEFAULT_WAIT_FOR_JMX_CLIENT = false;
 	public static final boolean DEFAULT_USE_JMX = true;
-	public static final boolean DEFAULT_DEBUG_MODE = true;
+	public static final boolean DEFAULT_EDGE_DEBUGGING = true;
 	public static final boolean DEFAULT_SKIP_CHECK_CONFIG = false;
 	public static final boolean DEFAULT_SYNCHRONIZED_RUN = false;
 	public static final boolean DEFAULT_TRANSACTION_MODE = false;
@@ -77,7 +77,7 @@ public class GraphRuntimeContext {
 	private Properties additionalProperties;
 	private boolean skipCheckConfig;
 	private String password;
-	private boolean debugMode;
+	private boolean edgeDebugging;
 	private String debugDirectory;
 	private boolean tokenTracking;
 	private String timeZone;
@@ -164,7 +164,7 @@ public class GraphRuntimeContext {
 		verboseMode = DEFAULT_VERBOSE_MODE;
 		additionalProperties = new Properties();
 		skipCheckConfig = DEFAULT_SKIP_CHECK_CONFIG;
-		debugMode = DEFAULT_DEBUG_MODE;
+		edgeDebugging = DEFAULT_EDGE_DEBUGGING;
 		synchronizedRun = DEFAULT_SYNCHRONIZED_RUN;
 		transactionMode = DEFAULT_TRANSACTION_MODE;
 		batchMode = DEFAULT_BATCH_MODE;
@@ -204,7 +204,7 @@ public class GraphRuntimeContext {
 		ret.useJMX = useJMX();
 		ret.waitForJMXClient = isWaitForJMXClient();
 		ret.password = getPassword();
-		ret.debugMode = isDebugMode();
+		ret.edgeDebugging = isEdgeDebugging();
 		ret.debugDirectory = getDebugDirectory();
 		ret.runtimeClassPath = getRuntimeClassPath();
 		ret.compileClassPath = getCompileClassPath();
@@ -251,7 +251,7 @@ public class GraphRuntimeContext {
 		prop.setProperty("useJMX", Boolean.toString(useJMX()));
 		prop.setProperty("waitForJMXClient", Boolean.toString(isWaitForJMXClient()));
 		prop.setProperty("password", String.valueOf(getPassword()));
-		prop.setProperty("debugMode", Boolean.toString(isDebugMode()));
+		prop.setProperty("edgeDebugging", Boolean.toString(isEdgeDebugging()));
 		prop.setProperty("debugDirectory", String.valueOf(getDebugDirectory()));
 		prop.setProperty("runtimeClassPath", Arrays.toString(getRuntimeClassPath()));
 		prop.setProperty("compileClassPath", Arrays.toString(getCompileClassPath()));
@@ -326,8 +326,8 @@ public class GraphRuntimeContext {
     /**
      * @return graph run debug mode
      */
-    public boolean isDebugMode() {
-        return debugMode;
+    public boolean isEdgeDebugging() {
+        return edgeDebugging;
     }
 
     /**
@@ -335,8 +335,8 @@ public class GraphRuntimeContext {
      * Debug mode for example can turn off debugging on all edges. 
      * @param debugMode
      */
-    public void setDebugMode(boolean debugMode) {
-        this.debugMode = debugMode;
+    public void setEdgeDebugging(boolean edgeDebugging) {
+        this.edgeDebugging = edgeDebugging;
     }
 
     /**
@@ -1064,7 +1064,7 @@ public class GraphRuntimeContext {
 				return parseBoolean(s);
 			}
 		},
-		DEBUG_MODE("debugMode", Boolean.class) {
+		EDGE_DEBUGGING("edgeDebugging", Boolean.class) {
 			@Override
 			public Object parseValue(String s) {
 				return parseBoolean(s);
