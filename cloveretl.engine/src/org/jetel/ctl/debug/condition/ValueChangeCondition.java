@@ -29,7 +29,7 @@ import org.jetel.ctl.ASTnode.SimpleNode;
  *
  * @created 4.7.2016
  */
-public class ValueChangeCondition extends CtlExpressionCondition {
+public class ValueChangeCondition extends CTLExpressionCondition {
 
 	private Object prevValue;
 	private Object curValue;
