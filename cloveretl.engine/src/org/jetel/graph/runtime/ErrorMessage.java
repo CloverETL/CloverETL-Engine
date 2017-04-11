@@ -31,19 +31,19 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @created Mar 21, 2017
  */
 @XmlRootElement(name = "ErrorMessage")
-@XmlAccessorType(XmlAccessType.FIELD)
+@XmlAccessorType(XmlAccessType.NONE)
 public class ErrorMessage {
 	
 	/**
 	 * Numeric http status code 
 	 */
-	@XmlElement(name="StatusCode")
+	
 	private int statusCode;
 	
 	/**
 	 * Textual phrase of status line
 	 */
-	@XmlElement(name="ReasonPhrase")
+	
 	private String reasonPhrase;
 	
 	public ErrorMessage() {
@@ -54,11 +54,21 @@ public class ErrorMessage {
 		this.reasonPhrase = reasonPhrase;
 	}
 
+	@XmlElement(name="StatusCode")
 	public int getStatusCode() {
 		return statusCode;
 	}
+	
+	public void setStatusCode(int statusCode) {
+		this.statusCode = statusCode;
+	}
 
+	@XmlElement(name="ReasonPhrase")
 	public String getReasonPhrase() {
 		return reasonPhrase;
+	}
+	
+	public void setReasonPhrase(String reasonPhrase) {
+		this.reasonPhrase = reasonPhrase;
 	}
 }
