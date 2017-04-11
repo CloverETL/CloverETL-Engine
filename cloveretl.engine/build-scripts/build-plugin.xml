@@ -602,9 +602,12 @@
 			
 			<keep name="com.opensys.cloveretl.connection.SOQLQuery"><field access="protected public"/><method access="protected public"/></keep>
 
-			<keep name="com.opensys.cloveretl.component.dataapi.ErrorMapping"><field /><method /></keep>
-			<keep name="com.opensys.cloveretl.component.dataapi.ErrorMappingBuilder"><field /><method /></keep>
-
+			<keep name="com.opensys.cloveretl.component.dataapi.ErrorMapping"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.dataapi.ErrorMappingBuilder"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.dataapi.ErrorsMapAdapter"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.dataapi.ErrorsMapAdapter$AdaptedEntry"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.dataapi.ErrorsMapAdapter$AdaptedMap"><field access="protected public"/><method access="protected public"/></keep>
+						
 			<!-- template to copy&paste
 			<keep name="xxxxxx"><field access="protected public"/><method access="protected public"/></keep>
 			-->
