@@ -28,7 +28,7 @@ import org.jetel.ctl.ASTnode.SimpleNode;
  *
  * @created 4.7.2016
  */
-public class BooleanExpressionCondition extends CtlExpressionCondition {
+public class BooleanExpressionCondition extends CTLExpressionCondition {
 
 	private Object value;
 	
