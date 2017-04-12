@@ -52,6 +52,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.RecursiveSubgraphException;
 import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.dictionary.Dictionary;
+import org.jetel.graph.http.EndpointSettings;
 import org.jetel.graph.modelview.impl.MetadataPropagationResult;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.GraphRuntimeContext;
@@ -227,6 +228,11 @@ public final class TransformationGraph extends GraphElement {
 	 * Contains nodes of original components - i.e. not the Trashifiers that are used as replacements.
 	 */
 	private Set<Node> keptBlocked = new HashSet<Node>();
+	
+	/**
+	 * Endpoint settings if the graph represents a REST job
+	 */
+	private EndpointSettings endpointSettings;
 	
 	public TransformationGraph() {
 		this(DEFAULT_GRAPH_ID);
@@ -1764,4 +1770,11 @@ public final class TransformationGraph extends GraphElement {
 		return keptBlocked;
 	}
 
+	public EndpointSettings getEndpointSettings() {
+		return endpointSettings;
+	}
+
+	public void setEndpointSettings(EndpointSettings endpointSettings) {
+		this.endpointSettings = endpointSettings;
+	}
 }

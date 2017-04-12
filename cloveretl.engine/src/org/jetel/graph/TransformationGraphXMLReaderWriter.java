@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
@@ -63,6 +64,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.dictionary.UnsupportedDictionaryOperation;
+import org.jetel.graph.http.EndpointSettings;
 import org.jetel.graph.runtime.ExecutionType;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataRecordMetadata;
@@ -505,6 +507,13 @@ public class TransformationGraphXMLReaderWriter {
 			//to ensure correct value of parameters is used when path parameter file is parametrised by
 			//parameter overridden by additional parameters.
 			graph.getGraphParameters().addPropertiesOverride(runtimeContext.getAdditionalProperties(), !runtimeContext.getJobType().isSubJob());
+			
+			// read endpoint settings (if any)
+			NodeList endpoint = document.getElementsByTagName(ENDPOINT_SETTINGS_ELEMENT);
+			if (endpoint.getLength() > 0) {
+				EndpointSettings settings = instantiateEndpointSettings(endpoint.item(0));
+				graph.setEndpointSettings(settings);
+			}
 
 			// handle dictionary
 			NodeList dictionaryElements = document.getElementsByTagName(DICTIONARY_ELEMENT);
@@ -550,6 +559,15 @@ public class TransformationGraphXMLReaderWriter {
 		}
 	}
 
+	private EndpointSettings instantiateEndpointSettings(org.w3c.dom.Node element) throws GraphConfigurationException {
+		try {
+			JAXBContext ctx = JAXBContextProvider.getInstance().getContext(EndpointSettings.class);
+			Unmarshaller unmarshaller = ctx.createUnmarshaller();
+			return (EndpointSettings)unmarshaller.unmarshal(element);
+		} catch (Exception e) {
+			throw new GraphConfigurationException("Could not parse endpoint settings: " + e.getMessage());
+		}
+	}
 
 	/**
 	 * Return 'Global' XML element, direct child of 'Graph' element.
