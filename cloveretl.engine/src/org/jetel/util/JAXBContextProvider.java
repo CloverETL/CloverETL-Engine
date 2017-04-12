@@ -18,7 +18,6 @@
  */
 package org.jetel.util;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -103,7 +102,10 @@ public class JAXBContextProvider {
 		private ClassLoader classLoader;
 		
 		public ContextKey(Class<?> ... types) {
-			this.types = new HashSet<Class<?>>(Arrays.asList(types));
+			this.types = new HashSet<Class<?>>(types.length);
+			for (Class<?> type : types) {
+				this.types.add(type);
+			}
 		}
 		
 		public ContextKey(String contextPath, ClassLoader classLoader) {
