@@ -492,6 +492,35 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		}
 	}
 	
+	public void testInfoRoot() throws Exception {
+		// CLO-10745 - root directory may not have all information.
+		URI root = baseUri.resolve("/");
+		CloverURI uri = CloverURI.createURI(root + ".");
+		System.out.println(uri.getAbsoluteURI());
+		InfoResult infoResult = manager.info(uri);
+		Info info = infoResult.getInfo();
+
+		// Make sure that none of the Info methods throws an exception:
+		info.getName();
+		info.getURI();
+		assertNull(String.format("%s should not have parent", uri), info.getParentDir());
+
+		assertTrue(String.format("%s is not a directory", uri), info.isDirectory());
+		assertFalse(String.format("%s is not a directory", uri), info.isFile());
+		info.isLink();
+		info.isHidden();
+
+		info.canRead();
+		info.canWrite();
+		info.canExecute();
+
+		info.getType();
+		info.getLastModified();
+		info.getCreated();
+		info.getLastAccessed();
+		info.getSize();
+	}
+	
 	protected void prepareData(Map<String, String> texts) throws Exception {
 		for (Map.Entry<String, String> e: texts.entrySet()) {
 			prepareData(relativeURI(e.getKey()), e.getValue());
@@ -1400,9 +1429,9 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		} {
 			// Recursive has not effect in that case.
 			listResult = manager.list(uri, new ListParameters()
-					.setListDirectoryContents(false)
-					.setRecursive(true)
-				);
+						.setListDirectoryContents(false)
+						.setRecursive(true)
+					);
 			assertTrue(listResult.getFirstErrorMessage(), listResult.success());
 			assertEquals(1, listResult.getResult().size());
 			Info info = listResult.getResult().get(0);

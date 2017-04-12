@@ -162,7 +162,7 @@ public class FTPOperationHandler implements IOperationHandler {
 
 		@Override
 		public Date getLastModified() {
-			return file.getTimestamp().getTime();
+			return file.getTimestamp() != null? file.getTimestamp().getTime(): null;
 		}
 
 		@Override
