@@ -37,7 +37,7 @@ public enum FileType {
 	CTL_TRANSFORMATION("ctl"), //$NON-NLS-1$
 	SUBGRAPH("sgrf"), //$NON-NLS-1$
 	SUBJOBFLOW("sjbf"), //$NON-NLS-1$
-	RESTJOB("rest"); //$NON-NLS-1$
+	RESTJOB("daj"); //$NON-NLS-1$
 	
 	public final String extension;
 	
