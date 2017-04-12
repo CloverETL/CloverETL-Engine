@@ -91,6 +91,11 @@ public class EdgeDebugWriter {
     
     private long lastFlushTime = 0;
 
+    /**
+     * Final status which will be written at the end of data stream.
+     */
+    private DebugDataStatus status;
+    
     public EdgeDebugWriter(OutputStream outputStream, DataRecordMetadata metadata) {
     	outputChannel = Channels.newChannel(outputStream);
     	this.metadata = metadata;
@@ -133,6 +138,7 @@ public class EdgeDebugWriter {
 	        	sampler = new Sampler();
 	        }
 	        
+	        status = DebugDataStatus.COMPLETE_DATA;// data stream is 'complete' by default
     	} catch (Exception e) {
     		throw new JetelRuntimeException("Initialization of edge debug writer failed.", e);
     	}
@@ -168,6 +174,9 @@ public class EdgeDebugWriter {
         	debuggedBytes += formatter.write(record);
         	flushIfNeeded();
         	debuggedRecords++;
+	        status = DebugDataStatus.COMPLETE_DATA; //the last record has been written - finall status may be 'complete'
+        } else {
+	        status = DebugDataStatus.TRUNCATED_DATA; //something has been skipped - final status may be 'truncated'
         }
     }
     
@@ -217,6 +226,9 @@ public class EdgeDebugWriter {
 	        	debuggedBytes += formatter.writeDirect(byteBuffer); 
 	        	flushIfNeeded();
 	        	debuggedRecords++;
+		        status = DebugDataStatus.COMPLETE_DATA; //the last record has been written - finall status may be 'complete'
+	        } else {
+		        status = DebugDataStatus.TRUNCATED_DATA; //something has been skipped - final status may be 'truncated'
 	        }
         }
     }
@@ -245,16 +257,15 @@ public class EdgeDebugWriter {
 	 */
 	public void close() {
 		try {
+			DataRecord dataRecord = DataRecordFactory.newRecord(metadata);
 			if (ringRecordBuffer != null) {
-				DataRecord dataRecord = DataRecordFactory.newRecord(metadata);
-
 				while (ringRecordBuffer.popRecord(recordOrdinal) != null && ringRecordBuffer.popRecord(dataRecord) != null) {
 					formatter.writeLong((Long) recordOrdinal.getField(0).getValue());
 					formatter.write(dataRecord);
 				}
 			}
-
-			formatter.writeLong(-1);
+			formatter.writeLong(status.getCode()); //write code of final status
+			formatter.write(dataRecord); //write empty record, this is necessary for writing the final status
 			formatter.close();
 		} catch (IOException exception) {
 			logger.error("Error writing debug records.");
@@ -262,7 +273,15 @@ public class EdgeDebugWriter {
 			logger.warn("Can't flush/rewind DataRecordTape.");
 		}
 	}
-    
+
+	/**
+	 * This is just a private hook how to inject custom final status to be written.
+	 * @see DebugDataStream
+	 */
+	void setStatus(DebugDataStatus status) {
+		this.status = status;
+	}
+
     private String getEdgeId() {
     	return parentEdge != null ? parentEdge.getId() : "";
     }
