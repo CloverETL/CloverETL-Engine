@@ -30,10 +30,10 @@ import javax.xml.bind.JAXBException;
 import org.jetel.exception.JetelRuntimeException;
 
 /**
- * JAXB contexts cache to prevent class leaks caused by their repeated creation,
- * see https://issues.apache.org/jira/browse/CXF-2939
- * Anyway, JAXBContext is a heavy-weight object - it should be cached.
+ * JAXB context cache to prevent class leaks caused by their repeated creation,
+ * see https://issues.apache.org/jira/browse/CXF-2939.
  * 
+ * Anyway, JAXBContext is a heavy-weight object so it should be cached.
  * 
  * @author jan.michalica (info@cloveretl.com)
  *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
@@ -82,7 +82,7 @@ public class JAXBContextProvider {
 	 */
 	public JAXBContext getContext(String contextPath) throws JAXBException {
 		
-		return getContext(new ContextKey(contextPath, null));
+		return getContext(contextPath, null);
 	}
 	
 	private JAXBContext getContext(ContextKey key) throws JAXBException {
