@@ -431,6 +431,17 @@ public class TransformationGraphXMLReaderWriter {
 		return graph;
 	}
 	
+	public EndpointSettings readEndpointSettings(InputStream stream) throws IOException, XMLConfigurationException, GraphConfigurationException {
+		
+		Document doc = prepareDocument(stream);
+		Element global = getGlobalElement(doc);
+		NodeList nodes = global.getElementsByTagName(ENDPOINT_SETTINGS_ELEMENT);
+		if (nodes.getLength() > 0) {
+			return instantiateEndpointSettings(nodes.item(0));
+		}
+		return null;
+	}
+	
 	/**
 	 *Constructor for the read object
 	 *
@@ -486,12 +497,13 @@ public class TransformationGraphXMLReaderWriter {
 	        graph.setLargeIconPath(grfAttributes.getString(LARGE_ICON_PATH_ATTRIBUTE, null));
 	        graph.setStaticJobType(JobType.fromString(grfAttributes.getString(JOB_TYPE_ATTRIBUTE, null)));
 	
+	        final Element global = getGlobalElement(document);
 	        //read subgraph input ports
-			List<Element> subgraphInputPortsElements = getChildElements(getGlobalElement(document), SUBGRAPH_INPUT_PORTS_ELEMENT);
+			List<Element> subgraphInputPortsElements = getChildElements(global, SUBGRAPH_INPUT_PORTS_ELEMENT);
 	        instantiateSubgraphPorts(true, graph.getSubgraphInputPorts(), subgraphInputPortsElements);
 
 	        //read subgraph output ports
-			List<Element> subgraphOutputPortsElements = getChildElements(getGlobalElement(document), SUBGRAPH_OUTPUT_PORTS_ELEMENT);
+			List<Element> subgraphOutputPortsElements = getChildElements(global, SUBGRAPH_OUTPUT_PORTS_ELEMENT);
 	        instantiateSubgraphPorts(false, graph.getSubgraphOutputPorts(), subgraphOutputPortsElements);
 
 			// handle all defined graph parameters - old-fashion
@@ -499,7 +511,7 @@ public class TransformationGraphXMLReaderWriter {
 			instantiateProperties(PropertyElements);
 
 			// handle all defined graph parameters - new-fashion
-			List<Element> graphParametersElements = getChildElements(getGlobalElement(document), GRAPH_PARAMETERS_ELEMENT);
+			List<Element> graphParametersElements = getChildElements(global, GRAPH_PARAMETERS_ELEMENT);
 			instantiateGraphParameters(graph.getGraphParameters(), graphParametersElements);
 
 			//additional graph parameters are loaded after all build-in parameters are already loaded
@@ -509,34 +521,34 @@ public class TransformationGraphXMLReaderWriter {
 			graph.getGraphParameters().addPropertiesOverride(runtimeContext.getAdditionalProperties(), !runtimeContext.getJobType().isSubJob());
 			
 			// read endpoint settings (if any)
-			NodeList endpoint = document.getElementsByTagName(ENDPOINT_SETTINGS_ELEMENT);
+			NodeList endpoint = global.getElementsByTagName(ENDPOINT_SETTINGS_ELEMENT);
 			if (endpoint.getLength() > 0) {
 				EndpointSettings settings = instantiateEndpointSettings(endpoint.item(0));
 				graph.setEndpointSettings(settings);
 			}
 
 			// handle dictionary
-			NodeList dictionaryElements = document.getElementsByTagName(DICTIONARY_ELEMENT);
+			NodeList dictionaryElements = global.getElementsByTagName(DICTIONARY_ELEMENT);
 			instantiateDictionary(dictionaryElements);
 			
 			if (!onlyParamsAndDict) {
 				// handle all defined DB connections
-				NodeList dbConnectionElements = document.getElementsByTagName(CONNECTION_ELEMENT);
+				NodeList dbConnectionElements = global.getElementsByTagName(CONNECTION_ELEMENT);
 				instantiateDBConnections(dbConnectionElements);
 		
 				// handle all defined DB connections
-				NodeList sequenceElements = document.getElementsByTagName(SEQUENCE_ELEMENT);
+				NodeList sequenceElements = global.getElementsByTagName(SEQUENCE_ELEMENT);
 				instantiateSequences(sequenceElements);
 				
 				//create metadata
 				//NodeList metadataElements = document.getElementsByTagName(METADATA_ELEMENT);
-				instantiateMetadata(getGlobalElement(document), metadata);
+				instantiateMetadata(global, metadata);
 		
 				// register all metadata (DataRecordMetadata) within transformation graph
 				graph.addDataRecordMetadata(metadata);
 		
 				// handle all defined lookup tables
-				NodeList lookupsElements = document.getElementsByTagName(LOOKUP_TABLE_ELEMENT);
+				NodeList lookupsElements = global.getElementsByTagName(LOOKUP_TABLE_ELEMENT);
 				instantiateLookupTables(lookupsElements);
 		
 				NodeList phaseElements = document.getElementsByTagName(PHASE_ELEMENT);
