@@ -57,6 +57,12 @@ public interface MVGraph extends MVGraphElement {
 	public Map<String, MVSubgraph> getMVSubgraphs();
 
 	/**
+	 * @param edgeId
+	 * @return true if edge with the given id exists in this graph
+	 */
+	public boolean hasMVEdge(String edgeId);
+	
+	/**
 	 * @param edgeId id of requested edge
 	 * @return MV representation of an edge from this graph 
 	 */
