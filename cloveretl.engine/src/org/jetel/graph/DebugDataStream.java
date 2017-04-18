@@ -213,15 +213,18 @@ public class DebugDataStream extends InputStream {
 	}
 	
 	private boolean fetchNextRecord() throws IOException, InterruptedException {
-		
 		final long status = reader.readRecord(buffer);
 		if (status > 0 && writer.acceptMoreRecords()) {
 			writer.writeRecord(buffer);
 			writer.flush();
 			return true;
 		} else {
+			//set final status to writer, this status will be written to the output
+			//by the following close() operation
+			writer.setStatus(status < 0 ? DebugDataStatus.fromCode(status) : DebugDataStatus.TRUNCATED_DATA);
 			writer.close();
 			return false;
 		}
 	}
+	
 }

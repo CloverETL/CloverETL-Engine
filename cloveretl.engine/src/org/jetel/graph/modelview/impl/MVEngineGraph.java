@@ -132,6 +132,12 @@ public class MVEngineGraph extends MVEngineGraphElement implements MVGraph {
 	}
 
 	@Override
+	public boolean hasMVEdge(String edgeId) {
+		Map<String, MVEdge> mvEdges = getMVEdges();
+		return mvEdges.containsKey(edgeId);
+	}
+
+	@Override
 	public MVEdge getMVEdge(String edgeId) {
 		Map<String, MVEdge> mvEdges = getMVEdges();
 		

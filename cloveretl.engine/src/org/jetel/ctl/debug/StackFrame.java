@@ -21,6 +21,8 @@ package org.jetel.ctl.debug;
 import java.io.Serializable;
 
 /**
+ * This unit represents a single frame on the CTL interpreter function callstack.
+ * 
  * @author jan.michalica (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
