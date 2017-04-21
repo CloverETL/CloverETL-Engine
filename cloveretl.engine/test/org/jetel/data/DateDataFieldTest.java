@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldFormatType;
@@ -359,6 +360,25 @@ public void test_1_DateDataField() {
 		field.setValue(new Date().getTime());
 		field.fromByteBuffer(BooleanDataFieldTest.getCloverBuffer("xxx"), decoder);
 		assertTrue(field.isNull());
+	}
+	
+	public void testGetValueWithTimeZone() {
+		DataFieldMetadata metadata = new DataFieldMetadata("dateField", DataFieldType.DATE, "");
+		metadata.setTimeZoneStr("Europe/London");
+		DateDataField field = new DateDataField(metadata);
+		
+		Calendar pragueCalendar = Calendar.getInstance(TimeZone.getTimeZone("Europe/Prague"));
+		pragueCalendar.set(2017, 3, 21, 14, 19, 33); // 2017-04-21 14:19:33
+		Calendar londonCalendar = Calendar.getInstance(TimeZone.getTimeZone("Europe/London"));
+		londonCalendar.set(2017, 3, 21, 13, 19, 33); // 2017-04-21 13:19:33
+		field.setValue(pragueCalendar.getTime());
+		assertTrue(londonCalendar.equals(field.getValueWithTimeZone()));
+		
+		pragueCalendar.set(2018, 0, 1, 0, 10, 22); // 2018-01-01 00:10:22
+		londonCalendar.set(2017, 11, 31, 23, 10, 22); // 2017-12-31 23:10:22
+		field.setValue(pragueCalendar.getTime());
+		assertTrue(londonCalendar.equals(field.getValueWithTimeZone()));
+		
 	}
 
 }
