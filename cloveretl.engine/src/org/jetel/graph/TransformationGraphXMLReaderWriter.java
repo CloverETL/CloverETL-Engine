@@ -19,9 +19,12 @@
 package org.jetel.graph;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,6 +85,7 @@ import org.jetel.util.string.UnicodeBlanks;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXParseException;
 
 /**
@@ -323,13 +327,23 @@ public class TransformationGraphXMLReaderWriter {
 		return XmlParserFactory.getDocumentBuilder(documentBuilderFactory);
 	}
 	
-	private static Document prepareDocument(InputStream in) throws XMLConfigurationException {
+	private static Document prepareDocument(InputStream stream) throws XMLConfigurationException {
+		InputSource inputSource = (stream != null) ? new InputSource(new BufferedInputStream(stream)) : null;
+		return prepareDocument(inputSource);
+	}
+	
+	private static Document prepareDocument(Reader reader) throws XMLConfigurationException {
+		InputSource inputSource = (reader != null) ? new InputSource(new BufferedReader(reader)) : null;
+		return prepareDocument(inputSource);
+	}
+	
+	private static Document prepareDocument(InputSource in) throws XMLConfigurationException {
 		Document document;
 		DocumentBuilderProvider documentBuilderProvider = null;
 		try {
 			documentBuilderProvider = getDocumentBuilderProvider();
 			if (in != null) {
-				document = documentBuilderProvider.getDocumentBuilder().parse(new BufferedInputStream(in));
+				document = documentBuilderProvider.getDocumentBuilder().parse(in);
 				document.normalize();
 			}else{
 				document = documentBuilderProvider.getDocumentBuilder().newDocument();
@@ -398,9 +412,49 @@ public class TransformationGraphXMLReaderWriter {
 		}
 	}
 	
-	public TransformationGraph read(InputStream in) throws XMLConfigurationException, GraphConfigurationException {
-		Document document = prepareDocument(in);
+	/**
+	 * Reads graph XML as a string.
+	 * 
+	 * @param graphXml - content of the graph file
+	 * @return {@link TransformationGraph} built from the XML
+	 * 
+	 * @throws XMLConfigurationException
+	 * @throws GraphConfigurationException
+	 */
+	public TransformationGraph read(String graphXml) throws XMLConfigurationException, GraphConfigurationException {
+		return read(new StringReader(graphXml));
+	}
+	
+	/**
+	 * Builds {@link TransformationGraph} from the provided character stream.
+	 * 
+	 * @param reader - character stream containing graph XML 
+	 * @return {@link TransformationGraph} built from the reader
+	 * 
+	 * @throws XMLConfigurationException
+	 * @throws GraphConfigurationException
+	 */
+	public TransformationGraph read(Reader reader) throws XMLConfigurationException, GraphConfigurationException {
+		Document document = prepareDocument(reader);
+		return readDocument(document);
+	}
 
+	/**
+	 * Builds {@link TransformationGraph} from the provided byte stream.
+	 * The charset is auto-detected from the XML header.
+	 * 
+	 * @param is - byte stream containing graph XML
+	 * @return {@link TransformationGraph} built from the input stream
+	 * @throws XMLConfigurationException
+	 * @throws GraphConfigurationException
+	 */
+	public TransformationGraph read(InputStream is) throws XMLConfigurationException, GraphConfigurationException {
+		Document document = prepareDocument(is);
+		return readDocument(document);
+	}
+	
+	private TransformationGraph readDocument(Document document)
+			throws XMLConfigurationException, GraphConfigurationException {
 		try {
 			read(document);
 		} catch (XMLConfigurationException e) {
