@@ -2,6 +2,15 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-5-1
+---------
+* CLO-10614	Support secure JNDI on Apache Tomcat 8
+* CLO-10775	Option to disable update reference cache
+* CLO-10777	Designer-Server connection diagnostic logging
+* CLO-10780	Cluster heartbeat performed from own thread
+* CLO-10808	Store cluster node status logging into separate file
+
+
 REL-4-5-0
 ---------
 * Changes
