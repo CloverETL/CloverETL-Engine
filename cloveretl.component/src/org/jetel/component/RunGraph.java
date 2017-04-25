@@ -164,8 +164,7 @@ public class RunGraph extends Node{
 	private final static String DEFAULT_JAVA_CMD_LINE = "java -cp";
 	private final static String DEFAULT_CLOVER_CMD_LINE = "";
 	private final static String DEFAULT_GRAPH_EXEC_CLASS = "org.jetel.main.runGraph";
-	private final static boolean DEFAULT_IGNORE_GRAPH_FILE = false;
-	
+
 	private final static int INPUT_PORT = 0;
 	private final static int OUTPUT_PORT = 0;
 	private final static int ERR_OUTPUT_PORT = 1;
