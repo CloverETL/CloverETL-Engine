@@ -22,6 +22,7 @@ import java.nio.BufferOverflowException;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
@@ -31,6 +32,7 @@ import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.DateFormatter;
 import org.jetel.util.formatter.DateFormatterFactory;
 import org.jetel.util.string.Compare;
+import org.jetel.util.string.StringUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -55,6 +57,8 @@ public class DateDataField extends DataFieldImpl implements Comparable<Object> {
 	private Date value;
 	/** the date formatter used to format this field */
 	private DateFormatter dateFormatter;
+	/** lazy initialized Calendar with metadata specific TimeZone */
+	private Calendar dateCalendar;
 
 	private final static int FIELD_SIZE_BYTES = 8;// standard size of field
 	private final static long DATE_NULL_VAL_SERIALIZED=Long.MIN_VALUE;
@@ -443,6 +447,34 @@ public class DateDataField extends DataFieldImpl implements Comparable<Object> {
 	@Override
 	public int getSizeSerialized() {
 		return FIELD_SIZE_BYTES;
+	}
+	
+	/**
+	 * Translate date to time zone specified in metadata (if metadata specifies time zone), otherwise return null. 
+	 * Useful for finding the local time in another time zone.
+	 * For example, if this Date holds 8:30 in Europe/Prague and metadata specified time zone Europe/London,
+	 * then result from this would be 7:30.
+	 *  
+	 * @return    Calendar instance with metadata specified TimeZone and local milliseconds
+	 */
+	public Calendar getValueWithTimeZone() {
+		if (isNull || StringUtils.isEmpty(metadata.getTimeZoneStr())) {
+			return null;
+		} else {
+			if (dateCalendar == null) {
+				String timeZoneID;
+				if (metadata.getTimeZone().hasJodaTimeZone()) {
+					timeZoneID = metadata.getTimeZone().getJodaTimeZone().getID();
+				} else {
+					timeZoneID = metadata.getTimeZone().getJavaTimeZone().getID();
+				}
+				dateCalendar = Calendar.getInstance(TimeZone.getTimeZone(timeZoneID));
+			}
+			if (dateCalendar != null) {
+				dateCalendar.setTime(value);
+			}
+			return dateCalendar;
+		}
 	}
 
 }

@@ -43,9 +43,7 @@
 		<DeleteFile file="data-out/sortedByTotalTax.xlsx"/>
 	</FunctionalTest>
 	
-	<FunctionalTest ident="WebServicesHTTP" graphFile="graph/WebServicesHTTP.grf">
-		<RegEx expression="Returned code for http request" occurences="0"/>
-	</FunctionalTest>
+	<FunctionalTest ident="WebServicesHTTP" graphFile="graph/WebServicesHTTP.grf" />
 	
 	<FunctionalTest ident="WebServicesWSClient" graphFile="graph/WebServicesWSClient.grf" />
 	
