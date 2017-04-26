@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 
+import org.jetel.graph.rest.jaxb.ErrorMessage;
+
 
 /**
  * Declares functions for working with HTTP request/response

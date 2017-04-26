@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.graph.http;
+package org.jetel.graph.rest.jaxb;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -29,16 +29,60 @@ import javax.xml.bind.annotation.XmlAttribute;
  * @created 12.4.2017
  */
 @XmlAccessorType(XmlAccessType.NONE)
-public class RequestMethod {
+public class RequestParameter {
 
 	private String name;
-
+	private String id;
+	private Boolean required;
+	private String description;
+	private String type;
+	
 	@XmlAttribute
 	public String getName() {
 		return name;
 	}
-
+	
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	@XmlAttribute
+	public String getId() {
+		return id;
+	}
+	
+	public void setId(String id) {
+		this.id = id;
+	}
+	
+	@XmlAttribute
+	public Boolean getRequired() {
+		return required;
+	}
+	
+	public boolean isRequired() {
+		return Boolean.TRUE.equals(required);
+	}
+	
+	public void setRequired(Boolean required) {
+		this.required = required;
+	}
+	
+	@XmlAttribute
+	public String getDescription() {
+		return description;
+	}
+	
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	
+	@XmlAttribute
+	public String getType() {
+		return type;
+	}
+	
+	public void setType(String type) {
+		this.type = type;
 	}
 }

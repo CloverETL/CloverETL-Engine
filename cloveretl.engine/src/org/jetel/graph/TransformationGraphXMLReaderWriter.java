@@ -67,7 +67,8 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.dictionary.UnsupportedDictionaryOperation;
-import org.jetel.graph.http.EndpointSettings;
+import org.jetel.graph.rest.jaxb.EndpointSettings;
+import org.jetel.graph.rest.jaxb.ErrorMapping;
 import org.jetel.graph.runtime.ExecutionType;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataRecordMetadata;
@@ -221,6 +222,8 @@ public class TransformationGraphXMLReaderWriter {
 	public final static String ENDPOINT_SETTINGS_PARAM_FORMAT_ATTR = "format";
 	public final static String ENDPOINT_SETTINGS_PARAM_REQUIRED_ATTR = "required";
 	public final static String ENDPOINT_SETTINGS_PARAM_DESCRIPTION_ATTR = "description";
+	
+	public final static String REST_ERROR_MAPPING_ELEMENT = "RestErrorMapping";
 	
 	private final static String DICTIONARY_ELEMENT = "Dictionary";
 	private final static String DICTIONARY_ENTRY_ELEMENT = "Entry";
@@ -581,6 +584,12 @@ public class TransformationGraphXMLReaderWriter {
 				graph.setEndpointSettings(settings);
 			}
 
+			NodeList restErrors = global.getElementsByTagName(REST_ERROR_MAPPING_ELEMENT);
+			if (restErrors.getLength() > 0) {
+				ErrorMapping mapping = instantiateRestErrorMapping(restErrors.item(0));
+				graph.setRestErrorMapping(mapping);
+			}
+			
 			// handle dictionary
 			NodeList dictionaryElements = global.getElementsByTagName(DICTIONARY_ELEMENT);
 			instantiateDictionary(dictionaryElements);
@@ -632,6 +641,16 @@ public class TransformationGraphXMLReaderWriter {
 			return (EndpointSettings)unmarshaller.unmarshal(element);
 		} catch (Exception e) {
 			throw new GraphConfigurationException("Could not parse endpoint settings: " + e.getMessage());
+		}
+	}
+	
+	private ErrorMapping instantiateRestErrorMapping(org.w3c.dom.Node element) throws GraphConfigurationException {
+		try {
+			JAXBContext ctx = JAXBContextProvider.getInstance().getContext(ErrorMapping.class);
+			Unmarshaller unmarshaller = ctx.createUnmarshaller();
+			return (ErrorMapping)unmarshaller.unmarshal(element);
+		} catch (Exception e) {
+			throw new GraphConfigurationException("Could not parse REST error mapping: " + e.getMessage());
 		}
 	}
 

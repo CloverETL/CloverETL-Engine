@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.graph.runtime;
+package org.jetel.graph.rest.jaxb;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -32,8 +32,9 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "ErrorMessage")
 @XmlAccessorType(XmlAccessType.NONE)
-public class ErrorMessage {
+public class ErrorMessage implements Cloneable {
 	
+	private String componentId;
 	/**
 	 * Numeric http status code 
 	 */
@@ -49,12 +50,22 @@ public class ErrorMessage {
 	public ErrorMessage() {
 	}
 	
-	public ErrorMessage(int statusCode, String reasonPhrase) {
+	public ErrorMessage(String componentId, int statusCode, String reasonPhrase) {
+		this.componentId = componentId;
 		this.statusCode = statusCode;
 		this.reasonPhrase = reasonPhrase;
 	}
+	
+	@XmlElement(name = "Key")
+	public String getComponentId() {
+		return componentId;
+	}
 
-	@XmlElement(name="StatusCode")
+	public void setComponentId(String componentId) {
+		this.componentId = componentId;
+	}
+
+	@XmlElement(name = "StatusCode")
 	public int getStatusCode() {
 		return statusCode;
 	}
@@ -63,12 +74,20 @@ public class ErrorMessage {
 		this.statusCode = statusCode;
 	}
 
-	@XmlElement(name="ReasonPhrase")
+	@XmlElement(name = "ReasonPhrase")
 	public String getReasonPhrase() {
 		return reasonPhrase;
 	}
 	
 	public void setReasonPhrase(String reasonPhrase) {
 		this.reasonPhrase = reasonPhrase;
+	}
+	
+	public ErrorMessage createCopy() {
+		try {
+			return (ErrorMessage)super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

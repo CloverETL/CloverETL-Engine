@@ -17,11 +17,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.jetel.graph.runtime;
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,7 +51,6 @@ import org.jetel.graph.ContextProvider;
 import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.IGraphElement;
-import org.jetel.graph.NodeErrorListener;
 import org.jetel.graph.Node;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
@@ -525,21 +522,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
 						setCauseException(new JetelRuntimeException(String.format("Graph element %s failed with unknown cause.", message.getSender())));
 					}
 					ExceptionUtils.logException(logger, null, getCauseException());
-					/*
-					 * notify about current failure before phase is finished
-					 */
-					Node failedNode = null;
-					if (message.getSender() instanceof Node) {
-						failedNode = (Node)message.getSender();
-					}
-					for (NodeErrorListener handler : getErrorListeners()) {
-						try {
-							handler.nodeFailed(failedNode, getCauseException());
-						} catch (Exception e) {
-							logger.error("Unhandled exception in error handler", e);
-						}
-					}
-					
 					return Result.ERROR;
 				case MESSAGE:
 					synchronized (messageMonitor) {
@@ -922,16 +904,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
     	//so try to release the JMX bean again
     	freeJMX();
     	isReleased = true;
-    }
-    
-    private Collection<NodeErrorListener> getErrorListeners() {
-    	List<NodeErrorListener> result = new ArrayList<>();
-    	for (Node node : graph.getNodes().values()) {
-    		if (node instanceof NodeErrorListener) {
-    			result.add((NodeErrorListener)node);
-    		}
-    	}
-    	return result;
     }
     
 	/**
