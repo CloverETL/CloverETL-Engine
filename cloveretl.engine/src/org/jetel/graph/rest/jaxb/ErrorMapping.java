@@ -18,6 +18,7 @@
  */
 package org.jetel.graph.rest.jaxb;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,8 +40,10 @@ import org.jetel.graph.Node;
  */
 @XmlRootElement(name = "RestErrorMapping")
 @XmlAccessorType(XmlAccessType.NONE)
-public class ErrorMapping implements Cloneable {
+public class ErrorMapping implements Cloneable, Serializable {
 
+	private static final long serialVersionUID = 1L;
+	
 	/**
 	 * Key for default error Mesasge
 	 */
