@@ -57,7 +57,6 @@ public class JAXBContextProvider {
 	 * @throws JAXBException
 	 */
 	public JAXBContext getContext(Class<?> ... types) throws JAXBException {
-		
 		return getContext(new ContextKey(types));
 	}
 	
@@ -68,7 +67,9 @@ public class JAXBContextProvider {
 	 * @throws JAXBException
 	 */
 	public JAXBContext getContext(String contextPath, ClassLoader classLoader) throws JAXBException {
-		
+		if (classLoader == null) {
+			classLoader = Thread.currentThread().getContextClassLoader();
+		}
 		return getContext(new ContextKey(contextPath, classLoader));
 	}
 	
@@ -79,8 +80,7 @@ public class JAXBContextProvider {
 	 * @throws JAXBException
 	 */
 	public JAXBContext getContext(String contextPath) throws JAXBException {
-		
-		return getContext(contextPath, Thread.currentThread().getContextClassLoader());
+		return getContext(contextPath, null);
 	}
 	
 	private JAXBContext getContext(ContextKey key) throws JAXBException {
