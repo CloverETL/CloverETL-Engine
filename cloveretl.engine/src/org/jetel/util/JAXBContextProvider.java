@@ -67,9 +67,6 @@ public class JAXBContextProvider {
 	 * @throws JAXBException
 	 */
 	public JAXBContext getContext(String contextPath, ClassLoader classLoader) throws JAXBException {
-		if (classLoader == null) {
-			classLoader = Thread.currentThread().getContextClassLoader();
-		}
 		return getContext(new ContextKey(contextPath, classLoader));
 	}
 	
@@ -80,7 +77,7 @@ public class JAXBContextProvider {
 	 * @throws JAXBException
 	 */
 	public JAXBContext getContext(String contextPath) throws JAXBException {
-		return getContext(contextPath, null);
+		return getContext(contextPath, Thread.currentThread().getContextClassLoader());
 	}
 	
 	private JAXBContext getContext(ContextKey key) throws JAXBException {
@@ -113,7 +110,7 @@ public class JAXBContextProvider {
 		JAXBContext createContext() throws JAXBException {
 			if (types != null) {
 				return JAXBContext.newInstance(types.toArray(new Class<?>[types.size()]));
-			} if (contextPath != null && classLoader != null) {
+			} if (contextPath != null) {
 				return JAXBContext.newInstance(contextPath, classLoader);
 			} else {
 				throw new JetelRuntimeException("Invalid arguments for context creation.");
