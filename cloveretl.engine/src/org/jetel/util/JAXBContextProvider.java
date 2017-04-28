@@ -19,6 +19,7 @@
 package org.jetel.util;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -42,7 +43,7 @@ public class JAXBContextProvider {
 
 	private static final JAXBContextProvider instance = new JAXBContextProvider();
 	
-	private ConcurrentHashMap<ContextKey, JAXBContext> cache = new ConcurrentHashMap<>();
+	private Map<ContextKey, JAXBContext> cache = new ConcurrentHashMap<>();
 	
 	private JAXBContextProvider() {}
 	
@@ -84,7 +85,7 @@ public class JAXBContextProvider {
 		JAXBContext ctx = cache.get(key);
 		if (ctx == null) {
 			ctx = key.createContext();
-			cache.putIfAbsent(key, ctx);
+			cache.put(key, ctx);
 		}
 		return ctx;
 	}
