@@ -24,21 +24,21 @@ package org.jetel.util;
  *
  * @created Mar 28, 2017
  */
-public class DataApiJobUtils {
+public class RestJobUtils {
 	
-	public static final String DATA_API_JOB_INPUT_TYPE = "DATAAPI_INPUT";
-	public static final String DATA_API_JOB_OUTPUT_TYPE = "DATAAPI_OUTPUT";
+	public static final String REST_JOB_INPUT_TYPE = "RESTJOB_INPUT";
+	public static final String REST_JOB_OUTPUT_TYPE = "RESTJOB_OUTPUT";
 	
-	public static boolean isDataApiJobInputComponent(String componentType) {
-		return DATA_API_JOB_INPUT_TYPE.equals(componentType);
+	public static boolean isRestJobInputComponent(String componentType) {
+		return REST_JOB_INPUT_TYPE.equals(componentType);
 	}
 	
-	public static boolean isDataApiJobOutputComponent(String componentType) {
-		return DATA_API_JOB_OUTPUT_TYPE.equals(componentType);
+	public static boolean isRestJobOutputComponent(String componentType) {
+		return REST_JOB_OUTPUT_TYPE.equals(componentType);
 	}
 	
-	public static boolean isDataApiJobInputOutputComponent(String componentType) {
-		return isDataApiJobInputComponent(componentType) || isDataApiJobOutputComponent(componentType);
+	public static boolean isRestJobInputOutputComponent(String componentType) {
+		return isRestJobInputComponent(componentType) || isRestJobOutputComponent(componentType);
 	}
 	
 }
