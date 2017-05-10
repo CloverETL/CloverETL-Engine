@@ -444,5 +444,5 @@ public class DateDataField extends DataFieldImpl implements Comparable<Object> {
 	public int getSizeSerialized() {
 		return FIELD_SIZE_BYTES;
 	}
-
+	
 }

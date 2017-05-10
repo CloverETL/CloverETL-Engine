@@ -22,6 +22,10 @@ import java.lang.Thread;
 import org.jetel.graph.Node;
 
 /**
+ * This unit represents a Java thread together with a component
+ * running in that thread. It represents a hint about CTL thread
+ * when the CTL thread is not currently being executed and hence it is not known to the debug bean.
+ * 
  * @author jan.michalica (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *

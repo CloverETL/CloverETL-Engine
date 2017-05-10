@@ -18,11 +18,10 @@
  */
 package org.jetel.util;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -44,7 +43,7 @@ public class JAXBContextProvider {
 
 	private static final JAXBContextProvider instance = new JAXBContextProvider();
 	
-	private Map<ContextKey, JAXBContext> cache = new HashMap<ContextKey, JAXBContext>();
+	private Map<ContextKey, JAXBContext> cache = new ConcurrentHashMap<>();
 	
 	private JAXBContextProvider() {}
 	
@@ -59,7 +58,6 @@ public class JAXBContextProvider {
 	 * @throws JAXBException
 	 */
 	public JAXBContext getContext(Class<?> ... types) throws JAXBException {
-		
 		return getContext(new ContextKey(types));
 	}
 	
@@ -70,7 +68,6 @@ public class JAXBContextProvider {
 	 * @throws JAXBException
 	 */
 	public JAXBContext getContext(String contextPath, ClassLoader classLoader) throws JAXBException {
-		
 		return getContext(new ContextKey(contextPath, classLoader));
 	}
 	
@@ -81,19 +78,16 @@ public class JAXBContextProvider {
 	 * @throws JAXBException
 	 */
 	public JAXBContext getContext(String contextPath) throws JAXBException {
-		
-		return getContext(new ContextKey(contextPath, null));
+		return getContext(contextPath, Thread.currentThread().getContextClassLoader());
 	}
 	
 	private JAXBContext getContext(ContextKey key) throws JAXBException {
-		synchronized (cache) {
-			JAXBContext ctx = cache.get(key);
-			if (ctx == null) {
-				ctx = key.createContext();
-				cache.put(key, ctx);
-			}
-			return ctx;
+		JAXBContext ctx = cache.get(key);
+		if (ctx == null) {
+			ctx = key.createContext();
+			cache.put(key, ctx);
 		}
+		return ctx;
 	}
 	
 	private static class ContextKey {
@@ -102,24 +96,23 @@ public class JAXBContextProvider {
 		private String contextPath;
 		private ClassLoader classLoader;
 		
-		public ContextKey(Class<?> ... types) {
-			this.types = new HashSet<Class<?>>(Arrays.asList(types));
+		ContextKey(Class<?> ... types) {
+			this.types = new HashSet<>(types.length);
+			for (Class<?> type : types) {
+				this.types.add(type);
+			}
 		}
 		
-		public ContextKey(String contextPath, ClassLoader classLoader) {
+		ContextKey(String contextPath, ClassLoader classLoader) {
 			this.contextPath = contextPath;
 			this.classLoader = classLoader;
 		}
 		
-		public JAXBContext createContext() throws JAXBException {
+		JAXBContext createContext() throws JAXBException {
 			if (types != null) {
 				return JAXBContext.newInstance(types.toArray(new Class<?>[types.size()]));
 			} if (contextPath != null) {
-				if (classLoader != null) {
-					return JAXBContext.newInstance(contextPath, classLoader);
-				} else {
-					return JAXBContext.newInstance(contextPath);
-				}
+				return JAXBContext.newInstance(contextPath, classLoader);
 			} else {
 				throw new JetelRuntimeException("Invalid arguments for context creation.");
 			}

@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldFormatType;
@@ -360,5 +361,5 @@ public void test_1_DateDataField() {
 		field.fromByteBuffer(BooleanDataFieldTest.getCloverBuffer("xxx"), decoder);
 		assertTrue(field.isNull());
 	}
-
+	
 }
