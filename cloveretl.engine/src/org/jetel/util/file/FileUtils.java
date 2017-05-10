@@ -89,6 +89,7 @@ import org.jetel.util.protocols.UserInfo;
 import org.jetel.util.protocols.amazon.S3InputStream;
 import org.jetel.util.protocols.amazon.S3OutputStream;
 import org.jetel.util.protocols.ftp.FTPStreamHandler;
+import org.jetel.util.file.HttpPartUrlUtils;
 import org.jetel.util.protocols.proxy.ProxyHandler;
 import org.jetel.util.protocols.proxy.ProxyProtocolEnum;
 import org.jetel.util.protocols.sandbox.SandboxStreamHandler;
@@ -104,7 +105,7 @@ import com.jcraft.jsch.ChannelSftp;
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
 import de.schlichtherle.truezip.file.TFileOutputStream;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  *  Helper class with some useful methods regarding file manipulation
  *
@@ -352,6 +353,13 @@ public class FileUtils {
 			ArchiveType type = getArchiveType(fileURL, innerInput, anchor);
 			URL archiveFileUrl = getFileURL(contextURL, innerInput.toString());
 			return new URL(null, type.getId() + ":(" + archiveFileUrl.toString() + ")#" + anchor, new ArchiveURLStreamHandler(contextURL));
+		}
+		
+		if (HttpPartUrlUtils.isRequestUrl(fileURL)) {
+			try {
+        		return new URL(contextURL, fileURL, GENERIC_HANDLER);
+            } catch (MalformedURLException e) {
+            }
 		}
 		
 		if (!StringUtils.isEmpty(protocol)) {
@@ -624,7 +632,9 @@ public class FileUtils {
             	return new FileInputStream(url.getRef() != null ? getUrlFile(url) + "#" + url.getRef() : getUrlFile(url));
         	} else if (archiveType == null && SandboxUrlUtils.isSandboxUrl(url)) {
         		return SandboxUrlUtils.getSandboxInputStream(url);
-        	}
+        	} else if (archiveType == null && HttpPartUrlUtils.isRequestUrl(url)) {
+        		return HttpPartUrlUtils.getRequestInputStream(url);
+        	} 
         	
         	//CLO-6036
     		if (url.toString().startsWith("dict:")) {
@@ -1213,6 +1223,10 @@ public class FileUtils {
 		return input.startsWith(DICTIONARY_PROTOCOL);
 	}
 	
+	public static boolean isHttpRequest(String input) {
+		return HttpPartUrlUtils.isRequestUrl(input);
+	}
+	
 	/**
 	 * @param input
 	 * @return true if the given url starts with "port:" prefix
@@ -1224,7 +1238,9 @@ public class FileUtils {
 	public static boolean isLocalFile(URL contextUrl, String input) {
 		if (input.startsWith("file:")) {
 			return true;
-		} else if (isRemoteFile(input) || isConsole(input) || isSandbox(input) || isArchive(input) || isDictionary(input) || isPortURL(input)) {
+		} else if (isRemoteFile(input) || isConsole(input) || isSandbox(input) 
+				|| isArchive(input) || isDictionary(input) || isPortURL(input)
+				|| isHttpRequest(input)) {
 			return false;
 		} else {
 			try {

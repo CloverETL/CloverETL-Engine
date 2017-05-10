@@ -53,6 +53,16 @@ public class FileUtilsTest extends CloverTestCase {
 			FileUtils.getJavaFile(null, "port:$0.field1:discrete");
 			fail();
 		} catch (JetelRuntimeException jre) {}
+		
+		try {
+			FileUtils.getJavaFile(null, "request:body");
+			fail();
+		} catch (JetelRuntimeException jre) {}
+		
+		try {
+			FileUtils.getJavaFile(null, "request:part:name");
+			fail();
+		} catch (JetelRuntimeException jre) {}
 	}
 
 	public void testGetFileURL() throws MalformedURLException {
@@ -266,6 +276,12 @@ public class FileUtilsTest extends CloverTestCase {
 
 			result = FileUtils.getFileURL("dict:path"); // must not fail
 			assertEquals("dict:path", result.toString());
+			
+			result = FileUtils.getFileURL("request:body"); // must not fail
+			assertEquals("request:body", result.toString());
+			
+			result = FileUtils.getFileURL("request:part:name"); // must not fail
+			assertEquals("request:part:name", result.toString());
 		}
 		
 		// CLO-978
@@ -318,6 +334,8 @@ public class FileUtilsTest extends CloverTestCase {
 		assertFalse(FileUtils.isLocalFile(null, "port:$0.field1:discrete"));
 		assertFalse(FileUtils.isLocalFile(null, "s3://accessKey:secretKey@s3.amazonaws.com"));
 		assertFalse(FileUtils.isLocalFile(null, "hdfs://CONNECTION0/"));
+		assertFalse(FileUtils.isLocalFile(null, "request:body"));
+		assertFalse(FileUtils.isLocalFile(null, "request:part:name"));
 	}
 	
 	public void testIsRemoteFile() {
@@ -325,6 +343,8 @@ public class FileUtilsTest extends CloverTestCase {
 		assertFalse(FileUtils.isRemoteFile("port:$0.field1:discrete"));
 		assertTrue(FileUtils.isRemoteFile("s3://accessKey:secretKey@s3.amazonaws.com"));
 		assertTrue(FileUtils.isRemoteFile("hdfs://CONNECTION0/"));
+		assertFalse(FileUtils.isRemoteFile("request:body"));
+		assertFalse(FileUtils.isRemoteFile("request:part:name"));
 	}
 	
 	public void testNormalizeFilePath() {
@@ -650,6 +670,16 @@ public class FileUtilsTest extends CloverTestCase {
 		input = "zip:(./path/*.zip)#entry/fil?.txt";
 		result = FileUtils.getAbsoluteURL(contextUrl, input);
 		assertEquals("zip:(http:(proxy://juzr:heslou@koule:3128)//www.google.com/path/*.zip)#entry/fil?.txt", result);
+		
+		// http request
+		input = "request:body";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(input, result);
+		
+		// http request
+		input = "request:part:name";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(input, result);
 	}
 	
 	private static String[][] paths = new String[][] {
@@ -1094,6 +1124,23 @@ public class FileUtilsTest extends CloverTestCase {
 				"zip:(C:/archive.zip)#inner2/data.txt", // normalized
 		},
 		
+		new String[] {
+				"request:body", // input
+				"", // path
+				"request:body", // filename
+				"request:body", // basename
+				"", // extension
+				"request:body", // normalized
+		},
+		
+		new String[] {
+				"request:part:name", // input
+				"", // path
+				"request:part:name", // filename
+				"request:part:name", // basename
+				"", // extension
+				"request:part:name", // normalized
+		},
 		
 		
 	};

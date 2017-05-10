@@ -53,6 +53,7 @@ import org.jetel.util.protocols.ProxyConfiguration;
 import org.jetel.util.protocols.UserInfo;
 import org.jetel.util.protocols.amazon.S3InputStream;
 import org.jetel.util.protocols.ftp.FTPConnection;
+import org.jetel.util.file.HttpPartUrlUtils;
 import org.jetel.util.protocols.proxy.ProxyHandler;
 import org.jetel.util.protocols.proxy.ProxyProtocolEnum;
 import org.jetel.util.protocols.sftp.SFTPConnection;
@@ -571,7 +572,8 @@ public class WcardPattern {
 			return getHttpNames(url);
 		}
 		// CLO-5532:
-		else if (protocol.equals(PORT_PROTOCOL) || protocol.equals(DICTIONARY_PROTOCOL)) {
+		else if (protocol.equals(PORT_PROTOCOL) || protocol.equals(DICTIONARY_PROTOCOL)
+				|| protocol.equals(HttpPartUrlUtils.REQUEST_PROTOCOL)) {
 			return Arrays.asList(fileName);
 		}
 

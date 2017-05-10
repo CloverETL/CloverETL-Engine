@@ -49,4 +49,9 @@ public interface HttpContext {
 	
 	/** Sends error response to the client */
 	void sendResponseError(ErrorMessage message) throws IOException;
+	
+	/** Returns input stream for the given part
+	 * @param partName 
+	 **/
+	InputStream getRequestInputStream(String partName) throws IOException;
 }
