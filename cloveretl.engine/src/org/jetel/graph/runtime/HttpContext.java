@@ -24,7 +24,6 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * Provides methods to access HTTP request/response
  * 
@@ -34,6 +33,12 @@ import java.util.Map;
  * @created 21. 3. 2017
  */
 public interface HttpContext {
+	
+	/**
+	 * Answers IP of the client that performed the HTTP request.
+	 * @return
+	 */
+	String getClientIPAddress();
 	
 	/**
 	 * Answers name of HTTP method of the request.
@@ -182,7 +187,16 @@ public interface HttpContext {
 	InputStream getRequestInputStream(String partName) throws IOException;
 	
 	/**
-	 * Returns output stream to write to response body
+	 * Answers filename of the first request body part with given name.
+	 * @param partName
+	 * @return
+	 */
+	String getRequestPartFilename(String partName);
+	
+	/**
+	 * Answers output stream to write response body.
+	 * @return
+	 * @throws IOException
 	 */
 	OutputStream getResponseOutputStream() throws IOException;
 }
