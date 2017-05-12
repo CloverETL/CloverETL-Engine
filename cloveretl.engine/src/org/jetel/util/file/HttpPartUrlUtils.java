@@ -35,13 +35,15 @@ import org.jetel.graph.runtime.IAuthorityProxy;
 public class HttpPartUrlUtils {
 
 	public static final String REQUEST_PROTOCOL = "request";
-	public static final String REQUEST_BODY = "body";
-	public static final String REQUEST_PART = "part";
-	public static final String REQUEST_PART_PREFIX = REQUEST_PART+":";
+	public static final String RESPONSE_PROTOCOL = "response";
+	public static final String PART_BODY = "body";
+	public static final String PART = "part";
+	public static final String REQUEST_PART_PREFIX = PART+":";
 	
 	public static final String REQUEST_PROTOCOL_URL_PREFIX = REQUEST_PROTOCOL + ":";
+	public static final String RESPONSE_PROTOCOL_URL_PREFIX = RESPONSE_PROTOCOL + ":";
 	
-	public static final String REQUEST_PROTOCOL_URL_PLAIN_PREFIX = REQUEST_PROTOCOL_URL_PREFIX + REQUEST_BODY;
+	public static final String REQUEST_PROTOCOL_URL_PLAIN_PREFIX = REQUEST_PROTOCOL_URL_PREFIX + PART_BODY;
 	public static final String REQUEST_PROTOCOL_URL_MUTLTIPART_PREFIX = REQUEST_PROTOCOL_URL_PREFIX + REQUEST_PART_PREFIX;
 	
 	private HttpPartUrlUtils() {
@@ -55,24 +57,18 @@ public class HttpPartUrlUtils {
 		return url != null && REQUEST_PROTOCOL.equals(url.getProtocol());
 	}
 	
-	public static boolean isPlainRequestUrl(String url) {
-		if (isRequestUrl(url)) {
-			return url.startsWith(REQUEST_PROTOCOL_URL_PLAIN_PREFIX);
-		}
-		return false;
+	public static boolean isResponseUrl(String url) {
+		return (url != null && url.startsWith(RESPONSE_PROTOCOL_URL_PREFIX));
 	}
 	
-	public static boolean isMultipartRequestUrl(String url) {
-		if (isRequestUrl(url)) {
-			return url.startsWith(REQUEST_PROTOCOL_URL_MUTLTIPART_PREFIX);
-		}
-		return false;
+	public static boolean isResponseUrl(URL url) {
+		return url != null && RESPONSE_PROTOCOL.equals(url.getProtocol());
 	}
 		
 	public static InputStream getRequestInputStream(URL url) throws IOException {
 		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
 		String urlPath = url.getPath();
-		if (REQUEST_BODY.equals(urlPath)) {
+		if (PART_BODY.equals(urlPath)) {
 			return authorityProxy.getHttpContext().getRequestInputStream();
 		} else {
 			String param = getPartName(urlPath);
@@ -80,9 +76,14 @@ public class HttpPartUrlUtils {
 		}
 	}
 	
-	public static OutputStream getRequestOutputStream(URL url) throws IOException {
-		/** TODO implement **/
-		throw new UnsupportedOperationException("getRequestOutputStream is not supported yet");
+	public static OutputStream getResponseOutputStream(URL url) throws IOException {
+		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
+		String urlPath = url.getPath();
+		if (PART_BODY.equals(urlPath)) {
+			return authorityProxy.getHttpContext().getResponseOutputStream();
+		} else {
+			throw new IOException("Invalid HTTP respone path "+urlPath);
+		}
 	}
 	
 	private static String getPartName(String urlPath) throws IOException {

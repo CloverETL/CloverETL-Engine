@@ -573,7 +573,8 @@ public class WcardPattern {
 		}
 		// CLO-5532:
 		else if (protocol.equals(PORT_PROTOCOL) || protocol.equals(DICTIONARY_PROTOCOL)
-				|| protocol.equals(HttpPartUrlUtils.REQUEST_PROTOCOL)) {
+				|| protocol.equals(HttpPartUrlUtils.REQUEST_PROTOCOL) 
+				|| protocol.equals(HttpPartUrlUtils.RESPONSE_PROTOCOL)) {
 			return Arrays.asList(fileName);
 		}
 

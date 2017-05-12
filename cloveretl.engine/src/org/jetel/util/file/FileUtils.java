@@ -89,7 +89,6 @@ import org.jetel.util.protocols.UserInfo;
 import org.jetel.util.protocols.amazon.S3InputStream;
 import org.jetel.util.protocols.amazon.S3OutputStream;
 import org.jetel.util.protocols.ftp.FTPStreamHandler;
-import org.jetel.util.file.HttpPartUrlUtils;
 import org.jetel.util.protocols.proxy.ProxyHandler;
 import org.jetel.util.protocols.proxy.ProxyProtocolEnum;
 import org.jetel.util.protocols.sandbox.SandboxStreamHandler;
@@ -355,13 +354,13 @@ public class FileUtils {
 			return new URL(null, type.getId() + ":(" + archiveFileUrl.toString() + ")#" + anchor, new ArchiveURLStreamHandler(contextURL));
 		}
 		
-		if (HttpPartUrlUtils.isRequestUrl(fileURL)) {
+		if (HttpPartUrlUtils.isRequestUrl(fileURL) || HttpPartUrlUtils.isResponseUrl(fileURL)) {
 			try {
         		return new URL(contextURL, fileURL, GENERIC_HANDLER);
             } catch (MalformedURLException e) {
             }
 		}
-		
+				
 		if (!StringUtils.isEmpty(protocol)) {
             // unknown protocol will throw an exception,
             // standard Java protocols will be ignored;
@@ -1227,6 +1226,10 @@ public class FileUtils {
 		return HttpPartUrlUtils.isRequestUrl(input);
 	}
 	
+	public static boolean isHttpResponse(String input) {
+		return HttpPartUrlUtils.isResponseUrl(input);
+	}
+	
 	/**
 	 * @param input
 	 * @return true if the given url starts with "port:" prefix
@@ -1240,7 +1243,7 @@ public class FileUtils {
 			return true;
 		} else if (isRemoteFile(input) || isConsole(input) || isSandbox(input) 
 				|| isArchive(input) || isDictionary(input) || isPortURL(input)
-				|| isHttpRequest(input)) {
+				|| isHttpRequest(input) || isHttpResponse(input)) {
 			return false;
 		} else {
 			try {
@@ -1570,6 +1573,9 @@ public class FileUtils {
     		} else if (isSandbox(input)) {
     			URL url = FileUtils.getFileURL(contextURL, input);
     			return SandboxUrlUtils.getSandboxOutputStream(url, appendData);
+    		} else if (isHttpResponse(input)) {
+    			URL url = FileUtils.getFileURL(contextURL, input);
+    			return HttpPartUrlUtils.getResponseOutputStream(url); 
     		} else {
     			// file path or relative URL
     			URL url = FileUtils.getFileURL(contextURL, input);
@@ -1623,7 +1629,6 @@ public class FileUtils {
 	 * @return true if can write, false otherwise
 	 * @throws ComponentNotReadyException
 	 */
-	@SuppressWarnings(value = "RV_ABSOLUTE_VALUE_OF_HASHCODE")
 	public static boolean canWrite(URL contextURL, String fileURL, boolean mkDirs) throws ComponentNotReadyException {
 		// get inner source
 		Matcher matcher = getInnerInput(fileURL);
@@ -1651,6 +1656,10 @@ public class FileUtils {
 			String filename = multiOut.next();
 			if(filename.startsWith("port:")) return true;
 			if(filename.startsWith("dict:")) return true;
+			if(isHttpRequest(fileName)) {
+				throw new ComponentNotReadyException("Cannot write to a HTTP request");
+			}
+			if(isHttpResponse(fileName)) return true;
 			url = getFileURL(contextURL, filename);
             if(!url.getProtocol().equalsIgnoreCase("file")) return true;
             
@@ -1658,11 +1667,7 @@ public class FileUtils {
             String sUrl = getUrlFile(url);
             boolean isFile = !sUrl.endsWith("/") && !sUrl.endsWith("\\");
             if (!isFile) {
-            	if (fileURL.indexOf("#") < 0) {
-					sUrl = sUrl + "tmpfile" + Math.abs(sUrl.hashCode());
-				} else {
-					sUrl = sUrl + "tmpfile" + UUID.randomUUID();
-				}
+				sUrl = sUrl + "tmpfile" + UUID.randomUUID();
             }
 			file = new File(sUrl);
 		} catch (Exception e) {

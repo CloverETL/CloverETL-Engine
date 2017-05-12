@@ -20,6 +20,7 @@ package org.jetel.graph.runtime;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -179,4 +180,9 @@ public interface HttpContext {
 	 * @param partName 
 	 **/
 	InputStream getRequestInputStream(String partName) throws IOException;
+	
+	/**
+	 * Returns output stream to write to response body
+	 */
+	OutputStream getResponseOutputStream() throws IOException;
 }

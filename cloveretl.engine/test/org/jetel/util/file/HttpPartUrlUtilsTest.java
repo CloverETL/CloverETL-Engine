@@ -21,7 +21,6 @@ package org.jetel.util.file;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.jetel.util.file.HttpPartUrlUtils;
 import org.junit.Test;
 
 /**
@@ -37,30 +36,22 @@ public class HttpPartUrlUtilsTest {
 		
 		assertTrue(HttpPartUrlUtils.isRequestUrl("request:body"));
 		assertTrue(HttpPartUrlUtils.isRequestUrl("request:part:name"));
-		
+		assertFalse(HttpPartUrlUtils.isRequestUrl((String)null));
+		assertFalse(HttpPartUrlUtils.isRequestUrl("request"));
+		assertFalse(HttpPartUrlUtils.isRequestUrl("response:body"));
 		assertFalse(HttpPartUrlUtils.isRequestUrl("dict:name"));
 		assertFalse(HttpPartUrlUtils.isRequestUrl("sandbox://test/local/graph/graph.grf"));
-		
 	}
 	
 	@Test
-	public void testIsMultipartRequestUrl() {
+	public void testIsResponseUrl() {
 		
-		assertFalse(HttpPartUrlUtils.isMultipartRequestUrl("request:body"));
-		assertTrue(HttpPartUrlUtils.isMultipartRequestUrl("request:part:name"));
-		
-		assertFalse(HttpPartUrlUtils.isMultipartRequestUrl("dict:body"));
-		assertFalse(HttpPartUrlUtils.isMultipartRequestUrl("dict:part"));
-		
-	}
-	
-	@Test
-	public void testIsPlainRequestUrl() {
-		
-		assertTrue(HttpPartUrlUtils.isPlainRequestUrl("request:body"));
-		assertFalse(HttpPartUrlUtils.isPlainRequestUrl("request:part:name"));
-		
-		assertFalse(HttpPartUrlUtils.isPlainRequestUrl("dict:body"));
-		assertFalse(HttpPartUrlUtils.isPlainRequestUrl("dict:part"));
+		assertTrue(HttpPartUrlUtils.isResponseUrl("response:body"));
+		assertFalse(HttpPartUrlUtils.isResponseUrl((String)null));
+		assertFalse(HttpPartUrlUtils.isResponseUrl("response"));
+		assertFalse(HttpPartUrlUtils.isResponseUrl("request:body"));
+		assertFalse(HttpPartUrlUtils.isResponseUrl("request:part:name"));
+		assertFalse(HttpPartUrlUtils.isResponseUrl("dict:name"));
+		assertFalse(HttpPartUrlUtils.isResponseUrl("sandbox://test/local/graph/graph.grf"));
 	}
 }

@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.jetel.enums.ProcessingType;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.exec.PlatformUtils;
@@ -61,6 +62,11 @@ public class FileUtilsTest extends CloverTestCase {
 		
 		try {
 			FileUtils.getJavaFile(null, "request:part:name");
+			fail();
+		} catch (JetelRuntimeException jre) {}
+		
+		try {
+			FileUtils.getJavaFile(null, "response:body");
 			fail();
 		} catch (JetelRuntimeException jre) {}
 	}
@@ -282,6 +288,9 @@ public class FileUtilsTest extends CloverTestCase {
 			
 			result = FileUtils.getFileURL("request:part:name"); // must not fail
 			assertEquals("request:part:name", result.toString());
+			
+			result = FileUtils.getFileURL("response:body"); // must not fail
+			assertEquals("response:body", result.toString());
 		}
 		
 		// CLO-978
@@ -336,6 +345,7 @@ public class FileUtilsTest extends CloverTestCase {
 		assertFalse(FileUtils.isLocalFile(null, "hdfs://CONNECTION0/"));
 		assertFalse(FileUtils.isLocalFile(null, "request:body"));
 		assertFalse(FileUtils.isLocalFile(null, "request:part:name"));
+		assertFalse(FileUtils.isLocalFile(null, "response:body"));
 	}
 	
 	public void testIsRemoteFile() {
@@ -345,6 +355,7 @@ public class FileUtilsTest extends CloverTestCase {
 		assertTrue(FileUtils.isRemoteFile("hdfs://CONNECTION0/"));
 		assertFalse(FileUtils.isRemoteFile("request:body"));
 		assertFalse(FileUtils.isRemoteFile("request:part:name"));
+		assertFalse(FileUtils.isRemoteFile("response:body"));
 	}
 	
 	public void testNormalizeFilePath() {
@@ -671,13 +682,18 @@ public class FileUtilsTest extends CloverTestCase {
 		result = FileUtils.getAbsoluteURL(contextUrl, input);
 		assertEquals("zip:(http:(proxy://juzr:heslou@koule:3128)//www.google.com/path/*.zip)#entry/fil?.txt", result);
 		
-		// http request
+		// HTTP request
 		input = "request:body";
 		result = FileUtils.getAbsoluteURL(contextUrl, input);
 		assertEquals(input, result);
 		
-		// http request
+		// HTTP request
 		input = "request:part:name";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(input, result);
+		
+		// HTTP response
+		input = "response:body";
 		result = FileUtils.getAbsoluteURL(contextUrl, input);
 		assertEquals(input, result);
 	}
@@ -1142,7 +1158,14 @@ public class FileUtilsTest extends CloverTestCase {
 				"request:part:name", // normalized
 		},
 		
-		
+		new String[] {
+				"response:body", // input
+				"", // path
+				"response:body", // filename
+				"response:body", // basename
+				"", // extension
+				"response:body", // normalized
+		},
 	};
 
 
@@ -1214,6 +1237,25 @@ public class FileUtilsTest extends CloverTestCase {
 		assertInvalidPortUrl("port:asd123:stream");
 		assertInvalidPortUrl("port:$$asd:stream");
 		assertInvalidPortUrl("Port:$0.field1:source");
+	}
+	
+	public void testCanWrite() throws Exception {
+		URL contextURL = FileUtils.getFileURL("file:/c:/project/");
+		
+		try {
+			assertFalse(FileUtils.canWrite(contextURL, "request:body"));
+			fail("Cannot read to a HTTP request");
+		} catch(ComponentNotReadyException e) {
+			
+		}
+		try {
+			FileUtils.canWrite(contextURL, "request:part:name");
+			fail("Cannot read to a HTTP request");
+		} catch(ComponentNotReadyException e) {
+			
+		}
+		assertTrue(FileUtils.canWrite(contextURL, "response:body"));
+		
 	}
 	
 	private void assertPortUrl(String expectedRecordName, String expectedFieldName, ProcessingType expectedProcessingType, PortURL portUrl) {
