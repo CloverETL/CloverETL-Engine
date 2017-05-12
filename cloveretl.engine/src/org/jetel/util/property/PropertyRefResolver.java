@@ -63,12 +63,15 @@ public class PropertyRefResolver {
 
 	/** the logger for this class */
 	private static final Log logger = LogFactory.getLog(PropertyRefResolver.class);
+	
+	public final static String PREFIX_REQUEST_PARAMETERS = "request.";
 
 	/** properties used for resolving property references */
 	private final GraphParameters parameters;
 
 	/** the regex pattern used to find property references */
-	private static final Pattern propertyPattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX);
+	private static final Pattern propertyPattern = Pattern.compile("\\$\\{(([a-zA-Z_]\\\\w*)|(([a-zA-Z_]\\w*)|([Rr][Ee][Qq][Uu][Ee][Ss][Tt])\\.[^}]*))\\}");
+
 
 	/** the set (same errors need to be listed once only) of errors that occurred during evaluation of a single string */
 	private final Set<String> errorMessages = new HashSet<String>();
@@ -336,10 +339,15 @@ public class PropertyRefResolver {
 				} else {
 					resolvedReference = param.getValue();
 				}
-			} else {
-				if (resolvedReference == null) {
-					resolvedReference = MiscUtils.getEnvSafe(reference);
+			} else if (isHttpRequestParameter(reference)) {
+				try {
+					resolvedReference = getAuthorityProxy().getHttpContext().
+							getRequestParameter(reference.replaceFirst("(?i)" + PREFIX_REQUEST_PARAMETERS, ""));
+				} catch (UnsupportedOperationException e) {
+					// HTTP context is available during runtime 
 				}
+			} else {
+				resolvedReference = MiscUtils.getEnvSafe(reference);
 				
 				// find properties with '.' and '_' among system properties. If both found, use '.' for backwards compatibility
 				if (resolvedReference == null) {
@@ -373,6 +381,15 @@ public class PropertyRefResolver {
 				//logger.warn("Cannot resolve reference to property: " + reference);
 			}
 		}
+	}
+
+	/**
+	 * Return true if paramName is name of HttpRequest parameter.
+	 * @param reference
+	 * @return
+	 */
+	private boolean isHttpRequestParameter(String paramName) {
+		return (paramName != null && paramName.toLowerCase().startsWith(PREFIX_REQUEST_PARAMETERS));
 	}
 
 	/**
