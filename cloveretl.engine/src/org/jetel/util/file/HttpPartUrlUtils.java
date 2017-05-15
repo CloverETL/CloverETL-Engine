@@ -22,9 +22,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.regex.Matcher;
 
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
+import org.jetel.util.property.PropertyRefResolver;
 
 /**
  * @author reichman (info@cloveretl.com)
@@ -64,6 +66,11 @@ public class HttpPartUrlUtils {
 	public static boolean isResponseUrl(URL url) {
 		return url != null && RESPONSE_PROTOCOL.equals(url.getProtocol());
 	}
+	
+	public static boolean containsRequestParameter(String url) {
+		Matcher propertyMatcher = PropertyRefResolver.propertyPattern.matcher(url);
+		return propertyMatcher.find();
+	}
 		
 	public static InputStream getRequestInputStream(URL url) throws IOException {
 		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
@@ -82,7 +89,7 @@ public class HttpPartUrlUtils {
 		if (PART_BODY.equals(urlPath)) {
 			return authorityProxy.getHttpContext().getResponseOutputStream();
 		} else {
-			throw new IOException("Invalid HTTP respone path "+urlPath);
+			throw new IOException("Invalid HTTP response path "+urlPath);
 		}
 	}
 	

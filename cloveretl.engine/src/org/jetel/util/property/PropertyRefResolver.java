@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
+import org.jetel.exception.HttpContextNotAvailableException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.GraphParameter;
@@ -70,7 +71,7 @@ public class PropertyRefResolver {
 	private final GraphParameters parameters;
 
 	/** the regex pattern used to find property references */
-	private static final Pattern propertyPattern = Pattern.compile("\\$\\{(([a-zA-Z_]\\\\w*)|(([a-zA-Z_]\\w*)|([Rr][Ee][Qq][Uu][Ee][Ss][Tt])\\.[^}]*))\\}");
+	public static final Pattern propertyPattern = Pattern.compile("\\$\\{(([a-zA-Z_]\\\\w*)|(([a-zA-Z_]\\w*)|([Rr][Ee][Qq][Uu][Ee][Ss][Tt])\\.[^}]*))\\}");
 
 
 	/** the set (same errors need to be listed once only) of errors that occurred during evaluation of a single string */
@@ -343,8 +344,9 @@ public class PropertyRefResolver {
 				try {
 					resolvedReference = getAuthorityProxy().getHttpContext().
 							getRequestParameter(reference.replaceFirst("(?i)" + PREFIX_REQUEST_PARAMETERS, ""));
-				} catch (UnsupportedOperationException e) {
-					// HTTP context is available during runtime 
+				} catch (HttpContextNotAvailableException e) {
+					// HTTP context is available during runtime
+					logger.debug(e);
 				}
 			} else {
 				resolvedReference = MiscUtils.getEnvSafe(reference);
