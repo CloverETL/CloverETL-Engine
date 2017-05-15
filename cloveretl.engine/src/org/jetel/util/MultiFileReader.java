@@ -40,6 +40,7 @@ import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.HttpPartUrlUtils;
 import org.jetel.util.file.stream.Input;
 import org.jetel.util.property.PropertyRefResolver;
 
@@ -162,39 +163,42 @@ public class MultiFileReader {
      * @throws ComponentNotReadyException
      */
 	public void checkConfig(DataRecordMetadata metadata) throws ComponentNotReadyException {
-        parser.init();
-        try {
-            checkChannelIterator();
-            
-    		String fName = null; 
-    		Iterator<Input> fit = channelIterator.getInputIterator();
-    		boolean closeLastStream = false;
-    		while (fit.hasNext()) {
-    			try {
-    				Input input = fit.next();
-    				fName = input.getAbsolutePath();
-    				Object dataSource = input.getPreferredInput(parser.getPreferredDataSourceType());
-    				if (dataSource == null) {
-    					dataSource = input.getPreferredInput(DataSourceType.CHANNEL);
-    				}
-    				parser.setDataSource(dataSource);
-    				notifyFileChangeListeners(dataSource);
-    				
-    				parser.setReleaseDataSource(closeLastStream = true);
-    			} catch (Exception e) {
-    				throw new ComponentNotReadyException(UNREACHABLE_FILE + fName, e);
-    			}
-    		}
-    		if (closeLastStream) {
-    			try {
-    				parser.close();
-    			} catch (IOException e) {
-    				throw new ComponentNotReadyException("File '" + fName + "' cannot be closed.", e);
-    			}
-    		}
-        } finally {
-        	ReadableChannelIterator.free(channelIterator);
-        }
+		parser.init();
+		
+		if (!HttpPartUrlUtils.containsRequestParameter(fileURL)) {
+	        try {
+	            checkChannelIterator();
+	            
+	    		String fName = null; 
+	    		Iterator<Input> fit = channelIterator.getInputIterator();
+	    		boolean closeLastStream = false;
+	    		while (fit.hasNext()) {
+	    			try {
+	    				Input input = fit.next();
+	    				fName = input.getAbsolutePath();
+	    				Object dataSource = input.getPreferredInput(parser.getPreferredDataSourceType());
+	    				if (dataSource == null) {
+	    					dataSource = input.getPreferredInput(DataSourceType.CHANNEL);
+	    				}
+	    				parser.setDataSource(dataSource);
+	    				notifyFileChangeListeners(dataSource);
+	    				
+	    				parser.setReleaseDataSource(closeLastStream = true);
+	    			} catch (Exception e) {
+	    				throw new ComponentNotReadyException(UNREACHABLE_FILE + fName, e);
+	    			}
+	    		}
+	    		if (closeLastStream) {
+	    			try {
+	    				parser.close();
+	    			} catch (IOException e) {
+	    				throw new ComponentNotReadyException("File '" + fName + "' cannot be closed.", e);
+	    			}
+	    		}
+	        } finally {
+	        	ReadableChannelIterator.free(channelIterator);
+	        }
+		}
 	}
 	
 	/**

@@ -18,8 +18,10 @@
  */
 package org.jetel.util;
 
+import org.jetel.exception.HttpContextNotAvailableException;
 import org.jetel.graph.GraphParameter;
 import org.jetel.graph.GraphParameters;
+import org.jetel.graph.runtime.HttpContext;
 import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.property.PropertyRefResolver;
@@ -32,6 +34,8 @@ public class PropertyRefResolverTest extends CloverTestCase {
 	
 	private PropertyRefResolver resolver;
 
+	private HttpContext httpContextMock = new HttpContextMock();
+	
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -94,6 +98,11 @@ public class PropertyRefResolverTest extends CloverTestCase {
 					return null;
 				}
 			}
+			
+			@Override
+			public HttpContext getHttpContext() throws HttpContextNotAvailableException {
+				return httpContextMock;
+			}
 		});
 	}
 
@@ -128,6 +137,10 @@ public class PropertyRefResolverTest extends CloverTestCase {
 
 		assertEquals("Composition1Result_myself", resolver.resolveRef("${composition1}_${user}"));
 		assertEquals("myself_myself_abc${user}def${pwd}ghi_xxxyyyzzz_xxxyyyzzz", resolver.resolveRef("${user}_${composition2}_${pwd}"));
+		
+		//test REQUEST parameters
+		assertEquals("123", resolver.resolveRef("${REQUEST.a}"));
+		assertEquals("123", resolver.resolveRef("${request.a}"));
 	}
 
 	public void testEvaluate() {
@@ -186,6 +199,11 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		assertFalse(PropertyRefResolver.isPropertyReference("${123abc}"));
 		assertTrue(PropertyRefResolver.isPropertyReference("${abc123}"));
 		assertFalse(PropertyRefResolver.isPropertyReference("${a}${b}"));
+		
+		assertTrue(PropertyRefResolver.isPropertyReference("${request.a}"));
+		assertTrue(PropertyRefResolver.isPropertyReference("${REQUEST.a}"));
+		assertFalse(PropertyRefResolver.isPropertyReference("${.a}"));
+		
 	}
 
 	public void testContainsProperty() {
@@ -263,6 +281,10 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		assertEquals(null, PropertyRefResolver.getReferencedProperty("${123abc}"));
 		assertEquals("abc123", PropertyRefResolver.getReferencedProperty("${abc123}"));
 		assertEquals(null, PropertyRefResolver.getReferencedProperty("${a}${b}"));
+		
+		assertEquals("REQUEST.a", PropertyRefResolver.getReferencedProperty("${REQUEST.a}"));
+		assertEquals("request.a", PropertyRefResolver.getReferencedProperty("${request.a}"));
+		assertEquals(null, PropertyRefResolver.getReferencedProperty("${.a}"));
 	}
 	
 }

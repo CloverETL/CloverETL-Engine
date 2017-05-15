@@ -39,6 +39,7 @@ import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.HttpContextNotAvailableException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.StackTraceWrapperException;
 import org.jetel.exception.TempFileCreationException;
@@ -675,7 +676,8 @@ public abstract class IAuthorityProxy {
 	/**
 	 * Returns instance of HttpContext if this job is a RestJob
 	 * @return
+	 * @throws HttpContextNotAvailableException 
 	 */
-	public abstract HttpContext getHttpContext();
+	public abstract HttpContext getHttpContext() throws HttpContextNotAvailableException;
 	
 }
