@@ -691,9 +691,11 @@ public final class Defaults {
 		}
 
 		/** a regular expression describing the format of property references */
+		@SuppressFBWarnings("MS_PKGPROTECT")
 		public static String PROPERTY_PLACEHOLDER_REGEX;// = "\\$\\{([a-zA-Z_]\\w*)\\}";
 
 		/** allowed depth of recursion by graph property resolving */
+		@SuppressFBWarnings("MS_PKGPROTECT")
 		public static int PROPERTY_ALLOWED_RECURSION_DEPTH;// = 1000;
 
 	}
