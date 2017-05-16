@@ -1573,6 +1573,8 @@ public class FileUtils {
     		} else if (isSandbox(input)) {
     			URL url = FileUtils.getFileURL(contextURL, input);
     			return SandboxUrlUtils.getSandboxOutputStream(url, appendData);
+    		} else if (isHttpRequest(input)) {
+    			throw new IOException("Cannot write to a HTTP request");
     		} else if (isHttpResponse(input)) {
     			URL url = FileUtils.getFileURL(contextURL, input);
     			return HttpPartUrlUtils.getResponseOutputStream(url); 
