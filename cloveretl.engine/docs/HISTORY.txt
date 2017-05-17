@@ -2,6 +2,20 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-6-0-M2
+------------
+
+* Misc
+	* CLO-10797	Component editor cleanup
+	* CLO-10695	Hint for pasting the license text
+	* CLO-10398	SalesforceBulkReader - ability to read deleted records
+	* CLO-7735	Filter editor shows dictionary in Expression list
+* Fixes
+	* CLO-10745	ListFiles component throws NPE for root directory of ftp
+	* CLO-10646	WLS proxy plug-in for apache causes "HttpException: Expected HTTP code 200, got 405: Method Not Allowed"
+	* CLO-10048	EmailFilter does not accept empty string even if 'AcceptEmpty' is true
+
+
 REL-4-6-0-M1
 ------------
 
