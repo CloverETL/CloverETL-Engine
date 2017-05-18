@@ -44,6 +44,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -53,6 +54,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ExceptionUtils;
+import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.PortDataConsumer;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -631,7 +633,17 @@ public class MsSqlDataWriter extends BulkLoader {
 		}
 
 		if (processExitValue != 0) {
-			throw new JetelException("bcp utility has failed.");
+			//assemble error message from stdout and stderr
+			StringBuilder errMessage = new StringBuilder();
+			String errOut = ((LoggerDataConsumer) errConsumer).getMsg();
+			if (!StringUtils.isEmpty(errOut)) {
+				errMessage.append("Error output:\n").append(errOut).append("\n");
+			}
+			String stdOut = ((LoggerDataConsumer) consumer).getMsg();
+			if (!StringUtils.isEmpty(stdOut)) {
+				errMessage.append("Standard output:\n").append(stdOut);
+			}
+			throw new JetelException("bcp utility has failed", new JetelRuntimeException(errMessage.toString()));
 		}
 
 		if (isDataWrittenToPort) {
@@ -864,6 +876,15 @@ public class MsSqlDataWriter extends BulkLoader {
 		return getRecordDelimiter(false);
 	}
 
+	@Override
+	protected void createConsumers() throws ComponentNotReadyException {
+		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
+		((LoggerDataConsumer) errConsumer).setCacheLoggedData(true);
+		
+		consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
+		((LoggerDataConsumer) consumer).setCacheLoggedData(true);
+	}
+	
 	/**
 	 * Get column delimiter.
 	 */
