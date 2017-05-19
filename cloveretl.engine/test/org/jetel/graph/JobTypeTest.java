@@ -36,6 +36,7 @@ public class JobTypeTest extends CloverTestCase {
 		assertEquals(JobType.PROFILER_JOB, JobType.fromFileExtension("cpj"));
 		assertEquals(JobType.SUBGRAPH, JobType.fromFileExtension("sgrf"));
 		assertEquals(JobType.SUBJOBFLOW, JobType.fromFileExtension("sjbf"));
+		assertEquals(JobType.RESTJOB, JobType.fromFileExtension("rjob"));
 		try {
 			JobType.fromFileExtension("scpj");
 			fail();

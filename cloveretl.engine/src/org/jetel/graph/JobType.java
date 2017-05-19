@@ -149,6 +149,16 @@ public enum JobType {
 		return this.isSubTypeOf(PROFILER_JOB);
 	}
 	
+	/**
+	 * Returns <code>true</code> if the current job type
+	 * is {@link #RESTJOB}.
+	 * 
+	 * @return <code>true</code> for {@link #RESTJOB}
+	 */
+	public boolean isRestJob() {
+		return this.isSubTypeOf(RESTJOB);
+	}
+	
 	public JobType getBaseType() {
 		return (parent == null) ? this : parent.getBaseType();
 	}
