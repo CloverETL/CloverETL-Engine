@@ -50,7 +50,7 @@ public class Avg extends AggregateFunction {
 	@Override
 	public void checkInputFieldType(DataFieldMetadata inputField) throws AggregationException {
 		nullableInput = inputField.isNullable();
-		if (!inputField.isNumeric()){
+		if (!inputField.getDataType().isNumeric()){
 			throw new AggregationException(AggregateFunction.ERROR_NUMERIC);
 		}
 	}
@@ -63,7 +63,7 @@ public class Avg extends AggregateFunction {
 		if (nullableInput && !outputField.isNullable()) {
 			throw new AggregationException(AggregateFunction.ERROR_NULLABLE_BECAUSE_INPUT);
 		}
-		if (!outputField.isNumeric()){
+		if (!outputField.getDataType().isNumeric()){
 			throw new AggregationException(AggregateFunction.ERROR_NUMERIC);
 		}
 	}
