@@ -26,10 +26,14 @@ import java.io.InputStreamReader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.JetelRuntimeException;
 
 /**
  * Reads data from input stream, which is supposed to be connected to process' output or more usually to error output,
  * and writes the data using logger.
+ * 
+ * Moreover, this DataConsumer allows to cache all logged data and return them, see {@link #getMsg()}.
+ * This functionality is similar to {@link StringDataConsumer}.
  * 
  * @see org.jetel.util.exec.ProcBox
  * @see org.jetel.util.exec.DataConsumer
@@ -60,6 +64,11 @@ public class LoggerDataConsumer implements DataConsumer {
 	private int linesRead;
 	private BufferedReader reader;
 
+	/** Indicates, whether the logged data should be available using {@link #getMsg()} method. */
+	private boolean cacheLoggedData = false;
+	/** All incoming data are stored to this variable for furhter usage, see {@link #cacheLoggedData} */
+	private StringBuilder msg = new StringBuilder();
+
 	static Log logger = LogFactory.getLog(PortDataConsumer.class);
 
 	/** Sole ctor.
@@ -82,6 +91,10 @@ public class LoggerDataConsumer implements DataConsumer {
 		linesRead = 0;
 	}
 
+	public void setCacheLoggedData(boolean cacheLoggedData) {
+		this.cacheLoggedData = cacheLoggedData;
+	}
+	
 	/**
 	 * @see org.jetel.util.exec.DataConsumer
 	 */
@@ -110,6 +123,14 @@ public class LoggerDataConsumer implements DataConsumer {
 			return true;
 		}
 
+		if (cacheLoggedData) {
+			if (maxLines != 0 && linesRead == maxLines + 1) {
+				msg.append(line).append("\n...\n");	// last line to remember
+			} else {
+				msg.append(line).append("\n");
+			}
+		}
+
 		switch (level) {
 		case LVL_DEBUG:
 			logger.debug(line);
@@ -132,6 +153,18 @@ public class LoggerDataConsumer implements DataConsumer {
 	 */
 	@Override
 	public void close() {
+	}
+
+	/**
+	 * Retrieve consumed data in the form of a string. 
+	 * @return The string.
+	 */
+	public String getMsg() {
+		if (cacheLoggedData) {
+			return msg.toString();
+		} else {
+			throw new JetelRuntimeException("Message is not available.");
+		}
 	}
 
 }
