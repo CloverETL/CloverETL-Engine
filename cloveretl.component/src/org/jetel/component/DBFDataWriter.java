@@ -39,10 +39,7 @@ import org.jetel.database.dbf.DBFTypes;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -51,7 +48,6 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordParsingType;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.SystemOutByteChannel;
@@ -267,15 +263,15 @@ public class DBFDataWriter extends Node {
 		}
 		
 		if (fileURL == null) {
-			status.add("File URL not defined.", Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE);
+			status.addError(this, XML_FILEURL_ATTRIBUTE, "File URL not defined.");
 			return status;
 		}
 		
 		try {
 			URL url = FileUtils.getFileURL(fileURL);
 			if (!url.getProtocol().equals("file")) {
-				status.add(new ConfigurationProblem("Protocol " + url.getProtocol() + " is not supported by the component.", 
-						Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE));
+				status.addError(this, XML_FILEURL_ATTRIBUTE,
+						"Protocol " + url.getProtocol() + " is not supported by the component.");
 			}
 		} catch (MalformedURLException e1) {
 			//nothing to do here - error for invalid URL is reported by another check 
@@ -284,21 +280,19 @@ public class DBFDataWriter extends Node {
         try {
         	FileUtils.canWrite(getContextURL(), fileURL, mkDir);
         } catch (ComponentNotReadyException e) {
-            status.add(e,ConfigurationStatus.Severity.ERROR,this,
-            		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
+            status.addError(this, XML_FILEURL_ATTRIBUTE, e);
         }
         
         if (getInputPort(READ_FROM_PORT).getMetadata().getParsingType() != DataRecordParsingType.FIXEDLEN){
-        	status.add("Component DBFWriter supports only fixed-length metadata on input port.",
-        			ConfigurationStatus.Severity.ERROR,this, ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
+        	status.addError(this, XML_FILEURL_ATTRIBUTE,
+        			"Component DBFWriter supports only fixed-length metadata on input port.");
 		}
         
         for(DataFieldMetadata field : getInputPort(READ_FROM_PORT).getMetadata()){
         	try{
         		DBFTypes.cloverType2dbf(field.getDataType());
         	}catch(Exception ex){
-        		status.add(String.format("Error at field \"%s\". %s",field.getName(),ExceptionUtils.getMessage(ex)),ConfigurationStatus.Severity.ERROR,this,
-            		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
+        		status.addError(this, XML_FILEURL_ATTRIBUTE, String.format("Error at field \"%s\".", field.getName()), ex);
         	}
         }
         
@@ -311,20 +305,15 @@ public class DBFDataWriter extends Node {
                         excludeFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 
                 if (includedFieldIndices.length == 0) {
-                    status.add(new ConfigurationProblem("All data fields excluded!", Severity.ERROR, this,
-                            Priority.NORMAL, XML_EXCLUDE_FIELDS_ATTRIBUTE));
+                    status.addError(this, XML_EXCLUDE_FIELDS_ATTRIBUTE, "All data fields excluded!");
                 }
             } catch (IllegalArgumentException exception) {
-                status.add(new ConfigurationProblem(ExceptionUtils.getMessage(exception), Severity.ERROR, this,
-                        Priority.NORMAL, XML_EXCLUDE_FIELDS_ATTRIBUTE));
+                status.addError(this, XML_EXCLUDE_FIELDS_ATTRIBUTE, exception);
             }
         }
         
         if (charsetName != null && !Charset.isSupported(charsetName)) {
-        	status.add(new ConfigurationProblem(
-					MessageFormat.format("Charset {0} not supported!", charsetName), 
-					ConfigurationStatus.Severity.ERROR, this, 
-					ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+        	status.addError(this, XML_CHARSET_ATTRIBUTE, MessageFormat.format("Charset {0} not supported!", charsetName)); 
         }
         Charset charset = Charset.forName(charsetName).newEncoder().charset();
 		Set<String> excludedFields = new HashSet<>(Arrays.asList(StringUtils.isEmpty(excludeFields) ? new String[0] : 
@@ -333,12 +322,9 @@ public class DBFDataWriter extends Node {
 			String fieldName = field.getName();
 			int encodedLength = charset.encode(fieldName).limit();
 			if (!excludedFields.contains(fieldName) && encodedLength != fieldName.length()) {
-				status.add(new ConfigurationProblem(
-						MessageFormat.format("Cannot write DBF header. Column name {0} is invalid - metadata field {1} encoded with {2} is too long (encoded lenght is {3} B but {4} B is expected). Change used charset or metadata field name.", fieldName, fieldName, charsetName, encodedLength, fieldName.length()), 
-						ConfigurationStatus.Severity.ERROR, this, 
-						ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+				status.addError(this, XML_CHARSET_ATTRIBUTE,
+						MessageFormat.format("Cannot write DBF header. Column name {0} is invalid - metadata field {1} encoded with {2} is too long (encoded lenght is {3} B but {4} B is expected). Change used charset or metadata field name.", fieldName, fieldName, charsetName, encodedLength, fieldName.length()));
 			}
-			
 		}
         
         return status;

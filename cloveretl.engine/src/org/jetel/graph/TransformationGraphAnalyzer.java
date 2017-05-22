@@ -38,8 +38,6 @@ import org.jetel.component.ComponentFactory;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.RecursiveSubgraphException;
@@ -397,35 +395,35 @@ public class TransformationGraphAnalyzer {
 			ConfigurationStatus subgraphStatus = subgraph.getPreCheckConfigStatus();
 
 			if (getSubgraphInput() == null) {
-				subgraphStatus.add("Missing SubgraphInput component.", Severity.ERROR, getSubgraph(), Priority.NORMAL);
+				subgraphStatus.addError(getSubgraph(), null, "Missing SubgraphInput component.");
 				return;
 			}
 
 			if (getSubgraphOutput() == null) {
-				subgraphStatus.add("Missing SubgraphOutput component.", Severity.ERROR, getSubgraph(), Priority.NORMAL);
+				subgraphStatus.addError(getSubgraph(), null, "Missing SubgraphOutput component.");
 				return;
 			}
 
 			//phase order check
 			if (getSubgraphInput().getPhaseNum() > getSubgraphOutput().getPhaseNum() &&  !GraphUtils.hasEdge(getSubgraphInput(), getSubgraphOutput())) {
-				subgraphStatus.add("Invalid phase order. Phase number of SubgraphInput is greater than SubgraphOutput's phase number.", Severity.ERROR, getSubgraphInput(), Priority.NORMAL);
-				subgraphStatus.add("Invalid phase order. Phase number of SubgraphInput is greater than SubgraphOutput's phase number.", Severity.ERROR, getSubgraphOutput(), Priority.NORMAL);
+				subgraphStatus.addError(getSubgraphInput(), null, "Invalid phase order. Phase number of SubgraphInput is greater than SubgraphOutput's phase number.");
+				subgraphStatus.addError(getSubgraphOutput(), null, "Invalid phase order. Phase number of SubgraphInput is greater than SubgraphOutput's phase number.");
 			}
 			for (Node component : getSubgraph().getNodes().values()) {
 				if (component.isPartOfDebugInput()) {
 					if (component.getPhaseNum() > getSubgraphInput().getPhaseNum() && !GraphUtils.hasEdge(component, getSubgraphOutput())) {
-						subgraphStatus.add("Invalid phase order. Phase number of component " + component + " is greater than SubgraphInput's phase number.", Severity.ERROR, component, Priority.NORMAL);
+						subgraphStatus.addError(component, null, "Invalid phase order. Phase number of component " + component + " is greater than SubgraphInput's phase number.");
 					}
 				} else if (component.isPartOfDebugOutput()) {
 					if (component.getPhaseNum() < getSubgraphOutput().getPhaseNum() && !GraphUtils.hasEdge(getSubgraphOutput(), component)) {
-						subgraphStatus.add("Invalid phase order. Phase number of component " + component + " is less than SubgraphOutput's phase number.", Severity.ERROR, component, Priority.NORMAL);
+						subgraphStatus.addError(component, null, "Invalid phase order. Phase number of component " + component + " is less than SubgraphOutput's phase number.");
 					}
 				} else {
 					if (component.getPhaseNum() < getSubgraphInput().getPhaseNum() && !GraphUtils.hasEdge(getSubgraphInput(), component)) {
-						subgraphStatus.add("Invalid phase order. Phase number of component " + component + " is less than SubgraphInput's phase number.", Severity.ERROR, component, Priority.NORMAL);
+						subgraphStatus.addError(component, null, "Invalid phase order. Phase number of component " + component + " is less than SubgraphInput's phase number.");
 					}
 					if (component.getPhaseNum() > getSubgraphOutput().getPhaseNum() && !GraphUtils.hasEdge(component, getSubgraphOutput())) {
-						subgraphStatus.add("Invalid phase order. Phase number of component " + component + " is greater than SubgraphOutput's phase number.", Severity.ERROR, component, Priority.NORMAL);
+						subgraphStatus.addError(component, null, "Invalid phase order. Phase number of component " + component + " is greater than SubgraphOutput's phase number.");
 					}
 				}
 			}
@@ -493,8 +491,8 @@ public class TransformationGraphAnalyzer {
 		}
 		
 		private void reportError(ConfigurationStatus subgraphStatus, Node from, Node to) {
-			subgraphStatus.add("Invalid subgraph layout. Edge from " + from + " to " + to + " is not allowed.", Severity.ERROR, from, Priority.NORMAL);
-			subgraphStatus.add("Invalid subgraph layout. Edge from " + from + " to " + to + " is not allowed.", Severity.ERROR, to, Priority.NORMAL);
+			subgraphStatus.addError(from, null, "Invalid subgraph layout. Edge from " + from + " to " + to + " is not allowed.");
+			subgraphStatus.addError(to, null, "Invalid subgraph layout. Edge from " + from + " to " + to + " is not allowed.");
 		}
 	}
 

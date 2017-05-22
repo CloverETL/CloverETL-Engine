@@ -35,15 +35,12 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.SystemOutByteChannel;
@@ -460,26 +457,19 @@ public class XLSWriter extends Node {
         try {
             FileUtils.canWrite(getContextURL(), fileURL, mkDir);
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR,
-                    this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = status.addError(this, XML_FILEURL_ATTRIBUTE, e);
 
             if (!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
-            } else {
-            	problem.setAttributeName(XML_FILEURL_ATTRIBUTE);
             }
-
-            status.add(problem);
         }
 
         try {
 			if (formatterProvider.isAppend() && FileURLParser.isArchiveURL(fileURL) && FileURLParser.isServerURL(fileURL)) {
-			    status.add("Append true is not supported on remote archive files.", ConfigurationStatus.Severity.WARNING, this,
-			    		ConfigurationStatus.Priority.NORMAL, XML_APPEND_ATTRIBUTE);
+			    status.addWarning(this, XML_APPEND_ATTRIBUTE, "Append true is not supported on remote archive files.");
 			}
 		} catch (MalformedURLException e) {
-		    status.add(e.toString(), ConfigurationStatus.Severity.ERROR, this,
-		    		ConfigurationStatus.Priority.NORMAL, XML_APPEND_ATTRIBUTE);
+		    status.addError(this, XML_APPEND_ATTRIBUTE, e);
 		}
         
         if (!StringUtils.isEmpty(excludeFields)) {
@@ -491,12 +481,10 @@ public class XLSWriter extends Node {
                         excludeFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 
                 if (includedFieldIndices.length == 0) {
-                    status.add(new ConfigurationProblem("All data fields excluded!", Severity.ERROR, this,
-                            Priority.NORMAL, XML_EXCLUDE_FIELDS_ATTRIBUTE));
+                    status.addError(this, XML_EXCLUDE_FIELDS_ATTRIBUTE, "All data fields excluded!");
                 }
             } catch (IllegalArgumentException exception) {
-                status.add(new ConfigurationProblem(ExceptionUtils.getMessage(exception), Severity.ERROR, this,
-                        Priority.NORMAL, XML_EXCLUDE_FIELDS_ATTRIBUTE));
+                status.addError(this, XML_EXCLUDE_FIELDS_ATTRIBUTE, exception);
             }
         }
 

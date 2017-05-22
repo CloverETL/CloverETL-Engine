@@ -36,17 +36,13 @@ import org.jetel.data.parser.Parser;
 import org.jetel.data.parser.TextParserFactory;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -394,22 +390,22 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 				indexKey = new RecordKey(keys, metadata);
 			}
 		} catch (NullPointerException e) {
-			status.add(new ConfigurationProblem("Key metadata are null.", Severity.WARNING, this, Priority.NORMAL, XML_LOOKUP_KEY));
+			status.addWarning(this, XML_LOOKUP_KEY, "Key metadata are null.");
 			indexKey = null; // we have to create it once again in init method after creating metadata from stub
 		} catch (RuntimeException e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_LOOKUP_KEY));
+			status.addError(this, XML_LOOKUP_KEY, e);
 		}
 
 		if (fileURL != null) {
 			try {
 				FileUtils.getReadableChannel(getGraph().getRuntimeContext().getContextURL(), fileURL);
 			} catch (IOException e) {
-				status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_FILE_URL));
+				status.addError(this, XML_FILE_URL, e);
 			}
 		}
 
 		if (data != null && metadata.containsCarriageReturnInDelimiters()) {
-			status.add(new ConfigurationProblem("Cannot use carriage return as a delimiter when inline data is specified!", Severity.ERROR, this, Priority.NORMAL, XML_DATA_ATTRIBUTE));
+			status.addError(this, XML_DATA_ATTRIBUTE, "Cannot use carriage return as a delimiter when inline data is specified!");
 		}
 
 		return status;

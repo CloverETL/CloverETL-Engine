@@ -37,10 +37,7 @@ import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
@@ -555,24 +552,23 @@ public class DataReader extends Node {
         }
 
 		if (!PolicyType.isPolicyType(policyTypeStr)) {
-			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+			status.addError(this, XML_DATAPOLICY_ATTRIBUTE, "Invalid data policy: " + policyTypeStr);
 		} else {
 			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
 			if (policyType != PolicyType.CONTROLLED && getOutputPort(LOG_PORT) != null) {
-				status.add("Error port only receives data if Data policy is set to Controlled.", Severity.WARNING, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+				status.addWarning(this, XML_DATAPOLICY_ATTRIBUTE,
+						"Error port only receives data if Data policy is set to Controlled.");
 			} else if (policyType == PolicyType.CONTROLLED && getOutputPort(LOG_PORT) == null) {
-				status.add("Data policy is set to Controlled and the Error port is not connected.", Severity.WARNING, this, Priority.NORMAL);
+				status.addWarning(this, null, "Data policy is set to Controlled and the Error port is not connected.");
 			}
 		}
 
         if (charset != null && !Charset.isSupported(charset)) {
-        	status.add(new ConfigurationProblem(
-            		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+        	status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported!");
         }
         
         if (StringUtils.isEmpty(fileURL)) {
-            status.add("Missing file URL attribute.", Severity.ERROR, this, Priority.NORMAL, XML_FILE_ATTRIBUTE);
+            status.addError(this, XML_FILE_ATTRIBUTE, "Missing file URL attribute.");
             return status;
         }
         
@@ -582,17 +578,12 @@ public class DataReader extends Node {
             prepareMultiFileReader();
             
     		if (!getOutputPort(OUTPUT_PORT).getMetadata().hasFieldWithoutAutofilling()) {
-    			status.add(new ConfigurationProblem(
-                		"No field elements without autofilling for '" + getOutputPort(OUTPUT_PORT).getMetadata().getName() + "' have been found!", 
-                		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+    			status.addError(this, null, 
+    					"No field elements without autofilling for '" + getOutputPort(OUTPUT_PORT).getMetadata().getName() + "' have been found!");
     		}
     		reader.checkConfig(getOutputPort(OUTPUT_PORT).getMetadata());
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
+            status.addWarning(this, null, e);
         } finally {
         	free();
         }

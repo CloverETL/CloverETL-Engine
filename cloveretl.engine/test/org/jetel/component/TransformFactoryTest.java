@@ -82,7 +82,7 @@ public class TransformFactoryTest extends CloverTestCase {
 		
 		ConfigurationStatus status = new ConfigurationStatus();
 		transformFactory.checkConfig(status);
-		assertTrue(status.isEmpty());
+		assertTrue(!status.hasProblem());
 		assertTrue(transformFactory.isTransformSpecified());
 		
 		Greeter greeter = transformFactory.createTransform();
@@ -96,7 +96,7 @@ public class TransformFactoryTest extends CloverTestCase {
 		
 		ConfigurationStatus status = new ConfigurationStatus();
 		transformFactory.checkConfig(status);
-		assertTrue(status.isEmpty());
+		assertTrue(!status.hasProblem());
 		assertTrue(transformFactory.isTransformSpecified());
 		
 		Greeter greeter = transformFactory.createTransform();
@@ -110,7 +110,7 @@ public class TransformFactoryTest extends CloverTestCase {
 		
 		ConfigurationStatus status = new ConfigurationStatus();
 		transformFactory.checkConfig(status);
-		assertTrue(status.isEmpty());
+		assertTrue(!status.hasProblem());
 		assertTrue(transformFactory.isTransformSpecified());
 		
 		Greeter greeter = transformFactory.createTransform();
@@ -130,8 +130,8 @@ public class TransformFactoryTest extends CloverTestCase {
 		transformFactory.setOutMetadata(getOutMetadata());
 		ConfigurationStatus status = new ConfigurationStatus();
 		transformFactory.checkConfig(status);
-		assertEquals(1, status.size());
-		assertEquals("CTL1 is not a supported language any more, please convert your code to CTL2.", status.get(0).getMessage());
+		assertEquals(1, status.getProblems().size());
+		assertEquals("CTL1 is not a supported language any more, please convert your code to CTL2.", status.getFirstProblem().getMessage());
 	}
 
 	public void testCreateTransformCTL1TransformUrl() throws TransformException, ComponentNotReadyException {
@@ -142,8 +142,8 @@ public class TransformFactoryTest extends CloverTestCase {
 		transformFactory.setOutMetadata(getOutMetadata());
 		ConfigurationStatus status = new ConfigurationStatus();
 		transformFactory.checkConfig(status);
-		assertEquals(1, status.size());
-		assertEquals("CTL1 is not a supported language any more, please convert your code to CTL2.", status.get(0).getMessage());
+		assertEquals(1, status.getProblems().size());
+		assertEquals("CTL1 is not a supported language any more, please convert your code to CTL2.", status.getFirstProblem().getMessage());
 	}
 
 	public void testCreateTransformCTL2Transform() throws TransformException, ComponentNotReadyException {
@@ -159,7 +159,7 @@ public class TransformFactoryTest extends CloverTestCase {
 		transformFactory.setOutMetadata(getOutMetadata());
 		ConfigurationStatus status = new ConfigurationStatus();
 		transformFactory.checkConfig(status);
-		assertTrue(status.isEmpty());
+		assertTrue(!status.hasProblem());
 		assertTrue(transformFactory.isTransformSpecified());
 		
 		RecordTransform recordTransform = transformFactory.createTransform();
@@ -180,7 +180,7 @@ public class TransformFactoryTest extends CloverTestCase {
 		transformFactory.setOutMetadata(getOutMetadata());
 		ConfigurationStatus status = new ConfigurationStatus();
 		transformFactory.checkConfig(status);
-		assertTrue(status.isEmpty());
+		assertTrue(!status.hasProblem());
 		assertTrue(transformFactory.isTransformSpecified());
 		
 		RecordTransform recordTransform = transformFactory.createTransform();

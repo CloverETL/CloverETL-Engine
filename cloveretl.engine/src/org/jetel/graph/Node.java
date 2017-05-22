@@ -40,10 +40,7 @@ import org.jetel.component.ComponentDescriptionImpl;
 import org.jetel.data.DataRecord;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.distribution.EngineComponentAllocation;
@@ -1190,14 +1187,14 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     	//component allocation is limited for jobflows
     	if (!getGraph().getRuntimeJobType().isGraph()) {
     		if (!getAllocation().isNeighboursAllocation()) {
-        		status.add("Invalid component allocation. Only regular ETL graphs can be distributed.", Severity.ERROR, this, Priority.NORMAL);
+        		status.addError(this, null, "Invalid component allocation. Only regular ETL graphs can be distributed.");
     		}
     	}
     	
     	//check enabled attribute
     	String errorMessage = getEnabled().validate();
     	if (!StringUtils.isEmpty(errorMessage)) {
-    		status.add(errorMessage, Severity.ERROR, this, Priority.NORMAL, Node.XML_ENABLED_ATTRIBUTE);
+    		status.addError(this, XML_ENABLED_ATTRIBUTE, errorMessage);
     	}
     	
     	return status;
@@ -1216,16 +1213,16 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     	Collection<InputPort> inPorts = getInPorts();
     	if (min == max) {
     		if (inPorts.size() != min) {
-                status.add(new ConfigurationProblem(MessageFormat.format("{0,choice,0#No input port may|1#1 input port must|1<{0} input ports must} be defined!", min), Severity.ERROR, this, Priority.NORMAL));
+                status.addError(this, null, MessageFormat.format("{0,choice,0#No input port may|1#1 input port must|1<{0} input ports must} be defined!", min));
                 retValue = false;
     		}
     	} else {
             if(inPorts.size() < min) {
-                status.add(new ConfigurationProblem(MessageFormat.format("At least {0} input {0,choice,1#port|1<ports} must be defined!", min), Severity.ERROR, this, Priority.NORMAL));
+                status.addError(this, null, MessageFormat.format("At least {0} input {0,choice,1#port|1<ports} must be defined!", min));
                 retValue = false;
             }
             if(inPorts.size() > max) {
-                status.add(new ConfigurationProblem(MessageFormat.format("At most {0} input {0,choice,1#port|1<ports} can be defined!", max), Severity.ERROR, this, Priority.NORMAL));
+                status.addError(this, null, MessageFormat.format("At most {0} input {0,choice,1#port|1<ports} can be defined!", max));
                 retValue = false;
             }
     	}
@@ -1233,12 +1230,11 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         int index = 0;
         for (InputPort inputPort : inPorts) {
 			if (inputPort.getMetadata() == null){ //TODO interface for matadata
-                status.add(new ConfigurationProblem("Metadata on input port " + inputPort.getInputPortNumber() + 
-                		" are not defined!", Severity.WARNING, this, Priority.NORMAL));
+                status.addWarning(this, null, "Metadata on input port " + inputPort.getInputPortNumber() + " are not defined!");
                 retValue = false;
 			}
 			if (checkNonAssignedPorts && inputPort.getInputPortNumber() != index){
-                status.add(new ConfigurationProblem("Input port " + index + " is not defined!", Severity.ERROR, this, Priority.NORMAL));
+                status.addError(this, null, "Input port " + index + " is not defined!");
                 retValue = false;
 			}
 			index++;
@@ -1263,28 +1259,27 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     	Collection<OutputPort> outPorts = getOutPorts();
     	if (min == max) {
     		if (outPorts.size() != min) {
-                status.add(new ConfigurationProblem(MessageFormat.format("{0,choice,0#No output port may|1#1 output port must|1<{0} output ports must} be defined!", min), Severity.ERROR, this, Priority.NORMAL));
+                status.addError(this, null, MessageFormat.format("{0,choice,0#No output port may|1#1 output port must|1<{0} output ports must} be defined!", min));
                 return false;
     		}
     	} else {
             if(outPorts.size() < min) {
-                status.add(new ConfigurationProblem(MessageFormat.format("At least {0} output {0,choice,1#port|1<ports} must be defined!", min), Severity.ERROR, this, Priority.NORMAL));
+                status.addError(this, null, MessageFormat.format("At least {0} output {0,choice,1#port|1<ports} must be defined!", min));
                 return false;
             }
             if(outPorts.size() > max) {
-                status.add(new ConfigurationProblem(MessageFormat.format("At most {0} output {0,choice,1#port|1<ports} can be defined!", max), Severity.ERROR, this, Priority.NORMAL));
+                status.addError(this, null, MessageFormat.format("At most {0} output {0,choice,1#port|1<ports} can be defined!", max));
                 return false;
             }
     	}
         int index = 0;
         for (OutputPort outputPort : outPorts) {
 			if (outputPort.getMetadata() == null){
-                status.add(new ConfigurationProblem("Metadata on output port " + outputPort.getOutputPortNumber() + 
-                		" are not defined!", Severity.WARNING, this, Priority.NORMAL));
+                status.addWarning(this, null, "Metadata on output port " + outputPort.getOutputPortNumber() + " are not defined!");
                 return false;
 			}
 			if (checkNonAssignedPorts && outputPort.getOutputPortNumber() != index){
-                status.add(new ConfigurationProblem("Output port " + index + " is not defined!", Severity.ERROR, this, Priority.NORMAL));
+                status.addError(this, null, "Output port " + index + " is not defined!");
                 return false;
 			}
 			index++;
@@ -1342,12 +1337,13 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     	while (iterator.hasNext()) {
     		nextMetadata = iterator.next();
     		if (metadata == null || !metadata.equals(nextMetadata)) {
-    			status.add(new ConfigurationProblem("Metadata " + 
-	    					StringUtils.quote(metadata == null ? "null" : metadata.getName()) + 
-	    					" does not equal to metadata " + 
-	    					StringUtils.quote(nextMetadata == null ? "null" : nextMetadata.getName()), 
-    					metadata == null || nextMetadata == null ? Severity.WARNING : Severity.ERROR, 
-    					this, Priority.NORMAL));
+    			String message = "Metadata " + StringUtils.quote(metadata == null ? "null" : metadata.getName()) + 
+    					" does not equal to metadata " + StringUtils.quote(nextMetadata == null ? "null" : nextMetadata.getName());
+    			if (metadata == null || nextMetadata == null) {
+        			status.addWarning(this, null, message); 
+    			} else {
+        			status.addError(this, null, message); 
+    			}
     		}
     		metadata = nextMetadata;
     	}
@@ -1359,12 +1355,13 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     	if (iterator.hasNext()) {
     		nextMetadata = iterator.next();
     		if (metadata == null || !metadata.equals(nextMetadata, checkFixDelType)) {
-    			status.add(new ConfigurationProblem("Metadata " + 
-    					StringUtils.quote(metadata == null ? "null" : metadata.getName()) + 
-    					" does not equal to metadata " + 
-    					StringUtils.quote(nextMetadata == null ? "null" : nextMetadata.getName()), 
-					metadata == null || nextMetadata == null ? Severity.WARNING : Severity.ERROR, 
-					this, Priority.NORMAL));
+    			String message = "Metadata " + StringUtils.quote(metadata == null ? "null" : metadata.getName()) + 
+    					" does not equal to metadata " + StringUtils.quote(nextMetadata == null ? "null" : nextMetadata.getName());
+    			if (metadata == null || nextMetadata == null) {
+	    			status.addWarning(this, null, message);
+    			} else {
+	    			status.addError(this, null, message);
+    			}
     		}
     		metadata = nextMetadata;
     	}
@@ -1372,12 +1369,13 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     	while (iterator.hasNext()) {
     		nextMetadata = iterator.next();
     		if (metadata == null || !metadata.equals(nextMetadata)) {
-    			status.add(new ConfigurationProblem("Metadata " + 
-    					StringUtils.quote(metadata == null ? "null" : metadata.getName()) + 
-    					" does not equal to metadata " + 
-    					StringUtils.quote(nextMetadata == null ? "null" : nextMetadata.getName()), 
-					metadata == null || nextMetadata == null ? Severity.WARNING : Severity.ERROR, 
-					this, Priority.NORMAL));
+    			String message = "Metadata " + StringUtils.quote(metadata == null ? "null" : metadata.getName()) + 
+    					" does not equal to metadata " + StringUtils.quote(nextMetadata == null ? "null" : nextMetadata.getName());
+    			if (metadata == null || nextMetadata == null) {
+        			status.addWarning(this, null, message);
+    			} else {
+        			status.addError(this, null, message);
+    			}
     		}
     		metadata = nextMetadata;
     	}
@@ -1431,7 +1429,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	    	for (InputPort inputPort : inputPorts) {
 	    		if (inputPort.getMetadata() == null) {
 	    			noMetadataFound = true;
-	    			status.add(new ConfigurationProblem("Input port #" + inputPort.getInputPortNumber() + " does not have assigned metadata.", Severity.WARNING, this, Priority.NORMAL));
+	    			status.addWarning(this, null, "Input port #" + inputPort.getInputPortNumber() + " does not have assigned metadata.");
 	    		}
 	    	}
     	}
@@ -1439,7 +1437,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	    	for (OutputPort outputPort : outputPorts) {
 	    		if (outputPort.getMetadata() == null) {
 	    			noMetadataFound = true;
-	    			status.add(new ConfigurationProblem("Output port #" + outputPort.getOutputPortNumber() + " does not have assigned metadata.", Severity.WARNING, this, Priority.NORMAL));
+	    			status.addWarning(this, null, "Output port #" + outputPort.getOutputPortNumber() + " does not have assigned metadata.");
 	    		}
 	    	}
     	}
@@ -1469,13 +1467,12 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     	if (inputPorts != null) {
 	    	for (InputPort inputPort : inputPorts) {
 	    		if (!etalonMetadata.equals(inputPort.getMetadata(), checkFixDelType)) {
-	    			status.add(new ConfigurationProblem("Metadata " + 
+	    			status.addError(this, null, "Metadata " + 
 	    					StringUtils.quote(inputPort.getMetadata().getName()) +
 	    					" on input port #" + inputPort.getInputPortNumber() +
 	    					" does not equal to metadata " + 
 	    					StringUtils.quote(etalonMetadata.getName()) + " on " +
-	    					(isEtalonInputPort ? "input" : "output") + " port #" + etalonIndex + ".", 
-						Severity.ERROR, this, Priority.NORMAL));
+	    					(isEtalonInputPort ? "input" : "output") + " port #" + etalonIndex + ".");
 	    		}
 	    	}
     	}
@@ -1483,13 +1480,12 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     	if (outputPorts != null) {
 	    	for (OutputPort outputPort : outputPorts) {
 	    		if (!etalonMetadata.equals(outputPort.getMetadata(), checkFixDelType)) {
-	    			status.add(new ConfigurationProblem("Metadata " + 
+	    			status.addError(this, null, "Metadata " + 
 	    					StringUtils.quote(outputPort.getMetadata().getName()) +
 	    					" on output port #" + outputPort.getOutputPortNumber() +
 	    					" does not equal to metadata " + 
 	    					StringUtils.quote(etalonMetadata.getName()) + " on " +
-	    					(isEtalonInputPort ? "input" : "output") + " port #" + etalonIndex + ".", 
-						Severity.ERROR, this, Priority.NORMAL));
+	    					(isEtalonInputPort ? "input" : "output") + " port #" + etalonIndex + ".");
 	    		}
 	    	}
     	}

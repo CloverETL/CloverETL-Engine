@@ -32,8 +32,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.CompareUtils;
@@ -297,7 +295,7 @@ public class GraphParameters {
 		synchronized (userParameters) {
 			for (GraphParameter param: userParameters.values()) {
 				if (!StringUtils.isValidObjectName(param.getName())) {
-					status.add("Invalid name of graph parameter: '" + param.getName() + "'", Severity.ERROR, null, Priority.HIGH);
+					status.addError(null, null, "Invalid name of graph parameter: '" + param.getName() + "'");
 				}
 			}
 		}

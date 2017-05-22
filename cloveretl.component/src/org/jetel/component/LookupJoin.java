@@ -36,10 +36,7 @@ import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -465,16 +462,14 @@ public class LookupJoin extends Node implements MetadataProvider {
         }
         
         if (charset != null && !Charset.isSupported(charset)) {
-        	status.add(new ConfigurationProblem(
-            		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+        	status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported!");
         }
 
         if (getOutputPort(REJECTED_PORT) != null) {
             checkMetadata(status, getInputPort(READ_FROM_PORT), getOutputPort(REJECTED_PORT));
             if (leftOuterJoin) {
-        		status.add("Left outer join is selected, no records will be produced on second output port.",
-            			Severity.WARNING, this, Priority.NORMAL, XML_LEFTOUTERJOIN_ATTRIBUTE);
+        		status.addWarning(this, XML_LEFTOUTERJOIN_ATTRIBUTE,
+        				"Left outer join is selected, no records will be produced on second output port.");
         	}
         }
 
@@ -482,7 +477,7 @@ public class LookupJoin extends Node implements MetadataProvider {
         	try {
 				ErrorAction.checkActions(errorActionsString);
 			} catch (ComponentNotReadyException e) {
-				status.add(new ConfigurationProblem(e, Severity.ERROR, this, Priority.NORMAL, XML_ERROR_ACTIONS_ATTRIBUTE));
+				status.addError(this, XML_ERROR_ACTIONS_ATTRIBUTE, e);
 			}
         }
         
@@ -490,18 +485,17 @@ public class LookupJoin extends Node implements MetadataProvider {
         	try {
 				FileUtils.canWrite(getGraph().getRuntimeContext().getContextURL(), errorLogURL);
 			} catch (ComponentNotReadyException e) {
-				status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, XML_ERROR_LOG_ATTRIBUTE));
+				status.addWarning(this, XML_ERROR_LOG_ATTRIBUTE, e);
 			}
         }
 
         if (StringUtils.isEmpty(lookupTableName)) {
-			status.add(new ConfigurationProblem("Required lookup table is missing.", Severity.ERROR, this, Priority.NORMAL, XML_LOOKUP_TABLE_ATTRIBUTE));
+			status.addError(this, XML_LOOKUP_TABLE_ATTRIBUTE, "Required lookup table is missing.");
         } else {
 			LookupTable lookupTable = getGraph().getLookupTable(lookupTableName);
 	
 			if (lookupTable == null) {
-				status.add(new ConfigurationProblem("Lookup table \"" + lookupTableName + "\" not found.", Severity.ERROR,
-						this, Priority.NORMAL, XML_LOOKUP_TABLE_ATTRIBUTE));
+				status.addError(this, XML_LOOKUP_TABLE_ATTRIBUTE, "Lookup table \"" + lookupTableName + "\" not found.");
 			} else if (transformation == null && !runtimeMetadata(lookupTable)) {
 				DataRecordMetadata[] inMetadata = { getInputPort(READ_FROM_PORT).getMetadata(), lookupTable.getMetadata() };
 				DataRecordMetadata[] outMetadata = { getOutputPort(WRITE_TO_PORT).getMetadata() };
@@ -511,12 +505,12 @@ public class LookupJoin extends Node implements MetadataProvider {
 	
 				//check join key
 	        	if (joinKey == null) {
-	    			status.add(new ConfigurationProblem("Required join key is missing.", Severity.ERROR, this, Priority.NORMAL, XML_JOIN_KEY_ATTRIBUTE));
+	    			status.addError(this, XML_JOIN_KEY_ATTRIBUTE, "Required join key is missing.");
 	        	} else {
 		        	try {
 						recordKey = new RecordKey(joinKey, inMetadata[0]);
 					} catch (Exception e) {
-						status.add(new ConfigurationProblem("Join key parsing error.", e, Severity.ERROR, this, Priority.NORMAL, XML_JOIN_KEY_ATTRIBUTE));
+						status.addError(this, XML_JOIN_KEY_ATTRIBUTE, "Join key parsing error.", e);
 					}
 	        	}
 	        }

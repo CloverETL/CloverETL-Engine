@@ -41,10 +41,7 @@ import org.jetel.database.IConnection;
 import org.jetel.database.sql.DBConnection;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -56,7 +53,6 @@ import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.lookup.DBLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
@@ -340,27 +336,25 @@ public class DBJoin extends Node implements MetadataProvider {
         if (getOutputPort(REJECTED_PORT) != null) {
         	checkMetadata(status, getInputPort(READ_FROM_PORT), getOutputPort(REJECTED_PORT));
         	if (leftOuterJoin) {
-        		status.add("Left outer join is selected, no records will be produced on second output port.",
-            			Severity.WARNING, this, Priority.NORMAL, XML_LEFTOUTERJOIN_ATTRIBUTE);
+        		status.addWarning(this, XML_LEFTOUTERJOIN_ATTRIBUTE,
+        				"Left outer join is selected, no records will be produced on second output port.");
         	}
         }
         
         if (charset != null && !Charset.isSupported(charset)) {
-        	status.add(new ConfigurationProblem(
-            		"Charset "+charset+" not supported!",  //$NON-NLS-1$ //$NON-NLS-2$
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+        	status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported!"); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         dbMetadata = getGraph().getDataRecordMetadata(metadataName, false);
         
         if (query == null) {
-        	status.add("SQL query not defined.", Severity.ERROR, this, Priority.NORMAL);
+        	status.addError(this, null, "SQL query not defined.");
         }
         if (connectionName == null) {
-        	status.add("DB connection not defined.", Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+        	status.addError(this, XML_DBCONNECTION_ATTRIBUTE, "DB connection not defined.");
         }
         if (joinKey == null) {
-        	status.add("Join key not defined.", Severity.ERROR, this, Priority.NORMAL, XML_JOIN_KEY_ATTRIBUTE);
+        	status.addError(this, XML_JOIN_KEY_ATTRIBUTE, "Join key not defined.");
         }
         if (query == null || connectionName == null || joinKey == null) {
         	return status;
@@ -398,11 +392,7 @@ public class DBJoin extends Node implements MetadataProvider {
  				FileUtils.canWrite(getGraph().getRuntimeContext().getContextURL(), errorLogURL);
            	}
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
+            status.addError(this, null, e);
         }
 
         if (dbMetadata != null) {
