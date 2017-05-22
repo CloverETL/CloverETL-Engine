@@ -49,7 +49,7 @@ public class Count extends AggregateFunction {
 	 */
 	@Override
 	public void checkOutputFieldType(DataFieldMetadata outputField) throws AggregationException {
-		if (!outputField.isNumeric()) {
+		if (!outputField.getDataType().isNumeric()) {
 			throw new AggregationException(AggregateFunction.ERROR_NUMERIC);
 		}
 	}
