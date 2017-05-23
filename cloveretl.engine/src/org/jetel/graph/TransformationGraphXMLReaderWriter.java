@@ -214,6 +214,7 @@ public class TransformationGraphXMLReaderWriter {
 	public final static String ENDPOINT_SETTINGS_ELEMENT = "EndpointSettings";
 	public final static String ENDPOINT_SETTINGS_URL_PATH_ATTR = "urlPath";
 	public final static String ENDPOINT_SETTINGS_DESCRIPTION_ELEMENT = "Description";
+	public final static String ENDPOINT_SETTINGS_ENDPOINT_NAME_ATTR = "endpointName";
 	public final static String ENDPOINT_SETTINGS_METHOD_ELEMENT = "RequestMethod";
 	public final static String ENDPOINT_SETTINGS_METHOD_NAME_ATTR = "name";
 	public final static String ENDPOINT_SETTINGS_PARAM_ELEMENT = "RequestParameter";

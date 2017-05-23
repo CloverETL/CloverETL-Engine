@@ -39,6 +39,7 @@ public class EndpointSettings {
 
 	private String urlPath;
 	private String description;
+	private String endpointName;
 	private List<RequestMethod> requestMethods;
 	private List<RequestParameter> requestParameters;
 	
@@ -56,6 +57,14 @@ public class EndpointSettings {
 	}
 	public void setDescription(String description) {
 		this.description = description;
+	}
+	
+	@XmlAttribute(required = false)
+	public String getEndpointName() {
+		return endpointName;
+	}
+	public void setEndpointName(String endpointName) {
+		this.endpointName = endpointName;
 	}
 	
 	@XmlElement(name = "RequestMethod")
