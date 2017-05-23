@@ -107,34 +107,28 @@ public class ConfigurationStatus implements Iterable<ConfigurationProblem> {
     }
     
     @Deprecated
-    public ConfigurationProblem add(String message, Severity severity, GraphElement graphElement, Priority priority, String attributeName) {
-    	ConfigurationProblem configurationProblem = new ConfigurationProblem(message, severity, graphElement, priority, attributeName);
-    	configurationProblems.add(configurationProblem);
-    	return configurationProblem;
+    public void add(String message, Severity severity, GraphElement graphElement, Priority priority, String attributeName) {
+    	add(new ConfigurationProblem(message, severity, graphElement, priority, attributeName));
     }
 
     @Deprecated
-    public ConfigurationProblem add(Exception e, Severity severity, GraphElement graphElement, Priority priority, String attributeName) {
-    	ConfigurationProblem configurationProblem = new ConfigurationProblem(null, e, severity, graphElement, priority, attributeName);
-    	configurationProblems.add(configurationProblem);
-    	return configurationProblem;
+    public void add(Exception e, Severity severity, GraphElement graphElement, Priority priority, String attributeName) {
+    	add(new ConfigurationProblem(null, e, severity, graphElement, priority, attributeName));
     }
 
     @Deprecated
-    public ConfigurationProblem add(String message, Exception e, Severity severity, GraphElement graphElement, Priority priority, String attributeName) {
-    	ConfigurationProblem configurationProblem = new ConfigurationProblem(null, e, severity, graphElement, priority, attributeName);
-    	configurationProblems.add(configurationProblem);
-    	return configurationProblem;
+    public void add(String message, Exception e, Severity severity, GraphElement graphElement, Priority priority, String attributeName) {
+    	add(new ConfigurationProblem(message, e, severity, graphElement, priority, attributeName));
     }
 
     @Deprecated
-    public ConfigurationProblem add(String message, Severity severity, GraphElement graphElement, Priority priority) {
-    	return this.add(message, severity, graphElement, priority, null);
+    public void add(String message, Severity severity, GraphElement graphElement, Priority priority) {
+    	this.add(message, severity, graphElement, priority, null);
     }
 
     @Deprecated
-    public ConfigurationProblem add(String message, Exception e, Severity severity, GraphElement graphElement, Priority priority) {
-    	return this.add(message, e, severity, graphElement, priority, null);
+    public void add(String message, Exception e, Severity severity, GraphElement graphElement, Priority priority) {
+    	this.add(message, e, severity, graphElement, priority, null);
     }
 
     public ConfigurationProblem add(ConfigurationProblem configurationProblem) {
