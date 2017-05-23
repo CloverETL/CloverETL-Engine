@@ -212,9 +212,10 @@ public class TransformationGraphXMLReaderWriter {
 	public final static String SUBGRAPH_PORT_CONNECTED_ATTRIBUTE = "connected";
 	
 	public final static String ENDPOINT_SETTINGS_ELEMENT = "EndpointSettings";
-	public final static String ENDPOINT_SETTINGS_URL_PATH_ATTR = "urlPath";
+	public final static String ENDPOINT_SETTINGS_URL_PATH_ELEMENT = "UrlPath";
 	public final static String ENDPOINT_SETTINGS_DESCRIPTION_ELEMENT = "Description";
-	public final static String ENDPOINT_SETTINGS_ENDPOINT_NAME_ATTR = "endpointName";
+	public final static String ENDPOINT_SETTINGS_ENDPOINT_NAME_ELEMENT = "EndpointName";
+	public final static String ENDPOINT_SETTINGS_EXAMPLE_OUTPUT_ELEMENT = "ExampleOutput";
 	public final static String ENDPOINT_SETTINGS_METHOD_ELEMENT = "RequestMethod";
 	public final static String ENDPOINT_SETTINGS_METHOD_NAME_ATTR = "name";
 	public final static String ENDPOINT_SETTINGS_PARAM_ELEMENT = "RequestParameter";

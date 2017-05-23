@@ -40,6 +40,7 @@ public class EndpointSettings {
 	private String urlPath;
 	private String description;
 	private String endpointName;
+	private String exampleOutput;
 	private List<RequestMethod> requestMethods;
 	private List<RequestParameter> requestParameters;
 	
@@ -65,6 +66,14 @@ public class EndpointSettings {
 	}
 	public void setEndpointName(String endpointName) {
 		this.endpointName = endpointName;
+	}
+	
+	@XmlAttribute(required = false)
+	public String getExampleOutput() {
+		return exampleOutput;
+	}
+	public void setExampleOutput(String exampleOutput) {
+		this.exampleOutput = exampleOutput;
 	}
 	
 	@XmlElement(name = "RequestMethod")
