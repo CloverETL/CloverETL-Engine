@@ -47,8 +47,9 @@ public class ErrorMapping implements Cloneable, Serializable {
 	/**
 	 * Key for default error Mesasge
 	 */
-	public static final String ANY_JOB_ERROR_KEY = "*";
+	public static final String COMPONENT_ERROR_KEY = "*";
 	public static final String VALIDATION_ERROR_KEY = "REQUEST_VALIDATION_ERROR";
+	public static final String JOB_SUCCESS_ERROR_KEY = "JOB_SUCCESS_ERROR_KEY";
 
 	private static final ErrorMessage GENERIC_ERROR = new ErrorMessage(null, 500, "Job failed");
 	
@@ -91,7 +92,7 @@ public class ErrorMapping implements Cloneable, Serializable {
 				msg = getErrorsByComponentId().get(VALIDATION_ERROR_KEY);
 			}
 			if (msg == null) {
-				msg = getErrorsByComponentId().get(ANY_JOB_ERROR_KEY);
+				msg = getErrorsByComponentId().get(COMPONENT_ERROR_KEY);
 			}
 			return msg != null ? msg : GENERIC_ERROR;
 		}
