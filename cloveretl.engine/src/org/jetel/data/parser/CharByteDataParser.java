@@ -236,9 +236,6 @@ public class CharByteDataParser extends AbstractTextParser {
 						recordSkipper.skipInput(consumerIdx);
 					}
 				}
-			} catch (CharsetDecoderException e) {
-				parsingErrorFound(ExceptionUtils.getMessage(e));
-				return null;
 			} catch (UnexpectedEndOfRecordDataFormatException e) {
 				if (cfg.isVerbose()) {
 					lastRawRecord = getLastRawRecord(); 

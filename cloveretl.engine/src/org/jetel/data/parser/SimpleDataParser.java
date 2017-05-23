@@ -40,7 +40,6 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -371,13 +370,9 @@ public class SimpleDataParser extends AbstractTextParser {
 					return null;
 				}
 			}
-		} catch (CharsetDecoderException e) {
-			parsingErrorFound(ExceptionUtils.getMessage(e));
-			return null;
 		} catch (Exception ex) {
 			throw new RuntimeException(getErrorMessage(fieldBuffer, fieldIndex), ex);
 		}
-
 	}
 
 	private void finalFieldDecoration(int fieldIndex) {
@@ -403,15 +398,6 @@ public class SimpleDataParser extends AbstractTextParser {
 		} catch (CharacterCodingException e) {
 			isEOF = true;
 			throw new CharsetDecoderException("Character decoding error occurred. Set correct charset." + (!StringUtils.isEmpty(cfg.getCharset()) ? " Current charset is " + cfg.getCharset() : ""));
-		}
-	}
-
-	private void parsingErrorFound(String exceptionMessage) {
-		if (exceptionHandler != null) {
-			exceptionHandler.populateHandler("Parsing error: " + exceptionMessage, null, -1, -1,
-					null, new BadDataFormatException("Parsing error: " + exceptionMessage));
-		} else {
-			throw new RuntimeException("Parsing error: " + exceptionMessage);
 		}
 	}
 
