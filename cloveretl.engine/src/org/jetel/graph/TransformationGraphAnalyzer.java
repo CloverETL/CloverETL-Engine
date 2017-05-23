@@ -167,6 +167,8 @@ public class TransformationGraphAnalyzer {
 		for (Phase phase : graph.getPhases()) {
 			Set<Node> input = new HashSet<>();
 			Set<Node> output = new HashSet<>();
+			Set<Edge> inputOutgoing = new HashSet<>();
+			Set<Edge> outputOnly = new HashSet<>();
 			for (Node node : phase.getNodes().values()) {
 				if (node.isPartOfRestInput()) {
 					input.add(node);
@@ -182,9 +184,29 @@ public class TransformationGraphAnalyzer {
 				phase.deleteNode(node);
 				inputPhase.addNode(node);
 			}
+			/*
+			 * Move all edges outgoing from input-side components to the initial phase,
+			 * move edges whose both components are in the final phase to that phase.
+			 * CLO-10928
+			 */
+			for (Edge edge : phase.getEdges().values()) {
+				if (input.contains(edge.getWriter())) {
+					inputOutgoing.add(edge);
+				} else if (output.contains(edge.getReader()) && output.contains(edge.getWriter())) {
+					outputOnly.add(edge);
+				}
+			}
+			for (Edge edge : inputOutgoing) {
+				phase.deleteEdge(edge);
+				inputPhase.addEdge(edge);
+			}
 			for (Node node : output) {
 				phase.deleteNode(node);
 				outputPhase.addNode(node);
+			}
+			for (Edge edge : outputOnly) {
+				phase.deleteEdge(edge);
+				outputPhase.addEdge(edge);
 			}
 		}
 		
