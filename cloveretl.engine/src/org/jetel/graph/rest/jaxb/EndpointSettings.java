@@ -23,7 +23,6 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -44,7 +43,7 @@ public class EndpointSettings {
 	private List<RequestMethod> requestMethods;
 	private List<RequestParameter> requestParameters;
 	
-	@XmlAttribute
+	@XmlElement(name = "UrlPath")
 	public String getUrlPath() {
 		return urlPath;
 	}
@@ -52,7 +51,7 @@ public class EndpointSettings {
 		this.urlPath = urlPath;
 	}
 	
-	@XmlAttribute(required = false)
+	@XmlElement(name = "Description")
 	public String getDescription() {
 		return description;
 	}
@@ -60,7 +59,7 @@ public class EndpointSettings {
 		this.description = description;
 	}
 	
-	@XmlAttribute(required = false)
+	@XmlElement(name = "EndpointName")
 	public String getEndpointName() {
 		return endpointName;
 	}
@@ -68,7 +67,7 @@ public class EndpointSettings {
 		this.endpointName = endpointName;
 	}
 	
-	@XmlAttribute(required = false)
+	@XmlElement(name = "ExampleOutput")
 	public String getExampleOutput() {
 		return exampleOutput;
 	}
