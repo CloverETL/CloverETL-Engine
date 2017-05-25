@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="4.4.0.M1" id="1280331230946" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Feb 23 13:55:35 CET 2016" modifiedBy="jansedlacek" name="CreatingFixedMixedCust" revision="1.129" showComponentDetails="true">
+<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="4.6.0.M2" id="1280331230946" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Feb 23 13:55:35 CET 2016" modifiedBy="jansedlacek" name="CreatingFixedMixedCust" revision="1.129" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/customers_fixed.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata1"/>
@@ -115,9 +115,9 @@ function integer transform() {
 <Node enabled="enabled" guiName="convert to fixed" guiX="220" guiY="263" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
 <Node enabled="enabled" guiName="the other records" guiX="624" guiY="467" id="TRASH0" type="TRASH"/>
 <Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
-<Edge debugFilterExpression="$0.gender == &quot;M&quot;" debugLastRecords="false" debugMaxRecords="25" debugMode="false" debugSampleData="false" fromNode="REFORMAT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata0" toNode="DATA_WRITER0:0"/>
-<Edge debugFilterExpression="$0.income &lt; 30000 AND $0.gender=='F'" debugLastRecords="true" debugMaxRecords="100" debugMode="true" debugSampleData="true" fromNode="REFORMAT0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 1 (out)" persistedImplicitMetadata="Metadata0" toNode="TRASH0:0"/>
-<Edge debugFilterExpression="$0.age&gt; 25 AND $0.age&lt; 35 " debugLastRecords="false" debugMaxRecords="33" debugMode="true" debugSampleData="true" fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+<Edge fromNode="REFORMAT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge debugFilterExpression="//#CTL2&#13;&#10;$0.income &lt; 30000 AND $0.gender=='F'" debugLastRecords="true" debugMaxRecords="100" debugMode="custom" debugSampleData="true" fromNode="REFORMAT0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 1 (out)" toNode="TRASH0:0"/>
+<Edge debugFilterExpression="//#CTL2&#13;&#10;$0.age&gt; 25 AND $0.age&lt; 35 " debugLastRecords="false" debugMaxRecords="33" debugMode="custom" debugSampleData="true" fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
 </Phase>
 <Phase number="1">
 <Node dataPolicy="lenient" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region_BAD.csv" guiName="read bad records" guiX="31" guiY="901" id="DATA_READER1" trim="false" type="DATA_READER">
