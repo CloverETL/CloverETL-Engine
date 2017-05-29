@@ -53,7 +53,7 @@ public class RestJobComponentErrorStatus implements Cloneable, Serializable, Res
 	}
 	
 	@Override
-	@XmlElement(name = "Key")
+	@XmlElement(name = "ComponentId")
 	public String getComponentId() {
 		return componentId;
 	}
