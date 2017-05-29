@@ -65,15 +65,18 @@ public class PropertyRefResolver {
 	/** the logger for this class */
 	private static final Log logger = LogFactory.getLog(PropertyRefResolver.class);
 	
-	public final static String PREFIX_REQUEST_PARAMETERS = "request.";
+	/** prefix of request parameter*/
+	private final static String PREFIX_REQUEST_PARAMETERS = Defaults.RequestParameters.REQUEST_PARAMETER_PREFIX;
 
 	/** properties used for resolving property references */
 	private final GraphParameters parameters;
-
+	
+	/** the regex pattern used to find request parameter references */
+	private static final Pattern requestParameterPattern = Pattern.compile(Defaults.RequestParameters.REQUEST_PARAMETER_PLACEHOLDER_REGEX);
+	
 	/** the regex pattern used to find property references */
-	public static final Pattern propertyPattern = Pattern.compile("\\$\\{(([a-zA-Z_]\\\\w*)|(([a-zA-Z_]\\w*)|([Rr][Ee][Qq][Uu][Ee][Ss][Tt])\\.[^}]*))\\}");
-
-
+	private static final Pattern propertyPattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX + "|" + Defaults.RequestParameters.REQUEST_PARAMETER_PLACEHOLDER_REGEX);
+	
 	/** the set (same errors need to be listed once only) of errors that occurred during evaluation of a single string */
 	private final Set<String> errorMessages = new HashSet<String>();
 
@@ -317,9 +320,10 @@ public class PropertyRefResolver {
 			if (isRecursionOverflowed()) {
 				throw new RecursionOverflowedException(PropertyMessages.getString("PropertyRefResolver_infinite_recursion_warning")); //$NON-NLS-1$
 			}
-
+			
 			// resolve the property reference
-			String reference = propertyMatcher.group(1);
+			String reference = getPropertyName(propertyMatcher);
+			
 			String resolvedReference = null;
 			boolean canBeParamaterResolved = true;
 			
@@ -394,6 +398,16 @@ public class PropertyRefResolver {
 		return (paramName != null && paramName.toLowerCase().startsWith(PREFIX_REQUEST_PARAMETERS));
 	}
 
+	/**
+	 * Return true if input contains HttpRequest parameter.
+	 * @param input
+	 * @return
+	 */
+	public static boolean containsRequestParameter(String input) {
+		Matcher propertyMatcher = requestParameterPattern.matcher(input);
+		return propertyMatcher.find();
+	}
+	
 	/**
 	 * Test whether the resolving recursion is not too deep.
 	 */
@@ -505,7 +519,7 @@ public class PropertyRefResolver {
 		if (!StringUtils.isEmpty(value)) {
 			Matcher matcher = propertyPattern.matcher(value);
 			if (matcher.matches()) {
-				return matcher.group(1);
+				return getPropertyName(matcher);
 			} else {
 				return null;
 			}
@@ -522,7 +536,7 @@ public class PropertyRefResolver {
 			List<String> result = new ArrayList<String>();
 			Matcher matcher = propertyPattern.matcher(value);
 			while (matcher.find()) {
-				result.add(matcher.group(1));
+				result.add(getPropertyName(matcher));
 			}
 			return result;
 		} else {
@@ -540,6 +554,15 @@ public class PropertyRefResolver {
 		public RecursionOverflowedException(String message) {
 			super(message);
 		}
+	}
+	
+	 
+	/**
+	 * Returns property name from marcher
+	 */
+	private static String getPropertyName(Matcher matcher){
+		//group(1) for graph parameter, graph(2) for HTTP Request parameter
+		return matcher.group(1) != null ? matcher.group(1) : matcher.group(2);
 	}
 	
 }

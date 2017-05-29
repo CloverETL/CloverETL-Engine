@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.regex.Matcher;
 
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
@@ -70,8 +69,7 @@ public class HttpPartUrlUtils {
 	}
 	
 	public static boolean containsRequestParameter(String url) {
-		Matcher propertyMatcher = PropertyRefResolver.propertyPattern.matcher(url);
-		return propertyMatcher.find();
+		return PropertyRefResolver.containsRequestParameter(url);
 	}
 		
 	public static InputStream getRequestInputStream(URL url) throws IOException {

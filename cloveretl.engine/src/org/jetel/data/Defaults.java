@@ -264,6 +264,7 @@ public final class Defaults {
         Lookup.init();
         WatchDog.init();
         GraphProperties.init();
+        RequestParameters.init();
         InternalSortDataRecord.init();
         Graph.init();
         OracleConnection.init();
@@ -681,6 +682,23 @@ public final class Defaults {
 
 	}
 
+	public final static class RequestParameters {
+		/** a regular expression describing the format of request parameter references */
+		@SuppressFBWarnings("MS_PKGPROTECT")
+		public static String REQUEST_PARAMETER_PLACEHOLDER_REGEX;
+		
+		@SuppressFBWarnings("MS_PKGPROTECT")
+		public static String REQUEST_PARAMETER_PREFIX;
+		
+		public static void init() {
+			REQUEST_PARAMETER_PLACEHOLDER_REGEX = getStringProperties(
+					"RequestParameters.REQUEST_PARAMETER_PLACEHOLDER_REGEX", "\\$\\{([Rr][Ee][Qq][Uu][Ee][Ss][Tt]\\.[^}]*)\\}");
+			
+			REQUEST_PARAMETER_PREFIX = getStringProperties(
+					"RequestParameters.REQUEST_PARAMETER_PREFIX", "request.");
+		}
+	}
+	
 	public final static class GraphProperties {
 
 		public static void init() {
