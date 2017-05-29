@@ -54,7 +54,7 @@ import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.modelview.impl.MetadataPropagationResult;
 import org.jetel.graph.rest.jaxb.EndpointSettings;
-import org.jetel.graph.rest.jaxb.ErrorMapping;
+import org.jetel.graph.rest.jaxb.RestJobResponseStatus;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.IAuthorityProxy;
@@ -235,7 +235,7 @@ public final class TransformationGraph extends GraphElement {
 	 */
 	private EndpointSettings endpointSettings;
 	
-	private ErrorMapping restErrorMapping;
+	private RestJobResponseStatus responseStatus;
 	
 	public TransformationGraph() {
 		this(DEFAULT_GRAPH_ID);
@@ -1781,11 +1781,11 @@ public final class TransformationGraph extends GraphElement {
 		this.endpointSettings = endpointSettings;
 	}
 
-	public ErrorMapping getRestErrorMapping() {
-		return restErrorMapping;
+	public RestJobResponseStatus getRestJobResponseStatus() {
+		return responseStatus;
 	}
 
-	public void setRestErrorMapping(ErrorMapping restErrorMapping) {
-		this.restErrorMapping = restErrorMapping;
+	public void setRestJobResponseStatus(RestJobResponseStatus responseStatus) {
+		this.responseStatus = responseStatus;
 	}
 }
