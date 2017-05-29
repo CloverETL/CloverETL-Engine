@@ -119,8 +119,8 @@ public class RestJobResponseStatus implements Cloneable, Serializable {
 		if (errorsByComponentId == null) {
 			errorsByComponentId = new HashMap<>();
 			if (componentError != null) {
-				for (RestJobComponentErrorStatus componentError : componentError) {
-					errorsByComponentId.put(componentError.getComponentId(), componentError);
+				for (RestJobComponentErrorStatus component : componentError) {
+					errorsByComponentId.put(component.getComponentId(), component);
 				}
 			}
 		}
@@ -135,8 +135,8 @@ public class RestJobResponseStatus implements Cloneable, Serializable {
 			} 
 			if (componentError != null) {
 				copy.componentError = new ArrayList<>(componentError.size());
-				for (RestJobComponentErrorStatus compError : componentError) {
-					copy.componentError.add(compError.createCopy());
+				for (RestJobComponentErrorStatus component : componentError) {
+					copy.componentError.add(component.createCopy());
 				}
 			}
 			if (validationError != null) {
