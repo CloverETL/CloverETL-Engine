@@ -104,9 +104,8 @@ public class RestJobResponseStatus implements Cloneable, Serializable {
 			if (node.isPartOfRestInput()) {
 				responseStatus = validationError;
 			} else {
-				if (responseStatus == null) {
-					responseStatus = getErrorsByComponentId().get(node.getId());
-				}
+				responseStatus = getErrorsByComponentId().get(node.getId());
+				
 				if (responseStatus == null) {
 					responseStatus = jobError;
 				}
