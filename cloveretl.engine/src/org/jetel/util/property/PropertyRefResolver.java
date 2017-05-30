@@ -72,10 +72,10 @@ public class PropertyRefResolver {
 	private final GraphParameters parameters;
 	
 	/** the regex pattern used to find request parameter references */
-	private static final Pattern requestParameterPattern = Pattern.compile(Defaults.RequestParameters.REQUEST_PARAMETER_PLACEHOLDER_REGEX);
+	private static final Pattern REQUEST_PARAMETER_PATTERN = Pattern.compile(Defaults.RequestParameters.REQUEST_PARAMETER_PLACEHOLDER_REGEX);
 	
 	/** the regex pattern used to find property references */
-	private static final Pattern propertyPattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX + "|" + Defaults.RequestParameters.REQUEST_PARAMETER_PLACEHOLDER_REGEX);
+	private static final Pattern PROPERTY_PATTERN = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX + "|" + Defaults.RequestParameters.REQUEST_PARAMETER_PLACEHOLDER_REGEX);
 	
 	/** the set (same errors need to be listed once only) of errors that occurred during evaluation of a single string */
 	private final Set<String> errorMessages = new HashSet<String>();
@@ -312,7 +312,7 @@ public class PropertyRefResolver {
 	 * @return <code>true</code> if at least one property reference was found and resolved, <code>false</code> otherwise
 	 */
 	private void resolveReferences(StringBuilder value, RefResFlag flag) {
-		Matcher propertyMatcher = propertyPattern.matcher(value);
+		Matcher propertyMatcher = PROPERTY_PATTERN.matcher(value);
 		int nextStart = 0;
 		
 		while (propertyMatcher.find(nextStart)) {
@@ -404,7 +404,7 @@ public class PropertyRefResolver {
 	 * @return
 	 */
 	public static boolean containsRequestParameter(String input) {
-		Matcher propertyMatcher = requestParameterPattern.matcher(input);
+		Matcher propertyMatcher = REQUEST_PARAMETER_PATTERN.matcher(input);
 		return propertyMatcher.find();
 	}
 	
@@ -484,7 +484,7 @@ public class PropertyRefResolver {
 	 */
 	public static boolean containsProperty(String value){
 		if (!StringUtils.isEmpty(value)) {
-			return propertyPattern.matcher(value).find();
+			return PROPERTY_PATTERN.matcher(value).find();
 		} else {
 			return false;
 		}
@@ -496,7 +496,7 @@ public class PropertyRefResolver {
 	 */
 	public static boolean isPropertyReference(String value){
 		if (!StringUtils.isEmpty(value)) {
-			return propertyPattern.matcher(value).matches();
+			return PROPERTY_PATTERN.matcher(value).matches();
 		} else {
 			return false;
 		}
@@ -517,7 +517,7 @@ public class PropertyRefResolver {
 	 */
 	public static String getReferencedProperty(String value) {
 		if (!StringUtils.isEmpty(value)) {
-			Matcher matcher = propertyPattern.matcher(value);
+			Matcher matcher = PROPERTY_PATTERN.matcher(value);
 			if (matcher.matches()) {
 				return getPropertyName(matcher);
 			} else {
@@ -534,7 +534,7 @@ public class PropertyRefResolver {
 	public static List<String> getUnresolvedProperties(String value){
 		if (!StringUtils.isEmpty(value)) {
 			List<String> result = new ArrayList<String>();
-			Matcher matcher = propertyPattern.matcher(value);
+			Matcher matcher = PROPERTY_PATTERN.matcher(value);
 			while (matcher.find()) {
 				result.add(getPropertyName(matcher));
 			}
