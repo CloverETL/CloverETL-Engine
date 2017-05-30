@@ -68,6 +68,7 @@ public class RestJobComponentErrorStatus implements Cloneable, Serializable, Res
 		return statusCode;
 	}
 	
+	@Override
 	public void setStatusCode(Integer statusCode) {
 		this.statusCode = statusCode;
 	}

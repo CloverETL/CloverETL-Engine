@@ -54,6 +54,7 @@ public class RestJobSuccessStatus implements Cloneable, Serializable, ResponseSt
 		return statusCode;
 	}
 	
+	@Override
 	public void setStatusCode(Integer statusCode) {
 		this.statusCode = statusCode;
 	}

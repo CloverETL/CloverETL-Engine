@@ -31,5 +31,6 @@ public interface ResponseStatusInterface {
 	String getReasonPhrase();
 	
 	void setReasonPhrase(String reasonPhrase);
+	void setStatusCode(Integer reasonPhrase);
 	
 }
