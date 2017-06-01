@@ -51,7 +51,7 @@ public class ConfigurationProblem {
 
     private String graphElementName;
     
-    private Exception causeException;
+    private Throwable causeException;
     
 	public ConfigurationProblem(String message, Severity severity, IGraphElement graphElement, Priority priority, String attributeName) {
         this.message = message;
@@ -112,12 +112,18 @@ public class ConfigurationProblem {
         return severity;
     }
 
+    public ConfigurationProblem setSeverity(Severity severity) {
+    	this.severity = severity;
+    	return this;
+    }
+    
     public String getAttributeName() {
         return attributeName;
     }
 
-    public void setAttributeName(String attributeName) {
+    public ConfigurationProblem setAttributeName(String attributeName) {
         this.attributeName = attributeName;
+        return this;
     }
     
     public String getGraphElementID() {
@@ -132,11 +138,11 @@ public class ConfigurationProblem {
     	return graphElementName;
 	}
 
-    public Exception getCauseException() {
+    public Throwable getCauseException() {
 		return causeException;
 	}
 
-	public void setCauseException(Exception causeException) {
+	public void setCauseException(Throwable causeException) {
 		this.causeException = causeException;
 	}
 

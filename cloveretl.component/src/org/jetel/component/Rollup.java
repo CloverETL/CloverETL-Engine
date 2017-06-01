@@ -35,10 +35,7 @@ import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.TransformException;
@@ -156,9 +153,6 @@ import org.w3c.dom.Element;
  * @see RecordRollup
  */
 public class Rollup extends Node {
-
-    /** the type of the component */
-    private static final String COMPONENT_TYPE = "ROLLUP";
 
     //
     // names of XML attributes
@@ -332,20 +326,19 @@ public class Rollup extends Node {
 
             for (String groupKeyField : groupKeyFields) {
                 if (metadata.getField(groupKeyField) == null) {
-                    status.add(new ConfigurationProblem("The group key field " + StringUtils.quote(groupKeyField)
-                            + " doesn't exist!", Severity.ERROR, this, Priority.HIGH, XML_GROUP_KEY_FIELDS_ATTRIBUTE));
+                    status.addError(this, XML_GROUP_KEY_FIELDS_ATTRIBUTE,
+                    		"The group key field " + StringUtils.quote(groupKeyField) + " doesn't exist!");
                 }
             }
         }
 
         if (groupAccumulatorMetadataId != null && getGraph().getDataRecordMetadata(groupAccumulatorMetadataId, false) == null) {
-            status.add(new ConfigurationProblem("The group \"accumulator\" metadata ID is not valid!",
-                    Severity.ERROR, this, Priority.HIGH, XML_GROUP_ACCUMULATOR_METADATA_ID_ATTRIBUTE));
+            status.addError(this, XML_GROUP_ACCUMULATOR_METADATA_ID_ATTRIBUTE, 
+            		"The group \"accumulator\" metadata ID is not valid!");
         }
 
         if (transformUrlCharset != null && !Charset.isSupported(transformUrlCharset)) {
-            status.add(new ConfigurationProblem("The transform URL character set is not supported!",
-                    Severity.ERROR, this, Priority.NORMAL, XML_TRANSFORM_URL_CHARSET_ATTRIBUTE));
+            status.addError(this, XML_TRANSFORM_URL_CHARSET_ATTRIBUTE, "The transform URL character set is not supported!");
         }
         
         //check transformation

@@ -40,10 +40,7 @@ import org.jetel.data.NumericDataField;
 import org.jetel.data.StringDataField;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -505,7 +502,7 @@ public class TableauWriter extends Node  {
 	        	} catch (IllegalArgumentException e) {
 	        		errMessage = "Illegal value for default table collation: " + rawTableCollation;
 	        		if (status != null) {
-	        			status.add(new ConfigurationProblem(errMessage, Severity.ERROR,	this, Priority.NORMAL, XML_DEFAULT_TABLE_COLLATION));
+	        			status.addError(this, XML_DEFAULT_TABLE_COLLATION, errMessage);
 	        		} else {
 	        			logger.error(errMessage);
 	        		}
@@ -518,7 +515,7 @@ public class TableauWriter extends Node  {
 				errMessage = "Unable to initialize Tableau native libraries. Make sure they are installed and configured in PATH environment variable (see component docs). Underlying error: \n" + e.getMessage();
 			}
 			if (status != null) {
-				status.add(new ConfigurationProblem(errMessage, Severity.ERROR,	this, Priority.NORMAL));
+				status.addError(this, null, errMessage);
 			} else {
 				logger.error(errMessage);
 			}
@@ -532,27 +529,25 @@ public class TableauWriter extends Node  {
 		checkDefaultCollation(status);
 		
 		if (StringUtils.isEmpty(outputFileName)) {
-            status.add(new ConfigurationProblem("Missing File URL attribute.", Severity.ERROR, this, Priority.NORMAL, XML_OUTPUT_FILE));
+            status.addError(this, XML_OUTPUT_FILE, "Missing File URL attribute.");
         }
 		
 		// Tableau API requires that the target file ends with ".tde". See Extract constructor doc
 		if (outputFileName != null && !outputFileName.endsWith(REQUIRED_FILE_SUFFIX)) {
-			status.add(new ConfigurationProblem("Output file path must point to a file with \".tde\" suffix", Severity.ERROR, this, Priority.NORMAL, XML_OUTPUT_FILE));
+			status.addError(this, XML_OUTPUT_FILE, "Output file path must point to a file with \".tde\" suffix");
 		}
 		
 		for (Node n : getGraph().getPhase(getPhaseNum()).getNodes().values()) {
 			if (n != this && getType().equals(n.getType())) {
 				//multiple writers in the same phase
-				status.add("\""	+ n.getName() + "\" writes in the same phase. Having multiple TableauWriters in the same phase is not allowed.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+				status.addError(this, null, "\"" + n.getName() + "\" writes in the same phase. Having multiple TableauWriters in the same phase is not allowed.");
 			}
 		}
 		
 		try {
 			TableauActionOnExistingFile.valueOf(actionOnExistingFileRaw);
 		} catch (Exception e) {
-			status.add(new ConfigurationProblem(
-					"Action on existing output file is not set properly!",
-					Severity.ERROR, this, Priority.NORMAL, XML_ACTION_ON_EXISTING_FILE));
+			status.addError(this, XML_ACTION_ON_EXISTING_FILE, "Action on existing output file is not set properly!");
 		}
 		
 		checkInputPorts(status, 1, 1);
@@ -562,17 +557,17 @@ public class TableauWriter extends Node  {
 				DataFieldMetadata fieldMeta = recordMeta.getField(i);
 				DataFieldType fieldType= fieldMeta.getDataType();
 				if (fieldType == DataFieldType.LONG || fieldType == DataFieldType.DECIMAL || fieldType == DataFieldType.BYTE || fieldType == DataFieldType.CBYTE) {
-					status.add("Input metadata of \"" + getName() + "\" contain data type unsupported by Tableau! Metadata field "
+					status.addError(this, null, "Input metadata of \"" + getName() + "\" contain data type unsupported by Tableau! Metadata field "
 							+ recordMeta.getField(i).getName() + " of metadata " + recordMeta.getName() + " has type " + fieldType.getName()
 							+ "! Unsupported types are: " + DataFieldType.LONG.getName() + ", "	+ DataFieldType.DECIMAL.getName()
-							+ ", " + DataFieldType.BYTE.getName() + ", " + DataFieldType.CBYTE.getName(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+							+ ", " + DataFieldType.BYTE.getName() + ", " + DataFieldType.CBYTE.getName());
 				}
 				if (fieldMeta.getContainerType() != DataFieldContainerType.SINGLE) {
-					status.add("Input metadata of \"" + getName() + "\" have container unsupported by Tableau! Metadata field "
+					status.addError(this, null, "Input metadata of \"" + getName() + "\" have container unsupported by Tableau! Metadata field "
 							+ recordMeta.getField(i).getName() + " of metadata " + recordMeta.getName() + " has container " 
 							+ fieldMeta.getContainerType().getDisplayName() +"! Container types " 
 							+ DataFieldContainerType.MAP.getDisplayName() + " and " + DataFieldContainerType.LIST.getDisplayName() 
-							+ " are not supported.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+							+ " are not supported.");
 				}
 			}
 		}

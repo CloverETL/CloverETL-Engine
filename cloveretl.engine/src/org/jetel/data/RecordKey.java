@@ -34,8 +34,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.jetel.enums.CollatorSensitivityType;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CloverPublicAPI;
@@ -581,8 +579,7 @@ public class RecordKey {
     	
     	//slave key is null
     	if (slaveKey == null) {
-    		problem = new ConfigurationProblem("Slave key does not exist.", Severity.ERROR, component, Priority.NORMAL, masterAttribute );
-    		status.add(problem);
+    		status.addError(component, masterAttribute, "Slave key does not exist.");
     		return status;
     	}
     	
@@ -593,8 +590,7 @@ public class RecordKey {
     		int slaveLength = slaveKey.keyFields != null ? slaveKey.keyFields.length :
     			slaveKey.keyFieldNames.length;
     		if (!(masterLength == slaveLength)) {
-    			problem = new ConfigurationProblem("Keys have different number of DataFields", Severity.ERROR, component, Priority.NORMAL, slaveAttribute);
-    			status.add(problem);
+    			status.addError(component, slaveAttribute, "Keys have different number of DataFields");
     		}
     	}
     	
@@ -614,12 +610,10 @@ public class RecordKey {
 							+ " ("	+ slaveKey.metadata.getDataFieldType(s).getName()	+ ")" 
 						: "null");
 			if (d == null || s == null) {
-				problem = new ConfigurationProblem(message, Severity.ERROR, component, Priority.NORMAL);
+				status.addError(component, slaveAttribute, message);
 			}else {
-				problem = new ConfigurationProblem(message, Severity.WARNING, component, Priority.NORMAL);
+				status.addWarning(component, slaveAttribute, message);
 			}
-			problem.setAttributeName(slaveAttribute);
-			status.add(problem);
 		}
    	
     	return status;

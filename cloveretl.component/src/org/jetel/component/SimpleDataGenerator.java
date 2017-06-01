@@ -23,13 +23,10 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.Result;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.DataRecordGenerator;
-import org.jetel.util.ExceptionUtils;
-import org.jetel.util.string.StringUtils;
 
 /**
  *  <h3>Data Generator Component</h3> <!-- Generates new records.  -->
@@ -197,11 +194,7 @@ public class SimpleDataGenerator extends DataGenerator {
         try {
             init();
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
+            status.addError(this, null, e);
         } finally {
         	free();
         }

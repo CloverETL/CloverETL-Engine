@@ -39,7 +39,6 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
@@ -50,7 +49,6 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.ReformatComponentTokenTracker;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.TargetFile;
@@ -473,11 +471,7 @@ public class XSLDataTransformer extends Node {
             try {
                 checkConfig();
             } catch (ComponentNotReadyException e) {
-                ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-                if(!StringUtils.isEmpty(e.getAttributeName())) {
-                    problem.setAttributeName(e.getAttributeName());
-                }
-                status.add(problem);
+                status.addError(this, null, e);
             } finally {
             	free();
             }

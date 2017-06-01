@@ -29,14 +29,10 @@ import java.util.regex.Pattern;
 import org.jetel.data.DataField;
 import org.jetel.data.DataFieldFactory;
 import org.jetel.data.Defaults;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.util.CloverPublicAPI;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.BooleanFormatter;
 import org.jetel.util.formatter.BooleanFormatterFactory;
@@ -1377,13 +1373,12 @@ public class DataFieldMetadata implements Serializable {
 	public void checkConfig(ConfigurationStatus status) {
 		//check data type
 		if (type == null) {
-			status.add(new ConfigurationProblem("Data type is not specified.", Severity.ERROR, null, Priority.NORMAL));
+			status.addError(getDataRecordMetadata(), null, "Data type is not specified.");
 		}
 		
 		//not nullable field cannot have a default value in set of null values - CLO-4569
 		if (!isNullable() && getNullValues().contains(getDefaultValueStr())) {
-			status.add(new ConfigurationProblem("Invalid metadata for field '" + name + "'. Default value of not nullable field can not be one of the null values.",
-					Severity.ERROR, null, Priority.NORMAL));
+			status.addError(getDataRecordMetadata(), null, "Invalid metadata for field '" + name + "'. Default value of not nullable field can not be one of the null values.");
 			return;
 		}
 		
@@ -1393,8 +1388,7 @@ public class DataFieldMetadata implements Serializable {
 			try {
 				dataField.setToDefaultValue();
 			} catch (RuntimeException e) {
-				status.add(new ConfigurationProblem("Wrong default value '" + getDefaultValueStr() + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "'.",
-						Severity.ERROR, null, Priority.NORMAL));
+				status.addError(getDataRecordMetadata(), null, "Wrong default value '" + getDefaultValueStr() + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "'.");
 			}
 		}
 		
@@ -1404,25 +1398,19 @@ public class DataFieldMetadata implements Serializable {
 			final String trueO = bf.formatBoolean(true);
 			try {
 				if (true != bf.parseBoolean(trueO)) {
-					status.add(new ConfigurationProblem("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - reverse check for true output string defined by the format '" + trueO + "' will return incorrect value.",
-							Severity.WARNING, null, Priority.NORMAL));
+					status.addWarning(getDataRecordMetadata(), null, "Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - reverse check for true output string defined by the format '" + trueO + "' will return incorrect value.");
 				}
 			} catch (ParseBooleanException e) {
-				status.add(new ConfigurationProblem(
-						ExceptionUtils.getMessage("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - reverse check for true output string defined by the format '" + trueO + "' will not be parsable.", e),
-						Severity.WARNING, null, Priority.NORMAL));
+				status.addWarning(getDataRecordMetadata(), null, "Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - reverse check for true output string defined by the format '" + trueO + "' will not be parsable.", e);
 			}
 
 			final String falseO = bf.formatBoolean(false);
 			try {
 				if (false != bf.parseBoolean(falseO)) {
-					status.add(new ConfigurationProblem("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - reverse check for true output string defined by the format '" + falseO + "' will return incorrect value.",
-							Severity.WARNING, null, Priority.NORMAL));
+					status.addWarning(getDataRecordMetadata(), null, "Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - reverse check for true output string defined by the format '" + falseO + "' will return incorrect value.");
 				}
 			} catch (ParseBooleanException e) {
-				status.add(new ConfigurationProblem(
-						ExceptionUtils.getMessage("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - reverse check for true output string defined by the format '" + falseO + "' will not be parsable.", e),
-						Severity.WARNING, null, Priority.NORMAL));
+				status.addWarning(getDataRecordMetadata(), null, "Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - reverse check for true output string defined by the format '" + falseO + "' will not be parsable.", e);
 			}
 		}
 	}

@@ -30,7 +30,6 @@ import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
@@ -39,9 +38,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -340,33 +337,25 @@ public class Aggregate extends Node {
         checkMetadata(status, null, getOutPorts());
         
         if (charset != null && !Charset.isSupported(charset)) {
-        	status.add(new ConfigurationProblem(
-            		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+        	status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported!");
         }
         
         if (newMapping == null && oldMapping == null) {
-        	status.add(new ConfigurationProblem("Mapping not specified", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_MAPPING_ATTRIBUTE));
+        	status.addError(this, XML_MAPPING_ATTRIBUTE, "Mapping not specified");
         	return status;
         }
         
         if (newMapping != null && oldMapping != null) {
-        	status.add(new ConfigurationProblem(
-        			"Both " + XML_MAPPING_ATTRIBUTE + " and " + XML_OLD_MAPPING_ATTRIBUTE + " attributes specified",
-        			ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+        	status.addError(this, null, "Both " + XML_MAPPING_ATTRIBUTE + " and " + XML_OLD_MAPPING_ATTRIBUTE + " attributes specified");
         	return status;
         }
 
         try {
             init();
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
+            status.addError(this, null, e);
         } finally {
-        	free();
+            free();
         }
         
         return status;
@@ -400,10 +389,4 @@ public class Aggregate extends Node {
 		this.charset = charset;
 	}
 
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-	}
-	
-	
 }

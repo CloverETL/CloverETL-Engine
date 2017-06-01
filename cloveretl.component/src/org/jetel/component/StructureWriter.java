@@ -37,10 +37,7 @@ import org.jetel.data.lookup.LookupTable;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -321,11 +318,11 @@ public class StructureWriter extends Node {
 		//this is just a copy of checkInputPorts() method without test of connected edges - second port can be in fact non-assigned
     	Collection<InputPort> inPorts = getInPorts();
         if(inPorts.size() < 1) {
-            status.add(new ConfigurationProblem("At least 1 input port must be defined!", Severity.ERROR, this, Priority.NORMAL));
+            status.addError(this, null, "At least 1 input port must be defined!");
             return status;
         }
         if(inPorts.size() > 3) {
-            status.add(new ConfigurationProblem("At most 3 input ports can be defined!", Severity.ERROR, this, Priority.NORMAL));
+            status.addError(this, null, "At most 3 input ports can be defined!");
             return status;
         }
         //////////////
@@ -335,31 +332,26 @@ public class StructureWriter extends Node {
 		}
 		
 		if (charset != null && !Charset.isSupported(charset)) {
-        	status.add(new ConfigurationProblem(
-            		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+        	status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported!");
         }
 		
 		if (fileURL == null) {
-			status.add("File URL attribute is missing.", Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE);
+			status.addError(this, XML_FILEURL_ATTRIBUTE, "File URL attribute is missing.");
 			return status;
 		}
 
         try {
         	FileUtils.canWrite(getContextURL(), fileURL, mkDir);
         } catch (ComponentNotReadyException e) {
-            status.add(e,ConfigurationStatus.Severity.ERROR,this,
-            		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
+            status.addError(this, XML_FILEURL_ATTRIBUTE, e);
         }
         
         try {
 			if (appendData && FileURLParser.isArchiveURL(fileURL) && FileURLParser.isServerURL(fileURL)) {
-			    status.add("Append true is not supported on remote archive files.", ConfigurationStatus.Severity.WARNING, this,
-			    		ConfigurationStatus.Priority.NORMAL, XML_APPEND_ATTRIBUTE);
+			    status.addWarning(this, XML_APPEND_ATTRIBUTE, "Append true is not supported on remote archive files.");
 			}
 		} catch (MalformedURLException e) {
-            status.add(e.toString(),ConfigurationStatus.Severity.ERROR,this,
-            		ConfigurationStatus.Priority.NORMAL,XML_APPEND_ATTRIBUTE);
+            status.addError(this, XML_APPEND_ATTRIBUTE, e);
 		}
 
         return status;

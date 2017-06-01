@@ -22,10 +22,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -189,12 +186,7 @@ public class Filter extends Node {
 	/**  Description of the Method */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        //TODO
-    	
-        status.add(new ConfigurationProblem(
-        		"Component is of type SORT, which is deprecated",
-        		Severity.WARNING, this, Priority.NORMAL));
-
+        status.addWarning(this, null, "Component is of type SORT, which is deprecated");
 
         return status;
     }

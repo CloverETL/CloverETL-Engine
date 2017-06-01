@@ -35,10 +35,7 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.MissingFieldException;
 import org.jetel.exception.TransformException;
@@ -467,7 +464,7 @@ public class CTLMapping {
 				transform = createTransform(xmlAttribute);
 			} catch (JetelRuntimeException e) {
 				// report CTL error as a warning
-				status.add(new ConfigurationProblem(e, Severity.WARNING, component, Priority.NORMAL, attributeName));
+				status.addWarning(component, attributeName, e);
 			} finally {
 				if (transform instanceof Freeable) {
 					((Freeable) transform).free();
