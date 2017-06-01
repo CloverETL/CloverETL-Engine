@@ -24,13 +24,21 @@ package org.jetel.graph.rest.jaxb;
  *
  * @created 25. 5. 2017
  */
-public interface ResponseStatusInterface {
+public abstract class ResponseStatus {
 
-	String getComponentId();
-	Integer getStatusCode();
-	String getReasonPhrase();
+	public String getComponentId() {
+		return null;
+	}
+	public Integer getStatusCode() {
+		return null;
+	}
+	public String getReasonPhrase() {
+		return null;
+	}
 	
-	void setReasonPhrase(String reasonPhrase);
-	void setStatusCode(Integer reasonPhrase);
+	public void setReasonPhrase(String reasonPhrase) {
+	}
+	public void setStatusCode(Integer reasonPhrase) {
+	}
 	
 }

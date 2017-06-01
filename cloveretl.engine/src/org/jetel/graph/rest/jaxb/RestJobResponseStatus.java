@@ -46,60 +46,60 @@ public class RestJobResponseStatus implements Cloneable, Serializable {
 
 	private static final long serialVersionUID = 56313319828721615L;
 
-	private RestJobSuccessStatus success;
-	private List<RestJobComponentErrorStatus> componentError;
-	private RestJobErrorStatus validationError;
-	private RestJobErrorStatus jobError;
+	private SuccessStatus success;
+	private List<ComponentErrorStatus> componentError;
+	private ErrorStatus validationError;
+	private ErrorStatus jobError;
 	
-	private static final RestJobErrorStatus GENERIC_ERROR = new RestJobErrorStatus(500, "Job failed", false);
+	private static final ErrorStatus GENERIC_ERROR = new ErrorStatus(500, "Job failed", false);
 	
-	private Map<String, RestJobComponentErrorStatus> errorsByComponentId;
+	private Map<String, ComponentErrorStatus> errorsByComponentId;
 	
 	public RestJobResponseStatus() {
 		super();
 	}
 
 	@XmlElement(name = "Success")
-	public RestJobSuccessStatus getSuccess() {
+	public SuccessStatus getSuccess() {
 		return success;
 	}
 
-	public void setSuccess(RestJobSuccessStatus success) {
+	public void setSuccess(SuccessStatus success) {
 		this.success = success;
 	}
 
 	@XmlElement(name = "ComponentError")
-	public List<RestJobComponentErrorStatus> getComponentErrors() {
+	public List<ComponentErrorStatus> getComponentErrors() {
 		if (componentError == null) {
 			componentError = new ArrayList<>();
 		}
 		return componentError;
 	}
 
-	public void setComponentError(List<RestJobComponentErrorStatus> componentError) {
+	public void setComponentError(List<ComponentErrorStatus> componentError) {
 		this.componentError = componentError;
 	}
 
 	@XmlElement(name = "ValidationError")
-	public RestJobErrorStatus getValidationError() {
+	public ErrorStatus getValidationError() {
 		return validationError;
 	}
 
-	public void setValidationError(RestJobErrorStatus validationError) {
+	public void setValidationError(ErrorStatus validationError) {
 		this.validationError = validationError;
 	}
 
 	@XmlElement(name = "JobError")
-	public RestJobErrorStatus getJobError() {
+	public ErrorStatus getJobError() {
 		return jobError;
 	}
 
-	public void setJobError(RestJobErrorStatus jobError) {
+	public void setJobError(ErrorStatus jobError) {
 		this.jobError = jobError;
 	}
 	
-	public ResponseStatusInterface getErrorMessage(Node node, Throwable throwable) {
-		ResponseStatusInterface responseStatus = null;
+	public ResponseStatus getErrorMessage(Node node, Throwable throwable) {
+		ResponseStatus responseStatus = null;
 		if ((success != null || componentError != null || validationError != null || jobError != null) && node != null) {
 			if (node.isPartOfRestInput()) {
 				responseStatus = validationError;
@@ -114,11 +114,11 @@ public class RestJobResponseStatus implements Cloneable, Serializable {
 		return responseStatus != null ? responseStatus : GENERIC_ERROR;
 	}
 	
-	private Map<String, RestJobComponentErrorStatus> getErrorsByComponentId() {
+	private Map<String, ComponentErrorStatus> getErrorsByComponentId() {
 		if (errorsByComponentId == null) {
 			errorsByComponentId = new HashMap<>();
 			if (componentError != null) {
-				for (RestJobComponentErrorStatus component : componentError) {
+				for (ComponentErrorStatus component : componentError) {
 					errorsByComponentId.put(component.getComponentId(), component);
 				}
 			}
@@ -134,7 +134,7 @@ public class RestJobResponseStatus implements Cloneable, Serializable {
 			} 
 			if (componentError != null) {
 				copy.componentError = new ArrayList<>(componentError.size());
-				for (RestJobComponentErrorStatus component : componentError) {
+				for (ComponentErrorStatus component : componentError) {
 					copy.componentError.add(component.createCopy());
 				}
 			}

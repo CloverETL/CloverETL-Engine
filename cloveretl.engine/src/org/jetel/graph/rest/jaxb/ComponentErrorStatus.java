@@ -35,7 +35,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "ComponentError")
 @XmlAccessorType(XmlAccessType.NONE)
-public class RestJobComponentErrorStatus implements Cloneable, Serializable, ResponseStatusInterface {
+public class ComponentErrorStatus extends ResponseStatus implements Cloneable, Serializable {
 
 	private static final long serialVersionUID = -1620260144974715802L;
 	
@@ -43,10 +43,10 @@ public class RestJobComponentErrorStatus implements Cloneable, Serializable, Res
 	private Integer statusCode;
 	private String reasonPhrase;
 	
-	public RestJobComponentErrorStatus() {
+	public ComponentErrorStatus() {
 	}
 	
-	public RestJobComponentErrorStatus(String componentId, int statusCode, String reasonPhrase) {
+	public ComponentErrorStatus(String componentId, int statusCode, String reasonPhrase) {
 		this.componentId = componentId;
 		this.statusCode = statusCode;
 		this.reasonPhrase = reasonPhrase;
@@ -84,9 +84,9 @@ public class RestJobComponentErrorStatus implements Cloneable, Serializable, Res
 		this.reasonPhrase = reasonPhrase;
 	}
 	
-	public RestJobComponentErrorStatus createCopy() {
+	public ComponentErrorStatus createCopy() {
 		try {
-			return (RestJobComponentErrorStatus)super.clone();
+			return (ComponentErrorStatus)super.clone();
 		} catch (CloneNotSupportedException e) {
 			throw new RuntimeException(e);
 		}
@@ -110,7 +110,7 @@ public class RestJobComponentErrorStatus implements Cloneable, Serializable, Res
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		RestJobComponentErrorStatus other = (RestJobComponentErrorStatus) obj;
+		ComponentErrorStatus other = (ComponentErrorStatus) obj;
 		if (componentId == null) {
 			if (other.componentId != null)
 				return false;

@@ -26,30 +26,26 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * ValidationError,JobError elements in RestJobResponsesStatus
+ * Success element in RestJobResponsesStatus
  * 
  * @author Roland (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 24. 5. 2017
  */
-@XmlRootElement(name = "Errors")
+@XmlRootElement(name = "Success")
 @XmlAccessorType(XmlAccessType.NONE)
-public class RestJobErrorStatus implements Cloneable, Serializable, ResponseStatusInterface {
+public class SuccessStatus extends ResponseStatus implements Cloneable, Serializable {
+	
+	private static final long serialVersionUID = 284571148509257128L;
 
-	private static final long serialVersionUID = -5536323975040035396L;
-	
 	private Integer statusCode;
-	private String reasonPhrase;
-	private boolean validationError;
 	
-	public RestJobErrorStatus() {
+	public SuccessStatus() {
 	}
 	
-	public RestJobErrorStatus(int statusCode, String reasonPhrase, boolean validationError) {
+	public SuccessStatus(int statusCode) {
 		this.statusCode = statusCode;
-		this.reasonPhrase = reasonPhrase;
-		this.validationError = validationError;
 	}
 	
 	@Override
@@ -64,32 +60,23 @@ public class RestJobErrorStatus implements Cloneable, Serializable, ResponseStat
 	}
 
 	@Override
-	@XmlElement(name = "ReasonPhrase")
+	public String getComponentId() {
+		return null;
+	}
+
+	@Override
 	public String getReasonPhrase() {
-		return reasonPhrase;
+		return null;
 	}
 	
 	@Override
 	public void setReasonPhrase(String reasonPhrase) {
-		this.reasonPhrase = reasonPhrase;
-	}
-
-	@Override
-	public String getComponentId() {
-		return null;
 	}
 	
-	public boolean isValidationError() {
-		return validationError;
-	}
-
-	public void setValidationError(boolean validationError) {
-		this.validationError = validationError;
-	}
 	
-	public RestJobErrorStatus createCopy() {
+	public SuccessStatus createCopy() {
 		try {
-			return (RestJobErrorStatus)super.clone();
+			return (SuccessStatus)super.clone();
 		} catch (CloneNotSupportedException e) {
 			throw new RuntimeException(e);
 		}
@@ -99,9 +86,7 @@ public class RestJobErrorStatus implements Cloneable, Serializable, ResponseStat
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((reasonPhrase == null) ? 0 : reasonPhrase.hashCode());
 		result = prime * result + ((statusCode == null) ? 0 : statusCode.hashCode());
-		result = prime * result + (validationError ? 1231 : 1237);
 		return result;
 	}
 
@@ -113,18 +98,11 @@ public class RestJobErrorStatus implements Cloneable, Serializable, ResponseStat
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		RestJobErrorStatus other = (RestJobErrorStatus) obj;
-		if (reasonPhrase == null) {
-			if (other.reasonPhrase != null)
-				return false;
-		} else if (!reasonPhrase.equals(other.reasonPhrase))
-			return false;
+		SuccessStatus other = (SuccessStatus) obj;
 		if (statusCode == null) {
 			if (other.statusCode != null)
 				return false;
 		} else if (!statusCode.equals(other.statusCode))
-			return false;
-		if (validationError != other.validationError)
 			return false;
 		return true;
 	}
