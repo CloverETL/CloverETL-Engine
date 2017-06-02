@@ -18,6 +18,7 @@
  */
 package org.jetel.graph.rest.jaxb;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -85,6 +86,14 @@ public class EndpointSettings {
 	
 	public void setRequestMethods(List<RequestMethod> requestMethods) {
 		this.requestMethods = requestMethods;
+	}
+
+	public List<String> getRequestMethodNames() {
+		List<String> result = new ArrayList<>();
+		for (RequestMethod method : getRequestMethods()) {
+			result.add(method.getName());
+		}
+		return result;
 	}
 	
 	@XmlElement(name = "RequestParameter")
