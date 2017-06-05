@@ -53,7 +53,7 @@ public class AutoFilling {
     	METADATA_SOURCE_ROW_COUNT, SOURCE_NAME, SOURCE_TIMESTAMP, SOURCE_SIZE, ROW_TIMESTAMP, READER_TIMESTAMP, ERROR_CODE, ERROR_MESSAGE, SHEET_NAME};
     
     // autofilling for metadata
-    private Map<DataRecordMetadata, AutoFillingData> autoFillingMap = new HashMap<DataRecordMetadata, AutoFillingData>();
+    private Map<String, AutoFillingData> autoFillingMap = new HashMap<>();
     private AutoFillingData autoFillingData;
 
     // variables for global functions
@@ -92,7 +92,7 @@ public class AutoFilling {
 	 */
     public void addAutoFillingFields(DataRecordMetadata metadata) {
     	// create and put new autofilling
-        autoFillingMap.put(metadata, autoFillingData = createAutoFillingFields(metadata));
+        autoFillingMap.put(metadata.getId(), autoFillingData = createAutoFillingFields(metadata));
     }
 
     /**
@@ -191,10 +191,10 @@ public class AutoFilling {
 	 * @param metadata
 	 */
 	private void getAutofillingData(DataRecordMetadata metadata) {
-        autoFillingData = autoFillingMap.get(metadata);
+        autoFillingData = autoFillingMap.get(metadata.getId());
         if (autoFillingData == null) {
         	autoFillingData = createAutoFillingFields(metadata);
-            autoFillingMap.put(metadata, autoFillingData);
+            autoFillingMap.put(metadata.getId(), autoFillingData);
         }
 	}
 	

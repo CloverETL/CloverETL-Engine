@@ -43,10 +43,7 @@ import org.jetel.data.formatter.FixLenDataFormatter;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
@@ -60,7 +57,6 @@ import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.util.CommandBuilder;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.PlatformUtils;
@@ -758,24 +754,19 @@ public class DB2DataWriter extends Node {
         }
         //--Check mandatory attributes
 		if (StringUtils.isEmpty(database)) {
-			status.add(new ConfigurationProblem(StringUtils.quote(XML_DATABASE_ATTRIBUTE) + " attribute have to be set.", Severity.ERROR,
-					this, Priority.HIGH, XML_DATABASE_ATTRIBUTE));
+			status.addError(this, XML_DATABASE_ATTRIBUTE, StringUtils.quote(XML_DATABASE_ATTRIBUTE) + " attribute have to be set.");
 		}
 		if (StringUtils.isEmpty(table)) {
-			status.add(new ConfigurationProblem(StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute have to be set.", Severity.ERROR,
-					this, Priority.HIGH, XML_TABLE_ATTRIBUTE));
+			status.addError(this, XML_TABLE_ATTRIBUTE, StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute have to be set.");
 		}
 		if (StringUtils.isEmpty(user)) {
-			status.add(new ConfigurationProblem(StringUtils.quote(XML_USERNAME_ATTRIBUTE) + " attribute have to be set.", Severity.ERROR,
-					this, Priority.HIGH, XML_USERNAME_ATTRIBUTE));
+			status.addError(this, XML_USERNAME_ATTRIBUTE, StringUtils.quote(XML_USERNAME_ATTRIBUTE) + " attribute have to be set.");
 		}
 		if (StringUtils.isEmpty(psw)) {
-			status.add(new ConfigurationProblem(StringUtils.quote(XML_PASSWORD_ATTRIBUTE) + " attribute have to be set.", Severity.ERROR,
-					this, Priority.HIGH, XML_PASSWORD_ATTRIBUTE));
+			status.addError(this, XML_PASSWORD_ATTRIBUTE, StringUtils.quote(XML_PASSWORD_ATTRIBUTE) + " attribute have to be set.");
 		}
 		if (loadMode == null) {
-			status.add(new ConfigurationProblem(StringUtils.quote(XML_MODE_ATTRIBUTE) + " attribute have to be set.", Severity.ERROR,
-					this, Priority.HIGH, XML_MODE_ATTRIBUTE));
+			status.addError(this, XML_MODE_ATTRIBUTE, StringUtils.quote(XML_MODE_ATTRIBUTE) + " attribute have to be set.");
 		}
 		// --- Check column delimiter 
         if (columnDelimiter == 0 && parameters != null){
@@ -795,27 +786,24 @@ public class DB2DataWriter extends Node {
 			}			
 		}
 		if (Character.isWhitespace(columnDelimiter)) {
-			status.add(new ConfigurationProblem(StringUtils.quote(String.valueOf(columnDelimiter)) + " is not allowed as column delimiter",
-					Severity.ERROR, this, Priority.NORMAL, XML_COLUMNDELIMITER_ATTRIBUTE));
+			status.addError(this, XML_COLUMNDELIMITER_ATTRIBUTE, StringUtils.quote(String.valueOf(columnDelimiter)) + " is not allowed as column delimiter");
 		}
 		
 		// Check data file
 		if (dataURL == null && getInPorts().isEmpty()) {
-			status.add(new ConfigurationProblem("There is neither input port nor data file URL specified.", Severity.ERROR, this,
-					Priority.NORMAL, XML_FILEURL_ATTRIBUTE));			
+			status.addError(this, XML_FILEURL_ATTRIBUTE, "There is neither input port nor data file URL specified.");			
 		} else if (dataURL != null){
 			try {
 				initDataFile();
 			} catch (ComponentNotReadyException e) {
-				status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE));
+				status.addError(this, XML_FILEURL_ATTRIBUTE, e);
 			}
 		}
 		
 		//---Data is read from port
 		if (!getInPorts().isEmpty()) {
 			if (usePipe && PlatformUtils.isWindowsPlatform()) {
-				status.add(new ConfigurationProblem("Pipe transfer not supported on Windows", Severity.WARNING, this,
-						Priority.NORMAL, XML_USEPIPE_ATTRIBUTE));
+				status.addWarning(this, XML_USEPIPE_ATTRIBUTE, "Pipe transfer not supported on Windows");
 			}
 			inMetadata = getInputPort(READ_FROM_PORT).getMetadata();
 		}
@@ -825,22 +813,19 @@ public class DB2DataWriter extends Node {
 			try {
 				fileMetadata = getGraph().getDataRecordMetadata(fileMetadataName, true);
 			} catch (Exception e) {
-				status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_FILEMETADATA_ATTRIBUTE));
+				status.addError(this, XML_FILEMETADATA_ATTRIBUTE, e);
 			}
 			if (fileMetadata == null) {
-				status.add(new ConfigurationProblem("File metadata ID is not valid", Severity.ERROR, this, Priority.NORMAL,
-						XML_FILEMETADATA_ATTRIBUTE));
+				status.addError(this, XML_FILEMETADATA_ATTRIBUTE, "File metadata ID is not valid");
 			} else {
 				if (fileMetadata.getParsingType() == DataRecordParsingType.MIXED) {
-					status.add(new ConfigurationProblem("Only fixlen or delimited metadata allowed", Severity.ERROR, this, Priority.HIGH,
-							XML_FILEMETADATA_ATTRIBUTE));
+					status.addError(this, XML_FILEMETADATA_ATTRIBUTE, "Only fixlen or delimited metadata allowed");
 				}
 			}
 		}
 		if (interpreter != null && !interpreter.contains("${}")) {
-			status.add(new ConfigurationProblem("Incorect form of " + XML_INTERPRETER_ATTRIBUTE + " attribute:" + interpreter +
-					"\nUse form:\"interpreter [parameters] ${} [parameters]\"", Severity.ERROR, this,
-					Priority.HIGH, XML_INTERPRETER_ATTRIBUTE));
+			status.addError(this, XML_INTERPRETER_ATTRIBUTE, "Incorect form of " + XML_INTERPRETER_ATTRIBUTE + " attribute:" + interpreter +
+					"\nUse form:\"interpreter [parameters] ${} [parameters]\"");
 		}
 		try {
 			if (batchURL != null) {
@@ -850,33 +835,32 @@ public class DB2DataWriter extends Node {
 				batchFile = getGraph().getAuthorityProxy().newTempFile("tmp", ".bat", -1);
 			}
 			if (!Files.isWritable(batchFile.toPath())) {
-				status.add(new ConfigurationProblem("Can not create batch file", Severity.ERROR, this, Priority.NORMAL, XML_BATCHURL_ATTRIBUTE));
+				status.addError(this, XML_BATCHURL_ATTRIBUTE, "Can not create batch file");
 			}
-		} catch (IOException e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_BATCHURL_ATTRIBUTE));
-		} catch (TempFileCreationException e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_BATCHURL_ATTRIBUTE));
+		} catch (Exception e) {
+			status.addError(this, XML_BATCHURL_ATTRIBUTE, e);
 		}
 		
 		// Check field mapping
 		if (cloverFields != null && dbFields != null) {
 			if (cloverFields.length != dbFields.length) {
 				String countNotSame = "Count of fields is not the same for clover and DB fields (" + cloverFields.length + " vs. " + dbFields.length + ")";
-				status.add(new ConfigurationProblem(countNotSame, Severity.ERROR, this, Priority.NORMAL, XML_CLOVERFIELDS_ATTRIBUTE));
-				status.add(new ConfigurationProblem(countNotSame, Severity.ERROR, this, Priority.NORMAL, XML_DBFIELDS_ATTRIBUTE));
+				status.addError(this, XML_CLOVERFIELDS_ATTRIBUTE, countNotSame);
+				status.addError(this, XML_DBFIELDS_ATTRIBUTE, countNotSame);
 			}
 
+			String attributeName = fieldMappingOverride ? XML_FIELDMAP_ATTRIBUTE : XML_DBFIELDS_ATTRIBUTE;
 			for (String cloverField : cloverFields) {
 				if (cloverField.isEmpty()) {
-					status.add(new ConfigurationProblem("Clover field cannot be empty", Severity.ERROR, this, Priority.NORMAL, fieldMappingOverride ? XML_FIELDMAP_ATTRIBUTE : XML_CLOVERFIELDS_ATTRIBUTE));
+					status.addError(this, attributeName, "Clover field cannot be empty");
 				} else if (inMetadata != null && inMetadata.getField(cloverField) == null) {
-					status.add(new ConfigurationProblem("Clover field \"" + cloverField + "\" is not present in input data", Severity.ERROR, this, Priority.NORMAL, fieldMappingOverride ? XML_FIELDMAP_ATTRIBUTE : XML_CLOVERFIELDS_ATTRIBUTE));
+					status.addError(this, attributeName, "Clover field \"" + cloverField + "\" is not present in input data");
 				}
 			}
 
 			for (String dbField : dbFields) {
 				if ("\"\"".equals(dbField)) {
-					status.add(new ConfigurationProblem("DB field cannot be empty" + (fieldMappingOverride ? ". Expected syntax is sequence of $CloverField:=DBField" : ""), Severity.ERROR, this, Priority.NORMAL, fieldMappingOverride ? XML_FIELDMAP_ATTRIBUTE : XML_DBFIELDS_ATTRIBUTE));
+					status.addError(this, attributeName, "DB field cannot be empty" + (fieldMappingOverride ? ". Expected syntax is sequence of $CloverField:=DBField" : ""));
 				}
 			}
 		}

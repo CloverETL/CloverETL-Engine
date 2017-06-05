@@ -49,10 +49,7 @@ public class LocalOperationHandlerTest extends OperationHandlerTestTemplate {
 	
 	protected File createTmpDir() {
 		try {
-			File tmpFile = File.createTempFile("CloverTemp", Long.toString(System.nanoTime()));
-			if (tmpFile.delete() && tmpFile.mkdir()) {
-				return tmpFile;
-			}
+			return Files.createTempDirectory("CloverTemp").toFile();
 		} catch (IOException ex) {}
 		return null;
 	}

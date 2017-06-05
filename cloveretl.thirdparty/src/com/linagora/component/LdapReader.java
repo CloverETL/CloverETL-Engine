@@ -32,17 +32,13 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.property.RefResFlag;
@@ -349,13 +345,13 @@ public class LdapReader extends Node {
         checkOutputPorts(status, 1, Integer.MAX_VALUE);
         
         if (ldapUrl == null) {
-        	status.add("LDAP URL not defined", Severity.ERROR, this, Priority.NORMAL, XML_LDAPURL_ATTRIBUTE);
+        	status.addError(this, XML_LDAPURL_ATTRIBUTE, "LDAP URL not defined");
         }
         if (base == null) {
-        	status.add("Base DN not defined", Severity.ERROR, this, Priority.NORMAL, XML_BASE_ATTRIBUTE);
+        	status.addError(this, XML_BASE_ATTRIBUTE, "Base DN not defined");
         }
         if (filter == null) {
-        	status.add("Filter not defined", Severity.ERROR, this, Priority.NORMAL, XML_FILTER_ATTRIBUTE);
+        	status.addError(this, XML_FILTER_ATTRIBUTE, "Filter not defined");
         }
         if (ldapUrl == null || base == null || filter == null) {
         	return status;
@@ -364,11 +360,7 @@ public class LdapReader extends Node {
         try {
             init();
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
+            status.addError(this, null, e);
         } finally {
         	free();
         }

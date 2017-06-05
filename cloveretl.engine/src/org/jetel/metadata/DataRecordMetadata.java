@@ -43,10 +43,7 @@ import org.jetel.data.GraphElementDescription;
 import org.jetel.data.RecordKey;
 import org.jetel.data.Token;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.IGraphElement;
@@ -1274,8 +1271,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		// verify count of fields
 		if (fields.size() == 0) {
-			status.add(new ConfigurationProblem("No field elements for '" + name + "' have been found!",
-					Severity.ERROR, this, Priority.NORMAL));
+			status.addError(this, null, "No field elements for '" + name + "' have been found!");
 		}
 		
 		// verify delimiters - field delimiters
@@ -1291,8 +1287,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		TransformationGraph parentGraph = getGraph();
 		if (parentGraph != null) {
 			if (parentGraph.getRuntimeJobType().isJobflow() && getNature() != DataRecordNature.TOKEN) {
-				status.add(new ConfigurationProblem("Invalid metadata '" + name + "'. Token metadata nature is required.",
-						Severity.ERROR, this, Priority.NORMAL));
+				status.addError(this, null, "Invalid metadata '" + name + "'. Token metadata nature is required.");
 			}
 		}
 		
@@ -1319,8 +1314,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 			
 			for (String keyFieldName : keyFieldNames) {
 				if (!fieldNames.contains(keyFieldName)) {
-					status.add(new ConfigurationProblem("Field with name '" + keyFieldName + "' that is listed in a record key " +
-							"does not exist", Severity.ERROR, this, Priority.NORMAL));
+					status.addError(this, null, "Field with name '" + keyFieldName + "' that is listed in a record key does not exist");
 				}
 			}
 		}
@@ -1337,8 +1331,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		for (DataFieldMetadata field: fields) {
 			sName = field.getName();
 			if (setName.contains(sName)) {
-				status.add(new ConfigurationProblem("Field name '" + field.getName() + "' in the record element '"
-						+ name + "' is defined more than once!", Severity.ERROR, this, Priority.NORMAL));
+				status.addError(this, null, "Field name '" + field.getName() + "' in the record element '"
+						+ name + "' is defined more than once!");
 			} else {
 				setName.add(sName);
 			}
@@ -1383,8 +1377,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 */
 	private void verifyFieldSize(DataFieldMetadata field, ConfigurationStatus status) {
 		if (field.getSize() <= 0) {
-			status.add(new ConfigurationProblem("Field size '" + field.getSize() + "' for the field '" + field.getName()
-					+ "' in the record element '" + name + "' has wrong number!", Severity.ERROR, this, Priority.NORMAL));
+			status.addError(this, null, "Field size '" + field.getSize() + "' for the field '" + field.getName()
+					+ "' in the record element '" + name + "' has wrong number!");
 		}
 	}
 	
@@ -1397,8 +1391,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		if (field.isEofAsDelimiter()) return;
 		String[] fieldDelimiters = field.getDelimiters();
 		if (fieldDelimiters == null || fieldDelimiters.length == 0) {
-			status.add(new ConfigurationProblem("Field delimiter for the field '" + field.getName() +
-					"' in the record element '" + name + "' not found!", Severity.ERROR, this, Priority.NORMAL));
+			status.addError(this, null, "Field delimiter for the field '" + field.getName() +
+					"' in the record element '" + name + "' not found!");
 		}
 	}
 

@@ -34,10 +34,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
@@ -46,7 +43,6 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
@@ -917,48 +913,41 @@ public class MysqlDataWriter extends BulkLoader {
         //---CheckParams
         
         if (StringUtils.isEmpty(loadUtilityPath)) {
-        	status.add(new ConfigurationProblem(StringUtils.quote(XML_MYSQL_PATH_ATTRIBUTE)	+ " attribute have to be set.",
-					Severity.ERROR, this, Priority.HIGH, XML_MYSQL_PATH_ATTRIBUTE));
+        	status.addError(this, XML_MYSQL_PATH_ATTRIBUTE, StringUtils.quote(XML_MYSQL_PATH_ATTRIBUTE)	+ " attribute have to be set.");
 		}
 
 		if (StringUtils.isEmpty(database)) {
-			status.add(new ConfigurationProblem(StringUtils.quote(XML_DATABASE_ATTRIBUTE) + " attribute have to be set.",
-					Severity.ERROR, this, Priority.HIGH, XML_DATABASE_ATTRIBUTE));
+			status.addError(this, XML_DATABASE_ATTRIBUTE, StringUtils.quote(XML_DATABASE_ATTRIBUTE) + " attribute have to be set.");
 		}
 		try {
 			if (!fileExists(commandURL)) {
 				if (StringUtils.isEmpty(table)) {
-					status.add(new ConfigurationProblem(StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute has to be specified or " +
-							StringUtils.quote(XML_COMMAND_URL_ATTRIBUTE) + " attribute has to be specified and file at the URL must exist.",
-							Severity.ERROR, this, Priority.NORMAL));				
+					status.addError(this, null, StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute has to be specified or " +
+							StringUtils.quote(XML_COMMAND_URL_ATTRIBUTE) + " attribute has to be specified and file at the URL must exist.");				
 				}
 				if (!isDataReadFromPort && !fileUrlExists(dataURL)) {
-					status.add(new ConfigurationProblem("Input port or " + StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute or " +
-							StringUtils.quote(XML_COMMAND_URL_ATTRIBUTE) + " attribute have to be specified and specified file must exist.",
-							Severity.ERROR, this, Priority.NORMAL));
+					status.addError(this, null, "Input port or " + StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute or " +
+							StringUtils.quote(XML_COMMAND_URL_ATTRIBUTE) + " attribute have to be specified and specified file must exist.");
 				}
 				// If commandURL points to a file that does not exist and dataURL is empty, the component won't run correctly
 				// because it doesn't know what data file is specified in the command script
 				if (commandURL != null && StringUtils.isEmpty(dataURL)) {
-					status.add(new ConfigurationProblem("The " + StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute "
-				            + "has to be set because the " + StringUtils.quote(XML_COMMAND_URL_ATTRIBUTE) + " attribute is set!",
-							Severity.ERROR, this, Priority.NORMAL, XML_FILE_URL_ATTRIBUTE));
+					status.addError(this, XML_FILE_URL_ATTRIBUTE, "The " + StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute "
+				            + "has to be set because the " + StringUtils.quote(XML_COMMAND_URL_ATTRIBUTE) + " attribute is set!");
 				}
 			}
 			
 		} catch (ComponentNotReadyException e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e),	Severity.ERROR, this, Priority.NORMAL));
+			status.addError(this, null, e);
 		}
 		if (ignoreRows != UNUSED_INT && ignoreRows < 0) {
-			status.add(new ConfigurationProblem(XML_IGNORE_ROWS_ATTRIBUTE + " mustn't be less than 0.",	Severity.ERROR,
-					this, Priority.NORMAL, XML_IGNORE_ROWS_ATTRIBUTE));
+			status.addError(this, XML_IGNORE_ROWS_ATTRIBUTE, XML_IGNORE_ROWS_ATTRIBUTE + " mustn't be less than 0.");
 		}
 		
 		// check combination
 		if (properties.containsKey(LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM) && !properties.containsKey(LOAD_FIELDS_ENCLOSED_BY_PARAM)) {
-			status.add(new ConfigurationProblem("Attribute " + StringUtils.quote(LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM)
-					+ " is ignored because it has to be used in combination with " + StringUtils.quote(LOAD_FIELDS_ENCLOSED_BY_PARAM) +
-					" attribute.",	Severity.WARNING, this, Priority.NORMAL, LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM));
+			status.addWarning(this, LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM, "Attribute " + StringUtils.quote(LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM)
+					+ " is ignored because it has to be used in combination with " + StringUtils.quote(LOAD_FIELDS_ENCLOSED_BY_PARAM) + " attribute.");
 		}
 
 		// if any output port is connected, MYSQL_SHOW_WARNINGS_SWITCH parameter must be used
@@ -967,27 +956,24 @@ public class MysqlDataWriter extends BulkLoader {
 		if (isDataWrittenToPort) {
 			if (properties.containsKey(MYSQL_SHOW_WARNINGS_PARAM) &&
 					"false".equalsIgnoreCase(properties.getProperty(MYSQL_SHOW_WARNINGS_PARAM))) {
-				status.add(new ConfigurationProblem("If any output port is connected, " + StringUtils.quote(MYSQL_SHOW_WARNINGS_PARAM) + 
-						" parameter mustn't equals false.",	Severity.WARNING, this, Priority.NORMAL, MYSQL_SHOW_WARNINGS_PARAM));
+				status.addWarning(this, MYSQL_SHOW_WARNINGS_PARAM, "If any output port is connected, " + StringUtils.quote(MYSQL_SHOW_WARNINGS_PARAM) + 
+						" parameter mustn't equals false.");
 			}
 		}
 
 		// report on ignoring some attributes
 		if (isDataReadFromPort) {
 			if (properties.containsKey(LOAD_FIELDS_ENCLOSED_BY_PARAM)) {
-				status.add(new ConfigurationProblem("Attribute " + StringUtils.quote(LOAD_FIELDS_ENCLOSED_BY_PARAM)
-						+ " is ignored because it is used only when data is read directly from file.",	Severity.WARNING,
-						this, Priority.NORMAL, LOAD_FIELDS_ENCLOSED_BY_PARAM));
+				status.addWarning(this, LOAD_FIELDS_ENCLOSED_BY_PARAM, "Attribute " + StringUtils.quote(LOAD_FIELDS_ENCLOSED_BY_PARAM)
+						+ " is ignored because it is used only when data is read directly from file.");
 			}
 			if (properties.containsKey(LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM)) {
-				status.add(new ConfigurationProblem("Attribute " + StringUtils.quote(LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM)
-						+ " is ignored because it is used only when data is read directly from file.",	Severity.WARNING,
-						this, Priority.NORMAL, LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM));
+				status.addWarning(this, LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM, "Attribute " + StringUtils.quote(LOAD_FIELDS_IS_OPTIONALLY_ENCLOSED_PARAM)
+						+ " is ignored because it is used only when data is read directly from file.");
 			}
 			if (properties.containsKey(LOAD_FIELDS_ESCAPED_BY_PARAM)) {
-				status.add(new ConfigurationProblem("Attribute " + StringUtils.quote(LOAD_FIELDS_ESCAPED_BY_PARAM)
-						+ " is ignored because it is used only when data is read directly from file.",	Severity.WARNING,
-						this, Priority.NORMAL, LOAD_FIELDS_ESCAPED_BY_PARAM));
+				status.addWarning(this, LOAD_FIELDS_ESCAPED_BY_PARAM, "Attribute " + StringUtils.quote(LOAD_FIELDS_ESCAPED_BY_PARAM)
+						+ " is ignored because it is used only when data is read directly from file.");
 			}
 		}
 		
@@ -996,7 +982,7 @@ public class MysqlDataWriter extends BulkLoader {
 			initDataFile();
 			createCommandFile();
 		} catch (ComponentNotReadyException e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e),	Severity.ERROR, this, Priority.NORMAL));
+			status.addError(this, null, e);
 		}
 		deleteTempFiles();
 		return status;

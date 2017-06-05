@@ -2,6 +2,41 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-6-0
+------------
+
+* Misc
+	* CLO-10896	Designer-Server connection diagnostic logging - server side
+	* CLO-10759	Imported custom archivators configured to archive just a selected sandbox don't preserve the sandbox value
+	* CLO-10648	Data inspector view should indicate incomplete data record set
+	* CLO-10505	Add to documentation of installation on WebSphere that the profile name must not contain word "clover"
+* Fixes
+	* CLO-10943	XMLExtract: Incorrect output
+	* CLO-10991	Cluster nodes are too sensitive to load
+	* CLO-10824	ClassCastException when working with Secure parameters
+	* CLO-10815	MSSQLDataWriter does not report actual error message of bcp tool
+	* CLO-10587	Exported JoinKey component parameter behaves inconsistently
+	* CLO-9855	Documentation: Delete instructions on configuration in WEB-INF
+	* CLO-10949	Using a wildcard in XMLExtract in Subgraph throws error
+	* CLO-10680	Can't import xsd file into wsdl file using relative path on WebLogic
+* Compatibility
+	* CLO-10930	FlatFileReader fails silently on parsing errors
+
+
+REL-4-6-0-M2
+------------
+
+* Misc
+	* CLO-10797	Component editor cleanup
+	* CLO-10695	Hint for pasting the license text
+	* CLO-10398	SalesforceBulkReader - ability to read deleted records
+	* CLO-7735	Filter editor shows dictionary in Expression list
+* Fixes
+	* CLO-10745	ListFiles component throws NPE for root directory of ftp
+	* CLO-10646	WLS proxy plug-in for apache causes "HttpException: Expected HTTP code 200, got 405: Method Not Allowed"
+	* CLO-10048	EmailFilter does not accept empty string even if 'AcceptEmpty' is true
+
+
 REL-4-6-0-M1
 ------------
 
@@ -32,6 +67,15 @@ REL-4-6-0-M1
 	* CLO-9991	Salesforce SOQL content assist should be uppercase
 * Compatibility
 	* CLO-10096	Update Java bundled with Designer to JDK 8u121
+
+
+REL-4-5-1
+---------
+* CLO-10614	Support secure JNDI on Apache Tomcat 8
+* CLO-10775	Option to disable update reference cache
+* CLO-10777	Designer-Server connection diagnostic logging
+* CLO-10780	Cluster heartbeat performed from own thread
+* CLO-10808	Store cluster node status logging into separate file
 
 
 REL-4-5-0

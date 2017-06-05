@@ -42,10 +42,7 @@ import org.jetel.data.parser.Parser;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
@@ -54,7 +51,6 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
@@ -652,58 +648,50 @@ public class InformixDataWriter extends BulkLoader {
 		
 		//--Checkparams
 		if (StringUtils.isEmpty(loadUtilityPath)) {
-			status.add(new ConfigurationProblem(StringUtils.quote(XML_DB_LOADER_PATH_ATTRIBUTE)	+ " attribute have to be set.",
-					Severity.ERROR, this, Priority.HIGH, XML_DB_LOADER_PATH_ATTRIBUTE));
+			status.addError(this, XML_DB_LOADER_PATH_ATTRIBUTE, StringUtils.quote(XML_DB_LOADER_PATH_ATTRIBUTE)	+ " attribute have to be set.");
 		}
 		if (StringUtils.isEmpty(database)) {
-			status.add(new ConfigurationProblem(StringUtils.quote(XML_DATABASE_ATTRIBUTE) + " attribute have to be set.",
-					Severity.ERROR, this, Priority.HIGH, XML_DATABASE_ATTRIBUTE));
+			status.addError(this, XML_DATABASE_ATTRIBUTE, StringUtils.quote(XML_DATABASE_ATTRIBUTE) + " attribute have to be set.");
 		}		
     	if (columnDelimiter != null && columnDelimiter.length() != 1) {
-    		status.add(new ConfigurationProblem("Max. length of column delimiter is one.", Severity.ERROR, this, 
-    				Priority.NORMAL, XML_COLUMN_DELIMITER_ATTRIBUTE));
+    		status.addError(this, XML_COLUMN_DELIMITER_ATTRIBUTE, "Max. length of column delimiter is one.");
 		}
     	if (maxErrors != UNUSED_INT && maxErrors < 0) {
-    		status.add(new ConfigurationProblem(XML_MAX_ERRORS_ATTRIBUTE + " mustn't be less than 0.", Severity.ERROR, this, 
-    				Priority.NORMAL, XML_MAX_ERRORS_ATTRIBUTE));
+    		status.addError(this, XML_MAX_ERRORS_ATTRIBUTE, XML_MAX_ERRORS_ATTRIBUTE + " mustn't be less than 0.");
     	}
     	if (ignoreRows != UNUSED_INT && ignoreRows < 0) {
-    		status.add(new ConfigurationProblem(XML_IGNORE_ROWS_ATTRIBUTE + " mustn't be less than 0.", Severity.ERROR, this, 
-    				Priority.NORMAL, XML_IGNORE_ROWS_ATTRIBUTE));
+    		status.addError(this, XML_IGNORE_ROWS_ATTRIBUTE, XML_IGNORE_ROWS_ATTRIBUTE + " mustn't be less than 0.");
     	}
 		if (commitInterval != UNUSED_INT && commitInterval < 0) {
-			status.add(new ConfigurationProblem(XML_COMMIT_INTERVAL_ATTRIBUTE + " mustn't be less than 0.", Severity.ERROR, this, 
-    				Priority.NORMAL, XML_COMMIT_INTERVAL_ATTRIBUTE));
+			status.addError(this, XML_COMMIT_INTERVAL_ATTRIBUTE, XML_COMMIT_INTERVAL_ATTRIBUTE + " mustn't be less than 0.");
 		}
 		
 		// check if each of mandatory attributes is set
 		try {
 			if (!isDataReadFromPort && !fileExists(dataURL) && StringUtils.isEmpty(command)) {
-				status.add(new ConfigurationProblem("Input port or " + StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute or " +
-						StringUtils.quote(XML_COMMAND_ATTRIBUTE) + " attribute have to be specified and specified file must exist.",
-						Severity.ERROR, this, Priority.NORMAL));
+				status.addError(this, null, "Input port or " + StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute or " +
+						StringUtils.quote(XML_COMMAND_ATTRIBUTE) + " attribute have to be specified and specified file must exist.");
 			}
 		} catch (ComponentNotReadyException e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL));
+			status.addError(this, null, e);
 		}
 		if (StringUtils.isEmpty(command) && StringUtils.isEmpty(table)) {
-			status.add(new ConfigurationProblem(StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute has to be specified or " +
-					StringUtils.quote(XML_COMMAND_ATTRIBUTE) + " attribute has to be specified.", Severity.ERROR, this, Priority.NORMAL, XML_TABLE_ATTRIBUTE));
+			status.addError(this, XML_TABLE_ATTRIBUTE, StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute has to be specified or " +
+					StringUtils.quote(XML_COMMAND_ATTRIBUTE) + " attribute has to be specified.");
 		}
 		
 		if (!isDataReadFromPort) {
 			if (StringUtils.isEmpty(dataURL)) {
-				status.add(new ConfigurationProblem("There is neither input port nor " + StringUtils.quote(XML_FILE_URL_ATTRIBUTE) +
-						" attribute specified.", Severity.ERROR, this, Priority.NORMAL));
-        	} else
+				status.addError(this, null, "There is neither input port nor " + StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute specified.");
+			} else {
 				try {
 					if (!fileExists(dataURL)) {
-						status.add(new ConfigurationProblem("Data file " + StringUtils.quote(dataURL) + " not exists.",
-								Severity.ERROR,	this, Priority.NORMAL, XML_FILE_URL_ATTRIBUTE));
+						status.addError(this, XML_FILE_URL_ATTRIBUTE, "Data file " + StringUtils.quote(dataURL) + " not exists.");
 					}
 				} catch (ComponentNotReadyException e) {
-					status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_FILE_URL_ATTRIBUTE));
+					status.addError(this, XML_FILE_URL_ATTRIBUTE, e);
 				}
+			}
 		}
 		
 		// report on ignoring some attributes
@@ -739,8 +727,8 @@ public class InformixDataWriter extends BulkLoader {
 				fields.append(", ");
 			}
 			fields.replace(fields.length() - 2, fields.length(), ")");
-			status.add(new ConfigurationProblem("Attributes " + fields + " are ignored. " +	"They are used only when '" +
-					(useLoadUtility ? "dbload" : "load") + "' utility is used.", Severity.WARNING, this, Priority.NORMAL));
+			status.addWarning(this, null, "Attributes " + fields + " are ignored. " +	"They are used only when '" +
+					(useLoadUtility ? "dbload" : "load") + "' utility is used.");
 		}
 		//--CheckParams end
 		
@@ -757,7 +745,7 @@ public class InformixDataWriter extends BulkLoader {
 				getFilePath(errorLog);
 			}
 		} catch (ComponentNotReadyException e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e),	Severity.ERROR, this, Priority.NORMAL));
+			status.addError(this, null, e);
 		}        
         return status;
     }

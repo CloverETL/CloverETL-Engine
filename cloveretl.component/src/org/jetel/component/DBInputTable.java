@@ -38,10 +38,7 @@ import org.jetel.database.sql.JdbcSpecific.OperationType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
@@ -491,7 +488,7 @@ public class DBInputTable extends Node {
         }
         
 		if (!PolicyType.isPolicyType(policyTypeStr)) {
-			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+			status.addError(this, XML_DATAPOLICY_ATTRIBUTE, "Invalid data policy: " + policyTypeStr);
 		} else {
 			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
 		}
@@ -499,10 +496,10 @@ public class DBInputTable extends Node {
         checkMetadata(status, null, getOutPorts());
         
         if (sqlQuery == null && url == null) {
-        	status.add("SQL query not defined.", Severity.ERROR, this, Priority.NORMAL);
+        	status.addError(this, null, "SQL query not defined.");
         }
         if (dbConnectionName == null) {
-        	status.add("DB connection not defined.", Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+        	status.addError(this, XML_DBCONNECTION_ATTRIBUTE, "DB connection not defined.");
         	return status;
         }
         
@@ -528,33 +525,24 @@ public class DBInputTable extends Node {
 					// Throwing and exception halts the entire graph which might not be correct as inc file
 					// can be created at graph runtime. Instead just log it
 					// issue #2127
-		            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e1), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
-		            problem.setAttributeName(XML_INCREMENTAL_FILE_ATTRIBUTE);
-		            status.add(problem);
+		            status.addWarning(this, XML_INCREMENTAL_FILE_ATTRIBUTE, e1);
 				} catch (ComponentNotReadyException e2) {
 					// -pnajvar
 					// Throwing and exception halts the entire graph which might not be correct as inc file
 					// can be created at graph runtime. Instead just log it
 					// issue #2127
-		            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e2), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
-		            if(!StringUtils.isEmpty(e2.getAttributeName())) {
-		                problem.setAttributeName(e2.getAttributeName());
-		            }
-		            status.add(problem);
+					status.addWarning(this, null, e2);
 				}
 				
 				if (sqlQuery != null && incrementalKeyDef != null && !sqlQuery.contains(SQLIncremental.INCREMENTAL_KEY_INDICATOR)) {
-					status.add(new ConfigurationProblem("Incremental file and key is specified but sql query doesn't contain incremental key indicator ("
-							+SQLIncremental.INCREMENTAL_KEY_INDICATOR+"). The component will erase incremental key from the incremental file.",
-							Severity.WARNING, this, Priority.NORMAL, XML_SQLQUERY_ATTRIBUTE));
+					status.addWarning(this, XML_SQLQUERY_ATTRIBUTE,
+							"Incremental file and key is specified but sql query doesn't contain incremental key indicator ("
+									+ SQLIncremental.INCREMENTAL_KEY_INDICATOR +
+									"). The component will erase incremental key from the incremental file.");
 				}
 			}
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
+            status.addError(this, null, e);
         } 
         
         return status;
