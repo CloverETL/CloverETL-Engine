@@ -105,12 +105,13 @@ public class RestJobResponseStatus implements Cloneable, Serializable {
 				responseStatus = validationError;
 			} else {
 				responseStatus = getErrorsByComponentId().get(node.getId());
-				
-				if (responseStatus == null) {
-					responseStatus = jobError;
-				}
 			}
 		}
+		
+		if (responseStatus == null) {
+			responseStatus = jobError;
+		}
+		
 		return responseStatus != null ? responseStatus : GENERIC_ERROR;
 	}
 	
