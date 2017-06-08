@@ -283,6 +283,7 @@ public final class SandboxUrlUtils {
 		String sandboxName = SandboxUrlUtils.getSandboxName(url);
 		sandboxName = sandboxName.replace(" ", "%20");
 		String relativePath = SandboxUrlUtils.getRelativeUrl(url.toString());
+		relativePath = relativePath.replace(" ", "%20");
 		try {
 			urlString = SandboxUrlUtils.getSandboxUrl(sandboxName, relativePath).toString();
 		} catch (MalformedURLException e) {
