@@ -174,7 +174,9 @@ public class TransformationGraphAnalyzer {
 					input.addAll(incoming);
 				} else if (node.isPartOfRestOutput()) {
 					List<Node> outgoing = findFollowingNodesRecursive(node, null);
-					output.add(node);
+					if (!"RESTJOB_OUTPUT".equals(node.getType())) {
+						output.add(node);
+					}
 					output.addAll(outgoing);
 				}
 			}

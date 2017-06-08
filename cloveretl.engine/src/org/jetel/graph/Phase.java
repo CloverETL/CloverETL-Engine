@@ -447,7 +447,7 @@ public class Phase extends GraphElement implements Comparable<Phase> {
     public void deleteEdge(Edge edge) {
     	Edge removedEdge = edges.remove(edge.getId());
     	
-    	if(removedEdge != null) {
+    	if (removedEdge != null) {
     		removedEdge.setGraph(null);
     	}
     }
