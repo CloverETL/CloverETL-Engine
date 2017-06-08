@@ -22,10 +22,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPortDirect;
@@ -39,7 +36,6 @@ import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CTLMapping;
 import org.jetel.util.CTLMapping.MissingRecordFieldMessage;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.TimeIntervalUtils;
@@ -218,17 +214,13 @@ public class SpeedLimiter extends Node {
 		}
 
 		if (delay == -1 && StringUtils.isEmpty(inputMappingCode)) {
-			status.add(new ConfigurationProblem("Delay is not specified.", Severity.ERROR, this, Priority.NORMAL, XML_DELAY_ATTRIBUTE));
+			status.addError(this, XML_DELAY_ATTRIBUTE, "Delay is not specified.");
 		}
 		
 		try {
 			tryToInit(null);
 		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-			if(!StringUtils.isEmpty(e.getAttributeName())) {
-				problem.setAttributeName(e.getAttributeName());
-			}
-			status.add(problem);
+			status.addError(this, null, e);
 		} finally {
 			free();
 		}

@@ -29,8 +29,8 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.jetel.database.sql.DBConnection;
-import org.jetel.database.sql.SqlConnection;
 import org.jetel.database.sql.JdbcSpecific.OperationType;
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.GraphElement;
@@ -157,10 +157,8 @@ public abstract class AbstractDBConnection extends GraphElement implements DBCon
         Connection connection;
 		try {
 			connection = connect(OperationType.UNKNOWN);
-		} catch (JetelException e) {
-			throw new SQLException(e.getMessage());
-		} catch (JetelRuntimeException e) {
-			throw new SQLException(e.getMessage());
+		} catch (JetelException | JetelRuntimeException e) {
+			throw new SQLException(e);
 		}
         
         try {

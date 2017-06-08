@@ -44,10 +44,7 @@ import org.jetel.data.parser.Parser;
 import org.jetel.data.parser.TextParserFactory;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
@@ -657,13 +654,11 @@ public class SystemExecute extends Node{
 		}
 		
         if (charset != null && !Charset.isSupported(charset)) {
-        	status.add(new ConfigurationProblem(
-            		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+        	status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported!");
         }
         
         if (command == null) {
-			status.add("Command must be defined.", Severity.ERROR, this, Priority.NORMAL, XML_COMMAND_ATTRIBUTE);
+			status.addError(this, XML_COMMAND_ATTRIBUTE, "Command must be defined.");
 			return status;
 		}
         	try {
@@ -672,16 +667,12 @@ public class SystemExecute extends Node{
 						createBatch(command);
 						deleteBatch();
 					}else{
-			            ConfigurationProblem problem = new ConfigurationProblem(
-			            		"Incorect form of " + XML_INTERPRETER_ATTRIBUTE + " attribute:" + interpreter + "\nUse form:\"interpreter [parameters] ${} [parameters]\"", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-			            problem.setAttributeName(XML_INTERPRETER_ATTRIBUTE);
-			            status.add(problem);
+			            status.addError(this, XML_INTERPRETER_ATTRIBUTE,
+			            		"Incorect form of " + XML_INTERPRETER_ATTRIBUTE + " attribute:" + interpreter + "\nUse form:\"interpreter [parameters] ${} [parameters]\"");
 					}
 				}
 			} catch (IOException e) {
-	            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-	            problem.setAttributeName(XML_COMMAND_ATTRIBUTE);
-	            status.add(problem);
+	            status.addError(this, XML_COMMAND_ATTRIBUTE, e);
 	        }
         
         return status;

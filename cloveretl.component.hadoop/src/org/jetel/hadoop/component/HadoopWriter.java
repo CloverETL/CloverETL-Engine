@@ -30,21 +30,16 @@ import org.jetel.database.IConnection;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.hadoop.connection.HadoopConnection;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
-import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -184,13 +179,13 @@ public class HadoopWriter extends Node {
 		/* can't easily check writability - would need also Hadoop connection */
 		
 		if (fileURL == null) {
-			status.add("File URL not defined.", Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE);
+			status.addError(this, XML_FILEURL_ATTRIBUTE, "File URL not defined.");
 		}
 		if (keyField == null) {
-			status.add("Key field not defined.", Severity.ERROR, this, Priority.NORMAL, XML_KEY_FIELD_NAME_ATTRIBUTE);
+			status.addError(this, XML_KEY_FIELD_NAME_ATTRIBUTE, "Key field not defined.");
 		}
 		if (valueField == null) {
-			status.add("Value field not defined.", Severity.ERROR, this, Priority.NORMAL, XML_VALUE_FIELD_NAME_ATTRIBUTE);
+			status.addError(this, XML_VALUE_FIELD_NAME_ATTRIBUTE, "Value field not defined.");
 		}
 
 		try {
@@ -198,12 +193,7 @@ public class HadoopWriter extends Node {
 			prepareConnection();
 			HadoopReader.checkConnectionIDs(connectionId, connection, this, status);			
 		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e),
-					ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
-			if (!StringUtils.isEmpty(e.getAttributeName())) {
-				problem.setAttributeName(e.getAttributeName());
-			}
-			status.add(problem);
+			status.addWarning(this, null, e);
 		} finally {
 			free();
 		}

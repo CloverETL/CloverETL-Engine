@@ -41,10 +41,7 @@ import org.jetel.data.parser.CloverDataParser35;
 import org.jetel.data.parser.ICloverDataParser;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
@@ -59,7 +56,6 @@ import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileListener;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
@@ -285,7 +281,7 @@ public class CloverDataReader extends Node implements MultiFileListener, Metadat
         checkMetadata(status, null, getOutPorts());
         
         if (fileURL == null) {
-        	status.add("File URL not defined.", Severity.ERROR, this, Priority.NORMAL, XML_FILE_ATTRIBUTE);
+        	status.addError(this, XML_FILE_ATTRIBUTE, "File URL not defined.");
         	return status;
         }
         
@@ -295,7 +291,7 @@ public class CloverDataReader extends Node implements MultiFileListener, Metadat
     		prepareMultiFileReader();
     		reader.checkConfig(getOutputPort(OUTPUT_PORT).getMetadata());
     	} catch (Exception e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
+			status.addWarning(this, null, e);
         }
         return status;
     }

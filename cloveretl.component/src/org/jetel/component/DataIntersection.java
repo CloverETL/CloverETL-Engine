@@ -38,10 +38,7 @@ import org.jetel.data.reader.SlaveReader;
 import org.jetel.data.reader.SlaveReaderDup;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -717,9 +714,7 @@ public class DataIntersection extends Node implements MetadataProvider {
         }
         
         if (charset != null && !Charset.isSupported(charset)) {
-        	status.add(new ConfigurationProblem(
-            		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+        	status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported!");
         }
         
         DataRecordMetadata driverMetadata = getInputPort(DRIVER_ON_PORT).getMetadata();
@@ -731,7 +726,7 @@ public class DataIntersection extends Node implements MetadataProvider {
 		//join key checking
 		if (joinKeys == null) {
 			if (StringUtils.isEmpty(joinKey)) {
-				status.add("Missing required join key attribute.", Severity.ERROR, this, Priority.NORMAL, XML_JOINKEY_ATTRIBUTE);
+				status.addError(this, XML_JOINKEY_ATTRIBUTE, "Missing required join key attribute.");
 			}
 			try {
 				String[][][] tmp = JoinKeyUtils.parseHashJoinKey(joinKey, getInMetadata());
@@ -740,7 +735,7 @@ public class DataIntersection extends Node implements MetadataProvider {
 					slaveOverrideKeys = tmp[B_INDEX][0];
 				}
 			} catch (ComponentNotReadyException e) {
-				status.add(e, Severity.WARNING, this, Priority.NORMAL, XML_JOINKEY_ATTRIBUTE);
+				status.addWarning(this, XML_JOINKEY_ATTRIBUTE, e);
 				return status;
 			}
 		}
@@ -754,7 +749,7 @@ public class DataIntersection extends Node implements MetadataProvider {
         	try {
 				ErrorAction.checkActions(errorActionsString);
 			} catch (ComponentNotReadyException e) {
-				status.add(new ConfigurationProblem(e, Severity.ERROR, this, Priority.NORMAL, XML_ERROR_ACTIONS_ATTRIBUTE));
+				status.addError(this, XML_ERROR_ACTIONS_ATTRIBUTE, e);
 			}
         }
         
@@ -762,7 +757,7 @@ public class DataIntersection extends Node implements MetadataProvider {
         	try {
 				FileUtils.canWrite(getGraph().getRuntimeContext().getContextURL(), errorLogURL);
 			} catch (ComponentNotReadyException e) {
-				status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, XML_ERROR_LOG_ATTRIBUTE));
+				status.addWarning(this, XML_ERROR_LOG_ATTRIBUTE, e);
 			}
         }
 

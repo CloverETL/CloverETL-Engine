@@ -40,7 +40,6 @@ import org.jetel.data.RingRecordBuffer;
 import org.jetel.enums.OrderEnum;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
@@ -50,7 +49,6 @@ import org.jetel.graph.OutputPortDirect;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -754,11 +752,7 @@ public class Dedup extends Node {
          try {
              init();
          } catch (ComponentNotReadyException e) {
-             ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-             if(!StringUtils.isEmpty(e.getAttributeName())) {
-                 problem.setAttributeName(e.getAttributeName());
-             }
-             status.add(problem);
+             status.addError(this, null, e);
          } finally {
          	free();
          }

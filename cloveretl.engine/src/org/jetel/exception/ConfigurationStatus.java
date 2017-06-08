@@ -18,12 +18,17 @@
  */
 package org.jetel.exception;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.graph.GraphElement;
+import org.jetel.graph.IGraphElement;
 import org.jetel.util.CloverPublicAPI;
+import org.jetel.util.string.StringUtils;
 
 /**
  * This class is return value of all checkConfig() methods in the engine.
@@ -34,10 +39,8 @@ import org.jetel.util.CloverPublicAPI;
  * @created 24.11.2006
  */
 @CloverPublicAPI
-public class ConfigurationStatus extends LinkedList<ConfigurationProblem> {
+public class ConfigurationStatus implements Iterable<ConfigurationProblem> {
 
-	private static final long serialVersionUID = -8680194056314131978L;
-	
 	private static Log logger = LogFactory.getLog(ConfigurationStatus.class);
 
     public enum Severity {
@@ -48,30 +51,102 @@ public class ConfigurationStatus extends LinkedList<ConfigurationProblem> {
         HIGH, NORMAL, LOW
     };
 
-    public void log() {
-        for(ConfigurationProblem problem : this) {
-            problem.log(logger);
-        }
+    private LinkedList<ConfigurationProblem> configurationProblems = new LinkedList<>();
+
+    public ConfigurationProblem addError(IGraphElement graphElement, String attributeName, String message) {
+    	return addError(graphElement, attributeName, message, null);
     }
     
+    public ConfigurationProblem addError(IGraphElement graphElement, String attributeName, Throwable cause) {
+    	return addError(graphElement, attributeName, null, cause);
+    }
+    
+    public ConfigurationProblem addError(IGraphElement graphElement, String attributeName, String message, Throwable cause) {
+    	return addProblem(graphElement, attributeName, Severity.ERROR, message, cause);
+    }
+
+    public ConfigurationProblem addWarning(IGraphElement graphElement, String attributeName, String message) {
+    	return addWarning(graphElement, attributeName, message, null);
+    }
+    
+    public ConfigurationProblem addWarning(IGraphElement graphElement, String attributeName, Throwable cause) {
+    	return addWarning(graphElement, attributeName, null, cause);
+    }
+    
+    public ConfigurationProblem addWarning(IGraphElement graphElement, String attributeName, String message, Throwable cause) {
+    	return addProblem(graphElement, attributeName, Severity.WARNING, message, cause);
+    }
+
+    public ConfigurationProblem addInfo(IGraphElement graphElement, String attributeName, String message) {
+    	return addInfo(graphElement, attributeName, message, null);
+    }
+    
+    public ConfigurationProblem addInfo(IGraphElement graphElement, String attributeName, Throwable cause) {
+    	return addInfo(graphElement, attributeName, null, cause);
+    }
+    
+    public ConfigurationProblem addInfo(IGraphElement graphElement, String attributeName, String message, Throwable cause) {
+    	return addProblem(graphElement, attributeName, Severity.INFO, message, cause);
+    }
+
+    /**
+     * CLO-10929:
+     * Use this method only if you need to set Severity dynamically.
+     * Otherwise use one of the dedicated methods above.
+     * 
+     * @param graphElement
+     * @param attributeName
+     * @param severity
+     * @param message
+     * @param cause
+     * 
+     * @return
+     */
+    public ConfigurationProblem addProblem(IGraphElement graphElement, String attributeName, Severity severity, String message, Throwable cause) {
+    	ConfigurationProblem configurationProblem = new ConfigurationProblem(message, severity, graphElement, Priority.NORMAL, attributeName);
+    	configurationProblems.add(configurationProblem);
+    	configurationProblem.setAttributeName(attributeName);
+    	configurationProblem.setCauseException(cause);
+    	if (StringUtils.isEmpty(attributeName)
+    			&& cause instanceof ComponentNotReadyException
+    			&& !StringUtils.isEmpty(((ComponentNotReadyException) cause).getAttributeName())) {
+    		configurationProblem.setAttributeName(((ComponentNotReadyException) cause).getAttributeName());
+    	}
+    	return configurationProblem;
+    }
+
+    public void joinWith(ConfigurationStatus otherStatus) {
+    	configurationProblems.addAll(otherStatus.configurationProblems);
+    }
+    
+    @Deprecated
     public void add(String message, Severity severity, GraphElement graphElement, Priority priority, String attributeName) {
     	add(new ConfigurationProblem(message, severity, graphElement, priority, attributeName));
     }
 
+    @Deprecated
     public void add(Exception e, Severity severity, GraphElement graphElement, Priority priority, String attributeName) {
     	add(new ConfigurationProblem(null, e, severity, graphElement, priority, attributeName));
     }
 
+    @Deprecated
     public void add(String message, Exception e, Severity severity, GraphElement graphElement, Priority priority, String attributeName) {
     	add(new ConfigurationProblem(message, e, severity, graphElement, priority, attributeName));
     }
 
+    @Deprecated
     public void add(String message, Severity severity, GraphElement graphElement, Priority priority) {
     	this.add(message, severity, graphElement, priority, null);
     }
 
+    @Deprecated
     public void add(String message, Exception e, Severity severity, GraphElement graphElement, Priority priority) {
     	this.add(message, e, severity, graphElement, priority, null);
+    }
+
+    public ConfigurationProblem add(ConfigurationProblem configurationProblem) {
+    	configurationProblems.add(configurationProblem);
+    	return configurationProblem;
     }
 
     /**
@@ -111,4 +186,35 @@ public class ConfigurationStatus extends LinkedList<ConfigurationProblem> {
 		}
 	}
     
+    public void log() {
+        for(ConfigurationProblem problem : this) {
+            problem.log(logger);
+        }
+    }
+
+	@Override
+	public Iterator<ConfigurationProblem> iterator() {
+		return configurationProblems.iterator();
+	}
+
+	public ConfigurationProblem getFirstProblem() {
+		return configurationProblems.getFirst();
+	}
+
+	public ConfigurationProblem getLastProblem() {
+		return configurationProblems.getLast();
+	}
+
+	public boolean hasProblem() {
+		return !configurationProblems.isEmpty();
+	}
+
+	public List<ConfigurationProblem> getProblems() {
+		return new ArrayList<>(configurationProblems);
+	}
+
+	public void clear() {
+		configurationProblems.clear();
+	}
+	
 }

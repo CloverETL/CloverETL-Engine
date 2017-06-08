@@ -28,10 +28,7 @@ import org.jetel.data.Defaults;
 import org.jetel.enums.EdgeDebugMode;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataRecordMetadata;
@@ -709,10 +706,8 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
         
         //check phase order
         if (Phase.comparePhaseNumber(reader.getPhaseNum(), writer.getPhaseNum()) < 0) {
-        	status.add(new ConfigurationProblem("Invalid phase order. Phase number of component " + reader + " is less than " + writer + "'s phase number.",
-        		Severity.ERROR, reader, Priority.NORMAL));
-        	status.add(new ConfigurationProblem("Invalid phase order. Phase number of component " + writer + " is greater than " + reader + "'s phase number.",
-        		Severity.ERROR, writer, Priority.NORMAL));
+        	status.addError(reader, null, "Invalid phase order. Phase number of component " + reader + " is less than " + writer + "'s phase number.");
+        	status.addError(writer, null, "Invalid phase order. Phase number of component " + writer + " is greater than " + reader + "'s phase number.");
         }
         
         return status;

@@ -43,10 +43,7 @@ import org.jetel.data.sequence.Sequence;
 import org.jetel.database.IConnection;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.RecursiveSubgraphException;
@@ -63,7 +60,6 @@ import org.jetel.graph.runtime.tracker.TokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.util.CloverPublicAPI;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SubgraphUtils;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
@@ -1312,7 +1308,7 @@ public final class TransformationGraph extends GraphElement {
     	            status = new ConfigurationStatus();
     	        }
 
-    	    	status.addAll(preCheckConfigStatus);
+    	    	status.joinWith(preCheckConfigStatus);
     			
     	    	graphParameters.checkConfig(status);
     	        
@@ -1324,9 +1320,7 @@ public final class TransformationGraph extends GraphElement {
     	        	try {
     	        		connection.checkConfig(status);
     	        	} catch (Exception e) {
-    	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, connection, Priority.HIGH);
-    	        		problem.setCauseException(e);
-    	        		status.add(problem);
+    	        		status.addError(connection, null, e);
     	        	}
     	        }
     	
@@ -1335,9 +1329,7 @@ public final class TransformationGraph extends GraphElement {
     	        	try {
     	        		lookupTable.checkConfig(status);
     	        	} catch (Exception e) {
-    	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, lookupTable, Priority.HIGH);
-    	        		problem.setCauseException(e);
-    	        		status.add(problem);
+    	        		status.addError(lookupTable, null, e);
     	        	}
     	        }
     	
@@ -1346,9 +1338,7 @@ public final class TransformationGraph extends GraphElement {
     	        	try {
     	        		sequence.checkConfig(status);
     	        	} catch (Exception e) {
-    	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, sequence, Priority.HIGH);
-    	        		problem.setCauseException(e);
-    	        		status.add(problem);
+    	        		status.addError(sequence, null, e);
     	        	}
     	        }
     	
@@ -1375,12 +1365,12 @@ public final class TransformationGraph extends GraphElement {
     	        }
     	        if (subgraphInputComponents.size() > 1) {
     	    		for (Node subgraphInputComponent : subgraphInputComponents) {
-    	    			status.add("Multiple SubgraphInput component detected in the graph.", Severity.ERROR, subgraphInputComponent, Priority.NORMAL);
+    	    			status.addError(subgraphInputComponent, null, "Multiple SubgraphInput component detected in the graph.");
     	    		}
     	        }
     	        if (subgraphOutputComponents.size() > 1) {
     	    		for (Node subgraphOutputComponent : subgraphOutputComponents) {
-    	    			status.add("Multiple SubgraphOutput component detected in the graph.", Severity.ERROR, subgraphOutputComponent, Priority.NORMAL);
+    	    			status.addError(subgraphOutputComponent, null, "Multiple SubgraphOutput component detected in the graph.");
     	    		}
     	        }
     	        
@@ -1394,8 +1384,7 @@ public final class TransformationGraph extends GraphElement {
 	    	if (status == null) {
 	            status = new ConfigurationStatus();
 	        }
-    		ConfigurationProblem problem = new ConfigurationProblem(ex, Severity.ERROR, ex.getNode(), Priority.HIGH, SubgraphUtils.XML_JOB_URL_ATTRIBUTE);
-    		status.add(problem);
+    		status.addError(ex.getNode(), SubgraphUtils.XML_JOB_URL_ATTRIBUTE, ex);
     		return status;
     	}
 

@@ -33,7 +33,6 @@ import org.jetel.data.Defaults;
 import org.jetel.data.RecordComparator;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
@@ -44,10 +43,8 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.CopyComponentTokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 /**
  *  <h3>Sequence Checker Component</h3>
@@ -309,11 +306,7 @@ public class SequenceChecker extends Node {
             try {
                 init();
             } catch (ComponentNotReadyException e) {
-                ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-                if(!StringUtils.isEmpty(e.getAttributeName())) {
-                    problem.setAttributeName(e.getAttributeName());
-                }
-                status.add(problem);
+                status.addError(this, null, e);
             } finally {
             	free();
             }
