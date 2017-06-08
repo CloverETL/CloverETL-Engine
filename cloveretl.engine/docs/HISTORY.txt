@@ -19,6 +19,7 @@ REL-4-6-0
 	* CLO-9855	Documentation: Delete instructions on configuration in WEB-INF
 	* CLO-10949	Using a wildcard in XMLExtract in Subgraph throws error
 	* CLO-10680	Can't import xsd file into wsdl file using relative path on WebLogic
+	* CLO-11026	Server console GUI occasionally fails with NPE
 * Compatibility
 	* CLO-10930	FlatFileReader fails silently on parsing errors
 
