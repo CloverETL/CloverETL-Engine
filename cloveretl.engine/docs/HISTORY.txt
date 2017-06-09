@@ -14,7 +14,6 @@ REL-4-6-0
 	* CLO-10943	XMLExtract: Incorrect output
 	* CLO-10991	Cluster nodes are too sensitive to load
 	* CLO-10824	ClassCastException when working with Secure parameters
-	* CLO-10815	MSSQLDataWriter does not report actual error message of bcp tool
 	* CLO-10587	Exported JoinKey component parameter behaves inconsistently
 	* CLO-9855	Documentation: Delete instructions on configuration in WEB-INF
 	* CLO-10949	Using a wildcard in XMLExtract in Subgraph throws error
