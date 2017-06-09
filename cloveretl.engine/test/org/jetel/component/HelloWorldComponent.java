@@ -32,10 +32,18 @@ public class HelloWorldComponent extends Node {
 
 	private static final Logger log = Logger.getLogger(HelloWorldComponent.class);
 	
+	private static final String TYPE = "HELLO_WORLD";
+	
 	private String greeting = "Hello world!";
+	private String type;
 	
 	public HelloWorldComponent(String id) {
 		super(id);
+	}
+	
+	@Override
+	public String getType() {
+		return type != null ? type : TYPE;
 	}
 	
 	@Override
@@ -50,5 +58,9 @@ public class HelloWorldComponent extends Node {
 
 	public void setGreeting(String greeting) {
 		this.greeting = greeting;
+	}
+	
+	public void setType(String type) {
+		this.type = type;
 	}
 }

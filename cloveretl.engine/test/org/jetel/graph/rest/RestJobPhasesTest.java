@@ -49,18 +49,24 @@ public class RestJobPhasesTest extends CloverTestCase {
 		
 		HelloWorldComponent body = new HelloWorldComponent("HELLO2");
 		
+		HelloWorldComponent barrier = new HelloWorldComponent("HELLOBARRIER");
+		barrier.setGreeting("Hello from barrier");
+		barrier.setType("RESTJOB_OUTPUT");
+		barrier.setPartOfRestOutput(true);
+		
 		HelloWorldComponent output = new HelloWorldComponent("HELLO3");
 		output.setGreeting("Hello from job output!");
 		output.setPartOfRestOutput(true);
 		
 		Phase main = new Phase(7);
-		main.addNode(input, output, body);
+		main.addNode(input, output, body, barrier);
 		graph.addPhase(main);
 		
 		EngineInitializer.initGraph(graph, ctx);
 		
-		runGraph(graph);
-		
+		assertTrue("REST job output in wrong phase", main.getNodes().containsValue(barrier));
 		assertEquals("Unexpected count of phases", 3, graph.getPhases().length);
+		
+		runGraph(graph);
 	}
 }
