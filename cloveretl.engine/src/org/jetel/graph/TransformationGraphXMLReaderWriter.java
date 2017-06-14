@@ -501,6 +501,17 @@ public class TransformationGraphXMLReaderWriter {
 		return null;
 	}
 	
+	public String readOutputFormat(InputStream stream) throws XMLConfigurationException {
+		Document doc = prepareDocument(stream);
+		NodeList nodes = doc.getElementsByTagName(NODE_ELEMENT);
+		for (int i = 0; i < nodes.getLength(); i++) {
+			if ("RESTJOB_OUTPUT0".equals(nodes.item(i).getAttributes().getNamedItem(ID_ATTRIBUTE).getNodeValue())) {
+				return nodes.item(i).getAttributes().getNamedItem("responseFormat").getNodeValue();
+			}
+		}
+		return null;
+	}
+	
 	/**
 	 *Constructor for the read object
 	 *
