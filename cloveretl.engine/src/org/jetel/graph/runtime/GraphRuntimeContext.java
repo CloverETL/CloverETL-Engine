@@ -18,6 +18,8 @@
  */
 package org.jetel.graph.runtime;
 
+import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,12 +34,14 @@ import org.apache.log4j.Level;
 import org.jetel.component.MetadataProvider;
 import org.jetel.ctl.debug.Breakpoint;
 import org.jetel.data.Defaults;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.dictionary.DictionaryValuesContainer;
 import org.jetel.util.MiscUtils;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -48,8 +52,10 @@ import org.jetel.util.string.StringUtils;
  *
  * @created 27.11.2007
  */
-public class GraphRuntimeContext {
+public class GraphRuntimeContext implements Serializable {
 
+	private static final long serialVersionUID = 2613877772912214702L;
+	
 	public static final boolean DEFAULT_VERBOSE_MODE = false;
 	public static final boolean DEFAULT_WAIT_FOR_JMX_CLIENT = false;
 	public static final boolean DEFAULT_USE_JMX = true;
@@ -105,17 +111,18 @@ public class GraphRuntimeContext {
 	private boolean transactionMode;
 	private boolean batchMode;
 	private boolean embeddedRun;
-	private URL contextURL;
+	private transient URL contextURL;
+	private String contextURLString;
 	private DictionaryValuesContainer dictionaryContent;
 	/** Hint for the server environment where to execute the graph */
 	private String clusterNodeId;
-	private ClassLoader classLoader;
+	private transient ClassLoader classLoader;
 	private JobType jobType;
 	private String jobUrl;
 	/** Only for subgraphs - component id, where this subgraph has been executed. */
 	private String parentSubgraphComponentId;
-	private IAuthorityProxy authorityProxy;
-	private MetadataProvider metadataProvider;
+	private transient IAuthorityProxy authorityProxy;
+	private transient MetadataProvider metadataProvider;
 	/** Should executor check required graph parameters? */
 	private boolean validateRequiredParameters;
 	/** Only subgraphs can be executed in fast-propagated mode. This flag indicates,
@@ -211,7 +218,8 @@ public class GraphRuntimeContext {
 		ret.synchronizedRun = isSynchronizedRun();
 		ret.transactionMode = isTransactionMode();
 		ret.batchMode = isBatchMode();
-		ret.contextURL = getContextURL();
+		ret.contextURL = this.contextURL;
+		ret.contextURLString = this.contextURLString;
 		ret.dictionaryContent = DictionaryValuesContainer.duplicate(getDictionaryContent());
 		ret.executionGroup = getExecutionGroup();
 		ret.executionLabel = getExecutionLabel();
@@ -616,11 +624,26 @@ public class GraphRuntimeContext {
 	}
 
     public URL getContextURL() {
-        return contextURL;
+    	if (contextURL != null) {
+    		return contextURL;
+    	} else if (contextURLString != null) {
+    		try {
+				contextURL = FileUtils.getFileURL(contextURLString);
+			} catch (MalformedURLException e) {
+				throw new JetelRuntimeException(e);
+			}
+    		return contextURL;
+    	} else {
+    		return null;
+    	}
     }
 
     public void setContextURL(URL contextURL) {
     	this.contextURL = contextURL;
+    }
+
+    public void setContextURL(String contextURLString) {
+    	this.contextURLString = contextURLString;
     }
 
 	/**
@@ -817,7 +840,9 @@ public class GraphRuntimeContext {
 	 */
 	public void setAuthorityProxy(IAuthorityProxy authorityProxy) {
 		this.authorityProxy = authorityProxy;
-		authorityProxy.setGraphRuntimeContext(this);
+		if (authorityProxy != null) {
+			authorityProxy.setGraphRuntimeContext(this);
+		}
 	}
 
 	/**
