@@ -512,6 +512,16 @@ public class TransformationGraphXMLReaderWriter {
 		return null;
 	}
 	
+	public RestJobResponseStatus readResponseStatuses(InputStream stream) throws XMLConfigurationException, GraphConfigurationException {
+		Document doc = prepareDocument(stream);
+		Element global = getGlobalElement(doc);
+		NodeList nodes = global.getElementsByTagName(REST_JOB_RESPONSE_STATUS);
+		if (nodes.getLength() > 0) {
+			return instantiateRestJobResponseStatus(nodes.item(0));
+		}
+		return null;
+	}
+	
 	/**
 	 *Constructor for the read object
 	 *
