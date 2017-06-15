@@ -112,7 +112,12 @@ public class GraphRuntimeContext implements Serializable {
 	private boolean batchMode;
 	private boolean embeddedRun;
 	private transient URL contextURL;
-	private String contextURLString;
+	/**
+	 * This string representation of contextURL is necessary to keep GraphRuntimeContext
+	 * serializable, since contextURL is URL with sandbox protocol, which is not possible to deserialize,
+	 * because the respective URL handler (SandboxStreamHandler) cannot be correctly registered.
+	 */
+	private String contextURLString; 
 	private DictionaryValuesContainer dictionaryContent;
 	/** Hint for the server environment where to execute the graph */
 	private String clusterNodeId;
@@ -182,7 +187,6 @@ public class GraphRuntimeContext implements Serializable {
 		dictionaryContent = new DictionaryValuesContainer();
 		clusterNodeId = null;
 		jobType = JobType.DEFAULT;
-		setAuthorityProxy(AuthorityProxyFactory.createDefaultAuthorityProxy());
 		locale = null;
 		timeZone = null;
 		validateRequiredParameters = DEFAULT_VALIDATE_REQUIRED_PARAMETERS;
@@ -640,6 +644,7 @@ public class GraphRuntimeContext implements Serializable {
 
     public void setContextURL(URL contextURL) {
     	this.contextURL = contextURL;
+    	this.contextURLString = contextURL.toString();
     }
 
     public void setContextURL(String contextURLString) {
@@ -830,7 +835,10 @@ public class GraphRuntimeContext implements Serializable {
 	/**
 	 * @return authority proxy associated with this run
 	 */
-	public IAuthorityProxy getAuthorityProxy() {
+	public synchronized IAuthorityProxy getAuthorityProxy() {
+		if (authorityProxy == null) {
+			authorityProxy = AuthorityProxyFactory.createDefaultAuthorityProxy();
+		}
 		return authorityProxy;
 	}
 	
