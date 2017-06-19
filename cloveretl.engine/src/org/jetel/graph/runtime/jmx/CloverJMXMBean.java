@@ -100,6 +100,9 @@ public interface CloverJMXMBean {
      */
     public void closeServer();
     
+    //TODO is it possible to move this method from CloverJMX to CloverJMXMBean?
+	public void setApprovedPhaseNumber(int approvedPhaseNumber);
+
 //    Thread[] getCtlThreads();
 //    
 //    StackFrame[] getStackFrames(long threadId);

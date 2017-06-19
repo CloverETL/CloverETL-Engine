@@ -26,6 +26,7 @@ import java.lang.management.ThreadMXBean;
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Phase;
 import org.jetel.graph.runtime.WatchDog;
 
@@ -117,9 +118,12 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 		return approvedPhaseNumber;
 	}
 	
+	@Override
 	public synchronized void setApprovedPhaseNumber(int approvedPhaseNumber) {
-		this.approvedPhaseNumber = approvedPhaseNumber;
-		notifyAll();
+		//TODO this is not correctly implemented, JMX is not valid technology to do so
+		throw new JetelRuntimeException();
+//		this.approvedPhaseNumber = approvedPhaseNumber;
+//		notifyAll();
 	}
 	
 	//******************* EVENTS ********************/

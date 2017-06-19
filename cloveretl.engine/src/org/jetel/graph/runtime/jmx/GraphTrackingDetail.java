@@ -47,6 +47,8 @@ public class GraphTrackingDetail implements GraphTracking {
 	private long endTime = -1;
 
     private Result result;
+    
+    private GraphErrorDetail graphError;
 
     private String nodeId;
     
@@ -172,6 +174,11 @@ public class GraphTrackingDetail implements GraphTracking {
 	public Result getResult() {
 		return result;
 	}
+	
+	@Override
+	public GraphError getGraphError() {
+		return graphError;
+	}
 
 	@Override
 	public String getNodeId() {
@@ -256,12 +263,10 @@ public class GraphTrackingDetail implements GraphTracking {
 	}
 
 	void graphFinished() {
-		if (lastPhaseResult != null) {
-			result = lastPhaseResult;
-		} else {
-			//for empty graphs
-			result = graph.getWatchDog().getStatus();
-		}
+		result = graph.getWatchDog().getStatus();
+		
+		//populate graph error
+		graphError = GraphErrorDetail.createInstance(graph.getWatchDog());
 		
 		endTime = System.currentTimeMillis();
 	}
