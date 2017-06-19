@@ -18,6 +18,7 @@
  */
 package org.jetel.graph.runtime.jmx;
 
+import org.jetel.exception.SerializableException;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -50,7 +51,9 @@ public class GraphErrorDetail implements GraphError {
 		if (watchDog.getStatus() == Result.ERROR) {
 			GraphErrorDetail graphError = new GraphErrorDetail();
 			graphError.setErrorMessage(watchDog.getErrorMessage());
-			graphError.setCauseException(watchDog.getCauseException());
+			if (watchDog.getCauseException() != null) {
+				graphError.setCauseException(new SerializableException(watchDog.getCauseException()));
+			}
 			IGraphElement causeGraphElement = watchDog.getCauseGraphElement();
 			if (causeGraphElement != null) {
 				graphError.setCauseGraphElementId(causeGraphElement.getId());
