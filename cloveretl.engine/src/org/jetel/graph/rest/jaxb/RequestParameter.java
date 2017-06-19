@@ -21,8 +21,8 @@ package org.jetel.graph.rest.jaxb;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
+import javax.xml.bind.annotation.XmlType;
 
 /**
  * @author jan.michalica (info@cloveretl.com)
@@ -39,6 +39,16 @@ public class RequestParameter {
 	private String description;
 	private String type;
 	private Location location;
+	
+	@XmlType(name = "location", namespace = "http://cloveretl.com/server/data") // https://java.net/jira/browse/JAXB-933
+	public enum Location {
+		@XmlEnumValue("query") query,
+		@XmlEnumValue("url_path") path;
+		
+		public String value() {
+			return name();
+		}
+	}
 	
 	@XmlAttribute
 	public String getName() {
@@ -87,16 +97,6 @@ public class RequestParameter {
 	
 	public void setType(String type) {
 		this.type = type;
-	}
-	
-	@XmlEnum
-	public enum Location {
-		@XmlEnumValue("query") query,
-		@XmlEnumValue("url_path") path;
-		
-		public String value() {
-			return name();
-		}
 	}
 	
 	@XmlAttribute
