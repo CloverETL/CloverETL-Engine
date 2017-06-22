@@ -400,7 +400,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 
 	@Override
-	public RunStatus getRunStatus(long runId, List<TrackingEvent> trackingEvents, Long timeout) {
+	public RunStatus getRunStatus(long runId, List<TrackingEvent> trackingEvents, Long timeout) throws InterruptedException {
 		throw new UnsupportedOperationException("Graph execution status is available only in CloverETL Server environment!");
 	}
 

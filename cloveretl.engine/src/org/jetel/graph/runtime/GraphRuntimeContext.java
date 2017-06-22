@@ -127,7 +127,7 @@ public class GraphRuntimeContext implements Serializable {
 	/** Only for subgraphs - component id, where this subgraph has been executed. */
 	private String parentSubgraphComponentId;
 	private transient IAuthorityProxy authorityProxy;
-	private transient MetadataProvider metadataProvider;
+	private MetadataProvider metadataProvider;
 	/** Should executor check required graph parameters? */
 	private boolean validateRequiredParameters;
 	/** Only subgraphs can be executed in fast-propagated mode. This flag indicates,

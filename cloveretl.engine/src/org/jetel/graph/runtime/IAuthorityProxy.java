@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.net.URL;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.Charset;
@@ -112,7 +113,10 @@ public abstract class IAuthorityProxy {
 		}
 	}
 	
-	public static class RunStatus {
+	public static class RunStatus implements Serializable {
+		
+		private static final long serialVersionUID = -4945370081989985664L;
+		
 		public long runId;
 		public String clusterNodeId;
 		public String jobUrl;
