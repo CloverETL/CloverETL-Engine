@@ -505,10 +505,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 			edge.postExecute();
 		}
 		
-        if (edgeDebugWriter != null) {
-            edgeDebugWriter.close();
-            edgeDebugWriter = null;
-        }
+		edgeDebugWriter = null;
 	}
 	
     /**
@@ -674,6 +671,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     	if (!eofSent) {
         	if (edgeDebugWriter != null) {
         		edgeDebugWriter.eof();
+        		edgeDebugWriter.close();
         	}
 
         	edge.eof();

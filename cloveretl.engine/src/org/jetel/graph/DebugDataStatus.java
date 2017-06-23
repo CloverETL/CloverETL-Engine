@@ -40,7 +40,11 @@ public enum DebugDataStatus {
 	 * some other data records are still available in debug data stream.
 	 */
 	INCOMPLETE_DATA(-1, false),
-	
+
+	//all available data passed
+	//TODO comment and maybe rename
+	ALL_REQUESTED_DATA(-4, false),
+
 	/**
 	 * This constant means that the last record in debug data stream
 	 * has been reached and no following data records used to be available

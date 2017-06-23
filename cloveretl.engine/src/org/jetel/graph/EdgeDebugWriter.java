@@ -174,8 +174,9 @@ public class EdgeDebugWriter {
         	debuggedBytes += formatter.write(record);
         	flushIfNeeded();
         	debuggedRecords++;
-	        status = DebugDataStatus.COMPLETE_DATA; //the last record has been written - finall status may be 'complete'
+	        status = DebugDataStatus.COMPLETE_DATA; //the last record has been written - final status may be 'complete'
         } else {
+        	flushIfNeeded();
 	        status = DebugDataStatus.TRUNCATED_DATA; //something has been skipped - final status may be 'truncated'
         }
     }
@@ -228,6 +229,7 @@ public class EdgeDebugWriter {
 	        	debuggedRecords++;
 		        status = DebugDataStatus.COMPLETE_DATA; //the last record has been written - finall status may be 'complete'
 	        } else {
+	        	flushIfNeeded();
 		        status = DebugDataStatus.TRUNCATED_DATA; //something has been skipped - final status may be 'truncated'
 	        }
         }

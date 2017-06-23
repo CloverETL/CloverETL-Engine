@@ -203,9 +203,6 @@ public class DebugDataStream extends InputStream {
 					allRead = true;
 				}
 			}
-			if (allRead) {
-				writer.close(); // enforce flush
-			}
 			return sink.size() > 0;
 		} catch (InterruptedException e) {
 			throw new IOException(e);
@@ -221,7 +218,7 @@ public class DebugDataStream extends InputStream {
 		} else {
 			//set final status to writer, this status will be written to the output
 			//by the following close() operation
-			writer.setStatus(status < 0 ? DebugDataStatus.fromCode(status) : DebugDataStatus.TRUNCATED_DATA);
+			writer.setStatus(status < 0 ? DebugDataStatus.fromCode(status) : DebugDataStatus.INCOMPLETE_DATA);
 			writer.close();
 			return false;
 		}
