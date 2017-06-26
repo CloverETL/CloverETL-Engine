@@ -134,7 +134,7 @@ public class ASTBuilder extends NavigatingVisitor {
 		if (inputMetadata != null) {
 			for (int i = 0; i < inputMetadata.length; i++) {
 				DataRecordMetadata m = inputMetadata[i];
-				if (m != null) {
+				if (m != null && m.getName() != null) {
 					if (inputRecordsMap.put(m.getName(), i) != null) {
 						ambiguousInputMetadata.add(m.getName());
 					}
@@ -146,7 +146,7 @@ public class ASTBuilder extends NavigatingVisitor {
 		if (outputMetadata != null) {
 			for (int i = 0; i < outputMetadata.length; i++) {
 				DataRecordMetadata m = outputMetadata[i];
-				if (m != null) {
+				if (m != null && m.getName() != null) {
 					if (outputRecordsMap.put(m.getName(), i) != null) {
 						ambiguousOutputMetadata.add(m.getName());
 					}
@@ -161,7 +161,7 @@ public class ASTBuilder extends NavigatingVisitor {
 			while (mi.hasNext()) {
 				DataRecordMetadata m = graph.getDataRecordMetadata(mi.next());
 
-				if (graphMetadata.put(m.getName(), m) != null) {
+				if (m.getName() != null && graphMetadata.put(m.getName(), m) != null) {
 					ambiguousGraphMetadata.add(m.getName());
 				}
 			}
@@ -171,7 +171,7 @@ public class ASTBuilder extends NavigatingVisitor {
 			while (li.hasNext()) {
 				LookupTable t = graph.getLookupTable(li.next());
 
-				if (lookupMap.put(t.getName(), t) != null) {
+				if (t.getName() != null && lookupMap.put(t.getName(), t) != null) {
 					ambiguousLookupTables.add(t.getName());
 				}
 			}
@@ -181,7 +181,7 @@ public class ASTBuilder extends NavigatingVisitor {
 			while (si.hasNext()) {
 				Sequence s = graph.getSequence(si.next());
 
-				if (sequenceMap.put(s.getName(), s) != null) {
+				if (s.getName() != null && sequenceMap.put(s.getName(), s) != null) {
 					ambiguousSequences.add(s.getName());
 				}
 			}

@@ -292,11 +292,13 @@ public class XSLDataTransformer extends Node {
 	public void postExecute() throws ComponentNotReadyException {
 		try {
 			super.postExecute();
-			try {
-				xsltIs.close(); //closing XSLT opened in xsltMappingTransition or transformer
-				//files opened by channelIterator are closed in execute()
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(e);
+			if (xsltIs != null) {
+				try {
+					xsltIs.close(); //closing XSLT opened in xsltMappingTransition or transformer
+					//files opened by channelIterator are closed in execute()
+				} catch (IOException e) {
+					throw new ComponentNotReadyException(e);
+				}
 			}
 		} finally {
 			ReadableChannelIterator.postExecute(channelIterator);
