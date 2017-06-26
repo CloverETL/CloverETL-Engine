@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
+import org.jetel.exception.HttpContextNotAvailableException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.GraphParameter;
@@ -63,13 +64,19 @@ public class PropertyRefResolver {
 
 	/** the logger for this class */
 	private static final Log logger = LogFactory.getLog(PropertyRefResolver.class);
+	
+	/** prefix of request parameter*/
+	private final static String PREFIX_REQUEST_PARAMETERS = Defaults.RequestParameters.REQUEST_PARAMETER_PREFIX;
 
 	/** properties used for resolving property references */
 	private final GraphParameters parameters;
-
+	
+	/** the regex pattern used to find request parameter references */
+	private static final Pattern REQUEST_PARAMETER_PATTERN = Pattern.compile(Defaults.RequestParameters.REQUEST_PARAMETER_PLACEHOLDER_REGEX);
+	
 	/** the regex pattern used to find property references */
-	private static final Pattern propertyPattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX);
-
+	private static final Pattern PROPERTY_PATTERN = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX + "|" + Defaults.RequestParameters.REQUEST_PARAMETER_PLACEHOLDER_REGEX);
+	
 	/** the set (same errors need to be listed once only) of errors that occurred during evaluation of a single string */
 	private final Set<String> errorMessages = new HashSet<String>();
 
@@ -305,7 +312,7 @@ public class PropertyRefResolver {
 	 * @return <code>true</code> if at least one property reference was found and resolved, <code>false</code> otherwise
 	 */
 	private void resolveReferences(StringBuilder value, RefResFlag flag) {
-		Matcher propertyMatcher = propertyPattern.matcher(value);
+		Matcher propertyMatcher = PROPERTY_PATTERN.matcher(value);
 		int nextStart = 0;
 		
 		while (propertyMatcher.find(nextStart)) {
@@ -313,9 +320,10 @@ public class PropertyRefResolver {
 			if (isRecursionOverflowed()) {
 				throw new RecursionOverflowedException(PropertyMessages.getString("PropertyRefResolver_infinite_recursion_warning")); //$NON-NLS-1$
 			}
-
+			
 			// resolve the property reference
-			String reference = propertyMatcher.group(1);
+			String reference = getPropertyName(propertyMatcher);
+			
 			String resolvedReference = null;
 			boolean canBeParamaterResolved = true;
 			
@@ -336,10 +344,16 @@ public class PropertyRefResolver {
 				} else {
 					resolvedReference = param.getValue();
 				}
-			} else {
-				if (resolvedReference == null) {
-					resolvedReference = MiscUtils.getEnvSafe(reference);
+			} else if (isHttpRequestParameter(reference)) {
+				try {
+					resolvedReference = getAuthorityProxy().getHttpContext().
+							getRequestParameter(reference.replaceFirst("(?i)" + PREFIX_REQUEST_PARAMETERS, ""));
+				} catch (HttpContextNotAvailableException e) {
+					// HTTP context is available during runtime
+					logger.debug(e);
 				}
+			} else {
+				resolvedReference = MiscUtils.getEnvSafe(reference);
 				
 				// find properties with '.' and '_' among system properties. If both found, use '.' for backwards compatibility
 				if (resolvedReference == null) {
@@ -375,6 +389,25 @@ public class PropertyRefResolver {
 		}
 	}
 
+	/**
+	 * Return true if paramName is name of HttpRequest parameter.
+	 * @param reference
+	 * @return
+	 */
+	private boolean isHttpRequestParameter(String paramName) {
+		return (paramName != null && paramName.toLowerCase().startsWith(PREFIX_REQUEST_PARAMETERS));
+	}
+
+	/**
+	 * Return true if input contains HttpRequest parameter.
+	 * @param input
+	 * @return
+	 */
+	public static boolean containsRequestParameter(String input) {
+		Matcher propertyMatcher = REQUEST_PARAMETER_PATTERN.matcher(input);
+		return propertyMatcher.find();
+	}
+	
 	/**
 	 * Test whether the resolving recursion is not too deep.
 	 */
@@ -451,7 +484,7 @@ public class PropertyRefResolver {
 	 */
 	public static boolean containsProperty(String value){
 		if (!StringUtils.isEmpty(value)) {
-			return propertyPattern.matcher(value).find();
+			return PROPERTY_PATTERN.matcher(value).find();
 		} else {
 			return false;
 		}
@@ -463,7 +496,7 @@ public class PropertyRefResolver {
 	 */
 	public static boolean isPropertyReference(String value){
 		if (!StringUtils.isEmpty(value)) {
-			return propertyPattern.matcher(value).matches();
+			return PROPERTY_PATTERN.matcher(value).matches();
 		} else {
 			return false;
 		}
@@ -484,9 +517,9 @@ public class PropertyRefResolver {
 	 */
 	public static String getReferencedProperty(String value) {
 		if (!StringUtils.isEmpty(value)) {
-			Matcher matcher = propertyPattern.matcher(value);
+			Matcher matcher = PROPERTY_PATTERN.matcher(value);
 			if (matcher.matches()) {
-				return matcher.group(1);
+				return getPropertyName(matcher);
 			} else {
 				return null;
 			}
@@ -501,9 +534,9 @@ public class PropertyRefResolver {
 	public static List<String> getUnresolvedProperties(String value){
 		if (!StringUtils.isEmpty(value)) {
 			List<String> result = new ArrayList<String>();
-			Matcher matcher = propertyPattern.matcher(value);
+			Matcher matcher = PROPERTY_PATTERN.matcher(value);
 			while (matcher.find()) {
-				result.add(matcher.group(1));
+				result.add(getPropertyName(matcher));
 			}
 			return result;
 		} else {
@@ -521,6 +554,15 @@ public class PropertyRefResolver {
 		public RecursionOverflowedException(String message) {
 			super(message);
 		}
+	}
+	
+	 
+	/**
+	 * Returns property name from marcher
+	 */
+	private static String getPropertyName(Matcher matcher){
+		//group(1) for graph parameter, graph(2) for HTTP Request parameter
+		return matcher.group(1) != null ? matcher.group(1) : matcher.group(2);
 	}
 	
 }

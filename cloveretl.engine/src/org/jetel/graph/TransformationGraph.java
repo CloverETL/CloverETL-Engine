@@ -50,6 +50,8 @@ import org.jetel.exception.RecursiveSubgraphException;
 import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.modelview.impl.MetadataPropagationResult;
+import org.jetel.graph.rest.jaxb.EndpointSettings;
+import org.jetel.graph.rest.jaxb.RestJobResponseStatus;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.IAuthorityProxy;
@@ -81,7 +83,7 @@ public final class TransformationGraph extends GraphElement {
 	
     private static final int MAX_ALLOWED_OBJ_IDX = 1000000;
 
-    private Map <Integer,Phase> phases;
+    private Map <Integer, Phase> phases;
 
     private Map <String,IConnection> connections;
 
@@ -223,6 +225,13 @@ public final class TransformationGraph extends GraphElement {
 	 * Contains nodes of original components - i.e. not the Trashifiers that are used as replacements.
 	 */
 	private Set<Node> keptBlocked = new HashSet<Node>();
+	
+	/**
+	 * Endpoint settings if the graph represents a REST job
+	 */
+	private EndpointSettings endpointSettings;
+	
+	private RestJobResponseStatus responseStatus;
 	
 	public TransformationGraph() {
 		this(DEFAULT_GRAPH_ID);
@@ -477,17 +486,15 @@ public final class TransformationGraph extends GraphElement {
 	}
 	
 	/**
-     * Return array of Phases defined within graph sorted (ascentially)
+     * Return array of Phases defined within graph sorted (ascending)
      * according phase numbers.
      * 
 	 * @return Returns the Phases array.
 	 */
 	public Phase[] getPhases() {
-		
 		final Collection<Phase> retList = phases.values();
 		final Phase[] ret = retList.toArray(new Phase[retList.size()]);
 		Arrays.sort(ret);
-		
 		return ret; 
 	}
     
@@ -896,7 +903,7 @@ public final class TransformationGraph extends GraphElement {
 	 * @since         August 3, 2003
 	 */
 	public void addPhase(Phase phase) throws GraphConfigurationException {
-		if (phases.put(phase.getPhaseNum(),phase)!=null){
+		if (phases.put(phase.getPhaseNum(), phase) != null){
 		    throw new GraphConfigurationException("Phase already exists in graph "+phase);
         }
 		phase.setGraph(this);
@@ -1755,4 +1762,19 @@ public final class TransformationGraph extends GraphElement {
 		return keptBlocked;
 	}
 
+	public EndpointSettings getEndpointSettings() {
+		return endpointSettings;
+	}
+
+	public void setEndpointSettings(EndpointSettings endpointSettings) {
+		this.endpointSettings = endpointSettings;
+	}
+
+	public RestJobResponseStatus getRestJobResponseStatus() {
+		return responseStatus;
+	}
+
+	public void setRestJobResponseStatus(RestJobResponseStatus responseStatus) {
+		this.responseStatus = responseStatus;
+	}
 }

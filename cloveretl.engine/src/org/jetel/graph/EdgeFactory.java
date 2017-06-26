@@ -23,7 +23,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 
 /**
- * This factory class is intended to be used for factorisation of graph edges.
+ * This factory class is intended to be used for factorization of graph edges.
  * For now only two types of edges are distinguished - regular and jobflow edges.
  * 
  * @author Kokon (info@cloveretl.com)

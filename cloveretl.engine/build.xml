@@ -612,7 +612,9 @@ This software is licensed under the terms you may find in the file named "LICENS
 			
 			<keep name="org.jetel.database.IConnection"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.database.dbf.DBFDataParser"><field access="public"/><method access="public"/></keep>
-					
+			
+			<keep name="org.jetel.graph.runtime.ErrorMessage"><field /><method access="public"/></keep>
+				
 		</proguard>
 		
 		<concat destfile="${dir.obfuscate}/proGuard-mapping-all.txt">

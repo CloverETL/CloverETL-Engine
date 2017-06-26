@@ -52,6 +52,7 @@ import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.HttpPartUrlUtils;
 import org.jetel.util.file.stream.Input;
 import org.jetel.util.file.stream.Wildcards;
 import org.jetel.util.file.stream.Wildcards.CheckConfigFilter;
@@ -296,10 +297,18 @@ public class ReadableChannelIterator implements Closeable {
 			}
 		}
 		
+		checkForResponseProtocol(parts);
         portProtocolFields = getElementsByProtocol(parts, PORT, firstPortProtocolPosition);
         this.directoryStream = Wildcards.newDirectoryStream(contextURL, urls);
         closed = false;
         this.fileIterator = directoryStream.iterator();
+	}
+	
+	private void checkForResponseProtocol(String[] parts) throws ComponentNotReadyException {
+		List<String> responseProtocolElements = getElementsByProtocol(parts, HttpPartUrlUtils.RESPONSE_PROTOCOL, 0);
+		if (!responseProtocolElements.isEmpty()) {
+			throw new ComponentNotReadyException("A HTTP response cannot be read");
+		}
 	}
 
 	/**

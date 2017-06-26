@@ -100,7 +100,19 @@ public class TransformationGraphAnalyzer {
 		//remove optional input and output edges in subgraphs
 		removeOptionalEdges(graph);
 		
-		//analyse subgraph - check layout and removes debug components if necessary
+		/*
+		 *  analyze REST Job - put components before RestJobInput into initial phase,
+		 *  components after RestJobOutput into final phase
+		 */
+		if (runtimeContext.getJobType() == JobType.RESTJOB || graph.getStaticJobType() == JobType.RESTJOB) {
+			try {
+				analyseRestJob(graph);
+			} catch (GraphConfigurationException e) {
+				throw new JetelRuntimeException("REST job analysis failed", e);
+			}
+		}
+		
+		// analyze subgraph - check layout and removes debug components if necessary
 		boolean subJobRuntime = runtimeContext.getJobType().isSubJob();
 		boolean subJobFile = runtimeContext.getJobType().isSubJob() || graph.getStaticJobType().isSubJob();
 		if (subJobRuntime || subJobFile) {
@@ -143,6 +155,67 @@ public class TransformationGraphAnalyzer {
 		}
         
         graph.setAnalysed(true);
+	}
+	
+	private static void analyseRestJob(TransformationGraph graph) throws GraphConfigurationException {
+		
+		Phase inputPhase = new Phase(Phase.INITIAL_PHASE_ID);
+		Phase outputPhase = new Phase(Phase.FINAL_PHASE_ID);
+		
+		for (Phase phase : graph.getPhases()) {
+			Set<Node> input = new HashSet<>();
+			Set<Node> output = new HashSet<>();
+			Set<Edge> inputOutgoing = new HashSet<>();
+			Set<Edge> outputOnly = new HashSet<>();
+			for (Node node : phase.getNodes().values()) {
+				if (node.isPartOfRestInput()) {
+					input.add(node);
+					List<Node> incoming = findPrecedentNodesRecursive(node, null);
+					input.addAll(incoming);
+				} else if (node.isPartOfRestOutput()) {
+					List<Node> outgoing = findFollowingNodesRecursive(node, null);
+					if (!"RESTJOB_OUTPUT".equals(node.getType())) {
+						output.add(node);
+					}
+					output.addAll(outgoing);
+				}
+			}
+			for (Node node : input) {
+				phase.deleteNode(node);
+				inputPhase.addNode(node);
+			}
+			/*
+			 * Move all edges outgoing from input-side components to the initial phase,
+			 * move edges whose both components are in the final phase to that phase.
+			 * CLO-10928
+			 */
+			for (Edge edge : phase.getEdges().values()) {
+				if (input.contains(edge.getWriter())) {
+					inputOutgoing.add(edge);
+				} else if (output.contains(edge.getReader()) && output.contains(edge.getWriter())) {
+					outputOnly.add(edge);
+				}
+			}
+			for (Edge edge : inputOutgoing) {
+				phase.deleteEdge(edge);
+				inputPhase.addEdge(edge);
+			}
+			for (Node node : output) {
+				phase.deleteNode(node);
+				outputPhase.addNode(node);
+			}
+			for (Edge edge : outputOnly) {
+				phase.deleteEdge(edge);
+				outputPhase.addEdge(edge);
+			}
+		}
+		
+		if (!inputPhase.getNodes().isEmpty()) {
+			graph.addPhase(inputPhase);
+		}
+		if (!outputPhase.getNodes().isEmpty()) {
+			graph.addPhase(outputPhase);
+		}
 	}
 	
 	/**
@@ -597,7 +670,7 @@ public class TransformationGraphAnalyzer {
 			Node writer = edge.getWriter(); //can be null for remote edges
 			readerPhase = reader != null ? reader.getPhase() : null;
 			writerPhase = writer != null ? writer.getPhase() : null;
-			if (readerPhase.getPhaseNum() > writerPhase.getPhaseNum()) {
+			if (readerPhase.getPhaseNum() != writerPhase.getPhaseNum()) {
 				// edge connecting two nodes belonging to different phases
 				// has to be buffered
 				edge.setEdgeType(EdgeTypeEnum.PHASE_CONNECTION);
