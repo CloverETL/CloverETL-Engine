@@ -104,7 +104,7 @@ import com.jcraft.jsch.ChannelSftp;
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
 import de.schlichtherle.truezip.file.TFileOutputStream;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 /**
  *  Helper class with some useful methods regarding file manipulation
  *
@@ -354,6 +354,13 @@ public class FileUtils {
 			return new URL(null, type.getId() + ":(" + archiveFileUrl.toString() + ")#" + anchor, new ArchiveURLStreamHandler(contextURL));
 		}
 		
+		if (HttpPartUrlUtils.isRequestUrl(fileURL) || HttpPartUrlUtils.isResponseUrl(fileURL)) {
+			try {
+        		return new URL(contextURL, fileURL, GENERIC_HANDLER);
+            } catch (MalformedURLException e) {
+            }
+		}
+				
 		if (!StringUtils.isEmpty(protocol)) {
             // unknown protocol will throw an exception,
             // standard Java protocols will be ignored;
@@ -624,7 +631,9 @@ public class FileUtils {
             	return new FileInputStream(url.getRef() != null ? getUrlFile(url) + "#" + url.getRef() : getUrlFile(url));
         	} else if (archiveType == null && SandboxUrlUtils.isSandboxUrl(url)) {
         		return SandboxUrlUtils.getSandboxInputStream(url);
-        	}
+        	} else if (archiveType == null && HttpPartUrlUtils.isRequestUrl(url)) {
+        		return HttpPartUrlUtils.getRequestInputStream(url);
+        	} 
         	
         	//CLO-6036
     		if (url.toString().startsWith("dict:")) {
@@ -1213,6 +1222,14 @@ public class FileUtils {
 		return input.startsWith(DICTIONARY_PROTOCOL);
 	}
 	
+	public static boolean isHttpRequest(String input) {
+		return HttpPartUrlUtils.isRequestUrl(input);
+	}
+	
+	public static boolean isHttpResponse(String input) {
+		return HttpPartUrlUtils.isResponseUrl(input);
+	}
+	
 	/**
 	 * @param input
 	 * @return true if the given url starts with "port:" prefix
@@ -1224,7 +1241,9 @@ public class FileUtils {
 	public static boolean isLocalFile(URL contextUrl, String input) {
 		if (input.startsWith("file:")) {
 			return true;
-		} else if (isRemoteFile(input) || isConsole(input) || isSandbox(input) || isArchive(input) || isDictionary(input) || isPortURL(input)) {
+		} else if (isRemoteFile(input) || isConsole(input) || isSandbox(input) 
+				|| isArchive(input) || isDictionary(input) || isPortURL(input)
+				|| isHttpRequest(input) || isHttpResponse(input)) {
 			return false;
 		} else {
 			try {
@@ -1554,6 +1573,11 @@ public class FileUtils {
     		} else if (isSandbox(input)) {
     			URL url = FileUtils.getFileURL(contextURL, input);
     			return SandboxUrlUtils.getSandboxOutputStream(url, appendData);
+    		} else if (isHttpRequest(input)) {
+    			throw new IOException("Cannot write to a HTTP request");
+    		} else if (isHttpResponse(input)) {
+    			URL url = FileUtils.getFileURL(contextURL, input);
+    			return HttpPartUrlUtils.getResponseOutputStream(url); 
     		} else {
     			// file path or relative URL
     			URL url = FileUtils.getFileURL(contextURL, input);
@@ -1607,7 +1631,6 @@ public class FileUtils {
 	 * @return true if can write, false otherwise
 	 * @throws ComponentNotReadyException
 	 */
-	@SuppressWarnings(value = "RV_ABSOLUTE_VALUE_OF_HASHCODE")
 	public static boolean canWrite(URL contextURL, String fileURL, boolean mkDirs) throws ComponentNotReadyException {
 		// get inner source
 		Matcher matcher = getInnerInput(fileURL);
@@ -1635,6 +1658,10 @@ public class FileUtils {
 			String filename = multiOut.next();
 			if(filename.startsWith("port:")) return true;
 			if(filename.startsWith("dict:")) return true;
+			if(isHttpRequest(fileName)) {
+				throw new ComponentNotReadyException("Cannot write to a HTTP request");
+			}
+			if(isHttpResponse(fileName)) return true;
 			url = getFileURL(contextURL, filename);
             if(!url.getProtocol().equalsIgnoreCase("file")) return true;
             
@@ -1642,11 +1669,7 @@ public class FileUtils {
             String sUrl = getUrlFile(url);
             boolean isFile = !sUrl.endsWith("/") && !sUrl.endsWith("\\");
             if (!isFile) {
-            	if (fileURL.indexOf("#") < 0) {
-					sUrl = sUrl + "tmpfile" + Math.abs(sUrl.hashCode());
-				} else {
-					sUrl = sUrl + "tmpfile" + UUID.randomUUID();
-				}
+				sUrl = sUrl + "tmpfile" + UUID.randomUUID();
             }
 			file = new File(sUrl);
 		} catch (Exception e) {

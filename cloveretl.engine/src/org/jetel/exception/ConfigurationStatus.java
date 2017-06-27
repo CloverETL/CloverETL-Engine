@@ -89,7 +89,20 @@ public class ConfigurationStatus implements Iterable<ConfigurationProblem> {
     	return addProblem(graphElement, attributeName, Severity.INFO, message, cause);
     }
 
-    private ConfigurationProblem addProblem(IGraphElement graphElement, String attributeName, Severity severity, String message, Throwable cause) {
+    /**
+     * CLO-10929:
+     * Use this method only if you need to set Severity dynamically.
+     * Otherwise use one of the dedicated methods above.
+     * 
+     * @param graphElement
+     * @param attributeName
+     * @param severity
+     * @param message
+     * @param cause
+     * 
+     * @return
+     */
+    public ConfigurationProblem addProblem(IGraphElement graphElement, String attributeName, Severity severity, String message, Throwable cause) {
     	ConfigurationProblem configurationProblem = new ConfigurationProblem(message, severity, graphElement, Priority.NORMAL, attributeName);
     	configurationProblems.add(configurationProblem);
     	configurationProblem.setAttributeName(attributeName);

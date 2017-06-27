@@ -94,14 +94,17 @@ public class EdgeDebugReader {
     	try {
     		ordinal = parser.getNextRecordNumber();
     	} catch(NoDataAvailableException e) {
-    		return DebugDataStatus.INCOMPLETE_DATA.getCode();
+    		return -1;
     	}
-    	if (ordinal > 0) {
-    		if (parser.getNext(record) == null) {
+    	if (ordinal != -1) {
+    		if (parser.getNext(record) != null) {
+    			return ordinal;
+    		} else {
     			throw new JetelRuntimeException("Unexpected end of edge debug file.");
     		}
+		} else {
+			return -2;
 		}
-		return ordinal;
 	}
 
     /**
@@ -124,14 +127,17 @@ public class EdgeDebugReader {
     	try {
     		ordinal = parser.getNextRecordNumber();
     	} catch(NoDataAvailableException e) {
-    		return DebugDataStatus.INCOMPLETE_DATA.getCode();
+    		return -1;
     	}
-    	if (ordinal > 0) {
-    		if (!parser.getNext(record)) {
+    	if (ordinal != -1) {
+    		if (parser.getNext(record)) {
+    			return ordinal;
+    		} else {
     			throw new JetelRuntimeException("Unexpected end of edge debug file.");
     		}
+		} else {
+			return -2;
 		}
-		return ordinal;
 	}
 
 	/**

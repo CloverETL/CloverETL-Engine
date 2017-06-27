@@ -16,33 +16,24 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.graph;
+package org.jetel.exception;
 
-import org.jetel.test.CloverTestCase;
+import java.io.IOException;
 
 /**
- * @author Kokon (info@cloveretl.com)
+ * Exception for not available HTTP context.
+ * 
+ * @author Roland (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 21. 10. 2013
+ * @created 15. 5. 2017
  */
-public class JobTypeTest extends CloverTestCase {
+public class HttpContextNotAvailableException extends IOException {
 
-	public void testFromFileExtension() {
-		assertEquals(JobType.ETL_GRAPH, JobType.fromFileExtension(null));
-		assertEquals(JobType.ETL_GRAPH, JobType.fromFileExtension(""));
-		assertEquals(JobType.ETL_GRAPH, JobType.fromFileExtension("grf"));
-		assertEquals(JobType.JOBFLOW, JobType.fromFileExtension("jbf"));
-		assertEquals(JobType.PROFILER_JOB, JobType.fromFileExtension("cpj"));
-		assertEquals(JobType.SUBGRAPH, JobType.fromFileExtension("sgrf"));
-		assertEquals(JobType.SUBJOBFLOW, JobType.fromFileExtension("sjbf"));
-		assertEquals(JobType.RESTJOB, JobType.fromFileExtension("rjob"));
-		try {
-			JobType.fromFileExtension("scpj");
-			fail();
-		} catch (IllegalArgumentException e) {
-			//ok
-		}
-	}
+	private static final long serialVersionUID = 7164593286640547745L;
 	
+	public HttpContextNotAvailableException(String message) {
+		super(message);
+	}
+
 }

@@ -40,30 +40,34 @@ public enum JobType {
 	/** This type represents jobflows */
 	JOBFLOW("jobflow", "Jobflow", FileType.JOBFLOW),
 	PROFILER_JOB("profilerJob", "Profiler job", FileType.PROFILER_JOB),
-	SUBGRAPH("subgraph", "Subgraph", FileType.SUBGRAPH, ETL_GRAPH),
-	SUBJOBFLOW("subjobflow", "Subjobflow", FileType.SUBJOBFLOW, JOBFLOW);
+	SUBGRAPH("subgraph", "Subgraph", FileType.SUBGRAPH, ETL_GRAPH, true),
+	SUBJOBFLOW("subjobflow", "Subjobflow", FileType.SUBJOBFLOW, JOBFLOW, true),
+	RESTJOB("restJob", "REST Job", FileType.RESTJOB, ETL_GRAPH, false);
 
 	/** This type is used in case the type is not specified in different way. */
 	public static final JobType DEFAULT = ETL_GRAPH;
 
-	private String id;
+	private final String id;
 	
-	private String label;
+	private final String label;
 	
 	/** Associated file type. */
-	private FileType fileType;
+	private final FileType fileType;
 	
-	private JobType parent;
+	private final JobType parent;
+	
+	private final boolean subJob;
 	
 	private JobType(String id, String label, FileType fileType) {
+		this(id, label, fileType, null, false);
+	}
+
+	private JobType(String id, String label, FileType fileType, JobType parent, boolean subJob) {
 		this.id = id;
 		this.label = label;
 		this.fileType = fileType;
-	}
-
-	private JobType(String id, String label, FileType fileType, JobType parent) {
-		this(id, label, fileType);
 		this.parent = parent;
+		this.subJob = subJob;
 	}
 
 	public String getId() {
@@ -145,6 +149,16 @@ public enum JobType {
 		return this.isSubTypeOf(PROFILER_JOB);
 	}
 	
+	/**
+	 * Returns <code>true</code> if the current job type
+	 * is {@link #RESTJOB}.
+	 * 
+	 * @return <code>true</code> for {@link #RESTJOB}
+	 */
+	public boolean isRestJob() {
+		return this.isSubTypeOf(RESTJOB);
+	}
+	
 	public JobType getBaseType() {
 		return (parent == null) ? this : parent.getBaseType();
 	}
@@ -212,7 +226,6 @@ public enum JobType {
 	 * @return true for {@link JobType#SUBGRAPH} and {@link JobType#SUBJOBFLOW}; false otherwise
 	 */
 	public boolean isSubJob() {
-		return parent != null;
+		return subJob;
 	}
-
 }
