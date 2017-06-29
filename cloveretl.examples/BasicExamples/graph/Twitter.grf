@@ -66,9 +66,9 @@ After running a graph, you can see results located in project [BasicExamples|nav
 
 
 * [data-out/tweets-positive.csv|open://BasicExamples/data-out/tweets-positive.csv]
-* [data-out/tweets-negative.csv| open://data-out/tweets-negative.csv]
-* [tweets-undecided.csv|open://data-out/tweets-undecided.csv]
-* [tweets-word-frequencies.csv|open://data-out/tweets-word-frequencies.csv]
+* [data-out/tweets-negative.csv|open://BasicExamples/data-out/tweets-negative.csv]
+* [data-out/tweets-undecided.csv|open://BasicExamples/data-out/tweets-undecided.csv]
+* [data-out/tweets-word-frequencies.csv|open://BasicExamples/data-out/tweets-word-frequencies.csv]
 ]]></attr>
 </RichTextNote>
 <Dictionary/>
