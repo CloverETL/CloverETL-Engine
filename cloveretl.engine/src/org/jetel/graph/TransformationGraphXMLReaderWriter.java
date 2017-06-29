@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
@@ -45,6 +46,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.XMLEvent;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.ComponentFactory;
@@ -65,6 +67,8 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.dictionary.UnsupportedDictionaryOperation;
+import org.jetel.graph.rest.jaxb.EndpointSettings;
+import org.jetel.graph.rest.jaxb.RestJobResponseStatus;
 import org.jetel.graph.runtime.ExecutionType;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataRecordMetadata;
@@ -206,6 +210,22 @@ public class TransformationGraphXMLReaderWriter {
 	public final static String SUBGRAPH_PORT_REQUIRED_ATTRIBUTE = "required";
 	public final static String SUBGRAPH_PORT_KEEP_EDGE_ATTRIBUTE = "keepEdge";
 	public final static String SUBGRAPH_PORT_CONNECTED_ATTRIBUTE = "connected";
+	
+	public final static String ENDPOINT_SETTINGS_ELEMENT = "EndpointSettings";
+	public final static String ENDPOINT_SETTINGS_URL_PATH_ELEMENT = "UrlPath";
+	public final static String ENDPOINT_SETTINGS_DESCRIPTION_ELEMENT = "Description";
+	public final static String ENDPOINT_SETTINGS_ENDPOINT_NAME_ELEMENT = "EndpointName";
+	public final static String ENDPOINT_SETTINGS_EXAMPLE_OUTPUT_ELEMENT = "ExampleOutput";
+	public final static String ENDPOINT_SETTINGS_METHOD_ELEMENT = "RequestMethod";
+	public final static String ENDPOINT_SETTINGS_METHOD_NAME_ATTR = "name";
+	public final static String ENDPOINT_SETTINGS_PARAM_ELEMENT = "RequestParameter";
+	public final static String ENDPOINT_SETTINGS_PARAM_NAME_ATTR = "name";
+	public final static String ENDPOINT_SETTINGS_PARAM_TYPE_ATTR = "type";
+	public final static String ENDPOINT_SETTINGS_PARAM_FORMAT_ATTR = "format";
+	public final static String ENDPOINT_SETTINGS_PARAM_REQUIRED_ATTR = "required";
+	public final static String ENDPOINT_SETTINGS_PARAM_DESCRIPTION_ATTR = "description";
+	
+	public final static String REST_JOB_RESPONSE_STATUS = "RestJobResponseStatus";
 	
 	private final static String DICTIONARY_ELEMENT = "Dictionary";
 	private final static String DICTIONARY_ENTRY_ELEMENT = "Entry";
@@ -470,6 +490,38 @@ public class TransformationGraphXMLReaderWriter {
 		return graph;
 	}
 	
+	public EndpointSettings readEndpointSettings(InputStream stream) throws IOException, XMLConfigurationException, GraphConfigurationException {
+		
+		Document doc = prepareDocument(stream);
+		Element global = getGlobalElement(doc);
+		NodeList nodes = global.getElementsByTagName(ENDPOINT_SETTINGS_ELEMENT);
+		if (nodes.getLength() > 0) {
+			return instantiateEndpointSettings(nodes.item(0));
+		}
+		return null;
+	}
+	
+	public String readOutputFormat(InputStream stream) throws XMLConfigurationException {
+		Document doc = prepareDocument(stream);
+		NodeList nodes = doc.getElementsByTagName(NODE_ELEMENT);
+		for (int i = 0; i < nodes.getLength(); i++) {
+			if ("RESTJOB_OUTPUT0".equals(nodes.item(i).getAttributes().getNamedItem(ID_ATTRIBUTE).getNodeValue())) {
+				return nodes.item(i).getAttributes().getNamedItem("responseFormat").getNodeValue();
+			}
+		}
+		return null;
+	}
+	
+	public RestJobResponseStatus readResponseStatuses(InputStream stream) throws XMLConfigurationException, GraphConfigurationException {
+		Document doc = prepareDocument(stream);
+		Element global = getGlobalElement(doc);
+		NodeList nodes = global.getElementsByTagName(REST_JOB_RESPONSE_STATUS);
+		if (nodes.getLength() > 0) {
+			return instantiateRestJobResponseStatus(nodes.item(0));
+		}
+		return null;
+	}
+	
 	/**
 	 *Constructor for the read object
 	 *
@@ -525,12 +577,13 @@ public class TransformationGraphXMLReaderWriter {
 	        graph.setLargeIconPath(grfAttributes.getString(LARGE_ICON_PATH_ATTRIBUTE, null));
 	        graph.setStaticJobType(JobType.fromString(grfAttributes.getString(JOB_TYPE_ATTRIBUTE, null)));
 	
+	        final Element global = getGlobalElement(document);
 	        //read subgraph input ports
-			List<Element> subgraphInputPortsElements = getChildElements(getGlobalElement(document), SUBGRAPH_INPUT_PORTS_ELEMENT);
+			List<Element> subgraphInputPortsElements = getChildElements(global, SUBGRAPH_INPUT_PORTS_ELEMENT);
 	        instantiateSubgraphPorts(true, graph.getSubgraphInputPorts(), subgraphInputPortsElements);
 
 	        //read subgraph output ports
-			List<Element> subgraphOutputPortsElements = getChildElements(getGlobalElement(document), SUBGRAPH_OUTPUT_PORTS_ELEMENT);
+			List<Element> subgraphOutputPortsElements = getChildElements(global, SUBGRAPH_OUTPUT_PORTS_ELEMENT);
 	        instantiateSubgraphPorts(false, graph.getSubgraphOutputPorts(), subgraphOutputPortsElements);
 
 			// handle all defined graph parameters - old-fashion
@@ -538,7 +591,7 @@ public class TransformationGraphXMLReaderWriter {
 			instantiateProperties(PropertyElements);
 
 			// handle all defined graph parameters - new-fashion
-			List<Element> graphParametersElements = getChildElements(getGlobalElement(document), GRAPH_PARAMETERS_ELEMENT);
+			List<Element> graphParametersElements = getChildElements(global, GRAPH_PARAMETERS_ELEMENT);
 			instantiateGraphParameters(graph.getGraphParameters(), graphParametersElements);
 
 			//additional graph parameters are loaded after all build-in parameters are already loaded
@@ -546,29 +599,42 @@ public class TransformationGraphXMLReaderWriter {
 			//to ensure correct value of parameters is used when path parameter file is parametrised by
 			//parameter overridden by additional parameters.
 			graph.getGraphParameters().addPropertiesOverride(runtimeContext.getAdditionalProperties(), !runtimeContext.getJobType().isSubJob());
+			
+			// read endpoint settings (if any)
+			NodeList endpoint = global.getElementsByTagName(ENDPOINT_SETTINGS_ELEMENT);
+			if (endpoint.getLength() > 0) {
+				EndpointSettings settings = instantiateEndpointSettings(endpoint.item(0));
+				graph.setEndpointSettings(settings);
+			}
 
+			NodeList responseStatuses = global.getElementsByTagName(REST_JOB_RESPONSE_STATUS);
+			if (responseStatuses.getLength() > 0) {
+				RestJobResponseStatus status = instantiateRestJobResponseStatus(responseStatuses.item(0));
+				graph.setRestJobResponseStatus(status);
+			}
+			
 			// handle dictionary
-			NodeList dictionaryElements = document.getElementsByTagName(DICTIONARY_ELEMENT);
+			NodeList dictionaryElements = global.getElementsByTagName(DICTIONARY_ELEMENT);
 			instantiateDictionary(dictionaryElements);
 			
 			if (!onlyParamsAndDict) {
 				// handle all defined DB connections
-				NodeList dbConnectionElements = document.getElementsByTagName(CONNECTION_ELEMENT);
+				NodeList dbConnectionElements = global.getElementsByTagName(CONNECTION_ELEMENT);
 				instantiateDBConnections(dbConnectionElements);
 		
 				// handle all defined DB connections
-				NodeList sequenceElements = document.getElementsByTagName(SEQUENCE_ELEMENT);
+				NodeList sequenceElements = global.getElementsByTagName(SEQUENCE_ELEMENT);
 				instantiateSequences(sequenceElements);
 				
 				//create metadata
 				//NodeList metadataElements = document.getElementsByTagName(METADATA_ELEMENT);
-				instantiateMetadata(getGlobalElement(document), metadata);
+				instantiateMetadata(global, metadata);
 		
 				// register all metadata (DataRecordMetadata) within transformation graph
 				graph.addDataRecordMetadata(metadata);
 		
 				// handle all defined lookup tables
-				NodeList lookupsElements = document.getElementsByTagName(LOOKUP_TABLE_ELEMENT);
+				NodeList lookupsElements = global.getElementsByTagName(LOOKUP_TABLE_ELEMENT);
 				instantiateLookupTables(lookupsElements);
 		
 				NodeList phaseElements = document.getElementsByTagName(PHASE_ELEMENT);
@@ -591,6 +657,25 @@ public class TransformationGraphXMLReaderWriter {
 		}
 	}
 
+	private EndpointSettings instantiateEndpointSettings(org.w3c.dom.Node element) throws GraphConfigurationException {
+		try {
+			JAXBContext ctx = JAXBContextProvider.getInstance().getContext(EndpointSettings.class);
+			Unmarshaller unmarshaller = ctx.createUnmarshaller();
+			return (EndpointSettings)unmarshaller.unmarshal(element);
+		} catch (Exception e) {
+			throw new GraphConfigurationException("Could not parse endpoint settings: " + e.getMessage());
+		}
+	}
+	
+	private RestJobResponseStatus instantiateRestJobResponseStatus(org.w3c.dom.Node element) throws GraphConfigurationException {
+		try {
+			JAXBContext ctx = JAXBContextProvider.getInstance().getContext(RestJobResponseStatus.class);
+			Unmarshaller unmarshaller = ctx.createUnmarshaller();
+			return (RestJobResponseStatus)unmarshaller.unmarshal(element);
+		} catch (Exception e) {
+			throw new GraphConfigurationException("Could not parse REST job response status: " + e.getMessage());
+		}
+	}
 
 	/**
 	 * Return 'Global' XML element, direct child of 'Graph' element.
@@ -637,14 +722,14 @@ public class TransformationGraphXMLReaderWriter {
 					try {
 					    recordMetadata=MetadataFactory.fromFile(graph, fileURL);
 	                } catch (IOException ex) {
-	                	throwXMLConfigurationException("Can't parse metadata '" + metadataID + "'. Error when reading/parsing record metadata definition file '" + fileURL +"'.", ex);
+	                	throwXMLConfigurationException("Cannot parse metadata '" + metadataID + "'. Error when reading/parsing record metadata definition file '" + fileURL +"'.", ex);
 	                }
 				}// metadata from analyzing DB table (JDBC) - will be resolved
 				// later during Edge init - just put stub now.
 				else if (attributes.exists(DataRecordMetadataXMLReaderWriter.CONNECTION_ATTR)){
 					IConnection connection = graph.getConnection(attributes.getString(DataRecordMetadataXMLReaderWriter.CONNECTION_ATTR));
 					if(connection == null) {
-						throwXMLConfigurationException("Can't find Connection id - " + attributes.getString(DataRecordMetadataXMLReaderWriter.CONNECTION_ATTR) + ".");
+						throwXMLConfigurationException("Cannot find Connection id - " + attributes.getString(DataRecordMetadataXMLReaderWriter.CONNECTION_ATTR) + ".");
 					} else {
 						recordMetadata = new DataRecordMetadataStub(connection, attributes.attributes2Properties(null));
 					}
@@ -827,7 +912,7 @@ public class TransformationGraphXMLReaderWriter {
             
 			Object metadataObj = edgeMetadataID != null ? metadata.get(edgeMetadataID) : null;
 			if (metadataObj == null && edgeMetadataID != null) {
-				throwXMLConfigurationException("Can't find metadata ID '" + edgeMetadataID + "'.");
+				throwXMLConfigurationException("Cannot find metadata ID '" + edgeMetadataID + "'.");
 			}
 			// do we have real metadata or stub only ??
 			if (metadataObj instanceof DataRecordMetadata){
@@ -868,13 +953,13 @@ public class TransformationGraphXMLReaderWriter {
 			}
 			writerNode = graph.getNodes().get(specNodePort[0]);
 			if (writerNode == null) {
-				throwXMLConfigurationException("Can't find node with ID: " + fromNodeAttr);
+				throwXMLConfigurationException("Cannot find node with ID: " + fromNodeAttr);
 				continue;
 			}
             try{
                 fromPort=Integer.parseInt(specNodePort[1]);
             }catch(NumberFormatException ex){
-                throwXMLConfigurationException("Can't parse \"fromNode\"  port number value at edge "+edgeID+" : "+specNodePort[1]);
+                throwXMLConfigurationException("Cannot parse \"fromNode\"  port number value at edge "+edgeID+" : "+specNodePort[1]);
                 continue;
             }
             
@@ -892,13 +977,13 @@ public class TransformationGraphXMLReaderWriter {
 			// Node & port specified in form of: <nodeID>:<portNum>
 			readerNode = graph.getNodes().get(specNodePort[0]);
 			if (readerNode == null) {
-				throwXMLConfigurationException("Can't find node ID: " + toNodeAttr);
+				throwXMLConfigurationException("Cannot find node ID: " + toNodeAttr);
 				continue;
 			}
             try{
                 toPort=Integer.parseInt(specNodePort[1]);
             }catch(NumberFormatException ex){
-                throwXMLConfigurationException("Can't parse \"toNode\" number value at edge "+edgeID+" : "+specNodePort[1]);
+                throwXMLConfigurationException("Cannot parse \"toNode\" number value at edge "+edgeID+" : "+specNodePort[1]);
                 continue;
             }
 			// check whether port isn't already assigned
@@ -1103,7 +1188,7 @@ public class TransformationGraphXMLReaderWriter {
         	try {
         		graphParameters.addProperties(loadGraphProperties(resolvedFileURL));
         	} catch(IOException ex) {
-        		throwXMLConfigurationException("Can't load property definition from " + resolvedFileURL, ex);
+        		throwXMLConfigurationException("Cannot load property definition from " + resolvedFileURL, ex);
         	}
         }
 	}
@@ -1219,13 +1304,7 @@ public class TransformationGraphXMLReaderWriter {
         } catch(MalformedURLException e) {
         	throwXMLConfigurationException("Wrong URL/filename of file specified: " + fileURL, e);
         } finally {
-        	if (inStream != null) {
-        		try {
-        			inStream.close();
-        		} catch (IOException e) {
-        			//DO NOTHING
-        		}
-        	}
+        	IOUtils.closeQuietly(inStream);
         }
     	return null;
     }

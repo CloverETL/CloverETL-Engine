@@ -51,6 +51,7 @@ import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
+import org.jetel.exception.HttpContextNotAvailableException;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.ContextProvider;
@@ -548,6 +549,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	@Override
 	public void modifyGraphParameter(GraphParameter graphParameter) {
 		// no params modifications
+	}
+
+	@Override
+	public HttpContext getHttpContext() throws HttpContextNotAvailableException {
+		throw new HttpContextNotAvailableException("HTTP Context is not available for local execution");
 	}
 	
 }

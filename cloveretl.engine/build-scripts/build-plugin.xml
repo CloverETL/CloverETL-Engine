@@ -601,7 +601,6 @@
 			<keep name="com.initiatesystems.etl.formatter.MemPutJoiner"><field access="public"/><method access="public"/></keep>
 			
 			<keep name="com.opensys.cloveretl.connection.SOQLQuery"><field access="protected public"/><method access="protected public"/></keep>
-
 			<!-- template to copy&paste
 			<keep name="xxxxxx"><field access="protected public"/><method access="protected public"/></keep>
 			-->

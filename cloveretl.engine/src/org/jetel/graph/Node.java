@@ -135,6 +135,12 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     /** Subgraph only. Is this component part of debug output phase of the subgraph. */
     private boolean partOfDebugOutput = false;
     
+    /** REST job only - is this component part of debug input phase of the job */
+    private boolean partOfRestInput;
+    
+    /** REST job only - is this component part of debug output phase of the job */
+    private boolean partOfRestOutput;
+    
 	/**
 	 *  Various PORT kinds identifiers
 	 *
@@ -153,6 +159,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     public final static String XML_ALLOCATION_ATTRIBUTE = "allocation";
     public final static String XML_PART_OF_DEBUG_INPUT_ATTRIBUTE = "debugInput";
     public final static String XML_PART_OF_DEBUG_OUTPUT_ATTRIBUTE = "debugOutput";
+    public final static String XML_PART_OF_REST_INPUT = "restJobInput";
+    public final static String XML_PART_OF_REST_OUTPUT = "restJobOutput";
 
     /**
      *  Standard constructor.
@@ -1704,4 +1712,19 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		return partOfDebugOutput;
 	}
 
+	public boolean isPartOfRestInput() {
+		return partOfRestInput;
+	}
+
+	public void setPartOfRestInput(boolean partOfRestInput) {
+		this.partOfRestInput = partOfRestInput;
+	}
+
+	public boolean isPartOfRestOutput() {
+		return partOfRestOutput;
+	}
+
+	public void setPartOfRestOutput(boolean partOfRestOutput) {
+		this.partOfRestOutput = partOfRestOutput;
+	}
 }

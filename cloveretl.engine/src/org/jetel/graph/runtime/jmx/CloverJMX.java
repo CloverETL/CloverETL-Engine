@@ -26,6 +26,7 @@ import java.lang.management.ThreadMXBean;
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 
+import org.apache.log4j.Logger;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Phase;
 import org.jetel.graph.runtime.WatchDog;
@@ -41,6 +42,8 @@ import org.jetel.graph.runtime.WatchDog;
 public class CloverJMX extends NotificationBroadcasterSupport implements CloverJMXMBean, Serializable {
 
 	private static final long serialVersionUID = 7993293097835091585L;
+	
+	private static final Logger log = Logger.getLogger(CloverJMX.class);
 
 	transient static final MemoryMXBean MEMORY_MXBEAN = ManagementFactory.getMemoryMXBean();
     transient static final ThreadMXBean THREAD_MXBEAN = ManagementFactory.getThreadMXBean();
@@ -129,44 +132,72 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	//******************* EVENTS ********************/
 	
 	synchronized public void graphStarted() {
-		graphDetail.graphStarted();
+		try {
+			graphDetail.graphStarted();
+		} catch (Exception e) {
+			log.error("Unexpected error during job tracking", e);
+		}
 
 		sendNotification(new Notification(GRAPH_STARTED, this/*getGraphDetail()*/, notificationSequence++));
 	}
 
 	synchronized public void phaseStarted(Phase phase) {
-		graphDetail.phaseStarted(phase);
+		try {
+			graphDetail.phaseStarted(phase);
+		} catch (Exception e) {
+			log.error("Unexpected error during job tracking", e);
+		}
 		
 		sendNotification(new Notification(PHASE_STARTED, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++));
 	}
 
 	synchronized public void gatherTrackingDetails() {
-		graphDetail.gatherTrackingDetails();
+		try {
+			graphDetail.gatherTrackingDetails();
+		} catch (Exception e) {
+			log.error("Unexpected error during job tracking", e);
+		}
 		
 		sendNotification(new Notification(TRACKING_UPDATED, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++));
 	}
 
 	synchronized public void phaseFinished() {
-		graphDetail.phaseFinished();
+		try {
+			graphDetail.phaseFinished();
+		} catch (Exception e) {
+			log.error("Unexpected error during job tracking", e);
+		}
 		
 		sendNotification(new Notification(PHASE_FINISHED, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++));
 	}
 
 	synchronized public void phaseAborted() {
-		graphDetail.phaseFinished();
+		try {
+			graphDetail.phaseFinished();
+		} catch (Exception e) {
+			log.error("Unexpected error during job tracking", e);
+		}
 		
 		sendNotification(new Notification(PHASE_ABORTED, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++));
 	}
 
 	synchronized public void phaseError(String message) {
-		graphDetail.phaseFinished();
+		try {
+			graphDetail.phaseFinished();
+		} catch (Exception e) {
+			log.error("Unexpected error during job tracking", e);
+		}
 		
 		sendNotification(new Notification(PHASE_ERROR, this/*getGraphDetail().getRunningPhaseDetail()*/, notificationSequence++));
 	}
 
 	synchronized public void graphFinished() {
-		if(!graphFinished) { // if graph was already finished, we'll send only a notification
-			graphDetail.graphFinished();
+		if (!graphFinished) { // if graph was already finished, we'll send only a notification
+			try {
+				graphDetail.graphFinished();
+			} catch (Exception e) {
+				log.error("Unexpected error during job tracking", e);
+			}
 			graphFinished = true;
 		}
 
@@ -177,9 +208,13 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	 * Graph was aborted. Only send a notification.
 	 */
 	synchronized public void graphAborted() {
-		if(!graphFinished) { // if graph was already finished, we'll send only a notification
-			graphDetail.gatherTrackingDetails();
-			graphDetail.graphFinished();
+		if (!graphFinished) { // if graph was already finished, we'll send only a notification
+			try {
+				graphDetail.gatherTrackingDetails();
+				graphDetail.graphFinished();
+			} catch (Exception e) {
+				log.error("Unexpected error during job tracking", e);
+			}
 			graphFinished = true;
 		}
 
@@ -190,9 +225,13 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	 * Graph ends with an error. Only send a notification.
 	 */
 	synchronized public void graphError(String message) {
-		if(!graphFinished) { // if graph was already finished, we'll send only a notification
-			graphDetail.gatherTrackingDetails();
-			graphDetail.graphFinished();
+		if (!graphFinished) { // if graph was already finished, we'll send only a notification
+			try {
+				graphDetail.gatherTrackingDetails();
+				graphDetail.graphFinished();
+			} catch (Exception e) {
+				log.error("Unexpected error during job tracking", e);
+			}
 			graphFinished = true;
 		}
 
