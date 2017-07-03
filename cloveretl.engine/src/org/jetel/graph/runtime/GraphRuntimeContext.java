@@ -80,6 +80,7 @@ public class GraphRuntimeContext implements Serializable {
 	private boolean useJMX;
 	private boolean waitForJMXClient;
 	private boolean verboseMode;
+	private boolean workerExecution;
 	private Properties additionalProperties;
 	private boolean skipCheckConfig;
 	private String password;
@@ -212,6 +213,7 @@ public class GraphRuntimeContext implements Serializable {
 		ret.trackingInterval = getTrackingInterval();
 		ret.skipCheckConfig = isSkipCheckConfig();
 		ret.verboseMode = isVerboseMode();
+		ret.workerExecution = isWorkerExecution();
 		ret.useJMX = useJMX();
 		ret.waitForJMXClient = isWaitForJMXClient();
 		ret.password = getPassword();
@@ -413,6 +415,18 @@ public class GraphRuntimeContext implements Serializable {
 	 */
 	public boolean isVerboseMode() {
 		return verboseMode;
+	}
+	
+	/**
+	 * Sets whether graph should run on a worker.
+	 * @param workerExecution
+	 */
+	public void setWorkerExecution(boolean workerExecution) {
+		this.workerExecution = workerExecution;
+	}
+	
+	public boolean isWorkerExecution() {
+		return workerExecution;
 	}
 
 	/**
@@ -1134,6 +1148,13 @@ public class GraphRuntimeContext implements Serializable {
 			}
 		},
 		VERBOSE_MODE("verboseMode", Boolean.class) {
+			
+			@Override
+			public Object parseValue(String s) {
+				return Boolean.parseBoolean(s);
+			}
+		},
+		WORKER_EXECUTION("workerExecution", Boolean.class) {
 			
 			@Override
 			public Object parseValue(String s) {
