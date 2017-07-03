@@ -36,7 +36,6 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationException;
 import org.jetel.exception.ConfigurationStatus;
@@ -281,10 +280,6 @@ public abstract class IAuthorityProxy {
 	 * May be null when the AuthorityProxy instance is related to the graph which is not intended to be executed.
 	 */
 	protected GraphRuntimeContext runtimeContext;
-	
-	public abstract Sequence getSharedSequence(Sequence sequence);
-
-	public abstract void freeSharedSequence(Sequence sequence);
 
 	/**
 	 * Sets context for this graph run. Must be called just once for this instance just before graph run.

@@ -283,11 +283,6 @@ public class SimpleSequence extends AbstractSequence {
         return status;
     }
 
-	@Override
-	public boolean isShared() {
-		return true;
-	}
-
 	/**
 	 * @return the last number this sequence has currently reserved
 	 */

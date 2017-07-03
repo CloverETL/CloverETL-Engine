@@ -94,24 +94,6 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		super();
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSharedSequence(org.jetel.data.sequence.Sequence)
-	 */
-	@Override
-	public Sequence getSharedSequence(Sequence sequence) {
-		return sequence;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#freeSharedSequence(org.jetel.data.sequence.Sequence)
-	 */
-	@Override
-	public void freeSharedSequence(Sequence sequence) {
-		sequence.free();
-	}
-	
 	protected GraphRuntimeContext prepareRuntimeContext(GraphRuntimeContext givenRuntimeContext, long runId) {
         GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
         runtimeContext.setRunId(runId);

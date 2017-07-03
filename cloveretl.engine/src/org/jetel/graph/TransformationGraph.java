@@ -557,10 +557,6 @@ public final class TransformationGraph extends GraphElement {
 				ClassLoader formerClassLoader = Thread.currentThread().getContextClassLoader();
 				try {
 					Thread.currentThread().setContextClassLoader(sequence.getClass().getClassLoader());
-					if (sequence.isShared()) {
-						sequence = getAuthorityProxy().getSharedSequence(sequence);
-						sequences.put(sequence.getId(), sequence);
-					}
 					sequence.init();
 					logger.info(sequence + " ... OK");
 				} catch (Exception e) {
@@ -868,16 +864,7 @@ public final class TransformationGraph extends GraphElement {
 		while (iterator.hasNext()) {
 			try {
 				final Sequence seq = (Sequence) iterator.next();
-				if (seq.isShared()) {
-					IAuthorityProxy ap = getAuthorityProxy();
-					if (ap == null) { // CLD-3693: graph runs on the server
-						// try with the default authority proxy instead - should be a ServerAuthorityProxy
-						ap = IAuthorityProxy.getDefaultProxy();
-					}
-					ap.freeSharedSequence(seq);
-				} else {
-					seq.free();
-				}
+				seq.free();
 			} catch (Exception ex) {
 			    logger.warn("Can't free Sequence", ex);
 			}
