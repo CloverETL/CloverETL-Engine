@@ -221,6 +221,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				}
 			  	t.setName(newThreadName);
 	    		
+			  	logger.info("Authority proxy: " + getAuthorityProxy().getClass().getName());
+			  	
 			  	logger.debug("Job execution type: " + getGraphRuntimeContext().getJobType());
 			  	
 	    		//print graph properties
