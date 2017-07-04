@@ -185,7 +185,7 @@ public class HttpContextMock implements HttpContext {
 	}
 
 	@Override
-	public void sendResponseError(int status, String message) throws IOException {
+	public void setResponseStatus(int status, String message) {
 		// TODO Auto-generated method stub
 		
 	}
