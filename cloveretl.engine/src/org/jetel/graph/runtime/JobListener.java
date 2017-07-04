@@ -18,22 +18,20 @@
  */
 package org.jetel.graph.runtime;
 
-import java.util.concurrent.Future;
-
-import org.jetel.graph.Result;
-
 /**
- * WatchDogFuture class is a {@link Future} of a running {@link WatchDog}.
+ * This listener can be used with {@link WatchDogFuture} to monitor running jobs.
  * 
- * @author Kokon (info@cloveretl.com)
+ * @author martin (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 11.4.2013
+ * @created 4. 7. 2017
  */
-public interface WatchDogFuture extends FutureOfCallable<WatchDog, Result> {
+public interface JobListener {
 
-	public WatchDog getWatchDog();
-
-	public void addJobListener(JobListener jobListener);
+	/**
+	 * This method is invoked on job (graph, jobflow, ...) finish.
+	 * @param runId
+	 */
+	public void jobFinished(long runId);
 	
 }
