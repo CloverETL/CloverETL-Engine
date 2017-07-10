@@ -17,14 +17,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.jetel.connection.jdbc;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.Driver;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -56,7 +53,6 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.crypto.Enigma;
@@ -616,81 +612,6 @@ public class DBConnectionImpl extends AbstractDBConnection {
         super.checkConfig(status);
         //TODO
         return status;
-    }
-
-	@Override
-	public DataRecordMetadata createMetadata(Properties parameters) throws SQLException {
-    	if (!isInitialized()) {
-    		throw new IllegalStateException("DBConnection has to be initialized to be able to create metadata.");
-    	}
-    	
-        Statement statement = null;
-        ResultSet resultSet = null;
-
-        String sqlQuery = parameters.getProperty(SQL_QUERY_PROPERTY);
-        if(StringUtils.isEmpty(sqlQuery)) {
-            throw new IllegalArgumentException("JDBC stub for clover metadata can't find sqlQuery parameter.");
-        }
-        try {
-        	// CLO-4238:
-        	SQLScriptParser sqlParser = new SQLScriptParser();
-        	sqlParser.setBackslashQuoteEscaping(getJdbcSpecific().isBackslashEscaping());
-        	sqlParser.setRequireLastDelimiter(false);
-        	sqlParser.setStringInput(sqlQuery);
-			sqlQuery = sqlParser.getNextStatement();
-		} catch (IOException e1) {
-			logger.warn("Failed to parse SQL query", e1);
-		}
-        
-        String optimizeProperty = parameters.getProperty(OPTIMIZE_QUERY_PROPERTY);
-        SqlQueryOptimizeOption optimize;
-        if (optimizeProperty == null) {
-        	optimize = SqlQueryOptimizeOption.FALSE;
-        } else {
-        	try {
-        		optimize = SqlQueryOptimizeOption.valueOf(optimizeProperty.toUpperCase());
-        	} catch (Exception e) {
-        		optimize = SqlQueryOptimizeOption.FALSE;
-        	}
-        }
-
-        if (optimize != SqlQueryOptimizeOption.FALSE) {
-        	logger.debug("Optimizing sql query for dynamic metadata. Original query: " + sqlQuery);
-	        switch (optimize) {
-	        case TRUE:
-        		sqlQuery = SQLUtil.encloseInQptimizingQuery(sqlQuery);
-        		break;
-	        case NAIVE:
-        		sqlQuery = SQLUtil.appendOptimizingWhereClause(sqlQuery);
-	        	break;
-	        case BASIC_TRAVERSE: {
-	    		sqlQuery = SQLUtil.modifyQueryUsingBasicTraversal(sqlQuery);
-	        	break;
-	        }
-	        default:
-	        	//empty
-	        }
-        	logger.debug("Optimizing sql query for dynamic metadata. Optimized query: " + sqlQuery);
-        }
-
-        Connection connection;
-		try {
-			connection = connect(OperationType.UNKNOWN);
-		} catch (JetelException e) {
-			throw new SQLException(e);
-		} catch (JetelRuntimeException e) {
-			throw new SQLException(e);
-		}
-        
-        try {
-            statement = connection.createStatement();
-            resultSet = statement.executeQuery(sqlQuery);
-            DataRecordMetadata drMetaData = SQLUtil.dbMetadata2jetel(resultSet.getMetaData(), getJdbcSpecific());
-            return drMetaData;
-        } finally {
-            // make sure we close all connection resources
-        	SQLUtil.closeConnection(resultSet, statement, connection);
-        }
     }
 
     @Override
