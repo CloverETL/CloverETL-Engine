@@ -178,8 +178,12 @@ public interface HttpContext {
 	/** Set status code for this response */
 	void setResponseStatus(int status);
 	
-	/** Sends error response to the client */
-	void sendResponseError(int status, String message) throws IOException;
+	/**
+	 * Sets response status code woth optional message.
+	 * @param status
+	 * @param message
+	 */
+	void setResponseStatus(int status, String message);
 	
 	/** Returns input stream for the given part
 	 * @param partName 
