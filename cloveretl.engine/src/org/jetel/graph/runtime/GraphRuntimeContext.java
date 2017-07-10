@@ -1158,7 +1158,7 @@ public class GraphRuntimeContext implements Serializable {
 			
 			@Override
 			public Object parseValue(String s) {
-				return Boolean.parseBoolean(s);
+				return parseBoolean(s);
 			}
 		};
 		
