@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
@@ -344,26 +345,29 @@ public class PropertyRefResolver {
 				} else {
 					resolvedReference = param.getValue();
 				}
-			} else if (isHttpRequestParameter(reference)) {
-				try {
-					resolvedReference = getAuthorityProxy().getHttpContext().
-							getRequestParameter(reference.replaceFirst("(?i)" + PREFIX_REQUEST_PARAMETERS, ""));
-				} catch (HttpContextNotAvailableException e) {
-					// HTTP context is available during runtime
-					logger.debug(e);
-				}
 			} else {
-				resolvedReference = MiscUtils.getEnvSafe(reference);
-				
-				// find properties with '.' and '_' among system properties. If both found, use '.' for backwards compatibility
+				if (getAuthorityProxy().isHttpContextAvailable()) {
+					try {
+						resolvedReference = getAuthorityProxy().getHttpContext().
+								getRequestParameter(reference.replaceFirst("(?i)" + PREFIX_REQUEST_PARAMETERS, ""));
+					} catch (HttpContextNotAvailableException e) {
+						// HTTP context is available during runtime
+						logger.debug(e);
+					}
+				}
 				if (resolvedReference == null) {
-					String preferredReference = reference.replace('_', '.');
-					resolvedReference = System.getProperty(preferredReference);
+					resolvedReference = MiscUtils.getEnvSafe(reference);
+					
+					// find properties with '.' and '_' among system properties. If both found, use '.' for backwards compatibility
 					if (resolvedReference == null) {
-						resolvedReference = System.getProperty(reference);
-					} else {
-						if (!reference.equals(preferredReference) && System.getProperty(reference) != null) {
-							logger.warn(new String(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_preferred_substitution_warning"), reference))); //$NON-NLS-1$
+						String preferredReference = reference.replace('_', '.');
+						resolvedReference = System.getProperty(preferredReference);
+						if (resolvedReference == null) {
+							resolvedReference = System.getProperty(reference);
+						} else {
+							if (!reference.equals(preferredReference) && System.getProperty(reference) != null) {
+								logger.warn(new String(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_preferred_substitution_warning"), reference))); //$NON-NLS-1$
+							}
 						}
 					}
 				}
@@ -390,22 +394,23 @@ public class PropertyRefResolver {
 	}
 
 	/**
-	 * Return true if paramName is name of HttpRequest parameter.
-	 * @param reference
-	 * @return
-	 */
-	private boolean isHttpRequestParameter(String paramName) {
-		return (paramName != null && paramName.toLowerCase().startsWith(PREFIX_REQUEST_PARAMETERS));
-	}
-
-	/**
 	 * Return true if input contains HttpRequest parameter.
 	 * @param input
 	 * @return
 	 */
-	public static boolean containsRequestParameter(String input) {
+	public static boolean containsRequestParameter(List<String> inputParameters, String input) {
 		Matcher propertyMatcher = REQUEST_PARAMETER_PATTERN.matcher(input);
-		return propertyMatcher.find();
+		if (propertyMatcher.find()) {
+			return true;
+		} else {
+			for (String parameterName : inputParameters) {
+				String parameter = String.format("${%s}", parameterName);
+				if (input.contains(parameter)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	/**
@@ -461,19 +466,39 @@ public class PropertyRefResolver {
 	 * @param propertyName value of this property name is returned
 	 * @param refResFlag flag which is used by resolver
 	 * @return resolved value of given property name
+	 * @throws JetelRuntimeException if httpContext is not available 
+	 * @throws IllegalArgumentException if property name is empty
 	 */
 	public String getResolvedPropertyValue(String propertyName, RefResFlag refResFlag) {
 		if (!StringUtils.isEmpty(propertyName)) {
-			if (parameters.hasGraphParameter(propertyName)) {
-				StringBuilder propertyReference = new StringBuilder();
-				propertyReference.append("${").append(propertyName).append('}');
-				String propertyReferenceStr = propertyReference.toString();
-				return resolveRef(propertyReferenceStr, refResFlag);
-			} else {
-				return null;
+			try {
+				if (parameters.hasGraphParameter(propertyName) || 
+						(getAuthorityProxy().isHttpContextAvailable() &&
+						getAuthorityProxy().getHttpContext().getRequestParameterNames().contains(propertyName))) {
+					StringBuilder propertyReference = new StringBuilder();
+					propertyReference.append("${").append(propertyName).append('}');
+					String propertyReferenceStr = propertyReference.toString();
+					return resolveRef(propertyReferenceStr, refResFlag);
+				} else {
+					return null;
+				}
+			} catch (HttpContextNotAvailableException e) {
+				throw new JetelRuntimeException(e);
 			}
 		} else {
 			throw new IllegalArgumentException("empty property name");
+		}
+	}
+	
+	/**
+	 * @return all request parameters
+	 * @throws JetelRuntimeException if httpContext is not available
+	 */
+	public Map<String, String> getRequestParameters() {
+		try {
+			return getAuthorityProxy().getHttpContext().getRequestParameters();
+		} catch (HttpContextNotAvailableException e) {
+			throw new JetelRuntimeException(e);
 		}
 	}
 	

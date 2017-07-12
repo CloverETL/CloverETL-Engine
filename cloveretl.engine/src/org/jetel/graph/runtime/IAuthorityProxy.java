@@ -680,4 +680,9 @@ public abstract class IAuthorityProxy {
 	 */
 	public abstract HttpContext getHttpContext() throws HttpContextNotAvailableException;
 	
+	/**
+	 * Returns true if HttpContext is available
+	 */
+	public abstract boolean isHttpContextAvailable();
+	
 }
