@@ -42,7 +42,7 @@ import org.jetel.util.bytes.CloverBuffer;
 
 /**
  *  A class that represents Edge Proxy - surrogate which directs calls to
- *  apropriate Edge implementation according to edge type specification
+ *  appropriate Edge implementation according to edge type specification
  *
  * @author      D.Pavlis
  * @since       August 3, 2003
@@ -240,7 +240,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 */
 	@Override
 	public long getRecordCounter() {
-		return edge.getOutputRecordCounter();
+		return getOutputRecordCounter();
 	}
     
     /* (non-Javadoc)
@@ -248,7 +248,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
      */
     @Override
 	public long getOutputRecordCounter() {
-        return edge.getOutputRecordCounter();
+    	return edge != null ? edge.getOutputRecordCounter() : 0;
     }
 
     /* (non-Javadoc)
@@ -256,40 +256,40 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
      */
     @Override
 	public long getInputRecordCounter() {
-        return edge.getInputRecordCounter();
+    	return edge != null ? edge.getInputRecordCounter() : 0;
     }
 
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.InputPort#getByteCounter()
 	 */
 	@Override
-	public long getByteCounter(){
-	    return edge.getOutputByteCounter();
+	public long getByteCounter( ) {
+	    return getOutputByteCounter();
     }
 
     /* (non-Javadoc)
      * @see org.jetel.graph.OutputPort#getOutputByteCounter()
      */
     @Override
-	public long getOutputByteCounter(){
-        return edge.getOutputByteCounter();
+	public long getOutputByteCounter() {
+    	return edge != null ? edge.getOutputByteCounter() : 0;
     }
 
     /* (non-Javadoc)
      * @see org.jetel.graph.InputPort#getInputByteCounter()
      */
     @Override
-	public long getInputByteCounter(){
-        return edge.getInputByteCounter();
+	public long getInputByteCounter() {
+    	return edge != null ? edge.getInputByteCounter() : 0;
     }
 
-    public int getBufferedRecords(){
-    	return edge.getBufferedRecords();
+    public int getBufferedRecords() {
+    	return edge != null ? edge.getBufferedRecords() : 0;
     }
 
 	@Override
 	public int getUsedMemory() {
-		return edge.getUsedMemory();
+		return edge != null ? edge.getUsedMemory() : 0;
 	}
 
 	/**
@@ -298,7 +298,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 */
 	@Override
 	public long getReaderWaitingTime() {
-		return edge.getReaderWaitingTime();
+		return edge != null ? edge.getReaderWaitingTime() : 0;
 	}
 	
 	/**
@@ -307,7 +307,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 */
 	@Override
 	public long getWriterWaitingTime() {
-		return edge.getWriterWaitingTime();
+		return edge != null ? edge.getWriterWaitingTime() : 0;
 	}
 	
 	/**
@@ -382,21 +382,21 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 
     @Override
 	public boolean isEOF() {
-        return edge.isEOF();
+        return getEdgeBaseChecked().isEOF();
     }
 
     /**
      * @return true if eof() method has been already invoked on this edge
      */
     public boolean isEofSent() {
-    	return edge.isEofSent();
+    	return getEdgeBaseChecked().isEofSent();
     }
     
     /**
      * Current thread is block until EOF on the edge is reached.
      */
     public void waitForEOF() throws InterruptedException {
-    	edge.waitForEOF();
+    	getEdgeBaseChecked().waitForEOF();
     }
     
 	/**
@@ -419,7 +419,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 			try {
 				edge.init();
 	        } catch (Exception ex){
-	            throw new JetelRuntimeException("Edge base initialisation failed.", ex);
+	            throw new JetelRuntimeException("Edge base initialization failed.", ex);
 	        }
 		}
 	}
@@ -430,7 +430,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 			try {
 				edge.init();
 	        } catch (Exception ex){
-	            throw new JetelRuntimeException("Edge base initialisation failed.", ex);
+	            throw new JetelRuntimeException("Edge base initialization failed.", ex);
 	        }
 		}
 	}
@@ -451,7 +451,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 
 		if (!isSharedEdgeBase()) {
 			//pre-execute edge base only for non-shared edges
-			edge.preExecute();
+			getEdgeBaseChecked().preExecute();
 		}
 		
 		initDebugMode();
@@ -502,7 +502,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		
 		if (!isSharedEdgeBase()) {
 			//post-execute edge base only for non-shared edges
-			edge.postExecute();
+			getEdgeBaseChecked().postExecute();
 		}
 		
         if (edgeDebugWriter != null) {
@@ -542,7 +542,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 
 	@Override
 	public DataRecord readRecord(DataRecord record) throws IOException, InterruptedException {
-		return edge.readRecord(record);
+		return getEdgeBaseChecked().readRecord(record);
 	}
 
 
@@ -558,7 +558,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 */
 	@Override
 	public boolean readRecordDirect(CloverBuffer record) throws IOException, InterruptedException {
-		return edge.readRecordDirect(record);
+		return getEdgeBaseChecked().readRecordDirect(record);
 	}
 
 	/**
@@ -588,7 +588,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
         if (edgeDebugWriter != null) {
         	edgeDebugWriter.writeRecord(record);
         }
-		edge.writeRecord(record);
+		getEdgeBaseChecked().writeRecord(record);
 	}
 
 
@@ -606,7 +606,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
             edgeDebugWriter.writeRecord(record);
             record.rewind();
         }
-		edge.writeRecordDirect(record);
+        getEdgeBaseChecked().writeRecordDirect(record);
 	}
 
 	/**
@@ -676,15 +676,15 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
         		edgeDebugWriter.eof();
         	}
 
-        	edge.eof();
+        	getEdgeBaseChecked().eof();
 
         	eofSent = true;
     	}
     }
     
 	@Override
-	public boolean hasData(){
-		return edge.hasData();
+	public boolean hasData() {
+		return getEdgeBaseChecked().hasData();
 	}
 
     @Override
@@ -742,14 +742,14 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     public boolean equals(Object obj){
         if (obj instanceof Edge){
             return ((Edge)obj).getId().equals(getId());
-        }else{
+        } else {
             return false;
         }
     }
 
 	/**
 	 * Sets specific {@link EdgeBase} instance which is used as real edge algorithm.
-	 * By default, the {@link EdgeBase} instance is created in initialisation time
+	 * By default, the {@link EdgeBase} instance is created in initialization time
 	 * based on {@link EdgeTypeEnum}. Edge type is automatically updated as well.
 	 * @param edge
 	 */
@@ -821,6 +821,13 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	@Override
 	public String toString() {
 		return getId();
+	}
+	
+	protected EdgeBase getEdgeBaseChecked() {
+		if (edge != null) {
+			return edge;
+		}
+		throw new JetelRuntimeException("Edge " + getId() + " has not been initilized");
 	}
 
 	private String createMissingMetadataMessage() {

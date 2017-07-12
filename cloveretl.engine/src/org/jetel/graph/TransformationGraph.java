@@ -233,6 +233,8 @@ public final class TransformationGraph extends GraphElement {
 	
 	private RestJobResponseStatus responseStatus;
 	
+	private String outputFormat;
+	
 	public TransformationGraph() {
 		this(DEFAULT_GRAPH_ID);
 	}
@@ -1763,5 +1765,13 @@ public final class TransformationGraph extends GraphElement {
 
 	public void setRestJobResponseStatus(RestJobResponseStatus responseStatus) {
 		this.responseStatus = responseStatus;
+	}
+	
+	public String getOutputFormat() {
+		return outputFormat;
+	}
+
+	public void setOutputFormat(String outputFormat) {
+		this.outputFormat = outputFormat;
 	}
 }
