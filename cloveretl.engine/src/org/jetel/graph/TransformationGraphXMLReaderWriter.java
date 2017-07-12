@@ -77,6 +77,7 @@ import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.metadata.MetadataFactory;
 import org.jetel.util.JAXBContextProvider;
 import org.jetel.util.ReferenceState;
+import org.jetel.util.RestJobUtils;
 import org.jetel.util.XmlParserFactory;
 import org.jetel.util.XmlParserFactory.DocumentBuilderProvider;
 import org.jetel.util.file.FileUtils;
@@ -502,10 +503,14 @@ public class TransformationGraphXMLReaderWriter {
 	}
 	
 	public String readOutputFormat(InputStream stream) throws XMLConfigurationException {
-		Document doc = prepareDocument(stream);
+		return readOutputFormat(prepareDocument(stream));
+	}
+	
+	public String readOutputFormat(Document doc) throws XMLConfigurationException {
 		NodeList nodes = doc.getElementsByTagName(NODE_ELEMENT);
 		for (int i = 0; i < nodes.getLength(); i++) {
-			if ("RESTJOB_OUTPUT0".equals(nodes.item(i).getAttributes().getNamedItem(ID_ATTRIBUTE).getNodeValue())) {
+			if (nodes.item(i).getAttributes().getNamedItem(IGraphElement.XML_TYPE_ATTRIBUTE).getNodeValue()
+					.equals(RestJobUtils.REST_JOB_OUTPUT_TYPE)) {
 				return nodes.item(i).getAttributes().getNamedItem("responseFormat").getNodeValue();
 			}
 		}
@@ -612,6 +617,8 @@ public class TransformationGraphXMLReaderWriter {
 				RestJobResponseStatus status = instantiateRestJobResponseStatus(responseStatuses.item(0));
 				graph.setRestJobResponseStatus(status);
 			}
+			
+			graph.setOutputFormat(readOutputFormat(document));
 			
 			// handle dictionary
 			NodeList dictionaryElements = global.getElementsByTagName(DICTIONARY_ELEMENT);
