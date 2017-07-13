@@ -36,6 +36,8 @@ public class PropertyRefResolverTest extends CloverTestCase {
 
 	private HttpContext httpContextMock = new HttpContextMock();
 	
+	private PrimitiveAuthorityProxyMock authorityProxy;
+	
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -87,23 +89,9 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		System.setProperty("NAME.WITH.EXT.SYMBOL", "filename_dots.txt");
 		
 		resolver = new PropertyRefResolver(graphParameters);
-		resolver.setAuthorityProxy(new PrimitiveAuthorityProxy() {
-			@Override
-			public String getSecureParamater(String parameterName, String parameterValue) {
-				if (parameterName.equals("secureParameter")) {
-					return "secureValue";
-				} else if (parameterName.equals("password")) {
-					return "otherPass";
-				} else {
-					return null;
-				}
-			}
-			
-			@Override
-			public HttpContext getHttpContext() throws HttpContextNotAvailableException {
-				return httpContextMock;
-			}
-		});
+				
+		authorityProxy = new PrimitiveAuthorityProxyMock();
+		resolver.setAuthorityProxy(authorityProxy);
 	}
 
 	public void testResolve() {
@@ -139,6 +127,7 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		assertEquals("myself_myself_abc${user}def${pwd}ghi_xxxyyyzzz_xxxyyyzzz", resolver.resolveRef("${user}_${composition2}_${pwd}"));
 		
 		//test REQUEST parameters
+		authorityProxy.setHttpContextAvailable(true);
 		assertEquals("123", resolver.resolveRef("${REQUEST.a}"));
 		assertEquals("123", resolver.resolveRef("${request.a}"));
 	}
@@ -200,6 +189,7 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		assertTrue(PropertyRefResolver.isPropertyReference("${abc123}"));
 		assertFalse(PropertyRefResolver.isPropertyReference("${a}${b}"));
 		
+		authorityProxy.setHttpContextAvailable(true);
 		assertTrue(PropertyRefResolver.isPropertyReference("${request.a}"));
 		assertTrue(PropertyRefResolver.isPropertyReference("${REQUEST.a}"));
 		assertFalse(PropertyRefResolver.isPropertyReference("${.a}"));
@@ -282,9 +272,39 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		assertEquals("abc123", PropertyRefResolver.getReferencedProperty("${abc123}"));
 		assertEquals(null, PropertyRefResolver.getReferencedProperty("${a}${b}"));
 		
+		authorityProxy.setHttpContextAvailable(true);
 		assertEquals("REQUEST.a", PropertyRefResolver.getReferencedProperty("${REQUEST.a}"));
 		assertEquals("request.a", PropertyRefResolver.getReferencedProperty("${request.a}"));
 		assertEquals(null, PropertyRefResolver.getReferencedProperty("${.a}"));
 	}
 	
+	private class PrimitiveAuthorityProxyMock extends PrimitiveAuthorityProxy {
+		
+		boolean httpContextAvailable;
+		
+		@Override
+		public String getSecureParamater(String parameterName, String parameterValue) {
+			if (parameterName.equals("secureParameter")) {
+				return "secureValue";
+			} else if (parameterName.equals("password")) {
+				return "otherPass";
+			} else {
+				return null;
+			}
+		}
+		
+		@Override
+		public HttpContext getHttpContext() throws HttpContextNotAvailableException {
+			return httpContextMock;
+		}
+		
+		@Override
+		public boolean isHttpContextAvailable() {
+			return httpContextAvailable;
+		}
+		
+		public void setHttpContextAvailable(boolean available) {
+			httpContextAvailable = available;
+		}
+	};
 }
