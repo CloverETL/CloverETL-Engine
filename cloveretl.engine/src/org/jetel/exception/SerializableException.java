@@ -45,9 +45,9 @@ public class SerializableException extends JetelRuntimeException {
 	private String message;
 
 	/**
-	 * Class of the wrapped exception.
+	 * Class name of the wrapped exception.
 	 */
-	private Class<? extends Throwable> virtualClass;
+	private String virtualClassName;
 	
 	/**
 	 * In case the wrapped exception is {@link CompoundException},
@@ -65,7 +65,7 @@ public class SerializableException extends JetelRuntimeException {
 		//persist message of the wrapped exception
 		message = extractMessage(e);
 		//persist class of the wrapped exception
-		virtualClass = e.getClass();
+		virtualClassName = e.getClass().getName();
 		//inherit stackstrace from the wrapped exception
 		setStackTrace(e.getStackTrace());
 
@@ -105,21 +105,26 @@ public class SerializableException extends JetelRuntimeException {
 	@Override
 	public String toString() {
         String message = getLocalizedMessage();
-        return (message != null) ? (virtualClass.getName() + ": " + message) : virtualClass.getName();
+        return (message != null) ? (virtualClassName + ": " + message) : virtualClassName;
 	}
 
 	/**
 	 * This is workaround for regular instanceof operator.
 	 */
 	public boolean instanceOf(Class<? extends Throwable> throwableClass) {
-		return throwableClass.isAssignableFrom(virtualClass);
+		try {
+			Class<?> virtualClass = Class.forName(virtualClassName);
+			return throwableClass.isAssignableFrom(virtualClass);
+		} catch (ClassNotFoundException e) {
+			return false;
+		}
 	}
 
 	/**
-	 * @return class of wrapped exception
+	 * @return class name of wrapped exception
 	 */
-	public Class<? extends Throwable> getWrappedExceptionClass() {
-		return virtualClass;
+	public String getWrappedExceptionClassName() {
+		return virtualClassName;
 	}
 
 	/**

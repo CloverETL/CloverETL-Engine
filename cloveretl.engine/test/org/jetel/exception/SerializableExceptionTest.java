@@ -218,6 +218,9 @@ public class SerializableExceptionTest extends CloverTestCase {
 		if (e.getCause() != null) {
 			compare(e.getCause(), se.getCause());
 		}
+		
+		assertTrue(se.instanceOf(e.getClass()));
+		assertTrue(e.getClass().getName().equals(se.getWrappedExceptionClassName()));
 	}
 	
 }

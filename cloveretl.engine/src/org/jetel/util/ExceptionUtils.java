@@ -276,7 +276,7 @@ public class ExceptionUtils {
 		if (!(t instanceof SerializableException)) {
 			return t.getClass().getName();
 		} else {
-			return ((SerializableException) t).getWrappedExceptionClass().getName();
+			return ((SerializableException) t).getWrappedExceptionClassName();
 		}
     }
     
