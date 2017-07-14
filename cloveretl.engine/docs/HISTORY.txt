@@ -2,6 +2,19 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-7-0-M1
+------------
+
+* Data Services
+	* Publish data transformation as a REST web service
+	* New type of job - Data Service REST Job
+	* Support for various HTTP request method
+	* Access to HTTP request/response inside job logic
+	* New set of CTL functions for HTTP context processing
+	* New CloverETL Corporate Server management module - Data Service
+* CLO-10784	Graph validation without saving of graph
+
+
 REL-4-6-0
 ------------
 
