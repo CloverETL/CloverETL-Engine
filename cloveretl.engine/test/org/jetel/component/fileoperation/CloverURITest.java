@@ -46,6 +46,7 @@ public class CloverURITest extends CloverTestCase {
 	/**
 	 * Test method for {@link org.jetel.component.fileoperation.CloverURI#resolve(org.jetel.component.fileoperation.CloverURI)}.
 	 */
+	@SuppressWarnings("unused")
 	public void testResolve() throws Exception {
 		CloverURI baseUri = CloverURI.createURI("file://C:/myDire/?ctory/aaa/");
 		CloverURI relativeUri = CloverURI.createURI("bbb");
@@ -79,4 +80,36 @@ public class CloverURITest extends CloverTestCase {
 		assertEquals(URI.create("ftp://hostname/dir/"), result.getAbsoluteURI().toURI());
 	}
 
+	public void testSambaWorkgroupDetection() {
+		
+		final String singleSmbUriWithWorkgroup = "smb://WORKGROUP;user.name@host";
+		final String singleEscapedUri = "smb://WORKGROUP\0user.name@host";
+		
+		assertTrue(CloverURI.containsSambaWorkgroup(singleSmbUriWithWorkgroup));
+		assertFalse(CloverURI.containsSambaWorkgroup(singleSmbUriWithWorkgroup.replace(';', 'a')));
+		
+		assertEquals(singleEscapedUri, CloverURI.replaceSambaWorkgroupSeparator(singleSmbUriWithWorkgroup));
+		assertEquals(singleSmbUriWithWorkgroup, CloverURI.restoreSambaWorkgroupSeparator(singleEscapedUri));
+		
+		final String multiUri1 = "ftp://host/dir/file;" + singleSmbUriWithWorkgroup;
+		final String escapedMultiUri1 = "ftp://host/dir/file;" + singleEscapedUri;
+		
+		assertEquals(escapedMultiUri1, CloverURI.replaceSambaWorkgroupSeparator(multiUri1));
+		
+		final String multiUri2 = singleSmbUriWithWorkgroup + ";" + singleSmbUriWithWorkgroup + ";file:///dir/file.txt";
+		final String escapedMultiUri2 = singleEscapedUri + ";" + singleEscapedUri + ";file:///dir/file.txt";
+		
+		assertEquals(escapedMultiUri2, CloverURI.replaceSambaWorkgroupSeparator(multiUri2));
+		
+		// CLO-11085
+		MultiCloverURI multiUri = (MultiCloverURI)CloverURI.createURI("smb://WORKGROUP;user@host;smb://user@host/path");
+		List<SingleCloverURI> uris = multiUri.split();
+		assertEquals("smb://WORKGROUP;user@host", uris.get(0).toString());
+		assertEquals("smb://user@host/path", uris.get(1).toString());
+		
+		final String uriWithPwd = "smb://WORKGROUP;user:el?password@host/path";
+		final String escapedUriWithPwd = "smb://WORKGROUP\0user:el?password@host/path";
+	
+		assertEquals(escapedUriWithPwd, CloverURI.replaceSambaWorkgroupSeparator(uriWithPwd));
+	}
 }
