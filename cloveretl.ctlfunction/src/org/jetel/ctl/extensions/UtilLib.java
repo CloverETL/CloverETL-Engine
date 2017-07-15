@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.jetel.ctl.Stack;
@@ -197,6 +198,15 @@ public class UtilLib extends TLFunctionLibrary {
 		for (GraphParameter param : parameters.getAllGraphParameters()) {
 			map.put(param.getName(), refResolver.getResolvedPropertyValue(param.getName(), RefResFlag.SPEC_CHARACTERS_OFF));
 		}
+		if (context.getGraph().getAuthorityProxy().isHttpContextAvailable()) {
+			Map<String, String> requestParameters = refResolver.getRequestParameters();
+			for (Entry<String, String> entry : requestParameters.entrySet()) {
+				if (!map.containsKey(entry.getKey())) {
+					map.put(entry.getKey(), entry.getValue());
+				}
+			}
+		}
+		
 		context.setCache(new TLObjectCache<Map<String, String>>(Collections.unmodifiableMap(map)));
     }
 
@@ -621,6 +631,5 @@ public class UtilLib extends TLFunctionLibrary {
 		}
 
 	}
-	
 
 }

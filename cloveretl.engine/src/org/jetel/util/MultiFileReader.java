@@ -37,6 +37,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.dictionary.Dictionary;
+import org.jetel.graph.rest.jaxb.RequestParameter;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
@@ -165,7 +166,11 @@ public class MultiFileReader {
 	public void checkConfig(DataRecordMetadata metadata) throws ComponentNotReadyException {
 		parser.init();
 		
-		if (!HttpPartUrlUtils.containsRequestParameter(fileURL)) {
+		List<String> requestParameters = new ArrayList<String>();
+		if (metadata.getGraph() != null && metadata.getGraph().getEndpointSettings() != null) {
+			requestParameters = getRequestParametersNames(metadata.getGraph().getEndpointSettings().getRequestParameters());
+		}
+		if (requestParameters.isEmpty() || !HttpPartUrlUtils.containsRequestParameter(requestParameters, fileURL)) {
 	        try {
 	            checkChannelIterator();
 	            
@@ -422,6 +427,19 @@ public class MultiFileReader {
         	return checkRowAndPrepareSource();
         }
         return true;
+	}
+	
+	/**
+	 * Creates List of request parameters names.
+	 * @param parameters
+	 * @return
+	 */
+	private List<String> getRequestParametersNames(List<RequestParameter> parameters) {
+		List<String> result = new ArrayList<String>(parameters.size());
+		for (RequestParameter parameter : parameters) {
+			result.add(parameter.getName());
+		}
+		return result;
 	}
 	
 	/**

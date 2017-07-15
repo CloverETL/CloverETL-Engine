@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.List;
 
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
@@ -68,8 +69,8 @@ public class HttpPartUrlUtils {
 		return url != null && RESPONSE_PROTOCOL.equals(url.getProtocol());
 	}
 	
-	public static boolean containsRequestParameter(String url) {
-		return PropertyRefResolver.containsRequestParameter(url);
+	public static boolean containsRequestParameter(List<String> parameters, String url) {
+		return PropertyRefResolver.containsRequestParameter(parameters, url);
 	}
 		
 	public static InputStream getRequestInputStream(URL url) throws IOException {
