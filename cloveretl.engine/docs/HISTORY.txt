@@ -2,6 +2,18 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-6-1
+------------
+
+* Improvements
+	* CLO-11167 Log a warning when query for dynamic metadata returns records
+	* CLO-11103	Improve thread dump generation so that whole stacks are displayed
+* Fixes
+	* CLO-11085	File Event Listener on SMB doesn't work with special characters
+	* CLO-11146	Data Inspector view does not show records for running graphs
+	* CLO-11049	Extracting metadata from DBInputTable fails with NPE when JNDI is used
+
+
 REL-4-6-0
 ------------
 
