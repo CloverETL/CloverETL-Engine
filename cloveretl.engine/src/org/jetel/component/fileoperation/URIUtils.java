@@ -139,7 +139,8 @@ public class URIUtils {
 	}
 
 	/**
-	 * CLO-6374: Generic URL.toURI() method that handles sandbox URLs in a special way
+	 * CLO-3052: Generic URL.toURI() method that escapes space characters.
+	 * CLO-6374: Sandbox URLs are handled in a special way.
 	 * 
 	 * @param url
 	 * @return

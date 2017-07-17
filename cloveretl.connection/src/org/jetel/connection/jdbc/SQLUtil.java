@@ -1024,6 +1024,87 @@ public class SQLUtil {
 		}
 		return sqlQuery;
 	}
+
+
+	/**
+	 * Traverses whole SQL query and limits all WHERE clauses using 0=1 and replaces all parameters with NULL.
+	 * 
+	 * @param sqlQuery
+	 * @return modified query
+	 */
+	public static String modifyQueryUsingBasicTraversal(String sqlQuery) {
+		StringBuilder result = new StringBuilder();
+		String lowerQuery = sqlQuery.toLowerCase();
+		int queryLength = sqlQuery.length();
+		boolean stringMode = false;
+		int position = 0;
+		int nextQuot = -1;
+		int nextWhere = -1;
+		int nextParam = -1;
+		do {
+			nextQuot = lowerQuery.indexOf("'", position);
+			
+			if (stringMode) {
+				if (nextQuot == -1) {
+					// String is not terminated
+					result.append(sqlQuery.substring(position));
+					break;
+				}
+
+				int segmentEnd;
+				if (lowerQuery.length() == nextQuot + 1 || lowerQuery.charAt(nextQuot + 1) != '\'') {
+					// String ends
+					stringMode = false;
+					segmentEnd = nextQuot;
+				} else {
+					// Ignore two single quotation marks as character in string
+					segmentEnd = nextQuot + 1;
+				}
+				
+				result.append(sqlQuery.substring(position, segmentEnd + 1));
+				position = segmentEnd + 1;
+			} else {
+				nextWhere = lowerQuery.indexOf(" where ", position);
+				nextParam = lowerQuery.indexOf("?", position);
+
+				// Determine position of next thing to resolve
+				int nextThing = -1;
+				if (nextQuot >= 0) {
+					nextThing = nextQuot;
+				}
+				if (nextWhere >= 0 && (nextWhere < nextThing || nextThing == -1)) {
+					nextThing = nextWhere;
+				}
+				if (nextParam >= 0 && (nextParam < nextThing || nextThing == -1)) {
+					nextThing = nextParam;
+				}
+				
+				if (nextThing >= 0) {
+					if (nextThing == nextQuot) {
+						// New string have started
+						stringMode = true;
+						result.append(sqlQuery.substring(position, nextThing + 1));
+						position = nextThing + 1;
+					} else if (nextThing == nextWhere) {
+						// Add 1=0 condition to where section
+						result.append(sqlQuery.substring(position, nextThing + 7));
+						result.append("1=0 AND ");
+						position = nextThing + 7;
+					} else if (nextThing == nextParam) {
+						// Replace SQL parameter with NULL
+						result.append(sqlQuery.substring(position, nextThing));
+						result.append("NULL");
+						position = nextThing + 1;
+					}
+				} else {
+					result.append(sqlQuery.substring(position));
+					break;
+				}
+			}
+		} while (position < queryLength && nextQuot >= 0 || nextWhere >= 0 || nextParam >=0); 
+			
+		return result.toString();
+	}
 	
 }
 

@@ -37,7 +37,8 @@ import org.jetel.util.stream.SeekableOutputStream;
 
 public class CloverDebugFormatter extends CloverDataFormatter {
 
-	private static final int RECORD_NUMBER_SIZE = 8;
+	public static final int RECORD_NUMBER_SIZE = 8;
+	public static final String RECORD_NUMBER_FIELD_NAME = "__recordNumber";
 	
 	private ByteBuffer longBuffer = ByteBuffer.allocate(RECORD_NUMBER_SIZE);
 	private CloverBuffer tmpBuffer;
@@ -57,10 +58,10 @@ public class CloverDebugFormatter extends CloverDataFormatter {
 	public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
 		DataRecordMetadata duplicate = metadata.duplicate();
 		if (metadata.getParsingType() == DataRecordParsingType.FIXEDLEN) {
-			duplicate.addField(0, new DataFieldMetadata("__recordNumber", DataFieldType.LONG, 10));
+			duplicate.addField(0, new DataFieldMetadata(RECORD_NUMBER_FIELD_NAME, DataFieldType.LONG, 10));
 		} else {
 			String delimiter = (metadata.getFieldDelimiter() != null) ? null : "|"; // only set if no default delimiter
-			duplicate.addField(0, new DataFieldMetadata("__recordNumber", DataFieldType.LONG, delimiter));
+			duplicate.addField(0, new DataFieldMetadata(RECORD_NUMBER_FIELD_NAME, DataFieldType.LONG, delimiter));
 		}
 		
 		super.init(duplicate);

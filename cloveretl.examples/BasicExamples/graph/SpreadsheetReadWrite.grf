@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Oct 24 10:36:22 CEST 2006" description="In this example data are read from ORDERS.xls file, partitioned to 3 parts and each of thees parts are saved in orders.partitioned.xls file in different sheets. " guiVersion="4.0.0.M1" id="1199778867506" licenseType="Commercial" modified="Tue Mar 25 14:49:49 CET 2014" modifiedBy="User" name="graphXLSRead" revision="1.270" showComponentDetails="true">
+<Graph author="avackova" created="Tue Oct 24 10:36:22 CEST 2006" description="In this example data are read from ORDERS.xls file, partitioned to 3 parts and each of thees parts are saved in orders.partitioned.xls file in different sheets. " guiVersion="0.0.0.devel" id="1199778867506" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 09:29:59 CET 2016" modifiedBy="jansedlacek" name="graphXLSRead" revision="1.277" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata7" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="_10staxss_Sheet1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
@@ -164,132 +164,165 @@
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="0" backgroundColorR="0" enabled="true" folded="false" height="122" id="Note2" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Spreadsheet Components Example" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="12" width="950" x="38" y="45">
-<attr name="text"><![CDATA[
+<RichTextNote backgroundColor="DAD8C9" enabled="true" folded="false" fontSize="medium" height="122" id="Note2" textColor="000000" width="950" x="38" y="45">
+<attr name="text"><![CDATA[h3. Spreadsheet Components Example
 In this example graph, the most important features of SpreadsheetDataReader and SpreadsheetDataWriter components are demostrated. 
 
 The graph is divided into multiple phases. Each phase demonstrates a part of components functionality. 
 ]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="372" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Reading multiple files and multiple sheets" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="950" x="38" y="982"/>
-<Note alignment="1" backgroundColorB="220" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="102" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Reading multiple sheets" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="471" x="493" y="1234">
-<attr name="text"><![CDATA[
-SpreadsheetDataReader reads data from all sheets from given Excel file and fills a sheet name into the field "ShipCountry" - this has been achieved by choosing "sheet_name" in the autofilling parameter of the metadata file "ShipCountry".
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="328" id="Note9" textColor="000000" width="400" x="38" y="166">
+<attr name="text"><![CDATA[h3. Simple usage
 ]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="220" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="131" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Reading multiple files" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="471" x="493" y="1045">
-<attr name="text"><![CDATA[
-SpreadsheetDataReader reads data from all Excel files with names satisfying pattern ${DATAIN_DIR}/others/O*.xls.
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="328" id="Note10" textColor="000000" width="551" x="437" y="166">
+<attr name="text"><![CDATA[h3. Default columns-to-metadata mapping
 
-The data is then written into one Excel file, which is partitioned into different sheets depending on the value in field "ShipCountry".]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="398" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Defining mapping and file partitioning" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="950" x="38" y="559">
-<attr name="text"><![CDATA[In this example we read from a spreadsheet with non-default layout. This requires manual definition of mapping between spreadsheet columns and metadata.
+For both components, only file URL is specified. All other settings keep their default values.
+
+None of the components has a mapping parameter specified. It means that metadata fields are mapped to spreadsheets in a default way:
+* it is expected that the first line contains a header and next lines contain data records 
+* each column is mapped to a metadata field. This means that a reader reads data from a column to a mapped field and a writer writes data from a mapped field to a column.
+* fields are mapped to columns automatically:
+** for reader, column header is used to match a metadata field
+** for writer, columns are written in an order of metadata fields
+
+Metadata has been obtained by extraction from cells A1:N1 of the input file
+(Metadata -> New metadata -> Extract from XLS(X) file)]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="156" id="Note0" textColor="000000" width="950" x="38" y="505">
+<attr name="text"><![CDATA[h3. Defining mapping and file partitioning
+In this example we read from a spreadsheet with non-default layout. This requires manual definition of mapping between spreadsheet columns and metadata.
+
 Loaded data are parititioned into a number of spreadsheet files by one of metadata fields. Each spreadsheet file is further partitioned into a number of sheets by another field.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="309" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Reader mapping definition" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="447" x="47" y="628">
-<attr name="text"><![CDATA[
-In this use case, XLS file contains data with a layout different from a default layout. Therefore, mapping of spreadsheet columns on metadata fields is defined manually with use of mapping dialog (Right click on component -> Edit -> click on the Mapping property -> click on "..." button):
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="424" id="Note4" textColor="000000" width="475" x="36" y="660">
+<attr name="text"><![CDATA[h3. Reader mapping definition
+
+In this use case, XLS file contains data with a layout different from a default layout. Therefore, mapping of spreadsheet columns on metadata fields is defined manually with use of mapping dialog 
+
+_(Right click on component -> Edit -> click on the Mapping property -> click on "..." button):_
+
 (1) set default offset to 3, because first data cells are 3 lines below header cells from which we will extract metadata and which also will be mapped.
 (2) select cells A8:L8 and drag&drop them on "Add field" row in a metadata pane.
 
 After these steps mapping is defined and metadata for columns A-L is extracted.
 ]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="309" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Writer mapping and file &amp; sheet partitioning" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="451" x="515" y="628">
-<attr name="text"><![CDATA[
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="424" id="Note1" textColor="000000" width="480" x="510" y="660">
+<attr name="text"><![CDATA[h3. Writer mapping and file & sheet partitioning
+
 SpreadsheetDataWriter partitions incomming records into multiple files according to STATE_DESCRIPTION field. Additionally data in these files are partitioned according to ENTERPRISE_EMPLOYMENT_SIZE into different sheets.
 
-For writting we defined a simple mapping that excludes both field used for parititioning. The mapping has been created using a mapping dialog (Right click on component -> Edit -> click on the Mapping property -> click on "..." button):
+For writting we defined a simple mapping that excludes both field used for parititioning. The mapping has been created using a mapping dialog 
+
+_(Right click on component -> Edit -> click on the Mapping property -> click on "..." button):_
+
 (1) select all desired fields in a metadata view
 (2) drag&droping the selected fields on a cell A1]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="406" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Horizontal reading" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="981" x="38" y="1400">
-<attr name="text"><![CDATA[In this example we demostrate horizontal reading from a file. The data read in this phase are processed are used in later phases.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="328" id="Note9" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Simple usage" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="950" x="38" y="201"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="274" id="Note10" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Default columns-to-metadata mapping" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="471" x="493" y="241">
-<attr name="text"><![CDATA[
-For both components, only file URL is specified. All other settings keep their default values.
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="67" id="Note3" textColor="000000" width="954" x="36" y="1104">
+<attr name="text"><![CDATA[h3. Reading multiple files and multiple sheets]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFDC" enabled="true" folded="false" fontSize="medium" height="175" id="Note6" textColor="000000" width="534" x="456" y="1170">
+<attr name="text"><![CDATA[h3. Reading multiple files
 
-None of the components has a mapping parameter specified. It means that metadata fields are mapped to spreadsheets in a default way:
- - it is expected that the first line contains a header and next lines contain data records 
- - each column is mapped to a metadata field. This means that a reader reads data from a column to a mapped field and a writer writes data from a mapped field to a column.
- - fields are mapped to columns automatically:
-     * for reader, column header is used to match a metadata field
-     * for writer, columns are written in an order of metadata fields
+SpreadsheetDataReader reads data from all Excel files with names satisfying pattern ./data-in/others/O*.xls.
 
-Metadata has been obtained by extraction from cells A1:N1 of the input file
-(Metadata -> New metadata -> Extract from XLS(X) file)]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="366" id="Note11" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Writing to template" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="732" x="38" y="1823"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="317" id="Note12" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Mapping definition" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="259" x="47" y="1465">
-<attr name="text"><![CDATA[
+The data is then written into one Excel file, which is partitioned into different sheets depending on the value in field "ShipCountry".]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFDC" enabled="true" folded="false" fontSize="medium" height="168" id="Note5" textColor="000000" width="534" x="456" y="1355">
+<attr name="text"><![CDATA[h3. Reading multiple sheets
+
+SpreadsheetDataReader reads data from all sheets from given Excel file and fills a sheet name into the field "ShipCountry" - this has been achieved by choosing "sheet_name" in the autofilling parameter of the metadata file "ShipCountry".
+]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="88" id="Note8" textColor="000000" width="953" x="37" y="1548">
+<attr name="text"><![CDATA[h3. Horizontal reading
+In this example we demostrate horizontal reading from a file. The data read in this phase are processed are used in later phases.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="334" id="Note12" textColor="000000" width="259" x="38" y="1635">
+<attr name="text"><![CDATA[h3. Mapping definition
+
 An input file for this reader has a horizontal data orientation, i.e. records are written from left to right (instead of from top to bottom).
 
 Moreover, each record consists of 2 lines (columns), therefore "Columns per record" mapping property is set to 2.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="247" id="Note13" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Remove empty records" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="177" x="363" y="1486">
-<attr name="text"><![CDATA[
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="334" id="Note13" textColor="000000" width="203" x="324" y="1635">
+<attr name="text"><![CDATA[h3. Remove empty records
+
 This Reformat removes records having a "State" field value set to null.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="214" id="Note14" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sort" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="162" x="581" y="1517">
-<attr name="text"><![CDATA[
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="334" id="Note14" textColor="000000" width="208" x="555" y="1635">
+<attr name="text"><![CDATA[h3. Sort
+
 Sort by total tax statistic.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="214" id="Note15" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Store" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="181" x="801" y="1517">
-<attr name="text"><![CDATA[
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="334" id="Note15" textColor="000000" width="187" x="803" y="1635">
+<attr name="text"><![CDATA[h3. Store
+
 Save records so that next phase can use them.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="218" id="Note16" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Load data" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="213" x="74" y="1938">
-<attr name="text"><![CDATA[
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="70" id="Note11" textColor="000000" width="958" x="38" y="1988">
+<attr name="text"><![CDATA[h3. Writing to template]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="280" id="Note16" textColor="000000" width="213" x="38" y="2057">
+<attr name="text"><![CDATA[h3. Load data
+
 Load statistics from previous phase.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="274" id="Note17" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Write into template" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="358" x="359" y="1882">
-<attr name="text"><![CDATA[The SpreadsheetDataWriter copies a template file into a target file and then performs write operations (the write mode "Insert into sheet" is the most typical in combination with templates) 
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="280" id="Note17" textColor="000000" width="676" x="320" y="2057">
+<attr name="text"><![CDATA[h3. Write into template
+The SpreadsheetDataWriter copies a template file into a target file and then performs write operations (the write mode "Insert into sheet" is the most typical in combination with templates) 
 
 Important: The first row below a header in a template file is considered to be a "template row". All inserted rows are created by copying this row and the template row is removed at the end.
 ]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="421" id="Note18" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Tax form filling" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="732" x="38" y="2222">
-<attr name="text"><![CDATA[In this example we demonstrate how SpreadsheetDataWriter can be used for Excel form filling.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="315" id="Note19" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Load personal data" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="215" x="72" y="2294">
-<attr name="text"><![CDATA[
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="90" id="Note18" textColor="000000" width="958" x="38" y="2350">
+<attr name="text"><![CDATA[h3. Tax form filling
+In this example we demonstrate how SpreadsheetDataWriter can be used for Excel form filling.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="315" id="Note19" textColor="000000" width="260" x="37" y="2439">
+<attr name="text"><![CDATA[h3. Load personal data
+
 Reads data to be filled in.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="315" id="Note20" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Fill tax form" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="393" x="359" y="2294">
-<attr name="text"><![CDATA[
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="315" id="Note20" textColor="000000" width="635" x="361" y="2439">
+<attr name="text"><![CDATA[h3. Fill tax form
+
 Writer has tax form Excel file set as a template. Unlike the previous example we use the "Overwrite in sheet" write mode (we do not want to insert new lines, but rather fill empty cells).
 
 In the mapping dialog we have explicitly defined cells correspoding to fields of metadata. Note that data offset is set to 0.
 
 File partitioning is peformed according to person's surname and first name.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="405" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Tax form reading" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="732" x="38" y="2672">
-<attr name="text"><![CDATA[In this example we show how data from tax forms can be read back.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="319" id="Note21" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Read tax forms" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="332" x="81" y="2733">
-<attr name="text"><![CDATA[
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="91" id="Note7" textColor="000000" width="958" x="38" y="2772">
+<attr name="text"><![CDATA[h3. Tax form reading
+In this example we show how data from tax forms can be read back.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="319" id="Note21" textColor="000000" width="419" x="38" y="2862">
+<attr name="text"><![CDATA[h3. Read tax forms
+
 Reads all files generated in the previous phase.
 
 Uses exactly the same mapping as the SpreadsheetDataWriter in previous phase.
 
 Note that "Max number of records per source" is set to 1, causing that only one record is read from each input file.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="246" id="Note22" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Store loaded data" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="228" x="481" y="2806">
-<attr name="text"><![CDATA[
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="319" id="Note22" textColor="000000" width="451" x="545" y="2862">
+<attr name="text"><![CDATA[h3. Store loaded data
+
 Stores loaded tax form data into a simple text file.]]></attr>
-</Note>
+</RichTextNote>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/orders.xlsx" guiName="XLSX (Orders)" guiX="315" guiY="293" id="XLSX_ORDERS" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/ORDERS.xls" guiName="XLS (Orders)" guiX="74" guiY="293" id="XLS_ORDERS1" type="SPREADSHEET_READER"/>
+<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/orders.xlsx" guiName="XLSX (Orders)" guiX="266" guiY="224" id="XLSX_ORDERS" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/ORDERS.xls" guiName="XLS (Orders)" guiX="62" guiY="224" id="XLS_ORDERS1" type="SPREADSHEET_READER"/>
 <Edge debugMode="true" fromNode="XLS_ORDERS1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (input)" metadata="Metadata2" outPort="Port 0 (output)" toNode="XLSX_ORDERS:0"/>
 </Phase>
 <Phase number="1">
-<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/others/county_totals_2009.xls" guiName="SpreadsheetDataReader" guiX="125" guiY="819" id="SPREADSHEET_READER0" sheet="County" type="SPREADSHEET_READER">
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/others/county_totals_2009.xls" guiName="SpreadsheetDataReader" guiX="142" guiY="956" id="SPREADSHEET_READER0" sheet="County" type="SPREADSHEET_READER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
     <globalAttributes>
@@ -320,7 +353,7 @@ Stores loaded tax form data into a simple text file.]]></attr>
 </mapping>
 ]]></attr>
 </Node>
-<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/stats/stat_#.xlsx" guiName="SpreadsheetDataWriter" guiX="629" guiY="819" id="SPREADSHEET_WRITER0" makeDirs="true" partitionFileTag="keyNameFileTag" partitionKey="STATE_DESCRIPTION" sheet="$ENTERPRISE_EMPLOYMENT_SIZE" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_STREAM">
+<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/stats/stat_#.xlsx" guiName="SpreadsheetDataWriter" guiX="657" guiY="956" id="SPREADSHEET_WRITER0" makeDirs="true" partitionFileTag="keyNameFileTag" partitionKey="STATE_DESCRIPTION" sheet="$ENTERPRISE_EMPLOYMENT_SIZE" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_STREAM">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
     <globalAttributes>
@@ -391,27 +424,27 @@ Stores loaded tax form data into a simple text file.]]></attr>
 <Edge debugMode="true" fromNode="SPREADSHEET_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (input)" metadata="Metadata4" outPort="Port 0 (output)" toNode="SPREADSHEET_WRITER0:0"/>
 </Phase>
 <Phase number="2">
-<Node enabled="enabled" existingSheetsActions="CLEAR_SHEETS" fileURL="${DATAOUT_DIR}/ordersByCountry.xlsx" guiName="Orders by Country" guiX="305" guiY="1068" id="ORDERS_BY_COUNTRY1" sheet="$ShipCountry" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY">
+<Node enabled="enabled" existingSheetsActions="CLEAR_SHEETS" fileURL="${DATAOUT_DIR}/ordersByCountry.xlsx" guiName="Orders by Country" guiX="284" guiY="1210" id="ORDERS_BY_COUNTRY1" sheet="$ShipCountry" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY">
 <attr name="guiDescription"><![CDATA[One sheet for each country]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/O*.xls" guiName="XLS (Orders)" guiX="74" guiY="1068" id="XLS_ORDERS" sheet="*" type="SPREADSHEET_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/O*.xls" guiName="XLS (Orders)" guiX="53" guiY="1210" id="XLS_ORDERS" sheet="*" type="SPREADSHEET_READER">
 <attr name="guiDescription"><![CDATA[All orders in 1 sheet]]></attr>
 </Node>
 <Edge debugMode="true" fromNode="XLS_ORDERS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (input)" metadata="Metadata2" outPort="Port 0 (output)" toNode="ORDERS_BY_COUNTRY1:0"/>
 </Phase>
 <Phase number="3">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders_delimited.txt" guiName="UniversalDataWriter" guiX="298" guiY="1240" id="DATA_WRITER0" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders_delimited.txt" guiName="UniversalDataWriter" guiX="277" guiY="1382" id="DATA_WRITER0" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Flat file with all orders]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/ordersByCountry.xlsx" guiName="Orders by Country" guiX="72" guiY="1240" id="ORDERS_BY_COUNTRY" sheet="*" type="SPREADSHEET_READER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/ordersByCountry.xlsx" guiName="Orders by Country" guiX="51" guiY="1382" id="ORDERS_BY_COUNTRY" sheet="*" type="SPREADSHEET_READER">
 <attr name="guiDescription"><![CDATA[One sheet for each country]]></attr>
 </Node>
 <Edge debugMode="true" fromNode="ORDERS_BY_COUNTRY:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (output)" toNode="DATA_WRITER0:0"/>
 </Phase>
 <Phase number="4">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/sortedByTotalTax.clv" guiName="CloverDataWriter" guiX="826" guiY="1614" id="CLOVER_WRITER0" type="CLOVER_WRITER"/>
-<Node enabled="enabled" guiName="FastSort" guiX="601" guiY="1614" id="FAST_SORT0" runSize="100" sortKey="Total_taxes(d)" type="FAST_SORT"/>
-<Node enabled="enabled" guiName="Reformat" guiX="392" guiY="1616" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/sortedByTotalTax.clv" guiName="CloverDataWriter" guiX="823" guiY="1854" id="CLOVER_WRITER0" type="CLOVER_WRITER"/>
+<Node enabled="enabled" guiName="FastSort" guiX="595" guiY="1853" id="FAST_SORT0" runSize="100" sortKey="Total_taxes(d)" type="FAST_SORT"/>
+<Node enabled="enabled" guiName="Reformat" guiX="354" guiY="1854" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -447,7 +480,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node attitude="IN_MEMORY" enabled="enabled" fileURL="${DATAIN_DIR}/others/10staxss.xls" guiName="SpreadsheetDataReader" guiX="81" guiY="1618" id="SPREADSHEET_READER1" sheet="Sheet1" type="SPREADSHEET_READER">
+<Node attitude="IN_MEMORY" enabled="enabled" fileURL="${DATAIN_DIR}/others/10staxss.xls" guiName="SpreadsheetDataReader" guiX="72" guiY="1854" id="SPREADSHEET_READER1" sheet="Sheet1" type="SPREADSHEET_READER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
     <globalAttributes>
@@ -839,13 +872,13 @@ function integer transform() {
 </mapping>
 ]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="FAST_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="CLOVER_WRITER0:0"/>
-<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="FAST_SORT0:0"/>
+<Edge debugMode="true" fromNode="FAST_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata7" toNode="CLOVER_WRITER0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata7" toNode="FAST_SORT0:0"/>
 <Edge debugMode="true" fromNode="SPREADSHEET_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata7" outPort="Port 0 (output)" toNode="REFORMAT1:0"/>
 </Phase>
 <Phase number="5">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/sortedByTotalTax.clv" guiName="CloverDataReader" guiX="115" guiY="2024" id="CLOVER_READER0" type="CLOVER_READER"/>
-<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/sortedByTotalTax.xlsx" guiName="SpreadsheetDataWriter" guiX="456" guiY="2024" id="SPREADSHEET_WRITER1" sheet="Taxes" templateFileURL="${DATAIN_DIR}/others/10staxss_template.xlsx" type="SPREADSHEET_WRITER" writeMode="INSERT_INTO_SHEET_IN_MEMORY">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/sortedByTotalTax.clv" guiName="CloverDataReader" guiX="62" guiY="2214" id="CLOVER_READER0" type="CLOVER_READER"/>
+<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/sortedByTotalTax.xlsx" guiName="SpreadsheetDataWriter" guiX="555" guiY="2214" id="SPREADSHEET_WRITER1" sheet="Taxes" templateFileURL="${DATAIN_DIR}/others/10staxss_template.xlsx" type="SPREADSHEET_WRITER" writeMode="INSERT_INTO_SHEET_IN_MEMORY">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
     <globalAttributes>
@@ -940,7 +973,7 @@ function integer transform() {
 <Edge debugMode="true" fromNode="CLOVER_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (input)" metadata="Metadata7" outPort="Port 0 (out)" toNode="SPREADSHEET_WRITER1:0"/>
 </Phase>
 <Phase number="6">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/tax_form_data.xlsx" guiName="SpreadsheetDataReader" guiX="97" guiY="2468" id="SPREADSHEET_READER2" sheet="Tax data" type="SPREADSHEET_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/tax_form_data.xlsx" guiName="SpreadsheetDataReader" guiX="49" guiY="2634" id="SPREADSHEET_READER2" sheet="Tax data" type="SPREADSHEET_READER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
     <globalAttributes>
@@ -996,7 +1029,7 @@ function integer transform() {
 </mapping>
 ]]></attr>
 </Node>
-<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/FilledTaxForms/form_#.xlsx" guiName="SpreadsheetDataWriter" guiX="465" guiY="2468" id="SPREADSHEET_WRITER2" makeDirs="true" partitionFileTag="keyNameFileTag" partitionKey="Taxpayer_Surname;Taxpayer_First_Name" sheet="Form" templateFileURL="${DATAIN_DIR}/others/tax_form_en.xlsx" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY">
+<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/FilledTaxForms/form_#.xlsx" guiName="SpreadsheetDataWriter" guiX="555" guiY="2634" id="SPREADSHEET_WRITER2" makeDirs="true" partitionFileTag="keyNameFileTag" partitionKey="Taxpayer_Surname;Taxpayer_First_Name" sheet="Form" templateFileURL="${DATAIN_DIR}/others/tax_form_en.xlsx" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
     <globalAttributes>
@@ -1235,8 +1268,8 @@ function integer transform() {
 <Edge debugMode="true" fromNode="SPREADSHEET_READER2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (input)" metadata="Metadata9" outPort="Port 0 (output)" toNode="SPREADSHEET_WRITER2:0"/>
 </Phase>
 <Phase number="7">
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/tax_form_data.txt" guiName="UniversalDataWriter" guiX="526" guiY="2920" id="DATA_WRITER1" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/FilledTaxForms/form_*.xlsx" guiName="SpreadsheetDataReader" guiX="164" guiY="2920" id="SPREADSHEET_READER3" numSourceRecords="1" type="SPREADSHEET_READER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/tax_form_data.txt" guiName="UniversalDataWriter" guiX="688" guiY="3070" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/FilledTaxForms/form_*.xlsx" guiName="SpreadsheetDataReader" guiX="87" guiY="3070" id="SPREADSHEET_READER3" numSourceRecords="1" type="SPREADSHEET_READER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
     <globalAttributes>

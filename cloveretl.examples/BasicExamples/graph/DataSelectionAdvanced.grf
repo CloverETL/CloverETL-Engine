@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Petr" created="Thu Jul 01 14:14:48 CEST 2010" guiVersion="4.1.0" id="1277991711576" licenseCode="CLP1DJAVLI58889773BY" licenseType="Commercial" modified="Fri Jul 24 11:55:18 CEST 2015" modifiedBy="magda" name="graphAccessingDataSources" revision="1.104" showComponentDetails="true">
+<Graph author="Petr" created="Thu Jul 01 14:14:48 CEST 2010" guiVersion="0.0.0.devel" id="1277991711576" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 11:13:09 CET 2016" modifiedBy="jansedlacek" name="graphAccessingDataSources" revision="1.108" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/orders_with_autofilling.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/orders.fmt" id="Metadata2"/>
@@ -33,46 +33,54 @@
 </Record>
 </Metadata>
 <GraphParameters>
+<GraphParameter name="CONST" value="ORDERS."/>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="210" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Autofilling metadata feature" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="361" x="12" y="67">
-<attr name="text"><![CDATA[Input data read from Excel file containing the data organized into sheets by country.
-Autofilling enriches the data set by sheet name (country name) and is defined for the field ShipCountry.
+<RichTextNote backgroundColor="DAD8C9" enabled="true" folded="false" fontSize="medium" height="46" id="Note3" textColor="000000" width="829" x="13" y="16">
+<attr name="text"><![CDATA[h3. Selecting data from data sources, autofilling
 ]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="400" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Archived files" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="236" x="12" y="291">
-<attr name="text"><![CDATA[Clover can read data from zipped/gzipped/tar files. You can select specific file(s) or use wildcards (?,*).]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="238" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Input port reading" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="209" x="9" y="724">
-<attr name="text"><![CDATA[Clover is able to read files (URLs) stored externally. In this way you can easily parameterize the graph processing. Instead of a specific URL, a special syntax is used - each record of a single field represents the URL of an input file:
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="304" id="Note0" textColor="000000" width="309" x="12" y="67">
+<attr name="text"><![CDATA[h3. Autofilling metadata feature
+Input data read from [Excel file|open://BasicExamples/data-in/delimited/Orders.xlsx] containing the data organized into sheets by country.
+*Autofilling* enriches the data set by sheet name (country name) and is defined for the field *ShipCountry*.
+]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="304" id="Note4" textColor="000000" width="513" x="329" y="67">
+<attr name="text"><![CDATA[h3. Aggregator
 
-port:$0.fileURL:source]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="0" backgroundColorR="0" enabled="true" folded="false" height="38" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Selecting data from data sources, autofilling" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="10" width="829" x="13" y="16"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="262" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Aggregator" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="374" x="408" y="207">
-<attr name="text"><![CDATA[
-Records with the same "ShipCountry" key field value are grouped and the aggregation function count() is applied.
+Records with the same "*ShipCountry*" key field value are grouped and the aggregation function *count()* is applied.
 
 The following  can be mapped to output fields:
-1. if non-key fields are being mapped
- - using an aggregation function is a must
 
+1. if non-key fields are being mapped
+- using an aggregation function is a must
 2. if key fields are being mapped
- - input field (ShipCountry)
- - function (count())
- - constant ]]></attr>
-</Note>
+- input field (ShipCountry)
+- function (count())
+- constant ]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="444" id="Note1" textColor="000000" width="259" x="13" y="377">
+<attr name="text"><![CDATA[h3. Archived files
+Clover can read data from *zipped/gzipped/tar* files. You can select specific file(s) or use wildcards (?,*).]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="265" id="Note2" textColor="000000" width="259" x="13" y="826">
+<attr name="text"><![CDATA[h3. Input port reading
+Clover is able to read files (URLs) stored externally. In this way you can easily parameterize the graph processing. Instead of a specific URL, a special syntax is used - each record of a single field represents the URL of an input file:
+
+{noformat}port:$0.fileURL:source{noformat}]]></attr>
+</RichTextNote>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node aggregateKey="ShipCountry;" enabled="enabled" guiName="how many from?" guiX="410" guiY="106" id="AGGREGATE0" mapping="$From:=$ShipCountry;$Count:=count();" sorted="false" type="AGGREGATE"/>
-<Node enabled="enabled" fileURL="tar:(gzip:(${DATAIN_DIR}/delimited/Orders.TGZ))#Orders_Spain.csv" guiName="1 sheet from .TGZ" guiX="50" guiY="482" id="DATA_READER3" skipLeadingBlanks="false" skipRows="1" type="DATA_READER">
+<Node aggregateKey="ShipCountry;" enabled="enabled" guiName="how many from?" guiX="517" guiY="286" id="AGGREGATE0" mapping="$From:=$ShipCountry;$Count:=count();" sorted="false" type="AGGREGATE"/>
+<Node enabled="enabled" fileURL="tar:(gzip:(${DATAIN_DIR}/delimited/Orders.TGZ))#Orders_Spain.csv" guiName="1 sheet from .TGZ" guiX="51" guiY="612" id="DATA_READER3" skipLeadingBlanks="false" skipRows="1" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[One file]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="tar:(${DATAIN_DIR}/delimited/Orders.tar)#Orders_Br*.csv" guiName="selects from .tar" guiX="58" guiY="590" id="DATA_READER4" skipRows="1" type="DATA_READER">
+<Node enabled="enabled" fileURL="tar:(${DATAIN_DIR}/delimited/Orders.tar)#Orders_Br*.csv" guiName="selects from .tar" guiX="59" guiY="720" id="DATA_READER4" skipRows="1" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Wildcard usage]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/Orders.xlsx" guiName="reads whole .xlsx" guiX="120" guiY="171" id="READS_WHOLE_XLSX" sheet="*" type="SPREADSHEET_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/Orders.xlsx" guiName="reads whole .xlsx" guiX="87" guiY="256" id="READS_WHOLE_XLSX" sheet="*" type="SPREADSHEET_READER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mapping>
     <globalAttributes>
@@ -109,36 +117,36 @@ The following  can be mapped to output fields:
 </mapping>
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="discards all" guiX="669" guiY="105" id="TRASH0" type="TRASH"/>
+<Node enabled="enabled" guiName="discards all" guiX="869" guiY="286" id="TRASH0" type="TRASH"/>
 <Edge debugMode="true" fromNode="AGGREGATE0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="TRASH0:0"/>
 <Edge fromNode="DATA_READER3:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 1 (in)" metadata="Metadata4" outPort="Port 0 (output)" toNode="CONCATENATE0:1"/>
 <Edge fromNode="DATA_READER4:0" guiBendpoints="268:601|268:521" guiLocks="256|null|null" guiRouter="Manual" id="Edge9" inPort="Port 2 (in)" metadata="Metadata4" outPort="Port 0 (output)" toNode="CONCATENATE0:2"/>
-<Edge debugMode="true" fromNode="READS_WHOLE_XLSX:0" guiBendpoints="453:313|453:222|396:222|396:126" guiLocks="381|396|222" guiRouter="Manual" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="AGGREGATE0:0"/>
+<Edge debugMode="true" fromNode="READS_WHOLE_XLSX:0" guiBendpoints="297:275|297:305" guiLocks="297|396|222" guiRouter="Manual" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="AGGREGATE0:0"/>
 </Phase>
 <Phase number="1">
-<Node aggregateKey="ShipCountry" enabled="enabled" guiName="how many from?" guiX="831" guiY="482" id="AGGREGATE1" mapping="$From:=$ShipCountry;$Count:=count();" sorted="false" type="AGGREGATE"/>
-<Node enabled="enabled" guiName="concatenates" guiX="294" guiY="482" id="CONCATENATE0" type="CONCATENATE"/>
-<Node enabled="enabled" fileURL="zip:(./data-in/delimited/Orders.zip)#Orders_Argentina.csv;zip:(./data-in/delimited/Orders.zip)#Orders_Brazil.csv;zip:(./data-in/delimited/Orders.zip)#Orders_Venezuela.csv;" guiName="3 sheets from .zip" guiX="50" guiY="380" id="DATA_READER0" skipSourceRows="1" type="DATA_READER">
+<Node aggregateKey="ShipCountry" enabled="enabled" guiName="how many from?" guiX="788" guiY="510" id="AGGREGATE1" mapping="$From:=$ShipCountry;$Count:=count();" sorted="false" type="AGGREGATE"/>
+<Node enabled="enabled" guiName="concatenates" guiX="320" guiY="510" id="CONCATENATE0" type="CONCATENATE"/>
+<Node enabled="enabled" fileURL="zip:(./data-in/delimited/Orders.zip)#Orders_Argentina.csv;zip:(./data-in/delimited/Orders.zip)#Orders_Brazil.csv;zip:(./data-in/delimited/Orders.zip)#Orders_Venezuela.csv;" guiName="3 sheets from .zip" guiX="51" guiY="510" id="DATA_READER0" skipSourceRows="1" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[List of files]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATATMP_DIR}/had_duplicate_records.txt" guiName="has duplicate" guiX="841" guiY="574" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER">
+<Node append="false" enabled="enabled" fileURL="${DATATMP_DIR}/had_duplicate_records.txt" guiName="has duplicate" guiX="798" guiY="602" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Writes duplicates to tmp file]]></attr>
 </Node>
-<Node dedupKey="OrderID(a);ShipCountry(a)" enabled="enabled" guiName="removes duplicates" guiX="648" guiY="482" id="DEDUP0" type="DEDUP"/>
-<Node enabled="enabled" guiName="ExtSort" guiX="473" guiY="482" id="EXT_SORT0" sortKey="OrderID(a);ShipCountry(a)" type="EXT_SORT"/>
-<Node debugPrint="true" enabled="enabled" guiName="prints to stdout" guiX="996" guiY="482" id="TRASH1" type="TRASH"/>
+<Node dedupKey="OrderID(a);ShipCountry(a)" enabled="enabled" guiName="removes duplicates" guiX="605" guiY="510" id="DEDUP0" type="DEDUP"/>
+<Node enabled="enabled" guiName="ExtSort" guiX="464" guiY="510" id="EXT_SORT0" sortKey="OrderID(a);ShipCountry(a)" type="EXT_SORT"/>
+<Node debugPrint="true" enabled="enabled" guiName="prints to stdout" guiX="953" guiY="510" id="TRASH1" type="TRASH"/>
 <Edge debugMode="true" fromNode="AGGREGATE1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="TRASH1:0"/>
 <Edge debugMode="true" fromNode="CONCATENATE0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata4" toNode="EXT_SORT0:0"/>
 <Edge fromNode="DATA_READER0:0" guiBendpoints="266:391|266:489" guiLocks="254|null|null" guiRouter="Manual" id="Edge7" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (output)" toNode="CONCATENATE0:0"/>
 <Edge debugMode="true" fromNode="DEDUP0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (in)" outPort="Port 0 (unique)" persistedImplicitMetadata="Metadata4" toNode="AGGREGATE1:0"/>
-<Edge fromNode="DEDUP0:1" guiBendpoints="838:513|838:564|815:564|815:616" guiLocks="826|803|573" guiRouter="Manual" id="Edge11" inPort="Port 0 (in)" outPort="Port 1 (duplicate)" persistedImplicitMetadata="Metadata4" toNode="DATA_WRITER0:0"/>
+<Edge fromNode="DEDUP0:1" guiBendpoints="838:513|838:564|815:564|815:616" guiLocks="783|760|467" guiRouter="Manual" id="Edge11" inPort="Port 0 (in)" outPort="Port 1 (duplicate)" persistedImplicitMetadata="Metadata4" toNode="DATA_WRITER0:0"/>
 <Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata4" toNode="DEDUP0:0"/>
 </Phase>
 <Phase number="2">
-<Node aggregateKey="ShipCountry" enabled="enabled" guiName="how many from?" guiX="636" guiY="739" id="AGGREGATE2" mapping="$From:=$ShipCountry;$Count:=count();" sorted="false" type="AGGREGATE"/>
-<Node enabled="enabled" fileURL="port:$0.fileURL:source" guiName="reads files data" guiX="463" guiY="739" id="DATA_READER1" skipSourceRows="1" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/filenames.txt" guiName="reads files location" guiX="271" guiY="739" id="DATA_READER2" type="DATA_READER"/>
-<Node debugFilename="${DATAOUT_DIR}/NumberOfCustomers.out" debugPrint="true" enabled="enabled" guiName="prints debug in file" guiX="814" guiY="735" id="TRASH2" type="TRASH"/>
+<Node aggregateKey="ShipCountry" enabled="enabled" guiName="how many from?" guiX="663" guiY="826" id="AGGREGATE2" mapping="$From:=$ShipCountry;$Count:=count();" sorted="false" type="AGGREGATE"/>
+<Node enabled="enabled" fileURL="port:$0.fileURL:source" guiName="reads files data" guiX="490" guiY="826" id="DATA_READER1" skipSourceRows="1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/filenames.txt" guiName="reads files location" guiX="311" guiY="826" id="DATA_READER2" type="DATA_READER"/>
+<Node debugFilename="${DATAOUT_DIR}/NumberOfCustomers.out" debugPrint="true" enabled="enabled" guiName="prints debug in file" guiX="841" guiY="822" id="TRASH2" type="TRASH"/>
 <Edge debugMode="true" fromNode="AGGREGATE2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="TRASH2:0"/>
 <Edge debugMode="true" fromNode="DATA_READER1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (output)" toNode="AGGREGATE2:0"/>
 <Edge fromNode="DATA_READER2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (input)" metadata="Metadata3" outPort="Port 0 (output)" toNode="DATA_READER1:0"/>

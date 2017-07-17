@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="dpavlis" created="Tue Jul 15 09:15:48 CEST 2014" guiVersion="4.0.0.M2" id="1405410961170" licenseType="Evaluation" modified="Fri Jul 18 11:04:13 CEST 2014" modifiedBy="User" name="WordsFrequency" nature="subgraph" revision="1.9" showComponentDetails="true">
+<Graph author="dpavlis" created="Tue Jul 15 09:15:48 CEST 2014" guiVersion="0.0.0.devel" id="1405410961170" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 09:54:14 CET 2016" modifiedBy="jansedlacek" name="WordsFrequency" nature="subgraph" revision="1.10" showComponentDetails="true">
 <Global>
+<inputPorts>
+<singlePort connected="true" name="0"/>
+</inputPorts>
+<outputPorts>
+<singlePort connected="true" name="0"/>
+</outputPorts>
 <Metadata id="Metadata0">
 <Record fieldDelimiter="|" name="recordName1" recordDelimiter="\n" recordSize="-1" type="delimited">
 <Field eofAsDelimiter="false" name="text" nullable="true" shift="0" size="0" type="string"/>
@@ -17,16 +23,28 @@
 <Field name="word" type="string"/>
 </Record>
 </Metadata>
+<MetadataGroup name="Implicit metadata" type="implicit">
+<Metadata com.cloveretl.profiler.engine.components.mapping.metrics="mapping.metrics" id="__dynamic_metadata_CALCULATE_FREQUENCIES_RunResults">
+<Record com.cloveretl.profiler.engine.components.mapping.metrics="mapping.metrics" fieldDelimiter="," name="RunResults" recordDelimiter="\n" type="delimited">
+<Field name="word__min_length" trim="true" type="integer"/>
+<Field name="word__avg_length" trim="true" type="number"/>
+<Field name="word__max_len" trim="true" type="integer"/>
+<Field name="word__shortest_string" type="string"/>
+<Field name="word__longest_string" type="string"/>
+<Field containerType="map" name="word__freq_histogram" trim="true" type="long"/>
+</Record>
+</Metadata>
+</MetadataGroup>
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="100" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Comment" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="14" width="570" x="418" y="39">
+<RichTextNote backgroundColor="F9EB81" enabled="true" folded="false" fontSize="medium" height="94" id="Note0" textColor="000000" width="788" x="308" y="42">
 <attr name="text"><![CDATA[This subraph accepts records on input (any structure) with field (named "text") containing text/sentence(s). It tokenizes the text, remove stop words (i.e.commonly used words) and calculacets frequencies of "rare" words. The output is sorted descending based on frequencies.]]></attr>
-</Note>
+</RichTextNote>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiName="Calculate Frequencies" guiX="499" guiY="310" id="CALCULATE_FREQUENCIES" type="PROFILER_PROBE">
+<Node enabled="enabled" guiName="Calculate Frequencies" guiX="642" guiY="160" id="CALCULATE_FREQUENCIES" persistResults="false" type="PROFILER_PROBE">
 <attr name="metrics"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <listOfFunctions>
     <metadataField name="word" type="string">
@@ -70,7 +88,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node debugInput="true" enabled="enabled" guiName="DebugInput" guiX="50" guiY="50" id="DEBUG_INPUT" recordsNumber="3" type="DATA_GENERATOR">
+<Node debugInput="true" enabled="enabled" guiName="DebugInput" guiX="49" guiY="83" id="DEBUG_INPUT" recordsNumber="3" type="DATA_GENERATOR">
 <attr name="generate"><![CDATA[//#CTL2
 
 string[] texts=["RT @Chilis: Where are you watching #ArgentinavsGermany? We'll have the game on our big screens! http://t.co/kXhE2s0L",	
@@ -105,8 +123,8 @@ function integer generate() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node debugOutput="true" enabled="enabled" guiName="DebugOutput" guiX="1278" guiY="217" id="DEBUG_OUTPUT" type="TRASH"/>
-<Node enabled="enabled" guiName="Normalizer" guiX="733" guiY="310" id="NORMALIZER" type="NORMALIZER">
+<Node debugOutput="true" enabled="enabled" guiName="DebugOutput" guiX="1264" guiY="160" id="DEBUG_OUTPUT" type="TRASH"/>
+<Node enabled="enabled" guiName="Normalizer" guiX="848" guiY="160" id="NORMALIZER" type="NORMALIZER">
 <attr name="normalize"><![CDATA[//#CTL2
 // This transformation defines the way in which a single input record is normalized
 // into multiple output records.
@@ -161,7 +179,7 @@ function integer transform(integer idx) {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Remove Stop Words" guiX="501" guiY="188" id="REMOVE_STOP_WORDS" type="REFORMAT">
+<Node enabled="enabled" guiName="Remove Stop Words" guiX="459" guiY="160" id="REMOVE_STOP_WORDS" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 map[string,boolean] stop_map;
@@ -226,16 +244,16 @@ function boolean init() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Sort by frequencies" guiX="938" guiY="310" id="SORT_BY_FREQUENCIES" sortInMemory="true" sortKey="count(d)" type="FAST_SORT"/>
-<Node enabled="enabled" guiName="SubgraphInput" guiX="228" guiY="-32" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT">
-<Port guiY="68" name="0"/>
+<Node enabled="enabled" guiName="Sort by frequencies" guiX="991" guiY="160" id="SORT_BY_FREQUENCIES" sortInMemory="true" sortKey="count(d)" type="FAST_SORT"/>
+<Node enabled="enabled" guiName="SubgraphInput" guiX="228" guiY="-2" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT">
+<Port guiY="100" name="0"/>
 <Port guiY="138" name="1"/>
 </Node>
-<Node enabled="enabled" guiName="SubgraphOutput" guiX="1164" guiY="-27" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT">
-<Port guiY="235" name="0"/>
+<Node enabled="enabled" guiName="SubgraphOutput" guiX="1197" guiY="0" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT">
+<Port guiY="178" name="0"/>
 <Port guiY="371" name="1"/>
 </Node>
-<Node enabled="enabled" guiName="Tokenize" guiX="308" guiY="188" id="TOKENIZE" type="NORMALIZER">
+<Node enabled="enabled" guiName="Tokenize" guiX="308" guiY="160" id="TOKENIZE" type="NORMALIZER">
 <attr name="normalize"><![CDATA[//#CTL2
 // This transformation defines the way in which a single input record is normalized
 // into multiple output records.
@@ -290,13 +308,13 @@ function integer transform(integer idx) {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Edge debugMode="false" fromNode="CALCULATE_FREQUENCIES:1" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" outPort="Port 1 (results)" toNode="NORMALIZER:0"/>
+<Edge debugMode="false" fromNode="CALCULATE_FREQUENCIES:1" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" outPort="Port 1 (results)" persistedImplicitMetadata="__dynamic_metadata_CALCULATE_FREQUENCIES_RunResults" toNode="NORMALIZER:0"/>
 <Edge fromNode="DEBUG_INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SUBGRAPH_INPUT:0"/>
 <Edge debugMode="false" fromNode="NORMALIZER:0" guiBendpoints="" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SORT_BY_FREQUENCIES:0"/>
 <Edge debugMode="false" fromNode="REMOVE_STOP_WORDS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="CALCULATE_FREQUENCIES:0"/>
 <Edge debugMode="false" fromNode="SORT_BY_FREQUENCIES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge14" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SUBGRAPH_OUTPUT:0"/>
-<Edge debugMode="false" fromNode="SUBGRAPH_INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="TOKENIZE:0"/>
-<Edge debugMode="true" fromNode="SUBGRAPH_OUTPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="DEBUG_OUTPUT:0"/>
+<Edge debugMode="false" fromNode="SUBGRAPH_INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata0" toNode="TOKENIZE:0"/>
+<Edge debugMode="true" fromNode="SUBGRAPH_OUTPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata2" toNode="DEBUG_OUTPUT:0"/>
 <Edge debugMode="false" fromNode="TOKENIZE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="REMOVE_STOP_WORDS:0"/>
 </Phase>
 </Graph>

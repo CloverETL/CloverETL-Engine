@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="dpavlis" category="readers" created="Wed Jul 09 15:34:33 CEST 2014" guiVersion="4.1.0" id="1404915642404" largeIconPath="${SUBGRAPH_DIR}/icons/twitter/Twitter_logo_blue_48.png" licenseCode="CLP1DJAVLI58889773BY" licenseType="Commercial" mediumIconPath="${SUBGRAPH_DIR}/icons/twitter/Twitter_logo_blue_32.png" modified="Fri Jul 24 12:49:46 CEST 2015" modifiedBy="magda" name="TwitterReader" nature="subgraph" revision="1.40" showComponentDetails="true" smallIconPath="${SUBGRAPH_DIR}/icons/twitter/Twitter_logo_blue_16.png">
+<Graph author="dpavlis" category="readers" created="Wed Jul 09 15:34:33 CEST 2014" guiVersion="0.0.0.devel" id="1404915642404" largeIconPath="${SUBGRAPH_DIR}/icons/twitter/Twitter_logo_blue_48.png" licenseCode="Commercial Devel" licenseType="Commercial" mediumIconPath="${SUBGRAPH_DIR}/icons/twitter/Twitter_logo_blue_32.png" modified="Wed Feb 24 10:04:23 CET 2016" modifiedBy="jansedlacek" name="TwitterReader" nature="subgraph" revision="1.40" showComponentDetails="true" smallIconPath="${SUBGRAPH_DIR}/icons/twitter/Twitter_logo_blue_16.png">
 <Global>
 <inputPorts>
 <singlePort connected="false" name="0"/>
@@ -35,14 +35,12 @@
 </Metadata>
 <GraphParameters>
 <GraphParameter label="TWITTER_QUERY" name="_TWITTER__QUERY1" public="true" required="false" value="dummy"/>
-<GraphParameter category="basic" label="NUM_TWEETS" name="_NUM__TWEETS" public="true" required="false" value="100">
-<SingleType name="int"/>
-</GraphParameter>
+<GraphParameter category="basic" label="NUM_TWEETS" name="_NUM__TWEETS" public="true" required="false" value="100"/>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="100" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Comment" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="14" width="524" x="317" y="46">
+<RichTextNote backgroundColor="F9EB81" enabled="true" folded="false" fontSize="medium" height="100" id="Note0" textColor="000000" width="613" x="283" y="46">
 <attr name="text"><![CDATA[Reading Tweets/Searching based on provided search string. As Twitter returns max 100 tweets per request, this subgraph allows for cascading of the requests in order to return older (timewise) tweets for the same search string - that's why the second output port.]]></attr>
-</Note>
+</RichTextNote>
 <Dictionary/>
 </Global>
 <Phase number="0">
@@ -110,6 +108,34 @@ function integer generate() {
 </Node>
 <Node enabled="enabled" guiName="Search for tweets" guiX="317" guiY="200" id="SEARCH_FOR_TWEETS" type="HTTP_CONNECTOR">
 <attr name="NUM_TWEETS"><![CDATA[${_NUM__TWEETS}]]></attr>
+<attr name="standardOutputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.content = $in.1.content;
+	$out.0.query = $in.2.URL;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
 <attr name="inputMapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -143,37 +169,9 @@ function integer transform() {
 // Called to return a user-defined error message when an error occurs.
 // function string getMessage() {}
 ]]></attr>
-<attr name="standardOutputMapping"><![CDATA[//#CTL2
-
-// Transforms input record into output record.
-function integer transform() {
-	$out.0.content = $in.1.content;
-	$out.0.query = $in.2.URL;
-
-	return ALL;
-}
-
-// Called during component initialization.
-// function boolean init() {}
-
-// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
-// required by the transform. All resources allocated within this method should be released
-// by the postExecute() method.
-// function void preExecute() {}
-
-// Called only if transform() throws an exception.
-// function integer transformOnError(string errorMessage, string stackTrace) {}
-
-// Called during each graph run after the entire transform was executed. Should be used to free any resources
-// allocated within the preExecute() method.
-// function void postExecute() {}
-
-// Called to return a user-defined error message when an error occurs.
-// function string getMessage() {}
-]]></attr>
 <attr name="TWITTER_QUERY"><![CDATA[${_TWITTER__QUERY1}]]></attr>
 </Node>
-<Node enabled="enabled" guiName="SimpleCopy" guiX="685" guiY="193" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiName="SimpleCopy" guiX="678" guiY="200" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
 <Node enabled="enabled" guiName="SubgraphInput" guiX="228" guiY="10" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT">
 <Port guiY="152" name="0"/>
 <Port guiY="222" name="1"/>

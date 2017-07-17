@@ -228,6 +228,7 @@ public class DBInputTable extends Node {
 	 * @exception  ComponentNotReadyException  Description of Exception
 	 * @since                                  September 27, 2002
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
@@ -277,12 +278,6 @@ public class DBInputTable extends Node {
     	if ((lDataRecordMetadata = getOutMetadata()).size() > 0) 
     		autoFilling.addAutoFillingFields(lDataRecordMetadata.get(0));
 	}
-
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-		
-	}
 	
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
@@ -300,14 +295,16 @@ public class DBInputTable extends Node {
 
 	@Override
 	public Result execute() throws Exception {
+		String currentQuery = null;
 		try {
 			SQLDataParser parser = null;
 			if (sqlQuery != null) {
 				// we have only single query
+				currentQuery = sqlQuery;
 				if (printStatements) {
 					logger.info("Executing statement: " + sqlQuery);
 				}
-				parser = processSqlQuery(sqlQuery);
+				parser = processSqlQuery(currentQuery);
 			} else {
 				// process queries from file or input port
 				PropertyRefResolver propertyResolver = getPropertyRefResolver();
@@ -318,16 +315,19 @@ public class DBInputTable extends Node {
 					DataRecord statementRecord = DataRecordFactory.newRecord(statementMetadata);
     				//read statements from byte channel
     				while ((statementRecord = inputParser.getNext(statementRecord)) != null) {
-    					String sqlStatement = propertyResolver.resolveRef(statementRecord.getField(0).toString());
+    					currentQuery = propertyResolver.resolveRef(statementRecord.getField(0).toString());
        					if (printStatements) {
-    						logger.info("Executing statement: " + sqlStatement);
+    						logger.info("Executing statement: " + currentQuery);
     					}
-       					parser = processSqlQuery(sqlStatement);
+       					parser = processSqlQuery(currentQuery);
     				}
 				}
 			}
 			// save values of incremental key into file
 			storeValues(parser);
+		} catch (Exception e) {
+			logger.error("Error when executing statement: " + currentQuery);
+			throw e;
 		} finally {
     		broadcastEOF();
 		}
@@ -395,7 +395,8 @@ public class DBInputTable extends Node {
 	 * @throws AttributeNotFoundException 
 	 * @since           September 27, 2002
 	 */
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws Exception {
+    @SuppressWarnings("deprecation")
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws Exception {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		ComponentXMLAttributes xattribsChild;
 		DBInputTable aDBInputTable = null;
@@ -448,7 +449,7 @@ public class DBInputTable extends Node {
     	if (parser == null) return;
 		try {
 			Object dictValue = getGraph().getDictionary().getValue(Defaults.INCREMENTAL_STORE_KEY);
-			if (dictValue != null && dictValue == Boolean.FALSE) {
+			if (Boolean.FALSE.equals(dictValue)) {
 				return;
 			}
 			parser.storeIncrementalReading(incrementalKeyPosition);
@@ -558,7 +559,7 @@ public class DBInputTable extends Node {
     	this.policyTypeStr = (policyType != null) ? policyType.toString() : null;
     }
 
-	public void setIncrementalFile(String incrementalFile) throws MalformedURLException {
+	public void setIncrementalFile(String incrementalFile) {
 		this.incrementalFile = incrementalFile;
 	}
 

@@ -44,25 +44,25 @@ public class CloverBufferTest extends CloverTestCase {
 	
     public void testNormalizeCapacity() {
         // A few sanity checks
-        assertEquals(Integer.MAX_VALUE, CloverBufferImpl.normalizeCapacity(-10));
-        assertEquals(0, CloverBufferImpl.normalizeCapacity(0));
-        assertEquals(Integer.MAX_VALUE, CloverBufferImpl.normalizeCapacity(Integer.MAX_VALUE));
-        assertEquals(Integer.MAX_VALUE, CloverBufferImpl.normalizeCapacity(Integer.MIN_VALUE));
-        assertEquals(Integer.MAX_VALUE, CloverBufferImpl.normalizeCapacity(Integer.MAX_VALUE - 10));
+        assertEquals(Integer.MAX_VALUE, ByteBufferUtils.normalizeCapacity(-10));
+        assertEquals(0, ByteBufferUtils.normalizeCapacity(0));
+        assertEquals(Integer.MAX_VALUE, ByteBufferUtils.normalizeCapacity(Integer.MAX_VALUE));
+        assertEquals(Integer.MAX_VALUE, ByteBufferUtils.normalizeCapacity(Integer.MIN_VALUE));
+        assertEquals(Integer.MAX_VALUE, ByteBufferUtils.normalizeCapacity(Integer.MAX_VALUE - 10));
 
         // A sanity check test for all the powers of 2
         for (int i = 0; i < 30; i++) {
             int n = 1 << i;
 
-            assertEquals(n, CloverBufferImpl.normalizeCapacity(n));
+            assertEquals(n, ByteBufferUtils.normalizeCapacity(n));
 
             if (i > 1) {
                 // test that n - 1 will be normalized to n (notice that n = 2^i)
-                assertEquals(n, CloverBufferImpl.normalizeCapacity(n - 1));
+                assertEquals(n, ByteBufferUtils.normalizeCapacity(n - 1));
             }
 
             // test that n + 1 will be normalized to 2^(i + 1)
-            assertEquals(n << 1, CloverBufferImpl.normalizeCapacity(n + 1));
+            assertEquals(n << 1, ByteBufferUtils.normalizeCapacity(n + 1));
         }
 
         // The first performance test measures the time to normalize integers
@@ -70,7 +70,7 @@ public class CloverBufferTest extends CloverTestCase {
         long time = System.currentTimeMillis();
 
         for (int i = 0; i < 1 << 27; i++) {
-            int n = CloverBufferImpl.normalizeCapacity(i);
+            int n = ByteBufferUtils.normalizeCapacity(i);
 
             // do a simple superfluous test to prevent possible compiler or JVM
             // optimizations of not executing non used code/variables
@@ -87,7 +87,7 @@ public class CloverBufferTest extends CloverTestCase {
         // integers)
         time = System.currentTimeMillis();
         for (int i = Integer.MAX_VALUE; i > Integer.MAX_VALUE - (1 << 27); i--) {
-            int n = CloverBufferImpl.normalizeCapacity(i);
+            int n = ByteBufferUtils.normalizeCapacity(i);
 
             // do a simple superfluous test to prevent possible compiler or JVM
             // optimizations of not executing non used code/variables
@@ -111,23 +111,6 @@ public class CloverBufferTest extends CloverTestCase {
         assertFalse("Should *NOT* AutoExpand", slice.isAutoExpand()); 
     } 
 
-    /**
-     * This class extends the AbstractIoBuffer class to have direct access to
-     * the protected IoBuffer.normalizeCapacity() method and to expose it for
-     * the tests.
-     */
-    private static class CloverBufferImpl extends DynamicCloverBuffer {
-
-		protected CloverBufferImpl(ByteBuffer buf) {
-			super(buf);
-		}
-
-		public static int normalizeCapacity(int requestedCapacity) {
-            return CloverBuffer.normalizeCapacity(requestedCapacity);
-        }
-        
-    }
-    
     public void testAllocate() throws Exception {
         for (int i = 10; i < 1048576 * 2; i = i * 11 / 10) // increase by 10%
         {

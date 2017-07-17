@@ -599,6 +599,18 @@ public class XLSXDataParser extends XLSParser {
 		public void evaluateAll() {
 			throw new UnsupportedOperationException();
 		}
+
+		@Override
+		public void setDebugEvaluationOutputForNextEval(boolean arg0) {
+		}
+
+		@Override
+		public void setIgnoreMissingWorkbooks(boolean arg0) {
+		}
+
+		@Override
+		public void setupReferencedWorkbooks(Map<String, FormulaEvaluator> arg0) {
+		}
 		
 	}
 }

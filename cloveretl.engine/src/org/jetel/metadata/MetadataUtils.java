@@ -147,11 +147,16 @@ public class MetadataUtils {
 		return strMetadata1.equals(strMetadata2);
     }
     
-    private static String serializeMetadata(DataRecordMetadata metadata) {
+    /**
+     * Serializes metadata to XML
+     * @param metadata
+     * @return
+     */
+    public static String serializeMetadata(DataRecordMetadata metadata) {
 		try {
 	    	ByteArrayOutputStream os = new ByteArrayOutputStream();
 	    	DataRecordMetadataXMLReaderWriter.write(metadata, os);
-			return os.toString("UTF-8");
+			return os.toString(DataRecordMetadataXMLReaderWriter.DEFAULT_CHARACTER_ENCODING);
 		} catch (UnsupportedEncodingException e) {
 			throw new JetelRuntimeException("Metadata " + metadata.getId() + " serialization failed.", e);
 		}

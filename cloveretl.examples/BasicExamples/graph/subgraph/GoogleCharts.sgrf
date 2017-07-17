@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="krivanekm" category="writers" created="Mon Nov 10 13:22:19 CET 2014" guiVersion="4.1.0" id="1415630160185" largeIconPath="${SUBGRAPH_DIR}/icons/pie_chart/pie_chart_64.png" licenseCode="CLP1DJAVLI58889773BY" licenseType="Commercial" mediumIconPath="${SUBGRAPH_DIR}/icons/pie_chart/pie_chart_32.png" modified="Fri Jul 24 11:25:48 CEST 2015" modifiedBy="magda" name="GoogleChartsAPI" nature="subgraph" revision="1.85" showComponentDetails="true" smallIconPath="${SUBGRAPH_DIR}/icons/pie_chart/pie_chart_16.png">
+<Graph author="krivanekm" category="writers" created="Mon Nov 10 13:22:19 CET 2014" guiVersion="0.0.0.devel" id="1415630160185" largeIconPath="${SUBGRAPH_DIR}/icons/pie_chart/pie_chart_64.png" licenseCode="Commercial Devel" licenseType="Commercial" mediumIconPath="${SUBGRAPH_DIR}/icons/pie_chart/pie_chart_32.png" modified="Wed Feb 24 10:14:44 CET 2016" modifiedBy="jansedlacek" name="GoogleChartsAPI" nature="subgraph" revision="1.85" showComponentDetails="true" smallIconPath="${SUBGRAPH_DIR}/icons/pie_chart/pie_chart_16.png">
 <Global>
 <inputPorts>
 <singlePort connected="true" name="0"/>
@@ -33,12 +33,8 @@
 <GraphParameter label="Chart type" name="CHART_TYPE" public="true" required="true" value="ColumnChart">
 <SingleType allowCustomValues="true" name="simpleEnum" values="AreaChart;BarChart;BubbleChart;CandlestickChart;ColumnChart;GeoChart;Histogram;LineChart;PieChart;ScatterChart;SteppedAreaChart"/>
 </GraphParameter>
-<GraphParameter label="Width" name="WIDTH" public="true" value="1600">
-<SingleType name="int"/>
-</GraphParameter>
-<GraphParameter label="Height" name="HEIGHT" public="true" value="600">
-<SingleType name="int"/>
-</GraphParameter>
+<GraphParameter label="Width" name="WIDTH" public="true" value="1600"/>
+<GraphParameter label="Height" name="HEIGHT" public="true" value="600"/>
 <GraphParameter label="Title" name="TITLE" public="true"/>
 <GraphParameter category="advanced" label="Options" name="OPTIONS" public="true" value="'title':'${TITLE}', 'width':${WIDTH}, 'height':${HEIGHT}, titleTextStyle : { color: 'black', fontName: 'Arial', fontSize: 20, bold: true, italic: false }"/>
 <GraphParameter category="advanced" defaultHint=" " label="Transform" name="TRANSFORM" public="true" required="false">
@@ -83,17 +79,25 @@ function integer transform() {
 </GraphParameter>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="124" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Header" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="391" x="305" y="-30"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="131" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Count records" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="336" x="450" y="215"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="149" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="No comma after the last record" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="231" x="888" y="76"/>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="143" id="Note0" textColor="000000" width="337" x="305" y="-30">
+<attr name="text"><![CDATA[h3. Header]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="145" id="Note1" textColor="000000" width="336" x="450" y="215">
+<attr name="text"><![CDATA[h3. Count records
+]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="163" id="Note2" textColor="000000" width="315" x="840" y="62">
+<attr name="text"><![CDATA[h3. No comma after the last record
+]]></attr>
+</RichTextNote>
 <Dictionary>
 <Entry input="true" name="count" output="true" type="long"/>
 <Entry dictval.value="true" input="true" name="filter_firstRecord" output="true" type="boolean"/>
 </Dictionary>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiName="Aggregate" guiX="472" guiY="259" id="AGGREGATE" mapping="$count:=count();" type="AGGREGATE"/>
-<Node enabled="enabled" guiName="Concatenate" guiX="703" guiY="123" id="CONCATENATE" type="CONCATENATE"/>
+<Node enabled="enabled" guiName="Aggregate" guiX="466" guiY="267" id="AGGREGATE" mapping="$count:=count();" type="AGGREGATE"/>
+<Node enabled="enabled" guiName="Concatenate" guiX="686" guiY="125" id="CONCATENATE" type="CONCATENATE"/>
 <Node debugInput="true" enabled="enabled" guiName="DataGenerator" guiX="22" guiY="135" id="DATA_GENERATOR" recordsNumber="10" type="DATA_GENERATOR">
 <attr name="generate"><![CDATA[//#CTL2
 
@@ -125,14 +129,14 @@ function integer generate() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="ExtFilter" guiX="345" guiY="10" id="EXT_FILTER" type="EXT_FILTER">
+<Node enabled="enabled" guiName="ExtFilter" guiX="326" guiY="25" id="EXT_FILTER" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[//#CTL2
 dictionary.filter_firstRecord ? !(dictionary.filter_firstRecord = false) : false]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Reformat" guiX="472" guiY="131" id="REFORMAT" type="REFORMAT">
 <attr name="transform"><![CDATA[${TRANSFORM}]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Reformat" guiX="514" guiY="10" id="REFORMAT3" type="REFORMAT">
+<Node enabled="enabled" guiName="Reformat" guiX="495" guiY="25" id="REFORMAT3" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -165,7 +169,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="SetJobOutput" guiX="641" guiY="259" id="SET_JOB_OUTPUT" type="SET_JOB_OUTPUT">
+<Node enabled="enabled" guiName="SetJobOutput" guiX="641" guiY="267" id="SET_JOB_OUTPUT" type="SET_JOB_OUTPUT">
 <attr name="mapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.

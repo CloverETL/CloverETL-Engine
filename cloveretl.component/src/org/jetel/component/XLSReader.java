@@ -604,7 +604,7 @@ public class XLSReader extends Node {
     private void storeValues() {
 		try {
 			Object dictValue = getGraph().getDictionary().getValue(Defaults.INCREMENTAL_STORE_KEY);
-			if (dictValue != null && dictValue == Boolean.FALSE) {
+			if (Boolean.FALSE.equals(dictValue)) {
 				return;
 			}
 			reader.storeIncrementalReading();

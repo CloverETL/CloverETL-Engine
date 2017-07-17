@@ -193,9 +193,23 @@ public class RuntimeMappingModelFactory {
 		//we need to use port number 0 - this mini transformation has always one input and one output 
 		String transformationCode = buildTransformationCode(inputFieldToRecordMappings, 0);
 		
-		OutputPort outPort = context.getParentComponent().getOutputPort(parentRuntimeMapping.getOutputPortNumber());
-		InputPort inPort = context.getParentComponent().getInputPort(0);
+		int portNum = parentRuntimeMapping.getOutputPortNumber();
+		if (portNum < 0) {
+			XMLElementRuntimeMappingModel parent = parentRuntimeMapping;
+			while (parent != null && portNum < 0 && (parent.isUsingParentRecord() || parent.getOutputPortNumber() >= 0)) {
+				portNum = parent.getOutputPortNumber();
+				parent = parent.getParent();
+			}
+		}
 		
+		OutputPort outPort = context.getParentComponent().getOutputPort(portNum);
+		InputPort inPort = context.getParentComponent().getInputPort(0);
+		if (inPort == null) {
+			throw new JetelRuntimeException("Defined input field mapping, but no edge is connected to the input port 0.");
+		}
+		if (outPort == null) {
+			throw new JetelRuntimeException("Defined input field mapping, but the output port is not specified in its context.");
+		}
 		RecordTransform result = null;
 		if (!StringUtils.isEmpty(transformationCode)) {
 			try {

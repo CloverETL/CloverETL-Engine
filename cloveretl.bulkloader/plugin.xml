@@ -258,7 +258,7 @@
 	      <property category="basic" displayName="Database view" modifiable="true" name="view" nullable="true">
 	        <singleType name="string" />
 	      </property>
-	      <property category="basic" displayName="Database owner" modifiable="true" name="owner" nullable="true">
+	      <property category="basic" displayName="Database schema" modifiable="true" name="owner" nullable="true">
 	        <singleType name="string" />
 	      </property>
 	      <property category="basic" displayName="User name" modifiable="true" name="username" nullable="true">

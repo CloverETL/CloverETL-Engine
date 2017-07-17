@@ -254,11 +254,12 @@ public class LdapParser extends AbstractParser {
 			while (ne.hasMore()) {
 				i++;
 				SearchResult result = (SearchResult) ne.next(); 
-				String name = result.getName();
 				if (result.isRelative()) {
-					dnList.add(name + (dataSource.getBasedn().length() != 0 && name.length() != 0 ? "," : "") + dataSource.getBasedn());
+					String name = result.getNameInNamespace();
+					dnList.add(name);
 				} else {
 					// search result is a referral
+					String name = result.getName();
 					dnList.add(name);
 				}
 			}
@@ -312,11 +313,12 @@ public class LdapParser extends AbstractParser {
 			ne = ldapManager.search(dataSource.getBasedn(),dataSource.getFilter(),returnAttributesArray ,scope); 
 			while (ne.hasMore()) {
 				SearchResult result = (SearchResult) ne.next(); 
-				String name = result.getName();
 				if (result.isRelative()) {
-					dnList.add(name + (dataSource.getBasedn().length() != 0 && name.length() != 0 ? "," : "") + dataSource.getBasedn());
+					String name = result.getNameInNamespace();
+					dnList.add(name);
 				} else {
 					// search result is a referral
+					String name = result.getName();
 					dnList.add(name);
 				}
 			}

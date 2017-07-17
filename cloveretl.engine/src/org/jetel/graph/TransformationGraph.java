@@ -712,8 +712,6 @@ public final class TransformationGraph extends GraphElement {
 	 */
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
-		super.postExecute();
-		
 		//post-execute initialization of dictionary
 		dictionary.postExecute();
 		
@@ -749,6 +747,9 @@ public final class TransformationGraph extends GraphElement {
 				throw new ComponentNotReadyException(lookupTable, "Can't finalize lookup table " + lookupTable + ".", e);
 			}
 		}
+		
+		// must be the last step of postExecute, since it calls close of graph's classLoaders
+		super.postExecute();
 	}
 	
 	/* (non-Javadoc)

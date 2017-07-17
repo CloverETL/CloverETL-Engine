@@ -430,43 +430,41 @@ public class TypeChecker extends NavigatingVisitor {
 		case TransformLangParserConstants.REGEX_CONTAINS:
 		case TransformLangParserConstants.REGEX_EQUAL:
 			// regular expression operators
-			if (lhs.isString()) {
-				if (rhs.isString()) {
-					node.setType(TLTypePrimitive.BOOLEAN);
-					node.setOperationType(TLTypePrimitive.STRING);
+			if (lhs.isString() && rhs.isString()) { // CLO-7369
+				node.setType(TLTypePrimitive.BOOLEAN);
+				node.setOperationType(TLTypePrimitive.STRING);
 
-					int paramCount = 2;
-					boolean[] isLiteral = new boolean[paramCount];
-					Object[] paramValues = new Object[paramCount];
-					
-					for (int i = 0; i < paramCount; i++) {
-						SimpleNode iNode = (SimpleNode) node.jjtGetChild(i);
-						isLiteral[i] = (iNode instanceof CLVFLiteral);
-						if (isLiteral[i]) {
-							paramValues[i] = ((CLVFLiteral) iNode).getValue();
-						}
+				int paramCount = 2;
+				boolean[] isLiteral = new boolean[paramCount];
+				Object[] paramValues = new Object[paramCount];
+				
+				for (int i = 0; i < paramCount; i++) {
+					SimpleNode iNode = (SimpleNode) node.jjtGetChild(i);
+					isLiteral[i] = (iNode instanceof CLVFLiteral);
+					if (isLiteral[i]) {
+						paramValues[i] = ((CLVFLiteral) iNode).getValue();
 					}
-					
-					// prepare function call context used to cache the regex
-					TLFunctionCallContext context = new TLFunctionCallContext(transformationID);		
-					context.setParams(new TLType[] { TLTypePrimitive.STRING, TLTypePrimitive.STRING });
-					context.setLiterals(isLiteral);
-					context.setParamValues(paramValues);
-					context.setIndex(functionCallIndex++);
-					context.setHasInit(true);
-					context.setLibClassName("org.jetel.ctl.extensions.IntegralLib");
-					switch (node.getOperator()) {
-					case TransformLangParserConstants.REGEX_CONTAINS:
-						context.setInitMethodName("containsMatchInit");
-						break;
-					case TransformLangParserConstants.REGEX_EQUAL:
-						context.setInitMethodName("matchesInit");
-						break;
-					}
-
-					getFunctionCalls().add(context);
-					node.setComparisonContext(context);
 				}
+				
+				// prepare function call context used to cache the regex
+				TLFunctionCallContext context = new TLFunctionCallContext(transformationID);		
+				context.setParams(new TLType[] { TLTypePrimitive.STRING, TLTypePrimitive.STRING });
+				context.setLiterals(isLiteral);
+				context.setParamValues(paramValues);
+				context.setIndex(functionCallIndex++);
+				context.setHasInit(true);
+				context.setLibClassName("org.jetel.ctl.extensions.IntegralLib");
+				switch (node.getOperator()) {
+				case TransformLangParserConstants.REGEX_CONTAINS:
+					context.setInitMethodName("containsMatchInit");
+					break;
+				case TransformLangParserConstants.REGEX_EQUAL:
+					context.setInitMethodName("matchesInit");
+					break;
+				}
+
+				getFunctionCalls().add(context);
+				node.setComparisonContext(context);
 			} else {
 				node.setType(TLType.ERROR);
 				error(node, "Incompatible types '" + lhs.name() + "' and '" + rhs.name() + "' for regexp operator", "Both expressions must be of type 'string'");

@@ -439,7 +439,13 @@ public class BasicSqlConnection implements SqlConnection {
 				statement =  connection.prepareStatement(sql);
 			}
 		}else{
-			statement =  connection.prepareStatement(sql, columnNames);
+			if (columnNames.length == 0) {
+				// Calling prepareStatement with empty columnNames array crashes oracle jdbc driver.
+				// With following call we get the correct result anyway and it doesn't crash.
+				statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+			} else {
+				statement = connection.prepareStatement(sql, columnNames);
+			}
 		}
 		optimizeStatement(statement);
 		return statement;

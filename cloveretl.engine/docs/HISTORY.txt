@@ -2,6 +2,47 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-1-4
+---------
+
+* Activation changes - removed online activation from Designer
+* DataInspector fixes and improvements:
+  - Duplication of records
+  - Do not show DataInspector if component does not provide data
+  - DataInspector overlaps Console and/or Execution view
+  - DataInspector does not allow to focus graph editor
+  - other minor fixes
+* Multiple sheets load data issue
+
+
+REL-4-1-3
+---------
+
+* Removed 3-day anonymous trial
+* FIXES:
+  - Event Listener - send an email task doesn't work when Reply-to ends with @
+  - WebServiceClient throws InvocationTargetException on some WSDLs
+  - QuickBaseImportCSV does not work with output edges connected
+  - NPE when disposing unused minigraph
+  
+  
+REL-4-1-2
+---------
+
+* SpreadsheetDataReader does not loose precision when reading numbers into strings
+* FIXES:
+  - WebServiceClient does not respect HTTP headers in properties
+  - Populate parent record does not work when an element is mapped to a field with the same name
+
+
+REL-4-1-1
+---------
+
+* Anonymous 3-day trial available
+* XML/JSON - fixed issues with parsing into lists
+* COMPATIBILITY:
+	- JSONExtract/XMLExtract - auto-mapping by name does not apply for parent elements
+
 REL-4-1-0
 ---------
 
@@ -72,6 +113,18 @@ REL-4-1-0-M1
     - UniversalDataReader: "Character decoding error" results in graph failure in lenient and controlled mode
     - CTL2: Inconsistent list assignment semantics
     - DBExecute uses wrong default charset for queries in url
+
+REL-4-0-8
+---------
+
+* FIXES:
+	- LDAP components can't handle values with forward slashes	
+	- SQL validation doesn't work when SQL code is valid
+	- backported BufferedFastPropagateEdge does not correctly manipulate with big records
+	- DBOutputTable: 'Returning' does not return input fields unless some fields are generated in db
+	- MSSQLDataWriter corrupts date format defined on incoming metadata
+	- Incorrect handling of escape sequences in smb protocol File URL
+	- RETURNING clause does not work with INSERT on PostgreSQL
 
 REL-4-0-7
 ---------

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="User" created="Thu May 22 10:10:35 CEST 2014" guiVersion="0.0.0.devel" id="1400746845597" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Aug 05 15:06:39 CEST 2015" modifiedBy="User" name="create_jira_report" revision="1.106" showComponentDetails="true">
+<Graph author="User" created="Thu May 22 10:10:35 CEST 2014" guiVersion="0.0.0.devel" id="1400746845597" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Feb 23 13:40:23 CET 2016" modifiedBy="jansedlacek" name="create_jira_report" revision="1.103" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachment="${DATAIN_DIR}/jira-queries.txt" previewAttachmentCharset="ISO-8859-1">
 <Record label="jira-queries.txt" name="jira_query" previewAttachment="${DATAIN_DIR}/jira-queries.txt" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" skipSourceRows="0" type="delimited">
@@ -23,26 +23,30 @@
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="183" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="299" x="517" y="-172">
-<attr name="text"><![CDATA[Configure your JIRA URL and credentials in the JIRASearch subgraph parameters.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="183" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="343" x="-113" y="-172">
-<attr name="text"><![CDATA[We would like to create a report of number of issues for different versions of software tracked in JIRA.
+<RichTextNote backgroundColor="404040" enabled="true" folded="false" fontSize="medium" height="93" id="Note3" textColor="FFFFFF" width="929" x="-113" y="-231">
+<attr name="text"><![CDATA[h3. Create report from JIRA
+Create a report by searching via multiple queries in JIRA.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="251" id="Note2" textColor="000000" width="343" x="-113" y="-139">
+<attr name="text"><![CDATA[h3. Scenario
+We would like to create a report of number of issues for different versions of software tracked in JIRA.
 
 JIRASearch is a subgraph that searches in JIRA via its REST API - it calls the API, parses the response and packages it all in an easy to use package. The search queries are read from the input. GoogleCharts is a subgraph that generates HTML charts and it's used to visualize the report.]]></attr>
-</Note>
-<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="60" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Create report from JIRA" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="-113" y="-231">
-<attr name="text"><![CDATA[Create a report by searching via multiple queries in JIRA.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="183" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Highlights" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="289" x="229" y="-172">
-<attr name="text"><![CDATA[JIRASearch can handle login to JIRA or search anonymously. Internally it also handles paging of JIRA REST API in case there's a large number of results.]]></attr>
-</Note>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="251" id="Note5" textColor="000000" width="289" x="229" y="-139">
+<attr name="text"><![CDATA[h3. Highlights
+JIRASearch can handle login to JIRA or search anonymously. Internally it also handles paging of JIRA REST API in case there's a large number of results.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="251" id="Note6" textColor="000000" width="299" x="517" y="-139">
+<attr name="text"><![CDATA[h3. Notes
+Configure your JIRA URL in the [jira.prm|open://BasicExamples/jira.prm] file.]]></attr>
+</RichTextNote>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node __CHART_TYPE="PieChart" __FILE_URL="${DATAOUT_DIR}/issues-per-version.html" __HEIGHT="400" __TITLE="Issues fixed per release" __WIDTH="1200" enabled="enabled" guiName="GoogleCharts" guiX="659" guiY="50" id="GOOGLE_CHARTS" jobURL="${SUBGRAPH_DIR}/GoogleCharts.sgrf" type="SUBGRAPH"/>
-<Node __JIRA_URL="https://bug.javlin.eu" enabled="enabled" guiName="JIRASearch" guiX="191" guiY="50" id="JIRA_SEARCH" jobURL="${SUBGRAPH_DIR}/JIRASearch.sgrf" type="SUBGRAPH"/>
-<Node enabled="enabled" guiName="Map fields" guiX="470" guiY="50" id="MAP_FIELDS" type="REFORMAT">
+<Node __CHART_TYPE="PieChart" __FILE_URL="${DATAOUT_DIR}/issues-per-version.html" __HEIGHT="400" __TITLE="Issues fixed per release" __WIDTH="1200" enabled="enabled" guiName="GoogleCharts" guiX="688" guiY="127" id="GOOGLE_CHARTS" jobURL="${SUBGRAPH_DIR}/GoogleCharts.sgrf" type="SUBGRAPH"/>
+<Node enabled="enabled" guiName="JIRASearch" guiX="191" guiY="127" id="JIRA_SEARCH" jobURL="${SUBGRAPH_DIR}/JIRASearch.sgrf" type="SUBGRAPH"/>
+<Node enabled="enabled" guiName="Map fields" guiX="443" guiY="127" id="MAP_FIELDS" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -82,7 +86,7 @@ function string get_version(string jira_query) {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/jira-queries.txt" guiName="UniversalDataReader" guiX="-113" guiY="50" id="UNIVERSAL_DATA_READER" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/jira-queries.txt" guiName="UniversalDataReader" guiX="-113" guiY="127" id="UNIVERSAL_DATA_READER" type="DATA_READER"/>
 <Edge debugMode="true" fromNode="JIRA_SEARCH:1" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 1 (out)" persistedImplicitMetadata="JIRA_SEARCH_jira_search_metadata" toNode="MAP_FIELDS:0"/>
 <Edge debugMode="true" fromNode="MAP_FIELDS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="jira_search_metadata" outPort="Port 0 (out)" toNode="GOOGLE_CHARTS:0"/>
 <Edge debugMode="true" fromNode="UNIVERSAL_DATA_READER:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="JIRA_SEARCH:0"/>

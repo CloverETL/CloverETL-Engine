@@ -73,10 +73,16 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 		}
 	}
 	
+	/**
+	 * @return Component object associated with the component.
+	 */
 	protected Node getComponent() {
 		return getNode();
 	}
 	
+	/**
+	 * @return Configuration properties of the component (including custom properties).
+	 */
 	protected TypedProperties getProperties() {
 		if (properties == null) {
 			properties = new TypedProperties(getNode().getAttributes(), getGraph());
@@ -84,17 +90,22 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 		return properties;
 	}
 	
+	/**
+	 * @return Dedicated logger for this component.
+	 */
 	protected Logger getLogger() {
 		return getNode().getLog();
 	}
 	
 	/**
+	 * Reads a record from specified input port.
+	 * 
 	 * DataRecord objects returned by this method are re-used when this method is called repeatedly.
 	 * If you need to hold data from input DataRecords between multiple calls, use {@link DataRecord#duplicate()}
 	 * on records returned by this method or save the data elsewhere.
 	 * 
-	 * @param portIdx index of port to read from
-	 * @return null if there are no more records
+	 * @param portIdx Index of port to read from
+	 * @return <code>null</code> if there are no more records; DataRecord otherwise
 	 */
 	protected DataRecord readRecordFromPort(int portIdx) {
 		try {
@@ -104,6 +115,12 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 		}
 	}
 	
+	/**
+	 * Writes a record to specified output port.
+	 * 
+	 * @param portIdx Index of port to write to
+	 * @param record The record to write
+	 */
 	protected void writeRecordToPort(int portIdx, DataRecord record) {
 		try {
 			getComponent().writeRecord(portIdx, record);
@@ -147,7 +164,8 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	}
 	
 	/**
-	 * If you override this method, ALWAYS call super.init()
+	 * {@inheritDoc}<br>
+	 * If you override this method, ALWAYS call <code>super.init()</code>
 	 */
 	@Override
 	public void init() {
@@ -167,6 +185,9 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 		throw new JetelRuntimeException("Execute failed!", e);
 	}
 	
+	/**
+     * @see org.jetel.graph.IGraphElement#free()
+     */
 	@Override
 	public void free() {
 		// do nothing by default

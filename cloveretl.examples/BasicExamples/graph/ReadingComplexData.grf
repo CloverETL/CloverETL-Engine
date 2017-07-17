@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="krivanekm" created="Fri May 20 11:52:48 CEST 2011" guiVersion="4.0.0.M1" id="1305887240084" licenseType="Commercial" modified="Tue Mar 25 14:48:49 CET 2014" modifiedBy="User" name="PackageDelivery" revision="1.79" showComponentDetails="true">
+<Graph author="krivanekm" created="Fri May 20 11:52:48 CEST 2011" guiVersion="0.0.0.devel" id="1305887240084" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Feb 23 15:57:21 CET 2016" modifiedBy="jansedlacek" name="PackageDelivery" revision="1.80" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="in_batch" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -86,11 +86,10 @@
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="106" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Advanced Validation with External Components" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="506" x="178" y="18">
-<attr name="text"><![CDATA[
-
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="106" id="Note0" textColor="000000" width="765" x="34" y="18">
+<attr name="text"><![CDATA[h3. Advanced Validation with External Components
 Check if the total value of shipments plus the total value of charges matches the value from the preceding batch header using two aggregators and a joiner.]]></attr>
-</Note>
+</RichTextNote>
 <Dictionary/>
 </Global>
 <Phase number="0">
@@ -264,7 +263,7 @@ function integer nextOutput(integer state, integer seq) {
 //md5sum: 51B8E2D1DC559889F313F97C741DFF2F
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Filter Batches" guiX="683" guiY="142" id="EXT_FILTER0" type="EXT_FILTER">
+<Node enabled="enabled" guiName="Filter Batches" guiX="671" guiY="151" id="EXT_FILTER0" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[//#CTL2
 $0.totalValue == $0.aggregateValue]]></attr>
 </Node>
@@ -302,13 +301,13 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Valid Batches" guiX="703" guiY="261" id="TRASH1" type="TRASH"/>
+<Node enabled="enabled" guiName="Valid Batches" guiX="671" guiY="262" id="TRASH1" type="TRASH"/>
 <Edge debugMode="true" fromNode="AGGREGATE0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 1 (slave)" metadata="Metadata7" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:1"/>
 <Edge debugMode="true" fromNode="AGGREGATE1:0" guiBendpoints="452:323|452:199" guiLocks="452|null|null" guiRouter="Manual" id="Edge6" inPort="Port 2 (slave)" metadata="Metadata8" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:2"/>
 <Edge debugMode="true" fromNode="COMPLEX_DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (driver)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:0"/>
 <Edge debugMode="true" fromNode="COMPLEX_DATA_READER0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (out)" toNode="AGGREGATE0:0"/>
 <Edge debugMode="true" fromNode="COMPLEX_DATA_READER0:2" guiBendpoints="217:179|217:323" guiLocks="217|null|null" guiRouter="Manual" id="Edge3" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 2 (out)" toNode="AGGREGATE1:0"/>
-<Edge debugMode="true" fromNode="EXT_FILTER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" outPort="Port 0 (accepted)" toNode="TRASH1:0"/>
+<Edge debugMode="true" fromNode="EXT_FILTER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" outPort="Port 0 (accepted)" persistedImplicitMetadata="Metadata4" toNode="TRASH1:0"/>
 <Edge debugMode="true" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_FILTER0:0"/>
 </Phase>
 </Graph>

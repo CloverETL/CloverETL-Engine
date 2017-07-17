@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="User" category="readers" created="Thu May 22 11:17:18 CEST 2014" guiVersion="0.0.0.devel" id="1400758283747" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Aug 05 14:02:28 CEST 2015" modifiedBy="User" name="JIRA Search" nature="subgraph" revision="1.194" showComponentDetails="true">
+<Graph author="User" category="readers" created="Thu May 22 11:17:18 CEST 2014" guiVersion="0.0.0.devel" id="1400758283747" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 10:12:03 CET 2016" modifiedBy="jansedlacek" name="JIRA Search" nature="subgraph" revision="1.187" showComponentDetails="true">
 <Global>
 <inputPorts>
 <singlePort connected="true" keepEdge="true" name="0" required="false"/>
@@ -28,12 +28,11 @@
 </Record>
 </Metadata>
 <MetadataGroup name="Implicit metadata" type="implicit">
-<Metadata id="GET_PAGING_INFO_Metadata5" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter="|" name="search_params" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field name="query" type="string"/>
-<Field name="session_name" type="string"/>
-<Field name="session_value" type="string"/>
-<Field name="start_at" trim="true" type="integer"/>
+<Metadata id="RUN_SEARCH_REST_Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="jira_search_result" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="issue_id" type="string"/>
+<Field name="type" type="string"/>
+<Field name="summary" type="string"/>
 </Record>
 </Metadata>
 <Metadata id="LOGIN_Metadata2" previewAttachmentCharset="ISO-8859-1">
@@ -45,6 +44,14 @@
 <Field name="login_rest_error_message" type="string"/>
 </Record>
 </Metadata>
+<Metadata id="GET_PAGING_INFO_Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="jira_search_metadata" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="jira_query" type="string"/>
+<Field label="startAt" name="start_at" trim="true" type="integer"/>
+<Field label="maxResults" name="max_results" trim="true" type="integer"/>
+<Field label="total" name="total_results" trim="true" type="integer"/>
+</Record>
+</Metadata>
 <Metadata id="RUN_SEARCH_REST_Metadata5" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="search_params" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
 <Field name="query" type="string"/>
@@ -53,19 +60,12 @@
 <Field name="start_at" trim="true" type="integer"/>
 </Record>
 </Metadata>
-<Metadata id="RUN_SEARCH_REST_Metadata0" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter="|" name="jira_search_result" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field name="issue_id" type="string"/>
-<Field name="type" type="string"/>
-<Field name="summary" type="string"/>
-</Record>
-</Metadata>
-<Metadata id="GET_PAGING_INFO_Metadata1" previewAttachmentCharset="ISO-8859-1">
-<Record fieldDelimiter="|" name="jira_search_metadata" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field name="jira_query" type="string"/>
-<Field label="startAt" name="start_at" trim="true" type="integer"/>
-<Field label="maxResults" name="max_results" trim="true" type="integer"/>
-<Field label="total" name="total_results" trim="true" type="integer"/>
+<Metadata id="GET_PAGING_INFO_Metadata5" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="search_params" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="query" type="string"/>
+<Field name="session_name" type="string"/>
+<Field name="session_value" type="string"/>
+<Field name="start_at" trim="true" type="integer"/>
 </Record>
 </Metadata>
 <Metadata id="RUN_SEARCH_REST_Metadata1" previewAttachmentCharset="ISO-8859-1">
@@ -78,21 +78,19 @@
 </Metadata>
 </MetadataGroup>
 <GraphParameters>
-<GraphParameter defaultHint="e.g. https://bug.javlin.eu" label="JIRA URL" name="JIRA_URL" public="true">
-<attr name="description"><![CDATA[Root URL for your JIRA installation (e.g. http://bug.javlin.eu)]]></attr>
-</GraphParameter>
-<GraphParameter label="JIRA Query" name="JIRA_QUERY" public="true" required="false"/>
-<GraphParameter label="JIRA User" name="JIRA_USER" public="true" required="false"/>
-<GraphParameter label="JIRA Password" name="JIRA_PASSWORD" public="true" required="false" secure="true"/>
+<GraphParameter label="User" name="USER" public="true" required="false"/>
+<GraphParameter label="Password" name="PASSWORD" public="true" required="false" secure="true"/>
+<GraphParameter label="JIRA Query" name="QUERY" public="true" required="false"/>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="191" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Description" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="300" x="-354" y="-249">
-<attr name="text"><![CDATA[Searches JIRA. The subgraph has 2 modes:
+<RichTextNote backgroundColor="F9EB81" enabled="true" folded="false" fontSize="medium" height="200" id="Note3" textColor="000000" width="701" x="-439" y="-244">
+<attr name="text"><![CDATA[h3. Description
+Searches JIRA. The subgraph has 2 modes:
 - if an input port is connected, it searches via multiple JQL queries. The JQL queries are read from the input port. Sends the found issues to the 1. output port, and search metadata to the 2. output port.
 - if the input port is not connected, the JQL query is read from a public parameter
 
 In effect in subgraph is similar to many CloverETL readers - they can read their URL from a property or from their input.]]></attr>
-</Note>
+</RichTextNote>
 <Dictionary/>
 </Global>
 <Phase number="0">
@@ -131,7 +129,7 @@ function integer generate() {
 
 // Transforms input record into output record.
 function integer transform() {
-	$out.0.query = getParamValue("JIRA_QUERY");
+	$out.0.query = getParamValue("QUERY");
 
 	return ALL;
 }
@@ -155,10 +153,10 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node __JIRA_PASSWORD="${JIRA_PASSWORD}" __JIRA_URL="${JIRA_URL}" __JIRA_USER="${JIRA_USER}" enabled="enabled" guiName="Login" guiX="-184" guiY="-34" id="LOGIN" jobURL="${SUBGRAPH_DIR}/impl/JIRALogin.sgrf" type="SUBGRAPH"/>
-<Node guiName="SimpleCopy" guiX="17" guiY="-34" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
+<Node __PASSWORD="${PASSWORD}" __USER="${USER}" enabled="enabled" guiName="Login" guiX="-439" guiY="-34" id="LOGIN" jobURL="${SUBGRAPH_DIR}/impl/JIRALogin.sgrf" type="SUBGRAPH"/>
+<Node guiName="SimpleCopy" guiX="-269" guiY="-34" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
 <Node guiName="SimpleGather" guiX="-371" guiY="145" id="SIMPLE_GATHER" type="SIMPLE_GATHER"/>
-<Node enabled="enabled" guiName="SubgraphInput" guiX="-483" guiY="-244" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT">
+<Node enabled="enabled" guiName="SubgraphInput" guiX="-483" guiY="-239" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT">
 <Port guiY="163" name="0"/>
 <Port guiY="186" name="1"/>
 </Node>
@@ -297,8 +295,8 @@ function integer transform(integer idx) {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node __JIRA_URL="${JIRA_URL}" enabled="enabled" guiName="Get paging info" guiX="205" guiY="145" id="GET_PAGING_INFO" jobURL="${SUBGRAPH_DIR}/impl/JIRASearchREST.sgrf" type="SUBGRAPH"/>
-<Node enabled="enabled" guiName="Only last search result" guiX="1050" guiY="250" id="ONLY_LAST_SEARCH_RESULT" type="REFORMAT">
+<Node enabled="enabled" guiName="Get paging info" guiX="205" guiY="145" id="GET_PAGING_INFO" jobURL="${SUBGRAPH_DIR}/impl/JIRASearchREST.sgrf" type="SUBGRAPH"/>
+<Node enabled="enabled" guiName="Only last search result" guiX="1032" guiY="250" id="ONLY_LAST_SEARCH_RESULT" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -331,7 +329,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node __JIRA_URL="${JIRA_URL}" enabled="enabled" guiName="Run search REST" guiX="840" guiY="145" id="RUN_SEARCH_REST" jobURL="${SUBGRAPH_DIR}/impl/JIRASearchREST.sgrf" type="SUBGRAPH"/>
+<Node enabled="enabled" guiName="Run search REST" guiX="840" guiY="145" id="RUN_SEARCH_REST" jobURL="${SUBGRAPH_DIR}/impl/JIRASearchREST.sgrf" type="SUBGRAPH"/>
 <Node guiName="Start at 0" guiX="17" guiY="145" id="START_AT_0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
@@ -362,7 +360,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="SubgraphOutput" guiX="1238" guiY="-244" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT">
+<Node enabled="enabled" guiName="SubgraphOutput" guiX="1238" guiY="-239" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT">
 <Port guiY="161" name="0"/>
 <Port guiY="265" name="1"/>
 <Port guiY="287" name="2"/>

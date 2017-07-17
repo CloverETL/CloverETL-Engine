@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="User" created="Wed Mar 26 11:06:38 CET 2014" guiVersion="0.0.0.devel" id="1395840759846" licenseCode="Commercial Devel" licenseType="Commercial" modified="Thu Sep 25 15:37:05 CEST 2014" modifiedBy="User" name="Default graph name" nature="subgraph" revision="1.16" showComponentDetails="true">
+<Graph author="User" created="Wed Mar 26 11:06:38 CET 2014" guiVersion="0.0.0.devel" id="1395840759846" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 10:13:30 CET 2016" modifiedBy="jansedlacek" name="Default graph name" nature="subgraph" revision="1.17" showComponentDetails="true">
 <Global>
+<inputPorts>
+<singlePort connected="true" name="0"/>
+</inputPorts>
 <Metadata id="Metadata0">
 <Record name="input_record" recordDelimiter="\r\n" type="delimited">
 <Field name="email" type="string"/>
@@ -25,12 +28,13 @@
 </GraphParameter>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="165" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="EmailValidator Subgraph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="343" x="327" y="-10">
-<attr name="text"><![CDATA[Subgraph that validates email addresses. Type of validation is configurable via the LEVEL_OF_INSPECTION graph parameter. Output files are configured via ACCEPTED_FILE and REJECTED_FILE parameters.
+<RichTextNote backgroundColor="F9EB81" enabled="true" folded="false" fontSize="medium" height="173" id="Note0" textColor="000000" width="547" x="271" y="-10">
+<attr name="text"><![CDATA[h3. EmailValidator Subgraph
+Subgraph that validates email addresses. Type of validation is configurable via the LEVEL_OF_INSPECTION graph parameter. Output files are configured via ACCEPTED_FILE and REJECTED_FILE parameters.
 
 The parameters are set as public, so they are visible as ordinary component properties in parent graph using this subgraph.
 ]]></attr>
-</Note>
+</RichTextNote>
 <Dictionary/>
 </Global>
 <Phase number="0">

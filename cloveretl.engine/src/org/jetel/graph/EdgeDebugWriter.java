@@ -83,6 +83,8 @@ public class EdgeDebugWriter {
     /** the number of debugged (stored) records */
     private long debuggedRecords = 0;
     
+    private String excludedFields[];
+    
     private long lastFlushTime = 0;
 
     public EdgeDebugWriter(OutputStream outputStream, DataRecordMetadata metadata) {
@@ -106,6 +108,7 @@ public class EdgeDebugWriter {
 	    	}
 	    	
 	    	formatter = new CloverDebugFormatter(outputChannel);
+	    	formatter.setExcludedFieldNames(excludedFields);
 	    	formatter.init(metadata);
 	
 	        if (debugMaxRecords > 0 && debugLastRecords) {
@@ -341,7 +344,15 @@ public class EdgeDebugWriter {
 		this.sampleData = sampleData;
 	}
 
-    /**
+    public String[] getExcludedFiedls() {
+		return excludedFields;
+	}
+
+	public void setExcludedFields(String[] excludedFields) {
+		this.excludedFields = excludedFields;
+	}
+
+	/**
 	 * Class for sampling data record.
 	 * 
 	 * @author 		Miroslav Haupt (Mirek.Haupt@javlinconsulting.cz)

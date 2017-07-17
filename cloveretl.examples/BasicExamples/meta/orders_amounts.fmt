@@ -6,4 +6,5 @@
 <Field eofAsDelimiter="false" length="14" name="netamount" nullable="true" scale="2" shift="0" size="0" type="decimal"/>
 <Field eofAsDelimiter="false" length="14" name="tax" nullable="true" scale="2" shift="0" size="0" type="decimal"/>
 <Field eofAsDelimiter="false" length="14" name="totalamount" nullable="true" scale="2" shift="0" size="0" type="decimal"/>
+<Field name="productid" type="integer"/>
 </Record>

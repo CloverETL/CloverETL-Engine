@@ -19,8 +19,10 @@
 package org.jetel.data.xml.mapping.runtime;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -206,6 +208,7 @@ public class XMLElementRuntimeMappingModel extends XMLRuntimeMappingModel {
 	 */
 	private boolean charactersProcessed = false;
 	
+	private Deque<String> elementStack = new ArrayDeque<String>();
 	
 	private String[] subtreeKeys = null;
 	/** Class representing an anector field mapping.
@@ -826,5 +829,8 @@ public class XMLElementRuntimeMappingModel extends XMLRuntimeMappingModel {
 		this.charactersProcessed = charactersProcessed;
 	}
 	
+	public Deque<String> getElementStack() {
+		return elementStack;
+	}
 	
 }

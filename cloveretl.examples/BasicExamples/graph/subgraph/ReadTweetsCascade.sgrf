@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="dpavlis" category="readers" created="Thu Jul 10 09:29:34 CEST 2014" guiVersion="0.0.0.devel" id="1404993527014" largeIconPath="${SUBGRAPH_DIR}/icons/twitter/Twitter_logo_blue_48.png" licenseCode="Commercial Devel" licenseType="Commercial" mediumIconPath="${SUBGRAPH_DIR}/icons/twitter/Twitter_logo_blue_32.png" modified="Wed Nov 26 18:50:55 CET 2014" modifiedBy="User" name="ReadTweetsCascade" nature="subgraph" revision="1.10" showComponentDetails="true" smallIconPath="${SUBGRAPH_DIR}/icons/twitter/Twitter_logo_blue_16.png">
+<Graph author="dpavlis" category="readers" created="Thu Jul 10 09:29:34 CEST 2014" guiVersion="4.1.0.M1" id="1404993527014" largeIconPath="${SUBGRAPH_DIR}/icons/twitter/Twitter_logo_blue_48.png" licenseCode="CLP1DJAVLI71566686EX" licenseType="Evaluation" mediumIconPath="${SUBGRAPH_DIR}/icons/twitter/Twitter_logo_blue_32.png" modified="Wed Sep 23 13:14:39 CEST 2015" modifiedBy="dpavlis" name="ReadTweetsCascade" nature="subgraph" revision="1.18" showComponentDetails="true" smallIconPath="${SUBGRAPH_DIR}/icons/twitter/Twitter_logo_blue_16.png">
 <Global>
+<inputPorts/>
+<outputPorts>
+<singlePort connected="true" name="0"/>
+</outputPorts>
 <MetadataGroup name="Implicit metadata" type="implicit">
 <Metadata id="READING2ND_Metadata3">
 <Record fieldDelimiter="|" name="TweetMinID" recordDelimiter="\n" type="delimited">
-<Field name="minID" type="long"/>
+<Field name="minID" trim="true" type="long"/>
 </Record>
 </Metadata>
 <Metadata id="TWITTER_READER_Metadata2" previewAttachmentCharset="ISO-8859-1">
@@ -12,17 +16,17 @@
 <Field name="tweet_text" type="string"/>
 <Field name="created" type="string"/>
 <Field name="author" type="string"/>
-<Field name="id" type="long"/>
+<Field name="id" trim="true" type="long"/>
 </Record>
 </Metadata>
 <Metadata id="TWITTER_READER_Metadata3">
 <Record fieldDelimiter="|" name="TweetMinID" recordDelimiter="\n" type="delimited">
-<Field name="minID" type="long"/>
+<Field name="minID" trim="true" type="long"/>
 </Record>
 </Metadata>
 <Metadata id="READING1ST_Metadata3">
 <Record fieldDelimiter="|" name="TweetMinID" recordDelimiter="\n" type="delimited">
-<Field name="minID" type="long"/>
+<Field name="minID" trim="true" type="long"/>
 </Record>
 </Metadata>
 <Metadata id="READING1ST_Metadata2" previewAttachmentCharset="ISO-8859-1">
@@ -30,7 +34,7 @@
 <Field name="tweet_text" type="string"/>
 <Field name="created" type="string"/>
 <Field name="author" type="string"/>
-<Field name="id" type="long"/>
+<Field name="id" trim="true" type="long"/>
 </Record>
 </Metadata>
 <Metadata id="READING2ND_Metadata2" previewAttachmentCharset="ISO-8859-1">
@@ -38,12 +42,14 @@
 <Field name="tweet_text" type="string"/>
 <Field name="created" type="string"/>
 <Field name="author" type="string"/>
-<Field name="id" type="long"/>
+<Field name="id" trim="true" type="long"/>
 </Record>
 </Metadata>
 </MetadataGroup>
 <GraphParameters>
-<GraphParameter label="Twitter Query" name="__TWITTER___QUERY1" public="true" required="false" value="#SamsungGalaxyS5"/>
+<GraphParameter category="advanced" label="Twitter Query" name="__TWITTER___QUERY1" public="true" required="true" secure="false" value="#bigdata">
+<SingleType name="string"/>
+</GraphParameter>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
 <Dictionary/>

@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="dpavlis" created="Wed Jul 09 15:34:33 CEST 2014" guiVersion="4.1.0.M1" id="1404915892380" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Apr 29 18:14:18 CEST 2015" modifiedBy="User" name="CloverTweets" revision="1.104" showComponentDetails="true">
+<Graph author="dpavlis" created="Wed Jul 09 15:34:33 CEST 2014" guiVersion="0.0.0.devel" id="1404915892380" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Feb 23 15:27:48 CET 2016" modifiedBy="jansedlacek" name="CloverTweets" revision="1.134" showComponentDetails="true">
 <Global>
-<inputPorts/>
-<outputPorts/>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="Texts" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
 <Field eofAsDelimiter="false" name="text" nullable="true" shift="0" size="0" type="string"/>
@@ -20,12 +18,6 @@
 </Record>
 </Metadata>
 <MetadataGroup name="Implicit metadata" type="implicit">
-<Metadata id="CLASSIFY_TWEETS_Metadata4">
-<Record fieldDelimiter="|" name="keyword_classification" recordDelimiter="\r\n" type="delimited">
-<Field name="keyword" type="string"/>
-<Field name="positive" trim="true" type="boolean"/>
-</Record>
-</Metadata>
 <Metadata id="READ_TWEETS_TWITTER_READER_Metadata2" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="Tweets" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
 <Field name="tweet_text" type="string"/>
@@ -34,36 +26,61 @@
 <Field name="id" trim="true" type="long"/>
 </Record>
 </Metadata>
+<Metadata id="CLASSIFY_TWEETS_Metadata4">
+<Record fieldDelimiter="|" name="keyword_classification" recordDelimiter="\r\n" type="delimited">
+<Field name="keyword" type="string"/>
+<Field name="positive" trim="true" type="boolean"/>
+</Record>
+</Metadata>
 </MetadataGroup>
 <GraphParameters>
+<GraphParameter category="basic" defaultHint="pick or enter search query" label="Twitter Query" name="TWITTER_QUERY" public="true" required="true" value="#bigdata">
+<attr name="description"><![CDATA[Twitter search query]]></attr>
+<SingleType allowCustomValues="true" name="simpleEnum" values="#bigdata;#cloveretl;#iot;#dataintegration"/>
+</GraphParameter>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="183" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="299" x="654" y="-59">
-<attr name="text"><![CDATA[By default the graph searches for #bigdata tweets and retrieves up to 300 of them.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="183" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="343" x="24" y="-59">
-<attr name="text"><![CDATA[Search Twitter for a specified query and process the found tweets.
+<RichTextNote backgroundColor="DAD8C9" enabled="true" folded="false" fontSize="medium" height="90" id="Note3" textColor="000000" width="929" x="24" y="-118">
+<attr name="text"><![CDATA[h3. Twitter querying and analysis of tweets
+Search Twitter for a specified query and analyse tweets for sentiment and word frequency.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="217" id="Note2" textColor="000000" width="324" x="24" y="-29">
+<attr name="text"><![CDATA[h3. Scenario
+Search Twitter for a specified query and process the found tweets.
 
 Content of the tweets is analysed for their sentiment (positive, negative and neutral). Also, frequency of different words is calculated.]]></attr>
-</Note>
-<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="60" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Twitter querying and analysis of tweets" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="24" y="-118">
-<attr name="text"><![CDATA[Search Twitter for a specified query and analyse tweets for sentiment and word frequency.]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="183" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Highlights" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="289" x="366" y="-59">
-<attr name="text"><![CDATA[The graph uses three subgraphs for its task. Each subgraph is reusable for other applications - they perform generic function of Twitter access & different text analysis.
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="217" id="Note5" textColor="000000" width="357" x="347" y="-29">
+<attr name="text"><![CDATA[h3. Highlights
+The graph uses three subgraphs for its task. Each subgraph is reusable for other applications - they perform generic function of Twitter access & different text analysis.
 
 Custom words for classification are provided to the SentimentClassify subgraph via its 2nd input port. The port is optional, so not all users of the subgraph have to use it.]]></attr>
-</Note>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="217" id="Note6" textColor="000000" width="250" x="703" y="-29">
+<attr name="text"><![CDATA[h3. Notes
+By default the graph searches for [#bigdata|https://twitter.com/search?q=%23bigdata] tweets and retrieves up to 300 of them.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="DEF4AB" folded="false" fontSize="medium" height="189" id="Note7" textColor="000000" width="368" x="24" y="303">
+<attr name="text"><![CDATA[h3. See results in Navigator:
+After running a graph, you can see results located in project [BasicExamples|navigator://BasicExamples/data-out]:
+
+
+* [data-out/tweets-positive.csv|open://BasicExamples/data-out/tweets-positive.csv]
+* [data-out/tweets-negative.csv| open://data-out/tweets-negative.csv]
+* [tweets-undecided.csv|open://data-out/tweets-undecided.csv]
+* [tweets-word-frequencies.csv|open://data-out/tweets-word-frequencies.csv]
+]]></attr>
+</RichTextNote>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiName="SentimentClassify" guiX="600" guiY="285" id="CLASSIFY_TWEETS" jobURL="${SUBGRAPH_DIR}/SentimentClassify.sgrf" type="SUBGRAPH"/>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/tweets-word-frequencies.csv" guiName="Frequencies" guiX="825" guiY="497" id="FREQUENCIES1" type="DATA_WRITER"/>
-<Node fileURL="${DATAIN_DIR}/keyword_classification.txt" guiName="My sentiment keywords" guiX="391" guiY="299" id="MY_SENTIMENT_KEYWORDS" type="DATA_READER"/>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/tweets-negative.csv" guiName="Negative" guiX="825" guiY="285" id="NEGATIVE1" type="DATA_WRITER"/>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/tweets-positive.csv" guiName="Positive" guiX="825" guiY="178" id="POSITIVE1" type="DATA_WRITER"/>
-<Node ____TWITTER___QUERY1="#bigdata" enabled="enabled" guiName="ReadTweets" guiX="24" guiY="176" id="READ_TWEETS" jobURL="${SUBGRAPH_DIR}/ReadTweetsCascade.sgrf" type="SUBGRAPH"/>
-<Node enabled="enabled" guiName="Reformat" guiX="226" guiY="176" id="REFORMAT" type="REFORMAT">
+<Node enabled="enabled" guiName="SentimentClassify" guiX="607" guiY="196" id="CLASSIFY_TWEETS" jobURL="${SUBGRAPH_DIR}/SentimentClassify.sgrf" type="SUBGRAPH"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/tweets-word-frequencies.csv" guiName="Frequencies" guiX="832" guiY="512" id="FREQUENCIES1" type="DATA_WRITER"/>
+<Node fileURL="${DATAIN_DIR}/keyword_classification.txt" guiName="My sentiment keywords" guiX="398" guiY="317" id="MY_SENTIMENT_KEYWORDS" type="DATA_READER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/tweets-negative.csv" guiName="Negative" guiX="832" guiY="303" id="NEGATIVE1" type="DATA_WRITER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/tweets-positive.csv" guiName="Positive" guiX="832" guiY="196" id="POSITIVE1" type="DATA_WRITER"/>
+<Node ____TWITTER___QUERY1="${TWITTER_QUERY}" enabled="enabled" guiName="ReadTweets" guiX="24" guiY="194" id="READ_TWEETS" jobURL="${SUBGRAPH_DIR}/ReadTweetsCascade.sgrf" type="SUBGRAPH"/>
+<Node enabled="enabled" guiName="Reformat" guiX="233" guiY="194" id="REFORMAT" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -92,9 +109,9 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="SimpleCopy" guiX="406" guiY="176" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/tweets-undecided.csv" guiName="Undecided" guiX="825" guiY="391" id="UNDECIDED1" type="DATA_WRITER"/>
-<Node enabled="enabled" guiName="WordsFrequency" guiX="601" guiY="497" id="WORDS_FREQUENCY" jobURL="${SUBGRAPH_DIR}/WordsFrequency.sgrf" type="SUBGRAPH"/>
+<Node enabled="enabled" guiName="SimpleCopy" guiX="413" guiY="194" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/tweets-undecided.csv" guiName="Undecided" guiX="832" guiY="409" id="UNDECIDED1" type="DATA_WRITER"/>
+<Node enabled="enabled" guiName="WordsFrequency" guiX="625" guiY="512" id="WORDS_FREQUENCY" jobURL="${SUBGRAPH_DIR}/WordsFrequency.sgrf" type="SUBGRAPH"/>
 <Edge debugMode="true" fromNode="CLASSIFY_TWEETS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata0" toNode="POSITIVE1:0"/>
 <Edge debugMode="true" fromNode="CLASSIFY_TWEETS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 1 (out)" persistedImplicitMetadata="Metadata0" toNode="NEGATIVE1:0"/>
 <Edge debugMode="true" fromNode="CLASSIFY_TWEETS:2" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" outPort="Port 2 (out)" persistedImplicitMetadata="Metadata0" toNode="UNDECIDED1:0"/>

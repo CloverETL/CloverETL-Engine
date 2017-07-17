@@ -87,5 +87,10 @@ function integer transform() {
 		res9[i9++]=ctr9; 
 		printErr('Iteration ' + ctr9 + ' ' + i9);
 	}
+	
+	// CLO-6915:
+	for (integer i = 0; i < 5; i++) {
+	}
+	
 	return 0;
 }

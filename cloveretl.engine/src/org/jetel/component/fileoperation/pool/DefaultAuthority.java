@@ -30,8 +30,12 @@ public class DefaultAuthority extends AbstractAuthority implements Authority {
 		this.proxyString = proxyString;
 	}
 
+	/**
+	 * use {@link URI#getRawUserInfo()} so the user info is not decoded - connections decode it again, which
+	 * causes problems with the plus sign, see CLO-8885
+	 */
 	public DefaultAuthority(URI uri, String proxy) {
-		this(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), proxy);
+		this(uri.getScheme(), uri.getRawUserInfo(), uri.getHost(), uri.getPort(), proxy);
 	}
 	
 	public DefaultAuthority(URI uri) {

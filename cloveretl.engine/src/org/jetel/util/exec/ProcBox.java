@@ -20,9 +20,14 @@ package org.jetel.util.exec;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,6 +58,81 @@ import org.jetel.exception.JetelException;
  * @since 10/17/06 
  */
 public class ProcBox {
+	
+	/**
+	 * Utility to read lines from process output - output from certain programs on Windows (db2cmd) contains
+	 * \r\r\n as line delimiter that leads to extra empty lines when parsing output using {@link BufferedReader}.
+	 * Implementation of the {@link #readLine()} is rather naive, unsuitable to read data from block devices.
+	 */
+	public static class LineReader implements Closeable {
+		
+		private Reader reader;
+		
+		public LineReader(Reader reader) {
+			if (reader == null) {
+				throw new NullPointerException();
+			}
+			this.reader = reader;
+		}
+		
+		public String readLine() throws IOException {
+			
+			StringBuilder sb = new StringBuilder();
+			boolean newLine = false;
+			while (true) {
+				int i = reader.read();
+				if (i == -1) {
+					break;
+				}
+				char c = (char)i;
+				if (c == '\r') {
+					continue;
+				}
+				if (c == '\n') {
+					newLine = true;
+					break;
+				}
+				sb.append(c);
+			}
+			if (newLine) {
+				return sb.toString();
+			}
+			return null;
+		}
+		
+		@Override
+		public void close() throws IOException {
+			reader.close();
+		}
+	}
+	
+	/**
+	 * Answers encoding that the shell is using (to properly parse output from processes).
+	 * The value is based on <code>sun.jnu.encoding</code> system property value - if the value is set and
+	 * refers to valid encoding, corresponding {@link Charset} is returned. Otherwise platform
+	 * default charset is returned.
+	 * 
+	 * @return
+	 */
+	public static Charset getShellEncoding() {
+		
+		try {
+			String encoding = System.getProperty("sun.jnu.encoding");
+			if (encoding != null) {
+				try {
+					if (Charset.isSupported(encoding)) {
+						return Charset.forName(encoding);
+					}
+				} catch (IllegalCharsetNameException e) {
+					// ignore
+				}
+			}
+		} catch (SecurityException e) {
+			// ignore
+		}
+		return Charset.defaultCharset();
+	}
+	
 	/**
 	 * process to run
 	 */
@@ -274,5 +354,4 @@ public class ProcBox {
 		public void close() {
 		}
 	}
-	
 }

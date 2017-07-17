@@ -463,20 +463,6 @@ public class CharByteDataParser extends AbstractTextParser {
 			return;
 		}
 
-		boolean needByteInput = false;
-		boolean needCharInput = false;
-		
-		// let's find out what kind of input reader we need
-		for (DataFieldMetadata field : metadata.getFields()) {
-			if (field.isAutoFilled()) {
-				continue;
-			}
-			if (field.isByteBased()) {
-				needByteInput = true;
-			} else {
-				needCharInput = true;
-			}
-		}
 		// create input reader according to data record requirements
 		if (inputReader == null) {
 			CharByteInputReader singleMarkInputReader = CharByteInputReader.createInputReader(metadata, charset, false, false, getPolicyType());
@@ -492,7 +478,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		boolean[] isDelimited = new boolean[numFields];
 		for (int idx = 0; idx < numFields; idx++) {
 			DataFieldMetadata field = metadata.getField(idx);
-			isDelimited[idx] = !field.isAutoFilled() && field.isDelimited();
+			isDelimited[idx] = !field.isAutoFilled() && field.isDelimited() && !field.isByteBased();
 		}
 
 		numConsumers = 0;
@@ -536,17 +522,20 @@ public class CharByteDataParser extends AbstractTextParser {
 				idx++;
 			}
 		} // loop
+		
+		boolean needByteInput = metadata.getField(lastNonAutoFilledField).isByteBased();
+		
 		// CLO-5703: disable record skipping if last non-autofilled field has no delimiter
 		if (metadata.isSpecifiedRecordDelimiter() || isDelimited[lastNonAutoFilledField]) {
 			if (needByteInput) {
-				recordSkipper = new ByteRecordSkipper(inputReader, getCharDelimSearcher(), isDelimited);
+				recordSkipper = new ByteRecordSkipper(inputReader, getByteDelimSearcher(), isDelimited);
 			} else {
 				recordSkipper = new CharRecordSkipper(inputReader, getCharDelimSearcher(), isDelimited);
 			}
 		}
 		if (metadata.isSpecifiedRecordDelimiter() && !metadata.getField(lastNonAutoFilledField).isDelimited()) {
 			// last field without autofilling doesn't have delimiter - special consumer needed for record delimiter
-			fieldConsumers[numConsumers++] = new CharDelimConsumer(inputReader, needCharInput ? getCharDelimSearcher() : getByteDelimSearcher(), RECORD_DELIMITER_IDENTIFIER, metadata.getField(lastNonAutoFilledField).isEofAsDelimiter(), cfg.isTryToMatchLongerDelimiter());
+			fieldConsumers[numConsumers++] = new CharDelimConsumer(inputReader, needByteInput ? getByteDelimSearcher() : getCharDelimSearcher() , RECORD_DELIMITER_IDENTIFIER, metadata.getField(lastNonAutoFilledField).isEofAsDelimiter(), cfg.isTryToMatchLongerDelimiter());
 		}
 	}
 	

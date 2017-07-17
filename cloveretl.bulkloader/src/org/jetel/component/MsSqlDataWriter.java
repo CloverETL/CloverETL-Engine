@@ -50,6 +50,7 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.exec.PortDataConsumer;
@@ -586,8 +587,8 @@ public class MsSqlDataWriter extends BulkLoader {
 	
 
 	private final static String DEFAULT_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
-	private final static String DEFAULT_DATE_FORMAT = "MM/dd/yyyy";
-	private final static String DEFAULT_TIME_FORMAT = DEFAULT_DATETIME_FORMAT;
+	private final static String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
+	private final static String DEFAULT_TIME_FORMAT = "HH:mm:ss.SSS";
 
 	// variables for bcp's command
 	private String owner;
@@ -977,8 +978,11 @@ public class MsSqlDataWriter extends BulkLoader {
 
 	@Override
 	protected void setLoadUtilityDateFormat(DataFieldMetadata field) {
-		setLoadUtilityDateFormat(field, DEFAULT_TIME_FORMAT, 
-				DEFAULT_DATE_FORMAT, DEFAULT_DATETIME_FORMAT, null);
+		if (field.getDataType() == DataFieldType.DATE && !field.hasFormat()) {
+			field.setFormatStr("yyyy-MM-dd");
+		} else {
+			setLoadUtilityDateFormat(field, DEFAULT_TIME_FORMAT, DEFAULT_DATE_FORMAT, DEFAULT_DATETIME_FORMAT, null);
+		}
 	}
 
 	@Override

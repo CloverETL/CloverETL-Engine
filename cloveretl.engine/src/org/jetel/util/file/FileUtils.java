@@ -1178,6 +1178,10 @@ public class FileUtils {
 	}
 	
 	public static boolean isRemoteFile(String input) {
+		if (input == null) {
+			return false;
+		}
+
 		if (input.startsWith("http:")
 				|| input.startsWith("https:")
 				|| input.startsWith("ftp:") || input.startsWith("sftp:") || input.startsWith("scp:")) {

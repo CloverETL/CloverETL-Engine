@@ -233,6 +233,10 @@ public class SQLCloverCallableStatement {
 		this.inRecord = inRecord;
 		AbstractCopySQLData.resetDataRecord(inTransMap, inRecord);
 	}
+	
+	public String getQuery() {
+		return query;
+	}
 
 	public void close() throws SQLException {
 		statement.close();

@@ -175,7 +175,7 @@ public class MultiFileWriter {
 		if (multiTarget != null){
 			multiTarget.clear();
 			currentTarget = null;
-		}else{
+		} else if (currentTarget != null) { // CLO-7184
 			currentTarget.reset();
 		}
 		counter = 0;

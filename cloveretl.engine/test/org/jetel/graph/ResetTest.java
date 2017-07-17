@@ -242,6 +242,9 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("Transformations_invalid_language.grf") // ok, is to fail
 							&& !file.getName().equals("graphCloverData.grf") // remove after CLO-4360 fixed
 							&& !file.getName().equals("MetadataWriting.grf") // server test
+							&& !file.getName().equals("WSC_ThrowException.grf") // negative test
+							&& !file.getName().startsWith("DBInputTable_query_error_logging_") // negative tests
+							&& !file.getName().startsWith("DBExecute_query_error_logging_") // negative tests
 							&& !file.getName().equals("EclipseClasspathParsing_CLO-6013.grf") // server test
 							&& !file.getName().equals("CDR_corruptFile_CLO-5329.grf") // negative test
 							&& !file.getName().equals("CDR_metadataPropagation_CLO-2850.grf") // negative test
@@ -329,8 +332,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("ValidationDefaultLanguageSettings.grf") // server test
 							&& !file.getName().equals("DB_rollback_CLO-4878.grf") // server test
 							&& !file.getName().equals("ValidationTransformLifeCycle.grf") // have to be run only once
-							&& !file.getName().equals("Tableau-ThreadSafe.grf") // disabled test
-							&& !file.getName().startsWith("MultiFileWriter_emptyFile"); // excluded until CLO-7184 resolved
+							&& !file.getName().equals("Tableau-ThreadSafe.grf"); // disabled test
 				}
 			};
 			
@@ -348,6 +350,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("ExecuteGraph") // jobflows
 							&& !file.getName().equals("RecordToKeyValues") // CLO-7086: temporarily removed tests
 							&& !file.getName().equals("KeyValuesToRecord") // CLO-7086: temporarily removed tests
+							&& !file.getName().equals("DB2DataWriter") // can only work with db2 client
 							&& !file.getName().equals("windows"); // wokna only tests
 				}
 			};

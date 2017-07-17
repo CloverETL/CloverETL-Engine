@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Aug 04 09:04:37 CEST 2010" guiVersion="4.1.0" id="1280396941728" licenseCode="CLP1DJAVLI73925888BY" licenseType="Commercial" modified="Fri Jul 10 11:15:41 CEST 2015" modifiedBy="User" name="graphParsingTextData" revision="1.127" showComponentDetails="true">
+<Graph author="avackova" created="Wed Aug 04 09:04:37 CEST 2010" guiVersion="0.0.0.devel" id="1280396941728" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Feb 23 15:19:54 CET 2016" modifiedBy="jansedlacek" name="graphParsingTextData" revision="1.127" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=" " name="master" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -18,13 +18,22 @@
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" enabled="true" folded="false" height="46" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="How to process files with complicated structure?" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="602" x="4" y="16"/>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" enabled="true" folded="false" height="225" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="The order of states is known" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="602" x="4" y="73"/>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" enabled="true" folded="false" height="218" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Prefix is used to identify the state" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="602" x="4" y="302"/>
+<RichTextNote backgroundColor="DAD8C9" enabled="true" folded="false" fontSize="medium" height="46" id="Note2" textColor="000000" width="602" x="4" y="16">
+<attr name="text"><![CDATA[h3. How to process files with complicated structure?
+]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="225" id="Note0" textColor="000000" width="602" x="4" y="73">
+<attr name="text"><![CDATA[h5. The order of states is known
+]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="218" id="Note1" textColor="000000" width="602" x="4" y="302">
+<attr name="text"><![CDATA[h5. Prefix is used to identify the state
+]]></attr>
+</RichTextNote>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/peoples.txt" guiName="Multi Type Reader" guiX="13" guiY="119" id="COMPLEX_DATA_READER0" stateMetadata="Metadata0:person&#10;Metadata2:spouse&#10;Metadata2:children" type="COMPLEX_DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/peoples.txt" guiName="Multi Type Reader" guiX="26" guiY="137" id="COMPLEX_DATA_READER0" stateMetadata="Metadata0:person&#10;Metadata2:spouse&#10;Metadata2:children" type="COMPLEX_DATA_READER">
 <attr name="guiDescription"><![CDATA[Parses text file with various kinds of records. In this, easier case, we know, how the states go each after another, so we don't need to create a selector. We add a unique id, that idetifies the person, his/her spouse and children. The unique id is used in downstream transformation (XMLWriter) to join corresponding records together.]]></attr>
 <attr name="transformCode"><![CDATA[//#CTL2:COMPILE
 
@@ -44,9 +53,9 @@ function integer nextState_0() {
 	return 1;
 }
 function integer nextOutput_0_0() {
-	$out.0.id = long2integer(counter0);
-	$out.0.last_name = $0.last_name;
-	$out.0.first_name = $0.first_name;
+	$0.id = long2integer(counter0);
+	$0.last_name = $0.last_name;
+	$0.first_name = $0.first_name;
 	return 0;
 }
 function integer nextOutput_0_default(integer seq) {
@@ -64,9 +73,9 @@ function integer nextState_1() {
 	return 2;
 }
 function integer nextOutput_1_0() {
-	$out.1.id = long2integer(counter0 - 1);
-	$out.1.relationship = $1.relationship;
-	$out.1.name = $1.name;
+	$1.id = long2integer(counter0);
+	$1.relationship = $1.relationship;
+	$1.name = $1.name;
 	return 1;
 }
 function integer nextOutput_1_default(integer seq) {
@@ -84,9 +93,9 @@ function integer nextState_2() {
 	return 0;
 }
 function integer nextOutput_2_0() {
-	$out.2.id = long2integer(counter0 - 1);
-	$out.2.relationship = $2.relationship;
-	$out.2.name = $2.name;
+	$2.id = long2integer(counter0);
+	$2.relationship = $2.relationship;
+	$2.name = $2.name;
 	return 2;
 }
 function integer nextOutput_2_default(integer seq) {
@@ -116,10 +125,10 @@ function integer nextOutput(integer state, integer seq) {
 	}
 }
 
-//md5sum: C78653B3C290AC0D1F8E85A29A960502
+//md5sum: 5EC684CA50DDC038FC296F9D75F5736D
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/people.xml" guiName="XMLWriter" guiX="463" guiY="121" id="EXT_XML_WRITER0" omitNewLines="false" type="EXT_XML_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/people.xml" guiName="XMLWriter" guiX="450" guiY="137" id="EXT_XML_WRITER0" omitNewLines="false" type="EXT_XML_WRITER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <persons xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
   <person clover:inPort="0">
@@ -195,7 +204,8 @@ function void clean() {
 <Edge debugMode="false" fromNode="NORMALIZER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 2 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_XML_WRITER0:2"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/peoples.txt" guiName="Multi Type Reader" guiX="13" guiY="338" id="COMPLEX_DATA_READER1" selectorProperties="*children\:|1_=2&#13;&#10;*spouse\:|0_=1&#13;&#10;" stateMetadata="Metadata0:person&#10;Metadata2:spouse&#10;Metadata2:children" type="COMPLEX_DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/peoples.txt" guiName="Multi Type Reader" guiX="26" guiY="362" id="COMPLEX_DATA_READER1" selectorProperties="*spouse\:|=1&#10;*children\:|=2&#10;" stateMetadata="Metadata0:person&#10;Metadata2:spouse&#10;Metadata2:children" type="COMPLEX_DATA_READER">
+<attr name="guiDescription"><![CDATA[Parses text file with various kinds of records. Two of them are identified by prefix; record without prefix is sent to 0th output port.  We add a unique id, that idetifies the person, his/her spouse and children. The unique id is used in downstream transformation (XMLWriter) to join corresponding records together.]]></attr>
 <attr name="selectorCode"><![CDATA[import com.opensys.cloveretl.component.complexdatareader.ComplexDataParser;
 import com.opensys.cloveretl.component.complexdatareader.PrefixInputMetadataSelector;
 
@@ -210,7 +220,6 @@ public class PrefixInputMetadataSelectorWithDefault extends	PrefixInputMetadataS
 	
 }
 ]]></attr>
-<attr name="guiDescription"><![CDATA[Parses text file with various kinds of records. Two of them are identified by prefix; record without prefix is sent to 0th output port.  We add a unique id, that idetifies the person, his/her spouse and children. The unique id is used in downstream transformation (XMLWriter) to join corresponding records together.]]></attr>
 <attr name="transformCode"><![CDATA[//#CTL2:COMPILE
 
 long counter0 = 0;
@@ -229,9 +238,9 @@ function integer nextState_0() {
 	return ALL;
 }
 function integer nextOutput_0_0() {
-	$out.0.id = long2integer(counter0);
-	$out.0.last_name = $0.last_name;
-	$out.0.first_name = $0.first_name;
+	$0.id = long2integer(counter0);
+	$0.last_name = $0.last_name;
+	$0.first_name = $0.first_name;
 	return 0;
 }
 function integer nextOutput_0_default(integer seq) {
@@ -249,9 +258,9 @@ function integer nextState_1() {
 	return ALL;
 }
 function integer nextOutput_1_0() {
-	$out.1.id = long2integer(counter0 - 1);
-	$out.1.relationship = $1.relationship;
-	$out.1.name = $1.name;
+	$1.id = long2integer(counter0);
+	$1.relationship = $1.relationship;
+	$1.name = $1.name;
 	return 1;
 }
 function integer nextOutput_1_default(integer seq) {
@@ -269,9 +278,9 @@ function integer nextState_2() {
 	return ALL;
 }
 function integer nextOutput_2_0() {
-	$out.2.id = long2integer(counter0 - 1);
-	$out.2.relationship = $2.relationship;
-	$out.2.name = $2.name;
+	$2.id = long2integer(counter0);
+	$2.relationship = $2.relationship;
+	$2.name = $2.name;
 	return 2;
 }
 function integer nextOutput_2_default(integer seq) {
@@ -301,10 +310,10 @@ function integer nextOutput(integer state, integer seq) {
 	}
 }
 
-//md5sum: 44C3F44948672E0298FC7797322E1769
+//md5sum: 0263626E00311F5F395F1C3AF7C17015
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/people1.xml" guiName="XMLWriter" guiX="463" guiY="340" id="EXT_XML_WRITER1" omitNewLines="false" type="EXT_XML_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/people1.xml" guiName="XMLWriter" guiX="450" guiY="362" id="EXT_XML_WRITER1" omitNewLines="false" type="EXT_XML_WRITER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <persons xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
   <person clover:inPort="0">

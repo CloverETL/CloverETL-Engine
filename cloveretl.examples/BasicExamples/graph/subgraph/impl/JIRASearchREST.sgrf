@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="User" created="Wed May 28 13:40:15 CEST 2014" guiVersion="0.0.0.devel" id="1401291104482" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Aug 05 13:46:36 CEST 2015" modifiedBy="User" name="Default graph name" nature="subgraph" revision="1.39" showComponentDetails="true">
+<Graph author="User" created="Wed May 28 13:40:15 CEST 2014" guiVersion="0.0.0.devel" id="1401291104482" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 11:02:20 CET 2016" modifiedBy="jansedlacek" name="Default graph name" nature="subgraph" revision="1.37" showComponentDetails="true">
 <Global>
 <inputPorts>
 <singlePort connected="true" name="0"/>
@@ -53,18 +53,14 @@
 </Metadata>
 </MetadataGroup>
 <GraphParameters>
-<GraphParameter defaultHint="e.g. https://bug.javlin.eu" name="JIRA_URL" public="true" required="true">
-<attr name="description"><![CDATA[Root URL for your JIRA installation (e.g. http://bug.javlin.eu)]]></attr>
-</GraphParameter>
-<GraphParameter name="DEFAULT_MAX_RESULTS" value="1000">
-<SingleType name="int"/>
-</GraphParameter>
-<GraphParameter name="JIRA_SEARCH_URL" value="${JIRA_URL}/rest/api/2/search?"/>
+<GraphParameter name="DEFAULT_MAX_RESULTS" value="1000"/>
+<GraphParameter name="JIRA_SEARCH_URL" value="${JIRA_REST_URL}/search?"/>
 <GraphParameterFile fileURL="workspace.prm"/>
+<GraphParameterFile fileURL="jira.prm"/>
 </GraphParameters>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="94" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Description" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="380" x="305" y="-72">
+<RichTextNote backgroundColor="F9EB81" enabled="true" folded="false" fontSize="medium" height="87" id="Note0" textColor="000000" width="448" x="305" y="-72">
 <attr name="text"><![CDATA[Performs REST call for the JQL query. Returns one page of results, might need to be called multiple times.]]></attr>
-</Note>
+</RichTextNote>
 <Dictionary/>
 </Global>
 <Phase number="0">
@@ -99,7 +95,7 @@ function integer generate() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Combine" guiX="1328" guiY="136" id="COMBINE" type="COMBINE">
+<Node enabled="enabled" guiName="Combine" guiX="1329" guiY="128" id="COMBINE" type="COMBINE">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -131,7 +127,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Create REST URL" guiX="557" guiY="50" id="CREATE_REST_URL" type="REFORMAT">
+<Node enabled="enabled" guiName="Create REST URL" guiX="483" guiY="50" id="CREATE_REST_URL" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -168,9 +164,9 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node debugOutput="true" enabled="enabled" guiName="DebugOutput" guiX="1670" guiY="50" id="DEBUG_OUTPUT" type="TRASH"/>
-<Node debugOutput="true" enabled="enabled" guiName="DebugOutput" guiX="1670" guiY="167" id="DEBUG_OUTPUT1" type="TRASH"/>
-<Node enabled="enabled" guiName="Detect error" guiX="959" guiY="50" id="DETECT_ERROR" type="REFORMAT">
+<Node debugOutput="true" enabled="enabled" guiName="DebugOutput" guiX="1605" guiY="50" id="DEBUG_OUTPUT" type="TRASH"/>
+<Node debugOutput="true" enabled="enabled" guiName="DebugOutput" guiX="1605" guiY="167" id="DEBUG_OUTPUT1" type="TRASH"/>
+<Node enabled="enabled" guiName="Detect error" guiX="885" guiY="50" id="DETECT_ERROR" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -207,7 +203,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Parse search JSON" guiX="1148" guiY="50" id="PARSE_SEARCH_JSON" schema="${META_DIR}/issue_json.xsd" sourceUri="port:$0.content:discrete" type="JSON_EXTRACT">
+<Node enabled="enabled" guiName="Parse search JSON" guiX="1074" guiY="50" id="PARSE_SEARCH_JSON" schema="${META_DIR}/issue_json.xsd" sourceUri="port:$0.content:discrete" type="JSON_EXTRACT">
 <attr name="mapping"><![CDATA[<Mappings>
 	<Mapping element="json_object" outPort="1"
 			xmlFields="{}maxResults;{}startAt;{}total"
@@ -228,35 +224,7 @@ function integer transform() {
 </Mappings>
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Search REST" guiX="762" guiY="50" id="SEARCH_REST" requestMethod="GET" type="HTTP_CONNECTOR">
-<attr name="inputMapping"><![CDATA[//#CTL2
-
-// Transforms input record into output record.
-function integer transform() {
-	$out.0.URL = $in.0.rest_url;
-	$out.0.additionalHTTPHeaders["Cookie"] = $in.0.session_name + "=" + $in.0.session_value;
-
-	return ALL;
-}
-
-// Called during component initialization.
-// function boolean init() {}
-
-// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
-// required by the transform. All resources allocated within this method should be released
-// by the postExecute() method.
-// function void preExecute() {}
-
-// Called only if transform() throws an exception.
-// function integer transformOnError(string errorMessage, string stackTrace) {}
-
-// Called during each graph run after the entire transform was executed. Should be used to free any resources
-// allocated within the preExecute() method.
-// function void postExecute() {}
-
-// Called to return a user-defined error message when an error occurs.
-// function string getMessage() {}
-]]></attr>
+<Node enabled="enabled" guiName="Search REST" guiX="688" guiY="50" id="SEARCH_REST" requestMethod="GET" type="HTTP_CONNECTOR">
 <attr name="standardOutputMapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -290,13 +258,41 @@ function integer transform() {
 // Called to return a user-defined error message when an error occurs.
 // function string getMessage() {}
 ]]></attr>
+<attr name="inputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.URL = $in.0.rest_url;
+	$out.0.additionalHTTPHeaders["Cookie"] = $in.0.session_name + "=" + $in.0.session_value;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
 </Node>
-<Node enabled="enabled" guiName="SimpleCopy" guiX="392" guiY="50" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiName="SimpleCopy" guiX="305" guiY="50" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
 <Node enabled="enabled" guiName="SubgraphInput" guiX="228" guiY="-70" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT">
 <Port guiY="69" name="0"/>
 <Port guiY="87" name="1"/>
 </Node>
-<Node enabled="enabled" guiName="SubgraphOutput" guiX="1556" guiY="-70" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT">
+<Node enabled="enabled" guiName="SubgraphOutput" guiX="1491" guiY="-70" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT">
 <Port guiY="69" name="0"/>
 <Port guiY="87" name="1"/>
 <Port guiY="128" name="2"/>

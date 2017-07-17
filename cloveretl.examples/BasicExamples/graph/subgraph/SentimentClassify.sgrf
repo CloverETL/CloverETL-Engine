@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="dpavlis" created="Thu Jul 10 09:29:34 CEST 2014" guiVersion="4.1.0.M1" id="1404980749010" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Apr 29 18:10:33 CEST 2015" modifiedBy="User" name="CloverTweets" nature="subgraph" revision="1.68" showComponentDetails="true">
+<Graph author="dpavlis" created="Thu Jul 10 09:29:34 CEST 2014" guiVersion="0.0.0.devel" id="1404980749010" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 10:08:46 CET 2016" modifiedBy="jansedlacek" name="CloverTweets" nature="subgraph" revision="1.69" showComponentDetails="true">
 <Global>
 <inputPorts>
 <singlePort connected="true" name="0"/>
@@ -31,16 +31,22 @@
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
 <LookupTable charset="ISO-8859-1" id="LookupTable0" initialSize="512" key="keyword" metadata="Metadata0" name="KeyWordsLookup" type="simpleLookup"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="140" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Comment" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="14" width="493" x="321" y="22">
-<attr name="text"><![CDATA[Classify sentiment of input senteces/text. Classifies POSITIVE - out port 0, NEGATIVE - out port 1 and UNDECIDED - out port 2 sentiment.
+<RichTextNote backgroundColor="F9EB81" enabled="true" folded="false" fontSize="medium" height="230" id="Note0" textColor="000000" width="590" x="269" y="-16">
+<attr name="text"><![CDATA[Classify sentiment of input senteces/text. 
+Sentiment classification: 
+
+* *POSITIVE* - out port 0
+* *NEGATIVE* - out port 1
+* *UNDECIDED* - out port 2
+
 Classification done based on internal lookup table with positive&negative words. Input text is tokenized to words and each word is checked against the lookup.
 
 Custom keywords (with their classification) can be provided to the subgraph via the 2nd optional port.]]></attr>
-</Note>
+</RichTextNote>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node debugInput="true" enabled="enabled" guiName="DataGenerator" guiX="34" guiY="190" id="DATA_GENERATOR" recordsNumber="5" type="DATA_GENERATOR">
+<Node debugInput="true" enabled="enabled" guiName="DataGenerator" guiX="34" guiY="224" id="DATA_GENERATOR" recordsNumber="5" type="DATA_GENERATOR">
 <attr name="generate"><![CDATA[//#CTL2
 
 string[] texts= ["What a classic final match between #ArgentinaVsGermany seen by the whole world in #WorldCup2014 #BRA thanks again for the wonderful FInal..",
@@ -77,7 +83,7 @@ function integer generate() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node debugInput="true" enabled="never" guiName="DataGenerator" guiX="34" guiY="283" id="DATA_GENERATOR1" type="DATA_GENERATOR">
+<Node debugInput="true" enabled="never" guiName="DataGenerator" guiX="34" guiY="302" id="DATA_GENERATOR1" type="DATA_GENERATOR">
 <attr name="generate"><![CDATA[//#CTL2
 
 // Generates output record.
@@ -108,12 +114,12 @@ function integer generate() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enableWhenInputPort1IsDisconnected" fileURL="${DATAIN_DIR}/default_sentiment_keywords.txt" guiName="Default sentiment keywords" guiX="329" guiY="414" id="DEFAULT_SENTIMENT_KEYWORDS" type="DATA_READER"/>
-<Node guiName="Sentiment keyword lookup" guiX="546" guiY="283" id="SENTIMENT_KEYWORD_LOOKUP" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
-<Node guiName="SimpleGather" guiX="360" guiY="283" id="SIMPLE_GATHER" type="SIMPLE_GATHER"/>
-<Node enabled="enabled" guiName="SubgraphInput" guiX="228" guiY="10" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT">
-<Port guiY="207" name="0"/>
-<Port guiY="300" name="1"/>
+<Node enabled="enableWhenInputPort1IsDisconnected" fileURL="${DATAIN_DIR}/default_sentiment_keywords.txt" guiName="Default sentiment keywords" guiX="275" guiY="428" id="DEFAULT_SENTIMENT_KEYWORDS" type="DATA_READER"/>
+<Node guiName="Sentiment keyword lookup" guiX="644" guiY="337" id="SENTIMENT_KEYWORD_LOOKUP" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
+<Node guiName="SimpleGather" guiX="467" guiY="337" id="SIMPLE_GATHER" type="SIMPLE_GATHER"/>
+<Node enabled="enabled" guiName="SubgraphInput" guiX="228" guiY="-15" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT">
+<Port guiY="243" name="0"/>
+<Port guiY="317" name="1"/>
 <Port guiY="395" name="2"/>
 </Node>
 <Edge fromNode="DATA_GENERATOR:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="SUBGRAPH_INPUT:0"/>
@@ -127,7 +133,7 @@ function integer generate() {
 <Node debugOutput="true" enabled="enabled" guiName="DebugOutput" guiX="984" guiY="154" id="DEBUG_OUTPUT" type="TRASH"/>
 <Node debugOutput="true" enabled="enabled" guiName="DebugOutput" guiX="984" guiY="224" id="DEBUG_OUTPUT1" type="TRASH"/>
 <Node debugOutput="true" enabled="enabled" guiName="DebugOutput" guiX="984" guiY="294" id="DEBUG_OUTPUT2" type="TRASH"/>
-<Node enabled="enabled" guiName="Reformat" guiX="546" guiY="190" id="REFORMAT" type="REFORMAT">
+<Node enabled="enabled" guiName="Reformat" guiX="541" guiY="243" id="REFORMAT" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 KeywordsLookup keywordRec;
 boolean negate=false;
@@ -182,8 +188,8 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="SubgraphOutput" guiX="870" guiY="10" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT">
-<Port guiY="199" name="0"/>
+<Node enabled="enabled" guiName="SubgraphOutput" guiX="870" guiY="-15" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT">
+<Port guiY="222" name="0"/>
 <Port guiY="269" name="1"/>
 <Port guiY="312" name="2"/>
 <Port guiY="382" name="3"/>

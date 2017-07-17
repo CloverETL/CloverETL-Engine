@@ -462,7 +462,7 @@ public final class ByteBufferUtils {
             }
 
             //// Reallocate.
-            int newCapacity = Math.min(CloverBuffer.normalizeCapacity(requestedCapacity), maximumCapacity);
+            int newCapacity = Math.min(normalizeCapacity(requestedCapacity), maximumCapacity);
             CharBuffer newBuffer = CharBuffer.allocate(newCapacity);
             oldBuffer.clear();
             newBuffer.put(oldBuffer);
@@ -489,6 +489,73 @@ public final class ByteBufferUtils {
         }
     }
     
+    /**
+     * Normalizes the specified capacity of the buffer to power of 2, which is
+     * often helpful for optimal memory usage and performance. If it is greater
+     * than or equal to {@link Integer#MAX_VALUE}, it returns
+     * {@link Integer#MAX_VALUE}. If it is zero, it returns zero.
+     */
+    public static int normalizeCapacity(int requestedCapacity) {
+        if (requestedCapacity < 0) {
+            return Integer.MAX_VALUE;
+        }
+
+        int newCapacity = Integer.highestOneBit(requestedCapacity);
+        newCapacity <<= (newCapacity < requestedCapacity ? 1 : 0);
+        return newCapacity < 0 ? Integer.MAX_VALUE : newCapacity;
+    }
+
+    /**
+     * Perform {@link CharBuffer#compact()} method on the given {@link CharBuffer}.
+     * If the charBuffer has position equals 0, no array copy is performed.
+     * This implementation is significantly faster than direct invocation for big buffers.
+     * @param charBuffer
+     */
+    public static void compact(CharBuffer charBuffer) {
+		if (charBuffer.position() != 0) {
+			charBuffer.compact();
+		} else {
+			int remaining = charBuffer.remaining();
+			charBuffer.clear();
+			charBuffer.position(remaining);
+			charBuffer.limit(charBuffer.capacity());
+		}
+    }
+
+    /**
+     * Perform {@link CloverBuffer#compact()} method on the given {@link CloverBuffer}.
+     * If the byteBuffer has position equals 0, no array copy is performed.
+     * This implementation is significantly faster than direct invocation for big buffers.
+     * @param byeBuffer
+     */
+    public static void compact(CloverBuffer byteBuffer) {
+		if (byteBuffer.position() != 0) {
+			byteBuffer.compact();
+		} else {
+			int remaining = byteBuffer.remaining();
+			byteBuffer.clear();
+			byteBuffer.position(remaining);
+			byteBuffer.limit(byteBuffer.capacity());
+		}
+    }
+
+    /**
+     * Perform {@link ByteBuffer#compact()} method on the given {@link ByteBuffer}.
+     * If the byteBuffer has position equals 0, no array copy is performed.
+     * This implementation is significantly faster than direct invocation for big buffers.
+     * @param byeBuffer
+     */
+    public static void compact(ByteBuffer byteBuffer) {
+		if (byteBuffer.position() != 0) {
+			byteBuffer.compact();
+		} else {
+			int remaining = byteBuffer.remaining();
+			byteBuffer.clear();
+			byteBuffer.position(remaining);
+			byteBuffer.limit(byteBuffer.capacity());
+		}
+    }
+
     /**
      * Fills the ByteBuffer with defined value. Does not change buffer's current position.
      * @param buffer buffer to be filled

@@ -163,17 +163,36 @@ public class SQLScriptParser implements Iterable<String> {
 	}
 
 	public void setStringInput(String string) {
+		releaseDataSource();
 		this.reader = new StringReader(string);
 	}
 
 	public void setStreamInput(InputStream stream, Charset charset) {
+		releaseDataSource();
 		InputStreamReader inputStreamReader = new InputStreamReader(stream, charset);
 		this.reader = new BufferedReader(inputStreamReader); // add mark() and reset() support
 	}
 
 	public void setChannelInput(ReadableByteChannel channel, Charset charset) {
+		releaseDataSource();
 		Reader channelReader = Channels.newReader(channel, charset.newDecoder(), -1);
 		this.reader = new BufferedReader(channelReader); // add mark() and reset() support
+	}
+	
+	public void free() {
+		releaseDataSource();
+	}
+	
+	private void releaseDataSource() {
+		if (reader == null) {
+			return;
+		}
+		try {
+			reader.close();
+		} catch (IOException e) {
+			logger.error(e.getStackTrace());
+		}
+		reader = null;		
 	}
 	
 	@Override

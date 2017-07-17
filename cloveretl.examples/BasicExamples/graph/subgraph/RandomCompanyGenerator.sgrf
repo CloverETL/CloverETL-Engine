@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="dpavlis" created="Wed Jul 23 09:52:36 CEST 2014" guiVersion="4.1.0" id="1406103185208" licenseCode="CLP1DJAVLI58889773BY" licenseType="Commercial" modified="Fri Jul 24 12:40:09 CEST 2015" modifiedBy="magda" name="RandomPersonGenerator" nature="subgraph" revision="1.14" showComponentDetails="true">
+<Graph author="dpavlis" created="Wed Jul 23 09:52:36 CEST 2014" guiVersion="0.0.0.devel" id="1406103185208" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 10:10:24 CET 2016" modifiedBy="jansedlacek" name="RandomPersonGenerator" nature="subgraph" revision="1.14" showComponentDetails="true">
 <Global>
 <outputPorts>
 <singlePort connected="true" name="0"/>
@@ -26,15 +26,14 @@
 </Record>
 </Metadata>
 <GraphParameters>
-<GraphParameter label="Number of records to generate" name="RECORDS_NUMBER" public="true" required="false" value="100">
-<ComponentReference referencedComponent="DATA_GENERATOR" referencedProperty="recordsNumber"/>
-</GraphParameter>
+<GraphParameter label="Number of records to generate" name="RECORDS_NUMBER" public="true" required="false" value="100"/>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="100" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Comment" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="14" width="400" x="286" y="48">
+<RichTextNote backgroundColor="F9EB81" enabled="true" folded="false" fontSize="medium" height="126" id="Note0" textColor="000000" width="515" x="254" y="48">
 <attr name="text"><![CDATA[This subraph generates random companies/businesses. It uses third party datafactory java library.
+
 By default, 100 records are generated. This may be changed to whatever number.]]></attr>
-</Note>
+</RichTextNote>
 <Dictionary/>
 </Global>
 <Phase number="0">
