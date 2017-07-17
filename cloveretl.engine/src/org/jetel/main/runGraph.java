@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
+import javax.tools.ToolProvider;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Appender;
 import org.apache.log4j.Level;
@@ -169,7 +171,7 @@ public class runGraph {
         String password = null;
         boolean waitForJMXClient = GraphRuntimeContext.DEFAULT_WAIT_FOR_JMX_CLIENT;
         boolean useJMX = GraphRuntimeContext.DEFAULT_USE_JMX;
-        boolean debugMode = GraphRuntimeContext.DEFAULT_DEBUG_MODE;
+        boolean edgeDebugging = GraphRuntimeContext.DEFAULT_EDGE_DEBUGGING;
         boolean tokenTracking = GraphRuntimeContext.DEFAULT_TOKEN_TRACKING;
         boolean skipCheckConfig = GraphRuntimeContext.DEFAULT_SKIP_CHECK_CONFIG;
         String debugDirectory = null;
@@ -270,7 +272,7 @@ public class runGraph {
             } else if (args[i].startsWith(NO_TOKEN_TRACKING_SWITCH)){
             	tokenTracking = false;
             } else if (args[i].startsWith(NO_DEBUG_SWITCH)) {
-                debugMode = false;
+                edgeDebugging = false;
             } else if (args[i].startsWith(DEBUG_DIRECTORY_SWITCH)) {
                 i++;
                 debugDirectory = args[i]; 
@@ -353,7 +355,7 @@ public class runGraph {
         runtimeContext.setSkipCheckConfig(skipCheckConfig);
         runtimeContext.setUseJMX(useJMX);
         runtimeContext.setTokenTracking(tokenTracking);
-        runtimeContext.setDebugMode(debugMode);
+        runtimeContext.setEdgeDebugging(edgeDebugging);
         runtimeContext.setDebugDirectory(debugDirectory);
         runtimeContext.setContextURL(contextURL);
         runtimeContext.setLogLevel(logLevel);
@@ -564,18 +566,35 @@ public class runGraph {
 			"Running on {0} CPU(s)" +
     		", OS {1}" +
     		", architecture {2}" + 
-    		", Java version {3} ({4})" +
-    		", max available memory for JVM {5} KB");
+    		", max available memory for JVM {3} KB");
+	private static MessageFormat RUNTIME_HEADER_4 = new MessageFormat("Running on {0}, {1}, {2} ({3})");
 	
 	public static void printRuntimeHeader() {
         logger.info(RUNTIME_HEADER_1.format(new Object[] {JetelVersion.LIBRARY_BUILD_YEAR}));
         logger.info(RUNTIME_HEADER_2.format(new Object[] {getInfo()}));
-        logger.info(RUNTIME_HEADER_3.format(new Object[] {Runtime.getRuntime().availableProcessors(),
+        logger.info(RUNTIME_HEADER_3.format(new Object[] {
+        		Runtime.getRuntime().availableProcessors(),
         		System.getProperty("os.name"),
         		System.getProperty("os.arch"),
+        		Runtime.getRuntime().maxMemory() / 1024
+        }));
+        logger.info(RUNTIME_HEADER_4.format(new Object[] {
+        		System.getProperty("java.runtime.name"),
         		System.getProperty("java.version"),
         		System.getProperty("java.vendor"),
-        		Runtime.getRuntime().maxMemory() / 1024}));
+        		isCompilerAvailable() ? "JDK" : "JRE - runtime compilation is not available!"
+        }));
+	}
+	
+	/**
+	 * @return true if JDK with valid java compiler is detected, false for simple JRE
+	 */
+	private static Boolean isCompilerAvailable;
+	private static synchronized boolean isCompilerAvailable() {
+		if (isCompilerAvailable == null) {
+			isCompilerAvailable = ToolProvider.getSystemJavaCompiler() != null;
+		}
+		return isCompilerAvailable;
 	}
 	
 	/**

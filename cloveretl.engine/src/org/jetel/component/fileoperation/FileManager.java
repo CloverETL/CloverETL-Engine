@@ -21,12 +21,14 @@ package org.jetel.component.fileoperation;
 import static java.text.MessageFormat.format;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1072,9 +1074,22 @@ public class FileManager {
 						}
 					}
 					try {
-						List<Info> infos = handler.list(target, params); 
-						if (infos != null) {
-							result.add(target, infos);
+						if (params.isListDirectoryContents()) {
+							// List the contents of the directories.
+							List<Info> infos = handler.list(target, params); 
+							if (infos != null) {
+								result.add(target, infos);
+							}
+						} else {
+							// List the directories themselves.
+							InfoResult infoResult = info(target);
+							// If the directory does not exist, info() counts it as a success, but returns "null"
+							// as its Info. Add a failure in such case.
+							if (infoResult.getInfo() != null) {
+								result.add(target, infoResult.getResult());
+							} else {
+								throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), target)); //$NON-NLS-1$
+							}
 						}
 					} catch (Exception ex) {
 						result.addFailure(target, new IOException(FileOperationMessages.getString("FileManager.listing_failed"), ex)); //$NON-NLS-1$

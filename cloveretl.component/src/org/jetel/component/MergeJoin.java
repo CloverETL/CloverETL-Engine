@@ -44,10 +44,7 @@ import org.jetel.data.reader.SlaveReaderDup;
 import org.jetel.enums.OrderEnum;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
@@ -58,7 +55,6 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
@@ -835,15 +831,13 @@ public class MergeJoin extends Node implements MetadataProvider {
             			break;
             		default:
             	}
-        		status.add(message + " is selected, no records will be produced on second output port.",
-            			Severity.WARNING, this, Priority.NORMAL, XML_JOINTYPE_ATTRIBUTE);
+        		status.addWarning(this, XML_JOINTYPE_ATTRIBUTE,
+        				message + " is selected, no records will be produced on second output port.");
         	}
         }
 		
 		if (charset != null && !Charset.isSupported(charset)) {
-			status.add(new ConfigurationProblem(
-					"Charset "+charset+" not supported!", 
-					ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+			status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported!");
 		}
 		
 		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] {getOutputPort(WRITE_TO_PORT).getMetadata()};
@@ -853,7 +847,7 @@ public class MergeJoin extends Node implements MetadataProvider {
 			getTransformFactory(getInMetadataArray(), outMetadata).checkConfig(status);
 		}
 		if (joinKeys == null) {
-			status.add("Join key not defined.", Severity.ERROR, this, Priority.NORMAL, XML_JOINKEY_ATTRIBUTE);
+			status.addError(this, XML_JOINKEY_ATTRIBUTE, "Join key not defined.");
 			return status;
 		}
 		
@@ -870,7 +864,7 @@ public class MergeJoin extends Node implements MetadataProvider {
 					joiners[0] = tmp[0];
 				}
 				if (joiners.length < inputCnt) {
-					status.add("Join keys aren't specified for all slave inputs - deducing missing keys", Severity.WARNING, this, Priority.NORMAL);
+					status.addWarning(this, null, "Join keys aren't specified for all slave inputs - deducing missing keys");
 					OrderedKey[][] replJoiners = new OrderedKey[inputCnt][];
 					for (int i = 0; i < joiners.length; i++) {
 						replJoiners[i] = joiners[i];
@@ -915,11 +909,7 @@ public class MergeJoin extends Node implements MetadataProvider {
 			}        	
 	            	
 		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
-			if(!StringUtils.isEmpty(e.getAttributeName())) {
-				problem.setAttributeName(e.getAttributeName());
-			}
-			status.add(problem);
+			status.addWarning(this, null, e);
 		}
 		
 		return status;

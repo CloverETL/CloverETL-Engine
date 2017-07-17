@@ -1111,6 +1111,23 @@ public class StringUtils {
 	}
 	
 	/**
+	 * Strips file extension from given file name.
+	 * 
+	 * These conditions must be true for the stripping to occur:
+	 * 1) at least one char before the dot must be present
+	 * 2) maximum of 4 chars after the dot may be present
+	 */
+	public static String stripExtension(String originalName) {
+		int dotIndex = originalName.lastIndexOf('.');
+		// at least one char before dot is necessary
+		// up to 4 chars from the end are considered file extension
+		if (dotIndex < 1 || dotIndex == originalName.length() - 1 || dotIndex < originalName.length() - 5) {
+			return originalName;
+		}
+		return originalName.substring(0, dotIndex);
+	}
+	
+	/**
 	 * This function should be used to convert arbitrary field
 	 * or record name into a valid identifier.
 	 * 

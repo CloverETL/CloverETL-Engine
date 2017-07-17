@@ -19,9 +19,12 @@
 package org.jetel.graph;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +54,7 @@ import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.database.ConnectionFactory;
 import org.jetel.database.IConnection;
+import org.jetel.enums.EdgeDebugMode;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.AttributeNotFoundException;
@@ -81,6 +85,7 @@ import org.jetel.util.string.UnicodeBlanks;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXParseException;
 
 /**
@@ -322,13 +327,23 @@ public class TransformationGraphXMLReaderWriter {
 		return XmlParserFactory.getDocumentBuilder(documentBuilderFactory);
 	}
 	
-	private static Document prepareDocument(InputStream in) throws XMLConfigurationException {
+	private static Document prepareDocument(InputStream stream) throws XMLConfigurationException {
+		InputSource inputSource = (stream != null) ? new InputSource(new BufferedInputStream(stream)) : null;
+		return prepareDocument(inputSource);
+	}
+	
+	private static Document prepareDocument(Reader reader) throws XMLConfigurationException {
+		InputSource inputSource = (reader != null) ? new InputSource(new BufferedReader(reader)) : null;
+		return prepareDocument(inputSource);
+	}
+	
+	private static Document prepareDocument(InputSource in) throws XMLConfigurationException {
 		Document document;
 		DocumentBuilderProvider documentBuilderProvider = null;
 		try {
 			documentBuilderProvider = getDocumentBuilderProvider();
 			if (in != null) {
-				document = documentBuilderProvider.getDocumentBuilder().parse(new BufferedInputStream(in));
+				document = documentBuilderProvider.getDocumentBuilder().parse(in);
 				document.normalize();
 			}else{
 				document = documentBuilderProvider.getDocumentBuilder().newDocument();
@@ -397,9 +412,49 @@ public class TransformationGraphXMLReaderWriter {
 		}
 	}
 	
-	public TransformationGraph read(InputStream in) throws XMLConfigurationException, GraphConfigurationException {
-		Document document = prepareDocument(in);
+	/**
+	 * Reads graph XML as a string.
+	 * 
+	 * @param graphXml - content of the graph file
+	 * @return {@link TransformationGraph} built from the XML
+	 * 
+	 * @throws XMLConfigurationException
+	 * @throws GraphConfigurationException
+	 */
+	public TransformationGraph read(String graphXml) throws XMLConfigurationException, GraphConfigurationException {
+		return read(new StringReader(graphXml));
+	}
+	
+	/**
+	 * Builds {@link TransformationGraph} from the provided character stream.
+	 * 
+	 * @param reader - character stream containing graph XML 
+	 * @return {@link TransformationGraph} built from the reader
+	 * 
+	 * @throws XMLConfigurationException
+	 * @throws GraphConfigurationException
+	 */
+	public TransformationGraph read(Reader reader) throws XMLConfigurationException, GraphConfigurationException {
+		Document document = prepareDocument(reader);
+		return readDocument(document);
+	}
 
+	/**
+	 * Builds {@link TransformationGraph} from the provided byte stream.
+	 * The charset is auto-detected from the XML header.
+	 * 
+	 * @param is - byte stream containing graph XML
+	 * @return {@link TransformationGraph} built from the input stream
+	 * @throws XMLConfigurationException
+	 * @throws GraphConfigurationException
+	 */
+	public TransformationGraph read(InputStream is) throws XMLConfigurationException, GraphConfigurationException {
+		Document document = prepareDocument(is);
+		return readDocument(document);
+	}
+	
+	private TransformationGraph readDocument(Document document)
+			throws XMLConfigurationException, GraphConfigurationException {
 		try {
 			read(document);
 		} catch (XMLConfigurationException e) {
@@ -454,7 +509,7 @@ public class TransformationGraphXMLReaderWriter {
 	        
 	        grfAttributes.setResolveReferences(false);
 	        //get debug mode
-	        graph.setDebugMode(grfAttributes.getString("debugMode", "true"));
+	        graph.setEdgeDebugging(grfAttributes.getString("debugMode", "true"));
 	        //get debugMaxRecords
 	        graph.setDebugMaxRecords(grfAttributes.getLong("debugMaxRecords", 0));
 	        
@@ -520,7 +575,7 @@ public class TransformationGraphXMLReaderWriter {
 				instantiatePhases(phaseElements);
 		
 				NodeList edgeElements = document.getElementsByTagName(EDGE_ELEMENT);
-				instantiateEdges(edgeElements, metadata, graph.isDebugMode(), graph.getDebugMaxRecords());
+				instantiateEdges(edgeElements, metadata, graph.getDebugMaxRecords());
 
 				//finally analyse the graph
 				try {
@@ -720,13 +775,13 @@ public class TransformationGraphXMLReaderWriter {
 	 * @param  nodes         Description of Parameter
 	 * @since                May 24, 2002
 	 */
-	private void instantiateEdges(NodeList edgeElements, Map<String, Object> metadata, boolean graphDebugMode, long graphDebugMaxRecords) throws XMLConfigurationException,GraphConfigurationException {
+	private void instantiateEdges(NodeList edgeElements, Map<String, Object> metadata, long graphDebugMaxRecords) throws XMLConfigurationException,GraphConfigurationException {
 		String edgeID="unknown";
 		String edgeMetadataID;
 		String fromNodeAttr;
 		String toNodeAttr;
 		String edgeType = null;
-        boolean debugMode = false;
+        EdgeDebugMode debugMode;
         String debugFilterExpression = null;
         long debugMaxRecords = 0;
         boolean debugLastRecords = true;
@@ -756,7 +811,7 @@ public class TransformationGraphXMLReaderWriter {
 				throwXMLConfigurationException("Missing attribute at edge '" + edgeID + "'.", ex);
 				continue;
 			}
-			debugMode = attributes.getBoolean("debugMode", false);
+			debugMode = EdgeDebugMode.fromString(attributes.getString("debugMode", null));
             
             if (graphDebugMaxRecords == 0) { // if this value isn't defined for whole graph 
             	debugMaxRecords = attributes.getLong("debugMaxRecords", 0);

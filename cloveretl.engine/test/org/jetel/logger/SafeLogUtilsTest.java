@@ -29,19 +29,33 @@ import org.jetel.test.CloverTestCase;
 public class SafeLogUtilsTest extends CloverTestCase {
 
 	public void testObfuscateSensitiveInformation() {
+		assertEquals(null, SafeLogUtils.obfuscateSensitiveInformation(null));
+		assertEquals("", SafeLogUtils.obfuscateSensitiveInformation(""));
+		assertEquals("abc", SafeLogUtils.obfuscateSensitiveInformation("abc"));
+		assertEquals("abc://defg", SafeLogUtils.obfuscateSensitiveInformation("abc://defg"));
+		assertEquals("://de:fg", SafeLogUtils.obfuscateSensitiveInformation("://de:fg"));
+		assertEquals("abc://de:***@", SafeLogUtils.obfuscateSensitiveInformation("abc://de:fg@"));
+		assertEquals("abc://de@fg", SafeLogUtils.obfuscateSensitiveInformation("abc://de@fg"));
+		assertEquals("abc://de:***@fg", SafeLogUtils.obfuscateSensitiveInformation("abc://de:@fg"));
 		assertEquals("a://b:***@d", SafeLogUtils.obfuscateSensitiveInformation("a://b:c@d"));
 		assertEquals("://b:c@d", SafeLogUtils.obfuscateSensitiveInformation("://b:c@d"));
-		assertEquals("a://b:c@", SafeLogUtils.obfuscateSensitiveInformation("a://b:c@"));
+		assertEquals("a://b:***@", SafeLogUtils.obfuscateSensitiveInformation("a://b:c@"));
 		assertEquals("a://:***@d", SafeLogUtils.obfuscateSensitiveInformation("a://:c@d"));
 		assertEquals("a://b:***@d", SafeLogUtils.obfuscateSensitiveInformation("a://b:@d"));
 		assertEquals("a:a://b:***@d", SafeLogUtils.obfuscateSensitiveInformation("a:a://b:c@d"));
 		assertEquals("a://b:***@d", SafeLogUtils.obfuscateSensitiveInformation("a://b:a b@d"));
-		assertEquals("a://b/:a@d", SafeLogUtils.obfuscateSensitiveInformation("a://b/:a@d"));
-		assertEquals("a://b:***@a@d", SafeLogUtils.obfuscateSensitiveInformation("a://b:a@a@d"));
+		assertEquals("a://b/:***@d", SafeLogUtils.obfuscateSensitiveInformation("a://b/:a@d"));
+		assertEquals("a://b:***@d", SafeLogUtils.obfuscateSensitiveInformation("a://b:a@a@d"));
 		assertEquals("a://b:***@d a://b:***@d", SafeLogUtils.obfuscateSensitiveInformation("a://b:c@d a://b:c@d"));
 		assertEquals("ftp://test:***@koule", SafeLogUtils.obfuscateSensitiveInformation("ftp://test:test@koule"));
 		// CLO-6064: test multiline string
 		assertEquals("a\nftp://test:***@koule", SafeLogUtils.obfuscateSensitiveInformation("a\nftp://test:test@koule"));
+
+		assertEquals("ftp://test:***@koule/nonExistingDir/nonExistingFile.txt",
+				SafeLogUtils.obfuscateSensitiveInformation("ftp://test:my@test@koule/nonExistingDir/nonExistingFile.txt"));
+
+		assertEquals("asd ftp://user1:***@nonExistingFile.txt;ftp://user2:***@koule/nonExistingDir/nonExistingFile.txt",
+				SafeLogUtils.obfuscateSensitiveInformation("asd ftp://user1:bvc@test1@nonExistingFile.txt;ftp://user2:bvc@test2@koule/nonExistingDir/nonExistingFile.txt"));
 	}
 
 }

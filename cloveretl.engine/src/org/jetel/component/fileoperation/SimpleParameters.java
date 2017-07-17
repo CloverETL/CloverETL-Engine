@@ -65,9 +65,11 @@ public class SimpleParameters implements Parameters, Cloneable {
 
 	public static class ListParameters extends SimpleParameters {
 		public static final String RECURSIVE = "recursive"; //$NON-NLS-1$
+		public static final String LIST_DIRECTORY_CONTENTS = "listDirectoryContents"; //$NON-NLS-1$
 		
 		public ListParameters() {
 			set(RECURSIVE, false);
+			set(LIST_DIRECTORY_CONTENTS, true);
 		}
 
 		public ListParameters setRecursive(Boolean recursive) {
@@ -76,6 +78,14 @@ public class SimpleParameters implements Parameters, Cloneable {
 		
 		public boolean isRecursive() {
 			return (Boolean) get(RECURSIVE);
+		}
+
+		public ListParameters setListDirectoryContents(Boolean listDirectoryContents) {
+			return (ListParameters) set(LIST_DIRECTORY_CONTENTS, listDirectoryContents);
+		}
+		
+		public boolean isListDirectoryContents() {
+			return (Boolean) get(LIST_DIRECTORY_CONTENTS);
 		}
 	}
 

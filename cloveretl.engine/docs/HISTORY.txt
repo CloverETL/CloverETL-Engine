@@ -2,6 +2,117 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-6-1
+------------
+
+* Improvements
+	* CLO-11167 Log a warning when query for dynamic metadata returns records
+	* CLO-11103	Improve thread dump generation so that whole stacks are displayed
+* Fixes
+	* CLO-11085	File Event Listener on SMB doesn't work with special characters
+	* CLO-11146	Data Inspector view does not show records for running graphs
+	* CLO-11049	Extracting metadata from DBInputTable fails with NPE when JNDI is used
+
+
+REL-4-6-0
+------------
+
+* Misc
+	* CLO-10896	Designer-Server connection diagnostic logging - server side
+	* CLO-10759	Imported custom archivators configured to archive just a selected sandbox don't preserve the sandbox value
+	* CLO-10648	Data inspector view should indicate incomplete data record set
+	* CLO-10505	Add to documentation of installation on WebSphere that the profile name must not contain word "clover"
+* Fixes
+	* CLO-10943	XMLExtract: Incorrect output
+	* CLO-10991	Cluster nodes are too sensitive to load
+	* CLO-10824	ClassCastException when working with Secure parameters
+	* CLO-10587	Exported JoinKey component parameter behaves inconsistently
+	* CLO-9855	Documentation: Delete instructions on configuration in WEB-INF
+	* CLO-10949	Using a wildcard in XMLExtract in Subgraph throws error
+	* CLO-10680	Can't import xsd file into wsdl file using relative path on WebLogic
+	* CLO-11026	Server console GUI occasionally fails with NPE
+* Compatibility
+	* CLO-10930	FlatFileReader fails silently on parsing errors
+
+
+REL-4-6-0-M2
+------------
+
+* Misc
+	* CLO-10797	Component editor cleanup
+	* CLO-10695	Hint for pasting the license text
+	* CLO-10398	SalesforceBulkReader - ability to read deleted records
+	* CLO-7735	Filter editor shows dictionary in Expression list
+* Fixes
+	* CLO-10745	ListFiles component throws NPE for root directory of ftp
+	* CLO-10646	WLS proxy plug-in for apache causes "HttpException: Expected HTTP code 200, got 405: Method Not Allowed"
+	* CLO-10048	EmailFilter does not accept empty string even if 'AcceptEmpty' is true
+
+
+REL-4-6-0-M1
+------------
+
+* CLO-10558	Designer Tutorial
+* CLO-10569	Automatic debugging on edges
+* Designer UX Improvements
+	* CLO-10579	Do not show unneeded Secure Storage prompt at Designer startup
+	* CLO-10562	Easier to find search in palette
+	* CLO-10559	Designer should parse licenses more leniently
+	* CLO-10548	Prevent Designer Windows installer from looking frozen
+	* CLO-10672	Data Inspector should indicate that debugging is disabled on the edge
+	* CLO-10580	Improve error message of SpreadSheetDataWriter when file extension is not specified
+	* CLO-10255	Standardise PLUS sign behaviour in "Edit graph parameters" and "Edit metadata" screens
+	* CLO-9748	UP and DOWN button in Edit values wizard in Graph parameter editor type
+* Server Improvements
+	* CLO-10596	Unify and improve Server DB structures
+	* CLO-10239	Count of aggregated events in task history
+	* CLO-10134	Last execution and successes/failures count in listeners table
+	* CLO-10613	Remove tracking_* tables
+	* CLO-10495	Useless "kill source event" checkbox in Scheduling
+	* CLO-9585	Show version and build number on server login page
+* Misc
+	* CLO-10564	Add action to open list of Examples
+	* CLO-10539	Set charset for new Clover projects to UTF-8
+	* CLO-10210	Print Java vendor into the log file
+	* CLO-7082	Add a switch to ListFiles to return information about a directory itself, not its contents
+	* CLO-6594	CustomJavaComponent documentation should contain where external jars should be located
+	* CLO-9991	Salesforce SOQL content assist should be uppercase
+* Compatibility
+	* CLO-10096	Update Java bundled with Designer to JDK 8u121
+
+
+REL-4-5-1
+---------
+* CLO-10614	Support secure JNDI on Apache Tomcat 8
+* CLO-10775	Option to disable update reference cache
+* CLO-10777	Designer-Server connection diagnostic logging
+* CLO-10780	Cluster heartbeat performed from own thread
+* CLO-10808	Store cluster node status logging into separate file
+
+
+REL-4-5-0
+---------
+* Changes
+	* CLO-10512	Drop support of 32bit linux
+	* CLO-10405	Send email task: Easier plain text html extraction
+	* CLO-10474	SalesforceWriter - allow to configure batch size
+	* CLO-10325	Add hint to empty graph editor how to add a component
+	* CLO-9936 SalesforceBulkWriter - allow to configure batch mode and size
+	
+
+* FIXES
+	* CLO-10549	Fixed MSSQL structure to prevent Deadlock during configuration import
+	* CLO-10543 Metadata extracted from Salesforce are quoted by default
+	* CLO-10536	Import configuration preview changes live model of data
+	* CLO-10494	UI changes of TaskHistory table
+	* CLO-10471	Extract metadata from MSSQL fails when record start with number
+	* CLO-10457	Logged passwords in plaintext when incorrectly escaped
+	* CLO-10389	Killing finished job causes exception
+	* CLO-10108	ExecuteScript: No kill after timeout
+	* CLO-9808 Profiler reporting console login hitch
+	* CLO-9532 Metadata extraction: file preview shows escaped characters
+
+
 REL-4-5-0-M2
 ------------
 

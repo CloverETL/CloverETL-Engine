@@ -1,5 +1,6 @@
 info@javlin.eu
 test@javlin.eu
+test@seznam.cz
 info@opensys.com
 info@opensys.com
 sales@opensys.com

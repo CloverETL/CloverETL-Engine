@@ -30,10 +30,7 @@ import org.jetel.data.parser.XPathParser;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
@@ -49,7 +46,6 @@ import org.jetel.util.XmlUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
-import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -385,23 +381,21 @@ public class XmlXPathReader extends Node {
         }
         
         if (fileURL == null) {
-            status.add("Missing file URL attribute.", Severity.ERROR, this, Priority.NORMAL, XML_FILE_ATTRIBUTE);
+            status.addError(this, XML_FILE_ATTRIBUTE, "Missing file URL attribute.");
         }
         
         if (mappingURL == null && parser.getXPath() == null) {
-        	status.add("Mapping must be defined.", Severity.ERROR, this, Priority.NORMAL);
+        	status.addError(this, XML_MAPPING_URL_ATTRIBUTE, "Mapping must be defined.");
         }
         
 		if (!PolicyType.isPolicyType(policyTypeStr)) {
-			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+			status.addError(this, XML_DATAPOLICY_ATTRIBUTE, "Invalid data policy: " + policyTypeStr);
 		} else {
 			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
 		}
 
         if (charset != null && !Charset.isSupported(charset)) {
-        	status.add(new ConfigurationProblem(
-            		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+        	status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported!");
         }
 
 //        try {

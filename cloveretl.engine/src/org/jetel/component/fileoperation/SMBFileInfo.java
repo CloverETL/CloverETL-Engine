@@ -85,7 +85,7 @@ public class SMBFileInfo implements Info {
 	@Override
 	public Date getLastModified() {
 		try {
-		return new Date(file.lastModified());
+			return new Date(file.lastModified());
 		} catch (SmbException e) {
 			throw new JetelRuntimeException(e);
 		}
@@ -103,7 +103,9 @@ public class SMBFileInfo implements Info {
 	@Override
 	public URI getParentDir() {
 		try {
-			return new URI(file.getParent()); // TODO should null be returned sometimes?
+			String parent = file.getParent();
+			// If this is root directory, return null as parent (consistent with other handlers).
+			return parent.equals("smb://")? null: new URI(file.getParent());
 		} catch (URISyntaxException e) {
 			throw new JetelRuntimeException(e);
 		}

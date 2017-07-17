@@ -18,6 +18,7 @@
  */
 package org.jetel.graph;
 
+import org.jetel.enums.EdgeDebugMode;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 
@@ -36,7 +37,7 @@ public class EdgeFactory {
 	 * Returns appropriate edge implementation for given parameters.
 	 * Either regular {@link Edge} or {@link JobflowEdge} is returned based on {@link ContextProvider#getJobType()}.
 	 */
-	public static Edge newEdge(String id, DataRecordMetadata metadata, boolean debugMode) {
+	public static Edge newEdge(String id, DataRecordMetadata metadata, EdgeDebugMode debugMode) {
     	if (ContextProvider.getRuntimeJobType().isJobflow()) {
 			return new JobflowEdge(id, metadata, debugMode);
 		} else {
@@ -49,7 +50,7 @@ public class EdgeFactory {
 	 * Either regular {@link Edge} or {@link JobflowEdge} is returned based on {@link ContextProvider#getJobType()}.
 	 */
 	public static Edge newEdge(String id, DataRecordMetadata metadata) {
-		return newEdge(id, metadata, false);
+		return newEdge(id, metadata, null);
     }
     
 	/**

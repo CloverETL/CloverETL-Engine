@@ -26,8 +26,6 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -344,7 +342,7 @@ public abstract class AbstractJobflowComponent extends Node {
 		try {
         	tryToInit(status);
         } catch (Exception e) {
-        	ConfigurationProblem problem = new ConfigurationProblem("Initialization failed", e, Severity.ERROR, this, Priority.NORMAL, null);
+        	ConfigurationProblem problem = status.addError(this, null, "Initialization failed", e);
         	
         	List<ComponentNotReadyException> list = ExceptionUtils.getAllExceptions(e, ComponentNotReadyException.class);
         	if (!list.isEmpty()) {
@@ -353,11 +351,10 @@ public abstract class AbstractJobflowComponent extends Node {
         			problem.setAttributeName(attrName);
         		}
         	}
-        	status.add(problem);
         }
         
 		if (redirectErrorOutput && !hasOutputPort) {
-			status.add("The error port is redirected to the standard output port, but there is no edge connected", Severity.WARNING, this, Priority.LOW, XML_REDIRECT_ERROR_OUTPUT_ATTRIBUTE);
+			status.addWarning(this, XML_REDIRECT_ERROR_OUTPUT_ATTRIBUTE, "The error port is redirected to the standard output port, but there is no edge connected");
 		}
 		
         return status;

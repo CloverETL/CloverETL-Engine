@@ -26,20 +26,15 @@ import org.jetel.data.Defaults;
 import org.jetel.data.InternalSortDataRecord;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 /**
  *  <h3>Sort Component</h3>
@@ -252,7 +247,7 @@ public class Sort extends Node {
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 
-		status.add(new ConfigurationProblem("Component is of type SORT, which is deprecated", Severity.WARNING, this, Priority.NORMAL));
+		status.addWarning(this, null, "Component is of type SORT, which is deprecated");
 
 		if (!checkInputPorts(status, 1, 1) || !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
 			return status;
@@ -263,11 +258,7 @@ public class Sort extends Node {
 		try {
 			init();
 		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-			if (!StringUtils.isEmpty(e.getAttributeName())) {
-				problem.setAttributeName(e.getAttributeName());
-			}
-			status.add(problem);
+			status.addError(this, null, e);
 		} finally {
 			free();
 		}

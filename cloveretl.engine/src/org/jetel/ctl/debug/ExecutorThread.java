@@ -20,20 +20,35 @@ package org.jetel.ctl.debug;
 
 import org.jetel.ctl.DebugTransformLangExecutor;
 
+/**
+ * This unit represents a CTL thread that is currently being executed
+ * together with the CTL interpreter.
+ * 
+ * @author jan.michalica (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ */
 public class ExecutorThread {
 
-	private Thread thread;
-	private DebugTransformLangExecutor executor;
+	private final Thread thread;
+	private final DebugTransformLangExecutor executor;
 	
 	public ExecutorThread(Thread thread, DebugTransformLangExecutor executor) {
 		this.thread = thread;
 		this.executor = executor;
 	}
 	
+	/**
+	 * Answers executed CTL thread.
+	 * @return
+	 */
 	public Thread getCTLThread() {
 		return thread;
 	}
 	
+	/**
+	 * Answers CTL interpreter that executes CTL.
+	 * @return
+	 */
 	public DebugTransformLangExecutor getExecutor() {
 		return executor;
 	}

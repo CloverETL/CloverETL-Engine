@@ -135,6 +135,10 @@ public class URLOperationHandlerTest extends OperationHandlerTestTemplate {
 	}
 
 	@Override
+	public void testInfoRoot() throws Exception {
+	}
+
+	@Override
 	public void testMove() throws Exception {
 	}
 

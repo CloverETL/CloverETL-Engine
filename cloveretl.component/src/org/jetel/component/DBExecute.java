@@ -41,10 +41,7 @@ import org.jetel.database.sql.JdbcSpecific.OperationType;
 import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -861,16 +858,14 @@ public class DBExecute extends Node {
         }
         
         if (charset != null && !Charset.isSupported(charset)) {
-        	status.add(new ConfigurationProblem(
-            		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+        	status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported!");
         }
         
         if (sqlQuery == null && fileUrl == null) {
-        	status.add("SQL query not defined.", Severity.ERROR, this, Priority.NORMAL);
+        	status.addError(this,  null, "SQL query not defined.");
         }
         if (dbConnectionName == null) {
-        	status.add("DB connection not defined.", Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+        	status.addError(this, XML_DBCONNECTION_ATTRIBUTE, "DB connection not defined.");
         }
 
 		try {
@@ -891,15 +886,10 @@ public class DBExecute extends Node {
  				FileUtils.canWrite(getGraph().getRuntimeContext().getContextURL(), errorLogURL);
             }
             if (getOutputPort(WRITE_TO_PORT) == null && procedureCall && (dbSQL != null || sqlQuery != null) && outParams != null) {
-            	status.add(new ConfigurationProblem("Output port must be defined when output parameters are set.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+            	status.addError(this, null, "Output port must be defined when output parameters are set.");
             }
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
-            
+            status.addError(this, null, e);
         }
         
         return status;

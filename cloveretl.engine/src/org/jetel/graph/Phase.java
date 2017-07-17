@@ -28,14 +28,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.CompoundException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider.Context;
-import org.jetel.util.ExceptionUtils;
 
 
 /**
@@ -335,15 +331,13 @@ public class Phase extends GraphElement implements Comparable {
         	try {
         		node.checkConfig(status);
         	} catch (Exception e) {
-        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, node, Priority.HIGH);
-        		problem.setCauseException(e);
-        		status.add(problem);
+        		status.addError(node, null, e);
         	} catch (NoClassDefFoundError e) {
         		// NoClassDefFoundError is thrown e.g. when you use class from .jar that is not on classpath during checkconfig
-        		status.add(ExceptionUtils.getMessage("java.lang.NoClassDefFoundError:\n", e), Severity.ERROR, node, Priority.HIGH);
+        		status.addError(node, null, "java.lang.NoClassDefFoundError", e);
         	} catch (Error e) {
         		// java.lang.Error is thrown when you try to load invalid class (Eclipse produces invalid .class files when you don't set classpath correctly for compilation)
-        		status.add(ExceptionUtils.getMessage(e), Severity.ERROR, node, Priority.HIGH);
+        		status.addError(node, null, e);
         	}
         }
 

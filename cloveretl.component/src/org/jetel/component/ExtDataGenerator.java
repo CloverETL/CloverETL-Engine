@@ -25,10 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.Result;
 import org.jetel.metadata.DataFieldMetadata;
@@ -259,11 +256,12 @@ public class ExtDataGenerator extends DataGenerator {
 		}
 
 		if (StringUtils.isEmpty(generatorClassName) && StringUtils.isEmpty(generatorSource) && StringUtils.isEmpty(generatorURL)) {
-			status.add(new ConfigurationProblem("No generator specified, empty records will be generated", Severity.WARNING, this, Priority.NORMAL, XML_GENERATE_ATTRIBUTE));
+			status.addWarning(this, XML_GENERATE_ATTRIBUTE, "No generator specified, empty records will be generated");
 			DataRecordMetadata metadata = getOutputPort(0).getMetadata();
 			for (DataFieldMetadata fieldMetadata : metadata) {
 				if (!fieldMetadata.isNullable() && !fieldMetadata.isDefaultValueSet()) {
-					status.add(new ConfigurationProblem("No generator specified, and field '" + fieldMetadata.getName() + "' cannot be set to null", Severity.ERROR, this, Priority.NORMAL, XML_GENERATE_ATTRIBUTE));
+					status.addError(this, XML_GENERATE_ATTRIBUTE,
+							"No generator specified, and field '" + fieldMetadata.getName() + "' cannot be set to null");
 					break;
 				}
 			}

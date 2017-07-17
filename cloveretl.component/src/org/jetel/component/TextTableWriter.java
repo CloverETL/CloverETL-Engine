@@ -237,8 +237,7 @@ public class TextTableWriter extends Node {
         try {
         	FileUtils.canWrite(getContextURL(), fileURL);
         } catch (ComponentNotReadyException e) {
-            status.add(e,ConfigurationStatus.Severity.ERROR,this,
-            		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
+            status.addError(this, XML_FILEURL_ATTRIBUTE, e);
         }
         
         return status;

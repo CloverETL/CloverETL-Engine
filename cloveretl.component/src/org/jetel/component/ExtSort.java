@@ -379,11 +379,12 @@ public class ExtSort extends Node {
         
         DataRecordMetadata inMetadata = getInputPort(READ_FROM_PORT).getMetadata();
 		if (sortKeysNames == null) {
-			status.add("Sort key not defined.", Severity.ERROR, this, Priority.NORMAL, XML_SORTKEY_ATTRIBUTE);
+			status.addError(this, XML_SORTKEY_ATTRIBUTE, "Sort key not defined.");
 		} else {
 			for (int i = 0; i < sortKeysNames.length; i++) {
 				if (inMetadata.getFieldPosition(sortKeysNames[i]) < 0) {
-					status.add("Key field '" + sortKeysNames[i] + "' does not exist in input metadata", Severity.ERROR, this, Priority.NORMAL, XML_SORTKEY_ATTRIBUTE);
+					status.addError(this, XML_SORTKEY_ATTRIBUTE,
+							"Key field '" + sortKeysNames[i] + "' does not exist in input metadata");
 				}
 			}
 		}

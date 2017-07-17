@@ -606,6 +606,23 @@ public class StringUtilsTest extends CloverTestCase {
 		);
 	}
 	
+	public void testStripExtension() {
+		assertEquals("customers", StringUtils.stripExtension("customers"));
+		assertEquals("customers.", StringUtils.stripExtension("customers."));
+		assertEquals(".customers", StringUtils.stripExtension(".customers"));
+		assertEquals("weird.file.name.that.contains.dots", StringUtils.stripExtension("weird.file.name.that.contains.dots.xlsx"));
+		assertEquals("Žluťoučký kůň úpěl ďábelské ódy", StringUtils.stripExtension("Žluťoučký kůň úpěl ďábelské ódy.txt"));
+		
+		assertEquals("customers", StringUtils.stripExtension("customers.x"));
+		assertEquals("customers", StringUtils.stripExtension("customers.7z"));
+		assertEquals("customers", StringUtils.stripExtension("customers.txt"));
+		assertEquals("customers", StringUtils.stripExtension("customers.xlsx"));
+		
+		assertEquals("customers.xlsx1", StringUtils.stripExtension("customers.xlsx1"));
+		
+		assertEquals("cu . ome rs.xlsx1", StringUtils.stripExtension("cu . ome rs.xlsx1"));
+	}
+	
 	public void testNormalizeNames() {
 		assertEquals("Milasek", StringUtils.normalizeName("Milášek"));
 		assertEquals("Mil_ek", StringUtils.normalizeName("Mil%$ek"));

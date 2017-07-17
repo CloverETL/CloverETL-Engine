@@ -76,7 +76,7 @@ public class CloverDebugFormatter extends CloverDataFormatter {
 	public int writeLong(long value) throws IOException {
 		longBuffer.putLong(value);
 		longBuffer.flip();
-		return 0;
+		return 8; //do we have this constant somewhere?
 	}
 
 	@Override

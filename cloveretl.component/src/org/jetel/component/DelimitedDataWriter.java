@@ -30,10 +30,7 @@ import org.jetel.data.lookup.LookupTable;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -259,7 +256,7 @@ public class DelimitedDataWriter extends Node {
         
         ConfigurationStatus status; //TODO remove when the DataRecordMetadata have an interface, see checkConfig, Clover 3?
         if (checkPorts(status = new ConfigurationStatus())) {
-        	throw new ComponentNotReadyException(status.getFirst().getMessage());
+        	throw new ComponentNotReadyException(status.getFirstProblem().getMessage());
         }
 
         writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data 
@@ -291,9 +288,7 @@ public class DelimitedDataWriter extends Node {
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
  
-        status.add(new ConfigurationProblem(
-        		"Component is of type DELIMITED_DATA_WRITER, which is deprecated",
-        		Severity.WARNING, this, Priority.NORMAL));
+        status.addWarning(this, null, "Component is of type DELIMITED_DATA_WRITER, which is deprecated");
 
 		if(checkPorts(status)) {
 			return status;
@@ -302,8 +297,7 @@ public class DelimitedDataWriter extends Node {
         try {
         	FileUtils.canWrite(getContextURL(), fileURL);
         } catch (ComponentNotReadyException e) {
-            status.add(e,ConfigurationStatus.Severity.ERROR,this,
-            		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
+            status.addError(this, XML_FILEURL_ATTRIBUTE, e);
         }
         
         return status;

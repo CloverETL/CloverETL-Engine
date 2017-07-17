@@ -43,10 +43,7 @@ import org.jetel.database.sql.QueryType;
 import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.IGraphElement;
@@ -1226,11 +1223,11 @@ public class DBOutputTable extends Node implements MetadataProvider {
          }
          
          if (sqlQuery == null && queryURL == null && dbTableName == null) {
-         	status.add("One of " + XML_SQLQUERY_ATRIBUTE + ", " + XML_URL_ATTRIBUTE + " or " + XML_DBTABLE_ATTRIBUTE + " must be specified.",
-         			Severity.ERROR, this, Priority.NORMAL);
+         	status.addError(this, null,
+         			"One of " + XML_SQLQUERY_ATRIBUTE + ", " + XML_URL_ATTRIBUTE + " or " + XML_DBTABLE_ATTRIBUTE + " must be specified.");
          }
          if (dbConnectionName == null) {
-         	status.add("DB connection not defined.", Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+         	status.addError(this, XML_DBCONNECTION_ATTRIBUTE, "DB connection not defined.");
          }
          if ((sqlQuery == null && queryURL == null && dbTableName == null ) || dbConnectionName == null) {
         	 return status;
@@ -1355,10 +1352,7 @@ public class DBOutputTable extends Node implements MetadataProvider {
                             statement.close();
                         }
 					} catch (SQLException e) {
-						ConfigurationProblem problem = new ConfigurationProblem(e,
-								ConfigurationStatus.Severity.WARNING, this,
-								ConfigurationStatus.Priority.NORMAL, null);
-						status.add(problem);
+						status.addWarning(this, null, e);
 					}                        
 				}
 			}
@@ -1366,26 +1360,12 @@ public class DBOutputTable extends Node implements MetadataProvider {
 		}  catch (UnsupportedOperationException uoe) {
     		//it isn't possible to perform check config (for example some method of db driver throws the exception)
     		//this means we don't know whether the configuration is valid or not
-    		ConfigurationProblem problem = new ConfigurationProblem("Cannot check the configuration of component. " +
-    				"Used driver does not implement some required methods.", Severity.WARNING, this, Priority.NORMAL);
-    		problem.setCauseException(uoe);
-    		status.add(problem);
+    		status.addWarning(this, null,
+    				"Cannot check the configuration of component. Used driver does not implement some required methods.", uoe);
     	} catch (ComponentAlmostNotReadyException e1) {
-			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e1),
-					ConfigurationStatus.Severity.WARNING, this,
-					ConfigurationStatus.Priority.NORMAL);
-			if (!StringUtils.isEmpty(e1.getAttributeName())) {
-				problem.setAttributeName(e1.getAttributeName());
-			}
-			status.add(problem);
+			status.addWarning(this, null, e1);
 		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e),
-					ConfigurationStatus.Severity.ERROR, this,
-					ConfigurationStatus.Priority.NORMAL);
-			if (!StringUtils.isEmpty(e.getAttributeName())) {
-				problem.setAttributeName(e.getAttributeName());
-			}
-			status.add(problem);
+			status.addError(this, null, e);
 		} finally {
 			if (dbConnection != null) {
 				dbConnection.free();

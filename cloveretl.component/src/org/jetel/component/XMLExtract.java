@@ -44,24 +44,19 @@ import org.jetel.data.parser.XmlSaxParser;
 import org.jetel.data.parser.XmlSaxParser.MyHandler;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.AutoFilling;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.XmlUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.stream.Input;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
-import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -596,7 +591,7 @@ public class XMLExtract extends Node {
 		}
 
 		if (charset != null && !Charset.isSupported(charset)) {
-			status.add(new ConfigurationProblem("Charset " + charset + " not supported!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+			status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported!");
 		}
 
 		TransformationGraph graph = getGraph();
@@ -624,7 +619,7 @@ public class XMLExtract extends Node {
 				Set<String> attributesNames = ((MyHandler) handler).getAttributeNames();
 				for (String attributeName : attributesNames) {
 					if (!isXMLAttribute(attributeName)) {
-						status.add(new ConfigurationProblem("Can't resolve XML attribute: " + attributeName, Severity.WARNING, this, Priority.NORMAL));
+						status.addWarning(this, null, "Can't resolve XML attribute: " + attributeName);
 					}
 				}
 			}
@@ -636,15 +631,13 @@ public class XMLExtract extends Node {
 				for (int i = 0; i < mappingNodes.getLength(); i++) {
 					org.w3c.dom.Node node = mappingNodes.item(i);
 					List<String> errors = parser.processMappings(graph, node);
-					ConfigurationProblem problem;
 					for (String error : errors) {
-						problem = new ConfigurationProblem("Mapping error - " + error, Severity.WARNING, this, Priority.NORMAL);
-						status.add(problem);
+						status.addWarning(this, null, "Mapping error - " + error);
 					}
 				}
 			}
 		} catch (Exception e) {
-			status.add(new ConfigurationProblem("Can't parse XML mapping schema. Reason: " + ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL));
+			status.addError(this, null, "Can't parse XML mapping schema.", e);
 		} finally {
 			parser.reset();
 		}
@@ -676,11 +669,7 @@ public class XMLExtract extends Node {
 				}
 			}
 		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
-			if (!StringUtils.isEmpty(e.getAttributeName())) {
-				problem.setAttributeName(e.getAttributeName());
-			}
-			status.add(problem);
+			status.addWarning(this, null, e);
 		} finally {
 			free();
 		}

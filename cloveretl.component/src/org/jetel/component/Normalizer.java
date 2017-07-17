@@ -34,10 +34,7 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -358,16 +355,14 @@ public class Normalizer extends Node {
 		}
 		
 		if (charset != null && !Charset.isSupported(charset)) {
-        	status.add(new ConfigurationProblem(
-            		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+        	status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported!");
         }
 
         if (errorActionsString != null){
         	try {
 				ErrorAction.checkActions(errorActionsString);
 			} catch (ComponentNotReadyException e) {
-				status.add(new ConfigurationProblem(e, Severity.ERROR, this, Priority.NORMAL, XML_ERROR_ACTIONS_ATTRIBUTE));
+				status.addError(this, XML_ERROR_ACTIONS_ATTRIBUTE, e);
 			}
         }
         
@@ -375,7 +370,7 @@ public class Normalizer extends Node {
         	try {
 				FileUtils.canWrite(getGraph().getRuntimeContext().getContextURL(), errorLogURL);
 			} catch (ComponentNotReadyException e) {
-				status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, XML_ERROR_LOG_ATTRIBUTE));
+				status.addWarning(this, XML_ERROR_LOG_ATTRIBUTE, e);
 			}
         }
 		

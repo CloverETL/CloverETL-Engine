@@ -43,10 +43,7 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
@@ -65,7 +62,6 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.plugin.PluginLocation;
 import org.jetel.plugin.Plugins;
 import org.jetel.util.CompareUtils;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.exec.ProcBox;
@@ -164,8 +160,7 @@ public class RunGraph extends Node{
 	private final static String DEFAULT_JAVA_CMD_LINE = "java -cp";
 	private final static String DEFAULT_CLOVER_CMD_LINE = "";
 	private final static String DEFAULT_GRAPH_EXEC_CLASS = "org.jetel.main.runGraph";
-	private final static boolean DEFAULT_IGNORE_GRAPH_FILE = false;
-	
+
 	private final static int INPUT_PORT = 0;
 	private final static int OUTPUT_PORT = 0;
 	private final static int ERR_OUTPUT_PORT = 1;
@@ -517,7 +512,7 @@ public class RunGraph extends Node{
 		runtimeContext.setContextURL(this.getGraph().getRuntimeContext().getContextURL());
 		runtimeContext.setLogLocation(outputFileName);
 		runtimeContext.setLogLevel(this.getGraph().getRuntimeContext().getLogLevel());
-		runtimeContext.setDebugMode(this.getGraph().getRuntimeContext().isDebugMode());
+		runtimeContext.setEdgeDebugging(this.getGraph().getRuntimeContext().isEdgeDebugging());
 		runtimeContext.setSkipCheckConfig(this.getGraph().getRuntimeContext().isSkipCheckConfig());
 		runtimeContext.setUseJMX(this.getGraph().getRuntimeContext().useJMX());
 		runtimeContext.setRuntimeClassPath(this.getGraph().getRuntimeContext().getRuntimeClassPath());
@@ -628,7 +623,7 @@ public class RunGraph extends Node{
 		
 		ConfigurationStatus status = new ConfigurationStatus();
 		if (!checkMetadata(status)) {
-			throw new ComponentNotReadyException(this, status.getLast().getMessage());
+			throw new ComponentNotReadyException(this, status.getLastProblem().getMessage());
 		}
 		
 		pipelineMode = isPipelineMode();
@@ -701,17 +696,13 @@ public class RunGraph extends Node{
         //both output metadata need to have required fields
         if (outPort != null && !checkOutMetadata(outPort.getMetadata())  || 
         	errOutPort != null && !checkOutMetadata(errOutPort.getMetadata())) {
-    		ConfigurationProblem problem = new ConfigurationProblem("Wrong output metadata", 
-    				Severity.ERROR, this, Priority.NORMAL);
-        	status.add(problem);
+        	status.addError(this, null, "Wrong output metadata");
         	return false;
         }
         
         //both output metadata need to have same structure (see CL-2416)
         if (outPort != null && errOutPort != null && !outPort.getMetadata().equals(errOutPort.getMetadata(), false)) {
-    		ConfigurationProblem problem = new ConfigurationProblem("Both output metadata must have same structure.", 
-    				Severity.ERROR, this, Priority.NORMAL);
-        	status.add(problem);
+        	status.addError(this, null, "Both output metadata must have same structure.");
         	return false;
         }
         
@@ -721,22 +712,16 @@ public class RunGraph extends Node{
         if (inPort != null) { 
         	DataRecordMetadata inMetadata = inPort.getMetadata();
         	if (pipelineMode) { 
-            	ConfigurationProblem warning = new ConfigurationProblem("If graph name is specified as an attribute (pipeline mode), " +
-            			"the input port does not need to be connected.", Severity.WARNING, this, Priority.NORMAL);
-            	warning.setAttributeName(XML_GRAPH_NAME_ATTRIBUTE);
-            	status.add(warning);
+            	status.addWarning(this, XML_GRAPH_NAME_ATTRIBUTE, "If graph name is specified as an attribute (pipeline mode), " +
+            			"the input port does not need to be connected.");
         	} else { // in/out mode
         		if (!checkInMetadata(inMetadata)) {
-	            	ConfigurationProblem problem = new ConfigurationProblem("Wrong input metadata" +
-	            			" - first field should be string", Severity.ERROR, this, Priority.NORMAL);
-	            	status.add(problem);
+	            	status.addError(this, null, "Wrong input metadata - first field should be string");
 	            	return false;
         		}        		
             }        	                    
         } else if (!pipelineMode) {
-        	ConfigurationProblem problem = new ConfigurationProblem("If no graph is specified as an attribute, " +
-        			"the input port must be connected", Severity.ERROR, this, Priority.NORMAL);
-        	status.add(problem);
+        	status.addError(this, null, "If no graph is specified as an attribute, the input port must be connected");
         	return false;
         }
         
@@ -761,7 +746,7 @@ public class RunGraph extends Node{
 			try {
 				contextURL = FileUtils.convertUrlToFile(graphContextURL).getAbsolutePath();
 			} catch (MalformedURLException e) {
-				status.add(new ConfigurationProblem("Context URL cannot be found.", e, Severity.ERROR, this, Priority.NORMAL, null));
+				status.addError(this, null, "Context URL cannot be found.", e);
 				return status;
 			}
 		}
@@ -769,12 +754,7 @@ public class RunGraph extends Node{
         try {
             init();
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), 
-            		Severity.ERROR, this, Priority.NORMAL);
-            if (!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
+            status.addError(this, null, e);
         } finally {
         	free();
         }

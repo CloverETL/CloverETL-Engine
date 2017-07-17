@@ -28,7 +28,6 @@ import java.util.Properties;
 import org.jetel.connection.jdbc.specific.conn.MSAccessPureJavaConnection;
 import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.SqlConnection;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.Node;
@@ -130,7 +129,7 @@ public class MSAccessPureJavaSpecific extends AbstractJdbcSpecific {
 			for (DataFieldMetadata dataField : dataRecordMetadata.getFields()) {
 				switch (dataField.getDataType()) {
 				case LONG:
-					status.add(new ConfigurationProblem("Metadata on input port must not use field of type long " + "because of restrictions of used driver." + CONVERT_STRING, ConfigurationStatus.Severity.ERROR, node, ConfigurationStatus.Priority.NORMAL));
+					status.addError(node, null, "Metadata on input port must not use field of type long because of restrictions of used driver." + CONVERT_STRING);
 					break;
 				default:
 					break;

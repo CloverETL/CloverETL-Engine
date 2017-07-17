@@ -31,8 +31,6 @@ import org.jetel.enums.ProcessingType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
@@ -254,32 +252,28 @@ public class CloverDataWriter extends Node {
         }
 
         if (StringUtils.isEmpty(fileURL)) {
-            status.add("Attribute 'fileURL' is required.", ConfigurationStatus.Severity.ERROR, this,
-            		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
+            status.addError(this, XML_FILEURL_ATTRIBUTE, "Attribute 'fileURL' is required.");
         	return status;
         }
         
         try {
         	FileUtils.canWrite(getContextURL(), fileURL, mkDir);
         } catch (ComponentNotReadyException e) {
-            status.add(e,ConfigurationStatus.Severity.ERROR,this,
-            		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
+            status.addError(this, XML_FILEURL_ATTRIBUTE, e);
         }
         
         try {
 			if (append && FileURLParser.isArchiveURL(fileURL) && FileURLParser.isServerURL(fileURL)) {
-			    status.add("Append true is not supported on remote archive files.", ConfigurationStatus.Severity.WARNING, this,
-			    		ConfigurationStatus.Priority.NORMAL, XML_APPEND_ATTRIBUTE);
+			    status.addWarning(this, XML_APPEND_ATTRIBUTE, "Append true is not supported on remote archive files.");
 			}
 		} catch (MalformedURLException e) {
-            status.add(e.toString(),ConfigurationStatus.Severity.ERROR,this,
-            		ConfigurationStatus.Priority.NORMAL,XML_APPEND_ATTRIBUTE);
+            status.addError(this, XML_APPEND_ATTRIBUTE, e);
 		}
         
         try {
         	checkFileURL();
         } catch (Exception e) {
-        	status.add(e, Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE);
+        	status.addError(this, XML_FILEURL_ATTRIBUTE, e);
         }
         
         return status;

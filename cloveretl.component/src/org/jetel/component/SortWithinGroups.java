@@ -25,10 +25,7 @@ import org.jetel.data.ISortDataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -310,30 +307,29 @@ public class SortWithinGroups extends Node {
         DataRecordMetadata metadata = getInputPort(INPUT_PORT_NUMBER).getMetadata();
 
         if (groupKeyFields == null) {
-            status.add(new ConfigurationProblem("The group key is empty!", Severity.ERROR, this, Priority.HIGH, XML_ATTRIBUTE_GROUP_KEY));
+            status.addError(this, XML_ATTRIBUTE_GROUP_KEY, "The group key is empty!");
         } else {
             for (String groupKeyField : groupKeyFields) {
                 if (metadata.getField(groupKeyField) == null) {
-                    status.add(new ConfigurationProblem("The group key field " + StringUtils.quote(groupKeyField)
-                            + " doesn't exist!", Severity.ERROR, this, Priority.HIGH, XML_ATTRIBUTE_GROUP_KEY));
+                    status.addError(this, XML_ATTRIBUTE_GROUP_KEY,
+                    		"The group key field " + StringUtils.quote(groupKeyField) + " doesn't exist!");
                 }
             }
         }
 
         if (sortKeyFields == null) {
-            status.add(new ConfigurationProblem("The sort key is empty!", Severity.ERROR, this, Priority.HIGH, XML_ATTRIBUTE_SORT_KEY));
+            status.addError(this, XML_ATTRIBUTE_SORT_KEY, "The sort key is empty!");
         } else {
             for (String sortKeyField : sortKeyFields) {
                 if (metadata.getField(sortKeyField) == null) {
-                    status.add(new ConfigurationProblem("The sort key field " + StringUtils.quote(sortKeyField)
-                            + " doesn't exist!", Severity.ERROR, this, Priority.HIGH, XML_ATTRIBUTE_SORT_KEY));
+                    status.addError(this, XML_ATTRIBUTE_SORT_KEY,
+                    		"The sort key field " + StringUtils.quote(sortKeyField) + " doesn't exist!");
                 }
             }
         }
 
         if (numberOfTapes <= 0) {
-            status.add(new ConfigurationProblem("The number of tapes is less than 1!",
-                    Severity.ERROR, this, Priority.NORMAL, XML_ATTRIBUTE_NUMBER_OF_TAPES));
+            status.addError(this, XML_ATTRIBUTE_NUMBER_OF_TAPES, "The number of tapes is less than 1!");
         }
 
         return status;

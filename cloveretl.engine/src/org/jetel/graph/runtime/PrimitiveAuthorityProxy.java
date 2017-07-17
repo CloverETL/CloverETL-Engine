@@ -128,7 +128,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
         runtimeContext.setJobUrl(givenRuntimeContext.getJobUrl());
         
         // debug mode has to be turned off, parallel edge debugging is not available for non-server graph processing 
-        runtimeContext.setDebugMode(false);
+        runtimeContext.setEdgeDebugging(false);
         
         return runtimeContext;
 	}

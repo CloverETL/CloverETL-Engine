@@ -35,8 +35,6 @@ import org.jetel.data.formatter.TextTableFormatter;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.InputPortDirect;
@@ -162,22 +160,23 @@ public class Trash extends Node {
 
 		if (debugPrint) {
 			if (inPorts.size() > 1) {
-				status.add("Debug printing is supported with only one input port connected.", Severity.WARNING, this, Priority.NORMAL, XML_DEBUGAPPEND_ATTRIBUTE);
+				status.addWarning(this, XML_DEBUGAPPEND_ATTRIBUTE, "Debug printing is supported with only one input port connected.");
 			}
 			
 			if (debugFilename != null) {
 				try {
 					FileUtils.canWrite(getContextURL(), debugFilename, mkDir);
 				} catch (ComponentNotReadyException e) {
-					status.add(e, Severity.ERROR, this, Priority.NORMAL, XML_DEBUGFILENAME_ATTRIBUTE);
+					status.addError(this, XML_DEBUGFILENAME_ATTRIBUTE, e);
 				}
 
 				try {
 					if (debugAppend && FileURLParser.isArchiveURL(debugFilename) && FileURLParser.isServerURL(debugFilename)) {
-						status.add("Append true is not supported on remote archive files.", Severity.WARNING, this, Priority.NORMAL, XML_DEBUGAPPEND_ATTRIBUTE);
+						status.addWarning(this, XML_DEBUGAPPEND_ATTRIBUTE,
+								"Append true is not supported on remote archive files.");
 					}
 				} catch (MalformedURLException e) {
-					status.add(e.toString(), Severity.ERROR, this, Priority.NORMAL, XML_DEBUGAPPEND_ATTRIBUTE);
+					status.addError(this, XML_DEBUGAPPEND_ATTRIBUTE, e);
 				}
 			}
 		}

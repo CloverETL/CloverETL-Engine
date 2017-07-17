@@ -64,10 +64,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.formatter.AbstractFormatter;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -75,7 +72,6 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -1220,9 +1216,7 @@ public class XmlWriter extends Node {
 		}
 		
 		if (charset != null && !Charset.isSupported(charset)) {
-        	status.add(new ConfigurationProblem(
-            		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+        	status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported!");
         }
 		
 		//Check whether XML mapping schema is valid
@@ -1242,12 +1236,12 @@ public class XmlWriter extends Node {
 				Set<String> attributesNames = ((MyHandler) handler).getAttributesNames();
 				for (String attributeName : attributesNames) {
 					if (!isXMLAttribute(attributeName)) {
-						status.add(new ConfigurationProblem("Can't resolve XML attribute: " + attributeName, Severity.WARNING, this, Priority.NORMAL));
+						status.addWarning(this, null, "Can't resolve XML attribute: " + attributeName);
 					}
 				}
 			}
 		} catch (Exception e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.getMessage("Can't parse XML mapping schema.", e), Severity.ERROR, this, Priority.NORMAL));
+			status.addError(this, null, "Can't parse XML mapping schema.", e);
 		}
         
 		//...

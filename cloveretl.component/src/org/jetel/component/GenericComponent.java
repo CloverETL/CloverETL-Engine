@@ -25,10 +25,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
@@ -218,8 +215,7 @@ public class GenericComponent extends Node /*implements MetadataProvider*/ {
 		super.checkConfig(status);
 		
 		if (charset != null && !Charset.isSupported(charset)) {
-        	status.add(new ConfigurationProblem("Charset " + charset + " not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+        	status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported!");
         }
 		
 		try {
@@ -234,9 +230,9 @@ public class GenericComponent extends Node /*implements MetadataProvider*/ {
 			});
 		} catch (org.jetel.exception.LoadClassException e) {
 			if (ExceptionUtils.instanceOf(e, CompilationException.class)) {
-				status.add(ExceptionUtils.getMessage(e), Severity.WARNING, this, Priority.NORMAL);
+				status.addWarning(this, null, e);
 			} else {
-				status.add(ExceptionUtils.getMessage(e) + ". Make sure to set classpath correctly.", Severity.WARNING, this, Priority.NORMAL);
+				status.addWarning(this, null, "Make sure to set classpath correctly.", e);
 			}
 		} catch (ComponentNotReadyException e) {
 			throw new JetelRuntimeException(e);

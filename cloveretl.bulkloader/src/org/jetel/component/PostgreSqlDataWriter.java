@@ -30,10 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.util.CommandBuilder;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
@@ -41,7 +38,6 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.exec.ProcBox;
@@ -619,46 +615,41 @@ public class PostgreSqlDataWriter extends BulkLoader {
         
         //----Check Parameters        
         if (StringUtils.isEmpty(loadUtilityPath)) {
-        	status.add(new ConfigurationProblem(StringUtils.quote(XML_PSQL_PATH_ATTRIBUTE) + " attribute have to be set.",
-					Severity.ERROR, this, Priority.HIGH, XML_PSQL_PATH_ATTRIBUTE));
+        	status.addError(this, XML_PSQL_PATH_ATTRIBUTE, StringUtils.quote(XML_PSQL_PATH_ATTRIBUTE) + " attribute have to be set.");
 		}		
 		if (StringUtils.isEmpty(database)) {
-			status.add(new ConfigurationProblem(StringUtils.quote(XML_DATABASE_ATTRIBUTE) + " attribute have to be set.",
-					Severity.ERROR, this, Priority.HIGH, XML_DATABASE_ATTRIBUTE));
+			status.addError(this, XML_DATABASE_ATTRIBUTE, StringUtils.quote(XML_DATABASE_ATTRIBUTE) + " attribute have to be set.");
 		}
 		try {
 			if (!fileExists(commandURL)) {
 				if (StringUtils.isEmpty(table)) {
-					status.add(new ConfigurationProblem(StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute has to be specified or " +
-							StringUtils.quote(XML_COMMAND_URL_ATTRIBUTE) + " attribute has to be specified and file at the URL must exists.",
-							Severity.ERROR, this, Priority.NORMAL));
+					status.addError(this, null, StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute has to be specified or " +
+							StringUtils.quote(XML_COMMAND_URL_ATTRIBUTE) + " attribute has to be specified and file at the URL must exists.");
 				}
 				if (!isDataReadFromPort && !fileExists(dataURL)) {
-					status.add(new ConfigurationProblem("Input port or " + StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute or " +
-							StringUtils.quote(XML_COMMAND_URL_ATTRIBUTE) + " attribute have to be specified and specified file must exist.",
-							Severity.ERROR, this, Priority.NORMAL));
+					status.addError(this, null, "Input port or " + StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute or " +
+							StringUtils.quote(XML_COMMAND_URL_ATTRIBUTE) + " attribute have to be specified and specified file must exist.");
 				}
 			}			
 		} catch (ComponentNotReadyException e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e),	ConfigurationStatus.Severity.ERROR, this,ConfigurationStatus.Priority.NORMAL));
+			status.addError(this, null, e);
 		}		
 		csvMode = isCsvModeUsed(properties);
 		setDefaultColumnDelimiter(csvMode);		
 		if (columnDelimiter.length() != 1) {
-			status.add(new ConfigurationProblem("Max. length of column delimiter is one.",
-					Severity.ERROR, this, Priority.NORMAL, XML_COLUMN_DELIMITER_ATTRIBUTE));
+			status.addError(this, XML_COLUMN_DELIMITER_ATTRIBUTE, "Max. length of column delimiter is one.");
 		}
 		if (properties.containsKey(COPY_BINARY_PARAM) && (isColumnDelimiterUsed() || getNullValue() != null || csvMode)) {
-			status.add(new ConfigurationProblem("You cannot specify the " +	StringUtils.quote(XML_COLUMN_DELIMITER_ATTRIBUTE) + " attribute, " +
+			status.addError(this, XML_COLUMN_DELIMITER_ATTRIBUTE, "You cannot specify the " +	StringUtils.quote(XML_COLUMN_DELIMITER_ATTRIBUTE) + " attribute, " +
 					StringUtils.quote(COPY_NULL_PARAM) + " param or " +	StringUtils.quote("csv") + " param in binary mode (" + 
-					StringUtils.quote(COPY_BINARY_PARAM) + ").", Severity.ERROR, this, Priority.NORMAL, XML_COLUMN_DELIMITER_ATTRIBUTE));			
+					StringUtils.quote(COPY_BINARY_PARAM) + ").");			
 		}
 		//check creation of data and control file
 		try {			
 			initDataFile();
 			createCommandFile();
 		} catch (ComponentNotReadyException e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e),	ConfigurationStatus.Severity.ERROR, this,ConfigurationStatus.Priority.NORMAL));
+			status.addError(this, null, e);
 		}
 		deleteTempFiles();
 		return status;

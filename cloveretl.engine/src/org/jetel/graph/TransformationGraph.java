@@ -43,10 +43,7 @@ import org.jetel.data.sequence.Sequence;
 import org.jetel.database.IConnection;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.RecursiveSubgraphException;
@@ -61,7 +58,6 @@ import org.jetel.graph.runtime.tracker.TokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.util.CloverPublicAPI;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SubgraphUtils;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
@@ -112,9 +108,9 @@ public final class TransformationGraph extends GraphElement {
 	
 	private Enigma enigma = null;
 	
-    private boolean debugMode = true;
+    private boolean edgeDebugging = true;
     
-    private String debugModeStr;
+    private String edgeDebuggingStr;
     
     private long debugMaxRecords = 0;
     
@@ -270,19 +266,19 @@ public final class TransformationGraph extends GraphElement {
      * Sets debug mode on the edges.
 	 * @param debug
 	 */
-    private boolean isDebugModeResolved = true;
+    private boolean isEdgeDebuggingResolved = true;
     
-	public void setDebugMode(boolean debugMode) {
-	    this.debugMode = debugMode;
-        isDebugModeResolved = true;
+	public void setDebugMode(boolean edgeDebugging) {
+	    this.edgeDebugging = edgeDebugging;
+        isEdgeDebuggingResolved = true;
     }
 
-    public void setDebugMode(String debugModeStr) {
-        if(debugModeStr == null || debugModeStr.length() == 0) {
-            isDebugModeResolved = true;
+    public void setEdgeDebugging(String edgeDebuggingStr) {
+        if(edgeDebuggingStr == null || edgeDebuggingStr.length() == 0) {
+            isEdgeDebuggingResolved = true;
         } else {
-            this.debugModeStr = debugModeStr;
-            isDebugModeResolved = false;
+            this.edgeDebuggingStr = edgeDebuggingStr;
+            isEdgeDebuggingResolved = false;
         }
     }
 
@@ -290,16 +286,18 @@ public final class TransformationGraph extends GraphElement {
      * @param debug
      * @return <b>true</b> if is debug on; else <b>false</b>
      */
-    public boolean isDebugMode() {
-        if(!isDebugModeResolved) {
+    public boolean isEdgeDebugging() {
+        if(!isEdgeDebuggingResolved) {
             PropertyRefResolver prr = new PropertyRefResolver(getGraphParameters());
-            debugMode = Boolean.valueOf(prr.resolveRef(debugModeStr)).booleanValue();
-            isDebugModeResolved = true;
+            edgeDebugging = Boolean.valueOf(prr.resolveRef(edgeDebuggingStr)).booleanValue();
+            isEdgeDebuggingResolved = true;
         }
         
-        if (debugMode) {
+        if (edgeDebugging) {
 	        if (watchDog != null) {
-	        	return watchDog.getGraphRuntimeContext().isDebugMode();
+	        	//edge debugging is disabled for non-persistent graphs
+	        	return watchDog.getGraphRuntimeContext().getRunId() > 0
+	        			&& watchDog.getGraphRuntimeContext().isEdgeDebugging();
 	        } else {
 	            return true;
 	        }
@@ -601,9 +599,6 @@ public final class TransformationGraph extends GraphElement {
 		//check all required graph parameters whether the values have been passed from executor
 		validateRequiredGraphParameters();
 		
-		//print out types of all edges
-		printEdgesInfo();
-		
 		//pre-execute initialization of dictionary
 		dictionary.preExecute();
 		
@@ -639,8 +634,66 @@ public final class TransformationGraph extends GraphElement {
 				throw new ComponentNotReadyException(lookupTable, "Pre-Execution of lookup table " + lookupTable + "failed.", e);
 			}
 		}
+		
+		//output edges from SubgraphInput component and input edges to SubgraphOutput component
+		//can be shared with parent graph if possible
+		shareSubgraphInputEdges();
+		shareSubgraphOutputEdges();
+
+		//print out types of all edges
+		printEdgesInfo();
 	}
 	
+	/**
+	 * This method tries to detect whether output edges from SubgraphInput component
+	 * can be shared with parent graph.
+	 */
+	private void shareSubgraphInputEdges() {
+		//update output edges of SubgraphInput component - can we share edge base from parent graph with local output edge?
+		if (getGraph().getRuntimeJobType().isSubJob()) {
+			Node subgraphInput = SubgraphUtils.getSubgraphInput(this);
+			if (subgraphInput != null) { //subgraph input component can be null for clustered subgraphs, where only one partition has SGI and SGO components
+				for (OutputPort outputPort : subgraphInput.getOutPorts()) {
+					//edge from this graph
+					Edge outputEdge = outputPort.getEdge();
+					//corresponding edge from parent graph
+					Edge parentEdge = getGraph().getAuthorityProxy().getParentGraphSourceEdge(outputPort.getOutputPortNumber());
+					//is it possible to share edge base between these two edges?
+					if (parentEdge != null && SubgraphUtils.isSubgraphInputEdgeShared(outputEdge, parentEdge)) {
+						//let's share the edge base
+						outputEdge.setEdge(parentEdge.getEdgeBase());
+						outputEdge.setSharedEdgeBaseFromWriter(true);
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * This method tries to detect whether input edges from SubgraphOutput component
+	 * can be shared with parent graph.
+	 */
+	private void shareSubgraphOutputEdges() {
+        //update input edges of SubgraphOutput component - can we share edge base from parent graph with local input edge?
+		if (getGraph().getRuntimeJobType().isSubJob()) {
+			Node subgraphOutput = SubgraphUtils.getSubgraphOutput(this);
+			if (subgraphOutput != null) { //subgraph output component can be null for clustered subgraphs, where only one partition has SGI and SGO components
+				for (InputPort inputPort : subgraphOutput.getInPorts()) {
+					//edge from this graph
+					Edge inputEdge = inputPort.getEdge();
+					//corresponding edge from parent graph
+					Edge parentEdge = getGraph().getAuthorityProxy().getParentGraphTargetEdge(inputPort.getInputPortNumber());
+					//is it possible to share edge base between these two edges?
+					if (parentEdge != null && SubgraphUtils.isSubgraphOutputEdgeShared(inputEdge, parentEdge)) {
+						//let's share the edge base
+						inputEdge.setEdge(parentEdge.getEdgeBase());
+						inputEdge.setSharedEdgeBaseFromReader(true);
+					}
+				}
+			}
+		}
+	}
+
 	@Override
 	@Deprecated
 	public synchronized void reset() throws ComponentNotReadyException {
@@ -1121,6 +1174,8 @@ public final class TransformationGraph extends GraphElement {
     
     void clearCache() {
     	nodesCache = null;
+    	subgraphInputComponent = null;
+    	subgraphOutputComponent = null;
     }
     
     /**
@@ -1246,7 +1301,7 @@ public final class TransformationGraph extends GraphElement {
     	            status = new ConfigurationStatus();
     	        }
 
-    	    	status.addAll(preCheckConfigStatus);
+    	    	status.joinWith(preCheckConfigStatus);
     			
     	    	graphParameters.checkConfig(status);
     	        
@@ -1258,9 +1313,7 @@ public final class TransformationGraph extends GraphElement {
     	        	try {
     	        		connection.checkConfig(status);
     	        	} catch (Exception e) {
-    	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, connection, Priority.HIGH);
-    	        		problem.setCauseException(e);
-    	        		status.add(problem);
+    	        		status.addError(connection, null, e);
     	        	}
     	        }
     	
@@ -1269,9 +1322,7 @@ public final class TransformationGraph extends GraphElement {
     	        	try {
     	        		lookupTable.checkConfig(status);
     	        	} catch (Exception e) {
-    	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, lookupTable, Priority.HIGH);
-    	        		problem.setCauseException(e);
-    	        		status.add(problem);
+    	        		status.addError(lookupTable, null, e);
     	        	}
     	        }
     	
@@ -1280,9 +1331,7 @@ public final class TransformationGraph extends GraphElement {
     	        	try {
     	        		sequence.checkConfig(status);
     	        	} catch (Exception e) {
-    	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, sequence, Priority.HIGH);
-    	        		problem.setCauseException(e);
-    	        		status.add(problem);
+    	        		status.addError(sequence, null, e);
     	        	}
     	        }
     	
@@ -1309,12 +1358,12 @@ public final class TransformationGraph extends GraphElement {
     	        }
     	        if (subgraphInputComponents.size() > 1) {
     	    		for (Node subgraphInputComponent : subgraphInputComponents) {
-    	    			status.add("Multiple SubgraphInput component detected in the graph.", Severity.ERROR, subgraphInputComponent, Priority.NORMAL);
+    	    			status.addError(subgraphInputComponent, null, "Multiple SubgraphInput component detected in the graph.");
     	    		}
     	        }
     	        if (subgraphOutputComponents.size() > 1) {
     	    		for (Node subgraphOutputComponent : subgraphOutputComponents) {
-    	    			status.add("Multiple SubgraphOutput component detected in the graph.", Severity.ERROR, subgraphOutputComponent, Priority.NORMAL);
+    	    			status.addError(subgraphOutputComponent, null, "Multiple SubgraphOutput component detected in the graph.");
     	    		}
     	        }
     	        
@@ -1328,8 +1377,7 @@ public final class TransformationGraph extends GraphElement {
 	    	if (status == null) {
 	            status = new ConfigurationStatus();
 	        }
-    		ConfigurationProblem problem = new ConfigurationProblem(ex, Severity.ERROR, ex.getNode(), Priority.HIGH, SubgraphUtils.XML_JOB_URL_ATTRIBUTE);
-    		status.add(problem);
+    		status.addError(ex.getNode(), SubgraphUtils.XML_JOB_URL_ATTRIBUTE, ex);
     		return status;
     	}
 

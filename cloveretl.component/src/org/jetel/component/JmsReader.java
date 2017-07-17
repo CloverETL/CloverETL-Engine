@@ -34,7 +34,6 @@ import org.jetel.data.DataRecord;
 import org.jetel.database.IConnection;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
@@ -348,9 +347,7 @@ public class JmsReader extends Node {
         }
         
         if (charset != null && !Charset.isSupported(charset)) {
-        	status.add(new ConfigurationProblem(
-            		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+        	status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported!");
         }
 
         //check transformation

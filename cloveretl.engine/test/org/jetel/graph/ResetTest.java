@@ -303,10 +303,13 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().startsWith("Tableau-Unsupported") // negative test
 							&& !file.getName().equals("UDR_fixedLengthMetadata_errorReporting_CLO-3955.grf") // negative test
 							&& !file.getName().equals("UDR_invalidDataPolicy.grf") // negative test
+							&& !file.getName().equals("UDR_unmappable_characters_CharByteDataParser_controlled_fail.grf") // negative test
 							&& !file.getName().equals("UDR_unmappable_characters_CharByteDataParser_fail.grf") // negative test
 							&& !file.getName().equals("UDR_unmappable_characters_CharByteDataParser_skip_fail.grf") // negative test
+							&& !file.getName().equals("UDR_unmappable_characters_DataParser_controlled_fail.grf") // negative test
 							&& !file.getName().equals("UDR_unmappable_characters_DataParser_fail.grf") // negative test
 							&& !file.getName().equals("UDR_unmappable_characters_DataParser_skip_fail.grf") // negative test
+							&& !file.getName().equals("UDR_unmappable_characters_SimpleDataParser_controlled_fail.grf") // negative test
 							&& !file.getName().equals("UDR_unmappable_characters_SimpleDataParser_fail.grf") // negative test
 							&& !file.getName().equals("UDR_checkConfig_missingFile_CLO-9584.grf") // negative test
 							&& !file.getName().equals("WildcardsInDirPath.grf") // negative test
@@ -348,6 +351,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().startsWith("JSONExtract_employees_invalid_") // negative test
 							&& !file.getName().equals("JSONExtract_AllTypes_invalid_field.grf") // negative test
 							&& !file.getName().equals("SetTrustStore.grf") // env set-up graph
+							&& !file.getName().equals("check-logs.grf") // graph for checking logs from server tests
 							;
 				}
 			};

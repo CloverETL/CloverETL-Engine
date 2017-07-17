@@ -39,10 +39,7 @@ import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -54,7 +51,6 @@ import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.graph.runtime.CloverWorker;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
@@ -892,20 +888,18 @@ public class HashJoin extends Node implements MetadataProvider {
             			break;
             		default:
             	}
-        		status.add(message + " is selected, no records will be produced on second output port.",
-            			Severity.WARNING, this, Priority.NORMAL, XML_JOINTYPE_ATTRIBUTE);
+        		status.addWarning(this, XML_JOINTYPE_ATTRIBUTE,
+        				message + " is selected, no records will be produced on second output port.");
         	}
         }
 
 		if (charset != null && !Charset.isSupported(charset)) {
-        	status.add(new ConfigurationProblem(
-            		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+        	status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported!");
         }
 		
 		
 		if (joinKey == null) {
-			status.add("Join key not defined.", Severity.ERROR, this, Priority.NORMAL, XML_JOINKEY_ATTRIBUTE);
+			status.addError(this, XML_JOINKEY_ATTRIBUTE, "Join key not defined.");
 		}
 
 		int slaveCnt = inPorts.size() - FIRST_SLAVE_PORT;
@@ -987,11 +981,7 @@ public class HashJoin extends Node implements MetadataProvider {
 			// init();
 			// free();
 		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
-			if (!StringUtils.isEmpty(e.getAttributeName())) {
-				problem.setAttributeName(e.getAttributeName());
-			}
-			status.add(problem);
+			status.addWarning(this, null, e);
 		}
 
         //check transformation

@@ -27,7 +27,6 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -35,8 +34,6 @@ import java.util.Set;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.JsonSaxParser;
 import org.jetel.data.parser.Parser.DataSourceType;
@@ -44,24 +41,19 @@ import org.jetel.data.parser.XmlSaxParser;
 import org.jetel.data.parser.XmlSaxParser.MyHandler;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.AutoFilling;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.XmlUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.stream.Input;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
-import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -225,8 +217,6 @@ import org.xml.sax.helpers.DefaultHandler;
 public class JsonExtract extends Node {
 
 	public final static String COMPONENT_TYPE = "JSON_EXTRACT";
-
-	private static final Log LOGGER = LogFactory.getLog(JsonExtract.class);
 
 	// xml attributes
 	public static final String XML_SOURCEURI_ATTRIBUTE = "sourceUri";
@@ -463,15 +453,15 @@ public class JsonExtract extends Node {
 		}
 
 		if (charset != null && !Charset.isSupported(charset)) {
-			status.add(new ConfigurationProblem("Charset " + charset + " not supported!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+			status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported!");
 		}
 		
 		if (inputFile == null) {
-			status.add(new ConfigurationProblem("File URL not defined.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_SOURCEURI_ATTRIBUTE));
+			status.addError(this, XML_SOURCEURI_ATTRIBUTE, "File URL not defined.");
 		}
 		
 		if (mapping == null && mappingURL == null && mappingNodes == null) {
-			status.add(new ConfigurationProblem("Mapping not defined.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+			status.addError(this, null, "Mapping not defined.");
 		}
 
 		TransformationGraph graph = getGraph();
@@ -499,7 +489,7 @@ public class JsonExtract extends Node {
 				Set<String> attributesNames = ((MyHandler) handler).getAttributeNames();
 				for (String attributeName : attributesNames) {
 					if (!isXMLAttribute(attributeName)) {
-						status.add(new ConfigurationProblem("Can't resolve XML attribute: " + attributeName, Severity.WARNING, this, Priority.NORMAL));
+						status.addWarning(this, null, "Can't resolve XML attribute: " + attributeName);
 					}
 				}
 			}
@@ -511,15 +501,13 @@ public class JsonExtract extends Node {
 				for (int i = 0; i < mappingNodes.getLength(); i++) {
 					org.w3c.dom.Node node = mappingNodes.item(i);
 					List<String> errors = parser.processMappings(graph, node);
-					ConfigurationProblem problem;
 					for (String error : errors) {
-						problem = new ConfigurationProblem("Mapping error - " + error, Severity.WARNING, this, Priority.NORMAL);
-						status.add(problem);
+						status.addWarning(this, null, "Mapping error - " + error);
 					}
 				}
 			}
 		} catch (Exception e) {
-			status.add(new ConfigurationProblem("Can't parse JSON mapping schema. Reason: " + ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL));
+			status.addError(this, null, "Can't parse JSON mapping schema.", e);
 		} finally {
 			parser.reset();
 		}
@@ -551,11 +539,7 @@ public class JsonExtract extends Node {
 				}
 			}
 		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
-			if (!StringUtils.isEmpty(e.getAttributeName())) {
-				problem.setAttributeName(e.getAttributeName());
-			}
-			status.add(problem);
+			status.addWarning(this, null, e);
 		} finally {
 			free();
 		}
@@ -620,17 +604,6 @@ public class JsonExtract extends Node {
 	 */
 	public void setCharset(String charset) {
 		this.charset = charset;
-	}
-
-	/**
-	 * Sets namespace bindings to allow processing that relate namespace prefix used in Mapping and namespace URI used
-	 * in processed XML document
-	 * 
-	 * @param namespaceBindings
-	 *            the namespaceBindings to set
-	 */
-	private void setNamespaceBindings(HashMap<String, String> namespaceBindings) {
-		parser.setNamespaceBindings(namespaceBindings);
 	}
 
 	@Deprecated

@@ -34,8 +34,6 @@ import org.jetel.database.IConnection;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.ContextProvider;
@@ -364,24 +362,24 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		try {
 			loadConfigFileIfNeeded(config);
 		} catch (ComponentNotReadyException e) { // thrown iff loading of a config file fails
-			status.add(e, Severity.ERROR, this, Priority.NORMAL, XML_CONFIG_KEY);
+			status.addError(this, XML_CONFIG_KEY, e);
 			return super.checkConfig(status);
 		}
 		
 		if (!config.containsKey(XML_FS_HOST_KEY) || StringUtils.isEmpty(config.getProperty(XML_FS_HOST_KEY))) {
-			status.add("Cannot initialize Hadoop connection, Hadoop file system host is missing.", Severity.ERROR, this, Priority.NORMAL, XML_FS_HOST_KEY);
+			status.addError(this, XML_FS_HOST_KEY, "Cannot initialize Hadoop connection, Hadoop file system host is missing.");
 		}
 		if (!config.containsKey(XML_CORE_LIBRARY_KEY) || StringUtils.isEmpty(config.getProperty(XML_CORE_LIBRARY_KEY))) {
-			status.add("Cannot initialize Hadoop connection, Hadoop API .jar libraries are missing.", Severity.WARNING, this, Priority.NORMAL, XML_CORE_LIBRARY_KEY);
+			status.addWarning(this, XML_CORE_LIBRARY_KEY, "Cannot initialize Hadoop connection, Hadoop API .jar libraries are missing.");
 		}
 		if (!StringUtils.isEmpty(config.getProperty(XML_FS_PORT_KEY)) && Integer.parseInt(config.getProperty(XML_FS_PORT_KEY)) < 0) {
-			status.add("Port cannot be negative number.", Severity.ERROR, this, Priority.NORMAL, XML_FS_PORT_KEY);
+			status.addError(this, XML_FS_PORT_KEY, "Port cannot be negative number.");
 		}
 		if (!StringUtils.isEmpty(config.getProperty(XML_MAPRED_PORT_KEY)) && Integer.parseInt(config.getProperty(XML_MAPRED_PORT_KEY)) < 0) {
-			status.add("Port cannot be negative number.", Severity.ERROR, this, Priority.NORMAL, XML_MAPRED_PORT_KEY);
+			status.addError(this, XML_MAPRED_PORT_KEY, "Port cannot be negative number.");
 		}
 		if (!StringUtils.isEmpty(config.getProperty(XML_MAPRED_PORT_KEY)) && StringUtils.isEmpty(config.getProperty(XML_MAPRED_HOST_KEY))) {
-			status.add("Jobtracker port is specified but jobtracter host address is not.", Severity.ERROR, this, Priority.NORMAL, XML_MAPRED_PORT_KEY);
+			status.addError(this, XML_MAPRED_PORT_KEY, "Jobtracker port is specified but jobtracter host address is not.");
 		}
 		return super.checkConfig(status);
 	}

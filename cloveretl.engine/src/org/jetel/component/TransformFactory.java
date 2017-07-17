@@ -33,10 +33,7 @@ import org.jetel.ctl.MetadataErrorDetail;
 import org.jetel.ctl.TLCompilerFactory;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.data.Defaults;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.LoadClassException;
 import org.jetel.exception.MissingFieldException;
@@ -154,7 +151,7 @@ public class TransformFactory<T> {
 		try {
 			validateSettings();
 		} catch (Exception e) {
-        	status.add(new ConfigurationProblem(e, Severity.ERROR, component, Priority.NORMAL, null));
+        	status.addError(component, null, e);
 		}
 		
         String checkTransform = null;
@@ -173,10 +170,9 @@ public class TransformFactory<T> {
 
 	        	if (transformLanguage == TransformLanguage.UNKNOWN) {
 	        		String messagePrefix = attributeName != null ? attributeName + ": can't" : "Can't";
-	        		status.add(new ConfigurationProblem(messagePrefix + " determine transformation language",
-	        				Severity.WARNING, component, Priority.NORMAL, attributeName));
+	        		status.addWarning(component, attributeName, messagePrefix + " determine transformation language");
 	        	} else if (!transformLanguage.isSupported()) {
-					status.add(new ConfigurationProblem(transformLanguage.getName() + " is not a supported language any more, please convert your code to CTL2.", Severity.ERROR, component, Priority.NORMAL, null));
+					status.addError(component, null, transformLanguage.getName() + " is not a supported language any more, please convert your code to CTL2.");
 	        	} else if (transformLanguage == TransformLanguage.CTL2) {
 	        		// only CTL is checked
 	        		T transform = null;
@@ -184,7 +180,7 @@ public class TransformFactory<T> {
 						transform = createTransform();
 					} catch (JetelRuntimeException e) {
 						// report CTL error as a warning
-						status.add(new ConfigurationProblem(e, Severity.WARNING, component, Priority.NORMAL, null));
+						status.addWarning(component, null, e);
 					} finally {
 						if (transform instanceof Freeable) {
 							((Freeable)transform).free();

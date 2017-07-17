@@ -44,10 +44,7 @@ import org.jetel.data.parser.Parser;
 import org.jetel.data.parser.TextParserFactory;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.NotInitializedException;
 import org.jetel.exception.XMLConfigurationException;
@@ -222,18 +219,16 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		
 		for (int i = 0; i < startFields.length; i++) {
 			if (startFields[i].equals(endFields[i]) && !(startInclude[i] && endInclude[i])) {
-				status.add(new ConfigurationProblem("Interval "
+				status.addWarning(this, null, "Interval "
 						+ StringUtils.quote(startFields[i] + " - "
-								+ endFields[i]) + " is empty ("
+						+ endFields[i]) + " is empty ("
 						+ (!startInclude[i] ? "startInclude[" : "endInclude[")
-						+ i + "] is false).", Severity.WARNING, this,
-						Priority.NORMAL));
+						+ i + "] is false).");
 			}
 		}
 		
         if (data != null && metadata.containsCarriageReturnInDelimiters()) {
-            status.add(new ConfigurationProblem("Cannot use carriage return as a delimiter when inline data is specified!",
-            		Severity.ERROR, this, Priority.NORMAL, XML_DATA_ATTRIBUTE));
+            status.addError(this, XML_DATA_ATTRIBUTE, "Cannot use carriage return as a delimiter when inline data is specified!");
         }
 
 		return status;

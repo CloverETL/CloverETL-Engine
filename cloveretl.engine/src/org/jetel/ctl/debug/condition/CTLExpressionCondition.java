@@ -33,14 +33,14 @@ import org.jetel.ctl.debug.CTLExpressionHelper;
  *
  * @created 4.7.2016
  */
-public abstract class CtlExpressionCondition implements Condition {
+public abstract class CTLExpressionCondition implements Condition {
 
 	protected static final long EXPRESSION_TIMEOUT_NS = TimeUnit.SECONDS.toNanos(5);
 	
 	protected String expression;
 	private List<Node> nodes;
 	
-	public CtlExpressionCondition(String expression) {
+	public CTLExpressionCondition(String expression) {
 		super();
 		this.expression = expression;
 	}

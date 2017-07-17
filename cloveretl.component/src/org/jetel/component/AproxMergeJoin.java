@@ -38,10 +38,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.RecordOrderedKey;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.TransformException;
@@ -54,7 +51,6 @@ import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -1036,9 +1032,7 @@ public class AproxMergeJoin extends Node implements MetadataProvider {
         }
         
         if (charset != null && !Charset.isSupported(charset)) {
-        	status.add(new ConfigurationProblem(
-            		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+        	status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported!");
         }
         
 		if (getOutputPort(NOT_MATCH_DRIVER_OUT) != null) {
@@ -1062,7 +1056,7 @@ public class AproxMergeJoin extends Node implements MetadataProvider {
 				}
 			} catch (IndexOutOfBoundsException e) {
 				String joinKey = StringUtils.join(Arrays.asList(joinParameters), Defaults.Component.KEY_FIELDS_DELIMITER);
-				status.add("Invalid join key: " + joinKey, Severity.ERROR, this, Priority.NORMAL, XML_JOIN_KEY_ATTRIBUTE);
+				status.addError(this, "Invalid join key: " + joinKey, XML_JOIN_KEY_ATTRIBUTE);
 				return status;
 			}
     		joinKeys = new String[joinParameters.length];
@@ -1133,11 +1127,7 @@ public class AproxMergeJoin extends Node implements MetadataProvider {
 //            init();
 //            free();
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
+            status.addError(this, null, e);
         }
         
         //check transformation

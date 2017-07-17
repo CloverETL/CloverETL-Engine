@@ -341,7 +341,10 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 
 		@Override
 		public Boolean isHidden() {
-			return file.getFilename().startsWith("."); // FIXME is this correct on Windows? //$NON-NLS-1$
+			if (file != null && file.getFilename() != null) {
+				return file.getFilename().startsWith("."); // FIXME is this correct on Windows? //$NON-NLS-1$
+			}
+			return false;
 		}
 
 		@Override

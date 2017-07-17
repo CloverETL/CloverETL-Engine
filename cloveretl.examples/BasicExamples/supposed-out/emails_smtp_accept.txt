@@ -6,3 +6,4 @@ info@opensys.com
 test@javlin.eu
 info@javlin.eu
 test@cloveretl.net
+test@seznam.cz

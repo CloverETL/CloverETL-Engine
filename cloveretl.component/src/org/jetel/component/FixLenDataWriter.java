@@ -30,10 +30,7 @@ import org.jetel.data.lookup.LookupTable;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -351,9 +348,7 @@ public class FixLenDataWriter extends Node {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 		 
-        status.add(new ConfigurationProblem(
-        		"Component is of type FIXLEN_DATA_WRITER, which is deprecated",
-        		Severity.WARNING, this, Priority.NORMAL));
+        status.addWarning(this, null, "Component is of type FIXLEN_DATA_WRITER, which is deprecated");
 
 		if(!checkInputPorts(status, 1, 1)
 				|| !checkOutputPorts(status, 0, 1)) {
@@ -363,8 +358,7 @@ public class FixLenDataWriter extends Node {
         try {
         	FileUtils.canWrite(getContextURL(), fileURL);
         } catch (ComponentNotReadyException e) {
-            status.add(e,ConfigurationStatus.Severity.ERROR,this,
-            		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
+            status.addError(this, XML_FILEURL_ATTRIBUTE, e);
         }
         
         return status;

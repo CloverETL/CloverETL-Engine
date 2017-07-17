@@ -23,6 +23,7 @@ import java.io.IOException;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Token;
+import org.jetel.enums.EdgeDebugMode;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
@@ -45,7 +46,7 @@ public class JobflowEdge extends Edge {
 	
 	private Token lastReadToken;
 	
-	public JobflowEdge(String id, DataRecordMetadata metadata, boolean debugMode) {
+	public JobflowEdge(String id, DataRecordMetadata metadata, EdgeDebugMode debugMode) {
         super(id, metadata, debugMode);
 	}
 

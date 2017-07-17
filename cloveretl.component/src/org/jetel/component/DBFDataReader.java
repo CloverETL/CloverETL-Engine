@@ -31,10 +31,7 @@ import org.jetel.data.Defaults;
 import org.jetel.database.dbf.DBFDataParser;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
@@ -49,7 +46,6 @@ import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
-import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -367,22 +363,19 @@ public class DBFDataReader extends Node {
         }
         
 		if (!PolicyType.isPolicyType(policyTypeStr)) {
-			status.add(MessageFormat.format("Invalid data policy: {0}", policyTypeStr), Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+			status.addError(this, XML_DATAPOLICY_ATTRIBUTE, MessageFormat.format("Invalid data policy: {0}", policyTypeStr));
 		} else {
 			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
 		}
 
         if (charset != null && !Charset.isSupported(charset)) {
-        	status.add(new ConfigurationProblem(
-					MessageFormat.format("Charset {0} not supported!", charset), 
-					ConfigurationStatus.Severity.ERROR, this, 
-					ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+        	status.addError(this, XML_CHARSET_ATTRIBUTE, MessageFormat.format("Charset {0} not supported!", charset));
         }
         
         checkMetadata(status);
         
         if (fileURL == null) {
-        	status.add("File URL not defined.", Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE);
+        	status.addError(this, XML_FILEURL_ATTRIBUTE, "File URL not defined.");
         	return status;
         }
 
@@ -391,21 +384,13 @@ public class DBFDataReader extends Node {
             prepareMultiFileReader();
             DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
     		if (!metadata.hasFieldWithoutAutofilling()) {
-    			status.add(new ConfigurationProblem(
-                		MessageFormat.format("No field elements without autofilling for ''{0}'' have been found!", getOutputPort(OUTPUT_PORT).getMetadata().getName()), 
-                		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+    			status.addError(this, null,
+                		MessageFormat.format("No field elements without autofilling for ''{0}'' have been found!",
+                				getOutputPort(OUTPUT_PORT).getMetadata().getName()));
     		}
             reader.checkConfig(metadata);
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(
-            		ExceptionUtils.getMessage(e), 
-            		ConfigurationStatus.Severity.WARNING, 
-            		this, 
-            		ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
+            status.addWarning(this, null, e);
         } finally {
         	free();
         }
@@ -420,11 +405,9 @@ public class DBFDataReader extends Node {
     		DataFieldMetadata[] fields = metadata.iterator().next().getFields();
 			if (fields != null && fields.length > 0) {
 				if (!fields[0].isFixed() || fields[0].getSize() != 1) {
-					newStatus.add(new ConfigurationProblem(
-							MessageFormat.format("Invalid output metadata {0}. Expected size of first field is 1.", metadata.iterator().next().getId()), 
-							ConfigurationStatus.Severity.ERROR, 
-							this, 
-							ConfigurationStatus.Priority.NORMAL));
+					newStatus.addError(this, null,
+							MessageFormat.format("Invalid output metadata {0}. Expected size of first field is 1.",
+									metadata.iterator().next().getId()));
 				}
 			}
     	}

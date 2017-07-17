@@ -26,11 +26,8 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -194,16 +191,13 @@ public class LookupTableReaderWriter extends Node {
 		}
 		
 		if (lookupTableName == null) {
-			status.add("Lookup table not selected", Severity.ERROR, this, Priority.NORMAL, XML_LOOKUP_TABLE_ATTRIBUTE);
+			status.addError(this, XML_LOOKUP_TABLE_ATTRIBUTE, "Lookup table not selected");
 			return status;
 		}
 
         lookupTable = getGraph().getLookupTable(lookupTableName);
 		if (lookupTable == null) {
-            ConfigurationProblem problem = new ConfigurationProblem("Lookup table \"" + lookupTableName + 
-        			"\" not found.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-             problem.setAttributeName(XML_LOOKUP_TABLE_ATTRIBUTE);
-             status.add(problem);
+             status.addError(this, XML_LOOKUP_TABLE_ATTRIBUTE, "Lookup table \"" + lookupTableName + "\" not found.");
              
         // check lookup metadata against in/out metadata
 		} else {
@@ -216,8 +210,7 @@ public class LookupTableReaderWriter extends Node {
 			}
 			List<DataRecordMetadata> inMetadata = getInMetadata();
 			if (inMetadata != null && inMetadata.size() > 0 && !lookupTable.isPutSupported()) {
-				status.add(new ConfigurationProblem("DB Lookup table does not support write operation.", 
-						ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_LOOKUP_TABLE_ATTRIBUTE));
+				status.addError(this, XML_LOOKUP_TABLE_ATTRIBUTE, "DB Lookup table does not support write operation.");
 			}
 		}
 

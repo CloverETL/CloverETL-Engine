@@ -55,9 +55,7 @@ import org.jetel.data.lookup.LookupTable;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
@@ -66,7 +64,6 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -196,25 +193,22 @@ public abstract class TreeWriter extends Node {
 		}
 		
 		if (fileURL == null) {
-			status.add("Missing File URL attribute.", Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_FILE_URL_ATTRIBUTE);
+			status.addError(this, XML_FILE_URL_ATTRIBUTE, "Missing File URL attribute.");
 			return status;
 		}
 
 		try {
 			validateMapping(status);
 		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-			if (!StringUtils.isEmpty(e.getAttributeName())) {
-				problem.setAttributeName(e.getAttributeName());
-			}
-			status.add(problem);
+			status.addError(this, null, e);
 		}
 
 		if (sortedInput && sortHintsString == null) {
-			status.add(new ConfigurationProblem("Sort keys is not set", Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_SORTKEYS_ATTRIBUTE));
+			status.addError(this, XML_SORTKEYS_ATTRIBUTE, "Sort keys is not set");
 		}
 		if (cacheSize > Runtime.getRuntime().maxMemory()) {
-			status.add(new ConfigurationProblem("Cache size has a value of " + cacheSize + " but the JVM" + " is only configured for " + Runtime.getRuntime().maxMemory(), Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CACHE_SIZE));
+			status.addError(this, XML_CACHE_SIZE,
+					"Cache size has a value of " + cacheSize + " but the JVM" + " is only configured for " + Runtime.getRuntime().maxMemory());
 		}
 
 		return status;
@@ -226,7 +220,7 @@ public abstract class TreeWriter extends Node {
 
 	private void validateMapping(ConfigurationStatus status) throws ComponentNotReadyException {
 		if (mappingURL == null && mappingString == null) {
-			status.add("Mapping is not defined.", Severity.ERROR, this, Priority.NORMAL);
+			status.addError(this, null, "Mapping is not defined.");
 			return;
 		}
 		
@@ -261,23 +255,23 @@ public abstract class TreeWriter extends Node {
 			String atLeast = validator.isValidationComplete() ? "" : "At least ";
 
 			for (MappingError error : errors) {
-				status.add(new ConfigurationProblem("Invalid mapping (" + error.getMessage() + ")", Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+				status.addError(this, null, "Invalid mapping (" + error.getMessage() + ")");
 			}
 			if (errors.size() < validator.getErrorsCount()) {
 				int n = validator.getErrorsCount() - errors.size();
-				status.add(new ConfigurationProblem(atLeast + n + " more error" + (n > 1 ? "s" : "") + " in the mapping", Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+				status.addError(this, null, atLeast + n + " more error" + (n > 1 ? "s" : "") + " in the mapping");
 			}
 
 			int count = 0;
 			for (MappingError warning : warnings) {
 				if (errors.size() + count >= MAX_ERRORS_OR_WARNINGS)
 					break;
-				status.add(new ConfigurationProblem("Invalid mapping (" + warning.getMessage() + ")", Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
+				status.addWarning(this, null, "Invalid mapping (" + warning.getMessage() + ")");
 				count++;
 			}
 			if (count < validator.getWarningsCount()) {
 				int n = validator.getWarningsCount() - count;
-				status.add(new ConfigurationProblem(atLeast + n + (count > 0 ? " more" : " ") + " warning" + (n > 1 ? "s" : "") + " in the mapping", Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
+				status.addWarning(this, null, atLeast + n + (count > 0 ? " more" : " ") + " warning" + (n > 1 ? "s" : "") + " in the mapping");
 			}
 
 		} else {
@@ -285,7 +279,7 @@ public abstract class TreeWriter extends Node {
 			try {
 				tagger = new MappingTagger(connectedPorts, sortedInput ? sortHintsString : null, recordsCount == 1, cacheInMemory);
 			} catch (MappingTagger.SortHintException e) {
-				status.add(e, Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_SORTKEYS_ATTRIBUTE);
+				status.addError(this, XML_SORTKEYS_ATTRIBUTE, e);
 			}
 			
 			if (tagger != null) {
@@ -306,11 +300,11 @@ public abstract class TreeWriter extends Node {
 						}
 					}
 					if (usedPorts.size() == 0) {
-						status.add(new ConfigurationProblem("None of the connected input ports is used in mapping.", ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
+						status.addWarning(this, null, "None of the connected input ports is used in mapping.");
 					} else if (counter == 1) {
-						status.add(new ConfigurationProblem("Input port " + sb.substring(0, sb.length() - 2) + " is connected, but isn't used in mapping.", ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
+						status.addWarning(this, null, "Input port " + sb.substring(0, sb.length() - 2) + " is connected, but isn't used in mapping.");
 					} else if (counter > 1) {
-						status.add(new ConfigurationProblem("Input ports " + sb.substring(0, sb.length() - 2) + " are connected, but aren't used in mapping.", ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
+						status.addWarning(this, null, "Input ports " + sb.substring(0, sb.length() - 2) + " are connected, but aren't used in mapping.");
 					}
 				}
 			}

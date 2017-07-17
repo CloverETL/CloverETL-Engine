@@ -29,12 +29,13 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.jetel.database.sql.DBConnection;
-import org.jetel.database.sql.SqlConnection;
 import org.jetel.database.sql.JdbcSpecific.OperationType;
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
@@ -123,6 +124,17 @@ public abstract class AbstractDBConnection extends GraphElement implements DBCon
         if(StringUtils.isEmpty(sqlQuery)) {
             throw new IllegalArgumentException("JDBC stub for clover metadata can't find sqlQuery parameter.");
         }
+        try {
+        	// CLO-4238:
+        	SQLScriptParser sqlParser = new SQLScriptParser();
+        	sqlParser.setBackslashQuoteEscaping(getJdbcSpecific().isBackslashEscaping());
+        	sqlParser.setRequireLastDelimiter(false);
+        	sqlParser.setStringInput(sqlQuery);
+			sqlQuery = sqlParser.getNextStatement();
+		} catch (IOException e1) {
+			logger.warn("Failed to parse SQL query", e1);
+		}
+        
         String optimizeProperty = parameters.getProperty(OPTIMIZE_QUERY_PROPERTY);
         SqlQueryOptimizeOption optimize;
         if (optimizeProperty == null) {
@@ -157,15 +169,26 @@ public abstract class AbstractDBConnection extends GraphElement implements DBCon
         Connection connection;
 		try {
 			connection = connect(OperationType.UNKNOWN);
-		} catch (JetelException e) {
-			throw new SQLException(e.getMessage());
-		} catch (JetelRuntimeException e) {
-			throw new SQLException(e.getMessage());
+		} catch (JetelException | JetelRuntimeException e) {
+			throw new SQLException(e);
 		}
         
         try {
             statement = connection.createStatement();
             resultSet = statement.executeQuery(sqlQuery);
+            // CLO-11167: warn when query returns records
+            if (resultSet.next()) {
+            	String id = parameters.getProperty(TransformationGraphXMLReaderWriter.ID_ATTRIBUTE);
+            	StringBuilder sb = new StringBuilder();
+            	sb.append("SQL query for dynamic metadata ");
+            	if (!StringUtils.isEmpty(id)) {
+            		sb.append("(id=");
+            		sb.append(id);
+            		sb.append(") ");
+            	}
+            	sb.append("should return zero records. Consider using TOP, LIMIT or ROWNUM clause in your query, or adding metadata attribute sqlOptimization=\"true\".");
+            	logger.warn(sb.toString());
+            }
             DataRecordMetadata drMetaData = SQLUtil.dbMetadata2jetel(resultSet.getMetaData(), getJdbcSpecific());
             return drMetaData;
         } finally {

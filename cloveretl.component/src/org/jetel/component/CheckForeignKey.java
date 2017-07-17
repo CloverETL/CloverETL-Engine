@@ -32,8 +32,6 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -287,15 +285,6 @@ import org.w3c.dom.Element;
             return runIt ? Result.FINISHED_OK : Result.ABORTED;
        }
     
-       /*
-        * (non-Javadoc)
-        * @see org.jetel.graph.Node#reset()
-        */
-    	@Override
-		public synchronized void reset() throws ComponentNotReadyException {
-			super.reset();
-		}
-
     	/**
     	 *  Description of the Method
     	 *
@@ -351,11 +340,11 @@ import org.w3c.dom.Element;
         	checkMetadata(status, foreignMetadata, getOutMetadata());
         	
         	if (keyDefinition == null) {
-        		status.add("Foreign key not defined.", Severity.ERROR, this, Priority.NORMAL, XML_FOREIGNKEY_ATTRIBUTE);
+        		status.addError(this, XML_FOREIGNKEY_ATTRIBUTE, "Foreign key not defined.");
         	}
         	
         	if (defaultForeignKeys == null) {
-        		status.add("Default foreign key not defined.", Severity.ERROR, this, Priority.NORMAL, XML_DEFAULTFOREIGNKEY_ATTRIBUTE);
+        		status.addError(this, XML_DEFAULTFOREIGNKEY_ATTRIBUTE, "Default foreign key not defined.");
         	}
         	
         	if (keyDefinition == null || defaultForeignKeys == null) {
@@ -370,7 +359,7 @@ import org.w3c.dom.Element;
 						primaryKeys = tmp[PRIMERY_KEY_INDEX][0];
 					}
 				} catch (ComponentNotReadyException e) {
-					status.add(e, Severity.WARNING, this, Priority.NORMAL, XML_FOREIGNKEY_ATTRIBUTE);
+					status.addWarning(this, XML_FOREIGNKEY_ATTRIBUTE, e);
 				}
     		}
         	primaryKey = new RecordKey(primaryKeys, primaryMetadata);

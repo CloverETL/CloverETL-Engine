@@ -43,10 +43,7 @@ import org.jetel.database.sql.JdbcSpecific.OperationType;
 import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.NotInitializedException;
@@ -334,17 +331,15 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		if (connection == null) {
 			DBConnection tmp = (DBConnection)getGraph().getConnection(connectionId);
 			if (tmp == null) {
-				status.add(new ConfigurationProblem("Connection " + StringUtils.quote(connectionId) + 
-						" does not exist!!!", Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION));
+				status.addError(this, XML_DBCONNECTION, "Connection " + StringUtils.quote(connectionId) + " does not exist!!!");
 			}
 		}
 
 		if (metadataId != null) {
 			dbMetadata = getGraph().getDataRecordMetadata(metadataId, false);
 			if (dbMetadata == null) {
-				status.add(new ConfigurationProblem("Metadata " + StringUtils.quote(metadataId) + 
-						" does not exist. DB metadata will be created from sql query.", Severity.WARNING, this, 
-						Priority.LOW, XML_METADATA_ID));
+				status.addWarning(this, XML_METADATA_ID, "Metadata " + StringUtils.quote(metadataId) + 
+						" does not exist. DB metadata will be created from sql query.");
 			}
 		}
         return status;

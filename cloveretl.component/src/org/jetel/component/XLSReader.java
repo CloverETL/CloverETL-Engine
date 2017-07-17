@@ -36,10 +36,7 @@ import org.jetel.data.parser.XLSXDataParser;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
@@ -392,15 +389,13 @@ public class XLSReader extends Node {
         }
 
 		if (!PolicyType.isPolicyType(policyTypeStr)) {
-			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+			status.addError(this, XML_DATAPOLICY_ATTRIBUTE, "Invalid data policy: " + policyTypeStr);
 		} else {
 			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
 		}
 
         if (charset != null && !Charset.isSupported(charset)) {
-        	status.add(new ConfigurationProblem(
-            		"Charset "+charset+" not supported!", 
-            		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+        	status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported!");
         }
 
         checkMetadata(status, null, getOutPorts());
@@ -409,8 +404,7 @@ public class XLSReader extends Node {
             if (sheetNumber != null) {
                 Iterator<Integer> number = new NumberIterator(sheetNumber, 0, Integer.MAX_VALUE);
                 if (!number.hasNext()) {
-                    status.add(new ConfigurationProblem("There is no sheet with requested number.",
-                            ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_SHEETNUMBER_ATTRIBUTE));
+                    status.addError(this, XML_SHEETNUMBER_ATTRIBUTE, "There is no sheet with requested number.");
                 }
             } else if (sheetName == null) {
                 sheetNumber = "0";
@@ -423,8 +417,7 @@ public class XLSReader extends Node {
             try {
                 parser.setMetadataRow(metadataRow - 1);
             } catch (ComponentNotReadyException e) {
-                status.add(new ConfigurationProblem("Invalid metadataRow parameter.",
-                        ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_METADATAROW_ATTRIBUTE));
+                status.addError(this, XML_METADATAROW_ATTRIBUTE, "Invalid metadataRow parameter.");
             }
 
             if (sheetName != null) {
@@ -437,13 +430,10 @@ public class XLSReader extends Node {
             try {
 				reader.close();
 			} catch (IOException e) {
-				status.add(new ConfigurationProblem("Data source issue - cannot be closed.", Severity.ERROR, this, Priority.NORMAL, XML_FILE_ATTRIBUTE));
+				status.addError(this, XML_FILE_ATTRIBUTE, "Data source issue - cannot be closed.", e);
 			}
         } catch (IllegalArgumentException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR,
-                    this, ConfigurationStatus.Priority.NORMAL);
-            problem.setAttributeName(XML_SHEETNUMBER_ATTRIBUTE);
-            status.add(problem);
+            status.addError(this, XML_SHEETNUMBER_ATTRIBUTE, e);
         }
 
         return status;

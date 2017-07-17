@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Jul 30 09:24:17 CEST 2010" guiVersion="0.0.0.devel" id="1253338896057" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 09:41:48 CET 2016" modifiedBy="jansedlacek" name="WebServiceCalls" revision="1.182" showComponentDetails="true">
+<Graph author="avackova" created="Fri Jul 30 09:24:17 CEST 2010" guiVersion="4.6.0.M1" id="1253338896057" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 09:41:48 CET 2016" modifiedBy="jansedlacek" name="WebServiceCalls" revision="1.182" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="Forecast" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -104,17 +104,23 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Simple POST" guiX="236" guiY="490" id="HTTP_CONNECTOR2" outFileUrl="${DATAOUT_DIR}/PostResult.xml" password="clover" requestMethod="POST" type="HTTP_CONNECTOR" url="http://clover-4-3.server-demo-ec2.cloveretl.com/clover/request_processor/sandbox_content" username="clover">
+<Node enabled="enabled" guiName="Simple POST" guiX="236" guiY="490" id="HTTP_CONNECTOR2" outFileUrl="${DATAOUT_DIR}/PostResult.xml" password="clover" requestMethod="POST" type="HTTP_CONNECTOR" url="http://clover-4-6.server-demo-ec2.cloveretl.com/clover/request_processor/sandbox_content" username="clover">
 <attr name="requestContent"><![CDATA[sandbox=default]]></attr>
 <attr name="headerProperties"><![CDATA[Content-Type=application/x-www-form-urlencoded
 ]]></attr>
 <attr name="guiDescription"><![CDATA[A simple POST can also be executed.  This is only shown for illustrative  purposes  and is deliberetely not connected within the graph]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Simple GET" guiX="47" guiY="496" id="SIMPLE_GET" outFileUrl="${DATAOUT_DIR}/GetResult.xml" password="clover" requestMethod="GET" type="HTTP_CONNECTOR" url="http://clover-4-3.server-demo-ec2.cloveretl.com/clover/request_processor/sandbox_content?sandbox=default" username="clover">
+<Node enabled="enabled" guiName="Simple GET" guiX="47" guiY="496" id="SIMPLE_GET" outFileUrl="${DATAOUT_DIR}/GetResult.xml" password="clover" requestMethod="GET" type="HTTP_CONNECTOR" url="http://clover-4-6.server-demo-ec2.cloveretl.com/clover/request_processor/sandbox_content?sandbox=default" username="clover">
 <attr name="guiDescription"><![CDATA[A simple GET can also be executed.  This is only shown for illustrative  purposes  and is deliberetely not connected within the graph]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Trash" guiX="635" guiY="295" id="TRASH0" type="TRASH"/>
-<Node enabled="enabled" fileURL="port:$0.XMLString:discrete" guiName="XMLXPathReader" guiX="438" guiY="295" id="XML_XPATH_READER0" mapping="&lt;Context xpath=&quot;soap:Envelope/soap:Body/n:addResponse&quot; &#10;     outPort=&quot;0&quot; &#10;     namespacePaths='&quot;http://ws1.parasoft.com/glue/calculator/&quot;;soap=&quot;http://schemas.xmlsoap.org/soap/envelope/&quot;;n=&quot;http://www.parasoft.com/wsdl/calculator/&quot;'&gt;&#10;     &lt;Mapping xpath=&quot;n:Result&quot; cloverField=&quot;Result&quot;/&gt;&#10;&lt;/Context&gt;&#10;" type="XML_XPATH_READER">
+<Node enabled="enabled" fileURL="port:$0.XMLString:discrete" guiName="XMLXPathReader" guiX="438" guiY="295" id="XML_XPATH_READER0" type="XML_XPATH_READER">
+<attr name="mapping"><![CDATA[<Context xpath="soap:Envelope/soap:Body/n:addResponse" 
+     outPort="0" 
+     namespacePaths='"http://ws1.parasoft.com/glue/calculator/";soap="http://schemas.xmlsoap.org/soap/envelope/";n="http://www.parasoft.com/wsdl/calculator/"'>
+     <Mapping xpath="n:Result" cloverField="Result"/>
+</Context>
+]]></attr>
 <attr name="guiDescription"><![CDATA[XML data is returned in SOAP format. Complex data can be parsed using XPath and passed to multiply output ports]]></attr>
 </Node>
 <Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="HTTP_CONNECTOR0:0"/>

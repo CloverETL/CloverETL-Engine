@@ -21,7 +21,8 @@ package org.jetel.ctl.debug;
 import java.io.Serializable;
 
 /**
- * This unit represents a thread in which a CTL code is being executed.
+ * This unit represents a thread in which a CTL code is being executed,
+ * including its current debugging status.
  * 
  * @author jan.michalica (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -38,6 +39,10 @@ public class Thread implements Serializable {
 	private boolean suspended;
 	private transient java.lang.Thread javaThread;
 	
+	/**
+	 * Answers Java thread in which the CTL is being interpreted.
+	 * @return
+	 */
 	public java.lang.Thread getJavaThread() {
 		return javaThread;
 	}

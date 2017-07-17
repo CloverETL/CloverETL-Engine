@@ -432,21 +432,43 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		uri = relativeURI("foo");
 		System.out.println(uri.getAbsoluteURI());
 		info = manager.info(uri);
+		assertEquals("foo", info.getName());
 		assertTrue(String.format("%s is not a directory", uri), info.isDirectory());
 		
+		uri = relativeURI("foo/");
+		System.out.println(uri.getAbsoluteURI());
+		info = manager.info(uri);
+		assertEquals("foo", info.getName());
+		assertTrue(String.format("%s is not a directory", uri), info.isDirectory());
+		
+		uri = relativeURI("foo/.");
+		System.out.println(uri.getAbsoluteURI());
+		info = manager.info(uri);
+		assertEquals("foo", info.getName());
+		assertTrue(String.format("%s is not a directory", uri), info.isDirectory());
+		
+		uri = relativeURI("foo/../foo");
+		System.out.println(uri.getAbsoluteURI());
+		info = manager.info(uri);
+		assertEquals("foo", info.getName());
+		assertTrue(String.format("%s is not a directory", uri), info.isDirectory());
+
 		uri = relativeURI("foo/bar");
 		System.out.println(uri.getAbsoluteURI());
 		info = manager.info(uri);
+		assertEquals("bar", info.getName());
 		assertTrue(String.format("%s is not a file", uri), info.isFile());
 		
 		uri = relativeURI("foo/./bar");
 		System.out.println(uri.getAbsoluteURI());
 		info = manager.info(uri);
+		assertEquals("bar", info.getName());
 		assertTrue(String.format("%s is not a file", uri), info.isFile());
 
 		uri = relativeURI("foo/../foo/bar");
 		System.out.println(uri.getAbsoluteURI());
 		info = manager.info(uri);
+		assertEquals("bar", info.getName());
 		assertTrue(String.format("%s is not a file", uri), info.isFile());
 		
 		{
@@ -468,6 +490,35 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertTrue(String.format("%s is not a directory", uri), info.isDirectory());
 			assertEquals(dirName, info.getName());
 		}
+	}
+	
+	public void testInfoRoot() throws Exception {
+		// CLO-10745 - root directory may not have all information.
+		URI root = baseUri.resolve("/");
+		CloverURI uri = CloverURI.createURI(root + ".");
+		System.out.println(uri.getAbsoluteURI());
+		InfoResult infoResult = manager.info(uri);
+		Info info = infoResult.getInfo();
+
+		// Make sure that none of the Info methods throws an exception:
+		info.getName();
+		info.getURI();
+		assertNull(String.format("%s should not have parent", uri), info.getParentDir());
+
+		assertTrue(String.format("%s is not a directory", uri), info.isDirectory());
+		assertFalse(String.format("%s is not a directory", uri), info.isFile());
+		info.isLink();
+		info.isHidden();
+
+		info.canRead();
+		info.canWrite();
+		info.canExecute();
+
+		info.getType();
+		info.getLastModified();
+		info.getCreated();
+		info.getLastAccessed();
+		info.getSize();
 	}
 	
 	protected void prepareData(Map<String, String> texts) throws Exception {
@@ -1295,6 +1346,67 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		result = manager.list(relativeURI("file-vs-dir/file/"), new ListParameters().setRecursive(true)).getResult();
 		System.out.println(result);
 		assertEquals(0, result.size());
+		
+		{ 
+			// Not "List directory contents" mode, show the directory itself.
+			result = manager.list(relativeURI("dir1/eclipse"), new ListParameters()
+						.setListDirectoryContents(false)
+					).getResult();
+			System.out.println(result);
+			assertEquals(1, result.size());
+			assertEquals("eclipse", result.get(0).getName());
+			printInfo(baseUri, result);
+		} { 
+			result = manager.list(relativeURI("dir1/eclipse/"), new ListParameters()
+						.setListDirectoryContents(false)
+					).getResult();
+			System.out.println(result);
+			assertEquals(1, result.size());
+			assertEquals("eclipse", result.get(0).getName());
+			printInfo(baseUri, result);
+		} { 
+			result = manager.list(relativeURI("dir1/eclipse/."), new ListParameters()
+						.setListDirectoryContents(false)
+					).getResult();
+			System.out.println(result);
+			assertEquals(1, result.size());
+			assertEquals("eclipse", result.get(0).getName());
+			printInfo(baseUri, result);
+		} { 
+			result = manager.list(relativeURI("dir1/./eclipse/./.."), new ListParameters()
+						.setListDirectoryContents(false)
+					).getResult();
+			System.out.println(result);
+			assertEquals(1, result.size());
+			assertEquals("dir1", result.get(0).getName());
+			printInfo(baseUri, result);
+		} {
+			result = manager.list(relativeURI("dir?/ec*se"), new ListParameters()
+						.setListDirectoryContents(false)
+					).getResult();
+			System.out.println(result);
+			assertEquals(1, result.size());
+			assertEquals("eclipse", result.get(0).getName());
+			printInfo(baseUri, result);
+		} {
+			// Recursive has not effect in that case.
+			result = manager.list(relativeURI("dir1"), new ListParameters()
+						.setListDirectoryContents(false)
+						.setRecursive(true)
+					).getResult();
+			System.out.println(result);
+			assertEquals(1, result.size());
+			assertEquals("dir1", result.get(0).getName());
+			printInfo(baseUri, result);
+		} {
+			// Wrong path
+			ListResult listResult = manager.list(relativeURI("dir1/doesnotexist"), new ListParameters()
+						.setListDirectoryContents(false)
+					);
+			assertEquals(1, listResult.totalCount());
+			assertEquals(0, listResult.successCount());
+			assertEquals(1, listResult.failCount());
+		}
 	}
 	
 	public void testListRoot() {
@@ -1302,6 +1414,31 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		CloverURI uri = CloverURI.createURI(root + ".");
 		ListResult listResult = manager.list(uri);
 		assertTrue(listResult.getFirstErrorMessage(), listResult.success());
+		
+		{
+			// Not "List directory contents" mode, show the directory itself.
+			listResult = manager.list(uri, new ListParameters()
+						.setListDirectoryContents(false)
+					);
+			assertTrue(listResult.getFirstErrorMessage(), listResult.success());
+			assertEquals(1, listResult.getResult().size());
+			Info info = listResult.getResult().get(0);
+			assertEquals(getRootDirName(), info.getName());
+			assertTrue(info.isDirectory());
+			assertFalse(info.isFile());
+		} {
+			// Recursive has not effect in that case.
+			listResult = manager.list(uri, new ListParameters()
+						.setListDirectoryContents(false)
+						.setRecursive(true)
+					);
+			assertTrue(listResult.getFirstErrorMessage(), listResult.success());
+			assertEquals(1, listResult.getResult().size());
+			Info info = listResult.getResult().get(0);
+			assertEquals(getRootDirName(), info.getName());
+			assertTrue(info.isDirectory());
+			assertFalse(info.isFile());
+		}
 	}
 	
 	protected CloverURI relativeURI(String uri) throws URISyntaxException {
@@ -1480,6 +1617,10 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 	
 	protected long getTolerance() {
 		return 0;
+	}
+	
+	protected String getRootDirName() {
+		return "";
 	}
 	
 	/**

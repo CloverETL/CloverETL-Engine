@@ -23,14 +23,10 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
 
-import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
-import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
@@ -72,7 +68,7 @@ public class PrimitiveSequence extends AbstractSequence {
         try {
             loadExternalSequence();
 		} catch (ComponentNotReadyException e) {
-			status.add(e, Severity.ERROR, this, Priority.NORMAL, e.getAttributeName());
+			status.addError(this, null, e);
 		}
         
         return status;

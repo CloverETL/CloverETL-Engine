@@ -30,8 +30,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.file.FileUtils;
@@ -298,7 +296,7 @@ public class SimpleSequence extends AbstractSequence {
 	            throw new ComponentNotReadyException(this, XML_FILE_URL_ATTRIBUTE, "Can't write to " + filename);
 			}
 		} catch (ComponentNotReadyException e) {
-			status.add(e, Severity.ERROR, this, Priority.NORMAL, e.getAttributeName());
+			status.addError(this, null, e);
 		}
         
         return status;

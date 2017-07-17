@@ -74,10 +74,7 @@ import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.PolicyType;
@@ -217,7 +214,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		
 		for (String fileUrlEntry : this.getFileUrl().split(";")) {
 			if ((fileUrlEntry.startsWith("dict:") || fileUrlEntry.startsWith("port:")) && charset == null) {
-				status.add(new ConfigurationProblem("Charset cannot be auto-detected for input from a port or dictionary. Define it in the \"Charset\" attribute explicitly.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+				status.addError(this, null, "Charset cannot be auto-detected for input from a port or dictionary. Define it in the \"Charset\" attribute explicitly.");
 			}
 		}
 		
@@ -233,21 +230,21 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		}
 
 		if (!PolicyType.isPolicyType(policyTypeStr)) {
-			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+			status.addError(this, XML_DATAPOLICY_ATTRIBUTE, "Invalid data policy: " + policyTypeStr);
 		} else {
 			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
 		}
 
 		if (StringUtils.isEmpty(this.getFileUrl())) {
-			status.add(new ConfigurationProblem("Missing required attribute 'File URL'", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_FILE_URL_ATTRIBUTE));
+			status.addError(this, XML_FILE_URL_ATTRIBUTE, "Missing required attribute 'File URL'");
 		}
 
 		if (StringUtils.isEmpty(mappingURL) && StringUtils.isEmpty(mappingString)) {
-			status.add(new ConfigurationProblem("Missing required attribute 'Mapping'", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+			status.addError(this, null, "Missing required attribute 'Mapping'");
 		}
 
 		if (charset != null && !Charset.isSupported(charset)) {
-			status.add(new ConfigurationProblem("Charset " + charset + " not supported!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+			status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported!");
 		}
 
 		/*

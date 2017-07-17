@@ -22,8 +22,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -109,7 +107,7 @@ public class UniqueLabelsValidator {
 			String label = metadata.getField(i).getLabelOrName();
 			validateLabel(label);
 			if (labels.contains(label)) {
-				status.add("Field label \"" + label + "\" is not unique", Severity.WARNING, graphElement, Priority.LOW);
+				status.addWarning(graphElement, null, "Field label \"" + label + "\" is not unique");
 			}
 			labels.add(label);
 		}

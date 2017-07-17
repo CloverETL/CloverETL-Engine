@@ -38,6 +38,8 @@ import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTimeZone;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * Helper class which contains some framework-wide constants definitions.<br>
  * Change the compile-time defaults here !
@@ -45,6 +47,7 @@ import org.joda.time.DateTimeZone;
  * @author dpavlis
  * @created January 23, 2003
  */
+@SuppressFBWarnings("MS_CANNOT_BE_FINAL")
 public final class Defaults {
 	private static Properties properties;
 	private static Log logger = LogFactory.getLog(Defaults.class);
@@ -715,6 +718,11 @@ public final class Defaults {
 					Defaults.Record.RECORD_INITIAL_SIZE * 10);
 			DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS = getIntProperties(
 					"Graph.DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS", 4);
+		    DEFAULT_EDGE_DEBUGGING_MAX_RECORDS = getIntProperties(
+					"Graph.DEFAULT_EDGE_DEBUGGING_MAX_RECORDS", 1000);
+		    DEFAULT_EDGE_DEBUGGING_MAX_BYTES = getIntProperties(
+					"Graph.DEFAULT_EDGE_DEBUGGING_MAX_BYTES", 1024 * 1024); // 1MB
+
 		}
 
 		/**
@@ -737,6 +745,17 @@ public final class Defaults {
 		 * speed but not much.
 		 */
 		public static int DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS;
+		
+	    /**
+	     * Maximal number of records persisted on an edge for default edge debugging.
+	     */
+	    public static int DEFAULT_EDGE_DEBUGGING_MAX_RECORDS; // = 1000;
+
+	    /**
+	     * Maximal number of bytes persisted on an edge for default edge debugging.
+	     */
+	    public static int DEFAULT_EDGE_DEBUGGING_MAX_BYTES; // = 1024 * 1024; // 1MB
+
 	}
 
 	public final static class OracleConnection {

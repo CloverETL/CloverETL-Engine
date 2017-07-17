@@ -31,8 +31,6 @@ import org.jetel.data.FileRecordBuffer;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -373,7 +371,7 @@ public class CrossJoin extends Node implements MetadataProvider {
 			DataFieldMetadata[] outFields = outMetadata.getFields();
 
 			if (outFields.length < expectedFields.length) {
-				status.add("Incompatible metadata on output. Not enough fields in output metadata.", Severity.ERROR, this, Priority.NORMAL);
+				status.addError(this, null, "Incompatible metadata on output. Not enough fields in output metadata.");
 				return status;
 			}
 
@@ -400,7 +398,7 @@ public class CrossJoin extends Node implements MetadataProvider {
 						sb.append(StringUtils.quote("map[" + outType + "]"));
 					}
 					sb.append(".");
-					status.add(sb.toString(), Severity.ERROR, this, Priority.NORMAL);
+					status.addError(this, null, sb.toString());
 				}
 			}
 		} else {

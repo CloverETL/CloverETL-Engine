@@ -119,10 +119,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.StringDataField;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
@@ -2546,25 +2543,25 @@ public class HttpConnector extends Node {
 
 		// check character set
 		if (charset != null && !Charset.isSupported(charset)) {
-			status.add(new ConfigurationProblem("Charset " + charset + " not supported!", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_CHARSET_ATTRIBUTE));
+			status.addError(this, XML_CHARSET_ATTRIBUTE, "Charset " + charset + " not supported!");
 		}
 
 		InputPort inputPort = getInputPort(INPUT_PORT_NUMBER);
 		if (inputPort == null) {
 			// no input port, but URL from field defined
 			if (!StringUtils.isEmpty(urlInputField)) {
-				status.add(new ConfigurationProblem("'URL from input field' attribute is set, but no input port is connected.", Severity.WARNING, this, Priority.NORMAL));
+				status.addWarning(this, null, "'URL from input field' attribute is set, but no input port is connected.");
 			}
 
 			// no input port, but URL mapped from input
 			if (attributeMappedFromInput(IP_URL_NAME)) {
-				status.add(new ConfigurationProblem("URL is mapped from input field, but no input port is connected.", Severity.WARNING, this, Priority.NORMAL));
+				status.addWarning(this, null, "URL is mapped from input field, but no input port is connected.");
 			}
 
 			// no URL defined (in the situation without an input port, the URL can be only set using 'URL' attribute or
 			// mapped in Input Mapping)
 			if (StringUtils.isEmpty(rawUrl) && !attributeMapped(IP_URL_NAME)) {
-				status.add(new ConfigurationProblem("No URL defined - please set the 'URL' attribute or map URL in Input Mapping.", Severity.ERROR, this, Priority.NORMAL));
+				status.addError(this, null, "No URL defined - please set the 'URL' attribute or map URL in Input Mapping.");
 			}
 		}
 
@@ -2574,30 +2571,31 @@ public class HttpConnector extends Node {
 			// check whether both URL and input field URL isn't entered (note: the case when no input port is connected
 			// is handled above)
 			if (!StringUtils.isEmpty(rawUrl) && !StringUtils.isEmpty(urlInputField)) {
-				status.add(new ConfigurationProblem("Both URL and URL from input field is entered. URL from input field will be used.", Severity.WARNING, this, Priority.NORMAL));
+				status.addWarning(this, null, "Both URL and URL from input field is entered. URL from input field will be used.");
 			}
 
 			// no URL defined - check only if the input port is not null (the case of no input port is checked above)
 			if (inputPort != null && StringUtils.isEmpty(rawUrl) && StringUtils.isEmpty(urlInputField)) {
-				status.add(new ConfigurationProblem("No URL defined - please set the 'URL' attribute or map URL in Input Mapping.", Severity.ERROR, this, Priority.NORMAL));
+				status.addError(this, null, "No URL defined - please set the 'URL' attribute or map URL in Input Mapping.");
 			}
 
 		} else {
 			// URL field set and URL mapped - mapping will be used
 			if (!StringUtils.isEmpty(urlInputField)) {
-				status.add(new ConfigurationProblem("URL is mapped in 'Input Mapping' and 'URL from input field' attribute is set. 'URL from input field' will be ignored.", Severity.WARNING, this, Priority.NORMAL));
+				status.addWarning(this, null, "URL is mapped in 'Input Mapping' and 'URL from input field' attribute is set. 'URL from input field' will be ignored.");
 			}
 
 		}
 
 		// Unknown request method
 		if (!PLAIN_REQUEST_METHODS.contains(requestMethod) && !ENTITY_ENCLOSING_REQUEST_METHODS.contains(requestMethod)) {
-			status.add(new ConfigurationProblem("Unsupported request method: " + requestMethod, Severity.ERROR, this, Priority.NORMAL, XML_REQUEST_METHOD_ATTRIBUTE));
+			status.addError(this, XML_REQUEST_METHOD_ATTRIBUTE, "Unsupported request method: " + requestMethod);
 		}
 
 		// Unknown authentication method
 		if (!SUPPORTED_AUTHENTICATION_METHODS.contains(authenticationMethod)) {
-			status.add(new ConfigurationProblem("Unsupported authentication method: " + authenticationMethod, Severity.ERROR, this, Priority.NORMAL, XML_AUTHENTICATION_METHOD_ATTRIBUTE));
+			status.addError(this, XML_AUTHENTICATION_METHOD_ATTRIBUTE,
+					"Unsupported authentication method: " + authenticationMethod);
 		}
 
 		if (inputPort != null) {
@@ -2610,24 +2608,29 @@ public class HttpConnector extends Node {
 
 			// Input field is set, but does not exist
 			if (inputFieldName != null && inField == null) {
-				status.add(new ConfigurationProblem("Input field name '" + inputFieldName + "' does not exist in input metadata.", Severity.ERROR, this, Priority.NORMAL, XML_INPUT_PORT_FIELD_NAME));
+				status.addError(this, XML_INPUT_PORT_FIELD_NAME,
+						"Input field name '" + inputFieldName + "' does not exist in input metadata.");
 
 				// Input field is set, but has incompatible type
 			} else if (inputFieldName != null && inField.getDataType() != DataFieldType.STRING) {
-				status.add(new ConfigurationProblem("Input field '" + inputFieldName + "' has incompatible type '" + inField.getDataType().toString() + "'. Field has to be String.", Severity.ERROR, this, Priority.NORMAL, XML_INPUT_PORT_FIELD_NAME));
+				status.addError(this, XML_INPUT_PORT_FIELD_NAME,
+						"Input field '" + inputFieldName + "' has incompatible type '" + inField.getDataType().toString() + "'. Field has to be String.");
 			}
 
 			// check whether multipart entities and ignored list is entered just when possible or reasonable
 			if (!addInputFieldsAsParameters) {
 				if (!StringUtils.isEmpty(multipartEntities)) {
-					status.add(new ConfigurationProblem("'Multipart entities' attribute will be ignored, because 'Add input fields as parameters' attribute is set to 'false'.", Severity.WARNING, this, Priority.NORMAL));
+					status.addWarning(this, null,
+							"'Multipart entities' attribute will be ignored, because 'Add input fields as parameters' attribute is set to 'false'.");
 				}
 				if (!StringUtils.isEmpty(ignoredFields)) {
-					status.add(new ConfigurationProblem("'Ignored fields' attribute will be ignored, because 'Add input fields as parameters' attribute is set to 'false'.", Severity.WARNING, this, Priority.NORMAL));
+					status.addWarning(this, null,
+							"'Ignored fields' attribute will be ignored, because 'Add input fields as parameters' attribute is set to 'false'.");
 				}
 			} else {
 				if (!StringUtils.isEmpty(multipartEntities) && !ENTITY_ENCLOSING_REQUEST_METHODS.contains(requestMethod)) {
-					status.add(new ConfigurationProblem("Multipart entities cannot be used with a " + requestMethod + " request method.", Severity.WARNING, this, Priority.NORMAL));
+					status.addWarning(this, null,
+							"Multipart entities cannot be used with a " + requestMethod + " request method.");
 				}
 			}
 
@@ -2660,7 +2663,7 @@ public class HttpConnector extends Node {
 					ignoredList.remove(metadataName);
 				}
 				if (!ignoredList.isEmpty()) {
-					status.add(new ConfigurationProblem("Given ignored fields list contains value not defined at metadata: " + ignoredList.get(0), Severity.ERROR, this, Priority.NORMAL));
+					status.addError(this, null, "Given ignored fields list contains value not defined at metadata: " + ignoredList.get(0));
 				}
 			}
 
@@ -2668,17 +2671,20 @@ public class HttpConnector extends Node {
 			if (addInputFieldsAsParameters) {
 				if (StringUtils.isEmpty(addInputFieldsAsParametersTo)) {
 					if (ENTITY_ENCLOSING_REQUEST_METHODS.contains(requestMethod)) {
-						status.add(new ConfigurationProblem("Add input fields as parameters must be specified.", Severity.ERROR, this, Priority.NORMAL));
+						status.addError(this, null, "Add input fields as parameters must be specified.");
 					}
 				} else if (addInputFieldsAsParametersTo.equals("BODY") && PLAIN_REQUEST_METHODS.contains(requestMethod)) {
-					status.add(new ConfigurationProblem("Cannot add input fields as parameters to body of HTTP request when " + requestMethod + " method is used.", Severity.ERROR, this, Priority.NORMAL));
+					status.addError(this, null,
+							"Cannot add input fields as parameters to body of HTTP request when " + requestMethod + " method is used.");
 				}
 				
 				if(!StringUtils.isEmpty(this.requestParametersStr)) {
-					status.add(new ConfigurationProblem("Request parameters are defined but HTTPConnector will use input fields as parameters. Set 'Add input fields as parameters' to false if you want to use specified request parameters.", Severity.WARNING, this, Priority.NORMAL));
+					status.addWarning(this, null,
+							"Request parameters are defined but HTTPConnector will use input fields as parameters. Set 'Add input fields as parameters' to false if you want to use specified request parameters.");
 				}
 			}else if(!StringUtils.isEmpty(this.requestParametersStr) && addInputFieldsAsParametersTo.equals("BODY") && PLAIN_REQUEST_METHODS.contains(requestMethod)){
-				status.add(new ConfigurationProblem("Cannot add request parameters to body of HTTP request when " + requestMethod + " method is used.", Severity.ERROR, this, Priority.NORMAL));
+				status.addError(this, null,
+						"Cannot add request parameters to body of HTTP request when " + requestMethod + " method is used.");
 			}
 		}
 
@@ -2692,32 +2698,35 @@ public class HttpConnector extends Node {
 			}
 
 			if (outputFieldName != null && outField == null) {
-				status.add(new ConfigurationProblem("Output field name '" + outputFieldName + "' does not exist in output metadata.", Severity.ERROR, this, Priority.NORMAL, XML_OUTPUT_PORT_FIELD_NAME));
+				status.addError(this, XML_OUTPUT_PORT_FIELD_NAME,
+						"Output field name '" + outputFieldName + "' does not exist in output metadata.");
 
 			}
 			if (outField != null && outField.getDataType() != DataFieldType.STRING) {
 				if (outputFieldName != null) {
-					status.add(new ConfigurationProblem("Output field '" + outputFieldName + "' has incompatible type '" + outField.getDataType().toString() + "'. The field has to be 'string'.", Severity.ERROR, this, Priority.NORMAL, XML_OUTPUT_PORT_FIELD_NAME));
+					status.addError(this, XML_OUTPUT_PORT_FIELD_NAME,
+							"Output field '" + outputFieldName + "' has incompatible type '" + outField.getDataType().toString() + "'. The field has to be 'string'.");
 				} else {
-					status.add(new ConfigurationProblem("'Output field' not specified -> HTTP response content will be filled in the first field of output metadata, but the field has incompatible type '" + outField.getDataType().toString() + "'. It has to be 'string'.", Severity.ERROR, this, Priority.NORMAL, XML_OUTPUT_PORT_FIELD_NAME));
+					status.addError(this, XML_OUTPUT_PORT_FIELD_NAME, 
+							"'Output field' not specified -> HTTP response content will be filled in the first field of output metadata, but the field has incompatible type '" + outField.getDataType().toString() + "'. It has to be 'string'.");
 				}
 			}
 		}
 
 		if (inputPort == null && outputPort == null && StringUtils.isEmpty(outputFileUrl)) {
-			status.add(new ConfigurationProblem("Output port isn't connected and output file is not set.", Severity.WARNING, this, Priority.NORMAL));
+			status.addWarning(this, null, "Output port isn't connected and output file is not set.");
 		}
 
 		if (inputPort != null && !StringUtils.isEmpty(inputFileUrl)) {
-			status.add(new ConfigurationProblem("'Input file URL' will be ignored because input port is connected.", Severity.WARNING, this, Priority.NORMAL));
+			status.addWarning(this, null, "'Input file URL' will be ignored because input port is connected.");
 		}
 
 		if (storeResponseToTempFile && outputFileUrl != null) {
-			status.add(new ConfigurationProblem("Only one of 'Output file URL' and 'Store response file URL to output field' may be used.", Severity.ERROR, this, Priority.NORMAL));
+			status.addError(this, null, "Only one of 'Output file URL' and 'Store response file URL to output field' may be used.");
 		}
 
 		if (!StringUtils.isEmpty(requestContent) && !StringUtils.isEmpty(inputFileUrl)) {
-			status.add(new ConfigurationProblem("You can set either 'Request content' or 'Input file URL'.", Severity.ERROR, this, Priority.NORMAL));
+			status.addError(this, null, "You can set either 'Request content' or 'Input file URL'.");
 		}
 
 		// check existence of the temporary directory; if specified
@@ -2725,13 +2734,14 @@ public class HttpConnector extends Node {
 
 			// output port must be connected so that we can write file names into
 			if (outputPort == null) {
-				status.add(new ConfigurationProblem("An output port must be connected in order to write response temporary file names.", Severity.ERROR, this, Priority.NORMAL));
+				status.addError(this, null,
+						"An output port must be connected in order to write response temporary file names.");
 			}
 		}
 
 		// check whether both user name and password for BASIC http auth are entered or none of them
 		if ((!StringUtils.isEmpty(getUsername()) && StringUtils.isEmpty(getPassword())) || (StringUtils.isEmpty(getUsername()) && !StringUtils.isEmpty(getPassword()))) {
-			status.add(new ConfigurationProblem("Both username and password must be entered or none of them.", Severity.ERROR, this, Priority.NORMAL));
+			status.addError(this, null, "Both username and password must be entered or none of them.");
 		}
 
 		// check restrictions of the GET-like methods
@@ -2740,13 +2750,16 @@ public class HttpConnector extends Node {
 			// according to standard, but the HTTPClient library does not support it
 			// as it is not used in practice)
 			if (!StringUtils.isEmpty(requestContent)) {
-				status.add(new ConfigurationProblem("Request content not allowed when " + requestMethod + " method is used.", Severity.ERROR, this, Priority.NORMAL, XML_REQUEST_CONTENT_ATTRIBUTE));
+				status.addError(this, XML_REQUEST_CONTENT_ATTRIBUTE,
+						"Request content not allowed when " + requestMethod + " method is used.");
 			}
 			if (!StringUtils.isEmpty(inputFieldName)) {
-				status.add(new ConfigurationProblem("Input field not allowed when " + requestMethod + " method is used.", Severity.ERROR, this, Priority.NORMAL, XML_INPUT_PORT_FIELD_NAME));
+				status.addError(this, XML_INPUT_PORT_FIELD_NAME,
+						"Input field not allowed when " + requestMethod + " method is used.");
 			}
 			if (!StringUtils.isEmpty(inputFileUrl)) {
-				status.add(new ConfigurationProblem("Input file URL not allowed when " + requestMethod + " method is used.", Severity.ERROR, this, Priority.NORMAL, XML_INPUT_FILEURL_ATTRIBUTE));
+				status.addError(this, XML_INPUT_FILEURL_ATTRIBUTE, 
+						"Input file URL not allowed when " + requestMethod + " method is used.");
 			}
 		}
 
@@ -2755,22 +2768,21 @@ public class HttpConnector extends Node {
 				try {
 					parseRawHeaderItem(rawHeader);
 				} catch (IllegalArgumentException e) {
-					status.add(new ConfigurationProblem("Missing ':' semicolon character in \"raw HTTP header\" item: \"" + rawHeader + "\"", Severity.WARNING, this, Priority.NORMAL, XML_RAW_HTTP_HEADERS_ATTRIBUTE));
+					status.addWarning(this, XML_RAW_HTTP_HEADERS_ATTRIBUTE,
+							"Missing ':' semicolon character in \"raw HTTP header\" item: \"" + rawHeader + "\"");
 				}
 			}
 		}
 		
 		if (disableSSLCertValidation) {
-			status.add("Certificate validation is disabled. Connection will not be secure.", Severity.WARNING, this, Priority.NORMAL, XML_DISABLE_SSL_CERT_VALIDATION);
+			status.addWarning(this, XML_DISABLE_SSL_CERT_VALIDATION,
+					"Certificate validation is disabled. Connection will not be secure.");
 		}
 
 		try {
 			tryToInit(status);
-		} catch (ComponentNotReadyException e) {
-			status.add("Initialization failed. " + ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, e.getAttributeName());
-		}
-		catch (Exception e) {
-			status.add("Initialization failed. " + ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL);
+		} catch (Exception e) {
+			status.addError(this, null, "Initialization failed.", e);
 		}
 
 		return status;

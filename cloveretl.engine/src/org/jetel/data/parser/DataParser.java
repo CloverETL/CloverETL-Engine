@@ -42,7 +42,6 @@ import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.bytes.ByteCharBuffer;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.QuotingDecoder;
@@ -553,26 +552,15 @@ public class DataParser extends AbstractTextParser {
 				//populate field
 				populateField(record, fieldCounter, fieldBuffer);
 			}
-		} catch (CharsetDecoderException e) {
-			parsingErrorFound(ExceptionUtils.getMessage(e));
 		} catch (Exception ex) {
 			throw new RuntimeException(getErrorMessage(null, metadataFields[fieldCounter]), ex);
 		}
 		
-
 		return record;
 	}
 
 	public int getOverStepChars() {
 		return tempReadBuffer.length();
-	}
-
-	private void parsingErrorFound(String exceptionMessage) {
-        if (exceptionHandler != null) {
-            exceptionHandler.populateHandler("Parsing error: " + exceptionMessage, null, -1, -1, null, new BadDataFormatException("Parsing error: " + exceptionMessage));
-        } else {
-			throw new RuntimeException("Parsing error: " + exceptionMessage);
-		}
 	}
 
 	private DataRecord parsingErrorFound(String exceptionMessage, DataRecord record, int fieldNum) {

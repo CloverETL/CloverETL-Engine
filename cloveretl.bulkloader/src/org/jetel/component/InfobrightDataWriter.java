@@ -49,10 +49,7 @@ import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.database.sql.JdbcSpecific.OperationType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -215,23 +212,22 @@ public class InfobrightDataWriter extends Node {
 		try {
 			chset = Charset.forName(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 		} catch (Exception e) {
-			status.add(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_CHARSET_ATTRIBUTE);
+			status.addError(this, XML_CHARSET_ATTRIBUTE, e);
 		}
 
 		//check debug file
 		try {
 			if (logFile != null && !FileUtils.canWrite(getGraph().getRuntimeContext().getContextURL(), logFile)) {
-				status.add(new ConfigurationProblem("Can't write to " + logFile, Severity.WARNING, this, Priority.NORMAL, XML_LOG_FILE_ATTRIBUTE));
+				status.addWarning(this, XML_LOG_FILE_ATTRIBUTE, "Can't write to " + logFile);
 			}
 		} catch (ComponentNotReadyException e) {
-			status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, XML_LOG_FILE_ATTRIBUTE));
+			status.addWarning(this, XML_LOG_FILE_ATTRIBUTE, e);
 		}
 		
 		if (dataFormatStr != null) {
 			if (!(dataFormatStr.equalsIgnoreCase(DataFormat.BINARY.getBhDataFormat())
 					|| dataFormatStr.equalsIgnoreCase(DataFormat.TXT_VARIABLE.getBhDataFormat()))){
-				status.add(new ConfigurationProblem("Unknown data format: " + dataFormatStr + ". " + DEFAULT_DATA_FORMAT.getBhDataFormat() + " will be used.", 
-						Severity.WARNING, this, Priority.NORMAL, XML_DATA_FORMAT_ATTRIBUTE));
+				status.addWarning(this, XML_DATA_FORMAT_ATTRIBUTE, "Unknown data format: " + dataFormatStr + ". " + DEFAULT_DATA_FORMAT.getBhDataFormat() + " will be used.");
 			}
 			this.dataFormat = dataFormatStr.equalsIgnoreCase(DataFormat.BINARY.getBhDataFormat()) ?
 					DataFormat.BINARY : DataFormat.TXT_VARIABLE;
@@ -241,15 +237,15 @@ public class InfobrightDataWriter extends Node {
 	    if (dbConnection == null && connectionName != null){
 	        IConnection conn = getGraph().getConnection(connectionName);
             if(conn == null) {
-                status.add("Can't find DBConnection ID: " + connectionName, Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+                status.addError(this, XML_DBCONNECTION_ATTRIBUTE, "Can't find DBConnection ID: " + connectionName);
             }else
             if(!(conn instanceof DBConnection)) {
-                status.add("Connection with ID: " + connectionName + " isn't instance of the DBConnection class.", Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+                status.addError(this, XML_DBCONNECTION_ATTRIBUTE, "Connection with ID: " + connectionName + " isn't instance of the DBConnection class.");
             }else{
             	dbConnection = (DBConnection) conn;
             }
 	    } else if (connectionName == null) {
-	    	status.add("DB connection not defined.", Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+	    	status.addError(this, XML_DBCONNECTION_ATTRIBUTE, "DB connection not defined.");
 	    	return status;
 	    }
 	    //check connection
@@ -258,10 +254,10 @@ public class InfobrightDataWriter extends Node {
 				dbConnection.init();
 				sqlConnection = dbConnection.getConnection(getId(), OperationType.WRITE);
 			} catch (ComponentNotReadyException e) {
-				status.add(e, Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+				status.addError(this, XML_DBCONNECTION_ATTRIBUTE, e);
 				return status;
 			} catch (JetelException e) {
-				status.add(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+				status.addError(this, XML_DBCONNECTION_ATTRIBUTE, e);
 				return status;
 			}
 		}        
@@ -280,7 +276,7 @@ public class InfobrightDataWriter extends Node {
 		}
 		
 		if (table == null) {
-			status.add("Database table not defined.", Severity.ERROR, this, Priority.NORMAL, XML_TABLE_ATTRIBUTE);
+			status.addError(this, XML_TABLE_ATTRIBUTE, "Database table not defined.");
 			return status;
 		}
 		
@@ -293,16 +289,16 @@ public class InfobrightDataWriter extends Node {
 //			loader = new InfobrightNamedPipeLoader(quotedTable, sqlConnection, log, dataFormat, chset, agentPort);
 			// TODO Labels end
 		} catch (Exception e) {
-			status.add(new ComponentNotReadyException(e), Severity.ERROR, this, Priority.NORMAL, XML_AGENT_PORT_ATTRIBUTE);
+			status.addError(this, XML_AGENT_PORT_ATTRIBUTE, e);
 		}
 
 		if (sqlConnection != null && loader != null) {
 			try {
 				bRecord = createBrighthouseRecord(metadata, dbConnection.getJdbcSpecific(), log);
 			} catch (SQLException e) {//probably table doesn't exist yet
-				status.add(ExceptionUtils.getMessage(e), Severity.WARNING, this, Priority.NORMAL, XML_TABLE_ATTRIBUTE);
+				status.addWarning(this, XML_TABLE_ATTRIBUTE, e);
 			}catch (Exception e) {
-				status.add(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_CLOVER_FIELDS_ATTRIBUTE);
+				status.addError(this, XML_CLOVER_FIELDS_ATTRIBUTE, e);
 			}
 		}
 		return status;

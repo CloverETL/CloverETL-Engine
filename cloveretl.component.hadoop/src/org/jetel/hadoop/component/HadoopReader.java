@@ -30,10 +30,7 @@ import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
@@ -44,7 +41,6 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.hadoop.connection.HadoopConnection;
 import org.jetel.hadoop.connection.HadoopURLUtils;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
@@ -349,19 +345,19 @@ public class HadoopReader extends Node {
 		checkMetadata(status, null, getOutPorts());
 
 		if (!PolicyType.isPolicyType(policyTypeStr)) {
-			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+			status.addError(this, XML_DATAPOLICY_ATTRIBUTE, "Invalid data policy: " + policyTypeStr);
 		} else {
 			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
 		}
 		
 		if (fileURL == null) {
-			status.add("File URL not defined.", Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE);
+			status.addError(this, XML_FILEURL_ATTRIBUTE, "File URL not defined.");
 		}
 		if (keyFieldName == null) {
-			status.add("Key field not defined.", Severity.ERROR, this, Priority.NORMAL, XML_KEY_FIELD_NAME_ATTRIBUTE);
+			status.addError(this, XML_KEY_FIELD_NAME_ATTRIBUTE, "Key field not defined.");
 		}
 		if (valueFieldName == null) {
-			status.add("Value field not defined.", Severity.ERROR, this, Priority.NORMAL, XML_VALUE_FIELD_NAME_ATTRIBUTE);
+			status.addError(this, XML_VALUE_FIELD_NAME_ATTRIBUTE, "Value field not defined.");
 		}
 
 		try {
@@ -370,23 +366,14 @@ public class HadoopReader extends Node {
 			checkConnectionIDs(connectionId, connection, this, status);
 			DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
 			if (!metadata.hasFieldWithoutAutofilling()) {
-				status.add(new ConfigurationProblem("No field elements without autofilling for '"
-						+ getOutputPort(OUTPUT_PORT).getMetadata().getName() + "' have been found!",
-						ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+				status.addError(this, null, "No field elements without autofilling for '"
+						+ getOutputPort(OUTPUT_PORT).getMetadata().getName() + "' have been found!");
 			}
 			reader.checkConfig(metadata);
-		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
-			if (!StringUtils.isEmpty(e.getAttributeName())) {
-				problem.setAttributeName(e.getAttributeName());
-			}
-			status.add(problem);
 		} catch (Exception e) {
-			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
-			status.add(problem);
+			status.addWarning(this, null, e);
 		} catch (NoClassDefFoundError e) {
-			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-			status.add(problem);
+			status.addError(this, null, e);
 		} finally {
 			free();
 		}
@@ -396,8 +383,8 @@ public class HadoopReader extends Node {
 
 	static void checkConnectionIDs(String hadConnId, HadoopConnection usedHadConn, IGraphElement graphElement, ConfigurationStatus status) {
 		if (!StringUtils.isEmpty(hadConnId) && !hadConnId.equalsIgnoreCase(usedHadConn.getId())) { 
-			status.add(new ConfigurationProblem("Hadoop connecion with ID '" + usedHadConn.getId() + "' is specified in the 'File URL' component property, therefore connection with ID '" + hadConnId +
-					"' form 'Hadoop connection' property will be ignored", ConfigurationStatus.Severity.INFO, graphElement, ConfigurationStatus.Priority.LOW, XML_CONNECTION_ID_ATTRIBUTE));
+			status.addInfo(graphElement, XML_CONNECTION_ID_ATTRIBUTE, "Hadoop connecion with ID '" + usedHadConn.getId() + "' is specified in the 'File URL' component property, therefore connection with ID '" + hadConnId +
+					"' form 'Hadoop connection' property will be ignored");
 		}
 	}
 

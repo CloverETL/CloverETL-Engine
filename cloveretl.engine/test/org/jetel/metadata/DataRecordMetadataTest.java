@@ -162,8 +162,8 @@ public class DataRecordMetadataTest extends CloverTestCase {
 		
 		ConfigurationStatus status = new ConfigurationStatus();
 		aDelimitedDataRecordMetadata.checkConfig(status);
-		assertEquals(1, status.size());
-		status.clear();
+		assertEquals(1, status.getProblems().size());
+		status = new ConfigurationStatus();
 		
 		DataFieldMetadata aDataFieldMetadata = new DataFieldMetadata("Field0",DataFieldMetadata.INTEGER_FIELD,null);
 		aDataFieldMetadata.setDefaultValueStr("0");
@@ -172,36 +172,36 @@ public class DataRecordMetadataTest extends CloverTestCase {
 		aDataFieldMetadata.setDefaultValueStr("1");
 		aDelimitedDataRecordMetadata.addField(aDataFieldMetadata);
 		aDelimitedDataRecordMetadata.checkConfig(status);
-		assertEquals(2, status.size());
-		status.clear();
+		assertEquals(2, status.getProblems().size());
+		status = new ConfigurationStatus();
 		
 		aDelimitedDataRecordMetadata.delField(1);
 		aDataFieldMetadata = new DataFieldMetadata("Field1",DataFieldMetadata.INTEGER_FIELD,";");
 		aDataFieldMetadata.setDefaultValueStr("null");
 		aDelimitedDataRecordMetadata.addField(aDataFieldMetadata);
 		aDelimitedDataRecordMetadata.checkConfig(status);
-		assertEquals(2, status.size());
-		status.clear();
+		assertEquals(2, status.getProblems().size());
+		status = new ConfigurationStatus();
 		
 		aDelimitedDataRecordMetadata.setFieldDelimiter(";");
 		
 		aDataFieldMetadata.setNullable(false);
 		aDataFieldMetadata.setDefaultValue(Integer.MIN_VALUE + 1);
 		aDelimitedDataRecordMetadata.checkConfig(status);
-		assertEquals(0, status.size());
-		status.clear();
+		assertEquals(0, status.getProblems().size());
+		status = new ConfigurationStatus();
 		
 		aDataFieldMetadata.setDefaultValue(-1);
 		aDelimitedDataRecordMetadata.checkConfig(status);
-		assertEquals(0, status.size());
+		assertEquals(0, status.getProblems().size());
 	}
 	
 	public void test_checkConfigFixed(){
 		
 		ConfigurationStatus status = new ConfigurationStatus();
 		aFixedDataRecordMetadata.checkConfig(status);
-		assertEquals(1, status.size());
-		status.clear();
+		assertEquals(1, status.getProblems().size());
+		status = new ConfigurationStatus();
 		
 		DataFieldMetadata aDataFieldMetadata = new DataFieldMetadata("Field0",DataFieldMetadata.INTEGER_FIELD,null);
 		aDataFieldMetadata.setDefaultValueStr("0");
@@ -210,28 +210,28 @@ public class DataRecordMetadataTest extends CloverTestCase {
 		aDataFieldMetadata.setDefaultValueStr("1");
 		aFixedDataRecordMetadata.addField(aDataFieldMetadata);
 		aFixedDataRecordMetadata.checkConfig(status);
-		assertEquals(2, status.size());
-		status.clear();
+		assertEquals(2, status.getProblems().size());
+		status = new ConfigurationStatus();
 		
 		aFixedDataRecordMetadata.delField(1);
 		aDataFieldMetadata = new DataFieldMetadata("Field1",DataFieldMetadata.INTEGER_FIELD,(short)4);
 		aDataFieldMetadata.setDefaultValueStr("null");
 		aFixedDataRecordMetadata.addField(aDataFieldMetadata);
 		aFixedDataRecordMetadata.checkConfig(status);
-		assertEquals(2, status.size());
-		status.clear();
+		assertEquals(2, status.getProblems().size());
+		status = new ConfigurationStatus();
 		
 		aFixedDataRecordMetadata.getField(0).setSize((short)2);
 		
 		aDataFieldMetadata.setNullable(false);
 		aDataFieldMetadata.setDefaultValue(Integer.MIN_VALUE + 1);
 		aFixedDataRecordMetadata.checkConfig(status);
-		assertEquals(0, status.size());
-		status.clear();
+		assertEquals(0, status.getProblems().size());
+		status = new ConfigurationStatus();
 		
 		aDataFieldMetadata.setDefaultValue(-1);
 		aFixedDataRecordMetadata.checkConfig(status);
-		assertEquals(0, status.size());
+		assertEquals(0, status.getProblems().size());
 	}
 
 	public void test_checkConfigMixed(){
@@ -254,28 +254,28 @@ public class DataRecordMetadataTest extends CloverTestCase {
 		aDataFieldMetadata.setDefaultValueStr("1");
 		aMixedDataRecordMetadata.addField(aDataFieldMetadata);
 		aMixedDataRecordMetadata.checkConfig(status);
-		assertEquals(2, status.size());
-		status.clear();
+		assertEquals(2, status.getProblems().size());
+		status = new ConfigurationStatus();
 		
 		aMixedDataRecordMetadata.delField(1);
 		aDataFieldMetadata = new DataFieldMetadata("Field1",DataFieldMetadata.INTEGER_FIELD,";");
 		aDataFieldMetadata.setDefaultValueStr("null");
 		aMixedDataRecordMetadata.addField(aDataFieldMetadata);
 		aMixedDataRecordMetadata.checkConfig(status);
-		assertEquals(2, status.size());
-		status.clear();
+		assertEquals(2, status.getProblems().size());
+		status = new ConfigurationStatus();
 		
 		aMixedDataRecordMetadata.getField(0).setSize((short)4);
 		
 		aDataFieldMetadata.setNullable(false);
 		aDataFieldMetadata.setDefaultValue(Integer.MIN_VALUE + 1);
 		aMixedDataRecordMetadata.checkConfig(status);
-		assertEquals(0, status.size());
-		status.clear();
+		assertEquals(0, status.getProblems().size());
+		status = new ConfigurationStatus();
 		
 		aDataFieldMetadata.setDefaultValue(-1);
 		aMixedDataRecordMetadata.checkConfig(status);
-		assertEquals(0, status.size());
+		assertEquals(0, status.getProblems().size());
 	}
 	
 	public void test_normalize() {
