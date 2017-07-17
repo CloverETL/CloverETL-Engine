@@ -157,6 +157,14 @@ public class TransformationGraphAnalyzer {
         graph.setAnalysed(true);
 	}
 	
+	/**
+	 * This method splits REST job into three sections - REST job input and any components attached to it are
+	 * placed into initial phase, anything to which REST job output is attached is placed into final phase.
+	 * Rest of the job is left in original configuration.
+	 * 
+	 * @param graph
+	 * @throws GraphConfigurationException
+	 */
 	private static void analyseRestJob(TransformationGraph graph) throws GraphConfigurationException {
 		
 		Phase inputPhase = new Phase(Phase.INITIAL_PHASE_ID);
