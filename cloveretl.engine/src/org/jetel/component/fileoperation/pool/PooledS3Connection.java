@@ -31,7 +31,6 @@ import org.jetel.util.protocols.URLValidator;
 import org.jetel.util.protocols.Validable;
 import org.jetel.util.protocols.amazon.S3Utils;
 
-import com.amazonaws.AmazonClientException;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.PredefinedClientConfigurations;
 import com.amazonaws.auth.AWSCredentials;
@@ -93,23 +92,17 @@ public class PooledS3Connection extends AbstractPoolableConnection implements Va
 	
 	@Override
 	public void validate() throws IOException {
-		try {
-			// validate connection
-			service.listBuckets();
-		} catch (AmazonClientException e) {
-			if (e.getCause() instanceof IllegalArgumentException) {
-				if ("Empty key".equals(e.getCause().getMessage())) {
-					throw new IOException("S3 URL does not contain valid keys. Please supply access key and secret key in the following format: s3://<AccessKey:SecretKey>@s3.amazonaws.com/<bucket>", S3Utils.getIOException(e));
-				}
-			}
-			throw new IOException("Connection validation failed", S3Utils.getIOException(e));
-		}
+		// Validation is not necessary, because AmazonS3Client uses HTTP connection pooling internally.
+		// A connection with invalid credentials can get into our connection pool, but it doesn't matter.
+		// The first request attempt with invalid connection will fail.
+		// The connection will be automatically removed from the pool after 1 minute of inactivity.
+		// Connection validation in File URL dialog uses validate(URL) instead.
 	}
 
 	@Override
 	public void validate(URL url) throws IOException {
-		validate();
 		try {
+			// we assume that the exception thrown from listFiles() will contain a meaningful error message
 			PrimitiveS3OperationHandler.listFiles(url.toURI(), this);
 		} catch (URISyntaxException e) {
 			throw new IOException(e);

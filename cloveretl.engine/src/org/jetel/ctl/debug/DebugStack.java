@@ -30,14 +30,14 @@ import org.jetel.ctl.data.TLType;
 /**
  * @author dpavlis (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
- *
+ * @author jan.michalica
+ * 
  * @created Aug 20, 2014
  */
 public class DebugStack extends Stack {
 	
 	private List<FunctionCallFrame> callStack = new ArrayList<>();
-	private long varIdSeq;
-	private long callIdSeq;
+	private IdSequence idSequence;
 	
 	public static class FunctionCallFrame {
 		
@@ -80,10 +80,16 @@ public class DebugStack extends Stack {
 		return -1;
 	}
 	
-	@Override
+	public FunctionCallFrame getFunctionCall(int callStackIndex) {
+		if (0 <= callStackIndex && callStackIndex < callStack.size()) {
+			return callStack.get(callStackIndex);
+		}
+		return null;
+	}
+	
 	public void setVariable(int blockOffset, int variableOffset, Object value, String name, TLType type) {
 		Variable storedVar = (Variable)super.getVariable(blockOffset, variableOffset);
-		long id = storedVar != null ? storedVar.getId() : nextVariableId();
+		long id = storedVar != null ? storedVar.getId() : idSequence.nextId();
 		super.setVariable(blockOffset, variableOffset, new Variable(name,type, blockOffset < 0, value, id));
 	}
 	
@@ -98,6 +104,15 @@ public class DebugStack extends Stack {
 	public Object getVariable(int blockOffset, int variableOffset){
 		Variable variable = (Variable)super.getVariable(blockOffset, variableOffset);
 		return variable != null ? variable.getValue() : null;
+	}
+	
+	public Object getVariableChecked(int blockOffset, int variableOffset) throws IllegalArgumentException {
+		Variable variable = (Variable)super.getVariable(blockOffset, variableOffset);
+		if (variable != null) {
+			return variable.getValue();
+		} else {
+			throw new IllegalArgumentException();
+		}
 	}
 	
 	/**
@@ -115,7 +130,7 @@ public class DebugStack extends Stack {
 	
 	public Object[] getLocalVariables(int functionCallIndex) {
 		FunctionCallFrame frame = callStack.get(functionCallIndex);
-		FunctionCallFrame nextFrame = functionCallIndex < callStack.size() - 1 ? callStack.get(functionCallIndex + 1) : null;
+		FunctionCallFrame nextFrame = functionCallIndex + 1 < callStack.size() ? callStack.get(functionCallIndex + 1) : null;
 		
 		final int startIndex = frame.getVarStackIndex() < 0 /* global scope */ ? 1 : frame.getVarStackIndex();
 		final int stopIndex = nextFrame != null ? nextFrame.getVarStackIndex() : variableStack.size();
@@ -142,7 +157,7 @@ public class DebugStack extends Stack {
 	
 	public void enteredSyntheticBlock(CLVFFunctionCall functionCallNode) {
 		if (functionCallNode != null) {
-			FunctionCallFrame frame = new FunctionCallFrame(functionCallNode, nextCallId());
+			FunctionCallFrame frame = new FunctionCallFrame(functionCallNode, idSequence.nextId());
 			callStack.add(frame);
 		}
 	}
@@ -151,6 +166,10 @@ public class DebugStack extends Stack {
 		if (functionCallNode != null) {
 			callStack.remove(callStack.size() - 1);
 		}
+	}
+	
+	public void setIdSequence(IdSequence idSequence) {
+		this.idSequence = idSequence;
 	}
 	
 	/**
@@ -163,7 +182,7 @@ public class DebugStack extends Stack {
 	public void enteredBlock(Scope blockScope, CLVFFunctionCall functionCallNode) {
 		super.enteredBlock(blockScope, functionCallNode);
 		if (functionCallNode != null) {
-			FunctionCallFrame frame = new FunctionCallFrame(functionCallNode, variableStack.size() - 1, nextCallId());
+			FunctionCallFrame frame = new FunctionCallFrame(functionCallNode, variableStack.size() - 1, idSequence.nextId());
 			callStack.add(frame);
 		}
 	}
@@ -184,11 +203,27 @@ public class DebugStack extends Stack {
 		return callStack.listIterator(callStack.size());
 	}
 	
-	public long nextVariableId() {
-		return ++varIdSeq;
-	}
-	
-	private long nextCallId() {
-		return ++callIdSeq;
+	public DebugStack createCopyUpToFrame(FunctionCallFrame callFrame) {
+		
+		if (!this.callStack.contains(callFrame)) {
+			throw new IllegalArgumentException("Call stack does not contain given call frame");
+		}
+		
+		final int frameIndex = callStack.indexOf(callFrame);
+		
+		DebugStack copy = new DebugStack();
+		copy.callStack = new ArrayList<>(callStack.subList(0, frameIndex + 1));
+		copy.idSequence = this.idSequence;
+		/*
+		 * variable stack has to be copied deeply to prevent original stack corruption should the expression have failed
+		 */
+		FunctionCallFrame nextFrame = frameIndex + 1 < callStack.size() ? callStack.get(frameIndex + 1) : null;
+		ArrayList<Object[]> varStackCopy = new ArrayList<>(variableStack.subList(0, nextFrame != null ? nextFrame.getVarStackIndex() : variableStack.size()));
+		for (int i = 0; i < varStackCopy.size(); ++i) {
+			varStackCopy.set(i, varStackCopy.get(i).clone());
+		}
+		copy.variableStack = varStackCopy;
+		
+		return copy;
 	}
 }

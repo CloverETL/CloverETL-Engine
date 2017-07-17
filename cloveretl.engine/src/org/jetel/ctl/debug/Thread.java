@@ -23,8 +23,6 @@ import java.io.Serializable;
 /**
  * This unit represents a thread in which a CTL code is being executed.
  * 
- * Note: this class has a natural ordering that is inconsistent with equals.
- * 
  * @author jan.michalica (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *

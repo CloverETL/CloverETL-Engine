@@ -247,7 +247,7 @@ public class ExceptionUtils {
 		//if the last item in the exception chain does not have an message, class name is used instead of message
 		//artificial exceptions are not considered RootException and StackTraceWrapperException
 		if (!(t instanceof RootException) && !(t instanceof StackTraceWrapperException) && message == null && t.getCause() == null) {
-			message = getClassName(t);
+			message = t.toString();
 		}
 
 		//do not report exception message that is mentioned already in parent exception message

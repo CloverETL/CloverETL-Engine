@@ -61,6 +61,7 @@ import org.jetel.util.crypto.Digest;
 import org.jetel.util.crypto.Digest.DigestType;
 import org.jetel.util.formatter.TimeZoneProvider;
 import org.jetel.util.primitive.TypedProperties;
+import org.jetel.util.property.PropertiesUtilsTest;
 import org.jetel.util.string.CloverString;
 import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTime;
@@ -5267,7 +5268,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
         doCompile("test_lookup");
 		check("alphaResult", Arrays.asList("Andorra la Vella","Andorra la Vella"));
 		check("bravoResult", Arrays.asList("Bruxelles","Bruxelles"));
-		check("charlieResult", Arrays.asList("Chamonix","Chodov","Chomutov","Chamonix","Chodov","Chomutov"));
+		check("charlieResult", Arrays.asList("Chamonix","Chomutov","Chodov","Chamonix","Chomutov","Chodov"));
 		check("countResult", Arrays.asList(3,3));
 		check("charlieUpdatedCount", 5);
 		check("charlieUpdatedResult", Arrays.asList("Chamonix", "Cheb", "Chodov", "Chomutov", "Chrudim"));

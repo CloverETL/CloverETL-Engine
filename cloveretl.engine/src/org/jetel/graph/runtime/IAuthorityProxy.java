@@ -633,6 +633,11 @@ public abstract class IAuthorityProxy {
 	public abstract boolean isClusterEnabled();
 	
 	/**
+	 * Returns true if runtime environment allows executing partitioned jobs.
+	 */
+	public abstract boolean isPartitioningEnabled();
+	
+	/**
 	 * Returns secret value of the given parameter or null if no value is available.
 	 * An exception can be thrown in case the authority decides the parameter should be resolved
 	 * but the requested value is not available or no enough permission for this operation is granted.

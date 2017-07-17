@@ -68,17 +68,17 @@ public class NullRecord extends DataRecordImpl {
 	
 	@Override
 	public void deserialize(CloverBuffer buffer) {
-		throw new UnsupportedOperationException("Can't deserialize NullRecord");
+		throw new UnsupportedOperationException("Cannot deserialize NullRecord");
 	}
 	
 	@Override
 	public void deserialize(CloverBuffer buffer, int[] whichFields) {
-		throw new UnsupportedOperationException("Can't deserialize NullRecord");
+		throw new UnsupportedOperationException("Cannot deserialize NullRecord");
 	}
 	
 	@Override
-	public void deserialize(CloverBuffer buffer,DataRecordSerializer serializer) {
-		throw new UnsupportedOperationException("Can't serialize NullRecord");
+	public void deserialize(CloverBuffer buffer, DataRecordSerializer serializer) {
+		throw new UnsupportedOperationException("Cannot deserialize NullRecord");
 	}
 	
 	@Override
@@ -93,22 +93,22 @@ public class NullRecord extends DataRecordImpl {
 	
 	@Override
 	public void serialize(CloverBuffer buffer) {
-		throw new UnsupportedOperationException("Can't serialize NullRecord");
+		throw new UnsupportedOperationException("Cannot serialize NullRecord");
 	}
 	
 	@Override
 	public void serialize(CloverBuffer buffer, int[] whichFields) {
-		throw new UnsupportedOperationException("Can't serialize NullRecord");
+		throw new UnsupportedOperationException("Cannot serialize NullRecord");
 	}
 	
 	@Override
-	public void serialize(CloverBuffer buffer,DataRecordSerializer serializer) {
-		throw new UnsupportedOperationException("Can't serialize NullRecord");
+	public void serialize(CloverBuffer buffer, DataRecordSerializer serializer) {
+		throw new UnsupportedOperationException("Cannot serialize NullRecord");
 	}
 	
 	@Override
 	public void serialize(CloverBuffer buffer, DataRecordSerializer serializer, int[] whichFields) {
-		throw new UnsupportedOperationException("Can't serialize NullRecord");
+		throw new UnsupportedOperationException("Cannot serialize NullRecord");
 	}
 
 	@Override
@@ -230,12 +230,12 @@ final class NullField extends DataFieldImpl {
 
 	@Override
 	public void deserialize(CloverBuffer buffer) {
-		throw new UnsupportedOperationException("Can't deserialize NullField");
+		throw new UnsupportedOperationException("Cannot deserialize NullField");
 	}
 	
 	@Override
-	public void deserialize(CloverBuffer buffer,DataRecordSerializer serializer) {
-		throw new UnsupportedOperationException("Can't serialize NullRecord");
+	public void deserialize(CloverBuffer buffer, DataRecordSerializer serializer) {
+		throw new UnsupportedOperationException("Cannot deserialize NullField");
 	}
 
 	@Override
@@ -293,12 +293,12 @@ final class NullField extends DataFieldImpl {
 
 	@Override
 	public void serialize(CloverBuffer buffer) {
-		throw new UnsupportedOperationException("Can't serialize NullField");
+		throw new UnsupportedOperationException("Cannot serialize NullField");
 	}
 	
 	@Override
-	public void serialize(CloverBuffer buffer,DataRecordSerializer serializer) {
-		throw new UnsupportedOperationException("Can't serialize NullRecord");
+	public void serialize(CloverBuffer buffer, DataRecordSerializer serializer) {
+		throw new UnsupportedOperationException("Cannot serialize NullField");
 	}
 
 	@Override
@@ -313,7 +313,7 @@ final class NullField extends DataFieldImpl {
 	@Override
 	public void setNull(boolean isNull) {
 		if (!isNull) throw new IllegalArgumentException(
-				"Can't set nullable=false for " + DataFieldType.NULL.getName() + " data field!!!");
+				"Cannot set nullable=false for " + DataFieldType.NULL.getName() + " data field.");
 		super.setNull(isNull);
 	}
 }

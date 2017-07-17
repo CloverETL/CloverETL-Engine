@@ -543,7 +543,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
                 return new DBConnectionImpl(id, xattribs.getString(XML_DBCONFIG_ATTRIBUTE));
             } else {
             	xattribs.setResolveReferences(false);
-                Properties connectionProps  = xattribs.attributes2Properties(new String[] {XML_ID_ATTRIBUTE}, RefResFlag.ALL_OFF.forceSecureParameters(false));
+                Properties connectionProps  = xattribs.attributes2Properties(new String[] {XML_ID_ATTRIBUTE}, RefResFlag.ALL_OFF);
                 
                 return new DBConnectionImpl(id, connectionProps);
             }

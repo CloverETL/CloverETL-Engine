@@ -20,8 +20,6 @@ package org.jetel.lookup;
 
 import java.util.ConcurrentModificationException;
 
-import junit.framework.Assert;
-
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.RecordKey;
@@ -32,6 +30,8 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
+
+import junit.framework.Assert;
 
 /**
  * @author Raszyk (info@cloveretl.com)
@@ -67,14 +67,14 @@ public class ClearTest extends CloverTestCase {
 		Assert.assertTrue(lookup1.hasNext());
 		
 		dr = lookup1.next();
-		Assert.assertEquals("2.6", dr.getField(1).getValue().toString());
+		Assert.assertEquals("2.5", dr.getField(1).getValue().toString());
 		Assert.assertTrue(lookup1.hasNext());
 		
 		slt.clear();
 		
 		Assert.assertTrue(lookup1.hasNext());
 		dr = lookup1.next();
-		Assert.assertEquals("2.5", dr.getField(1).getValue().toString());
+		Assert.assertEquals("2.6", dr.getField(1).getValue().toString());
 		
 		Assert.assertTrue(!lookup1.hasNext());
 		

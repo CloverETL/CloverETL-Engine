@@ -81,17 +81,23 @@ public class TypedProperties extends Properties {
      * @param refProperties properties to reference resolving
      */
     public TypedProperties(Properties properties, GraphParameters refParameters) {
+    	this(properties, (refParameters != null) ? new PropertyRefResolver(refParameters) : null);
+    }
+
+    /**
+     * @param properties
+     * @param resolver
+     */
+    public TypedProperties(Properties properties, PropertyRefResolver resolver) {
         super();
         
         //preset given properties
-        if(properties != null) {
+        if (properties != null) {
             putAll(properties);
         }
         
         //initialize propertyRefResolver
-        if (refParameters != null) {
-        	propertyRefResolver = new PropertyRefResolver(refParameters);
-        }
+        propertyRefResolver = resolver;
     }
 
     /**

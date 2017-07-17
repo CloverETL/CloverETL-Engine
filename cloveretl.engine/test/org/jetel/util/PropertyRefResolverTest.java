@@ -46,6 +46,12 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		graphParameters.addGraphParameter("recursion", "a${recursion}");
 		graphParameters.addGraphParameter("specChars", "a\\nb");
 		
+		graphParameters.addGraphParameter("composition1", "${composition1${composition1Idx}}");
+		graphParameters.addGraphParameter("composition1Idx", "A");
+		graphParameters.addGraphParameter("composition1A", "Composition1Result");
+		graphParameters.addGraphParameter("composition2", "${user}_${${composition2A}}_${pwd}");
+		graphParameters.addGraphParameter("composition2A", "nonResolvable2");
+		
 		GraphParameter gp1 = new GraphParameter("secureParameter", "abc");
 		gp1.setSecure(true);
 		graphParameters.addGraphParameter(gp1);
@@ -119,6 +125,9 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		assertEquals("${pwd}myself", resolver.resolveRef("${nonResolvable1}${user}"));
 		assertEquals("myself${pwd}", resolver.resolveRef("${user}${nonResolvable1}"));
 		assertEquals("${nonResolvable4}", resolver.resolveRef("${nonResolvable4}"));
+
+		assertEquals("Composition1Result_myself", resolver.resolveRef("${composition1}_${user}"));
+		assertEquals("myself_myself_abc${user}def${pwd}ghi_xxxyyyzzz_xxxyyyzzz", resolver.resolveRef("${user}_${composition2}_${pwd}"));
 	}
 
 	public void testEvaluate() {
@@ -224,7 +233,8 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		assertEquals(null, resolver.getResolvedPropertyValue("nonexisting_parameter", RefResFlag.SPEC_CHARACTERS_OFF));
 		assertEquals("${nonResolvable4}", resolver.getResolvedPropertyValue("nonResolvable4", RefResFlag.SPEC_CHARACTERS_OFF));
 		assertEquals("abc${user}def${pwd}ghi", resolver.getResolvedPropertyValue("nonResolvable2", RefResFlag.SPEC_CHARACTERS_OFF));
-		
+		assertEquals("Composition1Result", resolver.getResolvedPropertyValue("composition1", RefResFlag.SPEC_CHARACTERS_OFF));
+		assertEquals("myself_abc${user}def${pwd}ghi_xxxyyyzzz", resolver.getResolvedPropertyValue("composition2", RefResFlag.SPEC_CHARACTERS_OFF));
 		
 		try {
 			resolver.getResolvedPropertyValue("", RefResFlag.REGULAR);

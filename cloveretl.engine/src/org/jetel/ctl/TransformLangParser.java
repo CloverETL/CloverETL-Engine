@@ -95,8 +95,16 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         }
 
     @Override
-    public final Map<String,List<CLVFFunctionDeclaration>> getFunctions(){
+    public final Map<String, List<CLVFFunctionDeclaration>> getFunctions(){
         return parserHelper.getFunctions();
+    }
+
+    public void setFunctions(Map<String, List<CLVFFunctionDeclaration>> functions) {
+                parserHelper.getFunctions().putAll(functions);
+    }
+
+    public void setCurrentScope(Scope scope) {
+                parserHelper.setCurrentScope(scope);
     }
 
      public static final String unquote(String image){

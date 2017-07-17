@@ -18,12 +18,6 @@
  */
 package org.jetel.exception;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.jetel.graph.runtime.TempSpace;
-
 /**
  * Custom exception for problems occurring when temp. file is being created.
  * 
@@ -54,7 +48,7 @@ public class TempFileCreationException extends Exception {
 		NO_SPACE_AVAILABLE, NO_TEMPSPACE_CONFIGURED, MIXED, OTHER
 	}
 
-	private final Map<TempSpace, Throwable> causes = new LinkedHashMap<TempSpace, Throwable>();
+	private Throwable cause;
 	private Reason reason;
 
 	/**
@@ -93,43 +87,9 @@ public class TempFileCreationException extends Exception {
 	 * @param tempSpace
 	 *            temp space where temp file creation attempt has been performed
 	 */
-	public TempFileCreationException(Throwable cause, String label, int allocationHint, Long runId, TempSpace tempSpace) {
+	public TempFileCreationException(Throwable cause, String label, int allocationHint, Long runId) {
 		super(String.format("Creation of temp. space with label '%s', hint=%d failed for graph run id=%d", label, allocationHint, runId), cause);
-		if (cause != null) {
-			causes.put(tempSpace, cause);
-		}
-	}
-
-	/**
-	 * <p>
-	 * Add next cause to the exception (this kind of exceptions can have multiple causes that are necessary but not
-	 * sufficient conditions of the failure – only the combination is sufficient condition).
-	 * </p>
-	 * 
-	 * <p>
-	 * This method is not valid if reason is already set (by
-	 * {@link #TempFileCreationException(String, Reason, String, int, Long)} constructor)
-	 * </p>
-	 * 
-	 * @param t
-	 *            throwable that co-caused the exception
-	 * @param tempSpace
-	 *            temp space where temp file creation attempt leading to t has been performed
-	 */
-	public void addCause(Throwable t, TempSpace tempSpace) {
-		if (t == null) {
-			throw new IllegalArgumentException("param. Throwable t can not be null");
-		}
-		if (tempSpace == null) {
-			throw new IllegalArgumentException("param. tempSpace can not be null");
-		}
-		if (reason != null) {
-			throw new IllegalStateException("causes can not be added to exception that has already reason set");
-		}
-		if (causes.containsKey(tempSpace)) {
-			throw new IllegalArgumentException("exception already logged for tempsSpace " + tempSpace);
-		}
-		causes.put(tempSpace, t);
+		this.cause = cause;
 	}
 
 	/**
@@ -142,17 +102,10 @@ public class TempFileCreationException extends Exception {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder(super.toString());
-		if (!causes.isEmpty()) {
-			boolean multipleCauses = causes.size() > 1;
-			sb.append("\n\tThe temp file creation error has " + causes.size() + " cause" + (multipleCauses ? "s" : "") + ":\n");
-			int i = 1;
-			for (Entry<TempSpace, Throwable> cause : causes.entrySet()) {
-				sb.append("\t\t");
-				if (multipleCauses) {
-					sb.append("Cause " + i++ + (cause.getKey() == null ? "" : "; in " + cause.getKey()) + ": ");
-				}
-				sb.append(cause.getValue() + "\n");
-			}
+		if (cause != null) {
+			sb.append("\n\tThe temp file creation error has cause:\n");
+			sb.append("\t\t");
+			sb.append(cause + "\n");
 		}
 		return sb.toString();
 	}

@@ -73,26 +73,37 @@ The structure of input XML file is defined by XSD so you can use visual mapping 
 <Phase number="0">
 <Node dedupKey="actor_id(a)" enabled="enabled" guiName="1 record per actor" guiX="558" guiY="283" id="DEDUP0" type="DEDUP"/>
 <Node enabled="enabled" guiName="join actor_id to movie" guiX="473" guiY="394" id="EXT_HASH_JOIN0" joinKey="$movie_id=$movie_id" type="EXT_HASH_JOIN">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	$0.actor_id := $0.actor_id;
-	$0.movie_id := $1.movie_id;
-	$0.title := $1.title;
-	$0.description := $1.description;
-	$0.release_year := $1.release_year;
-	$0.category := $1.category;
+function integer transform() {
+	$out.0.actor_id = $in.0.actor_id;
+	$out.0.movie_id = $in.1.movie_id;
+	$out.0.title = $in.1.title;
+	$out.0.description = $in.1.description;
+	$out.0.release_year = $in.1.release_year;
+	$out.0.category = $in.1.category;
+
+	return ALL;
 }
 
-// Called to return a user-defined error message when an error occurs.
-// function getMessage() {}
-
 // Called during component initialization.
-// function init() {}
+// function boolean init() {}
 
-// Called after the component finishes.
-// function finished() {}
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
 ]]></attr>
 </Node>
 <Node enabled="enabled" guiName="actor_id" guiX="419" guiY="283" id="EXT_SORT0" sortKey="actor_id(a)" type="EXT_SORT"/>

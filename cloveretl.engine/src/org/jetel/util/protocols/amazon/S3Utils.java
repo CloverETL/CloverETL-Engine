@@ -22,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -46,6 +47,8 @@ import com.amazonaws.services.s3.transfer.Upload;
  * @created 1. 10. 2015
  */
 public class S3Utils {
+	
+	public static final String FORWARD_SLASH = "/";
 	
 	private static String JETS3T_PROPERTIES_FILENAME = "jets3t.properties";
 	
@@ -88,6 +91,27 @@ public class S3Utils {
 		return sse;
 	}
 
+	/**
+	 * Extracts bucket name and key from the URI.
+	 * If the key is empty, the returned array has just one element.
+	 * For an URI pointing to S3 root,
+	 * an array containing one empty string is returned.
+	 * 
+	 * @param uri
+	 * @return [bucketName, key] or [bucketName]
+	 */
+	public static String[] getPath(URI uri) {
+		String path = uri.getPath();
+		if (path.startsWith(FORWARD_SLASH)) {
+			path = path.substring(1);
+		}
+		String[] parts = path.split(FORWARD_SLASH, 2);
+		if ((parts.length == 2) && parts[1].isEmpty()) {
+			return new String[] {parts[0]};
+		}
+		return parts;
+	}
+	
 	/**
 	 * CLO-8589: set content length to 0 to prevent a warning being logged.
 	 * 
@@ -149,7 +173,7 @@ public class S3Utils {
 		return new ListObjectsRequest(bucketName, prefix, null, delimiter, Integer.MAX_VALUE);
 	}
 	
-	public static IOException getIOException(Throwable t) {
+	private static Throwable processS3Exception(Throwable t) {
 		if (t instanceof AmazonS3Exception) {
 			AmazonS3Exception e = (AmazonS3Exception) t;
 			Map<String, String> details = e.getAdditionalDetails();
@@ -170,6 +194,22 @@ public class S3Utils {
 				}
 			}
 		}
+		
+		return t;
+	}
+	
+	public static IOException getIOException(Throwable t) {
+		// detect empty key in all exceptions
+		if (t instanceof AmazonClientException) {
+			Throwable cause = ExceptionUtils.getRootCause(t);
+			if (cause instanceof IllegalArgumentException) {
+				if ("Empty key".equals(cause.getMessage())) {
+					return new IOException("S3 URL does not contain valid keys. Please supply access key and secret key in the following format: s3://<AccessKey>:<SecretKey>@s3.amazonaws.com/<bucket>", processS3Exception(t));
+				}
+			}
+		}
+		
+		t = processS3Exception(t);
 		return ExceptionUtils.getIOException(t);
 	}
 	

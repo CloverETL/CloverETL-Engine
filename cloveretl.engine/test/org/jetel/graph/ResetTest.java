@@ -13,9 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
 import org.apache.commons.io.filefilter.AbstractFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.logging.Log;
@@ -26,6 +23,9 @@ import org.jetel.main.runGraph;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
+
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /*
  * Copyright (c) 2004-2005 Javlin Consulting s.r.o. All rights reserved.
@@ -201,6 +201,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("LUTPersistent_wrong_metadata.grf") // ok, is to fail
 							&& !file.getName().equals("UDW_nonExistingDir_fail_CL-2478.grf") // ok, is to fail
 							&& !file.getName().equals("CTL_lookup_put_fail.grf") // ok, is to fail
+							&& !file.getName().equals("PersistentLookupTable_keyDuplicates_incompatibility.grf") // ok, is to fail
 							&& !file.getName().equals("SystemExecute_printBatchFile.grf") // ok, is to fail
 							&& !file.getName().equals("JoinMergeIssue_FailWhenMasterUnsorted.grf") // ok, is to fail
 							&& !file.getName().equals("UDW_remoteZipPartitioning_fail_CL-2564.grf") // ok, is to fail
@@ -233,6 +234,10 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("GEOCoding.grf") // contains subgraphs
 							&& !file.getName().equals("RandomDataGenerator.grf") // contains subgraphs
 							&& !file.getName().equals("graphHTTPConnector.grf") // external service is unstable
+							&& !file.getName().equals("WSC_Soap12_CLO-3349.grf") // external service is unstable (see CLO-9877)
+							&& !file.getName().equals("WebServiceClient.grf") // external service is unstable
+							&& !file.getName().equals("WebServiceClient1.grf") // external service is unstable
+							&& !file.getName().equals("WebServiceClientWithNS.grf") // external service is unstable
 							&& !file.getName().equals("CLO-2214_pre_post_execute_race_condition.grf") // ok, is to fail
 							&& !file.getName().equals("EmptyGraph.grf") // ok, is to fail
 							&& !file.getName().equals("informix.grf") // remove after CLO-2793 solved
@@ -333,7 +338,11 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("ValidationDefaultLanguageSettings.grf") // server test
 							&& !file.getName().equals("DB_rollback_CLO-4878.grf") // server test
 							&& !file.getName().equals("ValidationTransformLifeCycle.grf") // have to be run only once
-							&& !file.getName().equals("Tableau-ThreadSafe.grf"); // disabled test
+							&& !file.getName().equals("Tableau-ThreadSafe.grf") // disabled test
+							&& !file.getName().equals("SalesforceMigration.grf") // Salesforce example
+							&& !file.getName().equals("SalesforceRead.grf") // Salesforce example
+							&& (!file.getParentFile().getName().equals("Salesforce") || file.getName().equals("SalesforceBulkReaderWriter_allDataTypes.grf")) // CLO-9285, run 1 salesforce test
+							;
 				}
 			};
 			
@@ -454,7 +463,7 @@ public class ResetTest extends CloverTestCase {
 
 			EngineInitializer.initGraph(graph);
 
-			for (int i = 0; i < 3; i++) {
+			for (int i = 0; i < 2; i++) {
 
 				final Future<Result> futureResult = runGraph.executeGraph(graph, runtimeContext);
 

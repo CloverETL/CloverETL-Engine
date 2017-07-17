@@ -58,6 +58,7 @@ import org.jetel.graph.runtime.tracker.PrimitiveComponentTokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.ClusterUtils;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.StringUtils;
@@ -509,9 +510,9 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         childThreads = new ArrayList<Thread>();
 
         //cluster related settings can be used only in cluster environment
-        if (!getGraph().getAuthorityProxy().isClusterEnabled()) {
+        if (!getGraph().getAuthorityProxy().isPartitioningEnabled()) {
         	//cluster components cannot be used in non-cluster environment
-        	if (ClusterUtils.isClusterComponent(getType())) {
+        	if (ClusterUtils.isDataPartitioningComponent(getType())) {
 				throw new JetelRuntimeException("Cluster component cannot be used in non-cluster environment.");
         	}
 			//non empty allocation is not allowed in non-cluster environment
@@ -595,10 +596,14 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         } catch (InterruptedException ex) {
             setResultCode(Result.ABORTED);
         } catch (Exception ex) {
-            setResultCode(Result.ERROR);
-            resultException = createNodeException(ex);
-            msg = Message.createErrorMessage(this,
-                    new ErrorMsgBody(Result.ERROR.code(), Result.ERROR.message(), resultException));
+        	if (ExceptionUtils.instanceOf(ex, InterruptedException.class)) {
+        		setResultCode(Result.ABORTED);
+        	} else {
+        		setResultCode(Result.ERROR);
+                resultException = createNodeException(ex);
+                msg = Message.createErrorMessage(this,
+                        new ErrorMsgBody(Result.ERROR.code(), Result.ERROR.message(), resultException));
+        	}
         } catch (Throwable ex) {
         	logger.fatal(ex); 
             setResultCode(Result.ERROR);

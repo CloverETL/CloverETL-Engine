@@ -26,7 +26,17 @@ import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jetel.ctl.ASTnode.*;
+import org.jetel.ctl.ASTnode.CLVFArguments;
+import org.jetel.ctl.ASTnode.CLVFArrayAccessExpression;
+import org.jetel.ctl.ASTnode.CLVFFieldAccessExpression;
+import org.jetel.ctl.ASTnode.CLVFIdentifier;
+import org.jetel.ctl.ASTnode.CLVFListOfLiterals;
+import org.jetel.ctl.ASTnode.CLVFLiteral;
+import org.jetel.ctl.ASTnode.CLVFLookupNode;
+import org.jetel.ctl.ASTnode.CLVFMemberAccessExpression;
+import org.jetel.ctl.ASTnode.CastNode;
+import org.jetel.ctl.ASTnode.Node;
+import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.util.ExceptionUtils;
@@ -104,7 +114,7 @@ public class ErrorReporter {
 		while (exc.getCause()!=null) exc=exc.getCause();
 		SimpleNode nodeInError = runtimeException.getNode();
 		err.println(runtimeException.getSimpleMessage());
-		err.format("Caused by: %s -> %s%n",exc.getClass().getName(),exc.getMessage());
+		err.format("Caused by: %s -> %s%n",exc.getClass().getName(),ExceptionUtils.getMessage(exc));
 //		err.println("In operation: "+nodeInError.toString()); // CLO-2658
 		if (sourceCode != null) {
 			err.println("----------------------- CTL2 snippet -----------------------");
@@ -310,7 +320,7 @@ public class ErrorReporter {
 					// record name in identifier.getName()
 					err.format("field: \"%s\" (%s) -> %s%n",node.getName(),field.getMetadata().getDataType().getName(), field.isNull() ? NULL_STR_CONST  : field.toString());
 				}else{
-					err.format("record \"%s\" -> %s%n",identifier.getName(),value.toString());
+					err.format("record \"%s\" -> %s%n",identifier.getName(), String.valueOf(value));
 				}
 			
 			}

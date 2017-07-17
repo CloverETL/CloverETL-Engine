@@ -18,6 +18,9 @@
  */
 package org.jetel.component.fileoperation;
 
+import static org.jetel.util.protocols.amazon.S3Utils.FORWARD_SLASH;
+import static org.jetel.util.protocols.amazon.S3Utils.getPath;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilterInputStream;
@@ -33,6 +36,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
@@ -52,6 +56,7 @@ import org.jetel.util.string.StringUtils;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
@@ -71,32 +76,9 @@ import com.amazonaws.services.s3.transfer.TransferManager;
  */
 public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 	
-	private static final String FORWARD_SLASH = "/";
-	
 	private static final Log log = LogFactory.getLog(PrimitiveS3OperationHandler.class);
 
 	private ConnectionPool pool = ConnectionPool.getInstance();
-	
-	/**
-	 * Extracts bucket name and key from the URI.
-	 * If the key is empty, the returned array has just one element.
-	 * For an URI pointing to S3 root,
-	 * an array containing one empty string is returned.
-	 * 
-	 * @param uri
-	 * @return [bucketName, key] or [bucketName]
-	 */
-	protected static String[] getPath(URI uri) {
-		String path = uri.getPath();
-		if (path.startsWith(FORWARD_SLASH)) {
-			path = path.substring(1);
-		}
-		String[] parts = path.split(FORWARD_SLASH, 2);
-		if ((parts.length == 2) && parts[1].isEmpty()) {
-			return new String[] {parts[0]};
-		}
-		return parts;
-	}
 	
 	private static String appendSlash(String input) {
 		if (!input.endsWith(FORWARD_SLASH)) {
@@ -776,10 +758,19 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 			URI baseUri = connection.getBaseUri();
 			List<Info> result;
 			if (bucketName.isEmpty()) { // root - list buckets
-				List<Bucket> buckets = service.listBuckets();
-				result = new ArrayList<Info>(buckets.size());
-				for (Bucket bucket: buckets) {
-					result.add(getBucketInfo(bucket.getName(), baseUri));
+				try {
+					List<Bucket> buckets = service.listBuckets();
+					result = new ArrayList<Info>(buckets.size());
+					for (Bucket bucket: buckets) {
+						result.add(getBucketInfo(bucket.getName(), baseUri));
+					}
+				} catch (AmazonS3Exception e) {
+					// CLO-9194: provide more detailed error message
+					if (Objects.equals(e.getErrorCode(), "AccessDenied")) {
+						throw new IOException("Failed to list all buckets. Check that the user has s3:ListAllMyBuckets permission.", S3Utils.getIOException(e));
+					} else {
+						throw e;
+					}
 				}
 			} else {
 				String prefix = "";

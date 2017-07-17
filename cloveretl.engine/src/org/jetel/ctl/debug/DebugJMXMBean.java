@@ -35,8 +35,7 @@ public interface DebugJMXMBean {
     public static final String THREAD_RESUMED = "clover.thread.resumed";
     public static final String THREAD_STARTED = "clover.thread.started";
     public static final String THREAD_STOPPED = "clover.thread.stopped";
-
-	void info(long threadId);
+    public static final String BP_CONDITION_ERROR = "clover.bp_condition.error";
 	
     Thread[] listCtlThreads();
     
@@ -62,7 +61,7 @@ public interface DebugJMXMBean {
     
     void runToLine(long threadId, RunToMark mark);
     
-    VariableRetrievalResult listVariables(long threadId, int stackFrameDepth);
+    ListVariableResult listVariables(long threadId, int stackFrameDepth, boolean includeGlobal);
     
-    Variable getVariableValue(long threadId, int stackFrameDepth, String name);
+    Object evaluateExpression(String expression, long threadId, int callStackIndex) throws Exception;
 }

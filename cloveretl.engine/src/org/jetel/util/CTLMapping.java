@@ -525,7 +525,11 @@ public class CTLMapping {
 		
 		initMetadata();
 		
-		initUsedOutputFields();
+		try {
+			initUsedOutputFields();
+		} catch (Exception ex) {
+			throw new ComponentNotReadyException(component, name + " initialization failed.", ex, xmlAttribute);
+		}
 		
 		//create CTL transformation
         if (!StringUtils.isEmpty(sourceCode)) {
@@ -533,10 +537,12 @@ public class CTLMapping {
 			try {
 				// initialise mapping
 		        if (!ctlTransformation.init(null, inputRecordsMetadata, outputRecordsMetadata)) {
-		            throw new ComponentNotReadyException(name + " initialization was unsuccessful.", xmlAttribute);
+		            throw new ComponentNotReadyException(component, name + " initialization was unsuccessful.", xmlAttribute);
 		        }
+			} catch (ComponentNotReadyException e) {
+				throw e;
 			} catch (Exception e) {
-				throw new JetelRuntimeException(name + " initialization failed.", e);
+				throw new ComponentNotReadyException(component, name + " initialization failed.", e, xmlAttribute);
 			}
         }
 	}

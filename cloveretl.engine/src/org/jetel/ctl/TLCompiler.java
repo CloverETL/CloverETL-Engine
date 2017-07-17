@@ -27,9 +27,13 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.ctl.ASTnode.CLVFIfStatement;
 import org.jetel.ctl.ASTnode.CLVFStart;
 import org.jetel.ctl.ASTnode.CLVFStartExpression;
+import org.jetel.ctl.ASTnode.Node;
+import org.jetel.ctl.ASTnode.ScopeHolder;
 import org.jetel.ctl.ASTnode.SimpleNode;
+import org.jetel.ctl.data.Scope;
 import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.extensions.TLFunctionCallContext;
 import org.jetel.ctl.extensions.TLFunctionPluginRepository;
@@ -127,6 +131,14 @@ public class TLCompiler implements ITLCompiler {
 	
 	@Override
 	public List<ErrorMessage> validateExpression(Reader input) {
+		return validateExpressionInContext(input, null);
+	}
+	
+	public List<ErrorMessage> validateExpressionInContext(String input, SimpleNode context) {
+		return validateExpressionInContext(new SourceStringReader(input), context);
+	}
+	
+	public List<ErrorMessage> validateExpressionInContext(Reader input, SimpleNode context) {
 		if (!(input instanceof SourceCodeProvider)) {
 			input = copy(input);
 		}
@@ -138,6 +150,15 @@ public class TLCompiler implements ITLCompiler {
 	
 		parser.setTabSize(tabSize);
 		parser.enable_tracing();
+		
+		if (context != null) {
+			parser.setFunctions(context.getParser().getFunctions());
+			Scope containingScope = findContainingScope(context);
+			if (containingScope != null) {
+				parser.setCurrentScope(containingScope);
+			}
+		}
+		
 		CLVFStartExpression parseTree = null;
 		Context ctx = null;
 		try {
@@ -495,5 +516,28 @@ public class TLCompiler implements ITLCompiler {
 	
 	public TransformationGraph getGraph() {
 		return graph;
+	}
+	
+	private Scope findContainingScope(SimpleNode context) {
+		Node node = context;
+		while (node != null) {
+			if (node.jjtGetParent() instanceof ScopeHolder) {
+				return ((ScopeHolder)node.jjtGetParent()).getScope();
+			}
+			if (node.jjtGetParent() instanceof CLVFIfStatement) {
+				CLVFIfStatement ifStatement = (CLVFIfStatement)node.jjtGetParent();
+				for (int i = 0; i < ifStatement.jjtGetNumChildren(); ++i) {
+					if (node == ifStatement.jjtGetChild(i)) {
+						if (i == 1) {
+							return ifStatement.getThenScope();
+						} else if (i == 2) {
+							return ifStatement.getElseScope();
+						}
+					}
+				}
+			}
+			node = node.jjtGetParent();
+		}
+		return null;
 	}
 }

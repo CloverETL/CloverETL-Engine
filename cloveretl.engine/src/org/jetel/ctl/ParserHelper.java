@@ -142,5 +142,8 @@ public class ParserHelper {
 		return currentScope;
 	}
 	
-	
+	public void setCurrentScope(Scope scope) {
+		this.currentScope = scope;
+		this.blockOffset = scope.getBlockOffset();
+	}
 }

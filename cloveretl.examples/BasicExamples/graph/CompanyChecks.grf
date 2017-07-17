@@ -59,12 +59,12 @@ This runs in Phase 0 and deletes tables in Derby DB. Rest of graph runs in Phase
 <attr name="text"><![CDATA[h5. Mapping
 Mapping in the component uses the "star" notation: 
 
-{noformat}$0.* := $0.*;{noformat}]]></attr>
+{noformat}$out.0.* = $in.0.*;{noformat}]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="270" id="Note10" textColor="000000" width="253" x="491" y="589">
 <attr name="text"><![CDATA[h5. Mapping
 Mapping in the component uses the "star" notation: 
-{noformat}$0.* := $0.*;{noformat}]]></attr>
+{noformat}$out.0.* = $in.0.*;{noformat}]]></attr>
 </RichTextNote>
 <Dictionary/>
 </Global>
@@ -81,7 +81,7 @@ DELETE FROM validated;]]></attr>
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/res.txt" guiName="Company Status" guiX="337" guiY="761" id="DATA_READER1" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Read 'Companies in Liquidation' file]]></attr>
 </Node>
-<Node dbConnection="Connection0" dbTable="checksumfailures" enabled="enabled" guiName="Invalid Checksums" guiX="966" guiY="462" id="DB_OUTPUT_TABLE0" type="DB_OUTPUT_TABLE">
+<Node dbConnection="Connection0" dbTable="checksumfailures" enabled="enabled" guiName="Invalid Checksums" guiX="979" guiY="462" id="DB_OUTPUT_TABLE0" type="DB_OUTPUT_TABLE">
 <attr name="guiDescription"><![CDATA[Write bad IDs to DB table]]></attr>
 </Node>
 <Node dbConnection="Connection0" enabled="enabled" guiName="Unknown Liq Status" guiX="963" guiY="673" id="DB_OUTPUT_TABLE1" type="DB_OUTPUT_TABLE">
@@ -94,33 +94,45 @@ VALUES ($ic, $company, $zip, $city, $district, $street, $score)]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Filter bad Checksums" guiX="760" guiY="462" id="EXT_FILTER0" type="EXT_FILTER">
 <attr name="guiDescription"><![CDATA[Filter out any bad IDs]]></attr>
-<attr name="filterExpression"><![CDATA[$0.score > 0]]></attr>
+<attr name="filterExpression"><![CDATA[//#CTL2
+$in.0.score > 0]]></attr>
 </Node>
 <Node ascendingInputs="true" enabled="enabled" guiName="Merge List" guiX="538" guiY="747" id="EXT_MERGE_JOIN0" joinKey="$ic;#$ico;#" joinType="leftOuter" type="EXT_MERGE_JOIN">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
-	int i = 0;
+function integer transform() {
+	$out.0.* = $in.0.*;
 	
-	if(isnull($1.ico))
-		i = 1;
-	else
-	{
-		if($1.likv == 'A')
-			i = 3;
+	if(isEmpty($in.1.ico)) {
+		$out.0.score = 1;
+	}else
+	if($in.1.likv == 'A') {
+		$out.0.score = 3;  
+	}else{
+		$out.0.score = 0;  
 	}
-
-	// Inputs are assigned to outputs using the star notation. The last field is added to them explicitly.
-	$0.* := $0.*;
-	$0.score := i;
+	
+	return ALL;
 }
 
 // Called during component initialization.
-// function init() {}
+// function boolean init() {}
 
-// Called after the component finishes.
-// function finished() {}
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Merge it with our customer data]]></attr>
 </Node>
@@ -128,49 +140,49 @@ function transform() {
 <attr name="guiDescription"><![CDATA[Output each customer into one of the 3 DB tables on the right, depending on Liquidation status of the customer]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Calculate Checksum" guiX="535" guiY="462" id="REFORMAT0" type="REFORMAT">
-<attr name="transform"><![CDATA[//#TL
+<attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
-function transform() {
+function integer transform() {
+	integer count = 0;
 	
-	int count=0;
-	int i;
-	int mod;
-	int k;
-	string c;
-
-    // Calculate checksum
-	for(i=0; i<7; i++)
-		count = count + str2num(char_at($ic, i))*(8-i);
-
-	c = char_at($ic, 7);
-	mod = count%11;
-	if(mod == 0 || mod == 10)
-		i = 1;
-	else{
-		if(mod == 1)
-			i = 0;
-		else
-			i = 11 - mod;
-
-	if(i == str2num(c))
-		k = 0;
-	else
-		k = 2;
+	for(integer i=0; i<7; i++) {
+	  count +=  str2integer(charAt($in.0.ic,i)) * (8-i);  
 	}
 	
-	// k now contains either 0 (error state) or 1 (valid checksum)
-	// Assign all input values to outputs and put k into the 'score' field
-	// Inputs are assigned to outputs using the star notation. The last field is added to them explicitly.
-	$0.* := $0.*;	
-	$0.score := k;
+	string checkSumChar = charAt($in.0.ic, 7);
+	integer mod = count % 11;
+	
+	integer checkSum = (11 - mod) % 10; 
+	
+	
+	$out.0.* = $in.0.*;
+	if(checkSum == str2integer(checkSumChar)) {
+		$out.0.score = 0;
+	}else{
+		$out.0.score = 2;
+	}
+	
+	return ALL;
 }
 
 // Called during component initialization.
-// function init() {}
+// function boolean init() {}
 
-// Called after the component finishes.
-// function finished() {}
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Validate Company ID of customer]]></attr>
 </Node>

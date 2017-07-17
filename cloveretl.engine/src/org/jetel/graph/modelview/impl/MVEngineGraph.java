@@ -77,10 +77,11 @@ public class MVEngineGraph extends MVEngineGraphElement implements MVGraph {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public MVComponent getMVComponent(String componentId) {
 		if (hasModel()) {
-			Node component = getModel().getNodes().get(componentId);
+			Node component = getModel().getNodesCached().get(componentId);
 			if (component != null) {
 				if (!mvComponents.containsKey(componentId)) {
 					MVComponent mvComponent = new MVEngineComponent(component, this);
@@ -101,12 +102,13 @@ public class MVEngineGraph extends MVEngineGraphElement implements MVGraph {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public Map<MVComponent, MVGraph> getMVSubgraphs() {
 		if (mvSubgraphs == null) {
 			mvSubgraphs = new HashMap<>();
 			if (hasModel()) {
-				for (Node component : getModel().getNodes().values()) {
+				for (Node component : getModel().getNodesCached().values()) {
 					if (component instanceof SubgraphComponent) {
 						TransformationGraph engineSubgraph = ((SubgraphComponent) component).getSubgraphNoMetadataPropagation(false);
 						if (engineSubgraph != null) { //can be null if the subgraph component is not correctly defined - invalid subgraph URL 

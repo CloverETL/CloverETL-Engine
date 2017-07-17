@@ -436,7 +436,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 			logNewTempFile(file);
 			return file;
 		} catch (IOException e) {
-			throw new TempFileCreationException(e, label, allocationHint, null, TempSpace.ENGINE_DEFAULT);
+			throw new TempFileCreationException(e, label, allocationHint, null);
 		}
 	}
 
@@ -448,7 +448,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 			logNewTempFile(tmp);
 			return tmp;
 		} catch (IOException e) {
-			throw new TempFileCreationException(e, label, allocationHint, null, TempSpace.ENGINE_DEFAULT);
+			throw new TempFileCreationException(e, label, allocationHint, null);
 		}
 	}
 	
@@ -516,6 +516,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	
 	@Override
 	public boolean isClusterEnabled() {
+		return false;
+	}
+
+	@Override
+	public boolean isPartitioningEnabled() {
 		return false;
 	}
 

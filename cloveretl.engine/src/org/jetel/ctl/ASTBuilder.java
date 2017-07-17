@@ -634,7 +634,8 @@ public class ASTBuilder extends NavigatingVisitor {
 		final SimpleNode prefix = (SimpleNode)node.jjtGetChild(0);
 		
 		// CLO-4532:
-		if (prefix.getId() == TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION) {
+		// hot-fix for CLO-9286 add "&& node.isWildcard()" to condition
+		if ((prefix.getId() == TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION) && node.isWildcard()) {
 			error(node, "Invalid member access expression");
 			node.setType(TLType.ERROR);
 			return data;

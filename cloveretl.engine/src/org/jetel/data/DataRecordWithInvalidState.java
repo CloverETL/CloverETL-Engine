@@ -36,7 +36,7 @@ import org.jetel.metadata.DataRecordMetadata;
 public class DataRecordWithInvalidState extends DataRecordImpl {
 
 	@SuppressWarnings("deprecation")
-	DataRecordWithInvalidState(DataRecordMetadata _metadata) {
+	protected DataRecordWithInvalidState(DataRecordMetadata _metadata) {
 		super(_metadata);
 	}
 

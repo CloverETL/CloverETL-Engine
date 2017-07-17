@@ -23,7 +23,7 @@ import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.TransformLangParserVisitor;
 import org.jetel.ctl.data.Scope;
 
-public class CLVFSwitchStatement extends SimpleNode {
+public class CLVFSwitchStatement extends SimpleNode implements ScopeHolder {
 
 	private boolean hasDefaultClause = false;
 	private int defaultCaseIndex = -1;
@@ -52,8 +52,6 @@ public class CLVFSwitchStatement extends SimpleNode {
 	@Override
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
 		try {
-			//debug
-			 if(visitor.inDebugMode()) visitor.debug(this, data);
 			return visitor.visit(this, data);
 		} catch (TransformLangExecutorRuntimeException e) {
 			if (e.getNode() == null) {
@@ -69,10 +67,12 @@ public class CLVFSwitchStatement extends SimpleNode {
 		this.hasDefaultClause = hasDefault;
 	}
 
+	@Override
 	public void setScope(Scope scope) {
 		this.scope = scope;
 	}
 	
+	@Override
 	public Scope getScope() {
 		return scope;
 	}

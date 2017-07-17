@@ -16,43 +16,19 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.ctl.debug;
-
-import org.jetel.ctl.debug.DebugCommand.CommandType;
+package org.jetel.database;
 
 /**
- * This class contains a variable stack frame depth and name
- * so that it can be set to a command. See {@link CommandType#GET_VAR}.
+ * An extension of the {@link IConnection} interface,
+ * adds support for validation and possibly other features in the future. 
  * 
- * @author Jiri Musil (info@cloveretl.com)
+ * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created May 10, 2016
+ * @created 30. 6. 2016
  */
-public class VariableID {
+public interface IConnection2 extends IConnection {
 
-	private int stackFrameDepth;
-	private String name;
+	public void validate() throws Exception;
 	
-	public VariableID(int stackFrameDepth, String name) {
-		this.stackFrameDepth = stackFrameDepth;
-		this.name = name;
-	}
-
-	public int getStackFrameDepth() {
-		return stackFrameDepth;
-	}
-
-	public void setStackFrameDepth(int stackFrameDepth) {
-		this.stackFrameDepth = stackFrameDepth;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
 }

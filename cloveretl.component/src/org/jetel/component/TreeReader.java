@@ -36,11 +36,13 @@ import java.util.Set;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.tree.reader.AbortParsingException;
@@ -101,6 +103,8 @@ import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -735,37 +739,55 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 					source.setEncoding(charset);
 				}
 
-				Pipe pipe = Pipe.open();
-				
+				Pipe pipe = null;
 				try {
-					TreeStreamParser treeStreamParser = parserProvider.getTreeStreamParser();
-					treeStreamParser.setTreeContentHandler(new TreeXmlContentHandlerAdapter());
-					XMLReader treeXmlReader = new TreeXMLReaderAdaptor(treeStreamParser);
-					pipeTransformer = new PipeTransformer(TreeReader.this, treeXmlReader);
+					pipe = Pipe.open();
+					try {
+						TreeStreamParser treeStreamParser = parserProvider.getTreeStreamParser();
+						treeStreamParser.setTreeContentHandler(new TreeXmlContentHandlerAdapter());
+						XMLReader treeXmlReader = new TreeXMLReaderAdaptor(treeStreamParser);
+						pipeTransformer = new PipeTransformer(TreeReader.this, treeXmlReader);
 
-					pipeTransformer.setInputOutput(Channels.newWriter(pipe.sink(), "UTF-8"), source);
-					pipeParser = new PipeParser(TreeReader.this, pushParser, rootContext);
-					pipeParser.setInput(Channels.newReader(pipe.source(), "UTF-8"));
-					pipeParser.setInputDataRecord(inputRecord);
-				} catch (TransformerFactoryConfigurationError e) {
-					throw new JetelRuntimeException("Failed to instantiate transformer", e);
-				}
+						pipeTransformer.setInputOutput(Channels.newWriter(pipe.sink(), "UTF-8"), source);
+						pipeParser = new PipeParser(TreeReader.this, pushParser, rootContext);
+						pipeParser.setInput(Channels.newReader(pipe.source(), "UTF-8"));
+						pipeParser.setInputDataRecord(inputRecord);
+					} catch (TransformerFactoryConfigurationError e) {
+						throw new JetelRuntimeException("Failed to instantiate transformer", e);
+					}
 
-				FutureOfRunnable<PipeTransformer> pipeTransformerFuture = CloverWorker.startWorker(pipeTransformer);
-				FutureOfRunnable<PipeParser> pipeParserFuture = CloverWorker.startWorker(pipeParser);
+					FutureOfRunnable<PipeTransformer> pipeTransformerFuture = CloverWorker.startWorker(pipeTransformer);
+					FutureOfRunnable<PipeParser> pipeParserFuture = CloverWorker.startWorker(pipeParser);
 				
-				pipeTransformerFuture.get();
-				pipeParserFuture.get();
-				if (pipeTransformerFuture.getRunnable().getException() != null) {
-					throw new JetelRuntimeException("Pipe transformer failed.", pipeTransformerFuture.getRunnable().getException());
-				}
-				if (pipeParserFuture.getRunnable().getException() != null) {
-					throw new JetelRuntimeException("Pipe parser failed.", pipeParserFuture.getRunnable().getException());
+					pipeTransformerFuture.get();
+					pipeParserFuture.get();
+					if (pipeTransformerFuture.getRunnable().getException() != null) {
+						throw new JetelRuntimeException("Pipe transformer failed.", pipeTransformerFuture.getRunnable().getException());
+					}
+					if (pipeParserFuture.getRunnable().getException() != null) {
+						throw new JetelRuntimeException("Pipe parser failed.", pipeParserFuture.getRunnable().getException());
+					}
+				} finally {
+					if (pipe != null) {
+						closeQuietly(pipe.sink());
+						closeQuietly(pipe.source());
+					}
 				}
 			} else {
 				throw new JetelRuntimeException("Could not read input " + input);
 			}
 
+		}
+		
+		@SuppressFBWarnings("DE_MIGHT_IGNORE")
+		private void closeQuietly(Closeable c) {
+			if (c != null) {
+				try {
+					c.close();
+				} catch (Exception e) {
+					// ignore
+				}
+			}
 		}
 
 		private class PipeTransformer extends CloverWorker {
@@ -788,10 +810,13 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			}
 
 			@Override
-			public void work() throws Exception {
+			public void work() throws TransformerException {
 				javax.xml.transform.Result result = new StreamResult(pipedWriter);
-				transformer.transform(new SAXSource(treeXmlReader, source), result);
-				pipedWriter.close();
+				try {
+					transformer.transform(new SAXSource(treeXmlReader, source), result);
+				} finally {
+					IOUtils.closeQuietly(pipedWriter);
+				}
 			}
 
 			public void setInputOutput(Writer pipedWriter, InputSource source) {
@@ -819,7 +844,11 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 			@Override
 			public void work() throws InterruptedException, AbortParsingException {
-				pushParser.parse(rootContext, new SAXSource(new InputSource(pipedReader)), inputRecord);
+				try {
+					pushParser.parse(rootContext, new SAXSource(new InputSource(pipedReader)), inputRecord);
+				} finally {
+					IOUtils.closeQuietly(pipedReader);
+				}
 			}
 			
 			private void setInput(Reader pipedReader) {

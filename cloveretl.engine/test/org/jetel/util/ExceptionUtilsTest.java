@@ -58,7 +58,7 @@ public class ExceptionUtilsTest extends CloverTestCase {
 
 		assertEquals("abc\n first\n  java.lang.Exception", ExceptionUtils.getMessage("abc", new Exception("first", new Exception())));
 
-		assertEquals("abc\n first\n  java.lang.Exception", ExceptionUtils.getMessage("abc", new Exception("first", new Exception(""))));
+		assertEquals("abc\n first\n  java.lang.Exception: ", ExceptionUtils.getMessage("abc", new Exception("first", new Exception(""))));
 
 		assertEquals("abc\n first", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first"))));
 
@@ -78,7 +78,7 @@ public class ExceptionUtilsTest extends CloverTestCase {
 
 		assertEquals("abc\n first\n  second\n   java.lang.Exception", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception())))));
 
-		assertEquals("abc\n first\n  second\n   java.lang.Exception", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception(""))))));
+		assertEquals("abc\n first\n  second\n   java.lang.Exception: ", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception(""))))));
 		
 		assertEquals("abc\n first\n  second\n   third", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception("third"))))));
 
@@ -86,7 +86,7 @@ public class ExceptionUtilsTest extends CloverTestCase {
 
 		assertEquals("abc\n first\n  third\n  forth", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException(new Exception("third"), new Exception("forth"))))));
 
-		assertEquals("abc\n first\n  second\n   java.lang.Exception\n   forth", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception(""), new Exception("forth"))))));
+		assertEquals("abc\n first\n  second\n   java.lang.Exception: \n   forth", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception(""), new Exception("forth"))))));
 
 		assertEquals("abc\n first\n  second\n  second2\n   third\n    third1\n    third2\n     third3\n   forth", 
 				ExceptionUtils.getMessage("abc", 

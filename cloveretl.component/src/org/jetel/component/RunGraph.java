@@ -440,7 +440,7 @@ public class RunGraph extends Node{
 			commandList.add(StringUtils.unquote2(cloverCommandArg));
 		}
 		
-		if (!args.contains(runGraph.CONTEXT_URL_SWITCH) && getGraph().getRuntimeContext().getContextURL() != null) {
+		if (!args.contains(runGraph.CONTEXT_URL_SWITCH) && contextURL != null) {
 			commandList.add(runGraph.CONTEXT_URL_SWITCH);
 			commandList.add(contextURL);
 		}
@@ -615,11 +615,14 @@ public class RunGraph extends Node{
 			}
 			this.classPath = concat.toString();
 			
-			//get contextURL - has to be converted to path to local file system 
-			try {
-				contextURL = FileUtils.convertUrlToFile(getGraph().getRuntimeContext().getContextURL()).getAbsolutePath();
-			} catch (MalformedURLException e) {
-				throw new ComponentNotReadyException("Context URL does not found.", e);
+			//get contextURL - has to be converted to path to local file system
+			URL graphContextURL = getGraph().getRuntimeContext().getContextURL();
+			if (graphContextURL != null) {
+				try {
+					contextURL = FileUtils.convertUrlToFile(graphContextURL).getAbsolutePath();
+				} catch (MalformedURLException e) {
+					throw new ComponentNotReadyException("Context URL does not found.", e);
+				}
 			}
 		}
 		
@@ -753,11 +756,14 @@ public class RunGraph extends Node{
 
 		checkMetadata(status);
        	
-		try {
-			contextURL = FileUtils.convertUrlToFile(getGraph().getRuntimeContext().getContextURL()).getAbsolutePath();
-		} catch (MalformedURLException e) {
-			status.add(new ConfigurationProblem("Context URL cannot be found.", e, Severity.ERROR, this, Priority.NORMAL, null));
-			return status;
+		URL graphContextURL = getGraph().getRuntimeContext().getContextURL();
+		if (graphContextURL != null) {
+			try {
+				contextURL = FileUtils.convertUrlToFile(graphContextURL).getAbsolutePath();
+			} catch (MalformedURLException e) {
+				status.add(new ConfigurationProblem("Context URL cannot be found.", e, Severity.ERROR, this, Priority.NORMAL, null));
+				return status;
+			}
 		}
         
         try {

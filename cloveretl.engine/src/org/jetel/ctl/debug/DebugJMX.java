@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.ListenerNotFoundException;
@@ -44,12 +45,17 @@ import javax.management.ObjectName;
 import org.apache.log4j.Logger;
 import org.jetel.ctl.DebugTransformLangExecutor;
 import org.jetel.ctl.debug.DebugCommand.CommandType;
+import org.jetel.ctl.debug.condition.BooleanExpressionCondition;
+import org.jetel.ctl.debug.condition.HitCountCondition;
+import org.jetel.ctl.debug.condition.ValueChangeCondition;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.jmx.CloverJMXMBean;
+import org.jetel.util.CompareUtils;
+import org.jetel.util.string.UnicodeBlanks;
 
 /**
  * A JMX bean for CTL debugger. It manages debugging of CTL threads - passes debug commands to threads and sends suspend
@@ -59,7 +65,9 @@ import org.jetel.graph.runtime.jmx.CloverJMXMBean;
  *
  * @created 11. 3. 2016
  */
-public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMXMBean {
+public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMXMBean, IdSequence {
+	
+	private static final long EXPRESSION_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(10);
 	
 	private int notificationSequence;
     static Logger logger = Logger.getLogger(DebugJMX.class);
@@ -73,14 +81,23 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 	private volatile NotificationListener finishListener;
 	private final Object finishListenerLock = new Object();
 	
+	private long idSeq;
+	
 	public DebugJMX(GraphRuntimeContext runtimeContext) {
 		this.runtimeContext = runtimeContext;
 		nodeThreads = new ConcurrentHashMap<>();
 		activeThreads = new ConcurrentHashMap<>();
 		executors = new CopyOnWriteArraySet<>();
+		/*
+		 * set initial breakpoints conditions
+		 */
+		for (Breakpoint breakpoint : runtimeContext.getCtlBreakpoints()) {
+			updateBreakpointCondition(breakpoint);
+		}
 	}
 	
 	public void registerTransformLangExecutor(DebugTransformLangExecutor executor) {
+		executor.setIdSequence(this);
 		executors.add(executor);
 	}
 	
@@ -150,6 +167,17 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		sendNotification(notification);
 	}
 	
+	public void notifyConditionError(Breakpoint breakpoint, String errorMessage) {
+		Notification notification = new Notification(BP_CONDITION_ERROR, this, ++notificationSequence);
+		notification.setUserData(new BreakpointConditionError(breakpoint, errorMessage));
+		sendNotification(notification);
+	}
+	
+	@Override
+	public synchronized long nextId() {
+		return ++idSeq;
+	}
+	
 	@Override
 	public void resume(long threadId) {
 		for (ExecutorThread thread : activeThreads.values()) {
@@ -164,7 +192,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		}
 		try {
 			processCommand(threadId, new DebugCommand(CommandType.RESUME));
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -180,15 +208,6 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		NodeThread node = nodeThreads.get(Long.valueOf(threadId));
 		if (node != null && !node.isSuspend()) {
 			node.setSuspend(true);
-		}
-	}
-	
-	@Override
-	public void info(long threadId) {
-		try {
-			processCommand(threadId, new DebugCommand(CommandType.INFO));
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
 		}
 	}
 	
@@ -218,11 +237,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		Arrays.sort(result, new Comparator<Thread>() {
 			@Override
 			public int compare(Thread t1, Thread t2) {
-				if (t1.getName() == null) {
-					return t2.getName() == null ? 0 : -1;
-				} else {
-					return t2.getName() == null ? 1 : t1.getName().compareTo(t2.getName());
-				}
+				return CompareUtils.compare(t1.getName(), t2.getName());
 			}
 		});
 		return result;
@@ -233,7 +248,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		try {
 			DebugStatus status = processCommand(threadId, new DebugCommand(CommandType.GET_CALLSTACK));
 			return status != null ? (StackFrame[])status.getValue() : new StackFrame[0];
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -276,6 +291,10 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		for (Breakpoint bp : runtimeContext.getCtlBreakpoints()) {
 			if (bp.equals(breakpoint)) {
 				bp.setEnabled(breakpoint.isEnabled());
+				bp.setHitCount(breakpoint.getHitCount());
+				bp.setExpression(breakpoint.getExpression());
+				bp.setValueChange(breakpoint.isValueChange());
+				updateBreakpointCondition(bp);
 			}
 		}
 	}
@@ -292,7 +311,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 				throw new IllegalArgumentException("Invalid step type " + stepType);
 			}
 			processCommand(threadId, new DebugCommand(stepType));
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -303,39 +322,36 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 		command.setValue(mark);
 		try {
 			processCommand(threadId, command);
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 	
 	@Override
-	public VariableRetrievalResult listVariables(long threadId, int stackFrameDepth) {
+	public ListVariableResult listVariables(long threadId, int frameIndex, boolean includeGlobal) {
 		DebugCommand command = new DebugCommand(CommandType.LIST_VARS);
-		command.setValue(stackFrameDepth);
+		ListVariableOptions options = new ListVariableOptions();
+		options.setFrameIndex(frameIndex);
+		options.setIncludeGlobal(includeGlobal);
+		command.setValue(options);
 		try {
 			DebugStatus status = processCommand(threadId, command);
-			if (status != null && status.getValue() instanceof VariableRetrievalResult) {
-				return (VariableRetrievalResult) status.getValue();
+			if (status != null && status.getValue() instanceof ListVariableResult) {
+				return (ListVariableResult) status.getValue();
 			}
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		return new VariableRetrievalResult(new ArrayList<Variable>(), new ArrayList<Variable>());
+		return new ListVariableResult(new ArrayList<Variable>(), new ArrayList<Variable>());
 	}
 	
 	@Override
-	public Variable getVariableValue(long threadId, int stackFrameDepth, String name) {
-		DebugCommand command = new DebugCommand(CommandType.GET_VAR);
-		command.setValue(new VariableID(stackFrameDepth, name));
-		try {
-			DebugStatus status = processCommand(threadId, command);
-			if (status != null && status.getValue() instanceof Variable) {
-				return (Variable) status.getValue();
-			}
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
-		return null;
+	public Object evaluateExpression(String expression, long threadId, int callStackIndex) throws Exception {
+		DebugCommand command = new DebugCommand(CommandType.EVALUATE_EXPRESSION);
+		CTLExpression exp = new CTLExpression(expression, callStackIndex);
+		exp.setTimeout(EXPRESSION_TIMEOUT_MS); // CLO-9391
+		command.setValue(exp);
+		return processCommand(threadId, command).getValue();
 	}
 	
 	public void free() {
@@ -371,10 +387,14 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
         return "org.jetel.ctl:type=DebugJMX_" + graphId + "_" + runId;
 	}
 	
-	private DebugStatus processCommand(long threadId, DebugCommand command) throws InterruptedException {
+	private DebugStatus processCommand(long threadId, DebugCommand command) throws Exception {
 		ExecutorThread thread = activeThreads.get(threadId);
 		if (thread != null) { 
-			return thread.getExecutor().executeCommand(command);
+			DebugStatus debugStatus = thread.getExecutor().executeCommand(command);
+			if (debugStatus.getException() != null) {
+				throw debugStatus.getException();
+			}
+			return debugStatus;
 		} else {
 			logger.warn(String.format("CTL debug: Thread with id '%d' is not running.", threadId));
 			return null;
@@ -393,6 +413,19 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 				} catch (InstanceNotFoundException e) {
 					throw new JetelRuntimeException(e);
 				}
+			}
+		}
+	}
+	
+	private void updateBreakpointCondition(Breakpoint breakpoint) {
+		breakpoint.setCondition(null);
+		if (breakpoint.getHitCount() > 0) {
+			breakpoint.setCondition(new HitCountCondition(breakpoint.getHitCount()));
+		} else if (!UnicodeBlanks.isBlank(breakpoint.getExpression())) {
+			if (breakpoint.isValueChange()) {
+				breakpoint.setCondition(new ValueChangeCondition(breakpoint.getExpression()));
+			} else {
+				breakpoint.setCondition(new BooleanExpressionCondition(breakpoint.getExpression()));
 			}
 		}
 	}

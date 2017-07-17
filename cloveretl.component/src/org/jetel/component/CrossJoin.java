@@ -45,8 +45,8 @@ import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.MetadataUtils;
 import org.jetel.util.bytes.CloverBuffer;
-import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
@@ -363,7 +363,11 @@ public class CrossJoin extends Node implements MetadataProvider {
 		DataRecordMetadata[] inMeta = getInMetadataArray();
 		
 		if (transformSource == null && transformURL == null && transformClassName == null) {
-			DataRecordMetadata expectedOutMetadata = getConcatenatedMetadata(null);
+			DataRecordMetadata[] inputMetadata = new DataRecordMetadata[inPorts.size()];
+			for (int i = 0; i < inputMetadata.length; i++) {
+				inputMetadata[i] = getInputPort(i).getMetadata();
+			}
+			DataRecordMetadata expectedOutMetadata = MetadataUtils.getConcatenatedMetadata(inputMetadata, OUT_METADATA_NAME);
 			DataRecordMetadata outMetadata = getOutputPort(WRITE_TO_PORT).getMetadata();
 			DataFieldMetadata[] expectedFields = expectedOutMetadata.getFields();
 			DataFieldMetadata[] outFields = outMetadata.getFields();
@@ -405,34 +409,7 @@ public class CrossJoin extends Node implements MetadataProvider {
 		return status;
 	}
 
-	/**
-	 * Produces metadata for output based on metadata on inputs. The goal is to produce exactly the metadata user
-	 * wants in most cases.
-	 * 
-	 * Output metadata are made by copying metadata on first input port and copying all fields from other input ports. 
-	 * @return
-	 */
-	private DataRecordMetadata getConcatenatedMetadata(DataRecordMetadata[] inputMetadata) {
-		if (inputMetadata == null) {
-			inputMetadata = new DataRecordMetadata[inPorts.size()];
-			for (int i = 0; i < inputMetadata.length; i++) {
-				inputMetadata[i] = getInputPort(i).getMetadata();
-			}
-		}
-		
-		DataRecordMetadata outMeta = inputMetadata[0].duplicate();
-		for (int i = 1; i < inputMetadata.length; i++) {
-			for (DataFieldMetadata inFieldMeta : inputMetadata[i].getFields()) {
-				outMeta.addField(inFieldMeta.duplicate());
-			}
-		}
-		outMeta.setLabel(null); // because of normalization which is done later (it copies label into name, we don't want that)
-		outMeta.setName(OUT_METADATA_NAME);
-		TypedProperties props = outMeta.getRecordProperties();
-		props.clear(); // clear GUI properties (preview attachment etc.)
-		DataRecordMetadata.normalizeMetadata(outMeta);
-		return outMeta;
-	}
+	
 
 	@Override
 	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
@@ -452,7 +429,7 @@ public class CrossJoin extends Node implements MetadataProvider {
 				inputMetadata[index] = metadata.getModel();
 				index++;
 			}
-			return metadataPropagationResolver.createMVMetadata(getConcatenatedMetadata(inputMetadata), this, OUT_METADATA_ID_SUFFIX);
+			return metadataPropagationResolver.createMVMetadata(MetadataUtils.getConcatenatedMetadata(inputMetadata, OUT_METADATA_NAME), this, OUT_METADATA_ID_SUFFIX);
 		}
 		return null;
 	}

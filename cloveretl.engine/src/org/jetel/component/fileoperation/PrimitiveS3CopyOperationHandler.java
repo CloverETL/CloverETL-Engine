@@ -18,6 +18,8 @@
  */
 package org.jetel.component.fileoperation;
 
+import static org.jetel.util.protocols.amazon.S3Utils.getPath;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;

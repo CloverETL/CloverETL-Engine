@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -714,7 +715,6 @@ public final class TransformationGraph extends GraphElement {
 	 */
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
-		super.postExecute();
 		
 		//post-execute initialization of dictionary
 		dictionary.postExecute();
@@ -751,6 +751,9 @@ public final class TransformationGraph extends GraphElement {
 				throw new ComponentNotReadyException(lookupTable, "Can't finalize lookup table " + lookupTable + ".", e);
 			}
 		}
+		
+		// must be the last step of postExecute, since it calls close of graph's classLoaders
+		super.postExecute();
 	}
 	
 	/* (non-Javadoc)
@@ -1163,6 +1166,22 @@ public final class TransformationGraph extends GraphElement {
 		}
 
 		return ret;
+    }
+    
+    private Map<String, Node> nodesCached = null; // no synchronization, it's not a problem if the value is initialized twice
+    
+    /**
+     * CLO-9097
+     * 
+     * @deprecated
+     * Do not use! This method will be removed in future versions.
+     */
+    @Deprecated
+    public Map<String, Node> getNodesCached() {
+		if (nodesCached == null) {
+			nodesCached = Collections.unmodifiableMap(getNodes());
+		}
+		return nodesCached;
     }
 
     /**

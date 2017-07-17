@@ -23,7 +23,7 @@ import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.TransformLangParserVisitor;
 import org.jetel.ctl.data.Scope;
 
-public class CLVFStart extends SimpleNode {
+public class CLVFStart extends SimpleNode implements ScopeHolder {
 	private Scope scope;
 	private boolean compiledMode = false;
 	
@@ -63,10 +63,12 @@ public class CLVFStart extends SimpleNode {
 		}
 	}
 	
+	@Override
 	public void setScope(Scope scope) {
 		this.scope = scope;
 	}
 	
+	@Override
 	public Scope getScope() {
 		return scope;
 	}

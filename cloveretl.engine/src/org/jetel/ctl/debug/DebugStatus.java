@@ -29,28 +29,16 @@ public class DebugStatus implements Serializable {
 	
 	protected int line;
 	protected String sourceFilename;
-	protected boolean suspended;
-	protected String message;
 	protected Object value;
 	protected CommandType forCommand;
-	protected boolean error;
 	private long threadId;
+	private Exception exception;
 
 	public DebugStatus(SimpleNode node, CommandType forCommand) {
 		this.line = node.getLine();
 		this.sourceFilename = node.sourceFilename;
-		suspended = true;
 		value = null;
 		this.forCommand=forCommand;
-		this.error=false;
-	}
-
-	public boolean isError() {
-		return error;
-	}
-
-	public void setError(boolean error) {
-		this.error = error;
 	}
 
 	public CommandType getForCommand() {
@@ -60,22 +48,13 @@ public class DebugStatus implements Serializable {
 	public void setForCommand(CommandType forCommand) {
 		this.forCommand = forCommand;
 	}
-	
-	
+
 	public Object getValue() {
 		return value;
 	}
 
 	public void setValue(Object value) {
 		this.value = value;
-	}
-
-	public String getMessage() {
-		return message;
-	}
-
-	public void setMessage(String message) {
-		this.message = message;
 	}
 
 	public int getLine() {
@@ -94,14 +73,6 @@ public class DebugStatus implements Serializable {
 		this.sourceFilename = sourceFilename;
 	}
 
-	public boolean isSuspended() {
-		return suspended;
-	}
-
-	public void setSuspended(boolean suspended) {
-		this.suspended = suspended;
-	}
-
 	@Override
 	public String toString(){
 		return this.forCommand.toString();
@@ -113,5 +84,13 @@ public class DebugStatus implements Serializable {
 
 	public void setThreadId(long threadId) {
 		this.threadId = threadId;
+	}
+
+	public Exception getException() {
+		return exception;
+	}
+
+	public void setException(Exception exception) {
+		this.exception = exception;
 	}
 }

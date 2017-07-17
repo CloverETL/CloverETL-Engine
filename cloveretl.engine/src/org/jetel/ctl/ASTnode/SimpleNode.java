@@ -391,7 +391,7 @@ public abstract class SimpleNode implements Node {
 		return n;
 	}
 	
-	public Node jjtNextNonChild(Class whichClass) {
+	public Node jjtNextNonChild(Class<?> whichClass) {
 		SimpleNode p = this;
 		Node n = null;
 		do {
@@ -416,7 +416,7 @@ public abstract class SimpleNode implements Node {
 	 * @param whichClass
 	 * @return
 	 */
-	public Node jjtGetChilDeep(Class whichClass){
+	public Node jjtGetChilDeep(Class<?> whichClass){
 		final int count=jjtGetNumChildren();
 		int i;
 		Node child;
@@ -463,5 +463,4 @@ public abstract class SimpleNode implements Node {
 	public boolean isBreakable(){
 		return false;
 	}
-	
 }

@@ -118,6 +118,7 @@ import org.jetel.data.lookup.Lookup;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.MissingFieldException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldContainerType;
@@ -426,7 +427,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		return this.stack.getGlobalVariables()[vd.getVariableOffset()];
 	}
 	
-	private Object getLocalVariableValue(CLVFIdentifier node) {
+	protected Object getLocalVariableValue(CLVFIdentifier node) {
 		return stack.getVariable(node.getBlockOffset(), node.getVariableOffset());
 	}
 	
@@ -1286,6 +1287,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 		// loop execution
 		while (condition) {
+			checkInterrupt();
 			// loops always have (possibly fake) body
 			forBody.jjtAccept(this, data);
 			// check for break or continue statements
@@ -1337,6 +1339,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			final Collection<Object> iterable = composite.getType().isList() ? stack.popList() : stack.popMap().values();
 			
 			for (Object o : iterable) {
+				checkInterrupt();
 				setVariable(var,o);
 				// block is responsible for cleanup
 				body.jjtAccept(this, data);
@@ -1363,6 +1366,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 				final DataRecord record = stack.popRecord();
 				
 				for (int field : node.getTypeSafeFields()) {
+					checkInterrupt();
 					setVariable(var,fieldValue(record.getField(field)));
 					// block is responsible for cleanup
 					body.jjtAccept(this, data);
@@ -1400,6 +1404,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 		// loop execution
 		while (condition) {
+			checkInterrupt();
 			// block is responsible for cleanup
 			body.jjtAccept(this, data);
 			// check for break or continue statements
@@ -1486,6 +1491,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		
 		// loop execution
 		do {
+			checkInterrupt();
 			body.jjtAccept(this, data);
 			// check for break or continue statements
 			if (breakFlag) {
@@ -2336,7 +2342,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	
 	@Override
 	public Object visit(CLVFUnaryStatement node, Object data) {
-		
 		final SimpleNode child = (SimpleNode)node.jjtGetChild(0);
 		child.jjtAccept(this, data);
 
@@ -2421,7 +2426,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 	@Override
 	public Object visit(CLVFListOfLiterals node, Object data) {
-		
 		if (!node.areAllItemsLiterals() || node.getValue() == null) {
 			List<Object> value = new ArrayList<Object>();
 			for (int i=0; i<node.jjtGetNumChildren(); i++) {
@@ -2684,6 +2688,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 
 	@Override
 	public Object visit(CLVFFunctionCall node, Object data) {
+		checkInterrupt();
 		node.jjtGetChild(0).jjtAccept(this, data);
 		if (node.isExternal()) {
 			assert node.getFunctionCallContext().getGraph() != null : "Graph is null";
@@ -2980,19 +2985,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 					throw new TransformLangExecutorRuntimeException("Unknown variable type: " + lhs);
 			}
 
-			if (inDebugMode()){
-				if (lhs instanceof CLVFVariableDeclaration){
-					CLVFVariableDeclaration var = (CLVFVariableDeclaration)lhs;
-					stack.setVariable(blockOffset, varOffset, value, var.getName(), var.getType());
-				} else if (lhs instanceof CLVFIdentifier) {
-					CLVFIdentifier ident = (CLVFIdentifier)lhs;
-					stack.setVariable(blockOffset, varOffset, value, ident.getName(), ident.getType());
-				} else {
-					throw new TransformLangExecutorRuntimeException("Unknown variable type: " + lhs);
-				}
-			} else {
-				stack.setVariable(blockOffset, varOffset, value);
-			}
+			stack.setVariable(blockOffset, varOffset, value);
 		}
 	}
 	
@@ -3188,13 +3181,12 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		
 	}
 	
-	@Override
-	public boolean inDebugMode(){
-		return false;
-	}
-
-	@Override
-	public void debug(SimpleNode node, Object data) {
-		//do nothing, just stub to allow debugging
+	/*
+	 * CLO-9387
+	 */
+	protected void checkInterrupt() {
+		if (Thread.interrupted()) {
+			throw new JetelRuntimeException("Execution thread was interrupted", new InterruptedException());
+		}
 	}
 }

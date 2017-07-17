@@ -34,6 +34,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
@@ -306,6 +307,11 @@ public class WcardPattern {
         }
         
         if (archiveType != null) {
+        	if (!resolveAllNames) {
+        		// CLO-9154:
+        		// skip wildcard resolution in archives in checkConfig
+        		return Collections.emptyList();
+        	}
             // check sub-archives
             List<String> newFileStreamNames = new ArrayList<String>();
             

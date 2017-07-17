@@ -23,7 +23,7 @@ import org.jetel.ctl.TransformLangParser;
 import org.jetel.ctl.TransformLangParserVisitor;
 import org.jetel.ctl.data.Scope;
 
-public class CLVFForeachStatement extends SimpleNode {
+public class CLVFForeachStatement extends SimpleNode implements ScopeHolder {
 	private Scope scope;
 	private int[] typeSafeFields;
 	
@@ -54,8 +54,6 @@ public class CLVFForeachStatement extends SimpleNode {
 	@Override
 	public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
 		try {
-			//debug
-			 if(visitor.inDebugMode()) visitor.debug(this, data);
 			return visitor.visit(this, data);
 		} catch (TransformLangExecutorRuntimeException e) {
 			if (e.getNode() == null) {
@@ -67,10 +65,12 @@ public class CLVFForeachStatement extends SimpleNode {
 		}
 	}
 
+	@Override
 	public void setScope(Scope scope) {
 		this.scope = scope;
 	}
 	
+	@Override
 	public Scope getScope() {
 		return scope;
 	}
