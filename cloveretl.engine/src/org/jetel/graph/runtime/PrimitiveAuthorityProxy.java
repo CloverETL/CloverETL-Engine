@@ -189,11 +189,12 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 	/**
 	 * Implementation taken from original RunGraph component created by Juraj Vicenik.
+	 * @throws InterruptedException 
 	 * 
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#executeGraph(long, java.lang.String)
 	 */
 	@Override
-	public RunStatus executeGraphSync(String graphFileName, GraphRuntimeContext givenRuntimeContext, Long timeout) {
+	public RunStatus executeGraphSync(String graphFileName, GraphRuntimeContext givenRuntimeContext, Long timeout) throws InterruptedException {
 		RunStatus rr = new RunStatus();
         long runId = (this.runtimeContext == null) ? 0:this.runtimeContext.getRunId();
         

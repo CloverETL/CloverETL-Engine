@@ -80,7 +80,6 @@ public class GraphRuntimeContext implements Serializable {
 	private boolean useJMX;
 	private boolean waitForJMXClient;
 	private boolean verboseMode;
-	private boolean workerExecution;
 	private Properties additionalProperties;
 	private boolean skipCheckConfig;
 	private String password;
@@ -93,6 +92,18 @@ public class GraphRuntimeContext implements Serializable {
 	private volatile boolean ctlBreakingEnabled = true;
 	private volatile boolean suspendThreads = false;
 	private final Set<Breakpoint> ctlBreakpoints = new CopyOnWriteArraySet<>();
+	
+	/**
+	 * Whether the execution must happen on worker in multi-jvm environment.
+	 */
+	private Boolean workerExecution;
+	
+	/**
+	 * Whether the execution must happen on the same JVM as parent execution.
+	 * Only valid for non-root executions.
+	 */
+	private boolean forceParentJvm;
+	
 	/**
 	 * Default multi-thread execution is managed by {@link WatchDog}.
 	 * Single thread execution is managed by {@link SingleThreadWatchDog}. 
@@ -197,6 +208,8 @@ public class GraphRuntimeContext implements Serializable {
 		strictGraphFactorization = true;
 		classLoaderCaching = false;
 		calculateNoMetadata = false;
+		workerExecution = null;
+		forceParentJvm = false;
 	}
 	
 	/* (non-Javadoc)
@@ -214,6 +227,7 @@ public class GraphRuntimeContext implements Serializable {
 		ret.skipCheckConfig = isSkipCheckConfig();
 		ret.verboseMode = isVerboseMode();
 		ret.workerExecution = isWorkerExecution();
+		ret.forceParentJvm = isForceParentJvm();
 		ret.useJMX = useJMX();
 		ret.waitForJMXClient = isWaitForJMXClient();
 		ret.password = getPassword();
@@ -262,6 +276,8 @@ public class GraphRuntimeContext implements Serializable {
 		prop.setProperty("trackingInterval", Integer.toString(getTrackingInterval()));
 		prop.setProperty(PropertyKey.SKIP_CHECK_CONFIG.getKey(), Boolean.toString(isSkipCheckConfig()));
 		prop.setProperty("verboseMode", Boolean.toString(isVerboseMode()));
+		prop.setProperty("workerExecution", String.valueOf(isWorkerExecution()));
+		prop.setProperty("forceParentJvm", Boolean.toString(isForceParentJvm()));
 		prop.setProperty("useJMX", Boolean.toString(useJMX()));
 		prop.setProperty("waitForJMXClient", Boolean.toString(isWaitForJMXClient()));
 		prop.setProperty("password", String.valueOf(getPassword()));
@@ -421,12 +437,24 @@ public class GraphRuntimeContext implements Serializable {
 	 * Sets whether graph should run on a worker.
 	 * @param workerExecution
 	 */
-	public void setWorkerExecution(boolean workerExecution) {
+	public void setWorkerExecution(Boolean workerExecution) {
 		this.workerExecution = workerExecution;
 	}
 	
-	public boolean isWorkerExecution() {
+	public Boolean isWorkerExecution() {
 		return workerExecution;
+	}
+
+	public boolean isForceParentJvm() {
+		return forceParentJvm;
+	}
+
+	/**
+	 * Sets whether graph must run on the same jvm as parent graph.
+	 * @param parentJvm
+	 */
+	public void setForceParentJvm(boolean parentJvm) {
+		this.forceParentJvm = parentJvm;
 	}
 
 	/**

@@ -518,6 +518,7 @@ public class RunGraph extends Node{
 		runtimeContext.setRuntimeClassPath(this.getGraph().getRuntimeContext().getRuntimeClassPath());
 		runtimeContext.setCompileClassPath(this.getGraph().getRuntimeContext().getCompileClassPath());
 		runtimeContext.setJobUrl(graphFileName);
+		runtimeContext.setForceParentJvm(true);
 		RunStatus rs = this.getGraph().getAuthorityProxy().executeGraphSync( graphFileName, runtimeContext, null);
 		
 		outputRecordData.setDescription(rs.errException);
