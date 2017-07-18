@@ -24,7 +24,6 @@ import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jetel.data.Defaults;
@@ -50,10 +49,6 @@ public abstract class CloverURI {
 	private static final char SLASH_CHAR = '/';
 	
 	private static final Pattern SPACE_PATTERN = Pattern.compile(" "); //$NON-NLS-1$
-	
-	private static final char SMB_WORKGROUP_SEPARATOR = ';';
-	private static final char SMB_WORKGROUP_SEPARATOR_REPLACEMENT = '\0';
-	private static final Pattern SMB_URI_WITH_WORKGROUP_START_PATTERN = Pattern.compile("smb://[\\w\\.\\-]+;[\\w \\.\\-]+[:@]");
 	
 	protected URI context;
 	
@@ -102,28 +97,14 @@ public abstract class CloverURI {
 		}
 		CloverURI result = null;
 		uriString = preprocess(uriString);
-		/*
-		 * CLO-11085 - find and replace SMB workgroup separator before split
-		 */
-		final boolean sambaWorkgroup = containsSambaWorkgroup(uriString);
-		if (sambaWorkgroup) {
-			uriString = replaceSambaWorkgroupSeparator(uriString);
-		}
-		
 		if (uriString.contains(SEPARATOR)) {
 			String[] uris = uriString.split(SEPARATOR);
 			for (int i = 0; i < uris.length; i++) {
-				if (sambaWorkgroup) {
-					uris[i] = restoreSambaWorkgroupSeparator(uris[i]);
-				}
 				uris[i] = fileToUri(uris[i]);
 			}
 			result = new MultiCloverURI(uris); 
 			result.context = base;
 		} else {
-			if (sambaWorkgroup) {
-				uriString = restoreSambaWorkgroupSeparator(uriString);
-			}
 			uriString = fileToUri(uriString);
 			result = new SingleCloverURI(base, uriString);
 		}
@@ -166,27 +147,6 @@ public abstract class CloverURI {
 		}
 		uri = fileToUri(preprocess(uri));
 		return new SingleCloverURI(context, uri);
-	}
-	
-	static boolean containsSambaWorkgroup(String uri) {
-		return uri.indexOf(SMB_WORKGROUP_SEPARATOR) >= 0 && SMB_URI_WITH_WORKGROUP_START_PATTERN.matcher(uri).find();
-	}
-	
-	static String replaceSambaWorkgroupSeparator(String uriString) {
-		StringBuilder result = new StringBuilder(uriString.length());
-		Matcher matcher = SMB_URI_WITH_WORKGROUP_START_PATTERN.matcher(uriString);
-		int pos = 0;
-		while (matcher.find()) {
-			result.append(uriString.substring(pos, matcher.start()));
-			result.append(matcher.group().replace(SMB_WORKGROUP_SEPARATOR, SMB_WORKGROUP_SEPARATOR_REPLACEMENT));
-			pos = matcher.end();
-		}
-		result.append(uriString.substring(pos));
-		return result.toString();
-	}
-	
-	static String restoreSambaWorkgroupSeparator(String uri) {
-		return uri.replace(SMB_WORKGROUP_SEPARATOR_REPLACEMENT, SMB_WORKGROUP_SEPARATOR);
 	}
 	
 	protected URI getContext() {
