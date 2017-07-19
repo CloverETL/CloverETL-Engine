@@ -19,6 +19,7 @@
 package org.jetel.graph;
 import java.io.IOException;
 
+import org.apache.commons.io.IOUtils;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.tape.DataRecordTape;
@@ -261,17 +262,15 @@ public class PhaseConnectionEdge extends EdgeBase {
 		return !isEmpty;
 	}
 	
-	/* (non-Javadoc)
-	 * clean up
-	 * @see java.lang.Object#finalize()
-	 */
+	@Override
+	public void postExecute() {
+		super.postExecute();
+		
+		IOUtils.closeQuietly(dataTape);
+	}
+	
 	@Override
 	public void free() {
-	    try{
-	        dataTape.close();
-	    }catch(Exception ex){
-	        // ignore
-	    }
 	}
 
     @Override

@@ -245,15 +245,17 @@ public class Phase extends GraphElement implements Comparable<Phase> {
         if(logger.isDebugEnabled()){
 		    logger.debug("Edges post-execution");
         }
-		for (Edge edge : edges.values()) {
-			try {
-				edge.postExecute();
-			} catch (ComponentNotReadyException e) {
-				result = Result.ERROR;
-				exceptions.add(new ComponentNotReadyException(edge, "Edge " + edge + " post-execution failed.", e));
+		for (Edge edge : getGraph().getEdges().values()) { //release all edges with reader component in this phase
+			if (edge.getReader().getPhase() == this) {
+				try {
+					edge.postExecute();
+				} catch (ComponentNotReadyException e) {
+					result = Result.ERROR;
+					exceptions.add(new ComponentNotReadyException(edge, "Edge " + edge + " post-execution failed.", e));
+				}
 			}
 		}
-        if(logger.isDebugEnabled()){
+		if(logger.isDebugEnabled()){
 	    	logger.debug("Edges post-execution " + (exceptions.size() != 0 ? "failed." : "success."));
         }
 
