@@ -24,7 +24,7 @@ import java.util.TreeMap;
 
 /**
  * {@link ClassLoader} to allow filtering of parent delegated class loading.
- * By default all java.* and javax.* packages are delegated.
+ * By default all java.*, javax.* and sun.* packages are delegated.
  * 
  * @author jan.michalica (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
