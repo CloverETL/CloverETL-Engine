@@ -23,11 +23,11 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.jetel.plugin.PluginClassLoader;
@@ -48,28 +48,17 @@ public final class MultiParentClassLoader extends ClassLoader {
 		@Override
 		protected Class<?> loadClass(String className, boolean resolveClass) throws ClassNotFoundException {
 			throw new ClassNotFoundException(className);
-		};
+		}
 		
 		@Override
 		public URL getResource(String resName) {
 			return null;
-		};
+		}
 		
 		@Override
 		public Enumeration<URL> getResources(String resName) throws IOException {
-			return new Enumeration<URL>() {
-				
-				@Override
-				public boolean hasMoreElements() {
-					return false;
-				}
-				
-				@Override
-				public URL nextElement() {
-					throw new NoSuchElementException();
-				};
-			};
-		};
+			return Collections.emptyEnumeration();
+		}
 	};
 	
 	private final ClassLoader parents[];
