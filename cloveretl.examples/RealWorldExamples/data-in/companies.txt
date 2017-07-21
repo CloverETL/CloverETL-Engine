@@ -1,0 +1,1000 @@
+00025534;Michal Opatřil;63900;Brno;;Londynske namesti 2/856
+00063207;Kožedělný podnik Praha, státní podnik;14800;PRAHA 11;;V Parku 4
+00068365;Václav Matouš;34511;Úsilov;;Slavikovice 31
+00244333;Obec Ruda;27101;RUDA;;130
+00448133;Český svaz chovatelů, Okresní výbor Benešov;25601;BENEŠOV;;Černoleská 1929
+00466930;DŮM KUBÁNSKÉ KULTURY;11000;PRAHA 1;;NÁRODNÍ 31
+00527815;TĚLOVÝCHOVNÁ JEDNOTA VALY;53501;VALY;;
+00533882;Sdružení sportovních klubů SK Havířov;73601;Havířov - Město;Město;Svornosti 2/86
+10034323;HORVÁTOVÁ, STRAVOVÁNÍ;73601;HAVÍROV MĚSTO;;HLAVNÍ TŘ.
+10041401;Antonín Kočí a syn;77100;Olomouc - Pavlovičky;Pavlovičky;Denisova 6
+10043772;Emanuel Mika;36214;Kolová;Kolová;7
+10075178;MYNAŘÍK JIŘÍ;79601;PROSTEJOV;;HUSOVO NAM. 39
+10092871;Oldřich Zouhar - Občerstvení u Kozelků;68606;Uherské Hradiště;Uherské Hradiště;Štěpnická 1090
+10146181;Zdeněk DUŠEK;16200;PRAHA 6;STŘEŠOVICE;ZÁPADNÍ 250/8
+10164537;IKO - IVAN KOŠAN;15000;PRAHA 5;;KOVÁKŮ 13
+10200509;Jana Vodrážková;27101;Nové Strašecí;Nové Strašecí;Lesní 1010
+10203265;KAREL ŠMÍD, VÝROBA A PRODEJ UPOMÍNKOVÝCH PŘEDMĚTŮ;27054;REVNICOV 62;;
+10236473;LUDMILA ZÁMORSKÁ, ZAHRADNICTVÍ;27716;Všetaty;;Přívory 1
+10241230;Miloslava Danemarková;28401;KUTNÁ HORA;;Ortenova 85
+10273026;PC-DPT-SAZBA;37010;BOREK;;DRUŽSTEVNÍ 189
+10303499;Metropol;39811;SKÁLY;;Skály 91
+10419292;Danuše Kejaková - "Krajka";43144;Droužkovice;Droužkovice;192
+10433414;Miroslav Janšto;41119;MARTINĚVES;;CHarvatce 12
+10433848;Jiří Kočí;41301;Roudnice nad Labem;Roudnice nad Labem;Rybářské nám. 2
+10460551;DANIEL MALAŤÁK - PRODEJ ODĚVŮ;40007;ÚSTÍ NAD LABEM;;KEPLEROVA 693/2
+10469958;Marcela Chvojanová;50009;Hradec Králové;Hradec Králové;Akátová 669
+10519670;JANATA MALÍŘ,NATĚRAČ;54201;ŽACLÉŘ;;RUDÉ ARMÁDY 18
+10521453;Jiří KŘEPELKA;54212;Radvanice;Radvanice;162
+10611657;Roman Sabo;73564;Havířov - Prostřední Suchá;Prostřední Suchá;Úzká 1232/1a
+11029889;LICEK;53957;VČELÁKOV 70;;
+11191511;KRYL-KVALITNĚ,RYCHLE,LEVNĚ,VÝROBA KONST. PRVKŮ PRO            ELEKTRONIKU;73801;FRÝDEK-MÍSTEK;;I.P.PAVLOVA 283
+11210338;STANISLAVA MEDKOVÁ - služby obyvatelstvu;15200;PRAHA 5;PRAHA 5;LAMAČOVA 21/907
+11220058;Ivanka JUNGOVÁ;13000;PRAHA 3;VINOHRADY;U VODÁRNY 932/12
+11233991;Luboš Hák;14000;PRAHA 4;KRČ;POD ROVINOU 656/9
+11239751;Kamil ŠUBRT;10800;PRAHA 10;STRAŠNICE;LIMUZSKÁ
+11396661;Lubomír Kraus - Auto;36005;Karlovy Vary;Rybáře;Čankovská 59
+11424052;JOSEF OKRUTA;40007;Ústí nad Labem;Krásné Březno;Kmochova 3143/7
+11430508;ANDRS - ELEKTRIKÁŘ;43001;CHOMUTOV;;PŘEMYSLOVA 3913
+11438916;František Svobodník;46008;Liberec;Liberec VIII-Dolní Hanychov;Ještědská 151
+11481072;POLÁK - KONSTRUKCE STROJŮ;62100;BRNO;;SOUSEDNÍ 4
+11500794;KOMÁREK BOLESLAV-VÝROBA VÍNA;69185;DOLNI DUNAJOVICE 840;;
+11512857;Michal Majchrák;76701;Kroměříž;Kroměříž;Rumunská 4051
+11539127;MAZUR,INŽENÝRSKÁ ČINNOST-VŠEOBECNĚ;73961;TŘINEC;;
+12021938;Vlastimil Karkoš;43969;Lipno;Lipno;61
+12026611;LINKA, TESAŘSKÉ A LEŠENÁŘSKÉ PRÁCE;46342;HODKOVICE N/M., SPORTOVNÍ 446;;
+12147907;Božena Koláříková;61200;Brno;;Košinova 35
+12169463;DVOŘÁK - UBYTOVÁNÍ V SOUKROMÍ;63500;BRNO;;ONDROUŠKOVA 13
+12174378;Pavel  Hajzler - REPROSERVIS;60300;Brno;Staré Brno;Křížová 4
+12191485;O. ORŠEL;60200;BRNO;;BAYEROVA 14
+12214157;Zdeněk Nový;69501;Hodonín;Hodonín;Velkomoravská 37
+12237795;Jaroslav Lorenc;27801;Kralupy nad Vltavou;Kralupy nad Vltavou;Sídl.Hůrka 1046
+12248011;STEHLÍKOVÁ;26241;BOHUTÍN;;HAVÍRNA 55
+12253448;BAMBI-Průšová Renáta;27200;KLADNO;;Hajnova 174
+12276456;Zdeněk Solový;34901;Stříbro;Stříbro;Kruhová 1253
+12301680;Antonín Šinovský Čalounictví AŠ a spol;76701;Kroměříž;Kroměříž;Talichova 3976
+12352497;SEMERÁDOVÁ-OZDOBNICKÉ VÝROBKY;50343;ÚJEZD 77;;
+12385654;Helena Hořejší;27201;Kladno;Kladno;L. Zápotockého 3074
+12422762;Jaroslav Zbořil;63900;Brno;Štýřice;Vídeňská 470/9
+12428027;Aleš Bednář;58601;Jihlava;Jihlava;Březinova 4047/119
+12477761;GŽANA - PRÁCE NATĚRAČSKÉ;70300;OSTRAVA - VÍTKOVICE;;1.ÚDERKY 45
+12613533;Jana Rozkošná;14300;PRAHA;MODŘANY;PLOVDIVSKÁ
+12650927;Sylva Švestková, PhDr. TAKT;74401;Frenštát pod Radhoštěm;Frenštát pod Radhoštěm;náměstí Míru 7
+12680591;RUDOLF ZATLOUKAL, OPRAVA HODIN;78501;ŠTERNBERK;;POTOČNÍ 2
+12723304;Margita Podloučková;60200;Brno;Brno - město;Skřivanova 8
+12734446;Jitka Čolakovová;67401;Třebíč;Horka-Domky;Znojemská 20
+12743038;Rostislav Turza;76326;Luhačovice;Luhačovice;Úprkova 406
+12771279;Yveta Kubelková;40501;Děčín;Děčín II-Nové Město;Riegrova 801/32
+12779385;Radka Lachmanová;46001;Liberec;Liberec XIV-Ruprechtice;Zákopnická 356/14
+12782467;PYTLOUN - LAKÝRNICKÉ PRÁCE;47114;NEURČENA;;
+12794180;HAVLAN, TESAŘSKÉ A LEŠENÁŘSKÉ PRÁCE;46001;LIBEREC 19, IRKUTSKÁ 256;;
+12820288;Michal Valko;36009;Karlovy Vary;Drahovice;Stará Kysibelská 637/27
+12845884;Pavel Maršát;30100;Plzeň;Jižní Předměstí;Thámova 1281/5
+12865320;Jaroslav Zeman - soukromá autodoprava;35801;Jindřichovice;Jindřichovice;7
+12907375;Zdeněk César;39161;Opařany;Opařany;253
+12912115;BEZDĚKA;37006;ČESKÉ BUDĚJOVICE;;FUČÍKOVA 63
+12943282;MIROSLAV MEJSTŘÍK OPTIK;54701;Náchod;Náchod;Krámská 731
+13002317;Vlastimil Navrátil;78382;Medlov;Medlov;54
+13004654;Karel Dubovan VODO. A TOP. A ZÁM. PRÁCE;79057;Bernartice;Bernartice;Bernartice 269
+13060104;Eva Pálková;69145;PODIVÍN;;Řadová 886
+13076434;FELKL JIŘÍ;67801;BLANSKO;;TĚCHOVSKÁ 13
+13090411;Leoš Rafaj;76315;Slušovice;Slušovice;Dlouhá 70
+13143352;Petruška Marešová;10200;PRAHA 10;ŠTĚRBOHOLY;POD VALEM 307/19
+13175874;STEHLÍK-POMOCNÝ ZEDNÍK;56137;SEMANÍN;;ČP.103
+13186558;KULDA;54104;TRUTNOV;;DLOUHÁ 516
+13188569;Zuzana Bombelajová - EKOPO;10900;PRAHA 10;HORNÍ MĚCHOLUPY;LIVORNSKÁ 442
+13212095;DUNDÁČEK;58001;HAVLÍČKŮV BROD;;LEDVINKOVA 2879
+13248537;Josef Polonyi;74401;Frenštát pod Radhoštěm;Frenštát pod Radhoštěm;Papratná 895
+13250116;FIŠEROVÁ - PRODEJ PORCELÁNU,SKLA A SUVENÝRŮ;26717;MOŘINA 184;;
+13252682;Ludmila ŠVARCOVÁ - Čalounictví;26801;Hořovice;;9. května 1415
+13263668;POŠMOURNÝ - ZEMNÍ PRÁCE;15000;PRAHA 5;;K ŘEPORYJÍM 49
+13266381;ČERNÝ - AUTOKLEMPÍŘ;25229;ÚHOLIČKY 207;;
+13305956;NĚMEČEK - POMOCNÉ STAVEBNÍ PRÁCE;25266;LIBČICE NAD VLTAVOU;;TYRŠOVA 1881
+13307878;Jiří Džbánek;25219;Rudná;Rudná;Na mýtě 568
+13413449;Alena Brabcová;76872;Chvalčov;Chvalčov;716
+13456288;Ivan Šporka;40753;Jiříkov;Starý Jiříkov;Teplická 309/57
+13471279;Milan Vykouk;40012;Ústí nad Labem;Ústí nad Labem - Severní terasa;Jana Zajíce 2772/1
+13477153;Vlastislav Janouch;47001;Česká Lípa;Česká Lípa;Červeného kříže 2605
+13506731;JAN TESAŘ, ZEDNÍK;38278;LIPNO NAD VLTAVOU 26/4;;
+13511297;Jaroslav MARTÍNEK;38602;Strakonice;;Dukelská 481
+13519158;Jaroslav Bucek - Elektro;39181;Veselí nad Lužnicí;Veselí nad Lužnicí II;Štěpnice 734
+13564838;HRYZLÍKOVÁ-BRAŠNÁŘSTVÍ;50346;TŘEBECHOVICE POD OREBEM;;HRADECKÁ 573
+13586416;TJ PRIMÁTOR JEZDECKÝ ODDÍL;57001;LITOMYŠL;;BENÁTSKÁ 314
+13611011;HLADÍK JIŘÍ, TOPENÁŘSKÉ PRÁCE;79501;RÝMAŘOV;;JESENICKÁ 19
+13619063;Miloslav Lichý - Opravy moto 50;73514;Orlová - Poruba;Poruba;Rodinná 1097
+13658727;TRUMPEŠOVÁ - UBYTOVÁNÍ V SOUKROMÍ;76302;ZLÍN - MALENOVICE;;MLÝNSKÁ 802
+13700553;Jiří Křemeček;68603;Staré Město;Staré Město;Úprkova 1811
+13717529;Aleš Stejskal - Interiéry;67801;Blansko;Blansko;Divišova 16
+13753878;PELCOVÁ - KREJČOVSKÉ PRÁCE;26703;HUDLICE 329;;
+13755749;KRÁTKÁ - RUČNÍ PLETENÍ;26754;KOTOPEKY 7;;
+13772139;SUCHOMEL - ZEDNICKÉ PRÁCE;25262;ÚNĚTICE 11;;
+13815300;Petr Brožka;18600;PRAHA 8;KARLÍN;KUBOVA 505/6
+13827456;QUEST - ING. JAROSLAVA HERMÁNKOVÁ;10000;PRAHA 10;;HRADEŠÍNSKÁ 66
+13857771;PEŠEK - TRUHLÁŘ;33703;ROKYCANY;;NOVÉ MĚSTO 954
+13863614;JAVORSKÁ EVA-PEDIKÚRA,KADEŘNICTVÍ;34142;KOLINEC;;Č. 222
+13863797;Přemysl Paroubek;34201;Sušice;Sušice I;POD NEBOZÍZKEM 306
+13890018;Bohumír Sunek;32300;Plzeň;Bolevec;Kralovická 1464/69
+13918630;Jiří Poživil;46006;Liberec;Liberec VI-Rochlice;Pod Sadem míru 986
+13922530;Pavel Janďourek  JAPA-podlahářství;46001;Liberec;Liberec I-Staré Město;Matoušova 361/22
+14242344;Jaroslav Machovčiak;74801;Hlučín;Bobrovníky;Požárnická 41
+14498804;Odborová organizace - Okresní stavební podnik, a. s.;37001;ČESKÉ BUDĚJOVICE;;Novohradská 21
+14539888;Miloslava Šmídová;58222;PŘIBYSLAV;;Tržiště 568
+14584981;Jindřich Orság;78397;Paseka;Paseka;79
+14592274;NESTÁVALOVÁ-KRESLIČSKÉ A KONSTRUKTÉRSKÉ PRÁCE;75701;VALAŠSKÉ MEZIŘÍČÍ;;ČAPKOVA 687
+14594439;CHROMÁ LENKA;78901;ZÁBŘEH;;
+14636077;Stanislav Plšek;76363;Halenkovice;Halenkovice;611
+14683334;Radek Veleba;67401;Třebíč;Horka-Domky;Hartmannova 1145
+14685914;Stanislav Stehlík;30700;Plzeň;;Petřínská 4
+14735229;Josef Kohout - zámečnictví;33555;Neurazy;;č.p. 84
+14737001;Vladimír Formánek;33441;Dobřany;Dobřany;Loudů 952
+14794501;MIROSLAV BRZÁK, ZEDNICKÉ PRÁCE;28802;NYMBURK                              {*};;ŠEŘÍKOVA 2131
+14798620;Zemědělské družstvo Studený;25767;STUDENÝ;;
+14811642;Erika Englischová - KADEŘNICTVÍ;41731;Novosedlice;Novosedlice;Úzká 386
+14862425;SASKA, VÝROBA A PRODEJ BYTOVÝCH DOPLŇKŮ;46008;LIBEREC 8, ERBENOVA 146/10;;
+14884631;MACHÁČEK;46601;JABLONEC N.N.;;HORNÍ NÁMĚSTÍ, HOTEL NA BAŠTĚ
+14894238;PAVEL NAVRÁTIL;10000;PRAHA 10;;POD STRÁNÍ 2167
+14908786;Irena Černošková;15500;PRAHA;STODŮLKY;BAŠTECKÉHO 8
+14952165;JAN ŘÍHA;18100;PRAHA 8;;TORUŇSKÁ 331
+14987635;E L CE E M   ING. OTOMAR ŠPALEK;16000;PRAHA 6;;KAFKOVA 20
+15019772;LAUB;53851;CHRAST;;TYRŠOVA 329
+15041298;HRONOVSKÁ ILONA;51801;DOBRUŠKA;;SPÁLENIŠTĚ
+15055582;MALPA SPOL.S R.O.;50601;JIČÍN;;Na hrádku 20
+15063593;SEPO , spol. s r.o.;50000;HRADEC KRÁLOVÉ;;BRATŘÍ ŠTEFANŮ 902
+15073076;ING. JIŘÍ VÍTEK;15000;PRAHA 5;;TRACHTOVA 1/1129
+15097536;TOROVÁ;19016;PRAHA 9;;MACHOVICKÁ 1674
+15171884;KITLER-OBRÁBĚNÍ KOVŮ A DŘEVA,POMOCNÉ STAVEBNÍ PRÁCE;46001;LIBEREC 2;;METELKOVA 471/11
+15190706;Ing. Petr Werner,CS:SOUND;66401;Babice nad Svitavou;;16
+15229611;JAROSLAV NOVOTNÝ ZEDNICKÉ A OBKLADAČSKÉ PRÁCE;79817;SMRŽICE;;Č. 100
+15240088;Vladimír Hanousek - malíř, natěrač, malířské a natěračské práce;68501;BUČOVICE;;Urbáškova 110
+15263487;Jaroslav Marek;58851;Batelov;Batelov;nám. Míru 5
+15290280;VERA TELECOM;16900;PRAHA 6;;NA MALOVANCE 723/8
+15353851;MIROSLAV ŠIMEK;25070;ODOLENA VODA;;U LÉKÁRNY 201
+15428826;Ing. Pavel Seidl;70800;Ostrava - Poruba;Poruba;Jilemnického 906
+15430481;BOJKO, OBSTARÁNÍ ZÁLEŽITOSTÍ JINÉHO PÉČE O MAJETEK;78701;ŠUMPERK;;
+15457664;JANČÍK - ZÁMEČNICTVÍ ZÁMEČNICKÉ PRÁCE;78302;OLOMOUC;;NEMILANY
+15477410;Ing. Leopold Kolatek  Výškové práce;73561;Český Těšín;Chotěbuz;238
+15484921;MATĚJEK - SVÁŘEČSKÉ PRÁCE;74741;ŽIMROVICE;;HRADECKÁ 153
+15487938;Zdeněk Matýsek;74774;Holasovice;Holasovice;191
+15523586;Macura Vladimír SHR,smíšené hospodářství,Kunčice pod Ondřejníkem;73913;Kunčice pod Ondřejníkem;;čp.58
+15596460;JIŘANSKÝ;56601;VYSOKÉ MÝTO 644;;
+15643514;DELTA;50002;HRADEC KRÁLOVÉ;;VRCHLICKÉHO 1231
+15665356;Ing. Pavel ZMEK;40722;Benešov nad Ploučnicí;Benešov nad Ploučnicí;Opletalova 532
+15686868;TRDLOVÁ MARIE;46821;PĚNČÍN,BRATŘÍKOV 29;;
+15687830;Josef Konečný;46822;Železný Brod;Železný Brod;Průmyslová 813/30
+15705820;ŠPERL - VEŘEJNÁ NÁKLADNÍ AUTODOPRAVA;46010;LIBEREC 3                            {*};;SÁZAVSKÁ 13
+15749681;Ladislav Tyll - Typografické služby;32300;Plzeň;Bolevec;Kaznějovská 1205/1
+15777383;Jiřina Květoňová;37372;Zvíkov;Zvíkov;9
+15783197;ŠEDIVÝ Václav Ing. - INDUSTRIAL CONTROL S.P.S.;39102;SEZIMOVO ÚSTÍ;;Jilemnického 953
+15901459;GREPL - SMÍŠENÉ ZBOŽÍ;19900;PRAHA 9;;VELHARTICKÁ 395
+15922626;JIŘÍ LOULA;10000;PRAHA 10;;GRUZÍNSKÁ 5/1385
+16053648;DUSIL;15500;PRAHA 5;;BELLUŠOVA 1868
+16083423;PETR ŠVEJDA;14000;PRAHA 4;;V ZÁLOHU 1263/5
+16114299;MUSIL;19900;PRAHA 9;;HAVÍŘOVSKÁ 423
+16155271;OPPITZ;10000;PRAHA 10;;DUBEČSKÁ 8
+16172027;VEVERKA JOSEF;16300;PRAHA 6;;JIRÁNKOVA 1135/72
+16172752;ALENA CUKROVÁ;16900;PRAHA 6;;ZÁVĚRKA 4
+16180208;ČESIP;17000;PRAHA 7;;RUBENSKÁ 25
+16218663;ŽITKO JAROMÍR;50754;PODHORNÍ ÚJEZD 6;;
+16296923;Jarmila Tornaritisová - DAFNI;76001;BŘEZNICE;BŘEZNICE;455
+16317645;FYTO - KONZULT;62500;BRNO;;BĚLORUSKÁ 18
+16381769;IVETA-STŘÍHÁNÍ PSŮ;41501;TEPLICE;;P.JILEMNICKÉHO 8
+16424701;HUJOVá-POTRAVINY,VEřEJ.STRAVOVáNí-číšNICE;40501;DěčíN 1;;TYRšOVA 1093/7
+16430565;Václav Hoffman;46841;Tanvald;Šumburk nad Desnou;Vítězná 382
+16507509;Jarmila GÖTZOVÁ;10600;PRAHA 10;ZÁBĚHLICE;JABLOŇOVÁ 2136/11
+16527691;Karel Kemr;27304;Hradečno;Nová Ves;25
+16571002;Dana Čermáková - pedikůra;29001;Poděbrady;Poděbrady II;Pavlova 687
+16595998;VILLNER;28002;KOLIN II.;;DELNICKA 803
+16610975;Ing.arch. Lenka Mrázková - INEX;73532;Rychvald;Rychvald;Zátiší 1717
+16619072;ČERNÍN-MALÍŘSKÉ PRÁCE;74705;OPAVA 5;;ANTONÍNA SOVY 14
+16631854;MOCEK, OPRAVY SPOTŘEBNÍ ELEKTRONIKY;72528;OSTRAVA-HOŠŤÁLKOVICE;;ALEJE 287
+16687981;Lubomír Kopecký - BERG;33003;Chrást;Chrást;Budovatelů 560
+16750292;TOPENÁŘSTVÍ ŽAMBERK-KALOUSKOVÁ IVANA;54601;ŽAMBERK;;28.ŘÍJNA 643
+16758277;RENÉ MEISSNER;54403;DVŮR KRÁLOVÉ N.L.;;RAISOVA 1042
+16767799;MARIE TAMASOVÁ;53002;Ostřešany;Ostřešany;296
+16823842;Miroslav ŠRACHTA-Autoservis;38601;Strakonice;;Písecká 513
+16903901;V PLUS N;18100;PRAHA 8;;POZNAŇSKÁ 449
+16908392;LENKA HRBOVÁ HOLIČSTVÍ A KADEŘNICTVÍ;14000;PRAHA 4;;PŘÍMĚTICKÁ 1201/44
+16935411;MAŠIKA;26105;PŘÍBRAM VIII;;104
+16942361;VEVERKA;26101;PŘÍBRAM IV;;CIHLÁŘSKÁ 96
+16989601;YANO TRADING - IVAN JANOUŠEK ING.;10000;PRAHA 10;;NA ÚSEKU 1/740
+17025451;RAISOVÁ;17000;PRAHA 7;;FR.KŘÍŽKA 18
+17049849;RITOM SPOL.S R.O.;10000;PRAHA 10;;STAROSTRAŠNICKÁ 55
+18083552;NASYBA VLADIMÍR;79001;JESENÍK;;LIPOVSKÁ 1178
+18128149;Alena Skalická-REKLAMA ALIS;76361;Napajedla;Napajedla;Komenského 296
+18148166;KOCMAN - REDAKTOR;60200;BRNO;;NÁM. 28. ŘÍJNA 16
+18196225;Alena Čopáková -  A L K A;58601;Jihlava;Jihlava;Příční 20
+18240607;Jaroslav Vacek;33203;Šťáhlavy;;Jiráskova 277
+18269591;Jaromír Šimek - restaurace autobusové nádraží;38101;Český Krumlov;Horní Brána;Kaplická 586
+18298745;Bohuslav Jinoch  MALÍŘ - NATĚRAČ;37842;Nová Včelnice;Nová Včelnice;Na Hliněnce 451
+18313973;BOHUMILA VACKOVÁ PRODEJ LOSŮ;39601;HUMPOLEC;;HRADSKÁ 818
+18326765;Věra Špálová;46001;Liberec;Liberec XII-Staré Pavlovice;Na Cvičišti 558/58
+18439179;JAN KLÍMA;19000;PRAHA 9;;NOVOBORSKÁ 651/1
+18492410;Milan Hýl;71500;Ostrava - Michálkovice;Michálkovice;Československé armády 40
+18502539;OLŠÁK ING. -OPRAVY A ÚDRŽBA ROZHLAS. PŘÍM.;75501;VSETÍN;;JASENICKÁ 312
+18510396;ČERNEK LADISLAV;69002;BROD NAD DYJÍ 33;;BROD NAD DYJÍ 33
+18541372;ZELNÍČEK OTAKAR PRODEJ TEXTILU, VEDENÍ ÚČETNICTVÍ;67401;TŘEBÍČ;;HARTMANNOVA 1145
+18557791;SOUČKOVÁ;76502;OTROKOVICE;;
+18564712;Vojtěch Polák - autoopravna;66461;Rajhrad;Rajhrad;Syrovická 619
+18622372;COLUMBUS, Společnost s ručením omezeným;27101;NOVÉ STRAŠECÍ;;Okružní 1049
+18636322;RAJA BARTONÍČKOVÁ;18000;PRAHA 8 - ĎÁBLICE;;ĎÁBLICKÁ 82/73
+18642080;Petr Stach - PANDA;14900;Praha;Chodov;Michnova 1621/9
+18643701;PETR KOTĚŠOVSKÝ;14900;PRAHA 4 - JIŽNÍ MĚSTO;;KOLSKÉHO 1450
+18652930;DOROTOVIČ;16000;PRAHA 6;;POD JULISKOU 5
+18671250;MULLEROVÁ DAGMAR;10200;PRAHA 10;;HOČINIMOVA 7/916
+18725082;EKON VEDENÍ ÚČETNICTVÍ,DANĚ A ADMINISTR.PR.;31805;PLZEŇ;;KŘIMICKÁ 11
+18725627;URBAN JIŘÍ AUTOELEKTRIKÁŘSKÉ PRÁCE;31701;PLZEŇ;;U MLÝNA 23
+18788203;Karla Jurčová - KAROLÍNA;68761;Vlčnov;Vlčnov;Nivnická 1033
+18812961;Vojtěch Rygol;76005;Zlín;;SNP 4746
+18816291;UNILAND - OBCHODNÍ A ZPROSTŘEDKOVATELSKÁ ČINNOST - OBLAST PRŮMYSLOVÉ A SPOTŘEBNÍ ZBOŽÍ;76001;ZLÍN;;
+18846637;LB - BAŽANTOVÁ;50001;HRADEC KRÁLOVÉ;;U SOKOLA 567
+18870066;SCHEJBALOVÁ;51772;JÍLOVICE 1;;
+18930964;KOLDUSOVÁ ALENA;15500;PRAHA 5;;TRÁVNÍČKOVA 1762
+18933203;EKOHELP;19000;PRAHA 9;;VERNEŘICKÁ 5/406
+18967353;ŘEZNICTVÍ - KOLONIÁL U DIVADLA NÁKUP A PRODEJ SMÍŠENÉHO ZBOŽÍ;77200;OLOMOUC;;LIPENSKÁ 12
+19000553;Josef Kubeša Ing. - EDAPO;79201;Bruntál;Bruntál;Uhlířská 5
+19005628;LAJCZYK, POHOSTINSTVÍ;73514;ORLOVÁ-LUTYNĚ;;28. ŘÍJNA 1283
+19027036;Irena Šarmanová;41201;Litoměřice;Pokratice;Na výsluní 435/12
+19049951;Svetluša Janáková - G&B;43401;Most;;Komenského 520/614
+22974920;Marta Kronenbergová - MIMARA;73601;Havířov;Bludovice;Mládežnická 20
+22976612;Jarmila Kormanová - KADEŘNICTVÍ "PEGGY";73601;Havířov - Město;Město;Gogolova 926/1
+25000306;Agentura Sport s.r.o.;46313;LIBEREC;;Hodkovická 16
+25003232;DECIMEX s.r.o.;40501;DĚČÍN 2;;Folknářská 21
+25033433;Bytové družstvo DOLENKA;46010;Liberec 10;;Jáchymovská 272
+25086839;F.A.R. s.r.o.;11000;PRAHA 1;;JUNGMANNOVA 14/736
+25137409;AJSULU, s.r.o.;41501;Teplice;;Na Konečné 207/11
+25159186;Jozef Gajdoš;37501;Týn nad Vltavou;Týn nad Vltavou;Veselská 709
+25164724;PRENESTA s r. o.;38301;PRACHATICE;;Poštovní 114
+25170914;LAO SERVIS s.r.o.;14300;Praha 4;Modřany;Barrandova 409
+25176200;Profitex-Moda, spol. s r.o.;38301;Prachatice;;Nebahovská 68
+25204530;PROGRESS-BRUNNER s.r.o.;31814;Plzeň 3 - Skvrňany;;Terezie Brzkové 25
+25237471;DIRNBERGER s.r.o.;34816;Halže;Halže;65
+25248430;Krebber, s.r.o.;33034;Úlice;Kníje;18
+25352784;FM TRANS s.r.o.;73908;Frýdek-Místek;;171
+25422804;GOLF - KMN s.r.o.;41501;Teplice;;U Hadích lázní 48
+25510057;MAXIM Brno, s.r.o.;65502;Brno;;Veslařská 203
+25601474;DYDY,s.r.o.;10100;Praha 10;Vršovice;Košická 12
+25661400;NEMOCONSULT, s.r.o.;12000;Praha 2;;Sázavská 8, č.p. 91
+25732471;Y.P. INTERNATIONAL TRADING  s.r.o.;17000;Praha 7;Holešovice;Letenské nám. 5
+25757253;Rheingold - Praha  s.r.o.;16000;Praha 6 - Veleslavín;;Křenova 439/19
+25773143;Acc Asso,s.r.o.;16500;Praha 6;;Za Sokolovnou 440
+25779729;Ella Eurotrade CZ,s.r.o.;15000;Praha 5;Smíchov;Radlická 2
+25859358;RELE - Stolařství s.r.o.;73935;Václavovice;;Na Dolině 180
+25860674;EVOCO s.r.o.;77200;Olomouc;;Ostružnická 352/23
+25881761;Společenství vlastníků bytových jednotek v domě čp. 566 na st. 728/1 v k.ú. Šumperk;78701;Šumperk;;Nerudova 566/9
+25884824;Společenství vlastníků jednotek v domě čp. 836 v Orlové-Lutyni;73514;Orlová - Lutyně;Lutyně;Osvobození 796
+25921967;JOVEL, s.r.o.;51735;Lično;Lično;čp. 119
+26016516;BIRDIE s.r.o.;37833;Nová Bystřice;;Žižkova 222
+26030659;ŽOS České Velenice servis a.s.;37810;České Velenice;;J.Pernera 158
+26040000;Galyna Novikova;38801;Škvořetice;Škvořetice;58
+26045176;Společenství vlastníků jednotek v domu čp. 1699 - 1700 v ulici 17.listopadu v Písku;39701;Písek;;Velké náměstí 114
+26130495;D.A.Engineering s.r.o.;19000;Praha 9;Libeň;Kurta Konráda 500/6
+26135264;GLORS, s.r.o.;14000;Praha 4;Braník;U Staré pošty 172/7
+26273756;Společenství vlastníků jednotek domu Krymská 15 v Brně;62500;Brno;;Krymská 379/15
+26340216;Alparodina spol. s r. o.;36004;Karlovy Vary;Bohatice;Dalovická 241/17
+26415470;Strojírenský servis Praha s.r.o.;14000;Praha 4;Podolí;Na Dolinách 357/23
+26419572;Primaks s.r.o.;13000;Praha 3;Žižkov;Sudoměřská 1793/47
+26425939;VZS KLADNO s.r.o.;27200;Kladno;;Ostravská 3056
+26480654;PRAVIAGENT s.r.o.;12000;Praha 2;Vinohrady;Londýnská 218
+26543745;OUTSIDER Benešov;25601;BENEŠOV U PRAHY;;Hráského 1936
+26584034;TJ ŽÁK HAVÍŘOV;73601;HAVÍŘOV - MĚSTO;Město;Žákovská 1 / 1006
+40006000;JIRINA;28172;PRISIMASY 42;;
+40022641;BERAN-OBČERSTVENÍ;29501;MNICHOVO HRADIŠTĚ;;NA HRADČANECH 53
+40026329;CHVAPILOVÁ;27401;SLANÝ;;NA CHMELNICI 81
+40033686;LABORATOŘ-LIVOROVÁ;27200;KLADNO;;NÁM.ST.PAVLA 47
+40068820;Ing. Josef Havránek;28902;Kněžice;;Dubečno 37
+40069419;Ladislav Jech-prodej paliv a stavebnin;28802;Nymburk;Nymburk;Tyršova 1092
+40098478;ING. DVORSKÁ;53803;HEŘMANŮV MĚSTEC;;KLEŠICE 77
+40102971;SKALSKÝ;54101;TRUTNOV;;KOMENSKÉHO 19
+40139972;Ing. František Kovanda;58291;Světlá nad Sázavou;Světlá nad Sázavou;Havířská 616
+40189929;Maglen Pavel;40721;ČESKÁ KAMENICE;;Fučíkova 429
+40202381;Mgr.Marie Truncová - soukr.škola SLUNCE;47001;Česká Lípa;Česká Lípa;Červeného kříže 2563
+40223451;CHRISTOPH;40001;ÚSTÍ NAD LABEM;;OSTRČILOVA 9
+40255085;Ing.Petr Svoboda CSc.;43401;Most;;Kpt.Jaroše 35/606
+40264211;John Koňas - ELEKTROINSTALACE;46015;Liberec;Liberec XV-Starý Harcov;Aloisina výšina 631/106
+40279863;LIPKOVÁ, MASÁŽE;73301;KARVINÁ-HRANICE;;SLOVENSKÁ 2896
+40292266;Milan Procházka - PROMA;75124;Přerov;Přerov I-Město;Předmostí, Pod skalkou 18
+40299473;Josef Kolář;73901;Baška;Baška;243
+40363660;Jiřina Skřipcová;76701;Kroměříž;Kroměříž;Erbenovo nábřeží 3923
+40460754;Architekt Jindřich Škrabal;61300;BRNO;;Babičkova 3
+40478823;Pavel Haupt obchodní firma;57201;Polička;Polička-Město;Palackého nám. 58
+40484157;Helmut Pospischil;36017;Karlovy Vary;Karlovy Vary;Nerudova 154/8
+40488195;NOVOTNÝ TRADING PORADENSKÁ ČINNOST V OBCHODĚ,TRADING, MARKETING,PŘEKLADATELSKÁ ČINNOST;36301;OSTROV;;SEVERNÍ 1170/33
+40548872;PAVEL MINAŘÍK DROBNÉ OPRAVY AUTOMOBILŮ, OBCH. ČINNOST - POTRAVINÁŘSKÉ ZBOŽÍ, PRŮMYSLOVÉ ZBOŽÍ, STÁNKOVÝ PRODEJ;34401;DOMAŽLICE;;ČERCHOVSKÁ 460
+40564398;VACKOVÁ - RATHÚSKÁ ODĚVNÍ ČINNOST,OBCHODNÍ ČINNOST NEPOTRAV., PORADENSKÁ A ZPROSTŘ.ČINNOST;36017;KARLOVY VARY;;ZÁVODU MÍRU 823/59
+40647307;ING. MILAN BAHNI)K STAVEBNI) TECHNICKY) PROJEKTOVY) SERVIS;14600;PRAHA 4;;NAD PI)SKOVNOU 1454
+40671461;Tomáš VANÍČEK - SEA ADVENTURES;11000;PRAHA 1;NOVÉ MĚSTO;SOUKENICKÁ 1197/7
+40682684;HEP;13000;PRAHA 3;;KOUŘIMSKÁ 16
+40758591;KALASOVÁ,UBYTOVÁNÍ;37009;ČESKÉ BUDĚJOVICE;;DOBRÁ VODA
+40774805;OPATRNÁ DANA;14011;PRAHA 4;;SNOPKOVA 481
+40782468;JIŘÍ SALMON;14200;PRAHA 4 - MODŘANY;;PŠENČÍKOVA 16
+40789829;TOMANÍKOVÁ;19000;PRAHA 9;;LOVOSICKÁ 772
+40807606;Miroslav Jech  Restaurace Veselka;53807;Seč;;Seč 72
+40847781;Václav Steinocher;28101;Velim;Velim;Krále Jiřího 270
+40860931;ČMEL;17000;PRAHA 7;;MILADY HORÁKOVÉ 690/4
+40885429;Emil Houška;27034;Šípy;Bělbožice;3
+40906027;HALENKOVSKÝ;27204;KLADNO 4;;MLÁDEŽNICKÁ 841
+40949907;Ing.Jiří Balatka - Bistro ALICE;76901;Holešov;;Palackého 544
+40973433;MARTING;60200;Brno;;Bohuslava Martinů 12
+41001991;BRAMBORA, INTEC OBCHODNÍ ČINNOST;59231;NOVÉ MĚSTO NA MOR.;;MASARYKOVA 143
+41051491;Jaroslav Vyvial;74221;Kopřivnice;;Pod Bil.Horou 1278
+41148690;MUDr. Antonín EIS "Sport Ideál";16000;PRAHA 6;BUBENEČ;VIETNAMSKÁ 700/6
+41173911;Tomáš HODR - KAMIONSERVIS;19011;PRAHA 9;;ARANŽÉRSKÁ
+41178203;TOMA)S! RA)KOSNI)K;14900;PRAHA 4;;Petýrkova 1992
+41226119;MATĚJCOVÁ, HOSTINNÉ OBCHODNÍ ČINNOST;54371;HOSTINNÉ;;KONĚVOVA 586
+41256751;KINDL-ROZVOZ UHLÍ;55001;BROUMOV;;HEJTMÁNKOVICE 125
+41327853;AHOY EXPORT - IMPORT, S.R.O.;46015;LIBEREC 15;;PEKÁRKOVA 570/20
+41368231;VAŠEK-LIBERTA,ZPROSTŘ.OBCHODNÍ SPOLUP.;73902;JANOVICE;;
+41381823;Jurajdová Anna-SHR-chov domácího zvířectva, pěstování krmných plodin,ovoce a zeleniny;79351;BŘIDLIČNÁ;;Nerudova 345
+41390903;Pustková, prodej stavebního materiálu;74221;KOPŘIVNICE;;I.Šustaly 1087
+41394101;Karel Parma - zednické práce;74401;Kopřivnice;Lubina;603
+41398025;Michal Hrinko;73514;Orlová - Lutyně;;Masarykova 918
+41406541;Ilona Schneiderová ILKA;70030;Ostrava - Zábřeh;Zábřeh;Čujkovova 59
+41473167;PůPROZ;27703;HORNí POčAPLY;;EMě
+41531591;GAZDA JAROSLAV;69104;PŘÍTLUKY 153;;
+41542851;OSTRÝ PETR NÁKUP A PRODEJ POTRAVIN;67544;LESONICE;;LESONICE 159
+41585208;Václav Kovařík;76001;Zlín;Prštné;K.Světlé 290
+41610954;Karel ČELOUT;13000;PRAHA 3;VINOHRADY;PERUNOVA 787/9
+41650727;Ing. Vladislav Bareš, STROMSERVIS;34701;Tachov;Tachov;Hornická 1406
+41669240;Martin Braborec;33828;Radnice;Radnice;NÁMĚSTÍ KAŠPARA ŠTERNBERKA 1
+41676513;Růžena Chmelařová;35801;Kraslice;Kraslice;Pod Nádražím 1838
+41679008;Miroslav Holzman;32300;Plzeň;Bolevec;Žlutická 1482/5
+41680570;Zdeněk Jansa Karosářské práce;31216;Plzeň;;U cvičiště 3
+41704631;HAL;13000;PRAHA 3;;Biskupcova 36
+41711874;PHDR. POSSELTOVÁ;13000;PRAHA 3;;PÍSECKÁ 11
+41713401;Michael KONÁREK - HOSTINEC;13000;Praha;Žižkov (část);Viklefova 1811/16
+41757513;Lenka PALIVCOVÁ - BIG HAM;16000;PRAHA 6;DEJVICE;NA HANSPAULCE 807/27
+41778952;Josef FIŠER;10000;PRAHA 10;STRAŠNICE;DUBEČSKÁ 1765/18
+41815084;Ladislava CHRAMOSTOVÁ;15000;PRAHA 5;SMÍCHOV;FRÁNI ŠRÁMKA 2633/30
+41817311;Jan Veleta;15500;PRAHA 5;ZLIČÍN;NEDAŠOVSKÁ 341
+41818067;Jana DRAŠAROVÁ;15000;PRAHA 5;;STAROPRAMENNÁ 9/547
+41828283;JAN KRÝSL STUDIO;11000;PRAHA 1;NOVÉ MĚSTO;VE SMEČKÁCH 603/13
+41832582;ADÉLA URBANOVÁ - ADELAIDE;11000;PRAHA 1;JOSEFOV;PAŘÍŽSKÁ 125/16
+41834658;SOBOTKA VÁCLAV;14100;PRAHA 4;;CHOCERADSKÁ 3038
+41881222;František Vlček, samost. hosp. rolník;38491;HORNÍ VLTAVICE;;Horní Vltavice 75
+41913752;František JŮZEK-truhlářství;38901;Vodňany;;Budějovická 499/II
+41915259;AGROIMPO-OUŘEDNÍK;38772;LIBĚJOVICE;;LIBĚJOVICE 26
+41923006;EVA KANDUSOVÁ, J. HRADEC, OBCERSTVENI;37701;JINDŘICHŮV HRADEC;;STARTOVACÍ VĚŽ - KUNIFER
+41989732;Pavel KLIKA - Foto-elektronik servis;26721;Tmaň;Tmaň;prof. Krbce 77
+42014328;Helena Molčanová;73953;Třanovice;Třanovice;111
+42037662;Emil Pěnkava-FINCH;70200;Ostrava-Moravská Ostrava;;Maroldova 1/2987
+42096693;JAROMÍR ČERNÝ;41002;LOVOSICE;;KRÁTKÁ 985
+42105048;RADEK PROŠEK;43984;Blatno;;Malměřice 58
+42107598;Štěpán   Z i m m e r m a n n;43966;Zbrašín;;Senkov 1
+42124492;GREGOR VLADIMÍR - NÁKUP A PRODEJ LOSŮ;47124;MIMOŇ;;SÍDLIŠTĚ POD RALSKEM 579/I
+42131022;REJFEK-VÝROBA KOVOVÝCH PŘEDMĚTŮ PRO VÝROBNÍ ÚČELY, MONTÁŽ A OPRAVY KOVODĚLNÝCH VÝROBKŮ, SVÁŘEČSKÉ PRÁCE PLAMENEM A EL.OBLOUKEM;41771;ZABRUŠANY;;VŠECHLAPY 97
+42186188;SOUKUP JAROSLAV;51247;PASEKY NAD JIZEROU;;Paseky nad Jizerou 1
+42204909;HAVLÍN;50351;CHLUMEC N.CIDL.;;ŠVERMOVA 533/IV
+42229766;VĚRA KARLÍKOVÁ-KANOMA;50346;Třebechovice pod Orebem;;Nerudova 991
+42241839;Josef Smékal;57001;Litomyšl;Litomyšl-Město;Smetanovo náměstí 140
+42259380;VECTRA;53303;DAŠICE V Č.;;28. ŘÍJNA 425
+42272653;SVOBODA JINDŘICH, ZÁMEČNICKÉ A ZEDNICKÉ PRÁCE;66471;CHUDČICE 210;;
+42339111;Pavel Gregůrek;76005;Zlín;;Na honech 4907
+42421616;HÁSE VÁCLAV;40007;ÚSTÍ NAD LABEM;;PŘEMYSLOVCŮ 623/22
+42423953;MATYSOVÁ BLANKA;40327;ÚSTÍ NAD LABEM;;MALEČOV 44
+42565251;František BRŮNA;19000;PRAHA 9;PROSEK;MARTINOVSKÁ 247/13
+42593883;ZVĚŘINA Antonín;64300;Brno;;K lázinkám 4
+42602017;JURČÍK STANISLAV;76901;PŘÍLEPY 206,P.HOLEŠOV;;
+42617847;Rostislav TOMAN - pomocné stavební práce včetně prací ve výškách;76001;Zlín;;
+42633087;Karel Vystrčil;58601;Jihlava;Jihlava;Žižkova 2505/129
+42633842;KLIS - práce klempířské, izolatérské;58854;Mrákotín 257;;
+42691494;Jindřich Dvořák;61300;Brno;Brno - město;Merhautova 133
+42700337;Miluše Bučková;79823;Čelčice;Čelčice;17
+42702551;WEIGEND-SUVENÝRY,VÝROBA,PRODEJ;29301;ML.BOLESLAV;;HAVLÍČKOVA 590
+42741980;Zubík Václav;27731;MALÝ ÚJEZD 17;;
+42749557;Pavel Karban,pom.práce při výrobě chleba a pečiva,lakýrnické práce;28504;VAVŘINEC;;Chmeliště 13
+42760976;Jindrová;28144;Zásmuky;;
+42770149;TOMANČÍK VLADIMÍR-DŘEVOVÝROBA,STOLÁŘSTVÍ;75114;KŘTOMIL;;215
+42781949;Krejčí,projekční činnost-stavební;70800;NEMA STALE SIDLO;;
+42795745;Žák Kuchař;75701;VALAŠSKÉ MEZIŘÍČÍ 1;;Zd. Fibicha         1213
+42830052;KAREL HOFMAN ZPROSTŘ.ČIN.NÁKUP A PROD.V SORT. ELEKTRO ZBOŽÍ;32009;PLZEŇ;;DOBŘANSKÁ 9
+42865301;LUBOR HÁJA A SPOL. veřejná obchodní společnost;70200;Ostrava-Vítkovice;Vítkovice;Vítkovická, Důl Hlubina 11
+42872782;ŽUROVEC-AUROMECHANIK,AUTOOPRAV.SL.-PEV.ST.;73802;FRÝDEK-MÍSTEK;;BAHNO
+42875412;Ing. Václav Valigura;73801;Frýdek-Místek;Místek;J. Jabůrkové 1601
+42949114;Radomil Šnajder;74601;Opava;Opava-Město;Stojanova 16
+42997178;Jalůvka projekční činnost-strojírenství Palkovice;73941;Palkovice;;Myslík 179
+43088791;Ing. Jan Pokorný - programátor;14800;PRAHA;KUNRATICE;UKONČENÁ 80/9
+43096417;Josef Kuthan;25301;Hostivice;Hostivice;5. května 833
+43113265;Josef Barták;25164;Kamenice;Struhařov;67
+43122990;František Svatoš;26712;Loděnice 13;;
+43158048;RECOS-Vasová Zita;27201;KLADNO;;Litevská 2606/435
+43165958;ZAPO-Ohera Jiří;25263;ROZTOKY 795;;
+43172881;Andres František-sam.hosp.rolník;25202;Jíloviště 139;;
+43314988;Sulan Emil;34168;Horažďovice - Veřechov;;čp. 13
+43351816;Olga Makulová - TIMO;34562;Holýšov;Holýšov;Táborová 429
+43371183;NAVRÁTILOVÁ JAROSLAVA PRODEJ LOSŮ;67503;BUDIŠOV;;KAMENNÁ 60
+43378218;E & T  System  s r.o.;59101;ŽĎÁR NAD SÁZAVOU;;
+43431127;Hana Hankeová - prodej a nákup potravinářského zboží;76345;Březůvky 29;;
+43522238;Josef Skalický;56301;Lanškroun;Ostrovské Předměstí;T. G. Masaryka 302/II
+43523889;PAVEL ZÁLESKÝ;56141;PŘÍVRAT;;
+43531016;JUDr. František Havlíček - CRAMPY CONSULTING;51237;Benecko;Benecko;122
+43538479;Ilona Hamanová - OČNÍ OPTIKA;50601;Jičín;Valdické Předměstí;Havlíčkova 94
+43575857;Mutl,výr.pr.cukrářských výrobků;71500;Ostrava-Michálkovice;;Briketářská 29
+43698697;KRČÁLOVÁ;19800;PRAHA 9;;NOVOZÁMECKÁ 36/31
+43700055;ANNA MARVÁNKOVÁ;19600;PRAHA 9;;V PAČÁTKÁCH 124
+43718558;Josef Zadražil;14300;PRAHA 4;MODŘANY;LEVSKÉHO 3221/1
+43725945;Sukův komorní sbor;25601;BENEŠOV;;
+43776086;Ježek Stanislav;27301;KAMENNÉ ŽEHROVICE;;Kamenné Žehrovice
+43779034;Josef Votava;27351;Dolany;Dolany;Č.p. 73
+43806929;MARTINKOVIČOVÁ;26102;Příbram VII;;Tylova 394
+43843662;Eduard VODÁK-tesař;38731;Chrášťovice;Chrášťovice;56
+43875386;HYDROGEO spol. s r.o.;18100;Praha 8;;V Nových Bohnicích 16
+43883991;TODLOVÁ RADMILA;18000;PRAHA 8;;U PENTLOVKY 467
+43915701;ROBIN HÁJEK - POPPER Univerzál Projekt;10100;PRAHA 10;VRŠOVICE;BULHARSKÁ 704/14
+43927751;ING.FRANTIŠEK POSOLDA;17000;PRAHA 7;;JANA ZAJÍCE 19
+43969020;Jiří Pokorný;73514;Orlová;Lutyně;Hornická 944
+43992501;Marie Žitná;78391;Uničov;Uničov;MěDM
+44007132;Vlastimil Tyllich VETERINARNI TECHNIK;69801;VESELÍ NAD MORAVOU;;Dvořákova 793
+44031416;Koldová Anna, šití oděvů;66412;Oslavany;;nám.RA 77
+44042019;HOUZAR - opravy motorových vozidel;58901;Třešť;;Dr. Richtera 17
+44074042;Gabriela ČERNOCHOVÁ - public relations;61200;BRNO;;Charvatská 4
+44210973;Tomáš Farkaš;46826;Pěnčín;Huť;143
+44217544;Ing. Petr Končický;41182;Dušníky;Dušníky;106
+44224621;ZV OS Nemocnice s poliklinikou;46063;Liberec;;Husova 10
+44309902;PLATZ;16000;PRAHA 6;;GLINKOVA 8
+44368801;Miroslav TUREK;13000;Praha;Žižkov (část);Ostromečská 395/5
+44376693;Ing. Gustav Jablečník - Obchodní činnost;18200;PRAHA 8;KOBYLISY;FAMFULÍKOVA 1148/3
+44402856;Vladimír Malý;56501;Choceň;Choceň;Dr. Fikejze 1508
+44427662;JEBAVÝ;51401;JILEMNICE;;J.WEISE 1206
+44448058;Petr Lunga;50003;Hradec Králové;Hradec Králové;Markovická 653
+44457651;Marta Galuščáková;54101;Trutnov;Dolní Předměstí;Polská 148
+44477937;ING. STANISLAV HORÁČEK;50003;HRADEC KRÁLOVÉ;;ORLICKÁ 907
+44478771;Kněžáčková Miloslava, SHR;50751;Chloumky 12;;
+44492367;STRAŠILOVÁ;58266;HLUBOKÁ 32;;
+44493452;URBANOVÁ;58301;CHOTĚBOŘ;;MJR.FOMINA 1001
+44517360;Ivana Žižková;43601;Litvínov;;Mostecká 2050
+44528825;Ladislav Franců;51101;Turnov;;Palackého 212
+44557418;Sdružení občanů obytného domu Zálužanská 294,295;40339;Chlumec;;Zálužanská 295
+44575491;Tomáš Zuček;40501;Děčín;Děčín III-Staré Město;Jezdecká 322/14
+44633904;Iva Roubalová Veřejné stravování (servírka);30134;PLZEŇ 3;;Révová 15
+44658419;Josef Prechtl;31700;Plzeň;Černice (část);K rozhraní 349/12
+44719817;Pavelka Roman;27201;KLADNO;;Ústecká 3039
+44795599;B. & B. Trading spol. s r.o.;18000;Praha 8;;l.pluku 8-10
+44859074;Vladimír Pecha, SHR;28523;VLASTĚJOVICE;;Kounice
+44862512;Karel MEDELSKÝ - tiskárna SILURUS;13000;PRAHA 3;ŽIŽKOV;JESENIOVA 1909/151
+44910193;Zbyněk Pechál;74792;Háj ve Slezsku;Jilešovice;61
+44915063;Jana Konvičná - CROWN;73553;Dolní Lutyně;Dolní Lutyně;Zahradní 1148
+44943890;Haiser Radek, instalatér;66441;Troubsko;;Zahradní 18
+44945370;Mercl Václav, nákup a stánkový prodej upomínkových předmětů, ovoce-zeleniny, květin, balených potravin, nápojů, sklo, keramiky,;66434;Kuřim;;Na loučkách 1209
+44950063;JUDr. Ondráčková Mária;67471;NÁMĚŠŤ NAD OSLAVOU;;Zborovská 930
+44958781;Vladislav Horenský;68756;Pašovice;Pašovice;Záhumní 178
+44970919;Libor Železný;67102;Lesná;Lesná;27
+45012814;Bohumil Zimmel;39143;Mladá Vožice;Mladá Vožice;Plaňkova 267
+45046531;Černohorský Pavel, Trhové Sviny;37401;TRHOVÉ SVINY;;Jirsíkova 111
+45082197;Karel KOZMAN;26801;Hořovice;Hořovice;Smetanova 246
+45100110;Jaroslava Prokopová;29421;Bělá pod Bezdězem;Bělá pod Bezdězem;Paninodvorská 932
+45118728;Marie Vojtová;25087;VYŠEHOŘOVICE;;72/0
+45179131;Miloslav Vrana;79351;Huzová;Huzová;166
+45242674;C P CREDIT s.r.o.;14000;Praha 4;;Bránická 19
+45255920;Jiří Malíř;14700;PRAHA 4;BRANÍK;VE STUDENÉM 1455/3
+45312281;VICTORIA, SPOL. S R.O.;10000;PRAHA 10;;KARPATSKÁ 19
+45386731;Jaroslava Kadlecová;32300;Plzeň;Bolevec;Kaznějovská 1218/25
+45431086;Petr Večeřa;67555;Hrotovice;Hrotovice;Mírová 402
+45445435;Václav Černý - pension POHODA;66902;Znojmo;Znojmo;Rooseveltova 1009/35
+45461694;Monika Sitková;76005;Zlín;Jižní svahy;Budovatelská 4797
+45527083;Eva Grohsgottová - EGO;51301;Semily;Podmoklice;Na Olešce 437
+45541108;Jaroslav Strach;51601;Rychnov nad Kněžnou;;Svobody 1086
+45581185;JAROSLAV ŠTĚRBA;54931;HRONOV;;Havlíčkova 333
+45623911;Petr Palla;68201;Vyškov;Vyškov-Předměstí;Na Vyhlídce 567/33
+45626421;Petr Nekvapil;69164;NOSISLAV 61;;
+45627045;Věra Hadašová;69183;Drnholec;Drnholec;Havlíčkova 443
+45659648;Barvínek občanské sdružení;68307;Podomí;;155
+45678774;Dagmar Jelínková;76001;Zlín;Zlín;Pod rozhlednou 1875
+45685983;Vladimíra Nejezová;76502;Otrokovice;Otrokovice;Čechova 1381
+45707502;FRANTIŠEK VALENTA;11000;PRAHA 1;MALÁ STRANA;VŠEHRDOVA 23
+45788839;VALERIANA  s.r.o.;15000;Praha 5;;Musílkova 5
+45791571;WOLF SYSTEM spol. s r.o.;17000;PRAHA 7;;KOSTELNÍ 44
+45844747;Svatopluk Veselý;25203;Řitka;Řitka;5
+45849315;Alena Krobová -VIOLETT;27202;Kladno;Kročehlavy;Železničářů 1111
+45854939;Ivana Fafková;27322;Kmetiněves;Kmetiněves;60
+45874689;ing. Jiří Štrobl - BADO;25170;Popovičky;Chomutovice;133
+45893322;Helena Závodská;27801;Kralupy nad Vltavou;Lobeček;Kuzmínova 349
+45930601;Jiří Karel;50304;Černožice;Černožice;Hradecká 128
+45973784;Dalecký František;53825;LIBKOV;;
+45976104;Ing.Vladimír Vacek  V - projekt;53701;Chrudim;Chrudim II;Dr.Janského 727
+45980284;FARNÍ CHARITA Děkanský úřad;50351;CHLUMEC NAD CIDLINOU;;Čelakovského 40/1
+45981728;SCHEJBAL JOSEF;50331;VYSOKÁ NAD LABEM 75;;
+46035354;Jaroslav Čadílek;46321;Liberec;Liberec XXXII-Radčice;Výletní 198
+46051147;Libuše Křížová;46362;HEJNICE;;Č.p. 530/2
+46071768;NADACE BARTHOLOMEUS;41501;TEPLICE;;
+46130110;Jana Hoffmannová - Potraviny NON-STOP;79326;Vrbno pod Pradědem;Vrbno pod Pradědem;Sv. Čecha 315
+46223843;Zdeněk Kundrata;59261;Doubravník;Doubravník;268
+46270736;Tělovýchovná jednota Sokol, Zbýšov;68352;ZBÝŠOV;;
+46273662;Ing. Jaromír Nohel, zemědělská činnost;68352;KŘENOVICE;;Sokolská 79
+46275169;Gottvald David, výroba biohumusu;68327;VÁŽANY;;Vážany 161
+46275797;Naděžda Ševčíková, výroba biohumusu a chov kalifornských žížal;68326;HOŠTICE - HEROLTICE 72;;
+46279008;Vladimír Šuráň;76321;Slavičín;Bohuslavice nad Vláří;144
+46361898;František Jakubička - autoklempíř;27601;Hořín;Vrbno;Č.p. 52
+46414002;Fuksa Jan;27200;KLADNO;;Kladno
+46496041;Miroslav Schejbal;53304;Rokytno;Rokytno;
+46598073;MUDr. Jiří Závodský;74301;Bílovec;Bílovec;U Střelnice 938/23
+46615211;Kateřina Buršíková;78353;Velká Bystřice;Velká Bystřice;Na Svobodě 459
+46622314;Václav Komžák, chov ovcí, Hodňov;38226;HORNÍ PLANÁ;;Hodňov
+46683704;Optika Valuchová spol. s r.o.;37001;České Budějovice;;Krajinská ul. 9
+46701541;Karel Novák;39002;Tábor;Hlinice;20
+46746503;ŘECKOKATOLICKÝ DĚKANSKÝ ÚŘAD;46001;LIBEREC;;MISTROVSKÝ VRCH 349/2
+46764542;MUDr. P i l a ř o v á   Alena;44001;LOUNY;;Rybalkova 1400
+46822992;Jana Sklenářová;35301;Mariánské Lázně;Mariánské Lázně;Dřevěná 196
+46824596;Richard Meistr;35301;Mariánské Lázně;;Anglická 116/9
+46892761;Jaroslav Chalupa;79823;Tvorovice;Tvorovice;47
+46900420;KOVEX spol. s r.o.;76315;Dešná;;65
+46957910;Marcela Mudráková;68725;HLUK;;Lipová 1112
+46999787;HONEBNÍ SPOLEČENSTVO RYMICE;76901;RYMICE 9, P.HOLEŠOV;;
+47090022;Ing. Milada SEDLÁČKOVÁ - atelier Briza maxima;17000;PRAHA 7;BUBENEČ;KRÁLOVSKÁ OBORA 58
+47107251;Iveta REBERNIGGOVÁ;19000;PRAHA 9;;PEŠLOVA 358/16
+47118539;EURO - CON spol. s r.o.;10100;Praha 10;;Charkovská č.p.135/24
+47150793;Společnost pro UP, s.r.o.;79411;Krnov;;Vrbina 1
+47151579;Zemědělské družstvo v Hoštálkovech u Krnova;79381;Hošťálkovy;;
+47206578;KRUPÍK ZDENĚK;77400;OLOMOUC;;U STAVU 23
+47313391;Václav  Filáček;40010;Ústí nad Labem;Všebořice;Spartakiádní 271/17
+47344997;Jaroslav Slaník;68601;Uherské Hradiště;Uherské Hradiště;Svatováclavská 841
+47346531;Jindřich Machálek;68724;Uherský Ostroh;Uherský Ostroh;Hradišťská 404
+47504129;Jiří Hanousek;53322;Býšť;Býšť;236
+47509813;VLADěNA BERANOVA;50003;HRADEC KRÁLOVÉ;;SEVERNI 719
+47555921;Pavel POCH;26762;Komárov;;Pionýrů 519
+47566361;Jan Hegar;25228;Vonoklasy;Vonoklasy;Pod vrškem 40
+47574119;Olga Straková;14800;Praha;Chodov;Malenická 1791/13
+47616032;Ing. IVANA KUNOVÁ - OVATION PRAHA;11000;PRAHA 1;PRAHA 1;PŘÍČNÁ 8/663
+47651075;Karel Samiec;73984;Písek;;337
+47659271;Honební společenstvo Podlesí - Val. Meziříčí;75701;Valašské Meziříčí;;
+47736372;Pavla Albrechtová  PRO - AL OBCHOD;33023;Nýřany;Nýřany;OSVOBOZENÝCH POLITICKÝCH VĚZŇŮ 1069
+47745916;Vladimír Mráz;32300;Plzeň;Severní Předměstí;Elišky Krásnohorské 744/30
+47802685;MUDR.POSPÍŠIL;46001;LIBEREC;;KLÁŠTERNÍ 117/2
+47802707;MUDr. Petr Hnátek;46346;Příšovice;Příšovice;185
+47845473;Ing. Stanislav Hyška;78814;Rapotín;Rapotín;U koupaliště 560
+47884207;Málek Karel;67921;Černá Hora;;Bořitov 347
+47911476;A.M.A. Brno, spol. s.r.o.;61500;BRNO;;Markéty Kuncové 9
+47927551;Břetislav MLČOCH;76811;Chropyně;Plešovec;75
+47948507;Hilda Šebestová;61200;Brno;Královo Pole;Poděbradova 159/11
+47980745;Lumír Gavelčík;73514;Orlová;Poruba;Zátiší 979
+48004448;Honební společenstvo Orlová-Doubrava;73514;Orlová-Lutyně;;č.429,Milan Pěchovič
+48027367;TAURO-T, spol. s r.o.;68307;Podomí 91, Krásensko;;
+48103764;Ing. Vladimír Ryba;14200;PRAHA 4;PÍSNICE;VÝLETNÍ 359/16
+48151513;AUTOSTYL, spol. s r.o.;54101;Trutnov;;Horská 579
+48159778;Základní škola;53401;HOLICE;;Holubova 47
+48174009;Švadlenková Zdenka;53826;BOJANOV;;Hrbokov 8
+48325201;RNDr. Zdeněk Vobořil;34701;Tachov;Světce;21
+48340961;Jaroslava Dymáčková;35002;Cheb;Cheb;Goethova 37
+48348716;Jiří Dvořák;33901;Klatovy;Klatovy III;Suvorovova 616
+48360886;SILVA PLUS v.o.s.;32327;Plzeň 1 - Bolevec;;Plaská 19
+48449512;Rudolf Malaník - KOVEX;76311;Zlín;Želechovice nad Dřevnicí;Osvobození 16
+48493864;Dorničák Radek, samostatný rolník;76325;LOUČKA 105;;
+48523461;Antonín Růžička;67602;MORAVSKÉ BUDĚJOVICE;;Gagarinova 1070
+48583405;SLUŽBY TEPELNĚENERGETICKÝCH ZAŘÍZENÍ, S.R.O.;10000;PRAHA 10;;PRAŽSKÁ 16
+48616672;JAROSLAV LANKAŠ;51731;LEDCE;;P.BOLEHOŠŤ
+48689092;Hien Do Van;43001;Chomutov;Chomutov;28.října 1068/13
+48742619;Skalíková - soukromý zemědělec;75662;Hutisko Solanec č.230;;
+48761885;Richard Macura;73913;Kunčice pod Ondřejníkem;;č.58
+48764957;Klaudie Mikolášová;73801;Frýdek-Místek;;T.G.Masaryka,
+48804738;Myslivecké sdružení Bernartice nad Odrou;74241;Bernartice nad Odrou;;Bernartice n.O.
+48808511;Římskokatolická farnost Příbor;74258;Příbor;;Stojanova 364
+48864293;Ing. Jiří Sláma;69151;Lanžhot;Lanžhot;Nádražní 1282/31
+48883191;Jiří Slavíček;67401;Třebíč;;Demlova 963/21
+48886122;Mária Pechová;67401;Třebíč;Nové Dvory;gen. Svobody 636
+48921441;Oldřich Fojtík;67102;Štítary;;238
+48966797;Eva Jirásková;25073;Jenštejn;Jenštejn;68
+49017641;PRIMA - Sezimovo Ústí, s.r.o.;39101;SEZIMOVO ÚSTÍ;;Vaníčkova 22
+49088831;Josef Panchartek;41743;KRUPKA;;K háječku 173
+49099299;ORNELA, společnost s ručením omezeným;43801;ŽATEC;;nám. Svobody 42
+49099868;Šilhan a spol. spol. s r.o.;41502;Teplice;;Svojsíkova 2316
+49167570;Rudolf Parth;35735;Chodov;Chodov;Lipová 647
+49188909;Ing. Jan Nedvěd - Inženýrské stavby;36006;Karlovy Vary;Dvory;Chebská 58
+49191144;Vladislav Belanský;36017;Karlovy Vary;Počerny;107
+49243748;Faros, spol. s r.o.;13000;Praha 3;;Radhoštská 3
+49247760;Lenka Stodůlková;14300;PRAHA 4;MODŘANY;BOTEVOVA 3109/8
+49254227;JANA VONDRÁŠKOVÁ;19000;PRAHA 9;PROSEK;RUMBURSKÁ 247/16
+49261592;Petr Zinke;14000;PRAHA 4;KRČ;KOVAŘOVICOVA 1136/8
+49310569;Marie Kubíčková - MAJA DENT;56401;Žamberk;Žamberk;U Polikliniky 837
+49382411;Mykola Tovkač;19700;Praha;Kbely;Hornopočernická 286/2
+49383205;Ivan Butaš;19700;PRAHA 9;KBELY;HORNOPOČERNICKÁ 286/2
+49415433;Slováková Zdeňka RV - ŽV;69674;VELKÁ NAD VELIČKOU 801;;
+49436759;G - nes, spol. s r.o.;66902;ZNOJMO;;Vídeňská 81
+49451316;GRIFFIN, spol. s r.o.;60200;Brno;;Dominikánské nám. 5
+49470370;Vladimír Čípek;67913;Sloup;Sloup;123
+49498096;Hau Do Thi;25001;BRANDÝS NAD LABEM-STARÁ BOLESLAV;;Máchova 742
+49507559;Kateřina Fujáčková;25070;Odolena Voda;Dolínek;Pod Hrází 231
+49508903;Jiří Čáp;25066;Zdiby;Veltěž;Formanská 39
+49531689;Pavel Pešan;25741;Týnec nad Sázavou;;V koutech 380
+49533622;De Le Thi;39165;Bechyně;Bechyně;Libušina 154
+49534203;Marie Bydžovská, SHR;28931;CHLEBY 121;;
+49537539;Roman Hampl - HAKR;28802;Kovanice;Kovanice;175
+49539191;Jan Beran;28941;Oseček;Oseček;145
+49555049;Marta Danielová;77900;Olomouc;Olomouc;kpt. Jaroše 3
+49559834;Smýkal-samostatně hospodařící rolník;75000;Přerov;;Trávník 12
+49631501;Ondřej Pecháč;10200;PRAHA 10;HOSTIVAŘ;PŘEŠTICKÁ 1097/2
+49732889;Jan Novák - VELKOOBCHOD;33401;Přeštice;Přeštice;Palackého 1111
+49814672;AUTO - INTER, spol. s r.o.;54101;Trutnov;;Horská 12/89
+49822144;PRETTY WOMAN s.r.o.;26801;HOŘOVICE;;Pražská 12
+49936565;Ing.POLÁCH Petr CSc-;69501;Hodonín;Hodonín;Brandlova 79
+49969447;PIKE, spol. s r.o.;61800;Brno;;Černovické nábřeží 7
+60043806;ZO Hanácký svaz technických sportů Olomouc;77900;Olomouc;;Holická 29
+60061227;Svaz postižených civilizačními chorobami-okresní výbor Tábor;39001;TÁBOR;;DĚKANSKÁ 302
+60122102;Tomáš Pánek;56956;Čistá;Čistá;257
+60143622;Petr Jalůvka;50009;Hradec Králové;Malšova Lhota;Lhotecká 71
+60155141;Bohumil Suchánek;54401;Dvůr Králové nad Labem;Dvůr Králové nad Labem;Macharova 2094
+60175982;Hana Arnoštová;14700;Praha;Braník;Ohnivcova 1333/18
+60188014;Dana Červinková;18600;Praha;Karlín;Sokolovská 101/99
+60240440;KLÍNOVSKÝ LUBOŠ;46001;LIBEREC;;ALŠOVA 1296/9
+60273071;Jiřina Camprová;43801;Žatec;Žatec;Černobýla 2553
+60273615;Radmila Hladíková;43801;Žatec;Žatec;V zahradách 2197
+60316012;Roman Zezulák INSTALATÉRSTVÍ;70030;Ostrava - Hrabůvka;Hrabůvka;Horní 1437/78
+60316144;Jan Pitřík UNIS;70800;Ostrava - Poruba;Poruba;Hlavní třída 699/72
+60411317;Jiří Peřina;59101;ŽĎÁR NAD SÁZAVOU;;Strojírenská 341/16
+60430249;Karel Smetana;62500;Brno;Starý Lískovec;Kroupova 59/18
+60457431;ENER, SPOL. S R.O.,ORGANIZAČNÍ SLOŽKA;10100;PRAHA 10;;SEVASTOPOLSKÁ 7
+60476800;TOMÁŠ PŘISTOUPIL;15000;PRAHA 5;;NA HŘEBENKÁCH 1243/19
+60485604;Petr Kolmann;14000;PRAHA 4;PODOLÍ;NA TOPOLCE 918/20
+60494158;Oldřich Maťátko;61600;Brno;Žabovřesky;Zemkova 10
+60589299;Marie Pohanková;58821;VELKÝ BERANOV 223;;
+60632381;Libor Zahradník;38101;Český Krumlov;Domoradice;U Trojice 37
+60646233;FEST STELLITE s.r.o.;37806;Suchdol nad Lužnicí;;Na Huti 307
+60657405;Jan Mráz;37806;Suchdol nad Lužnicí;Suchdol nad Lužnicí;Pražská 100
+60685646;Ing. Eva Vláčilová;79821;Bedihošť;Bedihošť;Prostějovská 16
+60720182;TUBOLET, spol. s r. o.;68604;KUNOVICE 1177;;
+60733667;TSCHECHISCHE KACHELOFEN MANUFAKTUR G.m.b.H., s.r.o.;66902;Znojmo;;Dvořákova 21
+60767961;Radim Sovadina - RES;72527;Ostrava - Plesná;Plesná;26.dubna 32
+60789549;Pavel Divina;75002;Přerov I-Město;Přerov I-Město;Bratrská 26
+60807261;Thi Nga Le;70030;Ostrava - Zábřeh;Zábřeh;U Studia 31
+60880423;Václav Kučera;53341;Rohoznice;Rohoznice;21
+60894865;Pavel Jeništa;54923;Jestřebí;Jestřebí;49
+60945427;LIBOR DUBSKÝ;78353;VELKÁ BYSTŘICE;;NA LETNÉ 535
+60953586;Pavel Křempek;74705;Opava;Kateřinky;U lučního mlýna 788/41
+60964731;Miroslav Mentlík - AGROKULTUR;73511;Orlová-Město;;Nádražní 530
+60984074;Miroslav Dolínek;78323;Senice na Hané;Cakov;41
+61076953;Jindřich Hnízdil;27041;Slabce;Slabce;147
+61087424;Zborka Jan Mgr.;27201;KLADNO;;Ostravská 3061
+61115495;Pavel Švejcar;27801;Kralupy nad Vltavou;Kralupy nad Vltavou;Sídl.Hůrka 1047
+61132039;Marie Svobodová  DAJAMA;33023;Nýřany;Nýřany;DIOSS Nýřany
+61139629;Štěpánka Hrachová;33442;Chlumčany;Chlumčany;K Rokličkám 408
+61156299;Helena Baslová;33845;Strašice;Strašice;459
+61170313;MILOVAN RAJKOVIČ;35733;Loket;;Údolí 50
+61186040;Vladimír Fejfar;50003;Hradec Králové;Slezské Předměstí;Uhelná 868
+61220540;Jaroslav Polák;51401;Jilemnice;Jilemnice;J.Weisse 1204
+61230774;Irena Šilingová;53352;Staré Hradiště;Staré Hradiště;66
+61254096;Lenka Brožová;14900;PRAHA 4;CHODOV;BRODSKÉHO 1665/6
+61284041;JAROSLAVA RADOVÁ;14000;PRAHA 4;;U PLYNÁRNY 790/4
+61299006;PHDR. JAN JAROŠ;12000;PRAHA 2;;ANNY LETENSKÉ 16
+61405957;Květoslav Polách;76311;Zlín;Želechovice nad Dřevnicí;Papírenská 230
+61416797;Vladimír Hnátek;69002;Břeclav;Břeclav;Bratislavská 24
+61493686;JANA KORBELOVÁ;17000;PRAHA 7;HOLEŠOVICE;U PRŮHONU 1137/30
+61606880;Martina Frydrychová;74801;Hlučín;Hlučín;Severní 25
+61615048;Zdeněk Horák;75002;Bochoř;Bochoř;Přerovská 221/19
+61809039;Josef Trojan - STARPLAST;34815;Planá;Planá;Bohušova 782
+61859303;PRAMENY PRAHA, A.S.;13000;PRAHA 3;;RADHOŠŤSKÁ 21
+61869325;František Tvrdík;10200;PRAHA 10;HOSTIVAŘ;HOSTIVAŘSKÁ 211/27
+61910333;Alois Holík;28913;Písty;Písty;91
+61913791;Ladislav Vrzák;27601;Mělník;Mělník;Vodárenská
+62018116;Tomáš Cirkl - Peter's Disco Show;55001;Broumov;Nové Město;sídliště Křinické 211
+62058061;Miloslav Glos;50901;Nová Paka;;Radkyně 29
+62093568;Petr Příborský;61300;Brno;Černá Pole-část;Bieblova 155/4
+62099604;Tomáš Weinberger;62700;Brno;Slatina;Langrova 815/17
+62118137;Milan Škoda;66484;Babice u Rosic;;Havířská 102
+62189450;Tomáš Švachula;76005;Zlín;;Česká 4764
+62191528;Libuše Kočíková;76001;Zlín;;Štefánikova 1577
+62215787;Marie Portychová;46001;Liberec;Liberec XI-Růžodol I;Růžodolská 45/4
+62247808;Tělovýchovná jednota fotbalový klub;43925;KOZLY;;
+62251007;1. Český Golf and Country Club Krásný Dvůr;43973;KRÁSNÝ DVŮR;;
+62260715;Monika Tymočová;70030;Ostrava - Zábřeh;Zábřeh;Markova 2942/24
+62282948;Miroslav Motl - Morpolex;78501;Šternberk;Šternberk;Žitná 13
+62375512;JAN PIŠTORA;14700;PRAHA 4;;NA DOLINÁCH 23/357
+62397150;Son Nguyen Hoang;41742;Krupka;Krupka;K. Čapka 243
+62409573;Bytové družstvo VLASTBYT;16000;Praha 6;;U třetí baterie 1625/27
+62446754;David Frank;28802;Nymburk;Nymburk;Poděbradská 1039/10
+62449893;Martin Šimek;28802;Nymburk;Nymburk;Sv.Čecha 914/7
+62462679;Zdeněk Přáda;25263;Roztoky;Roztoky;Na valech 1490
+62486641;Krejčík - stavitelství;29473;BRODCE;;Pod školou 357
+62508539;Pavel Tůma - KERAMIKA;37001;České Budějovice;České Budějovice 7;Máchova 34
+62558439;IVANA FLORIANOVÁ;10600;PRAHA 10;;LIMUZSKÁ 39
+62582062;SČA Praha, s.r.o.;14316;PRAHA 4;Modřany;Do koutů 3
+62583701;ORIMPEX s.r.o.;19000;Praha 9;Kyje;Bošilecká 645
+62637550;Pavel Štumpa;35735;Chodov;Chodov;Luční 1028
+62641697;JAROSLAV HLAVSA;35733;Loket;;Sportovní 534
+62648756;Iveta Kadeřábková;36301;Ostrov;Ostrov;Staré nám. 19
+62672070;Vladimír Neděla;56992;Bystré;Bystré;Nám. Na podkově 90
+62677802;Martin Votava;57201;Polička;Dolní Předměstí;Heydukova 217
+62738208;PRISA V.O.S.;43513;HORNÍ JIŘETÍN;;
+62766449;Miroslava Podstavková;46006;Liberec;;Haškova 937/10
+62798545;Roman Loubal;79604;Prostějov;Prostějov;Václava Špály 15
+62842226;Jiří MATISEK;66902;Znojmo;;17. listopadu 14
+62877101;Petr Crhák;66701;Židlochovice;;Masarykova 697
+62896407;Martina Matoušková - FAMILY COSMETIC;14900;PRAHA 4;CHODOV;LEOPOLDOVA 2043/24
+62908332;MIPA Czech,s.r.o.;19002;Praha 9 - Vysočany;Vysočany;Kolbenova 11
+62967991;RICHTEK, s.r.o.;25219;CHRÁŠŤANY;;č.p. 13
+62984748;Ing. Miroslav Davídek-CONSULTING Poradenská a zprostředkovatelská služba v rámci obchodu;25263;ROZTOKY;;Školní nám. 492
+63025086;Česká energetická společnost pobočka Teplárny;73506;Karviná-Doly;;Svobody
+63047233;Mgr. Radim Fiala;73914;Ostravice;Ostravice;596
+63079577;Collegium  R investiment, a.s.;25163;STRANČICE;;Strančice 207
+63092077;ZDEŇKA HAVELKOVÁ  V+H STYL;17000;PRAHA 7;HOLEŠOVICE;U URANIE 1301/19
+63117631;Simona Procházková- POMPEA;25241;Dolní Břežany;Lhota;Lhota 502E
+63131820;Jan Lím;43801;Žatec;Žatec;Třebízského 2419
+63184834;Radek Černý;54103;Trutnov;Voletiny;104
+63189151;JAROSLAV LEJP;55221;VLKOV;;čp. 121, p. Rasošky
+63225425;Jozef Sabol;54301;Vrchlabí;Vrchlabí;Slovanská 893
+63238373;Jiří Knejp;50011;Hradec Králové;Třebeš;K Labi 10
+63248000;Roman Haňur;37333;Nové Hrady;Nové Hrady;Zahradní 315
+63285720;Dana Koldinská;38451;Volary;;Šumavská 169
+63304651;Stanislava Michalčíková;74733;Oldřišov;Oldřišov;9.května 333
+63403323;Karol Nagy;69151;LANŽHOT;;Kostická 9
+63410354;Bohumil Brhlík - ARIS;68731;Šumice;Šumice;293
+63417413;Radim Foltýn;76802;Soběsuky;Skržice;23
+63433613;Zdeněk Řezáč;69152;KOSTICE;;Břeclavská 37
+63436680;Václav Kachyňa;69102;Velké Bílovice;;Čejkovská 420
+63438348;Honební společenstvo Polná;58813;POLNÁ;;Indusova 203
+63468107;AMANDA INTERNATIONAL, spol. s r. o.;76001;ZLÍN;;nám. T.G.M. 1335
+63531739;Lan Nguyen Thi;36236;Pernink;Pernink;Jáchymovská 411
+63548984;Adolf Kanta;34815;Kočov;Kočov;11
+63590565;Miloslav Beran;55101;Rožnov;Rožnov;75
+63611279;Alois Lopaur - AUTOOPRAVNA;56802;Svitavy;Lány;Felberova 680/17
+63619067;Ing. Jaroslav NOVOTNÝ;13000;PRAHA 3;VINOHRADY;LIBICKÁ 1917/8
+63636701;Luboš Moravec - TRADICIONAL;10900;PRAHA 10;PETROVICE;REZLEROVA 307
+63651840;Eva JELÍNKOVÁ;11000;PRAHA 1;NOVÉ MĚSTO;SOUKENICKÁ 1196/11
+63682824;Jindřich Šimoník;77900;Olomouc;Neředín;Stiborova 31
+63734206;Milan Langer;70030;Ostrava - Zábřeh;Zábřeh;Žoluděvova 1
+63745267;Nga Nguyen Thi,  T.H.D.;40001;Ústí nad Labem;;Vinařská 736/8
+63766914;Aleš Bartoš - AB comp;46601;Jablonec nad Nisou;Jablonec nad Nisou;Na Výsluní 3080/15
+63775794;Jitka Černá;47201;DOKSY;;Karla Čapka 327
+63840863;Marie Kolaříková;28541;Chlístovice;Kralice;8
+63847612;Miloslava Jarolímková;27601;MĚLNÍK;;Čechova 434/14
+63910403;Wilhelm Welser - REISE BÜRO;37007;České Budějovice;České Budějovice 7;Na výsluní 1482/15
+63929091;Marcela Chmelařová;18000;PRAHA 8;LIBEŇ (ČÁST);NA TRUHLÁŘCE 43
+63958023;Josef Sýkora;14200;PRAHA 4;KAMÝK;PŠENČÍKOVA 673/26
+63990474;KS Katalog - Servis, s.r.o.;33203;Šťáhlavy;Šťáhlavy;Komenského 598
+64015513;Josef Srba;41108;Štětí;Štětí;U stadionu 483
+64048616;PILA SOBÁKOV, s.r.o.;46343;Český Dub;;Sobákov 21
+64078248;Jaroslav Jantoš - JANTY;25801;Vlašim;Vlašim;Riegrova 397
+64169103;Jiří Hudec;28601;Semtěš;Semtěš;126
+64170349;Jana Kolůvková;28401;Kutná Hora;Vrchlice;U Zastávky 80
+64181979;Josef Matějovský;33901;Klatovy;Klatovy IV;Vrbova 462
+64197735;Kristýna Langová;33445;Řenče;Řenče;100
+64252604;František Strasmeier;56151;Letohrad;Letohrad;Spořilov 752
+64312275;Marek Hladký Ing.;66431;LELEKOVICE;;407
+64333213;Hana Pražanová;67401;Třebíč;Nové Dvory;Benešova 508
+64362906;Xuan Nghiem Thi Thanh;35002;Cheb;Cheb;Na Hradčanech 1662/24
+64390993;Baumruk Karel, Mgr.;33901;Klatovy;;Čs. legií 172/I.
+64396606;Rudolf Mistr;35002;Cheb;Cheb;Riegerova 1311/15
+64434729;Miroslav Zajíc;67167;Hrušovany nad Jevišovkou;;Zahradní 40
+64508447;NOVOTRADE X, s.r.o.;61200;Brno;;Božetěchova 2826/36
+64559238;Hanna HOLEČKOVÁ;10000;PRAHA 10;VRŠOVICE;MURMANSKÁ 1249/7
+64573699;AVE BOHEMIA, S.R.O.;14200;PRAHA 12;;PÍSNICKÁ 765
+64609928;SEZOOZ OIL a.s.;75501;Vsetín;;Pod Pecníkem 1015
+64621651;Marie Křižková;79316;Zátor;Loučky;205
+64696570;Květa Skalová;40003;Ústí nad Labem;;Ke Hradu 820/16
+64709981;Mgr. Blanka Trojanová - Poradenství;40779;Mikulášovice;Mikulášovice;Vilová 21
+64728773;Jaroslava Procházková;28912;Sadská;Sadská;U Růži 866
+64765661;Kateřina Hejlíková;25065;Bořanovice;Bořanovice;Chatařská 15/E
+64767451;Jiří JOHN;17000;PRAHA 7;PRAHA 7;STROJNICKÁ 23/706
+64805140;Jiří Zlatník;56182;Klášterec nad Orlicí;Klášterec nad Orlicí;179
+64818055;Petr Pešek;53352;Staré Hradiště;Staré Hradiště;49
+64828255;Vasil Vasiljevič Fejer;53009;PARDUBICE 1;;Cihelna
+64842878;Miroslav Hartl;35735;Chodov;Chodov;U koupaliště 803
+64894916;Dmitro Tarkani;19014;PRAHA 9;KLÁNOVICE;KROVOVA 56
+64923924;Karel Králík;14000;PRAHA 4;;TÁBORSKÁ 836/10
+64941388;COMSERVIS, SPOL. S R.O.;13000;PRAHA 3;;KOUŘIMSKÁ 12/2351
+64977544;Zdeněk Svoboda;74221;Kopřivnice;Kopřivnice;Sokolovská 688
+65006968;Hung Tran Van;38241;Kaplice;Kaplice;Zahradní 708
+65018699;MUDr.Jana Stoklasová;39111;PLANÁ NAD LUŽNICÍ;;Průmyslová 499
+65032161;Romana Pospíšilová;37810;České Velenice;České Velenice;sídliště U Nádraží 200
+65050614;Odborová organizace KOVO - Belis, s.r.o., České Budějovice;37001;ČESKÉ BUDĚJOVICE;;Rudolfovská 111
+65051034;DAVIDOVÁ Věra - soukr. zem.;37351;DŘÍTEŇ;;Velice 17
+65167490;Antonie Pospíšilová;77900;Olomouc;Nová Ulice;Jílová 7
+65181484;Eva Papíková - AKVA - PLAST;53305;Dříteč;Dříteč;109
+65204212;Jiří Forejt;53705;Chrudim;Chrudim IV;Hradištní 1199
+65218531;Josef Štěpánek - TOPENÁŘSTVÍ-INSTALATÉRSTVÍ;54701;Náchod;Náchod;Hurdálkova 357
+65225237;Josef Čutka;58281;Habry;Habry;V Zahradách 296
+65234081;Petr Kolář;53501;Jeníkovice;Jeníkovice;16
+65253612;Ctibor Rostaš;27343;BUŠTĚHRAD;;V uličce 155
+65255437;Marek Stejskal;27351;Kyšice;;Spojovací 66
+65285191;Rudolf Knoflíček;63700;Brno;Jundrov;Šeříková 2
+65334132;Roman Seifer;67401;Třebíč;Nové Dvory;Fr. Hrubína 729
+65339291;Sbor dobrovolných hasiču, Petrov;67962;KŘETÍN;;Petrov 33
+65372468;Hana Smejkalová, koupě zboží za účelem jeho dalšího prodeje;68201;VYŠKOV;;Osvobození 645/29
+65402599;Ladislav NOVOTNÝ;16900;PRAHA 6;BŘEVNOV;SARTORIOVA 63/8
+65549031;Miroslav Šipla;36272;Kyselka;Radošov;10
+65558910;Hau Vu Duy;36238;Potůčky;Potůčky;168
+65574125;Dušan Donoval;34506;Brnířov;Brnířov;1
+65579283;Sbor dobrovolných hasičů Rozsedly;34163;Žihobce - Rozsedly;;
+65607589;Rudolf Patzelt;41501;Teplice;Prosetice;Pod Hvězdárnou 229
+65623878;Pavel Hajný;41113;Třebenice;Třebenice;Stará Struha 476
+65632036;Jan Boháč;46001;Liberec;;Gollova 555/3
+65646207;Libor Fišer;44001;Počedělice;Orasice;20
+65666968;SCRC Pardubice;53353;PARDUBICE 7;;Ohrazenice Semtínská 211
+65684346;Mária Balogová;57001;Litomyšl;Litomyšl-Město;T.G.Masaryka 1123
+65755448;Vlastimil Sadílek;59201;Herálec;Herálec;427
+65763408;Ivanka Srostlíková;79845;PROSTĚJOV;;Seč 34
+65765036;ZO OSŽ žel. stanice Mikulov na Moravě;69201;Mikulov;;Nádražní 33
+65837380;Ing. Josef Barák;79848;Protivanov;Protivanov;346
+65850548;Radek Šenkypl;67602;Moravské Budějovice;Moravské Budějovice;Gagarinova 1129
+65919301;Miroslav Sámel - ADVERTISING & PUBLIC RELATIONS;75002;Přerov;Přerov I-Město;Šrobárova 2659/4
+65925343;Josef Franc;28401;Kutná Hora;Hlouška;Spálená 288
+65931963;Jaroslav Kasal;38426;Strunkovice nad Blanicí;Strunkovice nad Blanicí;Protivecká 262
+65948807;Hana Gregorová;37825;Deštná;Deštná;Adamská 80
+65952090;Miroslav Vopravil;37826;Lodhéřov;Lodhéřov;22
+65966163;Jana Moravcová, Janua;40011;Ústí nad Labem;Ústí nad Labem - Severní terasa;Pincova 2972/15
+66024153;Pavel Fuchs;18200;PRAHA 8;KOBYLISY;ČIMICKÁ 1023/6
+66026067;Bohumil Bulíř;18100;Praha;Bohnice;Zelenohorská 503/23
+66048711;Barbara ZANE IN POETA;11000;PRAHA;PRAHA 1;VLAŠSKÁ 34/335
+66099064;Minh Tan Pham;35002;Cheb;;Družstevní 1493/11
+66101018;Pavel Duben;46311;Liberec;;Kapraďová 992
+66110033;Josef Petrus;47154;Cvikov;;Nábřežní 33/II
+66117127;Ing. Jiří Písek - TOPI;41301;Roudnice nad Labem;Roudnice nad Labem;třída T. G. Masaryka 1192
+66119855;Gabriela Vaisová - VIDEOPUJČOVNA - KOCANDA;41201;Litoměřice;Předměstí;Bojská 1858/11
+66164311;Miroslav Hambálek;73961;Třinec;Staré Město;Jablunkovská 695/2
+66190998;Ludmila Senylníková;78398;Jívová;Jívová;107
+66239010;Ueltzhöffer Andreas;12000;Praha 2;;Václavská 12
+66267676;Ing. Jaromír Hons JHG;58301;Chotěboř;Chotěboř;Zahradní 1362
+66390257;Martin Dušek;27601;Mělník;;Mladoboleslavská 2275
+66392934;Ing. Jana Jirmusová;27601;Mělník;Mělník;Čechova 434
+66401488;Radek Havlín;27711;Neratovice;Neratovice;E.Urxe 568
+66423040;Larysa Piloyan;29306;Kosmonosy;Kosmonosy;Boleslavská 147
+66445469;Lenka ZUNOVÁ;16000;PRAHA 6;;FETROVSKÁ 12/910
+66449774;Tien NGUYEN MANH;16900;PRAHA 6;BŘEVNOV;RADIMOVA 1286/1
+66456495;Predrag Rakočevic;16000;Praha 6;Praha 6;V Šáreckém údolí 41/2315
+66480850;Michael Sus-PVZS  Potápěčská a vodohospodářská záchranná služba;18200;Praha;Kobylisy;Famfulíkova 1140/19
+66483115;Valentina Ceplechová;18100;PRAHA 8;BOHNICE;DOLÁKOVA 554/14
+66483603;Tomáš Vaníček - VACOMP;18000;PRAHA 8;KOBYLISY;FRÝDLANTSKÁ 1310/23
+66495091;Ing. Aleš Petrák;28002;Kolín;Kolín II;Rimavské Soboty 909
+66548284;Karel Haičman;66491;Ivančice;Němčice;222
+66572843;František Macháč;60200;Brno;Veveří;Jiráskova 256/57
+66658977;Nataša Ulrychová;47114;Kamenický Šenov;Kamenický Šenov;Smetanova 890
+66750628;Ivana Kubánková;29001;Poděbrady;Kluk;Vrbová 228
+66757843;Josef Záruba;28541;Chlístovice;Chlístovice;55
+66781558;Václav Janák, samostatně hospodařící rolník;25756;NEVEKLOV;;Blaženice 12
+66893771;Ladislav ŠLECHTA;15500;PRAHA 5;STODŮLKY;MOHYLOVÁ 1966/8
+66902932;Natalia ZAITSEVA;10000;PRAHA 10;VRŠOVICE;V PŘEDPOLÍ 1473/25
+66910234;Miroslav Novotný;77200;Olomouc - Droždín;Droždín;Horní Úlehla 238/55
+66979641;David Reinwart;33151;Kaznějov;;Na výsluní 375
+67009468;Jezdecký klub Zhoř - JK;67923;Zhoř;Lomnice u Tišnova;2
+67138225;Vladimíra Trnková - Vlaďka;37341;Hluboká nad Vltavou;Hluboká nad Vltavou;Pražská 967
+67152228;Jan Nováček;38901;Libějovice;Nestanice;29
+67182241;Irena Kasalová;38301;Prachatice;Prachatice II;Česká 670
+67259545;Zdena Havelková;26102;Příbram;Příbram VII;28.října 6
+67293557;Ivana Mandová;27341;Brandýsek;Brandýsek;V Sídlišti SONP 311
+67315224;Marie Fusková;74401;Frenštát pod Radhoštěm;;Horní 123
+67318967;Jindřich Peš;70800;Ostrava - Poruba;Poruba;Bulharská 1420/13
+67321917;Ing.Šárka Hinnerová - THRILL;70800;Ostrava - Poruba;Poruba;Svojsíkova 1594
+67336965;Martin Brožek;73801;Frýdek-Místek;Místek;Wolkerova 1593
+67341802;Věra Kolegarová, Agentura domácí péče - Victoria;78701;Šumperk;;Nerudova 41
+67382339;Mgr. Hana ŠAFÁŘOVÁ;16400;PRAHA 6;PŘEDNÍ KOPANINA;NOVÉ DOMY 121
+67415768;Ing. Eva SAJDLOVÁ;10100;PRAHA;PRAHA 10;DVACÁTÉHO OSMÉHO PLUKU 4/1005
+67416705;Mgr.Zora BAŽANTOVÁ;10100;PRAHA;PRAHA 10;MEXICKÁ 2/692
+67421318;Václav Rybář;29406;Nová Telib;Nová Telib;28
+67469968;Josef Sádecký;54984;Heřmánkovice;Heřmánkovice;276
+67479804;MICHAELA DVORSKÁ;53361;Choltice;Choltice;257
+67506151;Mykola Donik;76701;Kroměříž;;Oskol 3201
+67553135;Petr Dosoudil;68601;Uherské Hradiště;Jarošov;Louky 499
+67588891;Jana Chovancová;68774;Starý Hrozenkov;Starý Hrozenkov;263
+67601235;Alexandre Naletski;61400;Brno;Husovice;Dukelská 55
+67604391;Anna Klimová;67172;Miroslavské Knínice;Miroslavské Knínice;147
+67614311;Jiří Lambert;28916;Starý Vestec;Starý Vestec;12
+67668569;Luboš Lesniak;16300;PRAHA;ŘEPY;BENDOVA 1111/2
+67673554;Jana Vinšová;29401;Bakov nad Jizerou;Trenčín;Brigádnická 758
+67691943;Martin Kučera;73961;Třinec;Staré Město;Nádražní 306
+67758684;Lukáš Hudeček;18000;PRAHA 8;BOHNICE;ČIMICKÁ 768/94
+67771645;JITKA JONÁŚOVÁ;15000;PRAHA;PRAHA 5;Štěpánkova 6/1094
+67864465;Jiří Šindelář;41145;Úštěk;Úštěk-Vnitřní Město;Mírové náměstí 60
+67918654;Vladan Kadlec;26281;Tochovice;Tochovice;55
+67963161;Filip DAĎA;16000;PRAHA 6;DEJVICE;KOULOVA 1567/5
+67996603;Pavla Janků;13000;Praha;Vinohrady (část);Boleslavská 2114/10
+68001975;Ing. Janka Špálová - ARTAX;13000;PRAHA;ŽIŽKOV (ČÁST);POD JAROVEM 2226/9
+68022948;Radoslav Rajsigl;69649;Žádovice;Žádovice;82
+68024720;Josef Koliba;69617;Dolní Bojanovice;Dolní Bojanovice;790
+68071507;Stanislav Trněný;68323;Dětkovice;Dětkovice;79
+68167563;Marie Tomečková;73914;Ostravice;Ostravice;504
+68180586;Petra Studená;77900;Olomouc;Neředín;Stiborova 30
+68202130;Michaela FIALOVÁ;26712;Loděnice;Loděnice;Za Gramofonovými závody 316
+68283962;Ludmila Sližíková;40711;Děčín;Děčín XXXII-Boletice nad Labem;Janáčkova 350
+68364571;Stefan Todorov BRATOV;10200;PRAHA 10;HOSTIVAŘ;ŠTĚRBOHOLSKÁ 571/79
+68365799;Jiří Nekolný - JaP;10900;PRAHA 10;HORNÍ MĚCHOLUPY;JANOVSKÁ 402
+68469519;Jaroslav Habrman;56002;Česká Třebová;Česká Třebová;Dr. E. Beneše 593
+68549407;Šárka Trázníková;38473;Stachy;Stachy;382
+68556578;Milan Louč;29401;Bakov nad Jizerou;Bakov nad Jizerou;Svatojánská 1046
+68603223;Antonín Baroň;76302;Zlín;Malenovice;Mlýnská 849
+68645546;Martin Talafa;76321;Slavičín;Slavičín;K. Vystrčila 378
+68664826;Marie Ficová;67521;Petrovice;Petrovice;121
+68696311;Pavlína Růžičková;69102;Velké Bílovice;Velké Bílovice;Lůčky 1016
+68729804;Sbor dobrovolných hasičů Tlumačov;76362;Tlumačov;;
+68738714;Marian Hrabec;68737;Polešovice;Polešovice;623
+68738731;Josef Marášek;68756;Pašovice;Pašovice;16
+68811730;Ivana Bartošová;32319;Plzeň;Bolevec;Sokolovská 1125/109
+68837526;Simona Skrčená;14000;PRAHA 4;NUSLE;NA PANKRÁCI 877/16
+68849311;JANA KONVALINKOVÁ;16000;PRAHA 6;PRAHA 6;VOKOVICKÁ 14/685
+68885881;Petr Klimeš;19016;PRAHA 9;ÚJEZD NAD LESY;SOBĚŠÍNSKÁ 1512
+68926251;Vojtěch Král;77200;Olomouc - Hodolany;Hodolany;Zeyerova 923/12
+68927771;Zdeněk Hlavinka;78324;Litovel;Savín;Savín 34
+68933089;Lenka Tomanová;74741;Hradec nad Moravicí;Žimrovice;Mlýnská 82
+68939949;Jaroslav Mráz;73931;Řepiště;Řepiště;Slezská 420
+68973152;Jarmila Kortánová;43401;Most;Most;Lidická 76/600
+68979291;Jitka Kulhavá;43003;Chomutov;Chomutov;Matěje Kopeckého 4823
+68979711;Oanh Pham Kieu  PKO;43005;Chomutov;Chomutov;Písečná 5067
+69004331;Věra Huličková;27325;Zvoleněves;Zvoleněves;Tyršova 233
+69008574;David Vojnar;28912;Třebestovice;Třebestovice;Žižkova 214
+69069310;Ing. Radek Nedvěd - MEDABE;15800;PRAHA 5;STODŮLKY;MEZI ŠKOLAMI 2477/25
+69200394;Mgr. Martin Flajšar;78815;Velké Losiny;Velké Losiny;Bukovická 107
+69212228;Dagmar Kuklišová;70030;Ostrava - Výškovice;Výškovice;Lumírova 490/9
+69219010;Michal Kokeš;70030;Ostrava - Výškovice;Výškovice;29. dubna 253/21
+69243417;Dana Hauptová;70800;Ostrava - Poruba;Poruba;Alžírská 1515/5
+69311609;Boris Nikolov VESSELINOV;10800;PRAHA 10;MALEŠICE;U TVRZE 60/33
+69317909;Marta PEKÁRKOVÁ;16000;PRAHA 6;VOKOVICE;EVROPSKÁ 677/150
+69339856;Michaela Fajtlová;14300;PRAHA;MODŘANY;POD BELÁRIÍ 706/4
+69363137;Jana Žížalová - Drogerie TIP;25601;Benešov;Benešov;Na Bezděkově 1737/1
+69405701;Mykhaylo Zhyhanskyy;43001;Chomutov;Chomutov;Kosmonautů 4021
+69410305;Mary Elizabeth Tonderová;40501;Děčín;Děčín I-Děčín;Masarykovo náměstí 193/20
+69416419;Ing. Miroslav Zahrádka;44001;Louny;Louny;Pražská 110
+69545596;Miroslav Horák;38601;Strakonice;Strakonice I;Máchova 108
+69553995;Roman Lehnert;39701;Písek;Budějovické Předměstí;Raisova 1428
+69584834;Dagmar Šteyerová;74781;Otice;Otice;Kylešovská 59
+69628475;Marek Handl;75105;Kokory;Kokory;03
+69643911;Aleš Klak;67201;Dobelice;Dobelice;9
+69690479;Ing. Karel Motyčka, Agro 2000;76326;Luhačovice;Luhačovice;Slunná 832
+69724628;Josef Kůra;61200;Brno;;Božetěchova 97
+69725691;Český svaz včelařů, základní organizace v Ostrožské Nové Vsi;68722;Ostrožská Nová Ves;;
+69740305;Albert Daniel;69301;Hustopeče;Hustopeče;Třebízského 76/1
+69778841;Ladislav KROUPA;10000;Praha 10;Strašnice;Dětská 2077/69
+69789126;Michal RAUS - Zprostředkovatel pojištění;14000;PRAHA 4;MICHLE;POD STÁRKOU 25
+69846081;Zbyněk Benc;58222;Přibyslav;Přibyslav;Wolkerova 605
+69855790;Michaela Pokorná;53501;Přelouč;Přelouč;nám. Dukelské 453
+69917060;Slavomír Kudláček;44101;Podbořany;Hlubany;27
+69921172;Pavel Kočíb;43401;Most;;Josefa Ševčíka 705/855
+69951560;Monika HRABĚTOVÁ;34022;NÝRSKO;BLATA;BLATA 49
+69980128;Myslivecké sdružení HÁJ Nezdřev;33544;Nezdřev;Nezdřev;
+70031096;Dušan Loukota, Ing.;74101;Nový Jičín - Loučka;;Jičínská 273
+70050503;Thanh Ngo Ninh;43003;Chomutov;;Lipská 2316/73
+70062862;Oleksandr Svynarskyy;14300;PRAHA 4;MODŘANY;LEVSKÉHO 3187/6
+70106126;Irena Nimsová;25088;Čelákovice;;Fűgnerova 1297
+70108064;JAROSLAVA ŠVARCOVÁ;19000;Praha 9;Libeň;Sokolovská 183/965
+70171475;Jaroslav Hykyš;50009;Hradec Králové;Malšovice;Na Kotli 1175
+70221448;Josef Stahl;47123;Zákupy;Zákupy;Gagarinova 331
+70221766;Vladislava Puschnerová;43158;Místo;Místo;Místo 49
+70238812;OREL jednota  Velké Karlovice;75606;Velké Karlovice;;p.Marie Oravcová 242
+70298084;David Sedláček;62500;Brno;Bohunice;Uzbecká 555/4
+70301263;Martina Pieleszová;73961;Třinec;Oldřichovice;592
+70315817;Petr Zajíc;74282;Jistebník;Jistebník;57
+70327076;Zdeněk Vokáč;75661;Rožnov pod Radhoštěm;Rožnov pod Radhoštěm;Kulturní 1753
+70327912;Ing. Stanislav Hasalík;74101;Hostašovice;Hostašovice;75
+70348081;Jindřiška KARLÍKOVÁ;17000;PRAHA 7;TROJA (ČÁST);TROJSKÁ 224/134
+70352186;Matěj BOŠINA;17000;PRAHA 7;BUBENEČ;ČECHOVA 285/21
+70356122;JUDr. Jiřina TROJANOVÁ - JMK;15000;PRAHA 5;SMÍCHOV;NÁM. 14. ŘÍJNA 1278/1
+70400652;Aleš Brabec;59101;Žďár nad Sázavou;Žďár nad Sázavou 4;Wolkerova 2084/11
+70509948;Stanislav Kostka;39468;Žirovnice;Štítné;15
+70576521;Oldřich Preisler;46802;Rychnov u Jablonce nad Nisou;Rychnov u Jablonce nad Nisou;Zálesí 529
+70601411;Vladimír Vizina;78701;Šumperk;Šumperk;Žižkova 2840/1
+70624933;Ing. Petr Kaličiak;73601;Havířov - Podlesí;Podlesí;Nad Terasou 1164/8
+70628041;Milena Hakenová;75002;Přerov;Přerov I-Město;Palackého 1446/30
+70631506;Česká vodíková asociace CZHA;70900;Ostrava - Nová Ves;Nová Ves;Paličkova 208/18
+70670251;Zdeněk Choura;38742;Předmíř;Předmíř;48
+70672245;Miroslav Brchl;37382;Včelná;Včelná;Hraniční 259
+70673667;Jana Linková;38101;Český Krumlov;Nové Spolí;70
+70729786;Hedvika Pavlová;28923;Milovice;Mladá;Slepá 551
+70740551;Martin Kanclíř;14100;PRAHA 4;ZÁBĚHLICE;HRUSICKÁ 2526/34
+70804818;Občanské sdružení  KLUB POPBALET;10900;Praha 10;Petrovice;Frostova 332
+70805792;Farní obec Starokatolické církve v Pacově;39501;Pacov;;Malovcova 1080
+70839948;Zájmové sdružení měst a obcí (Neratovice,Kostelec n.Labem,Odolena Voda,Libiš a Tišice);27715;Tišice;;Boleslavská 89
+70865710;Česko-moravské odborové sdružení;60200;Brno;Brno - střed;Křenová 60
+70868069;Odborový svaz pracovníků státních orgánů a organizací  Místní organizace pracovníků Obecních úřadů,Václavské nám.6,Uhlířské Janovice;28504;Uhlířské Janovice;;Václavské náměstí 6
+70897247;Jaroslav Pilař;53314;Kladruby nad Labem;Bílé Vchýnice;Bílé Vchýnice 9
+70964980;Ing. Jiří ZUMR;15000;Praha 5;Košíře;Pod Šmukýřkou 1079/10
+71046607;Pavel SAPÁK;16900;PRAHA 6;BŘEVNOV;ZLIČÍNSKÁ 2142/14
+71086382;Jindřich Škobis;14900;PRAHA 4;CHODOV;BRANDLOVA 1381/18
+71613498;Oldřich Košnář;14000;PRAHA 4;PODOLÍ;LOPATECKÁ 57/15
+71632336;Iva Sudová;19600;PRAHA;TŘEBORADICE;KRÁLOVA
+71693998;Lenka Matějková;40501;Děčín;Děčín III-Staré Město;Oblouková 376
+72104279;Milan Koktan;39161;Opařany;Opařany;285
+72118911;Zdeněk Berenda;39701;Písek;Budějovické Předměstí;třída Přátelství 1971
+72127694;Petr Gondek;37004;České Budějovice;České Budějovice 3;Pražská tř. 952/38
+72192823;Milena Pašková;35605;Sokolov;Sokolov;Švabinského 1731
+72223464;Jana Mrázková;33401;Přeštice;Přeštice;Husova 1038
+72235799;Lenka Plechatá;36251;Jáchymov;Jáchymov;K Lanovce 1048
+72308494;Ing.Václav Duchoň;66451;Jiříkovice;Jiříkovice;100
+72335297;Magdaléna Křížová;68201;Vyškov;Vyškov-Město;Nádražní 358/23
+72338601;Jan Vašíček;69701;Kyjov;Kyjov;Nádražní 610/15
+72358289;Jana Vajdáková;76001;Zlín;Prštné;Nábřeží 611
+72429089;Marie Zemánková;68601;Uherské Hradiště;Uherské Hradiště;Malinovského 771
+72586761;Veronika Remeňová;43004;Chomutov;Chomutov;Školní pěšina 5097
+72671688;Marek Pohl;47301;Nový Bor;Nový Bor;Skalická 1446
+72673010;Jiří Krafl;41501;Újezdeček;Újezdeček;Křičkova 1332
+72810483;Josef Hloušek;58253;Štoky;Štoky;126
+72817372;Lenka Chrtková DiS.;50601;Vitiněves;Vitiněves;64
+72843993;Olga Pytlíková;56542;Vraclav;Vraclav;112
+72987898;Marcela Petrošová;74291;Velké Albrechtice;Velké Albrechtice;47
+73007447;Daniel Liberda;73995;Bystřice;Bystřice;850
+79315241;ART SOFT - VLADAN HEJNIC;16000;PRAHA 6;;BUŠTĚHRADSKÁ 1
+87654326;CENTROFLOR s.p.;40500;Děčín;;Dělnická 208

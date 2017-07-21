@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Mappings>
+
+    <Mapping element="a" outPort="0" templateId="T"
+            xmlFields="id;../id;b;../c;../." cloverFields="f1;f2;f3;f4;f5">
+        <Mapping templateRef="T" nestedDepth="5"/>
+    </Mapping>
+</Mappings>

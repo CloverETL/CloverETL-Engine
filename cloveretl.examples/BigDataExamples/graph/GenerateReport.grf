@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="3.4.0.M2" id="1361366651526" licenseType="Commercial" modified="Mon Mar 18 13:17:28 CET 2013" modifiedBy="Pavel" name="WriteCountOutput" revision="1.29" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/meta_count_output.fmt" id="Metadata0"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="278" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Read Metric values" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="210" x="30" y="195">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+
+
+Reads number of unique visitors for each month. The file with up-to-date metric values can be created using CloverETL, MapReduce or Hive query.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="278" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Read Metric values" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="212" x="389" y="195">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+
+
+Reorders data so that the months with highest number of unique visits are listed on the top.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="278" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Read Metric values" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="212" x="747" y="195">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+
+
+Writes final output report in Excel]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="38" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="This graph is a generic part for all variants of the UniqueVisits example." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="929" x="30" y="113"/>
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="78" id="Note4" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Big Data - Processing Web Access Log (Unique Visitors)" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="30" y="36">
+<attr name="text"><![CDATA[Report the number of unique visitors per month from a potentially huge web access log using different methods.
+(CloverETL, Hadoop HIVE, and Hadoop MapReduce)]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/Monthly_Unique_Visitors.xlsx" guiName="Create Excel Report" guiX="782" guiY="241" id="CREATE_EXCEL_REPORT" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_STREAM"/>
+<Node enabled="enabled" guiName="Order by Unique Visitors" guiX="412" guiY="241" id="ORDER_BY_UNIQUE_VISITORS" sortKey="ip_count(d)" type="FAST_SORT"/>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/unique_visitors.txt" guiName="Read Unique Visitors Count" guiX="45" guiY="241" id="READ_UNIQUE_VISITORS_COUNT" type="DATA_READER"/>
+<Edge fromNode="ORDER_BY_UNIQUE_VISITORS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (input)" metadata="Metadata0" outPort="Port 0 (out)" toNode="CREATE_EXCEL_REPORT:0"/>
+<Edge debugMode="true" fromNode="READ_UNIQUE_VISITORS_COUNT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="ORDER_BY_UNIQUE_VISITORS:0"/>
+</Phase>
+</Graph>
