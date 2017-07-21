@@ -1,0 +1,10 @@
+1495;###,000.00;num2str($0.String,$0.Format);1,495.00
+3255;#00,000.00;num2str($0.String,$0.Format);03,255.00
+6239;000,000.00;num2str($0.String,$0.Format);006,239.00
+326;###,000.00;num2str($0.String,$0.Format);326.00
+210;##0,000.00;num2str($0.String,$0.Format);0,210.00
+38;###,##0.00;num2str($0.String,$0.Format);38.00
+12;###,#00.00;num2str($0.String,$0.Format);12.00
+2;###,000.00;num2str($0.String,$0.Format);002.00
+1;###,000.00;num2str($0.String,$0.Format);001.00
+3;###,000.00;num2str($0.String,$0.Format);003.00

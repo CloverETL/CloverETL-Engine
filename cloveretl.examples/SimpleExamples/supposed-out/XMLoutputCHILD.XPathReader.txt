@@ -1,0 +1,4 @@
+Ann;4;1
+Mark;6;1
+Peter;14;2
+none;0;3

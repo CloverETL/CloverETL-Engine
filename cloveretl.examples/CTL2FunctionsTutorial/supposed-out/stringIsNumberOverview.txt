@@ -1,0 +1,5 @@
+test;isNumber($0.Arg);false
+têst;isNumber($0.Arg);false
+5;isNumber($0.Arg);true
+123456732325;isNumber($0.Arg);true
+1234.28e-3;isNumber($0.Arg);true
