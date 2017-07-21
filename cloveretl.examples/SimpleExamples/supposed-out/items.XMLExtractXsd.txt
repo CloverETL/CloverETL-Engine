@@ -1,0 +1,2 @@
+John Smith|Empire Burlesque|Special Edition|1|10.90
+John Smith|Hide your heart||1|9.90

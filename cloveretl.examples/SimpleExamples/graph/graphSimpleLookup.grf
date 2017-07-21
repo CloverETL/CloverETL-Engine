@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Tue Dec 12 09:10:59 CET 2006" description="This graph demonstrates functionality of HASH_JOIN components. HASH_JOIN component&#10;performs joining of master data with slave data based on specified key. First all slave&#10;data are read and hash-table is constructed from them. Then for every master record, attempt&#10;is made to find corresponding slave-record.&#10;HASH_JOIN performs better than SORT/MERGE_JOIN when you have relatively small slave data set&#10;and big master data set. It doesn't require master and slave data to be sorted&#10;" guiVersion="0.0.0.devel" id="1196683278570" licenseType="Evaluation Devel" modified="Mon Jun 13 11:32:20 CEST 2011" modifiedBy="avackova" name="Testing Hash Joiner" revision="1.45" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/delimited/joinedOrders.fmt" id="Metadata2"/>
+<Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata1"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<LookupTable fileURL="${DATAIN_DIR}/delimited/employees.dat" id="LookupTable0" key="EmployeeID" metadata="Metadata0" name="jmeno" type="simpleLookup"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="101" guiName="Orders" guiWidth="128" guiX="24" guiY="24" id="INPUT1" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="101" guiName="Join with Employees" guiWidth="178" guiX="202" guiY="24" id="JOIN" type="REFORMAT">
+<attr name="transform"><![CDATA[
+import org.jetel.component.DataRecordTransform;
+import org.jetel.data.DataRecord;
+import org.jetel.data.RecordKey;
+import org.jetel.data.lookup.Lookup;
+import org.jetel.data.lookup.LookupTable;
+import org.jetel.exception.ComponentNotReadyException;
+
+public class ReformatTestInline extends DataRecordTransform{
+
+	Lookup mylookup;
+
+	public boolean init() throws ComponentNotReadyException{
+
+		LookupTable lt = graph.getLookupTable("LookupTable0");
+		if (!lt.isInitialized()) {
+			lt.init();
+		}
+	
+		// create key 
+	    String[] lookupKeyStr={"EmployeeID"};
+		RecordKey key=new RecordKey(lookupKeyStr,sourceMetadata[0]);
+		key.init();
+		mylookup = lt.createLookup(key);
+		return true;
+	}
+
+	public int transform(DataRecord[] source, DataRecord[] target){
+	        
+		mylookup.seek(source[0]);
+		
+		if (!mylookup.hasNext()) {// skip this one
+			errorMessage = "Input:\n" + source[0] + " - There is no record with corresponding key in lookup table\n";
+			return SKIP; 
+		}
+		
+		DataRecord employee = (DataRecord)mylookup.next();
+
+		target[0].getField(0).setValue(source[0].getField(0).getValue());
+  		target[0].getField(1).setValue(source[0].getField(1).getValue());
+		target[0].getField(2).setValue(source[0].getField(2).getValue().toString());
+		target[0].getField(3).setValue(employee.getField(0).getValue().toString());
+		target[0].getField(4).setValue(employee.getField(1).getValue());
+
+		return ALL;
+	}
+	
+}
+]]></attr>
+<attr name="guiDescription"><![CDATA[Orders are joined with Employees on the EmployeeID using a simple lookup table defined in the graph. The table is based on the employees.dat file. Corresponds to Inner join (Orders without an Employee are not transformed to the output)]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data_hash.out" guiHeight="101" guiName="Orders-Employees" guiWidth="162" guiX="447" guiY="24" id="WRITER" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="JOIN:0"/>
+<Edge debugMode="true" fromNode="JOIN:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="WRITER:0"/>
+</Phase>
+</Graph>
