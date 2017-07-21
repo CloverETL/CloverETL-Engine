@@ -1,0 +1,740 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<project name="cloveretl plugin" default="build" basedir=".">
+
+	<!-- =========================== DEFAULT DIRECTORIES =========================== -->
+	<basename property="plugin.name" file="${basedir}" />
+	<propertyregex property="plugin.dir.name"
+		input="${plugin.name}"
+		regexp="cloveretl\.(.*)"
+		select="org.jetel.\1" />
+
+	<property name="dir.src" value="${basedir}/src"/>
+	<property name="dir.src.test" value="${basedir}/test"/>
+	<property name="dir.lib" value="${basedir}/lib"/>
+	<property name="dir.dist" value="${basedir}/dist"/>
+	<property name="dir.dist.other.plugins" value="${dir.dist}"/>
+	<property name="dir.plugin.dist" value="${dir.dist}/plugins/${plugin.dir.name}"/>
+
+	<property name="dir.engine" value="${basedir}/../cloveretl.engine"/>
+	<property file="${dir.engine}/build.properties"/>		
+	<property name="dir.engine.lib" value="${dir.engine}/lib"/>
+	<property name="dir.engine.tools" value="${dir.engine}/tools"/>
+	<property name="dir.cobertura" value="${dir.engine.tools}/cobertura" />
+	<property name="dir.build-scripts" value="${dir.engine}/build-scripts"/>
+	<property name="dir.engine.classes" value="${dir.engine}/build-tmp/classes" />
+	<property name="engine.mapping.all" value="${dir.engine}/build-tmp/obfuscate/proGuard-mapping-all.txt" />
+	<property name="dir.license" value="${basedir}/../cloveretl.license"/>
+	
+	<property name="dir.build" value="${basedir}/build"/>
+	<property name="dir.testsresult" value="${dir.build}/testsresult"/>
+	<property name="dir.classes" value="${dir.build}/classes"/>
+	<property name="dir.classestest" value="${dir.build}/classes-test"/>
+	<property name="dir.coverage.classes" value="${dir.build}/classes-coverage"/>
+	<property name="dir.src.improved" value="${dir.build}/src-improved"/>
+	<property name="dir.findbugsreport" value="${dir.build}/findbugsreport"/>
+	<property name="dir.manifest" value="${dir.build}/manifest"/>
+	<property name="dir.obfuscate" value="${dir.build}/obfuscate"/>
+	<property name="dir.obfuscate.classes" value="${dir.obfuscate}/classes"/>
+	<property name="dir.obfuscate.manifest" value="${dir.obfuscate}/manifest"/>
+	<property name="required.plugins.file" value="required-plugins.txt"/>
+	<property name="required.plugins.lib.collected" value="${dir.build}/required-plugins-lib-collected.txt" />
+	<property name="required.plugins.collected" value="${dir.build}/required-plugins-collected.txt" />
+	<property name="required.plugins.lib.collected" value="${dir.build}/required-plugins-lib-collected.txt" />
+	<property name="cobertura.ser" value="${dir.build}/plugin-cobertura.ser"/>
+
+	<property file="${basedir}/build-plugin.properties"/>
+	<property name="javadoc.limited.include" value="**"/>
+	
+	<!-- ProGuard task definition -->
+	<taskdef resource="proguard/ant/task.properties" classpath="${dir.engine.tools}/proguard.jar" />
+		
+	<taskdef resource="cz/mathan/ant/contrib/taskdef.properties">
+	  <classpath>
+	    <pathelement location="${dir.engine.tools}/mathan-ant-contrib.jar"/>
+	  </classpath>
+	</taskdef>
+		
+	<!-- =========================== LIBRARIES ============================= -->
+	<fileset id="engine-libs" dir="${dir.engine.lib}" erroronmissingdir="false">
+		<include name="**/*.jar"/>
+	</fileset>
+
+	<fileset id="engine-tools" dir="${dir.engine.tools}" erroronmissingdir="false">
+		<include name="**/*.jar"/>
+	</fileset>
+
+	<fileset id="license-libs" dir="${dir.license}" erroronmissingdir="false">
+		<include name="dist/*.jar"/>
+	</fileset>
+
+	<path id="cp.cobertura">
+	    <fileset dir="${dir.cobertura}">
+	        <include name="*.jar" />
+	    </fileset>
+	</path>
+
+	<!-- =========================== TARGETS ============================== -->
+	<target name="build" depends="compile,package" description="Compiles sources and creates a JAR file"/>
+
+	<target name="init">
+
+		<echo message="Using directory for classes: ${dir.classes}"/>
+		<echo message="Using directory for dist: ${dir.dist}"/>
+
+		<mkdir dir="${dir.build}"/>
+
+		<if><available file="${dir.lib}"/>
+			<then>
+				<echo message="Plugin has own libraries in ${dir.engine.lib}"/>
+				<!-- fileset plugin-libs contains all jar files in plugin lib directory, used while compile plugin -->
+				<fileset id="plugin-libs" dir="${dir.lib}">
+					<include name="**/*.jar"/>
+					<!-- this is not an actual library, the module is loaded dynamically into separated classloader -->
+					<exclude name="**/cloveretl.component.dominoloader.jar"/>
+					<exclude name="**/cloveretl.connection.mongodb.jar"/>
+				</fileset>
+				<!-- fileset plugin-lib-files contains all files in plugin lib directory, may contain executables (e.g. cloveretl.bulkloader), used while package plugin -->
+				<fileset id="plugin-lib-files" dir="${dir.lib}">
+					<include name="**"/> 
+				</fileset>
+			</then>
+			<else>
+				<echo message="Plugin has no own library"/>
+				<!-- define empty fileset -->
+				<fileset id="plugin-libs" dir="${basedir}">
+					<include name=""/>
+				</fileset>
+				<fileset id="plugin-lib-files" dir="${basedir}">
+					<include name=""/>
+				</fileset>
+			</else>
+		</if>
+		
+		<if><available file="${dir.src.test}"/>
+			<then>
+				<echo message="Plugin has tests in ${dir.src.test}"/>
+				<property name="tests-available" value="true"/>
+			</then>
+			<else>
+				<echo message="Plugin has no test"/>
+			</else>
+		</if>
+		
+		<if><equals arg1="${plugin.obfuscate}" arg2="true"/>
+			<then>
+				<property name="plugin.obfuscate.run" value="true"/>
+				<property name="dir.package.classes" value="${dir.obfuscate.classes}"/>
+				<property name="dir.package.manifest" value="${dir.obfuscate.manifest}"/>
+			</then>
+			<else>
+				<property name="dir.package.classes" value="${dir.classes}"/>
+				<property name="dir.package.manifest" value="${dir.manifest}"/>
+			</else>
+		</if>
+
+		<available property="jdbc4.present" classname="java.sql.Wrapper"/>
+		
+	</target>
+
+	<!-- make a temp copy of source - necessary for substitute release number constants in source code -->
+	<target name="improve-java-sources" depends="copy-java-sources,improve-nojdbc4">
+		<if><not><equals arg1="${java.src.header.file}" arg2="" trim="true"/></not>
+			<then>
+				<echo>Changing license of all files - license file ${java.src.header.file}</echo> 
+				<fileheading heading="${java.src.header.file}">
+					<fileset dir="${dir.src.improved}" includes="**/*.java"/>
+				</fileheading>
+			</then>
+		</if>
+	</target>
+	
+	<target name="copy-java-sources" depends="init">
+		<copy todir="${dir.src.improved}" encoding="UTF-8">
+			<fileset dir="${dir.src}" />
+		</copy>
+	</target>
+	
+	<target name="improve-nojdbc4" unless="jdbc4.present">
+		<replace dir="${dir.src.improved}" token="/* JDBC_4_ANT_KEY_BEGIN */" value="/* THIS FRAGMENT IS ONLY FOR JDBC 4"/>
+		<replace dir="${dir.src.improved}" token="/* JDBC_4_ANT_KEY_END */" value="*/"/>
+	</target>
+
+  <target name="save-required-plugins-lib">
+			<echo file="${required.plugins.lib.collected}" append="true">;${lib.file}
+</echo>
+  </target>
+
+	<target name="save-required-plugins">
+		<if>
+			<available file="${basedir}/../${plugin.name}/plugin.xml" />
+		<then>
+			<xslt 
+				style="${dir.engine}/build-scripts/required-plugins.xsl"
+				in="${basedir}/../${plugin.name}/plugin.xml"
+				out="${basedir}/../${plugin.name}/required-plugins.txt"
+				>
+				<param name="separator" expression=","/>
+				<param name="dist" expression="${dir.dist.other.plugins}"/>
+				<param name="home" expression="${basedir}/.."/>
+			</xslt>
+
+			<property file="${basedir}/../${plugin.name}/required-plugins.txt" prefix="${plugin.name}"/>
+			<delete file="${basedir}/../${plugin.name}/required-plugins.txt" />
+
+			<propertycopy name="property.classes" from="${plugin.name}.required.plugins.classes" />
+
+      <echo file="${required.plugins.collected}" append="true">${property.classes}
+</echo>
+      
+			<if>
+				<available file="${basedir}/../${plugin.name}/lib" type="dir" />
+			<then>
+				<foreach param="lib.file" target="save-required-plugins-lib">
+					<fileset dir="${basedir}/../${plugin.name}/lib" includes="*.jar" />
+				</foreach>
+			</then>
+			</if>
+
+
+			<propertycopy name="list.property" from="${plugin.name}.required.plugins.dirs" />
+
+      <foreach list="${list.property}" param="plugin.name" target="save-required-plugins-recursive">
+          <param name="echo.recursive.property" value="1" />
+      </foreach>
+		</then>
+		</if>
+  </target>
+
+    <target name="save-required-plugins-recursive">
+        <antcall target="save-required-plugins">
+            <param name="plugin.name" value="${plugin.name}" />
+        </antcall>
+    </target>
+
+    <target name="find-required-plugins" depends="init">
+        <echo message="plugin.name ${plugin.name}" />
+        <antcall target="save-required-plugins">
+                <param name="plugin.name" value="${plugin.name}" />
+        </antcall>
+
+        <loadfile property="required.plugins.classes.junit"
+                 srcFile="${required.plugins.collected}">
+        </loadfile>
+        <delete file="${required.plugins.collected}" />
+
+        <if>
+            <available file="${required.plugins.lib.collected}" />
+            <then>
+                <loadfile property="required.plugins.lib"
+                          srcFile="${required.plugins.lib.collected}">
+                </loadfile>
+                <delete file="${required.plugins.lib.collected}" />
+
+            </then>
+            <else>
+                <property name="required.plugins.lib" value="" />
+            </else>
+        </if>
+
+        <property name="cp.compile.junit" value="${dir.engine.classes}${required.plugins.classes.junit}${required.plugins.lib}" />
+      
+        <xslt 
+            style="${dir.engine}/build-scripts/required-plugins.xsl"
+            in="${basedir}/plugin.xml"
+            out="${required.plugins.file}"
+        >
+            <param name="separator" expression=","/>
+            <param name="dist" expression="${dir.dist.other.plugins}"/>
+            <param name="home" expression="${basedir}/.."/>
+        </xslt>
+        <property file="${required.plugins.file}"/>
+        <delete file="${required.plugins.file}"/>
+        
+        <property name="cp.compile" value="${dir.engine.classes}${required.plugins.classes}" />
+
+        <echo>cp.compile=${cp.compile}</echo>
+        <echo>cp.compile.junit=${cp.compile.junit}</echo>
+        <echo>required.plugins=${required.plugins}</echo>
+    </target>
+	
+	<target name="compile" depends="init,improve-java-sources,find-required-plugins" description="Compile sources">
+		<!-- Create directory for binaries. -->
+		<mkdir dir="${dir.classes}"/>
+
+		<echo message="Compile classes from ${dir.src.improved} with classpath ${cp.compile}"/>
+		<!-- Compile sources -->
+		<javac 
+				debug="true" 
+				destdir="${dir.classes}"
+				source="${java.src.version}"
+				target="${java.src.version}"  
+				encoding="UTF-8"
+				classpath="${cp.compile}">
+			<classpath>
+				<fileset refid="plugin-libs"/>
+				<fileset refid="engine-libs"/>
+				<fileset refid="license-libs"/>
+			</classpath>
+			<src path="${dir.src.improved}"/>
+		</javac>
+
+		<!-- copy resources -->
+		<copy todir="${dir.classes}">
+			<fileset dir="${dir.src}">
+				<exclude name="**/*.java" />
+				<exclude name="**/svn/**" />
+			</fileset>
+		</copy>
+
+	</target>
+
+	<target name="plugin.xml" depends="init">
+		<if><equals arg1="${plugin.xml.xslt}" arg2="" trim="true"/>
+			<then>
+				<copy file="plugin.xml" tofile="${dir.build}/plugin.xml" encoding="UTF-8" overwrite="true"/> <!-- overver=true is required, version number may be changed-->
+			</then>
+			<else>
+				<echo>Transforming plugin.xml - ${plugin.xml.xslt}</echo>
+				<xslt 
+					style="${plugin.xml.xslt}"
+					in="plugin.xml"
+					out="${dir.build}/plugin.xml"
+					force="true"
+					>
+				</xslt>
+			</else>
+		</if>
+		
+		<mkdir dir="${dir.manifest}"/>
+		<copy file="${dir.build}/plugin.xml" tofile="${dir.manifest}/plugin.xml" encoding="UTF-8" overwrite="true"/> <!-- overver=true is required, version number may be changed-->
+		<replace file="${dir.manifest}/plugin.xml" encoding="UTF-8">
+			<replacefilter token="0.0.0.devel" value="${version.full}"/>
+			<replacefilter token="&lt;library path=&quot;bin/&quot;/&gt;" value="&lt;library path=&quot;${plugin.name}.jar&quot;/&gt;"/>
+		</replace>
+	</target>
+	
+	<target name="obfuscate" depends="compile,plugin.xml" if="plugin.obfuscate.run">
+		<mkdir dir="${dir.obfuscate.classes}"/>
+		<mkdir dir="${dir.obfuscate.manifest}"/>
+		
+		<pathconvert property="plugin-libs.classpath" refid="plugin-libs"/>
+		<pathconvert property="engine-libs.classpath" refid="engine-libs"/>
+		<pathconvert property="license-libs.classpath" refid="license-libs"/>
+
+		<if><available file="${engine.mapping.all}"/>
+			<then>
+				<property name="apply.mapping" value="${engine.mapping.all}"/>
+			</then>
+			<else>
+				<property name="apply.mapping" value="${dir.build-scripts}/empty-mapping.txt"/>
+			</else>
+		</if>
+		
+		<proguard 
+			shrink="false" 
+			verbose="true"
+			optimize="false" 
+			usemixedcaseclassnames="false"
+			skipnonpubliclibraryclasses="false"
+			skipnonpubliclibraryclassmembers="false"
+			applymapping="${apply.mapping}"
+			printmapping="${dir.obfuscate}/proGuard-mapping.txt"
+			printseeds="${dir.obfuscate}/proGuard-seeds.txt"
+			dump="${dir.obfuscate}/proGuard-dump.txt"
+			>
+			
+		  	<injar path="${dir.classes}" />
+			<outjar location="${dir.obfuscate.classes}" />
+
+		  	<injar path="${dir.manifest}" />
+			<outjar location="${dir.obfuscate.manifest}" />
+			
+			<adaptresourcefilecontents filter="plugin.xml" />
+			
+		  	<libraryjar location="${java.home}/lib/rt.jar" />
+		  	<libraryjar location="${java.home}/lib/jsse.jar" />
+			<libraryjar path="${cp.compile}"/>
+			<libraryjar path="${plugin-libs.classpath}"/>
+			<libraryjar path="${engine-libs.classpath}"/>
+			<libraryjar path="${license-libs.classpath}"/>
+
+			<keepattribute name="InnerClasses" />
+			<keepattribute name="Exceptions" />
+			<keepattributes filter="*Annotation*,Signature" />
+			<keep extends="java.lang.Enum"><field access="public"/><method access="public"/></keep>
+			
+			<keep extends="java.io.Serializable">
+				<field name="serialVersionUID"/>
+				<field /> <!-- keep all fields, object may be saved to file, which must be compatible between clover releases -->				
+				<method type="void" name="writeObject" parameters="java.io.ObjectOutputStream"/>
+				<method type="void" name="readObject" parameters="java.io.ObjectInputStream"/>
+				<method type="java.lang.Object" name="writeReplace" parameters=""/>
+				<method type="java.lang.Object" name="readResolve" parameters=""/>
+			</keep>
+
+			<keep name="org.jetel.graph.Node"><field access="protected public"/><method access="protected public"/></keep>
+			<keep extends="org.jetel.graph.GraphElement">
+				<field access="protected public"/><method access="protected public"/>
+			</keep>
+			<keep implements="org.jetel.connection.jdbc.specific.JdbcSpecific">
+				<field access="protected public"/><method access="protected public"/>
+			</keep>
+
+			<!-- list of classes to keep from all plugins except cloveretl.engine (better to place in plugin build script but duplication of proguard tag in each plugin is required; duplication is worse)-->
+			<keep name="org.jetel.component.RecordFilterTL"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.normalize.RecordNormalize"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.normalize.DataRecordNormalize"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.denormalize.RecordDenormalize"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.denormalize.DataRecordDenormalize"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.denormalize.CTLRecordDenormalize"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.JavaRunnable"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.BasicJavaRunnable"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.RecordTransform"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.DataRecordTransform"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.partition.PartitionFunction"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.jms.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.partition.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.component.rollup.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.data.parser.*"><field access="public"/><method access="public"/></keep> <!-- the XPathParser is used in a transformation of a test (graphJmsSingleXmlField.grf), so has to be de-obfuscated -->
+			
+			<keep name="org.jetel.connection.jdbc.CopySQLData"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.DBConnection"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.SQLCloverStatement"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.SQLUtil"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.specific.DBConnectionInstance"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.specific.JdbcSpecific"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.SQLDataParser"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.SQLCloverCallableStatement"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.driver.JdbcDriver"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.driver.JdbcDriverDescription"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.driver.JdbcDriverFactory"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jms.JmsConnection"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.specific.conn.DefaultConnection"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.specific.impl.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.specific.conn.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.jdbc.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.connection.Activator"><field access="protected public"/><method access="protected public"/></keep>
+			
+			<keep name="org.jetel.lookup.DBLookupTable"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="org.jetel.lookup.RangeLookupTable"><field access="protected public"/><method access="protected public"/></keep>
+			
+			<keep name="org.jetel.sequence.PrimitiveSequence"><field access="protected public"/><method access="protected public"/></keep>
+
+			<keep name="com.opensys.cloveretl.data.parser.MultiLevelSelector"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.data.parser.AbstractMultiLevelSelector"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.data.parser.PrefixMultiLevelSelector"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.data.parser.ParentChildSelector"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.data.parser.ExampleMultiLevelSelector"><field access="protected public"/><method access="protected public"/></keep>
+			
+			<keep name="com.opensys.cloveretl.lookup.PersistentLookupTable"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.lookup.PersistentLookupTable$SerializableKey"><field access="protected public"/><method access="protected public"/></keep>
+			<keep extends="jdbm.helper.Serializer">
+				<method type="void" name="readObject" parameters="java.io.ObjectInputStream"/>
+				<method type="void" name="writeObject" parameters="java.io.ObjectOutputStream"/>
+			</keep>
+            <keep name="com.opensys.cloveretl.lookup.AspellLookupTable"><field access="protected public"/><method access="protected public"/></keep>
+            <keep name="com.opensys.cloveretl.lookup.aspell.AspellDictionary"><field access="protected public"/><method access="protected public"/></keep>
+
+			<keep name="org.jetel.ctl.extensions.*"><field access="protected public"/><method access="protected public"/></keep>
+			
+			<keep name="com.opensys.cloveretl.component.ws.WSDLAnalyzer"><field access="protected public"/><method access="protected public"/></keep>
+			
+			<keep name="com.opensys.cloveretl.component.ws.ConnectionConfiguration"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.ws.WSDLAnalyzer"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.ws.proxy.WSOperationName"><field access="public"/><method access="public"/></keep>
+			
+			<keep name="com.opensys.cloveretl.component.pivot.CTLPivotTransform"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.pivot.PivotTransformTL"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.pivot.DataRecordPivotTransform"><field access="public"/><method access="public"/></keep>
+
+			<keep name="com.opensys.cloveretl.appcraft.ACSession"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.appcraft.ACRelationship"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.appcraft.ACAppNotFoundException"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.appcraft.apptreemodel.*"><field /><method /></keep>
+			<keep name="com.applicationcraft.ac_dev.service.clover.soap.*"><field /><method /></keep>
+
+			<keep name="com.opensys.cloveretl.ctl.CTLUtils"><field access="protected public"/><method access="protected public"/></keep>
+
+			<keep name="org.jetel.license.Activator"><field access="protected public"/><method access="protected public"/></keep>
+
+			
+			<keep name="com.opensys.cloveretl.component.complexdatareader.*"><field access="protected public"/><method access="protected public"/></keep>
+
+			<keep name="com.opensys.cloveretl.addressdoctor.unlockcode.provider.*"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.addressdoctor.unlockcode.provider.impl.*"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.addressdoctor.unlockcode.validator.*"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.addressdoctor.mapping.element.AddressObjectMappingElement"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.addressdoctor.mapping.provider.ADMappingElementProvider"><field access="public"/><method access="public"/></keep>
+			
+			<keep name="com.opensys.cloveretl.ctl.extensions.*Lib"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.ctl.ASTRewriter"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.ctl.BytecodeCompiler"><field access="protected public"/><method access="protected public"/></keep>
+			
+			<keep name="com.opensys.cloveretl.connection.domino.*"><method name="*"/></keep>
+			
+			<keep name="com.opensys.cloveretl.data.cobol.CobolData"><method name="*"/></keep>
+			<keep name="com.opensys.cloveretl.data.cobol.CobolData2CloverMetadata"><field access="public"/><method name="*"/></keep>
+			<keep name="com.opensys.cloveretl.data.cobol.CopyBookParser"><method name="*"/></keep>
+			<keep name="com.opensys.cloveretl.data.cobol.StripLineNumbers"><method name="*"/></keep>
+			
+			<keep name="com.opensys.cloveretl.component.SpreadsheetReader"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.SpreadsheetWriter"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.spreadsheet.formatter.FieldNamesForSheetPartitioningParser"><field access="public"/><method access="public"/></keep>
+			
+			<keep name="com.opensys.cloveretl.component.tree.bean.schema.model.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.tree.bean.schema.generator.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.tree.bean.schema.util.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.tree.bean.*"><field access="protected public"/><method access="protected public"/></keep>
+			
+			<keep name="com.opensys.cloveretl.component.tree.writer.bean.BeanMappingValidator"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.tree.writer.json.JsonMappingValidator"><field access="protected public"/><method access="protected public"/></keep>
+			
+			<keep name="com.opensys.cloveretl.component.BeanReader"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.BeanWriter"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.MapReader"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.JSONReader"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.JSONWriter"><field access="protected public"/><method access="protected public"/></keep>
+	
+			<keep name="com.opensys.cloveretl.component.tree.writer.bean.BeanWriter$MapEntry"><field access="private protected public"/><method access="private protected public"/></keep>
+			<keep name="com.opensys.cloveretl.component.tree.writer.bean.BeanWriter$CollectionEntry"><field access="private protected public"/><method access="private protected public"/></keep>
+			
+			<keep name="com.opensys.cloveretl.component.jobflow.JobflowUtils"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.jobflow.TrackingMetadataToolkit"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.jobflow.TrackingMetadataToolkit$FieldNameStructure"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.jobflow.TrackingMetadataToolkit$GraphFieldNameStructure"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.jobflow.TrackingMetadataToolkit$PhaseFieldNameStructure"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.jobflow.TrackingMetadataToolkit$ComponentFieldNameStructure"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.jobflow.TrackingMetadataToolkit$PortFieldNameStructure"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.component.jobflow.TrackingMetadataToolkit$FieldType"><field access="public"/><method access="public"/></keep>
+
+			<keep name="com.cloveretl.profiler.engine.DProfiler"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.cloveretl.profiler.engine.functions.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.cloveretl.profiler.engine.model.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.cloveretl.profiler.engine.store.ProfilerStore"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.cloveretl.profiler.engine.store.ProfilerStoreFactory"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.cloveretl.profiler.engine.store.init.ProfilerStoreInitializer"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.cloveretl.profiler.engine.store.ConnectionValidator"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.cloveretl.profiler.engine.utils.ModelUtils"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.cloveretl.profiler.engine.components.Profiler"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.cloveretl.profiler.engine.components.MappingMetadataFactory"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.cloveretl.profiler.engine.ProfilerLauncherImpl"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.cloveretl.profiler.engine.PreviewGraphGeneratorImpl"><field access="protected public"/><method access="protected public"/></keep>
+
+			<keep name="com.opensys.cloveretl.connection.nosql.mongo.IMongoClient"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.connection.nosql.mongo.IMongoDBCursor"><field access="protected public"/><method access="protected public"/></keep>
+
+			<!-- template to copy&paste
+			<keep name="xxxxxx"><field access="protected public"/><method access="protected public"/></keep>
+			-->
+		</proguard>
+		<concat destfile="${engine.mapping.all}" append="true">
+			<filelist files="${dir.obfuscate}/proGuard-mapping.txt"/>
+		</concat>
+	</target>
+	
+	
+	<!-- pack binary result of compile to jar file -->
+	<target name="package" depends="compile,obfuscate,plugin.xml">
+
+		<!-- Create plugin directory. -->
+		<mkdir dir="${dir.plugin.dist}"/>
+
+		<jar destfile="${dir.plugin.dist}/${plugin.name}.jar" basedir="${dir.package.classes}">
+			<include name="**/*"/>
+		</jar>
+		<!-- copy plugin manifest -->
+		<copy file="${dir.package.manifest}/plugin.xml" todir="${dir.plugin.dist}" />
+		
+		<!-- copy all libraries from lib directory -->
+		<copy todir="${dir.plugin.dist}/lib">
+			<fileset refid="plugin-lib-files"/>
+		</copy>
+	</target>
+
+	<target name="dist.src" depends="plugin.xml,improve-java-sources" description="Creates source distribution">
+
+		<copy todir="${dist.src}/${plugin.name}/src">
+			<fileset dir="${dir.src.improved}" excludes="${java.src.exclude}"/>
+		</copy>
+
+		<copy todir="${dist.src}/${plugin.name}/lib">
+			<fileset refid="plugin-lib-files"/>
+		</copy>
+
+		<copy todir="${dist.src}/${plugin.name}" file="build.xml"/>
+		<copy todir="${dist.src}/${plugin.name}" file="${dir.build}/plugin.xml"/>
+			
+	</target>
+
+	<target name="clean" depends="init" description="Delete previously build files">
+		<delete dir="${dir.build}"/>
+	</target>
+	
+	<target name="coverage-instrument" depends="package">
+		<mkdir dir="${dir.coverage.classes}"/>
+
+		<cobertura-instrument todir="${dir.coverage.classes}" datafile="${cobertura.ser}">
+            <fileset dir="${dir.classes}">
+				<include name="**/*.class" />
+            </fileset>
+        </cobertura-instrument>
+		
+		<copy todir="${dir.coverage.dist}/plugins/${plugin.dir.name}/">
+			<fileset dir="${dir.plugin.dist}/"/>
+		</copy>
+		
+		<jar destfile="${dir.coverage.dist}/plugins/${plugin.dir.name}/${plugin.name}.jar" basedir="${dir.coverage.classes}" update="true">
+			<include name="**/*"/>
+		</jar>
+
+	</target>
+
+	
+	<target name="compile-tests" depends="find-required-plugins,compile">
+		<mkdir dir="${dir.classestest}"/>
+		<if><isset property="tests-available"/><then>
+			<echo>fileset dir="${dir.engine.classestest}"</echo>
+			<javac 
+					debug="true" 
+					destdir="${dir.classestest}" 
+					target="${java.src.version}" 
+					source="${java.src.version}" 
+					encoding="UTF-8"
+					classpath="${cp.compile}">
+				<classpath>
+					<fileset refid="plugin-libs"/>
+					<fileset refid="engine-libs"/>
+					<fileset refid="engine-tools"/>
+					<pathelement path="${dir.engine.classestest}"/>
+					<pathelement path="${dir.classes}"/>
+				</classpath>
+				<src path="${dir.src.test}"/>
+			</javac>
+			<copy todir="${dir.classestest}">
+				<fileset dir="${dir.src.test}">
+					<exclude name="**/*.java"/>
+				</fileset>
+			</copy>
+		</then></if>
+	</target>
+	
+	<target name="runtests" depends="init,compile-tests" if="tests-available">
+		<mkdir dir="${dir.testsresult}"/>
+		<echo message="Running all tests from ${dir.src.test} excluding ${test.exclude}"/>
+		<junit 
+				haltonerror="false" 
+				haltonfailure="false" 
+				printsummary="true" 
+				fork="true" 
+				forkmode="once"
+				dir="${basedir}"
+				>
+    		<sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser}" />
+    		<sysproperty key="file.encoding" value="UTF-8" />
+			<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
+			<classpath path="${cp.compile.junit}">
+				<pathelement path="${dir.classestest}"/>
+				<pathelement path="${dir.engine.classestest}"/>
+				<fileset dir="${test.cloveretl.plugins}/${plugin.dir.name}/">
+					<include name="**/*.jar"/>
+				</fileset>
+				<!--
+				// bring about difficulties with class files on classpath
+				<fileset dir="${dir.engine.classestest}">
+				</fileset>-->
+				<fileset refid="plugin-libs"/>
+				<fileset refid="engine-libs"/>
+				<fileset refid="engine-tools"/>
+    			<path refid="cp.cobertura"/>
+			</classpath>
+			<batchtest todir="${dir.testsresult}">
+				<fileset dir="${dir.src.test}" excludes="${test.exclude}">
+					<include name="**/*Test.java" />
+					<include name="**/Test*.java" />
+				</fileset>
+			</batchtest>
+			<formatter type="plain"/>
+			<formatter type="xml"/>
+		</junit>
+
+		<!--
+		<cobertura-merge datafile="${all.cobertura.ser}">
+		    <fileset dir="${dir.build}">
+		        <include name="*cobertura.ser" />
+		    </fileset>
+		</cobertura-merge>
+		-->
+	</target>
+
+	
+	<target name="findbugs-init">
+		<taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask">
+		  <classpath>
+		    <pathelement location="${dir.findbugs}/lib/findbugs-ant.jar"/>
+		  </classpath>
+		</taskdef>
+	</target>
+	
+	<target name="findbugs-xml" depends="init,findbugs-init,compile,compile-tests">
+		<mkdir dir="${dir.findbugsreport}"/>
+		<findbugs 
+				home="${dir.findbugs}" 
+				output="xml"
+				outputfile="${dir.findbugsreport}/bugreport.xml" 
+				excludeFilter="${dir.build-scripts}/findbugs-exclude.xml"
+				effort="max"
+				reportlevel="low"
+				jvmargs="-Xmx500m">
+			<class location="${dir.classes}"/>
+			<class location="${dir.classestest}"/>
+			<sourcePath path="${dir.src}" />
+			<sourcePath path="${dir.src.test}" />
+			<auxClasspath path="${cp.compile} "/>
+			<auxClasspath path="${dir.engine.classestest}"/>
+			<auxClasspath>
+				<fileset refid="engine-libs"/>
+				<fileset refid="plugin-libs"/>
+				<fileset refid="engine-tools"/>
+			</auxClasspath>
+		</findbugs>
+	</target>
+
+	<target name="collect-javadoc-src" depends="init">
+		<fail unless="dir.src.javadoc"/>
+		<if><istrue value="${javadoc.limited}"/>
+			<then><property name="javadoc.src.include" value="${javadoc.limited.include}"/></then>
+			<else><property name="javadoc.src.include" value=""/></else>
+		</if>
+		<copy todir="${dir.src.javadoc}">
+			<fileset dir="${dir.src}" excludes="${java.src.exclude}" includes="${javadoc.src.include}"/>
+		</copy>
+		<copy todir="${dir.lib.javadoc}">
+			<fileset refid="plugin-lib-files"/>
+			<flattenmapper/>
+			<filterset endtoken=".jar"/>
+		</copy>
+	</target>
+	
+	
+	<target name="check-sources">
+		<if><matches pattern=".*\.commercial" string="${plugin.dir.name}"/>
+			<then>
+				<property name="plugin.java.src.header.file" value="${dir.build-scripts}/engine.commercial.license.txt"/>
+			</then>
+			<else>
+				<property name="plugin.java.src.header.file" value="${dir.build-scripts}/engine.gpl.license.txt"/>
+			</else>
+		</if>
+		<echo message="plugin.java.src.header.file=${plugin.java.src.header.file}"/>
+		
+		<fileheading heading="${plugin.java.src.header.file}" dryrun="true" propertyifrewritten="java.src.header.invalid">
+			<fileset dir="${dir.src}">
+				<include name="**/*.java"/>
+				<exclude name="ConsoleDemoJava.java"/>
+			</fileset>
+		</fileheading>
+		<fail message="File ${java.src.header.invalid} has invalid header - must be ${plugin.java.src.header.file}" if="java.src.header.invalid"/>
+	</target>
+	
+</project>
