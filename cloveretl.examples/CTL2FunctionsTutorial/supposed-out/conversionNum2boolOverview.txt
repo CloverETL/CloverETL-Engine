@@ -1,0 +1,4 @@
+1;num2bool($0.Integer);true
+0;num2bool($0.Integer);false
+2;num2bool($0.Integer);true
+-2;num2bool($0.Integer);true
