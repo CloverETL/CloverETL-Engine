@@ -1,0 +1,8 @@
+*******************************************************************************
+                                 KNOWN BUGS
+*******************************************************************************
+
+- metadata defined by connection stub are not compatible with new checkConfig system
+
+- the method TransformationGraphXMLReaderWriter.write() is not fully implemented - help is very appreciated
+   - a graph built at runtime is not possible to be written to an xml file
