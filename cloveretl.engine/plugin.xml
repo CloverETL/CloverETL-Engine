@@ -1,0 +1,97 @@
+<plugin
+   id="org.jetel.engine"
+   version="0.0.0.devel"
+   provider-name="Javlin a.s.">
+
+	<extension point-id="dictionaryType">
+		<parameter id="type" value="string"/>
+		<parameter id="className" value="org.jetel.graph.dictionary.StringDictionaryType"/>
+	</extension>
+	
+	<extension point-id="dictionaryType">
+		<parameter id="type" value="object"/>
+		<parameter id="className" value="org.jetel.graph.dictionary.ObjectDictionaryType"/>
+	</extension>
+
+	<extension point-id="dictionaryType">
+		<parameter id="type" value="readable.channel"/>
+		<parameter id="className" value="org.jetel.graph.dictionary.ReadableChannelDictionaryType"/>
+	</extension>
+	
+	<extension point-id="dictionaryType">
+		<parameter id="type" value="writable.channel"/>
+		<parameter id="className" value="org.jetel.graph.dictionary.WritableChannelDictionaryType"/>
+	</extension>
+	
+	<extension point-id="dictionaryType">
+		<parameter id="type" value="integer"/>
+		<parameter id="className" value="org.jetel.graph.dictionary.IntegerDictionaryType"/>
+	</extension>
+	
+	<extension point-id="dictionaryType">
+		<parameter id="type" value="long"/>
+		<parameter id="className" value="org.jetel.graph.dictionary.LongDictionaryType"/>
+	</extension>
+	
+	<extension point-id="dictionaryType">
+		<parameter id="type" value="decimal"/>
+		<parameter id="className" value="org.jetel.graph.dictionary.DecimalDictionaryType"/>
+	</extension>
+	
+	<extension point-id="dictionaryType">
+		<parameter id="type" value="number"/>
+		<parameter id="className" value="org.jetel.graph.dictionary.NumberDictionaryType"/>
+	</extension>
+	
+	<extension point-id="dictionaryType">
+		<parameter id="type" value="date"/>
+		<parameter id="className" value="org.jetel.graph.dictionary.DateDictionaryType"/>
+	</extension>
+	
+	<extension point-id="dictionaryType">
+		<parameter id="type" value="boolean"/>
+		<parameter id="className" value="org.jetel.graph.dictionary.BooleanDictionaryType"/>
+	</extension>
+	
+	<extension point-id="dictionaryType">
+		<parameter id="type" value="byte"/>
+		<parameter id="className" value="org.jetel.graph.dictionary.ByteDictionaryType"/>
+	</extension>
+	
+	<extension point-id="dictionaryType">
+		<parameter id="type" value="list"/>
+		<parameter id="className" value="org.jetel.graph.dictionary.ListDictionaryType"/>
+	</extension>
+	
+	<extension point-id="dictionaryType">
+		<parameter id="type" value="map"/>
+		<parameter id="className" value="org.jetel.graph.dictionary.MapDictionaryType"/>
+	</extension>
+	
+	<extension point-id="tlCompiler">
+		<parameter id="type" value="simple.compiler"/>
+		<parameter id="className" value="org.jetel.ctl.TLCompiler"/>
+	</extension>
+	
+	<extension point-id="ctlfunction">
+		<parameter id="libraryName" value="record"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.IntegralLib"/>
+	</extension>
+	
+	<extension point-id="urlResolver">
+		<parameter id="className" value="org.jetel.util.file.SMBPathResolver"/>
+		<parameter id="type" value="SMB"/>
+	</extension>
+	
+	<extension point-id="urlResolver">
+		<parameter id="className" value="org.jetel.util.protocols.amazon.S3PathResolver"/>
+		<parameter id="type" value="S3"/>
+	</extension>
+	
+	<extension point-id="authorityProxy">
+		<parameter id="type" value="PrimitiveAuthorityProxy"/>
+		<parameter id="className" value="org.jetel.graph.runtime.PrimitiveAuthorityProxy"/>
+		<parameter id="priority" value="0"/>
+	</extension>
+	
+</plugin>
