@@ -1,0 +1,2 @@
+[milk,butter,onion,apple,egg];sort(List);[apple,butter,egg,milk,onion];[apple,butter,egg,milk,onion]
+[honey,cherry,carrot,pear,garlic];sort(List);[carrot,cherry,garlic,honey,pear];[carrot,cherry,garlic,honey,pear]

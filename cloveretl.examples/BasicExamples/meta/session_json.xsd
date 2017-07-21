@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="json_object" type="json_objectType"/>
+  <xs:complexType name="sessionType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="name"/>
+      <xs:element type="xs:string" name="value"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="loginInfoType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="failedLoginCount"/>
+      <xs:element type="xs:string" name="loginCount"/>
+      <xs:element type="xs:string" name="lastFailedLoginTime"/>
+      <xs:element type="xs:string" name="previousLoginTime"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="json_objectType">
+    <xs:sequence>
+      <xs:element type="sessionType" name="session"/>
+      <xs:element type="loginInfoType" name="loginInfo"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
