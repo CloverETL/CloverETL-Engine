@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record name="Zamestnanci" recordSize="132" type="fixed">
+<Field name="OsobniCislo" nullable="false" shift="0" size="11" skipFirstLine="false" type="integer"/>
+<Field name="Jmeno" nullable="true" shift="0" size="40" skipFirstLine="false" type="string"/>
+<Field name="RC" nullable="true" shift="0" size="11" skipFirstLine="false" type="string"/>
+<Field name="Adresa" nullable="true" shift="0" size="60" skipFirstLine="false" type="string"/>
+<Field length="12" name="Plat" nullable="true" scale="2" shift="0" size="10" skipFirstLine="false" type="decimal"/>
+</Record>

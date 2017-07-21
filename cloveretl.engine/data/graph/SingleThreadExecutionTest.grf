@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Kokon" created="Tue Apr 02 17:35:00 CEST 2013" guiVersion="0.0.0.devel" id="1364917053360" licenseType="Commercial" modified="Tue Jun 18 13:04:42 CEST 2013" modifiedBy="Kokon" name="g" revision="1.204" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="agg" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="field1" type="string"/>
+<Field name="count" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0">
+<Record fieldDelimiter="|" name="recordName1" recordDelimiter="\r\n" type="delimited">
+<Field name="field1" type="string"/>
+<Field name="field2" type="string"/>
+</Record>
+</Metadata>
+<Property id="GraphParameter0" name="PPP" value="sekacka"/>
+<Property fileURL="workspace.prm" id="GraphParameter1"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node aggregateKey="field1" enabled="enabled" guiName="Aggregate" guiX="344" guiY="352" id="AGGREGATE" mapping="$field1:=$field1;$count:=count();" sorted="false" type="AGGREGATE"/>
+<Node enabled="enabled" guiName="DataGenerator" guiX="142" guiY="352" id="DATA_GENERATOR" recordsNumber="1000000" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+setRandomSeed(567);
+
+// Generates output record.
+function integer generate() {
+	$out.0.field1 = randomString(1,1);
+	$out.0.field2 = randomString(3,5);
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the generate. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if generate() throws an exception.
+// function integer generateOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="ExtHashJoin" guiX="426" guiY="71" id="EXT_HASH_JOIN" joinKey="$field1=$field1" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.field1 = $in.0.field1;
+	$out.0.field2 = $in.0.field2+$in.1.field2;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/SingleThreadExecutionTestData1.txt" guiName="UniversalDataReader" guiX="151" guiY="12" id="UNIVERSAL_DATA_READER" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/SingleThreadExecutionTestData2.txt" guiName="UniversalDataReader" guiX="156" guiY="147" id="UNIVERSAL_DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/SingleThreadExecutionTestOutData2.txt" guiName="UniversalDataWriter" guiX="553" guiY="339" id="UNIVERSAL_DATA_WRITER1" type="DATA_WRITER"/>
+<Edge debugMode="true" fromNode="AGGREGATE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="UNIVERSAL_DATA_WRITER1:0"/>
+<Edge fromNode="DATA_GENERATOR:0" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="AGGREGATE:0"/>
+<Edge debugMode="true" fromNode="EXT_HASH_JOIN:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_COPY:0"/>
+<Edge fromNode="UNIVERSAL_DATA_READER:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (driver)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_HASH_JOIN:0"/>
+<Edge fromNode="UNIVERSAL_DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_HASH_JOIN:1"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" guiName="ExtSort" guiX="412" guiY="239" id="EXT_SORT" sortKey="field1(a);field2(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiName="SimpleCopy" guiX="592" guiY="84" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiName="SimpleGather" guiX="787" guiY="75" id="SIMPLE_GATHER" type="SIMPLE_GATHER"/>
+<Edge fromNode="EXT_SORT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DEDUP:0"/>
+<Edge fromNode="SIMPLE_COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_GATHER:0"/>
+<Edge fromNode="SIMPLE_COPY:1" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="SIMPLE_GATHER:1"/>
+<Edge fromNode="SIMPLE_GATHER:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT:0"/>
+</Phase>
+<Phase number="2">
+<Node dedupKey="field1(a);field2(a)" enabled="enabled" guiName="Dedup" guiX="608" guiY="239" id="DEDUP" type="DEDUP"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/SingleThreadExecutionTestOutData1.txt" guiName="UniversalDataWriter" guiX="827" guiY="239" id="UNIVERSAL_DATA_WRITER" type="DATA_WRITER"/>
+<Edge debugMode="true" fromNode="DEDUP:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (unique)" toNode="UNIVERSAL_DATA_WRITER:0"/>
+</Phase>
+</Graph>

@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="User" created="Mon Oct 07 16:18:17 CEST 2013" guiVersion="3.5.0.M2" id="1381155530817" licenseType="Evaluation" modified="Fri Oct 11 13:42:12 CEST 2013" modifiedBy="User" name="ValidateData" revision="1.96" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata2" previewAttachment="${DATAIN_DIR}/contacts.csv" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" label="contacts.csv" name="contacts_csv" previewAttachmentCharset="ISO-8859-1" quoteChar="both" quotedStrings="false" recordDelimiter="\r\n" skipSourceRows="1" type="delimited">
+<Field name="id" type="string"/>
+<Field name="first_name" type="string"/>
+<Field name="last_name" type="string"/>
+<Field name="date_of_birth" type="string"/>
+<Field name="street" type="string"/>
+<Field name="city" type="string"/>
+<Field name="zip" type="string"/>
+<Field name="country" type="string"/>
+<Field name="phone1" type="string"/>
+<Field name="phone2" type="string"/>
+<Field eofAsDelimiter="true" name="email" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" label="contacts.csv" name="rejected_contacts_csv" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" skipSourceRows="1" type="delimited">
+<Field eofAsDelimiter="false" name="id" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="first_name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="last_name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="date_of_birth" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="street" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="city" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="zip" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="country" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="phone1" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="phone2" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="true" name="email" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="recordNo" nullable="true" shift="0" size="0" type="long"/>
+<Field eofAsDelimiter="false" name="ruleName" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="validationMessage" nullable="true" shift="0" size="0" type="string"/>
+<Field name="validatedFields" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3" previewAttachment="${DATAIN_DIR}/contacts.csv" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" label="contacts.csv" name="valid_contacts_csv" previewAttachmentCharset="ISO-8859-1" quoteChar="both" quotedStrings="false" recordDelimiter="\r\n" skipSourceRows="1" type="delimited">
+<Field name="id" type="integer"/>
+<Field name="first_name" type="string"/>
+<Field name="last_name" type="string"/>
+<Field name="date_of_birth" type="date"/>
+<Field name="street" type="string"/>
+<Field name="city" type="string"/>
+<Field name="zip" type="string"/>
+<Field name="country" type="string"/>
+<Field name="phone1" type="string"/>
+<Field name="phone2" type="string"/>
+<Field eofAsDelimiter="true" name="email" type="string"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameter name="MAX_NAME_LENGTH" value="50"/>
+<GraphParameter name="MAX_ADDRESS_LENGTH" value="50"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="197" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="A. Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="211" x="25" y="16">
+<attr name="text"><![CDATA[We need to store contact information in an Excel file. Only contacts meeting certain validation criteria should be stored there. 
+
+Invalid contacts will be sent to a rejects file to be manually processed - so they need to contain description why they failed the validation.]]></attr>
+</Note>
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="84" id="Note2" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Data Quality: Validator" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="900" x="25" y="-67">
+<attr name="text"><![CDATA[
+This example shows how to data records before processing them.
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="197" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="B. Problem" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="211" x="235" y="16">
+<attr name="text"><![CDATA[It should be user friendly to define and modify the validation criteria. It should not be necessary to code the validation rules in CTL.  
+
+Records that don't pass the validation criteria should be reported in a consistent way, with a description of the failed criteria.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="197" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="C. Solution" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="211" x="445" y="16">
+<attr name="text"><![CDATA[To validate the contacts we use the Validator component - the component provides a set of validation rules that can be used and configured to define the validation criteria.
+
+Validator sends invalid records to its second output port together with information about the validation problem.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="197" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="270" x="655" y="16">
+<attr name="text"><![CDATA[This example demonstrates the basic usage of Validator. The component also covers more complex scenarios - it can be extended with custom validation rules implemented in CTL.
+
+Validation rules that check whether the value is of some specific data type can also automatically convert the value to the type. See the metadata of the first output of Validator - some fields have a more specific data type than in the source data. So the Validator can check and convert data types in one step.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/contacts.xlsx" guiName="Contacts" guiX="513" guiY="263" id="CONTACTS" sheet="Sheet0" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/invalid_contacts.csv" guiName="Invalid contacts" guiX="513" guiY="370" id="INVALID_CONTACTS" outputFieldNames="true" type="DATA_WRITER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/contacts.csv" guiName="Raw contacts" guiX="25" guiY="263" id="RAW_CONTACTS" type="DATA_READER"/>
+<Node enabled="enabled" guiName="Validator" guiX="277" guiY="263" id="VALIDATOR1" type="VALIDATOR">
+<attr name="errorMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.1.* = $in.0.*;
+	$out.1.recordNo = $in.1.recordNo;
+	$out.1.validationMessage = $in.1.validationMessage;
+	$out.1.ruleName = $in.1.ruleName;
+	$out.1.validatedFields = toString($in.1.validatedFieldNames);
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+<attr name="rules"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<group conjunction="AND" enabled="true" errorMessage="" errorMessageProducer="RULES" lazyEvaluation="true" name="All rules" statusCode="">
+    <children>
+        <copyAllByName customRejectMessage="" enabled="true" inputField="" name="Copy all fields by name" outputField=""/>
+        <group conjunction="AND" enabled="true" errorMessage="" errorMessageProducer="RULES" lazyEvaluation="true" name="id" statusCode="">
+            <children>
+                <nonEmptyField customRejectMessage="" enabled="true" goal="NONEMPTY" inputField="id" name="non empty id" outputField="" trimInput="false"/>
+                <isNumber customRejectMessage="" enabled="true" inputField="id" name="id is number" numberType="INTEGER" outputField="id" trimInput="false">
+                    <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                </isNumber>
+            </children>
+            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+            <imports/>
+        </group>
+        <group conjunction="AND" enabled="true" errorMessage="" errorMessageProducer="RULES" lazyEvaluation="true" name="name" statusCode="">
+            <children>
+                <nonEmptySubset count="1" customRejectMessage="At least first_name or last_name must be found" enabled="true" goal="NONEMPTY" inputField="first_name,last_name" name="non empty name" outputField="" trimInput="true"/>
+                <stringLength customRejectMessage="" enabled="true" inputField="first_name" max="${MAX_NAME_LENGTH}" min="" name="max first_name length" outputField="first_name" trimInput="true">
+                    <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                </stringLength>
+                <stringLength customRejectMessage="" enabled="true" inputField="last_name" max="${MAX_NAME_LENGTH}" min="" name="max last_name length" outputField="last_name" trimInput="true">
+                    <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                </stringLength>
+            </children>
+            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+            <imports/>
+        </group>
+        <group conjunction="AND" enabled="true" errorMessage="" errorMessageProducer="RULES" lazyEvaluation="true" name="date_of_birth" statusCode="">
+            <children>
+                <isDate customRejectMessage="" enabled="true" inputField="date_of_birth" name="DOB is date" outputField="date_of_birth" trimInput="false">
+                    <languageSetting dateFormat="dd/MM/yyyy" locale="" numberFormat="" timezone=""/>
+                </isDate>
+            </children>
+            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+            <imports/>
+        </group>
+        <group conjunction="AND" enabled="true" errorMessage="" errorMessageProducer="RULES" lazyEvaluation="true" name="address" statusCode="">
+            <children>
+                <nonEmptySubset count="4" customRejectMessage="Full adress required" enabled="true" goal="NONEMPTY" inputField="street,city,zip,country" name="all address fields entered" outputField="" trimInput="false"/>
+                <group conjunction="AND" enabled="true" errorMessage="" errorMessageProducer="RULES" lazyEvaluation="true" name="max lengths" statusCode="">
+                    <children>
+                        <stringLength customRejectMessage="" enabled="true" inputField="street" max="${MAX_ADDRESS_LENGTH}" min="" name="max street length" outputField="" trimInput="false">
+                            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                        </stringLength>
+                        <stringLength customRejectMessage="" enabled="true" inputField="city" max="${MAX_ADDRESS_LENGTH}" min="" name="max city length" outputField="" trimInput="false">
+                            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                        </stringLength>
+                        <stringLength customRejectMessage="" enabled="true" inputField="zip" max="${MAX_ADDRESS_LENGTH}" min="" name="max zip length" outputField="" trimInput="false">
+                            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                        </stringLength>
+                        <stringLength customRejectMessage="" enabled="true" inputField="country" max="${MAX_ADDRESS_LENGTH}" min="" name="max country length" outputField="" trimInput="false">
+                            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                        </stringLength>
+                    </children>
+                    <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                    <imports/>
+                </group>
+                <group conjunction="OR" enabled="true" errorMessage="Unsupported ZIP format" errorMessageProducer="GROUP" lazyEvaluation="true" name="zip" statusCode="">
+                    <children>
+                        <patternMatch customRejectMessage="" enabled="true" ignoreCase="false" inputField="zip" name="usa" outputField="" trimInput="false">
+                            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                            <pattern>\d{5,5}</pattern>
+                        </patternMatch>
+                        <patternMatch customRejectMessage="" enabled="true" ignoreCase="false" inputField="zip" name="usa+4" outputField="" trimInput="false">
+                            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                            <pattern>\d{5,5}-\d{4,4}</pattern>
+                        </patternMatch>
+                        <patternMatch customRejectMessage="" enabled="true" ignoreCase="false" inputField="zip" name="cz" outputField="" trimInput="false">
+                            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                            <pattern>\d{3,3} \d{2,2}</pattern>
+                        </patternMatch>
+                        <patternMatch customRejectMessage="" enabled="true" ignoreCase="false" inputField="zip" name="ddd_ddd" outputField="" trimInput="false">
+                            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                            <pattern>\d{3,3} \d{3,3}</pattern>
+                        </patternMatch>
+                        <patternMatch customRejectMessage="" enabled="true" ignoreCase="false" inputField="zip" name="ddddd-ddd" outputField="" trimInput="false">
+                            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                            <pattern>\d{5,5}-\d{3,3}</pattern>
+                        </patternMatch>
+                        <patternMatch customRejectMessage="" enabled="true" ignoreCase="false" inputField="zip" name="ddddaa" outputField="" trimInput="false">
+                            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                            <pattern>\d{4,4}[a-zA-Z]{2,2}</pattern>
+                        </patternMatch>
+                        <patternMatch customRejectMessage="" enabled="true" ignoreCase="false" inputField="zip" name="www www" outputField="" trimInput="false">
+                            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                            <pattern>\w{2,3} \w{3,3}</pattern>
+                        </patternMatch>
+                        <patternMatch customRejectMessage="" enabled="true" ignoreCase="false" inputField="zip" name="dddd" outputField="" trimInput="false">
+                            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                            <pattern>\d{4,4}</pattern>
+                        </patternMatch>
+                    </children>
+                    <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                    <imports/>
+                </group>
+            </children>
+            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+            <imports/>
+        </group>
+        <group conjunction="AND" enabled="true" errorMessage="" errorMessageProducer="RULES" lazyEvaluation="true" name="phone" statusCode="">
+            <children>
+                <nonEmptySubset count="1" customRejectMessage="At least one phone number required" enabled="true" goal="NONEMPTY" inputField="phone1,phone2" name="at least one phone number" outputField="" trimInput="false"/>
+                <group conjunction="OR" enabled="true" errorMessage="phone1 unsupported format" errorMessageProducer="GROUP" lazyEvaluation="true" name="phone1" statusCode="">
+                    <children>
+                        <nonEmptyField customRejectMessage="" enabled="true" goal="EMPTY" inputField="phone1" name="no phone1" outputField="" trimInput="false"/>
+                        <patternMatch customRejectMessage="" enabled="true" ignoreCase="false" inputField="phone1" name="phone simple" outputField="" trimInput="false">
+                            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                            <pattern>\d{9,9}</pattern>
+                        </patternMatch>
+                        <phoneNumber customRejectMessage="" enabled="true" inputField="phone1" name="phone US" outputField="" region="US - United States (+1)" trimInput="false">
+                            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                            <pattern/>
+                        </phoneNumber>
+                    </children>
+                    <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                    <imports/>
+                </group>
+                <group conjunction="OR" enabled="true" errorMessage="phone2 unsupported format" errorMessageProducer="GROUP" lazyEvaluation="true" name="phone2" statusCode="">
+                    <children>
+                        <nonEmptyField customRejectMessage="" enabled="true" goal="EMPTY" inputField="phone2" name="no phone2" outputField="" trimInput="false"/>
+                        <patternMatch customRejectMessage="" enabled="true" ignoreCase="false" inputField="phone2" name="phone simple" outputField="" trimInput="false">
+                            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                            <pattern>\d{9,9}</pattern>
+                        </patternMatch>
+                        <phoneNumber customRejectMessage="" enabled="true" inputField="phone2" name="phone US" outputField="" region="US - United States (+1)" trimInput="false">
+                            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                            <pattern/>
+                        </phoneNumber>
+                    </children>
+                    <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                    <imports/>
+                </group>
+            </children>
+            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+            <imports/>
+        </group>
+        <group conjunction="AND" enabled="true" errorMessage="" errorMessageProducer="RULES" lazyEvaluation="true" name="email" statusCode="">
+            <children>
+                <email allowGroupAddresses="false" customRejectMessage="" enabled="true" inputField="email" name="valid email" outputField="" plainAddress="false" trimInput="false">
+                    <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                </email>
+            </children>
+            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+            <imports/>
+        </group>
+    </children>
+    <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+    <imports/>
+</group>
+]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="RAW_CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="VALIDATOR1:0"/>
+<Edge debugMode="true" fromNode="VALIDATOR1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (input)" metadata="Metadata3" outPort="Port 0 (valid)" toNode="CONTACTS:0"/>
+<Edge debugMode="true" fromNode="VALIDATOR1:1" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (invalid)" toNode="INVALID_CONTACTS:0"/>
+</Phase>
+</Graph>
