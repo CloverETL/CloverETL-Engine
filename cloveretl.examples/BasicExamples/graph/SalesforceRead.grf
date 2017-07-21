@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="User" created="Mon Aug 01 17:12:08 CEST 2016" guiVersion="4.4.0.M2" id="1470069189046" licenseCode="CLP1DJAVLI21013179BY" name="best-accounts" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0">
+<Record fieldDelimiter="|" name="Account" recordDelimiter="\n" type="delimited">
+<Field delimiter="," name="Name" type="string"/>
+<Field eofAsDelimiter="true" name="Id" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="AccountStats" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Name" type="string"/>
+<Field length="12" name="WonAmount" scale="2" trim="true" type="decimal"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="AccountWithOpportunity" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="AccountID" type="string"/>
+<Field delimiter="," name="AccountName" type="string"/>
+<Field delimiter="," name="OpportunityName" type="string"/>
+<Field delimiter="," length="18" name="Amount" scale="2" trim="true" type="decimal"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="Opportunity" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field delimiter="," name="Name" type="string"/>
+<Field delimiter="," length="18" name="Amount" scale="2" trim="true" type="decimal"/>
+<Field delimiter="," name="AccountId" type="string"/>
+</Record>
+</Metadata>
+<Connection config="${CONN_DIR}/My Salesforce.cfg" id="MY_SALESFORCE" type="SALESFORCE"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<RichTextNote backgroundColor="DAD8C9" folded="false" fontSize="large" height="279" id="Note2" textColor="444444" width="943" x="24" y="31">
+<attr name="text"><![CDATA[h3. Reading from Salesforce
+This example demonstrates reading from Salesforce to get the information about Accounts with the highest total value of won Opportunities. 
+
+This example shows 2 approaches - using SalesforceBulkReader components (that use Bulk API to read [Accounts|element://SALESFORCE_BULK_READ_ACCOUNTS] and [Opportunities|element://SALESFORCE_BULK_READ_OPPORTUNITIES]) and SalesforceReader component (that  calls a complex SOQL [query|element://SALESFORCE_COMPLEX_SOQL_VIA_SOAP] via the SOAP API). The bulk reading is better for larger amounts of data, but supports only simpler SOQL queries and requires a more complex graph. Reading via the SOAP API allows you to utilise the full power of SOQL to get the result in one step , but has worse performance for larger amounts of data.
+
+See also the [SalesforceMigration|open://BasicExamples/graph/SalesforceMigration.grf] example.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="228" id="Note0" textColor="444444" width="301" x="24" y="650">
+<attr name="text"><![CDATA[h3. Bulk Reading from Salesforce
+
+The SalesforceBulkReader component is used to read from Salesforce via the bulk API.
+
+It uses a Salesforce connection for credentials and connection configuration.
+
+A SOQL query defines what data are returned and an output mapping maps them to output metadata.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="204" id="Note1" textColor="444444" width="176" x="822" y="537">
+<attr name="text"><![CDATA[h3. Joining
+
+By joining Opportunities with Accounts on the Account IDs we get the data necessary to calculate the best accounts with the following components.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="DEF4AB" folded="false" fontSize="medium" height="170" id="Note7" textColor="444444" width="943" x="24" y="334">
+<attr name="text"><![CDATA[h3. Connect to Salesforce
+
+First, you'll need to configure a Salesforce connection in [Outline > Connections > My Salesforce|element://SALESFORCE0].
+
+If you don't have a Salesforce Username, Password and Security Token, follow these steps:
+
+# Create an account in [Salesforce|https://login.salesforce.com/]
+# Get your Security Token (in Salesforce go to "Your Account Name" > My Settings > Personal > Reset My Security Token) - this will send the token to your email
+# Enter your username, password and security token in the [Salesforce connection|element://SALESFORCE0]]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="256" id="Note3" textColor="444444" width="301" x="24" y="928">
+<attr name="text"><![CDATA[h3. SOAP Reading from Salesforce
+
+The SalesforceReader component is used to read from Salesforce via the SOAP API. 
+
+It uses a Salesforce connection for credentials and connection configuration.
+
+A SOQL query defines what data are returned and an output mapping maps them to output metadata. The SalesforceReader support complex SOQL that returns the same result as the above section of the graph that uses bulk reading from Salesforce.]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/best_accounts_bulk.xlsx" guiName="Best accounts via Bulk API" guiX="822" guiY="785" id="BEST_ACCOUNTS_VIA_BULK_API" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
+<Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/best_accounts_soap.xlsx" guiName="Best accounts via SOAP API" guiX="822" guiY="928" id="BEST_ACCOUNTS_VIA_SOAP_API" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
+<Node guiName="Enrich Opportunities with Accounts" guiX="561" guiY="537" id="ENRICH_OPPORTUNITIES_WITH_ACCOUNTS" joinKey="$AccountId=$Id" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.AccountID = $in.1.Id;
+	$out.0.AccountName = $in.1.Name;
+	$out.0.OpportunityName = $in.0.Name;
+	$out.0.Amount = $in.0.Amount;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node guiName="Salesforce: Bulk Read Accounts" guiX="341" guiY="650" id="SALESFORCE_BULK_READ_ACCOUNTS" sfConnection="MY_SALESFORCE" type="SALESFORCE_BULK_READER">
+<attr name="soqlQuery"><![CDATA[SELECT Name,Id From Account]]></attr>
+</Node>
+<Node guiName="Salesforce: Bulk Read Opportunities" guiX="24" guiY="537" id="SALESFORCE_BULK_READ_OPPORTUNITIES" sfConnection="MY_SALESFORCE" type="SALESFORCE_BULK_READER">
+<attr name="soqlQuery"><![CDATA[SELECT Name,Amount,AccountId FROM Opportunity WHERE IsWon = true]]></attr>
+<attr name="outputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.Name = $in.0.Name;
+	$out.0.Amount = $in.0.Amount;
+	$out.0.AccountId = $in.0.AccountId;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node guiName="Salesforce: Complex SOQL via SOAP" guiX="341" guiY="928" id="SALESFORCE_COMPLEX_SOQL_VIA_SOAP" sfConnection="MY_SALESFORCE" type="SALESFORCE_READER">
+<attr name="soqlQuery"><![CDATA[SELECT Account.Name, SUM(Amount) FROM Opportunity WHERE IsWon = true GROUP BY Account.Name ORDER BY SUM(Amount) DESC]]></attr>
+<attr name="outputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.Name = $in.0.Account__Name;
+	$out.0.WonAmount = $in.0.sum__Amount;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node guiName="Sort by amounts" guiX="618" guiY="785" id="SORT_BY_AMOUNTS" sortKey="WonAmount(d)" type="EXT_SORT"/>
+<Node aggregateKey="AccountID" guiName="Sum amounts" guiX="415" guiY="785" id="SUM_AMOUNTS" mapping="$Name:=first($AccountName);$WonAmount:=sum($Amount);" sorted="false" type="AGGREGATE"/>
+<Edge debugMode="true" fromNode="ENRICH_OPPORTUNITIES_WITH_ACCOUNTS:0" guiBendpoints="804:423|804:740|367:740|367:702" guiLocks="804|367|740" guiRouter="Manual" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SUM_AMOUNTS:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_BULK_READ_ACCOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="ENRICH_OPPORTUNITIES_WITH_ACCOUNTS:1"/>
+<Edge debugMode="true" fromNode="SALESFORCE_BULK_READ_OPPORTUNITIES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="ENRICH_OPPORTUNITIES_WITH_ACCOUNTS:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_COMPLEX_SOQL_VIA_SOAP:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (input)" metadata="Metadata3" outPort="Port 0 (out)" toNode="BEST_ACCOUNTS_VIA_SOAP_API:0"/>
+<Edge debugMode="true" fromNode="SORT_BY_AMOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (input)" metadata="Metadata3" outPort="Port 0 (out)" toNode="BEST_ACCOUNTS_VIA_BULK_API:0"/>
+<Edge debugMode="true" fromNode="SUM_AMOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="SORT_BY_AMOUNTS:0"/>
+</Phase>
+</Graph>

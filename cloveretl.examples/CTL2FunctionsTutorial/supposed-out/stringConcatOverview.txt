@@ -1,0 +1,2 @@
+Nancy;Davolio;0;2008-12-08;2.78;concat($0.Arg1,$0.Arg2,$0.Arg3,$0.Arg4,$0.Arg5);NancyDavolio02008-12-082.78
+Andrew;Fuller;4;2007-01-15;1.978;concat($0.Arg1,$0.Arg2,$0.Arg3,$0.Arg4,$0.Arg5);AndrewFuller42007-01-151.978
