@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="3.5.0.M2" id="1235387325275" licenseType="Commercial" modified="Tue Sep 24 10:27:13 CEST 2013" modifiedBy="user" name="mathRound" revision="1.111" showComponentDetails="false">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="roundInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field length="32" name="Decimal" scale="3" type="decimal"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="roundOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field length="32" name="Decimal" scale="3" type="decimal"/>
+<Field name="Function" type="string"/>
+<Field length="32" name="Result" scale="3" type="decimal"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="222" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="decimal round(decimal arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="640" x="52" y="-102">
+<attr name="text"><![CDATA[
+The round(decimal) function takes one decimal argument and returns decimal value rounded to the closest integer value. 
+
+By default, decimal number has 8 significant digits, including 2 digits after the decimal dot. For this reason, we have set Decimals to 32 significant digits (Length == number of significant digits) and 3 digits after the decimal dot (Scale == digits after the decimal dot).
+
+We can see how Clover rounds the non-integer fractions while preserving only the integer parts of decimal values.
+
+
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="100" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="long round(number arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="637" x="54" y="136">
+<attr name="text"><![CDATA[
+Another function with similar meaning is: long round(number arg).]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/mathRound.txt" guiName="UniversalDataReader" guiX="55" guiY="261" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/mathRoundOverview.txt" guiName="UniversalDataWriter" guiX="473" guiY="261" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiName="Reformat" guiX="273" guiY="261" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.Decimal = $0.Decimal;
+	$0.Function = "round($0.Decimal)";
+	$0.Result = round($0.Decimal);
+
+	return 0;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>

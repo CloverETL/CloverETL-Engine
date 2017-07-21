@@ -1,0 +1,10 @@
+function transform() {
+	$0.lname := $0.lname;
+	$0.fname := $0.fname;
+	$0.birthdate := $0.birthdate;
+	$0.gender := $0.gender;
+	$0.first_name := $1.first_name;
+	$0.last_name := $1.last_name;
+	$0.birth_date := $1.birth_date;
+	$0.gender1 := $1.gender;
+}

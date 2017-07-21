@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="User" created="Thu May 22 10:10:35 CEST 2014" guiVersion="4.0.0.M2" id="1400746845597" licenseType="Evaluation" modified="Mon Jun 30 18:29:55 CEST 2014" modifiedBy="User" name="create_jira_report" revision="1.76" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0" previewAttachment="${DATAIN_DIR}/jira-queries.txt" previewAttachmentCharset="ISO-8859-1">
+<Record label="jira-queries.txt" name="jira_query" previewAttachment="${DATAIN_DIR}/jira-queries.txt" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" skipSourceRows="0" type="delimited">
+<Field eofAsDelimiter="true" name="query" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="jira_search_metadata" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="jira_report" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="jira_query" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="count" nullable="true" shift="0" size="0" type="integer"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+<GraphParameterFile fileURL="jira_login.prm"/>
+</GraphParameters>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="183" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="299" x="517" y="-172">
+<attr name="text"><![CDATA[Configure your JIRA URL in the jira.prm file and your login in jira_login.prm file.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="183" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="343" x="-113" y="-172">
+<attr name="text"><![CDATA[We would like to create a report of number of issues for different versions of software tracked in JIRA.
+
+JIRASearchMulti is a subgraph that searches in JIRA via its REST API - it calls the API, parses the response and packages it all in an easy to use package. The search queries are read from the input.]]></attr>
+</Note>
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="60" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Create report from JIRA" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="-113" y="-231">
+<attr name="text"><![CDATA[Create a report by searching via multiple queries in JIRA.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="183" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Highlights" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="289" x="229" y="-172">
+<attr name="text"><![CDATA[JIRASearchMulti can handle login to JIRA or search anonymously. Internally it also handles paging of JIRA REST API in case there's a large number of results.]]></attr>
+</Note>
+<Dictionary>
+<Entry id="DictionaryEntry0" input="false" name="session_name" output="true" type="string"/>
+<Entry id="DictionaryEntry1" input="false" name="session_value" output="true" type="string"/>
+</Dictionary>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/jira_report.txt" guiName="jira_report" guiX="664" guiY="192" id="JIRA_REPORT" outputFieldNames="true" type="DATA_WRITER"/>
+<Node __PASSWORD="${PASSWORD}" __USER="${USER}" enabled="enabled" guiName="JIRASearchMulti" guiX="253" guiY="50" id="JIRA_SEARCH" jobURL="${SUBGRAPH_DIR}/JIRASearchMulti.sgrf" type="SUBGRAPH"/>
+<Node enabled="enabled" guiName="Map fields" guiX="462" guiY="205" id="MAP_FIELDS" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.jira_query = $in.0.jira_query;
+	$out.0.count = $in.0.total_results;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Trash" guiX="664" guiY="50" id="TRASH" type="TRASH"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/jira-queries.txt" guiName="UniversalDataReader" guiX="-113" guiY="50" id="UNIVERSAL_DATA_READER" type="DATA_READER"/>
+<Edge debugMode="true" fromNode="JIRA_SEARCH:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="TRASH:0"/>
+<Edge debugMode="true" fromNode="JIRA_SEARCH:1" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 1 (out)" toNode="MAP_FIELDS:0"/>
+<Edge debugMode="true" fromNode="MAP_FIELDS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="jira_search_metadata" outPort="Port 0 (out)" toNode="JIRA_REPORT:0"/>
+<Edge debugMode="true" fromNode="UNIVERSAL_DATA_READER:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="JIRA_SEARCH:0"/>
+</Phase>
+</Graph>

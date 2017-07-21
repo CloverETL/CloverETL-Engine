@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231838925062" licenseType="Evaluation Devel" modified="Mon Oct 10 12:30:02 CEST 2011" modifiedBy="avackova" name="CreatingXML" revision="1.222" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/Amounts.fmt" id="Metadata4"/>
+<Metadata fileURL="${META_DIR}/AmountsWithCustIDWithEmplID.fmt" id="Metadata6"/>
+<Metadata fileURL="${META_DIR}/Children.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/CustomersFixed.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/Employees.fmt" id="Metadata2"/>
+<Metadata fileURL="${META_DIR}/EmployeesWithCustomerID.fmt" id="Metadata5"/>
+<Metadata fileURL="${META_DIR}/Family.fmt" id="Metadata8"/>
+<Metadata fileURL="${META_DIR}/IDs.fmt" id="Metadata3"/>
+<Metadata fileURL="${META_DIR}/Spouses.fmt" id="Metadata7"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="172" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Sixth graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="1132" x="42" y="48">
+<attr name="text"><![CDATA[
+In the sixth graph, we have created an XML structure based on different mapping hierarchy. 
+In this graph, the hierarchy is customer (the highest element), employee, family, amount of money paid. Each record is written to different output file to the "data-tmp" directory (since we will need to read them again in the next graphs of the project), named with mask "CustEmplFamAm$$$.xml", where dollars are substituted by record's number. 
+We narrow down the number of files to 15 while we don't want to clutter the directories, but without this limitation, there would be created 19,955 highest level elements. 
+More detailed information about this graph can be found in the "readme.html" file included in the CompanyTransactionsTutorial directory.
+]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/CustomersFixed.txt" guiHeight="85" guiName="CustomersFixed" guiWidth="145" guiX="45" guiY="233" id="DATA_READER0" skipFirstLine="true" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Customers]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/Ids.dat" guiHeight="85" guiName="IDsDelimited" guiWidth="128" guiX="45" guiY="508" id="DATA_READER1" skipFirstLine="true" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[IDs]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/Amounts.dat" guiHeight="85" guiName="AmountsDelimited" guiWidth="166" guiX="45" guiY="601" id="DATA_READER4" skipFirstLine="true" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Amounts]]></attr>
+</Node>
+<Node dedupKey="CustomerID;EmployeeID" enabled="enabled" guiHeight="69" guiName="Dedup" guiWidth="128" guiX="884" guiY="412" id="DEDUP1" keep="first" type="DEDUP"/>
+<Node enabled="enabled" guiHeight="101" guiName="ExtHashJoin" guiWidth="128" guiX="525" guiY="412" id="EXT_HASH_JOIN0" joinKey="$EmployeeID=$EmployeeID;#" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.EmployeeID := $1.EmployeeID;
+	$0.EmployeeSurname := $1.EmployeeSurname;
+	$0.EmployeeFirstname := $1.EmployeeFirstname;
+	$0.CustomerID := $0.CustomerID;
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="101" guiName="ExtHashJoin" guiWidth="128" guiX="525" guiY="567" id="EXT_HASH_JOIN1" joinKey="$AmountID=$AmountID;#" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.AmountID := $0.AmountID;
+	$0.CustomerID := $0.CustomerID;
+	$0.EmployeeID := $0.EmployeeID;
+	$0.Amount := $1.Amount;
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="101" guiName="ExtSort" guiWidth="128" guiX="727" guiY="412" id="EXT_SORT1" sortKey="CustomerID(a);EmployeeID(a)" type="EXT_SORT"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATATMP_DIR}/CustEmplFamAm$$$.xml" guiHeight="101" guiName="CustomersEmployeesAmounts" guiWidth="250" guiX="1070" guiY="412" id="EXT_XML_WRITER0" recordCount="${MAPPINGS}" recordsPerFile="1" type="EXT_XML_WRITER">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<Customers xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
+  <customer clover:inPort="0">
+    <clover:elements clover:include="$0.*"/>
+    <employee clover:inPort="3" clover:key="CustomerID" clover:parentKey="CustomerID">
+      <clover:elements clover:include="$3.*" clover:exclude="$3.CustomerID"/>
+      <spouse clover:inPort="2" clover:key="EmployeeID" clover:parentKey="EmployeeID">
+        <clover:elements clover:include="$2.*" clover:exclude="$2.EmployeeID"/>
+      </spouse>
+      <children>
+        <child clover:inPort="1" clover:key="ParentID" clover:parentKey="EmployeeID" clover:hide="true">
+          <clover:elements clover:include="$1.*" clover:exclude="$1.ParentID" clover:writeNullElement="$1.ChildName"/>
+        </child>
+      </children>
+      <transactions clover:inPort="4" clover:key="CustomerID;EmployeeID" clover:parentKey="CustomerID;EmployeeID">
+        <clover:elements clover:include="$4.*" clover:exclude="$4.CustomerID;$4.EmployeeID"/>
+      </transactions>
+    </employee>
+  </customer>
+</Customers>]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="72" guiName="SimpleCopy" guiWidth="128" guiX="286" guiY="508" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node enabled="enabled" fieldMap="$ChildName:=ChildName;$ParentID:=ParentID;" fileURL="${DATATMP_DIR}/EmployeesWithFamily.xls" guiHeight="85" guiName="ChildrenXLS" guiWidth="128" guiX="203" guiY="268" id="XLS_READER0" metadataRow="1" sheetName="Children" type="XLS_READER">
+<attr name="guiDescription"><![CDATA[Children]]></attr>
+</Node>
+<Node enabled="enabled" fieldMap="$EmployeeSurname:=EmployeeSurname;$EmployeeID:=EmployeeID;$EmployeeFirstname:=EmployeeFirstname;" fileURL="${DATATMP_DIR}/EmployeesWithFamily.xls" guiHeight="85" guiName="EmployeesXLS" guiWidth="135" guiX="45" guiY="412" id="XLS_READER1" metadataRow="1" sheetName="Employees" type="XLS_READER">
+<attr name="guiDescription"><![CDATA[Employees]]></attr>
+</Node>
+<Node enabled="enabled" fieldMap="$SpouseName:=SpouseName;$EmployeeID:=EmployeeID;" fileURL="${DATATMP_DIR}/EmployeesWithFamily.xls" guiHeight="85" guiName="SpousesXLS" guiWidth="128" guiX="355" guiY="320" id="XLS_READER2" metadataRow="1" sheetName="Spouses" type="XLS_READER">
+<attr name="guiDescription"><![CDATA[Spouses]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="1058:253|1058:424" guiLocks="1058|741|null" guiRouter="Manual" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_XML_WRITER0:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER4:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 1 (slave)" metadata="Metadata4" outPort="Port 0 (output)" toNode="EXT_HASH_JOIN1:1"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DEDUP1:0" guiBendpoints="1021:432|1021:460" guiLocks="1021|null|null" guiRouter="Manual" id="Edge11" inPort="Port 3 (in)" metadata="Metadata5" outPort="Port 0 (unique)" toNode="EXT_XML_WRITER0:3"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="EXT_HASH_JOIN1:0" guiBendpoints="1028:585|1028:472" guiLocks="1028|887|null" guiRouter="Manual" id="Edge14" inPort="Port 4 (in)" metadata="Metadata6" outPort="Port 0 (out)" toNode="EXT_XML_WRITER0:4"/>
+<Edge debugLastRecords="true" fromNode="EXT_SORT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="DEDUP1:0"/>
+<Edge debugLastRecords="true" fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (driver)" metadata="Metadata3" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:0"/>
+<Edge debugLastRecords="true" fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (driver)" metadata="Metadata3" outPort="Port 1 (out)" toNode="EXT_HASH_JOIN1:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="XLS_READER0:0" guiBendpoints="1047:288|1047:436" guiLocks="1047|723|null" guiRouter="Manual" id="Edge9" inPort="Port 1 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_XML_WRITER0:1"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="XLS_READER1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:1"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="XLS_READER2:0" guiBendpoints="1035:340|1035:448" guiLocks="1035|947|null" guiRouter="Manual" id="Edge2" inPort="Port 2 (in)" metadata="Metadata7" outPort="Port 0 (out)" toNode="EXT_XML_WRITER0:2"/>
+</Phase>
+</Graph>
