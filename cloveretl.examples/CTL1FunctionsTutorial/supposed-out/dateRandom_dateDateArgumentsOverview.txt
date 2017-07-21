@@ -1,0 +1,10 @@
+2000-12-02;2000-12-18;random_date($0.StartDate,$0.EndDate);2000-12-10
+2005-08-23;2007-03-28;random_date($0.StartDate,$0.EndDate);2005-12-22
+1985-05-14;1988-05-14;random_date($0.StartDate,$0.EndDate);1986-12-05
+1985-05-14;1988-05-14;random_date($0.StartDate,$0.EndDate);1987-01-04
+1985-05-14;1988-05-14;random_date($0.StartDate,$0.EndDate);1988-05-11
+1985-05-14;1988-05-14;random_date($0.StartDate,$0.EndDate);1988-02-24
+1985-05-14;1988-05-14;random_date($0.StartDate,$0.EndDate);1987-01-03
+1988-05-14;1997-05-14;random_date($0.StartDate,$0.EndDate);1990-09-16
+2000-12-02;2000-12-02;random_date($0.StartDate,$0.EndDate);2000-12-02
+2000-12-02;2000-12-02;random_date($0.StartDate,$0.EndDate);2000-12-02

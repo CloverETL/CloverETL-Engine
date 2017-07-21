@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="0.0.0.devel" id="1204803682775" licenseType="Evaluation Devel" modified="Thu May 19 15:57:02 CEST 2011" modifiedBy="avackova" name="MysqlDataWriter" revision="1.141" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata1">
+<Record fieldDelimiter="|" name="err" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field name="rowNo" nullable="true" shift="0" type="integer"/>
+<Field name="colName" nullable="true" shift="0" type="string"/>
+<Field name="errMsg" nullable="true" shift="0" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0">
+<Record fieldDelimiter="," name="test" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field name="intT" nullable="true" shift="0" type="integer"/>
+<Field name="smallT" nullable="true" shift="0" type="integer"/>
+<Field length="8" name="decT" nullable="true" precision="5" scale="2" shift="0" type="decimal"/>
+<Field name="numT" nullable="true" precision="5" scale="2" shift="0" type="number"/>
+<Field length="8" name="floatT" nullable="true" precision="5" scale="2" shift="0" type="decimal"/>
+<Field length="8" name="realT" nullable="true" precision="5" scale="2" shift="0" type="decimal"/>
+<Field format="yyyy-MM-dd HH:mm:ss" name="datetimeT" nullable="true" shift="0" type="date"/>
+<Field format="yyyy-MM-dd HH:mm:ss" name="timestampT" nullable="true" shift="0" type="date"/>
+<Field format="yyyy-MM-dd" name="dateT" nullable="true" shift="0" type="date"/>
+<Field name="timeT" nullable="true" shift="0" type="string"/>
+<Field format="yyyy" name="yearT" nullable="true" shift="0" type="date"/>
+<Field name="charT" nullable="true" shift="0" type="string"/>
+<Field name="varcharT" nullable="true" shift="0" type="string"/>
+<Field name="textT" nullable="true" shift="0" type="string"/>
+</Record>
+</Metadata>
+<Connection dbConfig="${CONN_DIR}/${connection_file}" id="Connection0" type="JDBC"/>
+<Property id="GraphParameter0" name="connection_file" value="mysql.cfg"/>
+<Property fileURL="workspace.prm" id="GraphParameter1"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/out.dat" guiHeight="98" guiName="DATA_WRITER0" guiWidth="142" guiX="301" guiY="34" id="DATA_WRITER0" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Invalid data with error message.]]></attr>
+</Node>
+<Node columnDelimiter="," database="test" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/mysqlFlat.dat" guiHeight="98" guiName="MYSQL_DATA_WRITER0" guiWidth="201" guiX="27" guiY="34" host="koule.javlin.eu" id="MYSQL_DATA_WRITER0" mysqlPath="mysql" parameters="port=3306|fieldsEnclosedBy=*|fieldsIsOptionallyEnclosed" password="test" table="test" type="MYSQL_DATA_WRITER" username="test">
+<attr name="guiDescription"><![CDATA[Reading data from the file specified.]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="MYSQL_DATA_WRITER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/mysql.dat" guiHeight="81" guiName="DATA_READER0" guiWidth="145" guiX="27" guiY="142" id="DATA_READER0" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Input data]]></attr>
+</Node>
+<Node database="test" enabled="enabled" guiHeight="98" guiName="MYSQL_DATA_WRITER1" guiWidth="201" guiX="242" guiY="142" host="koule.javlin.eu" id="MYSQL_DATA_WRITER1" mysqlPath="mysql" parameters="port=3306" password="test" table="test" type="MYSQL_DATA_WRITER" username="test">
+<attr name="guiDescription"><![CDATA[Receiving data through input port.]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="MYSQL_DATA_WRITER1:0"/>
+</Phase>
+<Phase number="2">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/out_remote.dat" guiHeight="98" guiName="DATA_WRITER0" guiWidth="142" guiX="301" guiY="254" id="DATA_WRITER1" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Invalid data with error message.]]></attr>
+</Node>
+<Node columnDelimiter="," commandURL="${DATATMP_DIR}/mysql_load.cmd" database="test" enabled="enabled" fileURL="/data/hudson/tests/data/mysqlFlat.dat" guiHeight="98" guiName="MYSQL_DATA_WRITER0" guiWidth="201" guiX="27" guiY="254" host="koule.javlin.eu" id="MYSQL_DATA_WRITER2" mysqlPath="mysql" parameters="port=&quot;3306&quot;|local=&quot;false&quot;|fieldsEnclosedBy=&quot;*&quot;|fieldsIsOptionallyEnclosed" table="test" type="MYSQL_DATA_WRITER" username="root">
+<attr name="guiDescription"><![CDATA[Reading data from the file specified. Used external control script.]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="MYSQL_DATA_WRITER2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
+</Phase>
+<Phase number="3">
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="98" guiName="DBInputTable" guiWidth="129" guiX="27" guiY="366" id="DB_INPUT_TABLE0" sqlQuery="select $intT:=intT, $smallT:=smallT, $decT:=decT, $numT:=numT, $floatT:=floatT, &#10;&#9;$realT:=realT, $datetimeT:=datetimeT, $timestampT:=timestampT, $dateT:=dateT,&#10;&#9;$timeT:=concat('',timeT), $yearT:=yearT, $charT:=charT, $varcharT:=varcharT,&#10;&#9;$textT:=textT from test" type="DB_INPUT_TABLE">
+<attr name="guiDescription"><![CDATA[Reading data from database throgh JDBC]]></attr>
+</Node>
+<Node debugFilename="${DATAOUT_DIR}/mysql.out" debugPrint="true" enabled="enabled" guiHeight="64" guiName="Trash" guiWidth="128" guiX="315" guiY="366" id="TRASH0" type="TRASH"/>
+<Edge fromNode="DB_INPUT_TABLE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="TRASH0:0"/>
+</Phase>
+</Graph>
