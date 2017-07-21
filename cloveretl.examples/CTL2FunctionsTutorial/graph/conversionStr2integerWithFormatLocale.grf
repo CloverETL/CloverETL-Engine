@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Thu Mar 19 14:24:06 CET 2009" guiVersion="0.0.0.devel" id="1237480457206" licenseType="Evaluation Devel" modified="Mon Jul 12 11:26:01 CEST 2010" modifiedBy="cloveruser" name="conversionStr2integerWithFormatLocale" revision="1.89">
+<Global>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="str2integerWithFormatLocale_OnlyDigitsOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="String" type="string"/>
+<Field name="Format" type="string"/>
+<Field name="Locale" type="string"/>
+<Field name="FunctionString" type="string"/>
+<Field name="ResultString" type="integer"/>
+<Field name="FunctionStringFormat" type="string"/>
+<Field name="ResultStringFormat" type="integer"/>
+<Field name="FunctionStringFormatLocale" type="string"/>
+<Field name="ResultStringFormatLocale" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="str2integerWithFormatLocale_ScientificNotationOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="String" type="string"/>
+<Field name="Format" type="string"/>
+<Field name="Locale" type="string"/>
+<Field name="FunctionStringFormatLocale" type="string"/>
+<Field name="ResultStringFormatLocale" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="str2integerWithFormatLocaleInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="String" type="string"/>
+<Field name="Format" type="string"/>
+<Field name="Locale" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="141" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="integer str2integer(string Arg, string Format, string Locale)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="561" x="118" y="-12">
+<attr name="text"><![CDATA[
+The str2integer(string, string, string) function accepts three string arguments. The first is a string that should be converted to the number, the second is the format of the string representation of a number used in the first argument and the fourth is the locale that should be used when applying the format.
+The function takes the first argument, compares it with the format using the locale and returns the numeric value of data type specified as the second argument.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="integer str2integer(string Arg, string Format)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="568" x="119" y="154">
+<attr name="text"><![CDATA[
+If Locale is not specified as the last argument of the function, system value is used instead.
+
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="241" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Three other functions for three other numeric data types:" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="589" x="115" y="549">
+<attr name="text"><![CDATA[
+long str2long(string Arg, string Format, string Locale) 
+long str2long(string Arg, string Format)
+long str2long(string Arg)
+
+number str2double(string Arg, string Format, string Locale)
+number str2double(string Arg, string Format)
+number str2double(string Arg)
+
+decimal str2decimal(string Arg, string Format, string Locale)
+decimal str2decimal(string Arg, string Format)
+decimal str2decimal(string Arg)
+
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="100" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="integer str2integer(string Arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="568" x="112" y="434">
+<attr name="text"><![CDATA[
+If the only argument is string, it can also be converted to an integer number if only the string contains only digits and does not contain any other non-numeric characters. This is demonstrated in phase 1. With scientific notation, the format must always be specified as an argument.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionStr2integerWithFormatLocale_ScientificNotation.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="109" guiY="263" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionStr2integerWithFormatLocale_ScientificNotationOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="588" guiY="263" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="349" guiY="263" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.String = $0.String;
+	$0.Format = $0.Format;
+	$0.Locale = $0.Locale;
+	$0.FunctionStringFormatLocale = "str2integer($0.String,$0.Format,$0.Locale)";
+	$0.ResultStringFormatLocale = str2integer($0.String,$0.Format,$0.Locale);
+
+	return 0;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT1:0"/>
+<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionStr2integerWithFormatLocale_OnlyDigits.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="111" guiY="353" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionStr2integerWithFormatLocale_OnlyDigitsOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="594" guiY="353" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="347" guiY="353" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.String = $0.String;
+	$0.Format = $0.Format;
+	$0.Locale = $0.Locale;
+	$0.FunctionString = "str2integer($0.String)";
+	$0.ResultString = str2integer($0.String);
+	$0.FunctionStringFormat = "str2integer($0.String,$0.Format)";
+	$0.ResultStringFormat = str2integer($0.String,$0.Format);
+	$0.FunctionStringFormatLocale = "str2integer($0.String,$0.Format,$0.Locale)";
+	$0.ResultStringFormatLocale = str2integer($0.String,$0.Format,$0.Locale);
+
+	return 0;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>

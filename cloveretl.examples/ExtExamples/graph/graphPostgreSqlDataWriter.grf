@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="0.0.0.devel" id="1204804033806" licenseType="Evaluation Devel" modified="Thu May 19 16:07:41 CEST 2011" modifiedBy="avackova" name="PsqlDataWriter" revision="1.95" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0">
+<Record fieldDelimiter="," name="test" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field name="intT" nullable="true" shift="0" type="integer"/>
+<Field name="smallT" nullable="true" shift="0" type="integer"/>
+<Field length="8" name="decT" nullable="true" precision="5" scale="2" shift="0" type="decimal"/>
+<Field length="8" name="floatT" nullable="true" precision="5" scale="2" shift="0" type="decimal"/>
+<Field length="8" name="realT" nullable="true" precision="5" scale="2" shift="0" type="decimal"/>
+<Field format="yyyy-MM-dd" name="dateT" nullable="true" shift="0" type="date"/>
+<Field format="yyyy-MM-dd HH:mm:ss" name="timestampT" nullable="true" shift="0" type="date"/>
+<Field format="HH:mm:ss" name="timeT" nullable="true" shift="0" type="date"/>
+<Field name="charT" nullable="true" shift="0" type="string"/>
+<Field name="varcharT" nullable="true" shift="0" type="string"/>
+<Field name="textT" nullable="true" shift="0" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="229" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the PostgreSQL Bulk Loader: PostgreSQLDataWriter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="553" x="249" y="135">
+<attr name="text"><![CDATA[
+Component uses the psql utility. Data records can be received through single input port or - if input port is not connected - a file with data records must be specified in the component itself.
+
+Phase 0 demonstrates the first possibility - receiving data through input port.
+
+Phase 1 shows the second option - reading data from the file specified in the component, in its Loader input file attribute.
+
+Remember that the psql utility must be in the PATH of your system. 
+
+PostgreSQL client must be configured on the same machine as CloverETL.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/postgreSqlFlat.dat" guiHeight="81" guiName="Data Reader" guiWidth="128" guiX="24" guiY="24" id="DATA_READER0" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Input data]]></attr>
+</Node>
+<Node database="test" enabled="enabled" guiHeight="98" guiName="PostgreSql Data Writer" guiWidth="197" guiX="252" guiY="24" host="koule.javlin.eu" id="POSTGRESQL_DATA_WRITER1" psqlPath="psql" table="test" type="POSTGRESQL_DATA_WRITER" username="test">
+<attr name="guiDescription"><![CDATA[Receiving data through input port.]]></attr>
+</Node>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="POSTGRESQL_DATA_WRITER1:0"/>
+</Phase>
+<Phase number="1">
+<Node columnDelimiter="," database="test" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/postgreSqlFlat.dat" guiHeight="98" guiName="PostgreSql Data Writer" guiWidth="197" guiX="25" guiY="135" host="koule.javlin.eu" id="POSTGRESQL_DATA_WRITER0" parameters="null=&quot;&quot;" psqlPath="psql" table="test" type="POSTGRESQL_DATA_WRITER" username="test">
+<attr name="guiDescription"><![CDATA[Reading data from the file specified.]]></attr>
+</Node>
+</Phase>
+</Graph>
