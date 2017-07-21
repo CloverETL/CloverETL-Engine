@@ -1,0 +1,19 @@
+<plugin
+   id="org.jetel.connection"
+   version="0.0.0.devel"
+   provider-name="Javlin a.s."
+   class="org.jetel.connection.Activator">
+
+	<runtime>
+		<library path="bin/"/>
+   	</runtime> 
+
+	<extension point-id="connection">
+		<parameter id="type" value="JDBC"/>
+		<parameter id="className" value="org.jetel.connection.jdbc.DBConnectionImpl"/>
+	</extension>
+	<extension point-id="connection">
+		<parameter id="type" value="JMS"/>
+		<parameter id="className" value="org.jetel.connection.jms.JmsConnection"/>
+	</extension>
+</plugin>

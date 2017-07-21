@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Tue Jan 13 08:01:02 CET 2009" guiVersion="0.0.0.devel" id="1231838925062" licenseType="Evaluation Devel" modified="Thu Jun 09 15:37:13 CEST 2011" modifiedBy="avackova" name="CreatingXML" revision="1.195" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/Children.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/Spouses.fmt" id="Metadata2"/>
+<Metadata fileURL="${META_DIR}/Transactions.fmt" id="Metadata0"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="199" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Eighth graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="828" x="52" y="32">
+<attr name="text"><![CDATA[
+In the eighth graph, we have created an XML structure based on different mapping hierarchy. 
+In this graph, unlike in the three previous graphs, we use the original files ("Transactions.dat", "Children.dat" and "Spouses.dat") to create these XML files. 
+The hierarchy is transactions (the highest element), family. 
+Each record is written to different output file to the "data-tmp" directory (since we will need to read them again in the next graphs of the project), named with mask "TransactionsFamily$$$.xml", where dollars are substituted by record's number. We narrow down the number of files to 15 while we don't want to clutter the directories, but without this limitation, there would be created 100,000 highest level elements. 
+More detailed information about this graph can be found in the "readme.html" file included in the CompanyTransactionsTutorial directory.
+]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Transactions.dat" guiHeight="85" guiName="TransactionsDelimited" guiWidth="190" guiX="61" guiY="246" id="DATA_READER0" skipFirstLine="true" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Transactions]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Children.dat" guiHeight="85" guiName="ChildrenDelimited" guiWidth="162" guiX="62" guiY="386" id="DATA_READER1" skipFirstLine="true" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Children]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Spouses.dat" guiHeight="85" guiName="SpousesDelimited" guiWidth="160" guiX="322" guiY="518" id="DATA_READER2" skipFirstLine="true" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Spouses]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="101" guiName="AlphabeticalSorting" guiWidth="174" guiX="274" guiY="386" id="EXT_SORT0" sortKey="ParentID(a);ChildName(a)" type="EXT_SORT"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATATMP_DIR}/TransactionsFamily$$$.xml" guiHeight="101" guiName="TransactionsFamily" guiWidth="165" guiX="557" guiY="365" id="EXT_XML_WRITER0" recordCount="${MAPPINGS}" recordsPerFile="1" type="EXT_XML_WRITER">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<Transactions xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
+  <transaction clover:inPort="0">
+    <clover:elements clover:include="$0.*" clover:exclude="$0.EmployeeID;$0.EmployeeSurname;$0.EmployeeFirstname"/>
+    <employee>
+      <EmployeeID>$0.EmployeeID</EmployeeID>
+      <EmployeeSurname>$0.EmployeeSurname</EmployeeSurname>
+      <EmployeeFirstname>$0.EmployeeFirstname</EmployeeFirstname>
+      <spouse clover:inPort="2" clover:key="EmployeeID" clover:parentKey="EmployeeID">
+        <clover:elements clover:include="$2.*" clover:exclude="$2.EmployeeID"/>
+      </spouse>
+      <children>
+        <child clover:inPort="1" clover:key="ParentID" clover:parentKey="EmployeeID" clover:hide="true">
+          <clover:elements clover:include="$1.*" clover:exclude="$1.ParentID" clover:writeNullElement="$1.ChildName"/>
+        </child>
+      </children>
+    </employee>
+  </transaction>
+</Transactions>]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="461:266|461:381" guiLocks="461|null|null" guiRouter="Manual" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_XML_WRITER0:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 2 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="EXT_XML_WRITER0:2"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 1 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_XML_WRITER0:1"/>
+</Phase>
+</Graph>

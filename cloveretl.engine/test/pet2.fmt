@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record name="pet2" recordSize="50" type="fixed">
+<Field name="name" nullable="true" shift="0" size="11" skipFirstLine="false" type="boolean"/>
+<Field name="owner" nullable="true" shift="0" size="7" skipFirstLine="false" type="number"/>
+<Field name="species" nullable="true" shift="0" size="11" skipFirstLine="false" type="integer"/>
+<Field name="sex" nullable="true" shift="0" size="1" skipFirstLine="false" type="string"/>
+<Field name="birth" format="yyyy-MM-dd" nullable="true" shift="0" size="10" skipFirstLine="false" type="date"/>
+<Field name="death" format="yyyy-MM-dd" nullable="true" shift="0" size="10" skipFirstLine="false" type="date"/>
+</Record>
