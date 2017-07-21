@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="customers" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="customerid" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="firstname" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="lastname" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="address1" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="address2" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="city" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="state" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="zip" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="country" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="region" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="email" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="phone" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="creditcardtype" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="creditcard" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="creditcardexpiration" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="username" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="password" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="age" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="income" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="gender" nullable="true" shift="0" size="0" type="string"/>
+</Record>

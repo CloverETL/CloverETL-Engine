@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Mappings>
+	<Mapping element="e" outPort="1" xmlFields="foo" cloverFields="f1">
+	    <Mapping element="foo" outPort="0" xmlFields="." cloverFields="f1"/>
+	</Mapping>
+</Mappings>
