@@ -1,0 +1,323 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.0  (Win32)">
+	<META NAME="CREATED" CONTENT="20090323;12580000">
+	<META NAME="CHANGED" CONTENT="0;0">
+	<STYLE TYPE="text/css">
+	<!--
+		@page { size: 21cm 29.7cm; margin: 2cm }
+		P { margin-bottom: 0.21cm }
+		P.western { font-size: 12pt; so-language: en-US }
+		P.cjk { font-family: "Arial Unicode MS", sans-serif; so-language: zxx }
+		P.ctl { font-size: 12pt }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" LINK="#000080" VLINK="#800000" DIR="LTR" STYLE="border: none; padding: 0cm">
+<P STYLE="text-indent: -0.03cm; margin-top: 0.42cm; font-style: normal; page-break-after: avoid">
+<FONT FACE="Arial, sans-serif"><FONT SIZE=6><FONT COLOR="#008000"><B>CompanyTransactionsTutorial</B></FONT></FONT></FONT></P>
+
+
+<P CLASS="western" STYLE="margin-bottom: 0cm">by Tomas Waller
+(04/22/2009)</P>
+<P CLASS="western" STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0cm">	This project aims to
+present an overview of how users can process the information about
+transactions made by their company.
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0cm">	All of the graphs
+presented in the project are sorted by the numbers that are included in their
+names in ascending order. And this is exactly the order in which these graphs
+should be run.</P>
+<P CLASS="western" STYLE="margin-bottom: 0cm">	The basic files of the
+projects are the following three: <I>Transactions.dat</I>,
+<I>Children.dat</I> and <I>Spouses.dat</I>. These files are
+delimited. In other words, their fields are separated from each other
+by semicolon.</P>
+<P CLASS="western" STYLE="margin-bottom: 0cm">	The <I>Transactions.dat</I>
+file contains an information about the transactions that were
+performed, the customers who made the orders and the employees of the
+company who served these orders.</P>
+<P CLASS="western" STYLE="margin-bottom: 0cm">	More detailed
+description of these three basic files:</P>
+<UL>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0cm"><I>Transactions.dat</I></P>
+	<UL>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0cm">Transactions are
+		represented by &ldquo;AmountID&rdquo; and &ldquo;Amount&rdquo; (of
+		money paid) fields.
+		</P>
+	</UL>
+	<UL>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">Customers are
+	represented by &ldquo;CustomerID&rdquo;, &ldquo;CustomerState&rdquo;,
+	&ldquo;CustomerSurname&rdquo; and &ldquo;CustomerFirstname&rdquo;
+	fields. All customers live in USA.</P>
+	</UL>
+	<UL>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">Employees are
+	represented by &ldquo;EmployeeID&rdquo;, &ldquo;EmployeeSurname&rdquo;
+	and &ldquo;EmployeeFirstname&rdquo;.</P>
+	</UL>
+</UL>
+<UL>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0cm"><I>Children.dat</I></P>
+	<UL>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0cm">Children are
+		represented by their &ldquo;ParentID&rdquo; (equal to &ldquo;EmployeeID&rdquo;)
+		and &ldquo;ChildName&rdquo;. Each employee can have at most three
+		children.</P>
+	</UL>
+</UL>
+<UL>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0cm"><I>Spouses.dat</I></P>
+	<UL>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0cm">Spouses (wives
+		and husbands) are represented by &ldquo;EmployeeID&rdquo; (their
+		husband or wife) and &ldquo;SpouseName&rdquo;.</P>
+	</UL>
+</UL>
+<P CLASS="western" STYLE="margin-bottom: 0cm">	The company realized
+100,000 transactions based on orders that had been made by 19,955
+customers and these customers were served by 200 employees.</P>
+<OL>
+	<P CLASS="western" STYLE="margin-bottom: 0cm"></P>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the first graph
+	(<I>A01_SplittingTransactions.grf</I>), data records from the
+	<I>Transactions.dat</I> file are splitted and parsed by <b>Reformat</b> and only some information is selected for each output port. Thus, each of the resulting output
+	files contains only a part of the whole information: <I>IDs.dat</I> file contains
+	the following fields: &ldquo;AmountID&rdquo;, &ldquo;CustomerID&rdquo;
+	and &ldquo;EmployeeID&rdquo;. <I>Amounts.dat</I> file contains
+	&ldquo;AmountID&rdquo; and &ldquo;Amount&rdquo; (of money) fields.
+	<I>Customers.dat</I> file contains &ldquo;CustomerID&rdquo;,
+	&ldquo;CustomerState&rdquo;, &ldquo;CustomerSurname&rdquo; and
+	&ldquo;CustomerFirstname&rdquo;. <I>Employees.dat</I> file contains
+	&ldquo;EmployeeID&rdquo;, &ldquo;EmployeeSurname&rdquo; and
+	&ldquo;EmployeeFirstname&rdquo;. These files are delimited &ndash;
+	their fields are also separated from each other by semicolon. Note
+	that (for each data flow) we have removed all duplicate data records
+	(since more customers made the orders and more employees served the
+	customers). To duplicate data records, as the first step, we needed
+	to sort them according to some key fields using <B>ExtSort</B> and,
+	as the second step, we removed duplicate fields using the <B>Dedup</B>
+	component. Therefore, the resulting files contain 200 employees, 19,955 customers, 100,000 amounts and 100,000 IDs. These IDs serve to
+	interconnect customers and employees with amounts of money paid. We
+	have written these output files to <I>data-tmp</I>, since we will use
+	them as input data files in the next graphs.</P>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the second
+	graph (<I>A02_CreatingXLSEmployeesWithFamily.grf</I>), we take all
+	employees from the <I>Employees.dat</I> file, their children from
+	the <I>Children.dat</I> file and their wives and husbands from the<I>
+	Spouses.dat</I> file and write them all to a single XLS file (<I>EmployeesWithFamily.xls</I>). Also
+	this file will be written to the <I>data-tmp</I> directory. (As we will
+	need this file as an input file in the next graphs.) Employees,
+	their children and spouses will be written to <I>Employees</I>,
+	<I>Children</I> and <I>Spouses</I>  file sheets of the output
+	<I>EmployeesWithFamily.xls</I> file, respectively. Note that we have
+	sorted all children according to their names. And note that the same
+	&ldquo;EmployeeID&rdquo; is named &ldquo;ParentID&rdquo; in the
+	<I>Children.dat</I> file. Each employee can have at most 3 children.</P>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the third graph
+	(<I>A03_ConvertingCustomersFromDelimitedToFixed.grf</I>), we
+	demonstrate how delimited data file (<I>Customers.dat</I>) can be
+	transformed to a fixed data file (<I>CustomersFixed.txt</I>). To
+	transform delimited data files to fixed data files and vice versa,
+	you can use the <B>SimpleCopy</B> component. The output <I>CustomersFixed.txt</I> file will also be written to the <I>data-tmp</I> directory. We will need this file in the next graphs.</P>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the fourth
+	graph (<I>A04_SortingTransactions.grf</I>), we calculate a
+	statistical information about transactions (we use the
+	<I>Transactions.dat</I> file again). In this graph, we use
+	<B>Aggregates</B> to get very useful statistical information. These components
+	can use a key. For this reason, we had to sort data flows according
+	to the same keys and remove duplicates before these data flows could
+	enter these <B>Aggregates</B>. Note that each <B>Aggregate</B> requires the information sorted. Thus we had to sort the records and deduplicate them (if needed) before they entered the <B>Aggregate</B> components. We calculated the following
+	statistical information:
+	</P>
+</OL>
+<UL>
+	<UL>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0cm">For all
+		customers, we learn how many orders were made by them, what were
+		the minimum, maximum, average and total sum of amount of money of
+		their transactions. The customers are sorted according to the state
+		and their surname and firstname. (Output file is written to the <I>data-out</I>
+		directory as the <I>TransactionsForCustomers.txt</I> file since we will not parse it in the next graphs of this project.)</P>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0cm">For all
+		employees, we learn how many orders were served by them, what were
+		the minimum, maximum, average and total sum of amount of money of
+		the transactions served by them. The employees are sorted according
+		to their surname and firstname. (Output file is written to the <I>data-out</I> directory
+		as the <I>TransactionsForEmployees.txt</I> file since we will not parse it in the next graphs of this project.)</P>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0cm">For all employees
+		and all states, we learn how many orders were served by them within
+		each of all states, what were the minimum, maximum, average and
+		total sum of amount of money of these transactions belonging to
+		each individual state and each individual employee. The employees
+		are sorted according to their surname and firstname. The states are
+		sorted in ascending order within each employee. (Output file is
+		written to the <I>data-out</I> directory as the
+		<I>TransactionsForStatesWithinEmployees.txt</I> file since we will not parse it in the next graphs of this project.)</P>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0cm">For all states,
+		we learn how many orders belonged to each state, what were the
+		minimum, maximum, average and total sum of amount of money of these
+		transactions belonging to each state. The states are sorted
+		alphabetically in ascending order. (Output file is written to the
+		<I>data-out</I> directory as the <I>CustomersForStates.txt</I> file since we will not parse it in the next graphs of this project.)</P>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0cm">For all states
+		and all customers, we learn how many customers belonged to
+		individual state. The states are sorted alphabetically in ascending
+		order. (Output file is written to the <I>data-out</I> directory as the
+		<I>TransactionsForCustomers.txt</I> file since we will not parse it in the next graphs of this project.)</P>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0cm">For all employees
+		and all customers, we learn how many employees served each
+		individual customer. The customers are sorted according to the
+		state, their surname and firstname. (Output file is written to
+		the <I>data-out</I> directory as the <I>EmployeesForCustomers.txt</I> file since we will not parse it in the next graphs of this project.)</P>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0cm">For all employees
+		and all customers, we learn how many customers belonged to each
+		individual employee. The employees are sorted according to their
+		surname and firstname. (Output file is written to the <I>data-out</I> directory
+		as the <I>CustomersForEmployees.txt</I> fiel since we will not parse it in the next graphs of this project.)</P>
+		<LI><P CLASS="western" STYLE="margin-bottom: 0cm">All these output
+		files are written to the <I>data-out</I> directory since we will not parse them in the next graphs of this project and they are all
+		delimited by semicolon.</P>
+	</UL>
+</UL>
+<OL START=5>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the fifth graph
+	(<I>A05_CreatingXMLEmplFamCustAm.grf</I>), we have created XML
+	structures based on different mapping hierarchy. In this graph, the
+	hierarchy is employee (the highest element), family, customer,
+	amount. Each record is written to different output file to the <i>data-tmp</i> directory since we will need to read them again in the next graphs of the project, named with mask <i>EmplFamCustAm$$$.xml</i>, where dollars are substituted by record's number. 
+We have narrowed down the number of files to 15 while we didn't want to clutter the directories, but without this limitation, there would be created 200 highest level elements.
+	These XML files are
+	created using delimited files (<I>IDs.dat</I>, <I>Employees.dat</I>),
+	fixed file (<I>CustomersFixed.txt</I>) and XLS file
+	(<I>EmployeesWithFamily.xls</I>).</P>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the sixth graph
+	(<I>A06_CreatingXMLCustEmplFamAm.grf</I>), we have created XML
+	structures based on different mapping hierarchy. In this graph, the
+	hierarchy is customer (the highest element), employee, family,
+	amount. Each record is written to different output file to the <i>data-tmp</i> directory since we will need to read them again in the next graphs of the project, named with mask <i>CustEmpFamAm$$$.xml</i>, where dollars are substituted by record's number. 
+We have narrowed down the number of files to 15 while we didn't want to clutter the directories, but without this limitation, there would be created 19,955 highest level elements.
+	These XML files are created using delimited files (<I>IDs.dat</I>, <I>Employees.dat</I>),
+	fixed file (<I>CustomersFixed.txt</I>) and XLS file
+	(<I>EmployeesWithFamily.xls</I>).</P>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the seventh
+	graph (<I>A07_CreatingXMLAmCustEmplFam.grf</I>), we have created XML
+	structures based on different mapping hierarchy. In this graph, the
+	hierarchy is amount (the highest element), customer, employee,
+	family. Each record is written to different output file to the <i>data-tmp</i> directory since we will need to read them again in the next graphs of the project, named with mask <i>AmCustEmpFam$$$.xml</i>, where dollars are substituted by record's number. 
+We have narrowed down the number of files to 10 while we didn't want to clutter the directories, but without this limitation, there would be created 100,000 highest level elements.
+	These XML files are 
+	created using delimited files (<I>IDs.dat</I>, <I>Employees.dat</I>),
+	fixed file (<I>CustomersFixed.txt</I>) and XLS file
+	(<I>EmployeesWithFamily.xls</I>).</P>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the eighth
+	graph (<I>A08_CreatingXMLTransactionsFamily.grf</I>), we have
+	created XML structures based on different mapping hierarchy. In this
+	graph, the hierarchy is amount (the highest element), customer,
+	employee, family. Each record is written to different output file to the <i>data-tmp</i> directory since we will need to read them again in the next graphs of the project, named with mask <i>TransactionsFamily$$$.xml</i>, where dollars are substituted by record's number. 
+We have narrowed down the number of files to 10 while we didn't want to clutter the directories, but without this limitation, there would be created 100,000 highest level elements.
+	These XML files are created using the original
+	delimited files (<I>Transactions.dat</I>, <I>Children.dat</I> and
+	<I>Spouses.dat</I>).</P>
+</OL>
+<P CLASS="western" STYLE="margin-left: 0.64cm; text-indent: -0.64cm; margin-bottom: 0cm">
+<BR>
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0cm">These XML files can be
+read using <B>XMLExtract</B> or <B>XMLXPathReader</B>. Note the
+difference of mapping within the same readers when reading data with
+different hierarchy and note also the difference between <B>XMLExtract</B> and
+<B>XMLXPathReader</B>. All output files are written to the <I>data-out</I> directory. We will not parse them in the next graphs of this project.</P>
+<P CLASS="western" STYLE="margin-bottom: 0cm"><BR>
+</P>
+<OL START=9>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the ninth graph
+	(<I>A09_XMLExtractEmplFamCustAm.grf</I>), we read the already
+	created <I>EmplFamCustAm???.xml</I> files contained in the <I>data-tmp</I>
+	directory. These XML files are read and five output files are created. They are similar to
+	the original delimited files except the last one, where &ldquo;EmployeeID&rdquo;
+	and &ldquo;CustomerID&rdquo; are included in one file together with
+	&ldquo;AmountID&rdquo; and &ldquo;Amount&rdquo;.</P>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the tenth graph
+	(<I>A10_XMLExtractCustEmplFamAm.grf</I>), we read the already
+	created <I>CustEmplFamAm???.xml</I> files contained in the <I>data-tmp</I>
+	directory. These XML files are read and five output files are created. They are similar to
+	the original delimited files except the last one, where &ldquo;EmployeeID&rdquo;
+	and &ldquo;CustomerID&rdquo; are included in one file together with
+	&ldquo;AmountID&rdquo; and &ldquo;Amount&rdquo;.</P>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the eleventh
+	graph (<I>A11_XMLExtractAmCustEmplFam.grf</I>), we read the already
+	created <I>AmCustEmplFam???.xml</I> files contained in the <I>data-tmp</I>
+	directory. These XML files are read and five output files are created. They are similar to
+	the original delimited files except two of them (for employees and
+	customers), where &ldquo;AmountID&rdquo; is included in these files
+	together with the other employee or customer fields.</P>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0cm"><A NAME="DDE_LINK"></A>
+	In the twelfth graph (<I>A12_XMLExtractTransactionsFamily.grf</I>),
+	we read the already created <I>TransactionsFamily???.xml</I> files
+	contained in the <I>data-tmp</I> directory. These XML files are read and three output files
+	are created. They are similar to the original delimited files:
+	<I>Transactions.dat</I>, <I>Children.dat</I> and <I>Spouses.dat</I>.</P>
+</OL>
+<P CLASS="western" STYLE="margin-left: 0.64cm; text-indent: -0.64cm; margin-bottom: 0cm">
+<BR>
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0cm">The following four
+graphs read the same XML files in a different way. We use
+<B>XMLXPathReader</B> for them. Note the different mapping as
+compared with <B>XMLExtract</B> mapping. Note also that mapping
+depends on the hierarchy of XML structure. All output files are written to the <I>data-out</I> directory. We will not parse them in the next graphs of this project.</P>
+<P CLASS="western" STYLE="margin-bottom: 0cm"><BR>
+</P>
+<OL START=13>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the thirteenth
+	graph (<I>A13_XMLXPathEmplFamCustAm.grf</I>), we read the already
+	created <I>EmplFamCustAm???.xml</I> files contained in the <I>data-tmp</I>
+	directory. These XML files are read and five output files are created. They are similar to
+	the original delimited files except the last one, where &ldquo;EmployeeID&rdquo;
+	and &ldquo;CustomerID&rdquo; are included in one file together with
+	&ldquo;AmountID&rdquo; and &ldquo;Amount&rdquo;.</P>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the fourteenth
+	graph (<I>A14_XMLXPathCustEmplFamAm.grf</I>), we read the already
+	created <I>CustEmplFamAm???.xml</I> files contained in the <I>data-tmp</I>
+	directory.These XML files are read and five output files are created. They are similar to
+	the original delimited files except the last one, where &ldquo;EmployeeID&rdquo;
+	and &ldquo;CustomerID&rdquo; are included in one file together with
+	&ldquo;AmountID&rdquo; and &ldquo;Amount&rdquo;.</P>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the fifteenth
+	graph (<I>A15_XMLXPathAmCustEmplFam.grf</I>), we read the already
+	created <I>AmCustEmplFam???.xml</I> files contained in the <I>data-tmp</I>
+	directory. These XML files are read and five output files are created. They are similar to
+	the original delimited files except two of them (for employees and
+	customers), where &ldquo;AmountID&rdquo; is included in these files
+	together with the other employee or customer fields.</P>
+	<LI><P CLASS="western" STYLE="margin-bottom: 0cm">In the sixteenth
+	graph (<I>A16_XMLXPathTransactionsFamily.grf</I>), we read the
+	already created <I>TransactionsFamily???.xml</I> file contained in the
+	<I>data-tmp</I> directory. These XML files are read and three output files are created.
+	They are similar to the original delimited files: <I>Transactions.dat</I>,
+	<I>Children.dat</I> and <I>Spouses.dat</I>.</P>
+</OL>
+<P CLASS="western" STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P CLASS="western" STYLE="margin-bottom: 0cm"><BR>
+</P>
+</BODY>
+</HTML>

@@ -1,0 +1,5189 @@
+<componentsDoc>
+   <componentDescription>
+      <componentName>Universal Data Reader</componentName>
+      <componentType>DATA_READER</componentType>
+      <category>readers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc>Reads data from flat files.</briefDesc>
+      <fullDesc>Reads data from flat files.</fullDesc>
+      <inputPorts></inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc>output</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         <port>
+            <portName>1</portName>
+            <portDesc>logs</portDesc>
+            <portMandatory>no</portMandatory>
+			<portMetadata>
+				<metaField>
+					<fieldType>int</fieldType>
+					<fieldNullable>false</fieldNullable>
+					<fieldDesc>record number</fieldDesc>
+				</metaField>				
+				<metaField>
+					<fieldType>string</fieldType>
+					<fieldNullable>false</fieldNullable>
+					<fieldDesc>wrong value - the value that cannot be set into field</fieldDesc>
+				</metaField>
+				<metaField>
+					<fieldType>string</fieldType>
+					<fieldNullable>false</fieldNullable>
+					<fieldDesc>error message - detail information about this error</fieldDesc>
+				</metaField>
+			</portMetadata>
+         </port>
+         
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>dataPolicy</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+             enumeration:  strict controlled lenient 
+            
+         </attrType>
+         <attrDesc>dataPolicy</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>fileURL</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>fileURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>trim</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>trim</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>skipLeadingBlanks</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>skipLeadingBlanks</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>skipFirstLine</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>skipFirstLine</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>skipRows</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>skipRows</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>numRecords</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>numRecords</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>maxErrorCount</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>maxErrorCount</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>quotedStrings</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>quotedStrings</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>treatMultipleDelimitersAsOne</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>treatMultipleDelimitersAsOne</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml>
+<![CDATA[
+  <Node id="InputFile" type="DATA_READER" fileURL="data.txt">
+
+  <Node id="InputFile"
+        type="DATA_READER"
+        fileURL="zip:http://www.store.com/data.zip#data.txt" 
+        charset="ISO-8859-15"
+        dataPolicy="Controlled"
+        skipLeadingBlanks="false"
+        trim="false"
+        skipFirstLine="true"
+        skipRows="1"
+        numRecords="100"
+        maxErrorCount="0"
+        quotedStrings="false"
+        treatMultipleDelimitersAsOne="false"
+  />
+]]>
+	   </exampleXml>
+         <exampleDesc>This a sentence in example description. This a sentence in example description. 
+         This a sentence in example description. This a sentence in example description. 
+         This a sentence in example description. This a sentence in example description. 
+         This a sentence in example description. This a sentence in example description. 
+         This a sentence in example description. This a sentence in example description. 
+         This a sentence in example description. This a sentence in example description. 
+         This a sentence in example description. This a sentence in example description. 
+         This a sentence in example description. This a sentence in example description.
+         This a sentence in example description. 
+         </exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Universal Data Writer</componentName>
+      <componentType>DATA_WRITER</componentType>
+      <category>writers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc></fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts></outputPorts>
+      <attribute>
+         <attrName>fileURL</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>fileURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>append</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>append</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>outputFieldNames</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>outputFieldNames</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>recordsPerFile</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>recordsPerFile</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>bytesPerFile</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>bytesPerFile</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>recordSkip</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>recordSkip</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>recordCount</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>recordCount</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>partitionKey</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>partitionKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>partition</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            lookupTableID
+            
+         </attrType>
+         <attrDesc>partition</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>partitionFileTag</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+             enumeration:  numberFileTag keyNameFileTag 
+            
+         </attrType>
+         <attrDesc>partitionFileTag</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Delimited Data Reader</componentName>
+      <componentType>DELIMITED_DATA_READER</componentType>
+      <category>readers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc>Reads data formated with delimiters from a file</briefDesc>
+      <fullDesc>Parses specified input data file and broadcasts the records to all connected out ports.</fullDesc>
+      <inputPorts></inputPorts>
+      <outputPorts>
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </outputPorts>
+      <attribute>
+         <attrName>dataPolicy</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+             enumeration:  strict controlled lenient 
+            
+         </attrType>
+         <attrDesc>dataPolicy</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>fileURL</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>fileURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>skipFirstLine</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>skipFirstLine</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>skipRows</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>skipRows</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>trim</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>trim</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>numRecords</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>numRecords</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Delimited Data Writer</componentName>
+      <componentType>DELIMITED_DATA_WRITER</componentType>
+      <category>writers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc>Writes data to a file formated using delimiters</briefDesc>
+      <fullDesc>All records from input port [0] are formatted with delimiter and written to specified file.
+         Delimiters are taken from metadata specified for port[0] data flow.
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts></outputPorts>
+      <attribute>
+         <attrName>fileURL</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>fileURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>append</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>append</attrDesc>
+         <attrDefaultVal>false</attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>outputFieldNames</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>outputFieldNames</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>recordsPerFile</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>recordsPerFile</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>bytesPerFile</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>bytesPerFile</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>recordSkip</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>recordSkip</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>recordCount</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>recordCount</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>partitionKey</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>partitionKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>partition</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            lookupTableID
+            
+         </attrType>
+         <attrDesc>partition</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>partitionFileTag</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+             enumeration:  numberFileTag keyNameFileTag 
+            
+         </attrType>
+         <attrDesc>partitionFileTag</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Simple Copy</componentName>
+      <componentType>SIMPLE_COPY</componentType>
+      <category>transformers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc>Copies data from sourceport to the outputs.</briefDesc>
+      <fullDesc>All records from input port:0 are copied onto all connected output ports.</fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts>
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </outputPorts>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Concatenate</componentName>
+      <componentType>CONCATENATE</componentType>
+      <category>transformers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>All records from all input ports are copied onto output port [0].
+         It goes port by port (waiting/blocked) if there is currently no data on port.
+         When reading from one port is done (EOF status), continues with the next.
+      </fullDesc>
+      <inputPorts>
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </outputPorts>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Simple Gather</componentName>
+      <componentType>SIMPLE_GATHER</componentType>
+      <category>transformers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>All records from all input ports are gathered and copied onto output port [0].
+         It goes port by port (waiting/blocked) if there is currently no data on port.
+         Implements inverse RoundRobin.
+      </fullDesc>
+      <inputPorts>
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </outputPorts>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Reformat</componentName>
+      <componentType>REFORMAT</componentType>
+      <category>transformers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>Changes / reformats data record between one INPUT and several OUTPUT ports.
+         This component is only a wrapper around transformation class implementing org.jetel.component.RecordTransform interface. The
+         method transform is called for every record passing through this component.
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts>
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </outputPorts>
+      <attribute>
+         <attrName>transformClass</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            class
+            
+         </attrType>
+         <attrDesc>transformClass</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transform</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            transform
+            
+         </attrType>
+         <attrDesc>transform</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transformURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>transformURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>DB Input Table</componentName>
+      <componentType>DB_INPUT_TABLE</componentType>
+      <category>readers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>This component reads data from DB. It first executes specified query on DB and then extracts all the rows returned.
+         The metadata provided throuh output port/edge must precisely describe the structure of read rows.
+         Use DBAnalyze utilitity to analyze DB structures and create Jetel/Clover metadata.
+      </fullDesc>
+      <inputPorts></inputPorts>
+      <outputPorts>
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </outputPorts>
+      <attribute>
+         <attrName>sqlQuery</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            sqlQuery
+            
+         </attrType>
+         <attrDesc>sqlQuery</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>fetchSize</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>fetchSize</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>dbConnection</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            connection
+            
+         </attrType>
+         <attrDesc>dbConnection</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>dataPolicy</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+             enumeration:  strict controlled lenient 
+            
+         </attrType>
+         <attrDesc>dataPolicy</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>url</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>url</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Sort</componentName>
+      <componentType>SORT</componentType>
+      <category>deprecated</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc>Sorts incoming records based on a key</briefDesc>
+      <fullDesc>Sorts the incoming records based on specified key.
+         The key is name (or combination of names) of field(s) from input record. The sort order is either Ascending (default) or Descending.
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts>
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </outputPorts>
+      <attribute>
+         <attrName>sortOrder</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            order
+            
+         </attrType>
+         <attrDesc>sortOrder</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>sortKey</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>sortKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>useI18N</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>useI18N</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>locale</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>locale</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>DB Output Table</componentName>
+      <componentType>DB_OUTPUT_TABLE</componentType>
+      <category>writers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>This component performs append (so far) operation on specified database table.
+         The metadata describing data comming in through input port[0] must be in the same structure as the target table.
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc>rejected</portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         <port>
+            <portName>1</portName>
+            <portDesc>autogenerated</portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>batchMode</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>batchMode</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>dbTable</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            table
+            
+         </attrType>
+         <attrDesc>dbTable</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>dbConnection</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            connection
+            
+         </attrType>
+         <attrDesc>dbConnection</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>maxErrors</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>maxErrors</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>sqlQuery</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            sqlQuery
+            
+         </attrType>
+         <attrDesc>sqlQuery</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>fieldMap</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            mapping
+            
+         </attrType>
+         <attrDesc>fieldMap</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>cloverFields</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>cloverFields</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>url</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>url</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>dbFields</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>dbFields</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>batchSize</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>batchSize</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>commit</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>commit</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>autoGeneratedColumns</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>autoGeneratedColumns</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Fixed Length Data Writer</componentName>
+      <componentType>FIXLEN_DATA_WRITER</componentType>
+      <category>writers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>All records from input port [0] are formatted with sizes specified in metadata and written to specified file.
+         Sizes are taken from metadata specified for port[0] data flow.
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts></outputPorts>
+      <attribute>
+         <attrName>append</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>append</attrDesc>
+         <attrDefaultVal>false</attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>fileURL</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>fileURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>recordsPerFile</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>recordsPerFile</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>bytesPerFile</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>bytesPerFile</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>recordSkip</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>recordSkip</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>recordCount</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>recordCount</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>outputFieldNames</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>outputFieldNames</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>fieldFiller</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>fieldFiller</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>recordFiller</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>recordFiller</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>partitionKey</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>partitionKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>partition</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            lookupTableID
+            
+         </attrType>
+         <attrDesc>partition</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>partitionFileTag</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+             enumeration:  numberFileTag keyNameFileTag 
+            
+         </attrType>
+         <attrDesc>partitionFileTag</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Dedup</componentName>
+      <componentType>DEDUP</componentType>
+      <category>transformers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated>2007.12.03</lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>Dedup (remove duplicate records) from sorted incoming records based on specified key.
+         The key is name (or combination of names) of field(s) from input record. It keeps either First or Last record from the group
+         based on the parameter {keep} specified.
+         All duplicated records are rejected to the second optional port.
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc>unique</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         <port>
+            <portName>1</portName>
+            <portDesc>duplicate</portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>dedupKey</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>dedupKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>keep</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            keep
+            
+         </attrType>
+         <attrDesc>keep</attrDesc>
+         <attrDefaultVal>first</attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>equalNULL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>equalNULL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>noDupRecord</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>noDupRecord</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Fixed Length Data Reader</componentName>
+      <componentType>FIXLEN_DATA_READER</componentType>
+      <category>readers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>Parses specified fixed-length-record, input data file and broadcasts the records to all connected out ports.</fullDesc>
+      <inputPorts></inputPorts>
+      <outputPorts>
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </outputPorts>
+      <attribute>
+         <attrName>byteMode</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>byteMode</attrDesc>
+         <attrDefaultVal>false</attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>dataPolicy</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+             enumeration:  strict controlled lenient 
+            
+         </attrType>
+         <attrDesc>dataPolicy</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>skipLeadingBlanks</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>skipLeadingBlanks</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>skipTrailingBlanks</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>skipTrailingBlanks</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>trim</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>trim</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>enableIncomplete</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>enableIncomplete</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>fileURL</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>fileURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>skipEmpty</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>skipEmpty</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>skipFirstLine</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>skipFirstLine</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>skipRows</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>skipRows</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>numRecords</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>numRecords</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Merge</componentName>
+      <componentType>MERGE</componentType>
+      <category>transformers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>Merges data records from two input ports onto one output. It preserves sorted order (as specified by the merge key)
+         The structure of records in all merged data flows must be the same - it implies that all input ports share the same metadata.
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>mergeKey</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>mergeKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Ext Merge Join</componentName>
+      <componentType>EXT_MERGE_JOIN</componentType>
+      <category>joiners</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>Joins sorted records on input ports. It expects that on port [0], there is a driver and on port [1] is slave
+         For each driver record, all slave records with corresponding key are found and sent to transformation class.
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc>driver</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc>slave</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>joinKey</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>joinKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transformClass</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            class
+            
+         </attrType>
+         <attrDesc>transformClass</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transform</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            transform
+            
+         </attrType>
+         <attrDesc>transform</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transformURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>transformURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>joinType</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+             enumeration:  inner leftOuter fullOuter 
+            
+         </attrType>
+         <attrDesc>joinType</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>slaveDuplicates</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>slaveDuplicates</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Merge Join</componentName>
+      <componentType>MERGE_JOIN</componentType>
+      <category>joiners</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>Joins sorted records on input ports. It expects that on port [0], there is a driver and on port [1] is slave
+         For each driver record, all slave records with corresponding key are found and sent to transformation class.
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc>driver</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc>slave</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>joinKey</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>joinKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transformClass</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            class
+            
+         </attrType>
+         <attrDesc>transformClass</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transform</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            transform
+            
+         </attrType>
+         <attrDesc>transform</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transformURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>transformURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>leftOuterJoin</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>leftOuterJoin</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>fullOuterJoin</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>fullOuterJoin</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>slaveOverrideKey</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            mapping
+            
+         </attrType>
+         <attrDesc>slaveOverrideKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Trash</componentName>
+      <componentType>TRASH</componentType>
+      <category>writers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc>Discards all the input. Used for debugging graphs.</briefDesc>
+      <fullDesc>All records from input port:0 are discarded.</fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts></outputPorts>
+      <attribute>
+         <attrName>debugFilename</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>debugFilename</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>debugPrint</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>debugPrint</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>mode</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            enumeration:  full_deserialize performance 
+            
+         </attrType>
+         <attrDesc>mode</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Filter</componentName>
+      <componentType>FILTER</componentType>
+      <category>deprecated</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>All records for which the filterExpression evaluates TRUE are copied from input port:0 onto output port:0. Rejected records
+         are copied onto output port:1 (if it is connected).
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc>accepted</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         <port>
+            <portName>1</portName>
+            <portDesc>rejected</portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>filterExpression</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            multiline
+            
+         </attrType>
+         <attrDesc>filterExpression</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>DB Execute</componentName>
+      <componentType>DB_EXECUTE</componentType>
+      <category>others</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>This component executes specified command(s) (SQL/DML) against specified DB</fullDesc>
+      <inputPorts></inputPorts>
+      <outputPorts></outputPorts>
+      <attribute>
+         <attrName>sqlQuery</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            multiline
+            
+         </attrType>
+         <attrDesc>sqlQuery</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>sqlStatementDelimiter</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>sqlStatementDelimiter</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>dbConnection</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            connection
+            
+         </attrType>
+         <attrDesc>dbConnection</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>printStatements</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>printStatements</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>url</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>url</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>inTransaction</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>inTransaction</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>callStatement</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>callStatement</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Ext Hash Join</componentName>
+      <componentType>EXT_HASH_JOIN</componentType>
+      <category>joiners</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>Joins records on input ports. It expects that on port [0], there is a driver and on port [1] is a slave
+         For each driver record, slave record is looked up in Hashtable which is created from all records on slave port. Pair of driver
+         and slave records is sent to transformation class.
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc>driver</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc>slave</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>joinKey</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>joinKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transformClass</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            class
+            
+         </attrType>
+         <attrDesc>transformClass</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transform</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            transform
+            
+         </attrType>
+         <attrDesc>transform</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transformURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>transformURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>joinType</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+             enumeration:  inner leftOuter fullOuter 
+            
+         </attrType>
+         <attrDesc>joinType</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>slaveDuplicates</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>slaveDuplicates</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>hashTableSize</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>hashTableSize</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>slaveOverrideKey</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>slaveOverrideKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Hash Join</componentName>
+      <componentType>HASH_JOIN</componentType>
+      <category>joiners</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>Joins records on input ports. It expects that on port [0], there is a driver and on port [1] is a slave
+         For each driver record, slave record is looked up in Hashtable which is created from all records on slave port. Pair of driver
+         and slave records is sent to transformation class.
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc>driver</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc>slave</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>joinKey</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>joinKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transformClass</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            class
+            
+         </attrType>
+         <attrDesc>transformClass</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transform</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            transform
+            
+         </attrType>
+         <attrDesc>transform</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transformURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>transformURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>leftOuterJoin</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>leftOuterJoin</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>slaveDuplicates</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>slaveDuplicates</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>hashTableSize</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>hashTableSize</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>slaveOverrideKey</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            mapping
+            
+         </attrType>
+         <attrDesc>slaveOverrideKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Check Foreign Key</componentName>
+      <componentType>CHECK_FOREIGN_KEY</componentType>
+      <category>others</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>Checks a foreign key against a table of primary keys to see if the foreign key is valid. If the foreign key is invalid then
+         a default foreign key is substituted. The resulting foreign record is broadcast to all connected outputs. The table containing
+         the "primary" keys may contain duplicates but they will be ignored.
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc>foreign records</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         <port>
+            <portName>1</portName>
+            <portDesc>primary records</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc>foreign records</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         <port>
+            <portName>1</portName>
+            <portDesc>invalid foreign records</portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>primaryKey</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>primaryKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>hashTableSize</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>hashTableSize</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>foreignKey</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>foreignKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>defaultForeignKey</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            recordPattern
+            
+         </attrType>
+         <attrDesc>defaultForeignKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>DBF Data Reader</componentName>
+      <componentType>DBF_DATA_READER</componentType>
+      <category>readers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>Reads records from specified dBase data file and broadcasts the records to all connected out ports.</fullDesc>
+      <inputPorts></inputPorts>
+      <outputPorts>
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </outputPorts>
+      <attribute>
+         <attrName>dataPolicy</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+             enumeration:  strict controlled lenient 
+            
+         </attrType>
+         <attrDesc>dataPolicy</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>fileURL</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>fileURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Ext Filter</componentName>
+      <componentType>EXT_FILTER</componentType>
+      <category>transformers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>All records for which the filterExpression evaluates TRUE are copied from input port:0 onto output port:0. Rejected records
+         are copied onto output port:1 (if it is connected).
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc>accepted</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         <port>
+            <portName>1</portName>
+            <portDesc>rejected</portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>filterExpression</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            filter
+            
+         </attrType>
+         <attrDesc>filterExpression</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Ext Sort</componentName>
+      <componentType>EXT_SORT</componentType>
+      <category>transformers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>Sorts the incoming records based on specified key.
+         The key is name (or combination of names) of field(s) from input record. The sort order is either Ascending (default) or Descending.
+         In case there is not enough room in internal sort buffer, it performs external sorting - thus any number of internal records
+         can be sorted.
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts>
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </outputPorts>
+      <attribute>
+         <attrName>sortOrder</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            order
+            
+         </attrType>
+         <attrDesc>sortOrder</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>sortKey</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>sortKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>bufferCapacity</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>bufferCapacity</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>numberOfTapes</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>numberOfTapes</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>sorterInitialCapacity</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>sorterInitialCapacity</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>tmpDirs</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>tmpDirs</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Partition</componentName>
+      <componentType>PARTITION</componentType>
+      <category>transformers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>Partitions data into distinct flows. Each connected port becomes one flow. For each record read, the partition function chosen
+         denotes which output flow (port) will be the record sent to.
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts>
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </outputPorts>
+      <attribute>
+         <attrName>ranges</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            ranges
+            
+         </attrType>
+         <attrDesc>ranges</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>partitionKey</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>partitionKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>partitionClass</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            class
+            
+         </attrType>
+         <attrDesc>partitionClass</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>partitionSource</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            multiline
+            
+         </attrType>
+         <attrDesc>partitionSource</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>partitionURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>partitionURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>useI18N</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>useI18N</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>locale</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            locale
+            
+         </attrType>
+         <attrDesc>locale</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Data Intersection</componentName>
+      <componentType>DATA_INTERSECTION</componentType>
+      <category>transformers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>Finds intersection of data flows (sets) A (in-port0) and B (in-port1) based on specified key. Both inputs must be sorted according
+         to specified key. DataRecords only in flow A are sent out through out-port[0]. DataRecords in both A&amp;B are sent to specified
+         transformation function and the result is sent through out-port[1]. DataRecords present only in flow B are sent through out-port[2].
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc>set A</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         <port>
+            <portName>1</portName>
+            <portDesc>set B</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc>only in A</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         <port>
+            <portName>1</portName>
+            <portDesc>in A &amp; B</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         <port>
+            <portName>2</portName>
+            <portDesc>only in B</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>joinKey</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>joinKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>slaveOverrideKey</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            mapping
+            
+         </attrType>
+         <attrDesc>slaveOverrideKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transformClass</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            class
+            
+         </attrType>
+         <attrDesc>transformClass</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transform</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            transform
+            
+         </attrType>
+         <attrDesc>transform</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>equalNULL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>equalNULL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transformURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>transformURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Aggregate</componentName>
+      <componentType>AGGREGATE</componentType>
+      <category>transformers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc>Aggregate function</briefDesc>
+      <fullDesc>Aggregate functions are applied on input data flow base on specified key.
+         The key is name (or combination of names) of field(s) from input record. Data flow can be sorted or not.
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts>
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </outputPorts>
+      <attribute>
+         <attrName>sorted</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>sorted</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>mapping</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            aggregationMapping
+            
+         </attrType>
+         <attrDesc>mapping</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>aggregateFunctions</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>aggregateFunctions</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>aggregateKey</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>aggregateKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>equalNULL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>equalNULL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>XML Extract</componentName>
+      <componentType>XML_EXTRACT</componentType>
+      <category>readers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>Provides the logic to parse a xml file and filter to different ports based on a matching element. The element and all children
+         will be turned into a Data record.
+      </fullDesc>
+      <inputPorts></inputPorts>
+      <outputPorts>
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </outputPorts>
+      <attribute>
+         <attrName>sourceUri</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>sourceUri</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>useNestedNodes</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>useNestedNodes</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>mapping</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            multiline
+            
+         </attrType>
+         <attrDesc>mapping</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>skipRows</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>skipRows</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>numRecords</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>numRecords</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>System execute</componentName>
+      <componentType>SYS_EXECUTE</componentType>
+      <category>others</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>Executes system command.</fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc>input for command</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc>output of command</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>command</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            multiline
+            
+         </attrType>
+         <attrDesc>command</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>capturedErrorLines</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>capturedErrorLines</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>outputFile</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>outputFile</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>append</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>append</attrDesc>
+         <attrDefaultVal>false</attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>interpreter</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>interpreter</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Key generator</componentName>
+      <componentType>KEY_GEN</componentType>
+      <category>transformers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>Creates key from given fields</fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>keyExpression</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>keyExpression</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Aproximative join</componentName>
+      <componentType>APROX_MERGE_JOIN</componentType>
+      <category>joiners</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>Joins data from two input ports which are similar on given fields</fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc>driver</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         <port>
+            <portName>1</portName>
+            <portDesc>slave</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc>joined with conformity &gt; limit</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         <port>
+            <portName>1</portName>
+            <portDesc>joined with conformity &lt; limit</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         <port>
+            <portName>2</portName>
+            <portDesc>driver with no matching slave</portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         <port>
+            <portName>3</portName>
+            <portDesc>slave with no matching driver</portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         
+         
+         
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>joinKey</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>joinKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>matchingKey</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>matchingKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transformClass</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            class
+            
+         </attrType>
+         <attrDesc>transformClass</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transform</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            transform
+            
+         </attrType>
+         <attrDesc>transform</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transformURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>transformURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transformClassForSuspicious</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            class
+            
+         </attrType>
+         <attrDesc>transformClassForSuspicious</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transformForSuspicious</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            transform
+            
+         </attrType>
+         <attrDesc>transformForSuspicious</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transformURLForSuspicious</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>transformURLForSuspicious</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>slaveOverrideKey</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            mapping
+            
+         </attrType>
+         <attrDesc>slaveOverrideKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>slaveMatchingOverride</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            mapping
+            
+         </attrType>
+         <attrDesc>slaveMatchingOverride</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>conformity</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            double
+            
+         </attrType>
+         <attrDesc>conformity</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>DBJoin</componentName>
+      <componentType>DBJOIN</componentType>
+      <category>joiners</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>Joins records from input port with records from database</fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc>joined records</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         <port>
+            <portName>1</portName>
+            <portDesc>skipped records</portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>dbConnection</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            connection
+            
+         </attrType>
+         <attrDesc>dbConnection</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>sqlQuery</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            sqlQuery
+            
+         </attrType>
+         <attrDesc>sqlQuery</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>joinKey</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>joinKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transformClass</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            class
+            
+         </attrType>
+         <attrDesc>transformClass</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transform</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            transform
+            
+         </attrType>
+         <attrDesc>transform</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transformURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>transformURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>metadata</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            metadata
+            
+         </attrType>
+         <attrDesc>metadata</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>leftOuterJoin</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>leftOuterJoin</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>maxCached</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>maxCached</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>XLS Data Reader</componentName>
+      <componentType>XLS_READER</componentType>
+      <category>readers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc>Reads data from xls files.</briefDesc>
+      <fullDesc>Reads data from xls files.</fullDesc>
+      <inputPorts></inputPorts>
+      <outputPorts>
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </outputPorts>
+      <attribute>
+         <attrName>dataPolicy</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+             enumeration:  strict controlled lenient 
+            
+         </attrType>
+         <attrDesc>dataPolicy</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>fileURL</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>fileURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>startRow</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>startRow</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>finalRow</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>finalRow</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>numRecords</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>numRecords</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>maxErrorCount</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>maxErrorCount</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>sheetName</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>sheetName</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>sheetNumber</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>sheetNumber</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>metadataRow</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>metadataRow</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>fieldMap</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            mapping
+            
+         </attrType>
+         <attrDesc>fieldMap</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>XLS Data Writer</componentName>
+      <componentType>XLS_WRITER</componentType>
+      <category>writers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc></fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts></outputPorts>
+      <attribute>
+         <attrName>fileURL</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>fileURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>sheetName</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>sheetName</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>sheetNumber</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>sheetNumber</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>append</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>append</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>namesRow</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>namesRow</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>firstDataRow</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>firstDataRow</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>firstColumn</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>firstColumn</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>recordsPerFile</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>recordsPerFile</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>recordSkip</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>recordSkip</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>recordCount</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>recordCount</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>partitionKey</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>partitionKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>partition</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            lookupTableID
+            
+         </attrType>
+         <attrDesc>partition</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>partitionFileTag</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+             enumeration:  numberFileTag keyNameFileTag 
+            
+         </attrType>
+         <attrDesc>partitionFileTag</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Clover Data Writer</componentName>
+      <componentType>CLOVER_WRITER</componentType>
+      <category>writers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc></fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts></outputPorts>
+      <attribute>
+         <attrName>fileURL</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>fileURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>append</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>append</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>saveMetadata</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>saveMetadata</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>saveIndex</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>saveIndex</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>compressData</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>compressData</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>compressLevel</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>compressLevel</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>recordsPerFile</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>recordsPerFile</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>recordSkip</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>recordSkip</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>recordCount</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>recordCount</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Clover Data Reader</componentName>
+      <componentType>CLOVER_READER</componentType>
+      <category>readers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc></fullDesc>
+      <inputPorts></inputPorts>
+      <outputPorts>
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </outputPorts>
+      <attribute>
+         <attrName>fileURL</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>fileURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>compressedData</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>compressedData</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>indexFileURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>indexFileURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>startRecord</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>startRecord</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>finalRecord</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>finalRecord</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>LDAP Reader</componentName>
+      <componentType>LDAP_READER</componentType>
+      <category>readers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc></fullDesc>
+      <inputPorts></inputPorts>
+      <outputPorts>
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </outputPorts>
+      <attribute>
+         <attrName>ldapUrl</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>ldapUrl</attrDesc>
+         <attrDefaultVal>ldap://host:port/</attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>base</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>base</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>filter</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>filter</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>scope</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+             enumeration:  object onelevel subtree 
+            
+         </attrType>
+         <attrDesc>scope</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>user</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>user</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>password</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            password
+            
+         </attrType>
+         <attrDesc>password</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>LDAP Writer</componentName>
+      <componentType>LDAP_WRITER</componentType>
+      <category>writers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc></fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc>rejected</portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>ldapUrl</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>ldapUrl</attrDesc>
+         <attrDefaultVal>ldap://host:port/</attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>action</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+             enumeration:  add_entry remove_entry replace_attributes remove_attributes 
+            
+         </attrType>
+         <attrDesc>action</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>user</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>user</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>password</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            password
+            
+         </attrType>
+         <attrDesc>password</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>MsSql Data Writer</componentName>
+      <componentType>MS_SQL_DATA_WRITER</componentType>
+      <category>writers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc>Loads data into an mssql database.</briefDesc>
+      <fullDesc>This component loads data to an MsSql database using the bcp utility. 
+         It creates a temporary file with bcp commands depending on input parameters. Data are read from given 
+         input file or from input port and loaded to database.
+         Any generated temporary files can be optionally logged to help diagnose problems.
+         To use this component MsSql client must be installed and configured on the local host.
+         Note: when data is read from input port, one of these values 
+         (nativeType, characterType, wideCharacterType, keepNonTextNative, formatFile) in parameters attribute has to be used.
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>bcpUtilityPath</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>bcpUtilityPath</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>database</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>database</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>table</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>table</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>owner</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>owner</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>view</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>view</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>fileURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>fileURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>parameters</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            multiline
+            
+         </attrType>
+         <attrDesc>parameters</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+
+   <componentDescription>
+      <componentName>Mysql Data Writer</componentName>
+      <componentType>MYSQL_DATA_WRITER</componentType>
+      <category>writers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc>Loads data into an mysql database.</briefDesc>
+      <fullDesc>This component loads data to mysql database using the mysql utility.
+         		There is created mysql command (LOAD DATA INFILE) depending on input parameters.
+         		Data are read from given input file or from the input port and loaded to database.
+         		Any generated scripts/commands can be optionally logged to help diagnose problems.
+         		Before you use this component, make sure that mysql client is installed and
+         		configured on the machine where CloverETL runs and mysql command line tool available.
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         		
+         	
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         		
+         	
+      </outputPorts>
+      <attribute>
+         <attrName>mysqlPath</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            			file
+            		
+         </attrType>
+         <attrDesc>mysqlPath</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>database</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            			string
+            		
+         </attrType>
+         <attrDesc>database</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>host</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            			string
+            		
+         </attrType>
+         <attrDesc>host</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>user</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            			string
+            		
+         </attrType>
+         <attrDesc>user</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>password</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            			string
+            		
+         </attrType>
+         <attrDesc>password</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>table</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            			string
+            		
+         </attrType>
+         <attrDesc>table</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>commandURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            			file
+            		
+         </attrType>
+         <attrDesc>commandURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>ignoreRows</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            			int
+            		
+         </attrType>
+         <attrDesc>ignoreRows</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>columnDelimiter</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            			string
+            		
+         </attrType>
+         <attrDesc>columnDelimiter</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>fileURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            			file
+            		
+         </attrType>
+         <attrDesc>fileURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>parameters</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            			multiline
+            		
+         </attrType>
+         <attrDesc>parameters</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Structured Data Writer</componentName>
+      <componentType>STRUCTURE_WRITER</componentType>
+      <category>writers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc></fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts></outputPorts>
+      <attribute>
+         <attrName>fileURL</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>fileURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>append</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>append</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>mask</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            xml
+            
+         </attrType>
+         <attrDesc>mask</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>header</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            multiline
+            
+         </attrType>
+         <attrDesc>header</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>footer</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            multiline
+            
+         </attrType>
+         <attrDesc>footer</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>recordsPerFile</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>recordsPerFile</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>bytesPerFile</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>bytesPerFile</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>recordSkip</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>recordSkip</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>recordCount</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>recordCount</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>partitionKey</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>partitionKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>partition</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            lookupTableID
+            
+         </attrType>
+         <attrDesc>partition</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>partitionFileTag</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+             enumeration:  numberFileTag keyNameFileTag 
+            
+         </attrType>
+         <attrDesc>partitionFileTag</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Lookup Join</componentName>
+      <componentType>LOOKUP_JOIN</componentType>
+      <category>joiners</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>Joins records from input port with records from lookup table</fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc>joined records</portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         <port>
+            <portName>1</portName>
+            <portDesc>skipped records</portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>lookupTable</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            lookupTableID
+            
+         </attrType>
+         <attrDesc>lookupTable</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transformClass</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            class
+            
+         </attrType>
+         <attrDesc>transformClass</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transform</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            transform
+            
+         </attrType>
+         <attrDesc>transform</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>transformURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>transformURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>leftOuterJoin</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>leftOuterJoin</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>freeLookupTable</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>freeLookupTable</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>joinKey</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>joinKey</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Lookup table reader/writer</componentName>
+      <componentType>LOOKUP_TABLE_READER_WRITER</componentType>
+      <category>others</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc></fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts>
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc></portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         
+      </outputPorts>
+      <attribute>
+         <attrName>lookupTable</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            lookupTableID
+            
+         </attrType>
+         <attrDesc>lookupTable</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>freeLookupTable</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>freeLookupTable</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Data Generator</componentName>
+      <componentType>DATA_GENERATOR</componentType>
+      <category>readers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc></fullDesc>
+      <inputPorts></inputPorts>
+      <outputPorts>
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </outputPorts>
+      <attribute>
+         <attrName>pattern</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            recordPattern
+            
+         </attrType>
+         <attrDesc>pattern</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>randomFields</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>randomFields</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>sequenceFields</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            mapping
+            
+         </attrType>
+         <attrDesc>sequenceFields</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>randomSeed</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>randomSeed</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>recordsNumber</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>recordsNumber</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>JMS Reader</componentName>
+      <componentType>JMS_READER</componentType>
+      <category>readers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc></fullDesc>
+      <inputPorts></inputPorts>
+      <outputPorts>
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </outputPorts>
+      <attribute>
+         <attrName>connection</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>connection</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>selector</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>selector</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>processorCode</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            multiline
+            
+         </attrType>
+         <attrDesc>processorCode</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>processorClass</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            class
+            
+         </attrType>
+         <attrDesc>processorClass</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>processorURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>processorURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>maxMsgCount</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>maxMsgCount</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>timeout</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>timeout</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>JMS Writer</componentName>
+      <componentType>JMS_WRITER</componentType>
+      <category>writers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc></fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts>
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc></portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         
+      </outputPorts>
+      <attribute>
+         <attrName>connection</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>connection</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>processorCode</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            multiline
+            
+         </attrType>
+         <attrDesc>processorCode</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>processorClass</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            class
+            
+         </attrType>
+         <attrDesc>processorClass</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>processorURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>processorURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Normalizer</componentName>
+      <componentType>NORMALIZER</componentType>
+      <category>transformers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc></fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>normalizeClass</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            class
+            
+         </attrType>
+         <attrDesc>normalizeClass</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>normalize</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            multiline
+            
+         </attrType>
+         <attrDesc>normalize</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>normalizeURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>normalizeURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Denormalizer</componentName>
+      <componentType>DENORMALIZER</componentType>
+      <category>transformers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc></fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>denormalizeClass</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            class
+            
+         </attrType>
+         <attrDesc>denormalizeClass</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>denormalize</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            multiline
+            
+         </attrType>
+         <attrDesc>denormalize</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>denormalizeURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>denormalizeURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>charset</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            charset
+            
+         </attrType>
+         <attrDesc>charset</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>order</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+             enumeration:  Asc Desc Ignore Auto 
+            
+         </attrType>
+         <attrDesc>order</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>key</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>key</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>XML Reader</componentName>
+      <componentType>XML_XPATH_READER</componentType>
+      <category>readers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc>Provides the logic to parse a xml file and filter to different ports based on a matching element by xpath. The element and
+         all direct children will be turned into a Data record.
+      </fullDesc>
+      <inputPorts></inputPorts>
+      <outputPorts>
+         
+         <port>
+            <portName>1..N</portName>
+            <portDesc></portDesc>
+            <portMandatory>yes</portMandatory>
+         </port>
+         
+      </outputPorts>
+      <attribute>
+         <attrName>fileURL</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>fileURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>mapping</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            multiline
+            
+         </attrType>
+         <attrDesc>mapping</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>skipRows</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>skipRows</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>numRecords</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>numRecords</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>dataPolicy</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+             enumeration:  strict controlled lenient 
+            
+         </attrType>
+         <attrDesc>dataPolicy</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Run graph</componentName>
+      <componentType>RUN_GRAPH</componentType>
+      <category>others</category>
+      <sinceVersion>1.8.3</sinceVersion>
+      <author>jvicenik</author>
+      <lastUpdated>12.12.2007</lastUpdated>
+      <briefDesc>Runs specified graph(s) optionally in another instance of clover.</briefDesc>
+      <fullDesc>Runs specified graph(s) optionally in another instance of clover. If <attrLink> graphName </attrLink> is
+			  specified, the component is in pipeline mode. That means it only executes the specified graph if some data 
+			comes through the input edge or the input is not connected. If the execution of the graph is successful, an
+		  information record is sent to the first output port, otherwise to the second one. Any of these port may not be 
+		  connected as well. If <attrLink> graphName </attrLink> isn't specified, graph names are read from the input edge
+		  (in this case the first field of input metadata must be string) and status messages are sent to the first output 
+		  port. </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc>in pipeline mode: a record which triggers execution of the graph. Otherwise names of the graphs to be executed</portDesc>
+            <portMandatory>no</portMandatory>
+			 <portMetadata>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>Name of the processed graph</fieldDesc>
+				</metadataField>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>Status</fieldDesc>
+				</metadataField>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>In a case of error: ID of the component where the problem occured</fieldDesc>
+				</metadataField>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>In a case of error: ID of the component where the problem occured</fieldDesc>
+				</metadataField>
+			</portMetadata>
+         </port>                  
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc>regular mode: status messages, pipeline mode: an information record in case of successful termination, otherwise nothing</portDesc>
+            <portMandatory>no</portMandatory>
+			<portMetadata>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>Name of the processed graph</fieldDesc>
+				</metadataField>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>Status</fieldDesc>
+				</metadataField>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>In a case of error: The error message</fieldDesc>
+				</metadataField>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>In a case of error: ID of the component where the problem occured</fieldDesc>
+				</metadataField>
+				<metadataField>					
+					<fieldType>decimal</fieldType>
+					<fieldDesc>Run time (sec)</fieldDesc>
+				</metadataField>
+			</portMetadata>
+         </port>
+		 <port>
+            <portName>1</portName>
+            <portDesc>in pipeline mode an information record in case of an error, otherwise nothing</portDesc>
+            <portMandatory>no</portMandatory>
+			<portMetadata>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>Name of the processed graph</fieldDesc>
+				</metadataField>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>Status</fieldDesc>
+				</metadataField>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>In a case of error: The error message</fieldDesc>
+				</metadataField>
+				<metadataField>					
+					<fieldType>string</fieldType>
+					<fieldDesc>In a case of error: ID of the component where the problem occured</fieldDesc>
+				</metadataField>
+				<metadataField>					
+					<fieldType>decimal</fieldType>
+					<fieldDesc>Run time (sec)</fieldDesc>
+				</metadataField>
+			</portMetadata>
+         </port>                  
+      </outputPorts>
+      <attribute>
+         <attrName>graphName</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>file</attrType>
+         <attrDesc>name of the graph to be executed; if this parameter is specified, the pipeline mode is activated</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+	  <attribute>
+         <attrName>sameInstance</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>boolean</attrType>
+         <attrDesc>if false, run the graph in separate instance of clover, otherwise run it in the same instance</attrDesc>
+         <attrDefaultVal>true</attrDefaultVal>
+      </attribute>
+	   
+      <attribute>
+         <attrName>logFile</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>Name of the file into which all the standard output of the executed graphs is redirected. It is only used when the graph is run in another instance of clover. </attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>logAppend</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>Whether to append the output into the log file <attrLink>logFile</attrLink> </attrDesc>
+         <attrDefaultVal>false</attrDefaultVal>
+      </attribute>
+	  
+	   
+	    
+	  <attribute>
+         <attrName>alternativeJavaCmdLine</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string            
+         </attrType>
+         <attrDesc>Aternative Java virtual machine with command line arguments </attrDesc>
+         
+      </attribute>
+	   
+	  <attribute>
+         <attrName>graphExecClass</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>Whichc clover class to execute</attrDesc>
+         <attrDefaultVal>org.jetel.graph.runGraph</attrDefaultVal>
+      </attribute>
+	   	
+	  <attribute>
+         <attrName>cloverCmdLineArguments</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>Command line arguments for clover; if <attrLink>sameInstance</attrLink> is false, at least the -plugins argument must be specified here</attrDesc>
+         <attrDefaultVal>false</attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+</componentsDoc>  

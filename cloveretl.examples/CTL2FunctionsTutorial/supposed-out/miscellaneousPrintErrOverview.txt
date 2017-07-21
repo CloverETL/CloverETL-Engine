@@ -1,0 +1,2 @@
+Error warning without info about location;Error warning with info about error location if PrintLocation is set to true;true;printErr($0.Message1);printErr($0.Message2,$0.PrintLocation)
+Error warning without info about location;Error warning with info about error location if PrintLocation is set to true;false;printErr($0.Message1);printErr($0.Message2,$0.PrintLocation)
