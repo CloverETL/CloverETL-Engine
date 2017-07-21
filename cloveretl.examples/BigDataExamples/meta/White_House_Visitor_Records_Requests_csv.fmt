@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?><Record fieldDelimiter="," label="White_House_Visitor_Records_Requests.csv" name="White_House_Visitor_Records_Requests_csv" previewAttachment="${DATAIN_DIR}/White_House_Visitor_Records_Requests.csv" previewAttachmentCharset="ISO-8859-1" quoteChar="both" quotedStrings="false" recordDelimiter="\n" skipSourceRows="1" type="delimited">
+<Field label="NAMELAST" name="NAMELAST" type="string"/>
+<Field label="NAMEFIRST" name="NAMEFIRST" type="string"/>
+<Field label="NAMEMID" name="NAMEMID" type="string"/>
+<Field label="UIN" name="UIN" type="string"/>
+<Field label="BDGNBR" name="BDGNBR" type="string"/>
+<Field label="Type of Access" name="Type_of_Access" type="string"/>
+<Field label="TOA" name="TOA" type="string"/>
+<Field label="POA" name="POA" type="string"/>
+<Field label="TOD" name="TOD" type="string"/>
+<Field label="POD" name="POD" type="string"/>
+<Field label="APPT_MADE_DATE" name="APPT_MADE_DATE" type="string"/>
+<Field label="APPT_START_DATE" name="APPT_START_DATE" type="string"/>
+<Field label="APPT_END_DATE" name="APPT_END_DATE" type="string"/>
+<Field label="APPT_CANCEL_DATE" name="APPT_CANCEL_DATE" type="string"/>
+<Field label="Total_People" name="Total_People" type="string"/>
+<Field label="LAST_UPDATEDBY" name="LAST_UPDATEDBY" type="string"/>
+<Field label="POST" name="POST" type="string"/>
+<Field label="LastEntryDate" name="LastEntryDate" type="string"/>
+<Field label="TERMINAL_SUFFIX" name="TERMINAL_SUFFIX" type="string"/>
+<Field label="visitee_namelast" name="visitee_namelast" type="string"/>
+<Field label="visitee_namefirst" name="visitee_namefirst" type="string"/>
+<Field label="MEETING_LOC" name="MEETING_LOC" type="string"/>
+<Field label="MEETING_ROOM" name="MEETING_ROOM" type="string"/>
+<Field label="CALLER_NAME_LAST" name="CALLER_NAME_LAST" type="string"/>
+<Field label="CALLER_NAME_FIRST" name="CALLER_NAME_FIRST" type="string"/>
+<Field label="CALLER_ROOM" name="CALLER_ROOM" type="string"/>
+<Field label="Description" name="Description" type="string"/>
+<Field eofAsDelimiter="false" label="RELEASE_DATE" name="RELEASE_DATE" type="string"/>
+</Record>

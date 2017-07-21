@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="admin" created="Tue Oct 07 10:02:00 CEST 2008" guiVersion="0.0.0.devel" id="1223366615315" licenseType="Evaluation Devel" modified="Mon Jun 13 10:40:26 CEST 2011" modifiedBy="avackova" name="graphSequenceChecker" revision="1.60" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="101" guiName="Employees" guiWidth="128" guiX="24" guiY="24" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="85" guiName="ExtSort (LastName)" guiWidth="170" guiX="356" guiY="24" id="EXT_SORT0" sortKey="LastName(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="101" guiName="sequence checker passes" guiWidth="208" guiX="550" guiY="24" id="SEQUENCE_CHECKER0" sortKey="LastName(a)" type="SEQUENCE_CHECKER">
+<attr name="guiDescription"><![CDATA[It is preceded by ExtSort which produces sorted data records. For this reason, it runs successfully.]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="72" guiName="SimpleCopy" guiWidth="128" guiX="188" guiY="24" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="SIMPLE_COPY0:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="SEQUENCE_CHECKER0:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT0:0"/>
+<Edge debugMode="false" fromNode="SIMPLE_COPY0:1" guiBendpoints="336:60|336:165" guiLocks="336|393|null" guiRouter="Manual" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="SEQUENCE_CHECKER1:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" guiHeight="101" guiName="sequence checker fails" guiWidth="191" guiX="550" guiY="145" id="SEQUENCE_CHECKER1" sortKey="LastName(a)" type="SEQUENCE_CHECKER">
+<attr name="guiDescription"><![CDATA[Records are not sorted so this component fails.]]></attr>
+</Node>
+</Phase>
+</Graph>
