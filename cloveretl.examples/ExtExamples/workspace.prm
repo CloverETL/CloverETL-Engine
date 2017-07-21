@@ -1,0 +1,18 @@
+##Project path
+#Tue Apr 13 09:07:08 CEST 2010
+PROJECT=.
+#PROJECT=/home/my_user/workspace/ExtExamples
+#PROJECT=C:/Users/my_user/workspace/ExtExamples
+
+#Tue Apr 13 09:07:08 CEST 2010
+CONN_DIR=${PROJECT}/conn
+connection=derby_koule.cfg
+SEQ_DIR=${PROJECT}/seq
+DATAOUT_DIR=${PROJECT}/data-out
+GRAPH_DIR=${PROJECT}/graph
+TRANS_DIR=${PROJECT}/trans
+DATATMP_DIR=${PROJECT}/data-tmp
+META_DIR=${PROJECT}/meta
+LIB_DIR=${PROJECT}/lib
+LOOKUP_DIR=${PROJECT}/lookup
+DATAIN_DIR=${PROJECT}/data-in
