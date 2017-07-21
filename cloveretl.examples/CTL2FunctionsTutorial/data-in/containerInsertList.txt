@@ -1,0 +1,5 @@
+milk;butter;onion;apple;0;egg;tea
+milk;butter;onion;apple;1;egg;tea
+milk;butter;onion;apple;2;egg;tea
+milk;butter;onion;apple;3;egg;tea
+milk;butter;onion;apple;4;egg;tea

@@ -1,0 +1,10 @@
+random_boolean();false;0;0;0.00;0.0;false
+random_boolean();false;0;0;0.00;0.0;false
+random_boolean();false;0;0;0.00;0.0;false
+random_boolean();false;0;0;0.00;0.0;false
+random_boolean();false;0;0;0.00;0.0;false
+random_boolean();false;0;0;0.00;0.0;false
+random_boolean();true;1;1;1.00;1.0;true
+random_boolean();true;1;1;1.00;1.0;true
+random_boolean();true;1;1;1.00;1.0;true
+random_boolean();false;0;0;0.00;0.0;false
