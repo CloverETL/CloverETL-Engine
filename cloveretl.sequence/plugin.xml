@@ -1,0 +1,19 @@
+<plugin
+   id="org.jetel.sequence"
+   version="0.0.0.devel"
+   provider-name="Javlin a.s.">
+
+	<runtime>
+		<library path="bin/"/>
+   	</runtime> 
+
+	<extension point-id="sequence">
+		<parameter id="type" value="SIMPLE_SEQUENCE"/>
+		<parameter id="className" value="org.jetel.sequence.SimpleSequence"/>
+	</extension>
+
+	<extension point-id="sequence">
+		<parameter id="type" value="PRIMITIVE_SEQUENCE"/>
+		<parameter id="className" value="org.jetel.sequence.PrimitiveSequence"/>
+	</extension>
+</plugin>
