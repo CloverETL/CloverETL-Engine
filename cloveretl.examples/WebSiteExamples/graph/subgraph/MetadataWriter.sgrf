@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="User" created="Mon May 19 10:29:09 CEST 2014" guiVersion="0.0.0.devel" id="1400489875721" licenseType="Commercial" modified="Thu Jun 19 17:17:12 CEST 2014" modifiedBy="User" name="MetadataWriter" nature="subgraph" revision="1.28" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="debugInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="name" nullable="false" type="string"/>
+<Field name="label" type="string"/>
+<Field default="string" name="type" type="string"/>
+<Field name="containerType" type="string"/>
+<Field name="delimiter" type="string"/>
+<Field name="size" type="integer"/>
+<Field name="format" type="string"/>
+<Field name="locale" type="string"/>
+<Field name="timezone" type="string"/>
+<Field name="nullValue" type="string"/>
+<Field name="default" type="string"/>
+<Field name="description" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="metadataField" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="fileName" type="string"/>
+<Field name="recordName" type="string"/>
+<Field name="name" nullable="false" type="string"/>
+<Field name="label" type="string"/>
+<Field default="string" name="type" type="string"/>
+<Field name="containerType" type="string"/>
+<Field name="delimiter" type="string"/>
+<Field name="size" type="integer"/>
+<Field name="format" type="string"/>
+<Field name="locale" type="string"/>
+<Field name="timezone" type="string"/>
+<Field name="nullValue" type="string"/>
+<Field name="default" type="string"/>
+<Field name="description" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record eofAsDelimiter="true" fieldDelimiter=";" name="metadataFileContent" previewAttachmentCharset="ISO-8859-1" type="delimited">
+<Field name="fileName" type="string"/>
+<Field delimiter="\r\n" name="content" type="byte"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameter label="Output dir" name="OUTPUT_DIR" public="true" required="false">
+<attr name="dynamicValue"><![CDATA[//#CTL2
+
+function string getValue() {
+	return "${DATATMP_DIR}";
+}
+]]></attr>
+<componentReference referencedComponent="UNIVERSAL_DATA_WRITER" referencedProperty="fileURL"/>
+</GraphParameter>
+<GraphParameter defaultHint="$out.0.* = $in.0.*" label="Input mapping" name="INPUT_MAPPING" public="true" required="false" value="//#CTL2&#10;&#10;// Transforms input record into output record.&#10;function integer transform() {&#10;&#9;$out.0.* = $in.0.*;&#10;&#10;&#9;return ALL;&#10;}&#10;&#10;// Called during component initialization.&#10;// function boolean init() {}&#10;&#10;// Called during each graph run before the transform is executed. May be used to allocate and initialize resources&#10;// required by the transform. All resources allocated within this method should be released&#10;// by the postExecute() method.&#10;// function void preExecute() {}&#10;&#10;// Called only if transform() throws an exception.&#10;// function integer transformOnError(string errorMessage, string stackTrace) {}&#10;&#10;// Called during each graph run after the entire transform was executed. Should be used to free any resources&#10;// allocated within the preExecute() method.&#10;// function void postExecute() {}&#10;&#10;// Called to return a user-defined error message when an error occurs.&#10;// function string getMessage() {}&#10;">
+<componentReference referencedComponent="INPUT_MAPPING" referencedProperty="transform"/>
+</GraphParameter>
+<GraphParameter label="Name" name="METADATA_NAME" public="true" required="false" secure="false" value="myMetadata"/>
+<GraphParameter label="Type" name="METADATA_TYPE" public="true" value="delimited"/>
+<GraphParameter category="advanced" label="Record delimiter" name="METADATA_RECORD_DELIMITER" public="true" value="\n"/>
+<GraphParameter category="advanced" label="Default field delimiter" name="METADATA_FIELD_DELIMITER" public="true" value=";"/>
+<GraphParameter category="advanced" label="Record size" name="METADATA_SIZE" public="true"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node debugInput="true" enabled="enabled" guiName="DebugInput" guiX="37" guiY="165" id="DATA_GENERATOR0" recordsNumber="1" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+
+// Generates output record.
+function integer generate() {
+	$out.0.name = "myStringField";
+	$out.0.label = "My String Field";
+	$out.0.type = "string";
+	$out.0.delimiter = ";";
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the generate. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if generate() throws an exception.
+// function integer generateOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node denormalizeClass="com.cloveretl.components.DataRecordMetadataDenormalize" enabled="enabled" guiName="Denormalizer" guiX="531" guiY="165" id="DENORMALIZER" key="recordName(i)" type="DENORMALIZER"/>
+<Node enabled="enabled" guiName="Input mapping" guiX="338" guiY="165" id="INPUT_MAPPING" type="REFORMAT">
+<attr name="transform"><![CDATA[${INPUT_MAPPING}]]></attr>
+</Node>
+<Node enabled="enabled" guiName="SubgraphInput" guiX="207" guiY="-105" id="SUBGRAPH_INPUT0" type="SUBGRAPH_INPUT">
+<Port guiY="0" name="0"/>
+<Port guiY="64" name="1"/>
+</Node>
+<Node enabled="enabled" guiName="SubgraphOutput" guiX="920" guiY="-105" id="SUBGRAPH_OUTPUT0" type="SUBGRAPH_OUTPUT">
+<Port guiY="0" name="0"/>
+</Node>
+<Node enabled="enabled" excludeFields="fileName" fileURL="${OUTPUT_DIR}/#.fmt" guiName="UniversalDataWriter" guiX="725" guiY="165" id="UNIVERSAL_DATA_WRITER" partitionFileTag="keyNameFileTag" partitionKey="fileName" type="DATA_WRITER"/>
+<Edge fromNode="DATA_GENERATOR0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SUBGRAPH_INPUT0:0"/>
+<Edge debugMode="true" fromNode="DENORMALIZER:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="UNIVERSAL_DATA_WRITER:0"/>
+<Edge debugMode="true" fromNode="INPUT_MAPPING:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DENORMALIZER:0"/>
+<Edge fromNode="SUBGRAPH_INPUT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="INPUT_MAPPING:0"/>
+</Phase>
+</Graph>
