@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Pavel" created="Thu Oct 04 11:41:15 CEST 2012" guiVersion="3.3.0.M3" id="1349357018755" licenseType="Commercial" modified="Thu Oct 04 17:48:58 CEST 2012" modifiedBy="Pavel" name="graphIntroduction" revision="1.10" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0" previewAttachment="${DATAIN_DIR}/delimited/addressbook.csv" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="," label="addressbook.csv" name="addressbook_csv" previewAttachment="${DATAIN_DIR}/delimited/addressbook.csv" previewAttachmentCharset="ISO-8859-1" quoteChar="both" quotedStrings="false" recordDelimiter="\n" skipSourceRows="1" type="delimited">
+<Field name="firstname" type="string"/>
+<Field name="lastname" type="string"/>
+<Field name="city" type="string"/>
+<Field name="address" type="string"/>
+<Field name="zip" type="string"/>
+<Field name="email" type="string"/>
+<Field name="phone" type="string"/>
+<Field eofAsDelimiter="false" name="fax" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="addressbook_short" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="name" type="string"/>
+<Field name="city" type="string"/>
+<Field name="email" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="162" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Transformation graph in a nutshell" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="900" x="30" y="283">
+<attr name="text"><![CDATA[
+Data flows from readers (green), through transformers (yellow) into writers (blue)
+
+Edges between components have metadata assigned to them - a sort of description for the data. Double-click any edge to see its metadata.
+
+Notice the small bugs on the edges - these indicate that debug mode is on. You can right-click / View Data to check what data came through the edge. Run the transformation first. Warning - always turn debug mode off when moving to production - it's a priceless help for development but kills performance.]]></attr>
+</Note>
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" folded="false" height="84" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Welcome to CloverETL" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="900" x="30" y="30">
+<attr name="text"><![CDATA[
+This simple example reads a CSV text file, performs some basic transformations on it, and outputs the result into an Excel spreadsheet.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/addressbook.csv" guiHeight="80" guiName="Read file" guiWidth="128" guiX="30" guiY="152" id="READ_FILE" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[CSV data]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="93" guiName="Reformat" guiWidth="128" guiX="525" guiY="152" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.name = $in.0.firstname+' '+$in.0.lastname;
+	$out.0.city = $in.0.city;
+	$out.0.email = $in.0.email;
+
+	return 0;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+<attr name="guiDescription"><![CDATA[Select only some fields, concatenate name]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="93" guiName="Sort by city, name" guiWidth="130" guiX="278" guiY="152" id="SORT_BY_CITY_NAME" sortKey="city(a);lastname(a)" type="FAST_SORT">
+<attr name="guiDescription"><![CDATA[Simple ascending sort by two fields]]></attr>
+</Node>
+<Node enabled="enabled" existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/addressbook_short.xlsx" guiHeight="93" guiName="Write as Excel" guiWidth="128" guiX="802" guiY="152" id="WRITE_AS_EXCEL" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY">
+<attr name="guiDescription"><![CDATA[Use default behavior]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="READ_FILE:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SORT_BY_CITY_NAME:0"/>
+<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (input)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WRITE_AS_EXCEL:0"/>
+<Edge debugMode="true" fromNode="SORT_BY_CITY_NAME:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT1:0"/>
+</Phase>
+</Graph>
