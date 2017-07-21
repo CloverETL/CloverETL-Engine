@@ -1,0 +1,12 @@
+11;0;true;bitSet($0.Arg,$0.Index,$0.SetBitTo1);11;1011;1011
+11;0;false;bitSet($0.Arg,$0.Index,$0.SetBitTo1);10;1011;1010
+11;1;true;bitSet($0.Arg,$0.Index,$0.SetBitTo1);11;1011;1011
+11;1;false;bitSet($0.Arg,$0.Index,$0.SetBitTo1);9;1011;1001
+11;2;true;bitSet($0.Arg,$0.Index,$0.SetBitTo1);15;1011;1111
+11;2;false;bitSet($0.Arg,$0.Index,$0.SetBitTo1);11;1011;1011
+11;3;true;bitSet($0.Arg,$0.Index,$0.SetBitTo1);11;1011;1011
+11;3;false;bitSet($0.Arg,$0.Index,$0.SetBitTo1);3;1011;11
+11;4;true;bitSet($0.Arg,$0.Index,$0.SetBitTo1);27;1011;11011
+11;4;false;bitSet($0.Arg,$0.Index,$0.SetBitTo1);11;1011;1011
+11;5;true;bitSet($0.Arg,$0.Index,$0.SetBitTo1);43;1011;101011
+11;5;false;bitSet($0.Arg,$0.Index,$0.SetBitTo1);11;1011;1011
