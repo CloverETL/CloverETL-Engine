@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph ilustrates reading data from DBF file." guiVersion="0.0.0.devel" id="1204544905191" licenseType="Evaluation Devel" modified="Tue May 24 12:36:46 CEST 2011" modifiedBy="avackova" name="TestingDB2" revision="1.16" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/fixlen/supplierDBF.fmt" id="Metadata0"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node charset="IBM850" enabled="enabled" fileURL="${DATAIN_DIR}/other/SUPPLIER.DBF" guiHeight="103" guiName="Suppliers" guiWidth="128" guiX="20" guiY="20" id="INPUT" type="DBF_DATA_READER">
+<attr name="guiDescription"><![CDATA[Reads data from dBase file]]></attr>
+</Node>
+<Node debugFilename="${DATAOUT_DIR}/Trash1_output.txt" debugPrint="true" enabled="enabled" guiHeight="103" guiName="Trash Output" guiWidth="128" guiX="195" guiY="20" id="OUTPUT" type="TRASH">
+<attr name="guiDescription"><![CDATA[Output printed into specified file.]]></attr>
+</Node>
+<Edge fromNode="INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
+</Phase>
+</Graph>
