@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="dpavlis" created="Wed Jul 23 09:52:36 CEST 2014" guiVersion="0.0.0.devel" id="1406104458027" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Feb 23 15:25:32 CET 2016" modifiedBy="jansedlacek" name="RandomPersonsUS" revision="1.10" showComponentDetails="true">
+<Global>
+<MetadataGroup name="Implicit metadata" type="implicit">
+<Metadata id="RANDOM_PERSON_GENERATOR_Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="Person" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="firstname" type="string"/>
+<Field name="lastname" type="string"/>
+<Field name="birthdate" trim="true" type="date"/>
+<Field name="address1" type="string"/>
+<Field name="address2" type="string"/>
+<Field name="address3" type="string"/>
+<Field name="city" type="string"/>
+<Field name="state" type="string"/>
+<Field name="statecode" type="string"/>
+<Field name="zip" type="string"/>
+<Field name="phone" type="string"/>
+<Field name="email" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="RANDOM_COMPANY_GENERATOR_Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="Company" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="company" type="string"/>
+<Field name="address1" type="string"/>
+<Field name="address2" type="string"/>
+<Field name="address3" type="string"/>
+<Field name="city" type="string"/>
+<Field name="state" type="string"/>
+<Field name="statecode" type="string"/>
+<Field name="zip" type="string"/>
+<Field name="phone" type="string"/>
+<Field name="fax" type="string"/>
+<Field name="www" type="string"/>
+<Field name="email" type="string"/>
+</Record>
+</Metadata>
+</MetadataGroup>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<RichTextNote backgroundColor="DAD8C9" enabled="true" folded="false" fontSize="medium" height="91" id="Note3" textColor="000000" width="929" x="48" y="17">
+<attr name="text"><![CDATA[h3. Test Data Generator
+Generate random but meaningful test data.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="138" id="Note2" textColor="000000" width="343" x="48" y="107">
+<attr name="text"><![CDATA[h3. Scenario
+Generate random test data that are meaningfull. The generated data represent persons and companies.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="138" id="Note5" textColor="000000" width="289" x="390" y="107">
+<attr name="text"><![CDATA[h3. Highlights
+Number of generated records is configurable on the subgraphs.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="138" id="Note6" textColor="000000" width="299" x="678" y="107">
+<attr name="text"><![CDATA[h3. Notes
+Uses a third party library to generated the data  - located in [trans|navigator://BasicExamples/trans] directory.]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/random_companies.txt" guiName="random companies" guiX="447" guiY="382" id="RANDOM_COMPANIES" type="DATA_WRITER"/>
+<Node __RECORDS_NUMBER="150" enabled="enabled" guiName="RandomCompanyGenerator" guiX="105" guiY="382" id="RANDOM_COMPANY_GENERATOR" jobURL="${SUBGRAPH_DIR}/RandomCompanyGenerator.sgrf" type="SUBGRAPH"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/random_persons.txt" guiName="random persons" guiX="447" guiY="258" id="RANDOM_PERSONS" type="DATA_WRITER"/>
+<Node __RECORDS_NUMBER="200" enabled="enabled" guiName="RandomPersonGenerator" guiX="105" guiY="258" id="RANDOM_PERSON_GENERATOR" jobURL="${SUBGRAPH_DIR}/RandomPersonGenerator.sgrf" type="SUBGRAPH"/>
+<Edge debugMode="true" fromNode="RANDOM_COMPANY_GENERATOR:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="RANDOM_COMPANY_GENERATOR_Metadata1" toNode="RANDOM_COMPANIES:0"/>
+<Edge debugMode="true" fromNode="RANDOM_PERSON_GENERATOR:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="RANDOM_PERSON_GENERATOR_Metadata1" toNode="RANDOM_PERSONS:0"/>
+</Phase>
+</Graph>
