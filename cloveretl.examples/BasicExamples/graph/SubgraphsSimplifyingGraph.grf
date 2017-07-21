@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Wed Jul 21 09:24:12 CEST 2010" guiVersion="0.0.0.devel" id="1279697274740" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 09:38:00 CET 2016" modifiedBy="jansedlacek" name="CreditCards" revision="1.127" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/Transactions.fmt" id="Metadata6"/>
+<Metadata id="Metadata7" previewAttachment="${DATAIN_DIR}/customers.csv" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="Customers" previewAttachment="${DATAIN_DIR}/customers.csv" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" skipFirstLine="true" type="delimited">
+<Field name="Id" type="integer"/>
+<Field name="LastName" type="string"/>
+<Field name="FirstName" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="rates" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="currency" type="string"/>
+<Field length="10" name="rate" scale="5" type="decimal"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata4" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="rates_with_id" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="currency" type="string"/>
+<Field length="10" name="rate" scale="5" type="decimal"/>
+<Field name="id" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="transaction_joined" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="customer_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="customer_last_name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="customer_first_name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="transaction_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" length="12" name="amount" nullable="true" scale="2" shift="0" size="0" type="decimal"/>
+<Field eofAsDelimiter="false" name="currency" nullable="true" shift="0" size="0" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="transaction_with_currency" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="customer_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="customer_last_name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="customer_first_name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="transaction_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" length="12" name="amount" nullable="true" scale="2" shift="0" size="0" type="decimal"/>
+<Field eofAsDelimiter="false" name="currency" nullable="true" shift="0" size="0" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0">
+<Record fieldDelimiter="|" name="transactions_only" recordDelimiter="\n" type="delimited">
+<Field name="id" type="integer"/>
+<Field name="amount" type="decimal"/>
+<Field name="currency_id" type="integer"/>
+</Record>
+</Metadata>
+<MetadataGroup name="Implicit metadata" type="implicit">
+<Metadata id="DETECT_RISKY_TRANSACTIONS_Metadata3" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="transaction_with_currency" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="customer_id" trim="true" type="integer"/>
+<Field name="customer_last_name" type="string"/>
+<Field name="customer_first_name" type="string"/>
+<Field name="transaction_id" trim="true" type="integer"/>
+<Field length="12" name="amount" scale="2" trim="true" type="decimal"/>
+<Field name="currency" type="string"/>
+</Record>
+</Metadata>
+</MetadataGroup>
+<GraphParameters>
+<GraphParameter name="RATES_FILE" value="http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<RichTextNote backgroundColor="DAD8C9" enabled="true" folded="false" fontSize="medium" height="105" id="Note3" textColor="000000" width="900" x="56" y="5">
+<attr name="text"><![CDATA[h3. Simplifying Complex Graphs
+This example shows how subgraphs can  be used to simplify complex graphs. It performs the same task as CreditCardFraudDetection graph, but is easier to understand and maintain.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="204" id="Note2" textColor="000000" width="343" x="56" y="109">
+<attr name="text"><![CDATA[h3. Scenario
+This examples joins multiple sources and checks for incorrect transactions (missing IDs, incorrect currencies) and identifies suspiciously high transactions.
+
+The complex logic is packaged as a subgraph to simplify the top level graph.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="204" id="Note5" textColor="000000" width="289" x="398" y="109">
+<attr name="text"><![CDATA[h3. Highlights
+The subgraph was created from the original complex graph via subgraph wrapping - just select a few components, right-click on them and select "Wrap As Subgraph".]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="204" id="Note6" textColor="000000" width="270" x="686" y="109">
+<attr name="text"><![CDATA[h3. Notes
+The subraph reads data from internet. If you don't have your computer connected to internet, you can read [eurofxref-daily.xml|open://BasicExamples/data-in/eurofxref-daily.xml] placed in data-in directory. To do that, set parameter [RATES_FILE|element://GraphParameter0] to 
+
+_./data-in/eurofxref-daily.xml_]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="195" id="Note1" textColor="000000" width="189" x="241" y="323">
+<attr name="text"><![CDATA[Sort transactions by customer ID]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="212" id="Note12" textColor="000000" width="205" x="1068" y="312">
+<attr name="text"><![CDATA[Output ttransactions with bad customer IDs]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="197" id="Note14" textColor="000000" width="205" x="1068" y="523">
+<attr name="text"><![CDATA[Output a list of unsupported currency]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="184" id="Note21" textColor="000000" width="205" x="1068" y="719">
+<attr name="text"><![CDATA[Output a list of risky customers]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="DetectRiskyTransactions" guiX="780" guiY="389" id="DETECT_RISKY_TRANSACTIONS" jobURL="${SUBGRAPH_DIR}/DetectRiskyTransactions.sgrf" type="SUBGRAPH"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/missing-currency.html" footer="&lt;/table&gt;&#13;&#10;&lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiName="Incorrect Currency" guiX="1090" guiY="592" header="&lt;html&gt;&#13;&#10;&lt;body&gt;&#13;&#10;&lt;h3&gt;Transactions with missing currency&lt;/h3&gt;&#13;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot;  border=&quot;1&quot;&gt;&#13;&#10;&lt;tr&gt;&#13;&#10;&lt;th&gt;Transaction&lt;/th&gt;&#13;&#10;&lt;th&gt;Customer&lt;/th&gt;&#13;&#10;&lt;th&gt;Amount&lt;/th&gt;&#13;&#10;&lt;th&gt;Currency&lt;/th&gt;&#13;&#10;&lt;th&gt;Full Name&lt;/th&gt;&#13;&#10;&lt;/tr&gt;&#13;&#10;" id="INCORRECT_CURRENCY" mask="&lt;tr&gt;&#13;&#10;&lt;td&gt;$transaction_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_id&lt;/id&gt;&#13;&#10;&lt;td&gt;$amount&lt;/td&gt;&#13;&#10;&lt;td&gt;$currency&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_first_name $customer_last_name&lt;/td&gt;&#13;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/customers.csv" guiName="Load Customer Details" guiX="69" guiY="552" id="LOAD_CUSTOMER_DETAILS" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/transactions.csv" guiName="Load Transactions" guiX="69" guiY="389" id="LOAD_TRANSACTIONS" type="DATA_READER"/>
+<Node enabled="enabled" guiName="Match Transactions with Customer" guiX="502" guiY="389" id="MATCH_TRANSACTIONS_WITH_CUSTOMER" joinKey="$CustomerId(a)#$Id(a);" joinType="leftOuter" type="EXT_MERGE_JOIN">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.transaction_id = $0.TransactionId;
+	$0.customer_id = $1.Id;
+	$0.amount = $0.Amount;
+	$0.currency = $0.CurrencyId;
+	$0.customer_last_name = $1.LastName;
+	$0.customer_first_name = $1.FirstName;
+
+	return 0;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/missing-customer.html" footer="&lt;/table&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;" guiName="Missing Customer ID" guiX="1086" guiY="389" header="&lt;html&gt;&#10;&lt;body&gt;&#10;&lt;h3&gt;Transactions with missing customer&lt;/h3&gt;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot; border=&quot;1&quot;&gt;&#10;&lt;tr&gt;&#10;&lt;th&gt;Transaction&lt;/th&gt;&#10;&lt;th&gt;Amount&lt;/th&gt;&#10;&lt;th&gt;Currency&lt;/th&gt;&#10;&lt;/tr&gt;" id="MISSING_CUSTOMER_ID" mask="&lt;tr&gt;&#10;&lt;td&gt;$transaction_id&lt;/td&gt;&#10;&lt;td&gt;$amount&lt;/td&gt;&#10;&lt;td&gt;$currency&lt;/td&gt;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/risky-customer.html" footer="&lt;/table&gt;&#13;&#10;&lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiName="Risky Customers" guiX="1098" guiY="793" header="&lt;html&gt;&#13;&#10;&lt;body&gt;&#13;&#10;&lt;h3&gt;Customers with suspicious transaction total (over EUR 400 000) &lt;/h3&gt;&#13;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot; border=&quot;1&quot;&gt;&#13;&#10;&lt;tr&gt;&#13;&#10;&lt;th&gt;Customer&lt;/th&gt;&#13;&#10;&lt;th&gt;Amount&lt;/th&gt;&#13;&#10;&lt;th&gt;Currency&lt;/th&gt;&#13;&#10;&lt;th&gt;Full Name&lt;/th&gt;&#13;&#10;&lt;/tr&gt;&#13;&#10;" id="RISKY_CUSTOMERS1" mask="&lt;tr&gt;&#13;&#10;&lt;td&gt;$customer_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$amount&lt;/td&gt;&#13;&#10;&lt;td&gt;$currency&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_first_name $customer_last_name&lt;/td&gt;&#13;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
+<Node enabled="enabled" guiName="Sort Transactions" guiX="262" guiY="389" id="SORT_TRANSACTIONS" sortKey="CustomerId(a)" type="FAST_SORT"/>
+<Edge fromNode="DETECT_RISKY_TRANSACTIONS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (Body port)" outPort="Port 0 (out)" persistedImplicitMetadata="DETECT_RISKY_TRANSACTIONS_Metadata3" toNode="MISSING_CUSTOMER_ID:0"/>
+<Edge debugMode="false" fromNode="DETECT_RISKY_TRANSACTIONS:1" guiBendpoints="1179:383|1179:578" guiLocks="1215|307|null" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (Body port)" outPort="Port 1 (out)" persistedImplicitMetadata="DETECT_RISKY_TRANSACTIONS_Metadata3" toNode="INCORRECT_CURRENCY:0"/>
+<Edge debugMode="false" fromNode="DETECT_RISKY_TRANSACTIONS:2" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (Body port)" outPort="Port 2 (out)" persistedImplicitMetadata="DETECT_RISKY_TRANSACTIONS_Metadata3" toNode="RISKY_CUSTOMERS1:0"/>
+<Edge debugMode="false" fromNode="LOAD_CUSTOMER_DETAILS:0" guiBendpoints="401:268|401:188" guiLocks="452|null|null" guiRouter="Manual" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata7" outPort="Port 0 (output)" toNode="MATCH_TRANSACTIONS_WITH_CUSTOMER:1"/>
+<Edge debugMode="false" fromNode="LOAD_TRANSACTIONS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (output)" toNode="SORT_TRANSACTIONS:0"/>
+<Edge debugMode="true" fromNode="MATCH_TRANSACTIONS_WITH_CUSTOMER:0" guiBendpoints="39:0|39:119" guiLocks="null|null|null" guiRouter="Manual" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DETECT_RISKY_TRANSACTIONS:0"/>
+<Edge debugMode="true" fromNode="SORT_TRANSACTIONS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (driver)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata6" toNode="MATCH_TRANSACTIONS_WITH_CUSTOMER:0"/>
+</Phase>
+</Graph>
