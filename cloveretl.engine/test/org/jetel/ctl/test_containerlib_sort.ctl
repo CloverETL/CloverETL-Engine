@@ -1,0 +1,46 @@
+integer[] intList;
+integer[] intList2;
+long[] longList;
+long[] longList2;
+decimal[] decList;
+decimal[] decList2;
+number[] numList;
+number[] numList2;
+date[] dateList;
+date[] dateList2;
+string[] strList;
+string[] strList2;
+string[] emptyList;
+string[] emptyList2;
+string[] retNull1;
+boolean[] retNull2;
+date[] retNull3;
+integer[] retNull4;
+long[] retNull5;
+number[] retNull6;
+decimal[] retNull7;
+
+function integer transform() {
+	intList = [3, 2, 1, 1, 5];
+	intList2 = sort(intList);
+	longList = [23l, 21l, 24l, 22l];
+	longList2 = longList.sort();
+	decList = [1.4d,1.2d,1.1d,1.3d];
+	decList2 = sort(decList);
+	numList = [1.3,1.2,1.4,1.1];
+	numList2 = numList.sort();
+	dateList = [str2date('2004-06-12','yyyy-MM-dd'),str2date('2002-06-12','yyyy-MM-dd'),str2date('2003-06-12','yyyy-MM-dd')];
+	dateList2 = sort(dateList);
+	strList = ['Soraka', 'Nocturne', 'Alistar', ''];
+	strList2 = strList.sort();
+	emptyList2 = sort(emptyList);
+	retNull1 = sort(['Kennen', null, 'Renector', null]);
+	retNull2 = sort([true, null, false, null, true, null]);
+	retNull3 = sort([null, 2001-01-20, null, 2003-05-12]);
+	retNull4 = sort([12,null,8,null,10,null,1]);
+	retNull5 = sort([12, null, 15L, null, 1, null]);
+	retNull6 = sort([null, 12.3, null, 12.4, 12.1]);
+	retNull7 = sort([11.1d, null, 11d, null, 11.2d, null]);
+	printErr(retNull7);
+	return 0;
+}
