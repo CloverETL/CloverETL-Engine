@@ -1,0 +1,84 @@
+OrderID|CustomerID|EmployeeID|OrderDate|RequiredDate|ShippedDate|ShipVia|Freight|ShipName|ShipAddress|ShipCity|ShipRegion|ShipPostalCode|ShipCountry
+10250|HANAR|4|08.07.1996|05.08.1996|12.07.1996|2|65.83|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|RJ|05454-876|Brazil
+10253|HANAR|3|10.07.1996|24.07.1996|16.07.1996|2|58.17|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|RJ|05454-876|Brazil
+10256|WELLI|3|15.07.1996|12.08.1996|17.07.1996|2|13.97|Wellington Importadora|Rua do Mercado, 12|Resende|SP|08737-363|Brazil
+10261|QUEDE|4|19.07.1996|16.08.1996|30.07.1996|2|3.05|Que Delícia|Rua da Panificadora, 12|Rio de Janeiro|RJ|02389-673|Brazil
+10287|RICAR|8|22.08.1996|19.09.1996|28.08.1996|3|12.76|Ricardo Adocicados|Av. Copacabana, 267|Rio de Janeiro|RJ|02389-890|Brazil
+10290|COMMI|8|27.08.1996|24.09.1996|03.09.1996|1|79.7|Comércio Mineiro|Av. dos Lusíadas, 23|Sao Paulo|SP|05432-043|Brazil
+10291|QUEDE|6|27.08.1996|24.09.1996|04.09.1996|2|6.4|Que Delícia|Rua da Panificadora, 12|Rio de Janeiro|RJ|02389-673|Brazil
+10292|TRADH|1|28.08.1996|25.09.1996|02.09.1996|2|1.35|Tradiçao Hipermercados|Av. Ines de Castro, 414|Sao Paulo|SP|05634-030|Brazil
+10299|RICAR|4|06.09.1996|04.10.1996|13.09.1996|2|29.76|Ricardo Adocicados|Av. Copacabana, 267|Rio de Janeiro|RJ|02389-890|Brazil
+10347|FAMIA|4|06.11.1996|04.12.1996|08.11.1996|3|3.1|Familia Arquibaldo|Rua Orós, 92|Sao Paulo|SP|05442-030|Brazil
+10372|QUEEN|5|04.12.1996|01.01.1997|09.12.1996|2|890.78|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|SP|05487-020|Brazil
+10379|QUEDE|2|11.12.1996|08.01.1997|13.12.1996|1|45.03|Que Delícia|Rua da Panificadora, 12|Rio de Janeiro|RJ|02389-673|Brazil
+10386|FAMIA|9|18.12.1996|01.01.1997|25.12.1996|3|13.99|Familia Arquibaldo|Rua Orós, 92|Sao Paulo|SP|05442-030|Brazil
+10406|QUEEN|7|07.01.1997|18.02.1997|13.01.1997|1|108.04|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|SP|05487-020|Brazil
+10414|FAMIA|2|14.01.1997|11.02.1997|17.01.1997|3|21.48|Familia Arquibaldo|Rua Orós, 92|Sao Paulo|SP|05442-030|Brazil
+10420|WELLI|3|21.01.1997|18.02.1997|27.01.1997|1|44.12|Wellington Importadora|Rua do Mercado, 12|Resende|SP|08737-363|Brazil
+10421|QUEDE|8|21.01.1997|04.03.1997|27.01.1997|1|99.23|Que Delícia|Rua da Panificadora, 12|Rio de Janeiro|RJ|02389-673|Brazil
+10423|GOURL|6|23.01.1997|06.02.1997|24.02.1997|3|24.5|Gourmet Lanchonetes|Av. Brasil, 442|Campinas|SP|04876-786|Brazil
+10447|RICAR|4|14.02.1997|14.03.1997|07.03.1997|2|68.66|Ricardo Adocicados|Av. Copacabana, 267|Rio de Janeiro|RJ|02389-890|Brazil
+10466|COMMI|4|06.03.1997|03.04.1997|13.03.1997|1|11.93|Comércio Mineiro|Av. dos Lusíadas, 23|Sao Paulo|SP|05432-043|Brazil
+10481|RICAR|8|20.03.1997|17.04.1997|25.03.1997|2|64.33|Ricardo Adocicados|Av. Copacabana, 267|Rio de Janeiro|RJ|02389-890|Brazil
+10487|QUEEN|2|26.03.1997|23.04.1997|28.03.1997|2|71.07|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|SP|05487-020|Brazil
+10494|COMMI|4|02.04.1997|30.04.1997|09.04.1997|2|65.99|Comércio Mineiro|Av. dos Lusíadas, 23|Sao Paulo|SP|05432-043|Brazil
+10496|TRADH|7|04.04.1997|02.05.1997|07.04.1997|2|46.77|Tradiçao Hipermercados|Av. Ines de Castro, 414|Sao Paulo|SP|05634-030|Brazil
+10512|FAMIA|7|21.04.1997|19.05.1997|24.04.1997|2|3.53|Familia Arquibaldo|Rua Orós, 92|Sao Paulo|SP|05442-030|Brazil
+10541|HANAR|2|19.05.1997|16.06.1997|29.05.1997|1|68.65|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|RJ|05454-876|Brazil
+10563|RICAR|2|10.06.1997|22.07.1997|24.06.1997|2|60.43|Ricardo Adocicados|Av. Copacabana, 267|Rio de Janeiro|RJ|02389-890|Brazil
+10581|FAMIA|3|26.06.1997|24.07.1997|02.07.1997|1|3.01|Familia Arquibaldo|Rua Orós, 92|Sao Paulo|SP|05442-030|Brazil
+10585|WELLI|7|01.07.1997|29.07.1997|10.07.1997|1|13.41|Wellington Importadora|Rua do Mercado, 12|Resende|SP|08737-363|Brazil
+10587|QUEDE|1|02.07.1997|30.07.1997|09.07.1997|1|62.52|Que Delícia|Rua da Panificadora, 12|Rio de Janeiro|RJ|02389-673|Brazil
+10606|TRADH|4|22.07.1997|19.08.1997|31.07.1997|3|79.4|Tradiçao Hipermercados|Av. Ines de Castro, 414|Sao Paulo|SP|05634-030|Brazil
+10622|RICAR|4|06.08.1997|03.09.1997|11.08.1997|3|50.97|Ricardo Adocicados|Av. Copacabana, 267|Rio de Janeiro|RJ|02389-890|Brazil
+10637|QUEEN|6|19.08.1997|16.09.1997|26.08.1997|1|201.29|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|SP|05487-020|Brazil
+10644|WELLI|3|25.08.1997|22.09.1997|01.09.1997|2|0.14|Wellington Importadora|Rua do Mercado, 12|Resende|SP|08737-363|Brazil
+10645|HANAR|4|26.08.1997|23.09.1997|02.09.1997|1|12.41|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|RJ|05454-876|Brazil
+10647|QUEDE|4|27.08.1997|10.09.1997|03.09.1997|2|45.54|Que Delícia|Rua da Panificadora, 12|Rio de Janeiro|RJ|02389-673|Brazil
+10648|RICAR|5|28.08.1997|09.10.1997|09.09.1997|2|14.25|Ricardo Adocicados|Av. Copacabana, 267|Rio de Janeiro|RJ|02389-890|Brazil
+10650|FAMIA|5|29.08.1997|26.09.1997|03.09.1997|3|176.81|Familia Arquibaldo|Rua Orós, 92|Sao Paulo|SP|05442-030|Brazil
+10652|GOURL|4|01.09.1997|29.09.1997|08.09.1997|2|7.14|Gourmet Lanchonetes|Av. Brasil, 442|Campinas|SP|04876-786|Brazil
+10659|QUEEN|7|05.09.1997|03.10.1997|10.09.1997|2|105.81|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|SP|05487-020|Brazil
+10685|GOURL|4|29.09.1997|13.10.1997|03.10.1997|2|33.75|Gourmet Lanchonetes|Av. Brasil, 442|Campinas|SP|04876-786|Brazil
+10690|HANAR|1|02.10.1997|30.10.1997|03.10.1997|1|15.8|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|RJ|05454-876|Brazil
+10704|QUEEN|6|14.10.1997|11.11.1997|07.11.1997|1|4.78|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|SP|05487-020|Brazil
+10709|GOURL|1|17.10.1997|14.11.1997|20.11.1997|3|210.8|Gourmet Lanchonetes|Av. Brasil, 442|Campinas|SP|04876-786|Brazil
+10720|QUEDE|8|28.10.1997|11.11.1997|05.11.1997|2|9.53|Que Delícia|Rua da Panificadora, 12|Rio de Janeiro|RJ|02389-673|Brazil
+10725|FAMIA|4|31.10.1997|28.11.1997|05.11.1997|3|10.83|Familia Arquibaldo|Rua Orós, 92|Sao Paulo|SP|05442-030|Brazil
+10728|QUEEN|4|04.11.1997|02.12.1997|11.11.1997|2|58.33|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|SP|05487-020|Brazil
+10734|GOURL|2|07.11.1997|05.12.1997|12.11.1997|3|1.63|Gourmet Lanchonetes|Av. Brasil, 442|Campinas|SP|04876-786|Brazil
+10770|HANAR|8|09.12.1997|06.01.1998|17.12.1997|3|5.32|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|RJ|05454-876|Brazil
+10777|GOURL|7|15.12.1997|29.12.1997|21.01.1998|2|3.01|Gourmet Lanchonetes|Av. Brasil, 442|Campinas|SP|04876-786|Brazil
+10783|HANAR|4|18.12.1997|15.01.1998|19.12.1997|2|124.98|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|RJ|05454-876|Brazil
+10786|QUEEN|8|19.12.1997|16.01.1998|23.12.1997|1|110.87|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|SP|05487-020|Brazil
+10790|GOURL|6|22.12.1997|19.01.1998|26.12.1997|1|28.23|Gourmet Lanchonetes|Av. Brasil, 442|Campinas|SP|04876-786|Brazil
+10794|QUEDE|6|24.12.1997|21.01.1998|02.01.1998|1|21.49|Que Delícia|Rua da Panificadora, 12|Rio de Janeiro|RJ|02389-673|Brazil
+10803|WELLI|4|30.12.1997|27.01.1998|06.01.1998|1|55.23|Wellington Importadora|Rua do Mercado, 12|Resende|SP|08737-363|Brazil
+10809|WELLI|7|01.01.1998|29.01.1998|07.01.1998|1|4.87|Wellington Importadora|Rua do Mercado, 12|Resende|SP|08737-363|Brazil
+10813|RICAR|1|05.01.1998|02.02.1998|09.01.1998|1|47.38|Ricardo Adocicados|Av. Copacabana, 267|Rio de Janeiro|RJ|02389-890|Brazil
+10830|TRADH|4|13.01.1998|24.02.1998|21.01.1998|2|81.83|Tradiçao Hipermercados|Av. Ines de Castro, 414|Sao Paulo|SP|05634-030|Brazil
+10834|TRADH|1|15.01.1998|12.02.1998|19.01.1998|3|29.78|Tradiçao Hipermercados|Av. Ines de Castro, 414|Sao Paulo|SP|05634-030|Brazil
+10839|TRADH|3|19.01.1998|16.02.1998|22.01.1998|3|35.43|Tradiçao Hipermercados|Av. Ines de Castro, 414|Sao Paulo|SP|05634-030|Brazil
+10851|RICAR|5|26.01.1998|23.02.1998|02.02.1998|1|160.55|Ricardo Adocicados|Av. Copacabana, 267|Rio de Janeiro|RJ|02389-890|Brazil
+10868|QUEEN|7|04.02.1998|04.03.1998|23.02.1998|2|191.27|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|SP|05487-020|Brazil
+10877|RICAR|1|09.02.1998|09.03.1998|19.02.1998|1|38.06|Ricardo Adocicados|Av. Copacabana, 267|Rio de Janeiro|RJ|02389-890|Brazil
+10886|HANAR|1|13.02.1998|13.03.1998|02.03.1998|1|4.99|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|RJ|05454-876|Brazil
+10900|WELLI|1|20.02.1998|20.03.1998|04.03.1998|2|1.66|Wellington Importadora|Rua do Mercado, 12|Resende|SP|08737-363|Brazil
+10903|HANAR|3|24.02.1998|24.03.1998|04.03.1998|3|36.71|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|RJ|05454-876|Brazil
+10905|WELLI|9|24.02.1998|24.03.1998|06.03.1998|2|13.72|Wellington Importadora|Rua do Mercado, 12|Resende|SP|08737-363|Brazil
+10913|QUEEN|4|26.02.1998|26.03.1998|04.03.1998|1|33.05|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|SP|05487-020|Brazil
+10914|QUEEN|6|27.02.1998|27.03.1998|02.03.1998|1|21.19|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|SP|05487-020|Brazil
+10922|HANAR|5|03.03.1998|31.03.1998|05.03.1998|3|62.74|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|RJ|05454-876|Brazil
+10925|HANAR|3|04.03.1998|01.04.1998|13.03.1998|1|2.27|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|RJ|05454-876|Brazil
+10935|WELLI|4|09.03.1998|06.04.1998|18.03.1998|3|47.59|Wellington Importadora|Rua do Mercado, 12|Resende|SP|08737-363|Brazil
+10959|GOURL|6|18.03.1998|29.04.1998|23.03.1998|2|4.98|Gourmet Lanchonetes|Av. Brasil, 442|Campinas|SP|04876-786|Brazil
+10961|QUEEN|8|19.03.1998|16.04.1998|30.03.1998|1|104.47|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|SP|05487-020|Brazil
+10969|COMMI|1|23.03.1998|20.04.1998|30.03.1998|2|0.21000000000000002|Comércio Mineiro|Av. dos Lusíadas, 23|Sao Paulo|SP|05432-043|Brazil
+10981|HANAR|1|27.03.1998|24.04.1998|02.04.1998|2|193.37|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|RJ|05454-876|Brazil
+10989|QUEDE|2|31.03.1998|28.04.1998|02.04.1998|1|34.76|Que Delícia|Rua da Panificadora, 12|Rio de Janeiro|RJ|02389-673|Brazil
+11022|HANAR|9|14.04.1998|12.05.1998|04.05.1998|2|6.27|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|RJ|05454-876|Brazil
+11042|COMMI|2|22.04.1998|06.05.1998|01.05.1998|1|29.99|Comércio Mineiro|Av. dos Lusíadas, 23|Sao Paulo|SP|05432-043|Brazil
+11049|GOURL|3|24.04.1998|22.05.1998|04.05.1998|1|8.34|Gourmet Lanchonetes|Av. Brasil, 442|Campinas|SP|04876-786|Brazil
+11052|HANAR|3|27.04.1998|25.05.1998|01.05.1998|1|67.26|Hanari Carnes|Rua do Paço, 67|Rio de Janeiro|RJ|05454-876|Brazil
+11059|RICAR|2|29.04.1998|10.06.1998||2|85.8|Ricardo Adocicados|Av. Copacabana, 267|Rio de Janeiro|RJ|02389-890|Brazil
+11068|QUEEN|8|04.05.1998|01.06.1998||2|81.75|Queen Cozinha|Alameda dos Canarios, 891|Sao Paulo|SP|05487-020|Brazil
