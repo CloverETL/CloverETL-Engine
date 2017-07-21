@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<project name="CustomTLFunctions" basedir="." default="install">
+	
+	<property file="${basedir}/build.properties"/>
+
+	<property name="dir.bin" value="${basedir}/bin"/>
+	<property name="dir.src" value="${basedir}/src"/>
+	<property name="dir.lib" value="${basedir}/lib"/>
+	
+	<property name="package.name" value="org.mypackage.${ctl_version}functions"/> 
+	<property name="library.name" value="my_lib_${ctl_version}.jar"/>
+	
+	<property name="verbose" value="true"/>
+
+	
+	<fileset id="libs" dir="${dir.lib}">
+		<include name="**/*.jar"/>
+	</fileset>
+
+	<target name="check-engine">
+	  <available file="${dir.engine}/lib/cloveretl.engine.jar" property="engineExist"/>
+	  <fail unless="engineExist" message="cloveretl.engine.jar not found. Please check the path in build.properties file!!!"/>
+	</target>
+
+	<target name="compile" description="Compile sources" depends="check-engine">
+		<!-- Create directory for binaries. -->
+		<mkdir dir="${dir.bin}"/>
+		<echo>CloverETL Engine's path: ${dir.engine}/lib/cloveretl.engine.jar</echo>
+		<!-- Compile sources -->
+		<javac debug="true" destdir="${dir.bin}" verbose="${verbose}">
+			<classpath>
+				<pathelement path="${dir.engine}/lib/cloveretl.engine.jar"/>
+				<fileset refid="libs"/>	
+			</classpath>
+			<src path="${dir.src}"/>
+		</javac>
+	</target>
+
+	<target name="package" description="Creates jar file" depends="compile">
+		<jar destfile="${basedir}/${library.name}" basedir="${dir.bin}">
+			<include name="**/${ctl_version}functions/**/*.class"/>
+		</jar>
+	</target>
+	
+	<target name="install" description="Copies all needed files to CloverETL plugins directory" depends="package">
+		<mkdir dir="${dir.engine}/plugins/${package.name}"/>
+		<copy file="${basedir}/${library.name}" todir="${dir.engine}/plugins/${package.name}"/>
+		<copy file="${basedir}/${ctl_version}_plugin.xml" tofile="${dir.engine}/plugins/${package.name}/plugin.xml"/>
+		<mkdir dir="${dir.engine}/plugins/${package.name}/lib"/>
+		<copy todir="${dir.engine}/plugins/${package.name}/lib">
+			<fileset refid="libs"/>
+		</copy>
+		<antcall target="clean"/>
+	</target>
+	
+	<target name="clean" description="Removes all unneeded files created during building">
+		<delete dir="${dir.bin}"/>
+		<delete file="${library.name}"/>
+	</target>
+
+</project>

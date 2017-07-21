@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361367492640" licenseCode="Commercial Devel" licenseType="Commercial" modified="Mon Jan 13 18:38:26 CET 2014" modifiedBy="User" name="RunJobInHadoopHIVE" revision="1.44" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/meta_count_output.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata0"/>
+<Connection dbConfig="${CONN_DIR}/Hive-CDH-5.6.0.cfg" id="JDBC0" type="JDBC"/>
+<GraphParameters>
+<GraphParameterFile fileURL="hadoop.prm"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<RichTextNote backgroundColor="404040" enabled="true" folded="false" fontSize="medium" height="104" id="Note4" textColor="FFFFFF" width="929" x="20" y="9">
+<attr name="text"><![CDATA[h3. Big Data - Processing Web Access Log (Unique Visitors):  Hadoop Hive Solution
+Report the number of unique visitors per month from a potentially huge web access log using different methods.
+(CloverETL, Hadoop HIVE, Hadoop MapReduce, and MongoDB)]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="47" id="Note5" textColor="000000" width="929" x="20" y="112">
+<attr name="text"><![CDATA[h3. This graph is part of the "[UniqueVisits-HadoopHive.jbf|navigator://BigDataExamples/jobflow/UniqueVisits-HadoopHive.jbf]" jobflow.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="259" id="Note0" textColor="000000" width="274" x="20" y="189">
+<attr name="text"><![CDATA[h3. Phase 0: Drop Hive table
+
+
+
+
+
+
+
+
+
+Drop table in Hive (if already exists) including any data it already contains.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="210" id="Note1" textColor="000000" width="327" x="323" y="238">
+<attr name="text"><![CDATA[h3. Phase 1: Re-create Hive table
+
+
+
+
+
+
+
+Recreates an empty Hive table to be populated with data.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="280" id="Note2" textColor="000000" width="289" x="675" y="298">
+<attr name="text"><![CDATA[h3. Phase 2: Load data from HDFS to Hive
+
+
+
+
+
+
+
+Loads data from HDFS filesystem into a Hive table. The LOAD DATA command uses absolute path without LOCAL keyword causing Hive to MOVE the load file to table.]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node dbConnection="JDBC0" enabled="enabled" guiName="Drop WebLogTable [HIVE]" guiX="69" guiY="254" id="DROP_WEB_LOG_TABLE_HIVE" inTransaction="one" type="DB_EXECUTE">
+<attr name="sqlQuery"><![CDATA[DROP TABLE IF EXISTS WebLogTable]]></attr>
+</Node>
+</Phase>
+<Phase number="1">
+<Node dbConnection="JDBC0" enabled="enabled" guiName="Create WebLogTable [HIVE]" guiX="393" guiY="298" id="CREATE_WEB_LOG_TABLE_HIVE" inTransaction="one" type="DB_EXECUTE">
+<attr name="sqlQuery"><![CDATA[CREATE TABLE IF NOT EXISTS WebLogTable (YEAR_MONTH STRING, IP_ADDRESS STRING)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE]]></attr>
+</Node>
+</Phase>
+<Phase number="2">
+<Node dbConnection="JDBC0" enabled="enabled" guiName="Load data to WebLogTable [HIVE]" guiX="706" guiY="388" id="LOAD_DATA_TO_WEB_LOG_TABLE_HIVE" inTransaction="one" type="DB_EXECUTE">
+<attr name="sqlQuery"><![CDATA[LOAD DATA INPATH '/tmp/bigdata_examples/key-value-pairs' OVERWRITE INTO TABLE WebLogTable;]]></attr>
+</Node>
+</Phase>
+</Graph>
