@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Petr" created="Thu Jul 15 14:15:28 CEST 2010" guiVersion="0.0.0.devel" id="1279197992165" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 11:07:05 CET 2016" modifiedBy="jansedlacek" name="graphJoining_Aggregating" revision="1.109" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/categories.fmt" id="Metadata5"/>
+<Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/orders_amounts.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/products.fmt" id="Metadata4"/>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="customer_order" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="customerid" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="firstname" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="lastname" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="email" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="phone" nullable="true" shift="0" size="0" type="string"/>
+<Field name="country" type="string"/>
+<Field eofAsDelimiter="false" name="income" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="orderid" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" format="yyyy-MM-dd" name="orderdate" nullable="true" shift="0" size="0" type="date"/>
+<Field eofAsDelimiter="false" length="14" name="totalamount" nullable="true" scale="2" shift="0" size="0" type="decimal"/>
+<Field name="productid" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="customer_order_agg" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="customerid" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="firstname" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="lastname" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="email" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="phone" nullable="true" shift="0" size="0" type="string"/>
+<Field name="country" type="string"/>
+<Field eofAsDelimiter="false" name="income" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" length="14" name="minamount" nullable="true" scale="2" shift="0" size="0" type="decimal"/>
+<Field eofAsDelimiter="false" length="14" name="maxamount" nullable="true" scale="2" shift="0" size="0" type="decimal"/>
+<Field eofAsDelimiter="false" length="14" name="avgamount" nullable="true" scale="2" shift="0" size="0" type="decimal"/>
+<Field name="noorders" type="integer"/>
+<Field length="14" name="totalamount" scale="2" type="decimal"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata6" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="products_category" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="prod_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="categoryname" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="title" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="actor" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" length="14" name="price" nullable="true" scale="2" shift="0" size="0" type="decimal"/>
+<Field eofAsDelimiter="false" name="special" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="common_prod_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field name="soldcopies" type="integer"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<RichTextNote backgroundColor="DAD8C9" enabled="true" folded="false" fontSize="medium" height="101" id="Note5" textColor="000000" width="1204" x="6" y="3">
+<attr name="text"><![CDATA[h3. Welcome to CloverETL
+
+This example shows various operations on multiple data sets which are combined/joined and worked on to produce reports & statistics.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="365" id="Note0" textColor="000000" width="180" x="193" y="107">
+<attr name="text"><![CDATA[Merges ordered data from two sources. The output data is ordered by the same key as input data.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="365" id="Note2" textColor="000000" width="238" x="374" y="107">
+<attr name="text"><![CDATA[We want to find customers that didn’t place an order. Those records are sent to the first output port. The records with the data joined from two input ports are sent to second output port]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="F9EB81" enabled="true" folded="false" fontSize="medium" height="319" id="Note6" textColor="000000" width="593" x="617" y="107">
+<attr name="text"><![CDATA[h5. TASK1: Find registered customers who did not buy a DVD.
+*SOLUTION*: Find such customers records that the customerid is not present in any orders record
+]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="118" id="Note3" textColor="000000" width="598" x="7" y="579">
+<attr name="text"><![CDATA[h6. Nothing remains...
+It is not suprising that no record is sent to the third output port - every order must have been made by a customer, thus no orders with unmatched "customerid" can be found]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="F9EB81" enabled="true" folded="false" fontSize="medium" height="266" id="Note1" textColor="000000" width="589" x="621" y="431">
+<attr name="text"><![CDATA[h5. TASK2: Calculate statistical data about customers who bought a DVD.
+*SOLUTION*: Find such customer and order records having "customerid" field value in common. Group the records by "customerid". Use aggregation functions.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="F9EB81" enabled="true" folded="false" fontSize="medium" height="399" id="Note4" textColor="000000" width="589" x="621" y="704">
+<attr name="text"><![CDATA[h3. TASK3: Report products and sales statistics
+*SOLUTION*: Join the product data with the category data then enhance products by sales statistics.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="DEF4AB" folded="false" fontSize="medium" height="196" id="Note7" textColor="000000" width="412" x="193" y="704">
+<attr name="text"><![CDATA[h3. See results in Navigator:
+
+After running a graph, you can see results located in project: [BasicExamples|navigator://BasicExamples]
+
+
+* [data-out/customers_without_order_region1.csv|open://data-out/customers_without_order_region1.csv]
+* [data-out/customers_without_order_region2.csv| open://data-out/customers_without_order_region2.csv]
+* [data-out/customers_DVD_report.xlsx|open://data-out/customers_DVD_report.xlsx]
+* [data-out/products_DVD_report.xlsx|open://data-out/products_DVD_report.xlsx]
+
+]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node aggregateKey="productid" enabled="enabled" guiName="Calculate DVD stats" guiX="643" guiY="1020" id="CALCULATE_DVD_STATS" mapping="$prod_id:=$productid;$soldcopies:=count();" sorted="false" type="AGGREGATE"/>
+<Node aggregateKey="customerid" enabled="enabled" guiName="Calculate stats" guiX="643" guiY="579" id="CALCULATE_STATS" mapping="$customerid:=$customerid;$firstname:=first($firstname);$lastname:=first($lastname);$email:=first($email);$phone:=first($phone);$country:=first($country);$income:=first($income);$minamount:=min($totalamount);$maxamount:=max($totalamount);$avgamount:=avg($totalamount);$noorders:=count();$totalamount:=sum($totalamount);" type="AGGREGATE"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/categories.csv" guiName="Categories" guiX="643" guiY="908" id="CATEGORIES" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Reads categories]]></attr>
+</Node>
+<Node guiName="Copy" guiX="426" guiY="387" id="COPY" type="SIMPLE_COPY"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region1.csv" guiName="Customers1" guiX="7" guiY="173" id="CUSTOMERS1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region2.csv" guiName="Customers2" guiX="7" guiY="311" id="CUSTOMERS2" type="DATA_READER"/>
+<Node enabled="enabled" existingSheetsActions="REMOVE_SHEETS" fileURL="${DATAOUT_DIR}/customers_DVD_report.xlsx" guiName="Customers report" guiX="886" guiY="579" id="CUSTOMERS_REPORT" sheet="Customers" templateFileURL="${DATAIN_DIR}/templates/customers_DVD_report_template.xlsx" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mapping>
+    <globalAttributes>
+        <orientation>VERTICAL</orientation>
+        <step>1</step>
+        <writeHeader>false</writeHeader>
+    </globalAttributes>
+    <defaultSkip>0</defaultSkip>
+    <headerGroups>
+        <headerGroup skip="0">
+            <cloverField>customerid</cloverField>
+            <headerRanges>
+                <headerRange begin="A3"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>firstname</cloverField>
+            <headerRanges>
+                <headerRange begin="B3"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>lastname</cloverField>
+            <headerRanges>
+                <headerRange begin="C3"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>email</cloverField>
+            <headerRanges>
+                <headerRange begin="D3"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>phone</cloverField>
+            <headerRanges>
+                <headerRange begin="E3"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>country</cloverField>
+            <headerRanges>
+                <headerRange begin="F3"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>income</cloverField>
+            <headerRanges>
+                <headerRange begin="G3"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>minamount</cloverField>
+            <headerRanges>
+                <headerRange begin="H3"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>maxamount</cloverField>
+            <headerRanges>
+                <headerRange begin="I3"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>avgamount</cloverField>
+            <headerRanges>
+                <headerRange begin="J3"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>noorders</cloverField>
+            <headerRanges>
+                <headerRange begin="K3"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>totalamount</cloverField>
+            <headerRanges>
+                <headerRange begin="L3"/>
+            </headerRanges>
+        </headerGroup>
+    </headerGroups>
+</mapping>
+]]></attr>
+</Node>
+<Node guiName="Enhance by produc stats" guiX="829" guiY="998" id="ENHANCE_BY_PRODUC_STATS" joinKey="$prod_id=$prod_id" joinType="leftOuter" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.prod_id = $in.0.prod_id;
+	$out.0.categoryname = $in.0.categoryname;
+	$out.0.title = $in.0.title;
+	$out.0.actor = $in.0.actor;
+	$out.0.price = $in.0.price;
+	$out.0.special = $in.0.special;
+	$out.0.common_prod_id = $in.0.common_prod_id;
+	$out.0.soldcopies = nvl($in.1.soldcopies,0);
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Replace categoryid by category name" guiX="820" guiY="838" id="EXT_HASH_JOIN0" joinKey="$category=$category" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.prod_id = $in.0.prod_id;
+	$out.0.title = $in.0.title;
+	$out.0.actor = $in.0.actor;
+	$out.0.price = $in.0.price;
+	$out.0.special = $in.0.special;
+	$out.0.common_prod_id = $in.0.common_prod_id;
+	$out.0.categoryname = $in.1.categoryname;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Sort by customerid" guiX="206" guiY="478" id="EXT_SORT0" sortKey="customerid(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiName="Intersect Data" guiX="426" guiY="265" id="INTERSECT_DATA" joinKey="$customerid=$customerid" type="DATA_INTERSECTION">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.customerid = $in.0.customerid;
+	$out.0.firstname = $in.0.firstname;
+	$out.0.lastname = $in.0.lastname;
+	$out.0.country = $in.0.country;
+	$out.0.email = $in.0.email;
+	$out.0.phone = $in.0.phone;
+	$out.0.income = $in.0.income;
+	$out.0.orderid = $in.1.orderid;
+	$out.0.orderdate = $in.1.orderdate;
+	$out.0.totalamount = $in.1.totalamount;
+	$out.0.productid = $in.1.productid;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+<attr name="guiDescription"><![CDATA[Intersect Customers & Orders]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Merge customers" guiX="215" guiY="265" id="MERGE_CUSTOMERS" mergeKey="customerid" type="MERGE"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.csv" guiName="Orders" guiX="7" guiY="471" id="ORDERS" type="DATA_READER"/>
+<Node debugPrint="true" enabled="enabled" guiName="Orders w/o customers" guiX="417" guiY="496" id="ORDERS_W_O_CUSTOMERS" type="TRASH"/>
+<Node enabled="enabled" guiName="Split by region" guiX="643" guiY="280" id="PARTITION0" type="PARTITION">
+<attr name="partitionSource"><![CDATA[//#CTL2
+// This transformation partitions input records into multiple output ports.
+
+// Returns the number of the output port where the input record will be sent.
+function integer getOutputPort() {
+	if ( $in.0.region == 1 ){
+		return 0;
+	} else {
+		return 1;
+	}
+}
+
+// Called during component initialization, partitionCount is the number of output ports.
+// function init(partitionCount) {}
+]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/products.csv" guiName="Products" guiX="643" guiY="791" id="PRODUCTS" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Reads products info]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customers_without_order_region1.csv" guiName="Region 1 customers" guiX="872" guiY="206" id="REGION_1_CUSTOMERS" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/customers_without_order_region2.csv" guiName="Region 2 customers" guiX="872" guiY="311" id="REGION_2_CUSTOMERS" type="DATA_WRITER"/>
+<Edge fromNode="CALCULATE_DVD_STATS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge15" inPort="Port 1 (slave)" metadata="Metadata6" outPort="Port 0 (out)" toNode="ENHANCE_BY_PRODUC_STATS:1"/>
+<Edge debugMode="true" fromNode="CALCULATE_STATS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (input)" metadata="Metadata3" outPort="Port 0 (out)" toNode="CUSTOMERS_REPORT:0"/>
+<Edge fromNode="CATEGORIES:0" guiBendpoints="190:772|190:744" guiLocks="369|null|null" guiRouter="Manhattan" id="Edge13" inPort="Port 1 (slave)" metadata="Metadata5" outPort="Port 0 (output)" toNode="EXT_HASH_JOIN0:1"/>
+<Edge debugMode="true" fromNode="COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="CALCULATE_STATS:0"/>
+<Edge fromNode="COPY:1" guiBendpoints="641:441|641:765|546:765|546:797" guiLocks="607|512|745" guiRouter="Manual" id="Edge3" inPort="Port 0 (in)" outPort="Port 1 (out)" toNode="CALCULATE_DVD_STATS:0"/>
+<Edge fromNode="CUSTOMERS1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="MERGE_CUSTOMERS:0"/>
+<Edge fromNode="CUSTOMERS2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="MERGE_CUSTOMERS:1"/>
+<Edge debugMode="true" fromNode="ENHANCE_BY_PRODUC_STATS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge17" inPort="Port 0 (input)" metadata="Metadata6" outPort="Port 0 (out)" toNode="PRODUCTS_REPORT:0"/>
+<Edge debugMode="true" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge14" inPort="Port 0 (driver)" metadata="Metadata6" outPort="Port 0 (out)" toNode="ENHANCE_BY_PRODUC_STATS:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 1 (set B)" outPort="Port 0 (out)" toNode="INTERSECT_DATA:1"/>
+<Edge debugMode="true" fromNode="INTERSECT_DATA:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (only in A)" toNode="PARTITION0:0"/>
+<Edge debugMode="true" fromNode="INTERSECT_DATA:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (in A &amp; B)" toNode="COPY:0"/>
+<Edge debugMode="true" fromNode="INTERSECT_DATA:2" guiBendpoints="606:332|606:506|440:506|440:535" guiLocks="572|406|486" guiRouter="Manual" id="Edge8" inPort="Port 0 (in)" outPort="Port 2 (only in B)" toNode="ORDERS_W_O_CUSTOMERS:0"/>
+<Edge debugMode="true" fromNode="MERGE_CUSTOMERS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge16" inPort="Port 0 (set A)" outPort="Port 0 (out)" toNode="INTERSECT_DATA:0"/>
+<Edge fromNode="ORDERS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
+<Edge debugMode="false" fromNode="PARTITION0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="REGION_1_CUSTOMERS:0"/>
+<Edge debugMode="false" fromNode="PARTITION0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" outPort="Port 1 (out)" toNode="REGION_2_CUSTOMERS:0"/>
+<Edge fromNode="PRODUCTS:0" guiBendpoints="226:809|226:874" guiLocks="226|null|null" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (driver)" metadata="Metadata4" outPort="Port 0 (output)" toNode="EXT_HASH_JOIN0:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" existingSheetsActions="REMOVE_SHEETS" fileURL="${DATAOUT_DIR}/products_DVD_report.xlsx" guiName="Products report" guiX="1047" guiY="983" id="PRODUCTS_REPORT" sheet="Products" templateFileURL="${DATAIN_DIR}/templates/products_DVD_report_template.xlsx" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mapping>
+    <globalAttributes>
+        <orientation>VERTICAL</orientation>
+        <step>1</step>
+        <writeHeader>false</writeHeader>
+    </globalAttributes>
+    <defaultSkip>0</defaultSkip>
+    <headerGroups>
+        <headerGroup skip="0">
+            <cloverField>prod_id</cloverField>
+            <headerRanges>
+                <headerRange begin="A2"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>categoryname</cloverField>
+            <headerRanges>
+                <headerRange begin="B2"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>title</cloverField>
+            <headerRanges>
+                <headerRange begin="C2"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>actor</cloverField>
+            <headerRanges>
+                <headerRange begin="D2"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>price</cloverField>
+            <headerRanges>
+                <headerRange begin="E2"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>special</cloverField>
+            <headerRanges>
+                <headerRange begin="F2"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>common_prod_id</cloverField>
+            <headerRanges>
+                <headerRange begin="G2"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>soldcopies</cloverField>
+            <headerRanges>
+                <headerRange begin="H2"/>
+            </headerRanges>
+        </headerGroup>
+    </headerGroups>
+</mapping>
+]]></attr>
+<attr name="guiDescription"><![CDATA[Writes products info]]></attr>
+</Node>
+</Phase>
+</Graph>

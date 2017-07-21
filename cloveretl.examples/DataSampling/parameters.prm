@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GraphParameters>
+<GraphParameter name="READER_TYPE" value="DATA_READER"/>
+<GraphParameter name="WRITER_TYPE" value="DATA_WRITER"/>
+<GraphParameter name="charset" value="ISO-8859-1"/>
+<GraphParameter name="input_file" value="${DATAIN_DIR}/employees.txt"/>
+<GraphParameter name="metadata" value="${META_DIR}/employees.fmt"/>
+<GraphParameter name="sample_size" value="0.1"/>
+<GraphParameter name="sampling_field" value="JOB_GRADE"/>
+<GraphParameter name="sort_data" value="enabled"/>
+<GraphParameter name="timing">
+<attr name="dynamicValue"><![CDATA[//#CTL2
+
+function double getValue() {
+	return 1.0 / str2double(getParamValue("sample_size"));
+}
+]]></attr>
+</GraphParameter>
+</GraphParameters>
