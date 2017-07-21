@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Kokon" created="Wed Sep 16 10:19:19 CEST 2009" guiVersion="0.0.0.devel" id="1253101461188" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 09:46:32 CET 2016" modifiedBy="jansedlacek" name="g" revision="1.403" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata10">
+<Record fieldDelimiter="|" name="ArrayOfForecast" recordDelimiter="\r\n" type="delimited">
+<Field name="ArrayOfForecastId" type="string"/>
+<Field name="ForecastReturnId" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata7" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="Forecast" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ForecastId" type="string"/>
+<Field name="ArrayOfForecastId" type="string"/>
+<Field format="yyy-MM-dd'T'HH:mm:ss" name="Date" type="date"/>
+<Field name="WeatherID" type="string"/>
+<Field name="Desciption" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="Forecast1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ForecastReturnId" type="integer"/>
+<Field name="Date" type="date"/>
+<Field name="WeatherID" type="string"/>
+<Field name="Desciption" type="string"/>
+<Field name="MorningLow" type="string"/>
+<Field name="DaytimeHigh" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="ForecastResult" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Date" type="date"/>
+<Field name="City" type="string"/>
+<Field name="State" type="string"/>
+<Field name="Desciption" type="string"/>
+<Field name="MorningLowF" type="string"/>
+<Field name="DaytimeHighF" type="string"/>
+<Field name="MorningLowC" type="string"/>
+<Field name="DaytimeHighC" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata6" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="ForecastReturn" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ForecastReturnId" type="string"/>
+<Field name="Success" type="string"/>
+<Field name="ResponseText" type="string"/>
+<Field name="State" type="string"/>
+<Field name="City" type="string"/>
+<Field name="WeatherStationCity" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="LoginResult" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="session" type="string"/>
+<Field name="userName" type="string"/>
+<Field name="message" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0">
+<Record fieldDelimiter="|" name="recordName1" recordDelimiter="\n" type="delimited">
+<Field name="code" type="string"/>
+<Field name="name" type="string"/>
+<Field name="rootPath" type="string"/>
+<Field name="ownerUserName" type="string"/>
+<Field name="session" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata4">
+<Record fieldDelimiter="|" name="recordName1" recordDelimiter="\n" type="delimited">
+<Field name="path" type="string"/>
+<Field name="type" type="string"/>
+<Field name="name" type="string"/>
+<Field name="size" type="string"/>
+<Field name="sandbox_code" type="string"/>
+<Field name="sandbox_name" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata8" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="Temperature" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ForecastId" type="string"/>
+<Field name="MorningLow" type="string"/>
+<Field name="DaytimeHigh" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata5" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="ZIP" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ZIP" type="string"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<RichTextNote backgroundColor="DAD8C9" enabled="true" folded="false" fontSize="medium" height="118" id="Note0" textColor="000000" width="978" x="5" y="8">
+<attr name="text"><![CDATA[h3. Using Web Service tools
+Example demonstrates a functional Web service providing a list of *.grf files from the demo CloverETL server called by the WebServiceClient component. Example shows cascade of SOAP API calls. The results are returned in XML format which are then parsed, consolidated and written to an Excel file.
+]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="DEF4AB" enabled="true" folded="false" fontSize="medium" height="99" id="Note3" textColor="000000" width="980" x="5" y="403">
+<attr name="text"><![CDATA[h3. Step-by-step tutorial available online
+
+[http://blog.cloveretl.com/2010/03/08/how-to-set-up-a-webserviceclient-component-in-3-steps/]]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="262" id="Note1" textColor="000000" width="642" x="5" y="133">
+<attr name="text"><![CDATA[h3. WebServiceClient
+
+
+* *WSDL URL* - defines the location of the web service description
+* *OPERATION NAME* - defines selection of operation to be performed
+* *REQUEST STRUCTURE* - passes specified parameters to a webservice
+* *RESPONSE MAPPING* - indicates how the response is processed]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/GraphsOnCloverDemoServer.xlsx" guiName="File list to XLSX" guiX="854" guiY="297" id="FILE_LIST_TO_XLSX" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY">
+<attr name="guiDescription"><![CDATA[Write the file list into an Excel file]]></attr>
+</Node>
+<Node guiName="Graphs only" guiX="674" guiY="297" id="GRAPHS_ONLY" type="EXT_FILTER">
+<attr name="guiDescription"><![CDATA[Name ends with .grf]]></attr>
+<attr name="filterExpression"><![CDATA[//#CTL2
+endsWith($in.0.name,".grf")]]></attr>
+</Node>
+<Node guiName="List files in graph directory" guiX="421" guiY="297" id="LIST_FILES_IN_GRAPH_DIRECTORY" operationName="{http://server.cloveretl.com/CloverServerWS/}CloverServerWS_service#CloverServerWS_port#ListFiles" type="WEB_SERVICE_CLIENT" wsdlURL="http://clover-4-2.server-demo-ec2.cloveretl.com/clover/webservice?wsdl">
+<attr name="namespaceBindings"><![CDATA[Clov=http://server.cloveretl.com/CloverServerWS/
+incl=http://www.w3.org/2004/08/xop/include
+XMLS=http://www.w3.org/2001/XMLSchema]]></attr>
+<attr name="requestStructure"><![CDATA[<clov:ListFiles xmlns:clov="http://server.cloveretl.com/CloverServerWS/">
+  <sessionToken>$session</sessionToken>
+  <sandboxCode>$code</sandboxCode>
+  <folderPath>graph</folderPath>
+</clov:ListFiles>
+
+]]></attr>
+<attr name="responseMapping"><![CDATA[<Mappings>
+	<Mapping element="Clov:ListFilesResponse">
+		<Mapping element="files" outPort="0"
+				xmlFields="{}name;{}path;{}size;{}type"
+				cloverFields="name;path;size;type">
+			<FieldMapping inputField="name" outputField="sandbox_name" />
+			<FieldMapping inputField="code" outputField="sandbox_code" />
+		</Mapping>
+	</Mapping>
+</Mappings>
+]]></attr>
+</Node>
+<Node guiName="List sandboxes" guiX="222" guiY="297" id="LIST_SANDBOXES" operationName="{http://server.cloveretl.com/CloverServerWS/}CloverServerWS_service#CloverServerWS_port#GetSandboxes" type="WEB_SERVICE_CLIENT" wsdlURL="http://clover-4-2.server-demo-ec2.cloveretl.com/clover/webservice?wsdl">
+<attr name="namespaceBindings"><![CDATA[Clov=http://server.cloveretl.com/CloverServerWS/
+incl=http://www.w3.org/2004/08/xop/include
+XMLS=http://www.w3.org/2001/XMLSchema]]></attr>
+<attr name="requestStructure"><![CDATA[<clov:GetSandboxes xmlns:clov="http://server.cloveretl.com/CloverServerWS/">
+  <sessionToken>$session</sessionToken>
+</clov:GetSandboxes>
+
+]]></attr>
+<attr name="responseMapping"><![CDATA[<Mappings>
+	<Mapping element="Clov:GetSandboxesResponse">
+		<Mapping element="sandboxes" outPort="0"
+				xmlFields="{}code;{}name;{}ownerUserName;{}rootPath"
+				cloverFields="code;name;ownerUserName;rootPath">
+			<FieldMapping inputField="session" outputField="session" />
+		</Mapping>
+	</Mapping>
+</Mappings>
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Login" guiX="23" guiY="297" id="LOGIN" operationName="{http://server.cloveretl.com/CloverServerWS/}CloverServerWS_service#CloverServerWS_port#Login" type="WEB_SERVICE_CLIENT" wsdlURL="http://clover-4-2.server-demo-ec2.cloveretl.com/clover/webservice?wsdl">
+<attr name="namespaceBindings"><![CDATA[Clov=http\://server.cloveretl.com/CloverServerWS/
+]]></attr>
+<attr name="requestStructure"><![CDATA[<clov:Login xmlns:clov="http://server.cloveretl.com/CloverServerWS/">
+  <username>clover</username>
+  <password>clover</password>
+</clov:Login>
+
+]]></attr>
+<attr name="responseMapping"><![CDATA[<Mappings>
+	<Mapping element="Clov:LoginResponse">
+		<Mapping element="session" outPort="0"
+				xmlFields="{}message;{}sessionToken;{}userName"
+				cloverFields="message;session;userName">
+		</Mapping>
+	</Mapping>
+</Mappings>
+]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="GRAPHS_ONLY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (input)" outPort="Port 0 (accepted)" persistedImplicitMetadata="Metadata4" toNode="FILE_LIST_TO_XLSX:0"/>
+<Edge debugMode="true" fromNode="LIST_FILES_IN_GRAPH_DIRECTORY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (response)" toNode="GRAPHS_ONLY:0"/>
+<Edge debugMode="true" fromNode="LIST_SANDBOXES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (request)" metadata="Metadata0" outPort="Port 0 (response)" toNode="LIST_FILES_IN_GRAPH_DIRECTORY:0"/>
+<Edge debugMode="true" fromNode="LOGIN:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (request)" metadata="Metadata1" outPort="Port 0 (response)" toNode="LIST_SANDBOXES:0"/>
+</Phase>
+</Graph>
