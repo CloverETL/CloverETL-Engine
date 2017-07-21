@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="0.0.0.devel" id="1280312940927" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Feb 23 14:07:20 CET 2016" modifiedBy="jansedlacek" name="graphFilters_Lookups" revision="1.45" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/orders.fmt" id="Metadata1"/>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="," name="customers_out" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="fixed">
+<Field name="orderid" size="10" type="integer"/>
+<Field format="yyyy-MM-dd" name="required_date" size="15" type="date"/>
+<Field format="yyyy-MM-dd" name="shipped_date" size="15" type="date"/>
+<Field name="customer_firstname" size="22" type="string"/>
+<Field name="customer_lastname" size="22" type="string"/>
+<Field name="customer_country" size="20" type="string"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<LookupTable charset="ISO-8859-1" id="LookupTable0" initialSize="512" key="customerid" metadata="Metadata0" name="customers_look" type="simpleLookup"/>
+<RichTextNote backgroundColor="DAD8C9" enabled="true" folded="false" fontSize="medium" height="149" id="Note0" textColor="000000" width="840" x="19" y="15">
+<attr name="text"><![CDATA[h3. TASK: Find which customers received their order late due to delayed shipping
+*SOLUTION*: Data from files with different metadata must be put together and compared using lookup table
+
+
+- File with orders shows which orders were sent late and the respective customerID
+- Files with customers can identify who is behind the selected customerID
+]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="203" id="Note1" textColor="000000" width="428" x="431" y="170">
+<attr name="text"><![CDATA[h5. How to fill in a lookup table with data?
+
+Case 1: Before the graph runs
+- selecting file to be the data source
+- typing the values
+
+Case 2: During the graph run
+- using a Java class
+- using [LookupTableReaderWriter|element://LOOKUP_TABLE_READER_WRITER0] component
+]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="272" id="Note4" textColor="000000" width="248" x="178" y="378">
+<attr name="text"><![CDATA[h5. Filtering
+We want only orders where
+
+{noformat}ShipDate > RequiredDate{noformat}]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="266" id="Note5" textColor="000000" width="280" x="431" y="378">
+<attr name="text"><![CDATA[h5. Reading from the lookup table
+
+For each record:
+- lookup table is searched for the OrderID value
+- if found, selected field values (see [customers_out|element://Metadata2] metadata) are mapped to output fields]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="Gathers Into 1 File" guiX="239" guiY="170" id="GATHERS_INTO_1_FILE" type="SIMPLE_GATHER"/>
+<Node enabled="enabled" guiName="LookupTableReaderWriter" guiX="216" guiY="278" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region1.csv" guiName="Reads Customers 1" guiX="23" guiY="170" id="READS_CUSTOMERS_1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region2.csv" guiName="Reads Customers 2" guiX="23" guiY="272" id="READS_CUSTOMERS_2" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/Orders.xlsx" guiName="reads orders" guiX="23" guiY="540" id="READS_ORDERS" sheet="*" type="SPREADSHEET_READER">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mapping>
+    <globalAttributes>
+        <orientation>VERTICAL</orientation>
+        <step>1</step>
+        <writeHeader>true</writeHeader>
+    </globalAttributes>
+    <defaultSkip>0</defaultSkip>
+    <headerGroups>
+        <headerGroup skip="0">
+            <autoMappingType>ORDER</autoMappingType>
+            <headerRanges>
+                <headerRange begin="A1"/>
+                <headerRange begin="B1"/>
+                <headerRange begin="C1"/>
+                <headerRange begin="D1"/>
+                <headerRange begin="E1"/>
+                <headerRange begin="F1"/>
+                <headerRange begin="G1"/>
+                <headerRange begin="H1"/>
+                <headerRange begin="I1"/>
+                <headerRange begin="J1"/>
+                <headerRange begin="K1"/>
+                <headerRange begin="L1"/>
+                <headerRange begin="M1"/>
+                <headerRange begin="N1"/>
+                <headerRange begin="O1"/>
+                <headerRange begin="P1"/>
+                <headerRange begin="Q1"/>
+                <headerRange end="inf1" begin="R1"/>
+            </headerRanges>
+        </headerGroup>
+    </headerGroups>
+</mapping>
+]]></attr>
+<attr name="guiDescription"><![CDATA[Reads orders data]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="GATHERS_INTO_1_FILE:0" guiBendpoints="430:174|430:164" guiLocks="421|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="LOOKUP_TABLE_READER_WRITER0:0"/>
+<Edge fromNode="READS_CUSTOMERS_1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="GATHERS_INTO_1_FILE:0"/>
+<Edge fromNode="READS_CUSTOMERS_2:0" guiBendpoints="189:276|189:188" guiLocks="189|195|null" guiRouter="Manhattan" id="Edge2" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="GATHERS_INTO_1_FILE:1"/>
+<Edge fromNode="READS_ORDERS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="EXT_FILTER0:0"/>
+</Phase>
+<Phase number="1">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders_late.txt" guiName="writes info in file" guiX="717" guiY="528" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" guiName="shipped late" guiX="231" guiY="540" id="EXT_FILTER0" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[//#CTL2
+$0.ShippedDate != null && $0.RequiredDate < $0.ShippedDate]]></attr>
+</Node>
+<Node enabled="enabled" guiName="orders + lookup tbl" guiX="474" guiY="549" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+customers matched_record;
+// Transforms input record into output record.
+function integer transform() {
+	matched_record = lookup(customers_look).get($in.0.OrderID);
+		$out.0.orderid = $in.0.OrderID;
+	    $out.0.required_date = $in.0.RequiredDate;
+		$out.0.shipped_date = $in.0.ShippedDate;
+		$out.0.customer_firstname = matched_record.firstname;
+		$out.0.customer_lastname = matched_record.lastname;
+		$out.0.customer_country = matched_record.country;
+
+		return 0;
+	}
+
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="EXT_FILTER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" outPort="Port 0 (accepted)" toNode="REFORMAT0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="58:0|58:-2" guiRouter="Manual" id="Edge6" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+</Phase>
+</Graph>
