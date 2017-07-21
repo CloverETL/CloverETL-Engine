@@ -1,0 +1,5 @@
+test;isAscii($0.Arg);true
+têst;isAscii($0.Arg);false
+5;isAscii($0.Arg);true
+123456732325;isAscii($0.Arg);true
+1234.28e-3;isAscii($0.Arg);true

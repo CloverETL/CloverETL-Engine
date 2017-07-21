@@ -1,0 +1,8 @@
+Blumberg;Brenda;Sat Jun 23 1979;M;Bloomberg;Ian;Mon Jun 01 1942;M;0.6;0.0;0.12
+Brunner;Kim;Thu Aug 10 1922;M;Brunner;Sandra;Sun May 20 1917;F;1.0;0.25;0.4
+Brunner;Kim;Thu Aug 10 1922;M;Brunner;June;Mon Feb 02 1914;M;1.0;0.25;0.4
+Brunner;Kim;Thu Aug 10 1922;M;Bruner;Shirley;Mon Feb 02 1914;M;0.8;0.25;0.36000000000000004
+Creek;Jewel;Mon Oct 18 1971;F;Crouch;Ryan;Mon Feb 02 1914;M;0.19999999999999996;0.0;0.039999999999999994
+Damstra;Robert;Thu Oct 08 1942;F;Damstra;Roberta;Thu Oct 08 1942;F;1.0;0.75;0.8
+Gutierrez;Maya;Thu May 10 1951;F;Gutirrez;Miggs;Mon Feb 02 1914;M;0.8;0.25;0.36000000000000004
+Stanz;Darren;Fri Aug 26 1949;M;Steen;Donahue;Mon Feb 02 1914;M;0.4;0.0;0.08000000000000002
