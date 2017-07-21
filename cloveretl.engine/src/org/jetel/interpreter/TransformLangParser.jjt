@@ -1,0 +1,1454 @@
+
+/*
+    Clover.ETL - Transformation language grammar.
+    (c) 2004-07 David.Pavlis <david.pavlis@centrum.cz>
+    Released under LGPL license.
+    
+    (Adapted from Ken Beesley and Metamata's javacc 'Interpreter' example.)
+ 
+*/
+
+
+/*
+ * Generated ParseException.java must be modified in order to report only one erroneous token.
+ * Update getMessge() method to contain only
+ 		for (int i = 0; i < maxSize; i++) {
+			if (i != 0)
+				retval += " ";
+			if (tok.kind == 0) {
+				retval += tokenImage[0];
+				break;
+			}
+			retval += add_escapes(tok.image);
+			tok = tok.next;
+		}
+ *
+ */
+options {
+   MULTI=true;
+   STATIC=false; 
+   VISITOR=true; 
+   JDK_VERSION = "1.5";
+   CACHE_TOKENS=true;
+   NODE_USES_PARSER=true;
+   NODE_PREFIX="CLVF";
+   //NODE_PACKAGE="org.jetel.interpreter.ASTnode";
+   NODE_PACKAGE="org.jetel.interpreter";
+   NODE_SCOPE_HOOK=true; // save line & column number
+   JAVA_UNICODE_ESCAPE = true ;
+   BUILD_NODE_FILES=false; // change to True only if new Node has been added 
+   
+}
+
+
+/* *** Specifcation of the parser class *** */
+
+PARSER_BEGIN(TransformLangParser)
+
+package org.jetel.interpreter;
+
+import org.jetel.data.DataRecord;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.interpreter.ASTnode.*;
+import org.jetel.util.string.StringUtils;
+import org.jetel.util.file.FileUtils;
+import org.jetel.util.string.CharSequenceReader;
+import org.jetel.component.CustomizedRecordTransform;
+import org.jetel.component.RecordTransform;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.List;
+import java.util.LinkedList;
+import java.io.FileInputStream;
+import java.io.BufferedInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.nio.channels.Channels;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+public class TransformLangParser extends ExpParser {
+
+	   public static final String SRC_ENCODING = "UTF-8";
+		
+       DataRecordMetadata[] inRecordsMetadata;
+       DataRecordMetadata[] outRecordsMetadata;
+       Map inDataRecordsMap;
+       Map outDataRecordsMap;
+	   ParserHelper parserHelper;       
+       List<Throwable> parseExceptions;
+       CustomizedRecordTransform custRecordTransform;
+       String sourceFilename;       
+       boolean hasEvalNode=false;
+       URL projectDirURL = null;
+
+       public TransformLangParser(DataRecordMetadata recordMetadata,java.io.InputStream stream){
+              this(new DataRecordMetadata[] {recordMetadata}, new DataRecordMetadata[0],stream,SRC_ENCODING);
+       }
+       
+       
+       public TransformLangParser(DataRecordMetadata[] inRecordsMetadata,
+       							DataRecordMetadata[] outRecordsMetadata,
+       							java.io.InputStream stream){
+			this(inRecordsMetadata,outRecordsMetadata,stream,SRC_ENCODING);
+       							
+       }
+       
+       public TransformLangParser(DataRecordMetadata recordMetadata,CharSequence source){
+              this(new DataRecordMetadata[] {recordMetadata}, new DataRecordMetadata[0],source);
+       }
+
+	   public TransformLangParser(DataRecordMetadata[] inRecordsMetadata,
+       							DataRecordMetadata[] outRecordsMetadata,
+       							CharSequence source){
+       							this(new CharSequenceReader(source));
+       		  parserHelper=new ParserHelper();
+              this.inRecordsMetadata=inRecordsMetadata;
+              this.outRecordsMetadata=outRecordsMetadata;
+              inDataRecordsMap=new HashMap(inRecordsMetadata.length);
+              outDataRecordsMap=new HashMap(outRecordsMetadata.length);
+              parseExceptions=new LinkedList<Throwable>();
+              for(int i=0;i<inRecordsMetadata.length;i++){
+            	  if (inRecordsMetadata[i] != null)
+            		  inDataRecordsMap.put(inRecordsMetadata[i].getName(),new Integer(i));
+              }
+              for(int i=0;i<outRecordsMetadata.length;i++){
+            	  if (outRecordsMetadata[i] != null)
+            		  outDataRecordsMap.put(outRecordsMetadata[i].getName(),new Integer(i));
+              }
+       							
+       }
+       
+       
+       public TransformLangParser(DataRecordMetadata[] inRecordsMetadata,
+       							DataRecordMetadata[] outRecordsMetadata,
+       							java.io.InputStream stream,String encoding){
+              this(stream,encoding);
+              parserHelper=new ParserHelper();
+              this.inRecordsMetadata=inRecordsMetadata;
+              this.outRecordsMetadata=outRecordsMetadata;
+              inDataRecordsMap=new HashMap(inRecordsMetadata.length);
+              outDataRecordsMap=new HashMap(outRecordsMetadata.length);
+              parseExceptions=new LinkedList<Throwable>();
+              for(int i=0;i<inRecordsMetadata.length;i++){
+            	  if (inRecordsMetadata[i] != null)
+            		  inDataRecordsMap.put(inRecordsMetadata[i].getName(),new Integer(i));
+              }
+              for(int i=0;i<outRecordsMetadata.length;i++){
+            	  if (outRecordsMetadata[i] != null)
+            		  outDataRecordsMap.put(outRecordsMetadata[i].getName(),new Integer(i));
+              }
+      }
+      
+      public TransformLangParser(TransformLangParser parent,String filename,java.io.InputStream stream){
+			  this(stream);
+			  this.sourceFilename=filename;
+			  this.parserHelper=parent.parserHelper;
+              this.inRecordsMetadata=parent.inRecordsMetadata;
+              this.outRecordsMetadata=parent.outRecordsMetadata;
+              this.inDataRecordsMap=parent.inDataRecordsMap;
+              this.outDataRecordsMap=parent.outDataRecordsMap;
+              this.parseExceptions=parent.parseExceptions;    	
+      }
+
+	 public TransformLangParser(TransformLangParser parent,String sourcename,CharSequence source){
+			  this(new CharSequenceReader(source));
+			  this.sourceFilename=sourcename;
+			  this.parserHelper=parent.parserHelper;
+              this.inRecordsMetadata=parent.inRecordsMetadata;
+              this.outRecordsMetadata=parent.outRecordsMetadata;
+              this.inDataRecordsMap=parent.inDataRecordsMap;
+              this.outDataRecordsMap=parent.outDataRecordsMap;
+              this.parseExceptions=parent.parseExceptions;
+      }
+      
+      public void ReInit(CharSequence source, boolean reset){
+      	if (reset){
+      		this.parserHelper.reset();
+      	}
+      	this.parseExceptions.clear();
+      	this.ReInit(new CharSequenceReader(source));
+      }
+      
+      public void setTabSize(int size){
+      		this.token_source.input_stream.setTabSize(size);
+      }
+      
+      /** 
+      	* Sets project root directory from where relative paths will be resolved
+      	* in import statements. This should be in common cases PROJECT_DIR definition
+      	* from workspace.prm
+      	*
+      	* If set to null or invalid URL, relative paths will be resolved from working directory
+      	* where java is running.
+      	*/
+      @Deprecated
+      public void setProjectDir(String projectDir) {
+      		try {
+      			this.projectDirURL = StringUtils.isEmpty(projectDir) 
+      								? null 
+      								: FileUtils.getFileURL(projectDir);
+      		} catch (MalformedURLException e) {
+      			// nowhere to report unfortunately...
+      			this.projectDirURL = null;
+      		}
+      }
+
+      /**
+        * Sets project root directory from where relative paths will be resolved
+        * in import statements. This should be in common cases PROJECT_DIR definition
+        * from workspace.prm
+        * 
+        * @param projectURL
+      */
+      public void setProjectURL(URL projectURL) {
+        this.projectDirURL = projectURL;
+      }
+
+      public final DataRecordMetadata getInRecordMeta(){
+    	  if (inRecordsMetadata.length>0)
+              return inRecordsMetadata[0];
+    	  else 
+    		  return null;
+      }
+      
+      public final int getInRecordNum(String name){
+      	try{
+             return ((Integer)inDataRecordsMap.get(name)).intValue() ;
+      	}catch(Exception ex){
+      		return -1;
+      	}
+      }
+      
+      public final int getOutRecordNum(String name){
+        try{
+             return ((Integer)outDataRecordsMap.get(name)).intValue() ;
+      	}catch(Exception ex){
+      		return -1;
+      	}
+      }
+      
+      public final DataRecordMetadata getInRecordMeta(int num){
+      	try{
+             return inRecordsMetadata[num];
+      	}catch(Exception ex){
+      		return null;
+      	}
+      }
+      
+      public final DataRecordMetadata getOutRecordMeta(int num){
+      	try{
+             return outRecordsMetadata[num];
+      	}catch(Exception ex){
+      		return null;
+      	}
+      }
+      
+       public final DataRecordMetadata[] getInRecordMetadata(){
+             return inRecordsMetadata;
+      }
+      
+      public final DataRecordMetadata[] getOutRecordMetadata(){
+             return outRecordsMetadata;
+      }
+      
+      
+     /**
+      *  Returns map of function symbols where
+      *  under function name is saved reference to appropriate 
+      *  function definition/declaration node - upon that node
+      *  visit() method of TransformationLangExecutor can be called to
+      *  execute function's body. 
+      */
+      
+      public final Map getFunctions(){
+        return parserHelper.functionSymbol;
+    }
+    
+     public final CLVFFunctionDeclaration getFunction(String name){
+     	return (CLVFFunctionDeclaration) parserHelper.functionSymbol.get(name);
+     }
+      
+      
+     public CustomizedRecordTransform getCustRecordTransform() {
+		if (custRecordTransform==null)
+			custRecordTransform=new CustomizedRecordTransform(null);
+		return custRecordTransform;
+	}
+     
+     /**
+      *  Returns map of global variable symbols where
+      *  under variable name is saved appropriate slot in 
+      *  which variable's value is saved. 
+      */
+      public final Map getGlobalVariables(){
+     	return parserHelper.globalVariableSymbol;
+     }
+     
+     public final int getGlobalVariableSlot(String name){
+     	return parserHelper.getGlobalVariableSlot(name);
+     }
+     
+     public static final String unquote(String image){
+     	return image.substring(1,image.length()-1);
+     }
+      
+   /**
+    * Save the current line number for run-time error messages
+    */
+   void jjtreeOpenNodeScope(Node n)
+    {
+       Token t = getToken(0);
+       if (t!= null) {
+           ((SimpleNode) n).setLineNumber(t.beginLine);
+           ((SimpleNode) n).setColumnNumber(t.beginColumn);
+       }
+       ((SimpleNode) n).setSourceFilename(sourceFilename);
+    }
+
+   /**
+    * Dummy routine, required because NODE_SCOPE_HOOK is true
+    */
+    void jjtreeCloseNodeScope(Node n)
+    {
+    }
+    
+    public List<Throwable> getParseExceptions(){
+    	return parseExceptions;
+    }
+    
+    /**
+     * Does the parsed AST tree contain any "eval" node ?
+     * If so, executor will need reference to parser to process such
+     * nodes
+     *
+     */
+    
+    public boolean hasEvalNode(){
+    	return hasEvalNode;
+    }
+      
+}
+
+PARSER_END(TransformLangParser)
+
+/* *** Token specification *** */
+
+/* Skip whitespace */
+SKIP : { " " | "\t" | "\n" | "\r" | "\n\r" }
+
+
+/* HANDLING COMMENTS */
+SPECIAL_TOKEN: {  <"/*"> : WithinComment }
+<WithinComment> SPECIAL_TOKEN:
+{
+    <"*/"> : DEFAULT
+}
+<WithinComment> MORE: { <~[]> }
+
+SPECIAL_TOKEN : 
+{
+    < SINGLE_LINE_COMMENT: "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")? > 
+} 
+
+
+/*
+SPECIAL_TOKEN: { <"'"> : WithinSingleQuote }
+<WithinSingleQuote> SPECIAL_TOKEN:
+{
+	<"'"> : DEFAULT
+}
+<WithinSingleQuote> MORE: { <~[]> }
+*/
+
+/* Literals */
+TOKEN : {
+  <INTEGER_LITERAL:  ["1"-"9"] (["0"-"9"])* (["l","L"])? >
+|  <#DIGIT: ["0"-"9"]>
+|  <#LETTER: [ "a"-"z", "A"-"Z" ] >
+|  <#UNDERSCORE: [ "_" ] > 
+| <HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+ (["l","L"])?> 
+|  <OCTAL_LITERAL: "0" (["0"-"7"])* (["l","L"])?> 
+|<FLOATING_POINT_LITERAL:  (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])? | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])? | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])? | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]>
+|  <#EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+>
+|<STRING_LITERAL: /* <QUOTED_STRING> | */ <DQUOTED_STRING> >
+//  <#QUOTED_STRING: "\'" (~["\"","\\","\n","\r"])* "\'">
+|  <#DQUOTED_STRING: "\"" (~["\"","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* "\"">
+| <UNTERMINATED_STRING_LITERAL: /*<UNTERMINATED_QUOTED_STRING> | */ <UNTERMINATED_DQUOTED_STRING> >
+// |  <#UNTERMINATED_QUOTED_STRING: "\'" (~["\'","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* (["\n","\r"])? >
+|  <#UNTERMINATED_DQUOTED_STRING: "\"" (~["\"","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* (["\n","\r"])? >
+|<BOOLEAN_LITERAL: <TRUE> | <FALSE> >
+| <#TRUE: "true">
+| <#FALSE: "false">
+|<DATE_LITERAL: <DIGIT><DIGIT><DIGIT><DIGIT>"-"<DIGIT>(<DIGIT>)?"-"<DIGIT>(<DIGIT>)? >
+|<DATETIME_LITERAL: <DIGIT><DIGIT><DIGIT><DIGIT>"-"<DIGIT>(<DIGIT>)?"-"<DIGIT>(<DIGIT>)? " " <DIGIT>(<DIGIT>)? ":" <DIGIT>(<DIGIT>)? ":" <DIGIT>(<DIGIT>)?>
+|<SEMICOLON: ";">
+|<BLOCK_START: "{">
+|<BLOCK_END: "}">
+|<NULL_LITERAL: "null">
+}
+
+
+TOKEN: {
+	< STRING_PLAIN_LITERAL:
+      "'"
+        >
+        {
+        	char inChar,prevChar=' ';
+        	image.setLength(0);
+        	int startLine=input_stream.getBeginLine();
+        	int startCol=input_stream.getBeginColumn();
+        	try{
+        		LOOP: while(true){
+        			inChar=input_stream.readChar();
+        			switch(inChar){
+        			case '\'':
+        				if (prevChar=='\\')
+        					image.setLength(image.length()-1);
+        				else
+        					break LOOP;
+        			break;
+        			case '\r':
+        			case '\n':
+        				if (prevChar=='\\')
+        					image.setLength(image.length()-1);
+        				else
+        					throw new TokenMgrError("unterminated string starting on line "+startLine+" column "+startCol,0);
+        				break;
+        			}
+        			image.append(inChar);
+        			prevChar=inChar;
+        		}
+        	}catch(java.io.IOException ioe){
+        		throw new TokenMgrError(ioe.getMessage(),0);
+        	}
+        	matchedToken.image=image.toString();
+        }
+}
+
+TOKEN : {
+<MAPPING: ":=">
+}
+
+/* Logical operators */
+TOKEN [IGNORE_CASE]: {
+  < OR: "or" | "||" >
+| < AND: "and" | "&&" >
+| < NOT: "not" | "!" >
+}
+
+
+/* Comparison Operators */
+TOKEN [IGNORE_CASE]: {
+  < EQUAL: "==" | ".eq.">
+| < NON_EQUAL: "!=" | "<>" | ".ne." >
+| < IN_OPER:  ".in." >
+| < LESS_THAN: "<" | ".lt." >
+| < LESS_THAN_EQUAL: "<=" | "=<" | ".le." >
+| < GREATER_THAN: ">" | ".gt.">
+| < GREATER_THAN_EQUAL: ">=" | "=>" | ".ge." >
+| < REGEX_EQUAL: "~=" | ".regex." >
+}
+
+TOKEN: {
+<CMPOPERATOR : <EQUAL> | <NON_EQUAL> | <LESS_THAN> | <LESS_THAN_EQUAL> | <GREATER_THAN>
+| <GREATER_THAN_EQUAL> | <REGEX_EQUAL> >
+}
+
+/* Numeric Operators */
+TOKEN: {
+ <MINUS: "-" >
+| <PLUS: "+" >
+| <MULTIPLY: "*" >
+| <DIVIDE: "/" >
+| <MODULO: "%" >
+| <INCR: "++" >
+| <DECR: "--" >
+| <TILDA: "~" >
+}
+
+
+/* Clover Field Identifiers */
+TOKEN: {
+  < FIELD_ID: "$" (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
+}
+
+/* Clover Record Field Identifiers */
+TOKEN: {
+  < REC_NAME_FIELD_ID:  "$" (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* "." (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
+  | < REC_NAME_FIELD_NUM:  "$" (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* "." <DIGIT> (<DIGIT>)* >
+  | < REC_NUM_FIELD_ID:  "$" <DIGIT> (<DIGIT>)* "." (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
+  | < REC_NUM_FIELD_NUM: "$" <DIGIT> (<DIGIT>)* "." <DIGIT> (<DIGIT>)* >
+  | <REC_NUM_WILDCARD: "$" (<DIGIT>) (<DIGIT>)* "." "*" >
+  | <REC_NAME_WILDCARD: "$" (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* "." "*" >
+}
+
+/* Clover Record Identifiers */
+TOKEN: {
+	<REC_NUM_ID: "@" (<DIGIT>) (<DIGIT>)* >
+	|<REC_NAME_ID: "@" (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
+}
+
+
+/* Parenthesis */
+TOKEN: {
+  <OPEN_PAR: "("> |
+  <CLOSE_PAR: ")">
+}
+
+
+TOKEN : /* variable Types */
+{ /*<VARIABLE_TYPE: <INT_VAR>|<LONG_VAR>|<DATE_VAR>|<DOUBLE_VAR>|<DECIMAL_VAR>|
+	<BOOLEAN_VAR>|<STRING_VAR>|<LIST_VAR>|<MAP_VAR>|<RECORD_VAR>|<OBJECT_VAR>> |*/
+   <INT_VAR: "int" >
+ |  <LONG_VAR: "long" >
+ |  <DATE_VAR: "date" >
+ |  <DOUBLE_VAR: "number" | "double" >
+ |  <DECIMAL_VAR: "decimal" >
+ |  <BOOLEAN_VAR: "boolean" >
+ |  <STRING_VAR: "string" >
+ |  <BYTE_VAR: "bytearray" >
+ |  <LIST_VAR: "list" >
+ |  <MAP_VAR: "map" >
+ |  <RECORD_VAR: "record" >
+ |  <OBJECT_VAR: "object" >
+ }
+
+/* reserved workds */
+TOKEN :
+{
+  < BREAK: "break" >
+| < CONTINUE: "continue" >
+| < ELSE: "else" >
+| < FOR: "for" >
+| < FOR_EACH: "foreach" >
+| < FUNCTION: "function" >
+| < IF: "if" >
+| < RETURN: "return" >
+| < WHILE: "while" >
+| < CASE: "case" >
+| < ENUM: "enum" >
+| < IMPORT: "import" >
+| < SWITCH: "switch" >
+| < CASE_DEFAULT: "default" >
+| < DO: "do" >
+| < TRY: "try" >
+| < CATCH: "catch" >
+| < RETURN_RECORD_SKIP: "SKIP" >
+| < RETURN_RECORD_SEND_ALL: "ALL" >
+| < RETURN_RECORD_OK: "OK" >
+| < RETURN_RECORD_ERROR: "ERROR" >
+}
+
+TOKEN :  /* date parts */
+{ <YEAR: "year" >
+  |<MONTH: "month" > 
+  |<WEEK: "week" >
+  |<DAY:  "day" >
+  |<HOUR:  "hour" >
+  |<MINUTE: "minute" >
+  |<SECOND: "second" >
+  |<MILLISEC: "millisec" >
+}
+
+/* DICTIONARY TOKENS */
+TOKEN:
+{
+	<READ_DICT: "read_dict">
+	|<WRITE_DICT: "write_dict">
+	|<DELETE_DICT: "delete_dict">
+}
+
+TOKEN : /* IDENTIFIERS */
+{
+  < IDENTIFIER: (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
+}
+  
+
+/* 
+ *  The start nonterminal and its productions. 
+ *  Nonterminal & productions for transformation language
+ */
+
+CLVFStart Start() : {}        // Start -> Exp
+{
+  CompilationUnit() <EOF>
+  { 
+  	if (parseExceptions.size()>0){
+  		throw (ParseException)parseExceptions.get(0);
+  	}	
+  	return jjtThis; 
+  }
+}
+
+/* 
+ *  The start expression nonterminal and its productions. 
+ *  Nonterminal & productions for expressions only
+ */
+
+
+CLVFStartExpression StartExpression() : {}
+{
+	ConditionalOrExpression() <EOF>
+	{ 
+		if (parseExceptions.size()>0){
+  			throw (ParseException)parseExceptions.get(0);
+  		}		
+		return jjtThis;
+	}
+}
+
+void CompilationUnit() #void :
+{
+   String name;
+}
+{
+	(ImportSource() ";" )*
+
+   (
+       VarDeclaration() ";"
+   
+     |
+       Statement()
+       
+     |
+       FunctionDeclaration()
+   )*
+   
+   (
+  		Mapping() ";"
+   	)*
+   	
+   <EOF>
+}
+
+void ImportSource() :{	Token t;
+	String filenameURL;}{	// must parse whole tree and insert it at this place	<IMPORT> ( t=<STRING_LITERAL> { filenameURL=unquote(t.image); }
+				| t=<STRING_PLAIN_LITERAL> { filenameURL=t.image; } )	{		// save line number - as openNodeScope hook does not work reliably
+		jjtThis.setLineNumber(t.beginLine);
+		InputStream stream;
+		jjtThis.setSourceToImport(filenameURL);
+		try{
+			stream=Channels.newInputStream(FileUtils.getReadableChannel(projectDirURL, filenameURL)); 
+			// stream=new BufferedInputStream(new FileInputStream(filenameURL));
+		}catch(Exception ex){
+			throw new ParseException(t,"can't open import file \""+filenameURL+"\"",ex);
+		} 
+		CLVFStart parseTree;
+		try{
+			TransformLangParser parser = new TransformLangParser(this,filenameURL,stream);
+		 	parseTree = parser.Start();
+		}catch(ParseException e){
+			e.setFilename(filenameURL);
+			throw e;
+			//new ParseException(t,"error when parsing import file \""+filenameURL+"\"",e);
+		}		jjtThis.jjtAddChild(parseTree, 0);	}}
+
+void FunctionDeclaration() :
+{
+	Token t,r;
+ 	int order=0; 
+ }
+{
+	//TODO: add function types
+	
+	<FUNCTION>
+	t = <IDENTIFIER> { 
+		jjtThis.setName(t.image); 
+		if (parserHelper.functionSymbol.put(t.image,jjtThis)!=null){
+			 throw new ParseException(t,"function "+t.image+" already declared");	
+			}
+		parserHelper.enteredFunctionDeclaration(t.image);
+		// save line number - as openNodeScope hook does not work reliably
+		jjtThis.setLineNumber(t.beginLine);
+		}
+		
+	"("  
+		 [ 
+		 	t = <IDENTIFIER> { jjtThis.addVarName(order++, t.image); 
+							if (!parserHelper.addLocalVariable(t.image,OBJECT_VAR)){
+							  throw new ParseException(t,"parameter ["+t.image+"] already declared in function"
+							  +parserHelper.functionName);
+							}
+						} 
+		
+		( ","  
+			  t = <IDENTIFIER> { jjtThis.addVarName(order++,t.image); 
+							if (!parserHelper.addLocalVariable(t.image,OBJECT_VAR)){
+							  throw new ParseException(t,"parameter ["+t.image+"] already declared in function"
+							  +parserHelper.functionName);
+							}
+						} )*
+		] 
+	
+	")"
+	"{"
+	  ( VarDeclaration() ";" )*
+	  ( Statement() )* 
+	  [ ( Mapping() ";" )+ [ ReturnStatement() ] ]
+	 
+	 "}"
+	{
+		parserHelper.exitedFunctionDeclaration();	
+	}
+}
+/*
+ JAVACODE
+    void FuncDeclarationExit() #void {
+	
+	  parserHelper.exitedFunctionDeclaration();	
+    }
+*/
+
+void VarDeclaration():
+{  Token t,l,p;  int varSlot;
+}{    (<INT_VAR> |  <LONG_VAR> | <DOUBLE_VAR> | <DECIMAL_VAR> | <STRING_VAR>		| <DATE_VAR> | <BYTE_VAR> | <BOOLEAN_VAR> | <LIST_VAR> | <MAP_VAR> | <OBJECT_VAR> | <RECORD_VAR> ) 
+    
+    {
+    	jjtThis.setType(getToken(0).kind);
+    	// set line number as the openNodeScope hook does not work reliably for this
+    	jjtThis.setLineNumber(getToken(0).beginLine);
+    }
+
+    [	"("  VarSpec(jjtThis)
+    ")"   ] 
+      
+    t = <IDENTIFIER>{      if (!parserHelper.addVariable(t.image,jjtThis.getType())){        throw new ParseException(t, "variable ["+t.image+"] already declared");
+      }      else {        // is it local variable declaration ?
+		if (parserHelper.inFunctionDeclaration){          jjtThis.setVarSlot(parserHelper.getLocalVariableSlot(t.image));          jjtThis.setLocalVariale(true);        }        else {          jjtThis.setVarSlot(parserHelper.getGlobalVariableSlot(t.image));          jjtThis.setLocalVariale(false);        }        jjtThis.setName(t.image);      }    }
+    
+    ["=" ConditionalOrExpression() {jjtThis.hasInitValue(true);} ]
+    
+    
+// }catch (ParseException e){//    parseExceptions.add(e);//following code causes parser to cough     
+//do {//      t = getNextToken();//    }//    while (t.kind != SEMICOLON);//  }}
+
+void VarSpec(CLVFVarDeclaration node) #void : 
+{
+	Token l,p;
+}
+{
+	  l=<IDENTIFIER> { node.setMetadataId(l.image);} 
+  	|  		
+  	l=<INTEGER_LITERAL> { node.setLength(l.image);} [ "," p=<INTEGER_LITERAL>  { node.setPrecision(p.image); } ]
+  	|
+  	 l=<REC_NUM_ID> {  node.setRecordNum(l,l.image);}
+  	|
+  	 l=<REC_NAME_ID> { node.setRecordName(l,l.image); }
+   	
+}
+
+void Expression() #void : {}
+{
+  //LOOKAHEAD( PrimaryExpression() "=" )
+  LOOKAHEAD( VarExp() "=" )
+  		Assignment()
+  |
+  	ConditionalOrExpression()   
+  
+}
+
+void Assignment() #Assignment :
+{}
+{
+ // PrimaryExpression() "=" Expression()
+ 	VarExp() "=" ConditionalOrExpression()
+}
+
+
+void Mapping() #void : 
+{ }
+{	
+  	DirectMapping()
+  	|WildCardMapping()
+}
+
+
+void DirectMapping() : // assignment of value to Clover field
+{ Token t ;}
+{	
+  	/*OutputFieldExp() */
+  	try{
+  	
+  (	t = <FIELD_ID> { jjtThis.setFieldName(t.image); jjtThis.updateMappingMatrix(getCustRecordTransform()); } 
+  | t = <REC_NAME_FIELD_ID> { jjtThis.setRecordFieldName(t.image); jjtThis.updateMappingMatrix(getCustRecordTransform()); }
+  | t= <REC_NAME_FIELD_NUM>  { jjtThis.setRecordNameFieldNum(t.image); jjtThis.updateMappingMatrix(getCustRecordTransform()); }
+  | t = <REC_NUM_FIELD_ID> { jjtThis.setRecordNumFieldName(t.image); jjtThis.updateMappingMatrix(getCustRecordTransform()); }
+  | t = <REC_NUM_FIELD_NUM> { jjtThis.setRecordNumFieldNum(t.image); jjtThis.updateMappingMatrix(getCustRecordTransform()); } 
+  	)
+  	}catch(ParseException ex){
+  		ex.setCurrentToken(getToken(0));
+  		throw ex;
+  	}
+  	
+  	<MAPPING> 
+  	
+  	ConditionalOrExpression() (":" ConditionalOrExpression())*
+}
+
+void WildCardMapping() :
+{ Token t,r;}
+{
+	 ( 	 LOOKAHEAD(3)
+	 t=<REC_NUM_WILDCARD> <MAPPING> r=<REC_NUM_WILDCARD> {jjtThis.setRule(t.image,r.image,getCustRecordTransform()); }
+	 | t=<REC_NUM_WILDCARD> <MAPPING> r=<REC_NAME_WILDCARD> {jjtThis.setRule(t.image,r.image,getCustRecordTransform()); }
+	 |LOOKAHEAD(3) t=<REC_NAME_WILDCARD> <MAPPING> r=<REC_NUM_WILDCARD> {jjtThis.setRule(t.image,r.image,getCustRecordTransform()); }
+	 | t=<REC_NAME_WILDCARD> <MAPPING> r=<REC_NAME_WILDCARD> {jjtThis.setRule(t.image,r.image,getCustRecordTransform()); }
+	 )
+}
+
+/* Other nonterminals and their productions */
+
+void ConditionalOrExpression() #void : {}        
+{
+   ConditionalAndExpression()
+   ( <OR> ConditionalAndExpression() #Or(2) )*
+}
+
+void ConditionalAndExpression() #void : {}
+{
+   EqualityExpression()
+   ( <AND> EqualityExpression() #And(2) ) *
+}
+
+void EqualityExpression() #void :
+{}
+{
+  RelationalExpression()
+  (
+     <EQUAL> RelationalExpression() { jjtThis.cmpType=EQUAL; } #Comparison(2)
+   |
+     <NON_EQUAL> RelationalExpression() { jjtThis.cmpType=NON_EQUAL; } #Comparison(2)
+   |
+     <IN_OPER> RelationalExpression() { jjtThis.cmpType=IN_OPER; } #Comparison(2)
+  )*
+}
+
+void RelationalExpression() #void :
+{}
+{
+  AdditiveExpression()
+  (
+    <LESS_THAN> AdditiveExpression() { jjtThis.cmpType=LESS_THAN; } #Comparison(2)
+   |
+    <GREATER_THAN> AdditiveExpression() { jjtThis.cmpType=GREATER_THAN; } #Comparison(2)
+   |
+    <LESS_THAN_EQUAL> AdditiveExpression() { jjtThis.cmpType=LESS_THAN_EQUAL; } #Comparison(2)
+   |
+    <GREATER_THAN_EQUAL> AdditiveExpression() { jjtThis.cmpType=GREATER_THAN_EQUAL; } #Comparison(2)
+   | 
+   	<REGEX_EQUAL>  RegexLiteral() { jjtThis.cmpType=REGEX_EQUAL; } #Comparison(2)
+  )*
+}
+
+void AdditiveExpression() #void : {}
+{
+ MultiplicativeExpression()
+ (
+     <PLUS> MultiplicativeExpression() #AddNode(2)
+   |
+     <MINUS> MultiplicativeExpression() #SubNode(2)
+  )*
+}
+
+void MultiplicativeExpression() #void : {}
+{
+     UnaryExpression()
+  (
+    <MULTIPLY> UnaryExpression() #MulNode(2)
+   |
+    <DIVIDE> UnaryExpression() #DivNode(2)
+   |
+    <MODULO> UnaryExpression() #ModNode(2)
+  )*
+}
+
+
+
+
+void PostfixOp() #Operator :
+{
+  Token t;
+}
+{
+  ( <INCR> | <DECR>)
+  {
+    jjtThis.setOperator(getToken(0).kind);
+  }
+}
+void PostfixExpression() #PostfixExpression(>1) :
+{Token t;}
+{
+	PrimaryExpression() [ PostfixOp() ] // [ ( t=<INCR> | t=<DECR>) { jjtThis.setOperator(t.kind); } ] 
+}
+
+
+void UnaryOp() #Operator :
+{
+  Token t;
+}
+{ 
+  (  <INCR> | <DECR> | <PLUS> | <MINUS> | <TILDA> | <NOT> )
+  {
+    jjtThis.setOperator(getToken(0).kind);
+  }
+}
+void UnaryExpression() #UnaryExpression(>1) :
+{}
+{ 
+	
+	 PostfixExpression()
+	|	UnaryOp() UnaryExpression()
+}
+
+
+void PrimaryExpression() #void : {}
+{
+	 LOOKAHEAD(3 /*<IDENTIFIER> "(" */ ) FunctionCall()
+	 | SymbolNameExp()
+     |LitExp()
+	 |VarExp()
+     |InputFieldExp()
+     |<OPEN_PAR> Expression() <CLOSE_PAR>
+   
+  
+}
+
+void FunctionCall() #void : {}
+{
+ 	 BuildInFunction()
+ 	| FunctionCallStatement()
+ 	
+}
+
+void LitExp() #void :            // 
+{
+	Token t;
+}
+{
+ t=<FLOATING_POINT_LITERAL>
+  	{ jjtThis.setVal(FLOATING_POINT_LITERAL,t.image);} #Literal
+ |t=<HEX_LITERAL>
+  	{ jjtThis.setVal(HEX_LITERAL,t.image);}   #Literal
+ |t=<OCTAL_LITERAL>
+  	{ jjtThis.setVal(OCTAL_LITERAL,t.image);}   #Literal
+ |t=<INTEGER_LITERAL>
+  	{ jjtThis.setVal(INTEGER_LITERAL,t.image);}   #Literal
+ |t=<STRING_LITERAL>
+  	{ jjtThis.setVal(STRING_LITERAL,StringUtils.stringToSpecChar(unquote(t.image))); }   #Literal
+ | t=<STRING_PLAIN_LITERAL>
+ 	{ jjtThis.setVal(STRING_LITERAL,t.image); }   #Literal
+ |t=<BOOLEAN_LITERAL>
+  	{ jjtThis.setVal(BOOLEAN_LITERAL,t.image);}   #Literal
+ |t=<DATE_LITERAL>
+ 	{ jjtThis.setVal(DATE_LITERAL,t.image);}   #Literal
+ |t=<DATETIME_LITERAL>
+  	{ jjtThis.setVal(DATETIME_LITERAL,t.image);}   #Literal
+ |t=<NULL_LITERAL>
+ 	{ jjtThis.setVal(NULL_LITERAL,t.image); } #Literal
+ |t=<RETURN_RECORD_SEND_ALL>
+ 	{ jjtThis.setConstant(RecordTransform.ALL); } #Literal
+ |t=<RETURN_RECORD_SKIP>
+ 	{ jjtThis.setConstant(RecordTransform.SKIP); } #Literal
+ |t=<RETURN_RECORD_OK>
+ 	{ jjtThis.setConstant(RecordTransform.OK); } #Literal
+ |t=<RETURN_RECORD_ERROR>
+ 	{ jjtThis.setConstant(RecordTransform.ERROR); } #Literal
+ | ListOfLiterals()
+ |t = <UNTERMINATED_STRING_LITERAL>
+  {
+       throw new ParseException(t,"unterminated string literal (starts at line "+t.beginLine+", column "+t.beginColumn+")");
+  }
+}
+
+void ListOfLiterals() :
+{
+	boolean negative = false;
+	CLVFLiteral lit = null;
+}
+{
+	"[" 
+		[ "-" { negative = true; } ] LitExp() 
+		{
+			lit = (CLVFLiteral)jjtree.peekNode();
+			lit.setNegative(negative);
+		}
+		( "," [ "-" { negative = true; } ]LitExp() 
+		{
+			lit = (CLVFLiteral)jjtree.peekNode();
+			lit.setNegative(negative);
+		}
+		)* 
+	"]"	
+}
+
+void InputFieldExp() #InputFieldLiteral :
+{  Token t;}{  t = <FIELD_ID> { jjtThis.setFieldName(t,t.image); }   | t = <REC_NAME_FIELD_ID> { jjtThis.setRecordFieldName(t,t.image); } 
+  | t = <REC_NUM_FIELD_ID> { jjtThis.setRecordNumFieldName(t,t.image); }
+  | t = <REC_NUM_FIELD_NUM> { jjtThis.setRecordNumFieldNum(t,t.image); }
+  | t= <REC_NAME_FIELD_NUM>  { jjtThis.setRecordNameFieldNum(t,t.image); } 
+  | t= <REC_NAME_ID> [ "[" AdditiveExpression() "]" {jjtThis.indexSet=true;} ] { jjtThis.setRecordName(t,t.image); } 
+  | t= <REC_NUM_ID> [ "[" AdditiveExpression() "]" {jjtThis.indexSet=true;} ] { jjtThis.setRecordNum(t,t.image); } }/*
+void OutputFieldExp() #void :// IDExp -> ID
+{
+  Token t;
+}
+{
+  t = <FIELD_ID> { jjtThis.setFieldName(t.image); } #OutputFieldLiteral
+  | t = <REC_NAME_FIELD_ID> { jjtThis.setRecordFieldName(t.image); } #OutputFieldLiteral
+  | t = <REC_NUM_FIELD_ID> { jjtThis.setRecordNumFieldName(t.image); } #OutputFieldLiteral
+}
+*/
+
+
+void VarExp() #VariableLiteral :
+{
+	Token t,u;
+	int varSlot;
+	int varType=0;
+	//boolean indexSet=false;
+}
+{
+	try{
+	
+	// primitive type
+  t=<IDENTIFIER> { 
+
+  		// first, look for local var reference
+  		if (parserHelper.inFunctionDeclaration && 
+  				(varSlot=parserHelper.getLocalVariableSlot(t.image))>=0){
+  			jjtThis.setLocalVariale(true);
+  			varType=parserHelper.getLocalVariableType(t.image);
+  		}else{
+    		if ((varSlot=parserHelper.getGlobalVariableSlot(t.image))<0){
+  				throw new ParseException(t,"variable ["+t.image+"] is not declared");
+    		}
+    		jjtThis.setLocalVariale(false);
+    		varType=parserHelper.getGlobalVariableType(t.image);
+	  	}
+  	jjtThis.setVarSlot(varSlot); 
+  	jjtThis.setVarName(t.image);
+  	jjtThis.setVarType(varType); 
+  	} 
+  	
+  	 // it may be element of LIST , MAP or RECORD
+	 [  "[" 
+	 		[ 
+	 			/* this won't work - conflict with variable inds: LOOKAHEAD( 2 ) u=<IDENTIFIER> { jjtThis.setFieldID(u.image); jjtThis.indexSet=true; } 
+	 			|*/
+	 			  AdditiveExpression() {jjtThis.indexSet=true;} 
+	 		]  
+	 	"]" {jjtThis.scalarContext=true;} 
+	 ]
+  	
+//  	{//  	if (!indexset){//  		if (varType==LIST_VAR)//	  		throw new ParseException(t,"variable ["+t.image+"] is a list and requires index to be specified");//	  	else if (varType==MAP_VAR)//	  		throw new ParseException(t,"variable ["+t.image+"] is a map and requires key to be specified");//  	}
+//  	}
+  	
+	}catch(ParseException e){
+		parseExceptions.add(e);
+	}
+	
+}
+
+void RegexLiteral() :
+{
+	Token t;
+}
+{
+  t=<STRING_LITERAL> { jjtThis.setRegex(unquote(t.image)); } 
+  |t=<STRING_PLAIN_LITERAL>	{ jjtThis.setRegex(t.image); } 
+}
+
+
+void SymbolNameExp() :
+{
+}
+{
+ (	
+	 <INT_VAR>
+ |  <LONG_VAR>
+ |  <DATE_VAR>
+ |  <DOUBLE_VAR>
+ |  <DECIMAL_VAR>
+ |  <BOOLEAN_VAR>
+ |  <STRING_VAR>
+ |  <BYTE_VAR>
+ |  <LIST_VAR>
+ |  <MAP_VAR>
+ |  <RECORD_VAR>
+	 |  <OBJECT_VAR>
+	|<YEAR>
+  	|<MONTH> 
+  	|<WEEK>
+  	|<DAY>
+  	|<HOUR>
+  	|<MINUTE>
+  	|<SECOND>
+  	|<MILLISEC> )
+  	{
+  	 	jjtThis.setType(getToken(0).kind);
+  	 }
+}
+
+
+/*
+ * Statement syntax follows.
+ */
+
+void Statement() #void :
+{ Token t;}
+{
+	
+	//try{
+		(
+		  <SEMICOLON>
+		/*|
+		  LOOKAHEAD(2)
+		  LabeledStatement() */
+		|
+		  Block()
+		| 
+		  IfStatement()
+		|
+		  SwitchStatement()
+		|
+		  WhileStatement()
+		|
+		  ForStatement()
+		| 
+		  ForeachStatement()
+		|
+		  DoStatement() 
+		|
+		  TryCatchStatement()
+		|
+		   BreakStatement()
+		|
+		   ContinueStatement()
+		|
+		   ReturnStatement()
+		| 
+		  StatementExpression()
+		  
+		
+		  )
+/*	}catch (ParseException e) {
+		parseExceptions.add(e);
+
+// following code causes strange behaviour in case of certain bugs
+// let's put some cap on interations
+
+	int i=0;
+    do {    	  t = getNextToken();
+	      i++;	    } while (t.kind != SEMICOLON || t.kind != BLOCK_END || t.kind != EOF || i < 99);
+	    jjtree.popNode();
+	   
+  }*/
+}
+
+/*
+* void LabeledStatement() #void :
+* {}
+*  {
+*    <IDENTIFIER> ":" Statement()
+*  }
+*/
+
+void Block() :
+{}
+{
+  "{" ( Statement() )* "}"
+}
+
+void StatementExpression() #void :
+{}
+{
+	
+   (
+ 	
+    LOOKAHEAD( VarExp() "=" ) Assignment() 
+	| LOOKAHEAD( 2 )  IncrDecrStatement()
+	|FunctionCall()
+	
+   ) ";"
+  }
+ 
+void IncrDecrStatement() #IncrDecrStatement():
+{Token t;}
+{
+	VarExp() ( t=<INCR> | t=<DECR> ) {jjtThis.setKind(t.kind); } 
+	
+}
+
+void IfStatement() :
+/*
+ * The disambiguating algorithm of JavaCC automatically binds dangling
+ * else's to the innermost if statement.  The LOOKAHEAD specification
+ * is to tell JavaCC that we know what we are doing.
+ */
+{}
+{
+  <IF> "(" Expression() ")" Statement() [ LOOKAHEAD(2) <ELSE> Statement() ]
+}
+
+void SwitchStatement() :
+/*
+ * The disambiguating algorithm of JavaCC automatically binds dangling
+ * else's to the innermost if statement.  The LOOKAHEAD specification
+ * is to tell JavaCC that we know what we are doing.
+ */
+{}
+{
+  <SWITCH>  "(" Expression() ")"
+  "{"
+  	 CaseExpression()
+     ( CaseExpression() )*
+  	 [ LOOKAHEAD(1) <CASE_DEFAULT> ":" Statement() { jjtThis.setDefaultClause(true); } ] 
+  "}"
+}
+
+void CaseExpression() :
+{}
+{
+  <CASE> Expression() ":" Statement()
+}
+
+
+void WhileStatement() :
+{}
+{
+  <WHILE> "(" Expression() ")" Statement()
+}
+
+void ForStatement() :
+{}
+{
+  <FOR> "(" Expression() ";" Expression() ";" Expression() ")" Statement()
+}
+
+void ForeachStatement() :
+{}
+{
+	<FOR_EACH> "(" VarExp() ":" VarExp() ")" Statement()
+}
+
+void DoStatement() #DoStatement(2) :
+{}
+{
+  <DO> Statement() <WHILE> "(" Expression() ")" 
+}
+
+void TryCatchStatement() :
+{}
+{
+  <TRY> Statement() <CATCH>  "(" [ VarExp() ] ")" Statement()
+}
+
+
+
+void BreakStatement() :
+{}
+{
+	<BREAK>
+}
+
+void ContinueStatement() :
+{}
+{
+	<CONTINUE>
+}
+
+void ReturnStatement() : {}
+{
+    <RETURN> [LOOKAHEAD(2) Expression()]
+	
+
+//(  [ Expression() ] ) #EmptyExpression(jjtree.nodeArity()==0)
+}
+
+void FunctionCallStatement() :
+{ Token t;
+  CLVFFunctionDeclaration functionNode;
+}
+{
+	 t=<IDENTIFIER> { 
+	 	jjtThis.setName( t.image); 
+	 	// is it already declared function ??
+	 	if ((functionNode=(CLVFFunctionDeclaration)parserHelper.functionSymbol.get(t.image))!=null){
+	 			 	jjtThis.setCallNode(functionNode);
+	 	}else if (parserHelper.isExternalFunction(t.image)){
+	 				jjtThis.setExternalFunction(parserHelper.getExternalFunction(t.image));
+	 	}else{ 
+	 		throw new ParseException(t,"function \""+t.image+"\" not declared");
+	 	}
+	 	}
+	"(" [ FunctionCallParameter()  ( "," FunctionCallParameter() )* ] ")"
+
+	{
+	 // verify number of call parameters
+	 	if (!jjtThis.validateParams()){
+	 		//System.err.println("wrong #arguments");
+	  		throw new ParseException(t,"wrong number of parameters when calling \""+t.image+"\"");
+	 	}
+	}
+}
+
+void FunctionCallParameter() #void : {}
+{
+	ConditionalOrExpression()
+}
+
+
+/* !!!! INTERNAL FUNCTIONS && PROCEDURES START HERE !!!! */
+
+void BuildInFunction() #void :
+{ }
+{
+	"isnull(" AdditiveExpression() ")" #IsNullNode(1)
+	|"nvl(" AdditiveExpression() "," AdditiveExpression() ")" #NVLNode(2)
+	|"nvl2(" AdditiveExpression() "," AdditiveExpression() "," AdditiveExpression()  ")" #NVL2Node(3)
+	|"iif(" ConditionalOrExpression() "," AdditiveExpression() "," AdditiveExpression() ")" #IffNode(3) // (condition, express if true, express else)
+	|SequenceNode()
+	|LookupNode()
+	|EvalNode()
+	|DictionaryNode()
+
+// 	procedures 
+	|PrintErrNode()
+	|"print_stack(" ")" #PrintStackNode(0)
+	|"breakpoint(" ")" #BreakpointNode(0)
+	| PrintLogNode()
+	|"raise_error(" AdditiveExpression() ")" #RaiseErrorNode(1)
+}
+
+
+void PrintErrNode() :
+{}
+{
+	"print_err(" AdditiveExpression() [ "," ConditionalOrExpression() ] ")" 
+}
+
+
+void EvalNode() :
+{}
+{
+   "eval(" AdditiveExpression() ["," AdditiveExpression() ] ")" { hasEvalNode=true;  jjtThis.setExpMode(false); }
+   | "eval_exp(" AdditiveExpression() ")" { jjtThis.setExpMode(true); }
+}
+
+void PrintLogNode() : 
+{
+	Token t;
+}
+{
+	"print_log(" 
+	( <IDENTIFIER> )
+		
+
+	{
+		try{
+			jjtThis.setLevel(getToken(0).image);
+		}catch (Exception ex){
+			throw new ParseException(getToken(0),ex.getMessage());
+		}
+	}
+	
+	","
+	AdditiveExpression()
+	")"
+}
+
+
+void SequenceNode() :
+{
+	Token t;
+}
+{
+	"sequence(" 
+	t=<IDENTIFIER> { jjtThis.setName(t.image); } 
+	[ ","
+	(  <INT_VAR> { jjtThis.setReturnType(INT_VAR); }
+	| <LONG_VAR> {  jjtThis.setReturnType(LONG_VAR); }
+	| <STRING_VAR> { jjtThis.setReturnType(STRING_VAR); }
+	) ]
+	")"
+	[ 
+		".next" 	{ jjtThis.setOperation(0); }
+	  | ".current" { jjtThis.setOperation(1); }
+	  | ".reset" { jjtThis.setOperation(2); }
+	]  
+}
+
+void LookupNode() :
+{
+	Token t,k;
+}
+{
+	(
+	(
+	"lookup("
+		t=<IDENTIFIER> { jjtThis.setOperation(0); jjtThis.setLookupName(t.image); }// LOOKUP NAME/ID
+		"," AdditiveExpression() //KEYS GO HERE
+		("," AdditiveExpression())*
+		")"
+		["." k=<IDENTIFIER> { jjtThis.setLookupField(k.image); } ]  // WHICH FIELD 
+		) 
+	
+	|("lookup_next("
+		t=<IDENTIFIER> { jjtThis.setOperation(1); jjtThis.setLookupName(t.image); }
+		")" 
+		[ "." k=<IDENTIFIER> { jjtThis.setLookupField(k.image); } ] 
+		) 
+	|(// how many records we have found
+		"lookup_found("
+		t=<IDENTIFIER> { jjtThis.setOperation(2); jjtThis.setLookupName(t.image); }
+		")"
+		) 
+	|(// do something with lookup
+		"lookup_admin("
+		t=<IDENTIFIER> { jjtThis.setLookupName(t.image); } ","
+		k=<IDENTIFIER> { if (k.image.equalsIgnoreCase("init"))  jjtThis.setOperation(3); else jjtThis.setOperation(4); } 
+		
+		")"
+		)
+	)
+}
+
+void DictionaryNode() :
+{
+	Token t,name;
+}
+{
+	(
+		"read_dict" "(" 
+			Expression()
+		")"
+		{ jjtThis.setOperation(0); }
+	)
+	|
+	(
+		"write_dict" "(" 
+			Expression()   "," 
+			Expression() 
+		")"
+		{ jjtThis.setOperation(1);}
+	)
+	|
+	(
+		"delete_dict" "(" 
+			Expression()  
+		")"
+		{ jjtThis.setOperation(2);}
+	)	
+}
+
+TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" | "hour" | "minute" | "sec" | "second" | "millisec" | "millisecond" > }
+
+
+/* error token which is generated by lexer if it can't match with any other */
+TOKEN:
+{
+   <ERROR: ~[] >
+}

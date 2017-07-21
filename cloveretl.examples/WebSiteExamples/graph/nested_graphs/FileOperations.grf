@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Tue Jul 31 13:22:30 CEST 2012" guiVersion="3.4.0.M2" id="1343744188144" licenseType="Commercial" modified="Wed Mar 06 14:54:57 CET 2013" modifiedBy="Pavel" name="example01_1" revision="1.69" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0" previewAttachment="${DATAIN_01_DIR}/customer_details_01.dat" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" label="customer_details" name="customer_details" previewAttachment="${DATAIN_01_DIR}/customer_details_01.dat" previewAttachmentCharset="ISO-8859-1" quoteChar="both" quotedStrings="false" recordDelimiter="\r\n" skipSourceRows="1" type="delimited">
+<Field name="customerId" type="string"/>
+<Field name="firstname" type="string"/>
+<Field name="lastname" type="string"/>
+<Field name="address" type="string"/>
+<Field name="city" type="string"/>
+<Field name="zipcode" type="string"/>
+<Field name="state" type="string"/>
+<Field eofAsDelimiter="false" name="createdDate" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1">
+<Record fieldDelimiter="|" name="recordName" recordDelimiter="\n" type="delimited">
+<Field eofAsDelimiter="false" name="customerId" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="firstname" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="lastname" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="address" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="city" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="zipcode" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="state" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="createdDate" nullable="true" shift="0" size="0" type="date"/>
+</Record>
+</Metadata>
+<Property id="GraphParameter3" name="PRM_INPUT_FILE" value="value"/>
+<Property id="GraphParameter4" name="PRM_OUTPUT_DIR" value="value"/>
+<Property fileURL="workspace.prm" id="GraphParameter5"/>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="120" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="New note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="582" x="20" y="82">
+<attr name="text"><![CDATA[1. Read data from source file
+2. Format certain data to correct data type
+3. Sort source data by states and customer names
+4. Extract customers from California only
+5. Add this list of customers to an output file]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="222" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="184" x="353" y="231">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+
+Sort data by State followed by Last Name field]]></attr>
+</Note>
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="63" id="Note1" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="File Operations - graph" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="582" x="20" y="20">
+<attr name="text"><![CDATA[This graph belongs to "File Operations" jobflow (see "jobflows" folder)]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="Convert Date" guiX="195" guiY="252" id="CONVERT_DATE" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.customerId = $in.0.customerId;
+	$out.0.firstname = $in.0.firstname;
+	$out.0.lastname = $in.0.lastname;
+	$out.0.address = $in.0.address;
+	$out.0.city = $in.0.city;
+	$out.0.zipcode = $in.0.zipcode;
+	$out.0.state = $in.0.state;
+	$out.0.createdDate = str2date($in.0.createdDate, "yyyy-MM-dd");
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Filter Customers (CA only)" guiX="565" guiY="252" id="FILTER_CUSTOMERS_CA_ONLY" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[//#CTL2
+$in.0.state == "CA"]]></attr>
+</Node>
+<Node append="true" enabled="enabled" fileURL="${PRM_OUTPUT_DIR}/selected_customers.dat" guiName="Output Customer List" guiX="804" guiY="252" id="OUTPUT_CUSTOMER_LIST" makeDirs="false" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${PRM_INPUT_FILE}" guiName="Read Source" guiX="20" guiY="253" id="READ_SOURCE" skipRows="1" type="DATA_READER" verbose="false"/>
+<Node enabled="enabled" guiName="Sort Data" guiX="381" guiY="252" id="SORT_DATA" sortKey="state(a);lastname(a)" type="FAST_SORT"/>
+<Edge debugMode="true" fromNode="CONVERT_DATE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="SORT_DATA:0"/>
+<Edge debugMode="true" fromNode="FILTER_CUSTOMERS_CA_ONLY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (accepted)" toNode="OUTPUT_CUSTOMER_LIST:0"/>
+<Edge debugMode="true" fromNode="READ_SOURCE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="CONVERT_DATE:0"/>
+<Edge debugMode="true" fromNode="SORT_DATA:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="FILTER_CUSTOMERS_CA_ONLY:0"/>
+</Phase>
+</Graph>
