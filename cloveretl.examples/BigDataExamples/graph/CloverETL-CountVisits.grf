@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361360266035" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Mar 25 15:54:24 CET 2014" modifiedBy="User" name="RunJobInCloverETL" revision="1.34" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/meta_count_output.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/weblogs_parse_txt.fmt" id="Metadata2"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<RichTextNote backgroundColor="404040" enabled="true" folded="false" fontSize="medium" height="110" id="Note4" textColor="FFFFFF" width="929" x="30" y="9">
+<attr name="text"><![CDATA[h3. Big Data - Processing Web Access Log (Unique Visitors):  Pure CloverETL Solution
+Report the number of unique visitors per month from a potentially huge web access log using different methods.
+(CloverETL, Hadoop HIVE, and Hadoop MapReduce)]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="49" id="Note5" textColor="000000" width="929" x="30" y="118">
+<attr name="text"><![CDATA[h3. This graph is part of the "[UniqueVisits-CloverETL.jbf|navigator://BigDataExamples/jobflow/UniqueVisits-CloverETL.jbf]" jobflow.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="248" id="Note0" textColor="000000" width="208" x="30" y="217">
+<attr name="text"><![CDATA[h3. Read Weblog (zipped)
+
+Reads data directly from a zipped Apache access log file.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="248" id="Note1" textColor="000000" width="233" x="271" y="217">
+<attr name="text"><![CDATA[h3. Extract data and IP
+
+Extracts year, month and ip adress fields. We can drop all other fields as they are not needed for further calculation.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="60FF60" enabled="true" folded="false" fontSize="medium" height="250" id="Note2" textColor="000000" width="430" x="534" y="215">
+<attr name="text"><![CDATA[h3. Calculate the number of unique visitors
+
+Input data is aggregated to produce number to calculate number of unique visitors for each month. Sorting before aggregation groups the data and allows the Aggregator to run in more efficient "sorted" mode. ]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="250" id="Note3" textColor="000000" width="290" x="989" y="215">
+<attr name="text"><![CDATA[h3. Save temp file with results
+
+Writes calculated statistics into a temporary output file which will be converted to Excel report in the next step of processing.]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="Extract Date and IP Fields" guiX="296" guiY="342" id="EXTRACT_DATE_AND_IP_FIELDS" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.value_ip_address = $in.0.client_ip;
+	$out.0.key_year_month = concat($in.0.year,".",upperCase($in.0.month));
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="zip:(${DATAIN_DIR}/weblogs_parse.zip)#weblogs_parse.txt" guiName="Read Web Access Log" guiX="55" guiY="341" id="READ_WEB_ACCESS_LOG" quotedStrings="true" type="DATA_READER"/>
+<Node enabled="enabled" guiName="Sort by  Date and IP" guiX="560" guiY="342" id="SORT_BY_DATE_AND_IP" sortKey="key_year_month(a);value_ip_address(a)" type="FAST_SORT"/>
+<Node aggregateKey="key_year_month" enabled="enabled" guiName="Unique visitors per month" guiX="743" guiY="342" id="UNIQUE_VISITORS_PER_MONTH" mapping="$year_month:=$key_year_month;$ip_count:=countunique($value_ip_address);" type="AGGREGATE"/>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/unique_visitors.txt" guiName="Write Unique Visitors Count" guiX="1029" guiY="342" id="WRITE_UNIQUE_VISITORS_COUNT" type="DATA_WRITER"/>
+<Edge debugMode="true" fromNode="EXTRACT_DATE_AND_IP_FIELDS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SORT_BY_DATE_AND_IP:0"/>
+<Edge debugMode="true" fromNode="READ_WEB_ACCESS_LOG:0" guiBendpoints="222:157|222:280|14:280|14:404" guiLocks="222|14|482" guiRouter="Manual" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="EXTRACT_DATE_AND_IP_FIELDS:0"/>
+<Edge debugMode="true" fromNode="SORT_BY_DATE_AND_IP:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata0" toNode="UNIQUE_VISITORS_PER_MONTH:0"/>
+<Edge debugMode="true" fromNode="UNIQUE_VISITORS_PER_MONTH:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WRITE_UNIQUE_VISITORS_COUNT:0"/>
+</Phase>
+</Graph>
