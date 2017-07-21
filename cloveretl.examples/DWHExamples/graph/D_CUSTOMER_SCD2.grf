@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Petr" created="Thu Sep 24 09:28:57 CEST 2009" guiVersion="0.0.0.devel" id="1253805317427" licenseType="Evaluation Devel" modified="Fri Jun 10 10:22:22 CEST 2011" modifiedBy="avackova" name="D_CUSTOMER_SCD2" revision="1.32" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/Customer.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/D_CUSTOMER.fmt" id="Metadata1"/>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="D_CUSTOMER_Customer" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ID_D_CUSTOMER" type="integer"/>
+<Field name="FIRST_NAME" type="string"/>
+<Field name="LAST_NAME" type="string"/>
+<Field name="CUSTOMER_NUMBER" type="integer"/>
+<Field name="EMAIL" type="string"/>
+<Field name="STREET_ADDRESS" type="string"/>
+<Field name="ZIP_CODE" type="string"/>
+<Field eofAsDelimiter="true" name="CITY" type="string"/>
+<Field format="yyyy-MM-dd" name="FROM_DATE" type="date"/>
+<Field format="yyyy-MM-dd" name="TO_DATE" type="date"/>
+<Field name="FIRST_NAME_NEW" type="string"/>
+<Field name="LAST_NAME_NEW" type="string"/>
+<Field name="CUSTOMER_NUMBER_NEW" type="integer"/>
+<Field name="EMAIL_NEW" type="string"/>
+<Field name="STREET_ADDRESS_NEW" type="string"/>
+<Field name="ZIP_CODE_NEW" type="string"/>
+<Field eofAsDelimiter="true" name="CITY_NEW" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Sequence cached="5" fileURL="${SEQ_DIR}/ID_D_CUSTOMER.seq" id="Sequence0" name="ID_D_CUSTOMER" start="1" step="1" type="SIMPLE_SEQUENCE"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="147" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Data Warehouse" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="166" x="20" y="-8"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="151" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="OLTP" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="166" x="18" y="145"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="291" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Filling of Customer dimension of DWH" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="1217" x="18" y="308">
+<attr name="text"><![CDATA[
+Customer dimension is slowly changing dimension type 2 (if the value is changed, a new record in dimension is created)
+
+Inputs:
+- D_CUSTOMER file contains the contents of Customer dimension as of 24th Sep 2009
+- Customer_input contains a snapshot of the online transaction processing system (OLTP) as of 25th Sep 2009
+
+Processing:
+- data records from dimesion are deduplicated and only valid records are processed
+- data records from dimension and OLTP are intersected on natural key (CUSTOMER_NUMBER) in the DataIntersection component
+- the records not contained in DWH but contained in OLTP are processed in the third branch of the graph after DataIntersection - new ID_D_CUSTOMER is generated, FROM_DATE attribute is set to today, TO_DATE to null and the resulting data records are written to the D_CUSTOMER_insert.tbl file
+- the records contained in both DWH and OLTP are processed in the second branch of the graph after DataIntersection - differences between OLTP and DWH are found, new records with actual values of attributes are written to the D_CUSTOMER_insert.tbl file (FROM_DATE is set to today, TO_DATE to null), the records that have become obsolete are written to the D_CUSTOMER_update.tbl file (TO_DATE is set to today-1) 
+
+If the data is stored in database instead of files, the D_CUSTOMER_update.tbl and D_CUSTOMER_insert.tbl files are replaced by SQL queries: UPDATE (ID_D_CUSTOMER is unique identifier of records) and INSERT
+]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" equalNULL="false" guiHeight="101" guiName="DataIntersection" guiWidth="152" guiX="633" guiY="83" id="DATA_INTERSECTION0" joinKey="$CUSTOMER_NUMBER=$CUSTOMER_NUMBER" keyDuplicates="false" type="DATA_INTERSECTION">
+<attr name="order"><![CDATA[Asc]]></attr>
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.ID_D_CUSTOMER := $0.ID_D_CUSTOMER;
+	$0.FIRST_NAME := $0.FIRST_NAME;
+	$0.LAST_NAME := $0.LAST_NAME;
+	$0.CUSTOMER_NUMBER := $0.CUSTOMER_NUMBER;
+	$0.EMAIL := $0.EMAIL;
+	$0.STREET_ADDRESS := $0.STREET_ADDRESS;
+	$0.ZIP_CODE := $0.ZIP_CODE;
+	$0.CITY := $0.CITY;
+	$0.FROM_DATE := $0.FROM_DATE;
+	$0.TO_DATE := $0.TO_DATE;
+	$0.FIRST_NAME_NEW := $1.FIRST_NAME;
+	$0.LAST_NAME_NEW := $1.LAST_NAME;
+	$0.CUSTOMER_NUMBER_NEW := $1.CUSTOMER_NUMBER;
+	$0.EMAIL_NEW := $1.EMAIL;
+	$0.STREET_ADDRESS_NEW := $1.STREET_ADDRESS;
+	$0.ZIP_CODE_NEW := $1.ZIP_CODE;
+	$0.CITY_NEW := $1.CITY;
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+<attr name="guiDescription"><![CDATA[Data are intersected on natural key (CUSTOMER_NUMBER)]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${TABLES}/D_CUSTOMER.tbl" guiHeight="101" guiName="D_CUSTOMER" guiWidth="130" guiX="27" guiY="28" id="DATA_READER0" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Customer dimension as of 24th Sep 2009]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Customer_25092009.csv" guiHeight="101" guiName="Customer_input" guiWidth="145" guiX="27" guiY="177" id="DATA_READER1" skipRows="1" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Snapshot of the online transaction processing system (OLTP) as of 25th Sep 2009]]></attr>
+</Node>
+<Node dedupKey="CUSTOMER_NUMBER(a);FROM_DATE(a)" enabled="enabled" equalNULL="false" guiHeight="101" guiName="Dedup" guiWidth="128" guiX="455" guiY="28" id="DEDUP0" keep="last" type="DEDUP">
+<attr name="guiDescription"><![CDATA[Data are deduplicated and only valid records are processed]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="101" guiName="Find differences" guiWidth="145" guiX="856" guiY="78" id="EXT_FILTER0" type="EXT_FILTER">
+<attr name="guiDescription"><![CDATA[Processing records, that are contained in both DWH and OLTP]]></attr>
+<attr name="filterExpression"><![CDATA[$FIRST_NAME != $FIRST_NAME_NEW OR $LAST_NAME != $LAST_NAME_NEW OR $EMAIL != $EMAIL_NEW
+OR $STREET_ADDRESS != $STREET_ADDRESS_NEW OR $ZIP_CODE != $ZIP_CODE_NEW OR $CITY != $CITY_NEW]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="101" guiName="Sort by CUSTOMER_NUMBER" guiWidth="238" guiX="193" guiY="28" id="EXT_SORT0" sortKey="CUSTOMER_NUMBER(a);FROM_DATE(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="85" guiName="Sort by CUSTOMER_NUMBER" guiWidth="238" guiX="192" guiY="154" id="EXT_SORT1" sortKey="CUSTOMER_NUMBER(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="101" guiName="Add ID_D_CUSTOMER &amp; FROM_DATE" guiWidth="293" guiX="856" guiY="186" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.FIRST_NAME := $0.FIRST_NAME;
+	$0.LAST_NAME := $0.LAST_NAME;
+	$0.CUSTOMER_NUMBER := $0.CUSTOMER_NUMBER;
+	$0.EMAIL := $0.EMAIL;
+	$0.STREET_ADDRESS := $0.STREET_ADDRESS;
+	$0.ZIP_CODE := $0.ZIP_CODE;
+	$0.CITY := $0.CITY;
+	$0.ID_D_CUSTOMER := sequence(Sequence0).next;
+	$0.FROM_DATE := trunc(today());
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+<attr name="guiDescription"><![CDATA[Processing  records, that are not contained in DWH but contained in OLTP]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="69" guiName="Set TO_DATE" guiWidth="128" guiX="1253" guiY="45" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.ID_D_CUSTOMER := $0.ID_D_CUSTOMER;
+	$0.FIRST_NAME := $0.FIRST_NAME;
+	$0.LAST_NAME := $0.LAST_NAME;
+	$0.CUSTOMER_NUMBER := $0.CUSTOMER_NUMBER;
+	$0.EMAIL := $0.EMAIL;
+	$0.STREET_ADDRESS := $0.STREET_ADDRESS;
+	$0.ZIP_CODE := $0.ZIP_CODE;
+	$0.CITY := $0.CITY;
+	$0.FROM_DATE := $0.FROM_DATE;
+	$0.TO_DATE := trunc(today())-1;
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="69" guiName="Add ID_D_CUSTOMER and FROM_DATE" guiWidth="309" guiX="1254" guiY="135" id="REFORMAT2" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.ID_D_CUSTOMER := sequence(Sequence0).next;
+	$0.FIRST_NAME := $0.FIRST_NAME_NEW;
+	$0.LAST_NAME := $0.LAST_NAME_NEW;
+	$0.CUSTOMER_NUMBER := $0.CUSTOMER_NUMBER_NEW;
+	$0.EMAIL := $0.EMAIL_NEW;
+	$0.STREET_ADDRESS := $0.STREET_ADDRESS_NEW;
+	$0.ZIP_CODE := $0.ZIP_CODE_NEW;
+	$0.CITY := $0.CITY_NEW;
+	$0.FROM_DATE := trunc(today());
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="72" guiName="SimpleCopy" guiWidth="128" guiX="1075" guiY="80" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="69" guiName="Trash" guiWidth="128" guiX="856" guiY="1" id="TRASH0" type="TRASH"/>
+<Edge fromNode="DATA_INTERSECTION0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (only in A)" toNode="TRASH0:0"/>
+<Edge fromNode="DATA_INTERSECTION0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (in A &amp; B)" toNode="EXT_FILTER0:0"/>
+<Edge fromNode="DATA_INTERSECTION0:2" guiBendpoints="18:0|18:69" guiLocks="null|null|null" guiRouter="Manual" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (only in B)" toNode="REFORMAT0:0"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
+<Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT1:0"/>
+<Edge fromNode="DEDUP0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (set A)" metadata="Metadata1" outPort="Port 0 (unique)" toNode="DATA_INTERSECTION0:0"/>
+<Edge debugMode="false" fromNode="EXT_FILTER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (accepted)" toNode="SIMPLE_COPY0:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
+<Edge fromNode="EXT_SORT1:0" guiBendpoints="599:174|599:119" guiLocks="599|586|null" guiRouter="Manual" id="Edge4" inPort="Port 1 (set B)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:1"/>
+<Edge debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+<Edge debugMode="false" fromNode="REFORMAT2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER2:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="REFORMAT1:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (out)" toNode="REFORMAT2:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" fileURL="${TABLES}/D_CUSTOMER_insert.tbl" guiHeight="101" guiName="INSERT to D_CUSTOMER" guiWidth="207" guiX="1253" guiY="236" id="DATA_WRITER0" type="DATA_WRITER"/>
+</Phase>
+<Phase number="2">
+<Node enabled="enabled" fileURL="${TABLES}/D_CUSTOMER_update.tbl" guiHeight="85" guiName="UPDATE D_CUSTOMER" guiWidth="192" guiX="1453" guiY="-3" id="DATA_WRITER1" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Changed customers]]></attr>
+</Node>
+<Node append="true" enabled="enabled" fileURL="${TABLES}/D_CUSTOMER_insert.tbl" guiHeight="85" guiName="INSERT to D_CUSTOMER" guiWidth="207" guiX="1590" guiY="132" id="DATA_WRITER2" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[New customers]]></attr>
+</Node>
+</Phase>
+</Graph>

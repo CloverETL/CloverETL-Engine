@@ -1,0 +1,2245 @@
+/*
+    Clover.ETL - Transformation language grammar.
+    (c) 2004-07 David.Pavlis <david.pavlis@centrum.cz>, Michal Tomcanyi <michal.tomcanyi@javlin.cz>
+    Released under LGPL license.
+    
+    (Adapted from Ken Beesley and Metamata's javacc 'Interpreter' example.)
+ 
+*/
+
+
+/* *********** !!!!!!!!!!!!!!! Compilation note !!!!!!!!!!!!!! *****************
+	After modifying this file you must execute ant target generate-java-sources (eclise launch configuration "cloveretl.engine generate-java-sources")
+	 
+	Whenever parser is manually recompiled by javacc, you need to:
+	
+	1. Delete the file org.jetel.ctl.Node.java
+	   Delete the file org.jetel.ctl.SimpleNode.java
+	   Because all AST nodes are using org.jetel.ctl.ASTNode.Node as their parent
+	   
+	2. Fix imports in org.jetel.interpreter.TransformLangParserVisitor.java
+	   Since our AST nodes are located in package org.jetel.ctl.ASTNode
+	   Add TransformLangParserVisitor extends SyntheticNodeVisitor interface
+	   
+	3. Modify org.jetel.ctl.TransformLangParser.jj_consume_token():
+	 	
+	 	...
+	 	jj_kind = kind;
+    	tokenError(kind); // <- Inserted
+    	throw generateParseException();
+	    }
+	    
+	    
+	    If not done, most of the syntactic errors will not be correctly reported by the parser
+	    and javacc does not provide token_error() method mentioned in documentation anymore.
+	    `
+	4. Before making a commit of production parser be sure to set the 
+		DEBUG_PARSER = false;
+   		DEBUG_TOKEN_MANAGER = false;
+   		Otherwise the parser generates amounts of debug messages iin background and is much slower.
+   *****************************************************************************/
+
+options {
+   MULTI=true;
+   STATIC=false; 
+   VISITOR=true; 
+   JDK_VERSION = "1.6";
+   CACHE_TOKENS=true;
+   NODE_USES_PARSER=true;
+   NODE_PREFIX="CLVF";
+   NODE_PACKAGE="org.jetel.ctl";
+   JAVA_UNICODE_ESCAPE = true;
+   BUILD_NODE_FILES = false; // change to true only if new Node has been added 
+   DEBUG_PARSER = false;	
+   DEBUG_TOKEN_MANAGER = false;
+   
+}
+
+
+/* *** Specifcation of the parser class *** */
+
+PARSER_BEGIN(TransformLangParser)
+
+package org.jetel.ctl;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.net.URL;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
+import org.jetel.component.RecordTransform;
+import org.jetel.ctl.ASTnode.*;
+import org.jetel.ctl.data.Scope;
+import org.jetel.ctl.data.TLType;
+import org.jetel.ctl.data.TLTypePrimitive;
+import org.jetel.graph.TransformationGraph;
+import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.SandboxUrlUtils;
+import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.property.RefResFlag;
+import org.jetel.util.string.StringUtils;
+
+
+public class TransformLangParser extends ExpParser {
+
+	   private ParserHelper parserHelper;       
+       private boolean hasEvalNode;
+	   private HashSet<String> parsedImports;
+	   private ProblemReporter problemReporter;
+	   private TransformationGraph graph;
+       private PropertyRefResolver propertyRefResolver;
+       private String encoding;
+       private boolean isImported = false;
+       private String sourceCode;
+       private int tabSize;
+
+	/**
+	 * Creates the main parser
+	 */
+	public TransformLangParser(TransformationGraph graph, ProblemReporter problemReporter, java.io.Reader input, String encoding) {
+		this(input);
+		if (input instanceof SourceCodeProvider) {
+			this.sourceCode = ((SourceCodeProvider) input).getSourceCode();
+		}		this.graph = graph;
+		this.propertyRefResolver = (graph != null) ? new PropertyRefResolver(graph.getGraphParameters()) : null;
+		this.parserHelper = new ParserHelper();
+		this.hasEvalNode = false;
+		this.parsedImports = new HashSet<String>();
+		this.problemReporter = problemReporter;
+		this.encoding = encoding;
+	}
+       
+      /**
+       * Used by main parser to create import parsers
+       */
+      public TransformLangParser(TransformLangParser parent, String filename, java.io.Reader input){			  this(input);
+			  this.graph = parent.graph;              this.propertyRefResolver = parent.propertyRefResolver;
+			  this.parserHelper=parent.parserHelper;
+			  this.hasEvalNode = false;              this.problemReporter = parent.problemReporter;
+              this.parsedImports = parent.parsedImports;              this.isImported  = true;
+              this.encoding = parent.encoding;
+              this.setTabSize(parent.tabSize);
+      }
+      
+	public void reset(java.io.Reader input) {
+  		parserHelper.reset();
+		hasEvalNode = false;
+		parsedImports.clear();
+		problemReporter.reset();
+		this.sourceCode = (input instanceof SourceCodeProvider) ? ((SourceCodeProvider) input).getSourceCode() : null;
+		ReInit(input);	
+	}
+
+	public String getSource() {		return sourceCode;
+	}
+
+	public String getEncoding() {
+	    return encoding;	}
+
+	public void setTabSize(int size) {
+	    this.tabSize = size;
+		this.token_source.input_stream.setTabSize(size);
+	}
+
+	public int getTabSize() {	    return this.tabSize;
+	}
+
+    @Override
+    public final Map<String, List<CLVFFunctionDeclaration>> getFunctions(){
+        return parserHelper.getFunctions();
+    }
+
+    public void setFunctions(Map<String, List<CLVFFunctionDeclaration>> functions) {
+		parserHelper.getFunctions().putAll(functions);
+    }
+
+    public void setCurrentScope(Scope scope) {
+		parserHelper.setCurrentScope(scope);
+    }
+    
+     public static final String unquote(String image){
+     	return image.substring(1,image.length()-1);
+     }
+
+	public void addVariable(CLVFVariableDeclaration var) {
+		CLVFVariableDeclaration oldDeclaration = null;
+		if ((oldDeclaration = parserHelper.addVariable(var)) != null) {
+			error(var,"Duplicate variable '" + var.getName() + "'");
+		}
+	}
+	
+	public CLVFVariableDeclaration checkDeclaration(String name, int beginLine, int beginColumn, int endLine, int endColumn) {
+		CLVFVariableDeclaration var = parserHelper.getVariable(name);
+		if (var == null) {
+			error(beginLine,beginColumn,endLine,endColumn,"Variable '" + name + "' is not declared");
+		}
+		
+		return var;
+	}
+	
+	/** Method for entering function blocks and checking for duplicate declarations */
+	public void enteredBlock(CLVFFunctionDeclaration func) {
+		if (!parserHelper.enteredBlock(func)) {
+			error(func,"Duplicate function '" + func.getName() + "'"); 
+		}
+	}
+	
+	/** Method for entering anonymous code blocks (loops/switch/if bodies) */
+	public Scope enteredBlock() {
+		return parserHelper.enteredBlock();
+	}
+	
+	public void exitedBlock() {
+		parserHelper.exitedBlock();
+	}
+	
+	public int getCurrentBlockOffset() {
+		return parserHelper.getCurrentBlockOffset();
+	}
+      
+    /**
+     * Does the parsed AST tree contain any "eval" node ?
+     * If so, executor will need reference to parser to process such
+     * nodes
+     *
+     */
+    
+    public boolean hasEvalNode(){
+    	return hasEvalNode;
+    }
+    
+	public boolean isParsedImport(String url) {
+		return parsedImports != null && parsedImports.contains(url);
+	}
+
+    public void addParsedImports(HashSet<String> imports) {
+    	if (imports == null) {
+    		return;
+    	}
+    	
+    	if (parsedImports == null) {
+    		parsedImports = new HashSet<String>();
+    	}
+    	
+    	parsedImports.addAll(imports);
+    		
+    }
+    
+    public void addParsedImport(String url) {
+    	
+    	if (parsedImports == null) {
+    		parsedImports = new HashSet<String>();
+    	}
+    	
+    	parsedImports.add(url);
+    }
+    
+    public HashSet<String> getParsedImports() {
+    	return parsedImports;
+    }
+    
+    
+    // -------------------- Error Reporting --------------------------
+    
+   	private void warn(SimpleNode node, String error, String hint) {
+		problemReporter.warn(node.getBegin(), node.getEnd(), error, hint);
+	}
+	
+	private void warn(Token token, String error, String hint) {
+		problemReporter.warn(token.beginLine,token.beginColumn,token.endLine,token.endColumn,error,hint);
+	}
+
+	private void warn(int beginLine, int beginColumn, int endLine, int endColumn, String error, String hint) {
+		problemReporter.warn(beginLine, beginColumn, endLine, endColumn, error, hint);
+	}
+	
+	private void error(Token token, String error) {
+		problemReporter.error(token.beginLine,token.beginColumn,token.endLine,token.endColumn,error,null);
+	}
+	
+	private void error(Token token, String error, String hint) {
+		problemReporter.error(token.beginLine,token.beginColumn,token.endLine,token.endColumn,error,hint);
+	}
+	
+	private void error(int beginLine, int beginColumn, int endLine, int endColumn, String error) {
+		problemReporter.error(beginLine, beginColumn, endLine, endColumn, error, null);
+	}
+	
+	private void error(SimpleNode node, String error) {
+		problemReporter.error(node.getBegin(), node.getEnd(), error, null);
+	}
+	
+	private void error(SimpleNode node, String error, String hint) {
+		problemReporter.error(node.getBegin(), node.getEnd(), error, hint);
+	}
+
+	public ProblemReporter getProblemReporter() {
+		return this.problemReporter;
+	}
+	
+    /**
+     *  Method to report a shift-operation for an unexpected token.
+     *  Insert: Call to this method into the generated parser's jj_consume_token() method
+     *  just before 'throw generateException()' line
+     */
+    public void tokenError(int expectedKind) {
+		String errorMessage;
+		if (jj_nt.kind != EOF) {
+			errorMessage = "Syntax error on token '" + jj_nt.image + "'";
+		} else {
+			// EOF has code 0 and is not present in tokenImage
+			errorMessage = "Syntax error - unexpected end of file";
+		}
+
+		String hint;
+		if (expectedKind > 0) {
+			hint = "Insert " + tokenImage[expectedKind] + " to correct";
+		} else {
+			hint = "Delete this token";
+		}
+
+		error(jj_nt, errorMessage, hint);
+	}
+	
+	/**
+	 * Analyzes special tokens (comments) for occurrence of indication comment to determine
+	 * if compiled or non-compiled mode is active.
+	 */
+	private boolean isCompiledMode(Token regular) {
+       		boolean lastCompiled = false;
+                while (regular.specialToken != null) {
+                        switch (regular.specialToken.kind) {
+                                case TL_COMPILE:
+                                        // this is #CTL2:COMPILE -> running in compiled mode
+                                        // NEW COMMENT
+                                        lastCompiled = true;
+                                        regular = regular.specialToken;
+                                        break;
+                                case TL_SHEBANG:
+                                        // this is #CTL2 -> running in non-compiled mode
+                                        lastCompiled = false;
+                                        regular = regular.specialToken;
+                                        break;
+                                default:
+                                        // check previous special token (if any)
+                                		regular = regular.specialToken;
+                                        break;
+                        }
+                }
+
+                // we checked all special tokens and did not find #CTL2:COMPILED -> return false
+                return lastCompiled;
+	}
+
+	private boolean isGenerated(Token token) {
+
+        boolean generated = false;
+        while (token.specialToken != null) {
+            if (token.specialToken.kind == TL_GENERATED) {
+                generated = true;
+                break;
+            } else {
+                token = token.specialToken;
+            }
+        }
+		return generated;
+    }
+    
+    public void parsingError(ParseException e) {
+    	// inspired by ParseException.toString()
+    	Token errorToken = e.currentToken;
+		if (e.currentToken.next != null) {
+			errorToken = e.currentToken.next;
+    	}
+    	
+    	int beginLine = 1;
+    	int beginColumn = 1;
+    	int endLine = 1;
+    	int endColumn = 2;
+    	String errorMessage = "Unrecoverable syntax error(s) occured"; 
+    	if (errorToken != null) {
+			beginLine = errorToken.beginLine;
+			beginColumn = errorToken.beginColumn;
+			endLine = errorToken.endLine;
+			endColumn = errorToken.endColumn;
+			errorMessage = "Syntax error on token '" + errorToken.image + "'";
+    	}
+    	
+    	error(beginLine,beginColumn,endLine,endColumn,errorMessage);
+    }
+    
+	// checks if LHS is a valid variable for assignment
+	// NOTE: variable intializers are not handled as assignments but as an expression!
+	//       that is why there is no JJTVARIABLEDECLARATION in thwe switch below      
+    private boolean checkAssignmentTarget(SimpleNode lhs) {
+		switch (lhs.getId()) {
+		case TransformLangParserTreeConstants.JJTIDENTIFIER:
+		case TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION:
+		case TransformLangParserTreeConstants.JJTDICTIONARYNODE:
+			// identifier and field are valid LHS of assignment
+			return true;
+		case TransformLangParserTreeConstants.JJTARRAYACCESSEXPRESSION:
+			SimpleNode child = (SimpleNode) lhs.jjtGetChild(0);
+			if (child.getId() == TransformLangParserTreeConstants.JJTFUNCTIONCALL) {
+				return true; // return type should be list or map, will be checked later
+			}
+			// for array access, the 'array' must be a valid target (i.e. identifier)
+			return checkAssignmentTarget(child);
+		case TransformLangParserTreeConstants.JJTMEMBERACCESSEXPRESSION:
+			// for member access, the source object must be a valid identifier (not a lookup, method..)
+			return checkAssignmentTarget((SimpleNode)lhs.jjtGetChild(0));
+		}
+		
+		// anyhting else is not valid
+		return false;
+	}
+}
+
+PARSER_END(TransformLangParser)
+
+/* *** Token specification *** */
+
+/* Skip whitespace */
+SKIP : { " " | "\t" | "\n" | "\r" | "\n\r" }
+
+
+/* HANDLING COMMENTS */
+SPECIAL_TOKEN: {  <"/*"> : WithinComment }
+<WithinComment> SPECIAL_TOKEN:
+{
+    <"*/"> : DEFAULT
+}
+
+<WithinComment> MORE: { <~[]> }
+
+SPECIAL_TOKEN : {
+	< "//" > : WithinSingleLineComment
+}
+
+<WithinSingleLineComment> SPECIAL_TOKEN : {
+	<"\n"|"\r"|"\r\n"> : DEFAULT
+}
+
+<WithinSingleLineComment> SKIP : { <~[]> }
+
+<WithinSingleLineComment, WithinComment> SPECIAL_TOKEN : {	< TL_SHEBANG : "#CTL2" > 	|	< TL_COMPILE : "#CTL2:COMPILE" >
+	|
+	< TL_GENERATED : "#CTL2:GENERATED" >}
+
+
+
+//SPECIAL_TOKEN : //{//    < SINGLE_LINE_COMMENT: "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")? > : WithinSingleLineComment //} 
+
+
+
+/* Literals */
+TOKEN : 
+{
+  < INTEGER_LITERAL:
+        <DECIMAL_LITERAL>
+      | <HEX_LITERAL> 
+      | <OCTAL_LITERAL>
+  >
+|
+  < LONG_LITERAL:  <INTEGER_LITERAL> ["l","L"] >
+|
+  < DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])* >
+|
+  < HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+ >
+|
+  < OCTAL_LITERAL: "0" (["0"-"7"])* >
+|
+  < FLOATING_POINT_LITERAL:
+        (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])?
+      | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])?
+      | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])?
+      | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]
+  >
+|
+  < #EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ >
+ 
+|  
+  < STRING_LITERAL: 
+		"\"" 
+		(	( ~["\"","\\","\n","\r"] ) 
+			| ("\\" 
+				~["\n", "\r"]
+			  )
+		)* 
+		"\""
+   >
+|
+  < BOOLEAN_LITERAL: "true" | "false" >
+|
+  < DATE_LITERAL: ["0"-"9"]["0"-"9"]["0"-"9"]["0"-"9"]"-"["0"-"9"](["0"-"9"])?"-"["0"-"9"](["0"-"9"])? >
+|
+  < DATETIME_LITERAL: ["0"-"9"]["0"-"9"]["0"-"9"]["0"-"9"]"-"["0"-"9"](["0"-"9"])?"-"["0"-"9"](["0"-"9"])? " " ["0"-"9"](["0"-"9"])? ":" ["0"-"9"](["0"-"9"])? ":" ["0"-"9"](["0"-"9"])?>
+| 
+  < NULL_LITERAL: "null">
+}
+
+/* CTL standard functions */
+TOKEN: 
+{
+ < ISNULL: "isnull">
+|
+ < NVL: "nvl" >
+|
+ < NVL2: "nvl2" >
+|
+ < IIF: "iif" >
+|
+ < IN: "in" >
+|
+ < PRINT_ERR: "printErr" >
+|
+ < PRINT_LOG: "printLog" >
+|
+ < PRINT_STACK: "printStack" >
+|
+ < RAISE_ERROR: "raiseError" >
+}
+
+TOKEN: 
+{
+	< STRING_PLAIN_LITERAL:
+      "'"
+        >
+        {
+        	char inChar,prevChar=' ';
+        	image.setLength(0);
+        	int startLine=input_stream.getBeginLine();
+        	int startCol=input_stream.getBeginColumn();
+        	try{
+        		LOOP: while(true){
+        			inChar=input_stream.readChar();
+        			switch(inChar){
+        			 case '\'':
+        				if (prevChar=='\\')
+        					image.setLength(image.length()-1);
+        				else
+        					break LOOP;
+        			break;
+        			case 'u':
+        				if (prevChar=='\\')
+        					image.setLength(image.length()-1);
+        				break;
+        			case '\r':
+        			case '\n':
+        				if (prevChar=='\\')
+        					image.setLength(image.length()-1);
+        				else
+        					throw new UnterminatedStringException(startLine,startCol,input_stream.getEndLine(),input_stream.getEndColumn());
+        				break;
+        			}
+        			image.append(inChar);
+        			prevChar=inChar;
+        		}
+        	}catch(java.io.IOException ioe){
+        		throw new UnterminatedStringException(startLine,startCol,input_stream.getEndLine(),input_stream.getEndColumn());
+        	}
+        	matchedToken.image=image.toString();
+        	matchedToken.endLine = input_stream.getEndLine();
+            matchedToken.endColumn = input_stream.getEndColumn();
+        }
+}
+
+/* Logical operators */
+TOKEN [IGNORE_CASE]: 
+{
+  < OR: "or" | "||" >
+| < AND: "and" | "&&" >
+| < NOT: "not" | "!" >
+}
+
+
+/* Comparison Operators */
+TOKEN [IGNORE_CASE]: 
+{
+  < EQUAL: "==" | ".eq.">
+| < NON_EQUAL: "!=" | "<>" | ".ne." >
+| < LESS_THAN: "<" | ".lt." >
+| < LESS_THAN_EQUAL: "<=" | "=<" | ".le." >
+| < GREATER_THAN: ">" | ".gt.">
+| < GREATER_THAN_EQUAL: ">=" | "=>" | ".ge." >
+| < REGEX_EQUAL: "~=" | ".regex." >
+| < REGEX_CONTAINS: "?=" >
+}
+
+/* Numeric Operators */
+TOKEN: 
+{
+  < MINUS: "-" >
+| < PLUS: "+" >
+| < MULTIPLY: "*" >
+| < DIVIDE: "/" >
+| < MODULO: "%" >
+| < INCR: "++" >
+| < DECR: "--" >
+| < TILDA: "~" >
+
+}
+
+/* Separators */
+TOKEN: 
+{
+  < ASSIGN: "=" >
+| < MAPPING: ":=" > 
+| < SEMICOLON: ";" >
+| < BLOCK_START: "{" >
+| < BLOCK_END: "}" >
+| < OPEN_PAR: "(" > 
+| < CLOSE_PAR: ")" >
+| < DOT: "." >
+| < QUESTION_MARK: "?" >
+| < COLON: ":" > 
+}
+
+/* Assigment operators */
+TOKEN:
+{
+  < ASSIGN_PLUS: "+=" >
+| < ASSIGN_MINUS: "-=" >
+| < ASSIGN_MULTIPLY: "*=" >
+| < ASSIGN_DIVIDE: "/=" >
+| < ASSIGN_MODULO: "%=" >}
+
+/* Types */
+TOKEN : 
+{ 	
+    <INT_VAR: "integer" >
+ |  <LONG_VAR: "long" >
+ |  <DATE_VAR: "date" >
+ |  <DOUBLE_VAR: "number" | "double" >
+ |  <DECIMAL_VAR: "decimal" >
+ |  <BOOLEAN_VAR: "boolean" >
+ |  <STRING_VAR: "string" >
+ |  <BYTE_VAR: "byte" | "cbyte">
+ |  <LIST_VAR: "list" >
+ |  <MAP_VAR: "map" >
+ |  <RECORD_VAR: "record" >
+ |  <OBJECT_VAR: "object" >
+ |  <VOID_VAR: "void" >
+ }
+
+/* Reserved words */
+TOKEN :
+{
+  < BREAK: "break" >
+| < CONTINUE: "continue" >
+| < ELSE: "else" >
+| < FOR: "for" >
+| < FOR_EACH: "foreach" >
+| < FUNCTION: "function" >
+| < IF: "if" >
+| < RETURN: "return" >
+| < WHILE: "while" >
+| < CASE: "case" >
+| < ENUM: "enum" >
+| < IMPORT: "import" >
+| < SWITCH: "switch" >
+| < CASE_DEFAULT: "default" >
+| < DO: "do" >
+| < TRY: "try" >
+| < CATCH: "catch" >
+| < LOOKUP: "lookup" >
+| < LOOKUP_NEXT: "lookup_next" > // obsolete
+| < LOOKUP_FOUND: "lookup_found" > // obsolete
+| < LOOKUP_ADMIN: "lookup_admin" > // obsolete
+| < SEQUENCE: "sequence" >
+| < LOGLEVEL_DEBUG: "debug" >
+| < LOGLEVEL_INFO: "info" >
+| < LOGLEVEL_WARN: "warn" >
+| < LOGLEVEL_ERROR: "error" >
+| < LOGLEVEL_FATAL: "fatal" >
+| < LOGLEVEL_TRACE: "trace" >
+}
+
+/* Reserved words - dictionary */
+TOKEN :
+{
+  < DICTIONARY: "dictionary" > : DictionaryEntrySeparator // CLO-6866
+}
+
+// CLO-6866: special lexer state that only allows a dot followed by a dictionary entry identifier
+<DictionaryEntrySeparator>
+TOKEN :
+{
+  // tokens must be renamed to prevent ambiguity
+  < DICT_SEPARATOR : <DOT> > : DictionaryEntryIdentifier
+}
+
+// CLO-6866: special lexer state that only dictionary entry identifier
+<DictionaryEntryIdentifier>
+TOKEN :
+{
+  // tokens must be renamed to prevent ambiguity
+  < DICT_IDENTIFIER: <IDENTIFIER> > : DEFAULT
+}
+
+
+/* Date parts */
+TOKEN : 
+{ 
+  < YEAR: "year" >
+| < MONTH: "month" > 
+| < WEEK: "week" >
+| < DAY:  "day" >
+| < HOUR:  "hour" >
+| < MINUTE: "minute" >
+| < SECOND: "second" >
+| < MILLISEC: "millisec" >
+}
+
+
+/* Transformation return value constants */
+TOKEN : 
+{
+  < RETURN_OK: "OK" >
+| < RETURN_SKIP: "SKIP" >
+| < RETURN_ALL: "ALL" >
+| < RETURN_STOP: "STOP" >
+}
+
+/*
+ * Record field access in form $1.fieldName clashes with float numbers since it is parsed as
+ * "$" and "1.". Therefore after "$" we switch to a new lexical state WithinFieldIdentifier and parse the record
+ * identifier (either numeric or as an identifier), then switch back to DEFAULT
+ */
+TOKEN : 
+{
+	< FIELD_ACCESS_OPERATOR : "$" | "$in." | "$out." > :  WithinFieldIdentifier 
+}
+
+<WithinFieldIdentifier> 
+TOKEN :
+{
+  <RECORD_ACCESS_FIRST_PART :  ( <NUMERIC_ID> | <STRING_ID> ) >
+  // after this token, decide whether to switch to DEFAULT state or to ExpectingFieldIdentifier
+  // the decision is made using a custom lookahead
+  // we need to distinguish between function call and string field identifiers
+  // - function call is followed by a left parenthesis
+  {
+		boolean fieldIdentifier = false; // is the following token a field identifier?
+		int count = 0; // the number of characters to rollback
+		try  {
+		    char c = input_stream.readChar(); // read the first character
+			count++;
+		    if (c == '.') { // field identifier may only come after '.'
+				c = input_stream.readChar(); // read the second character
+				count++;
+			    if (c == '_' || Character.isLetter(c)) { // string identifier
+				    do { // read letters, digits and underscores
+						c = input_stream.readChar();
+						count++;
+				    } while(c == '_' || Character.isLetterOrDigit(c));
+				    while (c == ' ' || c == '\t' || c == '\r' || c == '\n') { // skip whitespace after the identifier
+						c = input_stream.readChar();
+						count++;
+				    }
+				    if (c != '(') { // the identifier is actually a function name
+				    	fieldIdentifier = true;
+				    } else {
+//				    	System.out.print("\nFunction call");
+				    }
+			    } else if (Character.isDigit(c)) { // numeric identifier
+					// if the first character is a number, assume it is a numeric field identifier
+					// TODO if there are more digits, make sure the first one is [1-9]
+			    	fieldIdentifier = true;				} else if (c == '*') { // asterisk
+					// also expect <RECORD_ACCESS_SECOND_PART> if there is an asterisk			    	fieldIdentifier = true;
+				}
+		    }
+		} catch (Exception ex) {
+			// end of file
+		} finally {
+		    try {
+//				System.out.println();
+				input_stream.backup(count); // rollback to the original position
+		    } catch(Exception ex) {
+		    	throw new RuntimeException("Error restoring previous input stream position", ex);
+		    }
+		}
+		
+		if (fieldIdentifier) {
+//			System.out.println("Expecting a field identifier");
+			// manually switch state to <ExpectingFieldIdentifier>
+			SwitchTo(TransformLangParserConstants.ExpectingFieldIdentifier);
+		} else {
+//			System.out.println("Not expecting a field identifier");
+			// manually switch state to <DEFAULT>
+			SwitchTo(TransformLangParserConstants.DEFAULT);
+		}
+	    
+   }
+}
+
+// See above. When identifier of field is parsed jump back to DEFAULT lexical state
+<ExpectingFieldIdentifier> 
+TOKEN :
+{
+  <RECORD_ACCESS_SECOND_PART : "." ( <NUMERIC_ID> | <STRING_ID> | "*") > : DEFAULT| 
+  < #NUMERIC_ID : ( [ "1"-"9" ] )? ( [ "0" - "9" ] )+ >
+|
+  < #STRING_ID : <IDENTIFIER> >
+}
+
+TOKEN : 
+{
+  < IDENTIFIER: (<LETTER>|<UNDERSCORE>) (<LETTER>|["0"-"9"]|<UNDERSCORE>)* > 
+| 
+  < #LETTER: ["a"-"z","A"-"Z" ]>
+| 
+  < #UNDERSCORE: "_" > 
+}
+
+
+
+
+/* 
+ *  The start nonterminal and its productions. 
+ *  Nonterminal & productions for transformation language
+ */
+CLVFStart Start() :         // Start -> Exp
+{}
+{
+	{
+		if (!isImported)
+	  	{			// create global scope
+			jjtThis.setScope(enteredBlock());
+		} else		{
+		  	// for the imported source file reuse current scope
+			jjtn000.setScope( parserHelper.getCurrentScope());
+		}
+		
+		// check comments for execution mode indication
+		jjtThis.setCompiled(isCompiledMode(jj_nt));
+	}
+	try {
+  		CompilationUnit()
+	} catch (EndOfFileException e) { 		// Parsing deliberately terminated in unknownToken() due to EOF token
+	} catch (UnterminatedStringException e) {
+		error(e.beginLine,e.beginColumn,e.endLine,e.endColumn,"Unterminated string literal encountered");
+  	} catch (ParseException e) {
+  		error(e.currentToken, "Syntax error");
+	} catch (EscapeCharacterException e){
+		error(e.getLine(), e.getColumn()-1, e.getLine(), e.getColumn(), e.getMessage());
+    } catch (Exception e) {
+		error(1,1,1,2,"Parser error: " + e.getMessage());
+		e.printStackTrace();
+	} catch (TokenMgrError e) {
+		error(1,1,1,2,"Invalid lexical token encountered: " + e.getMessage());
+	} 
+	
+	{
+		if (!isImported)
+	  	{
+			exitedBlock();		
+		}
+  		return jjtThis;
+	} 
+}
+
+/* 
+ *  The start expression nonterminal and its productions. 
+ *  Nonterminal & productions for expressions only
+ */
+CLVFStartExpression StartExpression() : {}{
+	{
+		jjtThis.setScope(enteredBlock());
+		// check the comment (if any) and set the compilation mode
+		jjtThis.setCompiled(isCompiledMode(jj_nt));
+	}
+	
+	try {	
+  		ConditionalFailExpression()
+	} catch (EndOfFileException e) { 
+		// Parsing deliberately terminated in unknownToken() due to EOF token
+  	} catch (ParseException e) {
+  		error(1,1,1,2, "Syntax error");
+	} catch (EscapeCharacterException e){
+		error(e.getLine(), e.getColumn()-1, e.getLine(), e.getColumn(), e.getMessage());
+    } catch (Exception e) {
+		error(1,1,1,2,"Parser error: " + e.getMessage());
+		e.printStackTrace();
+	} catch (TokenMgrError e) {
+		error(1,1,1,2,"Invalid lexical token encountered: " + e.getMessage());
+	} 
+	
+	{ 
+		exitedBlock();		return jjtThis;	}}	
+void CompilationUnit() #void :
+{}
+{
+	(ImportSource() ";" )*
+
+	try {
+   (
+	   LOOKAHEAD(3)
+       Statement()     |
+       VariableDeclaration() ";"     |
+       FunctionDeclaration()
+	 | 	   unknownToken() // consumes EOF as well and throw exception to finish processing
+   )*
+	} catch (ParseException e) {
+		recover(SEMICOLON); // this handles problems in variable initializers
+	}
+   
+   
+}
+
+
+void StatementOrBlock() #void :
+{}
+{
+	/*
+	 * Insert a fake block node in case there is only a single statement to simplify processing.
+	 * This will also insert empty Block node in case loop has no body
+	 */
+	Statement()
+	{
+		SimpleNode blockStatement = (SimpleNode)jjtree.popNode();
+		CLVFBlock fakeBlock = new CLVFBlock(this,JJTBLOCK);
+		fakeBlock.jjtSetParent(blockStatement.jjtGetParent());
+		fakeBlock.jjtAddChild(blockStatement,0);
+		fakeBlock.begin(blockStatement.getLine(),blockStatement.getColumn());
+		fakeBlock.end(blockStatement.getEnd().getLine(),blockStatement.getEnd().getColumn());
+		blockStatement.jjtSetParent(fakeBlock);
+		jjtree.pushNode(fakeBlock);
+	}
+	|
+	Block()
+}
+
+
+void ImportSource() :{	Token t;	String filenameURL;}{	// must parse whole tree and insert it at this place	<IMPORT>
+	{
+		jjtThis.begin(token.beginLine,token.beginColumn);
+	}
+	 ( 
+	 	t=<STRING_LITERAL> { filenameURL=unquote(t.image); }		| 
+		t=<STRING_PLAIN_LITERAL> { filenameURL=t.image; } 
+	 )
+	{
+	    if (graph != null && graph.getPropertyRefResolver() != null) {
+	      filenameURL = graph.getPropertyRefResolver().resolveRef(filenameURL, RefResFlag.URL);	    }		// tag end of import
+		jjtThis.end(t.endLine,t.endColumn);
+
+		// to prevent parsing of an existing import
+		if (!isParsedImport(filenameURL)) {
+			Reader input;
+			
+			// we need to resolve the filename to project path (if it is relative)
+			final URL projectURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
+			
+			jjtThis.setSourceToImport(filenameURL);			CLVFStart parseTree = null;
+    		// store current "import context" so we can restore it after parsing this import
+    		String importFileUrl = problemReporter.getImportFileUrl();
+    		ErrorLocation errorLocation = problemReporter.getErrorLocation();
+
+			try {
+				String importSourceCode = null;
+				try {
+					importSourceCode = FileUtils.getStringFromURL(projectURL, filenameURL, encoding);
+				} catch (RuntimeException re) { // CLO-2167
+				  	if (re.getCause() instanceof IOException) {
+				  	    throw (IOException) re.getCause();				  	} else {						throw new IOException(re.getMessage());
+				 	}				} catch (Exception e) {
+					throw new IOException(e.getMessage());
+				}
+				if (propertyRefResolver != null) {
+					importSourceCode = propertyRefResolver.resolveRef(importSourceCode, RefResFlag.SPEC_CHARACTERS_OFF);
+				}
+
+				input = new StringReader(importSourceCode);
+				addParsedImport(filenameURL); // the above will handle invalid URL etc.
+                // set new "import context", propagate error location if already defined
+        		problemReporter.setImportFileUrl(filenameURL);
+        		problemReporter.setErrorLocation((errorLocation != null)
+        				? errorLocation : new ErrorLocation(jjtThis.getBegin(), jjtThis.getEnd()));
+
+				TransformLangParser parser = new TransformLangParser(this,filenameURL,input);				
+				parser.addParsedImports(getParsedImports());
+			 	parseTree = parser.Start();
+				String sourceId = SandboxUrlUtils.escapeUrlPath(FileUtils.getFileURL(projectURL, filenameURL).toString());
+				jjtThis.setSourceId(sourceId);
+			 	jjtThis.setSourceFilename(filenameURL);				jjtThis.jjtAddChild(parseTree,0);
+				jjtThis.jjtGetChild(0).jjtSetParent(jjtThis);
+				addParsedImports(parser.getParsedImports()); // merge child's imports
+				this.hasEvalNode = this.hasEvalNode || parser.hasEvalNode;			} catch(IOException e){				error(jjtThis,"Unable to open import \""+filenameURL+"\": " + e.getMessage());
+			} finally {
+        		// restore current "import context"
+        		problemReporter.setImportFileUrl(importFileUrl);
+        		problemReporter.setErrorLocation(errorLocation);
+			}
+		} else {                        warn(jjtn000, "Multiple import of \""+filenameURL+"\": ignoring redundant occurrences", "Try to remove multiple occurrences of import of the same file");
+		}		  
+
+	}}
+
+
+void FunctionDeclaration() #void:
+{}
+{
+	 	LOOKAHEAD(3) // disabiguate between V1 and V2 declaration
+	 (
+	 	// obsolete syntax
+	  	V1FunctionDeclaration()
+	  	{
+	  		SimpleNode n = (SimpleNode)jjtree.peekNode();
+			error(n,"Obsolete function declaration",
+			"Use 'function <ReturnType> functionName(<ParamType> param,...)' instead");
+		}
+	 )
+	|
+	 (
+	 	V2FunctionDeclaration()
+	 )
+}
+
+
+
+void V2FormalParameters() #Parameters:
+{}
+{
+	"(" 
+	{
+		jjtThis.begin(token.beginLine,token.beginColumn);
+	}
+		[ V2FormalParameter() ("," V2FormalParameter() )* ] 
+	")"
+	{
+		jjtThis.end(token.endLine,token.endColumn);
+	}
+}
+
+void ReturnType() #void:
+{}
+{
+	VariableType()
+	|
+	VoidType()
+}
+
+void VoidType() #Type :
+{}
+{
+	"void"
+	{
+		jjtThis.begin(token.beginLine,token.beginColumn);
+		jjtThis.end(token.endLine,token.endColumn);
+		jjtThis.setKind(VOID_VAR);
+	}
+}
+
+void V2FunctionDeclaration() #FunctionDeclaration:
+{}
+{
+	{
+		jjtThis.setGenerated(isGenerated(jj_nt));
+	}
+	"function"
+	{
+		jjtThis.begin(token.beginLine,token.beginColumn);
+	}
+	
+	ReturnType()
+	<IDENTIFIER>
+	
+	{
+		jjtThis.setName(token.image);
+		// function scope is allocated and saved within ParserHelper.enterBlock(CLVFFunctionDeclaration)
+		enteredBlock(jjtThis);
+	} 
+	
+	V2FormalParameters()
+	Block()
+	
+	{
+		exitedBlock();
+	}
+	
+}
+
+/* Function parameters in the old version are not typed */
+void V1FormalParameter() #VariableDeclaration: 
+{}
+{
+	{
+		// push fake type node	
+		CLVFType type = new CLVFType(this,JJTTYPE);
+		type.setType(TLType.VOID);
+		jjtree.pushNode(type);
+	}
+	<IDENTIFIER>
+	{
+		jjtThis.begin(token.beginLine,token.beginColumn);
+		jjtThis.end(token.endLine,token.endColumn);
+		jjtThis.setName(token.image);
+		addVariable(jjtThis);
+	}
+}
+
+void V1FormalParameters() #Parameters:
+{
+	Token t;
+}
+{
+	"(" 
+	{
+		jjtThis.begin(token.beginLine,token.beginColumn);
+	}
+		[ V1FormalParameter()  ( "," V1FormalParameter() )* ] 
+	")"	
+	{
+		jjtThis.end(token.endLine, token.endColumn);
+	}
+}
+
+void V1FunctionDeclaration() #FunctionDeclaration:{}{	"function"
+	{
+		jjtThis.begin(token.beginLine,token.beginColumn);
+		// push fake type node
+		// TODO: try to extract type from return statement in type-checking phase
+		CLVFType type = new CLVFType(this,JJTTYPE);
+		type.setType(TLType.VOID);
+		jjtree.pushNode(type);
+	}
+
+		 
+	<IDENTIFIER> 
+	{ 		jjtThis.setName(token.image); 
+		enteredBlock(jjtThis);	}			V1FormalParameters()	Block()
+	{		exitedBlock();
+	}}
+
+void V2FormalParameter() #VariableDeclaration: 
+{}
+{
+	VariableType()
+	<IDENTIFIER>
+	{
+		jjtThis.begin(token.beginLine,token.beginColumn);
+		jjtThis.setName(token.image);
+		jjtThis.end(token.endLine,token.endColumn);
+		addVariable(jjtThis);
+	}
+}
+
+
+void PrimitiveType() #Type: 
+{}
+{
+    (
+    	 ( <INT_VAR>	
+    	 	{ 
+    	 		jjtThis.begin(token.beginLine,token.beginColumn);
+    	 		jjtThis.end(token.endLine,token.endColumn);  
+    	 		jjtThis.setKind(INT_VAR);
+    	 	} 
+    	 )  
+    	|
+    	 ( <LONG_VAR>	
+    	 	{ 
+    	 		jjtThis.begin(token.beginLine,token.beginColumn);
+    	 		jjtThis.end(token.endLine,token.endColumn);  
+    	 		jjtThis.setKind(LONG_VAR);
+    	 	}
+    	 ) 
+    	|
+    	 ( <DOUBLE_VAR>	
+    	 	{ 
+    	 		jjtThis.begin(token.beginLine,token.beginColumn);
+    	 		jjtThis.end(token.endLine,token.endColumn);  
+    	 		jjtThis.setKind(DOUBLE_VAR);
+    	 	} 
+    	 ) 
+    	|
+    	 ( <DECIMAL_VAR> 
+    	 	{ 
+    	 		jjtThis.begin(token.beginLine,token.beginColumn);
+    	 		jjtThis.end(token.endLine,token.endColumn);
+    	 		jjtThis.setKind(DECIMAL_VAR); 
+    	 	}
+    	 ) 
+    	|
+    	 ( <STRING_VAR>	
+    	 	{ 
+    	 		jjtThis.begin(token.beginLine,token.beginColumn);
+    	 		jjtThis.end(token.endLine,token.endColumn);  
+    	 		jjtThis.setKind(STRING_VAR);
+    	 	} 
+    	 )		|
+		 ( <DATE_VAR>	
+			{ 
+    	 		jjtThis.begin(token.beginLine,token.beginColumn);
+    	 		jjtThis.end(token.endLine,token.endColumn);  
+    	 		jjtThis.setKind(DATE_VAR);
+    	 	}
+    	 ) 
+		|
+		 ( <BYTE_VAR>
+		 	{ 
+    	 		jjtThis.begin(token.beginLine,token.beginColumn);
+    	 		jjtThis.end(token.endLine,token.endColumn);  
+    	 		jjtThis.setKind(BYTE_VAR);
+    	 	} 
+    	 )
+		|
+		 ( <BOOLEAN_VAR>
+		 	{ 
+    	 		jjtThis.begin(token.beginLine,token.beginColumn);
+    	 		jjtThis.end(token.endLine,token.endColumn);  
+    	 		jjtThis.setKind(BOOLEAN_VAR); 
+    	 	}
+    	 ) 
+	) 
+
+}
+
+void CompositeType() #Type:
+{
+	Token t, name;
+}
+{
+	(
+	 ( "map" "[" PrimitiveType() "," (PrimitiveType() | CompositeType() ) "]"	
+	 	{ 
+    		jjtThis.begin(token.beginLine,token.beginColumn);
+    		jjtThis.end(token.endLine,token.endColumn);  
+    		jjtThis.setKind(MAP_VAR);
+    	} 
+	 )
+	|
+	 ( 
+	   //obsolete syntax
+	   t = "record" "(" name = <IDENTIFIER> ")"  
+	   { 
+	   	 jjtThis.begin(t.beginLine,t.beginColumn);
+	   	 jjtThis.end(token.endLine,token.endColumn);
+	   	 error(jjtThis,"Obsolete variable declaration'","Use '<MetadataName> identifier;' instead");
+	   	 jjtThis.setKind(IDENTIFIER);
+	   	 jjtThis.setMetadataName(name.image); 
+	   }
+	 ) 
+	|
+	 (
+	 	"list"  
+	 	{
+	 		jjtThis.begin(token.beginLine,token.beginColumn);
+	 		jjtThis.end(token.endLine,token.endColumn);
+	 		error(jjtThis,"Obsolete list declaration","Use '<Type>[]' instead");
+	 		jjtThis.setKind(LIST_VAR);
+	 	}
+	 )
+	 |
+	 ( 
+		<IDENTIFIER>
+		{
+		 jjtThis.begin(token.beginLine,token.beginColumn);
+		 jjtThis.end(token.endLine,token.endColumn);
+		 jjtThis.setKind(IDENTIFIER); 
+		 jjtThis.setMetadataName(token.image);
+	   	}			
+	 ) 
+	)
+}
+
+
+void VariableType() #Type(isList):
+{
+	boolean isList = false;
+}
+{
+	(
+	 LOOKAHEAD(2)	 CompositeType() 
+	 [
+	 	"[" "]"
+	 	{ 
+	 		isList = true;
+    		jjtThis.begin(token.beginLine,token.beginColumn);
+    		jjtThis.end(token.endLine,token.endColumn);  
+    		jjtThis.setKind(LIST_VAR);
+    	}
+	 ]
+	 | PrimitiveType()
+	 [
+	 	"[" "]"
+	 	{ 
+	 		isList = true;
+    		jjtThis.begin(token.beginLine,token.beginColumn);
+    		jjtThis.end(token.endLine,token.endColumn);  
+    		jjtThis.setKind(LIST_VAR);
+    	}
+	 ]
+	)
+}
+
+void VariableDeclaration():{}{
+    
+    VariableType()
+    {
+    	SimpleNode n = (SimpleNode)jjtree.peekNode();
+    	jjtThis.begin(n.getLine(),n.getColumn());
+    }
+    <IDENTIFIER>
+    {
+    	jjtThis.setName(token.image);
+    	jjtThis.end(token.endLine,token.endColumn);
+    }
+
+    [ 
+    	"=" Expression() 
+    	{
+    		SimpleNode expr = (SimpleNode)jjtree.peekNode();
+    		jjtThis.end(expr.getEnd().getLine(),expr.getEnd().getColumn());
+    	} 
+    ]
+	
+	{
+		// having the variable registration after initializer fixes the errorneous: int a = a;
+		addVariable(jjtThis);
+	}
+    
+}
+
+// Formal root of expressions, delegates to AssignmentExpression
+void Expression() #void : 
+{} 
+{
+	AssignmentExpression()
+}
+
+void AssignmentOp(CLVFAssignment assignment) #void :
+{}
+{
+  	 ( 
+  	  <ASSIGN>
+  	  |
+  	  (
+  	    <MAPPING>
+  	    {
+  	    	warn(token,"Operator ':=' is obsolete","Use '=' operator instead");
+  	    }
+  	  )
+  	  |
+  	  <ASSIGN_PLUS> | <ASSIGN_MINUS> | <ASSIGN_MULTIPLY> | <ASSIGN_DIVIDE> | <ASSIGN_MODULO> 
+  	) 
+  {
+    assignment.setOperator(token.kind);
+  }
+}
+
+ // Cascades of assignment allowed: x=y=z=3. Achieved by recursion inside  [...]void AssignmentExpression() #Assignment(>1) : 
+{}{  	ConditionalFailExpression()
+  	
+	[
+	AssignmentOp(jjtThis)  	{
+  		// We check if the LHS is a variable reference
+  		// The check can't be done immediately after ConditionalFailExpression()
+  		// because of the recursive call to AssignmentExpression() below
+  		final SimpleNode result = (SimpleNode)jjtree.peekNode();
+  		if (! checkAssignmentTarget(result)) {
+  			error(result,"The left hand side of assignment must be a variable");
+  		}
+  	}
+  	AssignmentExpression()
+   ]}
+
+void ConditionalFailExpression() #void :
+{}
+{
+  	ConditionalExpression()  ( LOOKAHEAD(2) ":" ConditionalExpression() #ConditionalFailExpression(2) )*}
+void ConditionalExpression() #ConditionalExpression(>2) : {}{	ConditionalOrExpression()
+	[ LOOKAHEAD(2) "?" ConditionalExpression() ":" ConditionalExpression() ]}void ConditionalOrExpression() #void : {}        {   ConditionalAndExpression()
+   ( <OR> ConditionalAndExpression() #Or(2)	)*}void ConditionalAndExpression() #void : {}{   EqualityExpression()
+      ( <AND> EqualityExpression() #And(2)	) *}void EqualityExpression() #void :{}{  RelationalExpression()
+    (     <EQUAL> RelationalExpression() { jjtThis.setOperator(EQUAL); } #Comparison(2)   |     <NON_EQUAL> RelationalExpression() { jjtThis.setOperator(NON_EQUAL); } #Comparison(2)  )*}void RelationalExpression() #void :{}{  AdditiveExpression()
+  (    <LESS_THAN> AdditiveExpression() { jjtThis.setOperator(LESS_THAN); } #Comparison(2)   |    <GREATER_THAN> AdditiveExpression() { jjtThis.setOperator(GREATER_THAN); } #Comparison(2)   |    <LESS_THAN_EQUAL> AdditiveExpression() { jjtThis.setOperator(LESS_THAN_EQUAL); } #Comparison(2)   |    <GREATER_THAN_EQUAL> AdditiveExpression() { jjtThis.setOperator(GREATER_THAN_EQUAL); } #Comparison(2)   | 
+   	<REGEX_EQUAL>  AdditiveExpression() { jjtThis.setOperator(REGEX_EQUAL); } #Comparison(2)
+   |
+    <REGEX_CONTAINS> AdditiveExpression() { jjtThis.setOperator(REGEX_CONTAINS); } #Comparison(2)  )*}void AdditiveExpression() #void :
+{}{ MultiplicativeExpression() (     <PLUS> MultiplicativeExpression() #AddNode(2)   |     <MINUS> MultiplicativeExpression() #SubNode(2)  )*}void MultiplicativeExpression() #void : 
+{}{     UnaryExpression()  (    <MULTIPLY> UnaryExpression() #MulNode(2)   |    <DIVIDE> UnaryExpression() #DivNode(2)   |    <MODULO> UnaryExpression() #ModNode(2)  )*}
+
+void UnaryExpression() #void :
+{}
+{  (    UnaryStatement()
+  |
+    UnaryNonStatement()
+  )
+}
+  
+void UnaryStatement() #UnaryStatement(isPrefix) :{
+	boolean isPrefix = false;
+}
+{ 		 PostfixExpression()	|	
+	 (
+	 	// prefix expression
+		{
+			// set the flag asap before jjtree has a chance to close node scope
+			isPrefix = true;
+		}	 	
+	 	PrefixStatementOp(jjtThis)
+	 	UnaryExpression() 
+	 )}
+
+void PrefixStatementOp(CLVFUnaryStatement expr) #void :
+{}
+{ 
+  (  "++" | "--"  )
+  {
+    expr.begin(token.beginLine,token.beginColumn);
+    expr.setOperator(token.kind);
+  }
+}
+
+void UnaryNonStatement() #UnaryNonStatement() :
+{
+}
+
+{ 
+	 (
+	 	PrefixNonStatementOp(jjtThis)
+	 	UnaryExpression() 
+	 )
+}
+void PrefixNonStatementOp(CLVFUnaryNonStatement expr) #void :
+{}
+{ 
+  (  "-" | < NOT > )
+  {
+    expr.begin(token.beginLine,token.beginColumn);
+    expr.setOperator(token.kind);
+  }
+}
+
+void PostfixExpression() #PostfixExpression(isPostfix) :{
+	boolean isPostfix = false;
+}
+{	PrimaryExpression()	
+	[ 
+		{
+			// set the flag asap before jjtree has a chance to close node scope
+			isPostfix = true;
+		} 
+		PostfixOp(jjtThis)
+	] }void PostfixOp(CLVFPostfixExpression expr) #void :{}{  ( "++" | "--")
+  {    expr.setOperator(token.kind);
+    expr.end(token.endLine,token.endColumn);  }}
+
+void PrimaryExpression() #void:
+{
+	Object id;
+	Token t;
+	Node prefix;
+} 
+{
+	(
+	 ( 
+	 	LOOKAHEAD(7) // disambiguate between identifier and function call 
+	 	( GeneralFunctionCall() )
+		|
+		( Identifier() )
+		|
+		( Literal() )
+		|
+		( LookupNode() )
+		|
+		( SequenceNode() )
+		|
+		( DictionaryNode() )
+		|
+		( "("	Expression() ")" )
+	 	|
+		( RecordOrFieldIdentifier() )
+		
+	 )
+	 ( 
+	 	{ prefix = jjtree.popNode(); }
+	 	PrimarySuffix(prefix) 
+	 )*
+	)  
+	 
+}
+
+void PrimarySuffix(Node prefix) #void:
+{
+	Token t;
+	Node memAcc = null;
+}	
+
+{
+	( // CLO-6866: special lexical tokens just for the dictionary
+		t = <DICT_SEPARATOR>
+		 ( <DICT_IDENTIFIER> 
+		   { 
+		   	 jjtThis.begin(t.beginLine,t.beginColumn);
+		   	 jjtThis.end(token.endLine,token.endColumn);
+		   	 jjtThis.setName(token.image);
+		   	 jjtThis.setWildcard(false);
+		   }
+		   	 #MemberAccessExpression
+		   {
+		   	 // push the prefix as LHS of the member access selector
+		   	 memAcc = jjtree.peekNode();
+		   	 memAcc.jjtAddChild(prefix,0);
+		   	 memAcc.jjtSetParent(prefix.jjtGetParent());
+		   	 prefix.jjtSetParent(memAcc);
+		   } 
+		 )
+	)
+	|
+	(
+		t = "."
+		(
+		// built-in functions can't be called like .print_err() 
+		// so we can't use GeneralFunctionCall() derivation here
+		 LOOKAHEAD(2)
+		 FunctionCall(prefix) 
+		|
+		 ( <IDENTIFIER> 
+		   { 
+		   	 jjtThis.begin(t.beginLine,t.beginColumn);
+		   	 jjtThis.end(token.endLine,token.endColumn);
+		   	 jjtThis.setName(token.image);
+		   	 jjtThis.setWildcard(false);
+		   }
+		   	 #MemberAccessExpression
+		   {
+		   	 // push the prefix as LHS of the member access selector
+		   	 memAcc = jjtree.peekNode();
+		   	 memAcc.jjtAddChild(prefix,0);
+		   	 memAcc.jjtSetParent(prefix.jjtGetParent());
+		   	 prefix.jjtSetParent(memAcc);
+		   } 
+		 )
+		|
+		 (
+		   "*"
+		   { 
+		   	 jjtThis.begin(t.beginLine,t.beginColumn);
+		   	 jjtThis.end(token.endLine,token.endColumn);
+		   	 jjtThis.setName(token.image);
+		   	 jjtThis.setWildcard(true);
+		   }
+		   	 #MemberAccessExpression
+		   {
+		   	 // push the prefix as LHS of the member access selector
+		   	 memAcc = jjtree.peekNode();
+		   	 memAcc.jjtAddChild(prefix,0);
+		   	 memAcc.jjtSetParent(prefix.jjtGetParent());
+		   	 prefix.jjtSetParent(memAcc);
+		   } 
+		 )
+		) 
+	)
+	|	// TODO: [] operator on lists means 'concatenate' -> will implement as '+'
+	( 
+		 	{
+		 		jjtree.pushNode(prefix);
+		 	}
+		 
+		 	t = "["  ConditionalFailExpression() "]"
+		
+		 	{
+				jjtThis.begin(t.beginLine,t.beginColumn);
+				jjtThis.end(token.beginLine,token.beginColumn);
+		 	}
+		 	
+		 	#ArrayAccessExpression(2)
+	 )
+	}
+
+void GeneralFunctionCall() #void:
+{
+	Token id;
+}
+{
+	BuiltInFunctionCall()
+	|
+	FunctionCall(null)
+}
+
+void FunctionCall(Node zeroArgument) #void:
+{
+	Token t;
+}
+{
+	(
+	 ( 
+	 	t = <IN> Arguments(zeroArgument) 
+	 	{ 
+	 		jjtThis.begin(t.beginLine,t.beginColumn); 
+	 	}	
+	 	#InFunction(1) 
+	 )
+	|
+	 ( 
+	 	t = <IDENTIFIER>  Arguments(zeroArgument) 
+	 	{
+	 		jjtThis.begin(t.beginLine,t.beginColumn);
+			jjtThis.setName(t.image);
+	  	} 
+	  	#FunctionCall(1)
+	 )
+	) 
+}
+
+
+
+void BuiltInFunctionCall() #void:
+{
+	Token t;
+}
+{
+	(
+	   ( t = <ISNULL> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #IsNullNode(1) ) 
+	 | ( t = <NVL>  Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); }	 #NVLNode(1) )
+	 | ( t = <NVL2> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); }  #NVL2Node(1) )
+	 | ( t = <IIF> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); }    #IIfNode(1) )
+	 | ( t = <PRINT_ERR> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #PrintErrNode(1) )
+	 | ( t = <PRINT_LOG> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #PrintLogNode(1) )
+	 | ( t = <PRINT_STACK> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #PrintStackNode(1) )
+	 | ( t = <RAISE_ERROR> Arguments(null) { jjtThis.begin(t.beginLine,t.beginColumn); } #RaiseErrorNode(1) )
+	)
+	
+}
+
+/*
+ * Unfortunately identifiers like $in.1 collide with float syntax allowing .1 syntax for 0.1
+ * To parse this properly we would have to add lexical state switching for most of the tokens
+ * because field identifier can be on RHS and shorthand $1 syntax is allowed
+ */
+void RecordOrFieldIdentifier() #FieldAccessExpression: 
+{}
+{
+	<FIELD_ACCESS_OPERATOR>
+	{
+		// first read the field access operator
+		// can be "$", "$in." or "$out."
+	 	jjtThis.begin(token.beginLine,token.beginColumn);
+
+		String fieldAccessImage = token.image;
+		String discriminator = null;
+	 	if (fieldAccessImage.equals("$in.")) {
+	 	  discriminator = "in"; // an input port is required
+		} else if (fieldAccessImage.equals("$out.")) {
+	 	  discriminator = "out"; // an output port is required
+		}
+		// store the information from the field access operator
+	 	jjtThis.setDiscriminator(discriminator);
+	}
+	<RECORD_ACCESS_FIRST_PART>
+	{
+		// the first part may denote a record ID or a field ID (old syntax) 
+		String firstPartImage = token.image;
+	    String secondPartImage = null;
+	}
+	// 
+	(
+	  <RECORD_ACCESS_SECOND_PART>
+	  {
+	    // optionally, there may be the second part of the field access expression
+	    secondPartImage = token.image.substring(1); // remove the '.' from the beginning
+	  }
+	)?
+	{
+	 	jjtThis.end(token.endLine,token.endColumn);	
+	 	// let's presume this is not a wildcard access
+	 	jjtThis.setWildcard(false);
+	 	
+	 	if (secondPartImage != null) {
+	 		try {
+	 			Integer recNum = Integer.parseInt(firstPartImage);
+	 			// set directly the position access 
+	 			jjtThis.setRecordId(recNum);
+	 		} catch (NumberFormatException e) {
+	 			jjtThis.setRecordName(firstPartImage);
+	 		}
+	 		
+			if (secondPartImage.equals("*")) {
+				jjtThis.setWildcard(true);
+			} else {
+		 		try {
+		 			Integer fieldNum = Integer.parseInt(secondPartImage);
+		 			// set directly the position access
+		 			jjtThis.setFieldId(fieldNum);
+		 		} catch (NumberFormatException e) {
+		 			// set the field name
+		 			jjtThis.setFieldName(secondPartImage);
+		 		}
+			}
+			
+	 	} else if (discriminator == null) {
+	 		// shortended syntax $1 or $fieldName -> treat as $0.1 or $0.fieldName
+	 		jjtThis.setRecordId(0);
+			try {
+		 		Integer fieldNum = Integer.parseInt(firstPartImage);
+		 		// set directly the position access
+		 		jjtThis.setFieldId(fieldNum);
+		 	} catch (NumberFormatException e) {
+		 		// set the field name
+		 		jjtThis.setFieldName(firstPartImage);
+		 	}
+	 	} else {
+	 	    // new syntax, $in.1 no longer means $0.1, but $1.* instead
+	 	    jjtThis.setWildcard(true);
+	 		try {
+	 			Integer recNum = Integer.parseInt(firstPartImage);
+	 			// set directly the position access 
+	 			jjtThis.setRecordId(recNum);
+	 		} catch (NumberFormatException e) {
+	 			jjtThis.setRecordName(firstPartImage);
+	 		}
+	 	}
+	}
+}
+
+void Identifier() :
+{
+	CLVFVariableDeclaration vd = null;
+}
+{
+	// the setName() method must be manually added to the generated AST node
+	<IDENTIFIER> 
+	{
+		jjtThis.begin(token.beginLine,token.beginColumn); 
+		jjtThis.end(token.endLine,token.endColumn);
+		jjtThis.setName(token.image);
+		vd = checkDeclaration(token.image,token.beginLine,token.beginColumn,token.endLine,token.endColumn);
+		if (vd != null) {
+			// declaration found, store reference and compute offset
+			jjtThis.setVariable(vd);
+			jjtThis.setBlockOffset(vd.getBlockOffset() == 0 ? -1 : getCurrentBlockOffset()-vd.getBlockOffset());
+			jjtThis.setVariableOffset(vd.getVariableOffset());
+		} 
+	}	
+}
+
+void Arguments(Node zeroArgument) #Arguments:
+{}
+{
+	"(" 
+	{
+		jjtThis.begin(token.beginLine,token.beginColumn);
+		if (zeroArgument != null) {
+			jjtree.pushNode(zeroArgument);
+		} 
+	}
+		[ 
+		 ( 
+			ConditionalFailExpression()
+		  	|
+		  	TypeArgument()
+		 )
+		 ( 
+		   ","
+		  ( 
+		   ConditionalFailExpression()
+		   |
+		   TypeArgument()
+		  ) 
+		 )* 
+		]
+	 ")"
+	 {
+		jjtThis.end(token.endLine,token.endColumn);
+	 }
+}
+
+void TypeArgument() #void:
+{}
+{
+	PrimitiveType()
+	|
+	DateField()
+	|
+	LogLevel()
+}
+
+void DateField() :
+{}
+{
+	( "year" | "month" | "week" | "day" | "hour" | "minute" | "second" | "millisec" )
+	{
+		jjtThis.begin(token.beginLine,token.beginColumn); 
+		jjtThis.end(token.endLine,token.endColumn); 
+		jjtThis.setFieldType(token.kind);
+		jjtThis.setType(TLType.createTypeSymbol(token.kind)); 
+	}
+}
+
+void LogLevel() :
+{}
+{
+	( "debug" | "info" | "warn" | "error" | "fatal" | "trace")
+	{
+		jjtThis.begin(token.beginLine,token.beginColumn); 
+		jjtThis.end(token.endLine,token.endColumn); 
+		jjtThis.setLogLevel(token.kind);
+		jjtThis.setType(TLType.createTypeSymbol(token.kind)); 
+	}
+
+}
+void Literal() #void :             {	Token t;
+	SimpleNode s;}{ 	(
+	 ( t=<FLOATING_POINT_LITERAL>	
+	 	{ 
+	 		jjtThis.begin(t.beginLine,t.beginColumn);
+	 		jjtThis.end(t.endLine,t.endColumn);
+	 		jjtThis.setValue(FLOATING_POINT_LITERAL,t.image);
+	 	} 
+	 	#Literal 
+	 ) 	|
+ 	 ( t=<LONG_LITERAL>  		
+ 	 	{ 
+			jjtThis.begin(t.beginLine,t.beginColumn);
+	 		jjtThis.end(t.endLine,t.endColumn);
+ 	 		jjtThis.setValue(LONG_LITERAL,t.image);
+ 	 	}   
+ 	 	#Literal 
+ 	 ) 	|
+ 	 ( t=<INTEGER_LITERAL>	  	
+ 	 	{
+			jjtThis.begin(t.beginLine,t.beginColumn);
+	 		jjtThis.end(t.endLine,t.endColumn);
+ 	 		jjtThis.setValue(INTEGER_LITERAL,t.image);
+ 	 	}   
+ 	 	#Literal 
+ 	 ) 	|
+ 	 ( t=<STRING_LITERAL>
+ 	 	{ 
+			jjtThis.begin(t.beginLine,t.beginColumn);
+	 		jjtThis.end(t.endLine,t.endColumn);
+	 		try { 				jjtThis.setValue(STRING_LITERAL,StringUtils.stringToSpecCharStrict(unquote(t.image)));	 		} catch (IllegalArgumentException iae) {
+	 		  	error(jjtThis, iae.getMessage());
+	 		}
+ 	 	}   
+ 	 	#Literal 
+ 	 ) 	|
+ 	 ( t=<STRING_PLAIN_LITERAL>	
+ 	 	{ 
+			jjtThis.begin(t.beginLine,t.beginColumn);
+	 		jjtThis.end(t.endLine,t.endColumn);
+  			jjtThis.setValue(STRING_LITERAL,t.image);
+ 	 	}   
+ 	 	#Literal 
+ 	 ) 	|
+ 	 ( t=<BOOLEAN_LITERAL>
+ 	 	 { 
+			jjtThis.begin(t.beginLine,t.beginColumn);
+	 		jjtThis.end(t.endLine,t.endColumn);
+ 	 		jjtThis.setValue(BOOLEAN_LITERAL,t.image);
+ 	 	 }   
+ 	 	#Literal 
+ 	 ) 	|
+ 	 ( t=<DATE_LITERAL>
+ 	 	{
+ 			jjtThis.begin(t.beginLine,t.beginColumn);
+	 		jjtThis.end(t.endLine,t.endColumn);
+  			jjtThis.setValue(DATE_LITERAL,t.image);
+ 	  	}   
+ 	  	#Literal 
+ 	 ) 	|
+ 	 ( t=<DATETIME_LITERAL>
+ 	   	{
+ 	   		jjtThis.begin(t.beginLine,t.beginColumn);
+	 		jjtThis.end(t.endLine,t.endColumn); 
+   			jjtThis.setValue(DATETIME_LITERAL,t.image);
+ 	   	}   
+ 	   	#Literal 
+ 	 ) 	|
+ 	 ( t=<NULL_LITERAL>
+ 	  	{
+ 	  		jjtThis.begin(t.beginLine,t.beginColumn);
+	 		jjtThis.end(t.endLine,t.endColumn); 
+  			jjtThis.setValue(NULL_LITERAL,t.image);
+ 	  	} 
+ 	  	#Literal 
+ 	  ) 	|
+ 	 ( ListOfLiterals() )			
+  )
+   }void ListOfLiterals() :{}{
+	"[" 
+	{
+		jjtThis.begin(token.beginLine,token.beginColumn); 
+	}
+		// list literals must not be empty in order to have type
+		Expression() ( "," Expression() )*  
+	"]"	
+	{
+		jjtThis.end(token.endLine,token.endColumn);
+	}
+}/* * Statements */void Statement() #void :{}{	try {			(
+		  EmptyStatement() 
+		|		  IfStatement()		|		  SwitchStatement()		|		  WhileStatement()		|		  ForStatement()		| 		  ForeachStatement()		|		  DoStatement() 		|		   BreakStatement() ";"		|		   ContinueStatement() ";"		|		   ReturnStatement() ";"		| 		  StatementExpression() ";"
+		
+		)
+	} catch (ParseException e) {
+		recover(SEMICOLON);
+	}
+		}void Block() :{}{
+  try {
+  "{"
+  	{
+  		jjtThis.begin(token.beginLine,token.beginColumn); 
+  	}
+  	Statements()
+  "}"
+  	{
+		jjtThis.end(token.endLine,token.endColumn);
+  	}
+  } catch (ParseException e) {
+  	recover(BLOCK_END);
+  }
+}
+void EmptyStatement() #void :
+{}
+{
+	";"
+}
+void StatementExpression() #void :{}{	/*
+	 * Both expressions below can derive into degenerated form and must be checked
+	 * in semantic/AST cleanup pass
+	 * Legal expressions are: assignment, pre/postfix operation, function call
+	 */
+	Expression() 
+	} void IfStatement() :/* * The disambiguating algorithm of JavaCC automatically binds dangling * else's to the innermost if statement.  The LOOKAHEAD specification * is to tell JavaCC that we know what we are doing. */{}{  <IF>
+  {
+  		jjtThis.begin(token.beginLine,token.beginColumn);
+  } 
+  "(" Expression() ")" 
+  {
+  		jjtThis.setThenScope(enteredBlock());
+  }
+  StatementOrBlock() 
+  {
+  		exitedBlock();
+  }
+  [ 
+  	LOOKAHEAD(2) <ELSE>
+  	{
+  		jjtThis.setElseScope(enteredBlock());
+  	} 
+  	StatementOrBlock() 
+  	{
+  		exitedBlock();
+  	}
+  ]}
+//TODO: if there are no case statements and expression does not have side effects we can ignore whole switch statementvoid SwitchStatement() :{
+	Token t;
+}{  t = <SWITCH>
+  {
+  	jjtThis.setScope(enteredBlock());
+  }
+  "(" Expression() ")"  
+  "{"
+     ( 
+     	CaseStatement(jjtThis)
+		Statements()
+     ) *  
+  "}"
+  {
+	jjtThis.begin(t.beginLine,t.beginColumn);
+	jjtThis.end(token.endLine,token.endColumn); 
+  	if (jjtThis.jjtGetNumChildren() < 2) {
+  		warn(t.beginLine,t.beginColumn,t.endLine,t.endColumn,"Switch statement has no 'case' sub-statements","Add 'case' statements or remove whole 'switch' statement");
+  	}
+	exitedBlock();
+  }
+  
+}void CaseStatement(CLVFSwitchStatement switchStatement) :{}{  ( 
+    "case" { jjtThis.begin(token.beginLine,token.beginColumn); }
+	  UnaryExpression() ":"  // CLO-5038
+    { jjtThis.end(token.endLine,token.endColumn); }
+  )
+  |
+  (
+  	"default" 
+  	{
+  		 jjtThis.begin(token.beginLine,token.beginColumn);
+  		 jjtThis.setDefaultClause(true); 
+  	} 
+  	":"	
+  	{
+  		jjtThis.end(token.endLine,token.endColumn); 
+  		if (switchStatement.hasDefaultClause()) {
+  			error(jjtThis,"Default case is already defined");
+  		}
+  		switchStatement.setDefaultClause(true); 
+  	}
+  )}
+void Statements() #void :
+{} 
+{
+	( 
+  		LOOKAHEAD(3)
+		VariableDeclaration() ";"
+		| 
+  		Statement()
+ 		
+  	)* 
+}
+void WhileStatement() :{}{  <WHILE>  
+  {
+  	jjtThis.begin(token.beginLine,token.beginColumn); 
+	jjtThis.setScope(enteredBlock());
+  } 
+  "(" Expression() ")"
+  StatementOrBlock()
+  {
+ 	exitedBlock();
+  }}
+
+void ForInit() #void:
+{}
+{
+	LOOKAHEAD(2)
+	VariableDeclaration()
+	|
+	Expression()
+}
+void ForStatement() :{
+	int i=0;
+}{  <FOR> 
+  { 
+  	jjtThis.begin(token.beginLine,token.beginColumn);
+  	jjtThis.setScope(enteredBlock());  
+  } 
+  "(" 
+  	[ ForInit() { jjtThis.setInitPosition(i++); } ]  ";" 
+  	[ Expression() { jjtThis.setFinalPosition(i++); } ] ";" 
+  	[ Expression() { jjtThis.setUpdatePosition(i++); } ] 
+  ")"
+  StatementOrBlock()
+  {
+  	exitedBlock();
+  }}
+void ForeachStatement() :{}{
+	<FOR_EACH> 
+	{ 
+		jjtThis.begin(token.beginLine,token.beginColumn);
+		jjtThis.setScope(enteredBlock());  
+	} 
+	// java requires there is variable declaration on LHS (NOT a variable reference)
+	"(" VariableDeclaration() ":" Expression() ")" 
+	StatementOrBlock()
+	{
+		exitedBlock();
+	}}
+
+void DoStatement() #DoStatement(2) :{}{  <DO> 
+  { 
+  	jjtThis.begin(token.beginLine,token.beginColumn);
+  	jjtThis.setScope(enteredBlock());  
+  } 
+   StatementOrBlock()
+   <WHILE> "(" Expression() ")"   { 
+  	// must exit block only here, as the expression is still part of loop scope!
+  	exitedBlock();
+  	jjtThis.end(token.endLine,token.endColumn); 
+  }
+}
+////void TryCatchStatement() ://{}//{//  <TRY> Statement() <CATCH> "(" VarExp() ")" Statement()//}//////void BreakStatement() :{}{	<BREAK> 
+	{
+		jjtThis.begin(token.beginLine,token.beginColumn);
+		jjtThis.end(token.endLine,token.endColumn); 
+	}}void ContinueStatement() :{}{	<CONTINUE>
+	{
+		jjtThis.begin(token.beginLine,token.beginColumn);
+		jjtThis.end(token.endLine,token.endColumn); 
+	}}
+void ReturnStatement() : {}{    <RETURN> { jjtThis.begin(token.beginLine,token.beginColumn); }
+    [ 
+    	Expression() 
+    	|
+    	ControlConstant()
+    ]
+    { jjtThis.end(token.endLine,token.endColumn); }}
+void ControlConstant() #Literal : {}
+{
+	{ jjtThis.begin(token.beginLine,token.beginColumn); }
+	(
+	"OK" { jjtThis.setType(TLTypePrimitive.INTEGER); jjtThis.setValueDirect(RecordTransform.OK); }
+	|
+	"SKIP" { jjtThis.setType(TLTypePrimitive.INTEGER); jjtThis.setValueDirect(RecordTransform.SKIP); }
+	|
+	"ALL" { jjtThis.setType(TLTypePrimitive.INTEGER); jjtThis.setValueDirect(RecordTransform.ALL); }
+	|
+	"STOP" { jjtThis.setType(TLTypePrimitive.INTEGER); jjtThis.setValueDirect(RecordTransform.STOP); }
+	)
+	{ jjtThis.end(token.endLine, token.endColumn); }
+}
+	
+//void EvalNode() ://{}//{//   "eval(" AdditiveExpression() ["," AdditiveExpression() ] ")" { hasEvalNode=true;  jjtThis.setExpMode(false); }//   | "eval_exp(" AdditiveExpression() ")" { jjtThis.setExpMode(true); }//}void SequenceNode() :{	Token t;}{	"sequence"
+	{
+		jjtThis.begin(token.beginLine,token.beginColumn);
+	} 
+	"(" 		t=<IDENTIFIER> 
+		{ 
+			jjtThis.setSequenceName(t.image,t.beginLine,t.beginColumn);
+			jjtThis.setType(TLTypePrimitive.INTEGER); 
+		} 	[ ","	  (  
+	  	<INT_VAR> { jjtThis.setType(TLTypePrimitive.INTEGER); }	   |
+	    <LONG_VAR> {  jjtThis.setType(TLTypePrimitive.LONG); }	   | 
+	    <STRING_VAR> { jjtThis.setType(TLTypePrimitive.STRING); }	  ) 
+	]	")"
+	"." FunctionCall(null)
+	{
+		jjtThis.end(token.endLine,token.endColumn);
+	}
+	 {
+	   		CLVFFunctionCall opFunc = (CLVFFunctionCall)jjtThis.jjtGetChild(0);
+	   		jjtThis.removeChild(0);
+	   		if (opFunc.jjtGetChild(0).jjtGetNumChildren() > 0) {
+	   			error(opFunc,"Function '" + opFunc.getName() + "' does not accept any arguments");
+	   		}
+	   		if ("next".equals(opFunc.getName())) {
+	   			jjtThis.setOperation(CLVFSequenceNode.OP_NEXT);
+	   		} else if ("current".equals(opFunc.getName())) {
+				jjtThis.setOperation(CLVFSequenceNode.OP_CURRENT);
+			} else if ("reset".equals(opFunc.getName())) {
+				jjtThis.setOperation(CLVFSequenceNode.OP_RESET);
+			} else {
+	   			error(opFunc,"Illegal sequence manipulator '" + opFunc.getName() + "()'",
+	   						"Use one of next(), current() or reset()");
+	   		}
+	}	
+}
+
+void LookupNode() :{}{	(	 ( "lookup" 
+	   {
+	   		jjtThis.begin(token.beginLine,token.beginColumn);
+	   }
+	   "("			<IDENTIFIER> 
+			{ 
+				jjtThis.setLookupName(token.image,token.beginLine,token.beginColumn); 
+			}	   ")"
+	   {
+	   		jjtThis.end(token.endLine,token.endColumn);
+	   }
+	   
+	   "." FunctionCall(null) 
+	   {
+	   		CLVFFunctionCall opFunc = (CLVFFunctionCall)jjtThis.jjtGetChild(0);
+	   		jjtThis.removeChild(0); // get rid of the manipulator function
+	   		if ("get".equals(opFunc.getName())) {
+	   			jjtThis.setOperation(CLVFLookupNode.OP_GET);
+	   		} else if ("next".equals(opFunc.getName())) {
+				jjtThis.setOperation(CLVFLookupNode.OP_NEXT);
+			} else if ("count".equals(opFunc.getName())) {
+				jjtThis.setOperation(CLVFLookupNode.OP_COUNT);
+			} else if ("put".equals(opFunc.getName())) {
+				jjtThis.setOperation(CLVFLookupNode.OP_PUT);
+			} else {
+	   			error(opFunc,"Illegal lookup manipulator","Use one of get(), next(), init(), free() or count()");
+	   		}
+			CLVFArguments params = (CLVFArguments)opFunc.jjtGetChild(0);
+			jjtThis.jjtAddChild(params,0);
+			jjtThis.end(params.getEnd().getLine(),params.getEnd().getColumn());
+	   }		 ) 	|  // multi-match
+	 ( "lookup_next"
+	   {
+	   		jjtThis.begin(token.beginLine,token.beginColumn);
+	   }
+	   "("
+			<IDENTIFIER> 			{ 
+				jjtThis.setOperation(1); 
+				jjtThis.setLookupName(token.image,token.beginLine,token.beginColumn); 
+			}
+	   ")" 	 	{
+	   		jjtThis.end(token.endLine,token.endColumn);
+			error(jjtThis,"Obsolete lookup syntax","Use 'lookup(<LookupName>).next().field' instead");
+	    }	 ) 	|
+	 (  // match count		"lookup_found"
+		{
+	   		jjtThis.begin(token.beginLine,token.beginColumn);
+	   	}
+		"("
+			<IDENTIFIER> 			{
+				jjtThis.setOperation(2); 
+				jjtThis.setLookupName(token.image,token.beginLine,token.beginColumn); 
+			}
+		")"		{
+	   		jjtThis.end(token.endLine,token.endColumn);
+	   		warn(jjtThis,"Obsolete lookup syntax","Use 'lookup(<lookupName>).count()' instead");
+	    }	 ) 	|
+	 (  // lookup state management		"lookup_admin" 
+		{
+	   		jjtThis.begin(token.beginLine,token.beginColumn);
+	   	}
+		"("
+			<IDENTIFIER> 			{ 
+				jjtThis.setLookupName(token.image,token.beginLine,token.beginColumn); 
+			} 
+			","	<IDENTIFIER> 
+			{ 
+				if (token.image.equalsIgnoreCase("init")) {
+					jjtThis.setOperation(3); 
+				} else if (token.image.equalsIgnoreCase("free")) {
+					jjtThis.setOperation(4); 
+				} else {
+					error(token,
+					"Invalid lookup operation identifier - '" + token.image +  "'",
+					"Replace with one of 'init' or 'free'");
+				}
+			} 
+		")"		{
+	   		jjtThis.end(token.endLine,token.endColumn);
+	   		error(jjtThis,"Obsolete lookup syntax","Use 'lookup(<lookupName>).init()' or 'lookup(<lookupName>).free()' instead");
+	    }
+	 )	)}
+
+void DictionaryNode() :
+{}
+{
+	(
+	 ( <DICTIONARY> 
+	   {
+	   		jjtThis.begin(token.beginLine,token.beginColumn);
+	   		jjtThis.end(token.endLine,token.endColumn);
+	   }
+	   
+	   /* . and identifier is parsed in PrimaryExpression
+	   "."
+			<IDENTIFIER> 
+			{ 
+				jjtThis.setKeyName(token.image); 
+			}
+	   {
+	   		jjtThis.end(token.endLine,token.endColumn);
+	   }
+	   */
+	 )
+	)
+}
+
+JAVACODEvoid recover(int kind) #void {	Token t;	do {		t = getNextToken();
+		if (t.kind == EOF) {
+			break;
+		}	} while (t.kind != kind);}
+
+JAVACODE
+void unknownToken() #void {
+	Token t;
+	
+	t = getNextToken();
+
+	if (t.kind != EOF) {
+		error(t,"Syntax error on token '" + t.image + "'","Delete this token");
+	} else {
+		// this stops processing in case we reach EOF
+		throw new EndOfFileException();
+	}
+}
+
+
+/* error token which is generated by lexer if it can't match with any other */
+<WithinFieldIdentifier, DEFAULT>
+TOKEN:
+{
+   <ERROR: ~[] > : DEFAULT
+}

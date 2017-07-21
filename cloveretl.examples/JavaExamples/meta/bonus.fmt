@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record name="Bonus" recordSize="-1" type="delimited">
+<Field delimiter=";" locale="cs.CZ" name="Client_id" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" locale="cs.CZ" name="Revenue" nullable="true" shift="0" type="number"/>
+<Field delimiter="\r\n" locale="cs.CZ" name="Contract_nr" nullable="true" shift="0" type="integer"/>
+</Record>
