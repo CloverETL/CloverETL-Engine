@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="User" created="Thu May 22 10:10:35 CEST 2014" guiVersion="0.0.0.devel" id="1400746845597" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Feb 23 13:40:23 CET 2016" modifiedBy="jansedlacek" name="create_jira_report" revision="1.103" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0" previewAttachment="${DATAIN_DIR}/jira-queries.txt" previewAttachmentCharset="ISO-8859-1">
+<Record label="jira-queries.txt" name="jira_query" previewAttachment="${DATAIN_DIR}/jira-queries.txt" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" skipSourceRows="0" type="delimited">
+<Field eofAsDelimiter="true" name="query" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="jira_search_metadata" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="jira_report" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="version" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="count" nullable="true" shift="0" size="0" type="integer"/>
+</Record>
+</Metadata>
+<MetadataGroup name="Implicit metadata" type="implicit">
+<Metadata id="JIRA_SEARCH_jira_search_metadata" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="jira_search_metadata" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="jira_query" type="string"/>
+<Field label="total" name="total_results" trim="true" type="integer"/>
+</Record>
+</Metadata>
+</MetadataGroup>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<RichTextNote backgroundColor="404040" enabled="true" folded="false" fontSize="medium" height="93" id="Note3" textColor="FFFFFF" width="929" x="-113" y="-231">
+<attr name="text"><![CDATA[h3. Create report from JIRA
+Create a report by searching via multiple queries in JIRA.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="251" id="Note2" textColor="000000" width="343" x="-113" y="-139">
+<attr name="text"><![CDATA[h3. Scenario
+We would like to create a report of number of issues for different versions of software tracked in JIRA.
+
+JIRASearch is a subgraph that searches in JIRA via its REST API - it calls the API, parses the response and packages it all in an easy to use package. The search queries are read from the input. GoogleCharts is a subgraph that generates HTML charts and it's used to visualize the report.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="251" id="Note5" textColor="000000" width="289" x="229" y="-139">
+<attr name="text"><![CDATA[h3. Highlights
+JIRASearch can handle login to JIRA or search anonymously. Internally it also handles paging of JIRA REST API in case there's a large number of results.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="251" id="Note6" textColor="000000" width="299" x="517" y="-139">
+<attr name="text"><![CDATA[h3. Notes
+Configure your JIRA URL in the [jira.prm|open://BasicExamples/jira.prm] file.]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node __CHART_TYPE="PieChart" __FILE_URL="${DATAOUT_DIR}/issues-per-version.html" __HEIGHT="400" __TITLE="Issues fixed per release" __WIDTH="1200" enabled="enabled" guiName="GoogleCharts" guiX="688" guiY="127" id="GOOGLE_CHARTS" jobURL="${SUBGRAPH_DIR}/GoogleCharts.sgrf" type="SUBGRAPH"/>
+<Node enabled="enabled" guiName="JIRASearch" guiX="191" guiY="127" id="JIRA_SEARCH" jobURL="${SUBGRAPH_DIR}/JIRASearch.sgrf" type="SUBGRAPH"/>
+<Node enabled="enabled" guiName="Map fields" guiX="443" guiY="127" id="MAP_FIELDS" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.version = get_version($in.0.jira_query);
+	$out.0.count = $in.0.total_results;
+
+	return ALL;
+}
+
+function string get_version(string jira_query) {
+	string regex = "\\d-\\d-\\d(-M\\d)?";	// matches the version number in Clover's JIRA format
+	
+	string[] version_matches = find(jira_query, regex);
+	string jira_version = version_matches[0];
+	string version = replace(jira_version, "-(\\d)", ".$1");	// replace "-" with "." in the correct place, not before milestone suffix
+
+	return version;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/jira-queries.txt" guiName="UniversalDataReader" guiX="-113" guiY="127" id="UNIVERSAL_DATA_READER" type="DATA_READER"/>
+<Edge debugMode="true" fromNode="JIRA_SEARCH:1" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 1 (out)" persistedImplicitMetadata="JIRA_SEARCH_jira_search_metadata" toNode="MAP_FIELDS:0"/>
+<Edge debugMode="true" fromNode="MAP_FIELDS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="jira_search_metadata" outPort="Port 0 (out)" toNode="GOOGLE_CHARTS:0"/>
+<Edge debugMode="true" fromNode="UNIVERSAL_DATA_READER:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="JIRA_SEARCH:0"/>
+</Phase>
+</Graph>
