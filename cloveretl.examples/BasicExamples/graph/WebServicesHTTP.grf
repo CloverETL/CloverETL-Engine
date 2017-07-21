@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Fri Jul 30 09:24:17 CEST 2010" guiVersion="4.6.0.M1" id="1253338896057" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Feb 24 09:41:48 CET 2016" modifiedBy="jansedlacek" name="WebServiceCalls" revision="1.182" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="Forecast" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="FIndexKey" type="long"/>
+<Field name="Desciption" type="string"/>
+<Field name="Low" type="string"/>
+<Field name="High" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="ResultRecord" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Result" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2">
+<Record name="XMLData" type="delimited">
+<Field eofAsDelimiter="true" name="XMLString" type="string"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<RichTextNote backgroundColor="DAD8C9" enabled="true" folded="false" fontSize="medium" height="189" id="Note5" textColor="000000" width="716" x="47" y="96">
+<attr name="text"><![CDATA[h3. Web Service Call
+ 
+This graph shows a Caluclator web service being called.
+
+* XML Data is loaded as an XML SOAP request
+* This data is then passed to the Web Service
+* The SOAP XML data is returned and processed by the XPathReader component
+* Result is parsed and sent to output port]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="167" id="Note6" textColor="000000" width="377" x="386" y="421">
+<attr name="text"><![CDATA[h3. Related Points of Interest
+* Any *GET*, *POST* or *SOAP* call can be made
+* Simple or Complex data can be parsed either using the *XPathReader*, *XMLExtract* or *XMLReader* component or more simple XML can be parsed directly
+* Full parameter support
+]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node dataPolicy="lenient" enabled="enabled" fileURL="${DATAIN_DIR}/SOAPRequest.xml" guiName="Get SOAP Request" guiX="47" guiY="295" id="DATA_READER0" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[XML SOAP request is passed into the graph]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Make SOAP Call" guiX="232" guiY="295" id="HTTP_CONNECTOR0" inputField="XMLString" outputField="XMLString" requestMethod="POST" responseAsFileName="false" type="HTTP_CONNECTOR" url="http://ws1.parasoft.com/glue/calculator">
+<attr name="headerProperties"><![CDATA[Content-Type=application/soap+xml
+]]></attr>
+<attr name="guiDescription"><![CDATA[A Web Service is called and the XML SOAP request is passed to it]]></attr>
+<attr name="inputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.requestContent = $in.0.XMLString;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+<attr name="standardOutputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.XMLString = $in.1.content;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Simple POST" guiX="236" guiY="490" id="HTTP_CONNECTOR2" outFileUrl="${DATAOUT_DIR}/PostResult.xml" password="clover" requestMethod="POST" type="HTTP_CONNECTOR" url="http://clover-4-7.server-demo-ec2.cloveretl.com/clover/request_processor/sandbox_content" username="clover">
+<attr name="requestContent"><![CDATA[sandbox=default]]></attr>
+<attr name="headerProperties"><![CDATA[Content-Type=application/x-www-form-urlencoded
+]]></attr>
+<attr name="guiDescription"><![CDATA[A simple POST can also be executed.  This is only shown for illustrative  purposes  and is deliberetely not connected within the graph]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Simple GET" guiX="47" guiY="496" id="SIMPLE_GET" outFileUrl="${DATAOUT_DIR}/GetResult.xml" password="clover" requestMethod="GET" type="HTTP_CONNECTOR" url="http://clover-4-7.server-demo-ec2.cloveretl.com/clover/request_processor/sandbox_content?sandbox=default" username="clover">
+<attr name="guiDescription"><![CDATA[A simple GET can also be executed.  This is only shown for illustrative  purposes  and is deliberetely not connected within the graph]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Trash" guiX="635" guiY="295" id="TRASH0" type="TRASH"/>
+<Node enabled="enabled" fileURL="port:$0.XMLString:discrete" guiName="XMLXPathReader" guiX="438" guiY="295" id="XML_XPATH_READER0" type="XML_XPATH_READER">
+<attr name="mapping"><![CDATA[<Context xpath="soap:Envelope/soap:Body/n:addResponse" 
+     outPort="0" 
+     namespacePaths='"http://ws1.parasoft.com/glue/calculator/";soap="http://schemas.xmlsoap.org/soap/envelope/";n="http://www.parasoft.com/wsdl/calculator/"'>
+     <Mapping xpath="n:Result" cloverField="Result"/>
+</Context>
+]]></attr>
+<attr name="guiDescription"><![CDATA[XML data is returned in SOAP format. Complex data can be parsed using XPath and passed to multiply output ports]]></attr>
+</Node>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="HTTP_CONNECTOR0:0"/>
+<Edge debugMode="true" fromNode="HTTP_CONNECTOR0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="XML_XPATH_READER0:0"/>
+<Edge debugMode="true" fromNode="XML_XPATH_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="TRASH0:0"/>
+</Phase>
+</Graph>
