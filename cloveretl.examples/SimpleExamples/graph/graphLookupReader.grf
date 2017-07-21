@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Tue Dec 12 09:10:59 CET 2006" guiVersion="0.0.0.devel" id="1199361218607" licenseType="Evaluation Devel" modified="Mon Oct 10 13:24:32 CEST 2011" modifiedBy="avackova" name="graphLookupReader" revision="1.59" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/delimited/employees.fmt" id="Metadata0"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<LookupTable charset="ISO-8859-1" id="LookupTable1" initialSize="512" key="EmployeeID" keyDuplicates="true" metadata="Metadata0" name="jmeno" type="simpleLookup">
+<attr name="data"><![CDATA[17;King2;Robert;Sales Representative;Mr.         ;29/05/1960 00:00:00;02/01/1994 00:00:00;Edgeham Hollow Winchester Way;London;;RG1 9SP;UK;(71) 555-5598;465;;Robert King served in the Peace Corps and traveled extensively before completing his degree in English at the University of Michigan and then joining the company.  After completing a course entitled ""Selling in Europe,"" he was transferred to the London office.;5
+18;Callahan;Laura;Inside Sales Coordinator;Ms.;09/01/1958 00:00:00;05/03/1994 00:00:00;4726 - 11th Ave. N.E.;Seattle;WA;98105;USA;(206) 555-1189       ;2344;;Laura received a BA in psychology from the University of Washington.  She has also completed a course in business French.  She reads and writes French.;2
+19;Dodsworth;Anne;Sales Representative;Ms.;02/07/1969 00:00:00;15/11/1994 00:00:00;7 Houndstooth Rd.;London;;WG2 7LT;UK;(71) 555-4444;452;;Anne has a BA degree in English from St. Lawrence College.  She is fluent in French and German.;5
+12;Davolio;Nancy;Sales Representative;Ms.        ;08/12/1968 00:00:00;01/05/1992 00:00:00;507 - 20th Ave. E.Apt. 2A;Seattle;WA               ;98122     ;USA;(206) 555-9857;5467;;Education includes a BA in psychology from Colorado State University.  She also completed ""The Art of the Cold Call.""  Nancy is a member of Toastmasters International.;2
+11;Fuller;Andrew;Vice President, Sales;Dr.;19/02/1952 00:00:00;14/08/1992 00:00:00;908 W. Capital Way;Tacoma;WA;98401;USA;(206) 555-9482;3457;;Andrew received his BTS commercial and a Ph.D. in international marketing from the University of Dallas.  He is fluent in French and Italian and reads German.  He joined the company as a sales representative, was promoted to sales manager and was then named vice president of sales.  Andrew is a member of the Sales Management Roundtable, the Seattle Chamber of Commerce, and the Pacific Rim Importers Association.;0
+]]></attr>
+</LookupTable>
+<LookupTable charset="ISO-8859-1" id="LookupTable0" initialSize="512" key="EmployeeID" metadata="Metadata0" name="jmeno" type="simpleLookup">
+<attr name="data"><![CDATA[17;King2;Robert;Sales Representative;Mr.         ;29/05/1960 00:00:00;02/01/1994 00:00:00;Edgeham Hollow Winchester Way;London;;RG1 9SP;UK;(71) 555-5598;465;;Robert King served in the Peace Corps and traveled extensively before completing his degree in English at the University of Michigan and then joining the company.  After completing a course entitled ""Selling in Europe,"" he was transferred to the London office.;5
+18;Callahan;Laura;Inside Sales Coordinator;Ms.;09/01/1958 00:00:00;05/03/1994 00:00:00;4726 - 11th Ave. N.E.;Seattle;WA;98105;USA;(206) 555-1189       ;2344;;Laura received a BA in psychology from the University of Washington.  She has also completed a course in business French.  She reads and writes French.;2
+19;Dodsworth;Anne;Sales Representative;Ms.;02/07/1969 00:00:00;15/11/1994 00:00:00;7 Houndstooth Rd.;London;;WG2 7LT;UK;(71) 555-4444;452;;Anne has a BA degree in English from St. Lawrence College.  She is fluent in French and German.;5
+12;Davolio;Nancy;Sales Representative;Ms.        ;08/12/1968 00:00:00;01/05/1992 00:00:00;507 - 20th Ave. E.Apt. 2A;Seattle;WA               ;98122     ;USA;(206) 555-9857;5467;;Education includes a BA in psychology from Colorado State University.  She also completed ""The Art of the Cold Call.""  Nancy is a member of Toastmasters International.;2
+11;Fuller;Andrew;Vice President, Sales;Dr.;19/02/1952 00:00:00;14/08/1992 00:00:00;908 W. Capital Way;Tacoma;WA;98401;USA;(206) 555-9482;3457;;Andrew received his BTS commercial and a Ph.D. in international marketing from the University of Dallas.  He is fluent in French and Italian and reads German.  He joined the company as a sales representative, was promoted to sales manager and was then named vice president of sales.  Andrew is a member of the Sales Management Roundtable, the Seattle Chamber of Commerce, and the Pacific Rim Importers Association.;0
+]]></attr>
+</LookupTable>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="235" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Working with data in lookup table" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="315" x="616" y="-51">
+<attr name="text"><![CDATA[Initially the lookup table contains only 5 records (data attribute). LookupTableReaderWriter component can fulfill the lookup table with data as well as read all (current) data from lookup table. 
+The graph illustrates the difference between lookup table with "single" and "duplicated" data (attribute  keyDuplicates).
+While in 1st case data with the same key are replaced with the new data, in the 2nd case they are added to existing ones.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="235" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Writing to&#10;Lookup Tables" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="203" x="402" y="-51"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="268" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Reading from&#10;Lookup Tables" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="200" x="0" y="137"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node dataPolicy="strict" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="101" guiName="Employees (Controlled)" guiWidth="200" guiX="0" guiY="7" id="DATA_READER0" quotedStrings="true" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="69" guiName="Duplicate NO" guiWidth="128" guiX="456" guiY="7" id="EmptyLookup" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
+<Node enabled="enabled" guiHeight="69" guiName="Duplicate YES" guiWidth="131" guiX="456" guiY="103" id="EmptyLookup1" lookupTable="LookupTable1" type="LOOKUP_TABLE_READER_WRITER"/>
+<Node enabled="enabled" guiHeight="72" guiName="SimpleCopy" guiWidth="128" guiX="259" guiY="7" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="SIMPLE_COPY0:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="EmptyLookup:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" router="Manhattan" toNode="EmptyLookup1:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" guiHeight="85" guiName="ExtSort (EmployeeID)" guiWidth="186" guiX="216" guiY="192" id="EXT_SORT0" sortKey="EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="85" guiName="ExtSort (EmployeeID)" guiWidth="186" guiX="216" guiY="304" id="EXT_SORT1" sortKey="EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="69" guiName="Duplicate NO" guiWidth="128" guiX="24" guiY="192" id="JOIN" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
+<Node enabled="enabled" guiHeight="69" guiName="Duplicate YES" guiWidth="131" guiX="24" guiY="304" id="JOIN1" lookupTable="LookupTable1" type="LOOKUP_TABLE_READER_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employees_without_duplicates.out" guiHeight="101" guiName="Sorted Unique Employees" guiWidth="215" guiX="456" guiY="192" id="WRITER" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employees_with_duplicates.out" guiHeight="101" guiName="Sorted Duplicate Employees" guiWidth="234" guiX="456" guiY="304" id="WRITER1" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER1:0"/>
+<Edge debugMode="false" fromNode="JOIN:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT0:0"/>
+<Edge debugMode="false" fromNode="JOIN1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="EXT_SORT1:0"/>
+</Phase>
+</Graph>

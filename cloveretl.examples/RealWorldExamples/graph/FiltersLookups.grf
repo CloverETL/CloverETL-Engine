@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="3.4.0.M2" id="1280312940927" licenseType="Commercial" modified="Wed Mar 06 17:49:44 CET 2013" modifiedBy="Pavel" name="graphFilters_Lookups" revision="1.33" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/orders.fmt" id="Metadata1"/>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="," name="customers_out" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="fixed">
+<Field name="orderid" size="10" type="integer"/>
+<Field format="yyyy-MM-dd" name="required_date" size="15" type="date"/>
+<Field format="yyyy-MM-dd" name="shipped_date" size="15" type="date"/>
+<Field name="customer_firstname" size="22" type="string"/>
+<Field name="customer_lastname" size="22" type="string"/>
+<Field name="customer_country" size="20" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<LookupTable charset="ISO-8859-1" id="LookupTable0" initialSize="512" key="customerid" metadata="Metadata0" name="customers_look" type="simpleLookup"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="248" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Filtering" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="205" x="194" y="374">
+<attr name="text"><![CDATA[We want only orders where
+ShipDate > RequiredDate]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="248" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Reading from the lookup tbl" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="205" x="433" y="374">
+<attr name="text"><![CDATA[
+For each record:
+- lookup tbl is searched for the OrderID value
+- if found, selected field values (see customers_out metadata) are mapped to output fields]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="203" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="How to fill in a lookup table with data?" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="424" x="430" y="170">
+<attr name="text"><![CDATA[
+Case 1: Before the graph runs
+- selecting file to be the data source
+- typing the values
+
+Case 2:. During the graph run
+- using a Java class
+- using LookupTableReaderWriter component
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" enabled="true" folded="false" height="135" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="12" title="TASK: Find which customers received their order late due to delayed shipping" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="840" x="19" y="15">
+<attr name="text"><![CDATA[SOLUTION: Data from files with different metadata must be put together and compared using lookup table
+
+- File with orders shows which orders were sent late and the respective customerID
+- Files with customers can identify who is behind the selected customerID
+]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region1.csv" guiName="reads customers 1" guiX="24" guiY="193" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region2.csv" guiName="reads customers 2" guiX="25" guiY="315" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" guiName="LookupTableReaderWriter" guiX="882" guiY="251" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
+<Node enabled="enabled" guiName="gathers into 1 file" guiX="247" guiY="263" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_GATHER0:0"/>
+<Edge fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_GATHER0:1"/>
+<Edge debugMode="true" fromNode="SIMPLE_GATHER0:0" guiBendpoints="430:174|430:164" guiLocks="421|null|null" guiRouter="Manual" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="LOOKUP_TABLE_READER_WRITER0:0"/>
+</Phase>
+<Phase number="1">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders_late.txt" guiName="writes info in file" guiX="686" guiY="534" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" guiName="shipped late" guiX="233" guiY="534" id="EXT_FILTER0" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[$0.RequiredDate < $0.ShippedDate]]></attr>
+</Node>
+<Node enabled="enabled" guiName="orders + lookup tbl" guiX="458" guiY="534" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+customers matched_record;
+// Transforms input record into output record.
+function integer transform() {
+	matched_record = lookup(customers_look).get($OrderID);
+		$0.orderid = $0.OrderID;
+	    $0.required_date = $0.RequiredDate;
+		$0.shipped_date = $0.ShippedDate;
+		$0.customer_firstname = matched_record.firstname;
+		$0.customer_lastname = matched_record.lastname;
+		$0.customer_country = matched_record.country;
+
+		return 0;
+	}
+
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/Orders.xlsx" guiName="reads orders" guiX="36" guiY="534" id="XLS_READER0" sheetName="*" type="XLS_READER">
+<attr name="guiDescription"><![CDATA[Reads orders data]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="EXT_FILTER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (accepted)" toNode="REFORMAT0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="58:0|58:-2" guiRouter="Manual" id="Edge6" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+<Edge fromNode="XLS_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_FILTER0:0"/>
+</Phase>
+</Graph>
