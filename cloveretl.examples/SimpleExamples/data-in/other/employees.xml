@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<employees>
+	<employee>
+		<empID>1</empID>
+		<jobID>3</jobID>
+   		<salary>5000</salary>
+		<name> 
+			<firstname>Mark</firstname>
+			<surname>Fish</surname>
+		</name>
+		
+		<child>
+			<chname>Ann</chname>
+			<age>4</age>
+		</child>
+		<child>
+			<chname>Mark</chname>
+			<age>6</age>
+		</child>
+		
+		<benefits>
+			<car>none</car>
+			<mobilephone>yes</mobilephone>
+			<financial>
+				<monthly_bonus>1000</monthly_bonus>
+				<yearly_bonus>0</yearly_bonus>	
+			</financial>
+		</benefits>
+		<project>
+			<projName>JSP</projName>
+			<projManager>John Smith</projManager>
+			<inProjectID>34</inProjectID>
+			<Start>06062006</Start>
+			<End>in progress</End>
+			<customer>
+                        	<name>Sunny</name>
+			</customer>
+			<customer>
+				<name>Weblea</name>
+			</customer>
+		</project>
+		<project>
+			<projName>Data warehouse</projName>
+			<projManager>John Major</projManager>
+			<inProjectID>51</inProjectID>
+			<Start>01062005</Start>
+			<End>31052006</End>
+			<customer>
+				<name>Hanuman</name>
+			</customer>
+			<customer>
+				<name>Weblea</name>
+			</customer>
+			<customer>
+				<name>SomeBank</name>
+			</customer>
+		</project>
+	</employee>
+	<employee>
+		<empID>2</empID>
+		<jobID>5</jobID>
+   		<salary>5500</salary>
+		<name> 
+			<firstname>Jane</firstname>
+			<surname>Simson</surname>
+		</name>
+		
+		<child>
+			<chname>Peter</chname>
+			<age>14</age>
+		</child>
+		
+		<benefits>
+			<car>yes</car>
+			<mobilephone>yes</mobilephone>
+			<financial>
+				<monthly_bonus>500</monthly_bonus>
+				<yearly_bonus>10000</yearly_bonus>	
+			</financial>
+		</benefits>
+		<project>
+			<projName>JSP</projName>
+			<projManager>John Smith</projManager>
+			<inProjectID>6</inProjectID>
+			<Start>06062006</Start>
+			<End>in progress</End>
+			<customer>
+                        <name>Sunny</name>
+			</customer>
+			<customer>
+				<name>Weblea</name>
+			</customer>
+		</project>
+		<project>
+			<projName>OLAP</projName>
+			<projManager>Raymond Brown</projManager>
+			<inProjectID>24</inProjectID>
+			<Start>11052004</Start>
+			<End>31012006</End>
+			<customer>
+				<name>Nestele</name>
+			</customer>
+			<customer>
+				<name>Traincorp</name>
+			</customer>
+			<customer>
+				<name>AnotherBank</name>
+			</customer>
+		</project>
+	</employee>
+<employee>
+		<empID>3</empID>
+		<jobID>10</jobID>
+   		<salary>7500</salary>
+		<name> 
+			<firstname>Brandon</firstname>
+			<surname>Morrison</surname>
+		</name>
+		
+		<child>
+			<chname>none</chname>
+			<age>0</age>
+		</child>
+		
+		<benefits>
+			<car>no</car>
+			<mobilephone>no</mobilephone>
+			<financial>
+				<monthly_bonus>0</monthly_bonus>
+				<yearly_bonus>25000</yearly_bonus>	
+			</financial>
+		</benefits>
+		<project>
+			<projName>Javascripting</projName>
+			<projManager>Brandon Morrison</projManager>
+			<inProjectID>7</inProjectID>
+			<Start>01032006</Start>
+			<End>in progress</End>
+			<customer>
+                        <name>Intershop</name>
+			</customer>
+			<customer>
+				<name>Intrashop</name>
+			</customer>
+		</project>
+		<project>
+			<projName>OLAP</projName>
+			<projManager>Raymond Brown</projManager>
+			<inProjectID>12</inProjectID>
+			<Start>11052004</Start>
+			<End>31012006</End>
+			<customer>
+				<name>Nestele</name>
+			</customer>
+			<customer>
+				<name>Traincorp</name>
+			</customer>
+			<customer>
+				<name>AnotherBank</name>
+			</customer>
+		</project>
+	</employee>
+
+</employees>
