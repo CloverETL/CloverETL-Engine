@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="4.4.0.M1" id="1280331230946" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Feb 23 13:55:35 CET 2016" modifiedBy="jansedlacek" name="CreatingFixedMixedCust" revision="1.129" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/customers_fixed.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata1"/>
+<GraphParameters>
+<GraphParameter name="sample" value="0.1"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<RichTextNote backgroundColor="DAD8C9" enabled="true" folded="false" fontSize="medium" height="104" id="Note0" textColor="000000" width="772" x="10" y="10">
+<attr name="text"><![CDATA[h3. This graph demonstrates raising an error!
+When trying to find an error in your graph you can use various debugging tools...]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="433" id="Note1" textColor="000000" width="160" x="10" y="121">
+<attr name="text"><![CDATA[h5. 100 records only
+To avoid printing hundreds of useless messages, we are reading just the first 100 records.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="229" id="Note2" textColor="000000" width="168" x="203" y="121">
+<attr name="text"><![CDATA[h5. SimpleCopy
+component can - apart from making an identical copy - slightly change the input records.
+]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="229" id="Note4" textColor="000000" width="214" x="382" y="121">
+<attr name="text"><![CDATA[h5. printErr()
+Prints out a user defined message to the error output ,  optionaly including the origin of the error message]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="211" id="Note5" textColor="000000" width="214" x="382" y="343">
+<attr name="text"><![CDATA[h5. printLog()
+Prints a debug message to the standard logger - best used on the Server!
+
+Moreover, you can specify the log level (debug, info, warn, error, fatal) where the message appears.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="285" id="Note3" textColor="000000" width="177" x="607" y="121">
+<attr name="text"><![CDATA[h5. Output from transform
+A random number of fixed length records selected from the input file randomly.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="F46353" enabled="true" folded="false" fontSize="medium" height="170" id="Note10" textColor="000000" width="263" x="798" y="121">
+<attr name="text"><![CDATA[h5. THIS GRAPH IS DESIGNED TO FAIL
+Demonstrates trying to find a fault in your graph, and how you can use various debugging tools to output error messages.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="F9EB81" enabled="true" folded="false" fontSize="medium" height="202" id="Note9" textColor="000000" width="772" x="10" y="556">
+<attr name="text"><![CDATA[h3. Debugging data on edges, Debug properties
+
+You can inspect data flowing through edges. Just right click the edge you want to inspect and select Enable Debug - you will see a small bug icon. After running the graph, you can select the debugged edge and  the actual data that went through the edge will be displayed in [Data Inspector|view://com.cloveretl.gui.debugDataView] view. Moreover, you can set filters on both the edge (keeping just the data that correspond with the filter) or in [Data Inspector|view://com.cloveretl.gui.debugDataView] - just filter your view on the stored debug data
+
+We have already switched some of the edges to Debug mode for you - look for the bug icon.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="250" id="Note7" textColor="000000" width="184" x="10" y="764">
+<attr name="text"><![CDATA[h5. File with incorrect records
+The file is read, all the records are sent out to the next component]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="250" id="Note8" textColor="000000" width="155" x="209" y="764">
+<attr name="text"><![CDATA[h5. Using raiseErr()
+Check the data and throw an error that causes the graph to fail]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="249" id="Note6" textColor="000000" width="383" x="399" y="765">
+<attr name="text"><![CDATA[h5. Note on interrupting the graph run
+Correct records are written in a file till a bad record appears and the raised error stops the graph executing]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="211" id="Note11" textColor="000000" width="168" x="202" y="343">
+<attr name="text"><![CDATA[The structure of I/O metadata remains the same except for a field/record property (a record type here)
+
+Note the difference between input and output 
+metadata!]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region1.csv" guiName="read delimited" guiX="26" guiY="263" id="DATA_READER0" numRecords="100" skipFirstLine="true" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[100 records only]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/CustomersFixed.txt" guiName="random records" guiX="629" guiY="263" id="DATA_WRITER0" outputFieldNames="false" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Output from transform]]></attr>
+</Node>
+<Node enabled="enabled" guiName="print messages" guiX="426" guiY="263" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+ integer counter =0;
+// Transforms input record into output record.
+function integer transform() {
+
+	counter++;
+	boolean location = false;
+	double random_number = random();
+	printErr(counter + ": random() function returns random_number = " + random_number + " representing customerID = " + $in.0.customerID, location);
+	if (random_number < ${sample}) {
+	printLog(info,"You get record number " + counter);
+		$out.0.* = $in.0.*;
+		return 0;
+// random records are sent to output port 0
+	}
+	else $out.1.*= $in.0.*;
+	return 1;
+// the other records are sent to output port 1	
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="convert to fixed" guiX="220" guiY="263" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiName="the other records" guiX="624" guiY="467" id="TRASH0" type="TRASH"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
+<Edge debugFilterExpression="$0.gender == &quot;M&quot;" debugLastRecords="false" debugMaxRecords="25" debugMode="false" debugSampleData="false" fromNode="REFORMAT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata0" toNode="DATA_WRITER0:0"/>
+<Edge debugFilterExpression="$0.income &lt; 30000 AND $0.gender=='F'" debugLastRecords="true" debugMaxRecords="100" debugMode="true" debugSampleData="true" fromNode="REFORMAT0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 1 (out)" persistedImplicitMetadata="Metadata0" toNode="TRASH0:0"/>
+<Edge debugFilterExpression="$0.age&gt; 25 AND $0.age&lt; 35 " debugLastRecords="false" debugMaxRecords="33" debugMode="true" debugSampleData="true" fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+</Phase>
+<Phase number="1">
+<Node dataPolicy="lenient" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region_BAD.csv" guiName="read bad records" guiX="31" guiY="901" id="DATA_READER1" trim="false" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Reads file with incorrect records]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/CustomersFixedCorrect.txt" guiName="incomplete file" guiX="502" guiY="901" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Writes correct records to a file]]></attr>
+</Node>
+<Node enabled="enabled" guiName="raise error" guiX="222" guiY="901" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+integer count=0;
+// Transforms input record into output record.
+function integer transform() {
+	count++;
+	$out.0.customerID = $in.0.customerid;
+	$out.0.firstname = $in.0.firstname;
+	$out.0.lastname = $in.0.lastname;
+	$out.0.address1 = $in.0.address1;
+	$out.0.address2 = $in.0.address2;
+	$out.0.city = $in.0.city;
+	$out.0.state = $in.0.state;
+	$out.0.zip = $in.0.zip;
+	$out.0.country = $in.0.country;
+	$out.0.region = $in.0.region;
+	$out.0.email = $in.0.email;
+	$out.0.phone = $in.0.phone;
+	$out.0.creditcardtype = $in.0.creditcardtype;
+	$out.0.creditcard = $in.0.creditcard;
+	$out.0.creditcardexpiration = $in.0.creditcardexpiration;
+	$out.0.username = $in.0.username;
+	$out.0.password = $in.0.password;
+	$out.0.age = $in.0.age;
+	$out.0.income = $in.0.income;
+	if (($in.0.gender != "M") && ($in.0.gender != "F"))
+	raiseError($in.0.gender + " is not a valid gender. Go to record No. " + count + " and replace with 'M' or 'F'.");
+	else $out.0.gender = $in.0.gender;
+
+	return 0;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Edge fromNode="DATA_READER1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="REFORMAT1:0"/>
+<Edge fromNode="REFORMAT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+</Phase>
+</Graph>

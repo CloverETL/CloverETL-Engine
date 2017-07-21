@@ -1,0 +1,2 @@
+com.cloveretl.gui.server.ignoredFiles=\# Examples\:\n\# .svn/ - .svn directory anywhere in project\n\# filename.txt - "filename.txt" filename anywhere in the project\n\# /filename.txt - "filename.txt" filename in top-level directory of the project\n\# /data-out/* - all files and sub-directories in the /data-out directory\n\n\# Default ignored files and directories\:\n/.bzr/\n.bzrignore\n/CVS/\n.cvsignore\n/.git/\n.gitignore\n/.hg/\n.hgignore\n.svn/\n\# Temporary files created by MS Office\:\n~$*.xls\n~$*.xlsx\n~$*.xlsm\n~$*.doc\n~$*.docx\n
+eclipse.preferences.version=1
