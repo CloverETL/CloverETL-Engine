@@ -1,0 +1,30 @@
+#! /bin/sh
+
+# this script was inspired by practices gained from ant run scripts (http://ant.apache.org/)
+
+#split command-line arguments to two sets - clover and jvm arguments
+clover_exec_args=
+java_exec_args=
+user_classpath=
+while [ "$*" != "" ] 
+do
+	if [ "$1" = "-" ] 
+	then
+		parse_java_args="yes"
+		shift
+	fi
+	
+	if [ -z "$parse_java_args" ] 
+	then
+		clover_exec_args="$clover_exec_args \"$1\""
+	else
+		if [ "$1" = "-classpath" ] 
+		then
+			shift
+			user_classpath="$1"
+		else 
+			java_exec_args="$java_exec_args \"$1\""
+		fi
+	fi
+	shift
+done

@@ -1,0 +1,12 @@
+11;0;true
+11;0;false
+11;1;true
+11;1;false
+11;2;true
+11;2;false
+11;3;true
+11;3;false
+11;4;true
+11;4;false
+11;5;true
+11;5;false

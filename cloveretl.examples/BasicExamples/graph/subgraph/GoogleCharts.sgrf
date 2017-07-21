@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="krivanekm" category="writers" created="Mon Nov 10 13:22:19 CET 2014" guiVersion="4.0.1" id="1415630160185" largeIconPath="${SUBGRAPH_DIR}/icons/pie_chart/pie_chart_64.png" licenseCode="CLP1DJAVLI74991486BY" licenseType="Commercial" mediumIconPath="${SUBGRAPH_DIR}/icons/pie_chart/pie_chart_32.png" modified="Mon Nov 24 15:42:24 CET 2014" modifiedBy="User" name="GoogleChartsAPI" nature="subgraph" revision="1.82" showComponentDetails="true" smallIconPath="${SUBGRAPH_DIR}/icons/pie_chart/pie_chart_16.png">
+<Global>
+<Metadata id="Metadata2">
+<Record fieldDelimiter="|" name="aggregated" recordDelimiter="\r\n" type="delimited">
+<Field name="count" type="long"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="records" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="line" type="string"/>
+<Field name="separator" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3">
+<Record fieldDelimiter="|" name="row" recordDelimiter="\r\n" type="delimited">
+<Field containerType="list" name="columns" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata4" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="sampleInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" skipSourceRows="1" type="delimited">
+<Field name="Name" type="string"/>
+<Field eofAsDelimiter="true" name="TotalCost" type="integer"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameter label="File URL" name="FILE_URL" public="true" required="true" value="${DATAOUT_DIR}/chart.html">
+<ComponentReference referencedComponent="STRUCTURED_DATA_WRITER" referencedProperty="fileURL"/>
+</GraphParameter>
+<GraphParameter label="Chart type" name="CHART_TYPE" public="true" required="true" value="ColumnChart"/>
+<GraphParameter label="Width" name="WIDTH" public="true" value="1600"/>
+<GraphParameter label="Height" name="HEIGHT" public="true" value="600"/>
+<GraphParameter label="Title" name="TITLE" public="true"/>
+<GraphParameter category="advanced" label="Options" name="OPTIONS" public="true" value="'title':'${TITLE}', 'width':${WIDTH}, 'height':${HEIGHT}, titleTextStyle : { color: 'black', fontName: 'Arial', fontSize: 20, bold: true, italic: false }"/>
+<GraphParameter category="advanced" defaultHint=" " label="Transform" name="TRANSFORM" public="true" required="false" value="//#CTL2&#10;&#10;// Transforms input record into output record.&#10;function integer transform() {&#10;&#9;string[] result;&#10;&#9;for (integer i = 0; i &lt; length($in.0); i++) {&#10;&#9;&#9;switch (getFieldType($in.0, i)) {&#10;&#9;&#9;&#9;case &quot;string&quot;:&#10;&#9;&#9;&#9;case &quot;date&quot;:&#10;&#9;&#9;&#9;&#9;result.append(concat(&quot;'&quot;, getValueAsString($in.0, i), &quot;'&quot;));&#10;&#9;&#9;&#9;&#9;break;&#10;&#9;&#9;&#9;default:&#10;&#9;&#9;&#9;&#9;result.append(getValueAsString($in.0, i));&#10;&#9;&#9;}&#10;&#9;}&#10;&#9;$out.0.columns = result;&#10;&#9;return ALL;&#10;}&#10;&#10;// Called during component initialization.&#10;// function boolean init() {}&#10;&#10;// Called during each graph run before the transform is executed. May be used to allocate and initialize resources&#10;// required by the transform. All resources allocated within this method should be released&#10;// by the postExecute() method.&#10;// function void preExecute() {}&#10;&#10;// Called only if transform() throws an exception.&#10;// function integer transformOnError(string errorMessage, string stackTrace) {}&#10;&#10;// Called during each graph run after the entire transform was executed. Should be used to free any resources&#10;// allocated within the preExecute() method.&#10;// function void postExecute() {}&#10;&#10;// Called to return a user-defined error message when an error occurs.&#10;// function string getMessage() {}&#10;">
+<ComponentReference referencedComponent="REFORMAT" referencedProperty="transform"/>
+</GraphParameter>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="124" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Header" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="391" x="305" y="-30"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="131" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Count records" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="336" x="450" y="215"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="149" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="No comma after the last record" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="231" x="888" y="76"/>
+<Dictionary>
+<Entry id="DictionaryEntry0" input="true" name="count" output="true" type="long"/>
+<Entry dictval.value="true" id="DictionaryEntry1" input="true" name="filter_firstRecord" output="true" type="boolean"/>
+</Dictionary>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="Aggregate" guiX="472" guiY="259" id="AGGREGATE" mapping="$count:=count();" type="AGGREGATE"/>
+<Node enabled="enabled" guiName="Concatenate" guiX="703" guiY="123" id="CONCATENATE" type="CONCATENATE"/>
+<Node debugInput="true" enabled="enabled" guiName="DataGenerator" guiX="22" guiY="135" id="DATA_GENERATOR" recordsNumber="10" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+
+// Generates output record.
+function integer generate() {
+	$out.0.Name = randomString(3,5);
+	$out.0.TotalCost = randomInteger(0,100);
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the generate. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if generate() throws an exception.
+// function integer generateOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="ExtFilter" guiX="345" guiY="10" id="EXT_FILTER" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[//#CTL2
+dictionary.filter_firstRecord ? !(dictionary.filter_firstRecord = false) : false]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Reformat" guiX="472" guiY="131" id="REFORMAT" type="REFORMAT">
+<attr name="transform"><![CDATA[${TRANSFORM}]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Reformat" guiX="514" guiY="10" id="REFORMAT3" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	string[] columnNames;
+	for (integer i = 0; i < length($in.0); i++) {
+		columnNames.append(concat("'", getFieldLabel($in.0, i), "'"));
+	}
+	$out.0.columns = columnNames;
+	
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="SetJobOutput" guiX="641" guiY="259" id="SET_JOB_OUTPUT" type="SET_JOB_OUTPUT">
+<attr name="mapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.count = $in.0.count;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="SimpleCopy" guiX="294" guiY="129" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiName="SubgraphInput" guiX="228" guiY="-25" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT">
+<Port guiY="147" name="0"/>
+<Port guiY="217" name="1"/>
+</Node>
+<Edge fromNode="AGGREGATE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SET_JOB_OUTPUT:0"/>
+<Edge fromNode="CONCATENATE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge15" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata3" toNode="REFORMAT1:0"/>
+<Edge debugMode="false" fromNode="DATA_GENERATOR:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SUBGRAPH_INPUT:0"/>
+<Edge debugMode="false" fromNode="EXT_FILTER:0" guiBendpoints="" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (in)" outPort="Port 0 (accepted)" persistedImplicitMetadata="Metadata4" toNode="REFORMAT3:0"/>
+<Edge debugMode="false" fromNode="REFORMAT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 1 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="CONCATENATE:1"/>
+<Edge fromNode="REFORMAT3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge14" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="CONCATENATE:0"/>
+<Edge fromNode="SIMPLE_COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata4" toNode="EXT_FILTER:0"/>
+<Edge debugMode="false" fromNode="SIMPLE_COPY:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 1 (out)" persistedImplicitMetadata="Metadata4" toNode="REFORMAT:0"/>
+<Edge fromNode="SIMPLE_COPY:2" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" outPort="Port 2 (out)" persistedImplicitMetadata="Metadata4" toNode="AGGREGATE:0"/>
+<Edge debugMode="false" fromNode="SUBGRAPH_INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata4" toNode="SIMPLE_COPY:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" guiName="Reformat" guiX="932" guiY="125" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+long counter = 0;
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.line = join(", ", $in.0.columns);
+	$out.0.separator = counter++ < dictionary.count ? "," : "";
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${FILE_URL}" footer="      ]);&#13;&#10;&#13;&#10;      // Set chart options&#13;&#10;      var options = {${OPTIONS}};&#13;&#10;&#13;&#10;      // Instantiate and draw our chart, passing in some options.&#13;&#10;      var chart = new google.visualization.${CHART_TYPE}(document.getElementById('chart_div'));&#13;&#10;      chart.draw(data, options);&#13;&#10;    }&#13;&#10;    &lt;/script&gt;&#13;&#10;  &lt;/head&gt;&#13;&#10;&#13;&#10;  &lt;body style=&quot;font-family: Arial;border: 0 none;&quot;&gt;&#13;&#10;&lt;!--Div that will hold the pie chart--&gt;&#13;&#10;    &lt;div id=&quot;chart_div&quot; style=&quot;width:${WIDTH}; height:${HEIGHT}&quot;&gt;&lt;/div&gt;&#13;&#10;  &lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiName="StructuredDataWriter" guiX="1167" guiY="125" header="&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD HTML 4.01 Transitional//EN&quot; &quot;http://www.w3.org/TR/html4/loose.dtd&quot;&gt;&#13;&#10;&lt;html&gt;&#13;&#10;  &lt;head&gt;&#13;&#10;    &lt;!--Load the AJAX API--&gt;&#13;&#10;    &lt;script type=&quot;text/javascript&quot; src=&quot;https://www.google.com/jsapi&quot;&gt;&lt;/script&gt;&#13;&#10;    &lt;script type=&quot;text/javascript&quot;&gt;&#13;&#10;   &#13;&#10;      // Load the Visualization API and the piechart package.&#13;&#10;      google.load('visualization', '1.0', {'packages':['corechart']});&#13;&#10;     &#13;&#10;      // Set a callback to run when the Google Visualization API is loaded.&#13;&#10;      google.setOnLoadCallback(drawChart);&#13;&#10;&#13;&#10;&#13;&#10;      // Callback that creates and populates a data table, &#13;&#10;      // instantiates the pie chart, passes in the data and&#13;&#10;      // draws it.&#13;&#10;      function drawChart() {&#13;&#10;&#13;&#10;      // Create the data table.&#13;&#10;      var data = google.visualization.arrayToDataTable([&#13;&#10;" id="STRUCTURED_DATA_WRITER" mask="        [$line]$separator&#13;&#10;" type="STRUCTURE_WRITER"/>
+<Node enabled="enabled" guiName="SubgraphOutput" guiX="1377" guiY="-25" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT">
+<Port guiY="110" name="0"/>
+</Node>
+<Edge debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (Body port)" metadata="Metadata1" outPort="Port 0 (out)" toNode="STRUCTURED_DATA_WRITER:0"/>
+</Phase>
+</Graph>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="User" category="readers" created="Tue Jun 03 18:12:53 CEST 2014" guiVersion="4.0.1" id="1401812464122" licenseCode="CLP1DJAVLI74991486BY" licenseType="Commercial" modified="Mon Nov 24 15:50:39 CET 2014" modifiedBy="User" name="jira_search" nature="subgraph" revision="1.9" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0">
+<Record fieldDelimiter="|" name="recordName1" recordDelimiter="\r\n" type="delimited">
+<Field name="field1" type="string"/>
+</Record>
+</Metadata>
+<MetadataGroup name="Implicit metadata" type="implicit">
+<Metadata id="JIRA_SEARCH_MULTI_RUN_SEARCH_REST_Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="jira_search_result" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="issue_id" type="string"/>
+<Field name="type" type="string"/>
+<Field name="summary" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="JIRA_SEARCH_MULTI_Metadata4" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="jira_search" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="query" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="JIRA_SEARCH_MULTI_jira_search_metadata" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="jira_search_metadata" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="jira_query" type="string"/>
+<Field label="total" name="total_results" type="integer"/>
+</Record>
+</Metadata>
+</MetadataGroup>
+<GraphParameters>
+<GraphParameter label="JIRA Query" name="QUERY" public="true" required="true" value="${DEFAULT_QUERY}"/>
+<GraphParameter label="User" name="USER" public="true" required="false"/>
+<GraphParameter label="Password" name="PASSWORD" public="true" required="false" secure="false"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+<GraphParameterFile fileURL="jira.prm"/>
+</GraphParameters>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="117" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Description" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="349" x="255" y="-16">
+<attr name="text"><![CDATA[Searches in JIRA via a JQL query. Returns all found issues on the output.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="GetJobInput" guiX="235" guiY="151" id="GET_JOB_INPUT" type="GET_JOB_INPUT">
+<attr name="mapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.query = getParamValue("QUERY");
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node __PASSWORD="${PASSWORD}" __USER="${USER}" enabled="enabled" guiName="JIRASearchMulti" guiX="438" guiY="151" id="JIRA_SEARCH_MULTI" jobURL="${SUBGRAPH_DIR}/JIRASearchMulti.sgrf" type="SUBGRAPH"/>
+<Node enabled="enabled" guiName="Search metadata not needed" guiX="485" guiY="312" id="SEARCH_METADATA_NOT_NEEDED" type="TRASH"/>
+<Node enabled="enabled" guiName="SubgraphInput" guiX="201" guiY="-100" id="SUBGRAPH_INPUT0" type="SUBGRAPH_INPUT">
+<Port guiY="0" name="0"/>
+</Node>
+<Node enabled="enabled" guiName="SubgraphOutput" guiX="725" guiY="-95" id="SUBGRAPH_OUTPUT0" type="SUBGRAPH_OUTPUT">
+<Port guiY="170" name="0"/>
+<Port guiY="240" name="1"/>
+</Node>
+<Edge fromNode="GET_JOB_INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="JIRA_SEARCH_MULTI_Metadata4" toNode="JIRA_SEARCH_MULTI:0"/>
+<Edge fromNode="JIRA_SEARCH_MULTI:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="JIRA_SEARCH_MULTI_RUN_SEARCH_REST_Metadata0" toNode="SUBGRAPH_OUTPUT0:0"/>
+<Edge fromNode="JIRA_SEARCH_MULTI:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 1 (out)" persistedImplicitMetadata="JIRA_SEARCH_MULTI_jira_search_metadata" toNode="SEARCH_METADATA_NOT_NEEDED:0"/>
+</Phase>
+</Graph>
