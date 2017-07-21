@@ -1,0 +1,6 @@
+word
+world
+wear
+book
+back
+break

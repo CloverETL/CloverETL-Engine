@@ -1,0 +1,102 @@
+create table MYEMPLOYEE
+(
+  EMP_NO      NUMBER not null,
+  FIRST_NAME  VARCHAR2(15) not null,
+  LAST_NAME   VARCHAR2(20) not null,
+  PHONE_EXT   VARCHAR2(4),
+  HIRE_DATE   DATE not null,
+  DEPT_NO     CHAR(3) not null,
+  JOB_CODE    VARCHAR2(5) not null,
+  JOB_GRADE   NUMBER(4,2) not null,
+  JOB_COUNTRY VARCHAR2(15) not null,
+  SALARY      NUMBER(15,2) not null,
+  FULL_NAME   VARCHAR2(35)
+);
+
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (2, 'Robert', 'Nelson', '250', to_date('28-12-1988', 'dd-mm-yyyy'), '600', 'VP', 2, 'USA', 105900, 'Nelson, Robert');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (4, 'Bruce', 'Young', '233', to_date('28-12-1988', 'dd-mm-yyyy'), '621', 'Eng', 2, 'USA', 97500, 'Young, Bruce');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (5, 'Kim', 'Lambert', '22', to_date('06-02-1989', 'dd-mm-yyyy'), '130', 'Eng', 2, 'USA', 102750, 'Lambert, Kim');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (8, 'Leslie', 'Johnson', '410', to_date('05-04-1989', 'dd-mm-yyyy'), '180', 'Mktg', 3, 'USA', 64635, 'Johnson, Leslie');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (9, 'Phil', 'Forest', '229', to_date('17-04-1989', 'dd-mm-yyyy'), '622', 'Mngr', 3, 'USA', 75060, 'Forest, Phil');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (11, 'K. J.', 'Weston', '34', to_date('17-01-1990', 'dd-mm-yyyy'), '130', 'SRep', 4, 'USA', 86292.94, 'Weston, K. J.');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (12, 'Terri', 'Lee', '256', to_date('01-05-1990', 'dd-mm-yyyy'), '000', 'Admin', 4, 'USA', 53793, 'Lee, Terri');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (14, 'Stewart', 'Hall', '227', to_date('04-06-1990', 'dd-mm-yyyy'), '900', 'Finan', 3, 'USA', 69482.63, 'Hall, Stewart');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (15, 'Katherine', 'Young', '231', to_date('14-06-1990', 'dd-mm-yyyy'), '623', 'Mngr', 3, 'USA', 67241.25, 'Young, Katherine');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (20, 'Chris', 'Papadopoulos', '887', to_date('01-01-1990', 'dd-mm-yyyy'), '671', 'Mngr', 3, 'USA', 89655, 'Papadopoulos, Chris');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (24, 'Pete', 'Fisher', '888', to_date('12-09-1990', 'dd-mm-yyyy'), '671', 'Eng', 3, 'USA', 81810.19, 'Fisher, Pete');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (28, 'Ann', 'Bennet', '5', to_date('01-02-1991', 'dd-mm-yyyy'), '120', 'Admin', 5, 'England', 22935, 'Bennet, Ann');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (29, 'Roger', 'De Souza', '288', to_date('18-02-1991', 'dd-mm-yyyy'), '623', 'Eng', 3, 'USA', 69482.63, 'De Souza, Roger');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (34, 'Janet', 'Baldwin', '2', to_date('21-03-1991', 'dd-mm-yyyy'), '110', 'Sales', 3, 'USA', 61637.81, 'Baldwin, Janet');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (36, 'Roger', 'Reeves', '6', to_date('25-04-1991', 'dd-mm-yyyy'), '120', 'Sales', 3, 'England', 33620.63, 'Reeves, Roger');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (37, 'Willie', 'Stansbury', '7', to_date('25-04-1991', 'dd-mm-yyyy'), '120', 'Eng', 4, 'England', 39224.06, 'Stansbury, Willie');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (44, 'Leslie', 'Phong', '216', to_date('03-06-1991', 'dd-mm-yyyy'), '623', 'Eng', 4, 'USA', 56034.38, 'Phong, Leslie');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (45, 'Ashok', 'Ramanathan', '209', to_date('01-08-1991', 'dd-mm-yyyy'), '621', 'Eng', 3, 'USA', 80689.5, 'Ramanathan, Ashok');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (46, 'Walter', 'Steadman', '210', to_date('09-08-1991', 'dd-mm-yyyy'), '900', 'CFO', 1, 'USA', 116100, 'Steadman, Walter');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (52, 'Carol', 'Nordstrom', '420', to_date('02-10-1991', 'dd-mm-yyyy'), '180', 'PRel', 4, 'USA', 42742.5, 'Nordstrom, Carol');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (61, 'Luke', 'Leung', '3', to_date('18-02-1992', 'dd-mm-yyyy'), '110', 'SRep', 4, 'USA', 68805, 'Leung, Luke');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (65, 'Sue Anne', 'O''Brien', '877', to_date('23-03-1992', 'dd-mm-yyyy'), '670', 'Admin', 5, 'USA', 31275, 'O''Brien, Sue Anne');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (71, 'Jennifer M.', 'Burbank', '289', to_date('15-04-1992', 'dd-mm-yyyy'), '622', 'Eng', 3, 'USA', 53167.5, 'Burbank, Jennifer M.');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (72, 'Claudia', 'Sutherland', 'null', to_date('20-04-1992', 'dd-mm-yyyy'), '140', 'SRep', 4, 'Canada', 100914, 'Sutherland, Claudia');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (83, 'Dana', 'Bishop', '290', to_date('01-06-1992', 'dd-mm-yyyy'), '621', 'Eng', 3, 'USA', 62550, 'Bishop, Dana');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (85, 'Mary S.', 'MacDonald', '477', to_date('01-06-1992', 'dd-mm-yyyy'), '100', 'VP', 2, 'USA', 111262.5, 'MacDonald, Mary S.');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (94, 'Randy', 'Williams', '892', to_date('08-08-1992', 'dd-mm-yyyy'), '672', 'Mngr', 4, 'USA', 56295, 'Williams, Randy');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (105, 'Oliver H.', 'Bender', '255', to_date('08-10-1992', 'dd-mm-yyyy'), '000', 'CEO', 1, 'USA', 212850, 'Bender, Oliver H.');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (107, 'Kevin', 'Cook', '894', to_date('01-02-1993', 'dd-mm-yyyy'), '670', 'Dir', 2, 'USA', 111262.5, 'Cook, Kevin');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (109, 'Kelly', 'Brown', '202', to_date('04-02-1993', 'dd-mm-yyyy'), '600', 'Admin', 5, 'USA', 27000, 'Brown, Kelly');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (110, 'Yuki', 'Ichida', '22', to_date('04-02-1993', 'dd-mm-yyyy'), '115', 'Eng', 3, 'Japan', 6000000, 'Ichida, Yuki');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (113, 'Mary', 'Page', '845', to_date('12-04-1993', 'dd-mm-yyyy'), '671', 'Eng', 4, 'USA', 48000, 'Page, Mary');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (114, 'Bill', 'Parker', '247', to_date('01-06-1993', 'dd-mm-yyyy'), '623', 'Eng', 5, 'USA', 35000, 'Parker, Bill');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (118, 'Takashi', 'Yamamoto', '23', to_date('01-07-1993', 'dd-mm-yyyy'), '115', 'SRep', 4, 'Japan', 7480000, 'Yamamoto, Takashi');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (121, 'Roberto', 'Ferrari', '1', to_date('12-07-1993', 'dd-mm-yyyy'), '125', 'SRep', 4, 'Italy', 99000000, 'Ferrari, Roberto');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (127, 'Michael', 'Yanowski', '492', to_date('09-08-1993', 'dd-mm-yyyy'), '100', 'SRep', 4, 'USA', 44000, 'Yanowski, Michael');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (134, 'Jacques', 'Glon', 'null', to_date('23-08-1993', 'dd-mm-yyyy'), '123', 'SRep', 4, 'France', 390500, 'Glon, Jacques');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (136, 'Scott', 'Johnson', '265', to_date('13-09-1993', 'dd-mm-yyyy'), '623', 'Doc', 3, 'USA', 60000, 'Johnson, Scott');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (138, 'T.J.', 'Green', '218', to_date('01-11-1993', 'dd-mm-yyyy'), '621', 'Eng', 4, 'USA', 36000, 'Green, T.J.');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (141, 'Pierre', 'Osborne', 'null', to_date('03-01-1994', 'dd-mm-yyyy'), '121', 'SRep', 4, 'Switzerland', 110000, 'Osborne, Pierre');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (144, 'John', 'Montgomery', '820', to_date('30-03-1994', 'dd-mm-yyyy'), '672', 'Eng', 5, 'USA', 35000, 'Montgomery, John');
+insert into MYEMPLOYEE (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+values (145, 'Mark', 'Guckenheimer', '221', to_date('02-05-1994', 'dd-mm-yyyy'), '622', 'Eng', 5, 'USA', 32000, 'Guckenheimer, Mark');
+
+commit;
+
