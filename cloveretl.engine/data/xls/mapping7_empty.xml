@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mapping>
+    <globalAttributes>
+        <orientation>VERTICAL</orientation>
+        <step>2</step>
+    </globalAttributes>
+    <headerGroups>
+        <headerGroup skip="0">
+            <autoMappingType>NAME</autoMappingType>
+            <headerRanges>
+                <headerRange begin="A2"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="0">
+            <cloverField>0</cloverField>
+            <headerRanges>
+                <headerRange begin="A1"/>
+            </headerRanges>
+        </headerGroup>
+    </headerGroups>
+</mapping>

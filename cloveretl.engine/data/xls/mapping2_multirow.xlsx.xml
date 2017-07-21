@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mapping>
+	<globalAttributes>
+		<orientation>VERTICAL</orientation>
+		<step>2</step>
+	</globalAttributes>
+	<headerGroups>
+		<headerGroup skip="2">
+			<cloverField>A</cloverField>
+			<headerRanges>
+				<headerRange begin="C3"/>
+			</headerRanges>
+		</headerGroup>
+		<headerGroup skip="3">
+			<cloverField>2</cloverField>
+			<headerRanges>
+				<headerRange begin="E4"/>
+			</headerRanges>
+		</headerGroup>
+		<headerGroup skip="3">
+			<cloverField>1</cloverField>
+			<headerRanges>
+				<headerRange begin="D2"/>
+			</headerRanges>
+		</headerGroup>
+	</headerGroups>
+</mapping>
