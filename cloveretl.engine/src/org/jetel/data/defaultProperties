@@ -1,0 +1,167 @@
+#RECORD_LIMIT_SIZE - this limits the maximum size of data record in binary form. The binary form is the form used by Clover 
+#when manipulating data.
+#Parsers are here to convert text representation or database representation of data records to Clover's internal. 
+#Some data can have larger representation in text form - dates, numbers and some shorter - strings, for example 
+#(java stores strings in unicode - 16bits per character).
+#If you start getting buffer overflow or similar errors, increase this value. The limit is theoretically 2^31.
+#This number can be actually pretty huge without any harm on initial memory usage. All internal buffers
+#dedicated to persist records are initially allocated to Record.RECORD_INITIAL_SIZE size
+#and can grow if necessary. This is a limit for the buffer growing.
+Record.RECORD_LIMIT_SIZE = 33554432
+
+#RECORD_INITIAL_SIZE - this is expected upper bounds of record size in binary form. The binary form is the form
+#used by Clover when manipulating data.
+#All internal buffers dedicated to persist a record are initially allocated to this size and can grow if necessary.
+#The overall impact to memory utilization can be huge. Increasing this initial buffer size can slightly
+#increase startup speed in case processing of big records.
+Record.RECORD_INITIAL_SIZE = 65536
+
+#FIELD_LIMIT_SIZE - this limits the maximum size of a field in binary form. The binary form is the form used by Clover 
+#when manipulating data.
+#Parsers are here to convert text representation or database representation of data records to Clover's internal. 
+#Some data can have larger representation in text form - dates, numbers and some shorter - strings, for example 
+#(java stores strings in unicode - 16bits per character).
+#If you start getting buffer overflow or similar errors, increase this value. The limit is theoretically 2^31.
+#This number can be actually pretty huge without any harm on initial memory usage. All internal buffers
+#dedicated to persist fields are initially allocated to Record.FIELD_INITIAL_SIZE size
+#and can grow if necessary. This is a limit for the buffer growing.
+Record.FIELD_LIMIT_SIZE = 33554432
+
+#FIELD_INITIAL_SIZE - this is expected upper bounds of field size in binary form. The binary form is the form
+#used by Clover when manipulating data.
+#All internal buffers dedicated to persist fields are initially allocated to this size and can grow if necessary.
+#The overall impact to memory utilization can be huge. Increasing this initial buffer size can slightly
+#increase startup speed in case processing of big records.
+Record.FIELD_INITIAL_SIZE = 65536
+
+#Compression level for compressed data fields (cbyte).
+Record.DEFAULT_COMPRESSION_LEVEL=5
+
+#This constant determines the internal buffer clover components allocate for I/O operations. 
+#Again, increasing this value does not have big impact on overall memory utilization as only 
+#few such buffers are used at runtime. There is no sense in increasing this value to speed up something. 
+#It has been tested that the performance improvement is negligible. 
+DEFAULT_INTERNAL_IO_BUFFER_SIZE = 32768
+
+DEFAULT_DATE_FORMAT = yyyy-MM-dd
+DEFAULT_TIME_FORMAT = HH\:mm\:ss
+#uncomment this property when locale should be independent on underlying platform otherwise system default locale is used
+#DEFAULT_LOCALE = en.US
+#uncomment this property to override the system default time zone
+#DEFAULT_TIME_ZONE = 'java:America/Chicago';'joda:America/Chicago'
+DEFAULT_DATETIME_FORMAT = yyyy-MM-dd HH\:mm\:ss
+DEFAULT_REGEXP_TRUE_STRING = true|T|TRUE|YES|Y|t|1|yes|y
+DEFAULT_REGEXP_FALSE_STRING = false|F|FALSE|NO|N|f|0|no|n
+
+#Default path to external binary files.
+DEFAULT_BINARY_PATH = ./
+
+#Regex for separator of filenames in list of filenames - path separator.
+DEFAULT_PATH_SEPARATOR_REGEX = \\s*;\\s*
+
+#List of directories, where plugins are located.
+#Paths separator is defined in DEFAULT_PATH_SEPARATOR_REGEX property.
+DEFAULT_PLUGINS_DIRECTORY = ./plugins
+
+#Default charset used when parsing data from text representation
+DataParser.DEFAULT_CHARSET_DECODER = ISO-8859-1
+
+#Default charset used when parsing data from text representation
+DataFormatter.DEFAULT_CHARSET_ENCODER = ISO-8859-1
+
+#Default charset used when parsing source code (CTL or Java)
+DEFAULT_SOURCE_CODE_CHARSET = UTF-8
+
+#the initial capacity of lookup table when created without specifying
+#the size			
+Lookup.LOOKUP_INITIAL_CAPACITY = 512
+
+#Determines default precision of decimal data field metatada.
+# Example: <Field type="decimal" name="usrid" <b>length="10"</b> scale="2" delimiter=";"  nullable="true" />
+DataFieldMetadata.DECIMAL_LENGTH = 12
+
+#Determines default scale od decimal data field metadata.<br>
+# Example: <Field type="decimal" name="usrid" length="10" <b>scale="2"</b> delimiter=";"  nullable="true" />
+DataFieldMetadata.DECIMAL_SCALE = 2
+
+#The number of rows of data that are fetched each time data is fetched;
+#the extra data is stored in client-side buffers for later access by the client.
+# -1 mean unused row prefetch
+OracleConnection.ROW_PREFETCH = 100
+
+#****************************************************************************
+# !!! DO NOT EDIT BELOW UNLESS YOU ARE ABSOLUTELY SURE WHAT YOU ARE DOING !!!
+#****************************************************************************
+
+DataFormatter.DELIMITER_DELIMITERS_REGEX = \\\\\\|
+			
+# ; or | or : , but not := - this is ASSIGN_SIGN
+Component.KEY_FIELDS_DELIMITER_REGEX = \\s*([|;]|\:(?\!\=))\\s*
+Component.KEY_FIELDS_DELIMITER = ;
+					
+WatchDog.WATCHDOG_SLEEP_INTERVAL = 1000
+WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL = 5000
+WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS = 1
+			
+GraphProperties.EXPRESSION_EVALUATION_ENABLED = true
+GraphProperties.EXPRESSION_PLACEHOLDER_REGEX = (?<\!\\\\)`(.*?)(?<\!\\\\)`
+GraphProperties.PROPERTY_PLACEHOLDER_REGEX = \\$\\{(\\w+)\\}
+GraphProperties.PROPERTY_ALLOWED_RECURSION_DEPTH = 1000
+
+InternalSortDataRecord.DEFAULT_INTERNAL_SORT_BUFFER_CAPACITY = 8000
+
+#Size of internal buffer of DirectEdge for storing
+#data records when transmitted between two components.
+#Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE = 24576
+
+
+#Size of internal buffer of BufferedEdge for storing/caching
+#data records. BufferedEdge is used when engine needs to compensate
+#fact that component reads data from two different ports and there might
+#be some interdependencies between the source data flows.
+#Graph.BUFFERED_EDGE_INTERNAL_BUFFER_SIZE = 81920
+
+#Number of internal buffers for storing/buffering records
+#transmitted through FastPropagate Edge. One buffer can
+#store one data record.
+#Minimum size is 1. Default is 4. Higher number can help increasing
+#processing speed but not much.
+Graph.DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS = 4
+
+# type of java compiler, which is used for compilation of java code specified in graphs
+# possible values are: "internal" | "jdk"
+# if "jdk" value is set, tools.jar has to be in classpath
+DEFAULT_JAVA_COMPILER=internal
+
+#string used for recognizing of clover field
+CLOVER_FIELD_INDICATOR = $
+
+#regex used for recognizing of clover field
+CLOVER_FIELD_REGEX = \\$[\\w]+
+
+# Assignation sign in the mappings
+ASSIGN_SIGN = \:\=
+
+#the key name used for incremental reading if the pointer shouldn't be stored
+#in example for view data with grid mode
+INCREMENTAL_STORE_KEY = incremental_store
+
+# List of package prefixes which are excluded from greedy class loading
+# Prevents GreedyClassLoader from loading interfaces and common classes from external libs, which would probably result in ClassCastExceptions
+# GreedyClassLoader is used for JMS implementations, JDBC drivers, transformation classes etc.
+PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING=java.;javax.;sun.misc.
+
+# It determines what is the maximum size of one particular data field for stream mode for writer components. 
+# This value must be less or equal to similar field or record buffers.
+PortReadingWriting.DATA_LENGTH = 2048
+
+# Clover engine intensively uses direct memory for data records manipulation.
+# For example underlying memory of CloverBuffer (serialised data records container)
+# is allocated outside the Java heap space in direct memory.
+# This attribute is <code>true</code> by default due better performance.
+# Since direct memory is out of control java virtual machine, try to turn off 
+# usage of direct memory in case OutOfMemory exception occurs. 
+# USE_DIRECT_MEMORY = true;
+
+# Applies to decimal division and double to decimal assignment.
+# CTL.DECIMAL_PRECISION = 32

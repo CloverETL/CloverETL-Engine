@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?><Graph author="lucie" created="Thu Jul 29 01:29:10 CEST 2010" guiVersion="3.4.0.M2" id="1280360243915" licenseType="Commercial" modified="Wed Mar 06 17:48:04 CET 2013" modifiedBy="Pavel" name="graphDatabaseAccess" revision="1.71" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="," name="customers_loaded" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="id" type="integer"/>
+<Field name="customerid" type="integer"/>
+<Field name="firstname" type="string"/>
+<Field name="lastname" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="," name="rejected" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field auto_filling="ErrCode" name="Error_code" type="integer"/>
+<Field auto_filling="ErrText" name="Error_message" type="string"/>
+<Field name="id" type="integer"/>
+<Field name="customerid" type="integer"/>
+<Field name="firstname" type="string"/>
+<Field name="lastname" type="string"/>
+</Record>
+</Metadata>
+<Connection database="DERBY" dbURL="jdbc:derby://localhost:1527/${DATAIN_DIR}/customers.db" id="Connection0" jdbcSpecific="DERBY" name="Derby" password="app" type="JDBC" user="app"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="260" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="DBExecute component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="285" y="109">
+<attr name="text"><![CDATA[A database table “CUSTOMERS” is created.
+
+Setting the Error Actions attribute to CONTINUE ignores errors generated if the table has already been created.
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="288" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="DBOutputTable" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="228" x="204" y="382">
+<attr name="text"><![CDATA[Question marks correspond to Clover fields, which are mapped to in the same order they appear in the "Clover fields" attribute. Each of the Clover fields are mapped to the DB field corresponding to the SQL query]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" enabled="true" folded="false" height="85" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="12" title="Working with a database (Derby)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="903" x="13" y="11">
+<attr name="text"><![CDATA[We are creating a database table and load specified customer data provided by a .csv file. Information about records not loaded into the newly created table will be stored in a special file. Data and table delete functionality also demonstrated.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="260" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="DBExecute - temporarily disabled" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="313" x="532" y="109">
+<attr name="text"><![CDATA[To delete data and the table, enable the two components. Don't forget to disable all the other ones.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="286" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Info about rejected records" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="189" x="532" y="382">
+<attr name="text"><![CDATA[Created 2 additional errors fields with auto filling- field filled in by the error code/message of a SQL error.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="288" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Data Policy: Lenient" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="183" x="13" y="382">
+<attr name="text"><![CDATA[Ensures that all records (including incorrect ones) are sent to DBOutputTable component]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="0" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="260" id="Note9" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Before running this graph:" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="262" x="13" y="109">
+<attr name="text"><![CDATA[You need to start the embedded Derby database in order to run this graph. Please go to Run -> External Tools and use the provided shortcuts to start/stop the database. (On first start you'll need to go to External Tools Configuration/Program).
+
+- You will find Derby distribution under lib/derby in this project]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node dbConnection="Connection0" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiName="creates table" guiX="343" guiY="285" id="DB_EXECUTE0" type="DB_EXECUTE">
+<attr name="sqlQuery"><![CDATA[create table CUSTOMERS (
+	CUSTOMER_ID INTEGER,
+    FIRST_NAME VARCHAR(80) NOT NULL,
+    LAST_NAME VARCHAR(80),
+    GENDER VARCHAR(80),
+    COUNTRY VARCHAR(80), 
+	CREDIT_CARD_NUMBER VARCHAR(80), AGE INTEGER
+)]]></attr>
+</Node>
+<Node dbConnection="Connection0" enabled="disabled" guiName="deletes data" guiX="552" guiY="285" id="DB_EXECUTE1" type="DB_EXECUTE">
+<attr name="sqlQuery"><![CDATA[DELETE FROM customers]]></attr>
+</Node>
+<Node dbConnection="Connection0" enabled="disabled" guiName="deletes table" guiX="695" guiY="285" id="DB_EXECUTE2" type="DB_EXECUTE">
+<attr name="sqlQuery"><![CDATA[DROP TABLE customers]]></attr>
+</Node>
+</Phase>
+<Phase number="1">
+<Node dataPolicy="lenient" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region_BAD.csv" guiName="reads data" guiX="35" guiY="553" id="DATA_READER0" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Lenient data policy ensures that all records (including incorrect ones) are sent to DBOutputTable component]]></attr>
+</Node>
+<Node append="false" charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/dbaccess_rejected.txt" guiName="rejected report" guiX="785" guiY="553" id="DATA_WRITER0" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Rejected records]]></attr>
+</Node>
+<Node cloverFields="customerid;firstname;lastname;gender;country;creditcard;age;" commit="10" dbConnection="Connection0" enabled="enabled" errorAction="ROLLBACK" guiName="loads data" guiX="256" guiY="553" id="DB_OUTPUT_TABLE0" maxErrors="10" type="DB_OUTPUT_TABLE">
+<attr name="sqlQuery"><![CDATA[INSERT INTO CUSTOMERS (CUSTOMER_ID, FIRST_NAME, LAST_NAME, GENDER, COUNTRY, CREDIT_CARD_NUMBER, AGE)
+VALUES (?,?,?,?,?,?,?)
+RETURNING $id:=AUTO_GENERATED,$customerid:=$customerid, $firstname:=$firstname, $lastname:=$lastname;]]></attr>
+</Node>
+<Node enabled="enabled" guiName="formats info rec." guiX="554" guiY="553" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.Error_code = $0.Error_code;
+	$0.Error_message = $0.Error_message;
+	$0.customerid = $0.customerid;
+	$0.firstname = $0.firstname;
+	$0.lastname = $0.lastname;
+
+	return 0;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+<attr name="guiDescription"><![CDATA[1 Auto generated field
+3 Fields from input file]]></attr>
+</Node>
+<Node debugFilename="${DATATMP_DIR}/customers_loaded.txt" debugPrint="true" enabled="enabled" guiName="data loaded" guiX="532" guiY="695" id="TRASH0" type="TRASH">
+<attr name="guiDescription"><![CDATA[Info about loaded records]]></attr>
+</Node>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="DB_OUTPUT_TABLE0:0"/>
+<Edge fromNode="DB_OUTPUT_TABLE0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (rejected)" toNode="REFORMAT0:0"/>
+<Edge debugMode="true" fromNode="DB_OUTPUT_TABLE0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (autogenerated)" toNode="TRASH0:0"/>
+<Edge fromNode="REFORMAT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>

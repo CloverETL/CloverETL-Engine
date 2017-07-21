@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Fri Jul 30 09:24:17 CEST 2010" guiVersion="0.0.0.devel" id="1253338896057" licenseType="Commercial" modified="Tue May 28 14:29:30 CEST 2013" modifiedBy="sedlacek" name="WebServiceCalls" revision="1.164" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="Forecast" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="FIndexKey" type="long"/>
+<Field name="Desciption" type="string"/>
+<Field name="Low" type="string"/>
+<Field name="High" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="Header" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="HdrIndexKey" type="long"/>
+<Field name="Success" type="string"/>
+<Field name="City" type="string"/>
+<Field name="State" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2">
+<Record name="XMLData" type="delimited">
+<Field eofAsDelimiter="true" name="XMLString" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" enabled="true" folded="false" height="280" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Web Service Call" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="368" x="793" y="23">
+<attr name="text"><![CDATA[ 
+This graph shows a Weather Forecast web service being called.
+
+    *      XML Data is loaded as an XML SOAP request
+    *      This data is then passed to the Web Service
+    *      The SOAP XML data is returned and processed by the XPathReader component
+    *      City, State and Weather Station are returned on the first output port as one record
+    *      Seven days of forecast data is returned as 7 records of data on the second output port
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" enabled="true" folded="false" height="128" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Related Points of Interest" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="468" x="393" y="310">
+<attr name="text"><![CDATA[    *      Any GET, POST or SOAP call can be made
+    *      Simple or Complex data can be parsed either using the XPathReader component or more simple XML can be parsed directly
+    *      Full parameter support
+]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node dataPolicy="lenient" enabled="enabled" fileURL="${DATAIN_DIR}/SOAPWeatherRequest.xml" guiName="Get SOAP Request" guiX="44" guiY="26" id="DATA_READER0" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[XML SOAP request is passed into the graph]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Make SOAP Call" guiX="252" guiY="81" id="HTTP_CONNECTOR0" inputField="XMLString" outputField="XMLString" requestMethod="POST" responseAsFileName="false" type="HTTP_CONNECTOR" url="http://wsf.cdyne.com/WeatherWS/Weather.asmx">
+<attr name="headerProperties"><![CDATA[Content-Type=application/soap+xml
+]]></attr>
+<attr name="guiDescription"><![CDATA[A Web Service is called and the XML SOAP request is passed to it]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Simple GET " guiX="33" guiY="310" id="HTTP_CONNECTOR1" outFileUrl="${DATAOUT_DIR}/GetResult.xml" requestMethod="GET" type="HTTP_CONNECTOR" url="http://wsf.cdyne.com/WeatherWS/Weather.asmx/GetCityForecastByZIP?ZIP=94028">
+<attr name="guiDescription"><![CDATA[A simple GET can also be executed.  This is only shown for illustrative  purposes  and is deliberetely not connected within the graph]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Simple POST" guiX="245" guiY="310" id="HTTP_CONNECTOR2" outFileUrl="${DATAOUT_DIR}/PostResult.xml" requestMethod="POST" type="HTTP_CONNECTOR" url="http://wsf.cdyne.com/WeatherWS/Weather.asmx/GetCityForecastByZIP">
+<attr name="requestContent"><![CDATA[ZIP=94028]]></attr>
+<attr name="headerProperties"><![CDATA[Content-Type=application/x-www-form-urlencoded
+]]></attr>
+<attr name="guiDescription"><![CDATA[A simple POST can also be executed.  This is only shown for illustrative  purposes  and is deliberetely not connected within the graph]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Trash" guiX="650" guiY="73" id="TRASH0" type="TRASH"/>
+<Node debugPrint="true" enabled="enabled" guiName="Trash" guiX="650" guiY="239" id="TRASH1" type="TRASH"/>
+<Node enabled="enabled" fileURL="port:$0.XMLString:discrete" guiName="XMLXPathReader" guiX="437" guiY="145" id="XML_XPATH_READER0" mapping="&lt;Context xpath=&quot;soap:Envelope/soap:Body/GetCityForecastByZIPResponse/GetCityForecastByZIPResult&quot; &#10;     outPort=&quot;0&quot; sequenceField=&quot;HdrIndexKey&quot; &#10;     namespacePaths='&quot;http://ws.cdyne.com/WeatherWS/&quot;;soap=&quot;http://www.w3.org/2003/05/soap-envelope&quot;'&gt;&#10;   &lt;Context xpath=&quot;ForecastResult/Forecast&quot; parentKey=&quot;HdrIndexKey&quot; generatedKey=&quot;FIndexKey&quot; &#10;          outPort=&quot;1&quot;&gt;&#10;&#9;&#9;&lt;Mapping xpath=&quot;Temperatures/MorningLow&quot; cloverField=&quot;Low&quot;/&gt;&#10;&#9;&#9;&lt;Mapping xpath=&quot;Temperatures/DaytimeHigh&quot; cloverField=&quot;High&quot;/&gt;&#10;   &lt;/Context&gt;&#10;&lt;/Context&gt;&#10;" type="XML_XPATH_READER">
+<attr name="guiDescription"><![CDATA[XML data is returned in SOAP format. Complex data can be parsed using XPath and passed to multiply output ports]]></attr>
+</Node>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="HTTP_CONNECTOR0:0"/>
+<Edge debugMode="true" fromNode="HTTP_CONNECTOR0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="XML_XPATH_READER0:0"/>
+<Edge debugMode="true" fromNode="XML_XPATH_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="TRASH0:0"/>
+<Edge debugMode="false" fromNode="XML_XPATH_READER0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="TRASH1:0"/>
+</Phase>
+</Graph>
