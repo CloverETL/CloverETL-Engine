@@ -1,0 +1,2 @@
+someverylongstring;[seaog];split($0.Arg,$0.Regex);[,,m,v,ryl,n,,trin]
+someanotherverylongstring;[setlg];split($0.Arg,$0.Regex);[,om,ano,h,rv,ry,on,,,rin]

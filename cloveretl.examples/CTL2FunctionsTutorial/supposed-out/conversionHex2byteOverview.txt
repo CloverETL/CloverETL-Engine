@@ -1,0 +1,12 @@
+61;hex2byte($0.StringHexadecimal);a
+6263;hex2byte($0.StringHexadecimal);bc
+646566;hex2byte($0.StringHexadecimal);def
+676869;hex2byte($0.StringHexadecimal);ghi
+68656c6c6f776f726c642b2b;hex2byte($0.StringHexadecimal);helloworld++
+61;hex2byte($0.StringHexadecimal);a
+62;hex2byte($0.StringHexadecimal);b
+63;hex2byte($0.StringHexadecimal);c
+64;hex2byte($0.StringHexadecimal);d
+78;hex2byte($0.StringHexadecimal);x
+79;hex2byte($0.StringHexadecimal);y
+7a;hex2byte($0.StringHexadecimal);z
