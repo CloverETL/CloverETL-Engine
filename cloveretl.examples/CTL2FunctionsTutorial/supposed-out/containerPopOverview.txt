@@ -1,0 +1,1 @@
+[milk, butter, meat, apple];pop(List);apple;[milk, butter, meat]
