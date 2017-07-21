@@ -1,0 +1,280 @@
+<Header record>
+	<customer id = 12>
+</Header record>
+<Header record>
+	<customer id = 1>
+</Header record>
+<Header record>
+	<customer id = 2>
+</Header record>
+<Header record>
+	<customer id = 3>
+</Header record>
+<Header record>
+	<customer id = 4>
+</Header record>
+<Header record>
+	<customer id = 5>
+</Header record>
+<Header record>
+	<customer id = 6>
+</Header record>
+<Header record>
+	<customer id = 7>
+</Header record>
+<Header record>
+	<customer id = 8>
+</Header record>
+<Header record>
+	<customer id = 9>
+</Header record>
+<Header record>
+	<customer id = 10>
+</Header record>
+<Header record>
+	<customer id = 11>
+</Header record>
+<Header record>
+	<customer id = 12>
+</Header record>
+<Header record>
+	<customer id = 13>
+</Header record>
+<Header record>
+	<customer id = 14>
+</Header record>
+<Header record>
+	<customer id = 15>
+</Header record>
+<Header record>
+	<customer id = 1>
+</Header record>
+<Header record>
+	<customer id = 2>
+</Header record>
+<Header record>
+	<customer id = 3>
+</Header record>
+<Header record>
+	<customer id = 4>
+</Header record>
+<Header record>
+	<customer id = 5>
+</Header record>
+<Header record>
+	<customer id = 6>
+</Header record>
+<Header record>
+	<customer id = 7>
+</Header record>
+<Header record>
+	<customer id = 8>
+</Header record>
+<Header record>
+	<customer id = 9>
+</Header record>
+<Header record>
+	<customer id = 10>
+</Header record>
+<Header record>
+	<customer id = 11>
+</Header record>
+<Header record>
+	<customer id = 12>
+</Header record>
+<Customer id=12>
+	<last name = Creek>
+	<first name = Jewel>
+</Customer>
+<Customer id=1>
+	<last name = Nowmer>
+	<first name = Sheri>
+</Customer>
+<Customer id=2>
+	<last name = Whelply>
+	<first name = Derrick>
+</Customer>
+<Customer id=3>
+	<last name = Derry>
+	<first name = Jeanne>
+</Customer>
+<Customer id=4>
+	<last name = Spence>
+	<first name = Michael>
+</Customer>
+<Customer id=5>
+	<last name = Gutierrez>
+	<first name = Maya>
+</Customer>
+<Customer id=6>
+	<last name = Damstra>
+	<first name = Robert>
+</Customer>
+<Customer id=7>
+	<last name = Kanagaki>
+	<first name = Rebecca>
+</Customer>
+<Customer id=8>
+	<last name = Brunner>
+	<first name = Kim>
+</Customer>
+<Customer id=9>
+	<last name = Blumberg>
+	<first name = Brenda>
+</Customer>
+<Customer id=10>
+	<last name = Stanz>
+	<first name = Darren>
+</Customer>
+<Customer id=11>
+	<last name = Murraiin>
+	<first name = Jonathan>
+</Customer>
+<Customer id=12>
+	<last name = Creek>
+	<first name = Jewel>
+</Customer>
+<Customer id=13>
+	<last name = Medina>
+	<first name = Peggy>
+</Customer>
+<Customer id=14>
+	<last name = Rutledge>
+	<first name = Bryan>
+</Customer>
+<Customer id=15>
+	<last name = Cavestany>
+	<first name = Walter>
+</Customer>
+<Customer id=1>
+	<last name = Nowmer>
+	<first name = Sheri>
+</Customer>
+<Customer id=2>
+	<last name = Whelply>
+	<first name = Derrick>
+</Customer>
+<Customer id=3>
+	<last name = Derry>
+	<first name = Jeanne>
+</Customer>
+<Customer id=4>
+	<last name = Spence>
+	<first name = Michael>
+</Customer>
+<Customer id=5>
+	<last name = Gutierrez>
+	<first name = Maya>
+</Customer>
+<Customer id=6>
+	<last name = Damstra>
+	<first name = Robert>
+</Customer>
+<Customer id=7>
+	<last name = Kanagaki>
+	<first name = Rebecca>
+</Customer>
+<Customer id=8>
+	<last name = Brunner>
+	<first name = Kim>
+</Customer>
+<Customer id=9>
+	<last name = Blumberg>
+	<first name = Brenda>
+</Customer>
+<Customer id=10>
+	<last name = Stanz>
+	<first name = Darren>
+</Customer>
+<Customer id=11>
+	<last name = Murraiin>
+	<first name = Jonathan>
+</Customer>
+<Customer id=12>
+	<last name = Creek>
+	<first name = Jewel>
+</Customer>
+<Footer record>
+	<account number = 87579238400>
+</Footer record>
+<Footer record>
+	<account number = 87462027264>
+</Footer record>
+<Footer record>
+	<account number = 87470587904>
+</Footer record>
+<Footer record>
+	<account number = 87475757056>
+</Footer record>
+<Footer record>
+	<account number = 87500480512>
+</Footer record>
+<Footer record>
+	<account number = 87514054656>
+</Footer record>
+<Footer record>
+	<account number = 87517782016>
+</Footer record>
+<Footer record>
+	<account number = 87521173504>
+</Footer record>
+<Footer record>
+	<account number = 87539744768>
+</Footer record>
+<Footer record>
+	<account number = 87544799232>
+</Footer record>
+<Footer record>
+	<account number = 87568711680>
+</Footer record>
+<Footer record>
+	<account number = 87572824064>
+</Footer record>
+<Footer record>
+	<account number = 87579238400>
+</Footer record>
+<Footer record>
+	<account number = 87587119104>
+</Footer record>
+<Footer record>
+	<account number = 87592624128>
+</Footer record>
+<Footer record>
+	<account number = 87597752320>
+</Footer record>
+<Footer record>
+	<account number = 87462027264>
+</Footer record>
+<Footer record>
+	<account number = 87470587904>
+</Footer record>
+<Footer record>
+	<account number = 87475757056>
+</Footer record>
+<Footer record>
+	<account number = 87500480512>
+</Footer record>
+<Footer record>
+	<account number = 87514054656>
+</Footer record>
+<Footer record>
+	<account number = 87517782016>
+</Footer record>
+<Footer record>
+	<account number = 87521173504>
+</Footer record>
+<Footer record>
+	<account number = 87539744768>
+</Footer record>
+<Footer record>
+	<account number = 87544799232>
+</Footer record>
+<Footer record>
+	<account number = 87568711680>
+</Footer record>
+<Footer record>
+	<account number = 87572824064>
+</Footer record>
+<Footer record>
+	<account number = 87579238400>
+</Footer record>

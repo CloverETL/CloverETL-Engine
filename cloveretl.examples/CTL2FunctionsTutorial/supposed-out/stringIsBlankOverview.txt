@@ -1,0 +1,6 @@
+test;isBlank($0.Arg);false
+têst;isBlank($0.Arg);false
+5;isBlank($0.Arg);false
+123456732325;isBlank($0.Arg);false
+;isBlank($0.Arg);true
+1234.28e-3;isBlank($0.Arg);false
