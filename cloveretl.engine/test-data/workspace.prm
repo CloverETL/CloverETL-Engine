@@ -1,0 +1,6 @@
+# example:
+# WORKSPACE = c:\\cloverETL\\examples
+# WORKSPACE = /home/cloverETL/examples
+WORKSPACE = c:/Users/Pavel/workspace_klara/cloveretl.examples.commercial
+EMAILS_SOURCE = ${WORKSPACE}/data/email/emails_7_greylisting.txt
+EMAIL_FILTER_LEVEL=SYNTAX

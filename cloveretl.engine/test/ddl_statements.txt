@@ -1,0 +1,51 @@
+CREATE TABLE asd.pet
+(
+	pet.xyz VARCHAR2(20),
+	owner VARCHAR(20),
+	species VARCHAR(20),
+	sex CHAR(1),			/* komentar */
+	birth DATE, 			// a propo
+	death TIMESTAMP
+);
+
+
+/*klementain*/
+
+CREATE TABLE pet2
+(
+	name boolean,
+	owner float,
+	species integer,
+	sex CHAR(1),
+	birth DATE,
+	death DATE
+);
+
+CREATE TABLE Zamestnanci (
+    OsobniCislo int NOT NULL PRIMARY KEY,
+    Jmeno       varchar(40),
+    RC          char(11),
+    Adresa      varchar(60),
+    Plat        decimal(10,2));
+
+CREATE TABLE Proj_Zam (
+    ID_Projektu char(6) NOT NULL,
+    OsobniCislo int NOT NULL,
+    PRIMARY KEY (ID_Projektu, OsobniCislo));
+
+CREATE TABLE Person 
+(
+LastName varchar,
+FirstName varchar,
+Address varchar,
+Age int
+);
+
+
+CREATE TABLE employee
+(
+id INT(3) NOT NULL,
+Lastname VARCHAR(50),
+Firstname VARCHAR(25),
+Title VARCHAR(10) DEFAULT 'crew' NULL
+);
