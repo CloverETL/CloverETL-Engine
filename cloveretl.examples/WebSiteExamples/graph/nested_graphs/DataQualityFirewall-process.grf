@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Jaro" created="Fri Jul 20 16:07:43 CEST 2012" guiVersion="3.3.0.M3" id="1342794075845" licenseType="Commercial" modified="Mon Sep 03 14:58:11 CEST 2012" modifiedBy="Wesley" name="process_incoming" revision="1.12" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/employees.fmt" id="Metadata0"/>
+<Property id="GraphParameter0" name="INPUT_PATH" value="${DATAIN_DIR}/05-ErrorHandling-DataQualityFirewall/employees.csv"/>
+<Property fileURL="workspace.prm" id="GraphParameter1"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="107" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Description" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="417" x="20" y="20">
+<attr name="text"><![CDATA[
+1. Sample graph demonstrating processing of data - it just reads them. 
+
+2. The Trash component simulates output to database.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${INPUT_PATH}" guiHeight="67" guiName="UniversalDataReader" guiWidth="148" guiX="20" guiY="165" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="67" guiName="Trash" guiWidth="128" guiX="309" guiY="165" id="TRASH0" type="TRASH"/>
+<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="TRASH0:0"/>
+</Phase>
+</Graph>
