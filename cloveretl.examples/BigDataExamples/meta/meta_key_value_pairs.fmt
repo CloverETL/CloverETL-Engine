@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter="|" name="meta_key_value_pairs"
+        previewAttachmentCharset="ISO-8859-1"
+        recordDelimiter="\n"
+        type="delimited">
+   <Field name="key_year_month" type="string"/>
+   <Field name="value_ip_address" type="string"/>
+</Record>
