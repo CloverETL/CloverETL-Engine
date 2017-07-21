@@ -1,0 +1,51 @@
+CustomerState;NumberOfCustomers
+Alabama;410
+Alaska;399
+Arizona;390
+Arkansas;393
+California;390
+Colorado;408
+Connecticut;394
+Delaware;414
+Florida;416
+Georgia;363
+Hawaii;436
+Idaho;380
+Illinois;376
+Indiana;411
+Iowa;373
+Kansas;389
+Kentucky;419
+Louisiana;390
+Maine;405
+Maryland;374
+Massachusetts;415
+Michigan;407
+Minnesota;416
+Mississippi;406
+Missouri;377
+Montana;392
+Nebraska;377
+Nevada;401
+New Hampshire;408
+New Jersey;430
+New Mexico;421
+New York;412
+North Carolina;421
+North Dakota;400
+Ohio;361
+Oklahoma;411
+Oregon;424
+Pennsylvania;405
+Rhode Island;395
+South Carolina;388
+South Dakota;404
+Tennessee;418
+Texas;390
+Utah;394
+Vermont;425
+Virginia;396
+Washington;399
+West Virginia;370
+Wisconsin;399
+Wyoming;363
