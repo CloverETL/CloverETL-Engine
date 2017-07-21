@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mapping>
+    <globalAttributes>
+        <orientation>VERTICAL</orientation>
+        <step>1</step>
+        <writeHeader>false</writeHeader>
+    </globalAttributes>
+    <checkboxState>true</checkboxState>
+    <headerGroups>
+        <headerGroup skip="1">
+            <cloverField>A</cloverField>
+            <headerRanges>
+                <headerRange begin="A1"/>
+            </headerRanges>
+            <formatField>B</formatField>
+        </headerGroup>
+        <headerGroup skip="1">
+            <autoMappingType>EXPLICIT</autoMappingType>
+            <headerRanges>
+                <headerRange begin="J1"/>
+            </headerRanges>
+            <formatField>L</formatField>
+        </headerGroup>
+        <headerGroup skip="1">
+            <cloverField></cloverField>
+            <headerRanges>
+                <headerRange begin="D1"/>
+            </headerRanges>
+            <formatField>E</formatField>
+        </headerGroup>
+        <headerGroup skip="1">
+            <cloverField>J</cloverField>
+            <headerRanges>
+                <headerRange begin="I2"/>
+            </headerRanges>
+            <formatField>K</formatField>
+        </headerGroup>
+        <headerGroup skip="2">
+            <cloverField></cloverField>
+            <headerRanges>
+                <headerRange begin="C1"/>
+            </headerRanges>
+            <formatField>D</formatField>
+        </headerGroup>
+        <headerGroup skip="1">
+            <autoMappingType>EXPLICIT</autoMappingType>
+            <headerRanges>
+                <headerRange begin="E1"/>
+            </headerRanges>
+            <formatField>F</formatField>
+        </headerGroup>
+        <headerGroup skip="1">
+            <autoMappingType>EXPLICIT</autoMappingType>
+            <headerRanges>
+                <headerRange begin="B1"/>
+            </headerRanges>
+            <formatField>C</formatField>
+        </headerGroup>
+        <headerGroup skip="3">
+            <autoMappingType>EXPLICIT</autoMappingType>
+            <headerRanges>
+                <headerRange begin="F1"/>
+            </headerRanges>
+            <formatField>G</formatField>
+        </headerGroup>
+        <headerGroup skip="1">
+            <autoMappingType>EXPLICIT</autoMappingType>
+            <headerRanges>
+                <headerRange begin="H1"/>
+            </headerRanges>
+            <formatField>I</formatField>
+        </headerGroup>
+        <headerGroup skip="1">
+            <autoMappingType>EXPLICIT</autoMappingType>
+            <headerRanges>
+                <headerRange begin="G1"/>
+            </headerRanges>
+            <formatField>H</formatField>
+        </headerGroup>
+    </headerGroups>
+</mapping>

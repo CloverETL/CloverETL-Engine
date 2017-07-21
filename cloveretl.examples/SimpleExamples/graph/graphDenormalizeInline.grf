@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline Java source." guiVersion="0.0.0.devel" id="1204545320021" licenseType="Evaluation Devel" modified="Tue May 24 12:47:39 CEST 2011" modifiedBy="avackova" name="Denormalize graph" revision="1.56" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/delimited/Orders1.fmt" id="Metadata0"/>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="customers" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="customers_count" type="integer">
+<attr name="description"><![CDATA[This field contains number of customers, that are listed in 'customers' field.]]></attr>
+</Field>
+<Field name="customers" type="string"/>
+<Field name="EmployeeID" type="integer"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="256" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the Denormalizer Component (Java)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="868" x="21" y="129">
+<attr name="text"><![CDATA[
+Denormalizer processes groups of data records with the same value of Key. 
+
+If records with the same value of Key are not adjacent to each other and are separated by any other Key value, such records are considered to be different groups of records. For this reason, if you do not want to process non-adjacent records as separate groups, sort the records on specified Key before they are processed by Denormalizer.
+
+Records are sorted on EmployeeID (Sort order is set to Ascending). After that, all records with the same value of Key are appended to each other (the append() function is used) and the information that is gathered is used to create output records in the transform() function. These are sent to the connected output port.
+
+In this graph, all customers for each employee are concatenated using white spaces and hyphens. 
+
+After processing every group of records, before processing the next key value, the clean() function is used to return the settings to the initial state.
+
+Transformation is defined in Java directly in the graph. It can be seen in the Source code and is compiled at runtime.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiHeight="103" guiName="Denormalizer" guiWidth="128" guiX="386" guiY="17" id="DENORMALIZE" key="EmployeeID" order="Asc" type="DENORMALIZER">
+<attr name="guiDescription"><![CDATA[All customers for each employee are concatenated using white spaces and hyphens.]]></attr>
+<attr name="denormalize"><![CDATA[
+import org.jetel.component.denormalize.DataRecordDenormalize;
+import org.jetel.data.*;
+
+public class DenormalizeTestInline extends DataRecordDenormalize {
+	private int recNum = 0;
+	private String customerID = "";
+	private int employeeID;
+
+	public DenormalizeTestInline() {
+	}
+
+	public int append(DataRecord inRecord) {
+		recNum++;
+		customerID = customerID + (customerID.length() > 0 ? " - " : "") + inRecord.getField("CustomerID");
+		employeeID = (Integer)inRecord.getField("EmployeeID").getValue();
+		return 0;
+	}
+	public int transform(DataRecord outRecord) {
+		outRecord.getField("EmployeeID").setValue(employeeID);
+		outRecord.getField("customers").setValue(customerID);
+		outRecord.getField("customers_count").setValue(recNum);
+		return 0;
+	}
+
+	public void clean(){
+		recNum = 0;
+		customerID = "";
+	}
+}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="103" guiName="ExtSort" guiWidth="128" guiX="194" guiY="17" id="EXT_SORT0" sortKey="EmployeeID(a)" type="EXT_SORT"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.sorted" guiHeight="103" guiName="Orders Sorted" guiWidth="132" guiX="20" guiY="17" id="INPUT1" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Reads input data]]></attr>
+<attr name="DataPolicy"><![CDATA[Strict]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/denormalized.out" guiHeight="86" guiName="Customers Grouped for Each Employee" guiWidth="309" guiX="582" guiY="17" id="WRITER" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="DENORMALIZE:0" guiBendpoints="" guiRouter="Manhattan" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DENORMALIZE:0"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="EXT_SORT0:0"/>
+</Phase>
+</Graph>

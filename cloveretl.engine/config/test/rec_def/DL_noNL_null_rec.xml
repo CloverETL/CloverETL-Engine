@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record name="FERC423" type="delimited">
+	<Field name="Sales" type="numeric" delimiter=";" nullable="yes"/> 
+	<Field name="PLANT_NAME" type="string" delimiter=";" nullable="yes"/> 
+	<Field name="ID" type="integer" delimiter=";"" nullable="yes"/> 
+	<Field name="EXP_DT" type="date" delimiter=";" format="MM/dd/yy" nullable="yes"/>
+</Record>

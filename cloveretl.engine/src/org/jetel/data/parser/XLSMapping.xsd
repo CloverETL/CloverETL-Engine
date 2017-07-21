@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.cloveretl.com/ns/xlsmapping"
+	xmlns:tns="http://www.cloveretl.com/ns/xlsmapping">
+
+	<element name="mapping" type="tns:mappingType" />
+
+	<complexType name="mappingType">
+		<sequence>
+			<element name="globalAttributes" type="tns:globalAttributesType" />
+			<element name="headerGroups">
+				<complexType>
+					<sequence>
+						<element name="headerGroup" type="tns:headerGroupType"
+							maxOccurs="unbounded" minOccurs="1" />
+					</sequence>
+				</complexType>
+			</element>
+		</sequence>
+	</complexType>
+
+	<complexType name="globalAttributesType">
+		<sequence>
+			<element name="step" minOccurs="0"> <!-- default value is 1 -->
+				<simpleType>
+					<restriction base="integer">
+						<minInclusive value="1" />
+					</restriction>
+				</simpleType>
+			</element>
+			<element name="orientation" minOccurs="0"> <!-- default value is HORIZONTAL -->
+				<simpleType>
+					<restriction base="string">
+						<enumeration value="HORIZONTAL" />
+						<enumeration value="VERTICAL" />
+					</restriction>
+				</simpleType>
+			</element>
+			<element name="writeHeader" type="boolean" minOccurs="0" /> <!-- default value is false -->
+		</sequence>
+	</complexType>
+
+	<complexType name="headerGroupType">
+		<sequence>
+			<choice>
+				<element name="cloverField" type="string" minOccurs="0" />
+				<element ref="tns:autoMappingType" minOccurs="0" />
+			</choice>
+			<element name="headerRanges">
+				<complexType>
+					<sequence>
+						<element name="headerRange" type="tns:headerRangeType"
+							maxOccurs="unbounded" minOccurs="1" />
+					</sequence>
+				</complexType>
+			</element>
+		</sequence>
+		<attribute name="skip" type="nonNegativeInteger" use="optional" /> <!-- default value is 0 -->
+	</complexType>
+
+	<complexType name="headerRangeType">
+		<attribute name="begin" type="tns:headerCoordinates" use="required" />
+		<attribute name="end" type="tns:headerCoordinates" use="optional" />
+	</complexType>
+
+	<simpleType name="headerCoordinates">
+		<restriction base="string">
+			<pattern value="[A-Z]{1,3}[1-9][0-9]{0,6}" />
+		</restriction>
+	</simpleType>
+
+	<element name="autoMappingType">
+		<simpleType>
+			<restriction base="string"> <!-- default value is NAME if header is present, ORDER otherwise -->
+				<enumeration value="AUTO" />
+				<enumeration value="NAME" />
+				<enumeration value="ORDER" />
+			</restriction>
+		</simpleType>
+	</element>
+
+</schema>

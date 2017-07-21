@@ -1,0 +1,92 @@
+//---------------------------------------------------------------------------------------------------------------------
+@Typed
+class GroovyRecordTransform implements RecordTransform {
+
+  CustomClass custom
+	
+	public GroovyRecordTransform()
+	{
+	}
+	
+	@Override
+	public void setNode(Node node) {
+	}
+
+	@Override
+	public Node getNode() {
+		return null
+	}
+
+	@Override
+	public TransformationGraph getGraph() {
+		return null
+	}
+
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+
+	}
+
+	@Override
+	public void postExecute() throws ComponentNotReadyException {
+
+	}
+
+	@Override
+	public String getMessage() {
+
+	}
+
+	@Override
+	public boolean init(Properties parameters, DataRecordMetadata[] sourcesMetadata, DataRecordMetadata[] targetMetadata)
+			throws ComponentNotReadyException {
+    
+    	custom = new CustomClass()
+    	
+    	return true
+	}
+
+	@Override
+	public int transform(DataRecord[] sources, DataRecord[] target) throws TransformException {
+     
+		custom.input.setData(sources)
+		custom.output.setData(target)
+		 
+		custom.transform()
+		
+		return 0
+	}
+  
+	@Override
+	public int transformOnError(Exception exception, DataRecord[] sources, DataRecord[] target)
+			throws TransformException {
+			
+    	/*custom.input.setData(sources)
+     	custom.output.setData(target)
+     
+     	custom.transformOnError(exception)*/
+    	
+    	return 0
+	}
+	
+	@Override
+	public void finished() {
+	}
+
+	@Override
+	public void reset() {
+	}
+	
+	@Override
+	public void signal(Object signalObject) {
+	}
+
+	@Override
+	public Object getSemiResult() {
+		return null
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+new GroovyRecordTransform()
+
