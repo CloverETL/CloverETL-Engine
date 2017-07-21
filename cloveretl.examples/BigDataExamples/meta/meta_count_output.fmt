@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?><Record fieldDelimiter="\t" name="meta_count_output" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field label="Year and Month" name="year_month" type="string"/>
+<Field label="Number of Unique Visitors" name="ip_count" type="long"/>
+</Record>
