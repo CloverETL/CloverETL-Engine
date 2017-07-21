@@ -1,0 +1,6 @@
+id,file_name,attachment_name,account_id
+1,attachment_1.dat,email_export.txt,20
+2,attachment_2.dat,nda.pdf,5
+3,attachment_3.dat,po.pdf,15
+4,,po.pdf,73
+5,attachment_3.dat,,15
