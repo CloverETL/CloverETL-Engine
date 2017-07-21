@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter="#" name="Customer" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="true" name="xml" nullable="true" shift="0" type="string"/>
+</Record>
