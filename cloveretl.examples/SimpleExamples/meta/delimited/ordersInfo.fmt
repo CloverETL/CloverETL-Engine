@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="ORDERS_Info" recordDelimiter="\n" type="delimited">
+<Field name="ORDERID" nullable="true" type="number"/>
+<Field name="CUSTOMERID" nullable="true" type="string"/>
+<Field name="CUSTOMER" nullable="true" type="string"/>
+<Field name="PRODUCTID" nullable="true" type="number"/>
+<Field name="UNITPRICE" nullable="true" type="number"/>
+<Field locale="en.US" name="PRICE_PER_UNIT" nullable="true" type="number"/>
+<Field name="QUANTITY" nullable="true" type="number"/>
+<Field name="DISCOUNT" nullable="true" type="number"/>
+<Field locale="en.US" name="SHIPTIME" nullable="true" type="integer"/>
+</Record>

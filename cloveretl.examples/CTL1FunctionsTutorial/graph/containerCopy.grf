@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Thu Dec 18 10:28:44 CET 2008" guiVersion="0.0.0.devel" id="1229608164792" licenseType="Evaluation license." modified="Fri May 15 13:59:43 CEST 2009" modifiedBy="cloveruser" name="container_push" revision="1.60">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="copyInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="List1Element0" type="string"/>
+<Field name="List1Element1" type="string"/>
+<Field name="List1Element2" type="string"/>
+<Field name="List2Element0" type="string"/>
+<Field name="List2Element1" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="copyOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="List1" type="string"/>
+<Field name="List2" type="string"/>
+<Field name="Function" type="string"/>
+<Field name="ReturnValue" type="string"/>
+<Field name="NewValueOfList1" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="152" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="list copy(list List1, list List2)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="420" x="69" y="34">
+<attr name="text"><![CDATA[
+The copy(list, list) function accepts two arguments, each of them is list. Elements of all lists must be of the same data type. The function takes the second argument, adds it to the end of the first list and returns it as a new list. Thus, the resulting list is a sum of both lists specified as arguments. Remember that also the list specified as the first argument changes to this new value.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="139" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="421" x="68" y="198">
+<attr name="text"><![CDATA[
+Here we use lists consisting of string elements. 
+List1 consists of 3 elements. 
+List2 consists of 2 elements. 
+copy(List1, List2) returns a new list of five string elements. 
+And the new value of List1 is this return value of the function.]]></attr>
+</Note>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/containerCopy.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="66" guiY="352" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/containerCopyOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="458" guiY="352" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="268" guiY="352" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+
+//Declarations.
+list list1;
+list list2;
+list list3;
+
+// Creates the first list.
+push(list1,$0.List1Element0);
+push(list1,$0.List1Element1);
+push(list1,$0.List1Element2);
+
+// Creates the second list.
+push(list2,$0.List2Element0);
+push(list2,$0.List2Element1);
+
+//Adds the second to the first list.
+list3=copy(list1,list2);
+
+//Prints the two lists, the return value of the function and the new value of list1.
+$0.List1 := concat("[",list1[0],",",list1[1],",",list1[2],"]");
+$0.List2 := concat("[",list2[0],",",list2[1],"]");
+$0.Function := "copy(List1,List2)";
+$0.ReturnValue := concat("[",list3[0],",",list3[1],",",list3[2],",",list3[3],",",list3[4],"]");
+$0.NewValueOfList1 := concat("[",list1[0],",",list1[1],",",list1[2],",",list1[3],",",list1[4],"]");
+}
+
+// Called during component initialization.
+//function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record name="Bigodata_dbf" type="fixed" dataOffset="193" recordSize="101" charset="US-ASCII">
+	<Field name="_IS_DELETED_" type="string" size="1" nullable="true" />
+	<Field name="ORDERID" type="number" size="20" nullable="true" />
+	<Field name="PRODUCTID" type="number" size="20" nullable="true" />
+	<Field name="UNITPRICE" type="number" size="20" nullable="true" />
+	<Field name="QUANTITY" type="number" size="20" nullable="true" />
+	<Field name="DISCOUNT" type="number" size="20" nullable="true" />
+</Record>
