@@ -1,0 +1,76 @@
+#!/bin/sh
+
+# this script was inspired by practices gained from ant run scripts (http://ant.apache.org/)
+
+
+# usage
+# analyzeDB <analyze_arguments>
+# example:
+# analyzeDB -config interbase.cfg -o employee.fmt -q "select * from EMPLOYEE"
+
+#define CLOVER_HOME variable
+if [ -z "$CLOVER_HOME" -o ! -d "$CLOVER_HOME" ] ; then
+	## resolve links - $0 may be a link to clover's home
+	PRG="$0"
+	progname=`basename "$0"`
+
+	# need this for relative symlinks
+	while [ -h "$PRG" ] ; do
+		ls=`ls -ld "$PRG"`
+		link=`expr "$ls" : '.*-> \(.*\)$'`
+		if expr "$link" : '/.*' > /dev/null; then
+			PRG="$link"
+		else
+			PRG=`dirname "$PRG"`"/$link"
+		fi
+	done
+
+	CLOVER_HOME=`dirname "$PRG"`/..
+	# make it fully qualified
+	CLOVER_HOME=`cd "$CLOVER_HOME" && pwd`
+fi
+
+cmd_line_arguments=
+
+while [ "$*" != "" ]
+do
+	cmd_line_arguments="$cmd_line_arguments \"$1\""
+	shift
+done
+
+# set java command
+if [ -z "$JAVACMD" ] ; then
+	if [ -n "$JAVA_HOME"  ] ; then
+		if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
+			# IBM's JDK on AIX uses strange locations for the executables
+			JAVACMD="$JAVA_HOME/jre/sh/java"
+		else
+			JAVACMD="$JAVA_HOME/bin/java"
+		fi
+	else
+		JAVACMD=`which java 2> /dev/null `
+		if [ -z "$JAVACMD" ] ; then
+			JAVACMD=java
+		fi
+	fi
+fi
+
+if [ ! -x "$JAVACMD" ] ; then
+	echo "Error: JAVA_HOME is not defined correctly."
+	echo "  We cannot execute $JAVACMD"
+	exit 1
+fi
+
+
+# set CLOVER_LIB location
+CLOVER_LIB="${CLOVER_HOME}/lib"
+
+for i in $CLOVER_LIB/*.jar $CLOVER_LIB/*.zip; do
+	LOCAL_CLASSPATH="$LOCAL_CLASSPATH:$i"
+done;
+
+LOCAL_CLASSPATH="$LOCAL_CLASSPATH:$CLOVER_HOME/plugins/org.jetel.connection/cloveretl.connection.jar"
+
+clover_exec_command="exec \"$JAVACMD\" -classpath \"$LOCAL_CLASSPATH\" org.jetel.connection.jdbc.AnalyzeDB $cmd_line_arguments -plugins $CLOVER_HOME/plugins"
+echo "$clover_exec_command"
+eval "$clover_exec_command"

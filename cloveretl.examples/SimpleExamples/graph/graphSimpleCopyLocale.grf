@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of SimpleCopy component. Everything brought to SimpleCopy on port 0 is&#10;duplicated onto all connected output ports.&#10;It also shows functionality of Trash Component. It discards everything which is sent into it. Its purpose&#10;is debugging - shows how many records ended in it and can print incoming records, if desired (option debugPrint)&#10;&#10;Metadata in this graph is embedded directly to graph instead of external file.&#10;Output metadata is the same as input except that for BirthDate and HireDate, locale&#10;property is defined. It allows to specify language or language.Country locale&#10;which is used when formatting output.&#10;In this example, date info on input is expected to be in dd/MM/yyyy format, wherease&#10;on output it should follow US/UK standard -&gt; (usually defined as MM/dd/YYYY)." guiVersion="0.0.0.devel" id="1196683146888" licenseType="Evaluation Devel" modified="Mon Jun 13 11:11:37 CEST 2011" modifiedBy="avackova" name="Testing Simple Copy" revision="1.27" showComponentDetails="true">
+<Global>
+<Metadata id="OutMetadata" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="Employees" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field name="EmployeeID" nullable="true" shift="0" type="string"/>
+<Field format="#" name="LastName" nullable="true" shift="0" type="string"/>
+<Field name="FirstName" nullable="true" shift="0" type="string"/>
+<Field name="Title" nullable="true" shift="0" type="string"/>
+<Field name="TitleInCourtesy" nullable="true" shift="0" type="string"/>
+<Field locale="en.US" name="BirthDate" nullable="true" shift="0" type="date"/>
+<Field locale="en.UK" name="HireDate" nullable="true" shift="0" type="date"/>
+<Field name="Address" nullable="true" shift="0" type="string"/>
+<Field name="City" nullable="true" shift="0" type="string"/>
+<Field name="Region" nullable="true" shift="0" type="string"/>
+<Field name="PostalCode" nullable="true" shift="0" type="string"/>
+<Field name="Country" nullable="true" shift="0" type="string"/>
+<Field name="Phone" nullable="true" shift="0" type="string"/>
+<Field name="Extension" nullable="true" shift="0" type="string"/>
+<Field name="Photo" nullable="true" shift="0" type="string"/>
+<Field name="Memo" nullable="true" shift="0" type="string"/>
+<Field format="#" name="ReportsTo" nullable="true" shift="0" type="number"/>
+</Record>
+</Metadata>
+<Metadata id="InMetadata" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="Employees" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field name="EmployeeID" nullable="true" shift="0" type="string"/>
+<Field name="LastName" nullable="true" shift="0" type="string"/>
+<Field name="FirstName" nullable="true" shift="0" type="string"/>
+<Field name="Title" nullable="true" shift="0" type="string"/>
+<Field name="TitleInCourtesy" nullable="true" shift="0" type="string"/>
+<Field format="dd/MM/yyyy HH:mm:ss" name="BirthDate" nullable="true" shift="0" type="date"/>
+<Field format="dd/MM/yyyy HH:mm:ss" name="HireDate" nullable="true" shift="0" type="date"/>
+<Field name="Address" nullable="true" shift="0" type="string"/>
+<Field name="City" nullable="true" shift="0" type="string"/>
+<Field name="Region" nullable="true" shift="0" type="string"/>
+<Field name="PostalCode" nullable="true" shift="0" type="string"/>
+<Field name="Country" nullable="true" shift="0" type="string"/>
+<Field name="Phone" nullable="true" shift="0" type="string"/>
+<Field name="Extension" nullable="true" shift="0" type="string"/>
+<Field name="Photo" nullable="true" shift="0" type="string"/>
+<Field name="Memo" nullable="true" shift="0" type="string"/>
+<Field format="#" name="ReportsTo" nullable="true" shift="0" type="number"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiHeight="101" guiName="Change format" guiWidth="137" guiX="204" guiY="24" id="BROADCAST" type="SIMPLE_COPY">
+<attr name="guiDescription"><![CDATA[Metadata on the output differ from those on input: date data fields of the input have specified format (dd/MM/yyyy). Their output equivalents use locale (en.US). Thus, format of date changes, but dates are the same.]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.dat" guiHeight="101" guiName="Employees" guiWidth="128" guiX="0" guiY="24" id="INPUT1" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Employees formatted according to InMetadata]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employees_locale.dat" guiHeight="101" guiName="Employees" guiWidth="128" guiX="408" guiY="24" id="OUTPUT1" type="DATA_WRITER">
+<attr name="dataPolicy"><![CDATA[Strict]]></attr>
+<attr name="guiDescription"><![CDATA[Employees formatted according to OutMetadata]]></attr>
+</Node>
+<Edge fromNode="BROADCAST:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="OutMetadata" outPort="Port 0 (out)" toNode="OUTPUT1:0"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 0 (output)" router="Manhattan" toNode="BROADCAST:0"/>
+</Phase>
+</Graph>

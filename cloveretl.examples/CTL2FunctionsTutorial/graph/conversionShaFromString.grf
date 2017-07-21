@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Wed Jul 15 09:57:30 CEST 2009" guiVersion="0.0.0.devel" id="1247650020462" licenseType="Evaluation Devel" modified="Thu Apr 14 13:55:17 CEST 2011" modifiedBy="cloveruser" name="conversionShaFromString" revision="1.56">
+<Global>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="ShaFromStringInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="InputString" nullable="true" shift="0" size="0" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="ShaFromStringOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="InputString" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="Function" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="Result" nullable="true" shift="0" size="0" type="byte"/>
+<Field eofAsDelimiter="false" name="ResultHex" nullable="true" shift="0" size="0" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="150" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="byte sha(string arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="426" x="27" y="13">
+<attr name="text"><![CDATA[
+The sha(string) function accepts one argument of string data type. It takes this argument and calculates its SHA hash value.
+The result is also displayed in its hexadecimal representation since some bytes are unprintable.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionShaFromString.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="30" guiY="199" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionShaFromStringOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="433" guiY="199" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="236" guiY="199" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.InputString = $0.InputString;
+	$0.Function = "sha($0.InputString)";
+	$0.Result = sha($0.InputString);
+	$0.ResultHex = byte2hex(sha($0.InputString));
+
+	return 0;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT1:0"/>
+<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
+</Phase>
+</Graph>
