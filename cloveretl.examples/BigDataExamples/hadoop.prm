@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GraphParameters>
+<GraphParameter name="HADOOP_HIVE_URL" value="jdbc:hive2://hive.yourhost.com:10000/default"/>
+<GraphParameter name="HADOOP_JOBTRACKER_HOST" value="jobtracker.yourhost.com"/>
+<GraphParameter name="HADOOP_NAMENODE_HOST" value="namenode.yourhost.com"/>
+</GraphParameters>
