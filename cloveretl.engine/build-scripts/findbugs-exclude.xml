@@ -1,0 +1,48 @@
+<FindBugsFilter>
+     <Match>
+       <Class name="~org\.jetel\.interpreter\.[^.]+Parser" />
+     </Match>
+     <Match>
+       <Class name="~org\.jetel\.interpreter\.[^.]+Visitor" />
+     </Match>
+     <Match>
+       <Class name="~org\.jetel\.interpreter\.Token[^.]*" />
+     </Match>
+
+     <Match>
+       <Class name="org.jetel.interpreter.JavaCharStream" />
+     </Match>
+     <Match>
+       <Class name="org.jetel.interpreter.SimpleCharStream" />
+     </Match>
+     <Match>
+       <Class name="org.jetel.interpreter.JJTTransformLangParserState" />
+     </Match>
+     <Match>
+       <Class name="org.jetel.interpreter.ParseException" />
+     </Match>
+     <Match>
+       <Class name="~org\.jetel\.interpreter\.TransformLangParser[^.]*" />
+     </Match>
+     
+     <Match>
+       <Package name="~com\.google.*" />
+     </Match>
+     <Match>
+       <Package name="~org\.apache.*" />
+     </Match>
+     <Match>
+       <Package name="~org\.slf4j.*" />
+     </Match>
+
+     <Match>
+     	<Bug code="PZLA" />
+     </Match>
+     <Match>
+     	<Bug code="UwF" />
+     </Match>
+     <Match>
+     	<Bug code="Dm" />
+     </Match>
+
+</FindBugsFilter>

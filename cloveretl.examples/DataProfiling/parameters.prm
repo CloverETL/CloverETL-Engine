@@ -1,0 +1,7 @@
+#Wed Dec 23 10:00:41 GMT+01:00 2009
+input_file=${DATAIN_DIR}/ORDERS.xls
+WRITER_TYPE=STRUCTURE_WRITER
+metadata=${META_DIR}/orders.fmt
+READER_TYPE=XLS_READER
+DATE_FORMAT=dd/MM/yyyy HH\:mm\:ss
+charset=ISO-8859-1
