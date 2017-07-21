@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation license." modified="Fri May 15 14:16:49 CEST 2009" modifiedBy="cloveruser" name="string2bits" revision="1.20">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="str2boolInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="String" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="str2boolOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="String" type="string"/>
+<Field name="Function" type="string"/>
+<Field name="Boolean" type="boolean"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="170" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="boolean str2bool(string arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="477" x="153" y="68">
+<attr name="text"><![CDATA[
+The str2bool(string) function takes one string argument and converts it to the corresponding boolean value. 
+Each of the following strings: "TRUE", "true", "T", "t", "YES", "yes", "Y", "y", "1", is converted to boolean true.
+Each of the following strings: "FALSE", "false", "F", "f", "NO", "no", "N", "n", "0" is converted to boolean false.]]></attr>
+</Note>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionStr2bool.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="51" guiY="278" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionStr2boolOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="580" guiY="279" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="294" guiY="278" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.String := $0.String;
+	$0.Function := "str2bool($0.String)";
+	$0.Boolean := str2bool($0.String);
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>
