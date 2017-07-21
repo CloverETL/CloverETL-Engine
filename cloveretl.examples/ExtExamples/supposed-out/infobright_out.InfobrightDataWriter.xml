@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+<test boolField="true" dateField="2009-02-03" decimalField="-0.87" stringField="test"/>
+<test boolField="false" dateField="2009-01-07" decimalField="-0.32" stringField="testString"/>
+<test boolField="false" dateField="2009-05-14" decimalField="0.78" stringField="string"/>
+<test boolField="false" dateField="2009-01-10" decimalField="-1.02" stringField=""/>
+<test boolField="true" dateField="2009-12-24" decimalField="-0.58" stringField="t e s t"/>
+<test boolField="true" dateField="2009-04-02" decimalField="-0.91" stringField=""/>
+<test boolField="false" dateField="2009-12-11" decimalField="0.19" stringField="string"/>
+<test boolField="true" dateField="2009-04-30" decimalField="0.29" stringField="stringValue"/>
+<test boolField="true" dateField="2009-02-14" decimalField="-2.64" stringField=""/>
+<test boolField="true" dateField="2009-09-06" decimalField="-1.18" stringField="name"/>
+</dataset>

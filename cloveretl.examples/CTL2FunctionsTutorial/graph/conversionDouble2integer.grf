@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation Devel" modified="Mon Jul 12 10:57:43 CEST 2010" modifiedBy="cloveruser" name="conversionDouble2integer" revision="1.107">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="double2integerInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field length="32" name="Double" scale="3" type="number"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="double2integerOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field length="32" name="Double" scale="3" type="number"/>
+<Field name="Function" type="string"/>
+<Field name="Result" type="integer"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="254" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="integer double2integer(number arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="695" x="61" y="-72">
+<attr name="text"><![CDATA[
+The double2integer(number) function takes one double argument and converts it to an integer. 
+
+We can see how Clover truncates the non-integer fractions while preserving only the integer parts of double values.
+
+Values greater than or equal to -2147483647.000 and values less than or equal to 2147483647.000 are converted to an integer. This is demonstrated in phase 0.
+
+All of the other values are out of the range of an integer and graph should fail (in phase 1). Such conversions (of a double greater than maximum positive integer or less than minimum negative integer) are meaningless.
+
+On the other hand, any integer can be mapped to a double without any restriction and loss of precision.
+]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionDouble2integerAllowed.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="63" guiY="206" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionDouble2integerAllowedOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="490" guiY="206" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="272" guiY="206" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.Double = $0.Double;
+	$0.Function = "double2integer($0.Double)";
+	$0.Result = double2integer($0.Double);
+
+	return 0;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER0:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionDouble2integerNotAllowed.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="63" guiY="290" id="DATA_READER1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionDouble2integerNotAllowedOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="492" guiY="290" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="272" guiY="290" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.Double = $0.Double;
+	$0.Function = "double2integer($0.Double)";
+	$0.Result = double2integer($0.Double);
+
+	return 0;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" fromNode="DATA_READER1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="REFORMAT1:0"/>
+<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
+</Phase>
+</Graph>
