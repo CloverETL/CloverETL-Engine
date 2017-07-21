@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Mappings>
+    <Mapping element="a">
+        <Mapping element="a">
+            <Mapping element="b" outPort="0" 
+                xmlFields=".;../id;../../id" 
+                cloverFields="f1;f2;f3"/>
+            <Mapping element="a">
+                <Mapping element="a">
+                    <Mapping element="b" outPort="0" 
+                        xmlFields=".;../id;../../id;../../../id;../../.;../../../b;../../../c" 
+                        cloverFields="f1;f2;f3;f4;f5;f6;f7"/>
+                </Mapping>
+            </Mapping>
+        </Mapping>
+    </Mapping>
+</Mappings>

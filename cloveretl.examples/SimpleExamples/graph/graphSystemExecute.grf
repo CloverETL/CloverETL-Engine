@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph ilustrates usage of System Ececute Component" guiVersion="0.0.0.devel" id="1204551079958" licenseType="Evaluation Devel" modified="Mon Jun 13 12:29:06 CEST 2011" modifiedBy="avackova" name="graphSystemExecute" revision="1.46" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0">
+<Record name="strings" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field locale="en.US" name="Field1" nullable="true" shift="0" type="string"/>
+</Record>
+</Metadata>
+<Property id="GraphParameter0" name="MY_DIR" value="${GRAPH_DIR}"/>
+<Property fileURL="workspace.prm" id="GraphParameter1"/>
+<Note alignment="1" backgroundColorB="192" backgroundColorG="255" backgroundColorR="255" folded="false" height="109" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="System Execute" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="349" x="551" y="21">
+<attr name="text"><![CDATA[SystemExecute reads data from input port and uses it as an input to system command. Output from the process can be sent to output port.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="101" guiName="Universal Data Reader" guiWidth="189" guiX="8" guiY="21" id="DATA_READER0" type="DATA_READER">
+<attr name="finalRecord"><![CDATA[30]]></attr>
+<attr name="startRecord"><![CDATA[0]]></attr>
+</Node>
+<Node append="false" deleteBatch="true" enabled="enabled" guiHeight="101" guiName="Executing simple system command" guiWidth="279" guiX="206" guiY="21" id="SYS_EXECUTE0" type="SYS_EXECUTE">
+<attr name="guiDescription"><![CDATA[* cat - Concatenate FILE(s), or standard input, to standard output. 
+In this example reads data from input port and send it to the console.]]></attr>
+<attr name="command"><![CDATA[cat]]></attr>
+</Node>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (input for command)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="SYS_EXECUTE0:0"/>
+</Phase>
+<Phase number="1">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/command.out" guiHeight="101" guiName="Universal Data Writer" guiWidth="184" guiX="716" guiY="136" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="85" guiName="ExtSort" guiWidth="128" guiX="551" guiY="136" id="EXT_SORT0" sortKey="Field1(a)" type="EXT_SORT"/>
+<Node append="true" deleteBatch="true" enabled="enabled" guiHeight="101" guiName="Executing simple system command" guiWidth="279" guiX="206" guiY="136" id="SYS_EXECUTE1" type="SYS_EXECUTE">
+<attr name="guiDescription"><![CDATA[* ls - List information about the FILEs (the current directory by default). 
+In this example sends information about the files in ${PROJECT} directory to output port.]]></attr>
+<attr name="command"><![CDATA[ls ${MY_DIR}]]></attr>
+</Node>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER1:0"/>
+<Edge fromNode="SYS_EXECUTE1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output of command)" router="Manhattan" toNode="EXT_SORT0:0"/>
+</Phase>
+<Phase number="2">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="101" guiName="Universal Data Reader" guiWidth="189" guiX="8" guiY="249" id="DATA_READER1" type="DATA_READER">
+<attr name="finalRecord"><![CDATA[30]]></attr>
+<attr name="startRecord"><![CDATA[0]]></attr>
+</Node>
+<Node append="true" enabled="enabled" fileURL="${DATAOUT_DIR}/command.out" guiHeight="101" guiName="Universal Data Writer" guiWidth="184" guiX="716" guiY="249" id="DATA_WRITER2" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="85" guiName="ExtSort" guiWidth="128" guiX="551" guiY="249" id="EXT_SORT1" sortKey="Field1(a)" type="EXT_SORT"/>
+<Node deleteBatch="true" enabled="enabled" guiHeight="101" guiName="Processing composed system command" guiWidth="309" guiX="206" guiY="249" id="SYS_EXECUTE2" interpreter="sh ${}" type="SYS_EXECUTE">
+<attr name="guiDescription"><![CDATA[To execute more than one command, tha batch file must be created and interpreter for executing the batch file must be provided.
+Content of the batch is specified by the command attribute and the component itself saves it to temporary batch file. Standard input is redirected to input port and standard output to output port.]]></attr>
+<attr name="command"><![CDATA[cat
+ls ${MY_DIR}]]></attr>
+</Node>
+<Edge fromNode="DATA_READER1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (input for command)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="SYS_EXECUTE2:0"/>
+<Edge fromNode="EXT_SORT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="DATA_WRITER2:0"/>
+<Edge fromNode="SYS_EXECUTE2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output of command)" router="Manhattan" toNode="EXT_SORT1:0"/>
+</Phase>
+</Graph>

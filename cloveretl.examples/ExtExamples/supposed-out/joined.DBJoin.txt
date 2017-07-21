@@ -1,0 +1,13 @@
+1;Nowmer;Sheri;Tlaxiac;Mexic;1;Sheri Nowmer
+2;Whelply;Derrick;Sooke;Canad;2;Derrick Whelply
+4;Spence;Michael;Burnaby;Canad;4;Michael Spence
+5;Gutierrez;Maya;Novato;USA;5;Maya Gutierrez
+6;Damstra;Robert;Lynnwoo;USA;6;Roberta Damstra
+7;Kanagaki;Rebecca;Tlaxiac;Mexic;7;Rebecca Kanagaki
+8;Brunner;Kim;San And;Mexic;8;Kim Brunner
+8;Brunner;Kim;San And;Mexic;44;Sandra Brunner
+8;Brunner;Kim;San And;Mexic;370;June Brunner
+9;Blumberg;Brenda;Richmon;Canad;9;Brenda Blumberg
+10;Stanz;Darren;Lake Os;USA;10;Darren Stanz
+11;Murraiin;Jonathan;La Mesa;USA;11;Jonathan Murraiin
+12;Creek;Jewel;Chula V;USA;12;Jewel Creek
