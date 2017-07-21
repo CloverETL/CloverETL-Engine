@@ -1,0 +1,78 @@
+Oklahoma City|OK|35.40|-97.60
+Tulsa|OK|36.20|-95.90
+Knoxville|TN|35.82|-83.98
+Atlanta|GA|33.65|-84.42
+Reno|NV|39.50|-119.78
+Flagstaff|AZ|35.13|-111.67
+Phoenix|AZ|33.44|-112.02
+Tucson|AZ|32.12|-110.93
+Jackson|TN|35.60|-88.92
+Little Rock|AR|35.22|-92.38
+Los Angeles|CA|34.03|-118.33
+San Diego|CA|32.73|-117.17
+Pueblo|CO|38.29|-104.52
+Denver|CO|39.75|-104.87
+Washington|DC|38.85|-77.04
+Key West|FL|24.58|-81.75
+Miami|FL|25.80|-80.28
+Orlando|FL|28.55|-81.33
+Tampa|FL|27.97|-82.53
+Boise|ID|43.57|-116.22
+Chicago|IL|41.98|-87.90
+Springfield|IL|39.85|-89.67
+Goodland|KS|39.37|-101.70
+Paducah|KY|37.07|-88.77
+New Orleans|LA|30.03|-90.03
+Bangor|ME|44.80|-68.78
+Caribou|ME|46.86|-68.01
+Portland|ME|43.65|-70.32
+Baltimore|MD|39.18|-76.67
+Detroit|MI|42.23|-83.33
+Marquette|MI|46.54|-87.41
+Duluth|MN|46.83|-92.18
+Minneapolis|MN|44.88|-93.22
+Tupelo|MS|34.27|-88.77
+St Louis|MO|38.75|-90.37
+Billings|MT|45.80|-108.53
+Butte|MT|45.95|-112.50
+Glasgow|MT|48.22|-106.62
+Missoula|MT|46.92|-114.08
+Elko|NV|40.83|-115.78
+Las Vegas|NV|36.08|-115.17
+Albuquerque|NM|35.05|-106.60
+Albany|NY|42.75|-73.80
+Buffalo|NY|42.93|-78.73
+Syracuse|NY|43.12|-76.12
+New York|NY|40.77|-73.98
+Bismarck|ND|46.77|-100.75
+Fargo|ND|46.90|-96.80
+Minot|ND|48.27|-101.28
+Cleveland|OH|41.42|-81.87
+Columbus|OH|40.00|-82.88
+Toledo|OH|41.60|-83.80
+Portland|OR|45.60|-122.60
+Erie|PA|42.08|-80.18
+Philadelphia|PA|39.88|-75.25
+Pittsburgh|PA|40.35|-79.93
+Hartford|CT|41.73|-72.65
+Sioux Falls|SD|43.58|-96.73
+Nashville|TN|36.17|-86.78
+Austin|TX|30.30|-97.70
+Brownsville|TX|25.90|-97.43
+Dallas|TX|32.90|-97.03
+El Paso|TX|31.80|-106.40
+Midland|TX|32.00|-102.08
+Houston|TX|29.65|-95.28
+San Antonio|TX|29.53|-98.47
+Salt Lake City|UT|40.78|-111.97
+Spokane|WA|47.63|-117.53
+Milwaukee|WI|42.95|-87.90
+Richmond|VA|37.50|-77.33
+San Juan|PR|18.40|-66.00
+St Thomas|VI|18.34|-64.96
+St Croix|VI|17.70|-64.90
+Anchorage|AK|61.17|-150.02
+Barrow|AK|71.30|-156.78
+Fairbanks|AK|64.82|-147.87
+Juneau|AK|58.37|-134.58
+Nome|AK|64.50|-165.43

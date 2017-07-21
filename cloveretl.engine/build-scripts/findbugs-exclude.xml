@@ -1,0 +1,67 @@
+<FindBugsFilter>
+     <Match>
+       <Class name="~org\.jetel\.interpreter\.[^.]+Parser" />
+     </Match>
+     <Match>
+       <Class name="~org\.jetel\.interpreter\.[^.]+Visitor" />
+     </Match>
+     <Match>
+       <Class name="~org\.jetel\.interpreter\.Token[^.]*" />
+     </Match>
+
+	 <Match>
+       <Class name="org.jetel.ctl.TransformLangParserTokenManager" />
+     </Match>
+     <Match>
+       <Class name="org.jetel.interpreter.JavaCharStream" />
+     </Match>
+     <Match>
+       <Class name="org.jetel.interpreter.SimpleCharStream" />
+     </Match>
+     <Match>
+       <Class name="org.jetel.interpreter.JJTTransformLangParserState" />
+     </Match>
+     <Match>
+       <Class name="org.jetel.interpreter.ParseException" />
+     </Match>
+     <Match>
+       <Class name="~org\.jetel\.interpreter\.TransformLangParser[^.]*" />
+     </Match>
+     
+     <Match>
+       <Package name="~com\.opensys\.cloveretl\.component\.salesforce.*" />
+     </Match>
+
+     <Match>
+       <Package name="~com\.google.*" />
+     </Match>
+     <Match>
+       <Package name="~org\.apache.*" />
+     </Match>
+     <Match>
+       <Package name="~org\.slf4j.*" />
+     </Match>
+     <Match>
+       <Package name="~org\.hsqldb.*" />
+     </Match>
+
+     <Match>
+     	<Bug code="PZLA,UwF,Dm,EI2" />
+     </Match>
+     <Match>
+     	<Bug pattern="EI_EXPOSE_REP" />
+     </Match>
+     <Match>
+     	<Bug pattern="NM_CONFUSING,NP_BOOLEAN_RETURN_NULL" />
+     </Match>
+     <Match>
+     	<Bug pattern="OBL_UNSATISFIED_OBLIGATION_EXCEPTION_EDGE" />
+     </Match>
+     <Match>
+     	<Bug pattern="REC_CATCH_EXCEPTION,RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE,RCN_REDUNDANT_NULLCHECK_OF_NULL_VALUE" />
+     </Match>
+     <Match>
+     	<Bug pattern="SE_COMPARATOR_SHOULD_BE_SERIALIZABLE,SIC_INNER_SHOULD_BE_STATIC_ANON,URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD" />
+     </Match>
+
+</FindBugsFilter>
