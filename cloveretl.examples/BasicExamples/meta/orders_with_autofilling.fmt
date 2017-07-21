@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter="|" name="Orders_with_autofilling" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field format="#" name="OrderID" type="number"/>
+<Field name="CustomerID" type="string"/>
+<Field name="EmployeeID" type="integer"/>
+<Field format="dd.MM.yyyy" name="OrderDate" type="date"/>
+<Field format="dd.MM.yyyy" name="RequiredDate" type="date"/>
+<Field format="dd.MM.yyyy" name="ShippedDate" type="date"/>
+<Field format="#" name="ShipVia" type="integer"/>
+<Field name="Freight" type="number"/>
+<Field name="ShipName" type="string"/>
+<Field name="ShipAddress" type="string"/>
+<Field name="ShipCity" type="string"/>
+<Field name="ShipRegion" type="string"/>
+<Field name="ShipPostalCode" type="string"/>
+<Field auto_filling="sheet_name" name="ShipCountry" type="string"/>
+</Record>

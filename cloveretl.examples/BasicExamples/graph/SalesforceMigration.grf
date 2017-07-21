@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="User" created="Tue Aug 02 16:07:04 CEST 2016" guiVersion="4.4.0.M2" id="1470149454547" licenseCode="CLP1DJAVLI21013179BY" name="crm_migration" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata4">
+<Record fieldDelimiter="|" name="attachment" recordDelimiter="\n" type="delimited">
+<Field name="id" trim="true" type="integer"/>
+<Field name="file_name" type="string"/>
+<Field name="attachment_name" type="string"/>
+<Field name="account_name" type="string"/>
+<Field name="account_sf_id" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3" previewAttachment="${DATAIN_DIR}/salesforce/attachments.csv" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="," label="attachments.csv" name="attachments_csv" previewAttachment="${DATAIN_DIR}/salesforce/attachments.csv" previewAttachmentCharset="ISO-8859-1" quoteChar="both" quotedStrings="false" recordDelimiter="\r\n" skipSourceRows="1" type="delimited">
+<Field name="id" type="integer"/>
+<Field name="file_name" type="string"/>
+<Field name="attachment_name" type="string"/>
+<Field eofAsDelimiter="true" name="account_id" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="contacts_to_insert" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="id" trim="true" type="integer"/>
+<Field name="name" type="string"/>
+<Field name="email" type="string"/>
+<Field name="phone" type="string"/>
+<Field eofAsDelimiter="true" name="account_sf_id" trim="true" type="string"/>
+<Field name="account_name" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0" previewAttachment="${DATAIN_DIR}/accounts.csv" previewAttachmentCharset="UTF-8">
+<Record fieldDelimiter="," label="accounts.csv" name="import_accounts" previewAttachment="${DATAIN_DIR}/accounts.csv" previewAttachmentCharset="UTF-8" quoteChar="both" quotedStrings="false" recordDelimiter="\n" skipSourceRows="0" type="delimited">
+<Field name="id" type="integer"/>
+<Field name="name" type="string"/>
+<Field eofAsDelimiter="true" name="country" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachment="${DATAIN_DIR}/contacts.csv" previewAttachmentCharset="UTF-8">
+<Record fieldDelimiter="," label="contacts.csv" name="import_contacts" previewAttachment="${DATAIN_DIR}/contacts.csv" previewAttachmentCharset="UTF-8" quoteChar="both" quotedStrings="false" recordDelimiter="\n" skipSourceRows="0" type="delimited">
+<Field name="id" type="integer"/>
+<Field name="name" type="string"/>
+<Field name="email" type="string"/>
+<Field name="phone" type="string"/>
+<Field eofAsDelimiter="true" name="account_id" type="integer"/>
+</Record>
+</Metadata>
+<Connection config="${CONN_DIR}/My Salesforce.cfg" id="SALESFORCE0" type="SALESFORCE"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<RichTextNote backgroundColor="DAD8C9" folded="false" fontSize="large" height="298" id="Note2" textColor="444444" width="1014" x="26" y="32">
+<attr name="text"><![CDATA[h3. Migrate Accounts and Contacts (with relationships) to Salesforce within a single transformation
+
+In this CRM migration example we start with three datasets ([Accounts|element://ACCOUNTS],  [Contacts|element://CONTACTS] and [Attachments|element://ATTACHMENTS]) that are linked by foreign keys exported from a source CRM. We need to migrate those datasets to Salesforce, retaining the relationships using Salesforce ObjectId's. The attachments show how to upload binary files to Salesforce, e.g. purchase orders.
+
+You will see you can do this in one go, using CloverETL's capability to pass new ObjectId's from one writer to another down the stream.
+
+See also the [SalesforceRead|open://BasicExamples/graph/SalesforceRead.grf] example.
+
+*Important:* this example uploads 100 new Accounts and 200 new Contacts to the Salesforce account. These new objects are tagged - the accounts have their Website field set to "CloverETL", the contacts have their Department field set to "CloverETL". You can use these tags later to find and delete the objects to clean-up after running this example. Deleting the Accounts automatically deletes their Attachments.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="208" id="Note4" textColor="444444" width="585" x="226" y="693">
+<attr name="text"><![CDATA[h3. Writing Accounts
+
+We use SalesforceBulkWriter to write Accounts into Salesforce (notice the input mapping).
+
+First output passes through successfully written records enriched with ObjectId field. We’ll use it later for joining Contacts with Accounts.
+
+Second output contains information about rejected records.
+]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="228" id="Note5" textColor="444444" width="316" x="225" y="1029">
+<attr name="text"><![CDATA[h3. Joining Contacts with Accounts
+
+Contacts in the source CRM reference their parent Accounts via an ID field. These source ID fields are used to join the successfully written Accounts with the incoming Contacts. 
+
+Important part is to get the ObjectId field of Accounts (autogenerated ID created when writing Accounts to Salesforce) so it can be used to represent the relationship between Contacts and Accounts.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="228" id="Note6" textColor="444444" width="247" x="563" y="1029">
+<attr name="text"><![CDATA[h3. Writing Contacts
+
+Contacts are written to Salesforce similarly as Accounts. To keep their relationship to Accounts, they need to store the Account ObjectId in the Contact's AccountId field. The Account ObjectId was acquired previously by joining with results of writing Accounts.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="DEF4AB" folded="false" fontSize="medium" height="170" id="Note7" textColor="444444" width="1014" x="26" y="359">
+<attr name="text"><![CDATA[h3. Connect to Salesforce
+
+First, you'll need to configure a Salesforce connection in [Outline > Connections > My Salesforce|element://SALESFORCE0].
+
+If you don't have a Salesforce Username, Password and Security Token, follow these steps:
+
+# Create an account in [Salesforce|https://login.salesforce.com/]
+# Get your Security Token (in Salesforce go to "Your Account Name" > My Settings > Personal > Reset My Security Token) - this will send the token to your email
+# Enter your username, password and security token in the [Salesforce connection|element://SALESFORCE0]]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="301" id="Note8" textColor="444444" width="128" x="26" y="637">
+<attr name="text"><![CDATA[h3. Source CRM
+The CSV files represent accounts and contacts in the source CRM. Typically these would be read from database or via an API of the CRM.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="195" id="Note0" textColor="444444" width="586" x="225" y="1401">
+<attr name="text"><![CDATA[h3. Writing Attachments
+
+Attachments are written using the SalesforceWriter component (the SalesforceBulkWriter component does not support writing attachments). To upload attachments you need to write to the Attachment object. In this case we're sending paths to files with the attachment contents. It's also possible to directly send byte fields with the attachment content.
+
+Each attachment has an owner object that is referenced via the ParentId field. In this case we set it to ObjectId of the previously written Accounts.]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node fileURL="${DATAIN_DIR}/salesforce/accounts.csv" guiName="Accounts" guiX="26" guiY="545" id="ACCOUNTS" skipRows="1" type="FLAT_FILE_READER"/>
+<Node fileURL="${DATAIN_DIR}/salesforce/attachments.csv" guiName="Attachments" guiX="26" guiY="1295" id="ATTACHMENTS" type="FLAT_FILE_READER"/>
+<Node fileURL="${DATAIN_DIR}/salesforce/contacts.csv" guiName="Contacts" guiX="26" guiY="937" id="CONTACTS" skipRows="1" type="FLAT_FILE_READER"/>
+<Node guiName="Enrich Attachments with Account ObjectId" guiX="274" guiY="1295" id="ENRICH_ATTACHMENTS_WITH_ACCOUNT_OBJECT_ID" joinKey="$account_id=$id" joinType="leftOuter" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.id = $in.0.id;
+	$out.0.file_name = "${DATAIN_DIR}/salesforce/" + $in.0.file_name;
+	$out.0.attachment_name = $in.0.attachment_name;
+	$out.0.account_name = $in.1.name;
+	$out.0.account_sf_id = $in.1.ObjectId;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node guiName="Enrich Contacts with Account ObjectId" guiX="298" guiY="937" id="ENRICH_CONTACTS_WITH_ACCOUNT_OBJECT_ID" joinKey="$account_id=$id" joinType="leftOuter" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.* = $in.0.*;
+	$out.0.account_sf_id = $in.1.ObjectId;
+	$out.0.account_name = $in.1.name;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/rejected_accounts.xls" guiName="Log Rejected Accounts" guiX="883" guiY="654" id="LOG_REJECTED_ACCOUNTS" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
+<Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/rejected_attachments.xls" guiName="Log Rejected Attachments" guiX="877" guiY="1401" id="LOG_REJECTED_ATTACHMENTS" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
+<Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/rejected_contacts.xls" guiName="Log Rejected Contacts" guiX="881" guiY="1057" id="LOG_REJECTED_CONTACTS" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
+<Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/written_accounts.xls" guiName="Log Written Accounts" guiX="883" guiY="545" id="LOG_WRITTEN_ACCOUNTS" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
+<Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/written_attachments.xls" guiName="Log Written Attachments" guiX="877" guiY="1295" id="LOG_WRITTEN_ATTACHMENTS" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
+<Node existingSheetsActions="DO_NOTHING" fileURL="${DATAOUT_DIR}/salesforce/written_contacts.xls" guiName="Log Written Contacts" guiX="883" guiY="937" id="LOG_WRITTEN_CONTACTS" makeDirs="true" type="SPREADSHEET_WRITER" writeMode="CREATE_FILE_IN_MEMORY"/>
+<Node guiName="Salesforce: Bulk Write Accounts" guiX="228" guiY="545" id="SALESFORCE_BULK_WRITE_ACCOUNTS" object="Account" sfConnection="SALESFORCE0" type="SALESFORCE_BULK_WRITER">
+<attr name="inputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.Name = $in.0.name;
+	$out.0.BillingCountry = $in.0.country;
+	$out.0.Website = "CloverETL";
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node guiName="Salesforce: Bulk Write Contacts" guiX="605" guiY="937" id="SALESFORCE_BULK_WRITE_CONTACTS" object="Contact" sfConnection="SALESFORCE0" type="SALESFORCE_BULK_WRITER">
+<attr name="inputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.LastName = $in.0.name;
+	$out.0.Email = $in.0.email;
+	$out.0.Phone = $in.0.phone;
+	$out.0.AccountId = $in.0.account_sf_id;
+	$out.0.Department = "CloverETL";
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node guiName="Salesforce: Write Attachments" guiX="610" guiY="1295" id="SALESFORCE_WRITE_ATTACHMENTS" object="Attachment" sfConnection="SALESFORCE0" type="SALESFORCE_WRITER">
+<attr name="inputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.Body_FileURL = $in.0.file_name;
+	$out.0.Name = $in.0.attachment_name;
+	$out.0.ParentId = $in.0.account_sf_id;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node guiName="SimpleCopy" guiX="682" guiY="545" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
+<Edge debugMode="true" fromNode="ACCOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SALESFORCE_BULK_WRITE_ACCOUNTS:0"/>
+<Edge debugMode="true" fromNode="ATTACHMENTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (driver)" metadata="Metadata3" outPort="Port 0 (output)" toNode="ENRICH_ATTACHMENTS_WITH_ACCOUNT_OBJECT_ID:0"/>
+<Edge debugMode="true" fromNode="CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (output)" toNode="ENRICH_CONTACTS_WITH_ACCOUNT_OBJECT_ID:0"/>
+<Edge debugMode="true" fromNode="ENRICH_ATTACHMENTS_WITH_ACCOUNT_OBJECT_ID:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SALESFORCE_WRITE_ATTACHMENTS:0"/>
+<Edge debugMode="true" fromNode="ENRICH_CONTACTS_WITH_ACCOUNT_OBJECT_ID:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SALESFORCE_BULK_WRITE_CONTACTS:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_BULK_WRITE_ACCOUNTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (accepted records)" toNode="SIMPLE_COPY:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_BULK_WRITE_ACCOUNTS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (input)" outPort="Port 1 (rejected records)" toNode="LOG_REJECTED_ACCOUNTS:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_BULK_WRITE_CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (input)" outPort="Port 0 (accepted records)" toNode="LOG_WRITTEN_CONTACTS:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_BULK_WRITE_CONTACTS:1" guiBendpoints="1002:492|1002:598" guiLocks="1002|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (input)" outPort="Port 1 (rejected records)" toNode="LOG_REJECTED_CONTACTS:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_WRITE_ATTACHMENTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (input)" outPort="Port 0 (accepted records)" toNode="LOG_WRITTEN_ATTACHMENTS:0"/>
+<Edge debugMode="true" fromNode="SALESFORCE_WRITE_ATTACHMENTS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (input)" outPort="Port 1 (rejected records)" toNode="LOG_REJECTED_ATTACHMENTS:0"/>
+<Edge fromNode="SIMPLE_COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (input)" outPort="Port 0 (out)" toNode="LOG_WRITTEN_ACCOUNTS:0"/>
+<Edge debugMode="true" fromNode="SIMPLE_COPY:1" guiBendpoints="816:409|847:916|280:916|280:913" guiLocks="847|280|916" guiRouter="Manual" id="Edge6" inPort="Port 1 (slave)" outPort="Port 1 (out)" toNode="ENRICH_CONTACTS_WITH_ACCOUNT_OBJECT_ID:1"/>
+<Edge debugMode="true" fromNode="SIMPLE_COPY:2" guiBendpoints="826:541|826:1275|247:1275|247:1277" guiLocks="826|247|1275" guiRouter="Manual" id="Edge4" inPort="Port 1 (slave)" outPort="Port 2 (out)" toNode="ENRICH_ATTACHMENTS_WITH_ACCOUNT_OBJECT_ID:1"/>
+</Phase>
+</Graph>
