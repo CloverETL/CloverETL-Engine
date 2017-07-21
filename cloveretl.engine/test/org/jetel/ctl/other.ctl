@@ -1,0 +1,1 @@
+integer otherImportVar = 1;

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="admin" created="Fri Feb 06 11:01:53 CET 2009" guiVersion="0.0.0.devel" id="1233914556451" licenseType="Evaluation Devel" modified="Fri Jun 10 15:11:01 CEST 2011" modifiedBy="avackova" name="graphDataGeneratorExt" revision="1.307" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="GenerateRecord" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field name="RandomName" nullable="true" shift="0" size="0" skipFirstLine="false" type="string"/>
+<Field format="dd.MM.yyyy" name="RandomDate" nullable="true" shift="0" size="0" skipFirstLine="false" type="date"/>
+<Field name="Random" nullable="true" shift="0" size="0" skipFirstLine="false" type="number"/>
+<Field name="RandomInt" nullable="true" shift="0" size="0" skipFirstLine="false" type="integer"/>
+<Field name="Sequence" nullable="true" shift="0" size="0" skipFirstLine="false" type="integer"/>
+<Field name="LookupTableV1" nullable="true" shift="0" size="0" skipFirstLine="false" type="string"/>
+<Field name="LookupTableV2" nullable="true" shift="0" size="0" skipFirstLine="false" type="integer"/>
+<Field name="Composite" nullable="true" shift="0" size="0" skipFirstLine="false" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="lookupRecord" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="field1" type="integer"/>
+<Field name="field2" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Sequence cached="1" id="Sequence0" name="SeqRandom" start="0" step="1" type="PRIMITIVE_SEQUENCE"/>
+<LookupTable charset="ISO-8859-1" id="LookupTable0" initialSize="512" key="field1" metadata="Metadata1" name="slookup" type="simpleLookup">
+<attr name="data"><![CDATA[0|ahoj0
+1|ahoj1
+2|ahoj2
+3|ahoj3
+5|ahoj5
+7|ahoj7
+10|ahoj10
+]]></attr>
+</LookupTable>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiHeight="101" guiName="DataGenerator" guiWidth="137" guiX="20" guiY="20" id="DATA_GENERATOR0" recordsNumber="10" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+integer i;
+lookupRecord randomRec;
+
+// Generates output record.
+function integer generate() {
+	i = randomInteger(0,10);
+	randomRec = lookup(slookup).get(i);
+	if (isnull(randomRec)) return SKIP;
+	$0.RandomName = randomString(0,5);
+	$0.RandomDate = randomDate("2009.01.01","2009.12.31","yyyy.MM.dd");
+	$0.Random = random();
+	$0.RandomInt = double2integer(floor(random()*100));
+	$0.Composite = randomString(3,5)+" - " + round(random()*100);
+	$0.Sequence = sequence(SeqRandom).next();
+	$0.LookupTableV1 = randomRec.field2;
+	$0.LookupTableV2 = randomRec.field1;
+	return ALL;
+}
+
+// Called during component initialization.
+function boolean init() {
+	setRandomSeed(-1);
+	return true;
+}
+
+function string getMessage(){
+	return "Lookup value doesn't exist for key: " + i;
+}
+]]></attr>
+<attr name="guiDescription"><![CDATA[One sequence and two lookup tables are used for random record's generation. CTL functions for generating random values generate values of several data types. Sequence gives unique numbers to the records. It is reseted at the end of the run. Also string is concatenated with numeric values performing an implicit conversion to a string. Usage of setRandomSeed() function assures that random values are not changed upon multiple graph runs.]]></attr>
+</Node>
+<Node debugFilename="${DATAOUT_DIR}/random.txt" debugPrint="true" enabled="enabled" guiHeight="69" guiName="Trash" guiWidth="128" guiX="244" guiY="20" id="TRASH1" type="TRASH">
+<attr name="guiPassMetadata"><![CDATA[false]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_GENERATOR0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="TRASH1:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" generateClass="GenerateRecord" guiHeight="101" guiName="DataGenerator" guiWidth="137" guiX="19" guiY="144" id="DATA_GENERATOR2" recordsNumber="10" type="DATA_GENERATOR">
+<attr name="guiDescription"><![CDATA[Generates data in the same way as in phase 0. Unlike in phase 0, where Clover Transformation Language is used, Java class is specified as the Generate class attribute in phase 1. Values are generated with the same algorithm as above and they still remain unchanged between several runs of the graph.]]></attr>
+</Node>
+<Node debugFilename="${DATAOUT_DIR}/random1.txt" debugPrint="true" enabled="enabled" guiHeight="69" guiName="Trash" guiWidth="128" guiX="244" guiY="144" id="TRASH3" type="TRASH">
+<attr name="guiPassMetadata"><![CDATA[false]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_GENERATOR2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="TRASH3:0"/>
+</Phase>
+</Graph>
