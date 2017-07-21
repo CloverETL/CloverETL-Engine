@@ -1,0 +1,522 @@
+/**
+ * JavaCC file
+ */
+ 
+options
+{ 
+	JDK_VERSION = "1.5";
+	STATIC=false;
+	CACHE_TOKENS=true;
+	IGNORE_CASE=true;
+}
+
+PARSER_BEGIN(DDL2Clover)
+package org.jetel.util.ddl2clover;
+
+import java.util.*;
+import java.io.*;
+import org.jetel.metadata.*;
+import java.math.*;
+import org.jetel.data.*;
+
+public class DDL2Clover {
+
+	/**
+		 * The class parses sql script containing only create statements. Output is a DataRecordMetadata List.
+		 */
+	 
+	private List<DataRecordMetadata> list = new LinkedList<DataRecordMetadata>();
+	private String fieldDelimiter;
+	private String recordDelimiter;
+	
+	private static final Long booleanLenght = Long.valueOf(5); // false / true
+	private static final Long byteLenght = Long.valueOf(String.valueOf(Byte.MIN_VALUE).length());
+	private static final Long charLenght = Long.valueOf(1); //
+	private static final Long integerLenght = Long.valueOf(String.valueOf(Integer.MIN_VALUE).length());
+	private static final Long longLenght = Long.valueOf(String.valueOf(Long.MIN_VALUE).length());
+	private static final Long floatLenght = Long.valueOf(String.valueOf(7));
+	private static final Long doubleLenght = Long.valueOf(String.valueOf(15));
+	private static final Long dateLenght = Long.valueOf(10); // "10.10.2007"
+	private static final Long dateTimeLenght = Long.valueOf(19); // "10.10.2007 23:10:10"
+	private static final Long textLenght = Long.valueOf(256);
+	
+	public static void main(String args[]) throws ParseException, FileNotFoundException {
+		DDL2Clover parser = new DDL2Clover(new FileInputStream(new File("./src/org/jetel/util/ddl2clover/ddl_statements.txt")));
+		parser.getDataRecordMetadataList(";", "\n");
+		parser.testPrint(parser.list);
+		System.out.println("Ok");
+	}
+
+	public List<DataRecordMetadata> getDataRecordMetadataList() throws ParseException {
+		return getDataRecordMetadataList(null, null);
+	}
+
+	public List<DataRecordMetadata> getDataRecordMetadataList(String fieldDelimiter, String recordDelimiter) throws ParseException {
+		this.fieldDelimiter = fieldDelimiter;
+		this.recordDelimiter = recordDelimiter;
+		while (!isEOF()) {
+			list.add(createTableStatement());
+		}
+		return list;
+	}
+	
+	private void testPrint(List<DataRecordMetadata> list) {
+		DataRecordMetadataXMLReaderWriter writer = new DataRecordMetadataXMLReaderWriter();
+   		for (DataRecordMetadata dataRecordMetadata : list) {
+			writer.write(dataRecordMetadata, System.out);
+			System.out.println();
+   		}		
+	}
+	
+}
+
+PARSER_END(DDL2Clover)
+
+// The SQL lexical grammar
+
+SKIP:
+{
+	// blank space
+		" "
+	|	"\t"
+	|	"\n"
+	|	"\r"
+	|	"\n\r"
+}
+
+// HANDLING COMMENTS
+SPECIAL_TOKEN: 
+{
+	<"/*"> : WithinComment 
+}
+
+<WithinComment> SPECIAL_TOKEN:	{ <"*/"> : DEFAULT }
+<WithinComment> MORE: { <~[]> }
+
+SPECIAL_TOKEN: 
+{  
+	<"//"> : WithinLineComment 
+}
+
+SPECIAL_TOKEN: 
+{  
+	<"--"> : WithinLineComment 
+}
+<WithinLineComment> SPECIAL_TOKEN: { <"\n"> : DEFAULT }
+<WithinLineComment> MORE: { <~[]> }
+
+
+TOKEN:
+{
+	// keywords
+//		< BIT: "bit" >
+		< BIGINT: "bigint" >
+	|	< BINARY: "binary" >
+	|	< BOOLEAN: "boolean" >
+	|	< BLOB: "blob" >
+	|	< CHAR: "char" >
+	|	< CHARACTER: "character" >
+	|	< CLOB: "clob" >
+	|	< COMMIT: "commit" >
+	|	< CONSTRAINT: "constraint" >
+	|	< CREATE: "create" >
+	|	< DATE:"date" >
+	|	< DATETIME:"datetime" >
+	|	< DEC:"dec" >
+	|	< DECIMAL:"decimal" >
+	|	< DEFAULT_: "default" >
+	|	< DELETE: "delete" >
+	|	< DOUBLE:"double" >
+	|	< FLOAT:"float" >
+	|	< FOREIGN:"foreign" >
+	|	< GLOBAL: "global" >
+	|	< INT: "int" >
+	|	< INTEGER: "integer" >
+//	|	< JAVA_OBJECT: "java_object" >
+	|	< KEY: "key" >
+	|	< LOCAL: "local" >
+//	|	< LONGVARBINARY: "longvarbinary" >
+//	|	< LONGVARCHAR: "longvarchar" >
+	|	< NOT: "not" >
+	|	< NULL: "null" >
+	|	< NUMBER: "number" >
+	|	< NUMERIC: "numeric" >
+	|	< ON: "on" >
+	|	< PRESERVE:"preserve" >
+	|	< PRIMARY:"primary" >
+	|	< REFERENCES:"references" >
+	|	< REAL: "real" >
+	|	< ROWS: "rows" >
+	|	< SMALLINT: "smallint" >
+	|	< STRING: "string" >
+	|	< TABLE: "table" >
+	|	< TEXT: "text" >
+	|	< TIME: "time" >
+	|	< TIMESTAMP: "timestamp" >
+	|	< TEMPORARY: "temporary" >
+	|	< TINYINT: "tinyint" >
+	|	< UNIQUE: "unique" >
+	|	< VARBINARY: "varbinary" >
+	|	< VARCHAR: "varchar" >
+	|	< VARCHAR2: "varchar2" >
+
+	// literals
+	|	< STRING_LITERAL: "'" (~["'"])* ( "''" (~["'"])* )* "'" >
+	|	< INTEGER_LITERAL: 	(["0"-"9"])+ >
+	|	< FLOAT_LITERAL:	(["0"-"9"])+ "." (["0"-"9"])+ (<EXP>)?
+							|	"." (["0"-"9"])+ (<EXP>)?
+							|	(["0"-"9"])+ (<EXP>)?>
+	|	< #EXP: ["e","E"] (["+","-"])? (["0"-"9"])+ >
+
+	// identifiers
+	|	< IDENTIFIER: ( <LETTER> )+ ( "_" | "$" | "#" | <DIGIT> | <LETTER> )* >
+	|	< LETTER: ["A"-"Z", "a"-"z"] >
+	|	< DIGIT: ["0"-"9"] >
+
+	// separators and operators
+	|	< CLOSEPAREN: ")" >
+	|	< COMA: "," >
+	|	< DOT: "." >
+	|	< OPENPAREN: "(" >
+	|	< SEMICOLON: ";" >
+	|	< STRSTR: "\"" >
+	|	< ALL: (["\u0000"-"\uFFFF"]) >
+}
+
+/*******************************************************************
+ * The SQL syntatic grammar starts here
+ *******************************************************************/
+
+DataRecordMetadata createTableStatement() : {
+	DataRecordMetadata dataRecordMetadata;
+	List<DataFieldMetadata> list;
+}
+{
+	<CREATE> [tableScope()] <TABLE> [LOOKAHEAD(2)(<IDENTIFIER><DOT>)]
+		{
+			String tableName = identifier();
+			// the record name will be constructed from the label
+			dataRecordMetadata = new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME); 
+			dataRecordMetadata.setLabel(tableName);
+		}
+		// table element list
+		{
+			list = tableElementList();
+			for (DataFieldMetadata field : list) {
+			    dataRecordMetadata.addField(field);
+			}
+		}
+		// | OF  <path-resolved user-defined type name> [ <subtable clause> ] [ <table element list> ]
+		// | <as subquery clause>
+	[ <ON> <COMMIT> (<PRESERVE> | <DELETE>)? <ROWS>]
+	<SEMICOLON>
+	{
+		if (fieldDelimiter != null && recordDelimiter != null) {
+			dataRecordMetadata.setRecType(DataRecordMetadata.DELIMITED_RECORD);
+		} else if (fieldDelimiter == null && recordDelimiter == null) {
+			dataRecordMetadata.setRecType(DataRecordMetadata.FIXEDLEN_RECORD);
+		}
+	}
+	{
+	  dataRecordMetadata.normalize();
+	  return dataRecordMetadata;
+	}
+}
+
+List<DataFieldMetadata> tableElementList() :
+{
+	List<DataFieldMetadata> list = new LinkedList<DataFieldMetadata>();
+	DataFieldMetadata ret;
+}
+{
+	<OPENPAREN> 
+	ret = tableElement() 			
+	{ 
+		ret.setDelimiter(fieldDelimiter);
+		list.add(ret); 
+		skipAllUptoComaOrCloseParen();
+	}
+	(<COMA> ret = tableElement() 	
+	{
+		if (ret != null) {
+			ret.setDelimiter(fieldDelimiter);
+			list.add(ret); 
+			skipAllUptoComaOrCloseParen();
+		}
+	})*
+	{
+		if (ret != null) {
+			ret.setDelimiter(recordDelimiter);
+		}
+	}
+	<CLOSEPAREN> 
+	{ return list; }
+}
+
+JAVACODE
+void skipAllUptoComaOrCloseParen() {
+	Token tok;
+	int nesting = 0;
+	boolean strStr = false;
+	while (true) {
+		tok = getToken(1);
+        if (tok.kind == STRSTR && strStr) strStr=false;
+        else if (tok.kind == STRSTR && !strStr) strStr=true;
+   		else if (!strStr) {
+			if (tok.kind == OPENPAREN) nesting++;
+	        else if (tok.kind == CLOSEPAREN && nesting > 0) nesting--;
+			else if (tok.kind == COMA && nesting == 0) return;
+			else if (tok.kind == CLOSEPAREN && nesting == 0) return;
+		}
+        tok = getNextToken();
+        if (tok.image.equals("")) return;
+	}
+}
+
+
+void tableScope() :
+{}
+{
+	[<GLOBAL> | <LOCAL>]  <TEMPORARY>
+}
+
+
+boolean isEOF() :
+{
+	boolean isEof = false;
+}
+{
+	(<EOF> isEof = t())?
+	{return isEof;}
+}
+
+boolean t() :
+{
+}
+{
+	{return true;}
+}
+
+//+
+ColumnConstraint columnConstraintDefinition() :
+{
+	ColumnConstraint value = null;
+}
+{
+	(	<NOT> <NULL> {value = ColumnConstraint.NOT_NULL; }
+	|	<NULL> {value = ColumnConstraint.NULL; }
+	|	<UNIQUE> {value = ColumnConstraint.UNIQUE; }
+	|	<PRIMARY> <KEY> {value = ColumnConstraint.PRIMARY_KEY; }
+//	|	<CHECK> <OPENPAREN> <CLOSEPAREN>
+	|	<REFERENCES> tableName() <OPENPAREN> identifierList() <CLOSEPAREN>
+	)
+	{return value; }
+}
+
+ColumnConstraint tableConstraintSubDefinition() :
+{
+	ColumnConstraint value = null;
+}
+{
+	(	<UNIQUE> <OPENPAREN> {identifierList(); } <CLOSEPAREN>
+	|	<PRIMARY> <KEY> <OPENPAREN> {identifierList(); } <CLOSEPAREN>
+	|	<FOREIGN> <KEY> <OPENPAREN> {identifierList(); } <CLOSEPAREN>
+//	|	<CHECK> <OPENPAREN> <CLOSEPAREN>
+	|	<REFERENCES> tableName() <OPENPAREN> identifierList() <CLOSEPAREN>
+	)
+	{return value; }
+}
+
+
+void tableConstraintDefinition() : {
+}
+{
+	((<CONSTRAINT> identifier())?
+	tableConstraintSubDefinition()
+	)
+}
+
+//+
+DataFieldMetadata columnDefinition() :
+{
+	DataFieldMetadata dataFieldMetadata;
+	String name;
+	DataType type;
+	Object value = null;
+	ColumnConstraint columnConstraint = null;
+}
+{
+	name = columnName()
+	type = dataType()
+	(<DEFAULT_> value = defaultValue())?
+	(columnConstraint = columnConstraintDefinition())*
+	{
+	  if (type.length == null) {
+		dataFieldMetadata = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, type.type, null);
+	  } else {
+		//dataFieldMetadata = new DataFieldMetadata(name, type.type, type.length.shortValue());
+		dataFieldMetadata = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, type.type, type.length.shortValue());
+	  }
+	  dataFieldMetadata.setLabel(name);
+	  if (value != null) {
+		dataFieldMetadata.setDefaultValueStr(value.toString());
+	  }
+	  if (columnConstraint != null) {
+	  	if (ColumnConstraint.NOT_NULL == columnConstraint ||
+	  	    ColumnConstraint.UNIQUE == columnConstraint ||
+	  	    ColumnConstraint.PRIMARY_KEY == columnConstraint)
+	  	dataFieldMetadata.setNullable(false);
+	  }
+	  if (type.format != null) {
+	  	dataFieldMetadata.setFormatStr(type.format);
+	  }
+	  return dataFieldMetadata; 
+	}
+}
+
+DataFieldMetadata tableElement() :
+{
+	DataFieldMetadata ret = null;
+}
+{
+	(	ret = columnDefinition()
+	  | tableConstraintDefinition()
+	// | <like clause>
+	// | <self-referencing column specification>
+	// | <column options>
+	)
+	{ return ret; }
+}
+
+//+
+String columnName() :
+{
+	String ret;
+}
+{
+	(LOOKAHEAD(2) identifier() <DOT>)? ret = identifier()
+	{ return ret; }
+}
+
+//+TODO dodelat dalsi typu jako DATE, VARCHAR,...
+DataType dataType() :
+{
+	char type;
+	Long temp = null;
+	Long lenght = null;
+	Long scale = null;
+	String format = null;
+}
+{
+	(	<BIGINT> { type = DataFieldMetadata.INTEGER_FIELD; }	(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> )? { lenght = temp != null ? temp : longLenght; }
+	|	<BINARY> { type = DataFieldMetadata.BYTE_FIELD; } 		(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> { lenght = temp; })
+	|	<BLOB> { type = DataFieldMetadata.BYTE_FIELD; } 		(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> { lenght = temp; })?
+	|	<BOOLEAN> { type = DataFieldMetadata.BOOLEAN_FIELD;		lenght = integerLenght;}
+	|	<CHAR> { type = DataFieldMetadata.STRING_FIELD; } 		(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> )? { lenght = temp != null ? temp : charLenght; }
+	|	<CHARACTER> { type = DataFieldMetadata.STRING_FIELD; } 	(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> )? { lenght = temp != null ? temp : charLenght; }
+	|	<CLOB> { type = DataFieldMetadata.BYTE_FIELD; } 		(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> { lenght = temp; })?
+	|	<DATE> { type = DataFieldMetadata.DATE_FIELD; 			lenght = dateLenght; format = Defaults.DEFAULT_DATE_FORMAT;}
+	|	<DATETIME> { type = DataFieldMetadata.DATE_FIELD;	    lenght = dateTimeLenght; format = Defaults.DEFAULT_DATETIME_FORMAT;}
+	|	<DEC> { type = DataFieldMetadata.DECIMAL_FIELD; }		(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> )? { lenght = temp != null ? temp : doubleLenght; }
+	|	<DECIMAL> { type = DataFieldMetadata.DECIMAL_FIELD; }	(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> )? { lenght = temp != null ? temp : doubleLenght; }
+	|	<DOUBLE> { type = DataFieldMetadata.DECIMAL_FIELD; }	(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> )? { lenght = temp != null ? temp : doubleLenght; }
+	|	<FLOAT> { type = DataFieldMetadata.NUMERIC_FIELD; 		lenght = floatLenght;}
+	|	<INT> { type = DataFieldMetadata.INTEGER_FIELD; }		(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> )? { lenght = temp != null ? temp : integerLenght; }
+	|	<INTEGER> { type = DataFieldMetadata.INTEGER_FIELD; }	(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> )? { lenght = temp != null ? temp : integerLenght; }
+	|	<REAL> { type = DataFieldMetadata.DECIMAL_FIELD; }		(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> )? { lenght = temp != null ? temp : doubleLenght; }
+	|	<SMALLINT> { type = DataFieldMetadata.INTEGER_FIELD; }	(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> )? { lenght = temp != null ? temp : integerLenght; }
+	|	<STRING> { type = DataFieldMetadata.STRING_FIELD; } 	(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> )? { lenght = temp != null ? temp : textLenght; }
+	|	<TEXT> { type = DataFieldMetadata.STRING_FIELD; } 		(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> )? { lenght = temp != null ? temp : textLenght; }
+	|	<TIME> { type = DataFieldMetadata.DATE_FIELD;			lenght = dateTimeLenght; format = Defaults.DEFAULT_TIME_FORMAT;} // ?
+	|	<TIMESTAMP> { type = DataFieldMetadata.DATE_FIELD;		lenght = dateTimeLenght; format = Defaults.DEFAULT_DATETIME_FORMAT;}
+	|	<NUMBER> { type = DataFieldMetadata.DECIMAL_FIELD; }	(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> )? { lenght = temp != null ? temp : doubleLenght; }
+	|	<NUMERIC> { type = DataFieldMetadata.DECIMAL_FIELD; }	(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> )? { lenght = temp != null ? temp : doubleLenght; }
+	|	<TINYINT> { type = DataFieldMetadata.INTEGER_FIELD; }	(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> )? { lenght = temp != null ? temp : integerLenght; }
+	|	<VARBINARY> { type = DataFieldMetadata.BYTE_FIELD; } 	(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> { lenght = temp; })
+	|	<VARCHAR> { type = DataFieldMetadata.STRING_FIELD; }	(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN>)? { lenght = temp; }
+	|	<VARCHAR2> { type = DataFieldMetadata.STRING_FIELD; }	<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> { lenght = temp; }
+	)
+	{ return new DataType(type, lenght, scale, format); }
+}
+
+//+
+Object defaultValue() : 
+{
+	Object ret;
+}
+{
+	(	ret = literal()
+	|	ret = nullLiteral() 
+	)
+	{ return ret; }
+}
+
+//+
+BigDecimal floatLiteral() :
+{}
+{
+	<FLOAT_LITERAL> { return new BigDecimal(token.image); }
+}
+
+//+
+String identifier() :
+{}
+{
+	<IDENTIFIER>
+	{ return token.image; }
+}
+
+//+
+void identifierList() :
+{
+}
+{
+	identifier()
+	(<COMA> identifier())*	
+}
+
+//+
+Object literal() :
+{
+	Object ret;
+}
+{
+	(	ret = integerLiteral()
+	|	ret = floatLiteral()
+	|	ret = stringLiteral()
+	)
+	{ return ret; }
+}
+
+//+
+Long integerLiteral() :
+{}
+{
+	<INTEGER_LITERAL> { return new Long(token.image); }
+}
+
+//+
+Object nullLiteral() : 
+{}
+{
+	<NULL> { return	null; }
+}
+	
+//+
+String stringLiteral() :
+{}
+{
+	<STRING_LITERAL> 
+	{ 
+		String value = token.image.intern();
+		return value.substring(1, value.length() - 1); 
+	}
+}
+
+//+
+void tableName() :
+{}
+{
+	<IDENTIFIER>
+}
+

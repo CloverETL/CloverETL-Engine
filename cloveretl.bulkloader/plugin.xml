@@ -1,0 +1,47 @@
+<plugin id="org.jetel.bulkloader" version="0.0.0.devel">
+	<runtime>
+		<library path="bin/"/>
+		<library path="lib/infobright-core-3.0-remote.jar"/>
+	</runtime>
+	
+	<requires engine-version="0.0.0.devel">
+		<import plugin-id="org.jetel.connection"/>
+		<import plugin-id="org.jetel.component"/>
+	</requires>
+	
+	<extension point-id="component">
+		<parameter id="type" value="ORACLE_DATA_WRITER"/>
+		<parameter id="className" value="org.jetel.component.OracleDataWriter"/>
+	</extension>
+	
+	<extension point-id="component">
+		<parameter id="type" value="DB2_DATA_WRITER"/>
+		<parameter id="className" value="org.jetel.component.DB2DataWriter"/>
+	</extension>
+	
+	<extension point-id="component">
+		<parameter id="type" value="INFORMIX_DATA_WRITER"/>
+		<parameter id="className" value="org.jetel.component.InformixDataWriter"/>
+	</extension>
+	
+	<extension point-id="component">
+		<parameter id="type" value="MS_SQL_DATA_WRITER"/>
+		<parameter id="className" value="org.jetel.component.MsSqlDataWriter"/>
+	</extension>
+	
+	<extension point-id="component">
+		<parameter id="type" value="MYSQL_DATA_WRITER"/>
+		<parameter id="className" value="org.jetel.component.MysqlDataWriter"/>
+	</extension>
+	
+	<extension point-id="component">
+		<parameter id="type" value="POSTGRESQL_DATA_WRITER"/>
+		<parameter id="className" value="org.jetel.component.PostgreSqlDataWriter"/>
+	</extension>
+	
+	<extension point-id="component">
+		<parameter id="type" value="INFOBRIGHT_DATA_WRITER"/>
+		<parameter id="className" value="org.jetel.component.InfobrightDataWriter"/>
+	</extension>
+	
+</plugin>

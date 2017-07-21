@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record locale="en.GB" name="EMPLOYEE" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field delimiter="," format="#" name="EMP_NO" nullable="true" shift="0" type="integer"/>
+<Field delimiter="," name="FIRST_NAME" nullable="true" shift="0" type="string"/>
+<Field delimiter="," name="LAST_NAME" nullable="true" shift="0" type="string"/>
+<Field delimiter="," name="PHONE_EXT" nullable="true" shift="0" type="string"/>
+<Field delimiter="," format="dd/MM/yyyy" name="HIRE_DATE" nullable="true" shift="0" type="date"/>
+<Field delimiter="," name="DEPT_NO" nullable="true" shift="0" type="string"/>
+<Field delimiter="," name="JOB_CODE" nullable="true" shift="0" type="string"/>
+<Field delimiter="," name="JOB_GRADE" nullable="true" shift="0" type="numeric"/>
+<Field delimiter="," name="JOB_COUNTRY" nullable="true" shift="0" type="string"/>
+<Field delimiter="," name="SALARY" nullable="true" shift="0" type="numeric"/>
+<Field name="FULL_NAME" nullable="true" shift="0" type="string"/>
+</Record>
