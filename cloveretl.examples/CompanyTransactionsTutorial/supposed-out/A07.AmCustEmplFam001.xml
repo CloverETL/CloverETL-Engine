@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Amounts>
+  <amount>
+    <AmountID>2</AmountID>
+    <Amount>768.50</Amount>
+    <customer>
+      <CustomerID>2</CustomerID>
+      <CustomerState>Montana</CustomerState>
+      <CustomerSurname>Keane</CustomerSurname>
+      <CustomerFirstname>Wathalee</CustomerFirstname>
+    </customer>
+    <employee>
+      <EmployeeID>2</EmployeeID>
+      <EmployeeSurname>Galvin</EmployeeSurname>
+      <EmployeeFirstname>William</EmployeeFirstname>
+      <spouse>
+        <SpouseName>Valerie</SpouseName>
+      </spouse>
+      <children>
+        <ChildName>Zoe</ChildName>
+        <ChildName>Amanda</ChildName>
+      </children>
+    </employee>
+  </amount>
+</Amounts>
