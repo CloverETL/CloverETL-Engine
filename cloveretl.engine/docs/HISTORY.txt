@@ -1,0 +1,1225 @@
+*******************************************************************************
+                          CloverETL Engine - HISTORY of RELEASES
+*******************************************************************************
+
+REL-3-4-3
+---------
+
+- FIXES:
+	- Component status and number of records on the edge are not shown after joiner 
+	that has input edges in different phases
+	- Insufficient error message while reading CSV files with header across two rows
+	- Insufficient and unclear error message while reading CSV files with incorrect encoding
+	- HTTPConnector changes EOL delimiters in response content
+	- Null value being saved into db table field of time type
+
+REL-3-4-2
+---------
+
+* improved performance of TreeWriter caches (in-memory caching)
+* upgraded JSch library to 0.1.50
+* upgraded slf4j-api to 1.7.2
+- FIXES:
+	- CLO-1216 Hadoop is missing in opensource engine build
+	- CLO-1335 Problems with DBExecute component
+
+REL-3-4-1
+---------
+
+- FIXES:
+	- Data_Intersection component drops data silently
+	- NPE occurs when data flows from JSONReader to ExtHashJoin and both components are in the same phase
+	- Checkconfig on DBOutputTable causes JNDI connection not released
+	- SORT_WITHIN_GROUPS output more records then records on input
+	- Lookup table can't read quoted data
+	- XmlReader: when port is not selected NPE is thrown
+	- A graph with DBLookupTable used in a CTL code is not restartable in batch mode
+
+REL-3-4-0
+---------
+
+* documented that Cloudera 3 works only on Sun Java
+* HTTPConnector should support PUT and DELETE methods
+* HTTPConnector - content should allow byte/cbyte data types
+* CTL2 wrapper for returning capturing groups from regex
+* improved visualization of error messages
+- FIXES:
+	- XMLWriter with underscore in key fails on server
+	- CharInputReader.skip skips bytes instead of characters
+	- UniversalDataReader - wildcard redading fails on server
+	- XMLExtract - extract element contents as text fails on databuffersize
+	- XmlExtract: parent field is not copied correctly
+	- Wildcard mapping does not check container type
+	- Improve Aggregate checkconfig
+	- MysqlDataWriter on MacOS
+	- UniversalDataReader: "Trim strings: not working when "quote strings" enabled
+	- XLSDataWriter: NPE when finishing writing into .xls file
+- BACKWARDS INCOMPATIBILITY:
+	- DBInputTable does not support empty strings - empty strings are considered as null value
+
+REL 3-4-0-M2
+------------
+
+* Cleanup of error reporting in graph log
+* Allow DataGenerator to generate variable number of records
+* Denormalizer should work also without key/group specification
+* XSLTransformer - support XSLT v2.0
+- Update JSch SFTP library
+- HadoopReader and HadoopWriter for local files
+- New CTL2 function sha256()
+- FIXES:
+	- Sequence does not allow using numbers higher than integer limit.
+	- Graph with 2 simple gathers runs forever
+	- Implement connection pooling
+- BACKWARDS INCOMPATIBILITY:
+	* Database connection refactoring
+	* Maximum number of processed records has long precision
+
+REL 3-4-0-M1
+------------
+
+* Hadoop support
+	- Hadoop connection
+	- HDFS protocol for readers & writers
+	- HadoopReader & HadoopWriter
+	- Hive JDBC specific
+* CTL2 wrapper for returning capturing groups from regex
+* CTL function for writing into lookup table
+* SystemExecute - new attribute “Ignore exit value”
+* Write binary data without padding with 0
+
+REL-3-3-1
+---------
+
++ tracking reported in % (e.g. now it's "30%" vs previous "0.3")
+- FIXES:
+	- XMLExtract: autofilling does not work
+	- SystemExecute: Do not delete temp file if component fails
+	- Recapacity of this CloverBuffer is not allowed.
+	- CTLUtils class cannot be used in transformations
+	- Incorrect last modification date on SFTP
+	- Remove org.jetel.license dependency from org.jetel.component plugin
+
+REL 3-3-0
+---------
+
+- UniversalDataReader does not open as many connections to SFTP
+- Partition correctly uses charset attribute
+- escape values in defaultProperties
+- input port reading in stream mode - process data progressibely without waiting for EOF
+
+REL 3-3-0-M3
+------------
+* DBFDataWriter component
+* USE_DIRECT_MEMORY in default properties – ability to turn off usage of direct memory and use heap instead (lower performance, better manageability)
+* Tempspace Management - components were updated to use centralised tempspace management
+	- BACKWARDS INCOMPATIBILITY
+		- components cannot specify their own tmp paths (SortWithinGroups, ExtSort, HTTPConnector, XLSDataWriter, XMLWriter)
+		- components cannot prevent deletion of their temporary files (SystemExecute - Delete tmp batch file)
+- XMLExtract - ability to read element/attribute names
+- MD5Sum, SHA1Sum, SHA256Sum aggregation functions
+- MSAccess specific/connection
+- CTL functions to access environment variables, Java properties, graph parameters
+- dateDiff() CTL function implementation fixed - provides correct results (BACKWARDS INCOMPATIBILITY)
+- Upgraded bundled Oracle JDBC driver to version 11.2.0.3.0
+
+
+REL 3-3-0-M2
+------------
+* Support for list and map fields in metadata (container types)
+* CTL2 change in assignment operator '=' (now it assigns by value, not reference)
+- Webservice client: added "Timeout" attribute + ability to print SOAP request/response in DEBUG mode
+
+
+REL 3-3-0-M1
+------------
++ Introducing MS Access and Generic ODBC
+- Improved log messages in readers and Aggregate
+- CTL2: fixed datediff() function to work with milliseconds
+- FastSort: Fixed rare synchronization problem during long runs causing a deadlock
+- UniversalDataReader: fixed buffer size problems when verbose mode is on with big records
+- UniversalDataReader/Writer, ComplexDataReader and ParallelReader: Explicit Quoted string and Quote character have now higher priority than setting these values in metadata (i.e. can now be properly overridden in component setting)
+- Analyzedb.bat: Paths to Clover-bundled JDBC drivers are now properly set
+- UniversalDataWriter and partitioned output – locking of file pattern is now more fine grained so that multiple graphs can run at the same time
+
+
+REL 3-2-1
+---------
+- WebServiceClient name space support fixed
+- XMLExtract mapping dialog not handling recursive XSDs correctly fixed
+
+
+REL 3-2-0
+---------
+* Introduction of dynamic edge buffers
++ Field Labels
+
+
+REL 3-1-2
+---------
+
+
+REL 3-1-0
+---------
+* New component ComplexDataReader (commercial only)
+	- for reading structured and unstructured flat files
+	- similar to MultiLevelReader, yet more powerful and user-friendly
+* Redesigned component XMLWriter (EXT_XML_WRITER)
+	- brand new mapping (incompatible)
+	- old XMLWriter still available as a deprecated component
+	- supports disk caching for large amounts of data
+* XMLExtract improvements
+	- automatic data denormalization
+	- metadata creation out of XMLExtract dialog
+	- ability to add ports and assign metadata
+	- annotations
+	- improved error reporting
+* AddressDoctor component (commercial only)
+* Lotus Notes Domino Reader/Writer/metadata extract (commercial only)
+* New component EmailReader (commercial only)
+* New CTL2 functions - xml2json() and json2xml()
+* Support for WebDAV and Amazon S3 protocols
+* DBInputTable supports reading SQL queries from input port
++ Binary parsers for integer and long, double (little/big endian, packed decimal)
++ New component Pivot
++ New component MetaPivot
++ PervasiveDB support
++ Firebird is has now built-in support
++ Trash multiple input ports
++ Trash can simulate a writer (Performance/Validate records modes)
++ New component DataSampler
++ New attribute for Denormalizer - group size
++ Performance of CTL random* functions improved
++ Performance of CTL String.indexOf() improved
++ Fixed handling of paths with spaces
++ ParallelReader improvements
++ Performance of Concatenate improved
++ Truezip is now used for handling zip files (append, excel)
+
+
+REL 3-0-2
+---------
+* CTL2: Lists and maps of records are now possible.
+	Now you can use list of records and maps of records in your code.
+	Example:
+		// lists
+		MyDataRecord[] myList;
+		MyDataRecord a;
+		MyDataRecord b;
+		myList[2] = a;
+		b = myList[2];
+		// maps
+		map[string, MyDataRecord] myMap;
+		myMap["hello"] = a;
+	(For maps, only values can be records)
+* XMLExtract now distinguishes between null and empty strings
+	When reading XML files with XML Extract, you can encouter the need to know whether an element or attribute is present in the source
+	or just has an empty value.
+	XMLExtract now sets either "null" value whenever the element/attribute is omitted or empty value ("") 
+	when the element/attribute is present but without a value
+* Aggregate: avg() and sum() aggregate functions now perform integer overflow check
+	Now you can easily see whether the aggration function produce the integer overflow and thus you're not getting the right results.
+* Fix: DataIntersection correctly reports unsorted input now
+	DataIntersection now stops immediately when it sees the input is not sorted properly ensuring data integrity.
+* UniversalDataReader & Writer now support "Quote character" attribute for specifying
+	Quoting support in readers/writers has been around for long time but now you can even specify the quoting character. In previous CloverETL
+	versions there has been built-in quote defined as either `'` or `"` (quote or double quote).
+	Now we present more fine-grained setting where the quote character can be defined.   
++ CTL2: byte and cbyte data types can now be compared with == or != interchangeably
++ CTL1 and CTL2: Huge performance improvement in index_of() function
++ New DataSampling example project in engine examples
++ Fix in DBOutputTable when working with byte values in batch mode
++ Fixed Partition transform conversion to Java
++ DBFReader explicit "strict" data policy setting is now correct
++ XLSWriter now creates empty files correctly
++ Fixed Denormalizer issue when loading Denormalize transform specified by class name
++ Updated built-in MySQL JDBC driver to mysql-connector-java-5.1.14
++ Fixed DBExecute not working when calling stored procedure and connection defined by JNDI
++ Fixed SystemExecute running Windows PowerShell scripts
++ EmailSender: MessageBody can now be multiline
+
+
+REL 3-0-1
+---------
++ error ports of UniversalDataReader and LDAP Reader can now have also byte/cbyte fields instead of just strings
++ fixed XMLExtract failing on opening input files in multiple phases
++ recursive parameter definition is now properly detected and warned in the log
++ CTL2 "for" cycle consuming memory fixed in CTL2 interpreted mode
++ byte and cbyte types in CTL2 are now fully compatible
++ ByteBufferUtils.encodeLength(ByteBuffer, int) fixed for 5-byte lengths
++ Default locale can be specified in defaultProperties
+
+
+REL 3-0-0
+---------
++ new format for boolean data field - e.g. /man|m/female|f/
++ new Dictinary types: integer,long,number,decimal,boolean,date,byte
++ new RunGraph component attribute "paramsToPass"
++ dedicated graph property name "PROJECT_DIR" (absolute path to project home directory) was substituted by attribute at GraphRuntimeContext.contextURL
+	- new command line attribute -contexturl <path> should be used instead of -P:PROJECT_DIR="<path>"
++ equalNulls attribute of Merge component was removed - value of this attribute was fixed on 'true' value 
++ list of components in tracking log (in console) are topologically sorted
++ new attribute 'quotedStrings' on DataWritter component - all written data can be quoted
++ new attributes for SystemExecute component - workersTimeout, charset
++ new attribute 'Collator sensitivity' on DataRecordMetadata
++ Joda date formatter is now default formatter (java formatter is still available with prefix "java:" in format string)
+
+
+REL 2-9-3
+---------
++ fix of #4252 RunGraph component - GraphNotFound on the server
++ Fixed incorrect resolving of special characters in transforms specified by URL
++ Reset fix in InfobrightDataWriter
+
+
+REL 2-9-2
+---------
++ Example projects using DB migrated to Derby - easy setup for newbies
++ FastSort NPE fix with non-nullable record and no default value
++ fixed XLSWriter long sheet names issue
++ fixed occasional NPE in DataIntersection
++ fixed DB2DataWriter not finishing in pipe mode
++ SQLite support improved
++ fixed ExtSort sorting composed key with nulls incorrectly
++ fixed fields delimited by "\n" - doubling backslash
++ CloverDataReader is now able to read without index file
++ fixed Reading timestamps from XLS sheets
+
+  
+
+REL 2-9-1
+---------
++ JMS Writer - Fix of exception propagation during sending of JMS message
++ fixed HashPartition function giving negative port numbers occasionally
++ improved SFTP speed
+
+
+REL 2-9-0
+---------
+Features:
++ XLS reading - formatted value can be obtained as a String type field if needed
++ Tracking - in final tracking summary average Rec/s and KB/s is displayed
++ LDAPWriter - possibility of changing/disabling multiseparator
++ CTL transformation has now PROJECT_DIR available
++ new AbstractPartitionFunction for Java writen PartitionFunction
+
+Fixed:
++ PostgreSqlDataWriter and OracleDataWriter - NullPointerException fix
++ Reading of zipped MS Excel files
+
+
+REL 2-8-1
+---------
+Features:
++ DBInputTable - incremental file is created automatically when properly configured
++ AspellLookupTable can now return edit distance
++ DBOutputTable has new attribute "Atomic SQL query" for ensuring that SQL query rollbacks on error
++ SQL query in DBExecute can have comments inside
++ Bundled jTDS for direct support for Microsoft SQL Server and Sybase
+ 
+Fixed:
++ Fixed CPU info tracking for multithreaded components
++ Fixed special characters resolving in some URL attributes
++ XMLWriter can be created from Java
++ Minor fixes in InformixDataWriter
+
+
+REL 2-8-0
+---------
++ Method DataRecord2JmsMsg.createLastMsg(DataRecord) is deprecated. Use the same method without parameters instead.  
++ org.jetel.component.jms.JmsMsg2DataRecordProperties can process javax.jms.BytesMessage
++ bodyField attribute of JmsReader/JmsWriter have default value 
++ interfaces DataRecord2JmsMsg and JmsMsg2DataRecord now have 2 new methods: setGraph(TransformationGraph) and getGraph()
++ context(thread) class-loader changed to current(class) class-loader
++ new run option: -skipcheckconfig
++ optimized UniversalDataReader
++ Trash now can print out its ID for debugging purposes
++ unified null and empty field values in sorting, Dedup, etc. 
+
+REL 2-7-3
+---------
+Features:
++ backport - skipCheckConfig runtime configuration parameter was added
++ all URLs in graphs can be now resolved by third-party algorithms - helpful for graphs processing inside war file or other non-standard file systems (see CustomPathResolver)
+
+Fixed:
++ CloverDataReader unintended locks the input file in configuration checking (checkConfig)
++ backport for DBExecute - database stored procedure is now correctly triggered
++ XMLExtract configuration checking (checkConfig) does call parent implementation - undesired warning message removed
++ undesired warning message removed in case incompatible field types in CTL auto-mapping $0.* := $0.*
+
+REL 2-7-2
+---------
+Features:
++ simplified JMSWriter - method DataRecord2JmsMsg.createMsg(r) is called for all records (event for last record) and DataRecord2JmsMsg.createLastMsg(r) is called just once after last record.
++ DBOutputTable converts to string all values with unknown data type 
+
+Fixed:
++ ExtSort does not sort correctly with Null values in key
++ SimpleCache used in DBJoin caches many records with same key in a wrong way
++ JMSReader/Writer: attributes processorCode and processorURL are ignored
++ DBExecute - if input port with parameters is connected but no record come, procedure should not execute
++ classpath resolving problems in RunGraph component
++ input file is not closed when graph fails (http://forum.cloveretl.org/viewtopic.php?f=4&t=810&sid=57ac7cf7f854d09b590535717dc0efb6)
+
+REL 2-7-1
+---------
+Features:
++ added CTL functions: bit_and bit_or, bit_xor
++ StringAproxComparatorLocaleRules for more languages
++ Clover-to-SQL conversions have been revised for all supported dbms, some data types changed 
++ performace improvement in HashJoin 
+
+Fixed:
++ multiple XPathReaders in one graph with different namespaces
++ writing data to port doesn't use unnecessary threads
++ updated our built-in mysql driver to version 5.1.17
++ DBExecute - NPE when executing stored procedure in Oracle, which have output parameter as not the first paramete
++ when query in DBInputTable finishes with ;<new line> strange error is thrown
++ OracleDataWriter leaves junk after execution
++ randomSeed doesn't work in DataGenerator
++ edit_distance function with strength 2
++ ExtSort with a locale
++ other fixes
+
+ 
+REL 2-7-0
+---------
+Features:
++ DataGenerator can use CTL function to generate random data, lookup table may be used
++ added support for XLSX format to both XLSReader and XLSWriter
++ new CTL functions
+	- edit_distance
+	- metaphone
+	- NYSIIS
+	- random_boolean
+	- random_gaussian
+	- random_int
+	- random_long
+	- random_date
+	- random_string
+	- bit_and
+	- bit_or
+	- bit_xor
+	- bit_set
+	- bit_invert
+	- bit_is_set
+	- bit_lshift
+	- bit_rshift
++ str2num ctl function has new pattern and locale parameters
++ added support for formatting of date/time fields using the Joda Time syntax
++ CloverDataReader can read multiple files
++ Tar protocol support for readers
++ xmlFeatures attribute for XMLExtract and XPathReader components
++ Skip and Number Records is implemented also for every source
++ XMLExtract has new numRecords and skipRecords in the mapping attribute
++ autofilling for DBInputTable and XMLExtract
++ autofilling has new attributes row_timestamp and reader_timestamp
++ better checkConfig for data record metadata
++ readers supports wildcards in archives
++ DBExecute can read statements from input port
++ bulkloaders use named pipes for data transfers when possible
++ new implementation of JdbcSpecific - DefaultConservativeJdbcSpecific
++ OracleSpecific has new attribute rowPrefetch (value can be changed in defaultProperties) 
++ new JDBC specific for MSSQL 2005
++ edge debug can log up last N records
++ graph parameters are printed out by logger on debug level
++ MergeJoin finishes as soon as no slave data records are available (in case of inner join)
++ Merge runs and displays a warning if only a single input is connected
++ locale and date/number formats can be specified for an entire data record
++ "description" property added to both data record and data field meta data
++ "recordKey" property added to data record metadata
++ clover and clover.bat shell scripts now return a value specifying success/failure
++ added shell scripts for AnalyzeDB and DBFAnalyzer
++ BadDataFormatException returns also wrong value for parsers
++ XMLExtract has better error handling
++ New example projects: CompanyTransactionsTutorial and CTLFunctionsTutorial
++ Notes added to some graphs from the advancedExamples project.
+
+Fixed:
++ DBLookupTable does not need metadata to be set
++ DBInputTable can convert all database types to String
++ Improved SQL query validation
++ External DB connections with custom drivers
++ InputStream releasing after reading
++ SimpleGather has now better heuristic to choose proper input port - that avoids performance issue caused by undesirable repeated waiting
++ MultiFileReader created empty "unassigned" file
++ DDL to Clover metadata didn't set the date/datetime format
++ data record wasn't valid for autofilling fields only
++ hex2byte CTL function sometimes returned wrong tail
++ wrong formatting for trash component
++ twice footer created by StructuredDataWriter
++ now bulkloaders can be run outside of the workspace
++ now persistent lookup table checks key identity during initialization; identity between settings of lookup table and persistent lookup table
++ field association in DBInputTable
++ cloverserver execution script update
++ Sheet name now has a higher priority than Sheet number in XLSReader
++ XLSReader now correctly reads decimal values
++ AspellLookupTable now correctly supports letters with diacritical marks in lookup keys
+
+REL 2-6-3
+---------
+Features:
++ the DBInputTable and the DataGenerator use more effective data record allocation during a parsing process
+
+Fixed:
++ incremental reading with the Universal Data Reader is fixed
++ the System Execute component now works even without specified an output file or an output edge
+
+REL 2-6-2
+---------
+Features:
++ the OracleDataWriter component has new output port to which rejected/erroneous records are sent
+
+Fixed:
++ integer number random generator is not allowed to produce the MIN_INT value, since it is recognized
+	in a integer data field as a special flag of null value
++ data record caching on buffered edge has synchronization issue - race-condition deadlock was fixed
++ the UniversalDataReader parses correctly an input file with UTF-8 encoding (and other multi-byte character encodings)
+
+REL 2-6-1
+---------
+Features:
++ extend OracleDataWriter to allows setting of other parameters of sqlldr utility
++ JDBC specific for Sybase database was added
++ buffered edges experience intermittently a deadlock or a bufferunderflow exception
+
+Fixed:
++ second paratemer of split CTL function doesn't need to be constant
++ both keyword 'number' and 'numeric' can be used for decimal floating point metadata field
++ added format parameter to Num2String function to enable formatting numbers in CTL
++ EdgeBase.hasData() method was updated so the EOF flag in the edge is recognised as a piece of data
+	- SimpleGather component now works well with all edge types (including phase edge type)
++ LookupJoin and SequenceChecker components have correct reset functionality
++ fix in free method for XLSWriter, StructureWriter and TextTableWriter components 
++ problems with stored procedures in Oracle are solved
++ all build scripts are UTF-8 compliant
++ XmlXPathReaderu component accepts xml input with default namespace
++ HISTORY.txt updated for minor release 2.6.1
+
+REL 2-6-0
+---------
+Features:
++ changed RecordTransform interface: method transform(DataRecor[],DataRecord[]) returns: 
+	- < -1 -- fatal error / user defined
+	-    SKIP = -1 -- error / skip record
+	- >= 0 -- send to a specified output port
+	-    ALL = Integer.MAX_VALUE -- send to all output ports
++ changed RecordNormalize and RecordDenormalize interfaces
++ added attributes "errorActions" and "errorLog" to following components:
+	- AproxMergeJoin
+	- DataInteresction
+	- DBJoin
+	- HashJoin
+	- LookupJoin
+	- MergeJoin
+	- Reformat
+	- Normalizer
+	- Denormalizer
+	- DBExecute
++ DBOutputTable and DBExecute use fields with autofilling for filling error code and error message
++ unification of trimming attributes of flat file readers
++ field type "numeric" is substituted by "number" - all graphs with "numeric" field type work while engine recognizes both type representation
++ XSLTransformer reading and writing, dictionary support
++ new component SortWithinGroups
++ graph run Debug informations
++ Lookup tables interfaces refactored
+
+Fixed:
++ Persistent lookup table doesn't work properly when changing key
++ XML Extract simple sequence with namespaces doesn't work
++ Unable to read date field without format written before
++ CTL push(), pop(), insert(), poll() behaviour fixed
++ CTL negative literals parsing fixed
++ Reformat transform method now returns error code instead of boolean
++ DataParser - Problem with empty fields with blank delimiter
++ DBInputTable - query parsing
++ FixLength mode allows arbitrary fill characters
++ XLSWriter - error during initialization 
+
+REL 2-5-3
+---------
++ DbConnection: explicit unregistering of JDBC drivers
++ WatchDog: explicit interruption of nodes for failed graph
++ SimpleCopy checkConfig uses deep validation of metadata equality
++ DBInputTable SQL queries parsing fixed
++ CTL datediff fixed
+
+REL 2-5-2
+---------
+Changes/bug fixes:
++ metadata externalization fixed
+
+REL 2-5-1
+---------
+Changes/bug fixes:
++ MergeJoin: new optional attribute ascendingInputs
++ MergeJoin: checking of inputs ordering
++ bugfixes
+
+REL 2-5-0
+---------
+Changes/bug fixes:
++ JDBC connections has new DB customization
++ keyDuplicates attribute for DataIntersection component
++ clover engine JMX messaging was reworked
++ standardization of mapping syntax:DBOutputTable, DataGenerator, DB2DataWriter, XLSReader
++ standardization of join key: AproxMergeJoin
++ debugDirectory graph attribute was replaced by command line parameter identically called
++ new command line parameter "-nodebug" turns of all runtime graph debugging (e.g edge debugging)
++ all names have to satisfy pattern "[_A-Za-z_]+[_A-Za-z0-9]*"
++ DBInputTable supports incremental reading 
++ DBOutputTable can return number of updated records
++ XMLWriter features: useRootElement, singleLine, DTD, XSD location, namespaces
++ XMLWriter: better mapping schema (old schema is still valid, but not recommended)
++ MergeJoin: new optional attribute ascendingInputs
++ removed byteMode attribute in Simple/RangeLookupTable
++ CloverDataWriter and CloverDataReader supports file name in format like other writers; compressData attribute is removed
++ MergeJoin: checking of inputs ordering
+
+REL 2-4-11
+----------
++ minor bugfixes
+
+REL 2-4-10
+----------
++ fix bug with index_of in CTL
++ small bugfixes
+
+REL 2-4-9
+---------
++ fixed bug in NumericFormat - some numbers ware not correctly formatted
+
+REL 2-4-8
+---------
++ oracle bulkloader updated
++ CTL decimal problem fixed
++ xls minor bugfixes
+
+REL 2-4-7
+---------
++ minor bugfixes
+
+REL 2-4-6
+---------
+Changes/bug fixes:
++ XSL Transformation component
++ support for namespaces in XmlXpathReader
++ normalizer transformation count() is called only once for each input record
++ minor bugfixes
+
+REL 2-4-5
+---------
+Changes/bug fixes:
++ reading from a port/field for XmlXpathReader
++ writing to a port/field for XmlWriter
++ minor bugfixes
+
+REL 2-4-4
+---------
+Changes/bug fixes:
++ new extension point for dictionary entry type
+
+REL 2-4-3
+---------
+Release in particular repairing bugs from 2.4.2 version.
+
+Changes/bug fixes:
++ MergeJoin - fix for left outer join
++ DBOutputTable - fix problem with order in fieldMap attribute
++ AnalyzeDB - added engine initialization 
++ minor bugfixes
+
+REL 2-4-2
+---------
+Release in particular repairing bugs from 2.4.1 version.
+
+Changes/bug fixes:
++ the Trash component has new charset parameter
++ update mysql jdbc driver, added postresql jdbc driver
++ minor bugfixes
+
+REL 2-4-1
+---------
+Release in particular repairing bugs from 2.4.0 version.
+
+Changes/bug fixes:
++ only minor changes for GUI release purpose (1.9.0)
+
+REL 2-4-0
+---------
+Changes/bug fixes:
++ new wrapper SystemOutByteChannel protects System.out against close() 
++ sftp protocol support for readers which use multifile reader
++ possibility of copying ByteDataField as BLOB
++ new implementation of "partition by range" feature with range lookup table usage 
++ field unquoting before setting value by delimited and universal data parsers
++ the set of available functions in the Clover transformation language was extended:
+	 - string remove_blank_space(string );
+	 - string get_alphanumeric_chars(string,boolean,boolean);
+	 - string translate(string, string,string );
+	 - string join(anytype,....);
+	 - boolean is_long(string)
+	 - integer index_of(string, string, integer)
+     - boolean try_convert(anytype, anytype, string)
+     - numeric num2num(numeric, symbol) 
+     - bool num2bool(numeric)
+     - numeric bool2num(bool, symbol)
+     - bool str2bool(string)
+     - date long2date(long)
+     - long date2long(date)
+     - string to_string(anytype)
+	 - byte base64byte(string)
+	 - string byte2base64(byte)
+	 - string bits2str(byte)
+	 - byte str2bits(string)
+	 - byte hex2byte(string)
+	 - string byte2hex(byte)
++ Clover transformation language supports two new variable types, byte array and record
++ some components have new optional "rejected" port(s) (AproxMergeJoin, CheckForeignKey, DBJoin, LookupJoin)
++ DBConnection - for threadSafe connections java.sql.Connections are stored specifically for element ids 
+	--> method getConnection() was replaced by getConnection(String)
+	--> some classes (SQLDataParser, DBLookupTable) now work with java.sql.Connection 
+		instead of org.jetel.connection.DBConnection
++ DBOutputTable accepts more queries at once; new jetel-sql query syntax introduced
++ DBOutputTable has new attribute "errorAction" - COMMIT or ROLLBACK on errors
++ StructureWriter has 3 input ports: "body", "header" and "footer". There can be different masks for each input port
++ all component attributes, which contain a java code or a Clover TL language code, are not resolved for special
+	characters
++ new graph processing facility - GraphExecutor, GraphPool.
++ new component XmlWriter with example graphXmlWriter.grf
++ new component SpeedLimiter
++ XLSWriter can write to different sheets depending on record's value
++ data record metadata can specify a default field delimiter
++ the DataReader component recognizes too few or too many fields per record
++ the DataReader component has extended error port metadata - field number where an error occurs is attached
++ new JavaExecute component
++ new component attribute type - properties
++ ascending/descending flag in sort component can be specified per each key field
+
+REL 2-3-4
+---------
+Release in particular repairing bugs from 2.3.3 version.
+
+Changes/bug fixes:
++ only minor changes for GUI release purpose
+
+REL 2-3-3
+---------
+Release in particular repairing bugs from 2.3.2 version.
+
+Changes/bug fixes:
++ added a public method to the aggregate mapping parser, which creates the values of constants from
+	their string representations
+
+REL 2-3-2
+---------
+Release in particular repairing bugs from 2.3.1 version.
+
+Changes/bug fixes:
++ fix in the clover TL - last line comment doesn't need to be finished with a new line character(s)
++ fix in DBLookupTable's caching algorithm
+
+REL 2-3-1 
+---------
+Release in particular repairing bugs from 2.3.0 version.
+
+Changes/bug fixes:
++ fixed race condition occurring during multiple concurrent accesses to one lookup table.
+
+REL 2-3-0 commercial purpose release
+---------
++ new extension point for build-in JDBC drivers - a JDBC connection now can be defined also via
+	identifier of a build-in JDBC driver instead direct parameters 'dbDriver' and 'driverLibrary'
++ new engine plugin - 'org.jetel.jdbc', which now contains only MySQL build-in JDBC driver
++ the Dedup compoment has new rejected port, where all duplicated records are resent
++ the set of available functions in the Clover transformation language was extended
+	- boolean is_blank(string)
+	- boolean is_ascii(string)
+	- boolean is_number(string)
+	- boolean is_integer(string)
+	- boolean is_date(string)
+	- boolean remove_diacritic(string)
++ the javolution library was updated to the version 5.1
++ the commons-logging library was updated to the version 1.1
++ the DBLookupTable has new parameter "storeNulls", which determines whether the internal cache will
+	store also a 'null' database response
++ method DataField.copyFrom() is now deprecated - developers should use setValue(DataField) instead
++ added new component "DB2 Data Writer" - DB2 bulk loader
++ added new component "Informix Data Writer" - Informix bulk loader
++ added new component "MSSQL Data Writer" - SQL Server bulk loader
++ most of the readers are able to read direct from STDIN - use '-' character in fileURL parameter for this purpose
++ most of the writers are able to write direct to STDOUT - use '-' character in fileURL parameter for this purpose
++ usage of the 'Check foreign key' component was slightly changed - check documentation
++ DateDataField corresponds with three database types (DATE,TIME,TIMESTAMP) depending on format string:
+	- format contains only date (GyMwWDdFE) symbols - DATE
+	- format contains only time (aHhKkmsSzZ) symbols - TIME
+	- format contains date and time symbols - TIMESTAMP
+	- format is empty - TIMESTAMP
+
+REL 2-2-1
+---------
+Release in particular repairing bugs from 2.2.0 version.
+
+Changes/bug fixes:
++ the running scripts were renamed from 'run[.bat]' to 'clover[.bat]'
++ the default tracking interval was shorted to two seconds
++ in the DataGenerator component randomFields attribute can have inside minimal and maximal values these characters :;|
+  a value has to be quoted
++ the StringUtils class has new split method
++ the OracleDataWriter better handles a directory path with whitespaces
++ few other small fixes
+
+REL 2-2-0
+---------
+Changes/bug fixes:
++ all read/write components have an uniform set of available attributes 
+  (i.e. dataPolicy, skipFirstLine, skipRows, numRecords, ...)
++ The examples package - example graphs are now distributed as an 'easy to use' eclipse project
++ engine binary release has this slightly different directory structure
+  - [cloverETL]
+    - [bin]      run scripts
+    - [docs]     documentation, licenses
+    - [lib]      clover engine and other dependant libraries
+    - [plugins]  clover engine plugins
++ new shell/bat scripts for easy clover execution are present in the [bin] directory
++ the documentation was moved to wiki page
++ new implementation of Aggregate component
++ new range lookup table was added to the lookup engine plugin
++ the DBOutputTable component now supports new output port for auto-generated keys from database;
+  only MySQL and Oracle databases are supported
++ new XML reader based on xPath technology was added - XPathReader
++ the clover engine plugin framework was extended by new extension point for TL functions
+  - most of the TL functions were externalized to the new engine plugin tlfunction
++ the field metadata has new attribute auto_filling
++ the clover transformation language increases usability - supports sequences, lookup tables, lists, maps ...
+
+REL 2-1-3
+---------
+Release in particular repairing bugs from 2.1.2 version.
+
+Changes/bug fixes:
++ fixes mainly in internal transformation language - isnull() method now process also numeric fields
+  and switch command does not ignore last default branch
+
+REL 2-1-2
+---------
+Release in particular repairing bugs from 2.1.1 version.
+
+Changes/bug fixes:
++ DBOutputTable component now properly recognizes empty cloverField parameter
++ DataGenerator component publics its parameter setters
++ support for sequences and lookup tables was introduced into clover transformation language
++ simple sequence now returns valid current value
+
+REL 2-1-1
+---------
+Release in particular repairing bugs from 2.1.0 version.
+
+Changes/bug fixes:
++ fix in Clover Data Reader and Clover Data Writer components
++ phase edges now correctly clean up temporary files
+
+REL 2-1-0
+---------
+Changes/bug fixes:
++ Added new component "Data Generator" - generator of synthetic/random data
++ Added new component "Lookup Table Reader/Writer" - reader/writer of records from/to lookup table
++ Added new component "Lookup Join" - joins incoming data with selected lookup table
++ Added new component "JMS Reader" - receives JMS-messages
++ Added new component "JMS Writer" - sends JMS-messages
++ Added new component "Normalizer" - normalizes input records
++ Added new component "Denormalizer" - denormalizes input records
++ Added new component "Structure writer" - record mask formatter
++ Added new connection "JMS connection" - connection related with JSMReader and JMSWriter
++ developers can use new method for engine initialization - runGraph.initEngine()
++ new approach in DataField.setToDefaultValue() method;
+  in case the default value is not preset, engine tries to set the field value to null
++ DBConnection has new calling method order;
+  new DBConnection(), init(), getConnection()/getStatement(), free() 
+  (connect() method is now private - call init() method instead)
++ Extended LookupTable interface by put() and remove() methods
++ all GraphElement(s) should implement checkConfig() method; this method is used for
+  checking engine element configuration; related changes of transformation graph startup
+  are described in runGraph class comments
++ components (Node descendants) should not override direct run() method, instead 
+  for this purpose was introduced new execute() method
++ WatchDog thread has new wide logging and inter-component communication facilities
++ Added new data field type cbyte (compressed byte array)
++ All join components are ready to satisfy more slave input data streams
+
+REL 2-0-4
+---------
+Release in particular repairing bugs from 2.0.3 version.
+
+Changes/bug fixes:
++ fix in transform language for optional assigning 
++ Clover data writer was fixed for incoming empty record set
+
+REL 2-0-3
+---------
+Release in particular repairing bugs from 2.0.2 version.
+
+Changes/bug fixes:
++ all factories for pluginable graph elements (ComponentFactory, ConnectionFactory, ...)
+  now are able to create instances by passing constructor parameters
++ all components with record transformation class (Reformat, HashJoin, ...)
+  have a new contructor for direct supplying RecordTransform class
+
+REL 2-0-2
+---------
+Release in particular repairing bugs from 2.0.1 version.
+
+Changes/bug fixes:
++ SQL utils/library better cooperate with ByteDataField
++ All <GraphElement>Factories can recognize type attribute as full class specification
++ Added new attribute sqlStatementDelimiter in DBExecute component
++ Extended LookupTable interface by put() and remove() methods
+
+REL 2-0-1
+---------
+Changes/bug fixes:
++ Added new component "Oracle Data Writer" - oracle bulk loader
++ Added new component "MySQL Data Writer" - mysql bulk loader
++ Added new component "Clover Data Reader" - data reader for Clover internal format
++ Added new component "Clover Data Writer" - data writer for Clover internal format
++ Added new component "LDAP Reader" - data extractor from LDAP directory
++ Added new component "LDAP Writer" - data loader to LDAP directory
++ Added new component "XLS Reader" - excel sheets reader
++ Added new component "XLS Writer" - excel sheets writer
++ DelimitedDataReader and FixLenDataReader can read from multifile specified by wildcard patterns
++ FixLenDataParser has two different reading mode - byte and char mode
++ XMLExtract now operates with multifield keys and generated key by sequence
+
+REL 2-0-0
+---------
+Changes/bug fixes:
++ CloverETL now requires Java 1.5 (or higher) to run
++ New plugging system introduced (see CloverETL web site, documentation section) - all components,
+connections, lookups, sequences are now implemented as independent plug-ins of CloverETL
++ Behaviour of setNull() method on DataField(s) is changed - may result in calling setDefault()
+depending on nullability flag
++ ByteDataField should now be working (many bugs have been fixed)
++ Transformation language has been greatly extended and thoroughly tested
++ Aggregate component now supports two more "aggregation functions" (CRC32 and MD5)
++ CloverETL now distinguishes between "core" components developed by CloverETL team and third
+party contributions - they are kept in separate "project"
++ BadDataFormatException handling has been reworked - see the source code for more info 
++ Encryption of passwords in db connections has been reworked - see org.jetel.main.runGraph JavaDoc
+for new command-line option
++ StringDataField now uses StringBuilder class to store its value
++ "old" FixLenDataParser has been replaced by two new parsers - FixLenCharDataParser/FixLenByteDataParser
+
+Note: for additional changes between "old" 1.x and "new" 2.x versions see documentation
+bundled with source code package.
+
+REL 1-9-0
+-------------
+Changes/bug fixes:
++ Removed Singleton pattern from TransformationGraph class - Clover now supports unlimited
+graphs within single JVM instance
++ Added DataReader/DataWriter - universal readers/writers of text files - support
+mixture of delimited & fix-len fields, able to survive errors in data
++ Added Transformation language - full-fledge programming language focused on creating
+data transformations (supported by Reformat, all joiners, DataIntersection components) -
+warning - this is still very untested. Examples will follow. 
++ Added option "fastPropagate" to Edge - allows fast propagation of records between
+components connected by such edge - different kind of buffering involved when reader
+can read data just after they are sent by writer. Normally, reader waits till writer
+fills-in the buffer fully.
+
+
+REL 1-8-3
+---------
+Changes/bug fixes:
+
++ loading definition of custom transformation components in org.jetel.main.runGraph()
+  (added option to load/register additional transformation components)
++ fixed bug in fromXML() method which caused "Can't find <SQLCode> node !" error in graphs developed in GUI
++ set equalNulls parameter of dedup component to be true as default.
++ DBConnection now supports drivers consisting of multiple Java libraries
+  (added option to specify more than one library when loading JDBC driver  - in connection definitions (driverLibrary) )
++ re-tested and fixed many problems in org.jetel.data.DecimalDataField and related classes
++ fixed hasData() method in DirectEdge implementation which sometimes caused component hang-on
++ fixed missing close() call on output stream in Trash component when output was directed to file
+
+
+REL 1-8-2
+---------
+Changes/bug fixes:
++ fixed FixLenDataParser2 which was discarding all records
++ fixed CopySQLData.CopyDate when used with Oracle 10 driver (DBOutputTable component) 
++ fixed	DBInputTable when used with DB2 JDBC driver - now calling commit() on result set (applies to all DBs)
+
+
+REL 1-8-1
+---------
+Changes/bug fixes:
++ fixed DirectEdge problem which caused component hang-up
++ fixed DelimitedReaderNIO problem when reading UTF-8 encoding (and other multi-byte character encodings)
++ improved reporting of parsing errors for DelimitedDataReaderNIO and FixLenDataReader
+
+
+REL 1-8-0
+---------
+The version numbering has changed. Starting with this version (1.8.0), the third part of version
+number will be used to distinguish bug-fixes between regular versions - if such release is needed.
+Second part is used to distinguish regular releases. First part of the number (e.g. 1) is changed when
+substantial architecture change was made.
+
+New features:
++new implementation of DirectEdge (the most common connection between components)
+brings substantial improvement in performance - especially on SMP systems
++new data type - Decimal - implemented. It brings really big numbers to Clover.
++Clover implements its own  "primitive" numeric data types - Integer, Long, Double
+which allow (in contrary to Java's own) modifications of stored values
++Reformat,HashJoin and MergeJoin components now support definition of mappings
+written in form of enhanced Java syntax  
+
+Changes:
++CodeParser has been updated to handle preprocessing of embedded "Clover" code in Java
+source code
+
+REL 1-1-7
+---------
+New features:
++added NVL() function to internal language used by filter component
++added JetelVersion class (in org.jetel.util) with several
+static methods (and vars) which can be used to get info about library
+version, build number, time of assembly, etc.
++added option to use encrypted passwords in JDBC config files
++all components now accept XML definition of parameters as XML attributes
+or inner XML nodes
++framework Defaults (org.jetel.data.Defaults) are now set/configured through
+defaultProperties file (in org/jetel/ directory of the binary package). It is no more
+needed to recompile the whole package if (for example) the maximum size of data record
+needs to be changed. Just edit the "defaultProperties" file.
++component factory is now configured through "components.xml" definition file. User
+components can now easily be added through modifying this file and specifying component's
+ID and class name.
++when defining graph layout and parameters for components in form of XML file, component parameters
+previously accepted only as XML nodes' attributes can be now defined in form of "child" nodes too.
+This is useful for long definitions or multiline parameters.
+
+
+Changes:
++information messages & debugging messages are now output through
+Jakarta's CommonsLogging means - they are not sent directly to console any more.
++fixed DelimitedDataFormatter - to properly handle OneRecordPerLine policy on different
+OS (CR&LF issue on Windows, Unix)
++fixed skipLeadingBlanks at FixLenDataParser
++refactored interface org.jetel.data.Number to org.jetel.data.Numeric - Number collided with
+java.lang.Number class
++Reformat component now supports multiple output ports connected. Appropriate transformation
+class has to be provided by user.
++Dedup component now offers selecting unique only data records - those records for which
+there were no duplicates found.
+
+
+REL 1-1-6
+---------
+New features:
++Sequences - definition of interface and implementation of simple sequence with
+persistent value.
++Parameters defined (parameter files referenced) from within graph's XML definition 
++Long datatype - represents signed 64bit integer
++Number interface - interface with methods to get/set/compare int,double,long values of
+data fields representing numeric value
++XML definition of graph's layout can now contain definition of properties (parameters).
+They may be defined directly in graph or loaded-in from external files - see JavaDoc
+for TransformationGraphXMLReaderWriter class.
+
+Changes:
++DBInputTable now allows to specify fetchSize when reading data from database
++Filter now accepts (copies to output port 0) all records for which the filterExpression evaluates TRUE
+(the same behaviour as ExtFilter)
++DBOutputTable - if maxErrors parameter is set to -1, all SQL errors are ignored.
++DataRecord now implements Comparable interface. However, compareTo() method can be used
+only to compare records based on the same metadata object
++Removed package org.jetel.test from clover's engine and put into clover examples package
++Removed clover org.jetel.gui - long abandoned code
++runGraph() method is now covered by LGPL license
+
+REL 1-1-5
+---------
+New features:
++DBInputTable,DBOutputTable,DBExecute now support loading SQL queries
+from external file - use "url" attribute. File can be accessed locally or
+through FTP or HTTP protocol - whatever is specified in "url".
++RecordTransform interface now includes "finished()" method. Called
+when particular Node (e.g. Reformat, MergeJoin,..)finishes transforming data.
++DataRecordTransform class has been updated to reflect changes in RecordTransform
+interface.
+
+REL 1-1-5pre
+----------
+New features:
++Partition component - partition data using one of following algorithms -
+(Round-Robin,Hash,Range)
++DataIntersect component - joins two data flows (A & B) and outputs records only
+in A to port 0, records both in A&B to port 1 and records in B only to port 2.
++extra XML attributes defined for components performing reformats (Reformat, HasJoin, MergeJoin)
+are now passed into transformation function as properties - can be used for parameterizing
+transformation functions
+
+
+Changes:
++enhanced MERGE_JOIN component to support full outer join.
++introduced code which detect potential deadlocks between components in graph and changes
+direct-edge to buffered-edge.
++transformation graph now registers all DataRecord metadata defined (by their IDs) and offers
+later retrieval of such metadata - good when using lookups which require metadata.
++SQLDataParser supports (again) setting of fetch size, also improved reporting of possible
+parsing errors
++changed definition of LookupTable interface, also updated SimpleLookupTable & DBLookupTable
++changed RecordTransform interface
++DataRecordTransform helper class has been updated to reflect changes in RecordTransform interface
+
+REL 1-1-4
+------------
+The same functionality as 1-1-4pre1.
+
+REL 1-1-4pre1
+-------------
+New features:
++ new ExtSort component has been added. It performs external sorting (on-disk sorting)
+if input data file is too big to fit into available memory.
+Changes:
++ added/extended toString() methods to DataRecord,DataRecordMetadata
++ changed size specifier when (de)serializing StringDataField from
+int to short -> saves two bytes on each serialized field which speeds up
+processing. However, poses the limit that string can be max 32K chars long.
++ added duplicate() method to DataRecord and all field classes. It
+makes duplicating (making copies) of existing records easier and much faster
+(it doesn't perform several checkings which are not necessary in this context).
+Creates new object.
++ added copyFrom() method to DataRecord and all field classes. Enables faster
+copying of content of one record into another. Does not create new object.
+
+
+REL 1-1-3a
+----------
+Changes:
++ BufferedEdge has been rolled back to version 1.1.1 since the version
+from rel 1.1.3 turned out to be buggy.
++ DirectEdge has been reworked and tuned. It should be also better tested now.
+
+REL 1-1-3
+---------
+New features:
++ extended metadata of locale support. Data & Numeric fields
+now can have locale specified. It can be used alone or combined
+with format string to specify how the value is going to be formated
+when printed as String or what is the expected format of the data in text form
+(for parsing).
++ DBOutputTable sends records rejected by DB to output port 0 (if connected). This
+can be used for capturing rejected records. Does not work well in Batch insert/update
+mode.
++ Metadata describing data flows can now be directly embedded into graph definition
+file. 
++ When specifying where to look for file containing metadata in XML 
+form, fileURL can now reference HTTP or FTP server (previously only FILE was accepted). 
+This allows for centralized metadata stored on central server.
++ Metadata can now be extracted directly from database based on SQL query. This
+allows for dynamic unloading of database tables without the need to create
+metadata definition file upfront.
++ ExtFilter's expression language has been extended by datediff() function.
+
+Changes:
++Updates to fatal error reporting of org.jetel.main.runGraph utility. Unless verbose
+mode is specified, only error message is displayed without stack trace info.
+
+REL 1-1-2
+---------
+New features:
++ extended ExtFilter - org.jetel.interpreter has been
+extended, it now supports arithmetic operations and
+has several built-in functions.
+
+Changes:
++ added several new "macros" to org.jetel.data.GetVal
+
+REL 1-1-1
+---------
+New features:
++ added DBF data/database reader. It comes with DBFAnalyze utility
+which reads in DBF table and produces Clover metadata describing the
+record structure. See examples (graphDBFRead) for illustration how it works.
++ created ExtFilter component which somehow resembles "old" Filter
+with several enhancements (supports logical operators AND,OR,NOT,
+braces, etc.)
++ created org.jetel.interpreter package - currently, code
+supporting ExtFilter is there. This should become base
+for Clover's internal transformation language interpreter.
++ for all data fields types, own hashCode() method implemented.
+
+Changes:
++ All components which work on stream of records now contain yield() call (within
+their main processing loop. This should improve thread scheduling and consequently
+help improve data flow throughout the graph.
++ introduced checking of name validity for Nodes (all components), Edges,
+Records, Fields. Allowed characters are [A-Za-z0-9_]. This is due to
+planned future enhancements. Up to this version, was no particular constraint.
++ rearranged/refactored packages & classes. All data parsers (for textual data)
+are now int org.jetel.data.parser. All data formatters (for textual data) are in
+org.jetel.data.formatter. Also lookups have been moved to separate package -
+org.jetel.data.lookup.
++ Extended interface definition RecordTransform to support variety of transformation
+components. Use DataRecordTransform (in org.jetel.component package) class as a base
+class for your custom transformations.
+It allows you to omit implementation of many methods from RecordTransform interface
+which are not used/called most of the time but have to be provided.
++ created new package org.jetel.data.lookup - base for consolidating
+lookup tables support (old lookup tables have been put there). New
+interface LookupTable has been created.
++ updated compareTo() methods for all data objects (NumericDataField,
+StringDataField, etc.) to support comparison with various object types.
++ FixLenDataParser2 has been updated to support line separators (when fix-len
+record is delimited by new-line character(s))
++ components FixLenDataReaderNIO,FixLenDataWriterNIO have been enhanced
+to allow specifying of which character(s) is used to separate
+record on line - if required.
+
+
+REL 1-1-0
+---------
+New features:
++ change of license from GPL to LGPL
++ enhanced DBOutputTable to allow for hand-written SQL/DML statements - this
+should give 100% flexibility when populating target DB table
++ improved CopySQL primitives to cope with basic datatype conversions - integer->decimal,
+date->datetime, etc. - it regards to Clover-DB interaction
++ graph layouts (component attributes) can now reference globally defined
+properties (through ${...property name...} ). These references are resolved
+when materializing components/metadata.
++ added handling of NULLs when copying data to/from Database 
+for fields (String, Date, Integer, Numeric);
++ for components requiring transformation classes to be specified (e.g. Reformat,Joins..),
+the possibility to embed the Java source into XML text defining graph layout is possible. The source
+code gets automatically compiled. When the graph is executed multiple times, it is
+checked whether the source code changed and if not, compilation is skipped.
+
+Bugs corrected:
++ fixed bug in CopyDate class (CopySQLData) when copying/setting DATE filed - thanks to Khelfa Mohamed
+
+
+REL 1-0-8
+---------
+New features:
++ updated DBOutputTable component to support selective source2target fields
+mapping - attribute cloverFields added.
++ updated DBOutputTable to support batch updates
++ updated Sort component to support lexicographics sorting & normal sorting
++ created new component - HashJoin.
++ created new class HashKey (used for building hash tables of DataRecords)
++ created new class RecordComparator to be used for sorting DataRecords
++ added Java Properties for DataRecordMetadata and DataFieldMetadata
++ new component CheckForeignKey added - contributed by Stewart Jeacocke
++ altered Filter component to send rejected records to second output port
+  (if connected)
++ updated EdgeDebuger to support debugging limited number of records, filtering and sampling
+
+Bugs corrected:
++ fixed problem in DataRecordMetadataXMLReaderWriter - part writing XML was wrongly
+outputting format string for defaultValue attribute.
+
