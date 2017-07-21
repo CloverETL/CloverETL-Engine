@@ -1,0 +1,34 @@
+#! /bin/sh
+# this script was inspired by practices gained from ant run scripts (http://ant.apache.org/)
+
+# usage 
+# clover <engine_arguments> <graph_name.grf> [ - <java_arguments> ]
+# example:
+# cloverserver -verbose myGraph.grf - -classpath /home/name/myTransformation
+
+#define CLOVER_HOME variable
+if [ -z "$CLOVER_HOME" -o ! -d "$CLOVER_HOME" ] ; then
+	## resolve links - $0 may be a link to clover's home
+	PRG="$0"
+	progname=`basename "$0"`
+
+	# need this for relative symlinks
+	while [ -h "$PRG" ] ; do
+		ls=`ls -ld "$PRG"`
+		link=`expr "$ls" : '.*-> \(.*\)$'`
+		if expr "$link" : '/.*' > /dev/null; then
+			PRG="$link"
+		else
+			PRG=`dirname "$PRG"`"/$link"
+		fi
+	done
+
+	CLOVER_HOME=`dirname "$PRG"`/..
+	# make it fully qualified
+	CLOVER_HOME=`cd "$CLOVER_HOME" && pwd`
+fi
+
+#split command-line arguments to two sets - clover and jvm arguments
+. ${CLOVER_HOME}/bin/commonlib $@
+
+${CLOVER_HOME}/bin/clover -noJMX $clover_exec_args - -server -Xmx1024M -XX:+UseParallelGC -classpath "$user_classpath" $java_exec_args
