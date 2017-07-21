@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="defaultName" recordSize="-1" type="delimited">
+<Field name="layout_key" type="string"/>
+<Field format="yyyy-MM-dd'T'HH:mm:ssZ" name="start_valid_time" type="date"/>
+<Field format="yyyy-MM-dd'T'HH:mm:ssZ" name="end_valid_time" type="date"/>
+<Field name="time_dim_id" type="integer"/>
+</Record>

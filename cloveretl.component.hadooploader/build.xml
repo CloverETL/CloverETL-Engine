@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<!--
+  Builds the Hadoop Loader module and copies the resulting jar file
+  to components.comercial/lib
+-->
+<project name="cloveretl.component.hadooploader" default="build" basedir=".">
+	<!-- =========================== PROPERTIES =========================== -->
+	<property name="parent.project" value="cloveretl.component.hadoop"/>
+	<property name="engine.project" value="cloveretl.engine"/>
+	
+	<!-- input directories -->
+	<property name="dir.src" value="${basedir}/src"/>
+	<property name="dir.lib" value="${basedir}/lib"/>
+	<property name="dir.projects" value="${basedir}/.."/>
+	
+	<!-- output directories -->
+	<property name="dir.build" value="${basedir}/build"/>
+	<property name="dir.dist" value="${basedir}/dist"/>
+	<property name="dir.component.lib" value="${dir.projects}/${parent.project}/lib"/>
+
+	<!-- output files -->
+	<property name="dist.jar" value="${dir.dist}/cloveretl.component.hadooploader.jar"/>
+	
+	<!-- =========================== FILESETS ============================= -->
+	<fileset id="libs" dir="${dir.lib}">
+		<include name="hadoop-core.jar"/>
+		<!--<include name="commons-configuration.jar"/>-->
+	</fileset>
+
+	<fileset id="components" dir="${dir.projects}/${parent.project}/dist/plugins/org.jetel.component.hadoop/">
+		<include name="${parent.project}.jar"/>
+	</fileset>
+	
+	<fileset id="engine" dir="${dir.projects}/cloveretl.engine/build/lib/">
+		<include name="*.jar"/>
+	</fileset>
+	
+	<!-- =========================== TARGETS ============================== -->
+	
+	<target name="init">
+		<mkdir dir="${dir.build}"/>
+		<echo message="Creating: ${dir.build} "/>
+	</target>
+	
+	<!-- The "build" target is an equivalent of the "compile" target. -->
+	<target name="build" depends="compile,package" description="Compiles sources and creates a JAR file"/>
+
+	<!-- The "compile" target compiles classes in all packages into .java files
+	     and runs the RMI compiler for classes implementing remote interfaces. -->
+	<target name="compile" depends="init" description="Compile Java sources">
+		<!--
+		<ant dir="${dir.projects}/${engine.project}/" antfile="build.xml"/>
+		<ant dir="${dir.projects}/${parent.project}/" antfile="build.xml"/>
+		-->
+		
+		<!-- Create directory for binaries. -->
+		<mkdir dir="${dir.build}"/>
+		
+		<!-- Compile Java sources into the "bin" directory.  -->
+		<echo message="Target: ${dir.build} "/>
+		<javac 
+				debug="true" 
+				destdir="${dir.build}"
+				target="1.5"
+				source="1.5">
+			<classpath>
+				<fileset refid="libs"/>
+				<fileset refid="engine"/>
+				<fileset refid="components"/>
+			</classpath>
+
+			<src path="${dir.src}"/>
+		</javac>
+		
+	</target>
+
+	<target name="package" depends="compile">
+
+		<!-- Create directory for binaries. -->
+		<mkdir dir="${dir.dist}"/>
+		
+		<jar destfile="${dist.jar}" basedir="${dir.build}">
+			<include name="**/*.class"/>
+		</jar>
+		
+		<copy file="${dist.jar}" todir="${dir.component.lib}"/>
+	</target>
+	
+	<target name="clean">
+		<delete dir="${dir.dist}"/>
+		<delete dir="${dir.build}"/>
+	</target>
+
+</project>
