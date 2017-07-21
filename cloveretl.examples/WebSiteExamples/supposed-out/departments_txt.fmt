@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="departments_txt" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Field delimiter="|" eofAsDelimiter="false" label="Department name" name="departmantName" nullable="true" shift="0" type="string"/>
+<Field delimiter="|" eofAsDelimiter="false" label="Building" name="building" nullable="true" shift="0" type="string"/>
+<Field delimiter="|" eofAsDelimiter="false" label="Floor" name="floor" nullable="true" shift="0" type="integer"/>
+<Field delimiter="|" eofAsDelimiter="false" label="Code" name="code" nullable="true" shift="0" type="string"/>
+</Record>
+
