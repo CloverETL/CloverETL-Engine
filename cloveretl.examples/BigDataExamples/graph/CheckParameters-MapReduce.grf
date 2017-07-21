@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="mtomcanyi" created="Tue Mar 19 13:20:07 CET 2013" guiVersion="0.0.0.devel" id="1363695843550" licenseType="Commercial" modified="Mon Jan 13 18:47:26 CET 2014" modifiedBy="User" name="CheckJobConfiguration" revision="1.53" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="ValidationStatus" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="isValid" type="boolean"/>
+<Field name="validationMessage" type="string"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameterFile fileURL="hadoop.prm"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="Check required parameters" guiX="32" guiY="246" id="CHECK_REQUIRED_PARAMETERS1" type="GET_JOB_INPUT">
+<attr name="mapping"><![CDATA[//#CTL2
+
+/*  ----- Default settings of parameters -----
+
+HADOOP_JOBTRACKER_HOST=jobtracker.yourhost.com
+HADOOP_HIVE_URL=
+HADOOP_NAMESERVER_PORT=8020
+HADOOP_NAMESERVER_HOST=namenode.yourhost.com
+HADOOP_HIVE_USER=
+HADOOP_JOBTRACKER_PORT=8021
+
+*/
+
+map[string,string] defaultSettings;
+defaultSettings["HADOOP_NAMENODE_HOST"]	    = "namenode.yourhost.com";
+defaultSettings["HADOOP_JOBTRACKER_HOST"]	= "jobtracker.yourhost.com";
+	
+
+
+// Transforms input record into output record.
+function integer transform() {
+	boolean isConfigurationValid = true;
+	string paramName;
+	string errorMessage = 
+"                                                                         " + "\n" +
+"-------------------------------------------------------------------------" + "\n" +
+" Please set the following required parameters in hadoop.prm:    " + "\n" ;
+
+	foreach (string paramName : defaultSettings.getKeys()) {
+		if (getParamValue(paramName) == null || length(getParamValue(paramName)) == 0 || getParamValue(paramName) == defaultSettings[paramName]) {
+			isConfigurationValid = false;
+			errorMessage = errorMessage + "\n " + paramName;
+		}
+	}
+	
+	
+	if (isConfigurationValid) {
+		errorMessage = "All required parameters are set";
+	} else {
+		errorMessage = errorMessage + "\n" + "--------------------------------------------------------------------------";
+	}
+	
+	$out.0.isValid = isConfigurationValid;
+	$out.0.validationMessage = errorMessage;
+	
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="OK" guiX="560" guiY="246" id="OK" type="SUCCESS"/>
+<Node enabled="enabled" guiName="Report missing parameters" guiX="281" guiY="412" id="REPORT_MISSING_PARAMETERS" type="FAIL">
+<attr name="mapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.errorMessage = $in.0.validationMessage;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Validation OK?" guiX="295" guiY="246" id="VALIDATION_OK1" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[//#CTL2
+$in.0.isValid]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="CHECK_REQUIRED_PARAMETERS1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="VALIDATION_OK1:0"/>
+<Edge fromNode="VALIDATION_OK1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted)" toNode="OK:0"/>
+<Edge fromNode="VALIDATION_OK1:1" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (rejected)" toNode="REPORT_MISSING_PARAMETERS:0"/>
+</Phase>
+</Graph>
