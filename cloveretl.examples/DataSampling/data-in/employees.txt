@@ -1,0 +1,1122 @@
+1,Nelson,Robert,7946,02/06/1992,710,Sales Representative,5,Brazil,111,588,Robert, Nelson
+2,Young,Bruce,9967,23/05/1993,673,Dir,2,Switzerland,205,428,Bruce, Young
+3,Lambert,Kim,2204,07/10/1983,266,SRep,4,Netherlands,108,367,Kim, Lambert
+4,Johnson,Leslie,6491,03/01/1991,727,Eng,5,Argentina,146,801,Leslie, Johnson
+5,Forest,Phil,6019,29/12/1980,103,Eng,5,Zambia,218,553,Phil, Forest
+6,Davolio,Nancy,4285,27/08/1991,386,Mngr,3,Singapore,80,688,Nancy, Davolio
+7,Weston,K. J.,1643,03/08/2003,389,Sales Representative,5,HongKong,194,855,K. J., Weston
+8,Lee,Terri,5829,21/06/1986,985,Finan,3,France,157,694,Terri, Lee
+9,Hall,Stewart,5319,18/11/2003,230,Eng,2,Egypt,340,079,Stewart, Hall
+10,Young,Katherine,2584,29/01/2001,197,Eng,3,Singapore,97,225,Katherine, Young
+11,Papadopoulos,Chris,3555,15/10/1997,640,Vice President,0,Germany,81,022,Chris, Papadopoulos
+12,Fisher,Pete,4822,21/01/1999,451,Vice President,0,Argentina,111,579,Pete, Fisher
+13,Bennet,Ann,6219,21/07/2007,737,Sales Representative,2,Germany,360,294,Ann, Bennet
+14,De Souza,Roger,4188,21/12/1998,268,Sales Representative,2,Denmark,72,389,Roger, De Souza
+15,Baldwin,Janet,5009,21/07/2004,528,SRep,4,Germany,199,679,Janet, Baldwin
+16,Reeves,Roger,6249,19/07/2010,740,Eng,3,Belgium,135,249,Roger, Reeves
+17,Stansbury,Willie,2898,01/09/1985,567,Eng,4,Egypt,278,153,Willie, Stansbury
+18,Phong,Leslie,2247,18/02/1987,494,Eng,3,China,260,108,Leslie, Phong
+19,Ramanathan,Ashok,5050,24/10/1988,405,Sales Representative,5,Kuwait,156,802,Ashok, Ramanathan
+20,Steadman,Walter,2639,10/08/1998,471,Eng,4,Zimbabwe,231,002,Walter, Steadman
+21,Nordstrom,Carol,6048,18/11/1984,450,SRep,4,United Kingdom,214,263,Carol, Nordstrom
+22,Leung,Luke,8454,06/11/1998,870,SRep,4,HongKong,225,308,Luke, Leung
+23,O'Brien,Sue Anne,8213,01/02/1993,747,Mngr,3,Egypt,226,195,Sue Anne, O'Brien
+24,Burbank,Jennifer M.,7394,20/06/1994,683,VP,2,France,116,154,Jennifer M., Burbank
+25,Sutherland,Claudia,1780,24/11/1992,689,Doc,3,Nigeria,146,757,Claudia, Sutherland
+26,Bishop,Dana,7992,31/12/1982,906,Dir,2,Netherlands,223,194,Dana, Bishop
+27,MacDonald,Mary S.,5757,19/04/2007,453,Admin,5,France,213,343,Mary S., MacDonald
+28,Williams,Randy,6711,16/06/2007,549,CEO,1,HongKong,149,084,Randy, Williams
+29,Bender,Oliver H.,8953,07/12/2003,381,Sales Representative,2,Egypt,137,143,Oliver H., Bender
+30,Cook,Kevin,1216,30/10/1994,252,SRep,4,India,292,582,Kevin, Cook
+31,Brown,Kelly,4846,27/11/1983,521,VP,2,Israel,71,043,Kelly, Brown
+32,Ichida,Yuki,2401,04/02/1983,169,Sales Representative,2,France,280,665,Yuki, Ichida
+33,Page,Mary,5012,03/05/1985,189,Vice President,0,Denmark,224,976,Mary, Page
+34,Parker,Bill,3232,31/05/1980,132,Admin,5,Italy,148,273,Bill, Parker
+35,Yamamoto,Takashi,1691,31/05/2008,115,Eng,5,Denmark,213,970,Takashi, Yamamoto
+36,Ferrari,Roberto,2908,15/03/1990,195,Eng,5,Switzerland,303,506,Roberto, Ferrari
+37,Yanowski,Michael,2501,30/11/1984,251,Sales Representative,5,United Kingdom,72,111,Michael, Yanowski
+38,Glon,Jacques,7482,08/05/2007,314,Eng,4,China,300,253,Jacques, Glon
+39,Johnson,Scott,5244,20/04/1998,709,VP,2,Switzerland,118,513,Scott, Johnson
+40,Green,T.J.,8270,05/12/1997,964,Sales Representative,2,Zambia,362,684,T.J., Green
+41,Osborne,Pierre,2997,03/07/2002,912,Eng,5,Germany,110,125,Pierre, Osborne
+42,Montgomery,John,4267,30/09/2000,905,Finan,3,Kuwait,189,035,John, Montgomery
+43,Guckenheimer,Mark,9893,12/05/1992,209,Inside Sales Coordinator,2,Belgium,238,294,Mark, Guckenheimer
+44,Fuller,Andrew,7293,23/10/1989,757,VP,2,Brazil,211,497,Andrew, Fuller
+45,Leverling,Janet,9932,09/08/1985,302,Admin,5,Italy,351,772,Janet, Leverling
+46,King,Robert,4947,21/09/1991,702,Eng,4,Australia,395,621,Robert, King
+47,King1,Robert,6715,04/06/1997,686,Eng,3,Nigeria,94,972,Robert, King1
+48,King2,Robert,1322,08/06/1984,536,Mngr,3,China,147,254,Robert, King2
+49,Callahan,Laura,2654,10/04/1990,822,Eng,4,Netherlands,313,686,Laura, Callahan
+50,Dodsworth,Anne,5788,20/01/1986,121,Sales,3,Israel,220,513,Anne, Dodsworth
+51,Sutherland,Claudia,9220,23/06/1993,633,Mktg,3,United States of America,270,482,Claudia, Sutherland
+52,Nelson,Robert,3843,21/01/1985,164,CEO,1,Australia,131,117,Robert, Nelson
+53,Young,Bruce,5472,12/03/2006,357,Doc,3,Israel,338,254,Bruce, Young
+54,Lambert,Kim,6631,28/06/2005,183,SRep,4,Zambia,204,039,Kim, Lambert
+55,Johnson,Leslie,5715,24/04/2006,728,Eng,4,United Kingdom,302,349,Leslie, Johnson
+56,Forest,Phil,5952,05/08/1992,291,Eng,3,Nigeria,134,133,Phil, Forest
+57,Davolio,Nancy,1651,20/07/1989,805,SRep,4,Mexico,64,160,Nancy, Davolio
+58,Weston,K. J.,6767,08/05/1998,621,SRep,4,United States of America,312,111,K. J., Weston
+59,Lee,Terri,1664,14/09/1997,895,Sales Representative,2,China,344,915,Terri, Lee
+60,Hall,Stewart,1160,21/03/2010,458,Eng,3,Zimbabwe,260,884,Stewart, Hall
+61,Young,Katherine,6053,15/08/1980,720,Admin,5,Nigeria,364,149,Katherine, Young
+62,Papadopoulos,Chris,4429,20/03/2000,150,Eng,5,HongKong,79,432,Chris, Papadopoulos
+63,Fisher,Pete,3964,18/05/1992,619,Inside Sales Coordinator,2,Netherlands,123,124,Pete, Fisher
+64,Bennet,Ann,8087,09/02/1998,913,Dir,2,Zambia,370,565,Ann, Bennet
+65,De Souza,Roger,2381,06/07/2000,482,Eng,3,India,320,454,Roger, De Souza
+66,Baldwin,Janet,1851,21/07/1996,871,PRel,4,Israel,81,644,Janet, Baldwin
+67,Reeves,Roger,6446,13/10/2004,874,SRep,4,Nigeria,155,569,Roger, Reeves
+68,Stansbury,Willie,9505,11/12/1995,797,Eng,4,Germany,251,812,Willie, Stansbury
+69,Phong,Leslie,7166,24/08/2008,906,PRel,4,Brazil,368,374,Leslie, Phong
+70,Ramanathan,Ashok,2700,13/08/2001,970,Mngr,3,Argentina,117,370,Ashok, Ramanathan
+71,Steadman,Walter,9984,02/09/1984,497,Doc,3,India,350,264,Walter, Steadman
+72,Nordstrom,Carol,5676,13/08/1991,868,Finan,3,HongKong,359,765,Carol, Nordstrom
+73,Leung,Luke,2818,10/11/2009,979,Eng,3,Argentina,203,509,Luke, Leung
+74,O'Brien,Sue Anne,4587,28/10/1992,722,CFO,1,Netherlands,364,813,Sue Anne, O'Brien
+75,Burbank,Jennifer M.,8439,11/10/1984,544,SRep,4,United States of America,150,806,Jennifer M., Burbank
+76,Sutherland,Claudia,6442,04/03/1997,457,Admin,5,United Kingdom,260,252,Claudia, Sutherland
+77,Bishop,Dana,6625,10/01/1985,372,Mngr,3,Belgium,75,037,Dana, Bishop
+78,MacDonald,Mary S.,3001,18/03/2009,633,Admin,5,Belgium,51,360,Mary S., MacDonald
+79,Williams,Randy,7335,20/10/1984,226,Eng,4,Denmark,373,048,Randy, Williams
+80,Bender,Oliver H.,4085,05/06/1982,797,Mngr,4,France,106,289,Oliver H., Bender
+81,Cook,Kevin,3939,01/10/2008,887,VP,2,Italy,148,920,Kevin, Cook
+82,Brown,Kelly,5166,17/10/1989,589,Sales Representative,2,Mexico,65,269,Kelly, Brown
+83,Ichida,Yuki,6415,15/10/2003,451,Sales Representative,2,Kuwait,206,979,Yuki, Ichida
+84,Page,Mary,6362,13/11/1982,979,Sales Representative,2,China,175,603,Mary, Page
+85,Parker,Bill,6960,26/11/1989,778,Sales Representative,2,United Kingdom,285,956,Bill, Parker
+86,Yamamoto,Takashi,3365,17/07/2000,196,Eng,3,Kuwait,332,687,Takashi, Yamamoto
+87,Ferrari,Roberto,7655,17/12/2003,846,Doc,3,Argentina,331,634,Roberto, Ferrari
+88,Yanowski,Michael,6621,27/11/1997,151,VP,2,Zimbabwe,73,080,Michael, Yanowski
+89,Glon,Jacques,5587,31/05/1981,177,Admin,5,Argentina,289,459,Jacques, Glon
+90,Johnson,Scott,5258,23/06/1996,807,Mngr,3,Brazil,104,036,Scott, Johnson
+91,Green,T.J.,2486,11/07/2007,125,CFO,1,Singapore,89,339,T.J., Green
+92,Osborne,Pierre,3395,05/03/1995,611,Mngr,3,Germany,243,716,Pierre, Osborne
+93,Montgomery,John,4676,15/08/2004,948,Inside Sales Coordinator,2,India,71,313,John, Montgomery
+94,Guckenheimer,Mark,1410,10/06/1993,891,CFO,1,Nigeria,230,997,Mark, Guckenheimer
+95,Fuller,Andrew,2220,04/01/2002,405,SRep,4,Zimbabwe,159,859,Andrew, Fuller
+96,Leverling,Janet,7634,28/09/1994,553,VP,2,Zimbabwe,394,395,Janet, Leverling
+97,King,Robert,6372,24/12/2001,673,Eng,3,Argentina,262,415,Robert, King
+98,King1,Robert,8023,21/09/2002,234,SRep,4,Denmark,152,742,Robert, King1
+99,King2,Robert,2600,01/02/1997,489,Mngr,4,Singapore,110,114,Robert, King2
+100,Callahan,Laura,8674,19/07/1994,124,Admin,5,Switzerland,69,778,Laura, Callahan
+101,Dodsworth,Anne,9861,12/05/2003,867,Finan,3,Belgium,218,078,Anne, Dodsworth
+102,Sutherland,Claudia,6112,07/07/2007,130,PRel,4,HongKong,377,117,Claudia, Sutherland
+103,Nelson,Robert,7833,23/10/2010,733,Eng,3,Argentina,154,634,Robert, Nelson
+104,Young,Bruce,7855,07/09/2007,414,SRep,4,Canada,316,993,Bruce, Young
+105,Lambert,Kim,4353,04/01/1996,166,Inside Sales Coordinator,2,Germany,74,438,Kim, Lambert
+106,Johnson,Leslie,2648,28/07/2007,641,Eng,3,France,336,802,Leslie, Johnson
+107,Forest,Phil,4561,06/11/2005,745,Eng,4,United Kingdom,187,127,Phil, Forest
+108,Davolio,Nancy,2773,13/11/1988,746,CFO,1,Belgium,100,992,Nancy, Davolio
+109,Weston,K. J.,7293,03/05/1983,576,Inside Sales Coordinator,2,Singapore,341,570,K. J., Weston
+110,Lee,Terri,2921,06/10/1989,570,VP,2,Belgium,136,482,Terri, Lee
+111,Hall,Stewart,7929,27/11/1993,920,Finan,3,Singapore,131,391,Stewart, Hall
+112,Young,Katherine,6002,24/07/1992,674,Finan,3,France,149,112,Katherine, Young
+113,Papadopoulos,Chris,6271,07/11/2009,875,Eng,2,Denmark,309,871,Chris, Papadopoulos
+114,Fisher,Pete,6034,12/09/1982,388,Eng,3,China,144,622,Pete, Fisher
+115,Bennet,Ann,8562,06/08/1999,717,Eng,4,Belgium,91,714,Ann, Bennet
+116,De Souza,Roger,4504,08/12/1980,979,Eng,3,Denmark,104,367,Roger, De Souza
+117,Baldwin,Janet,5040,07/02/1980,773,Eng,5,Kuwait,274,176,Janet, Baldwin
+118,Reeves,Roger,7933,23/01/1999,905,Admin,5,China,340,974,Roger, Reeves
+119,Stansbury,Willie,8599,22/11/1995,833,Admin,5,Singapore,68,713,Willie, Stansbury
+120,Phong,Leslie,8615,13/02/1992,665,Sales Representative,5,Japan,71,306,Leslie, Phong
+121,Ramanathan,Ashok,3294,06/08/1997,444,Eng,3,Zimbabwe,343,101,Ashok, Ramanathan
+122,Steadman,Walter,4250,06/07/2010,418,Eng,3,Brazil,324,012,Walter, Steadman
+123,Nordstrom,Carol,5750,12/02/1986,745,SRep,4,Netherlands,65,246,Carol, Nordstrom
+124,Leung,Luke,3656,03/08/2002,702,Eng,3,Canada,351,891,Luke, Leung
+125,O'Brien,Sue Anne,3700,10/07/2001,139,Eng,3,Zimbabwe,280,241,Sue Anne, O'Brien
+126,Burbank,Jennifer M.,6175,10/10/2008,390,Sales,3,Zambia,362,420,Jennifer M., Burbank
+127,Sutherland,Claudia,3814,07/03/2010,287,Sales Representative,5,China,206,035,Claudia, Sutherland
+128,Bishop,Dana,4688,15/08/1998,377,SRep,4,Canada,291,892,Dana, Bishop
+129,MacDonald,Mary S.,1218,20/02/1997,487,SRep,4,Switzerland,59,670,Mary S., MacDonald
+130,Williams,Randy,5332,30/07/2004,316,Eng,3,Netherlands,183,149,Randy, Williams
+131,Bender,Oliver H.,7915,28/10/1981,206,SRep,4,Zimbabwe,337,210,Oliver H., Bender
+132,Cook,Kevin,8618,16/12/1984,392,Dir,2,Netherlands,301,604,Kevin, Cook
+133,Brown,Kelly,6224,21/04/1990,822,Eng,5,China,218,076,Kelly, Brown
+134,Ichida,Yuki,5006,28/09/2004,486,Mngr,3,Singapore,203,484,Yuki, Ichida
+135,Page,Mary,1119,30/04/1995,322,SRep,4,France,172,600,Mary, Page
+136,Parker,Bill,4554,16/12/1986,426,Mngr,3,China,344,574,Bill, Parker
+137,Yamamoto,Takashi,2323,15/06/2002,778,Eng,3,Japan,150,041,Takashi, Yamamoto
+138,Ferrari,Roberto,5871,21/01/2005,326,Eng,3,Brazil,349,865,Roberto, Ferrari
+139,Yanowski,Michael,2142,27/08/1985,929,Admin,5,China,385,369,Michael, Yanowski
+140,Glon,Jacques,4798,20/08/1997,866,CFO,1,Switzerland,399,893,Jacques, Glon
+141,Johnson,Scott,6829,19/01/1999,452,Finan,3,Nigeria,77,129,Scott, Johnson
+142,Green,T.J.,9357,15/12/1982,679,Eng,2,Brazil,87,849,T.J., Green
+143,Osborne,Pierre,2366,26/01/1988,951,Eng,5,HongKong,244,774,Pierre, Osborne
+144,Montgomery,John,3720,22/03/1990,583,Vice President,0,Kuwait,349,292,John, Montgomery
+145,Guckenheimer,Mark,5261,09/10/2010,290,Eng,4,Zambia,150,901,Mark, Guckenheimer
+146,Fuller,Andrew,3757,25/10/2006,644,Finan,3,Germany,341,649,Andrew, Fuller
+147,Leverling,Janet,6211,22/09/1994,427,Doc,3,Argentina,296,404,Janet, Leverling
+148,King,Robert,2098,02/04/1983,560,Eng,3,India,274,385,Robert, King
+149,King1,Robert,3032,06/02/1999,108,Eng,4,Switzerland,54,923,Robert, King1
+150,King2,Robert,3094,10/09/1992,646,Eng,4,Zimbabwe,293,018,Robert, King2
+151,Callahan,Laura,5909,10/07/1984,487,Eng,4,United Kingdom,296,434,Laura, Callahan
+152,Dodsworth,Anne,6323,18/12/2004,298,Finan,3,Israel,114,152,Anne, Dodsworth
+153,Sutherland,Claudia,6013,06/09/1992,582,Mktg,3,Israel,182,376,Claudia, Sutherland
+154,Nelson,Robert,2378,21/08/2008,284,Admin,5,Egypt,352,951,Robert, Nelson
+155,Young,Bruce,1218,12/07/2007,882,Eng,3,Zimbabwe,258,712,Bruce, Young
+156,Lambert,Kim,9663,26/09/1993,682,Finan,3,Mexico,227,902,Kim, Lambert
+157,Johnson,Leslie,7211,25/07/1997,433,Eng,3,United States of America,213,177,Leslie, Johnson
+158,Forest,Phil,5212,28/08/1990,437,Admin,5,Netherlands,338,010,Phil, Forest
+159,Davolio,Nancy,7323,07/07/1990,824,CFO,1,Canada,82,683,Nancy, Davolio
+160,Weston,K. J.,3912,27/07/1990,887,CFO,1,Belgium,271,830,K. J., Weston
+161,Lee,Terri,4631,27/09/1985,330,Eng,2,Singapore,127,503,Terri, Lee
+162,Hall,Stewart,1963,28/03/1998,800,Eng,3,Japan,126,826,Stewart, Hall
+163,Young,Katherine,6353,02/09/1995,121,Admin,5,Kuwait,112,331,Katherine, Young
+164,Papadopoulos,Chris,6911,06/04/1989,461,PRel,4,Switzerland,303,810,Chris, Papadopoulos
+165,Fisher,Pete,9626,29/07/2001,199,Eng,3,Singapore,339,968,Pete, Fisher
+166,Bennet,Ann,5497,05/10/1986,714,Sales Representative,2,Italy,353,423,Ann, Bennet
+167,De Souza,Roger,6632,16/12/2005,253,SRep,4,Argentina,95,188,Roger, De Souza
+168,Baldwin,Janet,4667,05/05/1988,470,Finan,3,China,87,119,Janet, Baldwin
+169,Reeves,Roger,2130,19/12/1980,337,Finan,3,Zimbabwe,62,602,Roger, Reeves
+170,Stansbury,Willie,1606,21/08/2000,595,CFO,1,Zambia,189,473,Willie, Stansbury
+171,Phong,Leslie,9428,07/06/2003,398,Sales,3,Canada,243,926,Leslie, Phong
+172,Ramanathan,Ashok,5827,14/09/1994,870,Finan,3,Israel,146,985,Ashok, Ramanathan
+173,Steadman,Walter,2120,30/03/1993,122,SRep,4,Brazil,223,702,Walter, Steadman
+174,Nordstrom,Carol,6692,13/09/2007,598,Mktg,3,Singapore,214,291,Carol, Nordstrom
+175,Leung,Luke,1750,03/04/1987,964,Eng,5,Zimbabwe,165,957,Luke, Leung
+176,O'Brien,Sue Anne,7665,30/11/1981,967,Sales Representative,5,China,337,776,Sue Anne, O'Brien
+177,Burbank,Jennifer M.,7754,17/08/1980,816,SRep,4,Kuwait,235,946,Jennifer M., Burbank
+178,Sutherland,Claudia,9717,10/05/1991,609,Sales Representative,5,Germany,342,507,Claudia, Sutherland
+179,Bishop,Dana,1516,14/08/1983,113,Sales Representative,2,Singapore,111,610,Dana, Bishop
+180,MacDonald,Mary S.,9107,30/08/1987,933,Finan,3,Italy,134,192,Mary S., MacDonald
+181,Williams,Randy,4503,14/08/1990,851,SRep,4,Canada,367,879,Randy, Williams
+182,Bender,Oliver H.,4415,30/12/2005,377,Eng,3,Australia,259,594,Oliver H., Bender
+183,Cook,Kevin,6508,07/06/1996,904,Eng,3,Mexico,75,148,Kevin, Cook
+184,Brown,Kelly,1949,10/02/2010,419,Admin,5,Germany,276,097,Kelly, Brown
+185,Ichida,Yuki,3513,24/12/1983,311,Sales,3,Switzerland,89,598,Yuki, Ichida
+186,Page,Mary,9345,27/06/1993,825,SRep,4,Denmark,177,669,Mary, Page
+187,Parker,Bill,4232,08/09/1994,970,Doc,3,Japan,259,560,Bill, Parker
+188,Yamamoto,Takashi,7991,12/10/2000,992,Sales Representative,5,Germany,186,115,Takashi, Yamamoto
+189,Ferrari,Roberto,7687,21/08/2005,931,Admin,5,Brazil,369,628,Roberto, Ferrari
+190,Yanowski,Michael,1662,18/05/2007,554,Inside Sales Coordinator,2,India,203,530,Michael, Yanowski
+191,Glon,Jacques,6498,31/08/1986,731,Eng,4,Switzerland,314,958,Jacques, Glon
+192,Johnson,Scott,4556,02/12/2006,727,SRep,4,Nigeria,236,282,Scott, Johnson
+193,Green,T.J.,3074,02/09/1995,704,Mngr,3,HongKong,71,277,T.J., Green
+194,Osborne,Pierre,5763,23/06/1980,417,Eng,3,United Kingdom,188,260,Pierre, Osborne
+195,Montgomery,John,4692,21/06/1996,732,Eng,4,Australia,143,910,John, Montgomery
+196,Guckenheimer,Mark,4876,21/04/1980,232,Sales Representative,5,Kuwait,117,058,Mark, Guckenheimer
+197,Fuller,Andrew,6464,03/08/1983,979,PRel,4,Zimbabwe,127,439,Andrew, Fuller
+198,Leverling,Janet,9379,20/10/1984,202,Eng,2,Netherlands,250,073,Janet, Leverling
+199,King,Robert,1146,28/02/1989,119,Eng,5,Switzerland,294,129,Robert, King
+200,King1,Robert,9803,24/07/1986,299,Mngr,3,Mexico,268,634,Robert, King1
+201,King2,Robert,8007,21/12/1991,663,Admin,5,Nigeria,144,049,Robert, King2
+202,Callahan,Laura,4272,17/10/1997,734,Eng,5,Switzerland,395,784,Laura, Callahan
+203,Dodsworth,Anne,8816,25/12/2002,341,Eng,5,Zimbabwe,324,348,Anne, Dodsworth
+204,Sutherland,Claudia,7238,20/02/1987,567,Sales Representative,2,Zambia,65,973,Claudia, Sutherland
+205,Nelson,Robert,7844,06/11/2004,173,Eng,2,United Kingdom,299,611,Robert, Nelson
+206,Young,Bruce,7775,21/06/1997,730,Admin,5,United States of America,175,875,Bruce, Young
+207,Lambert,Kim,9309,06/10/2000,505,Eng,4,Italy,238,025,Kim, Lambert
+208,Johnson,Leslie,4401,30/09/1987,905,Eng,4,Brazil,216,684,Leslie, Johnson
+209,Forest,Phil,3420,23/08/1990,468,Inside Sales Coordinator,2,Egypt,356,683,Phil, Forest
+210,Davolio,Nancy,8995,11/07/1998,461,Sales,3,Belgium,263,571,Nancy, Davolio
+211,Weston,K. J.,7446,22/01/1985,651,Doc,3,India,176,975,K. J., Weston
+212,Lee,Terri,9023,26/05/1993,924,Mngr,3,United States of America,153,151,Terri, Lee
+213,Hall,Stewart,8506,06/09/2007,430,Eng,3,Zambia,245,108,Stewart, Hall
+214,Young,Katherine,9363,05/05/2005,797,Sales Representative,2,Netherlands,140,377,Katherine, Young
+215,Papadopoulos,Chris,5950,08/11/2007,762,SRep,4,China,87,832,Chris, Papadopoulos
+216,Fisher,Pete,3330,06/07/1994,891,Inside Sales Coordinator,2,Japan,352,750,Pete, Fisher
+217,Bennet,Ann,1834,15/10/1995,709,Doc,3,India,371,380,Ann, Bennet
+218,De Souza,Roger,2353,23/08/1987,777,Sales Representative,2,Singapore,67,581,Roger, De Souza
+219,Baldwin,Janet,1159,17/09/2007,873,Inside Sales Coordinator,2,Singapore,173,431,Janet, Baldwin
+220,Reeves,Roger,6902,16/02/2006,630,Sales Representative,5,Mexico,113,927,Roger, Reeves
+221,Stansbury,Willie,8138,26/05/2009,793,Sales,3,Germany,291,805,Willie, Stansbury
+222,Phong,Leslie,9145,30/09/1994,909,SRep,4,France,356,593,Leslie, Phong
+223,Ramanathan,Ashok,2198,01/01/1994,937,Eng,5,India,308,451,Ashok, Ramanathan
+224,Steadman,Walter,9178,05/08/1983,982,Eng,2,Argentina,279,167,Walter, Steadman
+225,Nordstrom,Carol,7091,18/03/1989,788,Admin,4,Denmark,155,196,Carol, Nordstrom
+226,Leung,Luke,4683,17/01/2006,870,SRep,4,Italy,255,409,Luke, Leung
+227,O'Brien,Sue Anne,8823,15/09/1995,283,Eng,3,France,383,076,Sue Anne, O'Brien
+228,Burbank,Jennifer M.,4140,11/02/1988,980,Doc,3,Egypt,230,390,Jennifer M., Burbank
+229,Sutherland,Claudia,1450,19/07/1995,342,Admin,5,Belgium,379,162,Claudia, Sutherland
+230,Bishop,Dana,6073,03/11/1988,894,Admin,5,Italy,346,146,Dana, Bishop
+231,MacDonald,Mary S.,7215,08/03/1987,669,Vice President,0,France,349,133,Mary S., MacDonald
+232,Williams,Randy,7541,07/04/2001,429,Eng,4,Australia,114,633,Randy, Williams
+233,Bender,Oliver H.,5709,14/05/1989,975,Eng,5,Denmark,286,647,Oliver H., Bender
+234,Cook,Kevin,6495,18/07/1990,851,SRep,4,Italy,250,285,Kevin, Cook
+235,Brown,Kelly,4972,28/01/2000,343,Eng,3,Netherlands,327,994,Kelly, Brown
+236,Ichida,Yuki,2797,10/10/1994,428,Eng,3,Germany,117,675,Yuki, Ichida
+237,Page,Mary,6213,31/08/1998,922,Sales Representative,5,Mexico,395,173,Mary, Page
+238,Parker,Bill,5669,30/10/1984,295,Eng,4,Singapore,289,821,Bill, Parker
+239,Yamamoto,Takashi,6706,16/02/1998,133,Mngr,3,China,133,549,Takashi, Yamamoto
+240,Ferrari,Roberto,7512,11/04/1996,950,Sales,3,Zambia,170,730,Roberto, Ferrari
+241,Yanowski,Michael,5183,16/05/1993,934,Sales Representative,5,United Kingdom,115,217,Michael, Yanowski
+242,Glon,Jacques,7877,11/02/1992,886,Mktg,3,Germany,315,453,Jacques, Glon
+243,Johnson,Scott,2523,23/09/1983,371,Admin,5,Belgium,260,677,Scott, Johnson
+244,Green,T.J.,6586,12/10/1991,602,Eng,2,Israel,228,348,T.J., Green
+245,Osborne,Pierre,8301,06/06/2010,567,Sales,3,Zambia,350,622,Pierre, Osborne
+246,Montgomery,John,3235,29/11/1986,586,PRel,4,Australia,310,090,John, Montgomery
+247,Guckenheimer,Mark,1759,19/03/1999,645,Sales Representative,2,Switzerland,321,220,Mark, Guckenheimer
+248,Fuller,Andrew,4958,01/06/2004,799,Vice President,0,HongKong,74,736,Andrew, Fuller
+249,Leverling,Janet,5815,27/11/1988,278,CFO,1,Zambia,67,910,Janet, Leverling
+250,King,Robert,6661,19/01/1983,743,Eng,3,Argentina,94,210,Robert, King
+251,King1,Robert,6669,11/10/2000,172,Doc,3,Zimbabwe,59,870,Robert, King1
+252,King2,Robert,9319,26/03/1995,948,Eng,5,Kuwait,82,067,Robert, King2
+253,Callahan,Laura,2419,17/05/2000,771,PRel,4,Zimbabwe,249,221,Laura, Callahan
+254,Dodsworth,Anne,6408,26/06/1982,394,Eng,5,China,123,859,Anne, Dodsworth
+255,Sutherland,Claudia,1942,14/07/1980,787,Eng,3,United Kingdom,275,053,Claudia, Sutherland
+256,Nelson,Robert,7252,27/04/1985,844,Admin,4,China,209,889,Robert, Nelson
+257,Young,Bruce,2467,12/09/1986,851,Eng,3,Egypt,369,883,Bruce, Young
+258,Lambert,Kim,8536,08/04/2010,565,SRep,4,Japan,77,701,Kim, Lambert
+259,Johnson,Leslie,8032,01/01/1980,812,Sales Representative,5,Mexico,292,078,Leslie, Johnson
+260,Forest,Phil,7304,30/03/1990,782,Mktg,3,Kuwait,342,974,Phil, Forest
+261,Davolio,Nancy,5480,07/07/1980,136,Admin,4,Japan,203,430,Nancy, Davolio
+262,Weston,K. J.,2791,08/10/1993,451,SRep,4,Zambia,147,123,K. J., Weston
+263,Lee,Terri,7211,16/01/1987,221,Sales,3,India,195,851,Terri, Lee
+264,Hall,Stewart,1231,27/01/1986,925,Mngr,3,Israel,125,420,Stewart, Hall
+265,Young,Katherine,2940,16/04/1989,505,Sales,3,Denmark,267,327,Katherine, Young
+266,Papadopoulos,Chris,1019,11/01/1994,657,Eng,5,Mexico,305,748,Chris, Papadopoulos
+267,Fisher,Pete,9174,20/01/1997,486,Mngr,3,Italy,53,337,Pete, Fisher
+268,Bennet,Ann,6575,29/06/1993,390,Eng,3,Zimbabwe,372,823,Ann, Bennet
+269,De Souza,Roger,7389,03/10/2004,139,VP,2,Denmark,217,469,Roger, De Souza
+270,Baldwin,Janet,6745,02/10/1998,555,Eng,4,Denmark,75,729,Janet, Baldwin
+271,Reeves,Roger,9547,11/05/2009,597,Eng,3,Zimbabwe,93,489,Roger, Reeves
+272,Stansbury,Willie,9810,25/01/1996,795,Inside Sales Coordinator,2,Zambia,270,286,Willie, Stansbury
+273,Phong,Leslie,9496,08/03/2006,869,Eng,5,Switzerland,187,828,Leslie, Phong
+274,Ramanathan,Ashok,5843,31/05/2004,794,CEO,1,HongKong,169,881,Ashok, Ramanathan
+275,Steadman,Walter,4107,05/07/2002,471,CEO,1,Switzerland,220,786,Walter, Steadman
+276,Nordstrom,Carol,8772,29/04/1981,963,Eng,4,United States of America,279,676,Carol, Nordstrom
+277,Leung,Luke,4339,07/07/1997,208,Eng,3,Denmark,202,060,Luke, Leung
+278,O'Brien,Sue Anne,7602,01/06/1999,665,PRel,4,Germany,72,084,Sue Anne, O'Brien
+279,Burbank,Jennifer M.,2488,23/05/2004,683,Vice President,0,Netherlands,387,352,Jennifer M., Burbank
+280,Sutherland,Claudia,4979,21/07/1984,883,Eng,3,Canada,162,276,Claudia, Sutherland
+281,Bishop,Dana,7601,05/02/2007,830,Doc,3,Belgium,243,494,Dana, Bishop
+282,MacDonald,Mary S.,6413,17/03/1981,679,Admin,5,Argentina,266,471,Mary S., MacDonald
+283,Williams,Randy,5787,02/03/1983,782,Eng,4,Nigeria,186,982,Randy, Williams
+284,Bender,Oliver H.,4661,22/10/1986,363,Vice President,0,India,169,769,Oliver H., Bender
+285,Cook,Kevin,1013,13/05/1995,472,Mngr,3,Mexico,283,490,Kevin, Cook
+286,Brown,Kelly,2903,17/11/1991,591,Eng,3,Brazil,102,670,Kelly, Brown
+287,Ichida,Yuki,7187,04/11/1984,441,SRep,4,United States of America,138,138,Yuki, Ichida
+288,Page,Mary,5696,07/07/2001,139,Mktg,3,Israel,291,375,Mary, Page
+289,Parker,Bill,9221,05/09/1982,907,CFO,1,Singapore,75,323,Bill, Parker
+290,Yamamoto,Takashi,4044,04/07/1996,815,SRep,4,Egypt,373,128,Takashi, Yamamoto
+291,Ferrari,Roberto,3511,28/02/1983,869,Mngr,3,Zambia,203,105,Roberto, Ferrari
+292,Yanowski,Michael,3319,29/03/1987,767,SRep,4,Australia,371,352,Michael, Yanowski
+293,Glon,Jacques,2939,21/09/1983,542,Admin,5,Australia,282,935,Jacques, Glon
+294,Johnson,Scott,9732,20/11/1984,377,Sales Representative,2,Germany,206,220,Scott, Johnson
+295,Green,T.J.,2999,12/12/1997,867,Eng,3,Zimbabwe,362,899,T.J., Green
+296,Osborne,Pierre,1383,07/11/1981,486,CFO,1,Egypt,61,552,Pierre, Osborne
+297,Montgomery,John,4588,18/08/1980,819,Sales Representative,5,Italy,121,974,John, Montgomery
+298,Guckenheimer,Mark,9634,12/04/1988,768,Dir,2,Nigeria,284,580,Mark, Guckenheimer
+299,Fuller,Andrew,3175,06/04/1994,517,Eng,3,Nigeria,214,547,Andrew, Fuller
+300,Leverling,Janet,8484,17/09/1980,856,VP,2,Nigeria,182,681,Janet, Leverling
+301,King,Robert,7320,09/04/2004,430,Eng,4,Egypt,388,332,Robert, King
+302,King1,Robert,4844,02/03/1991,494,Mngr,3,China,102,843,Robert, King1
+303,King2,Robert,3043,09/07/1980,217,Mngr,3,Zimbabwe,126,531,Robert, King2
+304,Callahan,Laura,2653,07/03/1982,323,SRep,4,Japan,77,371,Laura, Callahan
+305,Dodsworth,Anne,7982,14/12/1994,709,Sales Representative,5,Italy,130,227,Anne, Dodsworth
+306,Sutherland,Claudia,2118,30/09/2009,732,Eng,3,Mexico,307,526,Claudia, Sutherland
+307,Nelson,Robert,2609,25/11/1981,228,Eng,3,Zimbabwe,248,683,Robert, Nelson
+308,Young,Bruce,5329,10/06/1982,866,Sales Representative,2,Brazil,122,203,Bruce, Young
+309,Lambert,Kim,3487,24/08/1990,139,Doc,3,Argentina,83,938,Kim, Lambert
+310,Johnson,Leslie,2908,21/10/2010,149,Eng,3,United Kingdom,247,284,Leslie, Johnson
+311,Forest,Phil,3225,08/12/1987,792,Admin,4,Singapore,370,899,Phil, Forest
+312,Davolio,Nancy,1973,29/01/2006,340,Admin,5,Zambia,75,628,Nancy, Davolio
+313,Weston,K. J.,6080,12/04/2008,779,Mngr,4,United Kingdom,133,600,K. J., Weston
+314,Lee,Terri,2887,12/09/1987,792,Dir,2,Canada,130,387,Terri, Lee
+315,Hall,Stewart,8435,12/12/1991,563,Sales Representative,2,Zimbabwe,330,333,Stewart, Hall
+316,Young,Katherine,3042,11/12/1992,189,Doc,3,Switzerland,237,697,Katherine, Young
+317,Papadopoulos,Chris,4024,06/05/1990,536,CEO,1,France,164,050,Chris, Papadopoulos
+318,Fisher,Pete,9353,09/01/1999,938,VP,2,Germany,196,963,Pete, Fisher
+319,Bennet,Ann,8002,07/08/2008,619,Doc,3,Canada,156,780,Ann, Bennet
+320,De Souza,Roger,1272,06/12/2007,343,Admin,5,Belgium,290,037,Roger, De Souza
+321,Baldwin,Janet,7539,01/06/2009,738,Mngr,3,Egypt,336,903,Janet, Baldwin
+322,Reeves,Roger,6030,01/03/1980,666,CEO,1,HongKong,367,488,Roger, Reeves
+323,Stansbury,Willie,9719,30/10/1980,256,Mktg,3,Australia,70,235,Willie, Stansbury
+324,Phong,Leslie,3755,19/01/1988,817,CFO,1,Germany,103,744,Leslie, Phong
+325,Ramanathan,Ashok,2486,08/06/2005,791,Vice President,0,Italy,93,844,Ashok, Ramanathan
+326,Steadman,Walter,3161,12/05/2005,877,Dir,2,Netherlands,301,053,Walter, Steadman
+327,Nordstrom,Carol,3098,05/05/1997,462,Mngr,4,Egypt,169,232,Carol, Nordstrom
+328,Leung,Luke,4771,04/01/1990,175,Eng,5,Netherlands,85,518,Luke, Leung
+329,O'Brien,Sue Anne,2220,13/07/1981,678,Admin,5,Argentina,244,798,Sue Anne, O'Brien
+330,Burbank,Jennifer M.,4159,24/11/1984,368,Doc,3,Belgium,312,928,Jennifer M., Burbank
+331,Sutherland,Claudia,9345,30/03/1998,655,Admin,5,Germany,99,301,Claudia, Sutherland
+332,Bishop,Dana,4468,03/07/1990,483,Eng,5,Italy,136,023,Dana, Bishop
+333,MacDonald,Mary S.,6162,05/11/2002,187,SRep,4,Egypt,290,148,Mary S., MacDonald
+334,Williams,Randy,1315,29/05/1992,517,Eng,4,India,305,206,Randy, Williams
+335,Bender,Oliver H.,6110,04/05/1989,618,CFO,1,Canada,68,452,Oliver H., Bender
+336,Cook,Kevin,5689,22/09/1988,617,SRep,4,Denmark,59,572,Kevin, Cook
+337,Brown,Kelly,7698,26/07/1997,858,Eng,4,Belgium,262,209,Kelly, Brown
+338,Ichida,Yuki,7685,06/11/1988,802,Eng,2,United States of America,118,576,Yuki, Ichida
+339,Page,Mary,1950,16/02/1999,921,Mktg,3,Denmark,154,617,Mary, Page
+340,Parker,Bill,5686,25/09/1992,984,Eng,3,Germany,134,886,Bill, Parker
+341,Yamamoto,Takashi,1919,04/06/2008,388,VP,2,Kuwait,81,220,Takashi, Yamamoto
+342,Ferrari,Roberto,6006,12/10/1994,266,Eng,5,Mexico,60,444,Roberto, Ferrari
+343,Yanowski,Michael,6545,22/10/2005,460,SRep,4,Denmark,217,847,Michael, Yanowski
+344,Glon,Jacques,2832,02/10/2000,702,Eng,3,Netherlands,107,261,Jacques, Glon
+345,Johnson,Scott,2068,15/01/1985,152,Mngr,3,France,148,886,Scott, Johnson
+346,Green,T.J.,9588,02/03/2009,421,Eng,3,Israel,185,768,T.J., Green
+347,Osborne,Pierre,7513,10/07/2007,164,Eng,3,Netherlands,217,210,Pierre, Osborne
+348,Montgomery,John,3472,11/09/2004,941,CFO,1,Nigeria,162,662,John, Montgomery
+349,Guckenheimer,Mark,6565,05/01/1994,906,Admin,4,United Kingdom,313,796,Mark, Guckenheimer
+350,Fuller,Andrew,6303,20/01/1988,579,Admin,4,Italy,254,771,Andrew, Fuller
+351,Leverling,Janet,2732,30/11/1998,646,Admin,5,India,98,214,Janet, Leverling
+352,King,Robert,6438,29/10/2005,323,Inside Sales Coordinator,2,Italy,292,887,Robert, King
+353,King1,Robert,3536,09/09/1989,417,Eng,5,Mexico,123,252,Robert, King1
+354,King2,Robert,6234,23/07/1991,152,Doc,3,Australia,240,211,Robert, King2
+355,Callahan,Laura,4743,06/01/1997,836,Admin,5,Zimbabwe,257,691,Laura, Callahan
+356,Dodsworth,Anne,3133,14/09/2005,985,Eng,3,Netherlands,192,415,Anne, Dodsworth
+357,Sutherland,Claudia,2578,24/08/2009,757,Eng,3,Belgium,59,924,Claudia, Sutherland
+358,Nelson,Robert,6584,20/02/1994,448,Eng,2,Egypt,200,581,Robert, Nelson
+359,Young,Bruce,2304,07/09/1995,427,Admin,5,Canada,61,019,Bruce, Young
+360,Lambert,Kim,6737,23/05/2003,665,Sales Representative,5,India,107,012,Kim, Lambert
+361,Johnson,Leslie,3715,26/02/1998,350,Eng,4,Nigeria,297,636,Leslie, Johnson
+362,Forest,Phil,8008,15/03/2001,261,SRep,4,Denmark,216,330,Phil, Forest
+363,Davolio,Nancy,3682,09/09/1982,220,Admin,4,United States of America,138,474,Nancy, Davolio
+364,Weston,K. J.,9899,22/12/1995,547,Eng,5,Japan,182,038,K. J., Weston
+365,Lee,Terri,9455,29/12/1993,962,SRep,4,Germany,241,441,Terri, Lee
+366,Hall,Stewart,5670,07/09/1998,318,Eng,5,Italy,136,859,Stewart, Hall
+367,Young,Katherine,4800,05/05/1997,457,Mngr,4,Netherlands,203,951,Katherine, Young
+368,Papadopoulos,Chris,6978,25/02/1994,877,Eng,3,China,145,350,Chris, Papadopoulos
+369,Fisher,Pete,5726,13/07/1989,677,Eng,3,Australia,242,317,Pete, Fisher
+370,Bennet,Ann,4034,09/01/1980,891,PRel,4,Israel,300,438,Ann, Bennet
+371,De Souza,Roger,5913,18/11/1997,917,Admin,5,Zambia,224,783,Roger, De Souza
+372,Baldwin,Janet,4571,24/07/2005,275,SRep,4,Australia,363,757,Janet, Baldwin
+373,Reeves,Roger,6284,05/03/1992,492,Eng,3,Brazil,158,478,Roger, Reeves
+374,Stansbury,Willie,2614,09/03/1982,408,Eng,3,France,369,828,Willie, Stansbury
+375,Phong,Leslie,2114,20/12/2001,756,VP,2,Zimbabwe,166,451,Leslie, Phong
+376,Ramanathan,Ashok,8005,11/09/1988,398,Eng,3,Japan,249,389,Ashok, Ramanathan
+377,Steadman,Walter,8036,13/05/2001,832,SRep,4,Australia,394,762,Walter, Steadman
+378,Nordstrom,Carol,4287,05/03/2000,656,Dir,2,United States of America,100,177,Carol, Nordstrom
+379,Leung,Luke,9560,08/10/2009,440,Mngr,3,Zimbabwe,162,495,Luke, Leung
+380,O'Brien,Sue Anne,3867,09/11/1988,268,Eng,5,Israel,133,863,Sue Anne, O'Brien
+381,Burbank,Jennifer M.,2969,31/07/2006,728,Sales Representative,2,Singapore,162,931,Jennifer M., Burbank
+382,Sutherland,Claudia,3392,12/12/1987,854,Finan,3,Egypt,130,198,Claudia, Sutherland
+383,Bishop,Dana,5376,15/10/2009,269,Eng,4,Egypt,50,994,Dana, Bishop
+384,MacDonald,Mary S.,5519,01/10/1987,132,SRep,4,Singapore,87,382,Mary S., MacDonald
+385,Williams,Randy,9668,20/06/1997,958,Eng,4,Argentina,286,855,Randy, Williams
+386,Bender,Oliver H.,7654,03/01/1995,331,Eng,3,Argentina,262,984,Oliver H., Bender
+387,Cook,Kevin,7255,21/09/1982,430,Eng,5,Italy,313,029,Kevin, Cook
+388,Brown,Kelly,1953,19/12/1983,202,Mktg,3,Mexico,188,763,Kelly, Brown
+389,Ichida,Yuki,7666,05/05/1988,314,PRel,4,Egypt,155,164,Yuki, Ichida
+390,Page,Mary,6205,08/01/1983,496,CFO,1,Mexico,104,954,Mary, Page
+391,Parker,Bill,9639,27/03/1990,528,Eng,3,India,371,714,Bill, Parker
+392,Yamamoto,Takashi,5898,21/08/2009,485,Vice President,0,United Kingdom,161,287,Takashi, Yamamoto
+393,Ferrari,Roberto,8198,19/12/2001,447,Doc,3,HongKong,309,236,Roberto, Ferrari
+394,Yanowski,Michael,9723,28/11/1994,424,Eng,3,Mexico,231,218,Michael, Yanowski
+395,Glon,Jacques,5627,29/08/1989,855,Eng,3,Singapore,381,527,Jacques, Glon
+396,Johnson,Scott,5753,28/03/1981,969,SRep,4,Kuwait,194,295,Scott, Johnson
+397,Green,T.J.,8239,12/01/1985,159,Admin,5,Singapore,287,454,T.J., Green
+398,Osborne,Pierre,7886,09/10/2004,315,Sales,3,Mexico,81,858,Pierre, Osborne
+399,Montgomery,John,6040,30/08/2007,398,Finan,3,Italy,301,925,John, Montgomery
+400,Guckenheimer,Mark,5812,04/01/1990,182,SRep,4,France,390,596,Mark, Guckenheimer
+401,Fuller,Andrew,4152,28/02/1994,466,VP,2,Mexico,385,407,Andrew, Fuller
+402,Leverling,Janet,8193,31/12/2001,294,Eng,3,United States of America,217,390,Janet, Leverling
+403,King,Robert,4101,13/01/1990,228,Sales Representative,2,Zimbabwe,244,764,Robert, King
+404,King1,Robert,1857,04/09/1980,569,Admin,5,Kuwait,254,902,Robert, King1
+405,King2,Robert,4049,05/01/1996,944,SRep,4,Argentina,216,138,Robert, King2
+406,Callahan,Laura,9648,13/01/2005,661,Admin,4,Germany,398,820,Laura, Callahan
+407,Dodsworth,Anne,4294,03/12/1980,581,Eng,4,China,218,621,Anne, Dodsworth
+408,Sutherland,Claudia,9088,25/11/2008,956,Mngr,3,Brazil,303,596,Claudia, Sutherland
+409,Nelson,Robert,6225,25/08/2010,636,SRep,4,Argentina,164,887,Robert, Nelson
+410,Young,Bruce,6485,05/01/2003,147,SRep,4,United States of America,318,321,Bruce, Young
+411,Lambert,Kim,5830,16/10/1988,539,Eng,3,Denmark,125,859,Kim, Lambert
+412,Johnson,Leslie,7749,09/11/1982,323,SRep,4,Singapore,179,745,Leslie, Johnson
+413,Forest,Phil,1120,30/12/1991,364,Doc,3,France,319,610,Phil, Forest
+414,Davolio,Nancy,1313,25/06/1996,276,Mktg,3,Canada,335,253,Nancy, Davolio
+415,Weston,K. J.,4654,30/12/2009,434,Admin,5,Netherlands,394,053,K. J., Weston
+416,Lee,Terri,7040,11/04/2010,625,Mngr,3,Singapore,384,318,Terri, Lee
+417,Hall,Stewart,5146,21/05/2004,815,Sales Representative,2,France,370,288,Stewart, Hall
+418,Young,Katherine,8381,15/02/1980,829,Sales,3,France,230,420,Katherine, Young
+419,Papadopoulos,Chris,9669,17/02/2005,355,CEO,1,Canada,89,689,Chris, Papadopoulos
+420,Fisher,Pete,4370,08/09/2004,555,Eng,4,Germany,55,691,Pete, Fisher
+421,Bennet,Ann,7098,17/01/1999,556,Eng,3,Netherlands,208,153,Ann, Bennet
+422,De Souza,Roger,9751,01/03/1993,393,SRep,4,Australia,123,506,Roger, De Souza
+423,Baldwin,Janet,3214,31/10/2006,116,SRep,4,Zimbabwe,344,328,Janet, Baldwin
+424,Reeves,Roger,4110,11/03/1981,915,Eng,5,Denmark,306,711,Roger, Reeves
+425,Stansbury,Willie,2880,04/04/1995,568,VP,2,India,285,378,Willie, Stansbury
+426,Phong,Leslie,5832,23/10/2001,538,Inside Sales Coordinator,2,Belgium,322,468,Leslie, Phong
+427,Ramanathan,Ashok,3616,16/04/1993,213,Admin,5,Argentina,68,021,Ashok, Ramanathan
+428,Steadman,Walter,2262,14/04/1990,551,Eng,5,Italy,79,176,Walter, Steadman
+429,Nordstrom,Carol,2210,28/12/1990,944,Admin,5,Nigeria,390,115,Carol, Nordstrom
+430,Leung,Luke,4978,01/11/1985,363,Eng,3,Egypt,355,864,Luke, Leung
+431,O'Brien,Sue Anne,5218,29/06/1981,159,Eng,5,Denmark,143,579,Sue Anne, O'Brien
+432,Burbank,Jennifer M.,7708,25/09/2005,972,Eng,5,China,94,458,Jennifer M., Burbank
+433,Sutherland,Claudia,5452,19/03/1987,615,SRep,4,HongKong,282,132,Claudia, Sutherland
+434,Bishop,Dana,9037,07/07/1981,663,Dir,2,Netherlands,256,372,Dana, Bishop
+435,MacDonald,Mary S.,1403,14/02/2003,254,CEO,1,Germany,368,725,Mary S., MacDonald
+436,Williams,Randy,8826,08/07/1980,979,Eng,3,Australia,198,010,Randy, Williams
+437,Bender,Oliver H.,1294,23/02/1991,275,Eng,4,Brazil,155,266,Oliver H., Bender
+438,Cook,Kevin,4777,27/10/1989,505,PRel,4,Singapore,364,554,Kevin, Cook
+439,Brown,Kelly,4754,21/06/2008,542,Sales Representative,2,Zimbabwe,310,074,Kelly, Brown
+440,Ichida,Yuki,3610,02/08/1996,427,SRep,4,United States of America,201,895,Yuki, Ichida
+441,Page,Mary,6882,21/08/2003,696,Admin,5,Israel,63,067,Mary, Page
+442,Parker,Bill,3093,04/04/1998,696,Mngr,3,Belgium,271,678,Bill, Parker
+443,Yamamoto,Takashi,8591,03/12/2000,835,Eng,5,Kuwait,306,173,Takashi, Yamamoto
+444,Ferrari,Roberto,2092,23/02/1996,339,Admin,5,Israel,344,091,Roberto, Ferrari
+445,Yanowski,Michael,6593,23/04/1990,625,Admin,4,Canada,309,740,Michael, Yanowski
+446,Glon,Jacques,4795,11/07/1988,235,Admin,5,Mexico,122,847,Jacques, Glon
+447,Johnson,Scott,6358,08/10/2003,284,Vice President,0,Zambia,237,884,Scott, Johnson
+448,Green,T.J.,1629,12/11/2006,695,Sales Representative,5,Argentina,201,426,T.J., Green
+449,Osborne,Pierre,7167,23/07/1982,166,SRep,4,Argentina,216,035,Pierre, Osborne
+450,Montgomery,John,9512,01/10/1984,240,Vice President,0,Argentina,193,621,John, Montgomery
+451,Guckenheimer,Mark,9794,07/01/1996,809,Admin,4,Belgium,203,131,Mark, Guckenheimer
+452,Fuller,Andrew,1466,28/06/1983,313,Eng,3,United Kingdom,260,023,Andrew, Fuller
+453,Leverling,Janet,8122,11/08/1990,826,Admin,5,Nigeria,197,155,Janet, Leverling
+454,King,Robert,3318,11/01/1985,350,Eng,2,Switzerland,58,162,Robert, King
+455,King1,Robert,1983,07/07/2006,924,SRep,4,Denmark,345,343,Robert, King1
+456,King2,Robert,2581,26/02/1987,806,Inside Sales Coordinator,2,Switzerland,326,776,Robert, King2
+457,Callahan,Laura,3235,04/03/2010,469,Admin,4,Kuwait,300,547,Laura, Callahan
+458,Dodsworth,Anne,2242,15/11/1997,534,CFO,1,Kuwait,332,794,Anne, Dodsworth
+459,Sutherland,Claudia,9971,06/05/1983,724,Mngr,3,India,187,452,Claudia, Sutherland
+460,Nelson,Robert,5666,28/07/2002,904,Mngr,3,Mexico,127,542,Robert, Nelson
+461,Young,Bruce,4861,01/11/2000,240,Sales Representative,2,Switzerland,332,193,Bruce, Young
+462,Lambert,Kim,4787,16/09/2004,844,Dir,2,France,375,563,Kim, Lambert
+463,Johnson,Leslie,7173,19/05/2000,361,Mngr,3,Germany,222,381,Leslie, Johnson
+464,Forest,Phil,1404,27/03/1995,934,Sales,3,United Kingdom,151,509,Phil, Forest
+465,Davolio,Nancy,2165,02/01/1998,563,Admin,5,United States of America,286,361,Nancy, Davolio
+466,Weston,K. J.,9832,27/08/1998,878,CFO,1,United States of America,111,419,K. J., Weston
+467,Lee,Terri,1448,08/10/1992,282,Admin,5,Egypt,398,418,Terri, Lee
+468,Hall,Stewart,2445,13/02/1999,459,Eng,2,Zambia,185,164,Stewart, Hall
+469,Young,Katherine,7123,27/03/1981,203,Eng,5,Netherlands,138,245,Katherine, Young
+470,Papadopoulos,Chris,4056,19/07/1987,341,Eng,5,United Kingdom,88,313,Chris, Papadopoulos
+471,Fisher,Pete,1350,19/06/2002,317,Eng,3,Kuwait,238,789,Pete, Fisher
+472,Bennet,Ann,5332,13/06/2004,816,SRep,4,Denmark,371,086,Ann, Bennet
+473,De Souza,Roger,9120,16/09/1994,436,Mngr,3,India,248,528,Roger, De Souza
+474,Baldwin,Janet,6775,18/01/1999,793,Dir,2,Zimbabwe,193,301,Janet, Baldwin
+475,Reeves,Roger,2194,06/11/2002,971,SRep,4,United States of America,166,959,Roger, Reeves
+476,Stansbury,Willie,8230,24/11/1994,678,Mngr,4,Nigeria,209,862,Willie, Stansbury
+477,Phong,Leslie,7212,19/05/2008,479,Mktg,3,Israel,128,182,Leslie, Phong
+478,Ramanathan,Ashok,9811,26/01/2007,205,Eng,3,Germany,98,996,Ashok, Ramanathan
+479,Steadman,Walter,7391,22/03/1982,800,Mngr,3,United Kingdom,65,010,Walter, Steadman
+480,Nordstrom,Carol,8281,06/05/1980,894,Mktg,3,China,321,189,Carol, Nordstrom
+481,Leung,Luke,5391,05/03/1989,572,Eng,3,Zambia,300,180,Luke, Leung
+482,O'Brien,Sue Anne,2789,13/09/1994,758,Eng,3,Brazil,194,470,Sue Anne, O'Brien
+483,Burbank,Jennifer M.,7626,03/12/2008,574,Sales Representative,2,India,309,634,Jennifer M., Burbank
+484,Sutherland,Claudia,2958,16/01/1991,973,Vice President,0,France,161,334,Claudia, Sutherland
+485,Bishop,Dana,7255,18/10/2000,126,SRep,4,United Kingdom,310,742,Dana, Bishop
+486,MacDonald,Mary S.,8913,07/12/2004,490,Admin,5,Kuwait,322,963,Mary S., MacDonald
+487,Williams,Randy,5932,25/03/1998,620,Mngr,4,Australia,280,152,Randy, Williams
+488,Bender,Oliver H.,8575,14/09/1980,758,SRep,4,India,295,018,Oliver H., Bender
+489,Cook,Kevin,9609,01/02/2005,437,Admin,5,Mexico,165,732,Kevin, Cook
+490,Brown,Kelly,9462,04/02/1991,841,Sales Representative,5,Denmark,58,181,Kelly, Brown
+491,Ichida,Yuki,4301,29/03/1980,458,SRep,4,Netherlands,238,837,Yuki, Ichida
+492,Page,Mary,4888,05/10/2007,798,Eng,2,HongKong,82,926,Mary, Page
+493,Parker,Bill,1783,08/03/1983,698,Sales Representative,2,Mexico,158,753,Bill, Parker
+494,Yamamoto,Takashi,8913,03/11/2000,524,SRep,4,Kuwait,73,929,Takashi, Yamamoto
+495,Ferrari,Roberto,5373,31/03/2004,365,VP,2,France,349,327,Roberto, Ferrari
+496,Yanowski,Michael,1898,01/06/1984,732,PRel,4,Nigeria,200,312,Michael, Yanowski
+497,Glon,Jacques,2605,25/06/1985,847,Sales Representative,2,Denmark,366,154,Jacques, Glon
+498,Johnson,Scott,4503,08/08/2005,714,Eng,3,India,269,806,Scott, Johnson
+499,Green,T.J.,9689,12/10/1985,267,Eng,3,Denmark,317,432,T.J., Green
+500,Osborne,Pierre,3032,02/12/1998,220,SRep,4,Italy,203,550,Pierre, Osborne
+501,Montgomery,John,7967,16/01/1988,858,Sales Representative,2,Israel,118,742,John, Montgomery
+502,Guckenheimer,Mark,4309,07/03/1990,170,Finan,3,Germany,147,499,Mark, Guckenheimer
+503,Fuller,Andrew,6009,28/04/2005,544,SRep,4,HongKong,266,950,Andrew, Fuller
+504,Leverling,Janet,9804,25/02/2001,901,Admin,5,Argentina,132,246,Janet, Leverling
+505,King,Robert,5675,11/12/2000,597,SRep,4,Zambia,210,231,Robert, King
+506,King1,Robert,8369,01/06/1988,219,Eng,4,Belgium,297,947,Robert, King1
+507,King2,Robert,2945,04/06/2001,228,Sales,3,Nigeria,156,901,Robert, King2
+508,Callahan,Laura,6702,21/09/1994,717,Eng,4,France,161,726,Laura, Callahan
+509,Dodsworth,Anne,8344,23/01/1995,778,Admin,5,United States of America,354,593,Anne, Dodsworth
+510,Sutherland,Claudia,9559,10/09/1990,348,Eng,4,Zambia,392,812,Claudia, Sutherland
+511,Nelson,Robert,3397,12/03/1982,290,Eng,4,Switzerland,85,840,Robert, Nelson
+512,Young,Bruce,3634,12/09/2004,336,Eng,5,Japan,81,260,Bruce, Young
+513,Lambert,Kim,3123,05/10/1987,900,Eng,4,France,240,554,Kim, Lambert
+514,Johnson,Leslie,5972,17/06/1997,789,Eng,4,Australia,303,507,Leslie, Johnson
+515,Forest,Phil,4607,19/07/2006,921,SRep,4,Germany,145,322,Phil, Forest
+516,Davolio,Nancy,9078,31/05/2008,686,Eng,3,Australia,288,898,Nancy, Davolio
+517,Weston,K. J.,1920,25/05/1998,338,Mngr,3,France,229,634,K. J., Weston
+518,Lee,Terri,2333,20/11/1984,661,VP,2,Switzerland,114,404,Terri, Lee
+519,Hall,Stewart,5219,28/12/2000,747,Eng,4,Israel,303,115,Stewart, Hall
+520,Young,Katherine,3220,06/08/1989,892,Sales Representative,2,Italy,70,080,Katherine, Young
+521,Papadopoulos,Chris,2275,03/07/1992,224,Vice President,0,Singapore,307,513,Chris, Papadopoulos
+522,Fisher,Pete,1975,19/06/1984,585,Sales,3,Germany,65,725,Pete, Fisher
+523,Bennet,Ann,3091,26/10/1988,764,Sales,3,United States of America,338,917,Ann, Bennet
+524,De Souza,Roger,3468,21/03/1987,576,VP,2,Denmark,93,752,Roger, De Souza
+525,Baldwin,Janet,7043,04/10/1981,477,Eng,5,India,265,921,Janet, Baldwin
+526,Reeves,Roger,8974,18/06/1986,131,Mngr,3,Denmark,176,295,Roger, Reeves
+527,Stansbury,Willie,2374,12/12/2002,910,Mngr,3,Zambia,369,727,Willie, Stansbury
+528,Phong,Leslie,6960,26/10/2010,593,Admin,4,Denmark,328,914,Leslie, Phong
+529,Ramanathan,Ashok,4030,22/12/1994,772,Admin,5,Singapore,344,167,Ashok, Ramanathan
+530,Steadman,Walter,9999,09/03/2009,377,Eng,3,Netherlands,203,271,Walter, Steadman
+531,Nordstrom,Carol,6729,22/10/1993,830,Admin,5,Israel,370,874,Carol, Nordstrom
+532,Leung,Luke,4532,23/12/2002,929,CEO,1,Singapore,327,588,Luke, Leung
+533,O'Brien,Sue Anne,5163,25/06/1987,795,Eng,3,Belgium,395,843,Sue Anne, O'Brien
+534,Burbank,Jennifer M.,8969,12/11/1981,100,Sales Representative,5,Zimbabwe,251,531,Jennifer M., Burbank
+535,Sutherland,Claudia,9447,02/09/2001,154,Mngr,3,Brazil,101,197,Claudia, Sutherland
+536,Bishop,Dana,9156,06/07/2005,338,Finan,3,Belgium,332,494,Dana, Bishop
+537,MacDonald,Mary S.,3837,06/04/2009,622,Eng,3,France,394,609,Mary S., MacDonald
+538,Williams,Randy,5391,14/02/2008,853,Eng,2,Brazil,299,425,Randy, Williams
+539,Bender,Oliver H.,9726,16/08/1995,827,VP,2,Zimbabwe,210,454,Oliver H., Bender
+540,Cook,Kevin,4424,05/07/2007,224,SRep,4,Kuwait,136,774,Kevin, Cook
+541,Brown,Kelly,3386,14/11/2004,857,Eng,3,United States of America,222,199,Kelly, Brown
+542,Ichida,Yuki,6254,26/02/1994,466,VP,2,Argentina,364,462,Yuki, Ichida
+543,Page,Mary,1172,12/08/2009,527,Mktg,3,Germany,381,056,Mary, Page
+544,Parker,Bill,8614,07/10/2007,230,Eng,2,Denmark,359,016,Bill, Parker
+545,Yamamoto,Takashi,7458,11/10/1997,194,Eng,3,Canada,50,405,Takashi, Yamamoto
+546,Ferrari,Roberto,4468,09/12/1996,833,Eng,4,Kuwait,382,303,Roberto, Ferrari
+547,Yanowski,Michael,6059,31/08/2007,369,Eng,4,France,255,488,Michael, Yanowski
+548,Glon,Jacques,6607,03/06/1982,491,SRep,4,Canada,107,764,Jacques, Glon
+549,Johnson,Scott,9677,04/01/1995,185,Mngr,3,HongKong,330,886,Scott, Johnson
+550,Green,T.J.,5633,24/02/2002,240,Eng,3,Mexico,332,160,T.J., Green
+551,Osborne,Pierre,5255,16/03/1991,766,Mngr,3,Israel,150,720,Pierre, Osborne
+552,Montgomery,John,9268,25/11/1990,980,CEO,1,Egypt,166,036,John, Montgomery
+553,Guckenheimer,Mark,6552,16/05/2009,794,Eng,3,Nigeria,195,686,Mark, Guckenheimer
+554,Fuller,Andrew,4590,20/05/1981,552,VP,2,Argentina,264,432,Andrew, Fuller
+555,Leverling,Janet,8587,29/01/2005,435,Inside Sales Coordinator,2,Egypt,367,667,Janet, Leverling
+556,King,Robert,7122,03/07/1981,799,Mngr,4,Singapore,113,905,Robert, King
+557,King1,Robert,7569,23/02/1996,651,Eng,3,Switzerland,140,796,Robert, King1
+558,King2,Robert,3576,18/05/1983,669,Eng,5,Egypt,240,405,Robert, King2
+559,Callahan,Laura,8629,20/04/2004,156,Eng,3,Nigeria,382,693,Laura, Callahan
+560,Dodsworth,Anne,4700,29/11/1987,282,Eng,4,Canada,160,213,Anne, Dodsworth
+561,Sutherland,Claudia,4463,12/11/1999,920,Eng,2,India,285,988,Claudia, Sutherland
+562,Nelson,Robert,6853,26/11/2001,208,Sales Representative,2,Zimbabwe,210,070,Robert, Nelson
+563,Young,Bruce,1442,17/08/1982,487,SRep,4,Singapore,192,240,Bruce, Young
+564,Lambert,Kim,9657,12/10/2005,369,CEO,1,Denmark,153,818,Kim, Lambert
+565,Johnson,Leslie,7442,13/09/1986,798,CFO,1,Belgium,383,247,Leslie, Johnson
+566,Forest,Phil,5052,11/10/1983,478,Mngr,3,Switzerland,293,331,Phil, Forest
+567,Davolio,Nancy,9720,11/04/2000,544,Vice President,0,Egypt,326,804,Nancy, Davolio
+568,Weston,K. J.,9218,08/07/2007,724,Sales Representative,2,Zimbabwe,150,894,K. J., Weston
+569,Lee,Terri,2735,29/04/1993,462,Eng,3,France,367,023,Terri, Lee
+570,Hall,Stewart,6134,19/04/1986,681,Sales,3,Australia,191,089,Stewart, Hall
+571,Young,Katherine,4774,25/02/2001,805,VP,2,Kuwait,121,835,Katherine, Young
+572,Papadopoulos,Chris,7856,29/01/1991,224,Admin,5,Canada,135,964,Chris, Papadopoulos
+573,Fisher,Pete,4402,01/11/2005,883,Eng,3,United Kingdom,53,054,Pete, Fisher
+574,Bennet,Ann,6165,07/02/2007,457,Finan,3,Kuwait,118,154,Ann, Bennet
+575,De Souza,Roger,7333,24/06/2000,790,Eng,2,United States of America,186,760,Roger, De Souza
+576,Baldwin,Janet,5508,22/05/1981,392,Eng,3,Canada,180,099,Janet, Baldwin
+577,Reeves,Roger,9918,09/04/1985,778,Dir,2,United Kingdom,214,036,Roger, Reeves
+578,Stansbury,Willie,1118,30/11/1986,767,Sales,3,Belgium,309,056,Willie, Stansbury
+579,Phong,Leslie,2925,25/03/1999,574,Eng,3,Nigeria,345,295,Leslie, Phong
+580,Ramanathan,Ashok,8709,26/12/2000,907,Eng,5,Germany,199,834,Ashok, Ramanathan
+581,Steadman,Walter,4703,27/11/1981,355,Sales Representative,5,Germany,377,996,Walter, Steadman
+582,Nordstrom,Carol,1390,13/06/2002,557,CFO,1,Zambia,247,783,Carol, Nordstrom
+583,Leung,Luke,6137,25/08/1980,293,Sales Representative,5,Zimbabwe,381,859,Luke, Leung
+584,O'Brien,Sue Anne,5927,15/07/2006,395,Sales Representative,5,HongKong,318,501,Sue Anne, O'Brien
+585,Burbank,Jennifer M.,2994,17/08/1980,272,Eng,4,India,60,647,Jennifer M., Burbank
+586,Sutherland,Claudia,8495,31/01/1982,513,Admin,4,Germany,305,347,Claudia, Sutherland
+587,Bishop,Dana,6437,03/10/2003,934,Sales Representative,5,Mexico,264,215,Dana, Bishop
+588,MacDonald,Mary S.,3166,10/08/1989,323,CFO,1,Zimbabwe,207,135,Mary S., MacDonald
+589,Williams,Randy,5961,05/01/2004,910,SRep,4,Brazil,72,024,Randy, Williams
+590,Bender,Oliver H.,8659,22/12/2004,741,Eng,3,Canada,62,850,Oliver H., Bender
+591,Cook,Kevin,4050,01/07/2009,774,Sales,3,United States of America,251,331,Kevin, Cook
+592,Brown,Kelly,9640,14/03/2002,453,Vice President,0,Australia,296,432,Kelly, Brown
+593,Ichida,Yuki,3924,27/11/1994,133,SRep,4,France,241,193,Yuki, Ichida
+594,Page,Mary,5188,07/08/1997,377,Mngr,3,France,266,273,Mary, Page
+595,Parker,Bill,5158,11/09/1993,557,Mngr,3,Brazil,326,099,Bill, Parker
+596,Yamamoto,Takashi,8546,02/07/1988,951,SRep,4,France,62,756,Takashi, Yamamoto
+597,Ferrari,Roberto,3057,03/01/2007,851,Admin,5,Singapore,142,882,Roberto, Ferrari
+598,Yanowski,Michael,9173,22/11/1986,352,Mngr,3,China,240,850,Michael, Yanowski
+599,Glon,Jacques,7801,04/02/1997,638,Admin,5,Belgium,172,178,Jacques, Glon
+600,Johnson,Scott,1192,02/10/2008,979,VP,2,Australia,398,875,Scott, Johnson
+601,Green,T.J.,4912,28/09/1982,688,Mngr,3,Netherlands,385,516,T.J., Green
+602,Osborne,Pierre,6118,18/04/1990,146,Eng,4,Brazil,276,586,Pierre, Osborne
+603,Montgomery,John,6664,17/07/1994,220,Finan,3,Argentina,205,433,John, Montgomery
+604,Guckenheimer,Mark,6842,25/12/1997,535,Admin,5,Israel,351,563,Mark, Guckenheimer
+605,Fuller,Andrew,4305,23/11/2010,132,Mktg,3,Zambia,85,363,Andrew, Fuller
+606,Leverling,Janet,8849,23/04/1980,943,VP,2,Netherlands,130,088,Janet, Leverling
+607,King,Robert,6048,22/01/1985,415,Eng,3,Kuwait,127,685,Robert, King
+608,King1,Robert,4890,03/08/1991,265,Admin,5,United States of America,282,641,Robert, King1
+609,King2,Robert,3632,30/06/1980,948,Eng,3,Denmark,144,696,Robert, King2
+610,Callahan,Laura,9264,11/03/1987,183,Eng,3,United States of America,269,802,Laura, Callahan
+611,Dodsworth,Anne,2394,30/04/1992,671,Eng,4,Switzerland,143,097,Anne, Dodsworth
+612,Sutherland,Claudia,9285,21/05/2002,614,SRep,4,United Kingdom,149,955,Claudia, Sutherland
+613,Nelson,Robert,8787,22/07/1996,595,Eng,3,Belgium,159,758,Robert, Nelson
+614,Young,Bruce,5493,31/10/1990,910,Eng,3,Australia,345,867,Bruce, Young
+615,Lambert,Kim,3027,18/06/1996,143,Sales Representative,5,Belgium,371,804,Kim, Lambert
+616,Johnson,Leslie,8893,15/06/2007,232,Vice President,0,United Kingdom,130,804,Leslie, Johnson
+617,Forest,Phil,5356,25/04/1984,390,Eng,4,Switzerland,359,798,Phil, Forest
+618,Davolio,Nancy,2100,17/07/1986,624,Eng,3,Japan,346,462,Nancy, Davolio
+619,Weston,K. J.,8848,31/03/1993,662,Eng,4,Germany,279,335,K. J., Weston
+620,Lee,Terri,2020,29/09/1998,847,Dir,2,Brazil,338,232,Terri, Lee
+621,Hall,Stewart,9068,15/11/1994,655,SRep,4,India,328,066,Stewart, Hall
+622,Young,Katherine,4634,01/11/2007,214,Dir,2,Switzerland,106,515,Katherine, Young
+623,Papadopoulos,Chris,9365,19/11/1985,839,SRep,4,Denmark,104,667,Chris, Papadopoulos
+624,Fisher,Pete,7622,01/02/2000,355,Sales Representative,2,Zimbabwe,133,075,Pete, Fisher
+625,Bennet,Ann,3128,12/02/1998,637,SRep,4,United States of America,174,230,Ann, Bennet
+626,De Souza,Roger,3053,30/08/2005,133,Eng,5,Kuwait,73,850,Roger, De Souza
+627,Baldwin,Janet,1511,05/06/2010,787,Eng,4,China,397,059,Janet, Baldwin
+628,Reeves,Roger,8659,11/03/2002,312,Sales Representative,2,Japan,253,103,Roger, Reeves
+629,Stansbury,Willie,1532,30/09/1995,807,Vice President,0,Germany,51,987,Willie, Stansbury
+630,Phong,Leslie,5196,01/10/1986,126,Admin,5,Mexico,78,424,Leslie, Phong
+631,Ramanathan,Ashok,8894,11/12/1997,727,VP,2,Kuwait,237,711,Ashok, Ramanathan
+632,Steadman,Walter,7981,28/05/2003,696,Mngr,3,HongKong,87,291,Walter, Steadman
+633,Nordstrom,Carol,6242,21/03/1986,179,Eng,2,Singapore,92,099,Carol, Nordstrom
+634,Leung,Luke,1167,30/08/1997,762,Finan,3,Brazil,158,196,Luke, Leung
+635,O'Brien,Sue Anne,5794,26/03/1982,282,Admin,5,Germany,192,188,Sue Anne, O'Brien
+636,Burbank,Jennifer M.,5570,27/02/2003,306,SRep,4,Netherlands,278,511,Jennifer M., Burbank
+637,Sutherland,Claudia,2078,14/11/1984,824,Eng,3,Australia,385,194,Claudia, Sutherland
+638,Bishop,Dana,8563,11/02/1980,289,Eng,3,India,248,566,Dana, Bishop
+639,MacDonald,Mary S.,7978,15/05/1984,138,Sales Representative,2,Belgium,212,666,Mary S., MacDonald
+640,Williams,Randy,5621,17/07/1990,854,Admin,4,United States of America,148,153,Randy, Williams
+641,Bender,Oliver H.,7073,25/02/2001,619,Eng,5,United Kingdom,124,626,Oliver H., Bender
+642,Cook,Kevin,7189,29/08/2004,639,Eng,3,Japan,240,030,Kevin, Cook
+643,Brown,Kelly,2882,13/09/1984,965,Admin,5,Denmark,63,201,Kelly, Brown
+644,Ichida,Yuki,7529,21/08/1985,641,Vice President,0,HongKong,352,196,Yuki, Ichida
+645,Page,Mary,3897,07/08/2002,654,SRep,4,Israel,273,553,Mary, Page
+646,Parker,Bill,5363,29/04/1993,877,VP,2,Egypt,272,401,Bill, Parker
+647,Yamamoto,Takashi,2243,14/03/1995,627,Sales Representative,2,Singapore,259,751,Takashi, Yamamoto
+648,Ferrari,Roberto,9502,01/01/1986,501,SRep,4,India,114,888,Roberto, Ferrari
+649,Yanowski,Michael,2621,11/10/2010,184,Eng,3,Brazil,109,657,Michael, Yanowski
+650,Glon,Jacques,9722,25/01/1993,783,Admin,5,Mexico,175,294,Jacques, Glon
+651,Johnson,Scott,5988,10/04/1991,939,CEO,1,Zambia,270,486,Scott, Johnson
+652,Green,T.J.,7776,17/09/1996,807,Eng,3,Brazil,210,184,T.J., Green
+653,Osborne,Pierre,2257,16/02/1982,971,Sales Representative,5,Canada,262,558,Pierre, Osborne
+654,Montgomery,John,5555,19/07/1985,244,Eng,3,Germany,92,210,John, Montgomery
+655,Guckenheimer,Mark,2207,23/07/2004,679,Eng,5,United States of America,151,255,Mark, Guckenheimer
+656,Fuller,Andrew,4699,25/01/2007,526,Eng,3,Germany,295,210,Andrew, Fuller
+657,Leverling,Janet,1088,19/04/2000,930,Eng,3,Japan,287,641,Janet, Leverling
+658,King,Robert,7281,23/02/1986,612,Finan,3,Kuwait,352,755,Robert, King
+659,King1,Robert,2608,20/11/1999,257,Admin,5,Zambia,109,231,Robert, King1
+660,King2,Robert,6241,10/06/1987,655,Finan,3,Netherlands,303,517,Robert, King2
+661,Callahan,Laura,3441,16/03/2005,803,VP,2,Netherlands,186,052,Laura, Callahan
+662,Dodsworth,Anne,6758,21/06/1982,992,Eng,2,United Kingdom,202,619,Anne, Dodsworth
+663,Sutherland,Claudia,4917,19/11/1990,956,Mngr,3,Zambia,180,610,Claudia, Sutherland
+664,Nelson,Robert,2303,17/11/1992,546,Admin,4,United States of America,170,699,Robert, Nelson
+665,Young,Bruce,3528,16/05/1994,714,SRep,4,Argentina,248,421,Bruce, Young
+666,Lambert,Kim,4423,23/08/2004,805,Finan,3,Singapore,200,167,Kim, Lambert
+667,Johnson,Leslie,5822,19/11/1985,352,Eng,3,Switzerland,77,304,Leslie, Johnson
+668,Forest,Phil,6628,07/05/1996,584,Eng,2,Kuwait,351,579,Phil, Forest
+669,Davolio,Nancy,7351,26/08/1991,755,Admin,5,Nigeria,334,635,Nancy, Davolio
+670,Weston,K. J.,1850,18/12/1980,935,VP,2,China,281,530,K. J., Weston
+671,Lee,Terri,6109,04/12/1983,332,Admin,5,Israel,188,733,Terri, Lee
+672,Hall,Stewart,4123,12/03/2009,522,Admin,5,Netherlands,93,873,Stewart, Hall
+673,Young,Katherine,4855,14/05/1983,197,Sales,3,Israel,87,404,Katherine, Young
+674,Papadopoulos,Chris,3082,13/05/1996,291,Inside Sales Coordinator,2,Canada,149,350,Chris, Papadopoulos
+675,Fisher,Pete,4853,11/05/2010,198,Eng,3,Mexico,373,027,Pete, Fisher
+676,Bennet,Ann,1936,13/10/2010,463,VP,2,Nigeria,298,297,Ann, Bennet
+677,De Souza,Roger,8466,06/10/1992,871,Eng,4,Netherlands,264,075,Roger, De Souza
+678,Baldwin,Janet,2797,13/12/1984,336,Dir,2,Netherlands,165,201,Janet, Baldwin
+679,Reeves,Roger,2823,26/12/2001,697,Eng,3,Japan,218,768,Roger, Reeves
+680,Stansbury,Willie,5491,24/11/1992,759,SRep,4,Singapore,270,207,Willie, Stansbury
+681,Phong,Leslie,8101,26/03/2000,465,Mktg,3,Switzerland,126,010,Leslie, Phong
+682,Ramanathan,Ashok,3475,05/10/1981,308,VP,2,United Kingdom,272,614,Ashok, Ramanathan
+683,Steadman,Walter,6729,20/08/1986,275,Inside Sales Coordinator,2,Kuwait,336,102,Walter, Steadman
+684,Nordstrom,Carol,8286,16/08/2005,836,Sales,3,Israel,74,238,Carol, Nordstrom
+685,Leung,Luke,1560,08/01/1981,489,Eng,4,Argentina,106,834,Luke, Leung
+686,O'Brien,Sue Anne,3907,13/07/2009,664,Sales Representative,5,Germany,50,280,Sue Anne, O'Brien
+687,Burbank,Jennifer M.,2822,03/08/1986,383,CFO,1,Canada,256,424,Jennifer M., Burbank
+688,Sutherland,Claudia,1987,06/06/2002,923,Admin,4,Argentina,58,486,Claudia, Sutherland
+689,Bishop,Dana,1150,08/02/2004,987,SRep,4,HongKong,219,528,Dana, Bishop
+690,MacDonald,Mary S.,9984,06/09/1997,942,Admin,5,Zimbabwe,232,236,Mary S., MacDonald
+691,Williams,Randy,2447,15/12/1985,669,CFO,1,Brazil,219,147,Randy, Williams
+692,Bender,Oliver H.,7996,09/06/1987,199,Sales,3,Belgium,195,878,Oliver H., Bender
+693,Cook,Kevin,1001,25/11/1998,691,Mngr,3,Singapore,354,244,Kevin, Cook
+694,Brown,Kelly,7070,30/03/2002,790,Sales,3,Germany,133,369,Kelly, Brown
+695,Ichida,Yuki,7204,14/06/2008,965,Eng,3,India,283,875,Yuki, Ichida
+696,Page,Mary,5244,04/08/2004,330,Eng,3,United States of America,298,009,Mary, Page
+697,Parker,Bill,4577,24/10/2000,440,Eng,4,India,296,012,Bill, Parker
+698,Yamamoto,Takashi,8778,18/02/1996,927,Sales Representative,2,Canada,160,004,Takashi, Yamamoto
+699,Ferrari,Roberto,1098,13/01/1988,673,Eng,2,Israel,74,002,Roberto, Ferrari
+700,Yanowski,Michael,1604,30/06/1984,393,Mktg,3,Zambia,152,961,Michael, Yanowski
+701,Glon,Jacques,4763,29/04/2010,191,Eng,5,Denmark,229,941,Jacques, Glon
+702,Johnson,Scott,1305,15/11/1998,597,Eng,3,United Kingdom,206,378,Scott, Johnson
+703,Green,T.J.,2807,19/02/1985,288,Mktg,3,China,351,503,T.J., Green
+704,Osborne,Pierre,3467,16/10/2005,706,VP,2,Israel,259,085,Pierre, Osborne
+705,Montgomery,John,9015,11/04/2002,136,Sales Representative,5,Australia,388,504,John, Montgomery
+706,Guckenheimer,Mark,7290,20/12/1982,611,Sales Representative,2,Netherlands,261,590,Mark, Guckenheimer
+707,Fuller,Andrew,9941,22/01/1999,755,Eng,3,Zimbabwe,115,271,Andrew, Fuller
+708,Leverling,Janet,8612,22/02/2009,703,Mngr,3,Canada,85,046,Janet, Leverling
+709,King,Robert,8160,02/05/2004,516,Dir,2,Brazil,357,296,Robert, King
+710,King1,Robert,1323,25/09/1984,903,Admin,4,Zimbabwe,224,665,Robert, King1
+711,King2,Robert,1160,23/01/1999,503,Sales Representative,2,Israel,107,008,Robert, King2
+712,Callahan,Laura,6418,26/09/1987,686,Eng,3,Singapore,121,911,Laura, Callahan
+713,Dodsworth,Anne,2715,26/06/1998,942,CEO,1,Kuwait,54,877,Anne, Dodsworth
+714,Sutherland,Claudia,2264,31/07/2010,461,Eng,5,HongKong,156,911,Claudia, Sutherland
+715,Nelson,Robert,4919,25/01/2000,831,VP,2,Switzerland,326,355,Robert, Nelson
+716,Young,Bruce,8954,24/07/1987,550,Eng,4,Denmark,330,179,Bruce, Young
+717,Lambert,Kim,6134,04/09/1996,135,Admin,4,Japan,363,618,Kim, Lambert
+718,Johnson,Leslie,6135,17/12/1982,266,Eng,4,Nigeria,99,355,Leslie, Johnson
+719,Forest,Phil,7196,15/09/2000,185,Mngr,3,HongKong,155,971,Phil, Forest
+720,Davolio,Nancy,5182,17/10/1981,876,Admin,5,Netherlands,62,799,Nancy, Davolio
+721,Weston,K. J.,1889,19/12/1980,454,CEO,1,China,74,227,K. J., Weston
+722,Lee,Terri,9335,26/03/2007,731,Dir,2,India,240,437,Terri, Lee
+723,Hall,Stewart,2898,26/08/1998,508,Sales Representative,5,Switzerland,396,905,Stewart, Hall
+724,Young,Katherine,6721,27/07/2006,846,Admin,4,Mexico,81,436,Katherine, Young
+725,Papadopoulos,Chris,3837,01/12/2008,316,SRep,4,France,154,222,Chris, Papadopoulos
+726,Fisher,Pete,7727,08/09/1991,204,Sales Representative,5,Singapore,349,575,Pete, Fisher
+727,Bennet,Ann,7846,01/11/1994,599,Doc,3,Denmark,376,495,Ann, Bennet
+728,De Souza,Roger,3757,14/02/2007,929,Eng,2,United States of America,77,539,Roger, De Souza
+729,Baldwin,Janet,8853,05/10/1991,554,Eng,3,Australia,185,806,Janet, Baldwin
+730,Reeves,Roger,4699,06/01/2000,648,Eng,5,China,166,384,Roger, Reeves
+731,Stansbury,Willie,3912,31/10/2007,525,Eng,2,Nigeria,57,282,Willie, Stansbury
+732,Phong,Leslie,1494,01/02/2004,523,Finan,3,Belgium,73,875,Leslie, Phong
+733,Ramanathan,Ashok,5578,02/02/2002,879,SRep,4,Zimbabwe,96,934,Ashok, Ramanathan
+734,Steadman,Walter,4203,26/02/1987,525,Sales Representative,2,Canada,171,417,Walter, Steadman
+735,Nordstrom,Carol,1197,06/07/2001,801,Eng,5,Zimbabwe,178,381,Carol, Nordstrom
+736,Leung,Luke,6445,12/12/1981,786,CEO,1,China,185,888,Luke, Leung
+737,O'Brien,Sue Anne,4883,22/08/2004,775,SRep,4,Australia,317,122,Sue Anne, O'Brien
+738,Burbank,Jennifer M.,1246,21/06/2008,755,VP,2,United Kingdom,121,662,Jennifer M., Burbank
+739,Sutherland,Claudia,7191,31/01/1993,221,PRel,4,Germany,282,377,Claudia, Sutherland
+740,Bishop,Dana,6179,01/04/1982,582,Sales Representative,2,Australia,160,027,Dana, Bishop
+741,MacDonald,Mary S.,5056,08/10/1981,210,Eng,2,Egypt,349,429,Mary S., MacDonald
+742,Williams,Randy,1090,02/03/2007,201,Eng,5,Egypt,360,868,Randy, Williams
+743,Bender,Oliver H.,3276,23/07/1980,366,SRep,4,Zambia,210,709,Oliver H., Bender
+744,Cook,Kevin,2453,11/05/2004,549,Sales Representative,5,Italy,252,798,Kevin, Cook
+745,Brown,Kelly,3220,03/03/1986,423,Mngr,3,Denmark,117,154,Kelly, Brown
+746,Ichida,Yuki,5264,16/10/1980,709,Mktg,3,Mexico,377,097,Yuki, Ichida
+747,Page,Mary,6807,03/02/2007,150,Vice President,0,United Kingdom,261,700,Mary, Page
+748,Parker,Bill,4288,23/03/1989,240,Eng,3,Denmark,117,278,Bill, Parker
+749,Yamamoto,Takashi,6114,12/12/1991,601,Eng,3,Netherlands,292,026,Takashi, Yamamoto
+750,Ferrari,Roberto,8370,08/06/2002,766,SRep,4,United States of America,68,335,Roberto, Ferrari
+751,Yanowski,Michael,1896,17/12/2002,658,Mngr,3,Argentina,261,534,Michael, Yanowski
+752,Glon,Jacques,8864,24/09/1993,862,Eng,5,Netherlands,234,041,Jacques, Glon
+753,Johnson,Scott,8754,30/11/2009,717,SRep,4,Netherlands,94,664,Scott, Johnson
+754,Green,T.J.,3812,06/03/1981,342,Sales Representative,5,France,302,602,T.J., Green
+755,Osborne,Pierre,8031,27/09/1990,957,Eng,3,India,311,053,Pierre, Osborne
+756,Montgomery,John,3171,05/05/1998,579,SRep,4,Italy,157,243,John, Montgomery
+757,Guckenheimer,Mark,8659,04/07/2004,747,Doc,3,HongKong,89,489,Mark, Guckenheimer
+758,Fuller,Andrew,9986,24/03/1994,937,PRel,4,Zambia,276,985,Andrew, Fuller
+759,Leverling,Janet,2288,20/08/1994,467,Dir,2,United Kingdom,207,453,Janet, Leverling
+760,King,Robert,1866,22/04/2004,762,CEO,1,United States of America,203,019,Robert, King
+761,King1,Robert,3659,01/08/2002,356,Sales Representative,2,Brazil,229,713,Robert, King1
+762,King2,Robert,3848,16/12/1995,787,SRep,4,Denmark,337,342,Robert, King2
+763,Callahan,Laura,4313,14/05/2004,409,Eng,4,Brazil,380,135,Laura, Callahan
+764,Dodsworth,Anne,3769,05/02/2000,773,Finan,3,United States of America,372,518,Anne, Dodsworth
+765,Sutherland,Claudia,5287,11/06/2004,992,Eng,4,Argentina,365,736,Claudia, Sutherland
+766,Nelson,Robert,7867,01/07/2005,361,Eng,5,China,351,673,Robert, Nelson
+767,Young,Bruce,8151,25/02/1989,644,Eng,3,Canada,275,980,Bruce, Young
+768,Lambert,Kim,6597,30/03/1981,273,Admin,4,Singapore,157,481,Kim, Lambert
+769,Johnson,Leslie,6664,12/05/2003,259,Eng,5,Argentina,210,879,Leslie, Johnson
+770,Forest,Phil,7140,03/08/1985,595,PRel,4,United Kingdom,332,879,Phil, Forest
+771,Davolio,Nancy,4859,23/07/2006,634,Eng,2,Brazil,111,593,Nancy, Davolio
+772,Weston,K. J.,8815,18/12/1980,387,Eng,3,Mexico,129,996,K. J., Weston
+773,Lee,Terri,9499,04/10/2002,152,SRep,4,Argentina,188,704,Terri, Lee
+774,Hall,Stewart,8361,17/09/1995,168,SRep,4,Israel,320,904,Stewart, Hall
+775,Young,Katherine,8917,11/08/1991,847,Finan,3,Mexico,198,812,Katherine, Young
+776,Papadopoulos,Chris,9146,04/01/1991,378,Mngr,4,Kuwait,117,768,Chris, Papadopoulos
+777,Fisher,Pete,4906,20/10/1986,136,SRep,4,HongKong,380,483,Pete, Fisher
+778,Bennet,Ann,6012,07/12/1988,123,SRep,4,Canada,344,211,Ann, Bennet
+779,De Souza,Roger,4744,03/02/1982,902,Finan,3,HongKong,345,037,Roger, De Souza
+780,Baldwin,Janet,2221,21/04/1996,849,SRep,4,Australia,395,564,Janet, Baldwin
+781,Reeves,Roger,6915,19/03/1990,725,Eng,3,Mexico,86,166,Roger, Reeves
+782,Stansbury,Willie,6831,04/06/1998,944,VP,2,Argentina,304,217,Willie, Stansbury
+783,Phong,Leslie,7586,05/01/2006,368,Admin,5,Nigeria,342,562,Leslie, Phong
+784,Ramanathan,Ashok,6467,30/03/1981,484,CFO,1,China,230,212,Ashok, Ramanathan
+785,Steadman,Walter,3944,04/07/1981,650,Mngr,3,Singapore,240,481,Walter, Steadman
+786,Nordstrom,Carol,6955,07/03/1986,743,SRep,4,United States of America,358,349,Carol, Nordstrom
+787,Leung,Luke,7282,28/01/1989,344,Eng,3,Brazil,80,014,Luke, Leung
+788,O'Brien,Sue Anne,6449,06/03/1996,471,Inside Sales Coordinator,2,India,174,677,Sue Anne, O'Brien
+789,Burbank,Jennifer M.,7130,28/03/2002,889,Vice President,0,France,170,868,Jennifer M., Burbank
+790,Sutherland,Claudia,3367,15/05/1986,871,Eng,3,Mexico,154,348,Claudia, Sutherland
+791,Bishop,Dana,7950,07/08/2005,449,Eng,5,France,201,850,Dana, Bishop
+792,MacDonald,Mary S.,6465,24/02/1999,506,SRep,4,Canada,104,585,Mary S., MacDonald
+793,Williams,Randy,4504,10/02/2002,922,Mktg,3,Italy,64,318,Randy, Williams
+794,Bender,Oliver H.,6428,17/10/1989,388,SRep,4,India,71,349,Oliver H., Bender
+795,Cook,Kevin,2148,04/10/2010,368,Eng,3,Netherlands,206,584,Kevin, Cook
+796,Brown,Kelly,8137,28/03/2000,855,CEO,1,Netherlands,350,935,Kelly, Brown
+797,Ichida,Yuki,9107,21/02/1989,158,Vice President,0,United States of America,382,269,Yuki, Ichida
+798,Page,Mary,8663,15/08/1982,495,Eng,5,Denmark,318,635,Mary, Page
+799,Parker,Bill,8471,29/09/2008,617,Eng,3,Brazil,269,608,Bill, Parker
+800,Yamamoto,Takashi,7281,17/03/2010,141,Sales Representative,2,Zambia,357,256,Takashi, Yamamoto
+801,Ferrari,Roberto,1837,09/09/2000,820,SRep,4,Canada,226,042,Roberto, Ferrari
+802,Yanowski,Michael,9208,18/11/1982,682,Sales Representative,5,Brazil,316,715,Michael, Yanowski
+803,Glon,Jacques,5361,07/02/1989,285,Eng,4,Mexico,150,051,Jacques, Glon
+804,Johnson,Scott,1098,03/11/2002,733,Vice President,0,Germany,239,153,Scott, Johnson
+805,Green,T.J.,6755,15/02/1982,384,Admin,5,Argentina,168,706,T.J., Green
+806,Osborne,Pierre,5149,30/01/1999,767,Eng,4,Australia,226,257,Pierre, Osborne
+807,Montgomery,John,5422,28/10/2008,304,Sales Representative,2,Argentina,141,207,John, Montgomery
+808,Guckenheimer,Mark,9149,04/11/1990,658,SRep,4,Nigeria,379,753,Mark, Guckenheimer
+809,Fuller,Andrew,2864,28/09/1982,633,Doc,3,India,106,864,Andrew, Fuller
+810,Leverling,Janet,9357,14/10/1997,521,SRep,4,Japan,68,979,Janet, Leverling
+811,King,Robert,4855,17/11/2003,794,Eng,5,Zimbabwe,75,092,Robert, King
+812,King1,Robert,4947,24/04/2008,162,PRel,4,Netherlands,324,037,Robert, King1
+813,King2,Robert,2731,12/12/1996,607,CFO,1,Nigeria,364,205,Robert, King2
+814,Callahan,Laura,3257,04/08/1983,952,CFO,1,Italy,59,046,Laura, Callahan
+815,Dodsworth,Anne,3317,13/02/2005,990,Dir,2,Singapore,381,231,Anne, Dodsworth
+816,Sutherland,Claudia,9841,25/01/1999,365,Sales Representative,5,HongKong,241,213,Claudia, Sutherland
+817,Nelson,Robert,1283,09/12/2009,212,Vice President,0,Switzerland,307,520,Robert, Nelson
+818,Young,Bruce,4069,13/03/1983,725,Admin,5,Argentina,305,194,Bruce, Young
+819,Lambert,Kim,1440,06/01/2000,619,Admin,4,Belgium,283,644,Kim, Lambert
+820,Johnson,Leslie,1850,29/04/1998,497,Admin,5,Zimbabwe,267,826,Leslie, Johnson
+821,Forest,Phil,9575,14/04/2002,914,Admin,4,Mexico,55,285,Phil, Forest
+822,Davolio,Nancy,1487,29/04/1982,169,SRep,4,Italy,126,571,Nancy, Davolio
+823,Weston,K. J.,1276,24/03/1990,828,Eng,2,Italy,171,422,K. J., Weston
+824,Lee,Terri,1754,02/03/1999,140,Finan,3,Mexico,392,484,Terri, Lee
+825,Hall,Stewart,9918,07/01/1984,248,Eng,4,Nigeria,163,388,Stewart, Hall
+826,Young,Katherine,5048,10/09/1995,750,SRep,4,Switzerland,383,323,Katherine, Young
+827,Papadopoulos,Chris,1285,18/06/1981,878,CFO,1,Canada,152,110,Chris, Papadopoulos
+828,Fisher,Pete,7902,25/06/1995,418,Eng,5,France,245,126,Pete, Fisher
+829,Bennet,Ann,9432,19/01/1997,741,Mngr,3,Germany,324,909,Ann, Bennet
+830,De Souza,Roger,5368,22/07/1982,677,Admin,5,Netherlands,103,283,Roger, De Souza
+831,Nelson,Robert,2476,13/10/1993,624,Sales,3,Germany,202,898,Robert, Nelson
+832,Young,Bruce,2925,13/03/2001,873,Sales Representative,5,Denmark,157,833,Bruce, Young
+833,Lambert,Kim,7468,24/10/1988,414,Admin,5,Zimbabwe,84,342,Kim, Lambert
+834,Johnson,Leslie,2213,08/12/1992,272,Sales Representative,5,Singapore,310,417,Leslie, Johnson
+835,Forest,Phil,7620,15/04/1994,839,CFO,1,Argentina,387,794,Phil, Forest
+836,Davolio,Nancy,1119,09/12/2000,520,Eng,3,Egypt,261,222,Nancy, Davolio
+837,Weston,K. J.,3015,29/05/1999,716,Mngr,3,Netherlands,104,173,K. J., Weston
+838,Lee,Terri,4647,05/11/2001,131,Vice President,0,United Kingdom,301,098,Terri, Lee
+839,Hall,Stewart,8212,21/03/1985,568,Sales Representative,5,Egypt,115,474,Stewart, Hall
+840,Young,Katherine,2802,05/06/1995,572,SRep,4,Netherlands,59,029,Katherine, Young
+841,Papadopoulos,Chris,3821,14/07/2005,878,VP,2,Denmark,208,255,Chris, Papadopoulos
+842,Fisher,Pete,8363,29/05/1986,410,Admin,5,Denmark,53,210,Pete, Fisher
+843,Bennet,Ann,4851,03/05/2007,721,Eng,3,Singapore,184,993,Ann, Bennet
+844,De Souza,Roger,2204,23/04/2004,642,SRep,4,Singapore,54,992,Roger, De Souza
+845,Baldwin,Janet,4952,21/02/2006,852,Admin,4,Belgium,115,077,Janet, Baldwin
+846,Reeves,Roger,2055,27/11/1982,810,Eng,3,Zambia,76,384,Roger, Reeves
+847,Stansbury,Willie,3863,12/01/2002,533,Sales Representative,5,Australia,63,660,Willie, Stansbury
+848,Phong,Leslie,9876,15/08/1992,458,Admin,4,Switzerland,107,394,Leslie, Phong
+849,Ramanathan,Ashok,9171,01/05/1989,933,Eng,3,Singapore,350,249,Ashok, Ramanathan
+850,Steadman,Walter,1217,27/07/1995,747,Vice President,0,Switzerland,365,521,Walter, Steadman
+851,Nordstrom,Carol,2690,13/12/1983,970,SRep,4,China,393,658,Carol, Nordstrom
+852,Leung,Luke,3770,30/06/1995,218,SRep,4,HongKong,189,143,Luke, Leung
+853,O'Brien,Sue Anne,6304,19/01/2004,377,Eng,5,Zimbabwe,244,726,Sue Anne, O'Brien
+854,Burbank,Jennifer M.,5332,23/06/1985,798,VP,2,Singapore,270,248,Jennifer M., Burbank
+855,Sutherland,Claudia,3273,08/03/1983,983,SRep,4,Japan,258,303,Claudia, Sutherland
+856,Bishop,Dana,9156,28/01/2003,500,CFO,1,HongKong,386,387,Dana, Bishop
+857,MacDonald,Mary S.,4367,24/08/2007,639,Finan,3,France,358,574,Mary S., MacDonald
+858,Williams,Randy,7677,15/06/1986,188,VP,2,Brazil,106,537,Randy, Williams
+859,Bender,Oliver H.,8540,26/10/1997,312,Eng,3,Singapore,131,891,Oliver H., Bender
+860,Cook,Kevin,8008,25/01/2002,169,Vice President,0,HongKong,75,022,Kevin, Cook
+861,Brown,Kelly,3543,06/05/1999,877,Admin,5,Argentina,198,173,Kelly, Brown
+862,Ichida,Yuki,8017,23/01/1981,945,Inside Sales Coordinator,2,Kuwait,150,407,Yuki, Ichida
+863,Page,Mary,4721,15/03/1993,952,Doc,3,United States of America,268,113,Mary, Page
+864,Parker,Bill,3258,09/07/1994,477,Eng,3,Singapore,273,931,Bill, Parker
+865,Yamamoto,Takashi,7156,15/11/2007,222,SRep,4,India,68,231,Takashi, Yamamoto
+866,Ferrari,Roberto,1723,27/12/2001,223,VP,2,Egypt,375,654,Roberto, Ferrari
+867,Yanowski,Michael,6135,12/09/2001,566,Mngr,3,Brazil,301,311,Michael, Yanowski
+868,Glon,Jacques,5529,26/03/1995,731,SRep,4,United States of America,205,279,Jacques, Glon
+869,Johnson,Scott,8624,15/05/1984,933,Sales Representative,5,Kuwait,286,835,Scott, Johnson
+870,Green,T.J.,3778,18/05/2007,612,Doc,3,Belgium,151,049,T.J., Green
+871,Osborne,Pierre,2223,09/06/1984,344,Admin,5,Japan,105,308,Pierre, Osborne
+872,Montgomery,John,2851,28/10/2007,387,VP,2,Australia,166,885,John, Montgomery
+873,Guckenheimer,Mark,7089,03/06/1984,906,SRep,4,HongKong,256,355,Mark, Guckenheimer
+874,Fuller,Andrew,8853,28/01/2001,294,VP,2,Germany,312,473,Andrew, Fuller
+875,Leverling,Janet,8519,16/12/2008,575,SRep,4,Belgium,397,064,Janet, Leverling
+876,King,Robert,1186,26/02/2009,601,Inside Sales Coordinator,2,Zimbabwe,136,322,Robert, King
+877,King1,Robert,1251,12/02/2000,797,Sales,3,HongKong,158,174,Robert, King1
+878,King2,Robert,6225,24/11/1991,653,Admin,5,Belgium,61,399,Robert, King2
+879,Callahan,Laura,1598,26/09/2005,347,Sales Representative,5,Zambia,111,639,Laura, Callahan
+880,Dodsworth,Anne,6026,27/04/1995,897,Mngr,4,Italy,60,447,Anne, Dodsworth
+881,Sutherland,Claudia,1663,28/06/1982,651,Eng,3,Canada,204,455,Claudia, Sutherland
+882,Baldwin,Janet,1627,08/10/1994,477,SRep,4,United States of America,120,113,Janet, Baldwin
+883,Reeves,Roger,8377,28/04/1995,641,Mngr,3,Germany,390,383,Roger, Reeves
+884,Stansbury,Willie,2886,10/12/1980,241,Eng,3,Denmark,131,453,Willie, Stansbury
+885,Phong,Leslie,6840,20/06/1989,290,PRel,4,Germany,79,326,Leslie, Phong
+886,Ramanathan,Ashok,1551,05/07/1997,880,VP,2,United Kingdom,350,586,Ashok, Ramanathan
+887,Steadman,Walter,8729,04/05/1995,298,Eng,3,Italy,136,230,Walter, Steadman
+888,Nordstrom,Carol,6641,11/02/2005,737,Mngr,3,Belgium,305,526,Carol, Nordstrom
+889,Leung,Luke,5316,23/02/1980,335,Sales Representative,2,United States of America,229,675,Luke, Leung
+890,O'Brien,Sue Anne,2190,24/03/1987,408,Eng,4,Argentina,328,981,Sue Anne, O'Brien
+891,Burbank,Jennifer M.,1280,19/02/1990,601,Eng,4,France,207,062,Jennifer M., Burbank
+892,Sutherland,Claudia,1573,08/04/1999,161,Eng,5,Zimbabwe,236,831,Claudia, Sutherland
+893,Bishop,Dana,8032,05/12/1986,319,Finan,3,Israel,103,985,Dana, Bishop
+894,MacDonald,Mary S.,9953,24/01/2010,535,Admin,5,France,301,003,Mary S., MacDonald
+895,Williams,Randy,1271,19/12/2007,918,Sales Representative,2,France,99,342,Randy, Williams
+896,Bender,Oliver H.,5795,04/08/1999,488,Mngr,4,Mexico,167,390,Oliver H., Bender
+897,Cook,Kevin,9979,04/01/2002,368,VP,2,India,240,921,Kevin, Cook
+898,Brown,Kelly,2043,23/11/1991,239,SRep,4,Denmark,309,981,Kelly, Brown
+899,Ichida,Yuki,5496,01/03/2000,640,Eng,4,Nigeria,175,322,Yuki, Ichida
+900,Page,Mary,7548,08/09/1981,399,SRep,4,Kuwait,338,356,Mary, Page
+901,Parker,Bill,7420,07/06/1982,625,Sales Representative,2,Singapore,200,203,Bill, Parker
+902,Yamamoto,Takashi,2529,09/05/1998,498,SRep,4,United States of America,212,337,Takashi, Yamamoto
+903,Ferrari,Roberto,7651,24/07/2005,267,SRep,4,Italy,247,516,Roberto, Ferrari
+904,Yanowski,Michael,7991,16/05/1989,340,Eng,2,Australia,291,473,Michael, Yanowski
+905,Glon,Jacques,8076,05/03/1990,598,Doc,3,Germany,338,357,Jacques, Glon
+906,Johnson,Scott,1509,21/09/1981,105,VP,2,Zambia,207,301,Scott, Johnson
+907,Green,T.J.,9718,16/02/1991,555,Eng,3,Argentina,51,772,T.J., Green
+908,Osborne,Pierre,4403,07/01/1992,108,Eng,2,Belgium,87,868,Pierre, Osborne
+909,Montgomery,John,4667,19/02/1980,115,SRep,4,Israel,344,691,John, Montgomery
+910,Guckenheimer,Mark,7000,08/11/2010,397,Eng,4,Australia,340,553,Mark, Guckenheimer
+911,Fuller,Andrew,5407,21/09/1981,169,CFO,1,Argentina,259,716,Andrew, Fuller
+912,Leverling,Janet,6626,10/12/2009,581,CFO,1,Mexico,101,328,Janet, Leverling
+913,King,Robert,4988,22/01/2009,395,Mngr,4,France,305,055,Robert, King
+914,King1,Robert,8661,31/05/1990,753,SRep,4,India,152,184,Robert, King1
+915,King2,Robert,8071,19/08/2005,929,Doc,3,Switzerland,165,306,Robert, King2
+916,Callahan,Laura,8258,18/10/1993,241,SRep,4,Zimbabwe,306,763,Laura, Callahan
+917,Dodsworth,Anne,8528,05/07/1986,535,Eng,5,Nigeria,339,832,Anne, Dodsworth
+918,Sutherland,Claudia,5504,27/11/1987,773,Eng,3,Denmark,221,212,Claudia, Sutherland
+919,Nelson,Robert,1452,06/10/2000,391,CEO,1,France,193,808,Robert, Nelson
+920,Young,Bruce,2989,26/05/2000,528,Inside Sales Coordinator,2,Egypt,333,621,Bruce, Young
+921,Lambert,Kim,2636,17/07/2002,320,Eng,3,HongKong,302,536,Kim, Lambert
+922,Johnson,Leslie,8472,30/10/1993,200,Admin,4,Belgium,119,121,Leslie, Johnson
+923,Forest,Phil,5937,22/09/1988,449,SRep,4,Brazil,252,587,Phil, Forest
+924,Davolio,Nancy,2775,30/07/1981,947,Eng,3,Singapore,385,152,Nancy, Davolio
+925,Weston,K. J.,2414,24/05/2004,514,Eng,3,Germany,105,843,K. J., Weston
+926,Lee,Terri,5959,25/03/2006,446,SRep,4,Kuwait,206,279,Terri, Lee
+927,Hall,Stewart,9063,15/07/2000,406,SRep,4,Denmark,159,499,Stewart, Hall
+928,Young,Katherine,6406,11/11/1982,943,VP,2,HongKong,169,860,Katherine, Young
+929,Papadopoulos,Chris,2888,01/01/1999,780,Eng,4,Switzerland,127,455,Chris, Papadopoulos
+930,Fisher,Pete,4396,29/11/1991,248,Eng,4,China,361,894,Pete, Fisher
+931,Bennet,Ann,5631,01/05/1991,708,Mngr,3,Nigeria,383,479,Ann, Bennet
+932,De Souza,Roger,8581,24/06/1999,875,CEO,1,Denmark,82,809,Roger, De Souza
+933,Baldwin,Janet,2837,28/10/1989,434,Eng,4,Netherlands,280,570,Janet, Baldwin
+934,Reeves,Roger,1794,11/06/2002,551,Mngr,3,Australia,249,131,Roger, Reeves
+935,Stansbury,Willie,6423,23/02/2007,217,Mktg,3,United Kingdom,268,310,Willie, Stansbury
+936,Phong,Leslie,4500,26/10/1999,349,Sales Representative,5,India,203,181,Leslie, Phong
+937,Ramanathan,Ashok,1671,12/06/2008,878,Sales Representative,5,Brazil,198,809,Ashok, Ramanathan
+938,Steadman,Walter,8394,03/07/1996,309,Eng,3,Switzerland,148,355,Walter, Steadman
+939,Nordstrom,Carol,3779,04/02/2008,687,VP,2,Canada,99,091,Carol, Nordstrom
+940,Leung,Luke,1977,08/03/1981,711,Mngr,3,Egypt,71,081,Luke, Leung
+941,O'Brien,Sue Anne,8351,08/01/1993,373,Inside Sales Coordinator,2,Zimbabwe,124,618,Sue Anne, O'Brien
+942,Burbank,Jennifer M.,1060,09/11/2000,377,Eng,3,Japan,322,928,Jennifer M., Burbank
+943,Sutherland,Claudia,7018,11/02/2008,490,SRep,4,Netherlands,90,596,Claudia, Sutherland
+944,Bishop,Dana,2778,08/05/1994,490,Inside Sales Coordinator,2,Mexico,254,680,Dana, Bishop
+945,MacDonald,Mary S.,7620,04/02/1985,456,SRep,4,Argentina,127,327,Mary S., MacDonald
+946,Williams,Randy,2432,24/11/1987,401,Eng,3,Denmark,150,612,Randy, Williams
+947,Bender,Oliver H.,6010,09/01/1985,517,Mngr,3,Zambia,382,184,Oliver H., Bender
+948,Cook,Kevin,8990,03/03/2002,295,Eng,5,Kuwait,128,869,Kevin, Cook
+949,Brown,Kelly,5608,02/11/1991,219,Finan,3,Brazil,152,437,Kelly, Brown
+950,Ichida,Yuki,4072,17/07/1990,602,Mngr,4,Brazil,332,061,Yuki, Ichida
+951,Page,Mary,9905,27/01/2010,779,Mngr,3,Australia,118,332,Mary, Page
+952,Parker,Bill,5457,26/01/2008,240,Eng,5,Nigeria,340,318,Bill, Parker
+953,Yamamoto,Takashi,1440,25/06/2009,347,Eng,2,Singapore,195,055,Takashi, Yamamoto
+954,Ferrari,Roberto,4230,05/05/1999,218,Admin,5,HongKong,318,527,Roberto, Ferrari
+955,Yanowski,Michael,6369,15/07/2006,219,Eng,4,Nigeria,236,321,Michael, Yanowski
+956,Glon,Jacques,2104,29/07/2001,642,SRep,4,France,188,389,Jacques, Glon
+957,Johnson,Scott,2550,22/04/2006,338,Eng,3,Mexico,90,100,Scott, Johnson
+958,Green,T.J.,7528,07/06/2006,354,SRep,4,India,289,747,T.J., Green
+959,Osborne,Pierre,6780,14/01/1980,189,SRep,4,HongKong,352,187,Pierre, Osborne
+960,Montgomery,John,5988,02/04/2004,610,SRep,4,Zambia,238,679,John, Montgomery
+961,Guckenheimer,Mark,8380,06/06/1994,482,Eng,3,Kuwait,266,782,Mark, Guckenheimer
+962,Fuller,Andrew,1465,20/11/1989,474,Eng,3,Israel,140,107,Andrew, Fuller
+963,Leverling,Janet,1056,26/09/2007,721,Sales Representative,2,Nigeria,72,406,Janet, Leverling
+964,King,Robert,3738,29/04/1980,928,Sales Representative,5,India,151,596,Robert, King
+965,King1,Robert,3517,27/11/1996,531,VP,2,Argentina,346,324,Robert, King1
+966,King2,Robert,2448,14/08/1993,137,Finan,3,HongKong,256,531,Robert, King2
+967,Callahan,Laura,9507,27/08/2003,682,Eng,3,China,250,593,Laura, Callahan
+968,Dodsworth,Anne,6540,17/07/1986,231,VP,2,Argentina,228,633,Anne, Dodsworth
+969,Sutherland,Claudia,8615,27/04/1999,410,Finan,3,Zimbabwe,112,620,Claudia, Sutherland
+970,Nelson,Robert,9750,06/09/2002,992,CFO,1,China,377,791,Robert, Nelson
+971,Young,Bruce,2397,03/07/2003,518,Vice President,0,United States of America,352,375,Bruce, Young
+972,Lambert,Kim,7250,25/01/1992,308,Eng,3,United Kingdom,257,152,Kim, Lambert
+973,Johnson,Leslie,3509,20/09/1984,809,PRel,4,Israel,196,934,Leslie, Johnson
+974,Forest,Phil,9899,20/03/1998,152,Sales Representative,5,HongKong,377,456,Phil, Forest
+975,Davolio,Nancy,1754,04/07/2005,249,Inside Sales Coordinator,2,Israel,127,732,Nancy, Davolio
+976,Weston,K. J.,1883,04/06/1989,906,Eng,4,Japan,320,491,K. J., Weston
+977,Lee,Terri,3430,09/06/1997,392,Dir,2,Argentina,311,943,Terri, Lee
+978,Hall,Stewart,7178,12/04/1984,963,Sales Representative,5,Germany,285,948,Stewart, Hall
+979,Young,Katherine,1415,24/09/1997,529,Eng,2,Denmark,238,276,Katherine, Young
+980,Papadopoulos,Chris,4470,08/01/1980,598,Sales Representative,2,Brazil,92,763,Chris, Papadopoulos
+981,Fisher,Pete,3815,12/11/1986,500,Mktg,3,Denmark,398,220,Pete, Fisher
+982,Bennet,Ann,5926,20/02/1989,484,Admin,5,Egypt,167,725,Ann, Bennet
+983,De Souza,Roger,4586,05/08/1985,363,Vice President,0,Nigeria,90,836,Roger, De Souza
+984,Baldwin,Janet,4971,15/07/1981,530,Sales Representative,5,Nigeria,141,963,Janet, Baldwin
+985,Reeves,Roger,2490,15/03/1984,561,Mktg,3,Denmark,93,077,Roger, Reeves
+986,Stansbury,Willie,2333,18/03/1984,288,Doc,3,Australia,180,100,Willie, Stansbury
+987,Phong,Leslie,8909,18/05/2004,528,Eng,3,China,245,479,Leslie, Phong
+988,Ramanathan,Ashok,8095,07/12/2008,259,Eng,4,HongKong,273,158,Ashok, Ramanathan
+989,Steadman,Walter,8893,27/07/2003,127,CEO,1,Belgium,272,244,Walter, Steadman
+990,Nordstrom,Carol,9521,28/08/2005,407,Vice President,0,Canada,195,125,Carol, Nordstrom
+991,Leung,Luke,2583,01/05/1985,354,SRep,4,Egypt,210,224,Luke, Leung
+992,O'Brien,Sue Anne,6505,19/12/2006,854,Sales Representative,2,Nigeria,290,234,Sue Anne, O'Brien
+993,Burbank,Jennifer M.,5087,29/07/2000,237,Admin,5,Israel,330,816,Jennifer M., Burbank
+994,Sutherland,Claudia,8371,27/01/1995,305,Mngr,3,Nigeria,276,719,Claudia, Sutherland
+995,Bishop,Dana,1791,30/06/2008,172,Eng,2,United States of America,317,849,Dana, Bishop
+996,MacDonald,Mary S.,2773,09/06/1986,419,VP,2,Nigeria,238,786,Mary S., MacDonald
+997,Williams,Randy,1323,22/05/1989,995,Mngr,4,Netherlands,124,909,Randy, Williams
+998,Bender,Oliver H.,4489,20/01/2003,963,CEO,1,Singapore,178,870,Oliver H., Bender
+999,Cook,Kevin,3889,19/09/1999,208,PRel,4,United States of America,311,972,Kevin, Cook
+1000,Brown,Kelly,2639,10/05/2010,364,Eng,3,Argentina,371,459,Kelly, Brown
+1001,Ichida,Yuki,4763,06/02/1984,118,Eng,3,Kuwait,229,984,Yuki, Ichida
+1002,Page,Mary,4046,30/04/1992,120,Eng,4,Kuwait,243,203,Mary, Page
+1003,Parker,Bill,1094,20/05/2007,601,Sales Representative,5,Kuwait,166,376,Bill, Parker
+1004,Yamamoto,Takashi,3691,08/11/2005,534,Eng,4,Zambia,178,111,Takashi, Yamamoto
+1005,Ferrari,Roberto,4534,25/04/1980,271,Eng,4,Nigeria,397,186,Roberto, Ferrari
+1006,Yanowski,Michael,7224,22/02/2008,340,Doc,3,Switzerland,259,069,Michael, Yanowski
+1007,Glon,Jacques,1025,30/09/1990,214,Sales Representative,5,Italy,370,861,Jacques, Glon
+1008,Johnson,Scott,5174,19/11/1999,760,Eng,4,Canada,387,606,Scott, Johnson
+1009,Green,T.J.,7643,26/02/1988,189,Admin,5,Zimbabwe,294,609,T.J., Green
+1010,Osborne,Pierre,4294,10/06/1985,949,Sales,3,Denmark,99,375,Pierre, Osborne
+1011,Montgomery,John,8118,04/04/2003,365,Dir,2,Singapore,194,323,John, Montgomery
+1012,Guckenheimer,Mark,5118,24/12/2002,766,Eng,3,Canada,275,697,Mark, Guckenheimer
+1013,Fuller,Andrew,8214,20/11/1988,584,Inside Sales Coordinator,2,Brazil,182,431,Andrew, Fuller
+1014,Leverling,Janet,7826,06/03/1991,531,Eng,2,Belgium,120,059,Janet, Leverling
+1015,King,Robert,7539,08/06/2005,866,Finan,3,Italy,300,838,Robert, King
+1016,King1,Robert,7643,16/07/2009,887,Inside Sales Coordinator,2,China,250,351,Robert, King1
+1017,King2,Robert,5537,02/04/2009,178,Admin,4,Mexico,217,158,Robert, King2
+1018,Callahan,Laura,4021,02/06/1993,724,Sales Representative,5,United Kingdom,318,132,Laura, Callahan
+1019,Dodsworth,Anne,7076,19/12/2000,158,Admin,4,Brazil,312,351,Anne, Dodsworth
+1020,Sutherland,Claudia,6403,09/12/2003,571,Vice President,0,Kuwait,92,038,Claudia, Sutherland
+1021,Nelson,Robert,7475,10/01/1999,515,Sales Representative,2,France,209,479,Robert, Nelson
+1022,Young,Bruce,3618,10/08/1989,315,SRep,4,Brazil,267,268,Bruce, Young
+1023,Lambert,Kim,2167,14/06/2004,377,Sales Representative,2,Nigeria,324,429,Kim, Lambert
+1024,Johnson,Leslie,2727,07/04/2007,241,Mngr,4,Mexico,358,729,Leslie, Johnson
+1025,Forest,Phil,4832,24/06/2001,822,CFO,1,Israel,205,189,Phil, Forest
+1026,Davolio,Nancy,8217,22/12/1984,473,Eng,3,Kuwait,145,365,Nancy, Davolio
+1027,Weston,K. J.,3446,07/07/2005,875,Sales Representative,5,Germany,353,869,K. J., Weston
+1028,Lee,Terri,8952,10/11/1982,327,Sales Representative,5,Kuwait,338,431,Terri, Lee
+1029,Hall,Stewart,2587,17/06/1988,606,Sales Representative,2,Zimbabwe,211,446,Stewart, Hall
+1030,Young,Katherine,9452,07/11/1996,172,Eng,5,Egypt,124,988,Katherine, Young
+1031,Papadopoulos,Chris,6867,25/11/1990,885,CEO,1,Germany,63,395,Chris, Papadopoulos
+1032,Fisher,Pete,9651,18/07/1983,561,Eng,3,Argentina,307,210,Pete, Fisher
+1033,Bennet,Ann,7659,04/10/1992,785,CFO,1,Zimbabwe,346,709,Ann, Bennet
+1034,De Souza,Roger,6045,31/10/1998,355,SRep,4,India,188,913,Roger, De Souza
+1035,Baldwin,Janet,4576,13/03/1981,708,Finan,3,United States of America,344,945,Janet, Baldwin
+1036,Reeves,Roger,1342,22/01/1980,406,Eng,2,Mexico,236,727,Roger, Reeves
+1037,Stansbury,Willie,4299,07/09/2005,731,Admin,5,United Kingdom,278,433,Willie, Stansbury
+1038,Phong,Leslie,7424,30/01/1986,831,Sales Representative,2,Denmark,116,879,Leslie, Phong
+1039,Ramanathan,Ashok,3037,27/01/2001,555,SRep,4,United States of America,98,630,Ashok, Ramanathan
+1040,Steadman,Walter,5673,03/12/1987,143,Eng,4,Canada,142,393,Walter, Steadman
+1041,Nordstrom,Carol,5363,11/03/1991,972,PRel,4,Singapore,191,808,Carol, Nordstrom
+1042,Leung,Luke,3271,15/08/2000,965,Admin,5,Nigeria,124,845,Luke, Leung
+1043,O'Brien,Sue Anne,7145,27/04/2010,825,Eng,2,Mexico,120,038,Sue Anne, O'Brien
+1044,Burbank,Jennifer M.,1522,02/06/1994,432,Eng,4,China,300,880,Jennifer M., Burbank
+1045,Sutherland,Claudia,2109,21/05/1980,604,Eng,3,Brazil,218,585,Claudia, Sutherland
+1046,Bishop,Dana,8013,20/01/1988,598,CFO,1,United States of America,397,595,Dana, Bishop
+1047,MacDonald,Mary S.,5831,22/10/1988,995,Eng,3,Kuwait,83,894,Mary S., MacDonald
+1048,Williams,Randy,1907,05/09/1993,734,SRep,4,Singapore,292,628,Randy, Williams
+1049,Bender,Oliver H.,3438,29/06/2004,842,SRep,4,Zimbabwe,234,459,Oliver H., Bender
+1050,Cook,Kevin,9885,07/07/1998,880,SRep,4,Zimbabwe,299,045,Kevin, Cook
+1051,Brown,Kelly,9089,19/01/1990,579,Vice President,0,Japan,199,900,Kelly, Brown
+1052,Ichida,Yuki,3282,04/04/1998,838,Eng,3,Argentina,368,985,Yuki, Ichida
+1053,Page,Mary,8468,25/08/1994,981,Eng,3,Nigeria,202,911,Mary, Page
+1054,Parker,Bill,1956,05/02/1999,780,Eng,4,Brazil,358,054,Bill, Parker
+1055,Yamamoto,Takashi,1443,16/04/1987,143,Admin,5,Argentina,364,719,Takashi, Yamamoto
+1056,Ferrari,Roberto,3980,03/08/1984,940,SRep,4,Switzerland,97,169,Roberto, Ferrari
+1057,Yanowski,Michael,4824,12/09/1987,219,SRep,4,Zimbabwe,120,068,Michael, Yanowski
+1058,Glon,Jacques,4632,21/08/1995,498,Eng,4,Kuwait,333,921,Jacques, Glon
+1059,Johnson,Scott,6891,07/08/1985,607,Eng,4,Mexico,78,903,Scott, Johnson
+1060,Green,T.J.,1209,06/06/1984,815,Eng,2,Nigeria,90,665,T.J., Green
+1061,Osborne,Pierre,7525,12/09/1997,800,SRep,4,Argentina,231,498,Pierre, Osborne
+1062,Montgomery,John,1569,10/11/1987,158,Eng,3,Nigeria,174,684,John, Montgomery
+1063,Guckenheimer,Mark,5118,07/10/1994,973,Eng,4,Denmark,135,902,Mark, Guckenheimer
+1064,Fuller,Andrew,1718,17/11/1991,552,Inside Sales Coordinator,2,Denmark,189,704,Andrew, Fuller
+1065,Leverling,Janet,6435,14/03/1981,408,SRep,4,Egypt,359,925,Janet, Leverling
+1066,King,Robert,9040,11/07/1988,846,Eng,4,Argentina,366,348,Robert, King
+1067,King1,Robert,9508,06/03/2002,918,SRep,4,Kuwait,168,451,Robert, King1
+1068,King2,Robert,1799,16/08/1989,993,Sales Representative,2,Denmark,218,163,Robert, King2
+1069,Callahan,Laura,8746,05/11/1988,828,Finan,3,China,397,750,Laura, Callahan
+1070,Dodsworth,Anne,9605,22/12/2008,505,Eng,3,Mexico,373,178,Anne, Dodsworth
+1071,Sutherland,Claudia,2131,01/09/2007,937,VP,2,Australia,280,035,Claudia, Sutherland
+1072,Nelson,Robert,3662,23/04/2000,247,Eng,3,India,295,428,Robert, Nelson
+1073,Young,Bruce,6203,26/07/1984,535,Doc,3,Denmark,182,896,Bruce, Young
+1074,Lambert,Kim,3806,05/10/1986,186,Dir,2,Zambia,291,659,Kim, Lambert
+1075,Johnson,Leslie,7041,13/08/1991,288,Mktg,3,Germany,82,161,Leslie, Johnson
+1076,Forest,Phil,2702,14/06/1996,391,SRep,4,Switzerland,219,019,Phil, Forest
+1077,Davolio,Nancy,8852,20/02/1984,470,SRep,4,Zimbabwe,135,578,Nancy, Davolio
+1078,Weston,K. J.,5607,27/09/1995,423,Eng,3,Belgium,178,397,K. J., Weston
+1079,Lee,Terri,2412,17/05/1994,664,Admin,4,Nigeria,386,147,Terri, Lee
+1080,Hall,Stewart,1475,31/01/1998,813,Eng,3,Zambia,356,061,Stewart, Hall
+1081,Young,Katherine,2783,10/01/2006,826,VP,2,Egypt,190,632,Katherine, Young
+1082,Papadopoulos,Chris,3733,11/02/1981,775,SRep,4,Argentina,172,525,Chris, Papadopoulos
+1083,Fisher,Pete,4044,31/03/2003,456,Mngr,3,Brazil,105,947,Pete, Fisher
+1084,Bennet,Ann,5567,12/12/1994,583,Eng,2,United Kingdom,234,758,Ann, Bennet
+1085,De Souza,Roger,6610,28/02/2007,213,Eng,3,Italy,298,248,Roger, De Souza
+1086,Baldwin,Janet,6218,24/11/1993,888,VP,2,Argentina,234,293,Janet, Baldwin
+1087,Reeves,Roger,6311,10/07/2009,877,CFO,1,Brazil,120,526,Roger, Reeves
+1088,Stansbury,Willie,5806,13/06/2004,993,Eng,3,Denmark,57,838,Willie, Stansbury
+1089,Phong,Leslie,2289,01/07/2008,470,Eng,5,Canada,250,523,Leslie, Phong
+1090,Ramanathan,Ashok,7192,28/09/1995,719,Inside Sales Coordinator,2,United States of America,109,937,Ashok, Ramanathan
+1091,Steadman,Walter,7400,19/08/2002,703,SRep,4,Switzerland,311,947,Walter, Steadman
+1092,Nordstrom,Carol,4865,21/01/2004,516,Eng,2,Zimbabwe,213,061,Carol, Nordstrom
+1093,Leung,Luke,7588,04/01/1992,433,Mngr,4,Argentina,213,609,Luke, Leung
+1094,O'Brien,Sue Anne,7807,10/06/1985,456,CEO,1,Netherlands,365,393,Sue Anne, O'Brien
+1095,Burbank,Jennifer M.,8981,19/06/1993,869,VP,2,Canada,94,490,Jennifer M., Burbank
+1096,Sutherland,Claudia,4118,18/07/1990,410,Eng,3,Zambia,376,038,Claudia, Sutherland
+1097,Bishop,Dana,8147,20/02/1980,971,Admin,4,Singapore,71,680,Dana, Bishop
+1098,MacDonald,Mary S.,7910,25/02/2001,763,Finan,3,Argentina,362,743,Mary S., MacDonald
+1099,Williams,Randy,7592,16/10/1981,284,SRep,4,United Kingdom,216,717,Randy, Williams
+1100,Bender,Oliver H.,4518,31/05/2010,194,Mngr,3,Canada,321,508,Oliver H., Bender
+1101,Cook,Kevin,7643,03/08/1986,653,Eng,3,Israel,113,811,Kevin, Cook
+1102,Brown,Kelly,8591,13/01/1984,158,Mktg,3,Zambia,342,852,Kelly, Brown
+1103,Ichida,Yuki,5533,04/02/1989,429,Eng,3,France,168,434,Yuki, Ichida
+1104,Page,Mary,7332,07/04/1981,390,Dir,2,Egypt,98,681,Mary, Page
+1105,Parker,Bill,7990,25/10/1995,396,Eng,3,Belgium,373,890,Bill, Parker
+1106,Yamamoto,Takashi,6862,15/01/2004,374,Sales Representative,2,Egypt,55,511,Takashi, Yamamoto
+1107,Ferrari,Roberto,4754,10/08/2005,450,Eng,3,France,106,736,Roberto, Ferrari
+1108,Yanowski,Michael,2646,15/02/1991,512,Eng,3,Kuwait,392,770,Michael, Yanowski
+1109,Glon,Jacques,5854,12/01/1987,680,CEO,1,Argentina,71,602,Jacques, Glon
+1110,Johnson,Scott,9633,05/06/1994,936,Eng,3,Argentina,382,687,Scott, Johnson
+1111,Green,T.J.,4488,15/09/2007,315,SRep,4,Netherlands,53,367,T.J., Green
+1112,Osborne,Pierre,8492,18/05/2009,341,VP,2,Zambia,320,399,Pierre, Osborne
+1113,Montgomery,John,3923,04/12/1995,266,SRep,4,Denmark,343,393,John, Montgomery
+1114,Guckenheimer,Mark,3641,08/07/1992,263,Doc,3,Italy,202,868,Mark, Guckenheimer
+1115,Fuller,Andrew,5429,21/11/2007,232,VP,2,Kuwait,236,851,Andrew, Fuller
+1116,Leverling,Janet,6586,03/06/1982,903,Mngr,3,HongKong,354,145,Janet, Leverling
+1117,King,Robert,8051,07/12/1994,563,Eng,3,Germany,284,221,Robert, King
+1118,King1,Robert,5711,12/02/2005,411,VP,2,Zambia,296,417,Robert, King1
+1119,King2,Robert,4947,31/12/1981,897,Eng,5,Italy,114,729,Robert, King2
+1120,Callahan,Laura,5051,08/07/1988,367,CFO,1,Japan,100,546,Laura, Callahan
+1121,Dodsworth,Anne,3372,16/10/1999,301,Eng,5,Japan,222,079,Anne, Dodsworth
+1122,Sutherland,Claudia,3666,22/08/1991,116,Dir,2,Japan,77,135,Claudia, Sutherland
