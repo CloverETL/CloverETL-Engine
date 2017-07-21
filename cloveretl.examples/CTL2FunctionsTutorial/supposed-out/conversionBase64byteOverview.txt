@@ -1,0 +1,4 @@
+YQ==;base64byte($0.StringBase64);a
+ZGU=;base64byte($0.StringBase64);de
+Z2hp;base64byte($0.StringBase64);ghi
+aGVsbG93b3JsZA==;base64byte($0.StringBase64);helloworld

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph illustrates usage of the new Aggregate component. " guiVersion="0.0.0.devel" id="1204535282174" licenseType="Evaluation Devel" modified="Mon Jun 13 10:09:54 CEST 2011" modifiedBy="avackova" name="TestingSort" revision="1.72" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/delimited/ordersAggregate.fmt" id="Metadata1"/>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="groupAccumulator" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="count" type="integer"/>
+<Field name="totalFreight" type="number"/>
+<Field name="avgFreight" type="number"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="288" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="The same output" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="267" x="997" y="-19"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node aggregateKey="ShipCountry" enabled="enabled" guiHeight="101" guiName="AGGREGATE" guiWidth="128" guiX="625" guiY="24" id="AGGREGATE" mapping="$ShipCountry:=$ShipCountry;$Count:=count();$AvgFreight:=avg($Freight)" sorted="true" type="AGGREGATE">
+<attr name="guiDescription"><![CDATA[Counts number of records and average freight in each group]]></attr>
+</Node>
+<Node dedupKey="ShipName;ShipCity;OrderID;CustomerID;EmployeeID;OrderDate;RequiredDate;ShippedDate;ShipVia;Freight;ShipAddress;ShipRegion;ShipPostalCode;ShipCountry" enabled="enabled" guiHeight="85" guiName="Dedup equal records" guiWidth="178" guiX="425" guiY="24" id="DEDUP0" keep="first" type="DEDUP">
+<attr name="guiDescription"><![CDATA[Unique records]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="85" guiName="ExtSort (ShipCountry)" guiWidth="188" guiX="173" guiY="24" id="EXT_SORT" sortKey="ShipCountry(a)" type="EXT_SORT"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="101" guiName="Orders" guiWidth="128" guiX="20" guiY="24" id="INPUT1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.aggregated" guiHeight="101" guiName="Orders Aggegated" guiWidth="163" guiX="1017" guiY="24" id="OUTPUT" type="DATA_WRITER"/>
+<Edge debugMode="true" fromNode="AGGREGATE:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
+<Edge debugMode="true" fromNode="DEDUP0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (unique)" toNode="AGGREGATE:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="MIDDLE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_SORT:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" guiHeight="85" guiName="ExtSort (ShipCountry)" guiWidth="188" guiX="789" guiY="135" id="EXT_SORT1" sortKey="ShipCountry(a)" type="EXT_SORT"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="101" guiName="Orders" guiWidth="128" guiX="23" guiY="135" id="INPUT4" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/orders.aggregated_Rollup" guiHeight="101" guiName="Orders Aggregated (Rollup" guiWidth="225" guiX="1017" guiY="135" id="OUTPUT3" type="DATA_WRITER"/>
+<Node enabled="enabled" groupAccumulatorMetadataId="Metadata2" groupKeyFields="ShipCountry" guiHeight="101" guiName="Rollup" guiWidth="128" guiX="625" guiY="135" id="ROLLUP4" inputSorted="false" type="ROLLUP">
+<attr name="transform"><![CDATA[//#TL
+
+// Called for the first data record in a group.
+function initGroup(groupAccumulator) {
+	groupAccumulator["count"] = 0;
+	groupAccumulator["totalFreight"] = 0;
+}
+
+// Called for each data record in a group (including the first one and the last one).
+// Implicitly returns false => updateTransform is not called.
+function updateGroup(groupAccumulator) {
+	groupAccumulator["count"] = groupAccumulator["count"] + 1;
+	groupAccumulator["totalFreight"] = 	groupAccumulator["totalFreight"] + $0.Freight;
+}
+
+// Called for the last data record in a group.
+// Implicitly returns true => transform is called.
+function finishGroup(groupAccumulator) {
+	groupAccumulator["avgFreight"] = groupAccumulator["totalFreight"]/groupAccumulator["count"];
+}
+
+// Called to transform data records for intermediate output using the group accumulator.
+// The counter parameter stores the number of previous calls to this method for the current group update.
+// Implicitly returns SKIP to skip sending any data records to output.
+// Returning ALL would cause each data record to be sent to its corresponding output port.
+// A port number may be returned to specify which data record should be sent to output.
+function updateTransform(counter, groupAccumulator) {
+}
+
+// Called to transform data records for output using the group accumulator.
+// The counter parameter stores the number of previous calls to this method for the current group.
+// Implicitly returns SKIP to skip sending any data records to output.
+// Returning ALL would cause each data record to be sent to its corresponding output port.
+// A port number may be returned to specify which data record should be sent to output.
+function transform(counter, groupAccumulator) {
+	if (counter > 0) return SKIP;
+	$0.ShipCountry := $0.ShipCountry;
+	$0.Count := groupAccumulator["count"];
+	$0.AvgFreight := groupAccumulator["avgFreight"];
+	return ALL	
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {
+// }
+
+// Called during component initialization.
+// function init() {
+// }
+
+// Called at the end of the rollup transform after all input data records were processed.
+// function finished() {
+// }
+
+]]></attr>
+<attr name="guiDescription"><![CDATA[Rollup can serve as Aggregator.]]></attr>
+</Node>
+<Node enabled="enabled" groupAccumulatorMetadataId="Metadata2" groupKeyFields="OrderID;CustomerID;EmployeeID;OrderDate;RequiredDate;ShippedDate;ShipVia;Freight;ShipName;ShipAddress;ShipCity;ShipRegion;ShipPostalCode;ShipCountry" guiHeight="101" guiName="Dedup equal records" guiWidth="178" guiX="425" guiY="135" id="ROLLUP5" inputSorted="false" type="ROLLUP">
+<attr name="transform"><![CDATA[//#TL
+int INT;
+INT = 2;
+
+
+// Called for the first data record in a group.
+function initGroup(groupAccumulator) {
+	groupAccumulator["count"] = 0;
+}
+
+// Called for each data record in a group (including the first one and the last one).
+// Implicitly returns false => updateTransform is not called.
+function updateGroup(groupAccumulator) {
+	groupAccumulator["count"] = groupAccumulator["count"] + 1;
+	if (groupAccumulator["count"] < INT) return true;
+}
+
+// Called for the last data record in a group.
+// Implicitly returns true => transform is called.
+function finishGroup(groupAccumulator) {
+}
+
+// Called to transform data records for intermediate output using the group accumulator.
+// The counter parameter stores the number of previous calls to this method for the current group update.
+// Implicitly returns SKIP to skip sending any data records to output.
+// Returning ALL would cause each data record to be sent to its corresponding output port.
+// A port number may be returned to specify which data record should be sent to output.
+function updateTransform(counter, groupAccumulator) {
+	if (counter > 0) return SKIP;
+	$0.* := $0.*;
+	return ALL
+}
+
+// Called to transform data records for output using the group accumulator.
+// The counter parameter stores the number of previous calls to this method for the current group.
+// Implicitly returns SKIP to skip sending any data records to output.
+// Returning ALL would cause each data record to be sent to its corresponding output port.
+// A port number may be returned to specify which data record should be sent to output.
+function transform(counter, groupAccumulator) {
+}
+
+// Called to return a user-defined error message when an error occurs.
+// function getMessage() {
+// }
+
+// Called during component initialization.
+// function init() {
+// }
+
+// Called at the end of the rollup transform after all input data records were processed.
+// function finished() {
+// }
+
+]]></attr>
+<attr name="guiDescription"><![CDATA[Rollup can serve as Dedup even when input is unsorted.]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="EXT_SORT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="OUTPUT3:0"/>
+<Edge debugMode="false" fromNode="INPUT4:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="ROLLUP5:0"/>
+<Edge debugMode="false" fromNode="ROLLUP4:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge18" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
+<Edge debugMode="true" fromNode="ROLLUP5:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge16" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="ROLLUP4:0"/>
+</Phase>
+</Graph>

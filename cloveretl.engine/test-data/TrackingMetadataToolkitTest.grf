@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Kokon" created="Wed Oct 26 14:32:12 CEST 2011" guiVersion="0.0.0.devel" id="1319632368944" licenseType="Evaluation" modified="Fri May 11 17:34:35 CEST 2012" modifiedBy="Kokon" name="g" revision="1.49" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0">
+<Record fieldDelimiter="|" name="recordName1" recordDelimiter="\r\n" type="delimited">
+<Field name="field1" type="string"/>
+</Record>
+</Metadata>
+<Property id="GraphParameter0" name="NUM_RECORDS" value="1"/>
+<Property fileURL="test-data/workspace.prm" id="GraphParameter1"/>
+<Dictionary>
+<Entry dictval.value="123" id="DictionaryEntry0" input="true" name="COUNTER" output="false" type="integer"/>
+<Entry id="DictionaryEntry1" input="false" name="RESULT" output="true" type="long"/>
+</Dictionary>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiHeight="67" guiName="DataGenerator" guiWidth="128" guiX="283" guiY="176" id="DATA_GENERATOR0" recordsNumber="1" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+
+// Generates output record.
+function integer generate() {
+	$out.0.field1 = randomString(3,5);
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the generate. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if generate() throws an exception.
+// function integer generateOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="file.txt" guiHeight="80" guiName="UniversalDataReader" guiWidth="148" guiX="273" guiY="349" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" guiHeight="72" guiName="SimpleGather" guiWidth="128" guiX="542" guiY="259" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
+<Node enabled="enabled" guiHeight="67" guiName="Trash" guiWidth="128" guiX="832" guiY="145" id="TRASH0" type="TRASH"/>
+<Node enabled="enabled" guiHeight="72" guiName="Trash" guiWidth="128" guiX="795" guiY="324" id="TRASH1" type="TRASH"/>
+<Edge fromNode="DATA_GENERATOR0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_GATHER0:0"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge12" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_GATHER0:1"/>
+<Edge fromNode="DATA_READER0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge13" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 1 (logs)" toNode="TRASH1:1"/>
+<Edge fromNode="SIMPLE_GATHER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="TRASH0:0"/>
+<Edge fromNode="SIMPLE_GATHER0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="TRASH1:0"/>
+</Phase>
+</Graph>
