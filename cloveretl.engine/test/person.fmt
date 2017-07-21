@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record name="Person" recordSize="11" type="fixed">
+<Field name="LastName" nullable="true" shift="0" size="0" skipFirstLine="false" type="string"/>
+<Field name="FirstName" nullable="true" shift="0" size="0" skipFirstLine="false" type="string"/>
+<Field name="Address" nullable="true" shift="0" size="0" skipFirstLine="false" type="string"/>
+<Field name="Age" nullable="true" shift="0" size="11" skipFirstLine="false" type="integer"/>
+</Record>
