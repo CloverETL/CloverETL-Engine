@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="dpavlis" created="Thu Jul 10 09:29:34 CEST 2014" guiVersion="4.1.0.M1" id="1404980749010" licenseCode="Commercial Devel" licenseType="Commercial" modified="Wed Apr 29 18:10:33 CEST 2015" modifiedBy="User" name="CloverTweets" nature="subgraph" revision="1.68" showComponentDetails="true">
+<Global>
+<inputPorts>
+<singlePort connected="true" name="0"/>
+<singlePort connected="false" keepEdge="false" name="1" required="false"/>
+</inputPorts>
+<outputPorts>
+<singlePort connected="true" keepEdge="true" name="0" required="false"/>
+<singlePort connected="true" keepEdge="true" name="1" required="false"/>
+<singlePort connected="true" keepEdge="true" name="2" required="false"/>
+</outputPorts>
+<Metadata id="Metadata4">
+<Record fieldDelimiter="|" name="keyword_classification" recordDelimiter="\r\n" type="delimited">
+<Field name="keyword" type="string"/>
+<Field name="positive" type="boolean"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="," name="KeywordsLookup" previewAttachmentCharset="ISO-8859-1" recordDelimiter="&amp;" type="delimited">
+<Field name="keyword" type="string"/>
+<Field name="positive" type="boolean"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3">
+<Record fieldDelimiter="|" name="unittestMetadata" recordDelimiter="\n" type="delimited">
+<Field name="text" type="string"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<LookupTable charset="ISO-8859-1" id="LookupTable0" initialSize="512" key="keyword" metadata="Metadata0" name="KeyWordsLookup" type="simpleLookup"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="140" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Comment" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="14" width="493" x="321" y="22">
+<attr name="text"><![CDATA[Classify sentiment of input senteces/text. Classifies POSITIVE - out port 0, NEGATIVE - out port 1 and UNDECIDED - out port 2 sentiment.
+Classification done based on internal lookup table with positive&negative words. Input text is tokenized to words and each word is checked against the lookup.
+
+Custom keywords (with their classification) can be provided to the subgraph via the 2nd optional port.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node debugInput="true" enabled="enabled" guiName="DataGenerator" guiX="34" guiY="190" id="DATA_GENERATOR" recordsNumber="5" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+
+string[] texts= ["What a classic final match between #ArgentinaVsGermany seen by the whole world in #WorldCup2014 #BRA thanks again for the wonderful FInal..",
+				"Wooooo well done Argentina for winning the World Cup!!! #soproud #3stars #WorldCupFinal  #TweetLikeJadenSmith #Argentina #argentinavsgermany",
+				"Not well played Germany #ArgentinavsGermany #Brazil2014 #Brazil2014Final",
+				"Misery. Oh the sweet joy seeing the misery of the Argentinians and Argentina fans. #argentinavsgermany #GERARG #... http://t.co/FmkgDrpaVg",
+				"Extra time goal gives Germany fourth World Cup http://t.co/uRENEAQ08p #FIFA2014 #ArgentinavsGermany"];
+
+integer count=0;
+
+// Generates output record.
+function integer generate() {
+	$out.0.text = texts[count++];
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the generate. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if generate() throws an exception.
+// function integer generateOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node debugInput="true" enabled="never" guiName="DataGenerator" guiX="34" guiY="283" id="DATA_GENERATOR1" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+
+// Generates output record.
+function integer generate() {
+	$out.0.keyword = "extra";
+	$out.0.positive = true;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the generate. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if generate() throws an exception.
+// function integer generateOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enableWhenInputPort1IsDisconnected" fileURL="${DATAIN_DIR}/default_sentiment_keywords.txt" guiName="Default sentiment keywords" guiX="329" guiY="414" id="DEFAULT_SENTIMENT_KEYWORDS" type="DATA_READER"/>
+<Node guiName="Sentiment keyword lookup" guiX="546" guiY="283" id="SENTIMENT_KEYWORD_LOOKUP" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
+<Node guiName="SimpleGather" guiX="360" guiY="283" id="SIMPLE_GATHER" type="SIMPLE_GATHER"/>
+<Node enabled="enabled" guiName="SubgraphInput" guiX="228" guiY="10" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT">
+<Port guiY="207" name="0"/>
+<Port guiY="300" name="1"/>
+<Port guiY="395" name="2"/>
+</Node>
+<Edge fromNode="DATA_GENERATOR:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="SUBGRAPH_INPUT:0"/>
+<Edge fromNode="DATA_GENERATOR1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 1 (in)" outPort="Port 0 (out)" toNode="SUBGRAPH_INPUT:1"/>
+<Edge fromNode="DEFAULT_SENTIMENT_KEYWORDS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 1 (in)" outPort="Port 0 (output)" persistedImplicitMetadata="Metadata4" toNode="SIMPLE_GATHER:1"/>
+<Edge fromNode="SIMPLE_GATHER:0" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SENTIMENT_KEYWORD_LOOKUP:0"/>
+<Edge debugMode="false" fromNode="SUBGRAPH_INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata3" toNode="REFORMAT:0"/>
+<Edge fromNode="SUBGRAPH_INPUT:1" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" outPort="Port 1 (out)" toNode="SIMPLE_GATHER:0"/>
+</Phase>
+<Phase number="1">
+<Node debugOutput="true" enabled="enabled" guiName="DebugOutput" guiX="984" guiY="154" id="DEBUG_OUTPUT" type="TRASH"/>
+<Node debugOutput="true" enabled="enabled" guiName="DebugOutput" guiX="984" guiY="224" id="DEBUG_OUTPUT1" type="TRASH"/>
+<Node debugOutput="true" enabled="enabled" guiName="DebugOutput" guiX="984" guiY="294" id="DEBUG_OUTPUT2" type="TRASH"/>
+<Node enabled="enabled" guiName="Reformat" guiX="546" guiY="190" id="REFORMAT" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+KeywordsLookup keywordRec;
+boolean negate=false;
+
+// Transforms input record into output record.
+function integer transform() {
+		
+	string[] words = $in.0.text.split("(\\s)+");
+	foreach(string word:words){
+		boolean positive;
+		string search=lowerCase(word);
+		if (search.in(["no","not"])){
+			negate=true;
+			continue;
+		}
+		keywordRec=lookup(KeyWordsLookup).get(search);
+		if (keywordRec == null){
+			negate=false;
+			continue;
+		}
+		if (negate ? not keywordRec.positive : keywordRec.positive){
+			$out.0.*=$in.0.*;
+			negate=false;
+			return 0;
+		}else { //negative
+			$out.1.*=$in.0.*;
+			negate=false;
+			return 1;
+		}
+	}
+	$out.2.*=$in.0.*;
+	negate=false;
+	return 2; //undecided
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="SubgraphOutput" guiX="870" guiY="10" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT">
+<Port guiY="199" name="0"/>
+<Port guiY="269" name="1"/>
+<Port guiY="312" name="2"/>
+<Port guiY="382" name="3"/>
+</Node>
+<Edge debugMode="false" fromNode="REFORMAT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata3" toNode="SUBGRAPH_OUTPUT:0"/>
+<Edge debugMode="false" fromNode="REFORMAT:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 1 (in)" outPort="Port 1 (out)" persistedImplicitMetadata="Metadata3" toNode="SUBGRAPH_OUTPUT:1"/>
+<Edge debugMode="false" fromNode="REFORMAT:2" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 2 (in)" outPort="Port 2 (out)" persistedImplicitMetadata="Metadata3" toNode="SUBGRAPH_OUTPUT:2"/>
+<Edge debugMode="true" fromNode="SUBGRAPH_OUTPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata3" toNode="DEBUG_OUTPUT:0"/>
+<Edge debugMode="true" fromNode="SUBGRAPH_OUTPUT:1" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 1 (out)" persistedImplicitMetadata="Metadata3" toNode="DEBUG_OUTPUT1:0"/>
+<Edge debugMode="true" fromNode="SUBGRAPH_OUTPUT:2" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" outPort="Port 2 (out)" persistedImplicitMetadata="Metadata3" toNode="DEBUG_OUTPUT2:0"/>
+</Phase>
+</Graph>
