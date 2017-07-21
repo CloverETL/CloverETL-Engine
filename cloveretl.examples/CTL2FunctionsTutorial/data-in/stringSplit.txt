@@ -1,0 +1,2 @@
+someverylongstring;[seaog]
+someanotherverylongstring;[setlg]

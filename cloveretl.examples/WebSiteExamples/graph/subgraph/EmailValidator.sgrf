@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="User" created="Wed Mar 26 11:06:38 CET 2014" guiVersion="4.0.0.M1" id="1395840759846" licenseType="Commercial" modified="Fri Mar 28 15:58:37 CET 2014" modifiedBy="User" name="Default graph name" nature="subgraph" revision="1.9" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0">
+<Record name="input_record" recordDelimiter="\r\n" type="delimited">
+<Field name="email" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1">
+<Record fieldDelimiter="|" name="output_record" recordDelimiter="\r" type="delimited">
+<Field name="email" type="string"/>
+<Field name="status" type="integer"/>
+<Field name="error" type="string"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameter name="LEVEL_OF_INSPECTION" value="SYNTAX"/>
+<GraphParameter name="ACCEPTED_FILE" value="${DATAOUT_DIR}/emails_syntax_accept.txt"/>
+<GraphParameter name="REJECTED_FILE" value="${DATAOUT_DIR}/emails_syntax_reject.txt"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="111" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="EmailValidator Subgraph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="343" x="50" y="11">
+<attr name="text"><![CDATA[Subgraph that validates email addresses. Type of validation is configurable via the LEVEL_OF_INSPECTION graph parameter. Output files are configured via ACCEPTED_FILE and REJECTED_FILE parameters.
+]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node acceptCondition="STRICT" acceptEmpty="true" enabled="enabled" errorField="error" field="email" guiName="Check Email SYNTAX" guiX="392" guiY="253" id="CHECK_EMAIL_SYNTAX" level="${LEVEL_OF_INSPECTION}" statusField="status" type="EMAIL_FILTER"/>
+<Node charset="utf-8" enabled="enabled" fileURL="${ACCEPTED_FILE}" guiName="Accepted" guiX="646" guiY="174" id="DATA_WRITER0" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Valid emails]]></attr>
+</Node>
+<Node charset="utf-8" enabled="enabled" fileURL="${REJECTED_FILE}" guiName="Rejected" guiX="646" guiY="319" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" guiName="DebugInput" guiX="50" guiY="260" id="DEBUG_INPUT" recordsNumber="2" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+
+integer counter = 0;
+
+// Generates output record.
+function integer generate() {
+	if (counter == 0) {
+		$out.0.email = "john.doe@example.com";	
+	}
+	if (counter == 1) {
+		$out.0.email = "invalid email";	
+	}
+	counter ++;
+	
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the generate. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if generate() throws an exception.
+// function integer generateOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="SubgraphInput" guiX="228" guiY="166" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT"/>
+<Edge debugMode="true" fromNode="CHECK_EMAIL_SYNTAX:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted records)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="CHECK_EMAIL_SYNTAX:1" guiBendpoints="706:326|706:340" guiLocks="706|745|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected records)" toNode="DATA_WRITER1:0"/>
+<Edge debugMode="true" fromNode="DEBUG_INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SUBGRAPH_INPUT:0"/>
+<Edge debugMode="true" fromNode="SUBGRAPH_INPUT:0" guiBendpoints="506:562|506:566" guiLocks="506|263|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (input records)" metadata="Metadata0" outPort="Port 0 (out)" toNode="CHECK_EMAIL_SYNTAX:0"/>
+</Phase>
+</Graph>

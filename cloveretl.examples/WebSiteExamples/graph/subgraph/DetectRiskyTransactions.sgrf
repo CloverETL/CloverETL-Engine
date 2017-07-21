@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="User" created="Wed Apr 02 17:07:51 CEST 2014" guiVersion="0.0.0.devel" id="1396451422194" licenseType="Commercial" modified="Thu Apr 03 19:08:51 CEST 2014" modifiedBy="User" name="Default graph name" nature="subgraph" revision="1.3" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="rates" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="currency" type="string"/>
+<Field length="10" name="rate" scale="5" type="decimal"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata4" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="rates_with_id" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="currency" type="string"/>
+<Field length="10" name="rate" scale="5" type="decimal"/>
+<Field name="id" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="transaction_joined" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="customer_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="customer_last_name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="customer_first_name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="transaction_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" length="12" name="amount" nullable="true" scale="2" shift="0" size="0" type="decimal"/>
+<Field eofAsDelimiter="false" name="currency" nullable="true" shift="0" size="0" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="transaction_with_currency" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="customer_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="customer_last_name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="customer_first_name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="transaction_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" length="12" name="amount" nullable="true" scale="2" shift="0" size="0" type="decimal"/>
+<Field eofAsDelimiter="false" name="currency" nullable="true" shift="0" size="0" type="string"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameter name="RATES_FILE" value="http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="94" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="DetectRiskyTransactions" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="375" x="38" y="49">
+<attr name="text"><![CDATA[Subgraph that detects risky transactions based on some rules. Different types of risky transactions are returned on separate outputs.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="Amount &gt; 400k" guiX="1355" guiY="496" id="AMOUNT_400K" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[$0.amount > 400000]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Convert Currency" guiX="679" guiY="241" id="CONVERT_CURRENCY" joinKey="$currency=$id" joinType="leftOuter" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.customer_id = $0.customer_id;
+	$0.customer_last_name = $0.customer_last_name;
+	$0.customer_first_name = $0.customer_first_name;
+	$0.transaction_id = $0.transaction_id;
+	$0.amount = $0.amount  / $1.rate : $amount;
+	$0.currency = nvl($1.currency,toString($0.currency));
+
+	return 0;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="DebugInput" guiX="50" guiY="265" id="DEBUG_INPUT" recordsNumber="0" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+
+// Generates output record.
+function integer generate() {
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the generate. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if generate() throws an exception.
+// function integer generateOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="DebugOutput" guiX="1837" guiY="182" id="DEBUG_OUTPUT" type="TRASH"/>
+<Node enabled="enabled" guiName="DebugOutput" guiX="1837" guiY="299" id="DEBUG_OUTPUT1" type="TRASH"/>
+<Node enabled="enabled" guiName="DebugOutput" guiX="1837" guiY="416" id="DEBUG_OUTPUT2" type="TRASH"/>
+<Node enabled="enabled" guiName="Format Fields" guiX="513" guiY="472" id="FORMAT_FIELDS" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+integer counter = 1;
+// Transforms input record into output record.
+function integer transform() {
+	$0.currency = $0.currency;
+	$0.rate = $0.rate;
+	$0.id = counter++;
+
+	return 0;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Format Fields for Output" guiX="1116" guiY="182" id="FORMAT_FIELDS_FOR_OUTPUT" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	 $0.* = $0.*;
+
+	return 0;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Load Online Exchange Rates" guiX="284" guiY="466" id="LOAD_ONLINE_EXCHANGE_RATES1" sourceUri="${RATES_FILE}" type="XML_EXTRACT" useNestedNodes="true">
+<attr name="mapping"><![CDATA[<Mappings>
+  <Mapping element="gesmes:Envelope">
+    <Mapping element="Cube">
+     <Mapping element="Cube">
+        <Mapping element="Cube" outPort="0"/>
+      </Mapping>
+    </Mapping>
+  </Mapping>
+</Mappings>]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Sort Amount [Descending]" guiX="1510" guiY="496" id="SORT_AMOUNT_DESCENDING" sortKey="amount(d)" type="FAST_SORT"/>
+<Node enabled="enabled" guiName="Split Record by Logic" guiX="884" guiY="241" id="SPLIT_RECORD_BY_LOGIC" type="PARTITION">
+<attr name="partitionSource"><![CDATA[//#CTL2
+// This transformation partitions input records into multiple output ports.
+
+// Returns the number of the output port where the input record will be sent.
+function integer getOutputPort() {
+	if (isnull($customer_id)) return 0;
+	if (isNumber($currency)) return 1;
+  return 2;
+}
+
+// Called during component initialization, partitionCount is the number of output ports.
+// function void init(integer partitionCount) {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources.
+// All resources allocated within this method should be released by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if getOutputPort() throws an exception.
+// function integer getOutputPortOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="SubgraphInput" guiX="228" guiY="170" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT"/>
+<Node enabled="enabled" guiName="SubgraphOutput" guiX="1723" guiY="204" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT"/>
+<Node aggregateKey="customer_id" enabled="enabled" guiName="Sum Transactions by Customer" guiX="1116" guiY="496" id="SUM_TRANSACTIONS_BY_CUSTOMER" mapping="$customer_id:=$customer_id;$customer_last_name:=first($customer_last_name);$customer_first_name:=first($customer_first_name);$amount:=sum($amount);$currency:=&quot;€&quot;;" type="AGGREGATE"/>
+<Edge debugMode="false" fromNode="AMOUNT_400K:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" outPort="Port 0 (accepted)" toNode="SORT_AMOUNT_DESCENDING:0"/>
+<Edge debugMode="true" fromNode="CONVERT_CURRENCY:0" guiBendpoints="1004:731|1004:992|331:992|331:1235" guiLocks="1358|685|506" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="SPLIT_RECORD_BY_LOGIC:0"/>
+<Edge fromNode="DEBUG_INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="SUBGRAPH_INPUT:0"/>
+<Edge debugMode="true" fromNode="FORMAT_FIELDS:0" guiBendpoints="717:688|717:387" guiLocks="1089|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 1 (slave)" metadata="Metadata4" outPort="Port 0 (out)" toNode="CONVERT_CURRENCY:1"/>
+<Edge fromNode="FORMAT_FIELDS_FOR_OUTPUT:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="SUBGRAPH_OUTPUT:0"/>
+<Edge debugMode="true" fromNode="LOAD_ONLINE_EXCHANGE_RATES1:0" guiBendpoints="17:0|17:-104|363:-104|363:-69" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="FORMAT_FIELDS:0"/>
+<Edge debugMode="false" fromNode="SORT_AMOUNT_DESCENDING:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge13" inPort="Port 2 (in)" outPort="Port 0 (out)" toNode="SUBGRAPH_OUTPUT:2"/>
+<Edge debugMode="true" fromNode="SPLIT_RECORD_BY_LOGIC:0" guiBendpoints="1304:729|1304:881" guiLocks="1640|573|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="FORMAT_FIELDS_FOR_OUTPUT:0"/>
+<Edge debugMode="false" fromNode="SPLIT_RECORD_BY_LOGIC:1" guiBendpoints="1179:383|1179:578" guiLocks="805|-103|null" guiRouter="Manhattan" id="Edge9" inPort="Port 1 (in)" outPort="Port 1 (out)" toNode="SUBGRAPH_OUTPUT:1"/>
+<Edge debugMode="true" fromNode="SPLIT_RECORD_BY_LOGIC:2" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" outPort="Port 2 (out)" toNode="SUM_TRANSACTIONS_BY_CUSTOMER:0"/>
+<Edge debugMode="true" fromNode="SUBGRAPH_INPUT:0" guiBendpoints="39:0|39:119" guiLocks="null|null|null" guiRouter="Manual" id="Edge2" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="CONVERT_CURRENCY:0"/>
+<Edge fromNode="SUBGRAPH_OUTPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="DEBUG_OUTPUT:0"/>
+<Edge fromNode="SUBGRAPH_OUTPUT:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 1 (out)" toNode="DEBUG_OUTPUT1:0"/>
+<Edge fromNode="SUBGRAPH_OUTPUT:2" guiBendpoints="" guiRouter="Manhattan" id="Edge14" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 2 (out)" toNode="DEBUG_OUTPUT2:0"/>
+<Edge debugMode="true" fromNode="SUM_TRANSACTIONS_BY_CUSTOMER:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="AMOUNT_400K:0"/>
+</Phase>
+</Graph>
