@@ -1,0 +1,5 @@
+[milk, butter, onion, apple];0;[egg, tea];insert(listA,$0.Index,listB);[egg, tea, milk, butter, onion, apple];[egg, tea, milk, butter, onion, apple];[egg, tea]
+[milk, butter, onion, apple];1;[egg, tea];insert(listA,$0.Index,listB);[milk, egg, tea, butter, onion, apple];[milk, egg, tea, butter, onion, apple];[egg, tea]
+[milk, butter, onion, apple];2;[egg, tea];insert(listA,$0.Index,listB);[milk, butter, egg, tea, onion, apple];[milk, butter, egg, tea, onion, apple];[egg, tea]
+[milk, butter, onion, apple];3;[egg, tea];insert(listA,$0.Index,listB);[milk, butter, onion, egg, tea, apple];[milk, butter, onion, egg, tea, apple];[egg, tea]
+[milk, butter, onion, apple];4;[egg, tea];insert(listA,$0.Index,listB);[milk, butter, onion, apple, egg, tea];[milk, butter, onion, apple, egg, tea];[egg, tea]
