@@ -1,0 +1,8 @@
+Nancy Davolio;0;charAt($0.Arg,$0.Index);N
+Nancy Davolio;1;charAt($0.Arg,$0.Index);a
+Nancy Davolio;2;charAt($0.Arg,$0.Index);n
+Nancy Davolio;3;charAt($0.Arg,$0.Index);c
+Andrew Fuller;6;charAt($0.Arg,$0.Index); 
+Andrew Fuller;2;charAt($0.Arg,$0.Index);d
+Andrew Fuller;3;charAt($0.Arg,$0.Index);r
+Andrew Fuller;0;charAt($0.Arg,$0.Index);A

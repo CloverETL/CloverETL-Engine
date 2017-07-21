@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?><Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="3.4.0.M2" id="1280312940927" licenseType="Commercial" modified="Wed Mar 06 16:35:59 CET 2013" modifiedBy="Pavel" name="graphFilters_Lookups" revision="1.42" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/orders.fmt" id="Metadata4"/>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="," name="customers_out" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="fixed">
+<Field name="orderid" size="10" type="integer"/>
+<Field format="yyyy-MM-dd" name="required_date" size="15" type="date"/>
+<Field format="yyyy-MM-dd" name="shipped_date" size="15" type="date"/>
+<Field name="customer_firstname" size="22" type="string"/>
+<Field name="customer_lastname" size="22" type="string"/>
+<Field name="customer_country" size="20" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<LookupTable charset="ISO-8859-1" id="LookupTable0" initialSize="512" key="customerid" metadata="Metadata1" name="customers_look" type="simpleLookup"/>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="146" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="A. Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="211" x="32" y="105">
+<attr name="text"><![CDATA[Find which customers received their orders late due to delayed shipping]]></attr>
+</Note>
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="68" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Look up Late Orders" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="900" x="32" y="38">
+<attr name="text"><![CDATA[This graph defines the transformations to find which customers received their orders late due to delayed shipping]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="146" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="B. Problem" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="211" x="242" y="105">
+<attr name="text"><![CDATA[Customer details are in mulitple files
+
+Orders need to be matched with customers for an output report
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="146" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="C. Solution" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="480" x="452" y="105">
+<attr name="text"><![CDATA[Combine customer details using SimpleGather component
+
+Create a customer Lookup table for matching up with orders
+
+Extract late orders based on filter comparison of ShipDate and RequiredDate
+
+Join order details with customer information from Lookup table using Reformat]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="385" id="Note10" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase I - Load Multiple Customer Lists into a Lookup Table" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="900" x="32" y="262"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="196" id="Note11" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase II - Find Late Orders and Match Them with Customer Details in Lookup Table" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="900" x="32" y="660"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName=" Customer Lookup Table" guiX="715" guiY="312" id="CUSTOMER_LOOKUP_TABLE" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
+<Node enabled="enabled" guiName="Gather Customer Lists" guiX="387" guiY="404" id="GATHER_CUSTOMER_LISTS" type="SIMPLE_GATHER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/customers_region1.csv" guiName="Read Customer List [1]" guiX="75" guiY="312" id="READ_CUSTOMER_LIST_1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/customers_region2.csv" guiName="Read Customer List [2]" guiX="75" guiY="521" id="READ_CUSTOMER_LIST_2" type="DATA_READER"/>
+<Edge debugMode="true" fromNode="GATHER_CUSTOMER_LISTS:0" guiBendpoints="430:174|430:164" guiLocks="442|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="CUSTOMER_LOOKUP_TABLE:0"/>
+<Edge fromNode="READ_CUSTOMER_LIST_1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="GATHER_CUSTOMER_LISTS:0"/>
+<Edge fromNode="READ_CUSTOMER_LIST_2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 1 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="GATHER_CUSTOMER_LISTS:1"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" guiName="Extract Late Orders" guiX="267" guiY="725" id="EXTRACT_LATE_ORDERS" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[$0.RequiredDate < $0.ShippedDate]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Get Customer Details" guiX="472" guiY="725" id="GET_CUSTOMER_DETAILS" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+customers matched_record;
+// Transforms input record into output record.
+function integer transform() {
+	matched_record = lookup(customers_look).get($OrderID);
+		$0.orderid = $0.OrderID;
+	    $0.required_date = $0.RequiredDate;
+		$0.shipped_date = $0.ShippedDate;
+		$0.customer_firstname = matched_record.firstname;
+		$0.customer_lastname = matched_record.lastname;
+		$0.customer_country = matched_record.country;
+
+		return 0;
+	}
+
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders_late.txt" guiName="Output Late Order Records" guiX="698" guiY="725" id="OUTPUT_LATE_ORDER_RECORDS" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Orders.xlsx" guiName="Read Orders" guiX="74" guiY="725" id="READ_ORDERS" sheetName="*" type="XLS_READER"/>
+<Edge debugMode="true" fromNode="EXTRACT_LATE_ORDERS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (accepted)" toNode="GET_CUSTOMER_DETAILS:0"/>
+<Edge debugMode="true" fromNode="GET_CUSTOMER_DETAILS:0" guiBendpoints="58:0|58:-2" guiRouter="Manual" id="Edge6" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="OUTPUT_LATE_ORDER_RECORDS:0"/>
+<Edge fromNode="READ_ORDERS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXTRACT_LATE_ORDERS:0"/>
+</Phase>
+</Graph>
