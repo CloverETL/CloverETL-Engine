@@ -1,0 +1,14 @@
+##Project path
+#Thu Jul 29 15:56:46 CEST 2010
+PROJECT=.
+
+
+#Thu Jul 29 15:56:46 CEST 2010
+SEQ_DIR=${PROJECT}/seq
+DATAOUT_DIR=${PROJECT}/data-out
+GRAPH_DIR=${PROJECT}/graph
+TRANS_DIR=${PROJECT}/trans
+DATATMP_DIR=${PROJECT}/data-tmp
+META_DIR=${PROJECT}/meta
+LOOKUP_DIR=${PROJECT}/lookup
+DATAIN_DIR=${PROJECT}/data-in
