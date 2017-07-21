@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="krivanekm" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="4.2.0.M1" id="1361358390393" licenseCode="Commercial Devel" licenseType="Commercial" modified="Mon Jan 13 18:38:45 CET 2014" modifiedBy="User" name="PrepareInputData" revision="1.143" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/weblogs_parse_txt.fmt" id="Metadata0"/>
+<Metadata id="MongoDBExecute_Error">
+<Record fieldDelimiter="|" name="MongoDBExecute_Error" recordDelimiter="\n" type="delimited">
+<Field name="success" type="boolean"/>
+<Field name="errorMessage" type="string"/>
+<Field name="stackTrace" type="string"/>
+</Record>
+</Metadata>
+<Connection config="${CONN_DIR}/MongoDB.cfg" id="MONGODB0" type="MONGODB"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<RichTextNote backgroundColor="404040" enabled="true" folded="false" fontSize="medium" height="102" id="Note4" textColor="FFFFFF" width="929" x="30" y="12">
+<attr name="text"><![CDATA[h3. Big Data - Processing Web Access Log (Unique Visitors): MongoDB Solution
+Report the number of unique visitors per month from a potentially huge web access log using different methods.
+(CloverETL, Hadoop HIVE, Hadoop MapReduce, and MongoDB)]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="47" id="Note5" textColor="000000" width="929" x="30" y="113">
+<attr name="text"><![CDATA[h3. This graph is part of the "[UniqueVisits-MongoDB.jbf|navigator://../jobflow/UniqueVisits-MongoDB.jbf]" jobflow.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="204" id="Note2" textColor="000000" width="222" x="42" y="168">
+<attr name="text"><![CDATA[h3. Drop the Collection
+
+
+
+
+
+
+Make sure that the collection is empty.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="312" id="Note0" textColor="000000" width="317" x="331" y="330">
+<attr name="text"><![CDATA[h3. Prepare Key/Value Pair Format
+
+
+
+
+
+
+
+Extract fields that are relevant for metric calulation the report. Remaining fields are dropped in the process.
+
+Year and Month fields are additionally concatenated into a Key and IP Address is used the Value.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="312" id="Note1" textColor="000000" width="283" x="690" y="330">
+<attr name="text"><![CDATA[h3. Write Data to MongoDB
+
+
+
+
+
+
+
+Inserts the Key/Value pairs as documents into the MongoDB database. The values of the input fields are substituted for the placeholders in the New value attribute.
+
+Uses the potentially dangerous bulk insert mode.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="262" id="Note3" textColor="000000" width="255" x="49" y="663">
+<attr name="text"><![CDATA[h3. Create Indexes
+
+
+
+
+
+
+Demonstrates how indexes can be created using MongoDBExecute.
+
+The component executes server-side JavaScript, which requires full admin access.]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node connectionId="MONGODB0" enabled="enabled" guiName="MongoDBExecute" guiX="85" guiY="221" id="MONGO_DBEXECUTE" type="MONGODB_EXECUTE">
+<attr name="errorMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.1.* = $in.1.*;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+<attr name="command"><![CDATA[db.uniqueVisits.drop()]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Trash" guiX="387" guiY="221" id="TRASH" type="TRASH"/>
+<Edge fromNode="MONGO_DBEXECUTE:1" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="MongoDBExecute_Error" outPort="Port 1 (error)" toNode="TRASH:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" guiName="Extract Date and IP Fields" guiX="367" guiY="393" id="EXTRACT_DATE_AND_IP_FIELDS" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.value_ip_address = $in.0.client_ip;
+	$out.0.key_year_month = concat($in.0.year,".",upperCase($in.0.month));
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node batchSize="100" collection="uniqueVisits" connectionId="MONGODB0" enabled="enabled" guiName="MongoDBWriter" guiX="778" guiY="393" id="MONGO_DBWRITER" operation="insert" type="MONGODB_WRITER">
+<attr name="newValue"><![CDATA[{
+	key : "@{key_year_month}",
+	value : "@{value_ip_address}"
+}]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="zip:(${DATAIN_DIR}/weblogs_parse.zip)#weblogs_parse.txt" guiName="Read Web Access Log" guiX="76" guiY="393" id="READ_WEB_ACCESS_LOG" quotedStrings="true" type="DATA_READER"/>
+<Edge debugMode="true" fromNode="EXTRACT_DATE_AND_IP_FIELDS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="MONGO_DBWRITER:0"/>
+<Edge debugMode="true" fromNode="READ_WEB_ACCESS_LOG:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXTRACT_DATE_AND_IP_FIELDS:0"/>
+</Phase>
+<Phase number="2">
+<Node connectionId="MONGODB0" enabled="enabled" guiName="MongoDBExecute" guiX="107" guiY="719" id="MONGO_DBEXECUTE1" type="MONGODB_EXECUTE">
+<attr name="command"><![CDATA[db.uniqueVisits.ensureIndex({ key : 1 });
+db.uniqueVisits.ensureIndex({ value : 1 });]]></attr>
+</Node>
+</Phase>
+</Graph>

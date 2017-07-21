@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="4.2.0.M1" id="1361358390393" licenseCode="Commercial Devel" licenseType="Commercial" modified="Mon Jan 13 18:38:52 CET 2014" modifiedBy="User" name="PrepareInputData" revision="1.71" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/weblogs_parse_txt.fmt" id="Metadata0"/>
+<Connection config="${CONN_DIR}/Hadoop-CDH-5.6.0.cfg" id="CDH5" type="HADOOP"/>
+<GraphParameters>
+<GraphParameterFile fileURL="hadoop.prm"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<RichTextNote backgroundColor="404040" enabled="true" folded="false" fontSize="medium" height="102" id="Note4" textColor="FFFFFF" width="929" x="30" y="19">
+<attr name="text"><![CDATA[h3. Big Data - Processing Web Access Log (Unique Visitors): Hadoop solutions
+Report the number of unique visitors per month from a potentially huge web access log using different methods.
+(CloverETL, Hadoop HIVE, and Hadoop MapReduce)]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="90" id="Note5" textColor="000000" width="929" x="30" y="120">
+<attr name="text"><![CDATA[h3. This graph is part of "UniqueVisits-HadoopHive.jbf" and "UniqueVisits-HadoopMapReduce.jbf" jobflows.
+]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="340" id="Note0" textColor="000000" width="314" x="308" y="228">
+<attr name="text"><![CDATA[h3. Prepare Key/Value Pair Format
+
+
+
+
+
+
+
+
+Extract fields that are relevant for metric calulation the report. Remaining fields are dropped in the process.
+
+Year and Month fields are additionally concatenated into a Key and IP Address is used the Value.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="340" id="Note1" textColor="000000" width="224" x="651" y="228">
+<attr name="text"><![CDATA[h3. Write Data to HDFS
+
+
+
+
+
+
+
+
+Outputs the Key/Value pairs into a text file stored directly on HDFS file system. The file is then processed by MapReduce or loaded into a Hive table.]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="Extract Date and IP Fields" guiX="369" guiY="294" id="EXTRACT_DATE_AND_IP_FIELDS" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.value_ip_address = $in.0.client_ip;
+	$out.0.key_year_month = concat($in.0.year,".",upperCase($in.0.month));
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="zip:(${DATAIN_DIR}/weblogs_parse.zip)#weblogs_parse.txt" guiName="Read Web Access Log" guiX="78" guiY="294" id="READ_WEB_ACCESS_LOG" quotedStrings="true" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="hdfs://CDH5/tmp/bigdata_examples/key-value-pairs" guiName="Write to HDFS" guiX="697" guiY="294" id="WRITE_TO_HDFS" type="DATA_WRITER"/>
+<Edge debugMode="true" fromNode="EXTRACT_DATE_AND_IP_FIELDS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WRITE_TO_HDFS:0"/>
+<Edge debugMode="true" fromNode="READ_WEB_ACCESS_LOG:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXTRACT_DATE_AND_IP_FIELDS:0"/>
+</Phase>
+</Graph>

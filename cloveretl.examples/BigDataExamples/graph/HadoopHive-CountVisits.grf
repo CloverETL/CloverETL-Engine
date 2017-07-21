@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="4.2.0.M1" id="1361367492640" licenseCode="Javlin-Internal-License" licenseType="Commercial" modified="Mon Jan 13 18:38:19 CET 2014" modifiedBy="User" name="RunJobInHadoopHIVE" revision="1.44" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/meta_count_output.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata0"/>
+<Connection dbConfig="${CONN_DIR}/Hive-CDH-5.6.0.cfg" id="JDBC0" type="JDBC"/>
+<GraphParameters>
+<GraphParameterFile fileURL="hadoop.prm"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<RichTextNote backgroundColor="404040" enabled="true" folded="false" fontSize="medium" height="99" id="Note4" textColor="FFFFFF" width="929" x="30" y="15">
+<attr name="text"><![CDATA[h3. Big Data - Processing Web Access Log (Unique Visitors):  Hadoop Hive Solution
+Report the number of unique visitors per month from a potentially huge web access log using different methods.
+(CloverETL, Hadoop HIVE, Hadoop MapReduce, and MongoDB)]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="46" id="Note5" textColor="000000" width="929" x="30" y="113">
+<attr name="text"><![CDATA[h3. This graph is part of the "[UniqueVisits-HadoopHive.jbf|navigator://../jobflow/UniqueVisits-HadoopHive.jbf]" jobflow.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="292" id="Note0" textColor="000000" width="351" x="131" y="223">
+<attr name="text"><![CDATA[h3. Unique Visitors using Hive Query
+
+
+
+
+
+
+
+
+Calculates the number of unique visitors using a Hive query. 
+
+The components uses Hive JDBC connector to issue the query and retrieve results.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFE1" enabled="true" folded="false" fontSize="medium" height="292" id="Note3" textColor="000000" width="281" x="594" y="223">
+<attr name="text"><![CDATA[h3. Temp file with results
+
+
+
+
+
+
+
+
+
+
+Writes calculated statistics into a temporary output file which will be converted to Excel report in the next 
+step of processing.]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node dbConnection="JDBC0" enabled="enabled" guiName="Count Unique Visitors [HIVE]" guiX="183" guiY="290" id="COUNT_UNIQUE_VISITORS_HIVE" type="DB_INPUT_TABLE">
+<attr name="sqlQuery"><![CDATA[select $ip_count:=count(distinct ip_address) as cnt, $year_month:=year_month
+from weblogtable 
+group by year_month]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/unique_visitors.txt" guiName="Write Unique Visitors Count" guiX="633" guiY="290" id="WRITE_UNIQUE_VISITORS_COUNT" type="DATA_WRITER"/>
+<Edge debugMode="true" fromNode="COUNT_UNIQUE_VISITORS_HIVE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WRITE_UNIQUE_VISITORS_COUNT:0"/>
+</Phase>
+</Graph>

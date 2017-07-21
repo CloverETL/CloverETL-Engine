@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="defaultName" recordSize="-1" type="delimited">
+<Field name="applicable_location" type="string"/>
+<Field name="type" type="string"/>
+<Field name="units" type="string"/>
+<Field name="name" type="string"/>
+<Field name="value" type="number"/>
+<Field format="yyyy-MM-dd'T'HH:mm:ssZ" name="start_valid_time" type="date"/>
+<Field format="yyyy-MM-dd'T'HH:mm:ssZ" name="end_valid_time" type="date"/>
+</Record>
