@@ -1,0 +1,223 @@
+<plugin
+	id="org.jetel.jdbc"
+	version="0.0.0.devel"
+	provider-name="Javlin a.s.">
+
+	<runtime>
+		<library path="bin/"/>
+   	</runtime> 
+
+	<requires engine-version="0.0.0.devel">
+		<import plugin-id="org.jetel.connection"/>
+	</requires>
+
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="GENERIC"/>
+		<parameter id="name" value="Generic"/>
+		<!--parameter id="majorVersion" value="x"/-->
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.DefaultJdbcSpecific"/>
+	</extension>
+
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="DB2"/>
+		<parameter id="name" value="DB2"/>
+		<!--parameter id="majorVersion" value="x"/-->
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.DB2Specific"/>
+	</extension>
+
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="DERBY"/>
+		<parameter id="name" value="Derby"/>
+		<parameter id="productName" value="Apache Derby"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.DerbySpecific"/>
+	</extension>
+	
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="FIREBIRD"/>
+		<parameter id="name" value="Firebird"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.FirebirdSpecific"/>
+	</extension>
+	
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="GENERICODBC"/>
+		<parameter id="name" value="Generic ODBC"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.GenericODBCSpecific"/>
+	</extension>
+	
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="HIVE"/>
+		<parameter id="name" value="Hive"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.HiveSpecific"/>
+	</extension>
+	
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="INFORMIX"/>
+		<parameter id="name" value="Informix"/>
+		<!--parameter id="majorVersion" value="x"/-->
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.InformixSpecific"/>
+	</extension>
+	
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="MSACCESS"/>
+		<parameter id="name" value="Microsoft Access"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.MSAccessSpecific"/>
+	</extension>
+	
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="MSSQL"/>
+		<parameter id="name" value="MS SQL Server 2008-2012"/>
+		<parameter id="productName" value="Microsoft SQL Server"/>
+		<!--parameter id="majorVersion" value="x"/-->
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.MSSQLSpecific"/>
+	</extension>
+
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="MSSQL2005"/>
+		<parameter id="name" value="MS SQL Server 2000-2005"/>
+		<!--parameter id="majorVersion" value="x"/-->
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.MSSQLSpecific2005"/>
+	</extension>
+
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="MYSQL"/>
+		<parameter id="name" value="MySQL"/>
+		<parameter id="productName" value="MySQL"/>
+		<!--parameter id="majorVersion" value="x"/-->
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.MySQLSpecific"/>
+	</extension>
+
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="ORACLE"/>
+		<parameter id="name" value="Oracle"/>
+		<parameter id="productName" value="Oracle"/>
+		<!--parameter id="majorVersion" value="x"/-->
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.OracleSpecific"/>
+	</extension>
+	
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="PERVASIVE"/>
+		<parameter id="name" value="Pervasive"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.PervasiveSpecific"/>
+	</extension>
+
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="POSTGRE"/>
+		<parameter id="name" value="PostgreSQL"/>
+		<!--parameter id="majorVersion" value="x"/-->
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.PostgreSpecific"/>
+	</extension>
+
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="SYBASE"/>
+		<parameter id="name" value="Sybase"/>
+		<!--parameter id="majorVersion" value="x"/-->
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.SybaseSpecific"/>
+	</extension>
+
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="SQLITE"/>
+		<parameter id="name" value="SQLite"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.SQLiteSpecific"/>
+	</extension>
+
+	<extension point-id="jdbcDriver">
+		<parameter id="database" value="MYSQL"/>
+		<parameter id="name" value="MySQL"/>
+		<parameter id="dbDriver" value="org.gjt.mm.mysql.Driver"/>
+		<parameter id="driverLibrary" value="lib/mysql/mysql-connector-java-5.1.22-bin.jar"/>
+		<parameter id="urlHint" value="jdbc:mysql://hostname:3306/database"/>
+		<parameter id="jdbcSpecific" value="MYSQL"/>
+		<parameter id="jdbc.zeroDateTimeBehavior" value="convertToNull"/>
+	</extension>
+	
+	<extension point-id="jdbcDriver">
+		<parameter id="database" value="ORACLE"/>
+		<parameter id="name" value="Oracle"/>
+		<parameter id="dbDriver" value="oracle.jdbc.OracleDriver"/>
+		<parameter id="driverLibrary" value="lib/oracle/ojdbc6.jar"/>
+		<parameter id="urlHint">
+			<value>jdbc:oracle:thin:@host:1521:SID</value>	
+			<value>jdbc:oracle:thin:@cluster-alias:1521/service_name</value>
+			<value>jdbc:oracle:thin:@(DESCRIPTION=(LOAD_BALANCE=on)(ADDRESS=(PROTOCOL=TCP)(HOST=host1)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=host2)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=service_name)))</value>	
+			<value>jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=cluster_alias)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=service_name)))</value>	
+			<value>jdbc:oracle:thin:@host:1521/service_name</value>	
+		</parameter>
+		<parameter id="jdbcSpecific" value="ORACLE"/>
+	</extension>
+	
+	<extension point-id="jdbcDriver">
+		<parameter id="database" value="POSTGRE"/>
+		<parameter id="name" value="PostgreSQL"/>
+		<parameter id="dbDriver" value="org.postgresql.Driver"/>
+		<parameter id="driverLibrary" value="lib/postgre/postgresql-9.2-1002.jdbc4.jar"/>
+		<parameter id="urlHint" value="jdbc:postgresql://hostname/database"/>
+		<parameter id="jdbcSpecific" value="POSTGRE"/>
+	</extension>
+
+	<extension point-id="jdbcDriver">
+		<parameter id="database" value="MSSQL"/>
+		<parameter id="name" value="Microsoft SQL Server"/>
+		<parameter id="dbDriver" value="net.sourceforge.jtds.jdbc.Driver"/>
+		<parameter id="driverLibrary" value="lib/jtds/jtds-1.2.4.jar"/>
+		<parameter id="urlHint" value="jdbc:jtds:sqlserver://hostname:1433/database"/>
+		<parameter id="jdbcSpecific" value="MSSQL"/>
+	</extension>
+	
+	<extension point-id="jdbcDriver">
+		<parameter id="database" value="GENERICODBC"/>
+		<parameter id="name" value="Generic ODBC"/>
+		<parameter id="dbDriver" value="sun.jdbc.odbc.JdbcOdbcDriver"/>
+		<parameter id="driverLibrary" value="sun.jdbc.odbc.JdbcOdbcDriver"/>
+		<parameter id="urlHint" value="jdbc:odbc:dsn_source;"/>
+		<parameter id="jdbcSpecific" value="GENERICODBC"/>
+	</extension>
+	
+	<extension point-id="jdbcDriver">
+		<parameter id="database" value="MSACCESS"/>
+		<parameter id="name" value="Microsoft Access"/>
+		<parameter id="dbDriver" value="sun.jdbc.odbc.JdbcOdbcDriver"/>
+		<parameter id="driverLibrary" value="sun.jdbc.odbc.JdbcOdbcDriver"/>
+		<parameter id="urlHint">
+			<value>jdbc:odbc:driver={Microsoft Access Driver (*.mdb)};DBQ=database_file</value>
+			<value>jdbc:odbc:driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=database_file</value>
+			<value>jdbc:odbc:odbc_source_name</value>
+		</parameter>
+		<parameter id="jdbcSpecific" value="MSACCESS"/>
+	</extension>
+
+	<extension point-id="jdbcDriver">
+		<parameter id="database" value="SYBASE"/>
+		<parameter id="name" value="Sybase"/>
+		<parameter id="dbDriver" value="net.sourceforge.jtds.jdbc.Driver"/>
+		<parameter id="driverLibrary" value="lib/jtds/jtds-1.2.4.jar"/>
+		<parameter id="urlHint" value="jdbc:jtds:sybase://hostname:7100/database"/>
+		<parameter id="jdbcSpecific" value="SYBASE"/>
+	</extension>
+
+	<extension point-id="jdbcDriver">
+		<parameter id="database" value="SQLITE"/>
+		<parameter id="name" value="SQLite"/>
+		<parameter id="dbDriver" value="org.sqlite.JDBC"/>
+		<parameter id="driverLibrary" value="lib/sqlite/sqlite-jdbc-3.6.20.1.jar"/>
+		<parameter id="urlHint" value="jdbc:sqlite:C:/database"/>
+		<parameter id="jdbcSpecific" value="SQLITE"/>
+	</extension>
+
+	<extension point-id="jdbcDriver">
+		<parameter id="database" value="DERBY"/>
+		<parameter id="name" value="Derby"/>
+		<parameter id="dbDriver" value="org.apache.derby.jdbc.ClientDriver"/>
+		<parameter id="driverLibrary" value="lib/derby/derbyclient.jar"/>
+		<parameter id="urlHint" value="jdbc:derby://hostname:1527/derby.db"/>
+		<parameter id="jdbcSpecific" value="DERBY"/>
+	</extension>
+	
+	<extension point-id="jdbcDriver">
+		<parameter id="database" value="FIREBIRD"/>
+		<parameter id="name" value="Firebird"/>
+		<parameter id="dbDriver" value="org.firebirdsql.jdbc.FBDriver"/>
+		<parameter id="driverLibrary" value="lib/firebird/jaybird-full-2.2.1.jar"/>
+		<parameter id="urlHint" value="jdbc:firebirdsql:localhost/3050:/firebird/test.gdb"/>
+		<parameter id="jdbcSpecific" value="FIREBIRD"/>
+	</extension>
+</plugin>
