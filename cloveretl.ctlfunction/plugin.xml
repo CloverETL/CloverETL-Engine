@@ -1,0 +1,66 @@
+<plugin
+   id="org.jetel.ctlfunction"
+   version="0.0.0.devel"
+   provider-name="Javlin a.s.">
+
+	<runtime>
+		<library path="bin/"/>
+		<library path="lib/json.jar"/>
+   	</runtime> 
+
+	<extension point-id="ctlfunction">
+		<parameter id="libraryName" value="math"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.MathLib"/>
+	</extension>
+
+	<extension point-id="ctlfunction">
+		<parameter id="libraryName" value="date"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.DateLib"/>
+	</extension>
+
+	<extension point-id="ctlfunction">
+		<parameter id="libraryName" value="string"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.StringLib"/>
+	</extension>
+	
+	<extension point-id="ctlfunction">
+		<parameter id="libraryName" value="convert"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.ConvertLib"/>
+	</extension>
+	
+	<extension point-id="ctlfunction">
+		<parameter id="libraryName" value="container"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.ContainerLib"/>
+	</extension>
+	
+	<extension point-id="ctlfunction">
+		<parameter id="libraryName" value="random"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.RandomLib"/>
+	</extension>
+	
+	<extension point-id="ctlfunction">
+		<parameter id="libraryName" value="util"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.UtilLib"/>
+	</extension>
+	
+	<extension point-id="ctlfunction">
+		<parameter id="libraryName" value="dynamic"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.DynamicLib"/>
+	</extension>
+
+	<extension point-id="ctlfunction">
+		<parameter id="libraryName" value="string"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.StringLibExt"/>
+	</extension>
+
+	<extension point-id="ctlfunction">
+		<parameter id="libraryName" value="mapping"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.MappingLib"/>
+	</extension>
+
+	<extension point-id="ctlfunction">
+		<parameter id="libraryName" value="dynamic"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.DynamicLibExt"/>
+	</extension>
+
+</plugin>
