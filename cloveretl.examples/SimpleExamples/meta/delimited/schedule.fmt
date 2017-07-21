@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="schedule" recordSize="-1" type="delimited">
+<Field name="name" nullable="true" shift="0" type="string"/>
+<Field format="dd.MM.yyyy" name="dateStart" nullable="true" shift="0" type="date"/>
+<Field format="dd.MM.yyyy" name="dateEnd" nullable="true" shift="0" type="date"/>
+<Field name="timeStart" nullable="true" shift="0" type="number"/>
+<Field name="timeEnd" nullable="true" shift="0" type="number"/>
+<Field name="nameStart" nullable="true" shift="0" type="string"/>
+<Field name="nameEnd" nullable="true" shift="0" type="string"/>
+</Record>

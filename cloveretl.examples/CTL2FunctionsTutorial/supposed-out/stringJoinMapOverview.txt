@@ -1,0 +1,5 @@
+{his=apple, hers=butter, mine=meat, yours=milk};|,;join($0.Delimiter, myMap);his=apple|,hers=butter|,mine=meat|,yours=milk
+{his=apple, hers=butter, mine=meat, yours=milk};||;join($0.Delimiter, myMap);his=apple||hers=butter||mine=meat||yours=milk
+{his=apple, hers=butter, mine=meat, yours=milk};,;join($0.Delimiter, myMap);his=apple,hers=butter,mine=meat,yours=milk
+{his=apple, hers=butter, mine=meat, yours=milk};/;join($0.Delimiter, myMap);his=apple/hers=butter/mine=meat/yours=milk
+{his=apple, hers=butter, mine=meat, yours=milk};\/;join($0.Delimiter, myMap);his=apple\/hers=butter\/mine=meat\/yours=milk

@@ -1,0 +1,13 @@
+PROJECT=.
+# PROJECT= <<your project path>>
+# PROJECT = /home/user/workspace/examples
+# PROJECT = c:\\workspace\\examples
+GRAPH_DIR=${PROJECT}/graph
+META_DIR=${PROJECT}/meta
+LOOKUP_DIR=${PROJECT}/lookup
+CONN_DIR=${PROJECT}/conn
+TRANS_DIR=${PROJECT}/trans
+SEQ_DIR=${PROJECT}/seq
+DATAIN_DIR=${PROJECT}/data-in
+DATAOUT_DIR=${PROJECT}/data-out
+DATATMP_DIR=${PROJECT}/data-tmp
