@@ -1,0 +1,6 @@
+12;8;str2long($0.String);12;str2long($0.String,$0.Radix);10
+10;8;str2long($0.String);10;str2long($0.String,$0.Radix);8
+12;10;str2long($0.String);12;str2long($0.String,$0.Radix);12
+10;2;str2long($0.String);10;str2long($0.String,$0.Radix);2
+101;2;str2long($0.String);101;str2long($0.String,$0.Radix);5
+11;2;str2long($0.String);11;str2long($0.String,$0.Radix);3

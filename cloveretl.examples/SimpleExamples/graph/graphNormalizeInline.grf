@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline Java source." guiVersion="0.0.0.devel" id="1204548969094" licenseType="Evaluation Devel" modified="Fri Jun 10 15:57:29 CEST 2011" modifiedBy="avackova" name="Testing NORMALIZER" revision="1.34" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="customers" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="customers_count" type="integer">
+<attr name="description"><![CDATA[This field contains number of customers, that are listed in 'customers' field.]]></attr>
+</Field>
+<Field name="customers" type="string"/>
+<Field name="EmployeeID" type="integer"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers.txt" guiHeight="85" guiName="Customers Grouped for Each Employee" guiWidth="309" guiX="20" guiY="20" id="INPUT1" type="DATA_READER">
+<attr name="DataPolicy"><![CDATA[Strict]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="101" guiName="Normalizer" guiWidth="128" guiX="366" guiY="20" id="NORMALIZE" type="NORMALIZER">
+<attr name="normalize"><![CDATA[
+import org.jetel.component.normalize.DataRecordNormalize;
+import org.jetel.data.*;
+
+public class NormalizeTestInline extends DataRecordNormalize {
+
+	String[] customers;
+    int recNo;
+
+	//As we know that first field is just a number of customers
+	//(= number of records after normalization), we return its value
+	//More over we check if above is true
+	public int count(DataRecord source) {
+		customers = source.getField(1).toString().split("\\s*-\\s*");
+		recNo = (Integer)source.getField(0).getValue();
+		if (customers.length != recNo){
+			errorMessage = "Invalid input record";
+			return SKIP;
+		}
+		return recNo;
+	}
+
+	public int transform(DataRecord source, DataRecord target, int idx) {
+		target.getField(1).setValue(customers[idx]);
+		target.getField(2).setValue(source.getField(2).getValue());
+		return OK;
+	}
+}
+]]></attr>
+<attr name="guiDescription"><![CDATA[Splits the field into several substrings without white spaces and hyphens and counts the number of such substrings. This is erformed by the count() function. In the transform() function, which is called multiple times (number of calls of the function equals to the number returned by the count() function for the input record), new output records are created. These get the substrings and assign them to one of the output fields. Before processing next input record, the clean() function returns variables into intitial state.]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/normalized.out" guiHeight="101" guiName="Customers Normalized" guiWidth="192" guiX="541" guiY="20" id="WRITER" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="NORMALIZE:0"/>
+<Edge debugMode="true" fromNode="NORMALIZE:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="WRITER:0"/>
+</Phase>
+</Graph>
