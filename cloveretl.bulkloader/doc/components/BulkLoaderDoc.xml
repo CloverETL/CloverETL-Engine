@@ -1,0 +1,700 @@
+<componentsDoc>
+   <componentDescription>
+      <componentName>DB2 Data Writer</componentName>
+      <componentType>DB2_DATA_WRITER</componentType>
+      <category>writers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc></briefDesc>
+      <fullDesc></fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>fileURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>fileURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>fileMetadata</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            metadata
+            
+         </attrType>
+         <attrDesc>fileMetadata</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>parameters</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>parameters</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>database</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>database</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>userName</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>userName</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>password</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            password
+            
+         </attrType>
+         <attrDesc>password</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>table</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>table</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>loadMode</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+             enumeration:  insert replace restart terminate 
+            
+         </attrType>
+         <attrDesc>loadMode</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>fieldMap</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>fieldMap</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>cloverFields</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            key
+            
+         </attrType>
+         <attrDesc>cloverFields</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>dbFields</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>dbFields</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>rejectedURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>rejectedURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>batchURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>batchURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>sqlInterpreter</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>sqlInterpreter</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>useNamedPipe</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>useNamedPipe</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>columnDelimiter</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>columnDelimiter</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>recordSkip</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>recordSkip</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>recordCount</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>recordCount</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>maxErrors</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>maxErrors</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>capturedWarningLines</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>capturedWarningLines</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+   <componentDescription>
+      <componentName>Informix Data Writer</componentName>
+      <componentType>INFORMIX_DATA_WRITER</componentType>
+      <category>writers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc>Loads data into an Informix database.</briefDesc>
+      <fullDesc>This component loads data to an Informix database using the dbload or load2 utility. 
+         		It creates a temporary file with dbload commands depending on input parameters. Data are read from given 
+         		input file, from input port or stdin and loaded to database. 
+         		On Linux/Unix systems, data is transfered to the dbload utility via stdin.
+         		To use this component Informix client must be installed and configured on the local host.
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         
+         
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         
+         
+      </outputPorts>
+      <attribute>
+         <attrName>dbLoaderPath</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>dbLoaderPath</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>database</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>database</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>table</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>table</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>errorLog</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>errorLog</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>command</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>command</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>maxErrors</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>maxErrors</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>ignoreRows</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>ignoreRows</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>commitInterval</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+            
+         </attrType>
+         <attrDesc>commitInterval</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>columnDelimiter</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>columnDelimiter</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>fileURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+            
+         </attrType>
+         <attrDesc>fileURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>username</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>username</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>password</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+            
+         </attrType>
+         <attrDesc>password</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>useLoadUtility</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>useLoadUtility</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>ignoreUniqueKeyViolation</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>ignoreUniqueKeyViolation</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>useInsertCursor</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            bool
+            
+         </attrType>
+         <attrDesc>useInsertCursor</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+
+   <componentDescription>
+      <componentName>Mysql Data Writer</componentName>
+      <componentType>MYSQL_DATA_WRITER</componentType>
+      <category>writers</category>
+      <sinceVersion></sinceVersion>
+      <author></author>
+      <lastUpdated></lastUpdated>
+      <briefDesc>Loads data into an mysql database.</briefDesc>
+      <fullDesc>This component loads data to mysql database using the mysql utility.
+         		There is created mysql command (LOAD DATA INFILE) depending on input parameters.
+         		Data are read from given input file or from the input port and loaded to database.
+         		Any generated scripts/commands can be optionally logged to help diagnose problems.
+         		Before you use this component, make sure that mysql client is installed and
+         		configured on the machine where CloverETL runs and mysql command line tool available.
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         		
+         	
+      </inputPorts>
+      <outputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+         		
+         	
+      </outputPorts>
+      <attribute>
+         <attrName>mysqlPath</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            			file
+            		
+         </attrType>
+         <attrDesc>mysqlPath</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>database</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            			string
+            		
+         </attrType>
+         <attrDesc>database</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>host</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            			string
+            		
+         </attrType>
+         <attrDesc>host</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>user</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            			string
+            		
+         </attrType>
+         <attrDesc>user</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>password</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            			string
+            		
+         </attrType>
+         <attrDesc>password</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>table</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            			string
+            		
+         </attrType>
+         <attrDesc>table</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>commandURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            			file
+            		
+         </attrType>
+         <attrDesc>commandURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>ignoreRows</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            			int
+            		
+         </attrType>
+         <attrDesc>ignoreRows</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>columnDelimiter</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            			string
+            		
+         </attrType>
+         <attrDesc>columnDelimiter</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>fileURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            			file
+            		
+         </attrType>
+         <attrDesc>fileURL</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <attribute>
+         <attrName>parameters</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            			multiline
+            		
+         </attrType>
+         <attrDesc>parameters</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+   </componentDescription>
+
+   <componentDescription>
+      <componentName>PostgreSql Data Writer</componentName>
+      <componentType>POSTGRESQL_DATA_WRITER</componentType>
+      <category>writers</category>
+      <sinceVersion></sinceVersion>
+      <author>Haupt Miroslav</author>
+      <lastUpdated>2007.11.27</lastUpdated>
+      <briefDesc>Loads data into an PostgreSql database.</briefDesc>
+      <fullDesc>This component loads data to an PostgreSql database using the psql utility. 
+		It creates a temporary file with psql commands depending on input parameters. Data are read from given 
+		input file or from input port and loaded to database.
+		Any generated temporary files can be optionally logged to help diagnose problems.
+		To use this component PostgreSql client must be installed and configured on the local host.
+      </fullDesc>
+      <inputPorts>
+         <port>
+            <portName>0</portName>
+            <portDesc></portDesc>
+            <portMandatory>no</portMandatory>
+         </port>
+      </inputPorts>
+      <outputPorts></outputPorts>
+      
+      <attribute>
+         <attrName>psqlPath</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            file
+         </attrType>
+         <attrDesc>Path to psql utility</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      
+      <attribute>
+         <attrName>database</attrName>
+         <attrIsMandatory>yes</attrIsMandatory>
+         <attrType>
+            string
+         </attrType>
+         <attrDesc>Database</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      
+      <attribute>
+         <attrName>table</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+         </attrType>
+         <attrDesc>Database table</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      
+      <attribute>
+         <attrName>host</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+         </attrType>
+         <attrDesc>Host</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      
+      <attribute>
+         <attrName>username</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+         </attrType>
+         <attrDesc>User name</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      
+      <attribute>
+         <attrName>columnDelimiter</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            string
+         </attrType>
+         <attrDesc>Column delimiter</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      
+      <attribute>
+         <attrName>ignoreRows</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            int
+         </attrType>
+         <attrDesc>Ignore rows</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      
+      <attribute>
+         <attrName>fileURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+         </attrType>
+         <attrDesc>Input file</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      
+      <attribute>
+         <attrName>commandURL</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            file
+         </attrType>
+         <attrDesc>Path to control script</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      
+      <attribute>
+         <attrName>parameters</attrName>
+         <attrIsMandatory>no</attrIsMandatory>
+         <attrType>
+            multiline
+         </attrType>
+         <attrDesc>parameters</attrDesc>
+         <attrDefaultVal></attrDefaultVal>
+      </attribute>
+      
+      <example>
+         <exampleXml></exampleXml>
+         <exampleDesc></exampleDesc>
+      </example>
+      
+   </componentDescription>
+</componentsDoc>  
