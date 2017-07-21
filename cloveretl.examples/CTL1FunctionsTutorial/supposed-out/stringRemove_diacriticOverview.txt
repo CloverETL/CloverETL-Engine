@@ -1,0 +1,2 @@
+Maroš;remove_diacritic($0.Arg);Maros
+øezník;remove_diacritic($0.Arg);reznik
