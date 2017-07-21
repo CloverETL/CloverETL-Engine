@@ -1,0 +1,4 @@
+Nancy;2;metaphone($0.Arg,$0.MaxLength);NN
+Nancy;10;metaphone($0.Arg,$0.MaxLength);NNS
+Andrew;3;metaphone($0.Arg,$0.MaxLength);ANT
+Fuller;4;metaphone($0.Arg,$0.MaxLength);FLR

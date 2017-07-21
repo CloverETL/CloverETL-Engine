@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record name="FERC423" type="fixed">
+	<Field name="Sales" type="numeric" size="5" nullable="no"/> 
+	<Field name="PLANT_NAME" type="string" size="9" nullable="no"/> 
+	<Field name="ID" type="integer" size="6" nullable="no"/> 
+	<Field name="EXP_DT" type="string" size="8" nullable="no"/> 
+</Record>

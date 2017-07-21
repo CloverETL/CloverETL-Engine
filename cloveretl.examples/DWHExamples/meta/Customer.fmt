@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="Customer" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="FIRST_NAME" type="string"/>
+<Field name="LAST_NAME" type="string"/>
+<Field name="CUSTOMER_NUMBER" type="integer"/>
+<Field name="EMAIL" type="string"/>
+<Field name="STREET_ADDRESS" type="string"/>
+<Field name="ZIP_CODE" type="string"/>
+<Field eofAsDelimiter="true" name="CITY" type="string"/>
+</Record>
