@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter="|" name="joinOrders" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field format="#" name="OrderID" nullable="true" shift="0" type="number"/>
+<Field name="CustomerID" nullable="true" shift="0" type="string"/>
+<Field name="EmployeeID" nullable="true" shift="0" type="string"/>
+<Field name="EmployeeID2" nullable="true" shift="0" type="string"/>
+<Field name="LastName" nullable="true" shift="0" type="string"/>
+</Record>

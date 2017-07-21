@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter=";" name="defaultName" recordSize="-1" type="delimited">
+<Field name="city" type="string"/>
+<Field name="state" type="string"/>
+<Field name="name" type="string"/>
+<Field name="units" type="string"/>
+<Field name="value" scale="1" type="decimal"/>
+<Field format="yyyy-MM-dd HH:mm:ss" name="start_valid_time" type="date"/>
+<Field format="yyyy-MM-dd HH:mm:ss" name="end_valid_time" type="date"/>
+<Field name="moreWeatherInformation" type="string"/>
+</Record>
