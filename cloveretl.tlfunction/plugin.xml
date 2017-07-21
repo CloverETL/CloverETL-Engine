@@ -1,0 +1,139 @@
+<plugin
+   id="org.jetel.tlfunction"
+   version="0.0.0.devel"
+   provider-name="Javlin a.s.">
+
+	<runtime>
+		<library path="bin/"/>
+   	</runtime> 
+
+	<extension point-id="tlfunction">
+		<parameter id="libraryName" value="math"/>
+		<parameter id="className" value="org.jetel.interpreter.extensions.MathLib"/>
+		<parameter id="function">
+			<value>sqrt</value>
+			<value>log</value>
+			<value>log10</value>
+			<value>exp</value>
+			<value>round</value>
+			<value>pow</value>
+			<value>pi</value>
+			<value>e</value>
+			<value>random</value>
+			<value>random_gaussian</value>
+			<value>random_boolean</value>
+			<value>random_int</value>
+			<value>random_long</value>
+			<value>abs</value>
+			<value>bit_and</value>
+			<value>bit_or</value>
+			<value>bit_xor</value>
+			<value>bit_set</value>
+			<value>bit_invert</value>
+			<value>bit_is_set</value>
+			<value>bit_lshift</value>
+			<value>bit_rshift</value>
+		</parameter>
+	</extension>
+
+	<extension point-id="tlfunction">
+		<parameter id="libraryName" value="date"/>
+		<parameter id="className" value="org.jetel.interpreter.extensions.DateLib"/>
+		<parameter id="function">
+			<value>today</value>
+			<value>dateadd</value>
+			<value>datediff</value>
+			<value>trunc</value>
+			<value>trunc_date</value>
+			<value>random_date</value>
+		</parameter>
+	</extension>
+
+	<extension point-id="tlfunction">
+		<parameter id="libraryName" value="string"/>
+		<parameter id="className" value="org.jetel.interpreter.extensions.StringLib"/>
+		<parameter id="function">
+			<value>concat</value>
+			<value>uppercase</value>
+			<value>lowercase</value>
+			<value>substring</value>
+			<value>left</value>
+			<value>right</value>
+			<value>trim</value>
+			<value>length</value>
+			<value>replace</value>
+			<value>split</value>
+			<value>char_at</value>
+			<value>is_blank</value>
+			<value>is_ascii</value>
+			<value>is_number</value>
+			<value>is_integer</value>
+			<value>is_long</value>
+			<value>is_date</value>
+			<value>remove_diacritic</value>
+			<value>remove_blank_space</value>
+			<value>get_alphanumeric_chars</value>
+			<value>translate</value>
+			<value>join</value>
+			<value>index_of</value>
+			<value>count_char</value>
+			<value>chop</value>
+			<value>remove_nonprintable</value>
+			<value>remove_nonascii</value>
+			<value>find</value>
+			<value>cut</value>
+			<value>random_string</value>
+		</parameter>
+	</extension>
+	
+	<extension point-id="tlfunction">
+		<parameter id="libraryName" value="convert"/>
+		<parameter id="className" value="org.jetel.interpreter.extensions.ConvertLib"/>
+		<parameter id="function">
+		<value>num2str</value>
+        <value>date2str</value>
+        <value>str2date</value>
+        <value>date2num</value>
+        <value>str2num</value>
+        <value>try_convert</value>
+        <value>base64byte</value>
+        <value>byte2base64</value>
+        <value>bits2str</value>
+        <value>str2bits</value>
+        <value>hex2byte</value>
+        <value>byte2hex</value>
+		<value>num2num</value>
+        <value>num2bool</value>
+        <value>bool2num</value>
+        <value>str2bool</value>
+        <value>long2date</value>
+        <value>date2long</value>
+        <value>to_string</value>
+        <value>md5</value>
+        <value>sha</value>
+        <value>long2pacdecimal</value>
+        <value>pacdecimal2long</value>
+        <value>get_field_name</value>
+        <value>get_field_type</value>
+		</parameter>
+	</extension>
+	
+	<extension point-id="tlfunction">
+		<parameter id="libraryName" value="container"/>
+		<parameter id="className" value="org.jetel.interpreter.extensions.ContainerLib"/>
+		<parameter id="function">
+		<value>remove_all</value>
+        <value>push</value>
+        <value>pop</value>
+        <value>poll</value>
+        <value>remove</value>
+        <value>insert</value>
+        <value>sort</value>
+        <value>copy</value>
+        <value>reverse</value>
+        <value>dict_put_str</value>
+        <value>dict_get_str</value>
+		</parameter>
+	</extension>
+	
+</plugin>
