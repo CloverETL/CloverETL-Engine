@@ -1,0 +1,2 @@
+[milk,butter,onion];[apple,egg];copy(List1,List2);[milk,butter,onion,apple,egg];[milk,butter,onion,apple,egg]
+[honey,cherry,carrot];[pear,garlic];copy(List1,List2);[honey,cherry,carrot,pear,garlic];[honey,cherry,carrot,pear,garlic]

@@ -1,0 +1,329 @@
+<plugin
+   id="org.jetel.component"
+   version="0.0.0.devel"
+   provider-name="Javlin a.s.">
+
+	<runtime>
+		<library path="bin/"/>
+		<library path="lib/httpclient-4.2.jar"/>
+		<library path="lib/httpcore-4.2.jar"/>
+		<library path="lib/httpmime-4.2.jar"/>
+		<library path="lib/jdbm-2.2.jar" />
+		<library path="lib/saxon9.jar"/>
+		<library path="lib/saxon9-dom.jar"/>
+		<library path="lib/signpost-commonshttp4-1.2.1.2.jar"/>
+		<library path="lib/signpost-core-1.2.1.2.jar"/>
+   	</runtime> 
+
+	<requires engine-version="0.0.0.devel">
+		<import plugin-id="org.jetel.connection"/>
+		<import plugin-id="org.jetel.lookup"/>
+		<import plugin-id="org.jetel.sequence"/>
+	</requires>
+
+	<extension point-id="component">
+		<parameter id="className" value="org.jetel.component.DataReader"/>
+		<parameter id="type" value="DATA_READER"/>
+	</extension>
+
+	<extension point-id="component">
+		<parameter id="className" value="org.jetel.component.DataWriter"/>
+		<parameter id="type" value="DATA_WRITER"/>
+	</extension>
+
+	<extension point-id="component">
+		<parameter id="className" value="org.jetel.component.DelimitedDataReader"/>
+		<parameter id="type" value="DELIMITED_DATA_READER"/>
+	</extension>
+
+	<extension point-id="component">
+		<parameter id="className" value="org.jetel.component.DelimitedDataWriter"/>
+		<parameter id="type" value="DELIMITED_DATA_WRITER"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.SimpleCopy"/>
+	    <parameter id="type" value="SIMPLE_COPY"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.Concatenate"/>
+	    <parameter id="type" value="CONCATENATE"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.SimpleGather"/>
+	    <parameter id="type" value="SIMPLE_GATHER"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.Reformat"/>
+	    <parameter id="type" value="REFORMAT"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.DBInputTable"/>
+	    <parameter id="type" value="DB_INPUT_TABLE"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.Sort"/>
+	    <parameter id="type" value="SORT"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.DBOutputTable"/>
+	    <parameter id="type" value="DB_OUTPUT_TABLE"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.FixLenDataWriter"/>
+	    <parameter id="type" value="FIXLEN_DATA_WRITER"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.Dedup"/>
+	    <parameter id="type" value="DEDUP"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.FixLenDataReader"/>
+	    <parameter id="type" value="FIXLEN_DATA_READER"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.Merge"/>
+	    <parameter id="type" value="MERGE"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.MergeJoin"/>
+	    <parameter id="type" value="MERGE_JOIN"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.MergeJoin"/>
+	    <parameter id="type" value="EXT_MERGE_JOIN"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.MergeJoin"/>
+	    <parameter id="type" value="SORTED_JOIN"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.Trash"/>
+	    <parameter id="type" value="TRASH"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.DBExecute"/>
+	    <parameter id="type" value="DB_EXECUTE"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.HashJoin"/>
+	    <parameter id="type" value="HASH_JOIN"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.HashJoin"/>
+	    <parameter id="type" value="EXT_HASH_JOIN"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.CheckForeignKey"/>
+	    <parameter id="type" value="CHECK_FOREIGN_KEY"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.DBFDataReader"/>
+	    <parameter id="type" value="DBF_DATA_READER"/>
+	</extension>
+	
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.DBFDataWriter"/>
+	    <parameter id="type" value="DBF_DATA_WRITER"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.ExtFilter"/>
+	    <parameter id="type" value="EXT_FILTER"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.ExtSort"/>
+	    <parameter id="type" value="EXT_SORT"/>
+	</extension>
+
+    <extension point-id="component">
+        <parameter id="className" value="org.jetel.component.SortWithinGroups"/>
+        <parameter id="type" value="SORT_WITHIN_GROUPS"/>
+    </extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.Partition"/>
+	    <parameter id="type" value="PARTITION"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.DataIntersection"/>
+	    <parameter id="type" value="DATA_INTERSECTION"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.Aggregate"/>
+	    <parameter id="type" value="AGGREGATE"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.SystemExecute"/>
+	    <parameter id="type" value="SYS_EXECUTE"/>
+	</extension>
+	
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.RunGraph"/>
+	    <parameter id="type" value="RUN_GRAPH"/>
+	</extension>
+	
+	<extension point-id="component">
+		<parameter id="className" value="org.jetel.component.HttpConnector"/>
+		<parameter id="type" value="HTTP_CONNECTOR"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.KeyGenerator"/>
+	    <parameter id="type" value="KEY_GEN"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.AproxMergeJoin"/>
+	    <parameter id="type" value="APROX_MERGE_JOIN"/>
+	</extension>
+	
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.DBJoin"/>
+	    <parameter id="type" value="DBJOIN"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.XLSReader"/>
+	    <parameter id="type" value="XLS_READER"/>
+	</extension>
+	
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.XLSWriter"/>
+	    <parameter id="type" value="XLS_WRITER"/>
+	</extension>
+	
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.CloverDataWriter"/>
+	    <parameter id="type" value="CLOVER_WRITER"/>
+	</extension>
+	
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.CloverDataReader"/>
+	    <parameter id="type" value="CLOVER_READER"/>
+	</extension>
+	
+	<extension point-id="component">
+		<parameter id="type" value="STRUCTURE_WRITER"/>
+		<parameter id="className" value="org.jetel.component.StructureWriter"/>
+	</extension>
+
+	<extension point-id="component">
+		<parameter id="type" value="NORMALIZER"/>
+		<parameter id="className" value="org.jetel.component.Normalizer"/>
+	</extension>
+
+	<extension point-id="component">
+		<parameter id="type" value="DENORMALIZER"/>
+		<parameter id="className" value="org.jetel.component.Denormalizer"/>
+	</extension>
+
+	<extension point-id="component">
+		<parameter id="type" value="ROLLUP"/>
+		<parameter id="className" value="org.jetel.component.Rollup"/>
+	</extension>
+
+	<extension point-id="component">
+		<parameter id="type" value="JMS_READER"/>
+		<parameter id="className" value="org.jetel.component.JmsReader"/>
+	</extension>
+
+	<extension point-id="component">
+		<parameter id="type" value="JMS_WRITER"/>
+		<parameter id="className" value="org.jetel.component.JmsWriter"/>
+	</extension>
+
+	<extension point-id="component">
+		<parameter id="type" value="LOOKUP_JOIN"/>
+		<parameter id="className" value="org.jetel.component.LookupJoin"/>
+	</extension>
+
+	<extension point-id="component">
+		<parameter id="type" value="LOOKUP_TABLE_READER_WRITER"/>
+		<parameter id="className" value="org.jetel.component.LookupTableReaderWriter"/>
+	</extension>
+
+	<extension point-id="component">
+		<parameter id="type" value="DATA_GENERATOR"/>
+		<parameter id="className" value="org.jetel.component.DataGenerator"/>
+	</extension>
+
+	<extension point-id="component">
+		<parameter id="type" value="SEQUENCE_CHECKER"/>
+		<parameter id="className" value="org.jetel.component.SequenceChecker"/>
+	</extension>
+
+	<extension point-id="component">
+		<parameter id="type" value="TEXT_TABLE_WRITER"/>
+		<parameter id="className" value="org.jetel.component.TextTableWriter"/>
+	</extension>
+
+	<extension point-id="component">
+		<parameter id="type" value="XML_XPATH_READER"/>
+		<parameter id="className" value="org.jetel.component.XmlXPathReader"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.XMLExtract"/>
+	    <parameter id="type" value="XML_EXTRACT"/>
+	</extension>
+	
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.XmlReader"/>
+	    <parameter id="type" value="XML_READER"/>
+	</extension>
+	
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.SpeedLimiter"/>
+	    <parameter id="type" value="SPEED_LIMITER"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.SpeedLimiter"/>
+	    <parameter id="type" value="SLEEP"/>
+	</extension>
+	
+	<extension point-id="component">
+		<parameter id="className" value="org.jetel.component.JavaExecute"/>
+		<parameter id="type" value="JAVA_EXECUTE"/>
+	</extension>
+	
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.XmlWriter"/>
+	    <parameter id="type" value="XML_WRITER"/>
+	</extension>
+  
+    <extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.ExtXmlWriter"/>
+	    <parameter id="type" value="EXT_XML_WRITER"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.XSLDataTransformer"/>
+	    <parameter id="type" value="XSL_TRANSFORMER"/>
+	</extension>
+	
+</plugin>
