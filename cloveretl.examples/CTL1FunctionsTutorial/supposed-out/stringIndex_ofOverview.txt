@@ -1,0 +1,6 @@
+Nancy Davolio;a;3;index_of($0.Arg,$0.Substring);1;index_of($0.Arg,$0.Substring,$0.FromIndex);7
+Nancy Davolio;a;1;index_of($0.Arg,$0.Substring);1;index_of($0.Arg,$0.Substring,$0.FromIndex);1
+Nancy Davolio;Dav;0;index_of($0.Arg,$0.Substring);6;index_of($0.Arg,$0.Substring,$0.FromIndex);6
+Nancy Davolio;Nan;3;index_of($0.Arg,$0.Substring);0;index_of($0.Arg,$0.Substring,$0.FromIndex);-1
+Nancy Davolio;Nan;8;index_of($0.Arg,$0.Substring);0;index_of($0.Arg,$0.Substring,$0.FromIndex);-1
+Nancy Davolio;Nan;1;index_of($0.Arg,$0.Substring);0;index_of($0.Arg,$0.Substring,$0.FromIndex);-1
