@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="User" created="Thu Jun 19 15:50:49 CEST 2014" guiVersion="0.0.0.devel" id="1403191563752" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Feb 23 15:25:34 CET 2016" modifiedBy="jansedlacek" name="MetadataWriter" revision="1.19" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0" previewAttachment="${DATAIN_DIR}/TableDefinitions/employees.txt" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="metadataDescription" previewAttachment="${DATAIN_DIR}/TableDefinitions/employees.txt" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" skipSourceRows="1" type="delimited">
+<Field auto_filling="source_name" name="source_name" type="string"/>
+<Field name="fieldName" type="string"/>
+<Field name="fieldType" type="string"/>
+<Field name="fieldLabel" type="string"/>
+<Field name="fieldDelimiter" type="string"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<RichTextNote backgroundColor="DAD8C9" enabled="true" folded="false" fontSize="medium" height="87" id="Note3" textColor="000000" width="929" x="22" y="23">
+<attr name="text"><![CDATA[h3. External Metadata Writer as Subgraph
+MetadataWriter component produces .fmt [metadata|help://com.cloveretl.gui.docs/docs/external-metadata.html] files and it is implemented as a subgraph]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="222" id="Note2" textColor="000000" width="343" x="22" y="109">
+<attr name="text"><![CDATA[h3. Scenario
+We would like to produce metadata .fmt files by extracting metadata descriptions from external sources. We obtain plain metadata description from a flat file and we pass it to [MetadataWriter|element://METADATA_WRITER] component.
+
+The MetadataWriter component is implemented as a Subgraph. Each input record describes one field in the produced metadata.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="222" id="Note5" textColor="000000" width="289" x="364" y="109">
+<attr name="text"><![CDATA[h3. Highlights
+Multiple metadata files can be produced in single run. The component will split input records into groups by the specified name of the record, and each such group will produce one metadata file.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="222" id="Note6" textColor="000000" width="299" x="652" y="109">
+<attr name="text"><![CDATA[h3. Notes
+The component could also be used in combination with DBInputTable reading database tables definitions.]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="extract file name" guiX="341" guiY="355" id="EXTRACT_FILE_NAME" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+function string getFileName(string fullName) {
+	integer slash = lastIndexOf(fullName, "/");
+	if (slash < 0) {
+		return fullName;
+	}
+	return replace(substring(fullName, slash + 1, length(fullName) - slash - 1),"\\.","_");
+}
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.source_name = getFileName($in.0.source_name);
+	$out.0.fieldName = $in.0.fieldName;
+	$out.0.fieldType = $in.0.fieldType;
+	$out.0.fieldLabel = $in.0.fieldLabel;
+	$out.0.fieldDelimiter = $in.0.fieldDelimiter;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node __METADATA_RECORD_DELIMITER="\r\n" __OUTPUT_DIR="${DATAOUT_DIR}" enabled="enabled" guiName="MetadataWriter" guiX="591" guiY="355" id="METADATA_WRITER" jobURL="${SUBGRAPH_DIR}/MetadataWriter.sgrf" type="SUBGRAPH">
+<attr name="__INPUT_MAPPING"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.name = $in.0.fieldName;
+	$out.0.type = $in.0.fieldType;
+	$out.0.label = $in.0.fieldLabel;
+	$out.0.delimiter = $in.0.fieldDelimiter;
+	$out.0.recordName = $in.0.source_name;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/TableDefinitions/*.txt" guiName="UniversalDataReader" guiX="92" guiY="355" id="UNIVERSAL_DATA_READER" type="DATA_READER"/>
+<Edge debugMode="true" fromNode="EXTRACT_FILE_NAME:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata0" toNode="METADATA_WRITER:0"/>
+<Edge fromNode="UNIVERSAL_DATA_READER:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXTRACT_FILE_NAME:0"/>
+</Phase>
+</Graph>

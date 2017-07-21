@@ -1,0 +1,585 @@
+/*
+ * jETeL/CloverETL - Java based ETL application framework.
+ * Copyright (c) Javlin, a.s. (info@cloveretl.com)
+ *  
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
+package org.jetel.component.tree.writer.util;
+
+import java.text.MessageFormat;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.SortedSet;
+import java.util.Stack;
+import java.util.TreeSet;
+
+import org.jetel.component.tree.writer.model.design.AbstractNode;
+import org.jetel.component.tree.writer.model.design.Attribute;
+import org.jetel.component.tree.writer.model.design.CDataSection;
+import org.jetel.component.tree.writer.model.design.Comment;
+import org.jetel.component.tree.writer.model.design.ContainerNode;
+import org.jetel.component.tree.writer.model.design.MappingProperty;
+import org.jetel.component.tree.writer.model.design.Namespace;
+import org.jetel.component.tree.writer.model.design.ObjectNode;
+import org.jetel.component.tree.writer.model.design.Relation;
+import org.jetel.component.tree.writer.model.design.TemplateEntry;
+import org.jetel.component.tree.writer.model.design.TreeWriterMapping;
+import org.jetel.component.tree.writer.model.design.Value;
+import org.jetel.component.tree.writer.model.design.WildcardAttribute;
+import org.jetel.component.tree.writer.model.design.WildcardNode;
+import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.StringUtils;
+
+/**
+ * @author jan.michalica (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created 8.11.2011
+ */
+public abstract class AbstractMappingValidator extends AbstractVisitor {
+
+	protected Map<AbstractNode, Map<MappingProperty, SortedSet<MappingError>>> errorsMap = new HashMap<AbstractNode, Map<MappingProperty, SortedSet<MappingError>>>();
+	protected Stack<Integer> availablePorts = new Stack<Integer>();
+	protected Map<Integer, DataRecordMetadata> inPorts;
+	protected boolean errors = false;
+	protected int maxErrors = 50;
+	protected int maxErrorsLimit = 100;
+	protected int maxWarnings = 50;
+	protected int errorsCount;
+	protected int warningsCount;
+	protected ObjectNode globalPartition = null;
+	protected boolean runIt;
+	
+	protected AbstractMappingValidator(Map<Integer, DataRecordMetadata> inputPorts) {
+		this.inPorts = inputPorts;
+	}
+
+	protected static final class SeverityComparator implements Comparator<MappingError> {
+			
+			public static final SeverityComparator INSTANCE = new SeverityComparator();
+	
+			@Override
+			public int compare(MappingError me1, MappingError me2) {
+				int me1severity = getSeverityNumber(me1.getSeverity());
+				int me2severity = getSeverityNumber(me2.getSeverity());
+				return me2severity - me1severity;
+			}
+			
+			private int getSeverityNumber(Severity s) {
+				if (s == Severity.ERROR) return 2;
+				if (s == Severity.WARNING) return 1;
+				return 0;
+			}
+		}
+
+	public void validate() {
+		clear();
+		mapping.visit(this);
+	}
+
+	public void clear() {
+		errors = false;
+		globalPartition = null;
+		errorsMap.clear();
+		availablePorts.clear();
+		runIt = true;
+		errorsCount = 0;
+		warningsCount = 0;
+	}
+
+	@Override
+	public void setMapping(TreeWriterMapping mapping) {
+		this.mapping = mapping;
+		clear();
+	}
+
+	public boolean containsErrors() { 
+		return errors;
+	}
+
+	public Map<AbstractNode, Map<MappingProperty, SortedSet<MappingError>>> getErrorsMap() {
+		return errorsMap;
+	}
+
+	protected List<Integer> getPortIndexes(String inPortString, Map<Integer, DataRecordMetadata> availablePorts) {
+		List<Integer> toReturn = new LinkedList<Integer>();
+		if (inPortString == null) {
+			return toReturn;
+		}
+		
+		try {
+			Integer parsedIndex = Integer.valueOf(inPortString);
+			if (availablePorts.containsKey(parsedIndex)) {
+				toReturn.add(parsedIndex);
+			}
+		} catch (NumberFormatException ex) {
+			for (Entry<Integer, DataRecordMetadata> entry : availablePorts.entrySet()) {
+				if (entry.getValue() != null && entry.getValue().getName().equals(inPortString)) {
+					toReturn.add(entry.getKey());
+				}
+			}
+		}
+		return toReturn;
+	}
+
+	protected Integer getAvailableInputPort(String key, AbstractNode element, MappingProperty keyword) {
+		Integer toReturn = null;
+		try {
+			Integer portIndex = Integer.valueOf(key);
+			for (Integer inPortIndex : availablePorts) {
+				if (inPortIndex.equals(portIndex)) {
+					return portIndex;
+				}
+			}
+		} catch (NumberFormatException ex) {
+			for (Integer inPortIndex : availablePorts) {
+				if (inPorts.get(inPortIndex).getName().matches(key)) {
+					if (toReturn != null) {
+						addProblem(element, keyword, new MappingError(MessageFormat.format(ValidatorMessages.getString("AbstractMappingValidator.ambiguousPortWarning"), key), Severity.WARNING)); //$NON-NLS-1$
+					} else {
+						toReturn = inPortIndex;
+					}
+				}
+			}
+		}
+		return toReturn;
+	}
+
+	protected void checkAvailableData(AbstractNode element, MappingProperty property, DataRecordMetadata metadata, String[] fieldNames) {
+		if (metadata == null) {
+			addProblem(element, property, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.portMetadataNotAvailableError"), Severity.ERROR)); //$NON-NLS-1$
+		} else {
+			for (String fieldName : fieldNames) {
+				if (metadata.getField(fieldName) == null) {
+					addProblem(element, property, new MappingError(MessageFormat.format(ValidatorMessages.getString("AbstractMappingValidator.recordNoFieldError"), metadata.getName(), fieldName), Severity.ERROR)); //$NON-NLS-1$
+				}
+			}
+		}
+	}
+
+	protected void addProblem(AbstractNode element, MappingProperty property, MappingError error) {
+		if (error.getSeverity() == Severity.ERROR) {
+			errorsCount++;
+			errors = true;
+			if (errorsCount > maxErrors) {
+				if (errorsCount > maxErrorsLimit) {
+					runIt = false;
+				}
+				return;
+			}
+		} else {
+			warningsCount++;
+			if (warningsCount > maxWarnings) {
+				return;
+			}
+		}
+		
+		Map<MappingProperty, SortedSet<MappingError>> elementErrors = errorsMap.get(element);
+		SortedSet<MappingError> errorList;
+		if (elementErrors == null) {
+			errorList = new TreeSet<MappingError>(SeverityComparator.INSTANCE);
+			elementErrors = new HashMap<MappingProperty, SortedSet<MappingError>>();
+			elementErrors.put(property, errorList);
+			errorsMap.put(element, elementErrors);
+		} else {
+			errorList = elementErrors.get(property);
+			if (errorList == null) {
+				errorList = new TreeSet<MappingError>(SeverityComparator.INSTANCE);
+				elementErrors.put(property, errorList);
+			}
+		}
+		
+		errorList.add(error);
+	}
+	
+	@Override
+	public void visit(Attribute element) throws Exception {
+		
+		if (!runIt) {
+			return;
+		}
+		validateAttribute(element);
+	}
+	
+	protected abstract void validateAttribute(Attribute attribute);
+	
+	@Override
+	public void visit(Comment element) throws Exception {
+		
+		if (!runIt) {
+			return;
+		}
+		validateComment(element);
+	}
+	
+	protected abstract void validateComment(Comment comment);
+	
+	@Override
+	public void visit(CDataSection cdataSection) throws Exception {
+		
+		if (!runIt) {
+			return;
+		}
+		validateCDataSection(cdataSection);
+	}
+	
+	protected void validateCDataSection(CDataSection section) {}
+	
+	@Override
+	public void visit(Relation element) throws Exception {
+		if (!runIt) {
+			return;
+		}
+		
+		checkRelationPortAndKeyBinding(element);
+		validateRelation(element);
+	}
+
+	protected void checkRelationPortAndKeyBinding(Relation element) {
+		checkCloverNamespaceAvailable(element.getParent());
+
+		String inPortString = element.getProperty(MappingProperty.INPUT_PORT);
+		Integer inPortIndex = null;
+		if (inPortString == null) {
+			addProblem(element, MappingProperty.INPUT_PORT, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.inputPortNotSpecifiedError"), Severity.ERROR)); //$NON-NLS-1$
+			return;
+		} else {
+			inPortIndex = getAvailableInputPort(inPortString, element, MappingProperty.INPUT_PORT);
+			if (inPortIndex == null) {
+				addProblem(element, MappingProperty.INPUT_PORT, new MappingError(MessageFormat.format(ValidatorMessages.getString("AbstractMappingValidator.inputPortNotConnectedError"), inPortString), Severity.ERROR)); //$NON-NLS-1$
+				return;
+			}
+		}
+
+		String keyString = element.getProperty(MappingProperty.KEY);
+		String parentKeyString = element.getProperty(MappingProperty.PARENT_KEY);
+
+		if (parentKeyString != null && keyString == null) {
+			addProblem(element, MappingProperty.KEY, new MappingError(MessageFormat.format(ValidatorMessages.getString("AbstractMappingValidator.attributeNotSpecifiedError"), MappingProperty.KEY.getName()), Severity.ERROR)); //$NON-NLS-1$
+		}
+		if (parentKeyString == null && keyString != null) {
+			addProblem(element, MappingProperty.PARENT_KEY, new MappingError(MessageFormat.format(ValidatorMessages.getString("AbstractMappingValidator.attributeNotSpecifiedError"), MappingProperty.PARENT_KEY.getName()), Severity.ERROR)); //$NON-NLS-1$
+		}
+
+		if (keyString != null) {
+			String[] keyList = keyString.split(TreeWriterMapping.DELIMITER);
+			checkAvailableData(element, MappingProperty.KEY, inPorts.get(inPortIndex), keyList);
+
+			if (parentKeyString != null) {
+				if (parentKeyString.split(TreeWriterMapping.DELIMITER).length != keyList.length) {
+					addProblem(element, MappingProperty.KEY, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.countOfFieldsMustMatchParentError"), Severity.ERROR)); //$NON-NLS-1$
+					addProblem(element, MappingProperty.PARENT_KEY, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.countOfFieldsMustMatchParentKeyError"), Severity.ERROR)); //$NON-NLS-1$
+				}
+			}
+		}
+		checkRelationPortAndParentKeyBinding(element, parentKeyString);
+	}
+
+	protected void checkRelationPortAndParentKeyBinding(Relation element, String parentKeyString) {
+		checkRelationPortAndParentKeyBinding(element, parentKeyString, Severity.ERROR);
+	}
+
+	protected void checkRelationPortAndParentKeyBinding(Relation element, String parentKeyString, Severity severity) {
+		if (parentKeyString != null) {
+			String inPortString = null;
+			ContainerNode parent = getRecurringParent(element.getParent());
+			if (parent != null) {
+				inPortString = parent.getRelation().getProperty(MappingProperty.INPUT_PORT);
+			}
+			if (inPortString == null) {
+				addProblem(element, MappingProperty.PARENT_KEY, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.noDataForParentError"), severity)); //$NON-NLS-1$
+			} else {
+				Integer inPortIndex = getAvailableInputPort(inPortString, element, MappingProperty.PARENT_KEY);
+				if (inPortIndex == null) {
+					addProblem(element, MappingProperty.PARENT_KEY, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.noDataForParentError"), severity)); //$NON-NLS-1$
+				} else {
+					checkAvailableData(element, MappingProperty.PARENT_KEY, inPorts.get(inPortIndex), parentKeyString.split(TreeWriterMapping.DELIMITER));
+				}
+			}
+		}
+	}
+
+	protected abstract void validateRelation(Relation element);
+	
+	@Override
+	public void visit(ObjectNode element) throws Exception {
+		
+		if (!runIt || isInRecursion()) {
+			return;
+		}
+		if (element.getParent() == null) {
+			visitObject(element);
+			return;
+		}
+		if (element.isTemplate()) {
+			checkCloverNamespaceAvailable(element);
+			String templateName = element.getProperty(MappingProperty.NAME);
+			if (templateName == null) {
+				addProblem(element, MappingProperty.NAME, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.unspecifiedTemplateNameError"), Severity.ERROR)); //$NON-NLS-1$
+			}
+			return;
+		}
+		
+		checkCorrectEnumValue(element, MappingProperty.WRITE_NULL_ELEMENT, WriteNullElement.getValues());
+		checkCorrectBooleanValue(element, MappingProperty.RAW_VALUE);
+		
+		List<Integer> addedPorts = null;
+		Relation recurringInfo = element.getRelation();
+		if (recurringInfo != null) {
+			String inPortString = recurringInfo.getProperty(MappingProperty.INPUT_PORT);
+			if (inPortString != null) {
+				addedPorts = getPortIndexes(inPortString, inPorts);
+				if (addedPorts.size() > 1) {
+					addProblem(recurringInfo, MappingProperty.INPUT_PORT, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.ambiguousPortsWarning"), Severity.WARNING)); //$NON-NLS-1$
+				}
+				for (Integer inputPortIndex : addedPorts) {
+					availablePorts.push(inputPortIndex);
+				}
+			}
+		}
+		
+		String hideString = element.getProperty(MappingProperty.HIDE);
+		if (hideString != null) {
+			checkCorrectBooleanValue(element, MappingProperty.HIDE);
+		}
+		
+		validateElement(element);
+		
+		visitObject(element);
+
+		if (addedPorts != null) {
+			for (int i = 0; i < addedPorts.size(); i++) {
+				availablePorts.pop();
+			}
+		}
+	}
+	
+	protected abstract void validateElement(ObjectNode element);
+	
+	@Override
+	public void visit(Namespace element) throws Exception {
+		
+		if (!runIt) {
+			return;
+		}
+		validateNamespace(element);
+	}
+	
+	protected abstract void validateNamespace(Namespace element);
+	
+	@Override
+	public void visit(TemplateEntry objectTemplateEntry) throws Exception {
+		if (!runIt) {
+			return;
+		}
+		checkCloverNamespaceAvailable(objectTemplateEntry.getParent());
+		
+		checkTemplateExistence(objectTemplateEntry);
+		validateTemplateEntry(objectTemplateEntry);
+		
+		super.visit(objectTemplateEntry);
+	}
+	
+	protected void checkTemplateExistence(TemplateEntry objectTemplateEntry) {
+		String templateName = objectTemplateEntry.getProperty(MappingProperty.NAME);
+		if (templateName == null || !mapping.getTemplates().containsKey(templateName)) {
+			addProblem(objectTemplateEntry, MappingProperty.NAME, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.unknownTemplateError"), Severity.ERROR)); //$NON-NLS-1$
+			return;
+		}
+	}
+	
+	protected abstract void validateTemplateEntry(TemplateEntry element);
+	
+	@Override
+	public void visit(Value element) {
+		
+		if (!runIt) {
+			return;
+		}
+		validateValue(element);
+	}
+	
+	protected void validateValue(AbstractNode element) {
+		String value = element.getProperty(MappingProperty.VALUE);
+		if (value == null) {
+			addProblem(element, MappingProperty.VALUE, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.emptyValueWarning"), Severity.WARNING)); //$NON-NLS-1$
+			return;
+		}
+		validateFieldValue(element, value, MappingProperty.VALUE);
+	}
+	
+	protected void validateFieldValue(AbstractNode element, String value, MappingProperty valueProperty) {
+		List<ParsedFieldExpression> fields = parseValueExpression(value);
+		for (ParsedFieldExpression parsedFieldExpression : fields) {
+			Integer inPortIndex = getAvailableInputPort(parsedFieldExpression.getPort(), element, MappingProperty.VALUE);
+			if (inPortIndex == null) {
+				addProblem(element, valueProperty, new MappingError(MessageFormat.format(ValidatorMessages.getString("AbstractMappingValidator.inputPortNotAvailableHereError"), parsedFieldExpression.getPort()), Severity.ERROR)); //$NON-NLS-1$
+			} else if (inPorts.get(inPortIndex) == null) {
+				addProblem(element, valueProperty, new MappingError(MessageFormat.format(ValidatorMessages.getString("AbstractMappingValidator.metadataOfPortNotAvailableError"), parsedFieldExpression.getPort()), Severity.ERROR)); //$NON-NLS-1$
+			} else if (inPorts.get(inPortIndex).getField(parsedFieldExpression.getFields()) == null) {
+				addProblem(element, valueProperty,
+						new MappingError(MessageFormat.format(ValidatorMessages.getString("AbstractMappingValidator.fieldNotAvailableError"), parsedFieldExpression.getFields()), Severity.ERROR)); //$NON-NLS-1$
+			}
+		}
+	}
+	
+	@Override
+	public void visit(WildcardNode element) throws Exception {
+		
+		if (!runIt) {
+			return;
+		}
+		checkCloverNamespaceAvailable(element.getParent());
+		checkCorrectBooleanValue(element, MappingProperty.RAW_VALUE);
+		validateWildCardNode(element);
+	}
+	
+	protected abstract void validateWildCardNode(WildcardNode element);
+	
+	@Override
+	public void visit(WildcardAttribute element) throws Exception {
+		
+		if (!runIt) {
+			return;
+		}
+		checkCloverNamespaceAvailable(element.getParent());
+		validateWildCardAttribute(element);
+	}
+	
+	protected abstract void validateWildCardAttribute(WildcardAttribute element);
+
+	/**
+	 * Extract property from given element and check whether returned String is of boolean type (TRUE/FALSE or 
+	 * additionally emptyString/null) otherwise add exception to user view window.
+	 * @param element ObjectRepresentation
+	 * @param property MappingProperty
+	 */
+	protected void checkCorrectBooleanValue(AbstractNode element, MappingProperty property) {
+		checkCorrectBooleanValue(element, property, Severity.ERROR);
+	}
+	
+	protected void checkCorrectBooleanValue(AbstractNode element, MappingProperty property, Severity severity) {
+		String value = element.getProperty(property);
+		if (StringUtils.isEmpty(value)) {
+			return;
+		}
+		if (!Boolean.TRUE.toString().equalsIgnoreCase(value) && !Boolean.FALSE.toString().equalsIgnoreCase(value)) {
+			addProblem(element, property, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.acceptsOnlyBooleanError"), severity)); //$NON-NLS-1$
+		}
+	}
+
+	protected void checkCorrectEnumValue(ObjectNode element, MappingProperty property, List<String> allowedValues) {
+		checkCorrectEnumValue(element, property, allowedValues, Severity.ERROR);
+	}
+
+	protected void checkCorrectEnumValue(ObjectNode element, MappingProperty property, List<String> allowedValues, Severity severity) {
+		String value = element.getProperty(property);
+		if (StringUtils.isEmpty(value)) {
+			return; // empty value is ok
+		}
+		if (!allowedValues.contains(value)) {
+			addProblem(element, property, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.acceptsOnlyPredefinedError"), severity)); //$NON-NLS-1$
+		}
+	}
+	
+	protected void checkCloverNamespaceAvailable(ContainerNode element) {
+		if (!isCloverNamespaceAvailable(element)) {
+			addProblem(element, MappingProperty.UNKNOWN, new MappingError(ValidatorMessages.getString("AbstractMappingValidator.cloverNamespaceNotAvailableError"), Severity.ERROR)); //$NON-NLS-1$
+		}
+	}
+	
+	private boolean isCloverNamespaceAvailable(ContainerNode container) {
+		if (container instanceof ObjectNode) {
+			ObjectNode namespaceSupportingContainer = (ObjectNode) container; 
+		
+			for (Namespace namespace : namespaceSupportingContainer.getNamespaces()) {
+				if (TreeWriterMapping.MAPPING_KEYWORDS_NAMESPACEURI.equals(namespace.getProperty(MappingProperty.VALUE))) {
+					return true;
+				}
+			}
+		}
+		
+		if (container.getParent() != null) {
+			return isCloverNamespaceAvailable(container.getParent());
+		}
+		return false;
+	}
+	
+	/**
+	 * Sets number of full error messages to collect. If exceeded, only error counter gets increased.
+	 * Ensures: maxErrors <= maxErrorsLimit
+	 * @param maxErrors
+	 */
+	public void setMaxErrors(int maxErrors) {
+		if (maxErrors > maxErrorsLimit) {
+			maxErrorsLimit = maxErrors;
+		}
+		this.maxErrors = maxErrors;
+	}
+
+	public int getMaxErrors() {
+		return maxErrors;
+	}
+
+	/**
+	 * Sets validation error count threshold. If exceeded, validation is interrupted
+	 * and {@link #isValidationComplete()} returns <code>false</code>.
+	 * Ensures: maxErrors <= maxErrorsLimit
+	 * @param maxErrorsLimit
+	 */
+	public void setMaxErrorsLimit(int maxErrorsLimit) {
+		if (maxErrorsLimit < maxErrors) {
+			maxErrors = maxErrorsLimit;
+		}
+		this.maxErrorsLimit = maxErrorsLimit;
+	}
+
+	public int getMaxErrorsLimit() {
+		return maxErrorsLimit;
+	}
+
+	/**
+	 * Sets number of full warning messages to collect. If exceeded, only warnings counter gets increased.
+	 */
+	public void setMaxWarnings(int maxWarnings) {
+		this.maxWarnings = maxWarnings;
+	}
+
+	public int getMaxWarnings() {
+		return maxWarnings;
+	}
+
+	public int getErrorsCount() {
+		return errorsCount;
+	}
+
+	public int getWarningsCount() {
+		return warningsCount;
+	}
+
+	/**
+	 * Indicates whether last {@link #validate()} processed whole mapping. 
+	 * @return <code>false</code> if there were more validation errors then {@link #getMaxErrorsLimit()},
+	 * in which case only a part of mapping was validated.
+	 */
+	public boolean isValidationComplete() {
+		return runIt;
+	}
+}
