@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="4.2.0.M1" id="1361360543511" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Mar 25 15:55:57 CET 2014" modifiedBy="User" name="ProcessLog_CloverETL" nature="jobflow" revision="1.31" showComponentDetails="true">
+<Global>
+<MetadataGroup name="Implicit metadata" type="implicit">
+<Metadata id="__static_metadata_EXECUTE_GRAPH_ExecuteGraph_RunStatus">
+<Record fieldDelimiter="|" name="ExecuteGraph_RunStatus" recordDelimiter="\n" type="delimited">
+<Field name="runId" trim="true" type="long"/>
+<Field name="originalJobURL" type="string"/>
+<Field format="yyyy-MM-dd HH:mm:ss" name="startTime" trim="true" type="date"/>
+<Field format="yyyy-MM-dd HH:mm:ss" name="endTime" trim="true" type="date"/>
+<Field name="duration" trim="true" type="long"/>
+<Field name="executionGroup" type="string"/>
+<Field name="executionLabel" type="string"/>
+<Field name="status" type="string"/>
+<Field name="errException" type="string"/>
+<Field name="errMessage" type="string"/>
+<Field name="errComponent" type="string"/>
+<Field name="errComponentType" type="string"/>
+</Record>
+</Metadata>
+</MetadataGroup>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<RichTextNote backgroundColor="404040" enabled="true" folded="false" fontSize="medium" height="100" id="Note3" textColor="FFFFFF" width="929" x="20" y="20">
+<attr name="text"><![CDATA[h3. Big Data - Processing Web Access Log (Unique Visitors):  Pure CloverETL Solution
+Report the number of unique visitors per month from a potentially huge web access log using different methods.
+(CloverETL, Hadoop HIVE, Hadoop MapReduce, and MongoDB)]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="263" id="Note2" textColor="000000" width="288" x="20" y="119">
+<attr name="text"><![CDATA[h3. Scenario
+
+Web servers under heavy load can generate web access logs in orders of tens or hundreds of gigabytes per day.
+
+Preparing such data for analytics in a timely basis is crucial to fast operating businesses.
+
+In this example we demonstrate how to produce a simple "uniques per month" report from a standard Apache access_log file.
+]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="263" id="Note5" textColor="000000" width="284" x="307" y="119">
+<attr name="text"><![CDATA[h3. Pure CloverETL approach
+
+The processing is split into two steps. 
+
+Step 1: The first step calculates number of unique visits using built-in CloverETL components and outputs a text file with aggregated counts. 
+
+Step 2: The second step is common to all three solutions - it sorts and converts the generated file into an Excel report.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FFFFFF" enabled="true" folded="false" fontSize="medium" height="263" id="Note4" textColor="000000" width="359" x="590" y="119">
+<attr name="text"><![CDATA[h3. Possible optimization
+
+It is not necessary to split the processing into two steps; the processing could be completely streamlined into a single ETL graph.
+
+However, we wanted to reuse the "Generate Report" step for all the example implementations.
+]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="60FF60" enabled="true" folded="false" fontSize="medium" height="198" id="Note0" textColor="000000" width="333" x="212" y="411">
+<attr name="text"><![CDATA[h3. Read input and process it directly in CloverETL
+]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="Count Unique Visitors using CloverETL" guiX="259" guiY="496" id="COUNT_UNIQUE_VISITORS_USING_CLOVER_ETL" jobURL="${GRAPH_DIR}/CloverETL-CountVisits.grf" type="EXECUTE_GRAPH">
+<attr name="outputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.runId = $in.1.runId;
+	$out.0.originalJobURL = $in.1.originalJobURL;
+	$out.0.startTime = $in.1.startTime;
+	$out.0.endTime = $in.1.endTime;
+	$out.0.duration = $in.1.duration;
+	$out.0.status = $in.1.status;
+	$out.0.errException = $in.1.errException;
+	$out.0.errMessage = $in.1.errMessage;
+	$out.0.errComponent = $in.1.errComponent;
+	$out.0.errComponentType = $in.1.errComponentType;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Generate Report" guiX="583" guiY="496" id="GENERATE_REPORT" jobURL="${GRAPH_DIR}/GenerateReport.grf" type="EXECUTE_GRAPH"/>
+<Edge debugMode="true" fromNode="COUNT_UNIQUE_VISITORS_USING_CLOVER_ETL:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="__static_metadata_EXECUTE_GRAPH_ExecuteGraph_RunStatus" toNode="GENERATE_REPORT:0"/>
+</Phase>
+</Graph>
