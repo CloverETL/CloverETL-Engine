@@ -1,0 +1,16 @@
+AmountID;Amount;CustomerID;CustomerState;CustomerSurname;CustomerFirstname;EmployeeID;EmployeeSurname;EmployeeFirstname
+1;789.41;1;Virginia;Driggers;Tauni;1;Hanshew;Anthony
+2;768.50;2;Montana;Keane;Wathalee;2;Galvin;William
+3;297.59;3;South Carolina;Barile;Marlowe;3;Barrier;Agatha
+4;643.40;4;Pennsylvania;Dare;Annabelle;4;Harbison;Gabriel
+5;600.89;5;Ohio;Mc Guigan;Jeannet;5;Blaney;Theresa
+6;759.13;6;Nevada;Bliss;Marinell;6;Hills;Anthony
+7;713.63;7;Tennessee;Pumphrey;Mandi;7;Salazar;Jacqueline
+8;929.85;8;Maine;Ivner;Romeo;8;Deskus;Frederick
+9;855.71;9;Alaska;Hild;Mabel;9;Barrilleaux;Rosemary
+10;407.58;10;Missouri;Son;Michele;10;Cole;Rowan
+11;927.05;11;Oregon;Pennington;Emilo;11;Weinzimmer;Ashley
+12;291.93;12;Wisconsin;Mc Gary;Marliyn;12;Schmidt;Daniel
+13;30.81;13;California;Yellman;Noreen;13;Lovett;Richard
+14;672.45;14;Michigan;Segura;H.;14;Mcculloch;Richard
+15;860.62;15;Maryland;Frinton;Karie;15;Primavera;Annabel
