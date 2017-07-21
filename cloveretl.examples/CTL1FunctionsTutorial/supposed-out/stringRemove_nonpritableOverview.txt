@@ -1,0 +1,2 @@
+fternoon;remove_nonpritable($0.Arg);fternoon
+agta;remove_nonpritable($0.Arg);agta

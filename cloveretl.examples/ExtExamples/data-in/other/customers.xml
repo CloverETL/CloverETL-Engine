@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<records>
+<customer>
+<CUSTOMERID>BERGS</CUSTOMERID>
+<CompanyName>Berglunds snabbköp</CompanyName>
+<Representative>Christina Berglund</Representative>
+<JobTitle>Order Administrator</JobTitle>
+<Address>Berguvsvägen  8</Address>
+<City>Lulea</City>
+<State/>
+<PostCode>S-958 22</PostCode>
+<Country>Sweden</Country>
+<Phone>0921-12 34 65</Phone>
+<Fax>0921-12 34 67</Fax>
+<order>
+<OrderID>10278</OrderID>
+<CustomerID>BERGS</CustomerID>
+<EmployeeID>8</EmployeeID>
+<OrderDate>12.08.1996</OrderDate>
+<RequiredDate>09.09.1996</RequiredDate>
+<ShippedDate>16.08.1996</ShippedDate>
+<ShipVia>2</ShipVia>
+<Freight>93</Freight>
+<ShipName>Berglunds snabbköp</ShipName>
+<ShipAddress>Berguvsvägen  8</ShipAddress>
+<ShipCity>Luleå</ShipCity>
+<ShipRegion/>
+<ShipPostalCode>S-958 22</ShipPostalCode>
+<ShipCountry>Sweden</ShipCountry>
+</order>
+</customer>
+</records>

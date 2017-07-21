@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record name="SUPPLIER_DBF" type="fixed" dataOffset="417" recordSize="293" charset="US-ASCII">
+	<Field name="_IS_DELETED_" type="string" size="1" nullable="true" />
+	<Field name="SUPPLIERID" type="number" size="19" nullable="true" />
+	<Field name="COMPANYNAM" type="string" size="40" nullable="true" />
+	<Field name="CONTACTNAM" type="string" size="30" nullable="true" />
+	<Field name="CONTACTTIT" type="string" size="30" nullable="true" />
+	<Field name="ADDRESS" type="string" size="60" nullable="true" />
+	<Field name="CITY" type="string" size="15" nullable="true" />
+	<Field name="REGION" type="string" size="15" nullable="true" />
+	<Field name="POSTALCODE" type="string" size="10" nullable="true" />
+	<Field name="COUNTRY" type="string" size="15" nullable="true" />
+	<Field name="PHONE" type="string" size="24" nullable="true" />
+	<Field name="FAX" type="string" size="24" nullable="true" />
+	<Field name="HOMEPAGE" type="byte" size="10" nullable="true" />
+</Record>
