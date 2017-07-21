@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Petr" created="Fri Jul 02 14:49:13 CEST 2010" guiVersion="0.0.0.devel" id="1278077546166" licenseCode="Commercial Devel" licenseType="Commercial" modified="Tue Feb 23 14:08:47 CET 2016" modifiedBy="jansedlacek" name="graphXMLProcessing" revision="1.97" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata5" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="actor" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="actor_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="first_name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="last_name" nullable="true" shift="0" size="0" type="string"/>
+<Field name="movie_id" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="movie" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="movie_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="title" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="description" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="release_year" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="language" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="length" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="rating" nullable="true" shift="0" size="0" type="string"/>
+<Field name="category" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="movie_short" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="movie_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="title" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="description" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="release_year" nullable="true" shift="0" size="0" type="integer"/>
+<Field name="category" type="string"/>
+<Field name="actor_id" type="integer"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<RichTextNote backgroundColor="DAD8C9" enabled="true" folded="false" fontSize="medium" height="119" id="Note4" textColor="000000" width="962" x="26" y="0">
+<attr name="text"><![CDATA[h3. Working with JSON source file
+We have a list of movies and the actors in them. We want to have a reverse list with actors and the movies they are in. Use the provided movies.json file.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="501" id="Note1" textColor="000000" width="225" x="26" y="124">
+<attr name="text"><![CDATA[h3. Read JSON file
+It reads data from following JSON structure.
+
+{noformat}{
+  movies: 
+  [ 
+   movie: {
+       ...
+       actor: […]
+       }
+  ]
+}
+{noformat}]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="137" id="Note0" textColor="000000" width="469" x="256" y="124">
+<attr name="text"><![CDATA[h3. JSON data processing
+The structure of input JSON file is defined by XSD so you can use visual mapping editor for defining of mapping input fields to inner clover fields.]]></attr>
+</RichTextNote>
+<RichTextNote backgroundColor="FAF6D6" enabled="true" folded="false" fontSize="medium" height="501" id="Note2" textColor="000000" width="257" x="731" y="124">
+<attr name="text"><![CDATA[h3. Write JSON file
+It writes data to following JSON structure.
+
+{noformat}
+{
+  actor: {
+       first_name:,
+       last_name:,
+       movies: […],
+    },
+  actor: {
+       first_name:,
+       last_name:,
+       movies: […],
+    }
+...
+}
+{noformat}
+]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node dedupKey="actor_id(a)" enabled="enabled" guiName="1 record per actor" guiX="549" guiY="354" id="DEDUP0" type="DEDUP"/>
+<Node enabled="enabled" guiName="join actor_id to movie" guiX="482" guiY="519" id="EXT_HASH_JOIN0" joinKey="$movie_id=$movie_id" type="EXT_HASH_JOIN">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.actor_id = $in.0.actor_id;
+	$out.0.movie_id = $in.1.movie_id;
+	$out.0.release_year = $in.1.release_year;
+	$out.0.title = $in.1.title;
+	$out.0.description = $in.1.description;
+	$out.0.category = $in.1.category;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="actor_id" guiX="406" guiY="354" id="EXT_SORT0" sortKey="actor_id(a)" type="EXT_SORT"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/Actors.json" guiName="JSONWriter" guiX="755" guiY="498" id="JSONWRITER" type="JSON_WRITER">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<actors xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
+  <actor clover:inPort="0">
+    <clover:element clover:name="first_name">$0.first_name</clover:element>
+    <clover:element clover:name="last_name">$0.last_name</clover:element>
+    <clover:collection clover:name="movies" clover:inPort="1" clover:key="actor_id" clover:parentKey="actor_id">
+      <movie>$1.title</movie>
+    </clover:collection>
+  </actor>
+</actors>]]></attr>
+</Node>
+<Node charset="UTF-8" enabled="enabled" guiName="Read Movies.json" guiX="49" guiY="422" id="READ_MOVIES_JSON" schema="${DATAIN_DIR}/others/json/Movies_json.xsd" sourceUri="${DATAIN_DIR}/others/Movies.json" type="JSON_EXTRACT">
+<attr name="mapping"><![CDATA[<Mappings>
+		<Mapping element="movies">
+			<Mapping element="movie" outPort="1">
+				<Mapping element="actor" outPort="0" parentKey="movie_id" generatedKey="movie_id"
+						xmlFields="{}actor_id;{}first_name;{}last_name"
+						cloverFields="actor_id;first_name;last_name">
+				</Mapping>
+			</Mapping>
+		</Mapping>
+</Mappings>
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="SimpleCopy" guiX="256" guiY="422" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
+<Edge debugMode="true" fromNode="DEDUP0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (unique)" toNode="JSONWRITER:0"/>
+<Edge debugMode="true" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 1 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="JSONWRITER:1"/>
+<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata5" toNode="DEDUP0:0"/>
+<Edge debugMode="true" fromNode="READ_MOVIES_JSON:0" guiBendpoints="200:423|200:222" guiLocks="214|null|null" guiRouter="Manual" id="Edge1" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="SIMPLE_COPY1:0"/>
+<Edge debugMode="true" fromNode="READ_MOVIES_JSON:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 1 (out)" toNode="EXT_HASH_JOIN0:1"/>
+<Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" outPort="Port 0 (out)" persistedImplicitMetadata="Metadata5" toNode="EXT_SORT0:0"/>
+<Edge fromNode="SIMPLE_COPY1:1" guiBendpoints="427:477|427:539" guiLocks="427|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (driver)" outPort="Port 1 (out)" persistedImplicitMetadata="Metadata5" toNode="EXT_HASH_JOIN0:0"/>
+</Phase>
+</Graph>
