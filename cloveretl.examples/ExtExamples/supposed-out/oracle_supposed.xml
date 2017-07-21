@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+	<test NAME="testik" VALUE="2" />
+	<test NAME="kuk" VALUE="573" />
+	<test NAME="testxx" VALUE="10000" />
+	<test NAME="testik" VALUE="25555" />
+	<test NAME="kukxxx" VALUE="57322" />
+	<test NAME="testxx" VALUE="10000" />
+	<test NAME="testik" VALUE="25555" />
+	<test NAME="kukxxx" VALUE="57322" />
+	<test NAME="test" VALUE="1" />
+	<test NAME="testik" VALUE="2" />
+	<test NAME="kuk" VALUE="573" />
+	<test NAME="test" VALUE="1" />
+</dataset>
