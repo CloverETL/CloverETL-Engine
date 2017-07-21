@@ -1,0 +1,6 @@
+Name;Type;Label;Delimiter
+first_name;string;First name;|
+last_name;string;Last name;|
+age;integer;Age;|
+joined;date;Joined;|
+salary;decimal;Salary;|
