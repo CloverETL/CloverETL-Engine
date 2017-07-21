@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="cloveruser" created="Mon Feb 23 11:29:37 CET 2009" guiVersion="0.0.0.devel" id="1235387325275" licenseType="Evaluation license." modified="Fri May 15 14:16:47 CEST 2009" modifiedBy="cloveruser" name="string2bits" revision="1.24">
+<Global>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="str2bitsOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="String" type="string"/>
+<Field name="Function" type="string"/>
+<Field name="Bytearray" type="byte"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="string2bitsInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="String" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="201" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="byte str2bits(string arg)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="518" x="105" y="66">
+<attr name="text"><![CDATA[
+The str2bits(string) function takes one string argument and converts it to an array of bytes. 
+Its counterpart is the bits2str(bytearray) function. 
+The string consists of the following characters: Each of them can be either "1" or it can be any other character. In the string, each character "1" is converted to the bit 1, all other characters (not only "0", but also "a", "z", "/", etc.) are converted to the bit 0. 
+If the number of characters in the string is not an integral multiple of eight, the string is completed by "0" characters from the right. Then, the string is converted to an array of bytes as if the number of its characters were integral multiple of eight.]]></attr>
+</Note>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/conversionStr2bits.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="55" guiY="289" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/conversionStr2bitsOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="584" guiY="290" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="298" guiY="289" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.String := $0.String;
+	$0.Function := "str2bits($0.String)";
+	$0.Bytearray := str2bits($0.String);
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>
