@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter="|" name="Addresses" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field format="#" name="AddressID" nullable="true" shift="0" type="number"/>
+<Field name="OrderID" nullable="true" shift="0" type="number"/>
+<Field name="ShipName" nullable="true" shift="0" type="string"/>
+<Field name="ShipAddress" nullable="true" shift="0" type="string"/>
+<Field name="ShipCity" nullable="true" shift="0" type="string"/>
+<Field name="ShipRegion" nullable="true" shift="0" type="string"/>
+<Field name="ShipPostalCode" nullable="true" shift="0" type="string"/>
+<Field name="ShipCountry" nullable="true" shift="0" type="string"/>
+</Record>
