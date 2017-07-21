@@ -2,6 +2,31 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-7-0-M1
+------------
+
+* Data Services
+	* Publish data transformation as a REST web service
+	* New type of job - Data Service REST Job
+	* Support for various HTTP request method
+	* Access to HTTP request/response inside job logic
+	* New set of CTL functions for HTTP context processing
+	* New CloverETL Corporate Server management module - Data Service
+* CLO-10784	Graph validation without saving of graph
+
+
+REL-4-6-1
+------------
+
+* Improvements
+	* CLO-11167 Log a warning when query for dynamic metadata returns records
+	* CLO-11103	Improve thread dump generation so that whole stacks are displayed
+* Fixes
+	* CLO-11085	File Event Listener on SMB doesn't work with special characters
+	* CLO-11146	Data Inspector view does not show records for running graphs
+	* CLO-11049	Extracting metadata from DBInputTable fails with NPE when JNDI is used
+
+
 REL-4-6-0
 ------------
 

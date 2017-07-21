@@ -4,7 +4,6 @@ one@good.email.com
 another@google.com
 yetanother@google.com
 gooddomain@google.com
-second.mail@is.good.net
 test@seznam.cz
 dalsidomena@seznam.cz
 info@opensys.com

@@ -539,4 +539,9 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		throw new HttpContextNotAvailableException("HTTP Context is not available for local execution");
 	}
 	
+	@Override
+	public boolean isHttpContextAvailable() {
+		return false;
+	}
+	
 }
