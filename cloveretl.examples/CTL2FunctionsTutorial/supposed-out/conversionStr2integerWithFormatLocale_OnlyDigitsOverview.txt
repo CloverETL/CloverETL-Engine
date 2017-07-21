@@ -1,0 +1,5 @@
+12357;##0.#####E0;en.US;str2integer($0.String);12357;str2integer($0.String,$0.Format);12357;str2integer($0.String,$0.Format,$0.Locale);12357
+12;##0.#####E0;en.GB;str2integer($0.String);12;str2integer($0.String,$0.Format);12;str2integer($0.String,$0.Format,$0.Locale);12
+123;##0.#####E0;cs.CZ;str2integer($0.String);123;str2integer($0.String,$0.Format);123;str2integer($0.String,$0.Format,$0.Locale);123
+1235;00.###E0;en.US;str2integer($0.String);1235;str2integer($0.String,$0.Format);1235;str2integer($0.String,$0.Format,$0.Locale);1235
+1;00.###E0;en.US;str2integer($0.String);1;str2integer($0.String,$0.Format);1;str2integer($0.String,$0.Format,$0.Locale);1
