@@ -1,0 +1,2 @@
+12.67;Peter;try_convert($0.Decimal,string);12.67;try_convert($0.String,decimal);
+1987.30;John;try_convert($0.Decimal,string);1987.30;try_convert($0.String,decimal);
