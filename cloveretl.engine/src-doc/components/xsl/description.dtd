@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!ELEMENT componentsDoc (componentDescription+)>
+<!ELEMENT componentDescription (componentName, componentType, category, sinceVersion, author, lastUpdated, briefDesc,fullDesc, inputPorts, outputPorts, attribute+, example+ )>
+
+<!ELEMENT attribute  (attrName, attrIsMandatory, attrType, attrDesc, attrDefaultVal?)>
+
+<!ELEMENT inputPorts (port*)>
+<!ELEMENT outputPorts (port*)>
+<!ELEMENT port (portName, portDesc, portLongDesc?, portMandatory, portMetadata?)> 
+<!ELEMENT example (exampleXml, exampleImg?, exampleDesc)>
+<!ELEMENT portMetadata (metaField+)>
+<!ELEMENT metaField (fieldType, fieldNullable?, fieldDesc)>
+
+<!ELEMENT componentName   (#PCDATA)>
+<!ELEMENT componentType     (#PCDATA)>
+<!ELEMENT category  (#PCDATA)>
+<!ELEMENT sinceVersion (#PCDATA)>
+<!ELEMENT author (#PCDATA)>
+<!ELEMENT lastUpdated (#PCDATA)>
+<!ELEMENT briefDesc  (#PCDATA | attrLink)*>
+<!ELEMENT fullDesc  (#PCDATA | attrLink)*>
+
+<!ELEMENT portName   (#PCDATA)>
+<!ELEMENT portDesc   (#PCDATA | attrLink)*>
+<!ELEMENT portLongDesc   (#PCDATA | attrLink)*>
+<!ELEMENT portMandatory   (#PCDATA)>
+
+<!ELEMENT fieldType (#PCDATA)>
+<!ELEMENT fieldNullable (#PCDATA)>
+<!ELEMENT fieldDesc (#PCDATA | attrLink)*>
+
+
+<!-- <!ELEMENT category (readers|writers|transformers|joiners|others)>  -->
+
+<!ELEMENT attrName  (#PCDATA)>
+<!ELEMENT attrIsMandatory  (#PCDATA)>
+<!ELEMENT attrType  (#PCDATA)>
+<!ELEMENT attrDesc  (#PCDATA | attrLink)*>
+<!ELEMENT attrDefaultVal  (#PCDATA)>
+
+<!ELEMENT exampleXml  (#PCDATA)>
+<!ELEMENT exampleImg  (#PCDATA)>
+<!ELEMENT exampleDesc  (#PCDATA | attrLink)*>
+
+<!ELEMENT attrLink (#PCDATA)>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="milos_kovalcik" created="Thu Jan 15 12:18:29 CET 2009" guiVersion="0.0.0.devel" id="1232023819125" licenseType="Evaluation Devel" modified="Fri Apr 29 10:06:22 CEST 2011" modifiedBy="avackova" name="CreatingFixedMixedCust" revision="1.36" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/Customers.fmt" id="Metadata0"/>
+<Metadata fileURL="${META_DIR}/CustomersFixed.fmt" id="Metadata1"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="142" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Third graph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="734" x="37" y="40">
+<attr name="text"><![CDATA[
+In the third graph, we demonstrate how any delimited data file can be transformed to a fixed data file. 
+To transform delimited data files to fixed data files and vice versa, you can use SimpleCopy. 
+More detailed information about this graph can be found in the "readme.html" file included in the CompanyTransactionsTutorial directory.
+]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/Customers.dat" guiHeight="98" guiName="CustomersDelimited" guiWidth="178" guiX="36" guiY="226" id="DATA_READER0" skipFirstLine="true" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/CustomersFixed.txt" guiHeight="98" guiName="CustomersFixed" guiWidth="145" guiX="628" guiY="226" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="64" guiName="DelimitedToFixed" guiWidth="156" guiX="335" guiY="226" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
+<Edge debugMode="false" fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>

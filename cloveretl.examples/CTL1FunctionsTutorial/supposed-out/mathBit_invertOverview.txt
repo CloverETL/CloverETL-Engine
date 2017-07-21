@@ -1,0 +1,5 @@
+11;bit_invert($0.Arg);-12;1011;-1100
+15;bit_invert($0.Arg);-16;1111;-10000
+13;bit_invert($0.Arg);-14;1101;-1110
+3;bit_invert($0.Arg);-4;11;-100
+27;bit_invert($0.Arg);-28;11011;-11100
