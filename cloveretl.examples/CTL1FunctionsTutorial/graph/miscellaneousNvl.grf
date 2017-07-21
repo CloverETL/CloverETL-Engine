@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="milos_kovalcik" created="Wed Jan 14 14:13:20 CET 2009" guiVersion="0.0.0.devel" id="1231948177343" licenseType="Evaluation license." modified="Fri May 15 14:27:19 CEST 2009" modifiedBy="cloveruser" name="miscellaneousNvl" revision="1.13">
+<Global>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="nvlInput" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Arg" type="string"/>
+<Field name="DefaultValue" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="nvlOverview" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="Arg" type="string"/>
+<Field name="DefaultValue" type="string"/>
+<Field name="Function" type="string"/>
+<Field name="Result" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="149" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="anytype nvl(anytype arg, anytype default)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="472" x="143" y="62">
+<attr name="text"><![CDATA[
+The nvl(anytype, anytype) function accepts two arguments of any data type. Both arguments must be of the same type. 
+If the first argument is not null, the function returns its value. If it is null, the function returns the default value specified as the second argument.]]></attr>
+</Note>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/miscellaneousNvl.txt" guiHeight="0" guiName="UniversalDataReader" guiWidth="0" guiX="121" guiY="260" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/miscellaneousNvlOverview.txt" guiHeight="0" guiName="UniversalDataWriter" guiWidth="0" guiX="526" guiY="260" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="326" guiY="260" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+// Transforms input record into output record.
+function transform() {
+	$0.Arg := $0.Arg;
+	$0.DefaultValue := $0.DefaultValue;
+	$0.Function := 'nvl($0.Arg,$0.DefaultValue)';
+	$0.Result := nvl($0.Arg,$0.DefaultValue);
+	
+}
+
+// Called during component initialization.
+// function init() {}
+
+// Called after the component finishes.
+// function finished() {}
+]]></attr>
+</Node>
+<Edge debugLastRecords="true" debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="REFORMAT1:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+</Phase>
+</Graph>

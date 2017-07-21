@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Mon Dec 16 11:30:48 CET 2007" description="This graph ilustrates usage of JMS Reader/Writer for transfer one single field containing XML element. It requires ACtiveMQ JMS server and all libraries required by ACtiveMQ connection factory." guiVersion="0.0.0.devel" id="1204546496818" licenseType="Evaluation Devel" modified="Fri Jun 17 13:27:41 CEST 2011" modifiedBy="avackova" name="graphSystemExecute" revision="1.76" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/delimited/customers.fmt" id="Metadata1"/>
+<Metadata id="Metadata0">
+<Record fieldDelimiter="#" name="Customer" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="true" name="xml" nullable="true" shift="0" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="Orders" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field format="#" name="OrderID" nullable="true" shift="0" type="number"/>
+<Field name="CustomerID" nullable="true" shift="0" type="string"/>
+<Field name="EmployeeID" nullable="true" shift="0" type="integer"/>
+<Field format="dd.MM.yyyy" name="OrderDate" nullable="true" shift="0" type="date"/>
+<Field format="dd.MM.yyyy" name="RequiredDate" nullable="true" shift="0" type="date"/>
+<Field format="dd.MM.yyyy" name="ShippedDate" nullable="true" shift="0" type="date"/>
+<Field format="#" name="ShipVia" nullable="true" shift="0" type="integer"/>
+<Field format="#" name="Freight" nullable="true" shift="0" type="number"/>
+<Field name="ShipName" nullable="true" shift="0" type="string"/>
+<Field name="ShipAddress" nullable="true" shift="0" type="string"/>
+<Field name="ShipCity" nullable="true" shift="0" type="string"/>
+<Field name="ShipRegion" nullable="true" shift="0" type="string"/>
+<Field name="ShipPostalCode" nullable="true" shift="0" type="string"/>
+<Field name="ShipCountry" nullable="true" shift="0" type="string"/>
+</Record>
+</Metadata>
+<Connection connectionFactory="ConnectionFactory" destId="dynamicQueues/Clover" id="dest" iniCtxFactory="org.apache.activemq.jndi.ActiveMQInitialContextFactory" libraries="${PROJECT}/lib/activemq-all-5.2.0.jar" name="" password="" providerUrl="vm://localhost" type="JMS" username=""/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="49" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of JMS Components (JMSReader and JMSWriter)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="460" x="15" y="-90"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/other/customers.xml" guiHeight="101" guiName="XML (Customers with Orders)" guiWidth="241" guiX="12" guiY="-12" id="Input" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Reads an XML file with customer data as a simple flat file. ]]></attr>
+</Node>
+<Node bodyField="xml" connection="dest" enabled="enabled" guiHeight="101" guiName="JmsWriter" guiWidth="128" guiX="350" guiY="-12" id="JmsWriter" type="JMS_WRITER">
+<attr name="guiDescription"><![CDATA[Uses the default implementation of DataRecord2JmsMsg interface (DataRecord2JmsMsgProperties) to convert data record to JMS message.]]></attr>
+</Node>
+<Edge fromNode="Input:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="JmsWriter:0"/>
+</Phase>
+<Phase number="1">
+<Node bodyField="xml" connection="dest" enabled="enabled" guiHeight="101" guiName="JmsReader" guiWidth="128" guiX="12" guiY="175" id="JmsReader" maxMsgCount="0" timeout="4000" type="JMS_READER">
+<attr name="guiDescription"><![CDATA[Converts jms message to Clover data record and sends this record to the output port. 
+Uses the default implementation of JmsMsg2DataRecord interface (JmsMsg2DataRecordProperties).
+The timeout is set to 4000 milliseconds. If this time elapsed, process would terminate.]]></attr>
+</Node>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/customers.out" guiHeight="101" guiName="customer" guiWidth="128" guiX="350" guiY="121" id="OutCustomer" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Information about the Customer.]]></attr>
+</Node>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/orders.out" guiHeight="101" guiName="customer/order" guiWidth="140" guiX="331" guiY="259" id="OutOrder" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[Information about Order made by above Customer]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="101" guiName="XPath Parser" guiWidth="128" guiX="160" guiY="176" id="XPathTransform" transformURL="${TRANS_DIR}/ReformatOrders.java" type="REFORMAT">
+<attr name="guiDescription"><![CDATA[Parses body of jms  message as an XML file. If xml message can't be parsed, the error is thrown or the record is skipped depending on the value of custom skip_on_error attribute (see transformOnError method).]]></attr>
+<attr name="skip_on_error"><![CDATA[true]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="JmsReader:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="XPathTransform:0"/>
+<Edge debugMode="false" fromNode="XPathTransform:0" guiBendpoints="302:194|302:141" guiLocks="302|null|null" guiRouter="Manual" id="INEDGE4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" router="Manhattan" toNode="OutCustomer:0"/>
+<Edge debugMode="false" fromNode="XPathTransform:1" guiBendpoints="301:212|301:279" guiLocks="301|null|null" guiRouter="Manual" id="INEDGE5" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (out)" router="Manhattan" toNode="OutOrder:0"/>
+</Phase>
+</Graph>

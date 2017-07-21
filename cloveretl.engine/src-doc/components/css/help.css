@@ -1,0 +1,88 @@
+h1 { 
+	border-bottom: 1px solid silver; 
+	border-top: 1px solid silver;
+	padding: .1em .5em;
+	line-height: 1.9em; 
+	background-color: #dfd; 
+}
+
+h2 { 
+	margin-top: 1em; 
+	border-bottom: 1px solid silver;
+	border-top: 1px solid silver; 
+	padding: .1em .5em;  
+	line-height: 1.4em; 
+	background-color: #ddf; 
+}
+
+th {
+	font-weight: bold;
+	font-align: left;
+}
+
+td.framed { 
+	border: 1px solid silver;
+}
+
+td.head {
+	font-weight: bold;
+}
+
+td.head-framed {
+	font-weight: bold;
+	border: 1px solid silver;
+}
+
+td.title {
+	border: 1px solid silver;
+	font-weight: bold;
+	background-color: #eef; 
+}
+
+table.inputs {
+	width: 49%;
+	border: 1px solid silver;
+	margin: 0.03em;
+	cell-spacing:0;
+	cell-padding:5;
+	float: left; 	
+}
+
+table.outputs {
+	width: 49%;
+	border: 1px solid silver;
+	margin: 0.03em;
+	cell-spacing:0;
+	cell-padding:5;
+	float: right; 
+}
+
+table.fullwidth {
+	width: 100%;
+	border: 1px solid silver;
+	margin: 0.03em;
+	cell-spacing:0;
+	cell-padding:5;
+}
+
+div.clear {
+	clear: both;
+}
+
+div.title {
+	font-weight: bold;
+}
+
+pre.programlisting { 
+    background: #F0F0F0; 
+    border: 1px solid gray; 
+    padding: 2px; 
+    font-size: 10pt;
+    white-space: pre;
+}
+
+p.framed { 
+    background: #F0F0F0; 
+    border: 1px solid gray; 
+    padding: 2px; 
+}

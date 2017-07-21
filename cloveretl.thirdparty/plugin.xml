@@ -1,0 +1,28 @@
+<plugin
+   id="org.jetel.thirdparty"
+   version="0.0.0.devel"
+   provider-name="Javlin a.s.">
+
+	<runtime>
+		<library path="bin/"/>
+   	</runtime> 
+
+	<requires engine-version="0.0.0.devel">
+	</requires>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.Filter"/>
+	    <parameter id="type" value="FILTER"/>
+	</extension>
+	
+	<extension point-id="component">
+	    <parameter id="className" value="com.linagora.component.LdapReader"/>
+	    <parameter id="type" value="LDAP_READER"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="com.linagora.component.LdapWriter"/>
+	    <parameter id="type" value="LDAP_WRITER"/>
+	</extension>
+	
+</plugin>
