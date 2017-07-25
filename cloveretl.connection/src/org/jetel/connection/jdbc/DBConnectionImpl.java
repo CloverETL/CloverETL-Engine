@@ -53,6 +53,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.main.runGraph;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.crypto.Enigma;
@@ -901,8 +902,13 @@ public class DBConnectionImpl extends AbstractDBConnection {
 	protected SqlConnection connect(OperationType operationType) throws JetelException {
     	if (!StringUtils.isEmpty(getJndiName())) {
         	try {
-            	Context initContext = new InitialContext();
-           		DataSource ds = (DataSource)initContext.lookup(getJndiName());
+        		DataSource ds = null;
+        		if (runGraph.jndiDatasources.get(getJndiName()) != null) {
+        			ds = runGraph.jndiDatasources.get(getJndiName());
+        		} else { 
+        			Context initContext = new InitialContext();
+        			ds = (DataSource)initContext.lookup(getJndiName());
+        		}        		
                	Connection jndiConnection = ds.getConnection();
                	//update jdbc specific of this DBConnection according given JNDI connection
                	updateJdbcSpecific(jndiConnection);

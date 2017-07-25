@@ -31,10 +31,12 @@ import java.nio.file.Files;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
+import javax.sql.DataSource;
 import javax.tools.ToolProvider;
 
 import org.apache.commons.io.IOUtils;
@@ -150,6 +152,8 @@ public class runGraph {
     public final static String INIT_PROXY_AUTHENTICATOR_SWITCH = "-proxyauth";
     public final static String LOCALE_SWITCH = "-locale";
     public final static String TIME_ZONE_SWITCH = "-timezone";
+    
+    public static final HashMap<String, DataSource> jndiDatasources = new HashMap<String, DataSource>();
 	
 	/**
 	 *  Description of the Method
