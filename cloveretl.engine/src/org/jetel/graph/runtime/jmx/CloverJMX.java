@@ -22,6 +22,8 @@ import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.ThreadMXBean;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
@@ -29,6 +31,8 @@ import javax.management.NotificationBroadcasterSupport;
 import org.apache.log4j.Logger;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Phase;
+import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.dictionary.DictionaryValuesContainer;
 import org.jetel.graph.runtime.WatchDog;
 
 /**
@@ -40,6 +44,11 @@ import org.jetel.graph.runtime.WatchDog;
  * @created Jun 13, 2008
  */
 public class CloverJMX extends NotificationBroadcasterSupport implements CloverJMXMBean, Serializable {
+
+	/**
+	 * A key to the {@link Notification#getUserData()} map that contains final dictionary values. 
+	 */
+	public static final String USER_DATA_DICTIONARY = "dictionary";
 
 	private static final long serialVersionUID = 7993293097835091585L;
 	
@@ -201,7 +210,15 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 			graphFinished = true;
 		}
 
-		sendNotification(new Notification(GRAPH_FINISHED, this/*getGraphDetail()*/, notificationSequence++));
+		Notification notification = new Notification(GRAPH_FINISHED, this/*getGraphDetail()*/, notificationSequence++);
+		TransformationGraph graph = watchDog.getGraph();
+		if (graph != null) {
+			Map<String, Object> userData = new HashMap<>();
+			DictionaryValuesContainer dictionary = DictionaryValuesContainer.getDictionaryValuesContainer(graph.getDictionary(), false, true, false);
+			userData.put(USER_DATA_DICTIONARY, dictionary); // FIXME
+			notification.setUserData(userData);
+		}
+		sendNotification(notification);
 	}
 
 	/**
