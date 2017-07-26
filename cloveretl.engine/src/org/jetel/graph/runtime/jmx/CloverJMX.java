@@ -211,14 +211,18 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 		}
 
 		Notification notification = new Notification(GRAPH_FINISHED, this/*getGraphDetail()*/, notificationSequence++);
+		addDictionaryValues(notification);
+		sendNotification(notification);
+	}
+
+	private void addDictionaryValues(Notification notification) {
 		TransformationGraph graph = watchDog.getGraph();
 		if (graph != null) {
-			Map<String, Object> userData = new HashMap<>();
+			Map<Object, Object> userData = new HashMap<>();
 			DictionaryValuesContainer dictionary = DictionaryValuesContainer.getDictionaryValuesContainer(graph.getDictionary(), false, true, false);
 			userData.put(USER_DATA_DICTIONARY, dictionary); // FIXME
 			notification.setUserData(userData);
 		}
-		sendNotification(notification);
 	}
 
 	/**
@@ -235,7 +239,9 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 			graphFinished = true;
 		}
 
-		sendNotification(new Notification(GRAPH_ABORTED , this/*getGraphDetail()*/, notificationSequence++));
+		Notification notification = new Notification(GRAPH_ABORTED , this/*getGraphDetail()*/, notificationSequence++);
+		addDictionaryValues(notification);
+		sendNotification(notification);
 	}
 
 	/**
@@ -252,7 +258,9 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 			graphFinished = true;
 		}
 
-		sendNotification(new Notification(GRAPH_ERROR, this/*getGraphDetail()*/, notificationSequence++, message));
+		Notification notification = new Notification(GRAPH_ERROR, this/*getGraphDetail()*/, notificationSequence++, message);
+		addDictionaryValues(notification);
+		sendNotification(notification);
 	}
 	
 	synchronized public void nodeFinished(String message) {
