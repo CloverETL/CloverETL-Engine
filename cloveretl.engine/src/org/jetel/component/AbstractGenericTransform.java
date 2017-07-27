@@ -30,8 +30,6 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Node;
-import org.jetel.graph.modelview.MVMetadata;
-import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.file.FileUtils;
