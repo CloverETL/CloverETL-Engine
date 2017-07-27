@@ -177,11 +177,12 @@ public class MultiFileReader {
 	    		String fName = null; 
 	    		Iterator<Input> fit = channelIterator.getInputIterator();
 	    		boolean closeLastStream = false;
+	    		Object dataSource = null;
 	    		while (fit.hasNext()) {
 	    			try {
 	    				Input input = fit.next();
 	    				fName = input.getAbsolutePath();
-	    				Object dataSource = input.getPreferredInput(parser.getPreferredDataSourceType());
+	    				dataSource = input.getPreferredInput(parser.getPreferredDataSourceType());
 	    				if (dataSource == null) {
 	    					dataSource = input.getPreferredInput(DataSourceType.CHANNEL);
 	    				}
@@ -190,6 +191,9 @@ public class MultiFileReader {
 	    				
 	    				parser.setReleaseDataSource(closeLastStream = true);
 	    			} catch (Exception e) {
+	    				if (dataSource instanceof Closeable) { // CLO-11235
+	    					FileUtils.closeQuietly((Closeable) dataSource);
+	    				}
 	    				throw new ComponentNotReadyException(UNREACHABLE_FILE + fName, e);
 	    			}
 	    		}
