@@ -130,6 +130,7 @@
 		<exclude name="**/supposed-out/**"/>
 		<exclude name="**/supposed-out-night"/>
 		<exclude name="**/supposed-out-night/**"/>
+		<exclude name="**/.keep"/>
 	</patternset>
 
 	<!-- =========================== LIBRARIES ============================= -->
