@@ -209,6 +209,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				
 				//thread context classloader is preset to a reasonable classloader
 				//this is just for sure, threads are recycled and no body can guarantee which context classloader remains preset
+				//This is one of three calls which destroy JNDI context created in worker
+	    		//See https://bug.javlin.eu/browse/CLO-11113
 				Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
 	
 	    		MDC.put("runId", runtimeContext.getRunId());
