@@ -56,6 +56,7 @@ import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.SingleThreadWatchDog;
 import org.jetel.util.GraphUtils;
 import org.jetel.util.Pair;
+import org.jetel.util.RestJobUtils;
 import org.jetel.util.SubgraphUtils;
 
 /*
@@ -941,6 +942,11 @@ public class TransformationGraphAnalyzer {
 						continue; // no connected component on this port pair
 					}
 					next = outPort.getEdge().getReader();
+				}
+				
+				if (RestJobUtils.isRestJobOutputComponent(next.getType())
+						&& graph.getStaticJobType().isRestJob()) {
+					continue;
 				}
 				
 				if (!next.getEnabled().isBlocker() // "disabled as trash" components can't be blocked
