@@ -31,7 +31,7 @@ import org.jetel.util.string.UnicodeBlanks;
  * @created Aug 2, 2017
  */
 public class HttpUtil {
-	private static String regex = "(\\(|\\)|<|>|@|,|;|:|\\\\|\"|/|\\[|\\]|\\?|=|\\{|}|\\u0020|\\u0009)";
+	private static String regex = "(\\(|\\)|<|>|@|,|;|:|\\\\|\"|/|\\[|\\]|\\?|=|\\{|}|[\\u0000-\\u0020])";
 	private static Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
 
 	/**

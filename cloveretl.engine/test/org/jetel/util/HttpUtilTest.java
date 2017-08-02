@@ -19,67 +19,63 @@
 */
 package org.jetel.util;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 
 /**
  * 
- * @author kocik (info@cloveretl.com)
- *         (c) Javlin, a.s. (www.cloveretl.com)
+ * @author kocik (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created Aug 2, 2017
  */
-public class HttpUtilTest extends TestCase {
+public class HttpUtilTest {
 
+	@Test
+	public void testNullHttpHeader() {
+		assertFalse(HttpUtil.isValidHttpHeader(null));
+	}
 
-	
-    @Override
-	protected void setUp() throws Exception {
-        super.setUp();
-    }
+	@Test
+	public void testEmptyHttpHeader() {
+		assertFalse(HttpUtil.isValidHttpHeader(""));
+		assertFalse(HttpUtil.isValidHttpHeader("   "));
+		assertFalse(HttpUtil.isValidHttpHeader("	"));
+		assertFalse(HttpUtil.isValidHttpHeader(""));
+		assertFalse(HttpUtil.isValidHttpHeader("\n"));
+	}
 
-    public void testNullHttpHeader(){
-    	assertFalse(HttpUtil.isValidHttpHeader(null));
-    }
+	@Test
+	public void testCorrectHttpHeader() {
+		assertTrue(HttpUtil.isValidHttpHeader("headerName"));
+		assertTrue(HttpUtil.isValidHttpHeader("X-name"));
+	}
 
-    public void testEmptyHttpHeader(){
-    	assertFalse(HttpUtil.isValidHttpHeader(""));
-    	assertFalse(HttpUtil.isValidHttpHeader("   "));
-    	assertFalse(HttpUtil.isValidHttpHeader("	"));
-    	assertFalse(HttpUtil.isValidHttpHeader(""));
-    	assertFalse(HttpUtil.isValidHttpHeader("\n"));
-    }
-    
-    public void testCorrectHttpHeader(){
-    	assertTrue(HttpUtil.isValidHttpHeader("headerName"));
-    	assertTrue(HttpUtil.isValidHttpHeader("X-name"));
-    }
-
-    public void testInCorrectHttpHeader(){
-    	assertFalse(HttpUtil.isValidHttpHeader("test(test"));
-    	assertFalse(HttpUtil.isValidHttpHeader("test)test"));
-    	assertFalse(HttpUtil.isValidHttpHeader("test<test"));
-    	assertFalse(HttpUtil.isValidHttpHeader("test>test"));
-    	assertFalse(HttpUtil.isValidHttpHeader("test@test"));
-    	assertFalse(HttpUtil.isValidHttpHeader("test,test"));
-    	assertFalse(HttpUtil.isValidHttpHeader("test;test"));
-    	assertFalse(HttpUtil.isValidHttpHeader("test:test"));
-    	assertFalse(HttpUtil.isValidHttpHeader("test\\test"));
-    	assertFalse(HttpUtil.isValidHttpHeader("test\"test"));
-    	assertFalse(HttpUtil.isValidHttpHeader("test/test"));
-    	assertFalse(HttpUtil.isValidHttpHeader("test[test"));
-    	assertFalse(HttpUtil.isValidHttpHeader("test]test"));
-    	assertFalse(HttpUtil.isValidHttpHeader("test?test"));
-    	assertFalse(HttpUtil.isValidHttpHeader("test=test"));
-    	assertFalse(HttpUtil.isValidHttpHeader("test{test"));
-    	assertFalse(HttpUtil.isValidHttpHeader("test}test"));
-    	assertFalse(HttpUtil.isValidHttpHeader("test test"));
-    	assertFalse(HttpUtil.isValidHttpHeader("test	test"));
-    	assertFalse(HttpUtil.isValidHttpHeader(" test"));
-    	assertFalse(HttpUtil.isValidHttpHeader("test "));
-    }
-    
-    @Override
-	protected void tearDown(){
-    }
-
+	@Test
+	public void testInCorrectHttpHeader() {
+		assertFalse(HttpUtil.isValidHttpHeader("test(test"));
+		assertFalse(HttpUtil.isValidHttpHeader("test)test"));
+		assertFalse(HttpUtil.isValidHttpHeader("test<test"));
+		assertFalse(HttpUtil.isValidHttpHeader("test>test"));
+		assertFalse(HttpUtil.isValidHttpHeader("test@test"));
+		assertFalse(HttpUtil.isValidHttpHeader("test,test"));
+		assertFalse(HttpUtil.isValidHttpHeader("test;test"));
+		assertFalse(HttpUtil.isValidHttpHeader("test:test"));
+		assertFalse(HttpUtil.isValidHttpHeader("test\\test"));
+		assertFalse(HttpUtil.isValidHttpHeader("test\"test"));
+		assertFalse(HttpUtil.isValidHttpHeader("test/test"));
+		assertFalse(HttpUtil.isValidHttpHeader("test[test"));
+		assertFalse(HttpUtil.isValidHttpHeader("test]test"));
+		assertFalse(HttpUtil.isValidHttpHeader("test?test"));
+		assertFalse(HttpUtil.isValidHttpHeader("test=test"));
+		assertFalse(HttpUtil.isValidHttpHeader("test{test"));
+		assertFalse(HttpUtil.isValidHttpHeader("test}test"));
+		assertFalse(HttpUtil.isValidHttpHeader("test test"));
+		assertFalse(HttpUtil.isValidHttpHeader("test	test"));
+		assertFalse(HttpUtil.isValidHttpHeader(" test"));
+		assertFalse(HttpUtil.isValidHttpHeader("test "));
+		assertFalse(HttpUtil.isValidHttpHeader("test\ntest"));
+		assertFalse(HttpUtil.isValidHttpHeader("test\\u001Btest"));
+	}
 }
