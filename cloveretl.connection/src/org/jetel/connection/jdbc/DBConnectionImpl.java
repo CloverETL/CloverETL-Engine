@@ -303,17 +303,17 @@ public class DBConnectionImpl extends AbstractDBConnection {
     }
 
     private void prepareJdbcDriver() throws ComponentNotReadyException {
-        if(!StringUtils.isEmpty(getJndiName())) {
+        if (!StringUtils.isEmpty(getJndiName())) {
         	return;
         }
         
-        if(!StringUtils.isEmpty(getDatabase())) {
+        if (!StringUtils.isEmpty(getDatabase())) {
             //database connection is parameterized by DB identifier to the list of build-in JDBC drivers
             String database = getDatabase();
             JdbcDriverDescription jdbcDriverDescription = JdbcDriverFactory.getJdbcDriverDescriptor(database);
             
-            if(jdbcDriverDescription == null) {
-                throw new ComponentNotReadyException("Can not create JDBC driver '" + database + "'. This type of JDBC driver is not supported.");
+            if (jdbcDriverDescription == null) {
+                throw new ComponentNotReadyException("Cannot create JDBC driver '" + database + "'. This type of JDBC driver is not supported.");
             }
             
             jdbcDriver = jdbcDriverDescription.createJdbcDriver();
@@ -375,7 +375,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
     			if (t instanceof ThreadDeath) {
     				throw (ThreadDeath)t;
     			}
-    			logger.info("Connection does not support validation, checking whether closed.");
+    			logger.info("Connection does not support validation, checking whether is closed.");
     		}
     		return !connection.isClosed();
     	} catch (Exception e) {
@@ -585,7 +585,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
         		return; 
             Enigma enigma = getGraph().getEnigma();
             if (enigma == null) {
-            	logger.error("Can't decrypt password on DBConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.");
+            	logger.error("Cannot decrypt password for DBConnection (id=" + this.getId() + "). Set the password as the engine parameter -pass.");
                 //throw new ComponentNotReadyException(this, "Can't decrypt password on DBConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.");
                 return;
             }
@@ -593,7 +593,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
             try {
                 decryptedPassword = enigma.decrypt(getPassword());
             } catch (JetelException e) {
-                logger.error("Can't decrypt password on DBConnection (id=" + this.getId() + "). Incorrect password.");
+                logger.error("Cannot decrypt password on DBConnection (id=" + this.getId() + "). Incorrect password.");
                 //throw new ComponentNotReadyException(this, "Can't decrypt password on DBConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.", e);
             }
             // If password decryption returns failure, try with the password
@@ -706,7 +706,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
 			try {
 				driverLibraryURLs = ClassLoaderUtils.getClassloaderUrls(contextURL, driverLibrary);
 			} catch (Exception e) {
-				throw new ComponentNotReadyException("Can not create JDBC connection '" + getId() + "'.", e);
+				throw new ComponentNotReadyException("Cannot create JDBC connection '" + getId() + "'.", e);
 	        }
 		}
 	}
@@ -774,12 +774,12 @@ public class DBConnectionImpl extends AbstractDBConnection {
 		try {
 			typesClass = classLoader.loadClass(getJdbcSpecific().getTypesClassName());
 		} catch (ClassNotFoundException e) {
-			throw new ComponentNotReadyException("Invalid Types class name in jdbc specific: " + getJdbcSpecific().getTypesClassName(), e);
+			throw new ComponentNotReadyException("Invalid Types class name in JDBC specific: " + getJdbcSpecific().getTypesClassName(), e);
 		}
 		try {
 			return typesClass.getField(getJdbcSpecific().getResultSetParameterTypeField()).getInt(null);
 		} catch (Exception e) {
-			throw new ComponentNotReadyException("Invalid ResultSet type field name in jdbc specific: " + getJdbcSpecific().getResultSetParameterTypeField(), e);
+			throw new ComponentNotReadyException("Invalid ResultSet type field name in JDBC specific: " + getJdbcSpecific().getResultSetParameterTypeField(), e);
 		}
     }
     
@@ -828,7 +828,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
 		
 		@Override
 		public int hashCode() {
-			if(hashCode == 0) {
+			if (hashCode == 0) {
 				hashCode = (23 + elementId.hashCode()) * 37 + operationType.hashCode();
 			}
 			return hashCode;
@@ -878,7 +878,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
 		// -pnajvar
 		// this is a bad hack, workaround for issue 2668
 		if (jdbcDriver == null) { 
-			throw new JetelRuntimeException("JDBC driver couldn't be obtained");
+			throw new JetelRuntimeException("JDBC driver could not be obtained");
 		}
 		Driver driver = jdbcDriver.getDriver();
 		Connection connection;
@@ -888,7 +888,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
         try {
             connection = jdbcSpecific.connect(driver, getDbUrl(), connectionProperties);
         } catch (SQLException ex) {
-            throw new JetelRuntimeException("Can't connect to DB: " + ex.getMessage(), ex);
+            throw new JetelRuntimeException("Cannot connect to the DB: " + ex.getMessage(), ex);
         }
         if (connection == null) {
             throw new JetelRuntimeException("Not suitable driver for specified DB URL (" + driver + " / " + getDbUrl());
@@ -909,7 +909,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
                	//wrap the given JNDI connection to a DefaultConnection instance 
                	return getJdbcSpecific().createSQLConnection(this, jndiConnection, operationType);
         	} catch (Exception e) {
-        		throw new JetelException("Cannot establish DB connection to JNDI:" + getJndiName() + " " + e.getMessage(), e);
+        		throw new JetelException("Cannot open DB connection from JNDI data source:" + getJndiName() + " " + e.getMessage(), e);
         	}
     	} else {
         	try {
