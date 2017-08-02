@@ -49,6 +49,10 @@ public abstract class ArchiveDirectoryStream<Stream extends InputStream, Entry> 
 	private Entry cachedEntry;
 	
 	private boolean firstEntry = true;
+	
+	private boolean strict = false;
+	private String previousParentPath = null;
+	private boolean matchFound = false;
 
 	/**
 	 * 
@@ -62,6 +66,15 @@ public abstract class ArchiveDirectoryStream<Stream extends InputStream, Entry> 
 		this.glob = glob;
 		boolean containsWildcard = (glob.contains("?") || glob.contains("*"));
 		pattern = containsWildcard ? Pattern.compile(glob.replaceAll("\\\\", "\\\\\\\\").replaceAll("\\.", "\\\\.").replaceAll("\\?", "\\.").replaceAll("\\*", ".*")) : null; 
+	}
+
+	/**
+	 * @param strict
+	 * 
+	 * @see #readMatchingEntry()
+	 */
+	public void setStrict(boolean strict) {
+		this.strict = strict;
 	}
 
 	@Override
@@ -124,6 +137,7 @@ public abstract class ArchiveDirectoryStream<Stream extends InputStream, Entry> 
 	private void getNextArchiveInputStream() throws IOException {
 		Input input = parent.next();
 		currentInput = input;
+		previousParentPath = input.getAbsolutePath();
 		InputStream is = null;
 		try {
 			is = input.getInputStream();
@@ -143,9 +157,28 @@ public abstract class ArchiveDirectoryStream<Stream extends InputStream, Entry> 
 	 * Returns the first encountered matching entry.
 	 * Skips directories.
 	 * 
+	 * In strict mode (no wildcards) throws an exception if no entry matching the specified entry name is found.
+	 * 
 	 * @return
 	 * @throws IOException
+	 * 
+	 * @see {@link #doReadMatchingEntry()} 
 	 */
+	private Entry readMatchingEntry() throws IOException {
+		Entry matchingEntry = doReadMatchingEntry();
+		
+		if (matchingEntry != null) {
+			matchFound = true;
+		} else {
+			if (strict && !matchFound && !glob.isEmpty()) { // no wildcards and entry not found
+				// currently does not handle switching to the next parent InputStream - we assume there is exactly one
+				throw new IOException("File is unreachable: " + getEntryUrl(previousParentPath, glob), new IOException("No such entry: " + glob));
+			}
+		} 
+		
+		return matchingEntry;
+	}
+	
 	/**
 	 * Reads entries until it finds a match.
 	 * Returns the first encountered matching entry.
@@ -154,7 +187,7 @@ public abstract class ArchiveDirectoryStream<Stream extends InputStream, Entry> 
 	 * @return
 	 * @throws IOException
 	 */
-	private Entry readMatchingEntry() throws IOException {
+	private Entry doReadMatchingEntry() throws IOException {
 		for (Entry entry = readNextEntry(); entry != null; entry = readNextEntry()) {
 			if (isDirectory(entry)) {
 				continue; // skip directories

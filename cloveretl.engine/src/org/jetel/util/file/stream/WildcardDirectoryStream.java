@@ -90,18 +90,11 @@ public class WildcardDirectoryStream extends AbstractDirectoryStream<DirectorySt
 			String anchor = URIUtils.urlDecode(archiveDescriptor.anchor); // CL-2579
 			String innerSource = archiveDescriptor.innerSource;
 			DirectoryStream<Input> innerStream = newDirectoryStream(innerSource);
-			switch (archiveDescriptor.archiveType) {
-			case ZIP:
-				return new ZipDirectoryStream(innerStream, anchor);
-			case TAR:
-				return new TarDirectoryStream(innerStream, anchor);
-			case TGZ:
-				return new TgzDirectoryStream(innerStream, anchor);
-			case GZIP:
-				return new GzipDirectoryStream(innerStream);
-			default:
-				throw new UnsupportedOperationException("Unsupported archive type: " + archiveDescriptor.archiveType);
+			ArchiveDirectoryStream<?, ?> result = newArchiveDirectoryStream(archiveDescriptor.archiveType, innerStream, anchor);
+			if (!WcardPattern.hasWildcard(fileName)) {
+				result.setStrict(true);
 			}
+			return result;
 		}
 		
 		// TODO implement DirectoryStream with real streaming for local files and for S3
@@ -109,6 +102,21 @@ public class WildcardDirectoryStream extends AbstractDirectoryStream<DirectorySt
 		// most protocols are handled by making a list of file URLs and iterating through the list
 		Collection<String> filenames = listFiles(url, fileName);
 		return new CollectionDirectoryStream(contextUrl, filenames);
+	}
+
+	private static ArchiveDirectoryStream<?, ?> newArchiveDirectoryStream(ArchiveType archiveType, DirectoryStream<Input> innerStream, String anchor) {
+		switch (archiveType) {
+		case ZIP:
+			return new ZipDirectoryStream(innerStream, anchor);
+		case TAR:
+			return new TarDirectoryStream(innerStream, anchor);
+		case TGZ:
+			return new TgzDirectoryStream(innerStream, anchor);
+		case GZIP:
+			return new GzipDirectoryStream(innerStream);
+		default:
+			throw new UnsupportedOperationException("Unsupported archive type: " + archiveType);
+		}
 	}
 	
 	private Collection<String> listFiles(URL url, String fileName) throws IOException {
