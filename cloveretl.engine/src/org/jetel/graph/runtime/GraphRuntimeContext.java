@@ -83,7 +83,7 @@ public class GraphRuntimeContext {
 	private String timeZone;
 	private String locale;
 	private boolean ctlDebug;
-	private volatile boolean ctlBreakingEnabled = true;
+	private volatile boolean ctlBreakpointsEnabled = true;
 	private volatile boolean suspendThreads = false;
 	private final Set<Breakpoint> ctlBreakpoints = new CopyOnWriteArraySet<>();
 	/**
@@ -232,7 +232,7 @@ public class GraphRuntimeContext {
 		ret.classLoaderCaching = isClassLoaderCaching();
 		ret.calculateNoMetadata = isCalculateNoMetadata();
 		ret.ctlDebug = isCtlDebug();
-		ret.ctlBreakingEnabled = isCtlBreakingEnabled();
+		ret.ctlBreakpointsEnabled = isCtlBreakpointsEnabled();
 		ret.ctlBreakpoints.addAll(ctlBreakpoints);
 
 		return ret;
@@ -1029,12 +1029,12 @@ public class GraphRuntimeContext {
 		this.ctlBreakpoints.addAll(ctlBreakpoints);
 	}
 	
-	public boolean isCtlBreakingEnabled() {
-		return ctlBreakingEnabled;
+	public boolean isCtlBreakpointsEnabled() {
+		return ctlBreakpointsEnabled;
 	}
 
-	public void setCtlBreakingEnabled(boolean enabled) {
-		ctlBreakingEnabled = enabled;
+	public void setCtlBreakpointsEnabled(boolean enabled) {
+		ctlBreakpointsEnabled = enabled;
 	}
 	
 	/**

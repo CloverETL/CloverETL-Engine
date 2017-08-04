@@ -35,5 +35,4 @@ public class HttpContextNotAvailableException extends IOException {
 	public HttpContextNotAvailableException(String message) {
 		super(message);
 	}
-
 }

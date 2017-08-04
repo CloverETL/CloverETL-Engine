@@ -301,7 +301,7 @@ public class DebugJMX extends NotificationBroadcasterSupport implements DebugJMX
 
 	@Override
 	public void setCtlBreakingEnabled(boolean enabled) {
-		runtimeContext.setCtlBreakingEnabled(enabled);
+		runtimeContext.setCtlBreakpointsEnabled(enabled);
 	}
 
 	@Override

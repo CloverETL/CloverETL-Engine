@@ -850,7 +850,7 @@ public class DebugTransformLangExecutor extends TransformLangExecutor implements
 	}
 	
 	private boolean isActiveBreakpoint(Breakpoint breakpoint, SimpleNode node) {
-		if (!graph.getRuntimeContext().isCtlBreakingEnabled()) {
+		if (!graph.getRuntimeContext().isCtlBreakpointsEnabled()) {
 			return false;
 		}
 		
