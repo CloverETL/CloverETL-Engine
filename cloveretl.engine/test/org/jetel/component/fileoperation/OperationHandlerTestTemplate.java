@@ -498,6 +498,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		CloverURI uri = CloverURI.createURI(root + ".");
 		System.out.println(uri.getAbsoluteURI());
 		InfoResult infoResult = manager.info(uri);
+		assertTrue(infoResult.getFirstErrorMessage(), infoResult.success());
 		Info info = infoResult.getInfo();
 
 		// Make sure that none of the Info methods throws an exception:
