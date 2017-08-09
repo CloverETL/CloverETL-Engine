@@ -22,10 +22,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.jetel.component.fileoperation.CloverURI;
+import org.jetel.component.fileoperation.FileManager;
+import org.jetel.component.fileoperation.SingleCloverURI;
 import org.jetel.util.file.CustomPathResolver;
 import org.jetel.util.file.FileMessages;
 
@@ -84,7 +89,17 @@ public class SMB2PathResolver implements CustomPathResolver {
 	@Override
 	public List<String> resolveWildcardURL(URL contextURL, String fileURL) throws IOException {
 		if (isSmbUrl(fileURL)) {
-			// TODO
+			URL url = getURL(contextURL, fileURL);
+			try {
+				List<SingleCloverURI> resolved = FileManager.getInstance().defaultResolve(CloverURI.createSingleURI(url.toURI()));
+				List<String> result = new ArrayList<>(resolved.size());
+				for (SingleCloverURI uri: resolved) {
+					result.add(uri.toURI().toString());
+				}
+				return result;
+			} catch (URISyntaxException e) {
+				throw new IOException(e);
+			}
 		}
 		throw new MalformedURLException(MessageFormat.format(FileMessages.getString("SMBPathResolver_cannot_handle_url"), fileURL)); //$NON-NLS-1$
 	}
