@@ -47,46 +47,54 @@ public class SMB2Utils {
 		return getOutputStream(connection, getPath(target), append);
 	}
 
-	private static InputStream getInputStream(PooledSMB2Connection connection, String path) throws IOException {
-		DiskShare share = connection.getShare();
-		
-		final PooledSMB2Connection finalConnection = connection;
-		final com.hierynomus.smbj.share.File file = openFile(share, path, EnumSet.of(AccessMask.FILE_READ_DATA), SMB2CreateDisposition.FILE_OPEN);
-		InputStream is = file.getInputStream();
-		is = new FilterInputStream(is) {
-
-			@Override
-			public void close() throws IOException {
-				try {
-					super.close();
-				} finally {
-					FileUtils.closeAll(file, finalConnection);
-				}
-			}
+	private static InputStream getInputStream(final PooledSMB2Connection connection, String path) throws IOException {
+		try {
+			DiskShare share = connection.getShare();
 			
-		};
-		return is;
+			final com.hierynomus.smbj.share.File file = openFile(share, path, EnumSet.of(AccessMask.FILE_READ_DATA), SMB2CreateDisposition.FILE_OPEN);
+			InputStream is = file.getInputStream();
+			is = new FilterInputStream(is) {
+
+				@Override
+				public void close() throws IOException {
+					try {
+						super.close();
+					} finally {
+						FileUtils.closeAll(file, connection);
+					}
+				}
+				
+			};
+			return is;
+		} catch (Throwable t) {
+			connection.returnToPool();
+			throw t;
+		}
 	}
 
-	private static OutputStream getOutputStream(PooledSMB2Connection connection, String path, boolean append) throws IOException {
-		DiskShare share = connection.getShare();
-		
-		final PooledSMB2Connection finalConnection = connection;
-		final com.hierynomus.smbj.share.File file = openFile(share, path, EnumSet.of(AccessMask.FILE_WRITE_DATA), append ? SMB2CreateDisposition.FILE_OPEN_IF : SMB2CreateDisposition.FILE_SUPERSEDE);
-		OutputStream os = file.getOutputStream();
-		os = new DelegatingOutputStream(os) {
-
-			@Override
-			public void close() throws IOException {
-				try {
-					super.close();
-				} finally {
-					FileUtils.closeAll(file, finalConnection);
-				}
-			}
+	private static OutputStream getOutputStream(final PooledSMB2Connection connection, String path, boolean append) throws IOException {
+		try {
+			DiskShare share = connection.getShare();
 			
-		};
-		return os;
+			final com.hierynomus.smbj.share.File file = openFile(share, path, EnumSet.of(AccessMask.FILE_WRITE_DATA), append ? SMB2CreateDisposition.FILE_OPEN_IF : SMB2CreateDisposition.FILE_SUPERSEDE);
+			OutputStream os = file.getOutputStream();
+			os = new DelegatingOutputStream(os) {
+
+				@Override
+				public void close() throws IOException {
+					try {
+						super.close();
+					} finally {
+						FileUtils.closeAll(file, connection);
+					}
+				}
+				
+			};
+			return os;
+		} catch (Throwable t) {
+			connection.returnToPool();
+			throw t;
+		}
 	}
 
 }

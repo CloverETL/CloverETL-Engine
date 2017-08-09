@@ -38,7 +38,6 @@ import org.jetel.component.fileoperation.pool.ConnectionPool;
 import org.jetel.component.fileoperation.pool.PooledSMB2Connection;
 import org.jetel.component.fileoperation.pool.SMB2Authority;
 import org.jetel.util.ExceptionUtils;
-import org.jetel.util.file.FileUtils;
 import org.jetel.util.stream.StreamUtils;
 
 import com.hierynomus.msdtyp.AccessMask;
@@ -162,33 +161,13 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
 	}
 	
 	private InputStream getInputStream(URI source) throws IOException {
-		PooledSMB2Connection connection = null;
-		try {
-			connection = getConnection(source);
-			return SMB2Utils.getInputStream(connection, source);
-		} catch (Throwable t) {
-			try {
-				FileUtils.close(connection);
-			} catch (IOException ioe) {
-				t.addSuppressed(ioe);
-			}
-			throw t;
-		}
+		PooledSMB2Connection connection = getConnection(source);
+		return SMB2Utils.getInputStream(connection, source);
 	}
 	
 	private OutputStream getOutputStream(URI target, boolean append) throws IOException {
-		PooledSMB2Connection connection = null;
-		try {
-			connection = getConnection(target);
-			return SMB2Utils.getOutputStream(connection, target, append);
-		} catch (Throwable t) {
-			try {
-				FileUtils.close(connection);
-			} catch (IOException ioe) {
-				t.addSuppressed(ioe);
-			}
-			throw t;
-		}
+		PooledSMB2Connection connection = getConnection(target);
+		return SMB2Utils.getOutputStream(connection, target, append);
 	}
 
     @Override
