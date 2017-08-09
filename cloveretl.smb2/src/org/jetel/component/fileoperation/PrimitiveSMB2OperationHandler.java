@@ -18,8 +18,9 @@
  */
 package org.jetel.component.fileoperation;
 
+import static org.jetel.component.fileoperation.SMB2Utils.getPath;
+
 import java.io.Closeable;
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -31,24 +32,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
+import org.jetel.component.fileoperation.pool.ConnectionPool;
+import org.jetel.component.fileoperation.pool.PooledSMB2Connection;
+import org.jetel.component.fileoperation.pool.SMB2Authority;
 import org.jetel.util.ExceptionUtils;
-import org.jetel.util.stream.DelegatingOutputStream;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.stream.StreamUtils;
 
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.mserref.NtStatus;
 import com.hierynomus.msfscc.fileinformation.FileAllInformation;
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
-import com.hierynomus.mssmb2.SMB2CreateDisposition;
-import com.hierynomus.smbj.SMBClient;
-import com.hierynomus.smbj.auth.AuthenticationContext;
 import com.hierynomus.smbj.common.SMBApiException;
-import com.hierynomus.smbj.connection.Connection;
-import com.hierynomus.smbj.session.Session;
-import com.hierynomus.smbj.share.DiskShare;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -58,58 +55,20 @@ import com.hierynomus.smbj.share.DiskShare;
  */
 public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler {
 	
-	private SMBClient client = new SMBClient();
+	private ConnectionPool pool = ConnectionPool.getInstance();
 	
-	private Session getSession(URI uri) throws IOException {
-		Connection connection = openConnection(uri);
-		return startSession(connection, uri);
-	}
-
-	private Session startSession(Connection connection, URI uri) throws IOException {
-		String userInfoString = uri.getUserInfo();
-		String[] userInfo = userInfoString.split(":");
-		String username = userInfo[0];
-		String password = userInfo[1];
-		String domain = null;
-		if (username.contains(";")) {
-			String[] user = username.split(";");
-			domain = user[0];
-			username = user[1];
+	private PooledSMB2Connection getConnection(URI uri) throws IOException {
+		try {
+			return (PooledSMB2Connection) pool.borrowObject(new SMB2Authority(uri));
+		} catch (Exception e) {
+			throw ExceptionUtils.getIOException(e);
 		}
-		
-		AuthenticationContext authContext = new AuthenticationContext(username, password.toCharArray(), domain);
-		return connection.authenticate(authContext);
-	}
-
-	private Connection openConnection(URI uri) throws IOException {
-		int port = uri.getPort();
-		Connection connection;
-		if (port > -1) {
-			connection = client.connect(uri.getHost(), uri.getPort());
-		} else {
-			connection = client.connect(uri.getHost());
-		}
-		return connection;
 	}
 	
-	private SMBPath getPath(URI uri) {
-		return new SMBPath(uri);
-	}
-	
-	private DiskShare getShare(Session session, URI uri) throws IOException {
-		SMBPath path = getPath(uri);
-		return (DiskShare) session.connectShare(path.share);
-	}
-
 	@Override
 	public boolean createFile(URI target) throws IOException {
-    	try (
-    		Connection connection = openConnection(target);
-    		Session session = startSession(connection, target);
-    		DiskShare share = getShare(session, target);
-    	) {
-    		SMBPath smbPath = getPath(target);
-    		try (Closeable file = share.openFile(smbPath.getPath(), EnumSet.of(AccessMask.FILE_ADD_FILE), null, null, null, null)) {
+    	try (PooledSMB2Connection connection = getConnection(target)) {
+    		try (Closeable file = connection.getShare().openFile(getPath(target), EnumSet.of(AccessMask.FILE_ADD_FILE), null, null, null, null)) {
     		}
     		return true;
     	} catch (Exception ex) {
@@ -125,13 +84,8 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
 
 	@Override
 	public boolean makeDir(URI target) throws IOException {
-    	try (
-    		Connection connection = openConnection(target);
-    		Session session = startSession(connection, target);
-    		DiskShare share = getShare(session, target);
-    	) {
-    		SMBPath smbPath = getPath(target);
-    		share.mkdir(smbPath.getPath());
+    	try (PooledSMB2Connection connection = getConnection(target)) {
+    		connection.getShare().mkdir(getPath(target));
     		return true;
     	} catch (Exception ex) {
     		throw ExceptionUtils.getIOException(ex);
@@ -140,13 +94,8 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
 
 	@Override
 	public boolean deleteFile(URI target) throws IOException {
-    	try (
-    		Connection connection = openConnection(target);
-    		Session session = startSession(connection, target);
-    		DiskShare share = getShare(session, target);
-    	) {
-    		SMBPath smbPath = getPath(target);
-    		share.rm(smbPath.getPath());
+    	try (PooledSMB2Connection connection = getConnection(target)) {
+    		connection.getShare().rm(getPath(target));
     		return true;
     	} catch (Exception ex) {
     		throw ExceptionUtils.getIOException(ex);
@@ -155,13 +104,8 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
 
 	@Override
 	public boolean removeDir(URI target) throws IOException {
-    	try (
-    		Connection connection = openConnection(target);
-    		Session session = startSession(connection, target);
-    		DiskShare share = getShare(session, target);
-    	) {
-    		SMBPath smbPath = getPath(target);
-    		share.rmdir(smbPath.getPath(), false);
+    	try (PooledSMB2Connection connection = getConnection(target)) {
+    		connection.getShare().rmdir(getPath(target), false);
     		return true;
     	} catch (Exception ex) {
     		throw ExceptionUtils.getIOException(ex);
@@ -188,31 +132,13 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
 
 	@Override
 	public URI renameTo(URI source, URI target) throws IOException {
-		return null;
+		return null; // does not seem to be supported
 	}
 
 	@Override
 	public ReadableByteChannel read(URI source) throws IOException {
 		InputStream is = getInputStream(source);
 		return Channels.newChannel(is);
-	}
-
-	private InputStream getInputStream(URI source) throws IOException {
-		final com.hierynomus.smbj.share.File file = openFile(source, EnumSet.of(AccessMask.FILE_READ_DATA), SMB2CreateDisposition.FILE_OPEN);
-		InputStream is = file.getInputStream();
-		is = new FilterInputStream(is) {
-
-			@Override
-			public void close() throws IOException {
-				try {
-					super.close();
-				} finally {
-					file.close();
-				}
-			}
-			
-		};
-		return is;
 	}
 
 	@Override
@@ -234,45 +160,43 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
 	private OutputStream getOutputStream(URI target) throws IOException {
 		return getOutputStream(target, false);
 	}
-
-	private OutputStream getOutputStream(URI target, boolean append) throws IOException {
-		final com.hierynomus.smbj.share.File file = openFile(target, EnumSet.of(AccessMask.FILE_WRITE_DATA), append ? SMB2CreateDisposition.FILE_OPEN_IF : SMB2CreateDisposition.FILE_SUPERSEDE);
-		OutputStream os = file.getOutputStream();
-		os = new DelegatingOutputStream(os) {
-
-			@Override
-			public void close() throws IOException {
-				try {
-					super.close();
-				} finally {
-					file.close();
-				}
+	
+	private InputStream getInputStream(URI source) throws IOException {
+		PooledSMB2Connection connection = null;
+		try {
+			connection = getConnection(source);
+			return SMB2Utils.getInputStream(connection, source);
+		} catch (Throwable t) {
+			try {
+				FileUtils.close(connection);
+			} catch (IOException ioe) {
+				t.addSuppressed(ioe);
 			}
-			
-		};
-		return os;
+			throw t;
+		}
 	}
-
-	private com.hierynomus.smbj.share.File openFile(URI target, Set<AccessMask> accessMask, SMB2CreateDisposition createDisposition) throws IOException {
-		Session session = getSession(target);
-		DiskShare share = getShare(session, target);
-		SMBPath smbPath = getPath(target);
-		String path = smbPath.getPath();
-		com.hierynomus.smbj.share.File file = share.openFile(path, accessMask, null, null, createDisposition, null);
-		return file;
+	
+	private OutputStream getOutputStream(URI target, boolean append) throws IOException {
+		PooledSMB2Connection connection = null;
+		try {
+			connection = getConnection(target);
+			return SMB2Utils.getOutputStream(connection, target, append);
+		} catch (Throwable t) {
+			try {
+				FileUtils.close(connection);
+			} catch (IOException ioe) {
+				t.addSuppressed(ioe);
+			}
+			throw t;
+		}
 	}
 
     @Override
 	public Info info(URI target) throws IOException {
-    	try (
-    		Connection connection = openConnection(target);
-    		Session session = startSession(connection, target);
-    		DiskShare share = getShare(session, target);
-    	) {
-    		SMBPath smbPath = getPath(target);
-    		String path = smbPath.getPath();
+    	try (PooledSMB2Connection connection = getConnection(target)) {
+    		String path = getPath(target);
     		try {
-    			FileAllInformation file = share.getFileInformation(path);
+    			FileAllInformation file = connection.getShare().getFileInformation(path);
     			return new SmbFileInfo(target, file);
     		} catch (SMBApiException sae) {
                 NtStatus status = sae.getStatus();
@@ -289,14 +213,9 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
     
 	@Override
 	public List<URI> list(URI target) throws IOException {
-    	try (
-    		Connection connection = openConnection(target);
-    		Session session = startSession(connection, target);
-    		DiskShare share = getShare(session, target);
-    	) {
-    		SMBPath smbPath = getPath(target);
-    		String path = smbPath.getPath();
-    		List<FileIdBothDirectoryInformation> children = share.list(path);
+    	try (PooledSMB2Connection connection = getConnection(target)) {
+    		String path = getPath(target);
+    		List<FileIdBothDirectoryInformation> children = connection.getShare().list(path);
     		List<URI> result = new ArrayList<>(children.size());
     		for (FileIdBothDirectoryInformation child: children) {
     			String fileName = child.getFileName();
@@ -311,46 +230,6 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
     	}
 	}
 
-	private static class SMBPath {
-		
-		private String share = "";
-		private String path = "";
-		private String originalPath = "";
-		
-		public SMBPath(URI uri) {
-			String uriPath = uri.getPath();
-			if (uriPath != null) {
-				if (uriPath.startsWith("/")) {
-					uriPath = uriPath.substring(1);
-				}
-				
-				String[] parts = uriPath.split("/", 2);
-				if (parts.length > 0) {
-					this.share = parts[0];
-				}
-				if (parts.length > 1) {
-					this.originalPath = parts[1];
-				}
-				
-				this.path = originalPath;
-				if (this.path.endsWith(URIUtils.PATH_SEPARATOR)) {
-					this.path = this.path.substring(0, this.path.length() - 1);
-				}
-				this.path = this.path.replace('/', '\\');
-			}
-		}
-		
-		public String getPath() {
-			return this.path;
-		}
-
-		@Override
-		public String toString() {
-			return share + "/" + path;
-		}
-		
-	}
-	
 	private static class SmbFileInfo implements Info {
 		
 		private final FileAllInformation file;

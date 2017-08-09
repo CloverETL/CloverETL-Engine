@@ -1,7 +1,8 @@
 <plugin
    id="org.jetel.smb2"
    version="0.0.0.devel"
-   provider-name="Javlin a.s.">
+   provider-name="Javlin a.s."
+   class="org.jetel.util.protocols.smb2.Activator">
 
 	<runtime>
 		<library path="bin/"/>
@@ -12,4 +13,8 @@
 	<requires engine-version="0.0.0.devel">
 	</requires>
 
+	<extension point-id="urlResolver">
+		<parameter id="className" value="org.jetel.util.protocols.smb2.SMB2PathResolver"/>
+		<parameter id="type" value="SMB2"/>
+	</extension>
 </plugin>

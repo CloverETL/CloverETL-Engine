@@ -19,6 +19,7 @@
 package org.jetel.component.fileoperation.pool;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.pool.KeyedPoolableObjectFactory;
@@ -32,6 +33,12 @@ public class DefaultConnectionFactory implements KeyedPoolableObjectFactory<Auth
 		factories.add(new FTPConnectionFactory());
 		factories.add(new S3ConnectionFactory());
 //		factories.add(new FTPSConnectionFactory());
+	}
+	
+	public void addFactory(ConnectionFactory factory) {
+		synchronized (factories) {
+			factories.add(Objects.requireNonNull(factory));
+		}
 	}
 	
 	@Override

@@ -34,8 +34,7 @@ public class SMB2OperationHandler extends AbstractOperationHandler {
 		super(new PrimitiveSMB2OperationHandler());
 	}
 
-	static final String SMB_SCHEME = "smb2"; //$NON-NLS-1$
-	private static final String SMB_ROOT_URL = SMB_SCHEME + "://"; //$NON-NLS-1$
+	public static final String SMB_SCHEME = "smb2"; //$NON-NLS-1$
 	
 	@Override
 	public int getPriority(Operation operation) {
