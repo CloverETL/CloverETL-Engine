@@ -20,7 +20,6 @@ package org.jetel.component.fileoperation;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -33,7 +32,7 @@ import org.jetel.component.fileoperation.result.ListResult;
 
 public class SMB2OperationHandlerTest extends OperationHandlerTestTemplate {
 	
-	private static final String BASE_URI = "smb2://Administrator:semafor4@virt-pink/smbtest/";
+	private static final String BASE_URI = "smb2://domain%3BAdministrator:semafor4@virt-pink/smbtest/";
 
 	protected IOperationHandler handler = null;
 	
@@ -42,19 +41,18 @@ public class SMB2OperationHandlerTest extends OperationHandlerTestTemplate {
 		return handler = new SMB2OperationHandler();
 	}
 	
+	protected String getBaseUri() {
+		return BASE_URI;
+	}
+	
 	@Override
 	protected URI createBaseURI() {
-		try {
-			URI base = new URI(BASE_URI);
-			CloverURI tmpDirUri = CloverURI.createURI(base.resolve(String.format("CloverTemp%d/", System.nanoTime())));
-			CreateResult result = manager.create(tmpDirUri, new CreateParameters().setDirectory(true));
-			if (result.getFirstError() != null) throw new RuntimeException(result.getFirstError());
-			assertTrue(result.getFirstErrorMessage(), result.success());
-			return tmpDirUri.getSingleURI().toURI();
-		} catch (URISyntaxException ex) {
-			ex.printStackTrace();
-			return null;
-		}
+		URI base = URI.create(getBaseUri());
+		CloverURI tmpDirUri = CloverURI.createURI(base.resolve(String.format("CloverTemp%d/", System.nanoTime())));
+		CreateResult result = manager.create(tmpDirUri, new CreateParameters().setDirectory(true));
+		if (result.getFirstError() != null) throw new RuntimeException(result.getFirstError());
+		assertTrue(result.getFirstErrorMessage(), result.success());
+		return tmpDirUri.getSingleURI().toURI();
 	}
 	
 	@Override
