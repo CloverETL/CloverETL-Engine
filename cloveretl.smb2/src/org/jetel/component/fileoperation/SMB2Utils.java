@@ -10,6 +10,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 import org.jetel.component.fileoperation.pool.PooledSMB2Connection;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.stream.DelegatingOutputStream;
 
@@ -68,7 +69,7 @@ public class SMB2Utils {
 			return is;
 		} catch (Throwable t) {
 			connection.returnToPool();
-			throw t;
+			throw ExceptionUtils.getIOException(t);
 		}
 	}
 
@@ -93,7 +94,7 @@ public class SMB2Utils {
 			return os;
 		} catch (Throwable t) {
 			connection.returnToPool();
-			throw t;
+			throw ExceptionUtils.getIOException(t);
 		}
 	}
 
