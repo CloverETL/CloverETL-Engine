@@ -68,7 +68,7 @@ public class SMB2PathResolver implements CustomPathResolver {
 		if (isSmbUrl(output)) {
 			URL url = getURL(contextURL, output);
 			SMB2URLConnection connection = (SMB2URLConnection) url.openConnection();
-			connection.getOutputStream(appendData);
+			return connection.getOutputStream(appendData);
 		}
 		return null;
 	}
