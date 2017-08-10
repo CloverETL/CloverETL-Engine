@@ -18,6 +18,7 @@ import org.jetel.util.stream.DelegatingOutputStream;
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.msfscc.fileinformation.FileStandardInformation;
 import com.hierynomus.mssmb2.SMB2CreateDisposition;
+import com.hierynomus.mssmb2.SMB2ShareAccess;
 import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 
@@ -32,7 +33,8 @@ public class SMB2Utils {
 	}
 	
 	private static com.hierynomus.smbj.share.File openFile(DiskShare share, String path, Set<AccessMask> accessMask, SMB2CreateDisposition createDisposition) throws IOException {
-		return share.openFile(path, accessMask, null, null, createDisposition, null);
+		// use SMB2ShareAccess.ALL to prevent TimeoutException / buffer underflow on concurrent operations
+		return share.openFile(path, accessMask, null, SMB2ShareAccess.ALL, createDisposition, null);
 	}
 	
 	public static InputStream getInputStream(PooledSMB2Connection connection, URL source) throws IOException {
@@ -55,7 +57,10 @@ public class SMB2Utils {
 		try {
 			DiskShare share = connection.getShare();
 			
-			final com.hierynomus.smbj.share.File file = openFile(share, path, EnumSet.of(AccessMask.FILE_READ_DATA), SMB2CreateDisposition.FILE_OPEN);
+			Set<AccessMask> accessMask = EnumSet.of(AccessMask.FILE_READ_DATA);
+			SMB2CreateDisposition createDisposition = SMB2CreateDisposition.FILE_OPEN;
+			
+			final com.hierynomus.smbj.share.File file = openFile(share, path, accessMask, createDisposition);
 			InputStream is = file.getInputStream();
 			is = new FilterInputStream(is) {
 
@@ -80,7 +85,7 @@ public class SMB2Utils {
 		try {
 			DiskShare share = connection.getShare();
 			
-			EnumSet<AccessMask> accessMask = append ? EnumSet.of(AccessMask.FILE_APPEND_DATA) : EnumSet.of(AccessMask.FILE_WRITE_DATA);
+			Set<AccessMask> accessMask = append ? EnumSet.of(AccessMask.FILE_APPEND_DATA) : EnumSet.of(AccessMask.FILE_WRITE_DATA);
 			SMB2CreateDisposition createDisposition = append ? SMB2CreateDisposition.FILE_OPEN_IF : SMB2CreateDisposition.FILE_SUPERSEDE;
 			
 			final com.hierynomus.smbj.share.File file = openFile(share, path, accessMask, createDisposition);
