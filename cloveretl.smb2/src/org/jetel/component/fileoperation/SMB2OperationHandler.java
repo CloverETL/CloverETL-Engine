@@ -64,12 +64,12 @@ public class SMB2OperationHandler extends AbstractOperationHandler {
 	
 	@Override
 	public List<SingleCloverURI> resolve(SingleCloverURI uri, ResolveParameters params) throws IOException {
-		return manager.defaultResolve(uri);
+		return manager.defaultResolve(uri); // TODO
 	}
 
 	@Override
 	public String toString() {
-		return "SMB2perationHandler"; //$NON-NLS-1$
+		return "SMB2OperationHandler"; //$NON-NLS-1$
 	}
 
 }
