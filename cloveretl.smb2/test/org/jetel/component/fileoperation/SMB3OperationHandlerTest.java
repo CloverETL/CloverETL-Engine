@@ -31,9 +31,9 @@ import org.jetel.component.fileoperation.result.CreateResult;
 import org.jetel.component.fileoperation.result.DeleteResult;
 import org.jetel.component.fileoperation.result.ListResult;
 
-public class SMB2OperationHandlerTest extends OperationHandlerTestTemplate {
+public class SMB3OperationHandlerTest extends OperationHandlerTestTemplate {
 	
-	private static final String BASE_URI = "smb2://Administrator:semafor4@virt-pink/smbtest/";
+	private static final String BASE_URI = "smb2://domain%3BAdministrator:sem%40f0r@virt-test/smbtest/";   // unescaped password: sem@f0r    and %3B is ';'
 
 	protected IOperationHandler handler = null;
 	
