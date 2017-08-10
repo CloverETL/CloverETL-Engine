@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.EnumSet;
+import java.util.Objects;
 import java.util.Set;
 
 import org.jetel.component.fileoperation.pool.PooledSMB2Connection;
@@ -15,8 +16,10 @@ import org.jetel.util.file.FileUtils;
 import org.jetel.util.stream.DelegatingOutputStream;
 
 import com.hierynomus.msdtyp.AccessMask;
+import com.hierynomus.msfscc.fileinformation.FileStandardInformation;
 import com.hierynomus.mssmb2.SMB2CreateDisposition;
 import com.hierynomus.smbj.share.DiskShare;
+import com.hierynomus.smbj.share.File;
 
 public class SMB2Utils {
 
@@ -77,8 +80,11 @@ public class SMB2Utils {
 		try {
 			DiskShare share = connection.getShare();
 			
-			final com.hierynomus.smbj.share.File file = openFile(share, path, EnumSet.of(AccessMask.FILE_WRITE_DATA), append ? SMB2CreateDisposition.FILE_OPEN_IF : SMB2CreateDisposition.FILE_SUPERSEDE);
-			OutputStream os = file.getOutputStream();
+			EnumSet<AccessMask> accessMask = append ? EnumSet.of(AccessMask.FILE_APPEND_DATA) : EnumSet.of(AccessMask.FILE_WRITE_DATA);
+			SMB2CreateDisposition createDisposition = append ? SMB2CreateDisposition.FILE_OPEN_IF : SMB2CreateDisposition.FILE_SUPERSEDE;
+			
+			final com.hierynomus.smbj.share.File file = openFile(share, path, accessMask, createDisposition);
+			OutputStream os = append ? new AppendOutputStream(file) : file.getOutputStream();
 			os = new DelegatingOutputStream(os) {
 
 				@Override
@@ -96,6 +102,74 @@ public class SMB2Utils {
 			connection.returnToPool();
 			throw ExceptionUtils.getIOException(t);
 		}
+	}
+	
+	/**
+	 * Utility {@link OutputStream} for appending.
+	 * Does not close the parent {@link com.hierynomus.smbj.share.File}.
+	 * 
+	 * @author krivanekm
+	 *
+	 * @see com.hierynomus.smbj.share.FileOutputStream
+	 */
+	private static class AppendOutputStream extends OutputStream {
+		
+		private final File file;
+		
+		private long fileOffset;
+		private final byte[] temp = new byte[1];
+		
+		private boolean closed;
+		
+		public AppendOutputStream(File file) {
+			this.file = Objects.requireNonNull(file);
+			this.fileOffset = file.getFileInformation(FileStandardInformation.class).getEndOfFile();
+		}
+
+		@Override
+		public void write(int b) throws IOException {
+			temp[0] = (byte)b;
+			write(temp, 0, 1);
+		}
+
+		@Override
+		public void write(byte[] b) throws IOException {
+			write(b, 0, b.length);
+		}
+
+		@Override
+		public void write(byte[] b, int off, int len) throws IOException {
+			verifyConnectionNotClosed();
+			int total = 0;
+			while (total < len) {
+				int count = file.write(b, fileOffset, off + total, len - total);
+				total += count;
+				fileOffset += count;
+			}
+		}
+
+	    private void verifyConnectionNotClosed() throws IOException {
+	        if (closed) {
+	        	throw new IOException("Stream is closed");
+	        }
+	    }
+
+		// flushing does not seem to be necessary and file.flush() doesn't seem to work
+		@Override
+		public void flush() throws IOException {
+			verifyConnectionNotClosed();
+			// file.flush(); // causes STATUS_USER_SESSION_DELETED error
+		}
+
+		/**
+		 * Does not close the parent {@link File}.
+		 */
+		@Override
+		public void close() throws IOException {
+			closed = true;
+			// file.close() will be performed by the wrapping DelegateOutputStream above
+		}
+
 	}
 
 }

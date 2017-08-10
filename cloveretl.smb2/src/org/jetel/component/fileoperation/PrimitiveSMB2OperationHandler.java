@@ -147,8 +147,7 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
 
 	@Override
 	public WritableByteChannel append(URI target) throws IOException {
-		//return write(target, true);
-		return null; // TODO
+		return write(target, true);
 	}
 
 	private WritableByteChannel write(URI target, boolean append) throws IOException {
