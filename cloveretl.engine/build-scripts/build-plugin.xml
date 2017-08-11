@@ -39,6 +39,7 @@
 	<property name="required.plugins.lib.collected" value="${dir.build}/required-plugins-lib-collected.txt" />
 	<property name="required.plugins.collected" value="${dir.build}/required-plugins-collected.txt" />
 	<property name="required.plugins.lib.collected" value="${dir.build}/required-plugins-lib-collected.txt" />
+	<property name="exclude.plugin.libs" value="nothing-excluded"/>
 
 	<property file="${basedir}/build-plugin.properties"/>
 	<property name="javadoc.limited.include" value="**"/>
@@ -110,7 +111,8 @@
 				</fileset>
 				<!-- fileset plugin-lib-files contains all files in plugin lib directory, may contain executables (e.g. cloveretl.bulkloader), used while package plugin -->
 				<fileset id="plugin-lib-files" dir="${dir.lib}">
-					<include name="**"/> 
+					<include name="**"/>
+					<exclude name="${exclude.plugin.libs}"/>
 				</fileset>
 			</then>
 			<else>

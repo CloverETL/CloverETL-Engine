@@ -11,7 +11,9 @@
 	</taskdef>
 	
 	<target name="build">
-		<ant target="build" dir="." antfile="${dir.engine}/build-scripts/build-plugin.xml" />
+		<ant target="build" dir="." antfile="${dir.engine}/build-scripts/build-plugin.xml">
+			<property name="exclude.plugin.libs" value="bcprov-jdk*.jar"/>
+		</ant>
 	</target>
 	
 	<target name="clean">
