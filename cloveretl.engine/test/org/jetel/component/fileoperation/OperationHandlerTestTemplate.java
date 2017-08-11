@@ -1161,7 +1161,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		
 		result = manager.resolve(relativeURI("*\\ec?ipse-?.?\\eclipse.exe"));
 		System.out.println(result);
-		assertTrue(result.success());
+		assertTrue(result.getFirstErrorMessage(), result.success());
 		assertEquals(2, result.successCount());
 
 		result = manager.resolve(relativeURI("subdir/*/"));

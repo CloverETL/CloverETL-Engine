@@ -18,15 +18,20 @@
  */
 package org.jetel.component.fileoperation;
 
+import static java.text.MessageFormat.format;
+
 import java.io.IOException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 
 public class SMB2OperationHandler extends AbstractOperationHandler {
 	
-	private FileManager manager = FileManager.getInstance();
-
 	/**
 	 * @param simpleHandler
 	 */
@@ -62,14 +67,70 @@ public class SMB2OperationHandler extends AbstractOperationHandler {
 		}
 	}
 	
+	// TODO refactor this code and move it to AbstractOperationHandler
 	@Override
-	public List<SingleCloverURI> resolve(SingleCloverURI uri, ResolveParameters params) throws IOException {
-		return manager.defaultResolve(uri); // TODO
+	public List<SingleCloverURI> resolve(SingleCloverURI wildcards, ResolveParameters params) throws IOException {
+		String uriString = wildcards.toURI().toString();
+		if (wildcards.isRelative() || !FileManager.uriHasWildcards(uriString)) {
+			return Arrays.asList(wildcards);
+		}
+		
+		List<String> parts = FileManager.getUriParts(uriString);
+		URI baseUri = URI.create(parts.get(0));
+		Info baseInfo = simpleHandler.info(baseUri);
+		if (baseInfo == null) {
+			return new ArrayList<SingleCloverURI>(0);
+		}
+		List<URI> bases = Arrays.asList(baseUri);
+		for (Iterator<String> it = parts.listIterator(1); it.hasNext(); ) {
+			String part = it.next();
+			List<URI> nextBases = new ArrayList<>(bases.size());
+			boolean hasPathSeparator = part.endsWith(URIUtils.PATH_SEPARATOR);
+			if (hasPathSeparator) {
+				part = part.substring(0, part.length()-1);
+			}
+			for (URI i: bases) {
+				nextBases.addAll(expand(i, part, it.hasNext() || hasPathSeparator));
+			}
+			bases = nextBases;
+		}
+		
+		List<SingleCloverURI> result = new ArrayList<SingleCloverURI>(bases.size());
+		for (URI u: bases) {
+			result.add(CloverURI.createSingleURI(u));
+		}
+		return result;
 	}
 
 	@Override
 	public String toString() {
 		return "SMB2OperationHandler"; //$NON-NLS-1$
+	}
+
+	private List<URI> expand(URI base, String part, boolean directory) throws IOException {
+		if (base == null) {
+			throw new NullPointerException("base"); //$NON-NLS-1$
+		}
+		Info baseInfo = simpleHandler.info(base);
+		if ((baseInfo == null) || !baseInfo.isDirectory()) {
+			throw new IllegalArgumentException(format(FileOperationMessages.getString("FileManager.not_a_directory"), base)); //$NON-NLS-1$
+		}
+		if (FileManager.hasWildcards(part)) {
+			part = URIUtils.urlDecode(part);
+			return getSimpleHandler().list(base, part, directory);
+		} else {
+			URI child = URIUtils.getChildURI(base, URI.create(part));
+			Info childInfo = simpleHandler.info(child);
+			if (childInfo != null) {
+				return Arrays.asList(child);
+			} else {
+				return Collections.emptyList();
+			}
+		}
+	}
+
+	private PrimitiveSMB2OperationHandler getSimpleHandler() {
+		return (PrimitiveSMB2OperationHandler) simpleHandler;
 	}
 
 }

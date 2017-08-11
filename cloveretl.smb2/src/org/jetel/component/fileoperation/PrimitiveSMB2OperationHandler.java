@@ -29,6 +29,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
@@ -192,18 +193,35 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
     
 	@Override
 	public List<URI> list(URI target) throws IOException {
-    	try (PooledSMB2Connection connection = getConnection(target)) {
-    		String path = getPath(target);
-    		List<FileIdBothDirectoryInformation> children = connection.getShare().list(path);
+    	return list(target, null, false);
+	}
+	
+	private boolean isDirectory(FileIdBothDirectoryInformation file) {
+		return SMB2Utils.hasFlag(file.getFileAttributes(), FileAttributes.FILE_ATTRIBUTE_DIRECTORY.getValue());
+	}
+	
+	public List<URI> list(URI base, String mask, boolean dirsOnly) throws IOException {
+    	try (PooledSMB2Connection connection = getConnection(base)) {
+    		String path = getPath(base);
+    		List<FileIdBothDirectoryInformation> children = connection.getShare().list(path, (String) mask);
     		List<URI> result = new ArrayList<>(children.size());
     		for (FileIdBothDirectoryInformation child: children) {
+    			if (dirsOnly && !isDirectory(child)) {
+    				continue;
+    			}
     			String fileName = child.getFileName();
     			if (!fileName.equals(URIUtils.CURRENT_DIR_NAME) && !fileName.equals(URIUtils.PARENT_DIR_NAME)) {
-    				result.add(URIUtils.getChildURI(target, fileName));
+    				result.add(URIUtils.getChildURI(base, fileName));
     			}
     		}
     		
     		return result;
+    	} catch (SMBApiException ex) {
+    		// this weird error is thrown if there are no files that match the mask
+    		if ((mask != null) && (ex.getStatus() == NtStatus.UNKNOWN)) {
+    			return Collections.emptyList();
+    		}
+    		throw ExceptionUtils.getIOException(ex);
     	} catch (Exception ex) {
     		throw ExceptionUtils.getIOException(ex);
     	}
@@ -257,16 +275,12 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
 			return hasAttribute(FileAttributes.FILE_ATTRIBUTE_HIDDEN);
 		}
 		
-		private boolean hasFlag(long flags, long mask) {
-			return (flags & mask) != 0;
-		}
-		
 		private boolean hasAttribute(FileAttributes attribute) {
-			return hasFlag(file.getBasicInformation().getFileAttributes(), attribute.getValue());
+			return SMB2Utils.hasFlag(file.getBasicInformation().getFileAttributes(), attribute.getValue());
 		}
 		
 		private boolean hasAccess(AccessMask accessMask) {
-			return hasFlag(file.getAccessInformation().getAccessFlags(), accessMask.getValue());
+			return SMB2Utils.hasFlag(file.getAccessInformation().getAccessFlags(), accessMask.getValue());
 		}
 
 		@Override

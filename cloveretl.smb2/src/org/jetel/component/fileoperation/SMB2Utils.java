@@ -32,6 +32,10 @@ public class SMB2Utils {
 		return new SMB2Path(url).getPath();
 	}
 	
+	public static boolean hasFlag(long flags, long mask) {
+		return (flags & mask) != 0;
+	}
+	
 	private static com.hierynomus.smbj.share.File openFile(DiskShare share, String path, Set<AccessMask> accessMask, SMB2CreateDisposition createDisposition) throws IOException {
 		// use SMB2ShareAccess.ALL to prevent TimeoutException / buffer underflow on concurrent operations
 		return share.openFile(path, accessMask, null, SMB2ShareAccess.ALL, createDisposition, null);
