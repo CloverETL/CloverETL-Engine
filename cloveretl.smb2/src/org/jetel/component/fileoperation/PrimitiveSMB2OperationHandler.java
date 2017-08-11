@@ -42,6 +42,7 @@ import org.jetel.util.stream.StreamUtils;
 
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.mserref.NtStatus;
+import com.hierynomus.msfscc.FileAttributes;
 import com.hierynomus.msfscc.fileinformation.FileAllInformation;
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
 import com.hierynomus.smbj.common.SMBApiException;
@@ -253,22 +254,38 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
 
 		@Override
 		public Boolean isHidden() {
-			return null;
+			return hasAttribute(FileAttributes.FILE_ATTRIBUTE_HIDDEN);
+		}
+		
+		private boolean hasFlag(long flags, long mask) {
+			return (flags & mask) != 0;
+		}
+		
+		private boolean hasAttribute(FileAttributes attribute) {
+			return hasFlag(file.getBasicInformation().getFileAttributes(), attribute.getValue());
+		}
+		
+		@SuppressWarnings("unused")
+		private boolean hasAccess(AccessMask accessMask) {
+			return hasFlag(file.getAccessInformation().getAccessFlags(), accessMask.getValue());
 		}
 
 		@Override
 		public Boolean canRead() {
 			return null;
+//			return hasAccess(AccessMask.FILE_READ_DATA);
 		}
 
 		@Override
 		public Boolean canWrite() {
 			return null;
+//			return hasAccess(AccessMask.FILE_WRITE_DATA);
 		}
 
 		@Override
 		public Boolean canExecute() {
 			return null;
+//			return hasAccess(AccessMask.FILE_EXECUTE);
 		}
 
 		@Override
