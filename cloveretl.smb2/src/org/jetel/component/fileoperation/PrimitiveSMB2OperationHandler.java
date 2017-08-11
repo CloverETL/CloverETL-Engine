@@ -203,7 +203,7 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
 	public List<URI> list(URI base, String mask, boolean dirsOnly) throws IOException {
     	try (PooledSMB2Connection connection = getConnection(base)) {
     		String path = getPath(base);
-    		List<FileIdBothDirectoryInformation> children = connection.getShare().list(path, (String) mask);
+    		List<FileIdBothDirectoryInformation> children = connection.getShare().list(path, mask);
     		List<URI> result = new ArrayList<>(children.size());
     		for (FileIdBothDirectoryInformation child: children) {
     			if (dirsOnly && !isDirectory(child)) {
