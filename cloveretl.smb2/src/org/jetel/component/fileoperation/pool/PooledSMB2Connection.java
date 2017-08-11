@@ -31,10 +31,16 @@ import org.jetel.util.protocols.Validable;
 import org.jetel.util.string.StringUtils;
 
 import com.hierynomus.smbj.SMBClient;
+import com.hierynomus.smbj.SmbConfig;
 import com.hierynomus.smbj.auth.AuthenticationContext;
 import com.hierynomus.smbj.connection.Connection;
+import com.hierynomus.smbj.event.SMBEvent;
+import com.hierynomus.smbj.event.SMBEventBus;
 import com.hierynomus.smbj.session.Session;
 import com.hierynomus.smbj.share.DiskShare;
+
+import net.engio.mbassy.bus.SyncMessageBus;
+import net.engio.mbassy.bus.error.IPublicationErrorHandler;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -44,7 +50,6 @@ import com.hierynomus.smbj.share.DiskShare;
  */
 public class PooledSMB2Connection extends AbstractPoolableConnection implements Validable, URLValidator {
 
-	private SMBClient client = new SMBClient();
 	private Connection connection;
 	private Session session;
 	private DiskShare share;
@@ -65,6 +70,9 @@ public class PooledSMB2Connection extends AbstractPoolableConnection implements 
 
 	public void disconnect() throws IOException {
 		FileUtils.closeAll(share, session, connection);
+		this.share = null;
+		this.session = null;
+		this.connection = null;
 	}
 	
 	@Override
@@ -75,11 +83,21 @@ public class PooledSMB2Connection extends AbstractPoolableConnection implements 
 	private Connection openConnection() throws IOException {
 		String host = authority.getHost();
 		int port = authority.getPort();
-		Connection connection;
+		
+		/*
+		 * We do not use SmbClient, because we don't need its built-in connection pooling
+		 * and it logs the following message for each connection:
+		 * INFO: No error handler has been configured to handle exceptions during publication. 
+		 */
+		SmbConfig config = SmbConfig.createDefaultConfig(); // TODO: SmbConfig - SMB2 dialects, timeouts, proxy
+		IPublicationErrorHandler.ConsoleLogger errorHandler = new IPublicationErrorHandler.ConsoleLogger();
+		SMBEventBus bus = new SMBEventBus(new SyncMessageBus<SMBEvent>(errorHandler));
+		
+		Connection connection = new Connection(config, bus);
 		if (port > -1) {
-			connection = client.connect(host, port);
+			connection.connect(host, port);
 		} else {
-			connection = client.connect(host);
+			connection.connect(host, SMBClient.DEFAULT_PORT);
 		}
 		return connection;
 	}
