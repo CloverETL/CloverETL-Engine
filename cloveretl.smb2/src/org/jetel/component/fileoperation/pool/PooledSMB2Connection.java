@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.text.MessageFormat;
 
+import org.apache.log4j.Logger;
 import org.jetel.component.fileoperation.SMB2Utils;
 import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.util.file.FileUtils;
@@ -53,6 +55,8 @@ public class PooledSMB2Connection extends AbstractPoolableConnection implements 
 	private Connection connection;
 	private Session session;
 	private DiskShare share;
+	
+	private static final Logger log = Logger.getLogger(Connection.class);
 
 	public PooledSMB2Connection(Authority authority) {
 		super(authority);
@@ -70,6 +74,11 @@ public class PooledSMB2Connection extends AbstractPoolableConnection implements 
 
 	public void disconnect() throws IOException {
 		FileUtils.closeAll(share, session, connection);
+		int port = authority.getPort();
+		if (port < 0) {
+			port = SMBClient.DEFAULT_PORT;
+		}
+		log.debug(MessageFormat.format("Connection to << {0}:{1} >> closed", connection.getRemoteHostname(), port));
 		this.share = null;
 		this.session = null;
 		this.connection = null;
@@ -94,10 +103,10 @@ public class PooledSMB2Connection extends AbstractPoolableConnection implements 
 		SMBEventBus bus = new SMBEventBus(new SyncMessageBus<SMBEvent>(errorHandler));
 		
 		Connection connection = new Connection(config, bus);
-		if (port > -1) {
-			connection.connect(host, port);
-		} else {
+		if (port < 0) {
 			connection.connect(host, SMBClient.DEFAULT_PORT);
+		} else {
+			connection.connect(host, port);
 		}
 		return connection;
 	}
