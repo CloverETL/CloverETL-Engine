@@ -265,27 +265,23 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
 			return hasFlag(file.getBasicInformation().getFileAttributes(), attribute.getValue());
 		}
 		
-		@SuppressWarnings("unused")
 		private boolean hasAccess(AccessMask accessMask) {
 			return hasFlag(file.getAccessInformation().getAccessFlags(), accessMask.getValue());
 		}
 
 		@Override
 		public Boolean canRead() {
-			return null;
-//			return hasAccess(AccessMask.FILE_READ_DATA);
+			return hasAccess(AccessMask.FILE_READ_DATA);
 		}
 
 		@Override
 		public Boolean canWrite() {
-			return null;
-//			return hasAccess(AccessMask.FILE_WRITE_DATA);
+			return hasAccess(AccessMask.FILE_WRITE_DATA);
 		}
 
 		@Override
 		public Boolean canExecute() {
-			return null;
-//			return hasAccess(AccessMask.FILE_EXECUTE);
+			return hasAccess(AccessMask.FILE_EXECUTE);
 		}
 
 		@Override
