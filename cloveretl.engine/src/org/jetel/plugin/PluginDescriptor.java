@@ -54,6 +54,8 @@ public class PluginDescriptor {
 	public static final String PLUGIN_URL_PREFIX = "clover:/plugin/";
 	
 	private static final Pattern PLUGIN_URL_PATTERN = Pattern.compile(PLUGIN_URL_PREFIX + "([^/]*)/(.*)");
+	
+	private static final Pattern PROPERTY_IN_URL_PATTERN = Pattern.compile("\\$\\{(.*)\\}/(.*)");
 
     static Log logger = LogFactory.getLog(Plugins.class);
 
@@ -303,7 +305,15 @@ public class PluginDescriptor {
         
         for(int i = 0; i < libraries.size(); i++) {
             try {
-                urls[i] = getURL(libraries.get(i));
+            	Matcher matcher = PROPERTY_IN_URL_PATTERN.matcher(libraries.get(i));
+            	if (matcher.matches()) {
+            		String propertyValue = System.getProperty(matcher.group(1));
+            		if (propertyValue != null) {
+            			urls[i] = getURL(propertyValue.replace("\\", "/") + "/" + matcher.group(2));
+            		}
+            	} else {
+            		urls[i] = getURL(libraries.get(i));
+            	}
             } catch (MalformedURLException e) {
                 logger.error("Cannot create URL to plugin (" + getManifest() + ") library " + libraries.get(i) + ".");
                 urls[i] = null;
