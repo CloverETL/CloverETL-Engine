@@ -35,7 +35,7 @@
 
         <properties>
         	 <property category="basic" displayName="File URL" modifiable="true" name="outputFile" nullable="true" required="true" defaultHint="Path to file with *.tde suffix">
-	        	<singleType name="file" http_context="response" selectionMode="file_only" mandatory_existing_file="false"/>
+	        	<singleType name="file" httpContext="response" selectionMode="file_only" mandatory_existing_file="false"/>
 	      	 </property>
 	
 			 <property category="basic" displayName="Table name" modifiable="false" name="tableName" nullable="false" required="false" defaultHint="Extract (Tableau requires table name to be &quot;Extract&quot;)">

@@ -33,7 +33,7 @@
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" primaryAttribute="true">
-	        <singleType name="file" fields="input" dictionary="input" http_context="request" selectionMode="file_only"/>
+	        <singleType name="file" fields="input" dictionary="input" httpContext="request" selectionMode="file_only"/>
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
 	        <singleType name="charset"/>
@@ -116,7 +116,7 @@
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" primaryAttribute="true">
-	        <singleType name="file" fields="output" dictionary="output" http_context="response" selectionMode="file_or_directory" mandatory_existing_file="false" />
+	        <singleType name="file" fields="output" dictionary="output" httpContext="response" selectionMode="file_or_directory" mandatory_existing_file="false" />
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
 	        <singleType name="charset" />
@@ -197,7 +197,7 @@
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" primaryAttribute="true">
-	        <singleType name="file" fields="input" dictionary="input" http_context="request" selectionMode="file_only"/>
+	        <singleType name="file" fields="input" dictionary="input" httpContext="request" selectionMode="file_only"/>
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
 	        <singleType name="charset"/>
@@ -277,7 +277,7 @@
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" primaryAttribute="true">
-	        <singleType name="file" fields="output" dictionary="output" http_context="response" selectionMode="file_or_directory" mandatory_existing_file="false" />
+	        <singleType name="file" fields="output" dictionary="output" httpContext="response" selectionMode="file_or_directory" mandatory_existing_file="false" />
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
 	        <singleType name="charset" />
@@ -2125,7 +2125,7 @@
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" primaryAttribute="true">
-	        <singleType name="file" fields="output" dictionary="output" http_context="response" mandatory_existing_file="false" selectionMode="file_only" />
+	        <singleType name="file" fields="output" dictionary="output" httpContext="response" mandatory_existing_file="false" selectionMode="file_only" />
 	      </property>
 	      <property category="basic" displayName="Append" modifiable="true" name="append" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
@@ -2204,7 +2204,7 @@
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" primaryAttribute="true">
-	        <singleType name="file" selectionMode="file_only" fields="input" dictionary="input" http_context="request" />
+	        <singleType name="file" selectionMode="file_only" fields="input" dictionary="input" httpContext="request" />
 	      </property>
 	      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="skipRows" nullable="true" redundant="startRecord|finalRecord">
 	        <singleType name="int" />
@@ -2247,7 +2247,7 @@
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" primaryAttribute="true">
-	        <singleType name="file" fields="output" dictionary="output" http_context="response" selectionMode="file_only" mandatory_existing_file="false" />
+	        <singleType name="file" fields="output" dictionary="output" httpContext="response" selectionMode="file_only" mandatory_existing_file="false" />
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
 	        <singleType name="charset" />
@@ -2666,7 +2666,7 @@ Sends all resulting records to all connected output ports.</description>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true" primaryAttribute="true">
-	        <singleType name="file" fields="input" dictionary="input" http_context="request" selectionMode="file_only" />
+	        <singleType name="file" fields="input" dictionary="input" httpContext="request" selectionMode="file_only" />
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHint="Auto">
 	        <singleType name="charset" />
@@ -2709,7 +2709,7 @@ Sends all resulting records to all connected output ports.</description>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="sourceUri" nullable="true" required="true" openActionLabel="Open input XML">
-	        <singleType name="file" fields="input" dictionary="input" http_context="request" />
+	        <singleType name="file" fields="input" dictionary="input" httpContext="request" />
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHint="Auto">
 	        <singleType name="charset" />
@@ -2760,7 +2760,7 @@ Sends all resulting records to all connected output ports.</description>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="sourceUri" nullable="true" required="true" openActionLabel="Open input JSON">
-	        <singleType name="file" fields="input" dictionary="input" http_context="request" />
+	        <singleType name="file" fields="input" dictionary="input" httpContext="request" />
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
 	        <singleType name="charset" />
@@ -2804,7 +2804,7 @@ Sends all resulting records to all connected output ports.</description>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
-	        <singleType name="file" fields="input" dictionary="input" http_context="request" selectionMode="file_only" />
+	        <singleType name="file" fields="input" dictionary="input" httpContext="request" selectionMode="file_only" />
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHint="Auto">
 	        <singleType name="charset"/>
@@ -3093,7 +3093,7 @@ Sends all resulting records to all connected output ports.</description>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
-	        <singleType name="file" fields="output" dictionary="output" http_context="response" mandatory_existing_file="false"/>
+	        <singleType name="file" fields="output" dictionary="output" httpContext="response" mandatory_existing_file="false"/>
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
 	        <singleType name="charset"/>
@@ -3183,10 +3183,10 @@ Sends all resulting records to all connected output ports.</description>
 	        <singleType name="xsltMapping"/>
 	      </property>
 	      <property category="basic" displayName="XML input file or field" modifiable="true" name="xmlInputFile" nullable="true" required="!mapping" redundant="mapping">
-	        <singleType name="file" fields="input" dictionary="input" http_context="request" single_url="true"/>
+	        <singleType name="file" fields="input" dictionary="input" httpContext="request" single_url="true"/>
 	      </property>
 	      <property category="basic" displayName="XML output file or field" modifiable="true" name="xmlOutputFile" nullable="true" required="!mapping" redundant="mapping">
-	        <singleType name="file" fields="output" dictionary="output" http_context="response" single_url="true" mandatory_existing_file="false"/>
+	        <singleType name="file" fields="output" dictionary="output" httpContext="response" single_url="true" mandatory_existing_file="false"/>
 	      </property>
 	      <property category="advanced" displayName="Output charset" modifiable="true" name="charset" nullable="true" defaultHint="UTF-8">
 	        <singleType name="charset"/>
