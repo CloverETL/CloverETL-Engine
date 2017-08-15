@@ -92,8 +92,21 @@ public interface CloverJMXMBean {
 
     /**
      * Event for clients to stop graph processing.
+     * This operation is blocking until the graph is really aborted.
      */
     public void abortGraphExecution();
+
+    /**
+     * Event for clients to stop graph processing.
+     * This abort operation can be synchronous or asynchronous,
+     * based on the only parameter @param waitForAbort.
+     * Method execution with waitForAbort=true is identical with
+     * {@link #abortGraphExecution()}.
+     * Method execution with waitForAbort=false just send a signal,
+     * which tries to abort the graph and the current thread is 
+     * immediately returned.
+     */
+    public void abortGraphExecution(boolean waitForAbort);
 
     /**
      * Client should call this method immediately after all tracking information have been received.

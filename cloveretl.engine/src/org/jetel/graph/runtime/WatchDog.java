@@ -583,8 +583,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	public void abort() {
 		abort(true);
 	}
-	
-	private void abort(boolean waitForAbort) {
+
+	public void abort(boolean waitForAbort) {
 		currentPhaseLock.lock();
 		//only running or waiting graph can be aborted
 		if (watchDogStatus != Result.RUNNING && watchDogStatus != Result.WAITING) {

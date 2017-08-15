@@ -105,6 +105,11 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 		watchDog.abort();
 	}
 
+	@Override
+	public void abortGraphExecution(boolean waitForAbort) {
+		watchDog.abort(waitForAbort);
+	}
+
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.CloverJMXMBean#closeServer()
 	 */
