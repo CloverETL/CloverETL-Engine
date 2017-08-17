@@ -1,7 +1,9 @@
 package org.jetel.component.fileoperation;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLDecoder;
 
 public class SMB2Path {
 
@@ -36,6 +38,11 @@ public class SMB2Path {
 				this.path = this.path.substring(0, this.path.length() - 1);
 			}
 			this.path = this.path.replace('/', '\\');
+			try {
+				this.path = URLDecoder.decode(this.path, "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				//TODO: How to handle this?
+			}
 		}
 	}
 
