@@ -41,7 +41,6 @@ public class SMB2Path {
 			try {
 				this.path = URLDecoder.decode(this.path, "UTF-8");
 			} catch (UnsupportedEncodingException e) {
-				//TODO: How to handle this?
 			}
 		}
 	}
