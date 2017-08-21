@@ -104,7 +104,17 @@ public class DelegatingOutputStream extends FilterOutputStream {
 	@Override
 	public void close() throws IOException {
 		if (!isClosed.getAndSet(true)) {
-			super.close();
+			doClose();
 		}
+	}
+
+	/**
+	 * Closes the stream and releases any other related resources.
+	 * It is guaranteed that this method is called only once.
+	 * 
+	 * @throws IOException
+	 */
+	protected void doClose() throws IOException {
+		super.close();
 	}
 }

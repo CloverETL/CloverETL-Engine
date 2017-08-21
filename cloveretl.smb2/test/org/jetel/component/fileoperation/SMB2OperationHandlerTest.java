@@ -28,6 +28,7 @@ import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
 import org.jetel.component.fileoperation.result.CreateResult;
 import org.jetel.component.fileoperation.result.DeleteResult;
+import org.jetel.component.fileoperation.result.InfoResult;
 import org.jetel.component.fileoperation.result.ListResult;
 
 public class SMB2OperationHandlerTest extends OperationHandlerTestTemplate {
@@ -115,12 +116,6 @@ public class SMB2OperationHandlerTest extends OperationHandlerTestTemplate {
 		return "VIRT-ORANGE";
 	}
 
-	@Override
-	public void testCreateDated() throws Exception {
-		// disabled, fails randomly
-//		super.testCreateDated();
-	}
-
 	public void testAdministrativeShare() throws Exception {
 		URI uri = new URI("smb2://administrator:semafor@VIRT-ORANGE/ADMIN$/");
 		SingleCloverURI cloverURI = CloverURI.createSingleURI(uri);
@@ -142,5 +137,24 @@ public class SMB2OperationHandlerTest extends OperationHandlerTestTemplate {
 			expectedFiles.remove(i.getURI());
 		}
 		assertTrue("Some expected files were not listed: " + expectedFiles, expectedFiles.isEmpty());
+	}
+
+	@Override
+	public void testInfoRoot() throws Exception {
+		URI root = baseUri.resolve("/");
+		CloverURI uri = CloverURI.createURI(root + ".");
+		System.out.println(uri.getAbsoluteURI());
+		InfoResult infoResult = manager.info(uri);
+		assertFalse(infoResult.success());
+		assertTrue(infoResult.getFirstErrorMessage().contains("Share name is missing in the URL"));
+	}
+
+	@Override
+	public void testListRoot() {
+		URI root = baseUri.resolve("/");
+		CloverURI uri = CloverURI.createURI(root + ".");
+		ListResult listResult = manager.list(uri);
+		assertFalse(listResult.success());
+		assertTrue(listResult.getFirstErrorMessage().contains("Share name is missing in the URL"));
 	}
 }

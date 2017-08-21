@@ -18,6 +18,7 @@
  */
 package org.jetel.component.fileoperation;
 
+import static com.hierynomus.msfscc.fileinformation.FileBasicInformation.DONT_SET;
 import static org.jetel.component.fileoperation.SMB2Utils.getPath;
 
 import java.io.Closeable;
@@ -42,11 +43,15 @@ import org.jetel.util.ExceptionUtils;
 import org.jetel.util.stream.StreamUtils;
 
 import com.hierynomus.msdtyp.AccessMask;
+import com.hierynomus.msdtyp.FileTime;
 import com.hierynomus.mserref.NtStatus;
 import com.hierynomus.msfscc.FileAttributes;
 import com.hierynomus.msfscc.fileinformation.FileAllInformation;
+import com.hierynomus.msfscc.fileinformation.FileBasicInformation;
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
+import com.hierynomus.mssmb2.SMB2CreateDisposition;
 import com.hierynomus.smbj.common.SMBApiException;
+import com.hierynomus.smbj.share.DiskEntry;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -77,10 +82,21 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
     	}
 	}
 
+	/**
+	 * @see FileAttributes
+	 */
 	@Override
 	public boolean setLastModified(URI target, Date date) throws IOException {
-		// TODO Auto-generated method stub
-		return false;
+    	try (PooledSMB2Connection connection = getConnection(target)) {
+    		try (DiskEntry file = connection.getShare().open(getPath(target), EnumSet.of(AccessMask.FILE_WRITE_ATTRIBUTES), null, null, SMB2CreateDisposition.FILE_OPEN, null)) {
+    			FileTime changeTime = FileTime.fromDate(date);
+				FileBasicInformation newMetadata = new FileBasicInformation(DONT_SET, DONT_SET, changeTime, DONT_SET, 0); // 0x00000000 means no change for file attributes 
+				file.setFileInformation(newMetadata);
+    		}
+    		return true;
+    	} catch (Exception ex) {
+    		throw ExceptionUtils.getIOException(ex);
+    	}
 	}
 
 	@Override
@@ -203,7 +219,7 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
 	public List<URI> list(URI base, String mask, boolean dirsOnly) throws IOException {
     	try (PooledSMB2Connection connection = getConnection(base)) {
     		String path = getPath(base);
-    		List<FileIdBothDirectoryInformation> children = connection.getShare().list(path, (String) mask);
+    		List<FileIdBothDirectoryInformation> children = connection.getShare().list(path, mask);
     		List<URI> result = new ArrayList<>(children.size());
     		for (FileIdBothDirectoryInformation child: children) {
     			if (dirsOnly && !isDirectory(child)) {
@@ -305,7 +321,7 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
 
 		@Override
 		public Date getLastModified() {
-			return file.getBasicInformation().getChangeTime().toDate();
+			return file.getBasicInformation().getLastWriteTime().toDate();
 		}
 
 		@Override
