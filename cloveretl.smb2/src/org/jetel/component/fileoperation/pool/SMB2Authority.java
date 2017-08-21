@@ -1,10 +1,3 @@
-package org.jetel.component.fileoperation.pool;
-
-import java.net.URI;
-import java.net.URL;
-
-import org.jetel.component.fileoperation.SMB2Path;
-
 /*
  * jETeL/CloverETL - Java based ETL application framework.
  * Copyright (c) Javlin, a.s. (info@cloveretl.com)
@@ -23,6 +16,13 @@ import org.jetel.component.fileoperation.SMB2Path;
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+package org.jetel.component.fileoperation.pool;
+
+import java.net.URI;
+import java.net.URL;
+
+import org.jetel.component.fileoperation.SMB2Path;
+
 public class SMB2Authority extends DefaultAuthority {
 	
 	private final String share;
