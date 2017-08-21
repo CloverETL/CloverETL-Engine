@@ -19,6 +19,7 @@
 package org.jetel.component.fileoperation;
 
 import static org.jetel.component.fileoperation.SMB2Utils.getPath;
+import static com.hierynomus.msfscc.fileinformation.FileBasicInformation.DONT_SET;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -42,11 +43,15 @@ import org.jetel.util.ExceptionUtils;
 import org.jetel.util.stream.StreamUtils;
 
 import com.hierynomus.msdtyp.AccessMask;
+import com.hierynomus.msdtyp.FileTime;
 import com.hierynomus.mserref.NtStatus;
 import com.hierynomus.msfscc.FileAttributes;
 import com.hierynomus.msfscc.fileinformation.FileAllInformation;
+import com.hierynomus.msfscc.fileinformation.FileBasicInformation;
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
+import com.hierynomus.mssmb2.SMB2CreateDisposition;
 import com.hierynomus.smbj.common.SMBApiException;
+import com.hierynomus.smbj.share.DiskEntry;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -79,8 +84,17 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
 
 	@Override
 	public boolean setLastModified(URI target, Date date) throws IOException {
-		// TODO Auto-generated method stub
-		return false;
+    	try (PooledSMB2Connection connection = getConnection(target)) {
+    		try (DiskEntry file = connection.getShare().open(getPath(target), EnumSet.of(AccessMask.FILE_WRITE_ATTRIBUTES, AccessMask.FILE_READ_ATTRIBUTES), null, null, SMB2CreateDisposition.FILE_OPEN, null)) {
+    			FileBasicInformation oldMetadata = file.getFileInformation(FileBasicInformation.class);
+    			FileTime changeTime = FileTime.fromDate(date);
+				FileBasicInformation newMetadata = new FileBasicInformation(DONT_SET, DONT_SET, changeTime, DONT_SET, oldMetadata.getFileAttributes());
+				file.setFileInformation(newMetadata);
+    		}
+    		return true;
+    	} catch (Exception ex) {
+    		throw ExceptionUtils.getIOException(ex);
+    	}
 	}
 
 	@Override
@@ -305,7 +319,7 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
 
 		@Override
 		public Date getLastModified() {
-			return file.getBasicInformation().getChangeTime().toDate();
+			return file.getBasicInformation().getLastWriteTime().toDate();
 		}
 
 		@Override
