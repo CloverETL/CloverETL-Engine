@@ -115,12 +115,6 @@ public class SMB2OperationHandlerTest extends OperationHandlerTestTemplate {
 		return "VIRT-ORANGE";
 	}
 
-	@Override
-	public void testCreateDated() throws Exception {
-		// disabled, fails randomly
-//		super.testCreateDated();
-	}
-
 	public void testAdministrativeShare() throws Exception {
 		URI uri = new URI("smb2://administrator:semafor@VIRT-ORANGE/ADMIN$/");
 		SingleCloverURI cloverURI = CloverURI.createSingleURI(uri);
