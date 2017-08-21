@@ -18,8 +18,8 @@
  */
 package org.jetel.component.fileoperation;
 
-import static org.jetel.component.fileoperation.SMB2Utils.getPath;
 import static com.hierynomus.msfscc.fileinformation.FileBasicInformation.DONT_SET;
+import static org.jetel.component.fileoperation.SMB2Utils.getPath;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -82,13 +82,15 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
     	}
 	}
 
+	/**
+	 * @see FileAttributes
+	 */
 	@Override
 	public boolean setLastModified(URI target, Date date) throws IOException {
     	try (PooledSMB2Connection connection = getConnection(target)) {
-    		try (DiskEntry file = connection.getShare().open(getPath(target), EnumSet.of(AccessMask.FILE_WRITE_ATTRIBUTES, AccessMask.FILE_READ_ATTRIBUTES), null, null, SMB2CreateDisposition.FILE_OPEN, null)) {
-    			FileBasicInformation oldMetadata = file.getFileInformation(FileBasicInformation.class);
+    		try (DiskEntry file = connection.getShare().open(getPath(target), EnumSet.of(AccessMask.FILE_WRITE_ATTRIBUTES), null, null, SMB2CreateDisposition.FILE_OPEN, null)) {
     			FileTime changeTime = FileTime.fromDate(date);
-				FileBasicInformation newMetadata = new FileBasicInformation(DONT_SET, DONT_SET, changeTime, DONT_SET, oldMetadata.getFileAttributes());
+				FileBasicInformation newMetadata = new FileBasicInformation(DONT_SET, DONT_SET, changeTime, DONT_SET, 0); // 0x00000000 means no change for file attributes 
 				file.setFileInformation(newMetadata);
     		}
     		return true;
