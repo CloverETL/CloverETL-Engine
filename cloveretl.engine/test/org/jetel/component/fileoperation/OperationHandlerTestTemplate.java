@@ -421,6 +421,15 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertTrue(result.success());
 			assertTrue(manager.exists(target));
 		}
+
+		// detect double URL decoding
+		uri = relativeURI("%2540.tmp");
+		System.out.println(uri.getAbsoluteURI());
+		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
+		assertTrue(manager.create(uri).success());
+		InfoResult info = manager.info(uri);
+		assertTrue(String.format("%s is not a file", uri), info.isFile());
+		assertEquals("%40.tmp", info.getName()); // not "@.tmp"
 	}
 
 	public void testInfo() throws Exception {
