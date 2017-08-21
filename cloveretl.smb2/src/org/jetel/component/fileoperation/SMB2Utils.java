@@ -37,6 +37,7 @@ import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.msfscc.fileinformation.FileStandardInformation;
 import com.hierynomus.mssmb2.SMB2CreateDisposition;
 import com.hierynomus.mssmb2.SMB2ShareAccess;
+import com.hierynomus.smbj.share.DiskEntry;
 import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 
@@ -54,9 +55,14 @@ public class SMB2Utils {
 		return (flags & mask) != 0;
 	}
 	
-	private static com.hierynomus.smbj.share.File openFile(DiskShare share, String path, Set<AccessMask> accessMask, SMB2CreateDisposition createDisposition) throws IOException {
+	static com.hierynomus.smbj.share.File openFile(DiskShare share, String path, Set<AccessMask> accessMask, SMB2CreateDisposition createDisposition) throws IOException {
 		// use SMB2ShareAccess.ALL to prevent TimeoutException / buffer underflow on concurrent operations
 		return share.openFile(path, accessMask, null, SMB2ShareAccess.ALL, createDisposition, null);
+	}
+	
+	static DiskEntry open(DiskShare share, String path, Set<AccessMask> accessMask, SMB2CreateDisposition createDisposition) throws IOException {
+		// use SMB2ShareAccess.ALL to prevent TimeoutException / buffer underflow on concurrent operations
+		return share.open(path, accessMask, null, SMB2ShareAccess.ALL, createDisposition, null);
 	}
 	
 	public static InputStream getInputStream(PooledSMB2Connection connection, URL source) throws IOException {

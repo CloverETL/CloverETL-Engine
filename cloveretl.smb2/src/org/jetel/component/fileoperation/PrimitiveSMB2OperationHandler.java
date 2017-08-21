@@ -74,7 +74,7 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
 	@Override
 	public boolean createFile(URI target) throws IOException {
     	try (PooledSMB2Connection connection = getConnection(target)) {
-    		try (Closeable file = connection.getShare().openFile(getPath(target), EnumSet.of(AccessMask.FILE_ADD_FILE), null, null, null, null)) {
+    		try (Closeable file = SMB2Utils.openFile(connection.getShare(), getPath(target), EnumSet.of(AccessMask.FILE_ADD_FILE), SMB2CreateDisposition.FILE_OPEN_IF)) {
     		}
     		return true;
     	} catch (Exception ex) {
@@ -88,7 +88,7 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
 	@Override
 	public boolean setLastModified(URI target, Date date) throws IOException {
     	try (PooledSMB2Connection connection = getConnection(target)) {
-    		try (DiskEntry file = connection.getShare().open(getPath(target), EnumSet.of(AccessMask.FILE_WRITE_ATTRIBUTES), null, null, SMB2CreateDisposition.FILE_OPEN, null)) {
+    		try (DiskEntry file = SMB2Utils.open(connection.getShare(), getPath(target), EnumSet.of(AccessMask.FILE_WRITE_ATTRIBUTES), SMB2CreateDisposition.FILE_OPEN)) {
     			FileTime changeTime = FileTime.fromDate(date);
 				FileBasicInformation newMetadata = new FileBasicInformation(DONT_SET, DONT_SET, changeTime, DONT_SET, 0); // 0x00000000 means no change for file attributes 
 				file.setFileInformation(newMetadata);
