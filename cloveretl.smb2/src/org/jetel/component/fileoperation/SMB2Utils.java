@@ -18,29 +18,25 @@
  */
 package org.jetel.component.fileoperation;
 
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
-import java.nio.channels.Channel;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 
 import org.jetel.component.fileoperation.pool.PooledSMB2Connection;
 import org.jetel.util.ExceptionUtils;
-//import org.jetel.util.file.FileUtils;
-import org.jetel.util.stream.DelegatingOutputStream;
+import org.jetel.util.file.FileUtils;
+import org.jetel.util.stream.CloseOnceInputStream;
+import org.jetel.util.stream.CloseOnceOutputStream;
 
 import com.hierynomus.msdtyp.AccessMask;
-import com.hierynomus.mserref.NtStatus;
 import com.hierynomus.msfscc.fileinformation.FileStandardInformation;
 import com.hierynomus.mssmb2.SMB2CreateDisposition;
 import com.hierynomus.mssmb2.SMB2ShareAccess;
-import com.hierynomus.smbj.common.SMBApiException;
 import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 
@@ -88,14 +84,14 @@ public class SMB2Utils {
 			
 			final com.hierynomus.smbj.share.File file = openFile(share, path, accessMask, createDisposition);
 			InputStream is = file.getInputStream();
-			is = new FilterInputStream(is) {
+			is = new CloseOnceInputStream(is) {
 
 				@Override
-				public void close() throws IOException {
+				protected void doClose() throws IOException {
 					try {
-						super.close();
+						super.doClose();
 					} finally {
-						closeAll(file, connection);
+						FileUtils.closeAll(file, connection);
 					}
 				}
 				
@@ -116,14 +112,14 @@ public class SMB2Utils {
 			
 			final com.hierynomus.smbj.share.File file = openFile(share, path, accessMask, createDisposition);
 			OutputStream os = append ? new AppendOutputStream(file) : file.getOutputStream();
-			os = new DelegatingOutputStream(os) {
+			os = new CloseOnceOutputStream(os) {
 
 				@Override
-				public void close() throws IOException {
+				protected void doClose() throws IOException {
 					try {
-						super.close();
+						super.doClose();
 					} finally {
-						closeAll(file, connection);
+						FileUtils.closeAll(file, connection);
 					}
 				}
 				
@@ -135,60 +131,6 @@ public class SMB2Utils {
 		}
 	}
 
-	/**
-	 * Closes all objects passed as the argument.
-	 * If any of them throws an exception, the first exception is thrown.
-	 * 
-	 * @param closeables
-	 * @throws IOException
-	 */	
-	public static void closeAll(AutoCloseable... closeables) throws IOException {
-		if (closeables != null) {
-			closeAll(Arrays.asList(closeables));
-		}
-	}
-	
-	/**
-	 * Closes all objects passed as the argument.
-	 * If any of them throws an exception, the first exception is thrown.
-	 * The remaining exceptions are added as suppressed to the first one.
-	 * 
-	 * @param closeables
-	 * @throws IOException
-	 */
-	public static void closeAll(Iterable<? extends AutoCloseable> closeables) throws IOException {
-		if (closeables != null) {
-			Exception firstException = null;
-			
-			for (AutoCloseable closeable: closeables) {
-				if (closeable != null) {
-					if ((closeable instanceof Channel) && !((Channel) closeable).isOpen()) {
-						continue; // channel is already closed
-					}
-					try {
-						closeable.close();
-					} catch (Exception ex) {
-						//TODO: Solve why is the closing operation returning exception claiming file was already closed
-						if (ex instanceof SMBApiException) {
-							if (((SMBApiException) ex).getStatus().equals(NtStatus.STATUS_FILE_CLOSED)) {
-								continue;
-							}
-						}
-						if (firstException == null) {
-							firstException = ex;
-						} else {
-							firstException.addSuppressed(ex);
-						}
-					}
-				}
-			}
-			
-			if (firstException != null) {
-				throw ExceptionUtils.getIOException(firstException);
-			}
-		}
-	}
-	
 	/**
 	 * Utility {@link OutputStream} for appending.
 	 * Does not close the parent {@link com.hierynomus.smbj.share.File}.
