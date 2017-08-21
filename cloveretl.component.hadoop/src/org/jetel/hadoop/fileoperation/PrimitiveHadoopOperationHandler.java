@@ -254,7 +254,7 @@ public class PrimitiveHadoopOperationHandler implements PrimitiveOperationHandle
 
 		@Override
 		public String getName() {
-			return URIUtils.urlDecode(URIUtils.getFileName(uri));
+			return URIUtils.getFileName(uri);
 		}
 
 		@Override
