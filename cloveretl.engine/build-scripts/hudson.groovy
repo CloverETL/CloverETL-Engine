@@ -20,7 +20,7 @@ def testName
 
 // get paths for bouncy castle jars
 def getBouncyPath() {
-	bouncyPath = new GroovyShell().parse(new File('../../cloveretl.test.environment/test-scripts/bouncyCastle.groovy')).with {
+	bouncyPath = new GroovyShell().parse(new File('./cloveretl.test.environment/test-scripts/bouncyCastle.groovy')).with {
 		main()
 	}
 	println "We got path $bouncyPath"
