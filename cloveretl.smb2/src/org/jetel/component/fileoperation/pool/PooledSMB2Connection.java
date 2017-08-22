@@ -18,6 +18,7 @@
  */
 package org.jetel.component.fileoperation.pool;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -68,8 +69,29 @@ public class PooledSMB2Connection extends AbstractPoolableConnection implements 
 	
 	private void connect() throws IOException {
 		this.connection = openConnection();
-		this.session = startSession();
+		try {
+			this.session = startSession();
+		} catch (NoClassDefFoundError error) {
+			throw new IOException(getBouncyCastleErrorMessage(), error);
+		}
 		this.share = connectShare();
+	}
+
+	private String getBouncyCastleErrorMessage() throws IOException {
+		StringBuilder message = new StringBuilder("SMBv2 requires Bouncy Castle cryptographic library. ");
+		String dir = System.getProperty("bouncycastle.lib.dir");
+		if (StringUtils.isEmpty(dir)) {
+			dir = System.getProperty("osgi.syspath");
+			if (dir != null) {
+				dir = dir + "/..";
+			}
+		}
+		if (!StringUtils.isEmpty(dir)) {
+			message.append("Please put bcprov-jdk15on-1.57.jar and bcpkix-jdk15on-1.57.jar to '").append(new File(dir).getCanonicalPath()).append("'.");
+		} else {
+			message.append("See User Guide for installation instructions.");
+		}
+		return message.toString();
 	}
 
 	public void disconnect() throws IOException {
