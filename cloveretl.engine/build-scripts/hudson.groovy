@@ -77,6 +77,8 @@ jobIdent = jobIdent.replaceAll('-', '_').toLowerCase().replaceAll("after_commit"
 new File(baseD, "cloveretl.test.scenarios/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 new File(baseD, "cloveretl.examples/ExtExamples/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 
+getBouncyPath()
+
 antCustomEnv = ["ANT_OPTS":"-Xmx2048m -XX:MaxPermSize=256m"]
 if( !runTests ){
 	// compile engine and run some tests
