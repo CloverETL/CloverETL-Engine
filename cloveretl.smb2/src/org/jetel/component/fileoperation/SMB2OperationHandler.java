@@ -32,11 +32,14 @@ import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 
 public class SMB2OperationHandler extends AbstractOperationHandler {
 	
+	private final PrimitiveSMB2OperationHandler smbHandler;
+
 	/**
 	 * @param simpleHandler
 	 */
 	public SMB2OperationHandler() {
 		super(new PrimitiveSMB2OperationHandler());
+		this.smbHandler = (PrimitiveSMB2OperationHandler) simpleHandler;
 	}
 
 	public static final String SMB_SCHEME = "smb2"; //$NON-NLS-1$
@@ -117,7 +120,7 @@ public class SMB2OperationHandler extends AbstractOperationHandler {
 		}
 		if (FileManager.hasWildcards(part)) {
 			part = URIUtils.urlDecode(part);
-			return getSimpleHandler().list(base, part, directory);
+			return smbHandler.list(base, part, directory);
 		} else {
 			URI child = URIUtils.getChildURI(base, URI.create(part));
 			Info childInfo = simpleHandler.info(child);
@@ -127,10 +130,6 @@ public class SMB2OperationHandler extends AbstractOperationHandler {
 				return Collections.emptyList();
 			}
 		}
-	}
-
-	private PrimitiveSMB2OperationHandler getSimpleHandler() {
-		return (PrimitiveSMB2OperationHandler) simpleHandler;
 	}
 
 }

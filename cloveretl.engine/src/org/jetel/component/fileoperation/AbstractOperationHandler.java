@@ -53,9 +53,11 @@ import org.jetel.util.ExceptionUtils;
 public abstract class AbstractOperationHandler implements IOperationHandler {
 	
 	protected final PrimitiveOperationHandler simpleHandler;
+	protected final RecursiveDeleteHandler deleteHandler;
 
 	public AbstractOperationHandler(PrimitiveOperationHandler simpleHandler) {
 		this.simpleHandler = simpleHandler;
+		this.deleteHandler = (simpleHandler instanceof RecursiveDeleteHandler) ? (RecursiveDeleteHandler) simpleHandler : null; 
 	}
 
 	private static final CreateParameters CREATE_PARENT_DIRS = new CreateParameters().setMakeParents(true).setDirectory(true);
@@ -318,10 +320,14 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 		}
 		if (info.isDirectory()) {
 			if (params.isRecursive()) {
-				for (URI child: simpleHandler.list(target)) {
-					delete(child, params);
+				if (deleteHandler != null) {
+					return deleteHandler.removeDirRecursively(target);
+				} else {
+					for (URI child: simpleHandler.list(target)) {
+						delete(child, params);
+					}
+					return simpleHandler.removeDir(target);
 				}
-				return simpleHandler.removeDir(target);
 			} else {
 				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.cannot_remove_directory"), target)); //$NON-NLS-1$
 			}

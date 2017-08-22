@@ -59,7 +59,7 @@ import com.hierynomus.smbj.share.DiskEntry;
  *
  * @created 17. 7. 2017
  */
-public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler {
+public class PrimitiveSMB2OperationHandler implements RecursiveDeleteHandler {
 	
 	private ConnectionPool pool = ConnectionPool.getInstance();
 	
@@ -121,8 +121,17 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
 
 	@Override
 	public boolean removeDir(URI target) throws IOException {
-    	try (PooledSMB2Connection connection = getConnection(target)) {
-    		connection.getShare().rmdir(getPath(target), false);
+    	return removeDir(target, false);
+	}
+
+	@Override
+	public boolean removeDirRecursively(URI target) throws IOException {
+    	return removeDir(target, true);
+	}
+	
+	private boolean removeDir(URI target, boolean recursive) throws IOException {
+		try (PooledSMB2Connection connection = getConnection(target)) {
+    		connection.getShare().rmdir(getPath(target), recursive);
     		return true;
     	} catch (Exception ex) {
     		throw ExceptionUtils.getIOException(ex);
@@ -345,5 +354,5 @@ public class PrimitiveSMB2OperationHandler implements PrimitiveOperationHandler 
 		}
 		
 	}
-	
+
 }
