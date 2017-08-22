@@ -20,7 +20,7 @@ def testName
 
 // get paths for bouncy castle jars
 def getBouncyPath() {
-	bouncyPath = new GroovyShell().parse(new File('./cloveretl.test.environment/test-scripts/bouncyCastle.groovy')).with {
+	bouncyPath = new GroovyShell().parse(new File('../../cloveretl.test.environment/test-scripts/bouncyCastle.groovy')).with {
 		main()
 	}
 	println "We got path $bouncyPath"
@@ -90,6 +90,7 @@ if( !runTests ){
 		"-Dcte.hudson.link=job/${jobName}/${buildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
 		"-Djavaversion=${javaVersion}",
+		"-Dbnc.libraries.path=${bouncyPath}",
 		"-Drunscenarios.trustStore=-Djavax.net.ssl.trustStore=${trustStoreF}"
 	]
 	if( jobGoal == "after-commit" ) {
