@@ -48,7 +48,7 @@ import com.hierynomus.mserref.NtStatus;
 import com.hierynomus.msfscc.FileAttributes;
 import com.hierynomus.msfscc.fileinformation.FileAllInformation;
 import com.hierynomus.msfscc.fileinformation.FileBasicInformation;
-import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
+import com.hierynomus.msfscc.fileinformation.FileIdFullDirectoryInformation;
 import com.hierynomus.mssmb2.SMB2CreateDisposition;
 import com.hierynomus.mssmb2.SMBApiException;
 import com.hierynomus.smbj.share.DiskEntry;
@@ -221,7 +221,7 @@ public class PrimitiveSMB2OperationHandler implements RecursiveDeleteHandler, Wi
     	return list(target, null, false);
 	}
 	
-	private boolean isDirectory(FileIdBothDirectoryInformation file) {
+	private boolean isDirectory(FileIdFullDirectoryInformation file) {
 		return SMB2Utils.hasFlag(file.getFileAttributes(), FileAttributes.FILE_ATTRIBUTE_DIRECTORY.getValue());
 	}
 	
@@ -229,9 +229,9 @@ public class PrimitiveSMB2OperationHandler implements RecursiveDeleteHandler, Wi
 	public List<URI> list(URI base, String mask, boolean dirsOnly) throws IOException {
     	try (PooledSMB2Connection connection = getConnection(base)) {
     		String path = getPath(base);
-    		List<FileIdBothDirectoryInformation> children = connection.getShare().list(path, mask);
+    		List<FileIdFullDirectoryInformation> children = connection.getShare().list(path, FileIdFullDirectoryInformation.class, mask);
     		List<URI> result = new ArrayList<>(children.size());
-    		for (FileIdBothDirectoryInformation child: children) {
+    		for (FileIdFullDirectoryInformation child: children) {
     			if (dirsOnly && !isDirectory(child)) {
     				continue;
     			}
