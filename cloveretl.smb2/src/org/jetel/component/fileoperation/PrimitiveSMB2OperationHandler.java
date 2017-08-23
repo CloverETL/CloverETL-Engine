@@ -50,7 +50,7 @@ import com.hierynomus.msfscc.fileinformation.FileAllInformation;
 import com.hierynomus.msfscc.fileinformation.FileBasicInformation;
 import com.hierynomus.msfscc.fileinformation.FileIdBothDirectoryInformation;
 import com.hierynomus.mssmb2.SMB2CreateDisposition;
-import com.hierynomus.smbj.common.SMBApiException;
+import com.hierynomus.mssmb2.SMBApiException;
 import com.hierynomus.smbj.share.DiskEntry;
 
 /**
@@ -242,8 +242,8 @@ public class PrimitiveSMB2OperationHandler implements RecursiveDeleteHandler {
     		
     		return result;
     	} catch (SMBApiException ex) {
-    		// this weird error is thrown if there are no files that match the mask
-    		if ((mask != null) && (ex.getStatus() == NtStatus.UNKNOWN)) {
+    		// this error is thrown if there are no files that match the mask
+    		if ((mask != null) && (ex.getStatus() == NtStatus.STATUS_NO_SUCH_FILE)) {
     			return Collections.emptyList();
     		}
     		throw ExceptionUtils.getIOException(ex);

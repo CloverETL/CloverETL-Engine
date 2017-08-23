@@ -23,9 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.text.MessageFormat;
 
-import org.apache.log4j.Logger;
 import org.jetel.component.fileoperation.SMB2Utils;
 import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.util.file.FileUtils;
@@ -37,13 +35,8 @@ import com.hierynomus.smbj.SMBClient;
 import com.hierynomus.smbj.SmbConfig;
 import com.hierynomus.smbj.auth.AuthenticationContext;
 import com.hierynomus.smbj.connection.Connection;
-import com.hierynomus.smbj.event.SMBEvent;
-import com.hierynomus.smbj.event.SMBEventBus;
 import com.hierynomus.smbj.session.Session;
 import com.hierynomus.smbj.share.DiskShare;
-
-import net.engio.mbassy.bus.SyncMessageBus;
-import net.engio.mbassy.bus.error.IPublicationErrorHandler;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -57,8 +50,6 @@ public class PooledSMB2Connection extends AbstractPoolableConnection implements 
 	private Session session;
 	private DiskShare share;
 	
-	private static final Logger log = Logger.getLogger(Connection.class);
-
 	public PooledSMB2Connection(Authority authority) {
 		super(authority);
 	}
@@ -96,11 +87,6 @@ public class PooledSMB2Connection extends AbstractPoolableConnection implements 
 
 	public void disconnect() throws IOException {
 		FileUtils.closeAll(share, session, connection);
-		int port = authority.getPort();
-		if (port < 0) {
-			port = SMBClient.DEFAULT_PORT;
-		}
-		log.debug(MessageFormat.format("Connection to << {0}:{1} >> closed", connection.getRemoteHostname(), port));
 		this.share = null;
 		this.session = null;
 		this.connection = null;
@@ -115,22 +101,14 @@ public class PooledSMB2Connection extends AbstractPoolableConnection implements 
 		String host = authority.getHost();
 		int port = authority.getPort();
 		
-		/*
-		 * We do not use SmbClient, because we don't need its built-in connection pooling
-		 * and it logs the following message for each connection:
-		 * INFO: No error handler has been configured to handle exceptions during publication. 
-		 */
 		SmbConfig config = SmbConfig.createDefaultConfig(); // TODO: SmbConfig - SMB2 dialects, timeouts, proxy
-		IPublicationErrorHandler.ConsoleLogger errorHandler = new IPublicationErrorHandler.ConsoleLogger();
-		SMBEventBus bus = new SMBEventBus(new SyncMessageBus<SMBEvent>(errorHandler));
+		SMBClient client = new SMBClient(config);
 		
-		Connection connection = new Connection(config, bus);
 		if (port < 0) {
-			connection.connect(host, SMBClient.DEFAULT_PORT);
+			return client.connect(host);
 		} else {
-			connection.connect(host, port);
+			return client.connect(host, port);
 		}
-		return connection;
 	}
 	
 	private Session startSession() throws IOException {
