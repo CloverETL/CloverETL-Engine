@@ -18,46 +18,25 @@
  */
 package org.jetel.component.fileoperation;
 
-public class SMB2OperationHandler extends AbstractOperationHandler {
-	
+import java.io.IOException;
+import java.net.URI;
+import java.util.List;
+
+/**
+ * @author krivanekm (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created 23. 8. 2017
+ */
+public interface WildcardResolutionHandler extends PrimitiveOperationHandler {
+
 	/**
-	 * @param simpleHandler
+	 * 
+	 * @param dir
+	 * @param mask
+	 * @param dirsOnly
+	 * @return
 	 */
-	public SMB2OperationHandler() {
-		super(new PrimitiveSMB2OperationHandler());
-	}
-
-	public static final String SMB_SCHEME = "smb2"; //$NON-NLS-1$
-	
-	@Override
-	public int getPriority(Operation operation) {
-		return TOP_PRIORITY;
-	}
-
-	@Override
-	public boolean canPerform(Operation operation) {
-		switch (operation.kind) {
-			case READ:
-			case WRITE:
-			case LIST:
-			case INFO:
-			case RESOLVE:
-			case DELETE:
-			case CREATE:
-			case FILE:
-				return operation.scheme().equalsIgnoreCase(SMB_SCHEME);
-			case COPY:
-			case MOVE:
-				return operation.scheme(0).equalsIgnoreCase(SMB_SCHEME)
-						&& operation.scheme(1).equalsIgnoreCase(SMB_SCHEME);
-			default: 
-				return false;
-		}
-	}
-	
-	@Override
-	public String toString() {
-		return "SMB2OperationHandler"; //$NON-NLS-1$
-	}
+	public List<URI> list(URI dir, String mask, boolean dirsOnly) throws IOException;
 
 }

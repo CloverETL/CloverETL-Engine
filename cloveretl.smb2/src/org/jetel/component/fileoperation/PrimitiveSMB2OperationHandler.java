@@ -59,7 +59,7 @@ import com.hierynomus.smbj.share.DiskEntry;
  *
  * @created 17. 7. 2017
  */
-public class PrimitiveSMB2OperationHandler implements RecursiveDeleteHandler {
+public class PrimitiveSMB2OperationHandler implements RecursiveDeleteHandler, WildcardResolutionHandler {
 	
 	private ConnectionPool pool = ConnectionPool.getInstance();
 	
@@ -225,6 +225,7 @@ public class PrimitiveSMB2OperationHandler implements RecursiveDeleteHandler {
 		return SMB2Utils.hasFlag(file.getFileAttributes(), FileAttributes.FILE_ATTRIBUTE_DIRECTORY.getValue());
 	}
 	
+	@Override
 	public List<URI> list(URI base, String mask, boolean dirsOnly) throws IOException {
     	try (PooledSMB2Connection connection = getConnection(base)) {
     		String path = getPath(base);
