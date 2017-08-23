@@ -435,8 +435,14 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	public Lookup createLookup(RecordKey key, DataRecord keyRecord) throws ComponentNotReadyException {
         if (!isInitialized()) {
             throw new NotInitializedException(this);
-        } else if (sqlConnection == null) {
+        } else if ((sqlConnection == null) && (connection == null)) {
         	throw new NotInitializedException("No DB connection! (pre-execute initialization not performed?)", this);
+        } else if ((sqlConnection == null) && (connection != null)) {
+        	try {
+        		sqlConnection = connection.getConnection(getId(), OperationType.READ);
+        	} catch (JetelException e) {
+        		throw new ComponentNotReadyException("Can't connect to database", e);
+        	}
         }
 
         DBLookup lookup;
@@ -456,7 +462,11 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	
 	@Override
 	public DataRecordMetadata getKeyMetadata() throws ComponentNotReadyException {
-		throw new UnsupportedOperationException("DBLookupTable does not provide key metadata.");
+		if (this.metadataId != null) {
+			return getMetadata(); 
+		} else {
+			throw new UnsupportedOperationException("DBLookupTable does not provide key metadata.");
+		}
 	}
 	
 	@Override
