@@ -462,11 +462,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	
 	@Override
 	public DataRecordMetadata getKeyMetadata() throws ComponentNotReadyException {
-		if (this.metadataId != null) {
-			return getMetadata(); 
-		} else {
-			throw new UnsupportedOperationException("DBLookupTable does not provide key metadata.");
-		}
+		throw new UnsupportedOperationException("DBLookupTable does not provide key metadata.");
 	}
 	
 	@Override
