@@ -963,7 +963,7 @@ public class FileManager {
 	}
 
 	public List<SingleCloverURI> defaultResolve(SingleCloverURI wildcards) throws IOException {
-		String uriString = wildcards.toURI().toString();
+		String uriString = wildcards.getPath(); // use getPath() - toString() adds unwanted quotes and toURI().toString() may throw exception
 		if (wildcards.isRelative() || !uriHasWildcards(uriString)) {
 			return Arrays.asList(wildcards);
 		}
