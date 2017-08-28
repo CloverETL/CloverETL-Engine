@@ -216,19 +216,19 @@
 	      <property category="advanced" displayName="Loader input file" modifiable="true" name="fileURL" nullable="true">
 	        <singleType name="file" selectionMode="file_only" mandatory_existing_file="false" />
 	      </property>
-	      <property category="advanced" displayName="Use load utility" modifiable="true" name="useLoadUtility" nullable="true" defaultHint="false">
+	      <property category="deprecated" displayName="Use load utility" modifiable="true" name="useLoadUtility" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
 	      </property>
-	      <property category="advanced" displayName="User name" modifiable="true" name="username" nullable="true">
+	      <property category="deprecated" displayName="User name" modifiable="true" name="username" nullable="true">
 			<singleType name="string" />
 		  </property>
-		  <property category="advanced" displayName="Password" modifiable="true" name="password" nullable="true">
+		  <property category="deprecated" displayName="Password" modifiable="true" name="password" nullable="true">
 			<singleType name="password" />
 		  </property>
-	      <property category="advanced" displayName="Ignore unique key violation" modifiable="true" name="ignoreUniqueKeyViolation" nullable="true" defaultHint="false">
+	      <property category="deprecated" displayName="Ignore unique key violation" modifiable="true" name="ignoreUniqueKeyViolation" nullable="true" defaultHint="false">
 	        <singleType name="bool" />
 	      </property>
-	      <property category="advanced" displayName="Use insert cursor" modifiable="true" name="useInsertCursor" nullable="true" defaultHint="true">
+	      <property category="deprecated" displayName="Use insert cursor" modifiable="true" name="useInsertCursor" nullable="true" defaultHint="true">
 	        <singleType name="bool" />
 	      </property>
 	    </properties>
