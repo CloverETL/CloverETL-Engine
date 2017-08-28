@@ -179,9 +179,11 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		}
 		
 		indexKey = null;
-		keys = parseSQLWhereClause(sqlQuery, dbMetadata);
-		if (keys != null) {
-			indexKey = new RecordKey(keys, dbMetadata);
+		if (dbMetadata != null) {
+			keys = parseSQLWhereClause(sqlQuery, dbMetadata);
+			if (keys != null) {
+				indexKey = new RecordKey(keys, dbMetadata);
+			}
 		}
 		
 		if (connection == null) {
