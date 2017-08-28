@@ -29,7 +29,6 @@ import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 
 import org.apache.log4j.Logger;
-import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Phase;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.dictionary.DictionaryValuesContainer;
@@ -137,10 +136,8 @@ public class CloverJMX extends NotificationBroadcasterSupport implements CloverJ
 	
 	@Override
 	public synchronized void setApprovedPhaseNumber(int approvedPhaseNumber) {
-		//TODO this is not correctly implemented, JMX is not valid technology to do so
-		throw new JetelRuntimeException();
-//		this.approvedPhaseNumber = approvedPhaseNumber;
-//		notifyAll();
+		this.approvedPhaseNumber = approvedPhaseNumber;
+		notifyAll();
 	}
 	
 	//******************* EVENTS ********************/
