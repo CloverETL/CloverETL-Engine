@@ -306,7 +306,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
 		    	Context initContext = new InitialContext();
 		   		jndiDataSource = (DataSource) initContext.lookup(getJndiName());
 	    	} catch (Exception e) {
-	    		throw new ComponentNotReadyException("Cannot open DB connection from JNDI data source:" + getJndiName(), e);
+	    		throw new ComponentNotReadyException("Cannot open DB connection from JNDI data source: '" + getJndiName() + "'. " + e.getMessage(), e);
 	    	}
         }
 
@@ -919,7 +919,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
                	//wrap the given JNDI connection to a DefaultConnection instance 
                	return getJdbcSpecific().createSQLConnection(this, jndiConnection, operationType);
         	} catch (Exception e) {
-        		throw new JetelException("Cannot open DB connection from JNDI data source:" + getJndiName(), e);
+        		throw new JetelException("Cannot open DB connection from JNDI data source: '" + getJndiName() + "'. " + e.getMessage(), e);
         	}
     	} else {
         	try {

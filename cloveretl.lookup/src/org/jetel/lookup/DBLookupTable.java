@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jetel.connection.jdbc.AbstractCopySQLData;
 import org.jetel.connection.jdbc.SQLCloverStatement;
@@ -96,6 +98,9 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	protected DBConnection connection;
 	protected SqlConnection sqlConnection;
 	protected String sqlQuery;//this query can contain $field
+	
+	protected String[] keys;
+	protected RecordKey indexKey; 
 	
 	protected int maxCached = 0;
 	protected boolean storeNulls = false;
@@ -171,6 +176,14 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 
 		if (metadataId != null) {
 			dbMetadata = getGraph().getDataRecordMetadata(metadataId, true);
+		}
+		
+		indexKey = null;
+		if (dbMetadata != null) {
+			keys = parseSQLWhereClause(sqlQuery, dbMetadata);
+			if (keys != null) {
+				indexKey = new RecordKey(keys, dbMetadata);
+			}
 		}
 		
 		if (connection == null) {
@@ -368,7 +381,35 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     	synchronized (sqlConnection) {
     		return iteratorImpl(query.toString());
     	}
-   }
+    }
+    
+    private String[] parseSQLWhereClause(String queryString, DataRecordMetadata recordMetadata) {
+    	ArrayList<String> keys = new ArrayList<String>(); 
+    	
+    	StringBuilder query = new StringBuilder(queryString);
+    	int whereIndex = query.toString().toLowerCase().indexOf("where");
+    	int groupIndex = query.toString().toLowerCase().indexOf("group");
+    	if (whereIndex > -1) {
+    		query.delete(0, whereIndex + 5);
+    		if (groupIndex > -1){
+    			query.setLength(groupIndex);
+    		}
+    	}
+    	
+    	for (DataFieldMetadata field : recordMetadata.getFields()) {
+    		Pattern pattern = Pattern.compile(".*\\b" + field.getName() + "\\b.*");
+    		Matcher matcher = pattern.matcher(query);
+    		if (matcher.matches()) {
+    			keys.add(field.getName());
+    		}
+    	}
+    	
+    	if (keys.isEmpty()) {
+    		return null;
+    	} else {
+    		return keys.toArray(new String[0]);
+    	}
+    }     
     
     private Iterator<DataRecord> iteratorImpl(String query) {
     	
@@ -462,7 +503,11 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	
 	@Override
 	public DataRecordMetadata getKeyMetadata() throws ComponentNotReadyException {
-		throw new UnsupportedOperationException("DBLookupTable does not provide key metadata.");
+		if (indexKey != null) {
+			return indexKey.getKeyRecordMetadata(); 
+		} else {
+			throw new UnsupportedOperationException("DBLookupTable does not provide key metadata.");
+		}
 	}
 	
 	@Override
