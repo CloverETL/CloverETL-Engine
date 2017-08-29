@@ -209,9 +209,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
      * @param properties
      */
     public DataRecordMetadataXMLReaderWriter(GraphParameters graphParameters) {
-    	if(graphParameters != null) {
-    		refResolver = new PropertyRefResolver(graphParameters);
-    	}
+    	refResolver = new PropertyRefResolver(graphParameters);
     }
     
 	// Associations
