@@ -369,7 +369,7 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
         	if (metadata != null) { // CLO-5416: can also be used to read metadata from Clover debug file
         		// CLO-4591:
         		DataRecordMetadata nonAutofilledFieldsMetadata = MetadataUtils.getNonAutofilledFieldsMetadata(metadata);
-        		if (version.metadata != null && !nonAutofilledFieldsMetadata.equals(version.metadata, false)) {
+        		if (!nonAutofilledFieldsMetadata.equals(version.metadata, false)) {
         			logger.error("Data structure of input file is not compatible with used metadata. File data structure: " + version.metadata.toStringDataTypes());
         			throw new ComponentNotReadyException("Data structure of input file is not compatible with used metadata. More details available in log.");
         		}
