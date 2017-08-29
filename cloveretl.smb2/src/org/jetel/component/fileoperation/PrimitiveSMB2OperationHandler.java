@@ -53,6 +53,8 @@ import com.hierynomus.mssmb2.SMB2CreateDisposition;
 import com.hierynomus.mssmb2.SMBApiException;
 import com.hierynomus.smbj.share.DiskEntry;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -291,6 +293,7 @@ public class PrimitiveSMB2OperationHandler implements RecursiveDeleteHandler, Wi
 			return !isDirectory();
 		}
 
+		@SuppressFBWarnings("NP_BOOLEAN_RETURN_NULL")
 		@Override
 		public Boolean isLink() {
 			return null;
