@@ -987,7 +987,9 @@ This software is licensed under the terms you may find in the file named "LICENS
 				<jvmarg value="-XX:MaxPermSize=512m"/>
 				<jvmarg value="-Dderby.system.home=${dir.examples}/ExtExamples"/>
 				<jvmarg value="-Dhttps.protocols=TLSv1.2,TLSv1.1,TLSv1"/>
+				<jvmarg value="-Dbouncycastle.lib.dir=${bouncycastle.lib.dir}"/>
 				<jvmarg line="${additional.jvmargs}"/>
+				
 				<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
 				<classpath>
 					<pathelement path="${dir.classestest}"/>
@@ -1084,6 +1086,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 		<echo message="Executing Clover Test Environment environment - tests reset"/>
 		<property name="test.cloveretl.plugins" value="${dir.package}/plugins"/>
 		<property name="dir.test.additional.classpath" value=""/>
+		<property name="bouncycastle.lib.dir" value="${bouncycastle.lib.dir}"/>
 		<parallel>
 			<daemons>
 				<antcall target="start-testdb" />
