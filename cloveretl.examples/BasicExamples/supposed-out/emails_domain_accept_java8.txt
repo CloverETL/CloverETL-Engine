@@ -1,6 +1,5 @@
 info@javlin.eu
 test@javlin.eu
-one@good.email.com
 another@google.com
 yetanother@google.com
 gooddomain@google.com

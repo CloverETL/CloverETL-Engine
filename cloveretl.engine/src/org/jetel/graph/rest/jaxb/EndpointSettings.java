@@ -18,6 +18,7 @@
  */
 package org.jetel.graph.rest.jaxb;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,8 +36,10 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "EndpointSettings")
 @XmlAccessorType(XmlAccessType.NONE)
-public class EndpointSettings {
+public class EndpointSettings implements Serializable {
 
+	private static final long serialVersionUID = -2691513925619239673L;
+	
 	private String urlPath;
 	private String description;
 	private String endpointName;

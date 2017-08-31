@@ -35,7 +35,7 @@
 	        <singleType name="hadoopConnection"/>
 	      </property>
 	     <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
-	        <singleType name="file" fields="input" dictionary="input" selectionMode="file_only" mandatory_existing_file="false"/>
+	        <singleType name="file" dictionary="output" selectionMode="file_only" mandatory_existing_file="false"/>
 	      </property>
 	      <property category="basic" displayName="Key field" modifiable="true" name="keyField" nullable="true" required="true">
 	        <singleType name="field" inputPortName="0" />
