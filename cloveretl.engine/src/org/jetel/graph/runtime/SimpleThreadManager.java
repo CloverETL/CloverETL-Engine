@@ -60,8 +60,6 @@ public class SimpleThreadManager implements IThreadManager {
 	@Override
 	public void executeNode(Runnable node) {
 		Thread nodeThread = new Thread(node);
-		//This is one of three calls which destroy JNDI context created in worker
-		//See https://bug.javlin.eu/browse/CLO-11113
 		nodeThread.setContextClassLoader(node.getClass().getClassLoader());
 		nodeThread.setPriority(Thread.MIN_PRIORITY);
 		nodeThread.setDaemon(false);

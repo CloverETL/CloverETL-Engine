@@ -152,8 +152,6 @@ public class runGraph {
     public final static String INIT_PROXY_AUTHENTICATOR_SWITCH = "-proxyauth";
     public final static String LOCALE_SWITCH = "-locale";
     public final static String TIME_ZONE_SWITCH = "-timezone";
-    
-    public static final HashMap<String, DataSource> jndiDatasources = new HashMap<String, DataSource>();
 	
 	/**
 	 *  Description of the Method

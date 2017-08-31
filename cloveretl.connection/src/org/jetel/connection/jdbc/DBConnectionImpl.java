@@ -53,7 +53,6 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.main.runGraph;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.crypto.Enigma;
@@ -159,6 +158,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
     private JdbcDriver jdbcDriver;
     private JdbcSpecific jdbcSpecific;
     private URL[] driverLibraryURLs;
+    private DataSource jndiDataSource;
     
     /**
      *  Constructor for the DBConnection object.
@@ -190,6 +190,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
 	protected void fromProperties(Properties properties) {
 		TypedProperties typedProperties = new TypedProperties(properties, getGraph());
 
+		setName(typedProperties.getStringProperty(XML_NAME_ATTRIBUTE, null));
 		setUser(typedProperties.getStringProperty(XML_USER_ATTRIBUTE, null));
 		setPassword(typedProperties.getStringProperty(XML_PASSWORD_ATTRIBUTE, null, RefResFlag.PASSWORD));
 		setDbUrl(typedProperties.getStringProperty(XML_DBURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
@@ -297,7 +298,16 @@ public class DBConnectionImpl extends AbstractDBConnection {
             }
         } catch (SQLException e) {
             throw new ComponentNotReadyException(e);
-        } 
+        }
+        
+        if (!StringUtils.isEmpty(getJndiName())) {
+        	try {
+        		Context initContext = new InitialContext();
+        		jndiDataSource = (DataSource) initContext.lookup(getJndiName());
+        	} catch (Exception e) {
+        		throw new ComponentNotReadyException("Cannot open DB connection from JNDI data source:" + getJndiName(), e);
+        	}        
+        }
 
         //decrypt password
         decryptPassword();
@@ -902,20 +912,13 @@ public class DBConnectionImpl extends AbstractDBConnection {
 	protected SqlConnection connect(OperationType operationType) throws JetelException {
     	if (!StringUtils.isEmpty(getJndiName())) {
         	try {
-        		DataSource ds = null;
-        		if (runGraph.jndiDatasources.get(getJndiName()) != null) {
-        			ds = runGraph.jndiDatasources.get(getJndiName());
-        		} else { 
-        			Context initContext = new InitialContext();
-        			ds = (DataSource)initContext.lookup(getJndiName());
-        		}        		
-               	Connection jndiConnection = ds.getConnection();
+        		Connection jndiConnection = jndiDataSource.getConnection();
                	//update jdbc specific of this DBConnection according given JNDI connection
                	updateJdbcSpecific(jndiConnection);
                	//wrap the given JNDI connection to a DefaultConnection instance 
                	return getJdbcSpecific().createSQLConnection(this, jndiConnection, operationType);
         	} catch (Exception e) {
-        		throw new JetelException("Cannot establish DB connection to JNDI:" + getJndiName() + " " + e.getMessage(), e);
+        		throw new JetelException("Cannot open DB connection from JNDI data source:" + getJndiName(), e);
         	}
     	} else {
         	try {
