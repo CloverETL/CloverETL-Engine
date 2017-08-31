@@ -125,7 +125,7 @@ public class SMB2Utils {
 			DiskShare share = connection.getShare();
 			
 			Set<AccessMask> accessMask = append ? EnumSet.of(AccessMask.FILE_APPEND_DATA) : EnumSet.of(AccessMask.FILE_WRITE_DATA);
-			SMB2CreateDisposition createDisposition = append ? SMB2CreateDisposition.FILE_OPEN_IF : SMB2CreateDisposition.FILE_SUPERSEDE;
+			SMB2CreateDisposition createDisposition = append ? SMB2CreateDisposition.FILE_OPEN_IF : SMB2CreateDisposition.FILE_OVERWRITE_IF;
 			
 			final com.hierynomus.smbj.share.File file = openFile(share, path, accessMask, createDisposition);
 			OutputStream os = append ? new AppendOutputStream(file) : file.getOutputStream();
