@@ -18,6 +18,7 @@
  */
 package org.jetel.component.fileoperation;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -39,9 +40,13 @@ import com.hierynomus.msfscc.fileinformation.FileDirectoryInformation;
 import com.hierynomus.msfscc.fileinformation.FileStandardInformation;
 import com.hierynomus.mssmb2.SMB2CreateDisposition;
 import com.hierynomus.mssmb2.SMB2ShareAccess;
+import com.hierynomus.smbj.SmbConfig;
+import com.hierynomus.smbj.connection.Connection;
+import com.hierynomus.smbj.connection.NegotiatedProtocol;
 import com.hierynomus.smbj.share.DiskEntry;
 import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
+import com.hierynomus.smbj.share.TreeConnect;
 
 public class SMB2Utils {
 
@@ -128,6 +133,14 @@ public class SMB2Utils {
 			
 			final com.hierynomus.smbj.share.File file = openFile(share, path, accessMask, createDisposition);
 			OutputStream os = append ? new AppendOutputStream(file) : file.getOutputStream();
+			if (append) { // add buffering, AppendOutputStream is slow
+				TreeConnect treeConnect = share.getTreeConnect();
+				Connection smbjConnection = treeConnect.getSession().getConnection();
+		        NegotiatedProtocol negotiatedProtocol = smbjConnection.getNegotiatedProtocol();
+		        SmbConfig config = smbjConnection.getConfig();
+				int bufferSize = Math.min(config.getWriteBufferSize(), negotiatedProtocol.getMaxWriteSize());
+				os = new BufferedOutputStream(os, bufferSize);
+			}
 			os = new CloseOnceOutputStream(os) {
 
 				@Override
