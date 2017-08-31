@@ -35,6 +35,7 @@ import com.hierynomus.smbj.SMBClient;
 import com.hierynomus.smbj.SmbConfig;
 import com.hierynomus.smbj.auth.AuthenticationContext;
 import com.hierynomus.smbj.connection.Connection;
+import com.hierynomus.smbj.connection.NegotiatedProtocol;
 import com.hierynomus.smbj.session.Session;
 import com.hierynomus.smbj.share.DiskShare;
 
@@ -50,6 +51,8 @@ public class PooledSMB2Connection extends AbstractPoolableConnection implements 
 	private Session session;
 	private DiskShare share;
 	
+	private int writeBufferSize;
+	
 	public PooledSMB2Connection(Authority authority) {
 		super(authority);
 	}
@@ -60,6 +63,11 @@ public class PooledSMB2Connection extends AbstractPoolableConnection implements 
 	
 	private void connect() throws IOException {
 		this.connection = openConnection();
+
+        NegotiatedProtocol negotiatedProtocol = connection.getNegotiatedProtocol();
+        SmbConfig config = connection.getConfig();
+		writeBufferSize = Math.min(config.getWriteBufferSize(), negotiatedProtocol.getMaxWriteSize());
+
 		try {
 			this.session = startSession();
 		} catch (NoClassDefFoundError error) {
@@ -166,6 +174,10 @@ public class PooledSMB2Connection extends AbstractPoolableConnection implements 
 	public void validate() throws IOException {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public int getWriteBufferSize() {
+		return writeBufferSize;
 	}
 
 	public InputStream getInputStream(URL url) throws IOException {
