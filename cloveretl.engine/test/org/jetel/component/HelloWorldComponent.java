@@ -19,6 +19,9 @@
 package org.jetel.component;
 
 import org.apache.log4j.Logger;
+import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
+import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 
@@ -49,6 +52,15 @@ public class HelloWorldComponent extends Node {
 	@Override
 	protected Result execute() throws Exception {
 		log.info(getId() + ": " + greeting);
+		
+		for (InputPort ip : getInPorts()) {
+			DataRecord rec = DataRecordFactory.newRecord(ip.getMetadata());
+			while (rec != null) {
+				rec = ip.readRecord(rec);
+			}
+		}
+		
+		broadcastEOF();
 		return Result.FINISHED_OK;
 	}
 

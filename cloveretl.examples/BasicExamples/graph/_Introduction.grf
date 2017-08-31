@@ -39,9 +39,9 @@ After running a graph, you can see results in project: [BasicExamples|navigator:
 
 Data flows from *Readers* (green), through *Transformers* (yellow) into *Writers* (blue). Check the Palette to the right to see what's available.
 
-*Edges* between components have metadata assigned to them - a sort of description for the data. _Double-click_ any edge to see its metadata. Metadata help components to work with the data - readers use it to parse data, transformation components use it for configuring keys, mappings etc. and writers take metadata into accout when formatting the output.
+*Edges* between components have metadata assigned to them - a sort of description for the data. _Double-click_ any edge to see its metadata. Metadata helps components to work with the data - readers use it to parse data, transformation components use it for configuring keys, mappings etc. and writers take metadata into accout when formatting the output.
 
-Notice the small bugs on the edges - these indicate that debug mode is on for those edges. You can check [Data Inspector|view://com.cloveretl.gui.debugDataView] view to see what data came through the edge. But, you need to run the transformation first. Warning - always turn debug mode off when moving to production - it's a priceless help for development but kills performance in production.]]></attr>
+Notice the small bugs on the edges - these indicate that the Debug mode is turned on for those edges. You can check [Data Inspector|view://com.cloveretl.gui.debugDataView] view to see what data came through the edge. But, you need to run the transformation first. Warning - always turn debug mode off when moving to production - it's a priceless help for development but kills performance in production.]]></attr>
 </RichTextNote>
 <RichTextNote backgroundColor="FAF6D6" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" fontSize="medium" height="272" id="Note0" textColor="444444" width="368" x="653" y="261">
 <attr name="text"><![CDATA[h3. Where to go next?

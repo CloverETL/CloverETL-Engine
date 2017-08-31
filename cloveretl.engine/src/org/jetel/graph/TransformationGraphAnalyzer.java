@@ -56,6 +56,7 @@ import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.SingleThreadWatchDog;
 import org.jetel.util.GraphUtils;
 import org.jetel.util.Pair;
+import org.jetel.util.RestJobUtils;
 import org.jetel.util.SubgraphUtils;
 
 /*
@@ -181,11 +182,20 @@ public class TransformationGraphAnalyzer {
 					List<Node> incoming = findPrecedentNodesRecursive(node, null);
 					input.addAll(incoming);
 				} else if (node.isPartOfRestOutput()) {
-					List<Node> outgoing = findFollowingNodesRecursive(node, null);
-					if (!"RESTJOB_OUTPUT".equals(node.getType())) {
+					if (RestJobUtils.isRestJobOutputComponent(node.getType())) {
+						/*
+						 * if there are no components following the output, put the output component
+						 * to the final phase so that eventual file writing is performed in that phase
+						 */
+						List<Node> outgoing = findFollowingNodesRecursive(node, null);
+						if (outgoing.isEmpty()) {
+							output.add(node);
+						}
+					} else {
+						List<Node> outgoing = findFollowingNodesRecursive(node, null);
 						output.add(node);
+						output.addAll(outgoing);
 					}
-					output.addAll(outgoing);
 				}
 			}
 			for (Node node : input) {
@@ -941,6 +951,11 @@ public class TransformationGraphAnalyzer {
 						continue; // no connected component on this port pair
 					}
 					next = outPort.getEdge().getReader();
+				}
+				
+				if (RestJobUtils.isRestJobOutputComponent(next.getType())
+						&& graph.getStaticJobType().isRestJob()) {
+					continue;
 				}
 				
 				if (!next.getEnabled().isBlocker() // "disabled as trash" components can't be blocked

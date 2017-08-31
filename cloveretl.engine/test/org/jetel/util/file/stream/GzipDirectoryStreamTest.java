@@ -48,4 +48,9 @@ public class GzipDirectoryStreamTest extends ArchiveDirectoryStreamTestCase {
 		}
 	}
 
+	@Override
+	public void testStrict() throws IOException {
+		// nothing to test
+	}
+
 }

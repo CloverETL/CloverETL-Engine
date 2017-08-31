@@ -19,12 +19,20 @@
 package org.jetel.graph.rest;
 
 import org.jetel.component.HelloWorldComponent;
+import org.jetel.enums.EdgeTypeEnum;
+import org.jetel.graph.Edge;
+import org.jetel.graph.EdgeFactory;
 import org.jetel.graph.JobType;
 import org.jetel.graph.Phase;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.RestJobUtils;
 
 /**
  * @author jan.michalica (info@cloveretl.com)
@@ -37,6 +45,12 @@ public class RestJobPhasesTest extends CloverTestCase {
 	
 	public void testRestJobAnalysisAndPhases() throws Exception {
 		
+		DataRecordMetadata metadata = new DataRecordMetadata("rc1", DataRecordParsingType.DELIMITED);
+		metadata.addField(new DataFieldMetadata("f1", DataFieldType.STRING, "|"));
+		
+		Edge edge = EdgeFactory.newEdge("e1", metadata);
+		edge.setEdgeType(EdgeTypeEnum.DIRECT_FAST_PROPAGATE);
+	
 		TransformationGraph graph = new TransformationGraph();
 		graph.setStaticJobType(JobType.RESTJOB);
 		GraphRuntimeContext ctx = new GraphRuntimeContext();
@@ -51,16 +65,20 @@ public class RestJobPhasesTest extends CloverTestCase {
 		
 		HelloWorldComponent barrier = new HelloWorldComponent("HELLOBARRIER");
 		barrier.setGreeting("Hello from barrier");
-		barrier.setType("RESTJOB_OUTPUT");
+		barrier.setType(RestJobUtils.REST_JOB_OUTPUT_TYPE);
 		barrier.setPartOfRestOutput(true);
+		barrier.addOutputPort(0, edge);
 		
 		HelloWorldComponent output = new HelloWorldComponent("HELLO3");
 		output.setGreeting("Hello from job output!");
 		output.setPartOfRestOutput(true);
+		output.addInputPort(0, edge);
 		
 		Phase main = new Phase(7);
 		main.addNode(input, output, body, barrier);
+	
 		graph.addPhase(main);
+		graph.addEdge(edge);
 		
 		EngineInitializer.initGraph(graph, ctx);
 		

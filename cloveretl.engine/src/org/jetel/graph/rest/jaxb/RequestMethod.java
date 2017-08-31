@@ -18,6 +18,8 @@
  */
 package org.jetel.graph.rest.jaxb;
 
+import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -29,8 +31,10 @@ import javax.xml.bind.annotation.XmlAttribute;
  * @created 12.4.2017
  */
 @XmlAccessorType(XmlAccessType.NONE)
-public class RequestMethod {
-
+public class RequestMethod implements Serializable {
+	
+	private static final long serialVersionUID = -9220296979484662006L;
+	
 	private String name;
 
 	@XmlAttribute

@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -238,6 +239,15 @@ public class WildcardsTest extends CloverTestCase {
 			assertEquals(4, count);
 		}
 		
+		// CLO-11350: non-existing archive entry
+		try (DirectoryStream<Input> stream = Wildcards.newDirectoryStream(testScenarios, "zip:(./data-in/UDR/CLO-6584/escaping/dollar-sign.zip)#nonExisting.txt")) {
+			for (Input input: stream) {
+				LOG.debug(input.getAbsolutePath());
+			}
+			fail();
+		} catch (DirectoryIteratorException ex) {
+			// ignore
+		}
 	}
 
 	private int size(DirectoryStream<Input> stream) {

@@ -21,8 +21,10 @@ package org.jetel.util.file.stream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.util.Arrays;
+import java.util.NoSuchElementException;
 
 import org.jetel.test.CloverTestCase;
 
@@ -42,6 +44,14 @@ public abstract class ArchiveDirectoryStreamTestCase extends CloverTestCase {
 		
 		final MockInputStream mockInputStream = new MockInputStream(data);
 		
+		DirectoryStream<Input> parent = createParentDirectoryStream(contextUrl, mockInputStream);
+		DirectoryStream<?> stream = openDirectoryStream(parent, "*");
+		stream.iterator().next(); // opens the underlying InputStream
+		stream.close(); // should close the underlying InputStream
+		assertTrue(mockInputStream.isClosed());
+	}
+
+	private DirectoryStream<Input> createParentDirectoryStream(URL contextUrl, final MockInputStream mockInputStream) {
 		DirectoryStream<Input> parent = new CollectionDirectoryStream(contextUrl, Arrays.asList("something")) {
 
 			@Override
@@ -57,10 +67,32 @@ public abstract class ArchiveDirectoryStreamTestCase extends CloverTestCase {
 			}
 			
 		};
-		AbstractDirectoryStream<?> stream = openDirectoryStream(parent, "*");
-		stream.next(); // opens the underlying InputStream
-		stream.close(); // should close the underlying InputStream
-		assertTrue(mockInputStream.isClosed());
+		return parent;
+	}
+	
+	/**
+	 * CLO-11350
+	 */
+	public void testStrict() throws IOException {
+		URL contextUrl = null;
+		byte[] data = prepareData();
+		
+		final MockInputStream mockInputStream = new MockInputStream(data);
+		
+		DirectoryStream<Input> parent = createParentDirectoryStream(contextUrl, mockInputStream);
+		ArchiveDirectoryStream<?, ?> stream = (ArchiveDirectoryStream<?, ?>) openDirectoryStream(parent, "nonExisting");
+		stream.setStrict(true);
+		
+		try {
+			stream.next(); // opens the underlying InputStream
+			fail();
+		} catch (DirectoryIteratorException ex) {
+			// correct type of error - ignore
+		} catch (NoSuchElementException ex) {
+			fail(); // wrong type of error
+		} finally {
+			stream.close(); // close the underlying InputStream
+		}
 	}
 	
 	protected abstract AbstractDirectoryStream<?> openDirectoryStream(DirectoryStream<Input> parent, String mask) throws IOException;

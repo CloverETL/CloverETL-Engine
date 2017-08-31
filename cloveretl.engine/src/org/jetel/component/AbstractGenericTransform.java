@@ -23,15 +23,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.sql.Connection;
+import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
+import org.jetel.database.IConnection;
+import org.jetel.database.sql.DBConnection;
+import org.jetel.database.sql.JdbcSpecific.OperationType;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Node;
-import org.jetel.graph.modelview.MVMetadata;
-import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CloverPublicAPI;
 import org.jetel.util.file.FileUtils;
@@ -135,7 +139,7 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	 * @return {@link File} instance
 	 */
 	protected File getFile(String fileUrl) {
-		URL contextURL = getComponent().getGraph().getRuntimeContext().getContextURL();
+		URL contextURL = getGraph().getRuntimeContext().getContextURL();
 		File file = FileUtils.getJavaFile(contextURL, fileUrl);
 		return file;
 	}
@@ -146,7 +150,7 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	 * @throws IOException
 	 */
 	protected InputStream getInputStream(String fileUrl) throws IOException {
-		URL contextURL = getComponent().getGraph().getRuntimeContext().getContextURL();
+		URL contextURL = getGraph().getRuntimeContext().getContextURL();
 		InputStream is = FileUtils.getInputStream(contextURL, fileUrl);
 		return is;
 	}
@@ -158,9 +162,58 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 	 * @throws IOException
 	 */
 	protected OutputStream getOutputStream(String fileUrl, boolean append) throws IOException {
-		URL contextURL = getComponent().getGraph().getRuntimeContext().getContextURL();
+		URL contextURL = getGraph().getRuntimeContext().getContextURL();
 		OutputStream os = FileUtils.getOutputStream(contextURL, fileUrl, append, -1);
 		return os;
+	}
+
+	/**
+	 * Returns instance of {@link java.sql.Connection} for DBConnection specified in the graph.
+	 * @param name name or id of the requested connection
+	 */
+	protected Connection getDBConnection(String name) {
+		return getDBConnection(name, OperationType.UNKNOWN);
+	}
+	
+	/**
+	 * Returns instance of {@link java.sql.Connection} for DBConnection specified in the graph.
+	 * @param name name or id of the requested connection
+	 * @param operationType expected type of operation for which the connection will be used;
+	 * the connection will be optimise for this purpose
+	 */
+	protected Connection getDBConnection(String name, OperationType operationType) {
+		//find connection by ID
+		IConnection connection = getGraph().getConnection(name);
+		
+		//find connection by name
+		if (connection == null) {
+			Iterator<String> li = graph.getConnections();
+			while (li.hasNext()) {
+				IConnection c = graph.getConnection(li.next());
+				if (name.equals(c.getName())) {
+					if (connection == null) {
+						connection = c;
+					} else {
+						getLogger().warn("Connection name '" + name + "' is ambiguous. Rename the connection to a unique name");
+					}
+				}
+			}
+		}
+		
+		//instantiate java.sql.Connection
+		if (connection != null) {
+			if (connection instanceof DBConnection) {
+				try {
+					return ((DBConnection) connection).getConnection(getComponent().getId());
+				} catch (JetelException e) {
+					throw new JetelRuntimeException(e);
+				}
+			} else {
+				throw new JetelRuntimeException("Connection '" + name + "' is not DB connection.");
+			}
+		} else {
+			throw new JetelRuntimeException("Connection '" + name + "' does not found.");
+		}
 	}
 	
 	/**
