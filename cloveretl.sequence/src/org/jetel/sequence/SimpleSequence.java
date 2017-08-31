@@ -18,6 +18,7 @@
  */
 package org.jetel.sequence;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -173,13 +174,14 @@ public class SimpleSequence extends AbstractSequence {
 		
         try {
         	// register this sequence, set it's value
-        	synchronizer = SimpleSequenceSynchronizer.createSynchronizer(this);
+        	synchronizer = SimpleSequenceSynchronizer.registerAndGetSynchronizer(this);
     		alreadyIncremented = false;
 		} catch (IOException ex) {
             free();
-            ComponentNotReadyException cnre = new ComponentNotReadyException(this, "Can't read value from sequence file. If you "
-            		+ "are using CloverETL Cluster, please make sure you are accessing persisted sequence "
-            		+StringUtils.quote(getName())+" on the same cluster node.", ex);
+            ComponentNotReadyException cnre = new ComponentNotReadyException(this, "Can't read value from sequence file. " +
+            		"This is caused by accessing the file from multiple Java Virtual Machines at the same time. " +
+            		"If you are using CloverETL Cluster, make sure you are accessing persisted sequence " +
+            		StringUtils.quote(getName()) + " on the same cluster node.", ex);
             cnre.setAttributeName(XML_FILE_URL_ATTRIBUTE);
             throw cnre;
 		} catch (BufferUnderflowException e) {
@@ -232,8 +234,9 @@ public class SimpleSequence extends AbstractSequence {
 			return;
 		}
 		if (synchronizer != null) {
-			synchronizer.freeSequence(this);
+			synchronizer.unregisterSequence(this);
 		}
+		super.free();
 	}
 
 	public long getNumCachedValues() {
