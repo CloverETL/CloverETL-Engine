@@ -33,7 +33,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.io.FilenameUtils;
 import org.jetel.component.fileoperation.pool.ConnectionPool;
@@ -49,6 +51,8 @@ import com.hierynomus.msfscc.FileAttributes;
 import com.hierynomus.msfscc.fileinformation.FileAllInformation;
 import com.hierynomus.msfscc.fileinformation.FileBasicInformation;
 import com.hierynomus.msfscc.fileinformation.FileDirectoryInformation;
+import com.hierynomus.msfscc.fileinformation.FileQueryableInformation;
+import com.hierynomus.msfscc.fileinformation.FileStandardInformation;
 import com.hierynomus.mssmb2.SMB2CreateDisposition;
 import com.hierynomus.mssmb2.SMBApiException;
 import com.hierynomus.smbj.share.DiskEntry;
@@ -61,7 +65,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  *
  * @created 17. 7. 2017
  */
-public class PrimitiveSMB2OperationHandler implements RecursiveDeleteHandler, WildcardResolutionHandler {
+public class PrimitiveSMB2OperationHandler implements RecursiveDeleteHandler, WildcardResolutionHandler, FileMetadataHandler {
 	
 	private ConnectionPool pool = ConnectionPool.getInstance();
 	
@@ -197,25 +201,27 @@ public class PrimitiveSMB2OperationHandler implements RecursiveDeleteHandler, Wi
 		PooledSMB2Connection connection = getConnection(target);
 		return SMB2Utils.getOutputStream(connection, target, append);
 	}
+	
+	private <F extends FileQueryableInformation> F getFileInformation(URI target, Class<F> informationClass) throws IOException {
+    	try (PooledSMB2Connection connection = getConnection(target)) {
+    		String path = getPath(target);
+            return connection.getShare().getFileInformation(path, informationClass);
+    	} catch (SMBApiException sae) {
+            NtStatus status = sae.getStatus();
+			if (status == NtStatus.STATUS_OBJECT_NAME_NOT_FOUND || status == NtStatus.STATUS_OBJECT_PATH_NOT_FOUND) {
+                return null;
+            } else {
+                throw new IOException(sae);
+            }
+		} catch (Exception ex) {
+    		throw ExceptionUtils.getIOException(ex);
+    	}
+	}
 
     @Override
 	public Info info(URI target) throws IOException {
-    	try (PooledSMB2Connection connection = getConnection(target)) {
-    		String path = getPath(target);
-    		try {
-    			FileAllInformation file = connection.getShare().getFileInformation(path);
-    			return new SmbFileInfo(target, file);
-    		} catch (SMBApiException sae) {
-                NtStatus status = sae.getStatus();
-    			if (status == NtStatus.STATUS_OBJECT_NAME_NOT_FOUND || status == NtStatus.STATUS_OBJECT_PATH_NOT_FOUND) {
-                    return null;
-                } else {
-                    throw new IOException(sae);
-                }
-    		}
-    	} catch (Exception ex) {
-    		throw ExceptionUtils.getIOException(ex);
-    	}
+		FileAllInformation file = getFileInformation(target, FileAllInformation.class);
+		return (file != null) ? new SmbFileInfo(target, file) : null;
 	}
     
 	@Override
@@ -223,27 +229,12 @@ public class PrimitiveSMB2OperationHandler implements RecursiveDeleteHandler, Wi
     	return list(target, null, false);
 	}
 	
-	private boolean isDirectory(FileDirectoryInformation file) {
-		return SMB2Utils.hasFlag(file.getFileAttributes(), FileAttributes.FILE_ATTRIBUTE_DIRECTORY.getValue());
-	}
-	
-	@Override
-	public List<URI> list(URI base, String mask, boolean dirsOnly) throws IOException {
+	private List<FileDirectoryInformation> list(URI base, String mask) throws IOException {
+		List<FileDirectoryInformation> children;
+		String path = getPath(base);
+		
     	try (PooledSMB2Connection connection = getConnection(base)) {
-    		String path = getPath(base);
-    		List<FileDirectoryInformation> children = connection.getShare().list(path, FileDirectoryInformation.class, mask);
-    		List<URI> result = new ArrayList<>(children.size());
-    		for (FileDirectoryInformation child: children) {
-    			if (dirsOnly && !isDirectory(child)) {
-    				continue;
-    			}
-    			String fileName = child.getFileName();
-    			if (!fileName.equals(URIUtils.CURRENT_DIR_NAME) && !fileName.equals(URIUtils.PARENT_DIR_NAME)) {
-    				result.add(URIUtils.getChildURI(base, fileName));
-    			}
-    		}
-    		
-    		return result;
+    		children = connection.getShare().list(path, FileDirectoryInformation.class, mask);
     	} catch (SMBApiException ex) {
     		// this error is thrown if there are no files that match the mask
     		if ((mask != null) && (ex.getStatus() == NtStatus.STATUS_NO_SUCH_FILE)) {
@@ -253,26 +244,55 @@ public class PrimitiveSMB2OperationHandler implements RecursiveDeleteHandler, Wi
     	} catch (Exception ex) {
     		throw ExceptionUtils.getIOException(ex);
     	}
-	}
 
-	private static class SmbFileInfo implements Info {
+    	// filter out "." and ".."
+		for (Iterator<FileDirectoryInformation> it = children.iterator(); it.hasNext(); ) {
+			FileDirectoryInformation child = it.next();
+			String fileName = child.getFileName();
+			switch (fileName) {
+			case URIUtils.CURRENT_DIR_NAME:
+			case URIUtils.PARENT_DIR_NAME:
+				it.remove();
+			}
+		}
+		return children;
+	}
+	
+	@Override
+	public List<URI> list(URI base, String mask, boolean dirsOnly) throws IOException {
+		List<FileDirectoryInformation> children = list(base, mask);
+		List<URI> result = new ArrayList<>(children.size());
+		for (FileDirectoryInformation child: children) {
+			if (dirsOnly && !SMB2Utils.isDirectory(child)) {
+				continue;
+			}
+			result.add(URIUtils.getChildURI(base, child.getFileName()));
+		}
 		
-		private final FileAllInformation file;
+		return result;
+	}
+	
+	@Override
+	public List<Info> listFiles(URI base) throws IOException {
+		List<FileDirectoryInformation> children = list(base, null);
+		List<Info> result = new ArrayList<>(children.size());
+		for (FileDirectoryInformation child: children) {
+			String fileName = child.getFileName();
+			URI childURI = URIUtils.getChildURI(base, fileName);
+			result.add(new SimpleSmbFileInfo(childURI, child));
+		}
+		
+		return result;
+	}
+	
+	private static abstract class AbstractSmbInfo implements Info {
+
 		private final URI uri;
 
-		/**
-		 * @param file
-		 */
-		private SmbFileInfo(URI uri, FileAllInformation file) {
-			this.uri = uri;
-			this.file = file;
+		public AbstractSmbInfo(URI uri) {
+			this.uri = Objects.requireNonNull(uri);
 		}
-
-		@Override
-		public String getName() {
-			return FilenameUtils.getName(file.getNameInformation());
-		}
-
+		
 		@Override
 		public URI getURI() {
 			return uri;
@@ -281,11 +301,6 @@ public class PrimitiveSMB2OperationHandler implements RecursiveDeleteHandler, Wi
 		@Override
 		public URI getParentDir() {
 			return URIUtils.getParentURI(uri);
-		}
-
-		@Override
-		public boolean isDirectory() {
-			return file.getStandardInformation().isDirectory();
 		}
 
 		@Override
@@ -304,53 +319,59 @@ public class PrimitiveSMB2OperationHandler implements RecursiveDeleteHandler, Wi
 			return hasAttribute(FileAttributes.FILE_ATTRIBUTE_HIDDEN);
 		}
 		
-		private boolean hasAttribute(FileAttributes attribute) {
-			return SMB2Utils.hasFlag(file.getBasicInformation().getFileAttributes(), attribute.getValue());
-		}
-		
-		private boolean hasAccess(AccessMask accessMask) {
-			return SMB2Utils.hasFlag(file.getAccessInformation().getAccessFlags(), accessMask.getValue());
-		}
-
+		/**
+		 * <code>true</code>, because we have already checked that the resource exists
+		 */
 		@Override
 		public Boolean canRead() {
-			return hasAccess(AccessMask.FILE_READ_DATA);
+			return true;
 		}
 
+		/**
+		 * <code>true</code> if the resource is not marked read-only
+		 */
 		@Override
 		public Boolean canWrite() {
-			return hasAccess(AccessMask.FILE_WRITE_DATA);
+			return !hasAttribute(FileAttributes.FILE_ATTRIBUTE_READONLY);
 		}
 
+		@SuppressFBWarnings("NP_BOOLEAN_RETURN_NULL")
 		@Override
 		public Boolean canExecute() {
-			return hasAccess(AccessMask.FILE_EXECUTE);
+			return null;
 		}
 
 		@Override
 		public Type getType() {
 			return isDirectory() ? Type.DIR : Type.FILE;
 		}
-
+		
+		private boolean hasAttribute(FileAttributes attribute) {
+			return SMB2Utils.hasFlag(getFileAttributes(), attribute.getValue());
+		}
+		
 		@Override
 		public Date getLastModified() {
-			return file.getBasicInformation().getLastWriteTime().toDate();
+			return getLastWriteTime().toDate();
 		}
 
 		@Override
 		public Date getCreated() {
-			return file.getBasicInformation().getCreationTime().toDate();
+			return getCreationTime().toDate();
 		}
 
 		@Override
 		public Date getLastAccessed() {
-			return file.getBasicInformation().getLastAccessTime().toDate();
+			return getLastAccessTime().toDate();
 		}
 
-		@Override
-		public Long getSize() {
-			return file.getStandardInformation().getEndOfFile();
-		}
+		protected abstract long getFileAttributes();
+		
+		protected abstract FileTime getLastWriteTime();
+
+		protected abstract FileTime getCreationTime();
+
+		protected abstract FileTime getLastAccessTime();
 
 		@Override
 		public String toString() {
@@ -358,5 +379,111 @@ public class PrimitiveSMB2OperationHandler implements RecursiveDeleteHandler, Wi
 		}
 		
 	}
+	
+	private static class SmbFileInfo extends AbstractSmbInfo {
+		
+		private final FileAllInformation file;
 
+		/**
+		 * @param file
+		 */
+		private SmbFileInfo(URI uri, FileAllInformation file) {
+			super(uri);
+			this.file = Objects.requireNonNull(file);
+		}
+
+		@Override
+		public String getName() {
+			return FilenameUtils.getName(file.getNameInformation());
+		}
+
+		@Override
+		public boolean isDirectory() {
+			return getStandardInformation().isDirectory();
+		}
+
+		@Override
+		public Long getSize() {
+			return getStandardInformation().getEndOfFile();
+		}
+
+		@Override
+		protected long getFileAttributes() {
+			return getBasicInformation().getFileAttributes();
+		}
+
+		@Override
+		protected FileTime getLastWriteTime() {
+			return getBasicInformation().getLastWriteTime();
+		}
+
+		@Override
+		protected FileTime getCreationTime() {
+			return getBasicInformation().getCreationTime();
+		}
+
+		@Override
+		protected FileTime getLastAccessTime() {
+			return getBasicInformation().getLastAccessTime();
+		}
+
+		private FileStandardInformation getStandardInformation() {
+			return file.getStandardInformation();
+		}
+
+		private FileBasicInformation getBasicInformation() {
+			return file.getBasicInformation();
+		}
+
+	}
+
+	private static class SimpleSmbFileInfo extends AbstractSmbInfo {
+		
+		private final FileDirectoryInformation file;
+		
+		/**
+		 * @param file
+		 */
+		private SimpleSmbFileInfo(URI uri, FileDirectoryInformation file) {
+			super(uri);
+			this.file = Objects.requireNonNull(file);
+		}
+		
+		@Override
+		public String getName() {
+			return file.getFileName();
+		}
+
+		@Override
+		public boolean isDirectory() {
+			return SMB2Utils.isDirectory(file);
+		}
+
+		@Override
+		protected FileTime getLastWriteTime() {
+			return file.getLastWriteTime();
+		}
+
+		@Override
+		protected FileTime getCreationTime() {
+			return file.getCreationTime();
+		}
+
+		@Override
+		protected FileTime getLastAccessTime() {
+			return file.getLastAccessTime();
+		}
+
+		@Override
+		public Long getSize() {
+			return file.getEndOfFile();
+		}
+
+		@Override
+		protected long getFileAttributes() {
+			return file.getFileAttributes();
+		}
+
+	}
+	
 }

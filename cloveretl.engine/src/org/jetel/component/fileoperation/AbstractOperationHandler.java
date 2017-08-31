@@ -57,11 +57,13 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 	protected final PrimitiveOperationHandler simpleHandler;
 	protected final RecursiveDeleteHandler deleteHandler;
 	protected final WildcardResolutionHandler wildcardHandler;
+	protected final FileMetadataHandler fileMetadataProvider;
 
 	public AbstractOperationHandler(PrimitiveOperationHandler simpleHandler) {
 		this.simpleHandler = simpleHandler;
 		this.deleteHandler = (simpleHandler instanceof RecursiveDeleteHandler) ? (RecursiveDeleteHandler) simpleHandler : null; 
 		this.wildcardHandler = (simpleHandler instanceof WildcardResolutionHandler) ? (WildcardResolutionHandler) simpleHandler : null; 
+		this.fileMetadataProvider = (simpleHandler instanceof FileMetadataHandler) ? (FileMetadataHandler) simpleHandler : null; 
 	}
 
 	private static final CreateParameters CREATE_PARENT_DIRS = new CreateParameters().setMakeParents(true).setDirectory(true);
@@ -420,6 +422,10 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 	 * @throws IOException
 	 */
 	protected List<Info> listDirectory(URI uri) throws IOException {
+		if (fileMetadataProvider != null) {
+			return fileMetadataProvider.listFiles(uri);
+		}
+		
 		List<URI> children = simpleHandler.list(uri); 
 		List<Info> result = new ArrayList<Info>(children.size());
 		for (URI child: children) {
