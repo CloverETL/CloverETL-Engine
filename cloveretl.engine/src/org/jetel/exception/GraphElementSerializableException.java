@@ -18,6 +18,8 @@
  */
 package org.jetel.exception;
 
+import org.jetel.graph.IGraphElement;
+
 /**
  * Extension for {@link SerializableException}, which allow to carry
  * "causeGraphElementId", which is identifier of cause graph element.
@@ -40,7 +42,10 @@ public class GraphElementSerializableException extends SerializableException {
 
 	GraphElementSerializableException(ComponentNotReadyException e) {
 		super(e);
-		this.causeGraphElementId = e.getGraphElement().getId();
+		IGraphElement graphElement = e.getGraphElement();
+		if (graphElement != null) {
+			this.causeGraphElementId = graphElement.getId();
+		}
 	}
 
 	public String getCauseGraphElementId() {
