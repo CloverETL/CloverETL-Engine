@@ -229,6 +229,7 @@ public class PrimitiveSMB2OperationHandler implements RecursiveDeleteHandler, Wi
     	return list(target, null, false);
 	}
 	
+	@SuppressFBWarnings("SF_SWITCH_NO_DEFAULT")
 	private List<FileDirectoryInformation> list(URI base, String mask) throws IOException {
 		List<FileDirectoryInformation> children;
 		String path = getPath(base);
