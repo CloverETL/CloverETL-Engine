@@ -55,6 +55,10 @@ public class ConnectionPool extends GenericKeyedObjectPool<Authority, PoolableCo
 	public static ConnectionPool getInstance() {
 		return SingletonHolder.INSTANCE;
 	}
+	
+	public static DefaultConnectionFactory getConnectionFactory() {
+		return SingletonHolder.CONNECTION_FACTORY_INSTANCE;
+	}
 
 	/**
 	 * How often is the cleanup performed.

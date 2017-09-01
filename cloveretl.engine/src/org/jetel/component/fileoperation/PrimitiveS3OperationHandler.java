@@ -72,7 +72,7 @@ import com.amazonaws.services.s3.transfer.TransferManager;
  *
  * @created 17. 3. 2015
  */
-public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
+public class PrimitiveS3OperationHandler implements RecursiveDeleteHandler {
 	
 	private static final Log log = LogFactory.getLog(PrimitiveS3OperationHandler.class);
 	
@@ -218,6 +218,7 @@ public class PrimitiveS3OperationHandler implements PrimitiveOperationHandler {
 	 * @param target
 	 * @return
 	 */
+	@Override
 	public boolean removeDirRecursively(URI target) throws IOException {
 		target = target.normalize();
 		PooledS3Connection connection = null;
