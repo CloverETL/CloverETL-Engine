@@ -36,8 +36,6 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.HttpContextNotAvailableException;
 import org.jetel.exception.JetelRuntimeException;
@@ -47,7 +45,6 @@ import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Edge;
 import org.jetel.graph.EdgeBase;
 import org.jetel.graph.GraphParameter;
-import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -197,21 +194,7 @@ public abstract class IAuthorityProxy {
 			errException = ExceptionUtils.stackTraceToString(e);
 			
 			//try to find caused graph element id
-			Throwable t = e;
-			while (true) {
-				if (t instanceof ConfigurationException) {
-					errComponent = ((ConfigurationException) t).getCausedGraphElementId();
-				} else if (t instanceof ComponentNotReadyException) {
-					IGraphElement graphElement = ((ComponentNotReadyException) t).getGraphElement();
-					if (graphElement != null) {
-						errComponent = graphElement.getId();
-					}
-				}
-				if (!StringUtils.isEmpty(errComponent) || t.getCause() == null || t == t.getCause()) {
-					break;
-				}
-				t = t.getCause();
-			}
+			errComponent = ExceptionUtils.getCauseGraphElementId(e);
 		}
 	}
 

@@ -52,7 +52,7 @@ public class GraphErrorDetail implements GraphError {
 			GraphErrorDetail graphError = new GraphErrorDetail();
 			graphError.setErrorMessage(watchDog.getErrorMessage());
 			if (watchDog.getCauseException() != null) {
-				graphError.setCauseException(new SerializableException(watchDog.getCauseException()));
+				graphError.setCauseException(SerializableException.wrap(watchDog.getCauseException()));
 			}
 			IGraphElement causeGraphElement = watchDog.getCauseGraphElement();
 			if (causeGraphElement != null) {
@@ -103,13 +103,8 @@ public class GraphErrorDetail implements GraphError {
 		this.causeComponentType = causeComponentType;
 	}
 
-	public void setCauseGraphElement(IGraphElement graphElement) {
-		if (graphElement != null) {
-			this.causeGraphElementId = graphElement.getId();
-			if (graphElement instanceof Node) {
-				this.causeComponentType = ((Node) graphElement).getType();
-			}
-		}
+	public void setCauseGraphElement(String causeGraphElementId) {
+		this.causeGraphElementId = causeGraphElementId;
 	}
 
 }

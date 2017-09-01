@@ -54,24 +54,39 @@ public class SerializableException extends JetelRuntimeException {
 	 * this is list of causes of the wrapped compound exception.
 	 */
 	private List<SerializableException> causes;
+
+	/**
+	 * @return serializable exception derived from the given exception
+	 */
+	public static SerializableException wrap(Throwable e) {
+		SerializableException result;
+		if (e instanceof ConfigurationException) {
+			result = new GraphElementSerializableException((ConfigurationException) e);
+		} else if (e instanceof ComponentNotReadyException) {
+			result = new GraphElementSerializableException((ComponentNotReadyException) e);
+		} else {
+			result = new SerializableException(e);
+		}
+		return result;
+	}
 	
-	public SerializableException(Throwable e) {
+	SerializableException(Throwable e) {
 		if (e.getCause() != null) {
 			//if the wrapped exception has a cause exception
 			//the cause is wrapped as well and set as cause of this SerializableException
-			initCause(wrapException(e.getCause()));
+			initCause(wrap(e.getCause()));
 		}
 		
 		//persist message of the wrapped exception
-		message = extractMessage(e);
-		//persist class of the wrapped exception
+		message = e.getMessage();
+		//persist class name of the wrapped exception
 		virtualClassName = e.getClass().getName();
-		//inherit stackstrace from the wrapped exception
+		//inherit stacktrace from the wrapped exception
 		setStackTrace(e.getStackTrace());
 
 		//persist suppressed exceptions
 		for (Throwable suppressedException : e.getSuppressed()) {
-			addSuppressed(wrapException(suppressedException));
+			addSuppressed(wrap(suppressedException));
 		}
 
 		//compound exception needs special handling
@@ -79,17 +94,9 @@ public class SerializableException extends JetelRuntimeException {
 			CompoundException ce = (CompoundException) e;
 			causes = new ArrayList<SerializableException>(ce.getCauses().size());
 			for (Throwable t : ce.getCauses()) {
-				causes.add(new SerializableException(t));
+				causes.add(wrap(t));
 			}
 		}
-	}
-	
-	protected SerializableException wrapException(Throwable e) {
-		return new SerializableException(e);
-	}
-	
-	protected String extractMessage(Throwable e) {
-		return e.getMessage();
 	}
 	
 	@Override

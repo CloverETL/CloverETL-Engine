@@ -18,36 +18,33 @@
  */
 package org.jetel.exception;
 
-import org.jetel.logger.SafeLogUtils;
-
 /**
- * This is exception derived from an existing exception. The new exception
- * should has similar as possible characteristics as the former exception.
- * Only error messages of complete exception chain are obfuscated
- * using {@link SafeLogUtils#obfuscateSensitiveInformation(String)}.
+ * Extension for {@link SerializableException}, which allow to carry
+ * "causeGraphElementId", which is identifier of cause graph element.
  * 
- * @author Kokon (info@cloveretl.com)
+ * @author martin (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 5.6.2013
+ * @created 31. 8. 2017
  */
-public class ObfuscatingException extends SerializableException {
+public class GraphElementSerializableException extends SerializableException {
 
-	private static final long serialVersionUID = -5439348107967100144L;
-
-	public ObfuscatingException(Throwable e) {
-		super(e);
-	}
-
-	@Override
-	protected ObfuscatingException wrapException(Throwable e) {
-		return new ObfuscatingException(e);
-	}
+	private static final long serialVersionUID = -6390814799188946639L;
 	
-	@Override
-	protected String extractMessage(Throwable e) {
-		String message = super.extractMessage(e);
-		return SafeLogUtils.obfuscateSensitiveInformation(message);
+	private String causeGraphElementId;
+	
+	GraphElementSerializableException(ConfigurationException e) {
+		super(e);
+		this.causeGraphElementId = e.getCausedGraphElementId();
+	}
+
+	GraphElementSerializableException(ComponentNotReadyException e) {
+		super(e);
+		this.causeGraphElementId = e.getGraphElement().getId();
+	}
+
+	public String getCauseGraphElementId() {
+		return causeGraphElementId;
 	}
 	
 }
