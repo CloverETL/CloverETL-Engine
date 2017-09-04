@@ -301,7 +301,7 @@ public class PluginDescriptor {
     }
     
     public URL[] getLibraryURLs() {
-        URL[] urls = new URL[libraries.size()];
+    	List<URL> urls = new ArrayList<>(libraries.size());
         
         for(int i = 0; i < libraries.size(); i++) {
             try {
@@ -309,18 +309,17 @@ public class PluginDescriptor {
             	if (matcher.matches()) {
             		String propertyValue = System.getProperty(matcher.group(1));
             		if (propertyValue != null) {
-            			urls[i] = getURL(propertyValue.replace("\\", "/") + "/" + matcher.group(2));
+            			urls.add(getURL(propertyValue.replace("\\", "/") + "/" + matcher.group(2)));
             		}
             	} else {
-            		urls[i] = getURL(libraries.get(i));
+            		urls.add(getURL(libraries.get(i)));
             	}
             } catch (MalformedURLException e) {
                 logger.error("Cannot create URL to plugin (" + getManifest() + ") library " + libraries.get(i) + ".");
-                urls[i] = null;
             }
         }
         
-        return urls;
+        return urls.toArray(new URL[urls.size()]);
     }
     
     /**
