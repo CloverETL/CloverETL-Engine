@@ -18,7 +18,6 @@
  */
 package org.jetel.component.fileoperation.pool;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -26,6 +25,7 @@ import java.net.URL;
 
 import org.jetel.component.fileoperation.SMB2Utils;
 import org.jetel.component.fileoperation.URIUtils;
+import org.jetel.exception.MissingBouncyCastleException;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.protocols.URLValidator;
 import org.jetel.util.protocols.Validable;
@@ -72,26 +72,9 @@ public class PooledSMB2Connection extends AbstractPoolableConnection implements 
 		try {
 			this.session = startSession();
 		} catch (NoClassDefFoundError error) {
-			throw new IOException(getBouncyCastleErrorMessage(), error);
+			throw new MissingBouncyCastleException("SMBv2 requires Bouncy Castle cryptographic library. Please visit http://doc.cloveretl.com/documentation/UserGuide/topic/com.cloveretl.gui.docs/docs/optional-installation-steps.html#smb-support for installation instructions.", error);
 		}
 		this.share = connectShare();
-	}
-
-	private String getBouncyCastleErrorMessage() throws IOException {
-		StringBuilder message = new StringBuilder("SMBv2 requires Bouncy Castle cryptographic library. ");
-		String dir = System.getProperty("bouncycastle.lib.dir");
-		if (StringUtils.isEmpty(dir)) {
-			dir = System.getProperty("osgi.syspath");
-			if (dir != null) {
-				dir = dir + "/..";
-			}
-		}
-		if (!StringUtils.isEmpty(dir)) {
-			message.append("Please put bcprov-jdk15on-1.57.jar and bcpkix-jdk15on-1.57.jar to '").append(new File(dir).getCanonicalPath()).append("'.");
-		} else {
-			message.append("See User Guide for installation instructions.");
-		}
-		return message.toString();
 	}
 
 	public void disconnect() throws IOException {
