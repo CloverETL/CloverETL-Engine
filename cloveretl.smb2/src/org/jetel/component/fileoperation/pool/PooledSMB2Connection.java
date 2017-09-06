@@ -38,6 +38,7 @@ import com.hierynomus.smbj.connection.Connection;
 import com.hierynomus.smbj.connection.NegotiatedProtocol;
 import com.hierynomus.smbj.session.Session;
 import com.hierynomus.smbj.share.DiskShare;
+import com.hierynomus.smbj.share.Share;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -140,7 +141,12 @@ public class PooledSMB2Connection extends AbstractPoolableConnection implements 
 		if (StringUtils.isEmpty(shareName) || shareName.equals(URIUtils.CURRENT_DIR_NAME)) {
 			throw new IOException("Share name is missing in the URL");
 		}
-		return (DiskShare) session.connectShare(shareName);
+		Share share = session.connectShare(shareName);
+		if (share instanceof DiskShare) {
+			return (DiskShare) share;
+		} else {
+			throw new IOException(shareName + " is not a disk share");
+		}
 	}
 
 	@Override
