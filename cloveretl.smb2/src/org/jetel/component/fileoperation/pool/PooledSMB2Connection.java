@@ -72,7 +72,7 @@ public class PooledSMB2Connection extends AbstractPoolableConnection implements 
 		try {
 			this.session = startSession();
 		} catch (NoClassDefFoundError error) {
-			throw new MissingBouncyCastleException("SMBv2 requires Bouncy Castle cryptographic library. Please visit http://doc.cloveretl.com/documentation/UserGuide/topic/com.cloveretl.gui.docs/docs/optional-installation-steps.html#smb-support for installation instructions.", error);
+			throw new MissingBouncyCastleException("SMB 2.x requires Bouncy Castle cryptographic library. Please visit http://doc.cloveretl.com/documentation/UserGuide/topic/com.cloveretl.gui.docs/docs/optional-installation-steps.html#smb-support for installation instructions.", error);
 		}
 		this.share = connectShare();
 	}
