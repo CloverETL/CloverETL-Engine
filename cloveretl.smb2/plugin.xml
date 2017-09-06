@@ -1,0 +1,22 @@
+<plugin
+   id="org.jetel.smb2"
+   version="0.0.0.devel"
+   provider-name="Javlin a.s."
+   class="org.jetel.util.protocols.smb2.Activator">
+
+	<runtime>
+		<library path="bin/"/>
+		<library path="lib/smbj-0.3.0.jar" />
+		<library path="lib/mbassador-1.3.0.jar"/>
+		<library path="${bouncycastle.lib.dir}/bcprov-jdk15on-1.57.jar"/>
+		<library path="${bouncycastle.lib.dir}/bcpkix-jdk15on-1.57.jar"/>
+   	</runtime> 
+
+	<requires engine-version="0.0.0.devel">
+	</requires>
+
+	<extension point-id="urlResolver">
+		<parameter id="className" value="org.jetel.util.protocols.smb2.SMB2PathResolver"/>
+		<parameter id="type" value="SMB2"/>
+	</extension>
+</plugin>

@@ -80,6 +80,7 @@ import org.jetel.graph.ContextProvider;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.logger.SafeLog;
 import org.jetel.logger.SafeLogFactory;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiOutFile;
 import org.jetel.util.Pair;
 import org.jetel.util.exec.PlatformUtils;
@@ -2345,18 +2346,18 @@ public class FileUtils {
 	 * @param closeables
 	 * @throws IOException
 	 */
-	public static void closeAll(Iterable<? extends Closeable> closeables) throws IOException {
+	public static void closeAll(Iterable<? extends AutoCloseable> closeables) throws IOException {
 		if (closeables != null) {
-			IOException firstException = null;
+			Exception firstException = null;
 			
-			for (Closeable closeable: closeables) {
+			for (AutoCloseable closeable: closeables) {
 				if (closeable != null) {
 					if ((closeable instanceof Channel) && !((Channel) closeable).isOpen()) {
 						continue; // channel is already closed
 					}
 					try {
 						closeable.close();
-					} catch (IOException ex) {
+					} catch (Exception ex) {
 						if (firstException == null) {
 							firstException = ex;
 						} else {
@@ -2367,7 +2368,7 @@ public class FileUtils {
 			}
 			
 			if (firstException != null) {
-				throw firstException;
+				throw ExceptionUtils.getIOException(firstException);
 			}
 		}
 	}
@@ -2379,7 +2380,7 @@ public class FileUtils {
 	 * @param closeables
 	 * @throws IOException
 	 */
-	public static void closeAll(Closeable... closeables) throws IOException {
+	public static void closeAll(AutoCloseable... closeables) throws IOException {
 		if (closeables != null) {
 			closeAll(Arrays.asList(closeables));
 		}

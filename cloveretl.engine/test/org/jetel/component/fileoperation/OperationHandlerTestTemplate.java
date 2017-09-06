@@ -389,25 +389,32 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 	
 	public void testSpecialCharacters() throws Exception {
 		CloverURI uri;
+		InfoResult info;
 		
 		uri = relativeURI("moje složka/");
 		System.out.println(uri.getAbsoluteURI());
 		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
 		assertTrue(manager.create(uri).success());
-		assertTrue(String.format("%s is not a directory", uri), manager.isDirectory(uri));
+		info = manager.info(uri);
+		assertTrue(String.format("%s is not a directory", uri), info.isDirectory());
+		assertEquals("moje složka", info.getName());
 
 		uri = relativeURI("druhá složka/žluťoučký souboreček.tmp");
 		System.out.println(uri.getAbsoluteURI());
 		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
 		assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
-		assertTrue(String.format("%s is not a file", uri), manager.isFile(uri));
+		info = manager.info(uri);
+		assertTrue(String.format("%s is not a file", uri), info.isFile());
+		assertEquals("žluťoučký souboreček.tmp", info.getName());
 
 		uri = relativeURI("123čřž !@$&().tmp");
 		// #%^{[;:|<> - illegal FIXME
 		System.out.println(uri.getAbsoluteURI());
 		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
 		assertTrue(manager.create(uri).success());
-		assertTrue(String.format("%s is not a file", uri), manager.isFile(uri));
+		info = manager.info(uri);
+		assertTrue(String.format("%s is not a file", uri), info.isFile());
+		assertEquals("123čřž !@$&().tmp", info.getName());
 
 		assumeTrue(manager.create(relativeURI("moje složka/žluťoučký souboreček.tmp"), new CreateParameters().setMakeParents(true)).success());
 
@@ -421,6 +428,15 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertTrue(result.success());
 			assertTrue(manager.exists(target));
 		}
+
+		// detect double URL decoding
+		uri = relativeURI("%2540.tmp");
+		System.out.println(uri.getAbsoluteURI());
+		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
+		assertTrue(manager.create(uri).success());
+		info = manager.info(uri);
+		assertTrue(String.format("%s is not a file", uri), info.isFile());
+		assertEquals("%40.tmp", info.getName()); // not "@.tmp"
 	}
 
 	public void testInfo() throws Exception {
@@ -498,6 +514,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		CloverURI uri = CloverURI.createURI(root + ".");
 		System.out.println(uri.getAbsoluteURI());
 		InfoResult infoResult = manager.info(uri);
+		assertTrue(infoResult.getFirstErrorMessage(), infoResult.success());
 		Info info = infoResult.getInfo();
 
 		// Make sure that none of the Info methods throws an exception:
@@ -1160,7 +1177,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		
 		result = manager.resolve(relativeURI("*\\ec?ipse-?.?\\eclipse.exe"));
 		System.out.println(result);
-		assertTrue(result.success());
+		assertTrue(result.getFirstErrorMessage(), result.success());
 		assertEquals(2, result.successCount());
 
 		result = manager.resolve(relativeURI("subdir/*/"));

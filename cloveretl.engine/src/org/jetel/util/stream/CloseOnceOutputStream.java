@@ -48,6 +48,10 @@ public class CloseOnceOutputStream extends OutputStream {
 	private AtomicBoolean isClosed = new AtomicBoolean(false);
 	private AtomicBoolean isClosing = new AtomicBoolean(false);
 	
+	public CloseOnceOutputStream(OutputStream os) {
+		this(os, null);
+	}
+
 	public CloseOnceOutputStream(OutputStream os, Object objectToNotifyWhenClosed) {
 		super();
 		this.os = os;
@@ -67,7 +71,7 @@ public class CloseOnceOutputStream extends OutputStream {
 		} else {
 			log.debug("Stream "+this+" closing...");
 			try {
-				os.close();
+				doClose();
 				log.debug("Stream "+this+" closed.");
 			} finally {
 				isClosed.set(true);
@@ -78,6 +82,16 @@ public class CloseOnceOutputStream extends OutputStream {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Closes the underlying stream and releases related resources.
+	 * It is guaranteed that this method is called only once.
+	 * 
+	 * @throws IOException
+	 */
+	protected void doClose() throws IOException {
+		os.close();
 	}
 
 	@Override

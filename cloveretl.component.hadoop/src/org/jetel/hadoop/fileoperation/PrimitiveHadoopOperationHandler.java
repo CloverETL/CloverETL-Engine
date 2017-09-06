@@ -31,7 +31,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.jetel.component.fileoperation.Info;
-import org.jetel.component.fileoperation.PrimitiveOperationHandler;
+import org.jetel.component.fileoperation.RecursiveDeleteHandler;
 import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
@@ -48,7 +48,7 @@ import org.jetel.util.stream.StreamUtils;
  *
  * @created Nov 26, 2012
  */
-public class PrimitiveHadoopOperationHandler implements PrimitiveOperationHandler {
+public class PrimitiveHadoopOperationHandler implements RecursiveDeleteHandler {
 	
 	private HadoopFileSystemService getConnection(URI uri) throws IOException {
 		TransformationGraph graph = ContextProvider.getGraph();
@@ -139,6 +139,7 @@ public class PrimitiveHadoopOperationHandler implements PrimitiveOperationHandle
 		return getConnection(target).delete(getPath(target), false);
 	}
 
+	@Override
 	public boolean removeDirRecursively(URI target) throws IOException {
 		return getConnection(target).delete(getPath(target), true);
 	}
@@ -254,7 +255,7 @@ public class PrimitiveHadoopOperationHandler implements PrimitiveOperationHandle
 
 		@Override
 		public String getName() {
-			return URIUtils.urlDecode(URIUtils.getFileName(uri));
+			return URIUtils.getFileName(uri);
 		}
 
 		@Override
