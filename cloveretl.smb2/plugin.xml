@@ -8,8 +8,7 @@
 		<library path="bin/"/>
 		<library path="lib/smbj-0.3.0.jar" />
 		<library path="lib/mbassador-1.3.0.jar"/>
-		<library path="${bouncycastle.lib.dir}/bcprov-jdk15on-1.57.jar"/>
-		<library path="${bouncycastle.lib.dir}/bcpkix-jdk15on-1.57.jar"/>
+		<library path="${cloveretl.smb2.bouncycastle.jar}"/>
    	</runtime> 
 
 	<requires engine-version="0.0.0.devel">

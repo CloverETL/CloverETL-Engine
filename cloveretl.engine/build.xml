@@ -987,7 +987,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 				<jvmarg value="-XX:MaxPermSize=512m"/>
 				<jvmarg value="-Dderby.system.home=${dir.examples}/ExtExamples"/>
 				<jvmarg value="-Dhttps.protocols=TLSv1.2,TLSv1.1,TLSv1"/>
-				<jvmarg value="-Dbouncycastle.lib.dir=${bouncycastle.lib.dir}"/>
+				<jvmarg value="-Dcloveretl.smb2.bouncycastle.jar=${cloveretl.smb2.bouncycastle.jar}"/>
 				<jvmarg line="${additional.jvmargs}"/>
 				
 				<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
@@ -1028,7 +1028,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 			<property name="java.src.header.file" value="${java.src.header.file}"/>
 			<property name="java.src.target" value="${java.src.target}"/>
 			<property name="java.src.exclude" value="${java.src.exclude}"/>
-			<property name="bouncycastle.lib.dir" value="${bouncycastle.lib.dir}"/>
+			<property name="cloveretl.smb2.bouncycastle.jar" value="${cloveretl.smb2.bouncycastle.jar}"/>
 			<property name="plugin.xml.xslt" value="${plugin.xml.xslt}"/>
 		</ant>
 	</target>
@@ -1044,7 +1044,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 			<property name="version.full" value="${version.full}"/>
 			<property name="hudson.link" value="${cte.hudson.link}"/>
 			<property name="logpath" value="${cte.logpath}"/>
-			<property name="bouncycastle.lib.dir" value="${bouncycastle.lib.dir}"/>
+			<property name="cloveretl.smb2.bouncycastle.jar" value="${cloveretl.smb2.bouncycastle.jar}"/>
 			<property name="testenv.etlenvironment" value="engine"/>
 		</ant>
 	</target>
@@ -1059,7 +1059,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 			<property name="dir.plugins" value="${dir.package}/plugins"/>
 			<property name="version.full" value="${version.full}"/>
 			<property name="hudson.link" value="${cte.hudson.link}"/>
-			<property name="bouncycastle.lib.dir" value="${bouncycastle.lib.dir}"/>
+			<property name="cloveretl.smb2.bouncycastle.jar" value="${cloveretl.smb2.bouncycastle.jar}"/>
 			<property name="logpath" value="${cte.logpath}"/>
 			<property name="testenv.etlenvironment" value="engine"/>
 		</ant>
@@ -1075,7 +1075,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 			<property name="dir.plugins" value="${dir.package}/plugins"/>
 			<property name="version.full" value="${version.full}"/>
 			<property name="hudson.link" value="${cte.hudson.link}"/>
-			<property name="bouncycastle.lib.dir" value="${bouncycastle.lib.dir}"/>
+			<property name="cloveretl.smb2.bouncycastle.jar" value="${cloveretl.smb2.bouncycastle.jar}"/>
 			<property name="logpath" value="${cte.logpath}"/>
 			<property name="testenv.etlenvironment" value="engine"/>
 		</ant>
@@ -1086,7 +1086,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 		<echo message="Executing Clover Test Environment environment - tests reset"/>
 		<property name="test.cloveretl.plugins" value="${dir.package}/plugins"/>
 		<property name="dir.test.additional.classpath" value=""/>
-		<property name="bouncycastle.lib.dir" value="${bouncycastle.lib.dir}"/>
+		<property name="cloveretl.smb2.bouncycastle.jar" value="${cloveretl.smb2.bouncycastle.jar}"/>
 		<parallel>
 			<daemons>
 				<antcall target="start-testdb" />
