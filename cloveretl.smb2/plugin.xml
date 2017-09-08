@@ -8,7 +8,7 @@
 		<library path="bin/"/>
 		<library path="lib/smbj-0.3.0.jar" />
 		<library path="lib/mbassador-1.3.0.jar"/>
-		<library path="${cloveretl.smb2.bouncycastle.jar}"/>
+		<library path="${cloveretl.smb2.bouncycastle.jar.file}"/>
    	</runtime> 
 
 	<requires engine-version="0.0.0.devel">

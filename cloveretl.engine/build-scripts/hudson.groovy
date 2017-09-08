@@ -90,7 +90,7 @@ if( !runTests ){
 		"-Dcte.hudson.link=job/${jobName}/${buildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
 		"-Djavaversion=${javaVersion}",
-		"-Dcloveretl.smb2.bouncycastle.jar=${bouncyPath}/bcprov-jdk15on-1.57.jar",
+		"-Dcloveretl.smb2.bouncycastle.jar.file=${bouncyPath}/bcprov-jdk15on-1.57.jar",
 		"-Drunscenarios.trustStore=-Djavax.net.ssl.trustStore=${trustStoreF}"
 	]
 	if( jobGoal == "after-commit" ) {
@@ -151,7 +151,7 @@ if( !runTests ){
 		"-Dhudson.engine.link=job/${engineJobName}/${engineBuildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
 		"-Dtestenv.etlenvironment=engine",
-		"-Dcloveretl.smb2.bouncycastle.jar=${bouncyPath}/bcprov-jdk15on-1.57.jar",
+		"-Dcloveretl.smb2.bouncycastle.jar.file=${bouncyPath}/bcprov-jdk15on-1.57.jar",
 		"-Djavaversion=${javaVersion}"
 	]
 
