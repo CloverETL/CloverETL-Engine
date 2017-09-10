@@ -163,4 +163,12 @@ public class SMB2OperationHandlerTest extends OperationHandlerTestTemplate {
 		assertFalse(listResult.success());
 		assertTrue(listResult.getFirstErrorMessage().contains("Share name is missing in the URL"));
 	}
+	
+	public void testSymlinks() {
+		URI dir = baseUri.resolve("../symlinks");
+		CloverURI uri = CloverURI.createSingleURI(dir);
+		ListResult listResult = manager.list(uri);
+		assertTrue(listResult.success());
+		assertEquals(7, listResult.getResult().size());
+	}
 }

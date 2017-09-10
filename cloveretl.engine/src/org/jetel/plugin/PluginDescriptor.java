@@ -55,7 +55,7 @@ public class PluginDescriptor {
 	
 	private static final Pattern PLUGIN_URL_PATTERN = Pattern.compile(PLUGIN_URL_PREFIX + "([^/]*)/(.*)");
 	
-	private static final Pattern PROPERTY_IN_URL_PATTERN = Pattern.compile("\\$\\{(.*)\\}/(.*)");
+	private static final Pattern PROPERTY_IN_URL_PATTERN = Pattern.compile("\\$\\{(.*)\\}");
 
     static Log logger = LogFactory.getLog(Plugins.class);
 
@@ -309,7 +309,7 @@ public class PluginDescriptor {
             	if (matcher.matches()) {
             		String propertyValue = System.getProperty(matcher.group(1));
             		if (propertyValue != null) {
-            			urls.add(getURL(propertyValue.replace("\\", "/") + "/" + matcher.group(2)));
+            			urls.add(getURL(propertyValue.replace("\\", "/")));
             		}
             	} else {
             		urls.add(getURL(libraries.get(i)));
