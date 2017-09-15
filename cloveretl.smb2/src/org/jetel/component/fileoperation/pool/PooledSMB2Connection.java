@@ -169,6 +169,17 @@ public class PooledSMB2Connection extends AbstractPoolableConnection implements 
 		return writeBufferSize;
 	}
 
+	/**
+	 * Used in tests.
+	 * 
+	 * @return the domain passed to SMBJ connection
+	 */
+	String getDomain() {
+		DiskShare share = getShare();
+		AuthenticationContext authenticationContext = share.getTreeConnect().getSession().getAuthenticationContext();
+		return authenticationContext.getDomain();
+	}
+
 	public InputStream getInputStream(URL url) throws IOException {
 		return SMB2Utils.getInputStream(this, url); // TODO return the connection to pool on exception
 	}

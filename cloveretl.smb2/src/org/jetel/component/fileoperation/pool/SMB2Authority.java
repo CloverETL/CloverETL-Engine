@@ -22,10 +22,27 @@ import java.net.URI;
 import java.net.URL;
 
 import org.jetel.component.fileoperation.SMB2Path;
+import org.jetel.component.fileoperation.SMB2Utils;
 
 public class SMB2Authority extends DefaultAuthority {
 	
 	private final String share;
+	
+	/**
+	 * Used in JUnit tests - we need to create the instance using plugin classloader,
+	 * not the application classloader from JUnit.
+	 * 
+	 * @return
+	 */
+	static Authority newInstance(URI uri) {
+		try {
+			ClassLoader classLoader = SMB2Utils.getClassLoader();
+			Class<?> cls = classLoader.loadClass(SMB2Authority.class.getName());
+			return (Authority) cls.getConstructor(URI.class).newInstance(uri);
+		} catch (Exception ex) {
+			return new SMB2Authority(uri);
+		}
+	}
 
 	public SMB2Authority(URI uri) {
 		super(uri);

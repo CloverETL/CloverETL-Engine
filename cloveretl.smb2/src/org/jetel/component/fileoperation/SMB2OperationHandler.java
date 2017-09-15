@@ -21,6 +21,22 @@ package org.jetel.component.fileoperation;
 public class SMB2OperationHandler extends AbstractOperationHandler {
 	
 	/**
+	 * Used in JUnit tests - we need to create the instance using plugin classloader,
+	 * not the application classloader from JUnit.
+	 * 
+	 * @return
+	 */
+	static IOperationHandler newInstance() {
+		try {
+			ClassLoader classLoader = SMB2Utils.getClassLoader();
+			String className = SMB2OperationHandler.class.getName();
+			return (IOperationHandler) classLoader.loadClass(className).newInstance();
+		} catch (Exception e) {
+			return new SMB2OperationHandler();
+		}
+	}
+
+	/**
 	 * @param simpleHandler
 	 */
 	public SMB2OperationHandler() {

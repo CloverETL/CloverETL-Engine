@@ -39,7 +39,7 @@ public class SMB2OperationHandlerTest extends OperationHandlerTestTemplate {
 	
 	@Override
 	protected IOperationHandler createOperationHandler() {
-		return handler = new SMB2OperationHandler();
+		return handler = SMB2OperationHandler.newInstance();
 	}
 	
 	protected String getBaseUri() {

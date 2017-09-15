@@ -29,6 +29,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.jetel.component.fileoperation.pool.PooledSMB2Connection;
+import org.jetel.plugin.Plugins;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.stream.CloseOnceInputStream;
@@ -46,6 +47,12 @@ import com.hierynomus.smbj.share.File;
 
 public class SMB2Utils {
 
+	private static final String PLUGIN_ID = "org.jetel.smb2";
+
+	public static ClassLoader getClassLoader() {
+		return Plugins.getPluginDescriptor(PLUGIN_ID).getClassLoader();
+	}
+	
 	public static String getPath(URI uri) {
 		return new SMB2Path(uri).getPath();
 	}
