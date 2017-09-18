@@ -173,18 +173,18 @@ public class PluginDescriptor {
         try {
             doc = dbf.newDocumentBuilder().parse(manifest.openStream());
         } catch (SAXException e) {
-            throw new ComponentNotReadyException("Parse error occure in plugin manifest reading - " + manifest + ".", e);
+            throw new ComponentNotReadyException("Parse error occurred in plugin manifest reading - " + manifest + ".", e);
         } catch (IOException e) {
-            throw new ComponentNotReadyException("IO error occure in plugin manifest reading - " + manifest + ".", e);
+            throw new ComponentNotReadyException("IO error occurred in plugin manifest reading - " + manifest + ".", e);
         } catch (ParserConfigurationException e) {
-            throw new ComponentNotReadyException("Parse error occure in plugin manifest reading - " + manifest+ ".", e);
+            throw new ComponentNotReadyException("Parse error occurred in plugin manifest reading - " + manifest+ ".", e);
         }
         
         PluginDescriptionBuilder builder = new PluginDescriptionBuilder(this);
         try {
             builder.read(doc);
         } catch (InvalidAttributesException e) {
-            throw new ComponentNotReadyException("Parse error occure in plugin manifest reading - " + manifest + ".", e);
+            throw new ComponentNotReadyException("Parse error occurred in plugin manifest reading - " + manifest + ".", e);
         }
     }
     

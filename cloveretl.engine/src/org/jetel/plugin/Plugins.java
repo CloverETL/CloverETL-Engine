@@ -19,6 +19,7 @@
 package org.jetel.plugin;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -231,8 +232,12 @@ public class Plugins {
     		try {
     			pluginDescriptor.init();
     		} catch (ComponentNotReadyException e) {
-    			//manifest is not parsable
-				logger.warn("Plugin manifest '" + pluginManifestUrl + "' is not parsable (skipped).", e);
+    			if (e.getCause() instanceof FileNotFoundException) {
+    				logger.warn("Plugin manifest '" + pluginManifestUrl + "' is not available (skipped).");
+    			} else {
+        			//manifest is not parsable
+    				logger.warn("Plugin manifest '" + pluginManifestUrl + "' is not parsable (skipped).", e);
+    			}
     			continue;
     		}
     		//stores prepared plugin descriptor
