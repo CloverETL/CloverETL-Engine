@@ -47,7 +47,8 @@ public class RequestParameter implements Serializable {
 	@XmlType(name = "location", namespace = "http://cloveretl.com/server/data") // https://java.net/jira/browse/JAXB-933
 	public enum Location {
 		@XmlEnumValue("query") query,
-		@XmlEnumValue("url_path") path;
+		@XmlEnumValue("url_path") path,
+		@XmlEnumValue("form_data") formData;
 		
 		public String value() {
 			return name();
