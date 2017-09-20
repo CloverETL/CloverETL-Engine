@@ -806,7 +806,7 @@ public class FileManager {
 	 * @param uri
 	 * @return
 	 */
-	static boolean uriHasWildcards(String uri) {
+	public static boolean uriHasWildcards(String uri) {
 		Matcher m = URL_PREFIX_PATTERN.matcher(uri);
 		if (m.matches()) {
 			String scheme = m.group(2);
@@ -963,7 +963,7 @@ public class FileManager {
 	}
 
 	public List<SingleCloverURI> defaultResolve(SingleCloverURI wildcards) throws IOException {
-		String uriString = wildcards.toString();
+		String uriString = wildcards.getPath(); // use getPath() - toString() adds unwanted quotes and toURI().toString() may throw exception
 		if (wildcards.isRelative() || !uriHasWildcards(uriString)) {
 			return Arrays.asList(wildcards);
 		}

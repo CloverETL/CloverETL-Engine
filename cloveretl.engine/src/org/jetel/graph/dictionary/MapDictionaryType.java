@@ -19,11 +19,13 @@
 package org.jetel.graph.dictionary;
 
 import java.util.Map;
+import java.util.Properties;
 
 import org.jetel.ctl.ASTBuilder;
 import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.ctl.data.UnknownTypeException;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldType;
@@ -60,6 +62,24 @@ public class MapDictionaryType extends DictionaryType {
 	@Override
 	public Object init(Object value, Dictionary dictionary) throws ComponentNotReadyException {
 		return value;
+	}
+	
+	@Override
+	public boolean isParsePropertiesSupported() {
+		return true;
+	}
+
+	@Override
+	public Object parseProperties(Properties properties) throws AttributeNotFoundException {
+		if (properties != null) {
+			if (! properties.isEmpty()) {
+				return properties;
+			} else {
+				return null;
+			}
+		} else {
+			return null;
+		}
 	}
 	
 	/* (non-Javadoc)

@@ -18,7 +18,6 @@
  */
 package org.jetel.hadoop.fileoperation;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.text.MessageFormat;
@@ -32,11 +31,9 @@ import org.jetel.component.fileoperation.IOperationHandler;
 import org.jetel.component.fileoperation.Info;
 import org.jetel.component.fileoperation.Operation;
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
-import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
 import org.jetel.component.fileoperation.SimpleParameters.MoveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 import org.jetel.component.fileoperation.SingleCloverURI;
-import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.hadoop.connection.HadoopURLUtils;
 
 /**
@@ -151,29 +148,6 @@ public class HadoopOperationHandler extends AbstractOperationHandler {
 			}
 		}
 		return success;
-	}
-
-	/*
-	 * Overridden for better performance when deleting recursively
-	 */
-	@Override
-	protected boolean delete(URI target, DeleteParameters params)
-			throws IOException {
-		Info info = simpleHandler.info(target);
-		if (info == null) {
-			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), target.toString())); //$NON-NLS-1$
-		}
-		if (!info.isDirectory() && target.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
-			throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), target)); //$NON-NLS-1$
-		}
-		if (info.isDirectory()) {
-			if (params.isRecursive()) {
-				return hadoopHandler.removeDirRecursively(target);
-			} else {
-				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.cannot_remove_directory"), target)); //$NON-NLS-1$
-			}
-		}
-		return info.isDirectory() ? simpleHandler.removeDir(target) : simpleHandler.deleteFile(target);
 	}
 
 	/*

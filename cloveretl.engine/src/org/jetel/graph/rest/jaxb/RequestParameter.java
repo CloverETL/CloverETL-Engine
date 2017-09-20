@@ -18,6 +18,8 @@
  */
 package org.jetel.graph.rest.jaxb;
 
+import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -31,7 +33,9 @@ import javax.xml.bind.annotation.XmlType;
  * @created 12.4.2017
  */
 @XmlAccessorType(XmlAccessType.NONE)
-public class RequestParameter {
+public class RequestParameter implements Serializable {
+	
+	private static final long serialVersionUID = 1;
 
 	private String name;
 	private String id;
@@ -43,7 +47,8 @@ public class RequestParameter {
 	@XmlType(name = "location", namespace = "http://cloveretl.com/server/data") // https://java.net/jira/browse/JAXB-933
 	public enum Location {
 		@XmlEnumValue("query") query,
-		@XmlEnumValue("url_path") path;
+		@XmlEnumValue("url_path") path,
+		@XmlEnumValue("form_data") formData;
 		
 		public String value() {
 			return name();

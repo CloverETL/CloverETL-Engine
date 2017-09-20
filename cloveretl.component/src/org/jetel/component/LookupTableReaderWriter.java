@@ -21,12 +21,14 @@ package org.jetel.component;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jetel.component.tree.writer.xml.ValidatorMessages;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -147,6 +149,13 @@ public class LookupTableReaderWriter extends Node {
 		lookupTable.setCurrentPhase(getPhaseNum());
 		if (writeToTable) {//putting records to lookup table
 			InputPort inPort = getInputPort(READ_FROM_PORT);
+			
+			if (lookupTable.getMetadata() != null) {
+				if (! inPort.getMetadata().equals(lookupTable.getMetadata(), false)) {
+					throw new JetelException(ValidatorMessages.getString("LookupTableReaderWriter.inputMetadataDoNotMatch"));
+				}
+			}
+			
 			DataRecord inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
 			while ((inRecord = inPort.readRecord(inRecord)) != null && runIt) {
 				lookupTable.put(inRecord);

@@ -55,14 +55,14 @@ public class SMBFileInfo implements Info {
 	}
 	
 	/**
-	 * Similar to SmbFile.getName(), but removes trailing slash (in case of directories) and decodes URL "%xy" escape sequences.
+	 * Similar to SmbFile.getName(), but removes trailing slash (in case of directories).
 	 */
 	public static String getName(SmbFile file) {
 		String name = file.getName();
 		if (name.endsWith("/")) {
 			name = name.substring(0, name.length() - 1);
 		}
-		return URIUtils.urlDecode(name);
+		return name;
 	}
 
 	@Override
