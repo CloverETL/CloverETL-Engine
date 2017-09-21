@@ -130,6 +130,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 	}
 
 	public void testCopy() throws Exception {
+		prepareData(relativeURI("veryOldFile.tmp"), "Original content"); // CLO-11678
 		Map<String, String> texts = new HashMap<String, String>();
 		texts.put("srcdir/file.tmp", "Žluťoučký kůň úpěl ďábelské ódy");
 		texts.put("srcdir/f.tmp", "Tak se z lesa ozývá");
@@ -233,11 +234,10 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertEquals("File was overwritten with older file in update mode", originalContent, read(manager.getInput(target).channel()));
 		}
 		
-		{
+		{ // CLO-11678:
 			String newerContent = "Newer content";
 			source = relativeURI("newerFile.tmp");
-			target = relativeURI("olderFile.tmp");
-			prepareData(target, "Original content"); // older file
+			target = relativeURI("veryOldFile.tmp");
 			prepareData(source, newerContent); // newer file
 			assertTrue("Update mode returned an error", manager.copy(source, target, new CopyParameters().setUpdate()).success());
 			assertEquals("File was not overwritten with newer file in update mode", newerContent, read(manager.getInput(target).channel()));
@@ -562,6 +562,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 	}
 
 	public void testMove() throws Exception {
+		prepareData(relativeURI("veryOldFile.tmp"), "Original content"); // CLO-11678
 		Map<String, String> texts = new HashMap<String, String>();
 		texts.put("srcdir/file.tmp", "Žluťoučký kůň úpěl ďábelské ódy");
 		texts.put("srcdir/f.tmp", "Tak se z lesa ozývá");
@@ -697,11 +698,10 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertEquals("File was overwritten with older file in update mode", originalContent, read(manager.getInput(target).channel()));
 		}
 
-		{
+		{ // CLO-11678:
 			String newerContent = "Newer content";
 			source = relativeURI("newerFile.tmp");
-			target = relativeURI("olderFile.tmp");
-			prepareData(target, "Original content"); // older file
+			target = relativeURI("veryOldFile.tmp");
 			prepareData(source, newerContent); // newer file
 			assertTrue("Update mode returned an error", manager.move(source, target, new MoveParameters().setUpdate()).success());
 			assertEquals("File was not overwritten with newer file in update mode", newerContent, read(manager.getInput(target).channel()));
