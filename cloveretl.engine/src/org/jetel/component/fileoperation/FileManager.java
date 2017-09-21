@@ -1082,13 +1082,17 @@ public class FileManager {
 							}
 						} else {
 							// List the directories themselves.
-							InfoResult infoResult = info(target);
-							// If the directory does not exist, info() counts it as a success, but returns "null"
-							// as its Info. Add a failure in such case.
-							if (infoResult.getInfo() != null) {
-								result.add(target, infoResult.getResult());
+							if (target instanceof Info) { // performance optimization
+								result.add(target, Collections.singletonList((Info) target));
 							} else {
-								throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), target)); //$NON-NLS-1$
+								InfoResult infoResult = info(target);
+								// If the directory does not exist, info() counts it as a success, but returns "null"
+								// as its Info. Add a failure in such case.
+								if (infoResult.getInfo() != null) {
+									result.add(target, infoResult.getResult());
+								} else {
+									throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), target)); //$NON-NLS-1$
+								}
 							}
 						}
 					} catch (Exception ex) {
