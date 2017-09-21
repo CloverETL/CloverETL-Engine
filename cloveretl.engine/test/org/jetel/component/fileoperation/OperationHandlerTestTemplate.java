@@ -860,7 +860,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			// CLO-6088
 			source = relativeURI("trailingSlash");
 			target = relativeURI("trailingSlashMoved/");
-			assertTrue(manager.copy(source, target, new CopyParameters().setRecursive(true)).success());
+			assertTrue(manager.move(source, target, new MoveParameters()).success());
 			assertTrue(manager.isFile(relativeURI("trailingSlashMoved/file.tmp")));
 			assertFalse(manager.exists(relativeURI("trailingSlashMoved/trailingSlash")));
 		}
