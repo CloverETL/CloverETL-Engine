@@ -136,7 +136,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			prepareData(veryOldFile, "Original content");
 			// try to set last modification date - not supported by all protocols
 			if (!manager.create(veryOldFile, new CreateParameters().setLastModified(new Date(System.currentTimeMillis() - 10000))).success()) {
-				Thread.sleep(1100); // fallback, just wait at least 1 second
+				Thread.sleep(2000); // fallback, just wait at least 1 second
 			}
 		}
 		Map<String, String> texts = new HashMap<String, String>();
@@ -586,7 +586,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			prepareData(veryOldFile, "Original content");
 			// try to set last modification date - not supported by all protocols
 			if (!manager.create(veryOldFile, new CreateParameters().setLastModified(new Date(System.currentTimeMillis() - 10000))).success()) {
-				Thread.sleep(1100); // fallback, just wait at least 1 second
+				Thread.sleep(2000); // fallback, just wait at least 1 second
 			}
 		}
 		Map<String, String> texts = new HashMap<String, String>();
