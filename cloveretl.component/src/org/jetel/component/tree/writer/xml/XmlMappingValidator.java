@@ -46,6 +46,13 @@ import org.jetel.metadata.DataRecordMetadata;
  * @created 15 Dec 2010
  */
 public class XmlMappingValidator extends TreeMappingValidator {
+	
+	/**
+	 * The prefix xml is by definition bound to the namespace name http://www.w3.org/XML/1998/namespace.
+	 * It MAY, but need not, be declared, and MUST NOT be bound to any other namespace name. 
+	 * @see <a href="https://www.w3.org/TR/REC-xml-names#xmlReserved">Reserved Prefixes and Namespace Names</a>
+	 */
+	private static final String XMLNS_PREFIX = "xml";
 
 	public XmlMappingValidator(Map<Integer, DataRecordMetadata> inPorts, boolean oneRecordPerFile) {
 		super(inPorts, oneRecordPerFile);
@@ -84,7 +91,10 @@ public class XmlMappingValidator extends TreeMappingValidator {
 		if (validateName(element, name)) {
 			int colonIndex = name.indexOf(':');
 			if (colonIndex >= 0) {
-				checkNamespacePrefixAvailable(element, name.substring(0, colonIndex), MappingProperty.NAME);
+				String prefix = name.substring(0, colonIndex);
+				if (!XMLNS_PREFIX.equals(prefix)) {
+					checkNamespacePrefixAvailable(element, prefix, MappingProperty.NAME);
+				}
 			}
 		}
 		validateValue(element);
@@ -96,7 +106,10 @@ public class XmlMappingValidator extends TreeMappingValidator {
 		if (validateName(element, name)) {
 			int colonIndex = name.indexOf(':');
 			if (colonIndex >= 0) {
-				checkNamespacePrefixAvailable(element, element, name.substring(0, colonIndex), MappingProperty.NAME);
+				String prefix = name.substring(0, colonIndex);
+				if (!XMLNS_PREFIX.equals(prefix)) {
+					checkNamespacePrefixAvailable(element, element, prefix, MappingProperty.NAME);
+				}
 			}
 		}
 		Relation recurringInfo = element.getRelation();
