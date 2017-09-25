@@ -204,7 +204,7 @@ public abstract class AbstractGenericTransform extends AbstractDataTransform imp
 		if (connection != null) {
 			if (connection instanceof DBConnection) {
 				try {
-					return ((DBConnection) connection).getConnection(getComponent().getId());
+					return ((DBConnection) connection).getConnection(getComponent().getId(), operationType);
 				} catch (JetelException e) {
 					throw new JetelRuntimeException(e);
 				}
