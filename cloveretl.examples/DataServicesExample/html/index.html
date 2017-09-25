@@ -1,0 +1,330 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" type="text/css" href="../../data-service/file/css/bootstrap.min.css" />
+		
+		<script src="../../data-service/file/js/jquery-3.2.1.min.js" type="text/javascript"></script> 
+		
+		<style>
+			body {
+				margin: 0px;
+				padding: 0px;
+				background-color: #EBEBEB;
+			}
+			.top-bar {
+				border-bottom: 1px solid black;
+				color: white;
+				padding-left: 30px;
+				padding-top: 10px;
+				padding-bottom: 10px;
+				background-color: #263238;
+			}
+			
+			.top-bar h3 {
+				margin-top: 10px;
+			}
+			
+			.logo {
+				float:left; 
+			/*	margin-top:-5px;*/ 
+				margin-right: 10px;
+			}
+	
+			.header-bg {
+				background-color: #263238;
+				color: white;
+				padding-left: 10px;
+				border-top-left-radius: 8px;
+				border-top-right-radius: 8px;
+			}
+	
+			.contact {
+				border-radius: 8px;
+				border: 1px solid #263238;
+				padding: 10px 10px 10px 10px;
+				margin-top: 5px;
+			}
+			
+			.action-column {
+				text-align: right;
+			}
+			.content {
+				background-color:white;
+				padding-top: 10px;
+				padding-bottom: 10px;
+			}
+			
+			.contact-table {
+				width: 100%;
+			}
+			
+			.contact-row {
+				height: 32px;
+			}
+			
+			.button {
+				padding:  2px 10px 2px 10px;
+				border-radius: 2px;
+				border: 0;
+				background: #DDDDDD;
+				color: #333333;
+				width: 100px;
+				height: 30px;
+				display: inline-block;
+				cursor: pointer; cursor: hand;
+			}
+	
+			.actionButton {
+				width: 110px;
+			}
+	
+			.action-pane {
+				background-color: #B1D356;
+				margin: 3px;
+				margin-bottom: 10px;
+				border-radius: 8px;
+				padding-bottom: 5px;
+			}
+			
+			#contact-form {
+				padding-right:15px;
+				margin-top: 5px;
+				margin-bottom: 5px;
+			}
+			
+			#contact-form input {
+				width: 100%;
+				box-sizing: border-box;
+				-webkit-box-sizing:border-box;
+				-moz-box-sizing: border-box;
+			}
+			
+			.form-label {
+				margin-left: 5px;
+				padding-left: 20px;
+				padding-right: 0px;
+				margin-right: 0px;
+				font-size: small;
+				white-space: nowrap;
+			}
+			.form-field {
+				padding-left: 10px;
+				margin-left: 30px;
+			}
+	
+			.footer {
+				background-color:#EBEBEB;
+				margin-top: 0px;
+				bottom: 0;
+				margin-bottom: 0px;
+				width: 100%;
+				padding-top: 10px;
+				line-height: 40px;
+			}
+		</style>
+	
+		<script>
+			/*
+			create <div> element for  contact
+			*/
+			function createContactDiv(id,firstName, lastName, email, phone) {
+				var div = document.createElement('div');
+				div.id='contact-'+id;
+				div.className = 'contact';
+				div.innerHTML =
+					"<table class='contact-table'>"+
+						"<tr class='contact-row'>"+
+							"<td style='width:100px'>First name:</td>" +
+							"<td><strong>"+firstName+"</strong></td>"+
+							"<td class='action-column'>"+
+								"<button class='actionButton' type='button' onclick='deleteContact("+id+");'>"+
+									"<span class='glyphicon glyphicon-trash' aria-hidden='true' style='margin-right:5px;'></span>"+
+									"Delete"+
+								"</button>"+
+							"</td>"+
+						"</tr>"+
+						"<tr class='contact-row'>"+
+							"<td>Last name:</td><td><strong>"+lastName+"</strong></td>"+
+							"<td class='action-column'>"+
+								"<button class='actionButton' type='button' onclick='window.location.href=\""+getUrlPrefix()+"/contact/vcard/"+id+"\"'>"+
+									"<span class='glyphicon glyphicon-download' aria-hidden='true' style='margin-right:5px;'></span>"+
+									"VCARD"+
+								"</button>"+
+							"</td>"+
+						"</tr>"+
+						"<tr class='contact-row'>"+
+							"<td>Phone:</td>"+
+							"<td>"+phone+"</td>"+
+						"</tr>"+
+						"<tr class='contact-row'>"+
+							"<td>E-mail:</td>"+
+							"<td>"+email+"</td>"+
+						"</tr>"+
+					"</table>";
+				return div;
+			}
+	
+			/*
+			  invoke REST endpoint to remove contact and refresh contact list after it
+			*/
+			function deleteContact(id) {
+				
+				$.ajax({url: getUrlPrefix() + '/contact/'+id, type: "DELETE", dataType: "json"})
+					.done(function(result) {
+						fetchContacts(); //refresh
+					})
+					.fail(function(jqXHR, statusTxt, errTxt) {
+						var errorMessage = (jqXHR.responseText) ? (jqXHR.responseText) : (errTxt);
+						alert(errorMessage); //show error
+					});
+			}
+		
+			/*
+			  add new contact using REST endpoint
+			*/
+			function addContact() {
+				var vcard = $("#contact-form").serialize();
+				$.ajax({url: getUrlPrefix() + '/contact', type: "POST", data: vcard})
+					.done(function(result) {
+						fetchContacts(); //refresh
+					})
+					.fail(function(jqXHR, statusTxt, errTxt) {
+						var errorMessage = (jqXHR.responseText) ? (jqXHR.responseText) : (errTxt);
+						alert(errorMessage); //show error
+					});
+			}
+		
+			/*
+			  import content of VCARD text area
+			*/
+			function importVcard() {
+				var vcard = $("#vcard-content").val();
+				//alert(vcard);
+				$.ajax({url: getUrlPrefix() + '/contact/vcard', type: "PUT", data: vcard, dataType: "text"})
+					.done(function(result) {
+						$("#vcard-content").val('');
+						fetchContacts(); //refresh
+					})
+					.fail(function(jqXHR, statusTxt, errTxt) {
+						var errorMessage = (jqXHR.responseText) ? (jqXHR.responseText) : (errTxt);
+						alert(errorMessage); //show error
+					});
+			}
+		
+			/*
+			  refresh contact list
+			*/
+			function fetchContacts() {
+				var divContacts = $('#contacts-list');
+				divContacts.empty();
+				$.ajax({url: getUrlPrefix() + '/contacts', type: "GET", dataType: "json"})
+					.done(function(result) {
+						$.each(result, function (index, contact) {
+								divContacts.append(createContactDiv(
+									contact.id,
+									contact.firstName,
+									contact.lastName,
+									contact.phone,
+									contact.email
+								));
+							}
+						);
+					})
+					.fail(function(jqXHR, statusTxt, errTxt) {
+						var errorMessage = (jqXHR.responseText) ? (jqXHR.responseText) : (errTxt);
+						alert(errorMessage); //show error
+					});
+			}
+			
+			/*
+				get URL prefix
+			*/
+			function getUrlPrefix() {
+				var pathname = pathname = window.location.pathname;
+				var dataService = "data-service";
+				return pathname.substring(0, pathname.indexOf(dataService)+dataService.length);
+			}
+			
+		</script>
+	</head>
+
+	<body onload="fetchContacts();">
+		<div class='top-bar'>
+			<div class="container">
+					<a href="http://www.cloveretl.com">
+						<img class="logo" src="../../data-service/file/img/logo-cloveretl.png" />
+					</a>
+			
+					<h3>Data Services Example</h3>
+					<div style="clear:both;"></div>
+			</div>
+		</div>
+		<div class="content">
+			<div class="container">
+				<div class="row">
+					<div id="contacts-list" class="col-md-6">
+					</div>
+					<div class="col-md-6">
+						<div class='action-pane' >
+							<div class='header-bg'>
+								Add contact
+							</div>
+							<div>
+								<form id='contact-form'>
+									<table>
+										<tr>
+											<td>
+												<table>
+													<tr>
+														<td class='form-label'>First Name</td><td class='form-field'><input type='text' id='first-name' name='first-name'/></td>
+													</tr>
+													<tr>	
+														<td class='form-label'>Last Name</td><td class='form-field'><input type='text' id='last-name' name='last-name'/></td>
+													</tr>
+												</table>
+											</td>
+											<td>
+												<table>
+													<tr>
+														<td class='form-label'> Phone</td><td class='form-field'><input type='text' id='phone' name='phone'/></td>
+													</tr>
+													<tr>
+														<td class='form-label'>E-mail</td><td class='form-field'><input type='text' id='email' name='email'/></td>
+													</tr>
+												</table>
+											</td>			
+										</tr>
+									</table>
+								</form>
+								<div style='text-align:center'>
+									<input type='button' value='Add contact' onclick='addContact();'/>
+								</div>
+							</div>
+						</div>
+						<div class='action-pane'>
+							<div class='header-bg'>
+								Import VCARD
+							</div>
+							<div style='padding:10px 10px 5px 10px;'>
+								<textarea id='vcard-content' rows="8" style='width:100%'></textarea>
+							</div>
+							<div style='text-align:center'>
+								<input type='button' value='Import contact' onclick="importVcard();"/>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="footer">
+			<div class="container">
+				<span class="text-muted">CloverETL created by <a href="http://www.javlin.eu">Javlin</a> All rights reserved.</span>
+			</div>
+		</div>
+	</body>
+
+</html>

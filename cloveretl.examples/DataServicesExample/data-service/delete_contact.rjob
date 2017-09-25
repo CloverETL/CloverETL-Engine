@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="jansedlacek" created="Thu Aug 31 14:44:51 CEST 2017" guiVersion="4.7.0.M1" id="1504250913595" licenseCode="CLP1DJAVLI15742443BY" name="delete_contact" nature="restJob" showComponentDetails="true">
+<Global>
+<EndpointSettings>
+<UrlPath>/contact/{id}</UrlPath>
+<EndpointName>Remove contact record</EndpointName>
+<RequestMethod name="DELETE"/>
+<RequestParameter id="RestJobParameter0" location="url_path" name="id" required="true" type="string"/>
+</EndpointSettings>
+<RestJobResponseStatus>
+<JobError>
+<ReasonPhrase>Job failed</ReasonPhrase>
+<StatusCode>500</StatusCode>
+</JobError>
+<Success>
+<StatusCode>204</StatusCode>
+</Success>
+<ValidationError>
+<ReasonPhrase>Request validation failed</ReasonPhrase>
+<StatusCode>400</StatusCode>
+</ValidationError>
+</RestJobResponseStatus>
+<Metadata fileURL="${META_DIR}/contact.fmt" id="Metadata0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="344" id="Note0" textColor="444444" width="640" x="202" y="189">
+<attr name="text"><![CDATA[h3. Deleting contact
+
+This endpoint delets the contact identified by its ID, by simply reading and writing the full contact database and filtering out the contact we want to delete in the process.
+
+
+h3. Highlights
+* This endpoint accepts *DELETE* method and receives one *required* input HTTP parameter *id* in URL
+*  If successful the endpoint return *204 No Content* as we do not return any data back to browser]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node guiName="Filter-out deleted contact" guiX="407" guiY="53" id="FILTER_OUT_DELETED_CONTACT" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[//#CTL2
+num2str($in.0.id)!=getRequestParameter("id")]]></attr>
+</Node>
+<Node guiName="Read all contacts" guiX="224" guiY="53" id="READ_ALL_CONTACTS" schema="${META_DIR}/contacts_json.xsd" sourceUri="${DATAIN_DIR}/contacts.json" type="JSON_EXTRACT">
+<attr name="mapping"><![CDATA[<Mappings>
+	<Mapping element="json_array">
+		<Mapping element="json_array" outPort="0"
+				xmlFields="{}email;{}first-name;{}id;{}last-name;{}phone"
+				cloverFields="email;firstName;id;lastName;phone">
+		</Mapping>
+	</Mapping>
+</Mappings>
+]]></attr>
+</Node>
+<Node guiName="Input" guiX="80" guiY="10" id="RESTJOB_INPUT0" restJobInput="true" type="RESTJOB_INPUT"/>
+<Node guiName="Output" guiX="900" guiY="10" id="RESTJOB_OUTPUT0" noMetadataName="false" noTopLevelArray="false" responseFormat="CUSTOM" restJobOutput="true" type="RESTJOB_OUTPUT"/>
+<Node guiName="GetJobInput" guiX="480" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
+<attr name="mapping"><![CDATA[//#CTL2
+// Transforms input record into output record.
+function integer transform() {
+	if (isEmpty(getRequestParameter("id"))) { 
+		raiseError("Missing required request parameter: 'id'");
+	}
+	return ALL;
+}]]></attr>
+</Node>
+<Edge fromNode="FILTER_OUT_DELETED_CONTACT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 0 (accepted)" toNode="WRITE_REMAINING_CONTACTS:0"/>
+<Edge fromNode="READ_ALL_CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="FILTER_OUT_DELETED_CONTACT:0"/>
+</Phase>
+<Phase number="1">
+<Node fileURL="${DATAIN_DIR}/contacts.json" guiName="Write remaining contacts" guiX="635" guiY="53" id="WRITE_REMAINING_CONTACTS" type="JSON_WRITER">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<clover:collection clover:name="root" xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
+  <item clover:inPort="0">
+    <id>$0.id</id>
+    <first-name>$0.firstName</first-name>
+    <last-name>$0.lastName</last-name>
+    <email>$0.email</email>
+    <phone>$0.phone</phone>
+  </item>
+</clover:collection>]]></attr>
+</Node>
+</Phase>
+</Graph>

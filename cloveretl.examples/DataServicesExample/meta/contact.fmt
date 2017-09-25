@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record fieldDelimiter="|" name="contact" previewAttachmentCharset="UTF-8" recordDelimiter="\n" type="delimited">
+<Field name="id" type="integer"/>
+<Field name="firstName" type="string"/>
+<Field name="lastName" type="string"/>
+<Field name="email" type="string"/>
+<Field name="phone" type="string"/>
+</Record>
