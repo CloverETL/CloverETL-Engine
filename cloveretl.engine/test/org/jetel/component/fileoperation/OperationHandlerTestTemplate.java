@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.jetel.component.fileoperation.FileManager.WritableContentProvider;
 import org.jetel.component.fileoperation.SimpleParameters.CopyParameters;
@@ -240,7 +241,17 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			target = relativeURI("veryOldFile.tmp");
 			prepareData(source, newerContent); // newer file
 			assertTrue("Update mode returned an error", manager.copy(source, target, new CopyParameters().setUpdate()).success());
-			assertEquals("File was not overwritten with newer file in update mode", newerContent, read(manager.getInput(target).channel()));
+			String actualContent = read(manager.getInput(target).channel());
+			if (!Objects.equals(newerContent, actualContent)) {
+				long sourceTime = manager.info(source).getLastModified().getTime();
+				long targetTime = manager.info(target).getLastModified().getTime();
+				String message = String.format(
+						"File was not overwritten with newer file in update mode - source: %d, target: %d, diff: %d", 
+						sourceTime, 
+						targetTime, 
+						targetTime - sourceTime);
+				assertEquals(message, newerContent, actualContent);
+			}
 		}
 
 		source = relativeURI("q.tmp");
@@ -704,7 +715,17 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			target = relativeURI("veryOldFile.tmp");
 			prepareData(source, newerContent); // newer file
 			assertTrue("Update mode returned an error", manager.move(source, target, new MoveParameters().setUpdate()).success());
-			assertEquals("File was not overwritten with newer file in update mode", newerContent, read(manager.getInput(target).channel()));
+			String actualContent = read(manager.getInput(target).channel());
+			if (!Objects.equals(newerContent, actualContent)) {
+				long sourceTime = manager.info(source).getLastModified().getTime();
+				long targetTime = manager.info(target).getLastModified().getTime();
+				String message = String.format(
+						"File was not overwritten with newer file in update mode - source: %d, target: %d, diff: %d", 
+						sourceTime, 
+						targetTime, 
+						targetTime - sourceTime);
+				assertEquals(message, newerContent, actualContent);
+			}
 		}
 
 		source = relativeURI("q.tmp");
