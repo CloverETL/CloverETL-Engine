@@ -545,7 +545,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 	}
 
 	private void setLastModified(ChannelSftp channel, String path, long millis, boolean directory) throws SftpException {
-		int secs = (int) (millis / 1000);
+		int secs = (int) TimeUnit.MILLISECONDS.toSeconds(millis);
 		if (!directory) {
 			channel.setMtime(path, secs); // strict, setting modification date on files must work
 		} else {
