@@ -33,7 +33,7 @@
 	<classpathentry kind="lib" path="lib/commons-net-3.3.jar"/>
 	<classpathentry kind="lib" path="lib/ftp4j-1.7.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/XmlSchema-1.4.7-modified-for-WSC.jar" sourcepath="lib.src/XmlSchema-1.4.7-modified-for-WSC-sources.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/commons-io-2.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-io-2.2.jar" sourcepath="lib.src/commons-io-2.2-src.zip"/>
 	<classpathentry kind="lib" path="lib/truezip-kernel-7.7.5.jar"/>
 	<classpathentry kind="lib" path="lib/truezip-driver-zip-7.7.5.jar"/>
 	<classpathentry kind="lib" path="lib/truezip-driver-file-7.7.5.jar"/>
