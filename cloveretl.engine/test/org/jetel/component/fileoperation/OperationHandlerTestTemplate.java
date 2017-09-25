@@ -235,25 +235,6 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertEquals("File was overwritten with older file in update mode", originalContent, read(manager.getInput(target).channel()));
 		}
 		
-		{ // CLO-11678:
-			String newerContent = "Newer content";
-			source = relativeURI("newerFile.tmp");
-			target = relativeURI("veryOldFile.tmp");
-			prepareData(source, newerContent); // newer file
-			assertTrue("Update mode returned an error", manager.copy(source, target, new CopyParameters().setUpdate()).success());
-			String actualContent = read(manager.getInput(target).channel());
-			if (!Objects.equals(newerContent, actualContent)) {
-				long sourceTime = manager.info(source).getLastModified().getTime();
-				long targetTime = manager.info(target).getLastModified().getTime();
-				String message = String.format(
-						"File was not overwritten with newer file in update mode - source: %d, target: %d, diff: %d", 
-						sourceTime, 
-						targetTime, 
-						targetTime - sourceTime);
-				assertEquals(message, newerContent, actualContent);
-			}
-		}
-
 		source = relativeURI("q.tmp");
 		target = relativeURI("r");
 		result = manager.copy(source, target);
@@ -406,6 +387,26 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertTrue(manager.isFile(relativeURI("trailingSlashCopy/file.tmp")));
 			assertFalse(manager.exists(relativeURI("trailingSlashCopy/trailingSlash")));
 		}
+
+		{ // CLO-11678:
+			String newerContent = "Newer content";
+			source = relativeURI("newerFile.tmp");
+			target = relativeURI("veryOldFile.tmp");
+			prepareData(source, newerContent); // newer file
+			assertTrue("Update mode returned an error", manager.copy(source, target, new CopyParameters().setUpdate()).success());
+			String actualContent = read(manager.getInput(target).channel());
+			if (!Objects.equals(newerContent, actualContent)) {
+				long sourceTime = manager.info(source).getLastModified().getTime();
+				long targetTime = manager.info(target).getLastModified().getTime();
+				String message = String.format(
+						"File was not overwritten with newer file in update mode - source: %d, target: %d, diff: %d", 
+						sourceTime, 
+						targetTime, 
+						targetTime - sourceTime);
+				assertEquals(message, newerContent, actualContent);
+			}
+		}
+
 	}
 	
 	public void testSpecialCharacters() throws Exception {
@@ -709,25 +710,6 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertEquals("File was overwritten with older file in update mode", originalContent, read(manager.getInput(target).channel()));
 		}
 
-		{ // CLO-11678:
-			String newerContent = "Newer content";
-			source = relativeURI("newerFile.tmp");
-			target = relativeURI("veryOldFile.tmp");
-			prepareData(source, newerContent); // newer file
-			assertTrue("Update mode returned an error", manager.move(source, target, new MoveParameters().setUpdate()).success());
-			String actualContent = read(manager.getInput(target).channel());
-			if (!Objects.equals(newerContent, actualContent)) {
-				long sourceTime = manager.info(source).getLastModified().getTime();
-				long targetTime = manager.info(target).getLastModified().getTime();
-				String message = String.format(
-						"File was not overwritten with newer file in update mode - source: %d, target: %d, diff: %d", 
-						sourceTime, 
-						targetTime, 
-						targetTime - sourceTime);
-				assertEquals(message, newerContent, actualContent);
-			}
-		}
-
 		source = relativeURI("q.tmp");
 		target = relativeURI("r");
 		result = manager.move(source, target);
@@ -885,6 +867,26 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertTrue(manager.isFile(relativeURI("trailingSlashMoved/file.tmp")));
 			assertFalse(manager.exists(relativeURI("trailingSlashMoved/trailingSlash")));
 		}
+
+		{ // CLO-11678:
+			String newerContent = "Newer content";
+			source = relativeURI("newerFile.tmp");
+			target = relativeURI("veryOldFile.tmp");
+			prepareData(source, newerContent); // newer file
+			assertTrue("Update mode returned an error", manager.move(source, target, new MoveParameters().setUpdate()).success());
+			String actualContent = read(manager.getInput(target).channel());
+			if (!Objects.equals(newerContent, actualContent)) {
+				long sourceTime = manager.info(source).getLastModified().getTime();
+				long targetTime = manager.info(target).getLastModified().getTime();
+				String message = String.format(
+						"File was not overwritten with newer file in update mode - source: %d, target: %d, diff: %d", 
+						sourceTime, 
+						targetTime, 
+						targetTime - sourceTime);
+				assertEquals(message, newerContent, actualContent);
+			}
+		}
+
 	}
 	
 	protected String read(ReadableByteChannel channel) {
