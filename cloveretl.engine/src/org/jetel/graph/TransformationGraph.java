@@ -41,6 +41,7 @@ import org.jetel.ctl.debug.DebugJMX;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.database.IConnection;
+import org.jetel.database.sql.DBConnection;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
@@ -550,6 +551,10 @@ public final class TransformationGraph extends GraphElement {
 					throw new ComponentNotReadyException(connection, "Can't initialize connection " + connection + ".", e);
 				} finally {
 					Thread.currentThread().setContextClassLoader(formerClassLoader);
+					//Lookup JNDI connection in original classloader
+					if (connection instanceof DBConnection) {
+						((DBConnection)connection).lookupJndiConnection();
+					}
 				}
 			}
 

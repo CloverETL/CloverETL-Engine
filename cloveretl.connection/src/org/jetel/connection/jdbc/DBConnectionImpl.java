@@ -300,16 +300,6 @@ public class DBConnectionImpl extends AbstractDBConnection {
             throw new ComponentNotReadyException(e);
         } 
 
-        //initiate  JNDI data source
-        if (!StringUtils.isEmpty(getJndiName())) {
-        	try {
-		    	Context initContext = new InitialContext();
-		   		jndiDataSource = (DataSource) initContext.lookup(getJndiName());
-	    	} catch (Exception e) {
-	    		throw new ComponentNotReadyException("Cannot open DB connection from JNDI data source: '" + getJndiName() + "'. " + e.getMessage(), e);
-	    	}
-        }
-
         //decrypt password
         decryptPassword();
     }
@@ -644,7 +634,20 @@ public class DBConnectionImpl extends AbstractDBConnection {
         this.isPasswordEncrypted = isPasswordEncrypted;
     }
 
-	@Override
+    @Override
+    public void lookupJndiConnection() throws ComponentNotReadyException {
+		//initiate  JNDI data source
+    	if (!StringUtils.isEmpty(getJndiName())) {
+        	try {
+        		InitialContext initContext = new InitialContext();
+		   		jndiDataSource = (DataSource) initContext.lookup(getJndiName());
+	    	} catch (Exception e) {
+	    		throw new ComponentNotReadyException("Cannot open DB connection from JNDI data source: '" + getJndiName() + "'. " + e.getMessage(), e);
+	    	}
+        }
+    }
+    
+    @Override
 	public String getJndiName() {
 		return jndiName;
 	}
