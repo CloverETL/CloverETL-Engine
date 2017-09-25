@@ -131,7 +131,14 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 	}
 
 	public void testCopy() throws Exception {
-		prepareData(relativeURI("veryOldFile.tmp"), "Original content"); // CLO-11678
+		{ // CLO-11678:
+			CloverURI veryOldFile = relativeURI("veryOldFile.tmp");
+			prepareData(veryOldFile, "Original content");
+			// try to set last modification date - not supported by all protocols
+			if (!manager.create(veryOldFile, new CreateParameters().setLastModified(new Date(System.currentTimeMillis() - 10000))).success()) {
+				Thread.sleep(1100); // fallback, just wait at least 1 second
+			}
+		}
 		Map<String, String> texts = new HashMap<String, String>();
 		texts.put("srcdir/file.tmp", "Žluťoučký kůň úpěl ďábelské ódy");
 		texts.put("srcdir/f.tmp", "Tak se z lesa ozývá");
@@ -574,7 +581,14 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 	}
 
 	public void testMove() throws Exception {
-		prepareData(relativeURI("veryOldFile.tmp"), "Original content"); // CLO-11678
+		{ // CLO-11678:
+			CloverURI veryOldFile = relativeURI("veryOldFile.tmp");
+			prepareData(veryOldFile, "Original content");
+			// try to set last modification date - not supported by all protocols
+			if (!manager.create(veryOldFile, new CreateParameters().setLastModified(new Date(System.currentTimeMillis() - 10000))).success()) {
+				Thread.sleep(1100); // fallback, just wait at least 1 second
+			}
+		}
 		Map<String, String> texts = new HashMap<String, String>();
 		texts.put("srcdir/file.tmp", "Žluťoučký kůň úpěl ďábelské ódy");
 		texts.put("srcdir/f.tmp", "Tak se z lesa ozývá");
