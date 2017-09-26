@@ -137,7 +137,9 @@ public class DefaultOperationHandler extends BaseOperationHandler {
 					if (targetInfo.getLastModified() == null) {
 						throw new IOException("Failed to obtain target modification date: " + target);
 					}
-					return (sourceInfo.getLastModified().compareTo(targetInfo.getLastModified()) <= 0);
+					if (sourceInfo.getLastModified().compareTo(targetInfo.getLastModified()) <= 0) {
+						return true; // CLO-11678 - older file: mark as success; newer file: overwrite it (continue to copyFile() below)
+					}
 				}
 			} else if (makeParents) {
 				URI parentUri = URIUtils.getParentURI(target.toURI());

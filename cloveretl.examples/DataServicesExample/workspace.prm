@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<GraphParameters>
+    <GraphParameter name="PROJECT" value="." secure="false" public="false" required="false">
+        <attr name="description">Project root path</attr>
+    </GraphParameter>
+    <GraphParameter name="CONN_DIR" value="${PROJECT}/conn" secure="false" public="false" required="false">
+        <attr name="description">Default folder for external connections</attr>
+    </GraphParameter>
+    <GraphParameter name="DATAIN_DIR" value="${PROJECT}/data-in" secure="false" public="false" required="false">
+        <attr name="description">Default folder for input data files</attr>
+    </GraphParameter>
+    <GraphParameter name="DATAOUT_DIR" value="${PROJECT}/data-out" secure="false" public="false" required="false">
+        <attr name="description">Default folder for output data files</attr>
+    </GraphParameter>
+    <GraphParameter name="DATATMP_DIR" value="${PROJECT}/data-tmp" secure="false" public="false" required="false">
+        <attr name="description">Default folder for temporary data files</attr>
+    </GraphParameter>
+    <GraphParameter name="GRAPH_DIR" value="${PROJECT}/graph" secure="false" public="false" required="false">
+        <attr name="description">Default folder for transformation graphs (grf)</attr>
+    </GraphParameter>
+    <GraphParameter name="SUBGRAPH_DIR" value="${GRAPH_DIR}/subgraph" secure="false" public="false" required="false">
+        <attr name="description">Default folder for transformation subgraphs (sgrf)</attr>
+    </GraphParameter>
+    <GraphParameter name="JOBFLOW_DIR" value="${PROJECT}/jobflow" secure="false" public="false" required="false">
+        <attr name="description">Default folder for jobflows (jbf)</attr>
+    </GraphParameter>
+    <GraphParameter name="DATA_SERVICE_DIR" value="${PROJECT}/data-service" secure="false" public="false" required="false">
+        <attr name="description">Default folder for Data Service REST Jobs (rjob)</attr>
+    </GraphParameter>
+    <GraphParameter name="LIB_DIR" value="${PROJECT}/lib" secure="false" public="false" required="false">
+        <attr name="description">Default folder for java libraries (*.jar)</attr>
+    </GraphParameter>
+    <GraphParameter name="LOOKUP_DIR" value="${PROJECT}/lookup" secure="false" public="false" required="false">
+        <attr name="description">Default folder for external lookup tables</attr>
+    </GraphParameter>
+    <GraphParameter name="META_DIR" value="${PROJECT}/meta" secure="false" public="false" required="false">
+        <attr name="description">Default folder for external metadata (fmt)</attr>
+    </GraphParameter>
+    <GraphParameter name="PROFILE_DIR" value="${PROJECT}/profile" secure="false" public="false" required="false">
+        <attr name="description">Default folder for data profiler jobs (cpj)</attr>
+    </GraphParameter>
+    <GraphParameter name="SEQ_DIR" value="${PROJECT}/seq" secure="false" public="false" required="false">
+        <attr name="description">Default folder for external sequences (seq)</attr>
+    </GraphParameter>
+    <GraphParameter name="TRANS_DIR" value="${PROJECT}/trans" secure="false" public="false" required="false">
+        <attr name="description">Default folder for java and CTL transformations</attr>
+    </GraphParameter>
+</GraphParameters>

@@ -35,6 +35,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -313,10 +314,20 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 				return Type.FILE;
 			}
 		}
+		
+		/**
+		 * Converts <b>seconds</b> from Jan 1, 1970 in UTC to a {@link Date}.
+		 * 
+		 * @param seconds
+		 * @return a {@link Date}
+		 */
+		private Date toDate(int seconds) {
+			return new Date(TimeUnit.SECONDS.toMillis(seconds));
+		}
 
 		@Override
 		public Date getLastModified() {
-			return new Date(attrs.getMTime() * 1000L);
+			return toDate(attrs.getMTime());
 		}
 
 		@Override
@@ -326,7 +337,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 
 		@Override
 		public Date getLastAccessed() {
-			return new Date(attrs.getATime() * 1000L);
+			return toDate(attrs.getATime());
 		}
 
 		@Override
@@ -534,7 +545,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 	}
 
 	private void setLastModified(ChannelSftp channel, String path, long millis, boolean directory) throws SftpException {
-		int secs = (int) (millis / 1000);
+		int secs = (int) TimeUnit.MILLISECONDS.toSeconds(millis);
 		if (!directory) {
 			channel.setMtime(path, secs); // strict, setting modification date on files must work
 		} else {

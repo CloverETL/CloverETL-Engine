@@ -723,6 +723,7 @@
 				  <enable package="com.opensys.cloveretl"/>
 				</assertions>
 	    		<sysproperty key="file.encoding" value="UTF-8" />
+				<jvmarg value="-Dhttps.protocols=TLSv1.2,TLSv1.1,TLSv1"/>
 				<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
 				<classpath path="${cp.compile.junit}">
 					<pathelement path="${dir.classestest}"/>

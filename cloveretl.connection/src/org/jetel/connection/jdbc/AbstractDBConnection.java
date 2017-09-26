@@ -36,6 +36,8 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
@@ -52,6 +54,8 @@ public abstract class AbstractDBConnection extends GraphElement implements DBCon
 	public final static String SQL_QUERY_PROPERTY = "sqlQuery";
 	
 	public final static String OPTIMIZE_QUERY_PROPERTY = "sqlOptimization";
+
+	public final static String IGNORE_UNKNOWN_TYPES_PROPERTY = "ignoreUnknownTypes";
 	
     public static final String XML_JDBC_PROPERTIES_PREFIX = "jdbc.";
     
@@ -166,6 +170,10 @@ public abstract class AbstractDBConnection extends GraphElement implements DBCon
         	logger.debug("Optimizing sql query for dynamic metadata. Optimized query: " + sqlQuery);
         }
 
+        //process 'ignoreUnknownTypes' parameter, which allows to process even directly unsupported data types, see CLO-11740
+        String sIgnoreUnknownTypes = parameters.getProperty(IGNORE_UNKNOWN_TYPES_PROPERTY, "false");
+        boolean ignoreUnknownTypes = Boolean.valueOf(sIgnoreUnknownTypes);
+        
         Connection connection;
 		try {
 			connection = connect(OperationType.UNKNOWN);
@@ -189,7 +197,15 @@ public abstract class AbstractDBConnection extends GraphElement implements DBCon
             	sb.append("should return zero records. Consider using TOP, LIMIT or ROWNUM clause in your query, or adding metadata attribute sqlOptimization=\"true\".");
             	logger.warn(sb.toString());
             }
-            DataRecordMetadata drMetaData = SQLUtil.dbMetadata2jetel(resultSet.getMetaData(), getJdbcSpecific());
+            DataRecordMetadata drMetaData = SQLUtil.dbMetadata2jetel(resultSet.getMetaData(), getJdbcSpecific(), !ignoreUnknownTypes);
+            if (ignoreUnknownTypes) {
+            	//convert unknown data types to string
+            	for (DataFieldMetadata fieldMetadata : drMetaData) {
+            		if (fieldMetadata.getDataType() == DataFieldType.UNKNOWN) {
+            			fieldMetadata.setDataType(DataFieldType.STRING);
+            		}
+            	}
+            }
             return drMetaData;
         } finally {
             // make sure we close all connection resources

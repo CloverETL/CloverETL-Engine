@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="jansedlacek" created="Fri Sep 01 15:41:50 CEST 2017" guiVersion="4.7.0.M1" id="1504275392557" licenseCode="CLP1DJAVLI15742443BY" name="contact_vcard" nature="restJob" showComponentDetails="true">
+<Global>
+<EndpointSettings>
+<UrlPath>/contact/vcard/{id}</UrlPath>
+<EndpointName>Get contact_vcard</EndpointName>
+<RequestMethod name="GET"/>
+<RequestParameter id="RestJobParameter0" location="url_path" name="id" required="true" type="string"/>
+</EndpointSettings>
+<RestJobResponseStatus>
+<JobError>
+<ReasonPhrase>Job failed</ReasonPhrase>
+<StatusCode>500</StatusCode>
+</JobError>
+<Success>
+<StatusCode>200</StatusCode>
+</Success>
+<ValidationError>
+<ReasonPhrase>Request validation failed</ReasonPhrase>
+<StatusCode>400</StatusCode>
+</ValidationError>
+</RestJobResponseStatus>
+<Metadata fileURL="${META_DIR}/contact.fmt" id="Metadata0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="317" id="Note0" textColor="444444" width="640" x="198" y="182">
+<attr name="text"><![CDATA[h3. Download VCARD for contact
+
+This endpoints allows user to download selected contact in VCARD format. 
+
+
+h4. Highlights
+* Endpoint uses custom serialization, notice *<custom>* option in _Endpoint configuration_
+* We use *setResponseBody()* function to set the HTTP response from CTL
+* Using correct *Content-Type*  we make the browser offer the VCARD file for download. See functions *setResponseContentType()* and *setResponseHeader()* in [SetJobOutput|element://PRODUCE_OUTPUT_PAYLOAD] component
+
+Endpoint accepts *GET* method and uses single required input parameter *id*, passed in URL path.
+
+
+
+
+]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node guiName="Find required contact" guiX="457" guiY="71" id="FIND_REQUIRED_CONTACT" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[//#CTL2
+num2str($in.0.id)==getRequestParameter("id")]]></attr>
+</Node>
+<Node guiName="Produce output payload" guiX="676" guiY="71" id="PRODUCE_OUTPUT_PAYLOAD" type="SET_JOB_OUTPUT">
+<attr name="mapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+
+	string output = "";
+	
+	output += "BEGIN:VCARD\n";
+	output += "VERSION:3.0\n";
+	output += "FN:"+$in.0.firstName+" "+$in.0.lastName+"\n";
+	output += "TEL;TYPE=WORK,VOICE:"+$in.0.phone+"\n";
+	output += "EMAIL:"+$in.0.email+"\n";
+	output += "END:VCARD\n";
+	output += "\n";
+	
+	string downloadFilename = nvl($in.0.firstName + $in.0.lastName,$in.0.id.toString());
+	
+	setResponseContentType("text/x-vcard");
+	setResponseHeader("Content-Disposition","attachment; filename="+ downloadFilename + ".vcf");
+	
+	setResponseBody(output);
+	
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+<attr name="guiDescription"><![CDATA[and headers]]></attr>
+</Node>
+<Node guiName="Read all contacts" guiX="241" guiY="71" id="READ_ALL_CONTACTS" schema="${META_DIR}/contacts_json.xsd" sourceUri="${DATAIN_DIR}/contacts.json" type="JSON_EXTRACT">
+<attr name="mapping"><![CDATA[<Mappings>
+	<Mapping element="json_array">
+		<Mapping element="json_array" outPort="0"
+				xmlFields="{}email;{}first-name;{}id;{}last-name;{}phone"
+				cloverFields="email;firstName;id;lastName;phone">
+		</Mapping>
+	</Mapping>
+</Mappings>
+]]></attr>
+</Node>
+<Node guiName="Input" guiX="80" guiY="10" id="RESTJOB_INPUT0" restJobInput="true" type="RESTJOB_INPUT"/>
+<Node guiName="Output" guiX="900" guiY="10" id="RESTJOB_OUTPUT0" noMetadataName="false" noTopLevelArray="false" responseFormat="CUSTOM" restJobOutput="true" type="RESTJOB_OUTPUT"/>
+<Node guiName="GetJobInput" guiX="680" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
+<attr name="mapping"><![CDATA[//#CTL2
+// Transforms input record into output record.
+function integer transform() {
+	if (isEmpty(getRequestParameter("id"))) { 
+		raiseError("Missing required request parameter: 'id'");
+	}
+	return ALL;
+}]]></attr>
+</Node>
+<Edge fromNode="FIND_REQUIRED_CONTACT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" outPort="Port 0 (accepted)" toNode="PRODUCE_OUTPUT_PAYLOAD:0"/>
+<Edge fromNode="READ_ALL_CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="FIND_REQUIRED_CONTACT:0"/>
+</Phase>
+</Graph>

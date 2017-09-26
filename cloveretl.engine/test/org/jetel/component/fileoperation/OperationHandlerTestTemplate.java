@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.jetel.component.fileoperation.FileManager.WritableContentProvider;
 import org.jetel.component.fileoperation.SimpleParameters.CopyParameters;
@@ -124,12 +125,22 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		}  
 	}
 	
+	private void createOldFile() throws URISyntaxException, Exception {
+		{ // CLO-11678:
+			CloverURI veryOldFile = relativeURI("veryOldFile.tmp");
+			prepareData(veryOldFile, "Original content");
+			// try to set last modification date - not supported by all protocols
+			manager.create(veryOldFile, new CreateParameters().setLastModified(new Date(System.currentTimeMillis() - 10000)));
+		}
+	}
+	
 	protected void prepareData(CloverURI uri, String data) throws Exception {
 		assumeTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
 		assumeTrue(write(manager.getOutput(uri).channel(), data));
 	}
 
 	public void testCopy() throws Exception {
+		createOldFile(); // CLO-11678
 		Map<String, String> texts = new HashMap<String, String>();
 		texts.put("srcdir/file.tmp", "Žluťoučký kůň úpěl ďábelské ódy");
 		texts.put("srcdir/f.tmp", "Tak se z lesa ozývá");
@@ -228,7 +239,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			source = relativeURI("olderFile.tmp");
 			target = relativeURI("newerFile.tmp");
 			assumeTrue(manager.create(source).success()); // older file
-			prepareData(target, "Original content"); // newer file
+			prepareData(target, originalContent); // newer file
 			assertTrue("Update mode returned an error", manager.copy(source, target, new CopyParameters().setUpdate()).success());
 			assertEquals("File was overwritten with older file in update mode", originalContent, read(manager.getInput(target).channel()));
 		}
@@ -385,6 +396,28 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertTrue(manager.isFile(relativeURI("trailingSlashCopy/file.tmp")));
 			assertFalse(manager.exists(relativeURI("trailingSlashCopy/trailingSlash")));
 		}
+
+		{ // CLO-11678:
+			String newerContent = "Newer content";
+			source = relativeURI("newerFile.tmp");
+			target = relativeURI("veryOldFile.tmp");
+			prepareData(source, newerContent); // newer file
+			assertTrue("Update mode returned an error", manager.copy(source, target, new CopyParameters().setUpdate()).success());
+			String actualContent = read(manager.getInput(target).channel());
+			if (!Objects.equals(newerContent, actualContent)) {
+				long sourceTime = manager.info(source).getLastModified().getTime();
+				long targetTime = manager.info(target).getLastModified().getTime();
+				if (targetTime > sourceTime) { // disable the test if times are equal
+					String message = String.format(
+							"File was not overwritten with newer file in update mode - source: %d, target: %d, diff: %d", 
+							sourceTime, 
+							targetTime, 
+							targetTime - sourceTime);
+					assertEquals(message, newerContent, actualContent);
+				}
+			}
+		}
+
 	}
 	
 	public void testSpecialCharacters() throws Exception {
@@ -552,6 +585,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 	}
 
 	public void testMove() throws Exception {
+		createOldFile(); // CLO-11678
 		Map<String, String> texts = new HashMap<String, String>();
 		texts.put("srcdir/file.tmp", "Žluťoučký kůň úpěl ďábelské ódy");
 		texts.put("srcdir/f.tmp", "Tak se z lesa ozývá");
@@ -682,7 +716,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			source = relativeURI("olderFile.tmp");
 			target = relativeURI("newerFile.tmp");
 			assumeTrue(manager.create(source).success()); // older file
-			prepareData(target, "Original content"); // newer file
+			prepareData(target, originalContent); // newer file
 			assertTrue("Update mode returned an error", manager.move(source, target, new MoveParameters().setUpdate()).success());
 			assertEquals("File was overwritten with older file in update mode", originalContent, read(manager.getInput(target).channel()));
 		}
@@ -840,10 +874,32 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			// CLO-6088
 			source = relativeURI("trailingSlash");
 			target = relativeURI("trailingSlashMoved/");
-			assertTrue(manager.copy(source, target, new CopyParameters().setRecursive(true)).success());
+			assertTrue(manager.move(source, target, new MoveParameters()).success());
 			assertTrue(manager.isFile(relativeURI("trailingSlashMoved/file.tmp")));
 			assertFalse(manager.exists(relativeURI("trailingSlashMoved/trailingSlash")));
 		}
+
+		{ // CLO-11678:
+			String newerContent = "Newer content";
+			source = relativeURI("newerFile.tmp");
+			target = relativeURI("veryOldFile.tmp");
+			prepareData(source, newerContent); // newer file
+			assertTrue("Update mode returned an error", manager.move(source, target, new MoveParameters().setUpdate()).success());
+			String actualContent = read(manager.getInput(target).channel());
+			if (!Objects.equals(newerContent, actualContent)) {
+				long sourceTime = manager.info(source).getLastModified().getTime();
+				long targetTime = manager.info(target).getLastModified().getTime();
+				if (targetTime > sourceTime) { // disable the test if times are equal
+					String message = String.format(
+							"File was not overwritten with newer file in update mode - source: %d, target: %d, diff: %d", 
+							sourceTime, 
+							targetTime, 
+							targetTime - sourceTime);
+					assertEquals(message, newerContent, actualContent);
+				}
+			}
+		}
+
 	}
 	
 	protected String read(ReadableByteChannel channel) {
