@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="jansedlacek" created="Thu Aug 31 14:44:51 CEST 2017" guiVersion="4.7.0.M1" id="1504186503518" licenseCode="CLP1DJAVLI15742443BY" name="contacts" nature="restJob" showComponentDetails="true">
+<Graph author="jansedlacek" created="Thu Aug 31 14:44:51 CEST 2017" guiVersion="0.0.0.devel" id="1504186503518" licenseCode="CLP1DJAVLI15742443BY" name="contacts" nature="restJob" showComponentDetails="true">
 <Global>
 <EndpointSettings>
 <UrlPath>/contacts</UrlPath>
@@ -41,7 +41,7 @@ This endpoint returns full contents of JSON contact database to the JavaScript e
 
 
 h4. Highlights
-* The records are parsed from our 'database' and serialized back to JSON format using *default JSON serialization*. See Output setting in  _Endpoint configuration_
+* The records are parsed from our 'database' and serialized back to JSON format using *default JSON serialization*. See Output settings in  _[Endpoint Configuration|action://com.cloveretl.gui/com.cloveretl.gui.actions.ChangeGraphEditorTabAction?index=0]_
 
 The endpoint handles *GET* method and uses no parameters
 
@@ -52,11 +52,13 @@ The endpoint handles *GET* method and uses no parameters
 <Phase number="0">
 <Node fileURL="response:body" guiName="REST Job Response Writer" guiX="1100" guiY="10" id="JSON_WRITER" restJobOutput="true" type="JSON_WRITER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<clover:collection xmlns:clover="http://www.cloveretl.com/ns/xmlmapping" clover:inPort="0" clover:name="root">
+<root xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
+<clover:collection clover:inPort="0" clover:name="contact">
 <element0>
 <clover:elements clover:include="$0.*"/>
 </element0>
 </clover:collection>
+</root>
 ]]></attr>
 </Node>
 <Node guiName="Read all contacts" guiX="400" guiY="44" id="READ_ALL_CONTACTS" schema="${META_DIR}/contacts_json.xsd" sourceUri="${DATAIN_DIR}/contacts.json" type="JSON_EXTRACT">
@@ -71,8 +73,11 @@ The endpoint handles *GET* method and uses no parameters
 ]]></attr>
 </Node>
 <Node guiName="Input" guiX="80" guiY="10" id="RESTJOB_INPUT0" restJobInput="true" type="RESTJOB_INPUT"/>
-<Node guiName="Output" guiX="900" guiY="10" id="RESTJOB_OUTPUT0" noMetadataName="true" noTopLevelArray="false" responseFormat="JSON" restJobOutput="true" type="RESTJOB_OUTPUT"/>
+<Node attachment="false" guiName="Output" guiX="900" guiY="10" id="RESTJOB_OUTPUT0" metadataName="true" responseFormat="JSON" restJobOutput="true" topLevelArray="true" type="RESTJOB_OUTPUT">
+<attr name="noTopLevelArray"><![CDATA[false]]></attr>
+<attr name="noMetadataName"><![CDATA[true]]></attr>
+</Node>
 <Edge fromNode="READ_ALL_CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="RESTJOB_OUTPUT0:0"/>
-<Edge fromNode="RESTJOB_OUTPUT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="JSON_WRITER:0"/>
+<Edge fromNode="RESTJOB_OUTPUT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="JSON_WRITER:0"/>
 </Phase>
 </Graph>

@@ -3,7 +3,7 @@
 <Global>
 <EndpointSettings>
 <UrlPath>/html/{filename}</UrlPath>
-<EndpointName>Get html</EndpointName>
+<EndpointName>Get static file</EndpointName>
 <RequestMethod name="GET"/>
 <RequestParameter id="RestJobParameter0" location="url_path" name="filename" required="true" type="string"/>
 </EndpointSettings>
@@ -39,8 +39,8 @@
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="370" id="Note0" textColor="444444" width="640" x="226" y="269">
-<attr name="text"><![CDATA[h2. Serving HTML/CSS files
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="376" id="Note0" textColor="444444" width="654" x="206" y="131">
+<attr name="text"><![CDATA[h2. Serving files
 
 h4. Description
 The job serves HTML and CSS resources which (as correct HTTP headers are set) are then displayed in browser.
@@ -48,14 +48,12 @@ The job serves HTML and CSS resources which (as correct HTTP headers are set) ar
 
 h4. Highlights
 * Job sets response HTTP header *Content-Type* so that web page is correctly displayed by your browser
-* The job *returns any file based on incming HTTP parameter*.  We use it to return both HTML & CSS files.
-* Notice _${filename}_ parameter in Reader URL. It is automatically resolved using value from HTTP request
-* This job uses *custom response serialization*. Notice _response:body_ in Writer URL and _<custom>_ output setting in Endpoint configuration.
+* The job *returns any file based on incoming HTTP parameter*.  We use it to return HTML, CSS, PNG and JavaScript files.
+* Notice _${filename}_ parameter in output setting in _[Endpoint Configuration|action://com.cloveretl.gui/com.cloveretl.gui.actions.ChangeGraphEditorTabAction?index=0]_. It is automatically resolved using value from HTTP request.
+* This job uses *static file response*. Notice _<file>_ output setting in _[Endpoint Configuration|action://com.cloveretl.gui/com.cloveretl.gui.actions.ChangeGraphEditorTabAction?index=0]_.
 
-The job accepts only *GET* requests and uses one *required* input parameter _filename_, passed in URL path.
+The job accepts only *GET* requests and uses one *required* input parameter _filename_ as Path parameter.
 
-
-*Temporary:* _We will simplify the approach for serving static files in  4.7-M2 to allow services send file as response without need to implement any graph logic. In M1 it is necessary to use the combination of Reader and Writer to serve static file as service response._
 
 ]]></attr>
 </RichTextNote>
@@ -63,7 +61,7 @@ The job accepts only *GET* requests and uses one *required* input parameter _fil
 </Global>
 <Phase number="0">
 <Node guiName="Input" guiX="80" guiY="10" id="RESTJOB_INPUT0" restJobInput="true" type="RESTJOB_INPUT"/>
-<Node attachment="false" guiName="Output" guiX="900" guiY="10" id="RESTJOB_OUTPUT0" metadataName="true" responseFormat="CUSTOM" restJobOutput="true" topLevelArray="true" type="RESTJOB_OUTPUT">
+<Node attachment="false" encoding="UTF-8" fileURL="${PROJECT}/html/${filename}" guiName="Output" guiX="900" guiY="10" id="RESTJOB_OUTPUT0" metadataName="true" responseFormat="FILE" restJobOutput="true" topLevelArray="true" type="RESTJOB_OUTPUT">
 <attr name="noTopLevelArray"><![CDATA[false]]></attr>
 <attr name="noMetadataName"><![CDATA[false]]></attr>
 </Node>
@@ -77,7 +75,7 @@ function integer transform() {
 	return ALL;
 }]]></attr>
 </Node>
-<Node guiName="Set response Content-Type" guiX="233" guiY="32" id="SET_RESPONSE_CONTENT_TYPE" type="SET_JOB_OUTPUT">
+<Node guiName="Set response Content-Type" guiX="383" guiY="19" id="SET_RESPONSE_CONTENT_TYPE" type="SET_JOB_OUTPUT">
 <attr name="mapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -86,6 +84,8 @@ function integer transform() {
 		setResponseContentType("text/css");
 	} else if (endsWith(getParamValue("filename"), ".png")) {
 		setResponseContentType("image/png");
+	} else if (endsWith(getParamValue("filename"), ".js")) {
+		setResponseContentType("text/javascript");	
 	} else {
 		setResponseContentType("text/html");
 	}
@@ -112,12 +112,5 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-</Phase>
-<Phase number="1">
-<Node fileURL="${PROJECT}/html/${filename}" guiName="Read requested static file" guiX="233" guiY="134" id="READ_REQUESTED_STATIC_FILE" type="FLAT_FILE_READER">
-<attr name="guiDescription"><![CDATA[using ${filename} parameter]]></attr>
-</Node>
-<Node fileURL="response:body" guiName="Write file content to response body" guiX="577" guiY="134" id="WRITE_FILE_CONTENT_TO_RESPONSE_BODY" type="FLAT_FILE_WRITER"/>
-<Edge fromNode="READ_REQUESTED_STATIC_FILE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="WRITE_FILE_CONTENT_TO_RESPONSE_BODY:0"/>
 </Phase>
 </Graph>

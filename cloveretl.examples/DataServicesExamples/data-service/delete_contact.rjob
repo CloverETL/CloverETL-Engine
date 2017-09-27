@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="jansedlacek" created="Thu Aug 31 14:44:51 CEST 2017" guiVersion="4.7.0.M1" id="1504250913595" licenseCode="CLP1DJAVLI15742443BY" name="delete_contact" nature="restJob" showComponentDetails="true">
+<Graph author="jansedlacek" created="Thu Aug 31 14:44:51 CEST 2017" guiVersion="0.0.0.devel" id="1504250913595" licenseCode="CLP1DJAVLI15742443BY" name="delete_contact" nature="restJob" showComponentDetails="true">
 <Global>
 <EndpointSettings>
 <UrlPath>/contact/{id}</UrlPath>
@@ -24,10 +24,10 @@
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="344" id="Note0" textColor="444444" width="640" x="202" y="189">
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="220" id="Note0" textColor="444444" width="640" x="202" y="189">
 <attr name="text"><![CDATA[h3. Deleting contact
 
-This endpoint delets the contact identified by its ID, by simply reading and writing the full contact database and filtering out the contact we want to delete in the process.
+This endpoint deletes the contact identified by its ID, by simply reading and writing the full contact database and filtering out the contact we want to delete in the process.
 
 
 h3. Highlights
@@ -53,8 +53,11 @@ num2str($in.0.id)!=getRequestParameter("id")]]></attr>
 ]]></attr>
 </Node>
 <Node guiName="Input" guiX="80" guiY="10" id="RESTJOB_INPUT0" restJobInput="true" type="RESTJOB_INPUT"/>
-<Node guiName="Output" guiX="900" guiY="10" id="RESTJOB_OUTPUT0" noMetadataName="false" noTopLevelArray="false" responseFormat="CUSTOM" restJobOutput="true" type="RESTJOB_OUTPUT"/>
-<Node guiName="GetJobInput" guiX="480" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
+<Node attachment="false" guiName="Output" guiX="900" guiY="10" id="RESTJOB_OUTPUT0" metadataName="true" responseFormat="CUSTOM" restJobOutput="true" topLevelArray="true" type="RESTJOB_OUTPUT">
+<attr name="noTopLevelArray"><![CDATA[false]]></attr>
+<attr name="noMetadataName"><![CDATA[false]]></attr>
+</Node>
+<Node guiName="GetJobInput" guiX="280" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
 <attr name="mapping"><![CDATA[//#CTL2
 // Transforms input record into output record.
 function integer transform() {
