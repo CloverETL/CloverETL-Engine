@@ -325,7 +325,7 @@ public class TrackingMetadataToolkit {
 		populateField(record, composeFieldName(graphTracking, Attribute.GRAPH_NAME), graphTracking.getGraphName());
 		populateField(record, composeFieldName(graphTracking, Attribute.RESULT), graphTracking.getResult().message());
 		PhaseTracking runningPhase = graphTracking.getRunningPhaseTracking();
-		populateField(record, composeFieldName(graphTracking, Attribute.RUNNING_PHASE), ((runningPhase==null) ? null : runningPhase.getPhaseNum()) );
+		populateField(record, composeFieldName(graphTracking, Attribute.RUNNING_PHASE), ((runningPhase==null) ? null : runningPhase.getPhaseLabel()) );
 
 		PhaseTracking[] phases = graphTracking.getPhaseTracking();
 		if (phases != null) { //it is not probably necessary, just for sure
@@ -399,7 +399,7 @@ public class TrackingMetadataToolkit {
 	
 	//phase_{num}_{attr}
 	private static String composeFieldName(PhaseTracking phaseTracking, Attribute attribute) {
-		return FieldType.PHASE + "_" + phaseTracking.getPhaseNum() + "_" + attribute;
+		return FieldType.PHASE + "_" + phaseTracking.getPhaseLabel() + "_" + attribute;
 	}
 
 	//component_{id}_{attr}

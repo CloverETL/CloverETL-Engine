@@ -1012,10 +1012,10 @@ public final class TransformationGraph extends GraphElement {
 	public void dumpGraphConfiguration() {
 		logger.info("*** TRANSFORMATION GRAPH CONFIGURATION ***\n");
 		for (Phase phase : getPhases()) {
-			logger.info("--- Phase [" + phase.getPhaseNum() + "] ---");
+			logger.info("--- Phase [" + phase.getLabel() + "] ---");
 			logger.info("\t... nodes ...");
 			for (Node node : phase.getNodes().values()) {
-				logger.info("\t" + node.getId() + " : " + (node.getName() !=null ? node.getName() : "") + " phase: " + node.getPhase().getPhaseNum());
+				logger.info("\t" + node.getId() + " : " + (node.getName() !=null ? node.getName() : "") + " phase: " + node.getPhase().getLabel());
 			}
 			logger.info("\t... edges ...");
 			for(Edge edge : phase.getEdges().values()) {

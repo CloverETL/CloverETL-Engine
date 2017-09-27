@@ -46,6 +46,8 @@ public interface PhaseTracking extends Serializable {
 	 */
 	int getPhaseNum();
 	
+	String getPhaseLabel();
+	
 	/**
 	 * @return phase start time.
 	 * @see System#currentTimeMillis()
