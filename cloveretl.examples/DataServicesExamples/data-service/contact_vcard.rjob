@@ -67,7 +67,7 @@ function integer transform() {
 	
 	string downloadFilename = nvl($in.0.firstName + $in.0.lastName,$in.0.id.toString());
 	
-	setResponseContentType("text/x-vcard");
+	setResponseContentType("text/x-vcard;charset=UTF-8");
 	setResponseHeader("Content-Disposition","attachment; filename="+ downloadFilename + ".vcf");
 	
 	setResponseBody(output);
