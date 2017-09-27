@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="reichman" created="Wed Sep 27 13:26:08 CEST 2017" guiVersion="0.0.0.devel" id="1506516972781" licenseCode="Commercial Devel" name="validate_submitted_data" nature="subgraph" showComponentDetails="true">
+<Global>
+<inputPorts>
+<singlePort connected="true" name="0"/>
+</inputPorts>
+<outputPorts>
+<singlePort connected="true" name="0"/>
+</outputPorts>
+<Metadata fileURL="${META_DIR}/contact.fmt" id="Metadata2"/>
+<Metadata id="Metadata1">
+<Record eofAsDelimiter="true" fieldDelimiter="|" name="rows" previewAttachmentCharset="UTF-8" recordDelimiter="\n" type="delimited">
+<Field delimiter=":" name="header" type="string"/>
+<Field name="value" type="string"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Dictionary/>
+</Global>
+<Phase number="1">
+<Node debugInput="true" guiName="DebugInput" guiX="50" guiY="84" id="DEBUG_INPUT" recordsNumber="0" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+
+// Generates output record.
+function integer generate() {
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the generate. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if generate() throws an exception.
+// function integer generateOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node debugOutput="true" guiName="DebugOutput" guiX="992" guiY="84" id="DEBUG_OUTPUT" type="TRASH"/>
+<Node guiName="HTTP 400" guiX="650" guiY="205" id="HTTP_400" type="FAIL">
+<attr name="mapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	setResponseStatus(400);
+	setResponseBody($in.0.validationMessage);
+	
+	$out.0.errorMessage = $in.0.validationMessage;
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node guiName="SubgraphInput" guiX="228" guiY="1" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT">
+<Port guiY="101" name="0"/>
+<Port guiY="171" name="1"/>
+</Node>
+<Node guiName="SubgraphOutput" guiX="878" guiY="1" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT">
+<Port guiY="101" name="0"/>
+<Port guiY="171" name="1"/>
+</Node>
+<Node guiName="Validate submitted data" guiX="392" guiY="84" id="VALIDATE_SUBMITTED_DATA" type="VALIDATOR">
+<attr name="errorMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.1.recordNo = $in.1.recordNo;
+	$out.1.validationMessage = $in.1.validationMessage;
+	$out.1.ruleStatusCode = $in.1.ruleStatusCode;
+	$out.1.ruleName = $in.1.ruleName;
+	$out.1.ruleType = $in.1.ruleType;
+	$out.1.rulePath = $in.1.rulePath;
+	$out.1.validatedFieldNames = $in.1.validatedFieldNames;
+	$out.1.validatedValues = $in.1.validatedValues;
+	$out.1.ruleParameters = $in.1.ruleParameters;
+	$out.1.validationDate = $in.1.validationDate;
+	$out.1.componentID = $in.1.componentID;
+	$out.1.componentName = $in.1.componentName;
+	$out.1.graphURL = $in.1.graphURL;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+<attr name="rules"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<group conjunction="AND" description="" enabled="true" errorMessage="" errorMessageProducer="RULES" lazyEvaluation="true" name="All rules" statusCode="">
+    <children>
+        <nonEmptySubset count="1" customRejectMessage="Either First or Last name must be populated" description="" enabled="true" goal="NONEMPTY" inputField="first_name,last_name" name="Either First or Last name must be populated" outputField="" trimInput="true"/>
+        <group conjunction="AND" description="" enabled="true" errorMessage="" errorMessageProducer="RULES" lazyEvaluation="true" name="Group" statusCode="">
+            <children>
+                <email acceptEmpty="false" allowGroupAddresses="false" allowNoTLD="false" customRejectMessage="Entered email is invalid" description="" enabled="true" inputField="email" name="Email is valid" outputField="" plainAddress="false" trimInput="true">
+                    <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                </email>
+                <patternMatch acceptEmpty="false" customRejectMessage="Invalid phone number. Use format 999-999-999." description="" enabled="true" ignoreCase="false" inputField="phone" name="Relaxed phone number validation" outputField="" trimInput="false">
+                    <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+                    <pattern>[0-9][0-9][0-9]-[0-9][0-9][0-9]-[0-9][0-9][0-9]</pattern>
+                </patternMatch>
+            </children>
+            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+            <imports/>
+        </group>
+        <copyAllByName customRejectMessage="" description="" enabled="true" inputField="" name="Copy all fields by name" outputField=""/>
+    </children>
+    <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+    <imports/>
+</group>
+]]></attr>
+</Node>
+<Edge fromNode="DEBUG_INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SUBGRAPH_INPUT:0"/>
+<Edge fromNode="SUBGRAPH_INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="VALIDATE_SUBMITTED_DATA:0"/>
+<Edge fromNode="SUBGRAPH_OUTPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DEBUG_OUTPUT:0"/>
+<Edge fromNode="VALIDATE_SUBMITTED_DATA:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (valid)" toNode="SUBGRAPH_OUTPUT:0"/>
+<Edge fromNode="VALIDATE_SUBMITTED_DATA:1" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 1 (invalid)" toNode="HTTP_400:0"/>
+</Phase>
+</Graph>

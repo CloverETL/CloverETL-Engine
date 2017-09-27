@@ -5,7 +5,7 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		
 		<!-- Latest compiled and minified CSS -->
-		<link rel="stylesheet" type="text/css" href="../../data-service/html/bootstrap.min.css" />
+		<link rel="stylesheet" type="text/css" href="../../data-service/html/css/bootstrap.min.css" />
 		
 		<script src="../../data-service/html/jquery-3.2.1.min.js" type="text/javascript"></script>
 		
@@ -170,7 +170,7 @@
 			*/
 			function importVcard() {
 				var vcard = $("#vcard-content").val();
-				$.ajax({url: getUrlPrefix() + '/contact/vcard', type: "PUT", data: vcard, dataType: "text"})
+				$.ajax({url: getUrlPrefix() + '/contact/vcard', type: "PUT", data: vcard, dataType: "text", contentType: 'text/vcard'})
 					.done(function(result) {
 						$("#vcard-content").val('');
 						fetchContacts(); //refresh
@@ -198,10 +198,10 @@
 						$.each(result, function (index, contact) {
 								divContacts.append(createContactDiv(
 									contact.id,
-									contact.firstName,
-									contact.lastName,
-									contact.phone,
-									contact.email
+									contact.first_name,
+									contact.last_name,
+									contact.email,
+									contact.phone
 								));
 							}
 						);

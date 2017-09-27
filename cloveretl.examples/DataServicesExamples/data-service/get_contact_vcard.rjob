@@ -59,13 +59,13 @@ function integer transform() {
 	
 	output += "BEGIN:VCARD\n";
 	output += "VERSION:3.0\n";
-	output += "FN:"+$in.0.firstName+" "+$in.0.lastName+"\n";
+	output += "FN:"+$in.0.first_name+" "+$in.0.last_name+"\n";
 	output += "TEL;TYPE=WORK,VOICE:"+$in.0.phone+"\n";
 	output += "EMAIL:"+$in.0.email+"\n";
 	output += "END:VCARD\n";
 	output += "\n";
 	
-	string downloadFilename = nvl($in.0.firstName + $in.0.lastName,$in.0.id.toString());
+	string downloadFilename = nvl($in.0.first_name + $in.0.last_name,$in.0.id.toString());
 	
 	setResponseContentType("text/x-vcard;charset=UTF-8");
 	setResponseHeader("Content-Disposition","attachment; filename="+ downloadFilename + ".vcf");
@@ -100,7 +100,7 @@ function integer transform() {
 	<Mapping element="json_array">
 		<Mapping element="json_array" outPort="0"
 				xmlFields="{}email;{}first-name;{}id;{}last-name;{}phone"
-				cloverFields="email;firstName;id;lastName;phone">
+				cloverFields="email;first_name;id;last_name;phone">
 		</Mapping>
 	</Mapping>
 </Mappings>
@@ -111,7 +111,7 @@ function integer transform() {
 <attr name="noTopLevelArray"><![CDATA[false]]></attr>
 <attr name="noMetadataName"><![CDATA[false]]></attr>
 </Node>
-<Node guiName="GetJobInput" guiX="680" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
+<Node guiName="GetJobInput" guiX="480" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
 <attr name="mapping"><![CDATA[//#CTL2
 // Transforms input record into output record.
 function integer transform() {

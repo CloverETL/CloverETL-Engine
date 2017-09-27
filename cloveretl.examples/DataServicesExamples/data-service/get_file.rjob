@@ -20,22 +20,6 @@
 <StatusCode>400</StatusCode>
 </ValidationError>
 </RestJobResponseStatus>
-<Metadata id="Metadata1">
-<Record eofAsDelimiter="true" fieldDelimiter="|" name="fileContent" previewAttachmentCharset="UTF-8" recordDelimiter="\n" type="delimited">
-<Field name="data" size="1" type="string"/>
-</Record>
-</Metadata>
-<Metadata id="Metadata0">
-<Record fieldDelimiter="|" name="requestEcho" recordDelimiter="\n" type="delimited">
-<Field name="requestBody" type="string"/>
-<Field name="requestClientIpAddress" type="string"/>
-<Field name="requestContentType" type="string"/>
-<Field name="requestEncoding" type="string"/>
-<Field name="requestHeaders" type="string"/>
-<Field name="requestMethod" type="string"/>
-<Field name="requestParameters" type="string"/>
-</Record>
-</Metadata>
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>

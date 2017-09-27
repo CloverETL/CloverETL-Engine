@@ -46,7 +46,7 @@ num2str($in.0.id)!=getRequestParameter("id")]]></attr>
 	<Mapping element="json_array">
 		<Mapping element="json_array" outPort="0"
 				xmlFields="{}email;{}first-name;{}id;{}last-name;{}phone"
-				cloverFields="email;firstName;id;lastName;phone">
+				cloverFields="email;first_name;id;last_name;phone">
 		</Mapping>
 	</Mapping>
 </Mappings>
@@ -57,7 +57,7 @@ num2str($in.0.id)!=getRequestParameter("id")]]></attr>
 <attr name="noTopLevelArray"><![CDATA[false]]></attr>
 <attr name="noMetadataName"><![CDATA[false]]></attr>
 </Node>
-<Node guiName="GetJobInput" guiX="280" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
+<Node guiName="GetJobInput" guiX="480" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
 <attr name="mapping"><![CDATA[//#CTL2
 // Transforms input record into output record.
 function integer transform() {
@@ -76,8 +76,8 @@ function integer transform() {
 <clover:collection clover:name="root" xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
   <item clover:inPort="0">
     <id>$0.id</id>
-    <first-name>$0.firstName</first-name>
-    <last-name>$0.lastName</last-name>
+    <first-name>$0.first_name</first-name>
+    <last-name>$0.last_name</last-name>
     <email>$0.email</email>
     <phone>$0.phone</phone>
   </item>

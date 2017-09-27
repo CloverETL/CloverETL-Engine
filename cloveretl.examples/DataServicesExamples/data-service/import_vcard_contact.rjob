@@ -20,16 +20,9 @@
 <StatusCode>400</StatusCode>
 </ValidationError>
 </RestJobResponseStatus>
-<Metadata fileURL="${META_DIR}/contact.fmt" id="Metadata2"/>
-<Metadata id="Metadata0">
-<Record fieldDelimiter="|" name="requestEcho" recordDelimiter="\n" type="delimited">
-<Field name="requestBody" type="string"/>
-<Field name="requestClientIpAddress" type="string"/>
-<Field name="requestContentType" type="string"/>
-<Field name="requestEncoding" type="string"/>
-<Field name="requestHeaders" type="string"/>
-<Field name="requestMethod" type="string"/>
-<Field name="requestParameters" type="string"/>
+<Metadata id="Metadata3">
+<Record fieldDelimiter="|" name="ContentType" recordDelimiter="\n" type="delimited">
+<Field name="contentType" type="string"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata1">
@@ -41,7 +34,7 @@
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="293" id="Note0" textColor="444444" width="640" x="217" y="186">
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="293" id="Note0" textColor="444444" width="640" x="211" y="283">
 <attr name="text"><![CDATA[h3. Import VCARD contact
 
 This endpoint handles importing contact submitted via text field  in VCARD format.  
@@ -61,7 +54,132 @@ h4. Highlights
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node guiName="Convert to contact" guiX="453" guiY="65" id="CONVERT_TO_CONTACT" type="DENORMALIZER">
+<Node guiName="Content-Type is invalid (HTTP 415)" guiX="623" guiY="60" id="CONTENT_TYPE_IS_INVALID_HTTP_415" type="FAIL">
+<attr name="mapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	setResponseStatus(415);
+	setResponseBody($in.0.validationMessage);
+	
+	$out.0.errorMessage = $in.0.validationMessage;
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node guiName="Content-Type is valid" guiX="888" guiY="17" id="CONTENT_TYPE_IS_VALID1" type="SUCCESS"/>
+<Node guiName="Get Content-Type value" guiX="191" guiY="17" id="GET_CONTENT_TYPE_VALUE1" type="GET_JOB_INPUT">
+<attr name="mapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.contentType = getRequestHeader("content-type");
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node guiName="Input" guiX="80" guiY="10" id="RESTJOB_INPUT0" restJobInput="true" type="RESTJOB_INPUT"/>
+<Node attachment="false" guiName="Output" guiX="1062" guiY="10" id="RESTJOB_OUTPUT0" metadataName="true" responseFormat="JSON" restJobOutput="true" topLevelArray="true" type="RESTJOB_OUTPUT">
+<attr name="noTopLevelArray"><![CDATA[false]]></attr>
+<attr name="noMetadataName"><![CDATA[false]]></attr>
+</Node>
+<Node guiName="Validate content-type" guiX="412" guiY="17" id="VALIDATE_CONTENT_TYPE" type="VALIDATOR">
+<attr name="errorMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.1.recordNo = $in.1.recordNo;
+	$out.1.validationMessage = $in.1.validationMessage;
+	$out.1.ruleStatusCode = $in.1.ruleStatusCode;
+	$out.1.ruleName = $in.1.ruleName;
+	$out.1.ruleType = $in.1.ruleType;
+	$out.1.rulePath = $in.1.rulePath;
+	$out.1.validatedFieldNames = $in.1.validatedFieldNames;
+	$out.1.validatedValues = $in.1.validatedValues;
+	$out.1.ruleParameters = $in.1.ruleParameters;
+	$out.1.validationDate = $in.1.validationDate;
+	$out.1.componentID = $in.1.componentID;
+	$out.1.componentName = $in.1.componentName;
+	$out.1.graphURL = $in.1.graphURL;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+<attr name="rules"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<group conjunction="AND" description="" enabled="true" errorMessage="" errorMessageProducer="RULES" lazyEvaluation="true" name="All rules" statusCode="">
+    <children>
+        <copyAllByName customRejectMessage="" description="" enabled="true" inputField="" name="Copy all fields by name" outputField=""/>
+        <patternMatch acceptEmpty="false" customRejectMessage="Wrong Content-Type header value, expected 'text/vcard'." description="" enabled="true" ignoreCase="true" inputField="contentType" name="Pattern Match" outputField="" trimInput="false">
+            <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+            <pattern>text/vcard</pattern>
+        </patternMatch>
+    </children>
+    <languageSetting dateFormat="" locale="" numberFormat="" timezone=""/>
+    <imports/>
+</group>
+]]></attr>
+</Node>
+<Edge fromNode="GET_CONTENT_TYPE_VALUE1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="VALIDATE_CONTENT_TYPE:0"/>
+<Edge fromNode="VALIDATE_CONTENT_TYPE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (valid)" toNode="CONTENT_TYPE_IS_VALID1:0"/>
+<Edge fromNode="VALIDATE_CONTENT_TYPE:1" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" outPort="Port 1 (invalid)" toNode="CONTENT_TYPE_IS_INVALID_HTTP_415:0"/>
+</Phase>
+<Phase number="1">
+<Node guiName="Convert to contact" guiX="447" guiY="162" id="CONVERT_TO_CONTACT" type="DENORMALIZER">
 <attr name="denormalize"><![CDATA[//#CTL2
 // This transformation defines the way in which multiple input records 
 // (with the same key) are denormalized into one output record. 
@@ -92,8 +210,8 @@ function integer append() {
 // of a group of input records defined by the key.
 // It creates a single output record for the whole group.
 function integer transform() {
-	$out.0.firstName = firstName;
-	$out.0.lastName = lastName;
+	$out.0.first_name = firstName;
+	$out.0.last_name = lastName;
 	$out.0.email = email;
 	$out.0.phone = phone;
 	return OK;
@@ -127,14 +245,11 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node guiName="Create contact" guiX="670" guiY="65" id="CREATE_CONTACT" jobURL="${SUBGRAPH_DIR}/createContact.sgrf" type="SUBGRAPH"/>
-<Node dataPolicy="lenient" fileURL="request:body" guiName="Parse input payload" guiX="242" guiY="65" id="PARSE_INPUT_PAYLOAD" type="FLAT_FILE_READER"/>
-<Node guiName="Input" guiX="80" guiY="10" id="RESTJOB_INPUT0" restJobInput="true" type="RESTJOB_INPUT"/>
-<Node attachment="false" guiName="Output" guiX="900" guiY="10" id="RESTJOB_OUTPUT0" metadataName="true" responseFormat="JSON" restJobOutput="true" topLevelArray="true" type="RESTJOB_OUTPUT">
-<attr name="noTopLevelArray"><![CDATA[false]]></attr>
-<attr name="noMetadataName"><![CDATA[false]]></attr>
-</Node>
-<Edge fromNode="CONVERT_TO_CONTACT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="CREATE_CONTACT:0"/>
+<Node guiName="Create contact" guiX="908" guiY="162" id="CREATE_CONTACT" jobURL="${SUBGRAPH_DIR}/createContact.sgrf" type="SUBGRAPH"/>
+<Node dataPolicy="lenient" fileURL="request:body" guiName="Parse input payload" guiX="236" guiY="162" id="PARSE_INPUT_PAYLOAD" type="FLAT_FILE_READER"/>
+<Node guiName="Validate submitted data" guiX="656" guiY="162" id="VALIDATE_SUBMITTED_DATA1" jobURL="${SUBGRAPH_DIR}/validateSubmittedData.sgrf" type="SUBGRAPH"/>
+<Edge fromNode="CONVERT_TO_CONTACT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="VALIDATE_SUBMITTED_DATA1:0"/>
 <Edge fromNode="PARSE_INPUT_PAYLOAD:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="CONVERT_TO_CONTACT:0"/>
+<Edge fromNode="VALIDATE_SUBMITTED_DATA1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="CREATE_CONTACT:0"/>
 </Phase>
 </Graph>
