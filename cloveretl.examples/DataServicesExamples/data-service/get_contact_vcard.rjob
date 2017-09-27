@@ -3,7 +3,7 @@
 <Global>
 <EndpointSettings>
 <UrlPath>/contact/vcard/{id}</UrlPath>
-<EndpointName>Get contact_vcard</EndpointName>
+<EndpointName>Get contact VCARD</EndpointName>
 <RequestMethod name="GET"/>
 <RequestParameter id="RestJobParameter0" location="url_path" name="id" required="true" type="string"/>
 </EndpointSettings>
@@ -111,7 +111,7 @@ function integer transform() {
 <attr name="noTopLevelArray"><![CDATA[false]]></attr>
 <attr name="noMetadataName"><![CDATA[false]]></attr>
 </Node>
-<Node guiName="GetJobInput" guiX="280" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
+<Node guiName="GetJobInput" guiX="680" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
 <attr name="mapping"><![CDATA[//#CTL2
 // Transforms input record into output record.
 function integer transform() {

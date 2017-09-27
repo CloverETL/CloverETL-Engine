@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="jansedlacek" category="writers" created="Fri Sep 01 15:41:50 CEST 2017" guiVersion="0.0.0.devel" id="1504277403083" licenseCode="CLP1DJAVLI15742443BY" name="addContact" nature="subgraph" showComponentDetails="true">
+<Global>
+<inputPorts>
+<singlePort connected="false" name="0"/>
+</inputPorts>
+<EndpointSettings/>
+<Metadata fileURL="${META_DIR}/contact.fmt" id="Metadata1"/>
+<Metadata id="Metadata0">
+<Record fieldDelimiter="|" name="debugInput1" recordDelimiter="\n" type="delimited">
+<Field name="field1" type="string"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Dictionary>
+<Entry dictval.value="-1" input="true" name="maxId" output="false" type="integer"/>
+</Dictionary>
+</Global>
+<Phase number="0">
+<Node guiName="Find max id" guiX="334" guiY="79" id="FIND_MAX_ID" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.* = $in.0.*;
+	if($in.0.id > dictionary.maxId) {
+		dictionary.maxId = $in.0.id;
+	}
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node guiName="Read all contacts" guiX="167" guiY="79" id="READ_ALL_CONTACTS" schema="${META_DIR}/contacts_json.xsd" sourceUri="${DATAIN_DIR}/contacts.json" type="JSON_EXTRACT">
+<attr name="mapping"><![CDATA[<Mappings>
+	<Mapping element="json_array">
+		<Mapping element="json_array" outPort="0"
+				xmlFields="{}email;{}first-name;{}id;{}last-name;{}phone"
+				cloverFields="email;firstName;id;lastName;phone">
+		</Mapping>
+	</Mapping>
+</Mappings>
+]]></attr>
+</Node>
+<Node guiName="SubgraphInput" guiX="100" guiY="10" id="SUBGRAPH_INPUT0" type="SUBGRAPH_INPUT">
+<Port guiY="287" name="0"/>
+<Port guiY="357" name="1"/>
+</Node>
+<Edge fromNode="FIND_MAX_ID:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="GATHER_DATA:0"/>
+<Edge fromNode="READ_ALL_CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="FIND_MAX_ID:0"/>
+<Edge fromNode="SUBGRAPH_INPUT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadataRef="#//Edge7" outPort="Port 0 (out)" toNode="AUTO_INCREMENT1:0"/>
+</Phase>
+<Phase number="1">
+<Node guiName="Auto increment" guiX="234" guiY="247" id="AUTO_INCREMENT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.* = $in.0.*;
+	$out.0.id = dictionary.maxId+1;
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node guiName="Gather data" guiX="481" guiY="219" id="GATHER_DATA" type="SIMPLE_GATHER"/>
+<Node fileURL="${DATAIN_DIR}/contacts.json" guiName="Store all contacts" guiX="654" guiY="79" id="STORE_ALL_CONTACTS" type="JSON_WRITER">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<clover:collection clover:name="root" xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
+  <item clover:inPort="0">
+    <id>$0.id</id>
+    <first-name>$0.firstName</first-name>
+    <last-name>$0.lastName</last-name>
+    <email>$0.email</email>
+    <phone>$0.phone</phone>
+  </item>
+</clover:collection>]]></attr>
+</Node>
+<Node guiName="SubgraphOutput" guiX="800" guiY="10" id="SUBGRAPH_OUTPUT0" type="SUBGRAPH_OUTPUT">
+<Port guiY="117" name="0"/>
+</Node>
+<Edge fromNode="AUTO_INCREMENT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 1 (in)" outPort="Port 0 (out)" toNode="GATHER_DATA:1"/>
+<Edge fromNode="GATHER_DATA:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="STORE_ALL_CONTACTS:0"/>
+</Phase>
+</Graph>
