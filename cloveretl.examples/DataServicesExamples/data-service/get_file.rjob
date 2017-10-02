@@ -3,9 +3,12 @@
 <Global>
 <EndpointSettings>
 <UrlPath>/html/{filename}</UrlPath>
+<Description>The job serves HTML and CSS resources.&#13;
+&lt;br/&gt;&#13;
+The job takes one required path parameter: **filename**. The name of the file to be served.</Description>
 <EndpointName>Get static file</EndpointName>
 <RequestMethod name="GET"/>
-<RequestParameter id="RestJobParameter0" location="url_path" name="filename" required="true" type="string"/>
+<RequestParameter description="The name of the file to return." id="RestJobParameter0" location="url_path" name="filename" required="true" type="string"/>
 </EndpointSettings>
 <RestJobResponseStatus>
 <JobError>

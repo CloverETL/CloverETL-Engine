@@ -3,6 +3,8 @@
 <Global>
 <EndpointSettings>
 <UrlPath>/contact/vcard</UrlPath>
+<Description>This endpoint handles importing contact submitted in VCARD format.  &#13;
+</Description>
 <EndpointName>Import contact using VCARD</EndpointName>
 <RequestMethod name="POST"/>
 <RequestMethod name="PUT"/>

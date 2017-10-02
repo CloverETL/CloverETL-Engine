@@ -3,9 +3,12 @@
 <Global>
 <EndpointSettings>
 <UrlPath>/contact/{id}</UrlPath>
-<EndpointName>Remove contact record</EndpointName>
+<Description>This endpoint deletes the contact identified by its ID.&#13;
+&lt;br/&gt;&#13;
+The job takes one required path parameter: **id**. The ID of the contact to be deleted.</Description>
+<EndpointName>Delete contact</EndpointName>
 <RequestMethod name="DELETE"/>
-<RequestParameter id="RestJobParameter0" location="url_path" name="id" required="true" type="string"/>
+<RequestParameter description="The ID of the contact to delete." id="RestJobParameter0" location="url_path" name="id" required="true" type="string"/>
 </EndpointSettings>
 <RestJobResponseStatus>
 <JobError>
@@ -57,7 +60,7 @@ num2str($in.0.id)!=getRequestParameter("id")]]></attr>
 <attr name="noTopLevelArray"><![CDATA[false]]></attr>
 <attr name="noMetadataName"><![CDATA[false]]></attr>
 </Node>
-<Node guiName="GetJobInput" guiX="480" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
+<Node guiName="GetJobInput" guiX="680" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
 <attr name="mapping"><![CDATA[//#CTL2
 // Transforms input record into output record.
 function integer transform() {

@@ -3,9 +3,19 @@
 <Global>
 <EndpointSettings>
 <UrlPath>/contact/vcard/{id}</UrlPath>
+<Description>Get contact details in VCARD form based on contact ID.&#13;
+&lt;br/&gt;&#13;
+The job takes one required path parameter: **id**. The ID of the contact to be served.</Description>
+<ExampleOutput>BEGIN:VCARD&#13;
+VERSION:3.0&#13;
+FN:Pepe Lopez&#13;
+TEL;TYPE=WORK,VOICE:555-666-777&#13;
+EMAIL:pepe@lopez.mx&#13;
+END:VCARD&#13;
+</ExampleOutput>
 <EndpointName>Get contact VCARD</EndpointName>
 <RequestMethod name="GET"/>
-<RequestParameter id="RestJobParameter0" location="url_path" name="id" required="true" type="string"/>
+<RequestParameter description="The ID of the contact to get." id="RestJobParameter0" location="url_path" name="id" required="true" type="string"/>
 </EndpointSettings>
 <RestJobResponseStatus>
 <JobError>
@@ -111,7 +121,7 @@ function integer transform() {
 <attr name="noTopLevelArray"><![CDATA[false]]></attr>
 <attr name="noMetadataName"><![CDATA[false]]></attr>
 </Node>
-<Node guiName="GetJobInput" guiX="480" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
+<Node guiName="GetJobInput" guiX="280" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
 <attr name="mapping"><![CDATA[//#CTL2
 // Transforms input record into output record.
 function integer transform() {

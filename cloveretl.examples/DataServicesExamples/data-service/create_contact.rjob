@@ -3,13 +3,16 @@
 <Global>
 <EndpointSettings>
 <UrlPath>/contact</UrlPath>
+<Description>Enpoint for creating new contact.&#13;
+&lt;br/&gt;&#13;
+Either first name or last name is required.</Description>
 <EndpointName>Create contact</EndpointName>
 <RequestMethod name="POST"/>
 <RequestMethod name="PUT"/>
-<RequestParameter id="RestJobParameter1" location="query" name="first-name" required="false" type="string"/>
-<RequestParameter id="RestJobParameter2" location="query" name="last-name" required="false" type="string"/>
-<RequestParameter id="RestJobParameter3" location="query" name="phone" type="string"/>
-<RequestParameter id="RestJobParameter52" location="query" name="email" type="string"/>
+<RequestParameter description="The first name of the contact." id="RestJobParameter1" location="query" name="first-name" required="false" type="string"/>
+<RequestParameter description="The last name of the contact." id="RestJobParameter2" location="query" name="last-name" required="false" type="string"/>
+<RequestParameter description="The phone number of the contact. Must be in the following pattern: 999-999-999." id="RestJobParameter3" location="query" name="phone" type="string"/>
+<RequestParameter description="The e-mail address of the contact. Must be a valid e-mail address." id="RestJobParameter52" location="query" name="email" type="string"/>
 </EndpointSettings>
 <RestJobResponseStatus>
 <JobError>

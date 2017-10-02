@@ -3,6 +3,26 @@
 <Global>
 <EndpointSettings>
 <UrlPath>/contacts</UrlPath>
+<Description>This endpoint returns full contents of JSON contact database.</Description>
+<ExampleOutput>[ {&#13;
+  "id" : 8,&#13;
+  "first_name" : "John",&#13;
+  "last_name" : "Doe",&#13;
+  "email" : "john.doe@example.mail",&#13;
+  "phone" : "555-555-555"&#13;
+}, {&#13;
+  "id" : 10,&#13;
+  "first_name" : "John",&#13;
+  "last_name" : "Green",&#13;
+  "email" : "john.green@example.com",&#13;
+  "phone" : "555-555-757"&#13;
+}, {&#13;
+  "id" : 11,&#13;
+  "first_name" : "Pepe",&#13;
+  "last_name" : "Lopez",&#13;
+  "email" : "pepe@lopez.mx",&#13;
+  "phone" : "555-666-777"&#13;
+} ]</ExampleOutput>
 <EndpointName>Get contacts</EndpointName>
 <RequestMethod name="GET"/>
 </EndpointSettings>
