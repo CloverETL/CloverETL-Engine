@@ -8,6 +8,7 @@
 		<link rel="stylesheet" type="text/css" href="../../data-service/html/css/bootstrap.min.css" />
 		
 		<script src="../../data-service/html/jquery-3.2.1.min.js" type="text/javascript"></script>
+		<script src="../../data-service/html/bootstrap.min.js" type="text/javascript"></script>
 		
 		<style>
 			body {
@@ -65,16 +66,17 @@
 	
 			.action-panel {
 				background-color: #B1D356;
-				margin: 3px;
-				margin-bottom: 10px;
+				margin: 0px 3px 10px 3px;
 				border-radius: 8px;
 				padding-bottom: 5px;
+				padding-top: 0px;
 			}
 			
 			.action-panel-header {
 				background-color: #263238;
 				color: white;
 				padding-left: 10px;
+				padding-top: 3px;
 				border-top-left-radius: 8px;
 				border-top-right-radius: 8px;
 			}
@@ -105,7 +107,45 @@
 				padding-left: 10px;
 				margin-left: 30px;
 			}
-	
+			
+			textarea {
+				width: 100%;
+				resize: none;
+			}
+			
+			#log-panel {
+				background-color: #CFD8DC;
+			}
+
+			#log-header {
+				background-color: #CFD8DC;
+			}
+			
+			#log-header a {.
+				text-decoration: none;
+				color:grey;
+			}
+			
+			#log-header a:hover {
+				text-decoration: none;
+			}
+			
+			#log-header a:after {
+				font-family:'Glyphicons Halflings';
+				content:"\e114";
+				float: right;
+				color: grey;
+				margin-right: 5px;
+			}
+			
+			#log-header a.collapsed:after {
+				content:"\e080";
+			}
+			
+			#log-body {
+				padding:0px 10px 3px 10px;
+			}
+			
 			.footer {
 				background-color:#EBEBEB;
 				margin-top: 0px;
@@ -127,11 +167,13 @@
 					HTTP method: DELETE
 			*/
 			function deleteContact(id) {
-				$.ajax({url: getUrlPrefix() + '/contact/'+id, type: "DELETE", dataType: "json"})
-					.done(function(result) {
+				$.ajax({url: getUrlPrefix() + "/contact/"+id, type: "DELETE", dataType: "json"})
+					.done(function(result, textStatus, jqXHR) {
+						logHttp(this, jqXHR);
 						fetchContacts(); //refresh
 					})
 					.fail(function(jqXHR, statusTxt, errTxt) {
+						logHttp(this, jqXHR);
 						var errorMessage = (jqXHR.responseText) ? (jqXHR.responseText) : (errTxt);
 						alert(errorMessage); //show error
 					});
@@ -149,12 +191,14 @@
 			function createContact() {
 				var contactForm = $("#contact-form");
 				var vcard = contactForm.serialize();
-				$.ajax({url: getUrlPrefix() + '/contact', type: "POST", data: vcard})
-					.done(function(result) {
+				$.ajax({url: getUrlPrefix() + "/contact", type: "POST", data: vcard})
+					.done(function(result, textStatus, jqXHR) {
+						logHttp(this, jqXHR);
 						contactForm[0].reset();
 						fetchContacts(); //refresh
 					})
 					.fail(function(jqXHR, statusTxt, errTxt) {
+						logHttp(this, jqXHR);
 						var errorMessage = (jqXHR.responseText) ? (jqXHR.responseText) : (errTxt);
 						alert(errorMessage); //show error
 					});
@@ -173,12 +217,14 @@
 			function importVcard() {
 				var vcardContent = $("#vcard-content");
 				var vcard = vcardContent.val();
-				$.ajax({url: getUrlPrefix() + '/contact/vcard', type: "PUT", data: vcard, dataType: "text", contentType: 'text/vcard'})
-					.done(function(result) {
-						vcardContent.val('');
+				$.ajax({url: getUrlPrefix() + "/contact/vcard", type: "PUT", data: vcard, dataType: "text", contentType: "text/vcard"})
+					.done(function(result, textStatus, jqXHR) {
+						logHttp(this, jqXHR);
+						vcardContent.val("");
 						fetchContacts(); //refresh
 					})
 					.fail(function(jqXHR, statusTxt, errTxt) {
+						logHttp(this, jqXHR);
 						var errorMessage = (jqXHR.responseText) ? (jqXHR.responseText) : (errTxt);
 						alert(errorMessage); //show error
 					});
@@ -194,10 +240,11 @@
 					HTTP method: GET
 			*/
 			function fetchContacts() {
-				var divContacts = $('#contacts-list');
+				var divContacts = $("#contacts-list");
 				divContacts.empty();
-				$.ajax({url: getUrlPrefix() + '/contacts', type: "GET", dataType: "json"})
-					.done(function(result) {
+				$.ajax({url: getUrlPrefix() + "/contacts", type: "GET", dataType: "json"})
+					.done(function(result, textStatus, jqXHR) {
+						logHttp(this, jqXHR);
 						$.each(result, function (index, contact) {
 								divContacts.append(createContactDiv(
 									contact.id,
@@ -210,6 +257,7 @@
 						);
 					})
 					.fail(function(jqXHR, statusTxt, errTxt) {
+						logHttp(this, jqXHR);
 						var errorMessage = (jqXHR.responseText) ? (jqXHR.responseText) : (errTxt);
 						alert(errorMessage); //show error
 					});
@@ -219,9 +267,9 @@
 				Create <div> element for contact.
 			*/
 			function createContactDiv(id,firstName, lastName, email, phone) {
-				var div = document.createElement('div');
-				div.id='contact-'+id;
-				div.className = 'contact';
+				var div = document.createElement("div");
+				div.id="contact-"+id;
+				div.className = "contact";
 				div.innerHTML =
 					"<table class='contact-table'>" +
 						"<tr class='contact-row'>" +
@@ -237,7 +285,7 @@
 						"<tr class='contact-row'>" +
 							"<td>Last name:</td><td><strong>" + lastName + "</strong></td>" +
 							"<td class='contact-action-column'>" +
-								"<button class='contact-action-button' type='button' onclick='window.location.href=\"" + getUrlPrefix() + "/contact/vcard/" + id + "\"'>" +
+								"<button class='contact-action-button' type='button' onclick='logGet(\"" + getUrlPrefix() + "/contact/vcard/" + id + "\"); window.location.href=\"" + getUrlPrefix() + "/contact/vcard/" + id + "\"'>" +
 									"<span class='glyphicon glyphicon-download' aria-hidden='true' style='margin-right:5px;'></span>" +
 									"VCARD" +
 								"</button>" +
@@ -268,12 +316,37 @@
 				var dataService = "data-service";
 				return pathname.substring(0, pathname.indexOf(dataService) + dataService.length);
 			}
+					
+			function logHttp(settings, jqXHR) {
+				var message = settings.type + " " + settings.url + " : " + jqXHR.status + " " + jqXHR.statusText;
+				appendLog(message);
+			}
+			
+			function logGet(url) {
+				var message = "GET" + " " + url;
+				appendLog(message);
+			}
+			
+			function appendLog(message) {
+				var log = getTime() + " " + message;
+				var logger = $("#http-log");
+				logger.val(logger.val() + log + "\n");
+			}
+			
+			function getTime() {
+				var date = new Date();
+				return strPad(date.getHours()) + ":" + strPad(date.getMinutes()) + ":" + strPad(date.getSeconds());
+			}
+			
+			function strPad(n){
+				return n < 10 ? "0" + n : n;
+			}
 			
 		</script>
 	</head>
 
 	<body onload="fetchContacts();">
-		<div class='top-bar'>
+		<div class="top-bar">
 			<div class="container">
 					<a href="http://www.cloveretl.com" target="_blank">
 						<img class="logo" src="../../data-service/html/logo-cloveretl.png" />
@@ -289,37 +362,45 @@
 					<div id="contacts-list" class="col-md-6">
 					</div>
 					<div class="col-md-6">
-						<div class='action-panel' >
-							<div class='action-panel-header'>
+						<div class="action-panel">
+							<div class="action-panel-header">
 								Add contact
 							</div>
 							<div>
-								<form id='contact-form'>
+								<form id="contact-form">
 									<table>
 										<tr>
-											<td class='contact-form-label'>First Name</td><td class='contact-form-field'><input type='text' id='first-name' name='first-name' tabindex="1"/></td>
-											<td class='contact-form-label'> Phone</td><td class='contact-form-field'><input type='text' id='phone' name='phone' tabindex="3"/></td>
+											<td class="contact-form-label">First Name</td><td class="contact-form-field"><input type="text" id="first-name" name="first-name" tabindex="1"/></td>
+											<td class="contact-form-label"> Phone</td><td class="contact-form-field"><input type="text" id="phone" name="phone" tabindex="3"/></td>
 										</tr>
 										<tr>	
-											<td class='contact-form-label'>Last Name</td><td class='contact-form-field'><input type='text' id='last-name' name='last-name' tabindex="2"/></td>
-											<td class='contact-form-label'>E-mail</td><td class='contact-form-field'><input type='text' id='email' name='email' tabindex="4"/></td>
+											<td class="contact-form-label">Last Name</td><td class="contact-form-field"><input type="text" id="last-name" name="last-name" tabindex="2"/></td>
+											<td class="contact-form-label">E-mail</td><td class="contact-form-field"><input type="text" id="email" name="email" tabindex="4"/></td>
 										</tr>
 									</table>
 								</form>
-								<div style='text-align:center'>
-									<input type='button' value='Add contact' onclick='createContact();'/>
+								<div style="text-align:center">
+									<input type="button" value="Add contact" onclick="createContact();"/>
 								</div>
 							</div>
 						</div>
-						<div class='action-panel'>
-							<div class='action-panel-header'>
+						<div class="action-panel">
+							<div class="action-panel-header">
 								Import VCARD
 							</div>
-							<div style='padding:10px 10px 5px 10px;'>
-								<textarea id='vcard-content' rows="8" style='width:100%'></textarea>
+							<div style="padding:10px 10px 5px 10px;">
+								<textarea id="vcard-content" rows="8"></textarea>
 							</div>
-							<div style='text-align:center'>
-								<input type='button' value='Import contact' onclick="importVcard();"/>
+							<div style="text-align:center">
+								<input type="button" value="Import contact" onclick="importVcard();"/>
+							</div>
+						</div>
+						<div id="log-panel" class="action-panel">
+							<div id="log-header" class="action-panel-header">
+								<a href="#log-body" data-toggle="collapse" data-target="#log-body" class="collapsed">Log</a>
+							</div>
+							<div id="log-body" class="collapse">
+								<textarea id="http-log" rows="8" readonly></textarea>
 							</div>
 						</div>
 					</div>
