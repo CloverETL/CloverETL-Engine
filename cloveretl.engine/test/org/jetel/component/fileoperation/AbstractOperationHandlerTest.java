@@ -34,7 +34,6 @@ import java.util.List;
 
 import org.jetel.component.fileoperation.SimpleParameters.CopyParameters;
 import org.jetel.component.fileoperation.SimpleParameters.MoveParameters;
-import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 import org.jetel.util.file.FileUtils;
 
 public class AbstractOperationHandlerTest extends LocalOperationHandlerTest {
@@ -43,8 +42,6 @@ public class AbstractOperationHandlerTest extends LocalOperationHandlerTest {
 	
 	private static class TestAbstractOperationHandler extends AbstractOperationHandler {
 		
-		private final FileManager manager = FileManager.getInstance();
-
 		public TestAbstractOperationHandler() {
 			super(new PrimitiveFileOperationHandler());
 		}
@@ -64,11 +61,6 @@ public class AbstractOperationHandlerTest extends LocalOperationHandlerTest {
 				return true;
 			}
 			return false;
-		}
-
-		@Override
-		public List<SingleCloverURI> resolve(SingleCloverURI uri, ResolveParameters params) throws IOException {
-			return manager.defaultResolve(uri);
 		}
 
 		@Override
