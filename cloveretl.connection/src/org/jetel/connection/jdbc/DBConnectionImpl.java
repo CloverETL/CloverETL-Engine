@@ -915,6 +915,9 @@ public class DBConnectionImpl extends AbstractDBConnection {
 	protected SqlConnection connect(OperationType operationType) throws JetelException {
     	if (!StringUtils.isEmpty(getJndiName())) {
         	try {
+        		if (jndiDataSource == null) {
+        			lookupJndiConnection();
+        		}
         		Connection jndiConnection = jndiDataSource.getConnection();
                	//update jdbc specific of this DBConnection according given JNDI connection
                	updateJdbcSpecific(jndiConnection);
