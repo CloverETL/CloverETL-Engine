@@ -289,9 +289,15 @@ function integer append() {
 	  phone = $in.0.value;
 	}
 	if(startsWith($in.0.header,"FN")) {
-		string[] parts = split($in.0.value, " ");
-		firstName = parts[0];
-		lastName = parts[1];
+		string fn = trim($in.0.value);
+		integer pos = indexOf(fn, " ");
+		if (pos < 0) {
+			firstName = "";
+			lastName = fn;
+		} else {
+			firstName = trim(substring(fn, 0, pos));
+			lastName = trim(substring(fn, pos+1));
+		}
 	}
 	return OK;
 }
