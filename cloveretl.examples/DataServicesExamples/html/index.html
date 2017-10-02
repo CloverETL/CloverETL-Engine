@@ -147,9 +147,11 @@
 					HTTP method: POST
 			*/
 			function createContact() {
-				var vcard = $("#contact-form").serialize();
+				var contactForm = $("#contact-form");
+				var vcard = contactForm.serialize();
 				$.ajax({url: getUrlPrefix() + '/contact', type: "POST", data: vcard})
 					.done(function(result) {
+						contactForm[0].reset();
 						fetchContacts(); //refresh
 					})
 					.fail(function(jqXHR, statusTxt, errTxt) {
@@ -169,10 +171,11 @@
 					HTTP method: PUT
 			*/
 			function importVcard() {
-				var vcard = $("#vcard-content").val();
+				var vcardContent = $("#vcard-content");
+				var vcard = vcardContent.val();
 				$.ajax({url: getUrlPrefix() + '/contact/vcard', type: "PUT", data: vcard, dataType: "text", contentType: 'text/vcard'})
 					.done(function(result) {
-						$("#vcard-content").val('');
+						vcardContent.val('');
 						fetchContacts(); //refresh
 					})
 					.fail(function(jqXHR, statusTxt, errTxt) {
