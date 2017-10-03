@@ -241,10 +241,10 @@
 			*/
 			function fetchContacts() {
 				var divContacts = $("#contacts-list");
-				divContacts.empty();
 				$.ajax({url: getUrlPrefix() + "/contacts", type: "GET", dataType: "json"})
 					.done(function(result, textStatus, jqXHR) {
 						logHttp(this, jqXHR);
+						divContacts.empty();
 						$.each(result, function (index, contact) {
 								divContacts.append(createContactDiv(
 									contact.id,
@@ -371,11 +371,11 @@
 									<table>
 										<tr>
 											<td class="contact-form-label">First Name</td><td class="contact-form-field"><input type="text" id="first-name" name="first-name" tabindex="1"/></td>
-											<td class="contact-form-label"> Phone</td><td class="contact-form-field"><input type="text" id="phone" name="phone" tabindex="3"/></td>
+											<td class="contact-form-label">Phone*</td><td class="contact-form-field"><input type="text" id="phone" name="phone" tabindex="3"/></td>
 										</tr>
 										<tr>	
 											<td class="contact-form-label">Last Name</td><td class="contact-form-field"><input type="text" id="last-name" name="last-name" tabindex="2"/></td>
-											<td class="contact-form-label">E-mail</td><td class="contact-form-field"><input type="text" id="email" name="email" tabindex="4"/></td>
+											<td class="contact-form-label">E-mail*</td><td class="contact-form-field"><input type="text" id="email" name="email" tabindex="4"/></td>
 										</tr>
 									</table>
 								</form>
