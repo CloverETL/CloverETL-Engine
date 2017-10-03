@@ -53,11 +53,11 @@ public class URIUtils {
 	 */
 	public static final String CHARSET = "UTF-8"; //$NON-NLS-1$
 	
-	private static final Pattern PLUS_PATTERN = Pattern.compile("\\+"); //$NON-NLS-1$
+	public static final Pattern PLUS_PATTERN = Pattern.compile("\\+"); //$NON-NLS-1$
 	private static final Pattern SPACE_PATTERN = Pattern.compile(" "); //$NON-NLS-1$
 	
 	private static final String ENCODED_PLUS = "%2B"; //$NON-NLS-1$
-	private static final String ENCODED_SPACE = "%20"; //$NON-NLS-1$
+	public static final String ENCODED_SPACE = "%20"; //$NON-NLS-1$
 
 	public static URI getChildURI(URI parentDir, URI name) {
 		String uriString = parentDir.toString();
