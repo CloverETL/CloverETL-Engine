@@ -330,7 +330,11 @@
 			function appendLog(message) {
 				var log = getTime() + " " + message;
 				var logger = $("#http-log");
-				logger.val(logger.val() + log + "\n");
+				if (logger.val().length > 0) {
+					log = "\n" + log;
+				}
+				logger.val(logger.val() + log);
+				scrollLogDown();
 			}
 			
 			function getTime() {
@@ -341,6 +345,17 @@
 			function strPad(n){
 				return n < 10 ? "0" + n : n;
 			}
+			
+			function scrollLogDown() {
+				var logger = $("#http-log");
+				logger.scrollTop(logger[0].scrollHeight);
+			}
+			
+			$(document).ready(function() {
+				$("#log-panel").on("shown.bs.collapse", function (event) {
+					scrollLogDown();
+				})	
+			});
 			
 		</script>
 	</head>
@@ -397,7 +412,7 @@
 						</div>
 						<div id="log-panel" class="action-panel">
 							<div id="log-header" class="action-panel-header">
-								<a href="#log-body" data-toggle="collapse" data-target="#log-body" class="collapsed">Log</a>
+								<a href="#log-body" data-toggle="collapse" class="collapsed">Log</a>
 							</div>
 							<div id="log-body" class="collapse">
 								<textarea id="http-log" rows="8" readonly></textarea>
