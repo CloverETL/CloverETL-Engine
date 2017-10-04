@@ -4,8 +4,7 @@
 <EndpointSettings>
 <UrlPath>/contact/vcard/{id}</UrlPath>
 <Description>Get contact details in VCARD form based on contact ID.&#13;
-&lt;br/&gt;&#13;
-The job takes one required path parameter: **id**. The ID of the contact to be served.</Description>
+The job takes one required path parameter: id. The ID of the contact to be served.</Description>
 <ExampleOutput>BEGIN:VCARD&#13;
 VERSION:3.0&#13;
 FN:Pepe Lopez&#13;
