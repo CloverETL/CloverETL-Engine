@@ -37,7 +37,7 @@
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="293" id="Note0" textColor="444444" width="640" x="205" y="354">
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="237" id="Note0" textColor="444444" width="844" x="190" y="287">
 <attr name="text"><![CDATA[h3. Import VCARD contact
 
 This endpoint handles importing contact submitted via text field  in VCARD format.  
@@ -57,7 +57,7 @@ h4. Highlights
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node guiName="Content-Type is invalid (415)" guiX="438" guiY="132" id="CONTENT_TYPE_IS_INVALID_415" type="FAIL">
+<Node guiName="Content-Type is invalid (415)" guiX="590" guiY="107" id="CONTENT_TYPE_IS_INVALID_415" type="FAIL">
 <attr name="mapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -88,7 +88,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node guiName="Request body is empty (400)" guiX="781" guiY="132" id="CONTENT_TYPE_IS_INVALID_HTTP_1" type="FAIL">
+<Node guiName="Request body is empty (400)" guiX="840" guiY="107" id="CONTENT_TYPE_IS_INVALID_HTTP_1" type="FAIL">
 <attr name="mapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -119,8 +119,8 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node guiName="Content-Type is valid" guiX="888" guiY="17" id="CONTENT_TYPE_IS_VALID1" type="SUCCESS"/>
-<Node guiName="Get Content-Type value" guiX="191" guiY="17" id="GET_CONTENT_TYPE_VALUE1" type="GET_JOB_INPUT">
+<Node guiName="Content-Type is valid" guiX="881" guiY="27" id="CONTENT_TYPE_IS_VALID1" type="SUCCESS"/>
+<Node guiName="Get Content-Type value" guiX="184" guiY="27" id="GET_CONTENT_TYPE_VALUE1" type="GET_JOB_INPUT">
 <attr name="mapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -150,12 +150,12 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node guiName="Input" guiX="80" guiY="10" id="RESTJOB_INPUT0" restJobInput="true" type="RESTJOB_INPUT"/>
-<Node attachment="false" guiName="Output" guiX="1062" guiY="10" id="RESTJOB_OUTPUT0" metadataName="true" responseFormat="JSON" restJobOutput="true" topLevelArray="true" type="RESTJOB_OUTPUT">
+<Node guiName="Input" guiX="70" guiY="27" id="RESTJOB_INPUT0" restJobInput="true" type="RESTJOB_INPUT"/>
+<Node attachment="false" guiName="Output" guiX="1064" guiY="27" id="RESTJOB_OUTPUT0" metadataName="true" responseFormat="JSON" restJobOutput="true" topLevelArray="true" type="RESTJOB_OUTPUT">
 <attr name="noTopLevelArray"><![CDATA[false]]></attr>
 <attr name="noMetadataName"><![CDATA[false]]></attr>
 </Node>
-<Node guiName="Validate content-type" guiX="412" guiY="17" id="VALIDATE_CONTENT_TYPE" type="VALIDATOR">
+<Node guiName="Validate content-type" guiX="405" guiY="27" id="VALIDATE_CONTENT_TYPE" type="VALIDATOR">
 <attr name="errorMapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -209,7 +209,7 @@ function integer transform() {
 </group>
 ]]></attr>
 </Node>
-<Node guiName="Validate request body" guiX="635" guiY="17" id="VALIDATE_REQUEST_BODY" type="VALIDATOR">
+<Node guiName="Validate request body" guiX="628" guiY="27" id="VALIDATE_REQUEST_BODY" type="VALIDATOR">
 <attr name="errorMapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -269,7 +269,7 @@ function integer transform() {
 <Edge fromNode="VALIDATE_REQUEST_BODY:1" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" outPort="Port 1 (invalid)" toNode="CONTENT_TYPE_IS_INVALID_HTTP_1:0"/>
 </Phase>
 <Phase number="1">
-<Node guiName="Convert to contact" guiX="449" guiY="237" id="CONVERT_TO_CONTACT" type="DENORMALIZER">
+<Node guiName="Convert to contact" guiX="411" guiY="188" id="CONVERT_TO_CONTACT" type="DENORMALIZER">
 <attr name="denormalize"><![CDATA[//#CTL2
 // This transformation defines the way in which multiple input records 
 // (with the same key) are denormalized into one output record. 
@@ -341,9 +341,9 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node guiName="Create contact" guiX="910" guiY="237" id="CREATE_CONTACT" jobURL="${SUBGRAPH_DIR}/createContact.sgrf" type="SUBGRAPH"/>
-<Node dataPolicy="lenient" fileURL="request:body" guiName="Parse input payload" guiX="238" guiY="237" id="PARSE_INPUT_PAYLOAD" type="FLAT_FILE_READER"/>
-<Node guiName="Validate submitted data" guiX="658" guiY="237" id="VALIDATE_SUBMITTED_DATA1" jobURL="${SUBGRAPH_DIR}/validateSubmittedData.sgrf" type="SUBGRAPH"/>
+<Node guiName="Create contact" guiX="906" guiY="188" id="CREATE_CONTACT" jobURL="${SUBGRAPH_DIR}/createContact.sgrf" type="SUBGRAPH"/>
+<Node dataPolicy="lenient" fileURL="request:body" guiName="Parse input payload" guiX="190" guiY="188" id="PARSE_INPUT_PAYLOAD" type="FLAT_FILE_READER"/>
+<Node guiName="Validate submitted data" guiX="623" guiY="188" id="VALIDATE_SUBMITTED_DATA1" jobURL="${SUBGRAPH_DIR}/validateSubmittedData.sgrf" type="SUBGRAPH"/>
 <Edge fromNode="CONVERT_TO_CONTACT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="VALIDATE_SUBMITTED_DATA1:0"/>
 <Edge fromNode="PARSE_INPUT_PAYLOAD:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="CONVERT_TO_CONTACT:0"/>
 <Edge fromNode="VALIDATE_SUBMITTED_DATA1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="CREATE_CONTACT:0"/>

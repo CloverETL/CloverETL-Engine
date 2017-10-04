@@ -61,7 +61,7 @@ function integer transform() {
 	return ALL;
 }]]></attr>
 </Node>
-<Node guiName="Set response Content-Type" guiX="383" guiY="19" id="SET_RESPONSE_CONTENT_TYPE" type="SET_JOB_OUTPUT">
+<Node guiName="Set response Content-Type" guiX="442" guiY="23" id="SET_RESPONSE_CONTENT_TYPE" type="SET_JOB_OUTPUT">
 <attr name="mapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.

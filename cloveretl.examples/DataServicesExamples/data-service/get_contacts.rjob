@@ -43,7 +43,7 @@
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="248" id="Note0" textColor="444444" width="640" x="197" y="201">
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="306" id="Note0" textColor="444444" width="640" x="215" y="201">
 <attr name="text"><![CDATA[h3. Return list of contacts
 
 This endpoint returns full contents of JSON contact database to the JavaScript embedded in the HTML page which then displays it on the left side of the page.
@@ -59,7 +59,7 @@ The endpoint handles *GET* method and uses no parameters
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node fileURL="response:body" guiName="REST Job Response Writer" guiX="1100" guiY="10" id="JSON_WRITER" restJobOutput="true" type="JSON_WRITER">
+<Node fileURL="response:body" guiName="REST Job Response Writer" guiX="1100" guiY="10" id="JSON_WRITER1" restJobOutput="true" type="JSON_WRITER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <clover:collection xmlns:clover="http://www.cloveretl.com/ns/xmlmapping" clover:inPort="0" clover:name="root">
 <element0>
@@ -68,7 +68,7 @@ The endpoint handles *GET* method and uses no parameters
 </clover:collection>
 ]]></attr>
 </Node>
-<Node guiName="Read all contacts" guiX="400" guiY="44" id="READ_ALL_CONTACTS" schema="${META_DIR}/contacts_json.xsd" sourceUri="${DATAIN_DIR}/contacts.json" type="JSON_EXTRACT">
+<Node guiName="Read all contacts" guiX="471" guiY="23" id="READ_ALL_CONTACTS" schema="${META_DIR}/contacts_json.xsd" sourceUri="${DATAIN_DIR}/contacts.json" type="JSON_EXTRACT">
 <attr name="mapping"><![CDATA[<Mappings>
 	<Mapping element="json_array">
 		<Mapping element="json_array" outPort="0"
@@ -85,6 +85,6 @@ The endpoint handles *GET* method and uses no parameters
 <attr name="noMetadataName"><![CDATA[true]]></attr>
 </Node>
 <Edge fromNode="READ_ALL_CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="RESTJOB_OUTPUT0:0"/>
-<Edge fromNode="RESTJOB_OUTPUT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="JSON_WRITER:0"/>
+<Edge fromNode="RESTJOB_OUTPUT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="JSON_WRITER1:0"/>
 </Phase>
 </Graph>

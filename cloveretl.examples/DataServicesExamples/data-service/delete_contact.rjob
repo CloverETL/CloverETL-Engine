@@ -26,7 +26,7 @@ The job takes one required path parameter: id. The ID of the contact to be delet
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="220" id="Note0" textColor="444444" width="640" x="202" y="189">
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="290" id="Note0" textColor="444444" width="640" x="211" y="217">
 <attr name="text"><![CDATA[h3. Deleting contact
 
 This endpoint deletes the contact identified by its ID, by simply reading and writing the full contact database and filtering out the contact we want to delete in the process.
@@ -39,11 +39,11 @@ h3. Highlights
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node guiName="Filter-out deleted contact" guiX="407" guiY="53" id="FILTER_OUT_DELETED_CONTACT" type="EXT_FILTER">
+<Node guiName="Filter-out deleted contact" guiX="444" guiY="23" id="FILTER_OUT_DELETED_CONTACT" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[//#CTL2
 num2str($in.0.id)!=getRequestParameter("id")]]></attr>
 </Node>
-<Node guiName="Read all contacts" guiX="224" guiY="53" id="READ_ALL_CONTACTS" schema="${META_DIR}/contacts_json.xsd" sourceUri="${DATAIN_DIR}/contacts.json" type="JSON_EXTRACT">
+<Node guiName="Read all contacts" guiX="211" guiY="23" id="READ_ALL_CONTACTS" schema="${META_DIR}/contacts_json.xsd" sourceUri="${DATAIN_DIR}/contacts.json" type="JSON_EXTRACT">
 <attr name="mapping"><![CDATA[<Mappings>
 	<Mapping element="json_array">
 		<Mapping element="json_array" outPort="0"
@@ -59,7 +59,7 @@ num2str($in.0.id)!=getRequestParameter("id")]]></attr>
 <attr name="noTopLevelArray"><![CDATA[false]]></attr>
 <attr name="noMetadataName"><![CDATA[false]]></attr>
 </Node>
-<Node guiName="GetJobInput" guiX="680" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
+<Node guiName="GetJobInput" guiX="280" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
 <attr name="mapping"><![CDATA[//#CTL2
 // Transforms input record into output record.
 function integer transform() {
@@ -73,7 +73,7 @@ function integer transform() {
 <Edge fromNode="READ_ALL_CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="FILTER_OUT_DELETED_CONTACT:0"/>
 </Phase>
 <Phase number="1">
-<Node fileURL="${DATAIN_DIR}/contacts.json" guiName="Write remaining contacts" guiX="635" guiY="53" id="WRITE_REMAINING_CONTACTS" type="JSON_WRITER">
+<Node fileURL="${DATAIN_DIR}/contacts.json" guiName="Write remaining contacts" guiX="680" guiY="23" id="WRITE_REMAINING_CONTACTS" type="JSON_WRITER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <clover:collection clover:name="root" xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
   <item clover:inPort="0">

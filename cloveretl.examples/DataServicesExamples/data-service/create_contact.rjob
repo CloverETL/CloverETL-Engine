@@ -31,7 +31,7 @@ E-mail is required and must be a valid email address. e.g. test@test.com</Descri
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="296" id="Note0" textColor="444444" width="640" x="210" y="280">
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="353" id="Note0" textColor="444444" width="640" x="204" y="154">
 <attr name="text"><![CDATA[h3. Processing HTML form submission
 
 This endpoint processes data submitted via HTML form. See function _createContact()_ in [index.html|open://DataServicesExamples/html/index.html]. Values from form fields coming as HTTP parameters are converted to records serialized into JSON file that serves as simple contact 'database'.
@@ -47,13 +47,13 @@ h3. Highlights
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node guiName="Create contact" guiX="722" guiY="53" id="CREATE_CONTACT" jobURL="${SUBGRAPH_DIR}/createContact.sgrf" type="SUBGRAPH"/>
+<Node guiName="Create contact" guiX="716" guiY="23" id="CREATE_CONTACT" jobURL="${SUBGRAPH_DIR}/createContact.sgrf" type="SUBGRAPH"/>
 <Node guiName="Input" guiX="48" guiY="10" id="RESTJOB_INPUT0" restJobInput="true" type="RESTJOB_INPUT"/>
 <Node attachment="false" guiName="Output" guiX="900" guiY="10" id="RESTJOB_OUTPUT0" metadataName="true" responseFormat="CUSTOM" restJobOutput="true" topLevelArray="true" type="RESTJOB_OUTPUT">
 <attr name="noTopLevelArray"><![CDATA[false]]></attr>
 <attr name="noMetadataName"><![CDATA[false]]></attr>
 </Node>
-<Node guiName="GetJobInput" guiX="448" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
+<Node guiName="GetJobInput" guiX="248" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
 <attr name="mapping"><![CDATA[//#CTL2
 // Transforms input record into output record.
 function integer transform() {
@@ -66,7 +66,7 @@ function integer transform() {
 	return ALL;
 }]]></attr>
 </Node>
-<Node guiName="Validate submitted data" guiX="347" guiY="53" id="VALIDATE_SUBMITTED_DATA" jobURL="${SUBGRAPH_DIR}/validateSubmittedData.sgrf" type="SUBGRAPH"/>
+<Node guiName="Validate submitted data" guiX="204" guiY="23" id="VALIDATE_SUBMITTED_DATA" jobURL="${SUBGRAPH_DIR}/validateSubmittedData.sgrf" type="SUBGRAPH"/>
 <Edge fromNode="RESTJOB_INPUT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="VALIDATE_SUBMITTED_DATA:0"/>
 <Edge fromNode="VALIDATE_SUBMITTED_DATA:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="CREATE_CONTACT:0"/>
 </Phase>

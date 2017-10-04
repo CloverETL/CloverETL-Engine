@@ -33,7 +33,7 @@ END:VCARD&#13;
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="317" id="Note0" textColor="444444" width="640" x="198" y="182">
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="306" id="Note0" textColor="444444" width="640" x="198" y="201">
 <attr name="text"><![CDATA[h3. Download VCARD for contact
 
 This endpoints allows user to download selected contact in VCARD format. 
@@ -54,11 +54,11 @@ Endpoint accepts *GET* method and uses single required input parameter *id*, pas
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node guiName="Find required contact" guiX="457" guiY="71" id="FIND_REQUIRED_CONTACT" type="EXT_FILTER">
+<Node guiName="Find required contact" guiX="443" guiY="23" id="FIND_REQUIRED_CONTACT" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[//#CTL2
 num2str($in.0.id)==getRequestParameter("id")]]></attr>
 </Node>
-<Node guiName="Produce output payload" guiX="676" guiY="71" id="PRODUCE_OUTPUT_PAYLOAD" type="SET_JOB_OUTPUT">
+<Node guiName="Produce output payload" guiX="676" guiY="23" id="PRODUCE_OUTPUT_PAYLOAD" type="SET_JOB_OUTPUT">
 <attr name="mapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -104,7 +104,7 @@ function integer transform() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[and headers]]></attr>
 </Node>
-<Node guiName="Read all contacts" guiX="241" guiY="71" id="READ_ALL_CONTACTS" schema="${META_DIR}/contacts_json.xsd" sourceUri="${DATAIN_DIR}/contacts.json" type="JSON_EXTRACT">
+<Node guiName="Read all contacts" guiX="198" guiY="23" id="READ_ALL_CONTACTS" schema="${META_DIR}/contacts_json.xsd" sourceUri="${DATAIN_DIR}/contacts.json" type="JSON_EXTRACT">
 <attr name="mapping"><![CDATA[<Mappings>
 	<Mapping element="json_array">
 		<Mapping element="json_array" outPort="0"
