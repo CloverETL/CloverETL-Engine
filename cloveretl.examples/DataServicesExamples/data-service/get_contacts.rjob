@@ -3,7 +3,7 @@
 <Global>
 <EndpointSettings>
 <UrlPath>/contacts</UrlPath>
-<Description>This endpoint returns full contents of JSON contact database.</Description>
+<Description>This endpoint returns the full content of JSON contact database.</Description>
 <ExampleOutput>[ {&#13;
   "id" : 8,&#13;
   "first_name" : "John",&#13;
