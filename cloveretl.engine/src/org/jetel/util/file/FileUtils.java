@@ -695,22 +695,18 @@ public class FileUtils {
         	if (input.contains(")#")) {
                 anchor.append(input.substring(input.lastIndexOf(")#") + 2));
                 innerInput.append(input.substring(input.indexOf(":(") + 2, input.lastIndexOf(")#")));
-        	}
-        	else if (input.contains("#")) {
+        	} else if (input.contains("#")) {
                 anchor.append(input.substring(input.lastIndexOf('#') + 1));
                 innerInput.append(input.substring(input.indexOf(':') + 1, input.lastIndexOf('#')));
-        	}
-        	else {
+        	} else {
                 anchor = null;
                 innerInput.append(input.substring(input.indexOf(':') + 1));
         	}
-        }
-        else if (archiveType == ArchiveType.GZIP) {
+        } else if (archiveType == ArchiveType.GZIP) {
         	innerInput.append(input.substring(input.indexOf(':') + 1));
+        } else {
+        	innerInput.append(input);
         }
-        
-        // if doesn't exist inner input, inner input is input
-        if (innerInput.length() == 0) innerInput.append(input);
         
         // remove parentheses - fixes incorrect URL resolution
         if (innerInput.length() >= 2 && innerInput.charAt(0) == '(' && innerInput.charAt(innerInput.length()-1) == ')') {

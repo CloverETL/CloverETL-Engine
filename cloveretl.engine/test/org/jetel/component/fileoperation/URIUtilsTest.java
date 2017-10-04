@@ -161,7 +161,7 @@ public class URIUtilsTest extends TestCase {
 
 	public void testUrlDecode() {
 		assertEquals("file name", URIUtils.urlDecode("file%20name"));
-		assertEquals("file name", URIUtils.urlDecode("file+name")); // decode + sign as space
+		assertEquals("file+name", URIUtils.urlDecode("file+name")); // preserve + sign
 		assertEquals("file/name", URIUtils.urlDecode("file%2Fname"));
 		assertEquals("milan.krivanek@javlin.eu", URIUtils.urlDecode("milan.krivanek%40javlin.eu"));
 		assertEquals("path?query", URIUtils.urlDecode("path%3Fquery"));
@@ -175,6 +175,12 @@ public class URIUtilsTest extends TestCase {
 		assertEquals("milan.krivanek@javlin.eu", URIUtils.urlDecode("milan.krivanek@javlin.eu"));
 		assertEquals("path?query", URIUtils.urlDecode("path?query"));
 		assertEquals("path#fragment", URIUtils.urlDecode("path#fragment"));
+		
+		// CLO-9981: URIUtils.urlDecode() should be consistent with java.net.URI
+		URI uri = URI.create("s3://AKIAIG6EFMJBH6F7WYZQ:A+B%2FC@s3.eu-central-1.amazonaws.com/cloveretl.test.eu/test+fo/?a+b+b");
+		assertEquals(uri.getUserInfo(), URIUtils.urlDecode(uri.getRawUserInfo()));
+		assertEquals(uri.getPath(), URIUtils.urlDecode(uri.getRawPath()));
+		assertEquals(uri.getQuery(), URIUtils.urlDecode(uri.getRawQuery()));
 	}
 
 }

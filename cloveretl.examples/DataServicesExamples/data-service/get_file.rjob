@@ -3,9 +3,11 @@
 <Global>
 <EndpointSettings>
 <UrlPath>/html/{filename}</UrlPath>
+<Description>The job serves HTML and CSS resources.&#13;
+The job takes one required path parameter: filename. The name of the file to be served.</Description>
 <EndpointName>Get static file</EndpointName>
 <RequestMethod name="GET"/>
-<RequestParameter id="RestJobParameter0" location="url_path" name="filename" required="true" type="string"/>
+<RequestParameter description="The name of the file to return." id="RestJobParameter0" location="url_path" name="filename" required="true" type="string"/>
 </EndpointSettings>
 <RestJobResponseStatus>
 <JobError>
@@ -59,7 +61,7 @@ function integer transform() {
 	return ALL;
 }]]></attr>
 </Node>
-<Node guiName="Set response Content-Type" guiX="383" guiY="19" id="SET_RESPONSE_CONTENT_TYPE" type="SET_JOB_OUTPUT">
+<Node guiName="Set response Content-Type" guiX="442" guiY="23" id="SET_RESPONSE_CONTENT_TYPE" type="SET_JOB_OUTPUT">
 <attr name="mapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
