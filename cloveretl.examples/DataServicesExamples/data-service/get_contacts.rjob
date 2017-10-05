@@ -2,7 +2,7 @@
 <Graph author="jansedlacek" created="Thu Aug 31 14:44:51 CEST 2017" guiVersion="0.0.0.devel" id="1504186503518" licenseCode="CLP1DJAVLI15742443BY" name="contacts" nature="restJob" showComponentDetails="true">
 <Global>
 <EndpointSettings>
-<UrlPath>/contacts</UrlPath>
+<UrlPath>/example/contacts</UrlPath>
 <Description>This endpoint returns the full content of JSON contact database.</Description>
 <ExampleOutput>[ {&#13;
   "id" : 8,&#13;
