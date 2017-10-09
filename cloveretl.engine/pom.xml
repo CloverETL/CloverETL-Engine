@@ -58,6 +58,12 @@
 		<groupId>de.schlichtherle.truezip</groupId>
 		<artifactId>truezip-file</artifactId>
 		<version>7.7.5</version>
+		<exclusions>
+			<exclusion>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-compress</artifactId>
+			</exclusion>
+		</exclusions>
     </dependency>
     <dependency>
 		<groupId>de.schlichtherle.truezip</groupId>
@@ -73,6 +79,12 @@
 		<groupId>de.schlichtherle.truezip</groupId>
 		<artifactId>truezip-driver-zip</artifactId>
 		<version>7.7.5</version>
+		<exclusions>
+			<exclusion>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-compress</artifactId>
+			</exclusion>
+		</exclusions>
     </dependency>
     <dependency>
 		<groupId>de.schlichtherle.truezip</groupId>
@@ -116,6 +128,16 @@
 		<groupId>com.amazonaws</groupId>
 		<artifactId>aws-java-sdk-core</artifactId>
 		<version>1.11.75</version>
+		<exclusions>
+			<exclusion>
+				<groupId>commons-logging</groupId>
+				<artifactId>commons-logging</artifactId>
+			</exclusion>
+			<exclusion>
+				<groupId>joda-time</groupId>
+				<artifactId>joda-time</artifactId>
+			</exclusion>
+		</exclusions>
     </dependency>
     <dependency>
 		<groupId>com.amazonaws</groupId>
@@ -142,6 +164,12 @@
 		<groupId>com.github.lookfirst</groupId>
 		<artifactId>sardine</artifactId>
 		<version>5.0.2</version>
+		<exclusions>
+			<exclusion>
+				<groupId>commons-logging</groupId>
+				<artifactId>commons-logging</artifactId>
+			</exclusion>
+		</exclusions>
     </dependency>
     <dependency>
 		<groupId>jcifs</groupId>
@@ -170,11 +198,23 @@
 		<groupId>org.apache.poi</groupId>
 		<artifactId>poi-ooxml</artifactId>
 		<version>3.12</version>
+		<exclusions>
+			<exclusion>
+				<groupId>org.apache.xmlbeans</groupId>
+				<artifactId>xmlbeans</artifactId>
+			</exclusion>
+		</exclusions>
     </dependency>
     <dependency>
 		<groupId>org.apache.poi</groupId>
 		<artifactId>poi-ooxml-schemas</artifactId>
 		<version>3.12</version>
+		<exclusions>
+			<exclusion>
+				<groupId>org.apache.xmlbeans</groupId>
+				<artifactId>xmlbeans</artifactId>
+			</exclusion>
+		</exclusions>
     </dependency>
     <dependency>
 		<groupId>net.sourceforge.jexcelapi</groupId>
