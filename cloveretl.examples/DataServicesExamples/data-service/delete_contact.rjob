@@ -2,7 +2,7 @@
 <Graph author="jansedlacek" created="Thu Aug 31 14:44:51 CEST 2017" guiVersion="0.0.0.devel" id="1504250913595" licenseCode="CLP1DJAVLI15742443BY" name="delete_contact" nature="restJob" showComponentDetails="true">
 <Global>
 <EndpointSettings>
-<UrlPath>/contact/{id}</UrlPath>
+<UrlPath>/example/contact/{id}</UrlPath>
 <Description>This endpoint deletes the contact identified by its ID.&#13;
 The job takes one required path parameter: id. The ID of the contact to be deleted.</Description>
 <EndpointName>Delete contact</EndpointName>

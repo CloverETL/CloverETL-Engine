@@ -2,7 +2,7 @@
 <Graph author="jansedlacek" created="Fri Sep 01 15:41:50 CEST 2017" guiVersion="0.0.0.devel" id="1504275392557" licenseCode="CLP1DJAVLI15742443BY" name="contact_vcard" nature="restJob" showComponentDetails="true">
 <Global>
 <EndpointSettings>
-<UrlPath>/contact/vcard/{id}</UrlPath>
+<UrlPath>/example/contact/vcard/{id}</UrlPath>
 <Description>Get contact details in VCARD form based on contact ID.&#13;
 The job takes one required path parameter: id. The ID of the contact to be served.</Description>
 <ExampleOutput>BEGIN:VCARD&#13;
