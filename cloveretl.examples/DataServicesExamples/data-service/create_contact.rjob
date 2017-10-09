@@ -7,7 +7,7 @@
 Either first name or last name is required.&#13;
 Phone number is required and must be in correct form: 999-999-999.&#13;
 E-mail is required and must be a valid email address. e.g. test@test.com</Description>
-<EndpointName>Create contact</EndpointName>
+<EndpointName>Example - Create new contact - Parameters processing</EndpointName>
 <RequestMethod name="POST"/>
 <RequestMethod name="PUT"/>
 <RequestParameter description="The first name of the contact." id="RestJobParameter1" location="query" name="first-name" required="false" type="string"/>

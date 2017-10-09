@@ -12,7 +12,7 @@ TEL;TYPE=WORK,VOICE:555-666-777&#13;
 EMAIL:pepe@lopez.mx&#13;
 END:VCARD&#13;
 </ExampleOutput>
-<EndpointName>Get contact VCARD</EndpointName>
+<EndpointName>Example - Download contact VCARD - Custom response body serialization</EndpointName>
 <RequestMethod name="GET"/>
 <RequestParameter description="The ID of the contact to get." id="RestJobParameter0" location="url_path" name="id" required="true" type="string"/>
 </EndpointSettings>
