@@ -73,7 +73,7 @@ public class HadoopConnectingFileSystemProvider implements HadoopConnectingFileS
 		config.set(NAMENODE_URL_KEY, String.format(NAMENODE_URL_TEMPLATE, connData.getHost(), connData.getPort()));
 		
 		// Just try to connect to host first (real connect to HDFS makes 45 socket-timeout attempts, each timeout's 20s long)
-		connectionTest(FileSystem.getDefaultUri(config), config);
+//		connectionTest(FileSystem.getDefaultUri(config), config);
 		
 		try {
 			dfs = FileSystemRegistry.getAndRegister(FileSystem.getDefaultUri(config), config, connData.getUser(), this);
