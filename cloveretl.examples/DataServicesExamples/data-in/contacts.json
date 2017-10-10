@@ -12,8 +12,8 @@
   "phone" : "555-555-757"
 }, {
   "id" : 11,
-  "first-name" : "Pepe",
-  "last-name" : "Lopez",
-  "email" : "pepe@lopez.mx",
+  "first-name" : "Jack",
+  "last-name" : "Smith",
+  "email" : "jack.smith@example.mx",
   "phone" : "555-666-777"
 } ]

@@ -5,7 +5,7 @@
 <UrlPath>/example/contact/vcard</UrlPath>
 <Description>This endpoint handles importing contact submitted in VCARD format.  &#13;
 </Description>
-<EndpointName>Import contact using VCARD</EndpointName>
+<EndpointName>Example - Import contact using VCARD - Custom parsing of request body</EndpointName>
 <RequestMethod name="POST"/>
 <RequestMethod name="PUT"/>
 </EndpointSettings>

@@ -5,7 +5,7 @@
 <UrlPath>/example/html/{filename}</UrlPath>
 <Description>The job serves HTML and CSS resources.&#13;
 The job takes one required path parameter: filename. The name of the file to be served.</Description>
-<EndpointName>Get static file</EndpointName>
+<EndpointName>Example - Frontend pages - Use static file as response</EndpointName>
 <RequestMethod name="GET"/>
 <RequestParameter description="The name of the file to return." id="RestJobParameter0" location="url_path" name="filename" required="true" type="string"/>
 </EndpointSettings>
