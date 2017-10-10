@@ -5,7 +5,7 @@
 <UrlPath>/example/contact/{id}</UrlPath>
 <Description>This endpoint deletes the contact identified by its ID.&#13;
 The job takes one required path parameter: id. The ID of the contact to be deleted.</Description>
-<EndpointName>Delete contact</EndpointName>
+<EndpointName>Example - Remove contact - Custom response status code</EndpointName>
 <RequestMethod name="DELETE"/>
 <RequestParameter description="The ID of the contact to delete." id="RestJobParameter0" location="url_path" name="id" required="true" type="string"/>
 </EndpointSettings>

@@ -23,7 +23,7 @@
   "email" : "pepe@lopez.mx",&#13;
   "phone" : "555-666-777"&#13;
 } ]</ExampleOutput>
-<EndpointName>Get contacts</EndpointName>
+<EndpointName>Example - List contacts - Automatic JSON serialization</EndpointName>
 <RequestMethod name="GET"/>
 </EndpointSettings>
 <RestJobResponseStatus>

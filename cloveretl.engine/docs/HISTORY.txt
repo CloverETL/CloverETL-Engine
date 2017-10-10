@@ -2,6 +2,30 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-7-0
+---------
+
+* Data Services:
+  * CLO-11722 Multi-publish Data Service endpoints directly from CloverETL Designer
+  * CLO-11721 Convert graph to Data Service REST job
+  * CLO-11495 Mark failing Data Service endpoint as "fixed"
+  * CLO-11706 Automatic creation of REST job path parameters
+  * CLO-11374 Support for form parameters
+  * CLO-11356 Data Service endpoints catalogue
+  * CLO-11347 Explicitly enable storing of execution history for Data Service endpoint
+  * CLO-11331 Data Service example jobs and endpoints
+* Changes:
+  * CLO-11740 Allow to use unsupported DB types in dynamic metadata
+* Fixes:
+  * CLO-9981  Cannot listen for S3 location - ListFile component works OK with same URL
+  * CLO-11697	ConcurrentModificationException when editing dictionary list and execute Success component in the same phase
+  * CLO-11678	CopyFiles Fails when Using Update Overwrite Option
+  * CLO-11636	SMB2 does not work on WebLogic 12
+  * CLO-11398	XMLWriter Cannot Declare XML Namespace
+  * CLO-11601	Missing icon error on Mac OS X
+  * CLO-5139	Running a graph that uses a subgraph - no debug data count
+
+
 REL-4-7-0-M2
 ------------
 
