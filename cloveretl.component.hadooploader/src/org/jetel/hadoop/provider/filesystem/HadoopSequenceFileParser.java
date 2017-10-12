@@ -241,7 +241,7 @@ public class HadoopSequenceFileParser extends AbstractParser implements IHadoopS
 			// Here it's assumed that if MultiFileReader detects that a local file is to be read, it always
 			// provides to this method an absolute URI (resolved in context of contextURL) with scheme "file" (never null).
 			try {
-				fileSystem = FileSystemRegistry.getAndRegister(uri, configuration, user, owner);
+				fileSystem = FileSystemRegistry.getAndRegister(uri, configuration, user, owner, null);
 			} catch (InterruptedException e) {
 				throw new IOException("Internal error: failed to retrieve file system", e);
 			}
