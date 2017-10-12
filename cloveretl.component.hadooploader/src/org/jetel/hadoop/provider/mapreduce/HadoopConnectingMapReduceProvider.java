@@ -38,6 +38,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.jetel.hadoop.provider.HadoopConfigurationUtils;
 import org.jetel.hadoop.provider.filesystem.FileSystemRegistry;
+import org.jetel.hadoop.provider.utils.KerberosUtils;
 import org.jetel.hadoop.service.mapreduce.HadoopConnectingMapReduceService;
 import org.jetel.hadoop.service.mapreduce.HadoopJobReporter;
 import org.jetel.hadoop.service.mapreduce.HadoopMapReduceConnectionData;
@@ -128,17 +129,21 @@ public class HadoopConnectingMapReduceProvider implements HadoopConnectingMapRed
 		}
 
 		final JobConf config = new JobConf(HadoopConfigurationUtils.property2Configuration(additionalSettings));
-		if (connData.getUser() != null) {
-			config.setUser(connData.getUser());
+		String user = connData.getUser(); 
+		if (user != null) {
+			config.setUser(user);
 		}
 		config.set(NAMENODE_URL_KEY, String.format(connData.getFsUrlTemplate(), connData.getFsMasterHost(), connData
 				.getFsMasterPort()));
 		config.set(JOBTRACKER_URL_KEY, connData.getJobtrackerHost() + ":" + connData.getJobtrackerPort());
 		
-		if (connData.getUser() != null) {
-			// CLO-6417: create JobClient as a privileged action;
-			// requires javax.security.auth.AuthPermission "doAs" if SecurityManager is installed.
-			UserGroupInformation ugi = UserGroupInformation.createRemoteUser(connData.getUser());
+		if (user != null) {
+			UserGroupInformation ugi = KerberosUtils.getUserGroupInformation(user, config);
+			if (ugi == null) {
+				// CLO-6417: create JobClient as a privileged action;
+				// requires javax.security.auth.AuthPermission "doAs" if SecurityManager is installed.
+				ugi = UserGroupInformation.createRemoteUser(user);
+			}
 			try {
 				client = ugi.doAs(new PrivilegedExceptionAction<JobClient>() {
 					@Override

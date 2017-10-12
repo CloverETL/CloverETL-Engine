@@ -18,7 +18,6 @@
  */
 package org.jetel.hadoop.provider.filesystem;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -38,13 +37,13 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.jetel.hadoop.component.IHadoopSequenceFileFormatter;
 import org.jetel.hadoop.component.IHadoopSequenceFileParser;
 import org.jetel.hadoop.provider.HadoopConfigurationUtils;
+import org.jetel.hadoop.provider.utils.KerberosUtils;
 import org.jetel.hadoop.service.filesystem.HadoopConnectingFileSystemService;
 import org.jetel.hadoop.service.filesystem.HadoopDataInput;
 import org.jetel.hadoop.service.filesystem.HadoopDataOutput;
 import org.jetel.hadoop.service.filesystem.HadoopFileStatus;
 import org.jetel.hadoop.service.filesystem.HadoopFileSystemConnectionData;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.string.StringUtils;
 
 /**
  * @author dpavlis (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -56,13 +55,6 @@ import org.jetel.util.string.StringUtils;
 
 public class HadoopConnectingFileSystemProvider implements HadoopConnectingFileSystemService {
 
-	/**
-	 * 
-	 */
-	private static final String CLOVERETL_HADOOP_KERBEROS_KEYTAB = "cloveretl.hadoop.kerberos.keytab";
-
-	private static final String HADOOP_SECURITY_AUTHENTICATION = "hadoop.security.authentication";
-	
 	public static final String NAMENODE_URL_TEMPLATE = "hdfs://%s:%s";
 	public static final String NAMENODE_URL_KEY = "fs.default.name";
 
@@ -86,34 +78,13 @@ public class HadoopConnectingFileSystemProvider implements HadoopConnectingFileS
 //		connectionTest(FileSystem.getDefaultUri(config), config);
 		
 		try {
-			UserGroupInformation ugi = getUserGroupInformation(connData, config);
+			UserGroupInformation ugi = KerberosUtils.getUserGroupInformation(connData.getUser(), config);
 			dfs = FileSystemRegistry.getAndRegister(FileSystem.getDefaultUri(config), config, connData.getUser(), this, ugi);
 		} catch (InterruptedException ex) {
 			throw new RuntimeException("Hadoop client API internal exception occured.", ex);
 		}
 	}
 
-	private UserGroupInformation getUserGroupInformation(HadoopFileSystemConnectionData connData, Configuration config)
-			throws IOException {
-		String authentication = config.get(HADOOP_SECURITY_AUTHENTICATION, "");
-		if (authentication.equalsIgnoreCase("Kerberos")) {
-			String user = connData.getUser();
-			String keytab = config.get(CLOVERETL_HADOOP_KERBEROS_KEYTAB, "");
-			if (!StringUtils.isEmpty(user) && !StringUtils.isEmpty(keytab)) {
-				File file = new File(keytab);
-				if (file.exists()) {
-					keytab = file.getAbsolutePath();
-					synchronized (UserGroupInformation.class) { // make sure no other thread changes the static configuration
-						UserGroupInformation.setConfiguration(config);
-						return UserGroupInformation.loginUserFromKeytabAndReturnUGI(user, keytab);
-					}
-				}
-			}
-		}
-		
-		return null;
-	}
-	
 	// code taken from org.apache.hadoop.ipc.Client.Connection.setupConnection()
 	private void connectionTest(URI host, Configuration hadoopConfiguration) throws IOException {
 		SocketFactory socketFactory = NetUtils.getSocketFactory(hadoopConfiguration, ClientProtocol.class);
