@@ -20,9 +20,12 @@ package org.jetel.hadoop.provider.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
+import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.jetel.hadoop.provider.HadoopConfigurationUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -63,5 +66,38 @@ public class KerberosUtils {
 		return authentication.equalsIgnoreCase("Kerberos");
 	}
 	
+	/**
+	 * Helper method to invoke the specified action with Kerberos principal from the configuration.
+	 * If Kerberos authentication is not enabled, just invokes the action and returns the result.
+	 * 
+	 * @param action	the action
+	 * @param user		principal name
+	 * @param config	Hadoop configuration properties
+	 * 
+	 * @return result of the action
+	 * @throws Exception
+	 */
+	public static <T> T doAs(PrivilegedExceptionAction<T> action, String user, Configuration config) throws Exception {
+		UserGroupInformation ugi = getUserGroupInformation(user, config);
+		if (ugi != null) {
+			return ugi.doAs(action);
+		} else {
+			return action.run();
+		}
+	}
+
+	/**
+	 * Helper method for HiveSpecific.
+	 * 
+	 * @param action
+	 * @param user
+	 * @param kerberosProperties
+	 * @return
+	 * @throws Exception
+	 */
+	public static <T> T doAs(PrivilegedExceptionAction<T> action, String user, Properties kerberosProperties) throws Exception {
+		Configuration config = HadoopConfigurationUtils.property2Configuration(kerberosProperties);
+		return doAs(action, user, config);
+	}
 
 }
