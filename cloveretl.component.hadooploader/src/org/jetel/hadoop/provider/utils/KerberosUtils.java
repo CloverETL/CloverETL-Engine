@@ -25,7 +25,9 @@ import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.jetel.graph.ContextProvider;
 import org.jetel.hadoop.provider.HadoopConfigurationUtils;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -47,8 +49,8 @@ public class KerberosUtils {
 		if (isKerberosAuthentication(config)) {
 			String keytab = config.get(CLOVERETL_HADOOP_KERBEROS_KEYTAB, "");
 			if (!StringUtils.isEmpty(user) && !StringUtils.isEmpty(keytab)) {
-				File file = new File(keytab);
-				if (file.exists()) {
+				File file = FileUtils.getJavaFile(ContextProvider.getContextURL(), keytab); // FIXME get rid of ContextProvider
+				if ((file != null) && file.exists()) {
 					keytab = file.getAbsolutePath();
 					synchronized (UserGroupInformation.class) { // make sure no other thread changes the static configuration
 						UserGroupInformation.setConfiguration(config);
