@@ -18,6 +18,7 @@
  */
 package org.jetel.connection.jdbc.specific.impl;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -121,7 +122,8 @@ public class HiveSpecific extends AbstractJdbcSpecific {
 					throw exceptions.get(0);
 				}
 			}
-			throw new SQLException("Hive connection with Kerberos authenticaton failed", e); // fallback
+			Throwable cause = (e instanceof InvocationTargetException) ? e.getCause() : e; // unwrap
+			throw new SQLException(ExceptionUtils.getMessage("Hive connection with Kerberos authenticaton failed", cause), cause); // fallback
 		}
 	}
 
