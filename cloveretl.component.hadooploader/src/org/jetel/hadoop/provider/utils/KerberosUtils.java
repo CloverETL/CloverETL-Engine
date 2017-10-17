@@ -20,6 +20,7 @@ package org.jetel.hadoop.provider.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.security.PrivilegedExceptionAction;
 import java.util.Properties;
 
@@ -47,16 +48,24 @@ public class KerberosUtils {
 	
 	public static UserGroupInformation getUserGroupInformation(String user, Configuration config) throws IOException {
 		if (isKerberosAuthentication(config)) {
-			String keytab = config.get(CLOVERETL_HADOOP_KERBEROS_KEYTAB, "");
-			if (!StringUtils.isEmpty(user) && !StringUtils.isEmpty(keytab)) {
-				File file = FileUtils.getJavaFile(ContextProvider.getContextURL(), keytab); // FIXME get rid of ContextProvider
-				if ((file != null) && file.exists()) {
-					keytab = file.getAbsolutePath();
-					synchronized (UserGroupInformation.class) { // make sure no other thread changes the static configuration
-						UserGroupInformation.setConfiguration(config);
-						return UserGroupInformation.loginUserFromKeytabAndReturnUGI(user, keytab);
-					}
+			if (StringUtils.isEmpty(user)) {
+				throw new IOException("Kerberos principal name is not specified. Please set the principal name as user name.");
+			}
+			String keytab = config.get(CLOVERETL_HADOOP_KERBEROS_KEYTAB);
+			if (StringUtils.isEmpty(keytab)) {
+				throw new IOException(String.format("Keytab file location for principal '%s' is not specified. Please set '" + CLOVERETL_HADOOP_KERBEROS_KEYTAB + "' property.", user));
+			}
+			URL contextUrl = ContextProvider.getContextURL(); // FIXME get rid of ContextProvider
+			URL keyTabUrl = FileUtils.getFileURL(contextUrl, keytab);
+			File file = FileUtils.convertUrlToFile(keyTabUrl);
+			if ((file != null) && file.exists()) {
+				keytab = file.getAbsolutePath();
+				synchronized (UserGroupInformation.class) { // make sure no other thread changes the static configuration
+					UserGroupInformation.setConfiguration(config);
+					return UserGroupInformation.loginUserFromKeytabAndReturnUGI(user, keytab);
 				}
+			} else {
+				throw new IOException(String.format("Unable to open '%s' as a local file", keyTabUrl));
 			}
 		}
 		
