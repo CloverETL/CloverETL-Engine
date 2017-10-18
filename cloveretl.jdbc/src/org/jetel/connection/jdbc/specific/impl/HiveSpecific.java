@@ -131,7 +131,7 @@ public class HiveSpecific extends AbstractJdbcSpecific {
 		ClassLoader parent = driver.getClass().getClassLoader();
 		URL hadoopProviderJar = Plugins.getPluginDescriptor(HADOOP_PLUGIN_ID).getURL(HADOOP_PROVIDER_JAR);
 		URL[] urls = new URL[] { hadoopProviderJar };
-		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
+		IAuthorityProxy authorityProxy = ContextProvider.getAuthorityProxy();
 		ClassLoader cl = authorityProxy.getClassLoader(urls, parent, false);
 		Class<?> kerberosUtilsClass = cl.loadClass(KERBEROS_UTILS_CLASS);
 		Method doAsMethod = kerberosUtilsClass.getMethod(KERBEROS_HELPER_METHOD, PrivilegedExceptionAction.class, String.class, Properties.class);
