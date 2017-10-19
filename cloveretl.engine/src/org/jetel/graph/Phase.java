@@ -337,6 +337,7 @@ public class Phase extends GraphElement implements Comparable<Phase> {
 
 		//check nodes configuration
         for (Node node : nodes.values()) {
+    		Context c = ContextProvider.registerNode(node);
         	try {
         		node.checkConfig(status);
         	} catch (Exception e) {
@@ -347,6 +348,8 @@ public class Phase extends GraphElement implements Comparable<Phase> {
         	} catch (Error e) {
         		// java.lang.Error is thrown when you try to load invalid class (Eclipse produces invalid .class files when you don't set classpath correctly for compilation)
         		status.addError(node, null, e);
+        	} finally {
+        		ContextProvider.unregister(c);
         	}
         }
 
