@@ -24,7 +24,7 @@ public class Hadoop412OperationHandlerTest extends HadoopOperationHandlerTest {
 
 	@Override
 	protected URI getTestingURI() {
-		return URI.create(CDH560);
+		return URI.create(CDH412);
 	}
 
 	/*
@@ -32,7 +32,7 @@ public class Hadoop412OperationHandlerTest extends HadoopOperationHandlerTest {
 	 */
 	@Override
 	protected URI getRemoteURI() {
-		return URI.create(CDH412);
+		return URI.create(CDH560);
 	}
 
 	@Override
