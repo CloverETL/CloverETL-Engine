@@ -19,6 +19,7 @@
 package org.jetel.util;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -35,12 +36,12 @@ public class IbmMdmUtils {
 	public static final String IBM_TSKGET_DATA_READER = "TSKGET_DATA_READER";
 	public static final String IBM_TSKSEARCH = "TSKSEARCH";
 	
-	public static final List<String> IBM_MDM_READERS = Arrays.asList(
+	public static final List<String> IBM_MDM_READERS = Collections.unmodifiableList(Arrays.asList(
 			IBM_MEM_DICTIONARY_READER,
 			IBM_MEMGET_DATA_READER,
 			IBM_MEMSEARCH,
 			IBM_TSKGET_DATA_READER,
-			IBM_TSKSEARCH);
+			IBM_TSKSEARCH));
 	
 	public static boolean isIbmMdmReader(String componentType) {
 		return IBM_MDM_READERS.contains(componentType);
