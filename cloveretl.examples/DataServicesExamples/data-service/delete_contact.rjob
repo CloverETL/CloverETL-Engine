@@ -29,12 +29,12 @@ The job takes one required path parameter: id. The ID of the contact to be delet
 <RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="290" id="Note0" textColor="444444" width="640" x="211" y="217">
 <attr name="text"><![CDATA[h3. Deleting contact
 
-This endpoint deletes the contact identified by its ID, by simply reading and writing the full contact database and filtering out the contact we want to delete in the process.
+This job deletes the contact identified by its ID, by simply reading and writing the full contact database and filtering out the contact, which should be deleted.
 
 
 h3. Highlights
-* This endpoint accepts *DELETE* method and receives one *required* input HTTP parameter *id* in URL
-*  If successful the endpoint return *204 No Content* as we do not return any data back to browser]]></attr>
+* This job accepts *DELETE* method and receives one *required* input HTTP parameter *id* in URL path
+*  If successful the endpoint return *204 No Content*. No data is returned back by this job.]]></attr>
 </RichTextNote>
 <Dictionary/>
 </Global>

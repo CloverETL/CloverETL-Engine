@@ -40,14 +40,14 @@
 <RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="237" id="Note0" textColor="444444" width="844" x="190" y="287">
 <attr name="text"><![CDATA[h3. Import VCARD contact
 
-This endpoint handles importing contact submitted via text field  in VCARD format.  
+This job handles importing contact submitted via text field  in VCARD format.  
 
 
 h4. Highlights
 * Job uses no incoming parameters: VCARD data is coming in the body of HTTP request instead
-* To read the data coming in HTTP request body, we use *request:body* in URL of standard [Reader|element://PARSE_INPUT_PAYLOAD]
+* To read the data coming in HTTP request body, [Reader|element://PARSE_INPUT_PAYLOAD] uses *request:body* in URL to parse request body
 
-* The endpoint accepts both *PUT* and *POST* methods. JavaScript in [index.html|open://DataServicesExamples/html/index.html] uses only the PUT method, see function _importVcard()_
+The job accepts both *PUT* and *POST* methods. JavaScript in [index.html|open://DataServicesExamples/html/index.html] uses only the PUT method, see function _importVcard()_
 
 
 

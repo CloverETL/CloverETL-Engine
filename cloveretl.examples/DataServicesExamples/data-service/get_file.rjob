@@ -29,12 +29,12 @@ The job takes one required path parameter: filename. The name of the file to be 
 <attr name="text"><![CDATA[h2. Serving files
 
 h4. Description
-The job serves HTML and CSS resources which (as correct HTTP headers are set) are then displayed in browser.
+This job serves HTML and CSS resources which (as correct HTTP headers are set) are then displayed in browser.
 
 
 h4. Highlights
-* Job sets response HTTP header *Content-Type* so that web page is correctly displayed by your browser
-* The job *returns any file based on incoming HTTP parameter*.  We use it to return HTML, CSS, PNG and JavaScript files.
+* Job sets response HTTP header *Content-Type* so that web page is correctly displayed by a browser
+* The job *returns any file based on incoming HTTP parameter*. Parameter is used to return HTML, CSS, PNG and JavaScript files.
 * Notice _${filename}_ parameter in output setting in _[Endpoint Configuration|action://com.cloveretl.gui/com.cloveretl.gui.actions.ChangeGraphEditorTabAction?index=0]_. It is automatically resolved using value from HTTP request.
 * This job uses *static file response*. Notice _<file>_ output setting in _[Endpoint Configuration|action://com.cloveretl.gui/com.cloveretl.gui.actions.ChangeGraphEditorTabAction?index=0]_.
 
@@ -51,7 +51,7 @@ The job accepts only *GET* requests and uses one *required* input parameter _fil
 <attr name="noTopLevelArray"><![CDATA[false]]></attr>
 <attr name="noMetadataName"><![CDATA[false]]></attr>
 </Node>
-<Node guiName="GetJobInput" guiX="280" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
+<Node guiName="GetJobInput" guiX="680" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
 <attr name="mapping"><![CDATA[//#CTL2
 // Transforms input record into output record.
 function integer transform() {

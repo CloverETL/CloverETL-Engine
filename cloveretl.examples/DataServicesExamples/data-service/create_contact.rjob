@@ -34,14 +34,14 @@ E-mail is required and must be a valid email address. e.g. test@test.com</Descri
 <RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="353" id="Note0" textColor="444444" width="640" x="204" y="154">
 <attr name="text"><![CDATA[h3. Processing HTML form submission
 
-This endpoint processes data submitted via HTML form. See function _createContact()_ in [index.html|open://DataServicesExamples/html/index.html]. Values from form fields coming as HTTP parameters are converted to records serialized into JSON file that serves as simple contact 'database'.
+This job processes data submitted via HTML form. See function _createContact()_ in [index.html|open://DataServicesExamples/html/index.html]. Values from form fields coming as HTTP parameters are converted to records serialized into JSON file that serves as simple contact 'database'.
 
 
 h3. Highlights
-* This endpoint accepts *POST* method and uses 4 input HTTP parameters. 
-*  All input parameters are declared as optional. We perform validation in graph in order to provide meaningful error messages to the user; we use [Validator|element://VALIDATE_SUBMITTED_DATA] for quick check
-* If data is invalid, we simply report first incoming validation error and set error code to *HTTP 400*. We set the error code and error in the Fail component of [validateSubmittedData.sgrf|open://DataServicesExamples/graph/subgraph/validateSubmittedData.sgrf]
-* On success, the service returns (as recommended by REST standard) status code *201 Created*. The code 201 is configured in _[Endpoint Configuration|action://com.cloveretl.gui/com.cloveretl.gui.actions.ChangeGraphEditorTabAction?index=0]_, overriding the default success code *200 OK*
+* This job accepts *POST* method and uses 4 input HTTP parameters. 
+*  All input parameters are declared as optional. Validation is performed in the job logic in order to provide meaningful error messages to the user; job uses [Validator|element://VALIDATE_SUBMITTED_DATA] for quick check
+* If data is invalid, job simply reports first incoming validation error and set error code to *HTTP 400*. The error code and error is set in the Fail component of [validateSubmittedData.sgrf|open://DataServicesExamples/graph/subgraph/validateSubmittedData.sgrf]
+* On success, the job returns (as recommended by REST standard) status code *201 Created*. The code 201 is configured in _[Endpoint Configuration|action://com.cloveretl.gui/com.cloveretl.gui.actions.ChangeGraphEditorTabAction?index=0]_, overriding the default success code *200 OK*
 ]]></attr>
 </RichTextNote>
 <Dictionary/>
@@ -67,7 +67,7 @@ function integer transform() {
 }]]></attr>
 </Node>
 <Node guiName="Validate submitted data" guiX="204" guiY="23" id="VALIDATE_SUBMITTED_DATA" jobURL="${SUBGRAPH_DIR}/validateSubmittedData.sgrf" type="SUBGRAPH"/>
-<Edge fromNode="RESTJOB_INPUT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="VALIDATE_SUBMITTED_DATA:0"/>
+<Edge fromNode="RESTJOB_INPUT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 0 (Parameters)" toNode="VALIDATE_SUBMITTED_DATA:0"/>
 <Edge fromNode="VALIDATE_SUBMITTED_DATA:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="CREATE_CONTACT:0"/>
 </Phase>
 </Graph>
