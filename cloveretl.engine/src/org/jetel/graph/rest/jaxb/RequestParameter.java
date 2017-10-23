@@ -43,6 +43,7 @@ public class RequestParameter implements Serializable {
 	private String description;
 	private String type;
 	private Location location;
+	private Boolean sensitive;
 	
 	@XmlType(name = "location", namespace = "http://cloveretl.com/server/data") // https://java.net/jira/browse/JAXB-933
 	public enum Location {
@@ -111,5 +112,14 @@ public class RequestParameter implements Serializable {
 	
 	public void setLocation(Location location) {
 		this.location = location;
+	}
+
+	@XmlAttribute
+	public Boolean getSensitive() {
+		return sensitive;
+	}
+
+	public void setSensitive(Boolean sensitive) {
+		this.sensitive = sensitive;
 	}
 }
