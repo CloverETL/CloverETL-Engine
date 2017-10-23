@@ -92,6 +92,12 @@ public class CompressedByteDataField extends ByteDataField {
 		dataLen = value == null ? 0 : value.length;
 		super.setValue(ZipUtils.compress(value));
 	}
+	
+	@Override
+	public void setValue(byte[] value, int fromOffset, int length) {
+		dataLen = value == null ? 0 : length;
+		super.setValue(ZipUtils.compress(value, fromOffset, length));
+	}
 
 	@Override
 	public void setValue(byte value) {
