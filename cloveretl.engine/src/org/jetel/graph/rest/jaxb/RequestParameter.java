@@ -118,6 +118,10 @@ public class RequestParameter implements Serializable {
 	public Boolean getSensitive() {
 		return sensitive;
 	}
+	
+	public boolean isSensitive() {
+		return Boolean.TRUE.equals(sensitive);
+	}
 
 	public void setSensitive(Boolean sensitive) {
 		this.sensitive = sensitive;
