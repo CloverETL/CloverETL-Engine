@@ -31,6 +31,8 @@ import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.ZipUtils;
 import org.jetel.util.string.Compare;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * Class implementing field which represents gzip-compressed array of bytes. 
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
@@ -87,6 +89,7 @@ public class CompressedByteDataField extends ByteDataField {
         }
 	}
 	
+	@SuppressFBWarnings("NP_NULL_PARAM_DEREF")
 	@Override
 	public void setValue(byte[] value) {
 		dataLen = value == null ? 0 : value.length;
