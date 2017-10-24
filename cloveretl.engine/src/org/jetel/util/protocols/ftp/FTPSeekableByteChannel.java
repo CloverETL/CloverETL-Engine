@@ -18,10 +18,6 @@
  */
 package org.jetel.util.protocols.ftp;
 
-import it.sauronsoftware.ftp4j.FTPClient;
-import it.sauronsoftware.ftp4j.FTPDataTransferListener;
-import it.sauronsoftware.ftp4j.FTPFile;
-
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -33,7 +29,11 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.util.string.StringUtils;
+import org.jetel.util.protocols.UserInfo;
+
+import it.sauronsoftware.ftp4j.FTPClient;
+import it.sauronsoftware.ftp4j.FTPDataTransferListener;
+import it.sauronsoftware.ftp4j.FTPFile;
 
 /**
  * Little bit crappy wrapper around FTPClient from ftp4j library. This class provides SeekableByteChannel
@@ -88,9 +88,9 @@ public class FTPSeekableByteChannel implements SeekableByteChannel {
 			throw new ComponentNotReadyException("FTP connection failed.", e);
 		}
 		
-		String[] userInfo = getUserInfo(url);
+		UserInfo userInfo = UserInfo.fromURL(url);
 		try {
-			ftpClient.login(userInfo[0], userInfo[1]);
+			ftpClient.login(userInfo.getUser(), userInfo.getPassword());
 		} catch (Exception e) {
 			try {
 				close();
@@ -272,18 +272,6 @@ public class FTPSeekableByteChannel implements SeekableByteChannel {
 	@Override
 	public int write(ByteBuffer src) throws IOException {
 		throw new UnsupportedOperationException();
-	}
-
-	private String[] getUserInfo(URL url) {
-		String userInfo = url.getUserInfo();
-		if (StringUtils.isEmpty(userInfo)) {
-			return new String[] { "", null };
-		}
-		String[] result = userInfo.split(":");
-		if (result.length == 1) {
-			return new String[] { result[0], null };
-		}
-		return result;
 	}
 
 }
