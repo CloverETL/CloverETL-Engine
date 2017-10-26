@@ -1,4 +1,5 @@
 /bin/
+/build/
 /build-tmp/
 /dist/
 /target/

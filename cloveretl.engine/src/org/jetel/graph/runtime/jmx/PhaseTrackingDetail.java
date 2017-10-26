@@ -114,6 +114,14 @@ public class PhaseTrackingDetail implements PhaseTracking {
 	}
 	
 	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getPhaseLabel()
+	 */
+	@Override
+	public String getPhaseLabel() {
+		return phase.getLabel();
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.PhaseTracking#getStartTime()
 	 */
 	@Override

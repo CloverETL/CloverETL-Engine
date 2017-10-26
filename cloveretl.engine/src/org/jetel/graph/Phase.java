@@ -596,13 +596,13 @@ public class Phase extends GraphElement implements Comparable<Phase> {
         this.isCheckPoint = isCheckPoint;
     }
     
-    protected static String getPhaseLabel(int phaseNum) {
+    public static String getPhaseLabel(int phaseNum) {
     	switch (phaseNum) {
     	case INITIAL_PHASE_ID: {
-    		return "InitialPhase";
+    		return "Initial";
     	}
     	case FINAL_PHASE_ID: {
-    		return "FinalPhase";
+    		return "Final";
     	}
     	default: {
     		return Integer.toString(phaseNum);

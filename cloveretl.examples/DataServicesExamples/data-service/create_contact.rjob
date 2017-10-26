@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="jansedlacek" created="Fri Sep 01 15:41:50 CEST 2017" guiVersion="0.0.0.devel" id="1504279075080" licenseCode="CLP1DJAVLI15742443BY" name="contact_post" nature="restJob" showComponentDetails="true">
+<Global>
+<EndpointSettings>
+<UrlPath>/example/contact</UrlPath>
+<Description>Enpoint for creating new contact.&#13;
+Either first name or last name is required.&#13;
+Phone number is required and must be in correct form: 999-999-999.&#13;
+E-mail is required and must be a valid email address. e.g. test@test.com</Description>
+<EndpointName>Example - Create new contact - Parameters processing</EndpointName>
+<RequestMethod name="POST"/>
+<RequestMethod name="PUT"/>
+<RequestParameter description="The first name of the contact." id="RestJobParameter1" location="form_data" name="first-name" required="false" type="string"/>
+<RequestParameter description="The last name of the contact." id="RestJobParameter2" location="form_data" name="last-name" required="false" type="string"/>
+<RequestParameter description="The phone number of the contact. Must be in the following pattern: 999-999-999." id="RestJobParameter3" location="form_data" name="phone" required="true" type="string"/>
+<RequestParameter description="The e-mail address of the contact. Must be a valid e-mail address." id="RestJobParameter52" location="form_data" name="email" required="true" type="string"/>
+</EndpointSettings>
+<RestJobResponseStatus>
+<JobError>
+<ReasonPhrase>Job failed</ReasonPhrase>
+<StatusCode>500</StatusCode>
+</JobError>
+<Success>
+<StatusCode>201</StatusCode>
+</Success>
+<ValidationError>
+<ReasonPhrase>Request validation failed</ReasonPhrase>
+<StatusCode>400</StatusCode>
+</ValidationError>
+</RestJobResponseStatus>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="353" id="Note0" textColor="444444" width="640" x="204" y="154">
+<attr name="text"><![CDATA[h3. Processing HTML form submission
+
+This job processes data submitted via HTML form. See function _createContact()_ in [index.html|open://DataServicesExamples/html/index.html]. Values from form fields coming as HTTP parameters are converted to records serialized into JSON file that serves as simple contact 'database'.
+
+
+h3. Highlights
+* This job accepts *POST* method and uses 4 input HTTP parameters. 
+*  All input parameters are declared as optional. Validation is performed in the job logic in order to provide meaningful error messages to the user; job uses [Validator|element://VALIDATE_SUBMITTED_DATA] for quick check
+* If data is invalid, job simply reports first incoming validation error and set error code to *HTTP 400*. The error code and error is set in the Fail component of [validateSubmittedData.sgrf|open://DataServicesExamples/graph/subgraph/validateSubmittedData.sgrf]
+* On success, the job returns (as recommended by REST standard) status code *201 Created*. The code 201 is configured in _[Endpoint Configuration|action://com.cloveretl.gui/com.cloveretl.gui.actions.ChangeGraphEditorTabAction?index=0]_, overriding the default success code *200 OK*
+]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node guiName="Create contact" guiX="716" guiY="23" id="CREATE_CONTACT" jobURL="${SUBGRAPH_DIR}/createContact.sgrf" type="SUBGRAPH"/>
+<Node guiName="Input" guiX="48" guiY="10" id="RESTJOB_INPUT0" restJobInput="true" type="RESTJOB_INPUT"/>
+<Node attachment="false" guiName="Output" guiX="900" guiY="10" id="RESTJOB_OUTPUT0" metadataName="true" responseFormat="CUSTOM" restJobOutput="true" topLevelArray="true" type="RESTJOB_OUTPUT">
+<attr name="noTopLevelArray"><![CDATA[false]]></attr>
+<attr name="noMetadataName"><![CDATA[false]]></attr>
+</Node>
+<Node guiName="GetJobInput" guiX="248" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
+<attr name="mapping"><![CDATA[//#CTL2
+// Transforms input record into output record.
+function integer transform() {
+	if (isEmpty(getRequestParameter("phone"))) { 
+		raiseError("Missing required request parameter: 'phone'");
+	}
+	if (isEmpty(getRequestParameter("email"))) { 
+		raiseError("Missing required request parameter: 'email'");
+	}
+	return ALL;
+}]]></attr>
+</Node>
+<Node guiName="Validate submitted data" guiX="204" guiY="23" id="VALIDATE_SUBMITTED_DATA" jobURL="${SUBGRAPH_DIR}/validateSubmittedData.sgrf" type="SUBGRAPH"/>
+<Edge fromNode="RESTJOB_INPUT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 0 (Parameters)" toNode="VALIDATE_SUBMITTED_DATA:0"/>
+<Edge fromNode="VALIDATE_SUBMITTED_DATA:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="CREATE_CONTACT:0"/>
+</Phase>
+</Graph>

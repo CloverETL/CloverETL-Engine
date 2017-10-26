@@ -485,6 +485,8 @@
 
 			
 			<keep name="com.opensys.cloveretl.component.complexdatareader.*"><field access="protected public"/><method access="protected public"/></keep>
+			
+			<keep name="com.opensys.cloveretl.component.dataservice.BodyFieldResult"><field access="protected public"/><method access="protected public"/></keep>
 
 			<keep name="com.opensys.cloveretl.addressdoctor.unlockcode.provider.*"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.addressdoctor.unlockcode.provider.impl.*"><field access="public"/><method access="public"/></keep>

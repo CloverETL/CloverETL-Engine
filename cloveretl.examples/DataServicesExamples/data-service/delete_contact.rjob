@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="jansedlacek" created="Thu Aug 31 14:44:51 CEST 2017" guiVersion="0.0.0.devel" id="1504250913595" licenseCode="CLP1DJAVLI15742443BY" name="delete_contact" nature="restJob" showComponentDetails="true">
+<Global>
+<EndpointSettings>
+<UrlPath>/example/contact/{id}</UrlPath>
+<Description>This endpoint deletes the contact identified by its ID.&#13;
+The job takes one required path parameter: id. The ID of the contact to be deleted.</Description>
+<EndpointName>Example - Remove contact - Custom response status code</EndpointName>
+<RequestMethod name="DELETE"/>
+<RequestParameter description="The ID of the contact to delete." id="RestJobParameter0" location="url_path" name="id" required="true" type="string"/>
+</EndpointSettings>
+<RestJobResponseStatus>
+<JobError>
+<ReasonPhrase>Job failed</ReasonPhrase>
+<StatusCode>500</StatusCode>
+</JobError>
+<Success>
+<StatusCode>204</StatusCode>
+</Success>
+<ValidationError>
+<ReasonPhrase>Request validation failed</ReasonPhrase>
+<StatusCode>400</StatusCode>
+</ValidationError>
+</RestJobResponseStatus>
+<Metadata fileURL="${META_DIR}/contact.fmt" id="Metadata0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="290" id="Note0" textColor="444444" width="640" x="211" y="217">
+<attr name="text"><![CDATA[h3. Deleting contact
+
+This job deletes the contact identified by its ID, by simply reading and writing the full contact database and filtering out the contact, which should be deleted.
+
+
+h3. Highlights
+* This job accepts *DELETE* method and receives one *required* input HTTP parameter *id* in URL path
+*  If successful the endpoint return *204 No Content*. No data is returned back by this job.]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node guiName="Filter-out deleted contact" guiX="444" guiY="23" id="FILTER_OUT_DELETED_CONTACT" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[//#CTL2
+num2str($in.0.id)!=getRequestParameter("id")]]></attr>
+</Node>
+<Node guiName="Read all contacts" guiX="211" guiY="23" id="READ_ALL_CONTACTS" schema="${META_DIR}/contacts_json.xsd" sourceUri="${DATAIN_DIR}/contacts.json" type="JSON_EXTRACT">
+<attr name="mapping"><![CDATA[<Mappings>
+	<Mapping element="json_array">
+		<Mapping element="json_array" outPort="0"
+				xmlFields="{}email;{}first-name;{}id;{}last-name;{}phone"
+				cloverFields="email;first_name;id;last_name;phone">
+		</Mapping>
+	</Mapping>
+</Mappings>
+]]></attr>
+</Node>
+<Node guiName="Input" guiX="80" guiY="10" id="RESTJOB_INPUT0" restJobInput="true" type="RESTJOB_INPUT"/>
+<Node attachment="false" guiName="Output" guiX="900" guiY="10" id="RESTJOB_OUTPUT0" metadataName="true" responseFormat="CUSTOM" restJobOutput="true" topLevelArray="true" type="RESTJOB_OUTPUT">
+<attr name="noTopLevelArray"><![CDATA[false]]></attr>
+<attr name="noMetadataName"><![CDATA[false]]></attr>
+</Node>
+<Node guiName="GetJobInput" guiX="280" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
+<attr name="mapping"><![CDATA[//#CTL2
+// Transforms input record into output record.
+function integer transform() {
+	if (isEmpty(getRequestParameter("id"))) { 
+		raiseError("Missing required request parameter: 'id'");
+	}
+	return ALL;
+}]]></attr>
+</Node>
+<Edge fromNode="FILTER_OUT_DELETED_CONTACT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 0 (accepted)" toNode="WRITE_REMAINING_CONTACTS:0"/>
+<Edge fromNode="READ_ALL_CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="FILTER_OUT_DELETED_CONTACT:0"/>
+</Phase>
+<Phase number="1">
+<Node fileURL="${DATAIN_DIR}/contacts.json" guiName="Write remaining contacts" guiX="680" guiY="23" id="WRITE_REMAINING_CONTACTS" type="JSON_WRITER">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<clover:collection clover:name="root" xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
+  <item clover:inPort="0">
+    <id>$0.id</id>
+    <first-name>$0.first_name</first-name>
+    <last-name>$0.last_name</last-name>
+    <email>$0.email</email>
+    <phone>$0.phone</phone>
+  </item>
+</clover:collection>]]></attr>
+</Node>
+</Phase>
+</Graph>

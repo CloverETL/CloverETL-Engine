@@ -56,9 +56,9 @@ public class GraphTrackingLogger extends TrackingLogger {
 	protected void printProcessingStatus(boolean finalTracking) {
         //StringBuilder strBuf=new StringBuilder(120);
         if (finalTracking)
-            logger.info("----------------------** Final tracking Log for phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum() + "] **---------------------");
+            logger.info("----------------------** Final tracking Log for phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseLabel() + "] **---------------------");
         else 
-            logger.info("---------------------** Start of tracking Log for phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum() + "] **-------------------");
+            logger.info("---------------------** Start of tracking Log for phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseLabel() + "] **-------------------");
         // France is here just to get 24hour time format
         logger.info("Time: "
             + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM, Locale.FRANCE).

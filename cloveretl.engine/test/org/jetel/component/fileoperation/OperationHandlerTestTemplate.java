@@ -402,12 +402,17 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			source = relativeURI("newerFile.tmp");
 			target = relativeURI("veryOldFile.tmp");
 			prepareData(source, newerContent); // newer file
+			long sourceTime = manager.info(source).getLastModified().getTime();
+			long targetTime = manager.info(target).getLastModified().getTime();
+			System.out.println("currentTime=" + System.currentTimeMillis());
+			System.out.println("sourceTime=" + sourceTime);
+			System.out.println("targetTime=" + targetTime);
 			assertTrue("Update mode returned an error", manager.copy(source, target, new CopyParameters().setUpdate()).success());
 			String actualContent = read(manager.getInput(target).channel());
-			if (!Objects.equals(newerContent, actualContent)) {
-				long sourceTime = manager.info(source).getLastModified().getTime();
-				long targetTime = manager.info(target).getLastModified().getTime();
-				if (targetTime > sourceTime) { // disable the test if times are equal
+			if (sourceTime > targetTime) { //expected situation - veryOldFile is older than newerFile
+				if (!Objects.equals(newerContent, actualContent)) {
+					sourceTime = manager.info(source).getLastModified().getTime();
+					targetTime = manager.info(target).getLastModified().getTime();
 					String message = String.format(
 							"File was not overwritten with newer file in update mode - source: %d, target: %d, diff: %d", 
 							sourceTime, 
@@ -415,9 +420,19 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 							targetTime - sourceTime);
 					assertEquals(message, newerContent, actualContent);
 				}
+			} else { //this can occasionally happen
+				if (Objects.equals(newerContent, actualContent)) {
+					sourceTime = manager.info(source).getLastModified().getTime();
+					targetTime = manager.info(target).getLastModified().getTime();
+					String message = String.format(
+							"File was overwritten with older file in update mode - source: %d, target: %d, diff: %d", 
+							sourceTime, 
+							targetTime, 
+							targetTime - sourceTime);
+					assertNotSame(message, newerContent, actualContent);
+				}
 			}
 		}
-
 	}
 	
 	public void testSpecialCharacters() throws Exception {
@@ -884,18 +899,34 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			source = relativeURI("newerFile.tmp");
 			target = relativeURI("veryOldFile.tmp");
 			prepareData(source, newerContent); // newer file
+			long sourceTime = manager.info(source).getLastModified().getTime();
+			long targetTime = manager.info(target).getLastModified().getTime();
+			System.out.println("currentTime=" + System.currentTimeMillis());
+			System.out.println("sourceTime=" + sourceTime);
+			System.out.println("targetTime=" + targetTime);
 			assertTrue("Update mode returned an error", manager.move(source, target, new MoveParameters().setUpdate()).success());
 			String actualContent = read(manager.getInput(target).channel());
-			if (!Objects.equals(newerContent, actualContent)) {
-				long sourceTime = manager.info(source).getLastModified().getTime();
-				long targetTime = manager.info(target).getLastModified().getTime();
-				if (targetTime > sourceTime) { // disable the test if times are equal
+			if (sourceTime > targetTime) { //expected situation - veryOldFile is older than newerFile
+				if (!Objects.equals(newerContent, actualContent)) {
+					sourceTime = manager.info(source).getLastModified().getTime();
+					targetTime = manager.info(target).getLastModified().getTime();
 					String message = String.format(
 							"File was not overwritten with newer file in update mode - source: %d, target: %d, diff: %d", 
 							sourceTime, 
 							targetTime, 
 							targetTime - sourceTime);
 					assertEquals(message, newerContent, actualContent);
+				}
+			} else { //this can occasionally happen
+				if (Objects.equals(newerContent, actualContent)) {
+					sourceTime = manager.info(source).getLastModified().getTime();
+					targetTime = manager.info(target).getLastModified().getTime();
+					String message = String.format(
+							"File was overwritten with older file in update mode - source: %d, target: %d, diff: %d", 
+							sourceTime, 
+							targetTime, 
+							targetTime - sourceTime);
+					assertNotSame(message, newerContent, actualContent);
 				}
 			}
 		}

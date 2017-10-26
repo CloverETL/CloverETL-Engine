@@ -101,19 +101,19 @@ public abstract class TrackingLogger implements NotificationListener {
 
 	protected void phaseFinished() {
 		printProcessingStatus(true);
-		logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum()
+		logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseLabel()
 				+ "] successfully finished - elapsed time(sec): "
 				+ TrackingUtils.convertTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
 	}
 
 	protected void phaseAborted() {
-		logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum()
+		logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseLabel()
 				+ "] was aborted - elapsed time(sec): "
 				+ TrackingUtils.convertTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
 	}
 
 	protected void phaseError() {
-		logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum()
+		logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseLabel()
 				+ "] finished with error - elapsed time(sec): "
 				+ TrackingUtils.convertTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
 	}
@@ -124,7 +124,7 @@ public abstract class TrackingLogger implements NotificationListener {
 			logger.info("Phase#            Finished Status         RunTime(sec)    MemoryAllocation(KB)");
 			for (PhaseTracking phaseDetail : cloverJMX.getGraphTracking().getPhaseTracking()) {
 				if(phaseDetail != null) {
-	    			Object nodeInfo[] = { Integer.valueOf(phaseDetail.getPhaseNum()), 
+	    			Object nodeInfo[] = { phaseDetail.getPhaseLabel(), 
 	    					phaseDetail.getResult().message(),
 	    					TrackingUtils.convertTime(phaseDetail.getExecutionTime(), TimeUnit.SECONDS),
 	                        phaseDetail.getMemoryUtilization() >> 10};

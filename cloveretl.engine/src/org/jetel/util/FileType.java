@@ -111,5 +111,11 @@ public enum FileType {
 	public boolean isGraph() {
 		return this == ETL_GRAPH || this == JOBFLOW || this == SUBGRAPH || this == SUBJOBFLOW || this == RESTJOB;
 	}
-
+	
+	/**
+	 * Returns <code>true</code> when the file type is ETL Graph.
+	 */
+	public boolean isETLGraph() {
+		return this == ETL_GRAPH;
+	}
 }

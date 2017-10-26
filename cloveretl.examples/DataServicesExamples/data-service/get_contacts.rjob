@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="jansedlacek" created="Thu Aug 31 14:44:51 CEST 2017" guiVersion="0.0.0.devel" id="1504186503518" licenseCode="CLP1DJAVLI15742443BY" name="contacts" nature="restJob" showComponentDetails="true">
+<Global>
+<EndpointSettings>
+<UrlPath>/example/contacts</UrlPath>
+<Description>This endpoint returns the full content of JSON contact database.</Description>
+<ExampleOutput>[ {&#13;
+  "id" : 8,&#13;
+  "first_name" : "John",&#13;
+  "last_name" : "Doe",&#13;
+  "email" : "john.doe@example.mail",&#13;
+  "phone" : "555-555-555"&#13;
+}, {&#13;
+  "id" : 10,&#13;
+  "first_name" : "John",&#13;
+  "last_name" : "Green",&#13;
+  "email" : "john.green@example.com",&#13;
+  "phone" : "555-555-757"&#13;
+}, {&#13;
+  "id" : 11,&#13;
+  "first_name" : "Pepe",&#13;
+  "last_name" : "Lopez",&#13;
+  "email" : "pepe@lopez.mx",&#13;
+  "phone" : "555-666-777"&#13;
+} ]</ExampleOutput>
+<EndpointName>Example - List contacts - Automatic JSON serialization</EndpointName>
+<RequestMethod name="GET"/>
+</EndpointSettings>
+<RestJobResponseStatus>
+<JobError>
+<ReasonPhrase>Job failed</ReasonPhrase>
+<StatusCode>500</StatusCode>
+</JobError>
+<Success>
+<StatusCode>200</StatusCode>
+</Success>
+<ValidationError>
+<ReasonPhrase>Request validation failed</ReasonPhrase>
+<StatusCode>400</StatusCode>
+</ValidationError>
+</RestJobResponseStatus>
+<Metadata fileURL="${META_DIR}/contact.fmt" id="Metadata1"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="306" id="Note0" textColor="444444" width="640" x="215" y="201">
+<attr name="text"><![CDATA[h3. Return list of contacts
+
+This job returns full contents of JSON contact database to the JavaScript embedded in the HTML page which then displays it on the left side of the page.
+
+
+h4. Highlights
+* The records are parsed from our 'database' and serialized back to JSON format using *default JSON serialization*. See Output settings in _[Endpoint Configuration|action://com.cloveretl.gui/com.cloveretl.gui.actions.ChangeGraphEditorTabAction?index=0]_
+
+The job handles *GET* method and uses no parameters.
+
+]]></attr>
+</RichTextNote>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node fileURL="response:body" guiName="REST Job Response Writer" guiX="1100" guiY="10" id="JSON_WRITER" restJobOutput="true" type="JSON_WRITER">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<clover:collection xmlns:clover="http://www.cloveretl.com/ns/xmlmapping" clover:inPort="0" clover:name="root">
+<element0>
+<clover:elements clover:include="$0.*"/>
+</element0>
+</clover:collection>
+]]></attr>
+</Node>
+<Node guiName="Read all contacts" guiX="471" guiY="23" id="READ_ALL_CONTACTS" schema="${META_DIR}/contacts_json.xsd" sourceUri="${DATAIN_DIR}/contacts.json" type="JSON_EXTRACT">
+<attr name="mapping"><![CDATA[<Mappings>
+	<Mapping element="json_array">
+		<Mapping element="json_array" outPort="0"
+				xmlFields="{}email;{}first-name;{}id;{}last-name;{}phone"
+				cloverFields="email;first_name;id;last_name;phone">
+		</Mapping>
+	</Mapping>
+</Mappings>
+]]></attr>
+</Node>
+<Node guiName="Input" guiX="80" guiY="10" id="RESTJOB_INPUT0" restJobInput="true" type="RESTJOB_INPUT"/>
+<Node attachment="false" guiName="Output" guiX="900" guiY="10" id="RESTJOB_OUTPUT0" metadataName="false" responseFormat="JSON" restJobOutput="true" topLevelArray="true" type="RESTJOB_OUTPUT">
+<attr name="noTopLevelArray"><![CDATA[false]]></attr>
+<attr name="noMetadataName"><![CDATA[true]]></attr>
+</Node>
+<Edge fromNode="READ_ALL_CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="RESTJOB_OUTPUT0:0"/>
+<Edge fromNode="RESTJOB_OUTPUT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="JSON_WRITER:0"/>
+</Phase>
+</Graph>

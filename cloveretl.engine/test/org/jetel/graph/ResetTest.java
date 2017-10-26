@@ -342,6 +342,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("SetJobOutput_dictionary_CLO-3007.grf") // server test
 							&& !file.getName().equals("ValidationDefaultLanguageSettings.grf") // server test
 							&& !file.getName().equals("DB_rollback_CLO-4878.grf") // server test
+							&& !file.getName().equals("InvalidFileUrl_CLO-11790.grf") // server test
 							&& !file.getName().equals("ValidationTransformLifeCycle.grf") // have to be run only once
 							&& !file.getName().equals("Tableau-ThreadSafe.grf") // disabled test
 							&& !file.getName().equals("SalesforceMigration.grf") // Salesforce example
@@ -363,7 +364,8 @@ public class ResetTest extends CloverTestCase {
 					return file.isDirectory() 
 							&& !file.getName().equals("bigRecords") // runs too long
 							&& !file.getName().equals("cluster") // cluster tests
-							&& !file.getName().equals("S3") 
+							&& !file.getName().equals("DataService") // no need to run on engine
+							&& !file.getName().equals("S3")
 							&& !file.getName().equals("Redshift") // redshift tests
 							&& !file.getName().equals("email") 
 							&& !file.getName().equals("performance") 
