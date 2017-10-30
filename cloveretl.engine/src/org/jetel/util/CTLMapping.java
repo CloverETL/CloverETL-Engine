@@ -99,6 +99,7 @@ public class CTLMapping {
 	 * list of data records pairs which represents auto-mapping (star-map) in case CTL code is not specified
 	 */
 	private List<DataRecord[]> autoMapping;
+	private List<int[]> autoMappingIndexes;
 	
 	/**
 	 * compiled CTL code or null if CTL code is not specified
@@ -192,6 +193,7 @@ public class CTLMapping {
 		this.component = component;
 		
 		autoMapping = new LinkedList<DataRecord[]>();
+		autoMappingIndexes = new LinkedList<int[]>();
 		
 		inputRecordsMap = new HashMap<String, DataRecord>();
 		outputRecordsMap = new HashMap<String, DataRecord>();
@@ -392,6 +394,7 @@ public class CTLMapping {
 		DataRecord outputRecord = outputRecordsMap.get(outputName);
 		if (inputRecord != null && outputRecord != null) {
 			autoMapping.add(new DataRecord[] { inputRecordsMap.get(inputName), outputRecordsMap.get(outputName) });
+			autoMappingIndexes.add(new int[] { inputRecordsList.indexOf(inputRecord), outputRecordsList.indexOf(outputRecord) });
 		}
 	}
 	
@@ -638,6 +641,23 @@ public class CTLMapping {
 	 * @return result of CTL transformation (see {@link RecordTransform#}) or {@link RecordTransform#ALL} for star-mapping is returned
 	 */
 	public int execute() {
+		return execute(inputRecordsArray, outputRecordsArray);
+	}
+	
+	/**
+	 * This method allows to override the records used in mappings.
+	 * Note that various related functions may not work afterwards.
+	 * {@link #execute()} should be used instead whenever possible.
+	 * 
+	 * @param inputRecordsArray
+	 * @param outputRecordsArray
+	 * @return
+	 */
+	public static int executeWithCustomRecords(CTLMapping mapping, DataRecord[] inputRecordsArray, DataRecord[] outputRecordsArray) {
+		return mapping.execute(inputRecordsArray, outputRecordsArray);
+	}
+	
+	private int execute(DataRecord[] inputRecordsArray, DataRecord[] outputRecordsArray) {
 		if (!isInitialized) {
 			throw new IllegalStateException("mapping needs to be initialized before execution");
 		}
@@ -664,8 +684,8 @@ public class CTLMapping {
 				}
 			}
 		} else {
-			for (DataRecord[] map : autoMapping) {
-				map[1].copyFieldsByName(map[0]);
+			for (int[] map : autoMappingIndexes) {
+				outputRecordsArray[map[1]].copyFieldsByName(inputRecordsArray[map[0]]);
 			}
 			return RecordTransform.ALL;
 		}
