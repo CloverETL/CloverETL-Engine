@@ -29,14 +29,30 @@ public class RestJobUtils {
 	public static final String REST_JOB_INPUT_TYPE = "RESTJOB_INPUT";
 	public static final String REST_JOB_OUTPUT_TYPE = "RESTJOB_OUTPUT";
 	
+	/**
+	 * Answers whether given component type is the visible Rest Job Input component
+	 * 
+	 * @param componentType
+	 * @return
+	 */
 	public static boolean isRestJobInputComponent(String componentType) {
 		return REST_JOB_INPUT_TYPE.equals(componentType);
 	}
 	
+	/**
+	 * Answers whether given component type is the visible Rest Job output component
+	 * @param componentType
+	 * @return
+	 */
 	public static boolean isRestJobOutputComponent(String componentType) {
 		return REST_JOB_OUTPUT_TYPE.equals(componentType);
 	}
 	
+	/**
+	 * Answers whether given component type is the visible RestJobInput or RestJobOutput components
+	 * @param componentType
+	 * @return
+	 */
 	public static boolean isRestJobInputOutputComponent(String componentType) {
 		return isRestJobInputComponent(componentType) || isRestJobOutputComponent(componentType);
 	}

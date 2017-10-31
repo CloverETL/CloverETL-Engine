@@ -36,15 +36,15 @@ END:VCARD&#13;
 <RichTextNote backgroundColor="FAF6D6" folded="false" fontSize="medium" height="306" id="Note0" textColor="444444" width="640" x="198" y="201">
 <attr name="text"><![CDATA[h3. Download VCARD for contact
 
-This endpoints allows user to download selected contact in VCARD format. 
+This job allows user to download selected contact in VCARD format. 
 
 
 h4. Highlights
-* Endpoint uses custom serialization, notice *<custom>* option in _[Endpoint Configuration|action://com.cloveretl.gui/com.cloveretl.gui.actions.ChangeGraphEditorTabAction?index=0]_
-* We use *setResponseBody()* function to set the HTTP response from CTL
-* Using correct *Content-Type*  we make the browser offer the VCARD file for download. See functions *setResponseContentType()* and *setResponseHeader()* in [SetJobOutput|element://PRODUCE_OUTPUT_PAYLOAD] component
+* Job uses custom serialization, notice *<custom>* option in _[Endpoint Configuration|action://com.cloveretl.gui/com.cloveretl.gui.actions.ChangeGraphEditorTabAction?index=0]_
+* It uses *setResponseBody()* function to set the HTTP response from CTL
+* Using correct *Content-Type* forces the browser to offer the VCARD file for download. See functions *setResponseContentType()* and *setResponseHeader()* in [SetJobOutput|element://PRODUCE_OUTPUT_PAYLOAD] component
 
-Endpoint accepts *GET* method and uses single required input parameter *id*, passed in URL path.
+The job accepts *GET* method and uses single required input parameter *id*, passed in URL path.
 
 
 
@@ -120,7 +120,7 @@ function integer transform() {
 <attr name="noTopLevelArray"><![CDATA[false]]></attr>
 <attr name="noMetadataName"><![CDATA[false]]></attr>
 </Node>
-<Node guiName="GetJobInput" guiX="280" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
+<Node guiName="GetJobInput" guiX="480" guiY="10" id="RequestParametersValidator" restJobInput="true" type="GET_JOB_INPUT">
 <attr name="mapping"><![CDATA[//#CTL2
 // Transforms input record into output record.
 function integer transform() {
