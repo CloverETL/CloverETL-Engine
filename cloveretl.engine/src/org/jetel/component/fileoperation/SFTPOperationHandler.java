@@ -30,7 +30,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URLDecoder;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -53,6 +52,7 @@ import org.jetel.component.fileoperation.SimpleParameters.MoveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ReadParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.WriteParameters;
+import org.jetel.util.protocols.UserInfo;
 import org.jetel.util.protocols.sftp.URLUserInfo;
 import org.jetel.util.protocols.sftp.URLUserInfoIteractive;
 import org.jetel.util.string.StringUtils;
@@ -63,7 +63,6 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
-import com.jcraft.jsch.UserInfo;
 
 /**
  * @deprecated replaced with {@link PooledSFTPOperationHandler}.
@@ -255,28 +254,12 @@ public class SFTPOperationHandler implements IOperationHandler {
 		return manager.defaultResolve(wildcards);
 	}
 
-	private static final String ENCODING = "US-ASCII"; //$NON-NLS-1$
-	
-	private String decodeString(String s) {
-		try {
-			return URLDecoder.decode(s, ENCODING);
-		} catch (UnsupportedEncodingException e) {
-			return s;
-		}
-	}
-
-	private String[] getUserInfo(URI uri) {
-		String userInfo = uri.getUserInfo();
-		if (userInfo == null) return new String[] {""}; //$NON-NLS-1$
-		return decodeString(userInfo).split(":"); //$NON-NLS-1$
-	}
-
-	private Session getSession(JSch jsch, URI uri, UserInfo userInfo) throws IOException {
-		String[] user = getUserInfo(uri);
+	private Session getSession(JSch jsch, URI uri, com.jcraft.jsch.UserInfo userInfo) throws IOException {
+		UserInfo user = UserInfo.fromURI(uri);
 		Session session;
 		try {
-			if (uri.getPort() == 0) session = jsch.getSession(user[0], uri.getHost());
-			else session = jsch.getSession(user[0], uri.getHost(), uri.getPort() == -1 ? 22 : uri.getPort());
+			if (uri.getPort() == 0) session = jsch.getSession(user.getUser(), uri.getHost());
+			else session = jsch.getSession(user.getUser(), uri.getHost(), uri.getPort() == -1 ? 22 : uri.getPort());
 
 			// password will be given via UserInfo interface.
 			session.setUserInfo(userInfo);
@@ -300,14 +283,14 @@ public class SFTPOperationHandler implements IOperationHandler {
 
 	private Session getSession(JSch jsch, URI uri) throws Exception {
 		// password will be given via UserInfo interface.
-		String[] user = getUserInfo(uri);
+		UserInfo password = UserInfo.fromURI(uri);
 		
 		try {
 			log.trace("Connecting with password authentication");
-			return getSession(jsch, uri, new URLUserInfo(user.length == 2 ? user[1] : null));
+			return getSession(jsch, uri, new URLUserInfo(password.getPassword()));
 		} catch (Exception e) {
 			log.trace("Connecting with keyboard-interactive authentication");
-			return getSession(jsch, uri, new URLUserInfoIteractive(user.length == 2 ? user[1] : null));
+			return getSession(jsch, uri, new URLUserInfoIteractive(password.getPassword()));
 		}
 	}
 

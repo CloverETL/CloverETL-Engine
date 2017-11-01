@@ -29,7 +29,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URLDecoder;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -55,6 +54,7 @@ import org.jetel.component.fileoperation.SimpleParameters.ReadParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.WriteParameters;
 import org.jetel.component.fileoperation.URLOperationHandler.URLContent;
+import org.jetel.util.protocols.UserInfo;
 import org.jetel.util.stream.DelegatingOutputStream;
 import org.jetel.util.string.StringUtils;
 
@@ -207,36 +207,20 @@ public class FTPOperationHandler implements IOperationHandler {
 		
 	}
 	
-	private static final String ENCODING = "US-ASCII"; //$NON-NLS-1$
-	
-	private String decodeString(String s) {
-		try {
-			return URLDecoder.decode(s, ENCODING);
-		} catch (UnsupportedEncodingException e) {
-			return s;
-		}
-	}
-
-	protected String[] getUserInfo(URI uri) {
-		String userInfo = uri.getUserInfo();
-		if (userInfo == null) return new String[] {""}; //$NON-NLS-1$
-		return decodeString(userInfo).split(":"); //$NON-NLS-1$
-	}
-
 	protected FTPClient connect(URI uri) throws IOException {
 		FTPClient ftp = new FTPClient();
 //		FTPClientConfig config = new FTPClientConfig();
 //		config.setServerTimeZoneId("GMT+0");
 //		ftp.configure(config);
 		ftp.setListHiddenFiles(true);
-		String[] user = getUserInfo(uri);
+		UserInfo userInfo = UserInfo.fromURI(uri);
 		try {
 			int port = uri.getPort();
 			if (port < 0) {
 				port = 21;
 			}
 			ftp.connect(uri.getHost(), port);
-			if (!ftp.login(user.length >= 1 ? user[0] : "", user.length >= 2 ? user[1] : "")) { //$NON-NLS-1$ //$NON-NLS-2$
+			if (!ftp.login(userInfo.getUser(), userInfo.getPassword())) {
 	            ftp.logout();
 	            throw new IOException(FileOperationMessages.getString("FTPOperationHandler.authentication_failed")); //$NON-NLS-1$
 	        }

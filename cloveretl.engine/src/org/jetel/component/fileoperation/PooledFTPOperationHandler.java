@@ -26,7 +26,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URLDecoder;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -222,22 +221,6 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 		
 	}
 	
-	private static final String ENCODING = "US-ASCII"; //$NON-NLS-1$
-	
-	private String decodeString(String s) {
-		try {
-			return URLDecoder.decode(s, ENCODING);
-		} catch (UnsupportedEncodingException e) {
-			return s;
-		}
-	}
-
-	protected String[] getUserInfo(URI uri) {
-		String userInfo = uri.getUserInfo();
-		if (userInfo == null) return new String[] {""}; //$NON-NLS-1$
-		return decodeString(userInfo).split(":"); //$NON-NLS-1$
-	}
-
 	protected PooledFTPConnection connect(URI uri) throws IOException {
 		try {
 			Authority authority = new DefaultAuthority(uri);
