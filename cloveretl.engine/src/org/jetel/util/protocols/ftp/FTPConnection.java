@@ -21,17 +21,16 @@ package org.jetel.util.protocols.ftp;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLDecoder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
+import org.jetel.util.protocols.UserInfo;
 
 /**
  * URL Connection for sftp protocol.
@@ -45,10 +44,6 @@ public class FTPConnection extends URLConnection {
 
 	private FTPClient ftp;
 	
-	// standard encoding for URLDecoder
-	// see http://www.w3.org/TR/html40/appendix/notes.html#non-ascii-chars
-	private static final String ENCODING = "UTF-8";
-
 	/**
 	 * SFTP constructor.
 	 * 
@@ -79,9 +74,9 @@ public class FTPConnection extends URLConnection {
 //			log.warn("error closing ftp connection", e);
 		}
 
-		String[] user = getUserInfo();
+		UserInfo userInfo = UserInfo.fromURL(url);
 		ftp.connect(url.getHost(), 21);
-		if(!ftp.login(user.length >= 1 ? user[0] : "", user.length >= 2 ? user[1] : "")) {
+		if(!ftp.login(userInfo.getUser(), userInfo.getPassword())) {
             ftp.logout();
             throw new IOException("Authentication failed.");
         }
@@ -135,25 +130,6 @@ public class FTPConnection extends URLConnection {
 		return ftp.storeFileStream(url.getFile());
 	}
 
-	private String[] getUserInfo() {
-		String userInfo = url.getUserInfo();
-		if (userInfo == null) return new String[] {""};
-		return decodeString(userInfo).split(":");
-	}
-
-	/**
-	 * Decodes string.
-	 * @param s
-	 * @return
-	 */
-	private String decodeString(String s) {
-		try {
-			return URLDecoder.decode(s, ENCODING);
-		} catch (UnsupportedEncodingException e) {
-			return s;
-		}
-	}
-	
 	/**
 	 * Lists path.
 	 * 

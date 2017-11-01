@@ -18,6 +18,14 @@
  */
 package org.jetel.util.protocols;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLDecoder;
+
+import org.jetel.component.fileoperation.pool.Authority;
+import org.jetel.exception.JetelRuntimeException;
+
 /**
  * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -83,6 +91,58 @@ public class UserInfo {
 	public String toString() {
 		return getUserInfo();
 	}
+
+	/**
+	 * @return {@link UserInfo} instance based on the given {@link Authority},
+	 * individual parts of UserInfo are decoded
+	 */
+	public static UserInfo fromAuthority(Authority authority) {
+		return fromString(authority.getUserInfo());
+	}
+
+	/**
+	 * @return {@link UserInfo} instance based on the given {@link URI},
+	 * individual parts of UserInfo are decoded
+	 */
+	public static UserInfo fromURI(URI uri) {
+		return fromString(uri.getRawUserInfo());
+	}
+
+	/**
+	 * @return {@link UserInfo} instance based on the given {@link URL},
+	 * individual parts of UserInfo are decoded
+	 */
+	public static UserInfo fromURL(URL url) {
+		return fromString(url.getUserInfo());
+	}
+
+	/**
+	 * @return {@link UserInfo} instance based on the given user info string,
+	 * individual parts of UserInfo are decoded
+	 */
+	public static UserInfo fromString(String userInfo) {
+		if (userInfo == null) {
+			return new UserInfo("", null);
+		}
+		String[] userInfoParts = userInfo.split(":");
+		if (userInfoParts.length > 2) {
+			throw new JetelRuntimeException("Invalid user information: " + userInfo);
+		}
+		if (userInfoParts.length == 0) {
+			return new UserInfo("", null);
+		} else if (userInfoParts.length == 1) {
+			return new UserInfo(decodeUserInfoPart(userInfoParts[0]), null);
+		} else {
+			return new UserInfo(decodeUserInfoPart(userInfoParts[0]), decodeUserInfoPart(userInfoParts[1]));
+		}
+	}
 	
+	private static String decodeUserInfoPart(String s) {
+		try {
+			return URLDecoder.decode(s, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			return s;
+		}
+	}
 	
 }
