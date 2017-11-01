@@ -583,21 +583,22 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	}
 
 	public void abort(boolean waitForAbort) {
-		currentPhaseLock.lock();
-		//only running or waiting graph can be aborted
-		if (watchDogStatus != Result.RUNNING && watchDogStatus != Result.WAITING) {
-			//if the graph status is not final, so the graph was aborted
-			if (!watchDogStatus.isStop()) {
-		        watchDogStatus = Result.ABORTED;
-			}
-			currentPhaseLock.unlock();
-			return;
-		}
 		final Object oldMDCRunId = MDC.get("runId");
 		try {
 			//update MDC for current thread to route logging message to correct logging destination 
 			MDC.put("runId", runtimeContext.getRunId());
-			
+
+			currentPhaseLock.lock();
+			//only running or waiting graph can be aborted
+			if (watchDogStatus != Result.RUNNING && watchDogStatus != Result.WAITING) {
+				//if the graph status is not final, so the graph was aborted
+				if (!watchDogStatus.isStop()) {
+			        watchDogStatus = Result.ABORTED;
+				}
+				currentPhaseLock.unlock();
+				return;
+			}
+
 			//if the phase is running broadcast all nodes in the phase they should be aborted
 			if (watchDogStatus == Result.RUNNING) { 
 		        watchDogStatus = Result.ABORTED;
