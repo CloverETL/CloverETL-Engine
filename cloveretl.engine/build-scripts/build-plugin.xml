@@ -557,6 +557,9 @@
 			<keep name="com.cloveretl.profiler.engine.ProfilerLauncherImpl"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="com.cloveretl.profiler.engine.PreviewGraphGeneratorImpl"><field access="protected public"/><method access="protected public"/></keep>
 
+			<keep name="com.opensys.cloveretl.connection.nosql.mongo.bulk.*"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.connection.nosql.mongo.*"><field access="protected public"/><method access="protected public"/></keep>
+			
 			<keep name="com.opensys.cloveretl.connection.nosql.mongo.IMongoClient"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="com.opensys.cloveretl.connection.nosql.mongo.IMongoDBCursor"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="com.opensys.cloveretl.connection.nosql.mongo.IMongoURI"><field access="public"/><method access="public"/></keep>
