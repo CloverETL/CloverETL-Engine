@@ -557,15 +557,14 @@
 			<keep name="com.cloveretl.profiler.engine.ProfilerLauncherImpl"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="com.cloveretl.profiler.engine.PreviewGraphGeneratorImpl"><field access="protected public"/><method access="protected public"/></keep>
 
-			<keep name="com.opensys.cloveretl.connection.nosql.mongo.bulk.*"><field access="protected public"/><method access="protected public"/></keep>
-			<keep name="com.opensys.cloveretl.connection.nosql.mongo.*"><field access="protected public"/><method access="protected public"/></keep>
-			
 			<keep name="com.opensys.cloveretl.connection.nosql.mongo.IMongoClient"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.opensys.cloveretl.connection.nosql.mongo.IBulkMongoClient"><field access="protected public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.connection.nosql.mongo.IMongoDBCursor"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="com.opensys.cloveretl.connection.nosql.mongo.IMongoURI"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.connection.nosql.mongo.MongoUtils"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.connection.nosql.mongo.MongoURIModel"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.component.MongoDBWriter$Operation"><field access="public"/><method access="public"/></keep>
+			<keep name="com.opensys.cloveretl.connection.nosql.mongo.bulk.*"><field access="protected public"/><method access="protected public"/></keep>
 			
 			<keep name="com.opensys.cloveretl.validator.*"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.validator.params.*"><field access="public"/><method access="public"/></keep>
