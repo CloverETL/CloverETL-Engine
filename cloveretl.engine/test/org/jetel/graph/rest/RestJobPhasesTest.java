@@ -82,8 +82,9 @@ public class RestJobPhasesTest extends CloverTestCase {
 		
 		EngineInitializer.initGraph(graph, ctx);
 		
+		assertEquals("REST job input in wrong phase", main.getPhaseNum(), input.getPhaseNum());;
 		assertTrue("REST job output in wrong phase", main.getNodes().containsValue(barrier));
-		assertEquals("Unexpected count of phases", 3, graph.getPhases().length);
+		assertEquals("Unexpected count of phases", 2, graph.getPhases().length);
 		
 		runGraph(graph);
 	}
