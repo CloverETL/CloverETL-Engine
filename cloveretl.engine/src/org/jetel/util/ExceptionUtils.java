@@ -255,8 +255,8 @@ public class ExceptionUtils {
 		}
 
 		//do not report exception message that is mentioned already in parent exception message
-		//unless it is User abort e.g. from Fail component - never suppress this
-		if (message != null && lastMessage != null && lastMessage.contains(message) && !(t instanceof UserAbortException)) {
+		//unless it is User abort e.g. from Fail component - never suppress this (CLO-2931)
+		if (message != null && lastMessage != null && lastMessage.contains(message) && !basicInstanceOf(t, UserAbortException.class)) {
 			message = null;
 		}
 		
