@@ -170,6 +170,7 @@ public class TransformationGraphAnalyzer {
 		
 		Phase inputPhase = new Phase(Phase.INITIAL_PHASE_ID);
 		Phase outputPhase = new Phase(Phase.FINAL_PHASE_ID);
+		Phase formestPhase = new Phase(Integer.MAX_VALUE);
 		
 		for (Phase phase : graph.getPhases()) {
 			Set<Node> input = new HashSet<>();
@@ -226,14 +227,31 @@ public class TransformationGraphAnalyzer {
 				phase.deleteEdge(edge);
 				outputPhase.addEdge(edge);
 			}
+			
+			if (isFormerPhase(formestPhase, phase)) {
+				formestPhase = phase;
+			}
 		}
 		
-		if (!inputPhase.getNodes().isEmpty()) {
-			graph.addPhase(inputPhase);
+		if (formestPhase.getPhaseNum() == Integer.MAX_VALUE) {
+			if (!inputPhase.getNodes().isEmpty()) {
+				graph.addPhase(inputPhase);
+			}
+		} else {
+			formestPhase.addAllNodes(inputPhase.getNodes().values());
+			for (Edge edge : inputPhase.getEdges().values()) {
+				formestPhase.addEdge(edge);
+			}
 		}
+
 		if (!outputPhase.getNodes().isEmpty()) {
 			graph.addPhase(outputPhase);
 		}
+	}
+
+	private static boolean isFormerPhase(Phase formestPhase, Phase phase) {
+		return !phase.getNodes().isEmpty() && formestPhase.getPhaseNum() > phase.getPhaseNum() && 
+				(phase.getPhaseNum() != Phase.INITIAL_PHASE_ID || phase.getPhaseNum() != Phase.FINAL_PHASE_ID);
 	}
 	
 	/**
