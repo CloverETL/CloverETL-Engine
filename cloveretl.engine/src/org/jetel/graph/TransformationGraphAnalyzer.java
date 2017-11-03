@@ -233,17 +233,17 @@ public class TransformationGraphAnalyzer {
 			}
 		}
 		
-		if (formestPhase.getPhaseNum() == Integer.MAX_VALUE) {
-			if (!inputPhase.getNodes().isEmpty()) {
+		if (!inputPhase.getNodes().isEmpty()) {
+			if (formestPhase.getPhaseNum() == Integer.MAX_VALUE) {
 				graph.addPhase(inputPhase);
-			}
-		} else {
-			formestPhase.addAllNodes(inputPhase.getNodes().values());
-			for (Edge edge : inputPhase.getEdges().values()) {
-				formestPhase.addEdge(edge);
+			} else {
+				formestPhase.addAllNodes(inputPhase.getNodes().values());
+				for (Edge edge : inputPhase.getEdges().values()) {
+					formestPhase.addEdge(edge);
+				}
 			}
 		}
-
+		
 		if (!outputPhase.getNodes().isEmpty()) {
 			graph.addPhase(outputPhase);
 		}
