@@ -37,12 +37,26 @@ public class RequestParameter implements Serializable {
 	
 	private static final long serialVersionUID = 1;
 
+	@XmlAttribute
 	private String name;
+	
+	@XmlAttribute
 	private String id;
+	
+	@XmlAttribute
 	private Boolean required;
+	
+	@XmlAttribute
 	private String description;
+	
+	@XmlAttribute
 	private String type;
+	
+	@XmlAttribute
 	private Location location;
+	
+	@XmlAttribute
+	private Boolean sensitive;
 	
 	@XmlType(name = "location", namespace = "http://cloveretl.com/server/data") // https://java.net/jira/browse/JAXB-933
 	public enum Location {
@@ -55,7 +69,6 @@ public class RequestParameter implements Serializable {
 		}
 	}
 	
-	@XmlAttribute
 	public String getName() {
 		return name;
 	}
@@ -64,7 +77,7 @@ public class RequestParameter implements Serializable {
 		this.name = name;
 	}
 	
-	@XmlAttribute
+
 	public String getId() {
 		return id;
 	}
@@ -73,7 +86,6 @@ public class RequestParameter implements Serializable {
 		this.id = id;
 	}
 	
-	@XmlAttribute
 	public Boolean getRequired() {
 		return required;
 	}
@@ -86,7 +98,6 @@ public class RequestParameter implements Serializable {
 		this.required = required;
 	}
 	
-	@XmlAttribute
 	public String getDescription() {
 		return description;
 	}
@@ -95,7 +106,6 @@ public class RequestParameter implements Serializable {
 		this.description = description;
 	}
 	
-	@XmlAttribute
 	public String getType() {
 		return type;
 	}
@@ -104,12 +114,23 @@ public class RequestParameter implements Serializable {
 		this.type = type;
 	}
 	
-	@XmlAttribute
 	public Location getLocation() {
 		return location;
 	}
 	
 	public void setLocation(Location location) {
 		this.location = location;
+	}
+
+	public Boolean getSensitive() {
+		return sensitive;
+	}
+	
+	public boolean isSensitive() {
+		return Boolean.TRUE.equals(sensitive);
+	}
+
+	public void setSensitive(Boolean sensitive) {
+		this.sensitive = sensitive;
 	}
 }

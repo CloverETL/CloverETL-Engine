@@ -364,7 +364,8 @@ public class ResetTest extends CloverTestCase {
 					return file.isDirectory() 
 							&& !file.getName().equals("bigRecords") // runs too long
 							&& !file.getName().equals("cluster") // cluster tests
-							&& !file.getName().equals("S3") 
+							&& !file.getName().equals("DataService") // no need to run on engine
+							&& !file.getName().equals("S3")
 							&& !file.getName().equals("Redshift") // redshift tests
 							&& !file.getName().equals("email") 
 							&& !file.getName().equals("performance") 

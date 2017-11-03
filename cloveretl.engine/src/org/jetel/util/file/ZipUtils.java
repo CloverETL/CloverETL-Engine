@@ -75,12 +75,23 @@ public class ZipUtils {
 	 * @return Compressed data
 	 */
 	public static byte[] compress(byte[] input) {
+		return compress(input, 0, input.length);
+	}
+	
+	/**
+	 * Compresses data.
+	 * @param input Data to be compressed.
+	 * @param offset index where to start from
+	 * @param length number of bytes to compress
+	 * @return Compressed data
+	 */
+	public static byte[] compress(byte[] input, int offset, int length) {
 		if (input == null) {
 			return null;
 		}
 
 		Compresser compresser = getCompresser();
-		byte[] output = compresser.compress(input);
+		byte[] output = compresser.compress(input, offset, length);
 		compresser.release();
 		return output;
 	}
@@ -92,7 +103,7 @@ public class ZipUtils {
 	 * @param outSize Expected size of compressed data
 	 * @return Compressed data
 	 */
-	public static byte[] compress(byte[] input, int outSize) {		
+	public static byte[] compress(byte[] input, int outSize) {
 		if (input == null) {
 			return null;
 		}
@@ -195,13 +206,13 @@ public class ZipUtils {
 			outBuf = null;
 			outStream = null;
 		}
-
-		public byte[] compress(byte[] input) {
+		
+		public byte[] compress(byte[] input, int offset, int length) {
 			if (outBuf == null) {
 				outBuf = new byte[COMPRESS_BUFFER_SIZE];
-				outStream = new ByteArrayOutputStream(COMPRESS_BUFFER_SIZE);				
+				outStream = new ByteArrayOutputStream(COMPRESS_BUFFER_SIZE);
 			}
-			deflater.setInput(input);
+			deflater.setInput(input, offset, length);
 			deflater.finish();
 			do {
 				int clen = deflater.deflate(outBuf);

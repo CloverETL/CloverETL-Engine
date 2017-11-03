@@ -182,12 +182,16 @@ public class StringDataField extends DataFieldImpl implements CharSequence, Appe
 	}
 	
 	void setValue(char[] seq) {
+		setValue(seq, 0, seq.length);
+	}
+	
+	public void setValue(char[] seq, int offset, int length) {
 		value.setLength(0);
 		if (seq != null) {
-		    value.append(seq);
+			value.append(seq, offset, length);
 			setNull(false);
 		} else {
-		    setNull(true);
+			setNull(true);
 		}
 	}
 
