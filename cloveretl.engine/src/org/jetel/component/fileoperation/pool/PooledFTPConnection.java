@@ -23,20 +23,15 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.jetel.component.fileoperation.FileOperationMessages;
+import org.jetel.util.protocols.UserInfo;
 import org.jetel.util.stream.CloseOnceOutputStream;
 
 public class PooledFTPConnection extends AbstractPoolableConnection {
 
-	// standard encoding for URLDecoder
-	// see http://www.w3.org/TR/html40/appendix/notes.html#non-ascii-chars
-	protected static final String ENCODING = "UTF-8";
-	
 	public enum WriteMode {
 		APPEND,
 		OVERWRITE
@@ -49,25 +44,6 @@ public class PooledFTPConnection extends AbstractPoolableConnection {
 		this.ftp = new FTPClient();
 	}
 
-	/**
-	 * Decodes string.
-	 * @param s
-	 * @return
-	 */
-	protected String decodeString(String s) {
-		try {
-			return URLDecoder.decode(s, ENCODING);
-		} catch (UnsupportedEncodingException e) {
-			return s;
-		}
-	}
-
-	protected String[] getUserInfo() {
-		String userInfo = authority.getUserInfo();
-		if (userInfo == null) return new String[] {""};
-		return decodeString(userInfo).split(":");
-	}
-
 	public void connect() throws IOException {
 		if (ftp.isConnected()) {
 			return;
@@ -76,14 +52,14 @@ public class PooledFTPConnection extends AbstractPoolableConnection {
 //		config.setServerTimeZoneId("GMT+0");
 //		ftp.configure(config);
 		ftp.setListHiddenFiles(true);
-		String[] user = getUserInfo();
+		UserInfo userInfo = UserInfo.fromAuthority(authority);
 		try {
 			int port = authority.getPort();
 			if (port < 0) {
 				port = 21;
 			}
 			ftp.connect(authority.getHost(), port);
-			if (!ftp.login(user.length >= 1 ? user[0] : "", user.length >= 2 ? user[1] : "")) { //$NON-NLS-1$ //$NON-NLS-2$
+			if (!ftp.login(userInfo.getUser(), userInfo.getPassword())) {
 	            ftp.logout();
 	            throw new IOException(FileOperationMessages.getString("FTPOperationHandler.authentication_failed")); //$NON-NLS-1$
 	        }
