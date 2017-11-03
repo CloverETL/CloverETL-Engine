@@ -47,7 +47,6 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.spi.Filter;
 import org.apache.log4j.spi.LoggingEvent;
-import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
@@ -368,22 +367,6 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	}
 
 	@Override
-	public FileConstrains assignFilePortion(String componentId, String fileURL,
-			SeekableByteChannel channel, int recordLength) throws IOException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#assignFilePortion(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public FileConstrains assignFilePortion(String componentId, String fileURL, SeekableByteChannel channel, byte[] recordDelimiter) throws IOException {
-		return null;
-	}
-
-
-	@Override
 	public RunStatus getRunStatus(long runId, List<TrackingEvent> trackingEvents, Long timeout) throws InterruptedException {
 		throw new UnsupportedOperationException("Graph execution status is available only in CloverETL Server environment!");
 	}
@@ -395,11 +378,6 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 	@Override
 	public List<RunStatus> killExecutionGroup(String executionGroup, boolean recursive) {
-		throw new UnsupportedOperationException("Graph abortation is available only in CloverETL Server environment!");
-	}
-
-	@Override
-	public List<RunStatus> killChildrenJobs(boolean recursive) {
 		throw new UnsupportedOperationException("Graph abortation is available only in CloverETL Server environment!");
 	}
 
@@ -499,11 +477,6 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		return new MultiParentClassLoader(parents);
 	}
 	
-	@Override
-	public boolean isClusterEnabled() {
-		return false;
-	}
-
 	@Override
 	public boolean isPartitioningEnabled() {
 		return false;

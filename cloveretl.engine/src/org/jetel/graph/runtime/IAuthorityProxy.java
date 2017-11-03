@@ -351,15 +351,6 @@ public abstract class IAuthorityProxy {
 	public abstract List<RunStatus> killExecutionGroup(String executionGroup, boolean recursive);
 
 	/**
-	 * Ask authority to kill all children jobs.
-	 * @param recursive - true if daemon children jobs should be killed as well
-	 * @return final run status for all killed jobs (job finished/failed before this request aren't included)
-	 */
-	public abstract List<RunStatus> killChildrenJobs(boolean recursive);
-	
-	
-
-	/**
 	 * Throws exception if user who executed graph doesn't have write permission for requested sandbox.
 	 * Throws exception if requested sandbox isn't accessible (i.e. it's on cluster node which is disconnected).
 	 *
@@ -462,21 +453,6 @@ public abstract class IAuthorityProxy {
 	public abstract Edge getParentGraphTargetEdge(int outputPortIndex);
 
 	/**
-	 * Assigns proper portion of a file to current cluster node. It is used mainly by ParallelReader,
-	 * which is able to read just pre-defined part of file. Null is returned if the whole file should
-	 * be processed. This functionality makes available that each cluster node can process different
-	 * part of a single file.
-	 * 
-	 * @param componentId
-	 * @param fileURL
-	 * @return
-	 * @throws IOException
-	 * @see {@link FileConstrains}
-	 * @see {@link ParallelReader}
-	 */
-	public abstract FileConstrains assignFilePortion(String componentId, String fileURL, SeekableByteChannel channel, byte[] recordDelimiter) throws IOException;
-	
-	/**
 	 * Assigns file portion to a cluster. Ensures that the portion start and ends at the record boundary
 	 * Used for delimited data by ParallelReader in segment mode. 
 	 * @param componentId
@@ -488,18 +464,6 @@ public abstract class IAuthorityProxy {
 	 * @throws IOException
 	 */
 	public abstract FileConstrains assignFilePortion(String componentId, String fileURL, SeekableByteChannel channel, Charset charset, String[] recordDelimiters) throws IOException;
-
-	/**
-	 * Assigns file portion to a cluster. Ensures that the portion start and ends at the record boundary
-	 * Used for fixed-length data by ParallelReader in segment mode. 
-	 * @param componentId
-	 * @param fileURL
-	 * @param channel The channel to be apportioned
-	 * @param recordLength Record length in bytes
-	 * @return
-	 * @throws IOException
-	 */
-	public abstract FileConstrains assignFilePortion(String componentId, String fileURL, SeekableByteChannel channel, int recordLength) throws IOException;
 
 	/**
 	 * <p>
@@ -613,8 +577,6 @@ public abstract class IAuthorityProxy {
 	 * @return multi-parent classloader based on the given parent classloaders
 	 */
 	public abstract ClassLoader createMultiParentClassLoader(ClassLoader... parents);
-	
-	public abstract boolean isClusterEnabled();
 	
 	/**
 	 * Returns true if runtime environment allows executing partitioned jobs.
