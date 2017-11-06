@@ -256,23 +256,7 @@ public abstract class AbstractJobflowComponent extends Node {
 			throw new ComponentNotReadyException(this, XML_REDIRECT_ERROR_OUTPUT_ATTRIBUTE, "Error output is redirected to standard output port, but there is an edge connected to the error port.");
 		}
 		
-		// create input params record, no matter if input edge is connected
-		// used to resolve default values
-		attributesRecord = DataRecordFactory.newRecord(createInputMetadata());
-		
-		if (hasInputPort) {
-			inputRecord = DataRecordFactory.newRecord(inputPort.getMetadata());
-		}
-		
-		if (hasOutputPort) {
-			resultRecord = DataRecordFactory.newRecord(createOutputMetadata());
-			outputRecord = DataRecordFactory.newRecord(outputPort.getMetadata());
-		}
-		
-		if (hasErrorPort) {
-			errorResultRecord = DataRecordFactory.newRecord(createErrorMetadata());
-			errorRecord = DataRecordFactory.newRecord(errorPort.getMetadata());
-		}
+		createMappingRecords();
 		
 		//create input mapping
 		createInputMapping();
@@ -301,6 +285,26 @@ public abstract class AbstractJobflowComponent extends Node {
 				MissingRecordFieldMessage.newInputFieldMessage(ATTRIBUTES_RECORD_ID, "No such attribute"),
 				MissingRecordFieldMessage.newInputFieldMessage(ERROR_RESULT_RECORD_ID, "No such result field")
 		);
+	}
+
+	protected void createMappingRecords() {
+		// create input params record, no matter if input edge is connected
+		// used to resolve default values
+		attributesRecord = DataRecordFactory.newRecord(createInputMetadata());
+		
+		if (hasInputPort) {
+			inputRecord = DataRecordFactory.newRecord(inputPort.getMetadata());
+		}
+		
+		if (hasOutputPort) {
+			resultRecord = DataRecordFactory.newRecord(createOutputMetadata());
+			outputRecord = DataRecordFactory.newRecord(outputPort.getMetadata());
+		}
+		
+		if (hasErrorPort) {
+			errorResultRecord = DataRecordFactory.newRecord(createErrorMetadata());
+			errorRecord = DataRecordFactory.newRecord(errorPort.getMetadata());
+		}
 	}
 
 	protected void createInputMapping() {
