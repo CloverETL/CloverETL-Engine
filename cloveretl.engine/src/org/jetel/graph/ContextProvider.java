@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Stack;
+import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 import org.jetel.graph.runtime.CloverWorker;
@@ -270,6 +271,34 @@ public class ContextProvider {
 		contextCache.remove(Thread.currentThread());
 	}
 	
+	/**
+	 * Performs given action in context with thread bound supplied graph.
+	 * @param graph
+	 * @param action
+	 */
+	public static void runWithGraphContext(TransformationGraph graph, Runnable action) {
+		Context context = ContextProvider.registerGraph(graph);
+		try {
+			action.run();
+		} finally {
+			ContextProvider.unregister(context);
+		}
+	}
+	
+	/**
+	 * Performs given action in context with thread bound supplied graph.
+	 * @param graph
+	 * @param callable
+	 */
+	public static <T> T callWithGraphContext(TransformationGraph graph, Callable<T> callable) throws Exception {
+		Context context = ContextProvider.registerGraph(graph);
+		try {
+			return callable.call();
+		} finally {
+			ContextProvider.unregister(context);
+		}
+	}
+
 	/**
 	 * This class represents all context information managed by {@link ContextProvider}.
 	 */

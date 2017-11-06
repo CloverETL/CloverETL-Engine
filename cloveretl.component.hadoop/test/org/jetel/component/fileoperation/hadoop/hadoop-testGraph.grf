@@ -18,6 +18,7 @@
 </Metadata>
 <Connection config="cdh-4.1.2.cfg" id="CDH412" type="HADOOP"/>
 <Connection config="cdh-5.6.0.cfg" id="CDH560" type="HADOOP"/>
+<!-- <Connection config="cdh-5.11.0.cfg" id="CDH511" type="HADOOP"/> -->
 <GraphParameters>
 <GraphParameter name="ENCODING" value="UTF-8"/>
 </GraphParameters>

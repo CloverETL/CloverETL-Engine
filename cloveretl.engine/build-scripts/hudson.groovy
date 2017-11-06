@@ -96,7 +96,7 @@ if( !runTests ){
 	if( jobGoal == "after-commit" ) {
 		antTarget = "reports-hudson"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.7-Sun"
-		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/SFTPOperationHandlerTest.java,org/jetel/component/fileoperation/FTPOperationHandlerTest.java,com/opensys/cloveretl/component/EmailFilterTest.java"
+		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/SFTPOperationHandlerTest.java,org/jetel/component/fileoperation/FTPOperationHandlerTest.java,com/opensys/cloveretl/component/EmailFilterTest.java,org/jetel/component/fileoperation/hadoop/Hadoop511OperationHandlerTest.java"
 		antArgs += "-Druntests-target=runtests-scenario-after-commit"
 	} else if( jobGoal == "optimalized"){
 		antTarget = "reports-hudson-optimalized"
