@@ -107,7 +107,7 @@ if( !runTests ){
 	} else if( jobGoal == "detail"){
 		antTarget = "reports-hudson-detail"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.7-Sun_detail"
-		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java"
+		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/hadoop/Hadoop511OperationHandlerTest.java"
 		antArgs += "-Drun.coverage=true"
 		antArgs += "-Druntests-target=runtests-scenario-after-commit"
 	} else if( jobGoal == "tests-reset"){
