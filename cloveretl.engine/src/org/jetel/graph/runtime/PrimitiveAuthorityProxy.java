@@ -243,7 +243,6 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	public RunStatus executeGraphSync(TransformationGraph graph, GraphRuntimeContext givenRuntimeContext, Long timeout)
 			throws InterruptedException {
 		RunStatus rr = new RunStatus();
-        long runId = (this.runtimeContext == null) ? 0:this.runtimeContext.getRunId();
         
 		long startTime = System.currentTimeMillis();
 		rr.startTime = new Date(startTime);
