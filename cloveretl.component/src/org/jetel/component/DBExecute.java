@@ -601,7 +601,7 @@ public class DBExecute extends Node {
     							callableStatement[0].prepareCall();
     							executeCall(callableStatement[0], index);
     						}else{
-    							sqlStatement.executeUpdate(statement);
+    							sqlStatement.execute(statement);
     						}
     					} catch (SQLException e) {
     						handleException(e, null, index, statement);
@@ -629,7 +629,7 @@ public class DBExecute extends Node {
     						if (procedureCall) {
     							executeCall(callableStatement[i], i);
     						}else{
-    							sqlStatement.executeUpdate(dbSQL[i]);
+    							sqlStatement.execute(dbSQL[i]);
     						}
     					} catch (SQLException e) {
     						if (procedureCall) {

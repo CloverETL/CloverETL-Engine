@@ -20,11 +20,11 @@ package org.jetel.component.fileoperation.hadoop;
 
 import java.net.URI;
 
-public class Hadoop412OperationHandlerTest extends HadoopOperationHandlerTest {
+public class Hadoop511OperationHandlerTest extends HadoopOperationHandlerTest {
 
 	@Override
 	protected URI getTestingURI() {
-		return URI.create(CDH412);
+		return URI.create(CDH511);
 	}
 
 	/*
@@ -33,21 +33,6 @@ public class Hadoop412OperationHandlerTest extends HadoopOperationHandlerTest {
 	@Override
 	protected URI getRemoteURI() {
 		return URI.create(CDH560);
-	}
-
-	@Override
-	public void testInterruptDelete() throws Exception {
-		// FIXME disabled - takes too long in Jenkins
-	}
-
-	@Override
-	public void testInterruptCopy() throws Exception {
-		// FIXME disabled - takes too long in Jenkins
-	}
-
-	@Override
-	public void testInterruptMove() throws Exception {
-		// FIXME disabled - takes too long in Jenkins
 	}
 
 }

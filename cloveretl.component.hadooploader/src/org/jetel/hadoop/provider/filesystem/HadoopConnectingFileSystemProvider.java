@@ -23,6 +23,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Properties;
 
 import javax.net.SocketFactory;
@@ -33,15 +34,18 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.protocol.ClientProtocol;
 import org.apache.hadoop.net.NetUtils;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.jetel.hadoop.component.IHadoopSequenceFileFormatter;
 import org.jetel.hadoop.component.IHadoopSequenceFileParser;
 import org.jetel.hadoop.provider.HadoopConfigurationUtils;
+import org.jetel.hadoop.provider.utils.KerberosUtils;
 import org.jetel.hadoop.service.filesystem.HadoopConnectingFileSystemService;
 import org.jetel.hadoop.service.filesystem.HadoopDataInput;
 import org.jetel.hadoop.service.filesystem.HadoopDataOutput;
 import org.jetel.hadoop.service.filesystem.HadoopFileStatus;
 import org.jetel.hadoop.service.filesystem.HadoopFileSystemConnectionData;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.StringUtils;
 
 /**
  * @author dpavlis (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -76,14 +80,49 @@ public class HadoopConnectingFileSystemProvider implements HadoopConnectingFileS
 		connectionTest(FileSystem.getDefaultUri(config), config);
 		
 		try {
-			dfs = FileSystemRegistry.getAndRegister(FileSystem.getDefaultUri(config), config, connData.getUser(), this);
+			UserGroupInformation ugi = KerberosUtils.getUserGroupInformation(connData.getUser(), config);
+			dfs = FileSystemRegistry.getAndRegister(FileSystem.getDefaultUri(config), config, connData.getUser(), this, ugi);
 		} catch (InterruptedException ex) {
 			throw new RuntimeException("Hadoop client API internal exception occured.", ex);
 		}
 	}
+
+	// FIXME can this be simplified?
+	private void connectionTest(URI host, Configuration hadoopConfiguration) throws IOException {
+		String nameservice = hadoopConfiguration.get("dfs.nameservices");
+		if (!StringUtils.isEmpty(nameservice)) { // HA configuration, test one node after another
+			String[] namenodes = hadoopConfiguration.getStrings("dfs.ha.namenodes." + nameservice);
+			if ((namenodes != null) && (namenodes.length > 0)) {
+				IOException firstException = null;
+				for (String namenode: namenodes) {
+					String address = hadoopConfiguration.get("dfs.namenode.rpc-address." + nameservice + "." + namenode);
+					if (!StringUtils.isEmpty(address)) {
+						try {
+							try {
+								URI namenodeUri = new URI("hdfs://" + address);
+								doTestConnection(namenodeUri, hadoopConfiguration);
+								return; // return on first success
+							} catch (URISyntaxException e) {
+								throw new IOException(e);
+							}
+						} catch (IOException ioe) {
+							if (firstException == null) {
+								firstException = ioe;
+							}
+						}
+					}
+				}
+				if (firstException != null) {
+					throw firstException;
+				}
+			}
+		} else {
+			doTestConnection(host, hadoopConfiguration);
+		}
+	}
 	
 	// code taken from org.apache.hadoop.ipc.Client.Connection.setupConnection()
-	private void connectionTest(URI host, Configuration hadoopConfiguration) throws IOException {
+	private void doTestConnection(URI host, Configuration hadoopConfiguration) throws IOException {
 		SocketFactory socketFactory = NetUtils.getSocketFactory(hadoopConfiguration, ClientProtocol.class);
 		Socket socket = socketFactory.createSocket();
         socket.setTcpNoDelay(false);

@@ -173,6 +173,36 @@ public class RestJobPhasesTest extends CloverTestCase {
 		checkPhases(4, checkPhase, mainPhase);
 	}
 	
+	public void testJobWith3PhasesAndRequiredParametersValidator() throws Exception {
+		generateResponse();
+		
+		HelloWorldComponent validator = new HelloWorldComponent("RESTJOB_VALIDATOR");
+		validator.setPartOfRestInput(true);
+		validator.setType("RESTJOB_VALIDATOR");
+		validator.setGreeting("Hello from rest job input!");
+		mainPhase.addNode(validator);
+		
+		HelloWorldComponent checkData = new HelloWorldComponent("DATA_CHECK");
+		checkData.setGreeting("Hello from data check");
+		Phase checkPhase = new Phase(3);
+		checkPhase.addNode(checkData);
+		restJob.addPhase(checkPhase);
+		
+		HelloWorldComponent loadData = new HelloWorldComponent("DATA_LOAD");
+		loadData.setGreeting("Hello from data load");
+		mainPhase.addNode(loadData);
+		
+		HelloWorldComponent saveData = new HelloWorldComponent("DATA_SAVE");
+		saveData.setGreeting("Hello from create response");
+		Phase savePhase = new Phase(5);
+		savePhase.addNode(saveData);
+		restJob.addPhase(savePhase);
+		
+		EngineInitializer.initGraph(restJob, restJob.getRuntimeContext());
+		
+		checkPhases(5, checkPhase, mainPhase);
+	}
+	
 	private void checkPhases(int count, Phase input, Phase output) {
 		assertEquals("Unexpected count of phases", count, restJob.getPhases().length);
 		assertEquals("REST job input in wrong phase", input.getPhaseNum(), restJobInput.getPhaseNum());

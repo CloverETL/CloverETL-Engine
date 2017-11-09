@@ -20,6 +20,7 @@ package org.jetel.hadoop.provider.filesystem;
 
 import java.io.IOException;
 import java.net.URI;
+import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -27,6 +28,7 @@ import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.security.UserGroupInformation;
 
 /**
  * Registry for instances of Hadoop FileSystem class used to work-around FileSystem.CACHE issues (CLO-1160, CLO-730, ...).
@@ -63,8 +65,19 @@ public class FileSystemRegistry {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	public static synchronized FileSystem getAndRegister(final URI uri, final Configuration conf, final String user, Object owner) throws IOException, InterruptedException {
-		FileSystem fs = FileSystem.get(uri, conf, user);
+	public static synchronized FileSystem getAndRegister(final URI uri, final Configuration conf, final String user, Object owner, UserGroupInformation currentUser) throws IOException, InterruptedException {
+		FileSystem fs;
+		if (currentUser != null) {
+			fs = currentUser.doAs(new PrivilegedExceptionAction<FileSystem>() {
+
+				@Override
+				public FileSystem run() throws Exception {
+					return FileSystem.get(uri, conf); // Do not pass the user here! That creates another UserGroupInformation object.
+				}
+			});
+		} else {
+			fs = FileSystem.get(uri, conf, user);
+		}
 		registerFileSystem(fs, owner);
 		return fs;
 	}
