@@ -256,50 +256,16 @@ public abstract class AbstractJobflowComponent extends Node {
 			throw new ComponentNotReadyException(this, XML_REDIRECT_ERROR_OUTPUT_ATTRIBUTE, "Error output is redirected to standard output port, but there is an edge connected to the error port.");
 		}
 		
-		// create input params record, no matter if input edge is connected
-		// used to resolve default values
-		attributesRecord = DataRecordFactory.newRecord(createInputMetadata());
-		
-		if (hasInputPort) {
-			inputRecord = DataRecordFactory.newRecord(inputPort.getMetadata());
-		}
-		
-		if (hasOutputPort) {
-			resultRecord = DataRecordFactory.newRecord(createOutputMetadata());
-			outputRecord = DataRecordFactory.newRecord(outputPort.getMetadata());
-		}
-		
-		if (hasErrorPort) {
-			errorResultRecord = DataRecordFactory.newRecord(createErrorMetadata());
-			errorRecord = DataRecordFactory.newRecord(errorPort.getMetadata());
-		}
+		createMappingRecords();
 		
 		//create input mapping
-		inputMapping = new CTLMapping("Input mapping", this); //$NON-NLS-1$
-		inputMapping.setTransformation(inputMappingCode);
-		if (hasInputPort) {
-			inputMapping.addInputRecord(INPUT_RECORD_ID, inputRecord);
-		}
-		inputMapping.addOutputRecord(ATTRIBUTES_RECORD_ID, attributesRecord);
+		createInputMapping();
 		
 		//create output mapping
-		outputMapping = new CTLMapping("Output mapping", this); //$NON-NLS-1$
-		outputMapping.setTransformation(outputMappingCode);
-		outputMapping.addInputRecord(INPUT_RECORD_ID, inputRecord);
-		outputMapping.addInputRecord(RESULT_RECORD_ID, resultRecord);
-		outputMapping.addOutputRecord(OUTPUT_RECORD_ID, outputRecord);
-		outputMapping.addAutoMapping(INPUT_RECORD_ID, OUTPUT_RECORD_ID);
-		outputMapping.addAutoMapping(RESULT_RECORD_ID, OUTPUT_RECORD_ID);
+		createOutputMapping();
 
 		//create error mapping
-		errorMapping = new CTLMapping("Error mapping", this); //$NON-NLS-1$
-		errorMapping.setTransformation(errorMappingCode);
-		errorMapping.addInputRecord(INPUT_RECORD_ID, inputRecord);
-		errorMapping.addInputRecord(ERROR_RESULT_RECORD_ID, errorResultRecord);
-		errorMapping.addOutputRecord(OUTPUT_RECORD_ID, null);
-		errorMapping.addOutputRecord(ERROR_RECORD_ID, errorRecord);
-		errorMapping.addAutoMapping(INPUT_RECORD_ID, ERROR_RECORD_ID);
-		errorMapping.addAutoMapping(ERROR_RESULT_RECORD_ID, ERROR_RECORD_ID);
+		createErrorMapping();
 		
 		setDefaults();
 
@@ -319,6 +285,58 @@ public abstract class AbstractJobflowComponent extends Node {
 				MissingRecordFieldMessage.newInputFieldMessage(ATTRIBUTES_RECORD_ID, "No such attribute"),
 				MissingRecordFieldMessage.newInputFieldMessage(ERROR_RESULT_RECORD_ID, "No such result field")
 		);
+	}
+
+	protected void createMappingRecords() {
+		// create input params record, no matter if input edge is connected
+		// used to resolve default values
+		attributesRecord = DataRecordFactory.newRecord(createInputMetadata());
+		
+		if (hasInputPort) {
+			inputRecord = DataRecordFactory.newRecord(inputPort.getMetadata());
+		}
+		
+		if (hasOutputPort) {
+			resultRecord = DataRecordFactory.newRecord(createOutputMetadata());
+			outputRecord = DataRecordFactory.newRecord(outputPort.getMetadata());
+		}
+		
+		if (hasErrorPort) {
+			errorResultRecord = DataRecordFactory.newRecord(createErrorMetadata());
+			errorRecord = DataRecordFactory.newRecord(errorPort.getMetadata());
+		}
+	}
+
+	protected void createInputMapping() {
+		inputMapping = new CTLMapping("Input mapping", this); //$NON-NLS-1$
+		inputMapping.setTransformation(inputMappingCode);
+		if (hasInputPort) {
+			inputMapping.addInputRecord(INPUT_RECORD_ID, inputRecord);
+		}
+		inputMapping.addOutputRecord(ATTRIBUTES_RECORD_ID, attributesRecord);
+	}
+
+	protected void createOutputMapping() {
+		outputMapping = new CTLMapping("Output mapping", this); //$NON-NLS-1$
+		outputMapping.setTransformation(outputMappingCode);
+		outputMapping.addInputRecord(INPUT_RECORD_ID, inputRecord);
+		outputMapping.addInputRecord(RESULT_RECORD_ID, resultRecord);
+		outputMapping.addOutputRecord(OUTPUT_RECORD_ID, outputRecord);
+		outputMapping.addAutoMapping(INPUT_RECORD_ID, OUTPUT_RECORD_ID);
+		outputMapping.addAutoMapping(RESULT_RECORD_ID, OUTPUT_RECORD_ID);
+		outputMapping.setOutputSetDefaults(false);
+	}
+
+	protected void createErrorMapping() {
+		errorMapping = new CTLMapping("Error mapping", this); //$NON-NLS-1$
+		errorMapping.setTransformation(errorMappingCode);
+		errorMapping.addInputRecord(INPUT_RECORD_ID, inputRecord);
+		errorMapping.addInputRecord(ERROR_RESULT_RECORD_ID, errorResultRecord);
+		errorMapping.addOutputRecord(OUTPUT_RECORD_ID, null);
+		errorMapping.addOutputRecord(ERROR_RECORD_ID, errorRecord);
+		errorMapping.addAutoMapping(INPUT_RECORD_ID, ERROR_RECORD_ID);
+		errorMapping.addAutoMapping(ERROR_RESULT_RECORD_ID, ERROR_RECORD_ID);
+		errorMapping.setOutputSetDefaults(false);
 	}
 
 	@Override
