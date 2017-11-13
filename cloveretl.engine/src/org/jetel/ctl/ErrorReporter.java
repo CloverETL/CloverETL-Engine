@@ -241,7 +241,14 @@ public class ErrorReporter {
 	
 	String process(CLVFIdentifier node) {
 		if (identifiers.add(node.getName())) {
-			Object value = (stack != null) ? stack.getVariable(node.getBlockOffset(), node.getVariableOffset()) : "(value not available)";
+			Object value = "(value not available)";
+			if (stack != null) {
+				try {
+					value = stack.getVariable(node.getBlockOffset(), node.getVariableOffset());
+				} catch (Exception ex) {
+					// ignore, thrown for external function parameters
+				}
+			}
 			if (node.getType().isPrimitive() || value==null){
 				err.format("variable \"%s\" (%s) -> %s%n",node.getName(),node.getType(),maxstr(value==null ? NULL_STR_CONST : value.toString()));
 			} else {
