@@ -137,7 +137,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node batchSize="100" collection="uniqueVisits" connectionId="MONGODB0" enabled="enabled" guiName="MongoDBWriter" guiX="778" guiY="393" id="MONGO_DBWRITER" operation="insert" type="MONGODB_WRITER">
+<Node batchSize="100" collection="uniqueVisits" connectionId="MONGODB0" enabled="enabled" guiName="MongoDBWriter" guiX="778" guiY="393" id="MONGO_DBWRITER" operation="insertOne" type="MONGODB_WRITER">
 <attr name="newValue"><![CDATA[{
 	key : "@{key_year_month}",
 	value : "@{value_ip_address}"
