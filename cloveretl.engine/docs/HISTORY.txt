@@ -2,6 +2,27 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-4-8-0-M1
+------------
+
+* Data Services:
+  * CLO-11981	Streaming of request payload from input component
+  * CLO-11780	Hide sensitive parameters in history/log
+  * CLO-11714	Filtering in Data Services module
+  * CLO-11671	Improved layout of detail tab
+  * CLO-11380	Multiple security contexts management
+* Changes:
+  * CLO-11925	Server password lockout
+  * CLO-11924	Support Tomcat 9
+  * CLO-11922	Drop support for Tomcat 6
+  * CLO-11887	Option to disable HTTP API
+  * CLO-11969	Allow select queries in DBExecute
+  * CLO-11837	Support for Kerberos in Hadoop connection
+  * CLO-11637	New version of bulk operations in MongoDBWriter
+* Fixes:
+  * CLO-11936	Throw error when multiple inputs are connected and response format is CSV
+
+
 REL-4-7-0
 ---------
 

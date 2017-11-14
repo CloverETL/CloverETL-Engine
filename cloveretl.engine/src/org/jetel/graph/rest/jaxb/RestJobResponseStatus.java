@@ -19,18 +19,11 @@
 package org.jetel.graph.rest.jaxb;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
-
-import org.jetel.graph.Node;
-
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Response status mapping
@@ -47,13 +40,10 @@ public class RestJobResponseStatus implements Cloneable, Serializable {
 	private static final long serialVersionUID = 56313319828721615L;
 
 	private SuccessStatus success;
-	private List<ComponentErrorStatus> componentError;
 	private ErrorStatus validationError;
 	private ErrorStatus jobError;
-	
+		
 	private static final ErrorStatus GENERIC_ERROR = new ErrorStatus(500, "Job failed", false);
-	
-	private Map<String, ComponentErrorStatus> errorsByComponentId;
 	
 	public RestJobResponseStatus() {
 		super();
@@ -66,18 +56,6 @@ public class RestJobResponseStatus implements Cloneable, Serializable {
 
 	public void setSuccess(SuccessStatus success) {
 		this.success = success;
-	}
-
-	@XmlElement(name = "ComponentError")
-	public List<ComponentErrorStatus> getComponentErrors() {
-		if (componentError == null) {
-			componentError = new ArrayList<>();
-		}
-		return componentError;
-	}
-
-	public void setComponentError(List<ComponentErrorStatus> componentError) {
-		this.componentError = componentError;
 	}
 
 	@XmlElement(name = "ValidationError")
@@ -97,34 +75,9 @@ public class RestJobResponseStatus implements Cloneable, Serializable {
 	public void setJobError(ErrorStatus jobError) {
 		this.jobError = jobError;
 	}
-	
-	public ResponseStatus getErrorMessage(Node node, Throwable throwable) {
-		ResponseStatus responseStatus = null;
-		if ((success != null || componentError != null || validationError != null || jobError != null) && node != null) {
-			if (node.isPartOfRestInput()) {
-				responseStatus = validationError;
-			} else {
-				responseStatus = getErrorsByComponentId().get(node.getId());
-			}
-		}
-		
-		if (responseStatus == null) {
-			responseStatus = jobError;
-		}
-		
-		return responseStatus != null ? responseStatus : GENERIC_ERROR;
-	}
-	
-	private Map<String, ComponentErrorStatus> getErrorsByComponentId() {
-		if (errorsByComponentId == null) {
-			errorsByComponentId = new HashMap<>();
-			if (componentError != null) {
-				for (ComponentErrorStatus component : componentError) {
-					errorsByComponentId.put(component.getComponentId(), component);
-				}
-			}
-		}
-		return errorsByComponentId;
+
+	public ResponseStatus getDefaultErrorStatus() {
+		return GENERIC_ERROR;
 	}
 	
 	public RestJobResponseStatus createCopy() {
@@ -133,12 +86,6 @@ public class RestJobResponseStatus implements Cloneable, Serializable {
 			if (success != null) {
 				copy.success = success.createCopy();
 			} 
-			if (componentError != null) {
-				copy.componentError = new ArrayList<>(componentError.size());
-				for (ComponentErrorStatus component : componentError) {
-					copy.componentError.add(component.createCopy());
-				}
-			}
 			if (validationError != null) {
 				copy.validationError = validationError.createCopy();
 			}
@@ -155,7 +102,6 @@ public class RestJobResponseStatus implements Cloneable, Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((componentError == null) ? 0 : componentError.hashCode());
 		result = prime * result + ((jobError == null) ? 0 : jobError.hashCode());
 		result = prime * result + ((success == null) ? 0 : success.hashCode());
 		result = prime * result + ((validationError == null) ? 0 : validationError.hashCode());
@@ -171,11 +117,6 @@ public class RestJobResponseStatus implements Cloneable, Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		RestJobResponseStatus other = (RestJobResponseStatus) obj;
-		if (componentError == null) {
-			if (other.componentError != null)
-				return false;
-		} else if (!componentError.equals(other.componentError))
-			return false;
 		if (jobError == null) {
 			if (other.jobError != null)
 				return false;
