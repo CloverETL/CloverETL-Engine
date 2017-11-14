@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jetel.ctl.Stack;
+import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.util.primitive.BitArray;
 
 public class MathLib extends TLFunctionLibrary {
@@ -398,7 +399,14 @@ public class MathLib extends TLFunctionLibrary {
     
     @TLFunctionAnnotation("Returns the value of the first argument raised to the power of the second argument.")
     public static final BigDecimal pow(TLFunctionCallContext context, BigDecimal argument, BigDecimal power) {
-    	return argument.pow(power.intValue());
+    	int exponent = power.intValue();
+    	
+    	if (exponent < 0) { // CLO-12062: pass MathContext to allow negative exponents
+    		return argument.pow(exponent, TransformLangExecutor.MAX_PRECISION);
+    	} else {
+        	// MathContext might change precision, use the original implementation for non-negative exponents for backward compatibility
+        	return argument.pow(exponent); 
+    	}
     }
     
     // POW
