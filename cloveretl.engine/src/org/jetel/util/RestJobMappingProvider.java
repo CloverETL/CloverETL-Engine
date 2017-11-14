@@ -33,18 +33,18 @@ import org.jetel.metadata.DataFieldMetadata;
  */
 public class RestJobMappingProvider {
 
-	public static String createMapping(Node outputComponent, RestJobOutputType outputType) {
-		StringBuilder result = new StringBuilder();
+	public static String createMapping(Node outputComponent, RestJobOutputType outputType) {		
+		if (outputComponent == null || outputType == null || outputComponent.getInputPorts().isEmpty() || 
+				(outputType != RestJobOutputType.JSON && outputType != RestJobOutputType.XML)) {
+			return ""; //$NON-NLS-1$
+		}
 		
 		Map<Integer, InputPort> inputPorts = outputComponent.getInputPorts();
-		
+
 		boolean metadataName = outputType != RestJobOutputType.JSON || Boolean.parseBoolean(outputComponent.getAttributes().getProperty("metadataName"));
 		boolean topLevelArray = outputType == RestJobOutputType.JSON && (Boolean.parseBoolean(outputComponent.getAttributes().getProperty("topLevelArray")) || metadataName);
-	
-		if (inputPorts.isEmpty() || (outputType != RestJobOutputType.JSON && outputType != RestJobOutputType.XML)) {
-			return result.toString();
-		}
-
+		
+		StringBuilder result = new StringBuilder();
 		result.append("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>"); //$NON-NLS-1$
 		
 		if (outputType == RestJobOutputType.XML) {
@@ -79,7 +79,7 @@ public class RestJobMappingProvider {
 			
 		} else {
 			result.append("<root xmlns:clover=\"http://www.cloveretl.com/ns/xmlmapping\" clover:inPort=\"0\">"); //$NON-NLS-1$
-			for (DataFieldMetadata field : inputPorts.values().iterator().next().getEdge().getMetadata().getFields()) {
+			for (DataFieldMetadata field : inputPorts.values().iterator().next().getMetadata().getFields()) {
 				result.append("<").append(field.getName()).append(">"); //$NON-NLS-1$ //$NON-NLS-2$
 				result.append("$0.").append(field.getName()); //$NON-NLS-1$
 				result.append("</").append(field.getName()).append(">"); //$NON-NLS-1$ //$NON-NLS-2$
