@@ -483,12 +483,12 @@ public class LocalOperationHandler implements IOperationHandler {
 		}
 		BasicFileAttributes parentAttributes = Files.readAttributes(parent, BasicFileAttributes.class);
 		if (!parentAttributes.isDirectory()) {
-			return Arrays.asList((Info) new PathInfo(parent, parentAttributes));
+			return Arrays.asList((Info) new LocalPathInfo(parent, parentAttributes));
 		}
 		try (DirectoryStream<Path> children = Files.newDirectoryStream(parent)) {
 			List<Info> result = new ArrayList<Info>();
 			for (Path child: children) {
-				PathInfo childInfo = new PathInfo(child);
+				Info childInfo = new LocalPathInfo(child);
 				result.add(childInfo);
 				if (params.isRecursive() && childInfo.isDirectory()) {
 					result.addAll(list(child, params));
