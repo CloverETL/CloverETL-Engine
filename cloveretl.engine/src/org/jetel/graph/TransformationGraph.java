@@ -60,6 +60,7 @@ import org.jetel.graph.runtime.tracker.TokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.util.CloverPublicAPI;
+import org.jetel.util.RestJobUtils;
 import org.jetel.util.SubgraphUtils;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
@@ -103,6 +104,7 @@ public final class TransformationGraph extends GraphElement {
 	final static String DEFAULT_SEQUENCE_ID = "Sequence0";
 	final static String DEFAULT_LOOKUP_ID = "LookupTable0";
 	final static public String DEFAULT_METADATA_ID = "Metadata0";
+	final static String DEFAULT_EDGE_ID = "Edge0";
 
 	private Dictionary dictionary;
 	
@@ -1786,5 +1788,23 @@ public final class TransformationGraph extends GraphElement {
 
 	public void setOutputFormat(String outputFormat) {
 		this.outputFormat = outputFormat;
+	}
+	
+	public Node getRestJobOutputComponent() {
+		for (Node component : getNodes().values()) {
+			if (RestJobUtils.isRestJobOutputComponent(component.getType())) {
+				return component;
+			}
+		}
+		throw new JetelRuntimeException("RestJobOutput component is not available.");
+	}
+
+	public String getUniqueNodeId(String nodeType) {
+		String defaultNodeId = nodeType + "0";
+		return getUniqueId(defaultNodeId, getNodes());
+	}
+
+	public String getUniqueEdgeId() {
+		return getUniqueId(DEFAULT_EDGE_ID, getEdges());
 	}
 }

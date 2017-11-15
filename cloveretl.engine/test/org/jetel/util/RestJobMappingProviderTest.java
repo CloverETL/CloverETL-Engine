@@ -46,14 +46,14 @@ public class RestJobMappingProviderTest {
 	@Test
 	public void testMappingNullParams() {
 		assertEquals(EMPTY_STRING, RestJobMappingProvider.createMapping(null, null));
-		assertEquals(EMPTY_STRING, RestJobMappingProvider.createMapping(null, RestJobOutputType.JSON));
+		assertEquals(EMPTY_STRING, RestJobMappingProvider.createMapping(null, RestJobResponseFormat.JSON));
 		assertEquals(EMPTY_STRING, RestJobMappingProvider.createMapping(createNode(), null));
 		assertEquals(EMPTY_STRING, RestJobMappingProvider.createMapping(fillNode(createNode()), null));
 	} 
 
 	@Test
 	public void testMappingCsv() {
-		assertEquals(EMPTY_STRING, RestJobMappingProvider.createMapping(fillNode(createNode()), RestJobOutputType.CSV));
+		assertEquals(EMPTY_STRING, RestJobMappingProvider.createMapping(fillNode(createNode()), RestJobResponseFormat.CSV));
 	} 
 	
 	@Test
@@ -72,7 +72,7 @@ public class RestJobMappingProviderTest {
 		"	</clover:element>" +
 		"</root>";
 		
-		String mapping = RestJobMappingProvider.createMapping(fillNode(createNode()), RestJobOutputType.XML);
+		String mapping = RestJobMappingProvider.createMapping(fillNode(createNode()), RestJobResponseFormat.XML);
 		assertEquals(StringUtils.deleteWhitespace(expecting), StringUtils.deleteWhitespace(mapping));
 	}
 	
@@ -98,7 +98,7 @@ public class RestJobMappingProviderTest {
 		"	</clover:collection>" + 
 		"</root>";
 
-		String mapping = RestJobMappingProvider.createMapping(fillNode(createNode()), RestJobOutputType.JSON);
+		String mapping = RestJobMappingProvider.createMapping(fillNode(createNode()), RestJobResponseFormat.JSON);
 		assertEquals(StringUtils.deleteWhitespace(expecting), StringUtils.deleteWhitespace(mapping));
 	}
 	
@@ -116,7 +116,7 @@ public class RestJobMappingProviderTest {
 		node.getAttributes().setProperty(NODE_PROPERTY_METADATA, Boolean.FALSE.toString());
 		node.getAttributes().setProperty(NODE_PROPERTY_TOL_LEVEL_ARRAY, Boolean.TRUE.toString());
 
-		String mapping = RestJobMappingProvider.createMapping(node, RestJobOutputType.JSON);
+		String mapping = RestJobMappingProvider.createMapping(node, RestJobResponseFormat.JSON);
 		assertEquals(StringUtils.deleteWhitespace(expecting), StringUtils.deleteWhitespace(mapping));
 	}
 	
@@ -133,7 +133,7 @@ public class RestJobMappingProviderTest {
 		node.getAttributes().setProperty(NODE_PROPERTY_METADATA, Boolean.FALSE.toString());
 		node.getAttributes().setProperty(NODE_PROPERTY_TOL_LEVEL_ARRAY, Boolean.FALSE.toString());
 
-		String mapping = RestJobMappingProvider.createMapping(node, RestJobOutputType.JSON);
+		String mapping = RestJobMappingProvider.createMapping(node, RestJobResponseFormat.JSON);
 		assertEquals(StringUtils.deleteWhitespace(expecting), StringUtils.deleteWhitespace(mapping));
 	}
 	

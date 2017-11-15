@@ -18,42 +18,24 @@
  */
 package org.jetel.util;
 
-import org.jetel.util.string.StringUtils;
-
 /**
  * @author jedlickad (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 12. 11. 2017
+ * @created 15. 11. 2017
  */
-public enum RestJobOutputType {
+public enum RestJobResponseFormat {
 
-	CSV("FLAT_FILE_WRITER", false), JSON("JSON_WRITER", true), XML("EXT_XML_WRITER", true);
+	JSON, XML, CSV, CUSTOM, FILE;
 	
-	private String writerComponent;
-	private boolean mappingRequired;
-	
-	private RestJobOutputType(String writerComponent, boolean mappingRequired) {
-		this.writerComponent = writerComponent;
-		this.mappingRequired = mappingRequired;
-	}
-	
-	public static RestJobOutputType fromString(String format) {
-		if (!StringUtils.isEmpty(format)) {
-			for (RestJobOutputType type : values()) {
-				if(type.name().equals(format)) {
-					return type;
+	public static RestJobResponseFormat fromString(String format) {
+		if (format != null) {
+			for (RestJobResponseFormat value : values()) {
+				if (value.name().equals(format)) {
+					return value;
 				}
-			}
+			} 
 		}
 		return null;
-	}
-	
-	public String getWriterComponent() {
-		return this.writerComponent;
-	}
-	
-	public boolean isMappingRequired() {
-		return this.mappingRequired;
 	}
 }
