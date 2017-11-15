@@ -257,6 +257,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("CDR_metadataPropagation_CLO-2850.grf") // negative test
 							&& !file.getName().equals("CDW_append_CLO-5217.grf") // negative test
 							&& !file.getName().equals("CDW_autofilling_CLO-6311.grf") // server test
+							&& !file.getName().equals("CTL_errorReporter_CLO-12063") // negative test
 							&& !file.getName().equals("CTL_getComponentProperty_dynamicParam_fail_CLO-3838.grf") // negative test
 							&& !file.getName().equals("CTL_isSubgraphInputPortConnected_1_negative.grf") // negative test
 							&& !file.getName().equals("CTL_isSubgraphInputPortConnected_2_negative.grf") // negative test
@@ -532,4 +533,3 @@ public class ResetTest extends CloverTestCase {
 		}
 	}
 }
-
