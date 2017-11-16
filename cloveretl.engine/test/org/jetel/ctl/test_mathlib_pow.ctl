@@ -1,5 +1,8 @@
 number power1;
 number power2;
+number power3;
+decimal power4;
+
 decimal[] intResult;
 decimal[] longResult;
 decimal[] doubleResult;
@@ -9,6 +12,8 @@ function integer transform() {
 	power1=pow(3,1.2);
 	power2=pow(-10,-0.3);
 	printErr('power(-10,-0.3)='+power2);
+	power3=pow(10f,-3);
+	power4=pow(10d,-3);
 	
 	integer[] intArgs = [ 2 , 3 ];
 	long[] longArgs = [ 2L, 3L ];
