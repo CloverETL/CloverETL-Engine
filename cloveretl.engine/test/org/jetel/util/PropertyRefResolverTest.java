@@ -130,6 +130,9 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		authorityProxy.setHttpContextAvailable(true);
 		assertEquals("123", resolver.resolveRef("${REQUEST.a}"));
 		assertEquals("123", resolver.resolveRef("${request.a}"));
+		assertEquals("A++", resolver.resolveRef("${request.a--}"));
+		
+		assertEquals("pref A++A++A++a--${a++}", resolver.resolveRef("pref ${a--}${a--}${///}a--${a++}"));
 	}
 
 	public void testEvaluate() {
