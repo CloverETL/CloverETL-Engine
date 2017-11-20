@@ -169,7 +169,7 @@ public class TransformationGraphAnalyzer {
 
         for (GraphAnalyzerParticipant analyzerParticipant : GraphAnalyzerParticipantFactory.getAllAnalyzerParticipants()) {
         	try {
-        		analyzerParticipant.afterPropagate(graph, propagateMetadata);
+        		analyzerParticipant.afterPropagate(graph, runtimeContext, propagateMetadata);
         	} catch (Exception e) {
         		throw new JetelRuntimeException("Plugin Graph Analyzerfailed.", e);
         	}
