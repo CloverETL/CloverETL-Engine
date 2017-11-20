@@ -63,6 +63,10 @@ public class RestJobMappingProvider {
 			result.append("<root xmlns:clover=\"http://www.cloveretl.com/ns/xmlmapping\">"); //$NON-NLS-1$
 			for (Entry<Integer, InputPort> entrySet : inputPorts.entrySet()) {
 				int portNumber = entrySet.getKey();
+				
+				if (entrySet.getValue().getEdge().getMetadata() == null) {
+					continue;
+				}
 					
 				result.append("<clover:collection clover:inPort=\"").append(portNumber).append("\" clover:name=\"") //$NON-NLS-1$ //$NON-NLS-2$
 					.append(entrySet.getValue().getEdge().getMetadata().getName()).append("\">"); //$NON-NLS-1$

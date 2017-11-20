@@ -486,6 +486,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 			<keep name="org.jetel.graph.GraphElement"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.Node"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.graph.EdgeDebuger"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.GraphAnalyzerParticipant*"><method access="public"/></keep>
 			
 			<keep name="org.jetel.graph.runtime.IAuthorityProxy"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="org.jetel.graph.runtime.IAuthorityProxy$RunResult"><field access="public"/><method access="public"/></keep>

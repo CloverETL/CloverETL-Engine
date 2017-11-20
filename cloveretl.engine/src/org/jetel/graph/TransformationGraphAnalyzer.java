@@ -27,8 +27,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
@@ -167,6 +167,10 @@ public class TransformationGraphAnalyzer {
 		} catch (Exception e) {
 			throw new JetelRuntimeException("Edge type analysis failed.", e);
 		}
+        
+        for (GraphAnalyzerParticipant analyzerParticipant : GraphAnalyzerParticipantFactory.getAllAnalyzerParticipants()) {
+        	analyzerParticipant.afterPropagate(graph, propagateMetadata);
+        }
         
         graph.setAnalysed(true);
 	}
