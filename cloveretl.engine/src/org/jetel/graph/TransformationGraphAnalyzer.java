@@ -111,19 +111,6 @@ public class TransformationGraphAnalyzer {
 		//remove optional input and output edges in subgraphs
 		removeOptionalEdges(graph);
 		
-		/*
-		 *  analyze REST Job - put components before RestJobInput into initial phase,
-		 *  components after RestJobOutput into final phase
-		 */
-		if (runtimeContext.getJobType() == JobType.RESTJOB || graph.getStaticJobType() == JobType.RESTJOB) {
-			try {
-				createRestJobOutput(graph);
-				analyseRestJob(graph);
-			} catch (GraphConfigurationException e) {
-				throw new JetelRuntimeException("REST job analysis failed", e);
-			}
-		}
-		
 		// analyze subgraph - check layout and removes debug components if necessary
 		boolean subJobRuntime = runtimeContext.getJobType().isSubJob();
 		boolean subJobFile = runtimeContext.getJobType().isSubJob() || graph.getStaticJobType().isSubJob();
@@ -151,6 +138,21 @@ public class TransformationGraphAnalyzer {
 			//compare implicit metadata with persisted implicit metadata
 			//this validation is now temporary turned off - will be enabled in future releases (maybe) - see CLO-4144
 			//validateImplicitMetadata(mvGraph);
+		}
+		
+		/*
+		 *  analyze REST Job - put components before RestJobInput into initial phase,
+		 *  components after RestJobOutput into final phase
+		 */
+		if (runtimeContext.getJobType() == JobType.RESTJOB || graph.getStaticJobType() == JobType.RESTJOB) {
+			try {
+				if (propagateMetadata) {
+					createRestJobOutput(graph);
+				}
+				analyseRestJob(graph);
+			} catch (GraphConfigurationException e) {
+				throw new JetelRuntimeException("REST job analysis failed", e);
+			}
 		}
 		
 		try {
@@ -278,6 +280,9 @@ public class TransformationGraphAnalyzer {
 	 */
 	private static void createRestJobOutput(TransformationGraph graph) throws GraphConfigurationException {
 		Node outputComponent = graph.getRestJobOutputComponent();
+		if (outputComponent == null) {
+			return;
+		}
 		RestJobResponseFormat responseFormat = RestJobResponseFormat.fromString(graph.getOutputFormat());
 		if (responseFormat != null && outputComponent.getInPorts().size() > 0
 				&& outputComponent.getOutPorts().size() == 0) {
@@ -310,10 +315,10 @@ public class TransformationGraphAnalyzer {
 					responseWriter.setName(REST_JOB_RESPONSE_WRITER_NAME);
 					responseWriter.setPartOfRestOutput(true);
 					outputComponent.getPhase().addNode(responseWriter);
-					for(Integer portNum : outputComponent.getInputPorts().keySet()) {
-						Edge edge = EdgeFactory.newEdge(graph.getUniqueEdgeId(), (DataRecordMetadata) null);
-						outputComponent.addOutputPort(portNum, edge);
-						responseWriter.addInputPort(portNum, edge);
+					for(Entry<Integer, InputPort> inputPort : outputComponent.getInputPorts().entrySet()) {
+						Edge edge = EdgeFactory.newEdge(graph.getUniqueEdgeId(), inputPort.getValue().getMetadata());
+						outputComponent.addOutputPort(inputPort.getKey(), edge);
+						responseWriter.addInputPort(inputPort.getKey(), edge);
 						graph.addEdge(edge);
 					}
 				}
