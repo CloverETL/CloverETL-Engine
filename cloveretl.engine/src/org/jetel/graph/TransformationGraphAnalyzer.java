@@ -55,7 +55,6 @@ import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.graph.modelview.impl.MetadataPropagationResult;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.SingleThreadWatchDog;
-import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.GraphUtils;
 import org.jetel.util.Pair;
 import org.jetel.util.RestJobMappingProvider;
@@ -167,9 +166,13 @@ public class TransformationGraphAnalyzer {
 		} catch (Exception e) {
 			throw new JetelRuntimeException("Edge type analysis failed.", e);
 		}
-        
+
         for (GraphAnalyzerParticipant analyzerParticipant : GraphAnalyzerParticipantFactory.getAllAnalyzerParticipants()) {
-        	analyzerParticipant.afterPropagate(graph, propagateMetadata);
+        	try {
+        		analyzerParticipant.afterPropagate(graph, propagateMetadata);
+        	} catch (Exception e) {
+        		throw new JetelRuntimeException("Plugin Graph Analyzerfailed.", e);
+        	}
         }
         
         graph.setAnalysed(true);

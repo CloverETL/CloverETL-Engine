@@ -18,6 +18,8 @@
  */
 package org.jetel.graph;
 
+import org.jetel.exception.GraphConfigurationException;
+
 /**
  * @author adamekl (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -26,6 +28,6 @@ package org.jetel.graph;
  */
 public interface GraphAnalyzerParticipant {
 	
-	void afterPropagate(TransformationGraph graph, boolean propagateMetadata);
+	void afterPropagate(TransformationGraph graph, boolean propagateMetadata) throws GraphConfigurationException;
 
 }
