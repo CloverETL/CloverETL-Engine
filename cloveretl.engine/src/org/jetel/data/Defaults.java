@@ -689,13 +689,19 @@ public final class Defaults {
 		
 		@SuppressFBWarnings("MS_PKGPROTECT")
 		public static String REQUEST_PARAMETER_PREFIX;
+
+		@SuppressFBWarnings("MS_PKGPROTECT")
+		public static String FREE_FORM_PARAMETER_REGEX;
 		
 		public static void init() {
 			REQUEST_PARAMETER_PLACEHOLDER_REGEX = getStringProperties(
-					"RequestParameters.REQUEST_PARAMETER_PLACEHOLDER_REGEX", "\\$\\{([Rr][Ee][Qq][Uu][Ee][Ss][Tt]\\.[^}]*)\\}");
+					"RequestParameters.REQUEST_PARAMETER_PLACEHOLDER_REGEX", "\\$\\{([Rr][Ee][Qq][Uu][Ee][Ss][Tt]\\.[^}]+)\\}");
 			
 			REQUEST_PARAMETER_PREFIX = getStringProperties(
 					"RequestParameters.REQUEST_PARAMETER_PREFIX", "request.");
+			
+			FREE_FORM_PARAMETER_REGEX = getStringProperties(
+					"RequestParameters.FREE_FORM_PARAMETER_REGEX", "\\$\\{([^\\}]+)\\}");
 		}
 	}
 	

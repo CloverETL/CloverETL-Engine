@@ -39,6 +39,8 @@ public class HttpContextMock implements HttpContext {
 	
 	static {
 		REQUEST_PARAMETERES.put("a", "123");
+		REQUEST_PARAMETERES.put("a--", "A++");
+		REQUEST_PARAMETERES.put("///", "${a--}");
 	}
 	
 	@Override
