@@ -80,7 +80,7 @@ class InternalSimplePortData extends InternalPortData {
 		if (key == null) {
 			return (Collection<DataRecord>)records.get(null);
 		} else {
-			DataField childKeyField = keyRecord.getField(key[0]);
+			DataField childKeyField = keyRecord.getField(key[0]).duplicate();
 			childKeyField.reset();
 			childKeyField.setValue(parentData.getField(parentKey[0]));
 			Collection<DataRecord> data = records.get(childKeyField);
