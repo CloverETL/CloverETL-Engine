@@ -793,8 +793,6 @@ public class FileManager {
 		return path.contains(QUESTION_MARK) || path.contains(ASTERISK);
 	}
 	
-	private static final Pattern URL_PREFIX_PATTERN = Pattern.compile("^(([^/]+):/+[^/]+/?)(.*)");
-	
 	/**
 	 * CLO-4062:
 	 * 
@@ -807,15 +805,42 @@ public class FileManager {
 	 * @return
 	 */
 	public static boolean uriHasWildcards(String uri) {
-		Matcher m = URL_PREFIX_PATTERN.matcher(uri);
+		URLMatcher m = new URLMatcher(uri);
 		if (m.matches()) {
-			String scheme = m.group(2);
+			String scheme = m.getScheme();
 			if (!scheme.equals(LocalOperationHandler.FILE_SCHEME)) {
-				return hasWildcards(m.group(3));
+				return hasWildcards(m.getPath());
 			}
 		}
 			
 		return hasWildcards(uri);
+	}
+	
+	private static class URLMatcher {
+		
+		private static final Pattern URL_PREFIX_PATTERN = Pattern.compile("^(([^/:]+):(\\(.*?\\))?/+[^/]+/?)(.*)");
+		
+		private final Matcher m;
+		
+		public URLMatcher(CharSequence url) {
+			this.m = URL_PREFIX_PATTERN.matcher(url);
+		}
+		
+		public boolean matches() {
+			return m.matches();
+		}
+		
+		public String getScheme() {
+			return m.group(2);
+		}
+		
+		public String getBaseUrl() {
+			return m.group(1);
+		}
+		
+		public String getPath() {
+			return m.group(4);
+		}
 	}
 	
 	/**
@@ -830,11 +855,11 @@ public class FileManager {
 	 * @return
 	 */
 	static List<String> getUriParts(String uri) {
-		Matcher m = URL_PREFIX_PATTERN.matcher(uri);
+		URLMatcher m = new URLMatcher(uri);
 		if (m.matches()) {
-			String scheme = m.group(2);
+			String scheme = m.getScheme();
 			if (!scheme.equals(LocalOperationHandler.FILE_SCHEME)) {
-				return getParts(m.group(1), m.group(3));
+				return getParts(m.getBaseUrl(), m.getPath());
 			}
 		}
 			

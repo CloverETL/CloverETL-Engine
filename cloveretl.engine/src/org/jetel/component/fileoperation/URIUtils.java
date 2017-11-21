@@ -26,6 +26,8 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.regex.Pattern;
 
+import org.jetel.util.Pair;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.SandboxUrlUtils;
 import org.jetel.util.string.StringUtils;
 
@@ -64,7 +66,7 @@ public class URIUtils {
 		if (!uriString.endsWith(PATH_SEPARATOR)) {
 			parentDir = URI.create(uriString + PATH_SEPARATOR);
 		}
-		return parentDir.resolve(name);
+		return resolve(parentDir, name);
 	}
 
 	public static URI getChildURI(URI parentDir, String name) {
@@ -77,7 +79,7 @@ public class URIUtils {
 		if (!uriString.endsWith(PATH_SEPARATOR)) {
 			parentDir = URI.create(uriString + PATH_SEPARATOR);
 		}
-		return parentDir.resolve(sb.toString());
+		return resolve(parentDir, sb.toString());
 	}
 	
 	public static URI getParentURI(URI uri) {
@@ -87,6 +89,10 @@ public class URIUtils {
 			return null;
 		}
 		return normUri.toString().endsWith(PATH_SEPARATOR) ? normUri.resolve(PARENT_DIR_NAME) : normUri.resolve(CURRENT_DIR_NAME);
+	}
+	
+	public static String getPath(URI uri) {
+		return removeProxyString(uri).getPath();
 	}
 	
 	public static URI trimToLastSlash(URI uri) {
@@ -178,5 +184,50 @@ public class URIUtils {
 			uri = SPACE_PATTERN.matcher(uri).replaceAll(ENCODED_SPACE);
 			return new URI(uri); // URI can't contain spaces
 		}
+	}
+	
+	public static URI resolve(URI baseUri, String pathUri) {
+		return resolve(baseUri, URI.create(pathUri));
+	}
+	
+	/**
+	 * Just like {@link URI#resolve(URI)}, but it can handle proxy configuration strings.
+	 * 
+	 * @param baseUri
+	 * @param pathUri
+	 * @return
+	 * @throws URISyntaxException
+	 */
+	public static URI resolve(URI baseUri, URI pathUri) {
+		Pair<String, String> parts = FileUtils.extractProxyString(baseUri.toString());
+		String proxyString = parts.getSecond();
+		if (proxyString != null) {
+			URI base = URI.create(parts.getFirst());
+			URI resolved = base.resolve(pathUri);
+			String resolvedStr = resolved.toString();
+			int idx = resolvedStr.indexOf(':') + 1;
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append(resolved.getScheme()).append(':');
+			sb.append('(').append(proxyString).append(')');
+			if (idx < resolvedStr.length()) {
+				sb.append(resolvedStr.substring(idx));
+			}
+			
+			return URI.create(sb.toString());
+		} else {
+			return baseUri.resolve(pathUri);
+		}
+	}
+
+	/**
+	 * Removes proxy configuration string from URI.
+	 * 
+	 * @param uri
+	 * @return URI without proxy configuration.
+	 */
+	private static URI removeProxyString(URI uri) {
+		Pair<String, String> parts = FileUtils.extractProxyString(uri.toString());
+		return (parts.getSecond() != null) ? URI.create(parts.getFirst()) : uri;
 	}
 }

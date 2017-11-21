@@ -21,6 +21,9 @@ package org.jetel.component.fileoperation.pool;
 import java.net.URI;
 import java.net.URL;
 
+import org.jetel.util.Pair;
+import org.jetel.util.file.FileUtils;
+
 public class DefaultAuthority extends AbstractAuthority implements Authority {
 	
 	public final String proxyString;
@@ -48,6 +51,26 @@ public class DefaultAuthority extends AbstractAuthority implements Authority {
 
 	public DefaultAuthority(URL url) {
 		this(url, null);
+	}
+	
+	protected DefaultAuthority(ProxyHelper helper) {
+		this(helper.uri, helper.proxyString);
+	}
+	
+	protected static class ProxyHelper {
+		
+		public final URI uri;
+		public final String proxyString;
+		
+		private ProxyHelper(URI uri, String proxyString) {
+			this.uri = uri;
+			this.proxyString = proxyString;
+		}
+
+		public static ProxyHelper getInstance(URI uri) {
+			Pair<String, String> parts = FileUtils.extractProxyString(uri.toString());
+			return new ProxyHelper(URI.create(parts.getFirst()), parts.getSecond());
+		}
 	}
 	
 	/**

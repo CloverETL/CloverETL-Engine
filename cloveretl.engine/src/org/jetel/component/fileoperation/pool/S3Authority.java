@@ -31,15 +31,35 @@ import java.net.URI;
  */
 public class S3Authority extends DefaultAuthority {
 	
-	private final URI uri;
-
-	public S3Authority(URI uri) {
-		super(uri);
-		this.uri = uri;
+	private final URI noProxyUri;
+	private final URI proxyUri;
+	
+	private S3Authority(URI proxyUri, ProxyHelper proxyHelper) {
+		super(proxyHelper);
+		this.proxyUri = proxyUri;
+		this.noProxyUri = proxyHelper.uri;
 	}
 
+	public S3Authority(URI uri) {
+		this(uri, ProxyHelper.getInstance(uri));
+	}
+
+	/**
+	 * Returns URI that may contain proxy configuration.
+	 * 
+	 * @return URI with proxy configuration
+	 */
 	public URI getUri() {
-		return uri;
+		return proxyUri;
+	}
+	
+	/**
+	 * Returns URI that does not contain proxy configuration.
+	 * 
+	 * @return URI without proxy configuration
+	 */
+	public URI getPlainUri() {
+		return noProxyUri;
 	}
 
 }
