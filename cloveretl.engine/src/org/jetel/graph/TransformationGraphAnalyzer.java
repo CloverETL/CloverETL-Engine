@@ -505,6 +505,7 @@ public class TransformationGraphAnalyzer {
 		private static final long serialVersionUID = -8502212649423859074L;
 	}
 	
+	@SuppressWarnings("unused")
 	private static class SubgraphAnalysisResult {
 		private TransformationGraph subgraph;
 		private Node subgraphInput;
