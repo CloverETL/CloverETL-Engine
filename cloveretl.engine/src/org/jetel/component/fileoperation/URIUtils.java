@@ -84,11 +84,11 @@ public class URIUtils {
 	
 	public static URI getParentURI(URI uri) {
 		URI normUri = uri.normalize();
-		String path = normUri.getPath();
+		String path = getPath(normUri);
 		if (StringUtils.isEmpty(path) || path.equals(PATH_SEPARATOR)) {
 			return null;
 		}
-		return normUri.toString().endsWith(PATH_SEPARATOR) ? normUri.resolve(PARENT_DIR_NAME) : normUri.resolve(CURRENT_DIR_NAME);
+		return normUri.toString().endsWith(PATH_SEPARATOR) ? resolve(normUri, PARENT_DIR_NAME) : resolve(normUri, CURRENT_DIR_NAME);
 	}
 	
 	public static String getPath(URI uri) {

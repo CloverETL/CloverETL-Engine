@@ -29,6 +29,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.protocols.proxy.ProxyProtocolEnum;
@@ -140,6 +141,11 @@ public class ProxyConfiguration {
 		return getUserInfo().getPassword();
 	}
 	
+	@Override
+	public String toString() {
+		return Objects.toString(proxy);
+	}
+
 	public static ProxyConfiguration getSystemConfiguration(String protocol) {
 		protocol = protocol.toLowerCase();
 		String proxyHost = System.getProperty(protocol + ".proxyHost"); // null means any host
@@ -165,6 +171,16 @@ public class ProxyConfiguration {
 			return null;
 		}
 	}
+    
+    public static boolean isProxy(String fileURL) {
+    	try {
+    		// create an url
+    		URL url = FileUtils.getFileURL(fileURL);
+			return (ProxyProtocolEnum.fromString(url.getProtocol()) != null);
+		} catch (MalformedURLException e) {
+			return false;
+		}
+    }
     
     private static Proxy getProxy(URL proxyUrl) {
     	if (proxyUrl == null) {

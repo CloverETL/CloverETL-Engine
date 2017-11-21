@@ -104,8 +104,15 @@ public class FileURLParser {
 	 * @throws IOException
 	 */
 	public static String getMostInnerAddress(String input) {
+		return getMostInnerAddress(input, true);
+	}
+	
+	public static String getMostInnerAddress(String input, boolean extractProxy) {
         // get inner input
         String innerInput = getInnerAddress(input);
+        if (!extractProxy && FileUtils.isProxy(innerInput)) {
+        	return input;
+        }
         return innerInput == null ? input : getMostInnerAddress(innerInput);
 	}
 	
