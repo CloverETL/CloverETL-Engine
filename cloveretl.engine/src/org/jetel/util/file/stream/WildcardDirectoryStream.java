@@ -127,7 +127,7 @@ public class WildcardDirectoryStream extends AbstractDirectoryStream<DirectorySt
 		String protocol = url.getProtocol().toLowerCase();
 		switch (protocol) {
 			case FileUtils.PORT_PROTOCOL:
-				return Collections.<String>emptyList(); // returning fileName causes infinite loop, why?
+				return Collections.emptyList(); // returning fileName causes infinite loop, why?
 			default:
 				WcardPattern wcardPattern = new WcardPattern();
 				wcardPattern.setParent(contextUrl);
