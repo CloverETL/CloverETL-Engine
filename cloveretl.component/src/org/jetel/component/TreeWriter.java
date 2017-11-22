@@ -219,12 +219,12 @@ public abstract class TreeWriter extends Node {
 	}
 
 	private void validateMapping(ConfigurationStatus status) throws ComponentNotReadyException {
-		if (mappingURL == null && mappingString == null) {
+		if (mappingURL == null && mappingString == null && designMapping == null) {
 			status.addError(this, null, "Mapping is not defined.");
 			return;
 		}
 		
-		TreeWriterMapping mapping = initMapping();
+		TreeWriterMapping mapping = designMapping == null ? initMapping() : designMapping;
 		Map<Integer, DataRecordMetadata> connectedPorts = prepareConnectedData();
 		AbstractMappingValidator validator = createValidator(connectedPorts);
 		if (validator == null) { // No validator specified
