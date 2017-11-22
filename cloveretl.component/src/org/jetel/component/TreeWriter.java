@@ -351,7 +351,9 @@ public abstract class TreeWriter extends Node {
 		if (charset == null) {
 			charset = getDefaultCharset();
 		}
-		designMapping = initMapping();
+		if (designMapping == null) {
+			designMapping = initMapping();
+		}
 		compileMapping(designMapping);
 
 		configureWriter();
@@ -594,6 +596,10 @@ public abstract class TreeWriter extends Node {
 
 	public void setMappingURL(String mappingURL) {
 		this.mappingURL = mappingURL;
+	}
+	
+	public void setMappingTree(TreeWriterMapping mappingTree) {
+		this.designMapping = mappingTree;
 	}
 
 	public void setCacheSize(long cacheSize) {
