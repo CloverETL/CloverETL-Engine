@@ -163,37 +163,44 @@ public class ProxyConfiguration {
      * @return
      */
     public static Proxy getProxy(String fileURL) {
-    	try {
-    		// create an url
-    		URL url = FileUtils.getFileURL(fileURL);
-			return getProxy(url);
+		// create an url
+		URL url = getProxyUrl(fileURL);
+		return getProxy(url);
+	}
+
+	public static URL getProxyUrl(String fileURL) {
+		try {
+			return FileUtils.getFileURL(fileURL);
 		} catch (MalformedURLException e) {
 			return null;
 		}
 	}
     
     public static boolean isProxy(String fileURL) {
-    	try {
-    		// create an url
-    		URL url = FileUtils.getFileURL(fileURL);
-			return (ProxyProtocolEnum.fromString(url.getProtocol()) != null);
-		} catch (MalformedURLException e) {
-			return false;
-		}
+		// create an url
+		URL url = getProxyUrl(fileURL);
+		return (getProxyType(url) != null);
     }
     
-    private static Proxy getProxy(URL proxyUrl) {
+    public static Proxy getProxy(URL proxyUrl) {
     	if (proxyUrl == null) {
     		return null;
     	}
 		// get proxy type
-		ProxyProtocolEnum proxyProtocolEnum;
-    	if ((proxyProtocolEnum = ProxyProtocolEnum.fromString(proxyUrl.getProtocol())) == null) {
+		ProxyProtocolEnum proxyProtocolEnum = getProxyType(proxyUrl);
+    	if (proxyProtocolEnum == null) {
     		return null;
     	}
     	
     	return getProxy(proxyProtocolEnum, proxyUrl.getHost(), proxyUrl.getPort());
     }
+
+	private static ProxyProtocolEnum getProxyType(URL proxyUrl) {
+		if (proxyUrl == null) {
+			return null;
+		}
+		return ProxyProtocolEnum.fromString(proxyUrl.getProtocol());
+	}
 
     /**
      * Creates a proxy from the proxy type, hostname and port.
@@ -222,5 +229,35 @@ public class ProxyConfiguration {
     	Proxy proxy = new Proxy(Proxy.Type.valueOf(proxyProtocolEnum.getProxyString()), addr);
 		return proxy;
     }
+    
+    public static String toString(Proxy proxy, UserInfo proxyCredentials) {
+		if (proxy == null) {
+			return null;
+		} else {
+			ProxyProtocolEnum type = null;
+			switch (proxy.type()) {
+			case DIRECT:
+				type = ProxyProtocolEnum.NO_PROXY;
+				break;
+			case HTTP:
+				type = ProxyProtocolEnum.PROXY_HTTP;
+				break;
+			case SOCKS:
+				type = ProxyProtocolEnum.PROXY_SOCKS;
+				break;
+			}
+			StringBuilder sb = new StringBuilder();
+			sb.append(type.toString()).append("://");
+			if (proxy.type() != Proxy.Type.DIRECT) {
+				if ((proxyCredentials != null) && (proxyCredentials.getUserInfo() != null)) {
+					sb.append(proxyCredentials.getUserInfo()).append('@');
+				}
+				InetSocketAddress address = (InetSocketAddress) proxy.address();
+				sb.append(address.getHostString()).append(':').append(address.getPort());
+			}
+			return sb.toString();
+		}
+    }
+    
 
 }

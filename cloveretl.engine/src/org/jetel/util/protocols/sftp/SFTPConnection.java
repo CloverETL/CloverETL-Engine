@@ -45,7 +45,7 @@ import com.jcraft.jsch.SftpException;
  *
  * @created Jan 28, 2013
  */
-public class SFTPConnection extends AbstractURLConnection implements ProxyAuthenticable {
+public class SFTPConnection extends AbstractURLConnection<SFTPAuthority> implements ProxyAuthenticable {
 
 	private int mode;
 
@@ -205,6 +205,6 @@ public class SFTPConnection extends AbstractURLConnection implements ProxyAuthen
 
 	@Override
 	public void setProxyCredentials(UserInfo userInfo) {
-		((SFTPAuthority) authority).setProxyCredentials(userInfo);
+		authority.setProxyCredentials(userInfo);
 	}
 }

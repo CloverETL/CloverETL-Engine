@@ -204,20 +204,28 @@ public class URIUtils {
 		if (proxyString != null) {
 			URI base = URI.create(parts.getFirst());
 			URI resolved = base.resolve(pathUri);
-			String resolvedStr = resolved.toString();
-			int idx = resolvedStr.indexOf(':') + 1;
-			
-			StringBuilder sb = new StringBuilder();
-			sb.append(resolved.getScheme()).append(':');
-			sb.append('(').append(proxyString).append(')');
-			if (idx < resolvedStr.length()) {
-				sb.append(resolvedStr.substring(idx));
-			}
-			
-			return URI.create(sb.toString());
+			return insertProxyString(resolved, proxyString);
 		} else {
 			return baseUri.resolve(pathUri);
 		}
+	}
+
+	public static URI insertProxyString(URI uri, String proxyString) {
+		if (proxyString == null) {
+			return uri;
+		}
+		
+		String uriStr = uri.toString();
+		int idx = uriStr.indexOf(':') + 1;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append(uri.getScheme()).append(':');
+		sb.append('(').append(proxyString).append(')');
+		if (idx < uriStr.length()) {
+			sb.append(uriStr.substring(idx));
+		}
+		
+		return URI.create(sb.toString());
 	}
 
 	/**
