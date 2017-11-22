@@ -390,7 +390,7 @@
 					<div class="col-md-12">
 						<span class="contact" style="display: inline-block;">
 							<img src="img/info.png" style="margin: 10px; float: left; height:24px;"/>
-							<span style="margin: 15px 0;" >This application is a simple contact database and its complete functionality is provided by the published Data Service jobs. On the left-hand side, the Data Service job gets data from the database and the webpage creates the list of contacts. The web forms on the right-hand side send data to the Data Service jobs which save the contacts to the database.</span>
+							<span style="margin: 15px 0;" >This application is a simple contact database. Its complete functionality is provided by published Data Service jobs. On the left-hand side, Data Service job gets data from the database and web page creates the list of contacts. Web forms on the right-hand side send data to the Data Service jobs which save contacts to the database.</span>
 						</span>
 						<div class="row">
 							<div id="contacts-list" class="col-md-6">
@@ -426,7 +426,7 @@
 											</table>
 										</form>
 										<div style="text-align:center">
-											<input type="button" title="Create new contact sending a post request to /example/contact with the input data as form parameters in the request body" value="Add contact" onclick="createContact();"/>
+											<input type="button" title="Create new contact sending a POST request to /example/contact with the input data as form parameters in the request body" value="Add contact" onclick="createContact();"/>
 										</div>
 									</div>
 								</div>
@@ -452,7 +452,7 @@ END:VCARD"></textarea>
 								<div id="log-panel" class="action-panel">
 									<div id="log-header" class="action-panel-header">
 										<a href="#log-body" data-toggle="collapse" class="collapsed">Log</a>
-										<span class="text">Show log of all request being sent by this page</span>
+										<span class="text">Show log of all requests being sent by this page</span>
 									</div>
 									<div id="log-body" class="collapse">
 										<textarea id="http-log" rows="8" readonly></textarea>
